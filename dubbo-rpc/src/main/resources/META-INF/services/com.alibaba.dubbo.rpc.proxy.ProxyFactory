@@ -1,0 +1,5 @@
+com.alibaba.dubbo.rpc.proxy.wrapper.EchoProxyFactoryWrapper
+com.alibaba.dubbo.rpc.proxy.wrapper.MockProxyFactoryWrapper
+com.alibaba.dubbo.rpc.proxy.wrapper.StubProxyFactoryWrapper
+com.alibaba.dubbo.rpc.proxy.support.jdk.JdkProxyFactory
+com.alibaba.dubbo.rpc.proxy.support.javassist.JavassistProxyFactory
