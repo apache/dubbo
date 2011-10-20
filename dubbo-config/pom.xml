@@ -55,7 +55,7 @@
 							<goal>upload-single</goal>
 						</goals>
 						<configuration>
-							<fromDir>${basedir}/src/main/resources/com/alibaba/dubbo/config/spring/schema/dubbo.xsd</fromDir>
+							<fromFile>${basedir}/src/main/resources/com/alibaba/dubbo/config/spring/schema/dubbo.xsd</fromFile>
 							<url>dav:http://code.alibabatech.com/schema/dubbo/</url>
 							<serverId>opensesame.releases.account</serverId>
 						</configuration>
