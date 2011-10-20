@@ -1,0 +1,4 @@
+com.alibaba.dubbo.rpc.support.ProtocolFilterWrapper
+com.alibaba.dubbo.rpc.support.ProtocolListenerWrapper
+com.alibaba.dubbo.rpc.injvm.InjvmProtocol
+com.alibaba.dubbo.rpc.dubbo.DubboProtocol
