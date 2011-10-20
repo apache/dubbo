@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
+ * Copyright 1999-2101 Alibaba Group.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -108,9 +108,12 @@ public abstract class AbstractConfig implements Serializable {
                 version = monitor.substring(i + 1);
             } else {
                 group = monitor;
-                version = "0.0.0";
+                version = null;
             }
-            monitor = registry.setProtocol("dubbo").addParameter(Constants.MONITOR_KEY, registry.getProtocol()).addParameterAndEncoded(RpcConstants.REFER_KEY, "group=" + group + "&version=" + version + "&interface=" + MonitorService.class.getName()).toFullString();
+            monitor = registry.setProtocol("dubbo").addParameter(Constants.MONITOR_KEY, registry.getProtocol())
+                    .addParameterAndEncoded(RpcConstants.REFER_KEY, "group=" + group 
+                    + (version == null || version.length() == 0 ? "" : "&version=" + version) 
+                    + "&interface=" + MonitorService.class.getName()).toFullString();
         }
         try {
             return URLEncoder.encode(monitor, "UTF-8");
