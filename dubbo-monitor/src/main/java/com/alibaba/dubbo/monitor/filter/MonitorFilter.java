@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
+ * Copyright 1999-2101 Alibaba Group.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.monitor.Monitor;
 import com.alibaba.dubbo.monitor.MonitorFactory;
@@ -40,6 +42,8 @@ import com.alibaba.dubbo.rpc.RpcException;
  */
 @Extension("monitor")
 public class MonitorFilter implements Filter {
+
+    private static final Logger logger = LoggerFactory.getLogger(MonitorFilter.class);
     
     private final ConcurrentMap<String, AtomicInteger> concurrents = new ConcurrentHashMap<String, AtomicInteger>();
     
@@ -72,38 +76,42 @@ public class MonitorFilter implements Filter {
     
     // 信息采集
     private void collect(Invoker<?> invoker, Invocation invocation, RpcContext context, long start, boolean error) {
-        // ---- 服务信息获取 ----
-        long elapsed = System.currentTimeMillis() - start; // 计算调用耗时
-        int concurrent = getConcurrent(invoker, invocation).get(); // 当前并发数
-        String application = invoker.getUrl().getParameter(Constants.APPLICATION_KEY);
-        String service = invoker.getInterface().getName(); // 获取服务名称
-        String method = invocation.getMethodName(); // 获取方法名
-        URL url = URL.valueOf(invoker.getUrl().getParameterAndDecoded(Constants.MONITOR_KEY));
-        Monitor monitor = monitorFactory.getMonitor(url);
-        // ---- 服务提供方监控 ----
-        String server = context.getLocalAddressString(); // 本地提供方地址
-        if (invoker.getUrl().getAddress().equals(server)) {
-            monitor.count(new URL(invoker.getUrl().getProtocol(), NetUtils.getLocalHost(), context.getLocalPort())
-                    .addParameters(MonitorService.APPLICATION, application, 
-                            MonitorService.INTERFACE, service, 
-                            MonitorService.METHOD, method,
-                            MonitorService.CLIENT, context.getRemoteHost(),
-                            error ? MonitorService.FAILURE : MonitorService.SUCCESS, String.valueOf(1),
-                            MonitorService.ELAPSED, String.valueOf(elapsed),
-                            MonitorService.CONCURRENT, String.valueOf(concurrent)));
-        }
-        // ---- 服务消费方监控 ----
-        context = RpcContext.getContext(); // 消费方必须在invoke()之后获取context信息
-        server = context.getRemoteAddressString(); // 远程提供方地址
-        if (invoker.getUrl().getAddress().equals(server)) {
-            monitor.count(new URL(invoker.getUrl().getProtocol(), NetUtils.getLocalHost(), 0)
-                    .addParameters(MonitorService.APPLICATION, application, 
-                            MonitorService.INTERFACE, service, 
-                            MonitorService.METHOD, method,
-                            MonitorService.SERVER, server,
-                            error ? MonitorService.FAILURE : MonitorService.SUCCESS, String.valueOf(1),
-                            MonitorService.ELAPSED, String.valueOf(elapsed),
-                            MonitorService.CONCURRENT, String.valueOf(concurrent)));
+        try {
+            // ---- 服务信息获取 ----
+            long elapsed = System.currentTimeMillis() - start; // 计算调用耗时
+            int concurrent = getConcurrent(invoker, invocation).get(); // 当前并发数
+            String application = invoker.getUrl().getParameter(Constants.APPLICATION_KEY);
+            String service = invoker.getInterface().getName(); // 获取服务名称
+            String method = invocation.getMethodName(); // 获取方法名
+            URL url = URL.valueOf(invoker.getUrl().getParameterAndDecoded(Constants.MONITOR_KEY));
+            Monitor monitor = monitorFactory.getMonitor(url);
+            // ---- 服务提供方监控 ----
+            String server = context.getLocalAddressString(); // 本地提供方地址
+            if (invoker.getUrl().getAddress().equals(server)) {
+                monitor.count(new URL(invoker.getUrl().getProtocol(), NetUtils.getLocalHost(), context.getLocalPort())
+                        .addParameters(MonitorService.APPLICATION, application, 
+                                MonitorService.INTERFACE, service, 
+                                MonitorService.METHOD, method,
+                                MonitorService.CLIENT, context.getRemoteHost(),
+                                error ? MonitorService.FAILURE : MonitorService.SUCCESS, String.valueOf(1),
+                                MonitorService.ELAPSED, String.valueOf(elapsed),
+                                MonitorService.CONCURRENT, String.valueOf(concurrent)));
+            }
+            // ---- 服务消费方监控 ----
+            context = RpcContext.getContext(); // 消费方必须在invoke()之后获取context信息
+            server = context.getRemoteAddressString(); // 远程提供方地址
+            if (invoker.getUrl().getAddress().equals(server)) {
+                monitor.count(new URL(invoker.getUrl().getProtocol(), NetUtils.getLocalHost(), 0)
+                        .addParameters(MonitorService.APPLICATION, application, 
+                                MonitorService.INTERFACE, service, 
+                                MonitorService.METHOD, method,
+                                MonitorService.SERVER, server,
+                                error ? MonitorService.FAILURE : MonitorService.SUCCESS, String.valueOf(1),
+                                MonitorService.ELAPSED, String.valueOf(elapsed),
+                                MonitorService.CONCURRENT, String.valueOf(concurrent)));
+            }
+        } catch (Throwable t) {
+            logger.error("Failed to monitor count service " + invoker.getUrl() + ", cause: " + t.getMessage(), t);
         }
     }
     
