@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
+ * Copyright 1999-2101 Alibaba Group.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,17 +96,16 @@ public class DubboMonitor implements Monitor {
             long maxConcurrent = numbers[9];
              
             // 发送汇总信息
-            URL url = statistics.getUrl();
-            url.addParameter(MonitorService.SUCCESS, success);
-            url.addParameter(MonitorService.FAILURE, failure);
-            url.addParameter(MonitorService.INPUT, input);
-            url.addParameter(MonitorService.OUTPUT, output);
-            url.addParameter(MonitorService.ELAPSED, elapsed);
-            url.addParameter(MonitorService.CONCURRENT, concurrent);
-            url.addParameter(MonitorService.MAX_INPUT, maxInput);
-            url.addParameter(MonitorService.MAX_OUTPUT, maxOutput);
-            url.addParameter(MonitorService.MAX_ELAPSED, maxElapsed);
-            url.addParameter(MonitorService.MAX_CONCURRENT, maxConcurrent);
+            URL url = statistics.getUrl().addParameter(MonitorService.SUCCESS, success)
+                    .addParameter(MonitorService.FAILURE, failure)
+                    .addParameter(MonitorService.INPUT, input)
+                    .addParameter(MonitorService.OUTPUT, output)
+                    .addParameter(MonitorService.ELAPSED, elapsed)
+                    .addParameter(MonitorService.CONCURRENT, concurrent)
+                    .addParameter(MonitorService.MAX_INPUT, maxInput)
+                    .addParameter(MonitorService.MAX_OUTPUT, maxOutput)
+                    .addParameter(MonitorService.MAX_ELAPSED, maxElapsed)
+                    .addParameter(MonitorService.MAX_CONCURRENT, maxConcurrent);
             monitorService.count(url);
             
             // 减掉已统计数据
