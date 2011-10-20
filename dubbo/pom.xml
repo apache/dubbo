@@ -28,7 +28,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo-config</artifactId>
+			<artifactId>dubbo-container</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
 	</dependencies>
