@@ -64,7 +64,9 @@
 									<include>com.alibaba:dubbo-rpc</include>
 									<include>com.alibaba:dubbo-cluster</include>
 									<include>com.alibaba:dubbo-registry</include>
+									<include>com.alibaba:dubbo-monitor</include>
 									<include>com.alibaba:dubbo-config</include>
+									<include>com.alibaba:dubbo-container</include>
 								</includes>
 							</artifactSet>
 							<transformers>
