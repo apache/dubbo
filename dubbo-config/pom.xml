@@ -57,7 +57,7 @@
 						<configuration>
 							<fromDir>${basedir}/src/main/resources/com/alibaba/dubbo/config/spring/schema/dubbo.xsd</fromDir>
 							<url>dav:http://code.alibabatech.com/schema/dubbo/</url>
-							<serverId>code.alibabatech.com</serverId>
+							<serverId>opensesame.releases.account</serverId>
 						</configuration>
 					</execution>
 				</executions>

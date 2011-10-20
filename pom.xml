@@ -170,25 +170,13 @@
 	</dependencies>
 	<repositories>
 		<repository>
-			<id>alibaba-opensource</id>
-			<name>Alibaba Open Source Repository</name>
+			<id>opensesame.releases</id>
 			<url>http://code.alibabatech.com/mvn/releases</url>
 			<releases>
 				<enabled>true</enabled>
 			</releases>
 			<snapshots>
 				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>alibaba-opensource-snapshot</id>
-			<name>Alibaba Open Source Snapshot Repository</name>
-			<url>http://code.alibabatech.com/mvn/snapshots</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
 			</snapshots>
 		</repository>
 	</repositories>
