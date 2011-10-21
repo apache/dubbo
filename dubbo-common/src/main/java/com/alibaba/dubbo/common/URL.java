@@ -202,6 +202,7 @@ public final class URL implements Serializable {
     }
     
     public URL addParameterAndEncoded(String key, String value) {
+        if(value == null || value.length() == 0) return this;
         try {
             value = URLEncoder.encode(value, "UTF-8");
         } catch (UnsupportedEncodingException e) {
@@ -243,14 +244,17 @@ public final class URL implements Serializable {
     }
     
     public URL addParameter(String key, Enum<?> value) {
+        if(value == null) return this;
         return addParameter(key, String.valueOf(value));
     }
     
     public URL addParameter(String key, Number value) {
+        if(value == null) return this;
         return addParameter(key, String.valueOf(value));
     }
 
     public URL addParameter(String key, CharSequence value) {
+        if(value == null || value.length() == 0) return this;
         return addParameter(key, String.valueOf(value));
     }
     
