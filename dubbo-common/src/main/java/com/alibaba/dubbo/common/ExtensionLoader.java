@@ -243,7 +243,7 @@ public class ExtensionLoader<T> {
                 while (urls.hasMoreElements()) {
                     java.net.URL url = urls.nextElement();
                     try {
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), "utf-8"));
                         try {
                             String line = null;
                             while ((line = reader.readLine()) != null) {
