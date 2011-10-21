@@ -247,6 +247,8 @@ public class ExtensionLoader<T> {
                         try {
                             String line = null;
                             while ((line = reader.readLine()) != null) {
+                                final int ci = line.indexOf('#');
+                                if (ci >= 0) line = line.substring(0, ci);
                                 line = line.trim();
                                 if (line.length() > 0) {
                                     try {
