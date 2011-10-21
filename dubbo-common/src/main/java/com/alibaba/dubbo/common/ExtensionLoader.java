@@ -72,6 +72,7 @@ public class ExtensionLoader<T> {
     private volatile Class<?> cachedAdaptiveClass = null;
     
 	private final Reference<Object> cachedAdaptiveInstance = new Reference<Object>();
+	private volatile Throwable createAdaptiveInstanceError;
 	
     private Set<Class<?>> cachedWrapperClasses;
     
@@ -135,15 +136,33 @@ public class ExtensionLoader<T> {
     public T getAdaptiveExtension() {
         Object instance = cachedAdaptiveInstance.get();
         if (instance == null) {
-            synchronized (cachedAdaptiveInstance) {
-                instance = cachedAdaptiveInstance.get();
-                if (instance == null) {
-                    instance = createAdaptiveExtension();
-                    cachedAdaptiveInstance.set(instance);
+            if(createAdaptiveInstanceError == null) {
+                synchronized (cachedAdaptiveInstance) {
+                    instance = cachedAdaptiveInstance.get();
+                    if (instance == null) {
+                        try {
+                            instance = createAdaptiveExtension();
+                            cachedAdaptiveInstance.set(instance);
+                        } catch (Throwable t) {
+                            createAdaptiveInstanceError = t;
+                            rethrowAsRuntime(t, "fail to create adaptive instance: ");
+                        }
+                    }
                 }
             }
+            else {
+                rethrowAsRuntime(createAdaptiveInstanceError, "fail to create adaptive instance: ");
+            }
         }
+        
         return (T) instance;
+    }
+
+    private static void rethrowAsRuntime(Throwable t, String message) {
+        if(t instanceof RuntimeException)
+            throw (RuntimeException)t;
+        else
+            throw new IllegalStateException(message + t.toString(), t);
     }
 
     @SuppressWarnings("unchecked")
@@ -269,12 +288,12 @@ public class ExtensionLoader<T> {
                                         } else {
                                             try {
                                                 clazz.getConstructor(type);
-                                                Set<Class<?>> autoproxies = cachedWrapperClasses;
-                                                if (autoproxies == null) {
+                                                Set<Class<?>> wrappers = cachedWrapperClasses;
+                                                if (wrappers == null) {
                                                     cachedWrapperClasses = new ConcurrentHashSet<Class<?>>();
-                                                    autoproxies = cachedWrapperClasses;
+                                                    wrappers = cachedWrapperClasses;
                                                 }
-                                                autoproxies.add(clazz);
+                                                wrappers.add(clazz);
                                             } catch (NoSuchMethodException e) {
                                                 clazz.getConstructor();
                                                 Extension extension = clazz.getAnnotation(Extension.class);
@@ -348,7 +367,7 @@ public class ExtensionLoader<T> {
         }
         // 完全没有Adaptive方法，则不需要生成Adaptive类
         if(! hasAdaptiveAnnotation)
-            throw new IllegalStateException("No such adaptive class for extension " + type.getName());
+            throw new IllegalStateException("No adaptive method on extension " + type.getName() + ", refuse to create the adaptive class!");
         
         ClassGenerator cg = ClassGenerator.newInstance(classLoader);
         cg.setClassName(type.getName() + "$Adpative");
@@ -503,6 +522,11 @@ public class ExtensionLoader<T> {
         }
         classLoader = ExtensionLoader.class.getClassLoader();
         return classLoader;
+    }
+    
+    @Override
+    public String toString() {
+        return this.getClass().getName() + "[" + type.getName() + "]";
     }
     
 }

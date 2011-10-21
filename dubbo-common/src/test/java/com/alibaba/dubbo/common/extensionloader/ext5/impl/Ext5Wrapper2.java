@@ -17,22 +17,20 @@ package com.alibaba.dubbo.common.extensionloader.ext5.impl;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extensionloader.ext5.Ext5NoAdaptiveMethod;
 
 /**
  * @author ding.lid
  */
-@Extension("XXX")
-public class Ext5AutoProxy1 implements Ext5NoAdaptiveMethod {
+public class Ext5Wrapper2 implements Ext5NoAdaptiveMethod {
     Ext5NoAdaptiveMethod instance;
     
     public static AtomicInteger echoCount = new AtomicInteger();
     public static AtomicInteger yellCount = new AtomicInteger();
     public static AtomicInteger bangCount = new AtomicInteger();
     
-    public Ext5AutoProxy1(Ext5NoAdaptiveMethod instance) {
+    public Ext5Wrapper2(Ext5NoAdaptiveMethod instance) {
         this.instance = instance;
     }
     

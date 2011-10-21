@@ -1,4 +1,4 @@
 com.alibaba.dubbo.common.extensionloader.ext5.impl.Ext5Impl1
 com.alibaba.dubbo.common.extensionloader.ext5.impl.Ext5Impl2
-com.alibaba.dubbo.common.extensionloader.ext5.impl.Ext5AutoProxy1
-com.alibaba.dubbo.common.extensionloader.ext5.impl.Ext5AutoProxy2
+com.alibaba.dubbo.common.extensionloader.ext5.impl.Ext5Wrapper1
+com.alibaba.dubbo.common.extensionloader.ext5.impl.Ext5Wrapper2

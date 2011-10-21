@@ -16,7 +16,7 @@
 package com.alibaba.dubbo.common.extensionloader;
 
 import static org.hamcrest.CoreMatchers.anyOf;
-import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -41,8 +41,8 @@ import com.alibaba.dubbo.common.extensionloader.ext2.UrlHolder;
 import com.alibaba.dubbo.common.extensionloader.ext3.Ext3;
 import com.alibaba.dubbo.common.extensionloader.ext4.Ext4;
 import com.alibaba.dubbo.common.extensionloader.ext5.Ext5NoAdaptiveMethod;
-import com.alibaba.dubbo.common.extensionloader.ext5.impl.Ext5AutoProxy1;
-import com.alibaba.dubbo.common.extensionloader.ext5.impl.Ext5AutoProxy2;
+import com.alibaba.dubbo.common.extensionloader.ext5.impl.Ext5Wrapper1;
+import com.alibaba.dubbo.common.extensionloader.ext5.impl.Ext5Wrapper2;
 import com.alibaba.dubbo.common.extensionloader.ext6_inject.Ext6;
 import com.alibaba.dubbo.common.extensionloader.ext6_inject.impl.Ext6Impl2;
 
@@ -57,31 +57,31 @@ public class ExtensionLoaderTest {
     }
     
     @Test
-    public void test_getExtension_WithAutoProxy() throws Exception {
+    public void test_getExtension_WithWrapper() throws Exception {
         Ext5NoAdaptiveMethod impl1 = ExtensionLoader.getExtensionLoader(Ext5NoAdaptiveMethod.class).getExtension("impl1");
-        assertThat(impl1, anyOf(instanceOf(Ext5AutoProxy1.class), instanceOf(Ext5AutoProxy2.class)));
+        assertThat(impl1, anyOf(instanceOf(Ext5Wrapper1.class), instanceOf(Ext5Wrapper2.class)));
         
         Ext5NoAdaptiveMethod impl2 = ExtensionLoader.getExtensionLoader(Ext5NoAdaptiveMethod.class).getExtension("impl2") ;
-        assertThat(impl2, anyOf(instanceOf(Ext5AutoProxy1.class), instanceOf(Ext5AutoProxy2.class)));
+        assertThat(impl2, anyOf(instanceOf(Ext5Wrapper1.class), instanceOf(Ext5Wrapper2.class)));
         
         
         URL url = new URL("p1", "1.2.3.4", 1010, "path1");
-        int echoCount1 = Ext5AutoProxy1.echoCount.get();
-        int echoCount2 = Ext5AutoProxy2.echoCount.get();
-        int yellCount1 = Ext5AutoProxy1.yellCount.get();
-        int yellCount2 = Ext5AutoProxy2.yellCount.get();
+        int echoCount1 = Ext5Wrapper1.echoCount.get();
+        int echoCount2 = Ext5Wrapper2.echoCount.get();
+        int yellCount1 = Ext5Wrapper1.yellCount.get();
+        int yellCount2 = Ext5Wrapper2.yellCount.get();
         
         assertEquals("Ext5Impl1-echo", impl1.echo(url, "ha"));
-        assertEquals(echoCount1 + 1, Ext5AutoProxy1.echoCount.get());
-        assertEquals(echoCount2 + 1, Ext5AutoProxy2.echoCount.get());
-        assertEquals(yellCount1, Ext5AutoProxy1.yellCount.get());
-        assertEquals(yellCount2, Ext5AutoProxy2.yellCount.get());
+        assertEquals(echoCount1 + 1, Ext5Wrapper1.echoCount.get());
+        assertEquals(echoCount2 + 1, Ext5Wrapper2.echoCount.get());
+        assertEquals(yellCount1, Ext5Wrapper1.yellCount.get());
+        assertEquals(yellCount2, Ext5Wrapper2.yellCount.get());
         
         assertEquals("Ext5Impl2-yell", impl2.yell(url, "ha"));
-        assertEquals(echoCount1 + 1, Ext5AutoProxy1.echoCount.get());
-        assertEquals(echoCount2 + 1, Ext5AutoProxy2.echoCount.get());
-        assertEquals(yellCount1 + 1, Ext5AutoProxy1.yellCount.get());
-        assertEquals(yellCount2 + 1, Ext5AutoProxy2.yellCount.get());
+        assertEquals(echoCount1 + 1, Ext5Wrapper1.echoCount.get());
+        assertEquals(echoCount2 + 1, Ext5Wrapper2.echoCount.get());
+        assertEquals(yellCount1 + 1, Ext5Wrapper1.yellCount.get());
+        assertEquals(yellCount2 + 1, Ext5Wrapper2.yellCount.get());
     }
     
     @Test
@@ -94,7 +94,7 @@ public class ExtensionLoaderTest {
     }
     
     @Test
-    public void test_getExtension_ExceptionNoExtension_NameOnAutoProxyNoAffact() throws Exception {
+    public void test_getExtension_ExceptionNoExtension_NameOnWrapperNoAffact() throws Exception {
         try {
             ExtensionLoader.getExtensionLoader(Ext5NoAdaptiveMethod.class).getExtension("XXX");
         } catch (IllegalStateException expected) {
@@ -191,6 +191,27 @@ public class ExtensionLoaderTest {
             fail();
         } catch (IllegalArgumentException e) {
             assertEquals("url == null", e.getMessage());
+        }
+    }
+    
+    @Test
+    public void test_getAdaptiveExtension_ExceptionWhenNoAdativeMethodOnInterface() throws Exception {
+        try {
+            ExtensionLoader.getExtensionLoader(Ext5NoAdaptiveMethod.class).getAdaptiveExtension();
+            fail();
+        } catch (IllegalStateException expected) {
+            assertThat(expected.getMessage(), 
+                    allOf(containsString("Can not create adaptive extenstion interface com.alibaba.dubbo.common.extensionloader.ext5.Ext5NoAdaptiveMethod"),
+                            containsString("No adaptive method on extension com.alibaba.dubbo.common.extensionloader.ext5.Ext5NoAdaptiveMethod, refuse to create the adaptive class")));
+        }
+        // 多次get，都会报错且相同
+        try {
+            ExtensionLoader.getExtensionLoader(Ext5NoAdaptiveMethod.class).getAdaptiveExtension();
+            fail();
+        } catch (IllegalStateException expected) {
+            assertThat(expected.getMessage(), 
+                    allOf(containsString("Can not create adaptive extenstion interface com.alibaba.dubbo.common.extensionloader.ext5.Ext5NoAdaptiveMethod"),
+                            containsString("No adaptive method on extension com.alibaba.dubbo.common.extensionloader.ext5.Ext5NoAdaptiveMethod, refuse to create the adaptive class")));
         }
     }
 
