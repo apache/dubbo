@@ -222,7 +222,7 @@
 				<xsd:documentation><![CDATA[ The method does async. ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="sent" type="xsd:string" use="optional" default="true">
+		<xsd:attribute name="sent" type="xsd:string" use="optional" default="false">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[ The async method return await message sent ]]></xsd:documentation>
 			</xsd:annotation>
