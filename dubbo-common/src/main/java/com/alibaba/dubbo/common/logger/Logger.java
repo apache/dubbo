@@ -18,7 +18,7 @@ package com.alibaba.dubbo.common.logger;
 /**
  * 日志接口 <p/> 声明：引用自commons-logging
  *
- * @author liangfei0201@163.com
+ * @author william.liangf
  *
  */
 public interface Logger {
