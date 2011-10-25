@@ -25,6 +25,7 @@ import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.registry.NotifyListener;
+import com.alibaba.dubbo.registry.RegistryService;
 import com.alibaba.dubbo.rpc.RpcContext;
 
 /**
@@ -73,7 +74,7 @@ public class SimpleRegistryService extends AbstractRegistryService {
             logger.info("[subscribe] service: "+service + ",client:"+ client);
         }
         List<URL> urls = getRegistered().get(service);
-        if ((com.alibaba.dubbo.registry.RegistryService.class.getName() + ":0.0.0").equals(service)
+        if ((RegistryService.class.getName() + ":0.0.0").equals(service)
                 && (urls == null || urls.size() == 0)) {
             register(service, new URL("dubbo", 
                     NetUtils.getLocalHost(), 

@@ -29,9 +29,15 @@
 	<modules>
 		<module>dubbo-common</module>
 		<module>dubbo-remoting</module>
+		<module>dubbo-remoting-mina</module>
+		<module>dubbo-remoting-grizzly</module>
 		<module>dubbo-rpc</module>
+		<module>dubbo-rpc-rmi</module>
+		<module>dubbo-rpc-hessian</module>
 		<module>dubbo-cluster</module>
 		<module>dubbo-registry</module>
+		<module>dubbo-registry-multicast</module>
+		<module>dubbo-registry-zookeeper</module>
 		<module>dubbo-monitor</module>
 		<module>dubbo-config</module>
 		<module>dubbo-container</module>
@@ -48,6 +54,7 @@
 		<xstream_version>1.4.1</xstream_version>
 		<fastjson_version>1.1.6</fastjson_version>
 		<bsf_version>3.1</bsf_version>
+		<zookeeper_version>3.3.3</zookeeper_version>
 		<!-- Log libs -->
 		<log4j_version>1.2.16</log4j_version>
 		<slf4j_version>1.6.2</slf4j_version>
@@ -111,6 +118,11 @@
 				<groupId>org.apache.bsf</groupId>
 				<artifactId>bsf-api</artifactId>
 				<version>${bsf_version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.zookeeper</groupId>
+				<artifactId>zookeeper</artifactId>
+				<version>${zookeeper_version}</version>
 			</dependency>
 			<!-- Log libs -->
 			<dependency>
