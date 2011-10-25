@@ -31,21 +31,37 @@ import com.alibaba.dubbo.common.utils.CollectionUtils;
 
 /**
  * URL - Uniform Resource Locator (Immutable, ThreadSafe)
- * 
+ * <p>
  * url example:
  * <ul>
- * <li>http://www.facebook.com/friends?param=value1
+ * <li>http://www.facebook.com/friends?param1=value1&amp;param2=value2
  * <li>http://username:password@10.20.130.230:8080/list?version=1.0.0
- * <li>registry://192.168.1.7:9090/com.alibaba.service1?param1=value1&param2=value2
  * <li>ftp://username:password@192.168.1.7:21/1/read.txt
+ * <li>registry://192.168.1.7:9090/com.alibaba.service1?param1=value1&amp;param2=value2
+ * </ul>
+ * <p>
+ * Some strange example below:
+ * <ul>
+ * <li>192.168.1.3:20880<br>
+ * for this case, url protocol = null, url host = 192.168.1.3, port = 20880, url path = null
  * <li>file:///home/user1/router.js?type=script<br>
- * for this case, url protocol = null, url host = null, url path = /home/user1/router.js
+ * for this case, url protocol = null, url host = null, url path = home/user1/router.js
+ * <li>file://home/user1/router.js?type=script<br>
+ * for this case, url protocol = file, url host = home, url path = user1/router.js
  * <li>file:///D:/1/router.js?type=script<br>
- * for this case, url protocol = null, url host = null, url path = /D:/1/router.js
+ * for this case, url protocol = file, url host = null, url path = D:/1/router.js
+ * <li>file:/D:/1/router.js?type=script<br>
+ * same as above file:///D:/1/router.js?type=script 
+ * <li>/home/user1/router.js?type=script <br>
+ * for this case, url protocol = null, url host = null, url path = home/user1/router.js
+ * <li>home/user1/router.js?type=script <br>
+ * for this case, url protocol = null, url host = home, url path = user1/router.js
  * </ul>
  * 
  * @author william.liangf
  * @author ding.lid
+ * @see java.net.URL
+ * @see java.net.URI
  */
 public final class URL implements Serializable {
 
@@ -357,6 +373,7 @@ public final class URL implements Serializable {
 	 * 
 	 * @param url URL string
 	 * @return URL instance
+	 * @see URL
 	 */
 	public static URL valueOf(String url) {
 		if (url == null || (url = url.trim()).length() == 0) {

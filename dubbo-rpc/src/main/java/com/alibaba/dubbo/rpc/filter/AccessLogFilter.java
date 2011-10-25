@@ -46,11 +46,11 @@ import com.alibaba.dubbo.rpc.Result;
 /**
  * 记录Service的Access Log。
  * <p>
- * 使用的Logger key是<code><b>DUBBO.ACCESS-LOG</b></code>。
- * 如果要配置Access Log只出现在指定的Appender中，在Log4j中注意配置上additivity。配置示例:
+ * 使用的Logger key是<code><b>dubbo.accesslog</b></code>。
+ * 如果想要配置Access Log只出现在指定的Appender中，可以在Log4j中注意配置上additivity。配置示例:
  * <code>
  * <pre>
- * &lt;logger name="<b>DUBBO.ACCESS-LOG</b>" <font color="red">additivity="false"</font>&gt;
+ * &lt;logger name="<b>dubbo.accesslog</b>" <font color="red">additivity="false"</font>&gt;
  *    &lt;level value="info" /&gt;
  *    &lt;appender-ref ref="foo" /&gt;
  * &lt;/logger&gt;
