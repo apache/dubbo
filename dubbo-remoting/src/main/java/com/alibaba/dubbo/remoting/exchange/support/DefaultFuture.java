@@ -39,6 +39,7 @@ import com.alibaba.dubbo.remoting.exchange.Response;
  * DefaultFuture.
  * 
  * @author qian.lei
+ * @author chao.liuc
  */
 public class DefaultFuture implements ResponseFuture {
 
@@ -110,8 +111,9 @@ public class DefaultFuture implements ResponseFuture {
     }
     
     public void cancel(){
-        response = new Response(id);
-        response.setErrorMessage("request future has been canceled.");
+        Response errorResult = new Response(id);
+        errorResult.setErrorMessage("request future has been canceled.");
+        response = errorResult ;
         FUTURES.remove(id);
         CHANNELS.remove(id);
     }
@@ -122,14 +124,37 @@ public class DefaultFuture implements ResponseFuture {
 
     public void setCallback(ResponseCallback callback) {
         if (isDone()) {
-            try {
-                callback.done(returnFromResponse());
-            } catch (Throwable e) {
-                callback.caught(e);
-            }
+            invokeCallback(callback);
         } else {
-            this.callback = callback;
+            boolean isdone = false;
+            lock.lock();
+            try{
+                if (!isDone()) {
+                    this.callback = callback;
+                } else {
+                    isdone = true;
+                }
+            }finally {
+                lock.unlock();
+            }
+            if (isdone){
+                invokeCallback(callback);
+            }
         }
+    }
+    private void invokeCallback(ResponseCallback c){
+        if (c == null){
+            throw new NullPointerException("callback cannot be null.");
+        }
+        ResponseCallback callbackCopy = c;
+        c = null;
+        Object result = null;
+        try {
+            result = returnFromResponse();
+        } catch (Throwable e) {
+            callbackCopy.caught(e);
+        }
+        callbackCopy.done(result);
     }
 
     private long getId() {
@@ -198,14 +223,8 @@ public class DefaultFuture implements ResponseFuture {
         } finally {
             lock.unlock();
         }
-        ResponseCallback c = callback;
-        if (c != null) {
-            try {
-                c.done(returnFromResponse());
-            } catch (Throwable e) {
-                c.caught(e);
-            }
-            callback = null;
+        if (callback != null) {
+            invokeCallback(callback);
         }
     }
 
@@ -217,8 +236,6 @@ public class DefaultFuture implements ResponseFuture {
         if (res.getStatus() == Response.CLIENT_TIMEOUT || res.getStatus() == Response.SERVER_TIMEOUT) {
             throw new TimeoutException(res.getStatus() == Response.SERVER_TIMEOUT, channel, res.getErrorMessage());
         }
-        FUTURES.remove(id);
-        CHANNELS.remove(id);
         throw new RemotingException(channel, res.getErrorMessage());
     }
     
