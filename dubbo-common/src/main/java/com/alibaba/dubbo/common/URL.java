@@ -218,13 +218,10 @@ public final class URL implements Serializable {
     }
     
     public URL addParameterAndEncoded(String key, String value) {
-        if(value == null || value.length() == 0) return this;
-        try {
-            value = URLEncoder.encode(value, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e.getMessage(), e);
+        if(value == null || value.length() == 0) {
+            return this;
         }
-        return addParameter(key, value);
+        return addParameter(key, encode(value));
     }
     
     public URL addParameter(String key, boolean value) {
@@ -591,15 +588,7 @@ public final class URL implements Serializable {
     }
     
     public String getParameterAndDecoded(String key, String defaultValue) {
-        String value = getParameter(key, defaultValue);
-        if (value != null && value.length() > 0) { 
-            try {
-                value = URLDecoder.decode(value, "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException(e.getMessage(), e);
-            }
-        }
-        return value;
+        return decode(getParameter(key, defaultValue));
     }
 
     public String getParameter(String key) {
@@ -794,4 +783,27 @@ public final class URL implements Serializable {
         String value = getMethodParameter(method, key);
         return value != null && value.length() > 0;
     }
+    
+    public static String encode(String value) {
+        if (value == null || value.length() == 0) { 
+            return "";
+        }
+        try {
+            return URLEncoder.encode(value, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+    
+    public static String decode(String value) {
+        if (value == null || value.length() == 0) { 
+            return "";
+        }
+        try {
+            return URLDecoder.decode(value, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+    
 }
