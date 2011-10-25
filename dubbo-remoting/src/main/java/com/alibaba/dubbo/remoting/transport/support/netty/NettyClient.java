@@ -15,16 +15,13 @@
  */
 package com.alibaba.dubbo.remoting.transport.support.netty;
 
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
@@ -87,68 +84,54 @@ public class NettyClient extends AbstractClient {
     }
 
     protected void doConnect() throws Throwable {
+        long start = System.currentTimeMillis();
         ChannelFuture future = bootstrap.connect(getConnectAddress());
-        try {
-            long start = System.currentTimeMillis();
-            final AtomicReference<Throwable> exception = new AtomicReference<Throwable>();
-            final CountDownLatch finish = new CountDownLatch(1); // resolve future.awaitUninterruptibly() dead lock
-            future.addListener(new ChannelFutureListener() {
-                public void operationComplete(ChannelFuture future) throws Exception {
-                    try {
-                        if (future.isSuccess()) {
-                            Channel newChannel = future.getChannel();
-                            newChannel.setInterestOps(Channel.OP_READ_WRITE);
-                            try {
-                                // 关闭旧的连接
-                                Channel oldChannel = NettyClient.this.channel; // copy reference
-                                if (oldChannel != null) {
-                                    try {
-                                        if (logger.isInfoEnabled()) {
-                                            logger.info("Close old netty channel " + oldChannel + " on create new netty channel " + newChannel);
-                                        }
-                                        oldChannel.close();
-                                    } finally {
-                                        NettyChannel.removeChannelIfDisconnected(oldChannel);
-                                    }
-                                }
-                            } finally {
-                                if (NettyClient.this.isClosed()) {
-                                    try {
-                                        if (logger.isInfoEnabled()) {
-                                            logger.info("Close new netty channel " + newChannel + ", because the client closed.");
-                                        }
-                                        newChannel.close();
-                                    } finally {
-                                        NettyClient.this.channel = null;
-                                        NettyChannel.removeChannelIfDisconnected(newChannel);
-                                    }
-                                } else {
-                                    NettyClient.this.channel = newChannel;
-                                }
+        try{
+            boolean ret = future.awaitUninterruptibly(getConnectTimeout(), TimeUnit.MILLISECONDS);
+            
+            if (ret && future.isSuccess()) {
+                Channel newChannel = future.getChannel();
+                newChannel.setInterestOps(Channel.OP_READ_WRITE);
+                try {
+                    // 关闭旧的连接
+                    Channel oldChannel = NettyClient.this.channel; // copy reference
+                    if (oldChannel != null) {
+                        try {
+                            if (logger.isInfoEnabled()) {
+                                logger.info("Close old netty channel " + oldChannel + " on create new netty channel " + newChannel);
                             }
-                        } else if (future.getCause() != null) {
-                            exception.set(future.getCause());
+                            oldChannel.close();
+                        } finally {
+                            NettyChannel.removeChannelIfDisconnected(oldChannel);
                         }
-                    } catch (Exception e) {
-                        exception.set(e);
-                    } finally {
-                        finish.countDown();
+                    }
+                } finally {
+                    if (NettyClient.this.isClosed()) {
+                        try {
+                            if (logger.isInfoEnabled()) {
+                                logger.info("Close new netty channel " + newChannel + ", because the client closed.");
+                            }
+                            newChannel.close();
+                        } finally {
+                            NettyClient.this.channel = null;
+                            NettyChannel.removeChannelIfDisconnected(newChannel);
+                        }
+                    } else {
+                        NettyClient.this.channel = newChannel;
                     }
                 }
-            });
-            try {
-                finish.await(getConnectTimeout(), TimeUnit.MILLISECONDS);
-            } catch (InterruptedException e) {
-                throw new RemotingException(this, "Failed to connect to server " + getRemoteAddress() + " client-side timeout "
-                                            + getConnectTimeout() + "ms (elapsed: " + (System.currentTimeMillis() - start)
-                                            + "ms) from netty client " + NetUtils.getLocalHost() + " using dubbo version "
-                                            + Version.getVersion() + ", cause: " + e.getMessage(), e);
+            } else if (future.getCause() != null) {
+                throw future.getCause();
+            } else {
+                throw new RemotingException(this, "Faild to connect to server " + getRemoteAddress() + ", the future was not completed within the specified time limit, please check the timeout ["+ getConnectTimeout() +"] config .");
             }
-            Throwable e = exception.get();
-            if (e != null) {
-                throw e;
-            }
-        } finally {
+            
+        }catch (InterruptedException e) {
+            throw new RemotingException(this, "Failed to connect to server " + getRemoteAddress() + " client-side timeout "
+                    + getConnectTimeout() + "ms (elapsed: " + (System.currentTimeMillis() - start)
+                    + "ms) from netty client " + NetUtils.getLocalHost() + " using dubbo version "
+                    + Version.getVersion() + ", cause: " + e.getMessage(), e);
+        }finally{
             if (! isConnected()) {
                 future.cancel();
             }
