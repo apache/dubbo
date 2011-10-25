@@ -21,14 +21,14 @@
 		<artifactId>dubbo-parent</artifactId>
 		<version>2.0.8-SNAPSHOT</version>
 	</parent>
-	<artifactId>dubbo-registry-multicast</artifactId>
+	<artifactId>dubbo-remoting-grizzly</artifactId>
 	<packaging>jar</packaging>
-	<name>Dubbo Multicast Registry Module</name>
-	<description>The multicast registry module of dubbo project</description>
+	<name>Dubbo Grizzly Remoting Module</name>
+	<description>The grizzly remoting module of dubbo project</description>
 	<dependencies>
 		<dependency>
 			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo-registry</artifactId>
+			<artifactId>dubbo-remoting</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
 	</dependencies>
