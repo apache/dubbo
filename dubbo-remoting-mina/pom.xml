@@ -35,5 +35,9 @@
 			<groupId>org.apache.mina</groupId>
 			<artifactId>mina-core</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+		</dependency>
 	</dependencies>
 </project>

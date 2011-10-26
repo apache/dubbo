@@ -31,26 +31,5 @@
 			<artifactId>dubbo-common</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.jboss.netty</groupId>
-			<artifactId>netty</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.mina</groupId>
-			<artifactId>mina-core</artifactId>
-			<scope>provided</scope>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.glassfish.grizzly</groupId>
-			<artifactId>grizzly-core</artifactId>
-			<scope>provided</scope>
-			<optional>true</optional>
-		</dependency>
 	</dependencies>
 </project>
