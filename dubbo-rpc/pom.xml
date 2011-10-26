@@ -25,16 +25,4 @@
 	<packaging>jar</packaging>
 	<name>Dubbo RPC Module</name>
 	<description>The rpc module of dubbo project</description>
-	<dependencies>
-		<dependency>
-			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo-remoting</artifactId>
-			<version>${project.parent.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.mina</groupId>
-			<artifactId>mina-core</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
 </project>

@@ -31,5 +31,15 @@
 			<artifactId>dubbo-rpc</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo-remoting</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.mina</groupId>
+			<artifactId>mina-core</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 </project>
