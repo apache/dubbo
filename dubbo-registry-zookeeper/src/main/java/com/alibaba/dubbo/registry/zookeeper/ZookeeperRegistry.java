@@ -146,7 +146,7 @@ public class ZookeeperRegistry implements Registry {
         String service = toServicePath(url);
         Map<NotifyListener, NotifyWatcher> serviceWathers = wathers.remove(service);
         if (serviceWathers != null && serviceWathers.size() > 0) {
-            NotifyWatcher wather = serviceWathers.get(listener);
+            NotifyWatcher wather = serviceWathers.remove(listener);
             if (wather != null) {
                 wather.setListener(null);
             }
