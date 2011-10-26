@@ -225,6 +225,8 @@ public class Constants {
     
     public static final int          DEFAULT_RECONNECT_PERIOD       =  2000;
     
+    public static final String       SHUTDOWN_TIMEOUT_KEY           =  "shutdown.timeout";
+    
     public static final int          DEFAULT_SHUTDOWN_TIMEOUT       =  10000;
 
     public static final String       CHECK_KEY                      = "check";

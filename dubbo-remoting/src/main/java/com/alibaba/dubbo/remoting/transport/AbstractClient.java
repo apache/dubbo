@@ -59,11 +59,18 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     
     private final boolean send_reconnect ;
     
+    //the last successed connected time
+    private long lastConnectedTime = System.currentTimeMillis();
+    
+    private final int shutdown_timeout ;
+    
     
     public AbstractClient(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
         
         send_reconnect = url.getBooleanParameter(Constants.SEND_RECONNECT_KEY, false);
+        
+        shutdown_timeout = url.getIntParameter(Constants.SHUTDOWN_TIMEOUT_KEY, Constants.DEFAULT_SHUTDOWN_TIMEOUT);
         
         try {
             doOpen();
@@ -103,17 +110,23 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
      * init reconnect thread
      */
     private synchronized void initConnectStatusCheckCommand(){
-        //如果配置了 reconnect = false 则不尝试重连。
+        //reconnect=false to close reconnect 
         int reconnect = getReconnectParam(getUrl());
         if(reconnect > 0 && reconnectExecutorFuture == null){
             Runnable connectStatusCheckCommand =  new Runnable() {
+                String errorMsg = "Unexpected error occur at client reconnect";
                 public void run() {
                     try {
                         if (! isConnected()) {
-                            connect();//定时检查与消息发送时检测都要做。
+                            connect();
                         }
-                    } catch (Throwable t) { // 防御性容错
-                        logger.error("Unexpected error occur at client reconnect", t);
+                    } catch (Throwable t) { 
+                        // wait registry sync provider list
+                        if (System.currentTimeMillis() - lastConnectedTime > shutdown_timeout){
+                            logger.warn(errorMsg, t);
+                        } else {
+                            logger.error(errorMsg, t);
+                        }
                     }
                 }
             };
@@ -237,6 +250,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                                             + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
                                             + ", cause: Connect wait timeout: " + getTimeout() + "ms.");
             }
+            lastConnectedTime = System.currentTimeMillis();
         } catch (RemotingException e) {
             throw e;
         } catch (Throwable e) {
