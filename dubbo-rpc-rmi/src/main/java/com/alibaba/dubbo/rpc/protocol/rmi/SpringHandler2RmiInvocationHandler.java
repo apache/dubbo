@@ -29,7 +29,7 @@ import com.alibaba.dubbo.rpc.RpcResult;
  * @serial
  * @author ding.lid
  */
-class SpringHandler2RmiInvocationHandler extends AbstractRmiInvocationHandler {
+class SpringHandler2RmiInvocationHandler implements RmiInvocationHandler {
     
     private org.springframework.remoting.rmi.RmiInvocationHandler springHandler;
 

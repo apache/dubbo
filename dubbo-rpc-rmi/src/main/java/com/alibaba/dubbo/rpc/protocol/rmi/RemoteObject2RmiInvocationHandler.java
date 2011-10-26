@@ -30,7 +30,7 @@ import com.alibaba.dubbo.rpc.RpcResult;
  * @serial
  * @author qian.lei
  */
-class RemoteObject2RmiInvocationHandler extends AbstractRmiInvocationHandler
+class RemoteObject2RmiInvocationHandler implements RmiInvocationHandler
 {
 	private Remote mRemote;
 

@@ -130,7 +130,7 @@ public class RmiProtocol extends AbstractProtocol {
                 }
             };
         } else {
-            exportedObj = new AbstractRmiInvocationHandler() {
+            exportedObj = new RmiInvocationHandler() {
 
                 public Result invoke(Invocation inv) throws RemoteException, NoSuchMethodException,
                                                           IllegalAccessException, InvocationTargetException {
