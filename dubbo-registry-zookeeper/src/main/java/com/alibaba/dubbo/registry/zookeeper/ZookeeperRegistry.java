@@ -61,7 +61,12 @@ public class ZookeeperRegistry implements Registry {
     public ZookeeperRegistry(URL url) {
         this.url = url;
         try {
-            this.zookeeper = new ZooKeeper(url.getAddress(), url.getPositiveIntParameter(
+            String address = url.getAddress();
+            String backup = url.getParameter(Constants.BACKUP_KEY);
+            if (backup != null && backup.length() > 0) {
+                address = address + "," + backup;
+            }
+            this.zookeeper = new ZooKeeper(address, url.getPositiveIntParameter(
                     Constants.TIMEOUT_KEY, 5000), new Watcher() {
                 public void process(WatchedEvent event) {
                 }
