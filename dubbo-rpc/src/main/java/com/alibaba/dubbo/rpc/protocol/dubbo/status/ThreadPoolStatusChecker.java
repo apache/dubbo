@@ -26,7 +26,7 @@ import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.Server;
 import com.alibaba.dubbo.remoting.exchange.ExchangeServer;
 import com.alibaba.dubbo.remoting.exchange.support.header.HeaderExchangeServer;
-import com.alibaba.dubbo.remoting.transport.support.handler.WrappedChannelHandler;
+import com.alibaba.dubbo.remoting.transport.handler.WrappedChannelHandler;
 import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
 /**

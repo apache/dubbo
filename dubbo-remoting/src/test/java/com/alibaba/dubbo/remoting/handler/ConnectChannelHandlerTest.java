@@ -24,7 +24,7 @@ import org.junit.Test;
 
 import com.alibaba.dubbo.remoting.ExecutionException;
 import com.alibaba.dubbo.remoting.RemotingException;
-import com.alibaba.dubbo.remoting.transport.support.handler.ConnectionOrderedChannelHandler;
+import com.alibaba.dubbo.remoting.transport.handler.ConnectionOrderedChannelHandler;
 
 
 

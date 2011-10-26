@@ -26,7 +26,7 @@ import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;
-import com.alibaba.dubbo.remoting.transport.support.AbstractChannel;
+import com.alibaba.dubbo.remoting.transport.AbstractChannel;
 
 /**
  * MinaChannel

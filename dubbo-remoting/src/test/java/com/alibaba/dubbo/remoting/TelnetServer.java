@@ -15,7 +15,7 @@
  */
 package com.alibaba.dubbo.remoting;
 
-import com.alibaba.dubbo.remoting.transport.support.ChannelHandlerAdapter;
+import com.alibaba.dubbo.remoting.transport.ChannelHandlerAdapter;
 
 /**
  * TelnetServer

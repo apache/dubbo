@@ -23,7 +23,7 @@ import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.exchange.support.ExchangeHandlerDispatcher;
 import com.alibaba.dubbo.remoting.exchange.support.Replier;
-import com.alibaba.dubbo.remoting.transport.support.ChannelHandlerAdapter;
+import com.alibaba.dubbo.remoting.transport.ChannelHandlerAdapter;
 
 /**
  * Exchanger facade. (API, Static, ThreadSafe)

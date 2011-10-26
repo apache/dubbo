@@ -24,7 +24,7 @@ import com.alibaba.dubbo.common.serialize.ObjectInput;
 import com.alibaba.dubbo.common.serialize.ObjectOutput;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.remoting.Channel;
-import com.alibaba.dubbo.remoting.transport.support.AbstractCodec;
+import com.alibaba.dubbo.remoting.transport.AbstractCodec;
 
 /**
  * TransportCodec

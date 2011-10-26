@@ -19,7 +19,7 @@ import java.util.Collection;
 
 import com.alibaba.dubbo.remoting.p2p.Networkers;
 import com.alibaba.dubbo.remoting.p2p.Peer;
-import com.alibaba.dubbo.remoting.transport.support.ChannelHandlerAdapter;
+import com.alibaba.dubbo.remoting.transport.ChannelHandlerAdapter;
 
 /**
  * PeerMain

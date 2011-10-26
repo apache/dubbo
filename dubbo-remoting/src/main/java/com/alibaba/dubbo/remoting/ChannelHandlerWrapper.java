@@ -19,7 +19,7 @@ import com.alibaba.dubbo.common.Adaptive;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.remoting.transport.support.handler.DefaultChannelHandlerWrapper;
+import com.alibaba.dubbo.remoting.transport.handler.DefaultChannelHandlerWrapper;
 
 /**
  * ChannelHandlerWrapper (SPI, Singleton, ThreadSafe)

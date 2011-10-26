@@ -23,7 +23,7 @@ import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
-import com.alibaba.dubbo.remoting.transport.support.ChannelHandlerAdapter;
+import com.alibaba.dubbo.remoting.transport.ChannelHandlerAdapter;
 
 /**
  * TelnetHandlerDispather

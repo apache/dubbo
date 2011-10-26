@@ -22,7 +22,7 @@ import com.alibaba.dubbo.remoting.exchange.ExchangeChannel;
 import com.alibaba.dubbo.remoting.exchange.ExchangeHandler;
 import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
 import com.alibaba.dubbo.remoting.telnet.support.TelnetHandlerAdapter;
-import com.alibaba.dubbo.remoting.transport.support.ChannelHandlerDispatcher;
+import com.alibaba.dubbo.remoting.transport.ChannelHandlerDispatcher;
 
 /**
  * ExchangeHandlerDispatcher

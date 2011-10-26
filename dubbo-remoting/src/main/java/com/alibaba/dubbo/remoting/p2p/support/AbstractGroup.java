@@ -30,7 +30,7 @@ import com.alibaba.dubbo.remoting.Server;
 import com.alibaba.dubbo.remoting.Transporters;
 import com.alibaba.dubbo.remoting.p2p.Group;
 import com.alibaba.dubbo.remoting.p2p.Peer;
-import com.alibaba.dubbo.remoting.transport.support.ChannelHandlerDispatcher;
+import com.alibaba.dubbo.remoting.transport.ChannelHandlerDispatcher;
 
 /**
  * AbstractGroup

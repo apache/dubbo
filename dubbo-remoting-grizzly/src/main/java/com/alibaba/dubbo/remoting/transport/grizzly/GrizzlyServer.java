@@ -34,8 +34,8 @@ import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;
-import com.alibaba.dubbo.remoting.transport.support.AbstractServer;
-import com.alibaba.dubbo.remoting.transport.support.handler.ChannelHandlers;
+import com.alibaba.dubbo.remoting.transport.AbstractServer;
+import com.alibaba.dubbo.remoting.transport.handler.ChannelHandlers;
 
 /**
  * GrizzlyServer
