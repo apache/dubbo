@@ -1,1 +1,1 @@
-com.alibaba.dubbo.remoting.transport.support.grizzly.GrizzlyTransporter
+com.alibaba.remoting.transport.mina.MinaTransporter
