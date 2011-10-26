@@ -21,15 +21,14 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.ProxyFactory;
-import com.alibaba.dubbo.rpc.protocol.dubbo.DubboCodec;
 
 public class Server {
     private static ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
     private static Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
     
     public final static URL serviceURL =  URL.valueOf("dubbo://127.0.0.1:20880/"+IDemoService.class.getName()+"?group=test" 
-                +"&"+Constants.CODEC_KEY+"="+DubboCodec.NAME
-                +"&"+Constants.DOWNSTREAM_CODEC_KEY+"="+DubboCodec.NAME
+                +"&"+Constants.CODEC_KEY+"=dubbo"
+                +"&"+Constants.DOWNSTREAM_CODEC_KEY+"=dubbo"
                 +"&xxx.0.callback=true"
                 +"&timeout="+Integer.MAX_VALUE
 //                uncomment is unblock invoking

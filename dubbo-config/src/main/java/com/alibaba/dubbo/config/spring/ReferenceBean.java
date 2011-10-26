@@ -31,7 +31,6 @@ import com.alibaba.dubbo.config.ProtocolConfig;
 import com.alibaba.dubbo.config.ReferenceConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.config.ServiceConfig;
-import com.alibaba.dubbo.rpc.protocol.injvm.InjvmProtocol;
 
 /**
  * ReferenceFactoryBean
@@ -125,7 +124,7 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
                             protocols = serviceConfig.getProvider().getProtocols();
                         }
                         for (ProtocolConfig protocol : protocols) {
-                            if (InjvmProtocol.NAME.equals(protocol.getName())) {
+                            if ("injvm".equals(protocol.getName())) {
                                 setInjvm(true);
                                 break;
                             }

@@ -45,7 +45,6 @@ import com.alibaba.dubbo.rpc.cluster.Cluster;
 import com.alibaba.dubbo.rpc.cluster.directory.StaticDirectory;
 import com.alibaba.dubbo.rpc.cluster.support.AvailableCluster;
 import com.alibaba.dubbo.rpc.cluster.support.ClusterUtils;
-import com.alibaba.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import com.alibaba.dubbo.rpc.service.GenericService;
 
 /**
@@ -257,7 +256,7 @@ public class ReferenceConfig<T> extends AbstractConsumerConfig {
             j = consumer.isInjvm();
         }
         if (j != null && j) {
-            URL url = new URL(InjvmProtocol.NAME, NetUtils.LOCALHOST, InjvmProtocol.DEFAULT_PORT, interfaceClass.getName()).addParameters(map);
+            URL url = new URL("injvm", NetUtils.LOCALHOST, 1, interfaceClass.getName()).addParameters(map);
             invoker = protocol.refer(interfaceClass, url);
             if (logger.isInfoEnabled()) {
                 logger.info("Using injvm service " + interfaceClass.getName());
