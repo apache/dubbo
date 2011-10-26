@@ -18,6 +18,9 @@ package com.alibaba.dubbo.registry.zookeeper;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
@@ -44,10 +47,16 @@ import com.alibaba.dubbo.rpc.RpcException;
 public class ZookeeperRegistry implements Registry {
 
     private final static Logger logger = LoggerFactory.getLogger(ZookeeperRegistry.class);
+    
+    private final static String SEPARATOR = "/";
 
     private final URL           url;
+    
+    private final boolean       auth;
 
     private final ZooKeeper     zookeeper;
+    
+    private final ConcurrentMap<String, Map<NotifyListener, NotifyWatcher>> wathers = new ConcurrentHashMap<String, Map<NotifyListener, NotifyWatcher>>();
 
     public ZookeeperRegistry(URL url) {
         this.url = url;
@@ -57,6 +66,11 @@ public class ZookeeperRegistry implements Registry {
                 public void process(WatchedEvent event) {
                 }
             });
+            this.auth = url.getUsername() != null && url.getUsername().length() > 0 
+                    && url.getPassword() != null && url.getPassword().length() > 0;
+            if (auth) {
+                zookeeper.addAuthInfo(url.getUsername(), url.getPassword().getBytes());
+            }
         } catch (IOException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -80,50 +94,76 @@ public class ZookeeperRegistry implements Registry {
 
     public void register(URL url) {
         try {
-            String service = "/" + URL.encode(url.getServiceKey());
+            String service = toServicePath(url);
+            String provider = service + toProviderPath(url);
             if (zookeeper.exists(service, false) == null) {
-                zookeeper.create(service, new byte[0], Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+                zookeeper.create(service, new byte[0], auth ? Ids.CREATOR_ALL_ACL : Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
             }
-            String provider = service + "/" + URL.encode(url.toIdentityString());
             if (zookeeper.exists(provider, false) == null) {
-                zookeeper.create(provider, url.toParameterString().getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+                zookeeper.create(provider, url.toParameterString().getBytes(), auth ? Ids.CREATOR_ALL_ACL : Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
             }
-        } catch (Exception e) {
-            throw new RpcException(e.getMessage(), e);
+        } catch (Throwable e) {
+            throw new RpcException("Failed to register " + url + ", cause: " + e.getMessage(), e);
         }
     }
 
     public void unregister(URL url) {
         try {
-            String service = "/" + URL.encode(url.getServiceKey());
-            String provider = service + "/" + URL.encode(url.toIdentityString());
+            String service = toServicePath(url);
+            String provider = service + toProviderPath(url);
             zookeeper.delete(provider, -1);
-        } catch (Exception e) {
-            throw new RpcException(e.getMessage(), e);
+        } catch (Throwable e) {
+            throw new RpcException("Failed to unregister " + url + ", cause: " + e.getMessage(), e);
         }
     }
 
     public void subscribe(URL url, NotifyListener listener) {
         try {
-            String service = "/" + URL.encode(url.getServiceKey());
-            List<String> providers = zookeeper.getChildren(service, new NotifyWatcher(url, listener));
-            listener.notify(toUrls(service, providers));
-        } catch (Exception e) {
-            throw new RpcException(e.getMessage(), e);
+            String service = toServicePath(url);
+            NotifyWatcher wather = new NotifyWatcher(this, url, listener);
+            Map<NotifyListener, NotifyWatcher> serviceWathers = wathers.get(service);
+            if (serviceWathers == null) {
+                wathers.put(service, new ConcurrentHashMap<NotifyListener, NotifyWatcher>());
+                serviceWathers = wathers.get(service);
+            }
+            serviceWathers.put(listener, wather);
+            List<String> providers = zookeeper.getChildren(service, wather);
+            List<URL> urls = toUrls(service, providers);
+            if (urls != null && urls.size() > 0) {
+                listener.notify(urls);
+            }
+        } catch (Throwable e) {
+            throw new RpcException("Failed to subscribe " + url + ", cause: " + e.getMessage(), e);
         }
     }
 
     public void unsubscribe(URL url, NotifyListener listener) {
+        String service = toServicePath(url);
+        Map<NotifyListener, NotifyWatcher> serviceWathers = wathers.remove(service);
+        if (serviceWathers != null && serviceWathers.size() > 0) {
+            NotifyWatcher wather = serviceWathers.get(listener);
+            if (wather != null) {
+                wather.setListener(null);
+            }
+        }
     }
 
     public List<URL> lookup(URL url) {
         try {
-            String service = "/" + URL.encode(url.getServiceKey());
+            String service = toServicePath(url);
             List<String> providers = zookeeper.getChildren(service, false);
             return toUrls(service, providers);
-        } catch (Exception e) {
-            throw new RpcException(e.getMessage(), e);
+        } catch (Throwable e) {
+            throw new RpcException("Failed to lookup " + url + ", cause: " + e.getMessage(), e);
         }
+    }
+    
+    private String toServicePath(URL url) {
+        return SEPARATOR + URL.encode(url.getServiceKey());
+    }
+    
+    private String toProviderPath(URL url) {
+        return SEPARATOR + URL.encode(url.toIdentityString());
     }
     
     private List<URL> toUrls(String service, List<String> providers) throws KeeperException, InterruptedException {
@@ -142,23 +182,33 @@ public class ZookeeperRegistry implements Registry {
         }
         return urls;
     }
-
-    private class NotifyWatcher implements Watcher {
+    
+    private static class NotifyWatcher implements Watcher {
+        
+        private final Registry registry;
         
         private final URL url;
 
-        private final NotifyListener listener;
-
-        public NotifyWatcher(URL url, NotifyListener listener) {
+        private transient NotifyListener listener;
+        
+        public NotifyWatcher(Registry registry, URL url, NotifyListener listener) {
+            this.registry = registry;
             this.url = url;
             this.listener = listener;
         }
 
+        public void setListener(NotifyListener listener) {
+            this.listener = listener;
+        }
+
         public void process(WatchedEvent event) {
-            if (event.getType() == EventType.NodeChildrenChanged) {
-                listener.notify(lookup(url));
-            } else if (event.getType() == EventType.NodeDataChanged) {
-                listener.notify(lookup(url));
+            NotifyListener listener = this.listener;
+            if (listener != null && (event.getType() == EventType.NodeChildrenChanged
+                    || event.getType() == EventType.NodeDataChanged)) {
+                List<URL> urls = registry.lookup(url);
+                if (urls != null && urls.size() > 0) {
+                    listener.notify(urls);
+                }
             }
         }
 
