@@ -18,12 +18,12 @@ package com.alibaba.dubbo.rpc.cluster.support;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 import junit.framework.Assert;
 
 import org.easymock.EasyMock;
-import org.jboss.netty.util.internal.ConcurrentHashMap;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;

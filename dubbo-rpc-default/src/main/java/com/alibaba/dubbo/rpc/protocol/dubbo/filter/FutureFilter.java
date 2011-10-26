@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.filter;
+package com.alibaba.dubbo.rpc.protocol.dubbo.filter;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -33,17 +33,17 @@ import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.StaticContext;
-import com.alibaba.dubbo.rpc.protocol.FutureAdapter;
+import com.alibaba.dubbo.rpc.protocol.dubbo.FutureAdapter;
 
 /**
  * EventFilter
  * @author chao.liuc
  * @author william.liangf
  */
-@Extension("event")
-public class EventFilter implements Filter {
+@Extension("future")
+public class FutureFilter implements Filter {
 
-    protected static final Logger logger = LoggerFactory.getLogger(EventFilter.class);
+    protected static final Logger logger = LoggerFactory.getLogger(FutureFilter.class);
 
     public Result invoke(final Invoker<?> invoker, final Invocation invocation) throws RpcException {
         fireInvokeCallback(invoker, invocation);

@@ -27,7 +27,7 @@ import java.util.List;
 public final class RpcConstants {
 
     public static final List<String> DEFAULT_REFERENCE_FILTERS = Collections.unmodifiableList(Arrays.asList(new String[] {
-            "consumercontext", "compatible", "deprecated", "collect", "genericimpl", "activelimit", "monitor", "event" }));
+            "consumercontext", "compatible", "deprecated", "collect", "genericimpl", "activelimit", "monitor", "future" }));
 
     public static final List<String> DEFAULT_SERVICE_FILTERS    = Collections.unmodifiableList(Arrays.asList(new String[] {
             "ready", "context", "token", "exception", "echo", "generic", "accesslog", "trace", "classloader", "executelimit", "monitor" ,"timeout"}));

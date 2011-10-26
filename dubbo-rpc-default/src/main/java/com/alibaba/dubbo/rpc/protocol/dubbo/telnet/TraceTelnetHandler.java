@@ -24,8 +24,8 @@ import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
 import com.alibaba.dubbo.remoting.telnet.support.Help;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.filter.TraceFilter;
 import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
+import com.alibaba.dubbo.rpc.protocol.dubbo.filter.TraceFilter;
 
 /**
  * TraceTelnetHandler

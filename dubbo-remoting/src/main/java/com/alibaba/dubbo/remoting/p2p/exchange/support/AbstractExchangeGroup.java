@@ -17,8 +17,7 @@ package com.alibaba.dubbo.remoting.p2p.exchange.support;
 
 import java.util.ArrayList;
 import java.util.Map;
-
-import org.jboss.netty.util.internal.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;

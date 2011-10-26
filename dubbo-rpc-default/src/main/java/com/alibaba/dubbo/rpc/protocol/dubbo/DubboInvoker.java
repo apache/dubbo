@@ -29,7 +29,6 @@ import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.protocol.AbstractInvoker;
-import com.alibaba.dubbo.rpc.protocol.FutureAdapter;
 
 /**
  * DubboInvoker

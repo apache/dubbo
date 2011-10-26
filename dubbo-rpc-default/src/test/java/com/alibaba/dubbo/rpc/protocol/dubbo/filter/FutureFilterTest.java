@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.filter;
+package com.alibaba.dubbo.rpc.protocol.dubbo.filter;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 import org.easymock.EasyMock;
 import org.junit.BeforeClass;
@@ -38,8 +37,8 @@ import com.alibaba.dubbo.rpc.support.DemoService;
  * @author tony.chenl
  * TODO 暂时依赖callback集成测试，后续补充
  */
-public class EventFilterTest {
-    Filter                    eventFilter = new EventFilter();
+public class FutureFilterTest {
+    Filter                    eventFilter = new FutureFilter();
     private static Invocation invocation;
 
     @BeforeClass

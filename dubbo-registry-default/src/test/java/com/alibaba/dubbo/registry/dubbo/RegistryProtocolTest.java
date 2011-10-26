@@ -21,7 +21,6 @@ import org.junit.Test;
 
 import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.registry.MockedClient;
 import com.alibaba.dubbo.registry.RegistryFactory;
 import com.alibaba.dubbo.registry.support.RegistryProtocol;
 import com.alibaba.dubbo.registry.support.SimpleRegistryExporter;

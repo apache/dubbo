@@ -37,6 +37,11 @@
 			<version>${project.parent.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo-remoting</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring</artifactId>
 		</dependency>
