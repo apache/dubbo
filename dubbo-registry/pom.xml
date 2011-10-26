@@ -31,10 +31,5 @@
 			<artifactId>dubbo-cluster</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
-		<dependency>
-		    <groupId>org.apache.zookeeper</groupId>
-		    <artifactId>zookeeper</artifactId>
-		    <version>3.3.3</version>
-		</dependency>
 	</dependencies>
 </project>
