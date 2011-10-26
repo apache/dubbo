@@ -82,7 +82,7 @@ public class ZookeeperRegistry implements Registry {
         try {
             String service = "/" + URL.encode(url.getServiceKey());
             if (zookeeper.exists(service, false) == null) {
-                zookeeper.create(service, new byte[0], Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+                zookeeper.create(service, new byte[0], Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
             }
             String provider = service + "/" + URL.encode(url.toIdentityString());
             if (zookeeper.exists(provider, false) == null) {
