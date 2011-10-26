@@ -92,7 +92,7 @@ public class TelnetCodec extends TransportCodec {
         
         if (message[message.length - 1] == '\b') { // Windows backspace echo
             try {
-                boolean doublechar = message.length > 2 && message[message.length - 3] < 0; // double byte char
+                boolean doublechar = message.length >= 3 && message[message.length - 3] < 0; // double byte char
                 channel.send(new String(doublechar ? new byte[] {32, 32, 8, 8} : new byte[] {32, 8}, getCharset(channel).name()));
             } catch (RemotingException e) {
                 throw new IOException(StringUtils.toString(e));
@@ -103,7 +103,7 @@ public class TelnetCodec extends TransportCodec {
         for (Object command : EXIT) {
             if (isEquals(message, (byte[]) command)) {
                 if (logger.isInfoEnabled()) {
-                    logger.info(new Exception("Close channel " + channel + " on exit command " + command));
+                    logger.info(new Exception("Close channel " + channel + " on exit command: " + Arrays.toString((byte[])command)));
                 }
                 channel.close();
                 return null;
