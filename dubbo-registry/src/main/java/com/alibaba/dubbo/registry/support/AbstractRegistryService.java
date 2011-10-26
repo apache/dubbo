@@ -73,14 +73,14 @@ public abstract class AbstractRegistryService implements RegistryService {
         if (logger.isInfoEnabled()) {
             logger.info("Subscribe service: " + url.getServiceKey() + ",url:" + url);
         }
-        subscribe(url.getServiceKey(), url.getParameters(), listener);
+        subscribe(url.getServiceKey(), url, listener);
     }
     
     public void unsubscribe(URL url, NotifyListener listener) {
         if (logger.isInfoEnabled()) {
             logger.info("Unsubscribe service: " + url.getServiceKey() + ",url:" + url);
         }
-        unsubscribe(url.getServiceKey(), url.getParameters(), listener);
+        unsubscribe(url.getServiceKey(), url, listener);
     }
 
     public List<URL> lookup(URL url) {
@@ -117,17 +117,17 @@ public abstract class AbstractRegistryService implements RegistryService {
         }
     }
     
-    public void subscribe(String service, Map<String, String> parameters, NotifyListener listener) {
+    public void subscribe(String service, URL url, NotifyListener listener) {
         if (service == null) {
             throw new IllegalArgumentException("service == null");
         }
-        if (parameters == null) {
+        if (url == null) {
             throw new IllegalArgumentException("parameters == null");
         }
         if (listener == null) {
             throw new IllegalArgumentException("listener == null");
         }
-        subscribed.put(service, parameters); 
+        subscribed.put(service, url.getParameters()); 
         List<NotifyListener> listeners = notifyListeners.get(service);
         if (listeners == null) {
             notifyListeners.putIfAbsent(service, new CopyOnWriteArrayList<NotifyListener>());
@@ -136,11 +136,11 @@ public abstract class AbstractRegistryService implements RegistryService {
         listeners.add(listener);
     }
 
-    public void unsubscribe(String service, Map<String, String> parameters, NotifyListener listener) {
+    public void unsubscribe(String service, URL url, NotifyListener listener) {
         if (service == null) {
             throw new IllegalArgumentException("service == null");
         }
-        if (parameters == null) {
+        if (url == null) {
             throw new IllegalArgumentException("parameters == null");
         }
         if (listener == null) {

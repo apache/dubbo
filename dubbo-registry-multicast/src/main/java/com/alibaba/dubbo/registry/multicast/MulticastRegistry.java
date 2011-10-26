@@ -22,7 +22,6 @@ import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
@@ -41,10 +40,18 @@ public class MulticastRegistry extends AbstractRegistry {
     // 日志输出
     private static final Logger logger = LoggerFactory.getLogger(MulticastRegistry.class);
     
+    private static final String REGISTER = "register";
+
+    private static final String UNREGISTER = "unregister";
+
+    private static final String SUBSCRIBE = "subscribe";
+
+    private static final String UNSUBSCRIBE = "unsubscribe";
+    
     private InetAddress mutilcastAddress;
     
     private MulticastSocket mutilcastSocket;
-
+    
     public MulticastRegistry(URL url) {
         super(url);
         if (! isMulticastAddress(url.getHost())) {
@@ -89,11 +96,10 @@ public class MulticastRegistry extends AbstractRegistry {
     }
 
     private void receive(String msg, InetSocketAddress remoteAddress) {
-        if (msg.startsWith("register")) {
-            String[] parts = msg.split("\\s+");
-            String service = parts[1];
+        if (msg.startsWith(REGISTER)) {
+            URL url = URL.valueOf(msg.substring(REGISTER.length()).trim());
+            String service = url.getServiceKey();
             if (getSubscribed().containsKey(service)) {
-                URL url = URL.valueOf(parts[2]);
                 List<URL> urls = new ArrayList<URL>();
                 List<URL> notified = getNotified().get(service);
                 if (notified != null) {
@@ -104,14 +110,26 @@ public class MulticastRegistry extends AbstractRegistry {
                 }
                 notify(service, urls);
             }
-        } else if (msg.startsWith("subscribe")) {
-            String[] parts = msg.split("\\s+");
-            String service = parts[1];
+        } else if (msg.startsWith(UNREGISTER)) {
+            URL url = URL.valueOf(msg.substring(UNREGISTER.length()).trim());
+            String service = url.getServiceKey();
+            if (getSubscribed().containsKey(service)) {
+                List<URL> urls = new ArrayList<URL>();
+                List<URL> notified = getNotified().get(service);
+                if (notified != null) {
+                    urls.addAll(notified);
+                }
+                urls.remove(url);
+                notify(service, urls);
+            }
+        } else if (msg.startsWith(SUBSCRIBE)) {
+            String service = URL.valueOf(msg.substring(SUBSCRIBE.length()).trim()).getServiceKey();
             if (getRegistered().containsKey(service)) {
                 for (URL url : getRegistered().get(service)) {
-                    send("register " + service + " " + url.toString());
+                    send(REGISTER + " " + url.toFullString());
                 }
             }
+        } else if (msg.startsWith(UNSUBSCRIBE)) {
         }
     }
     
@@ -123,19 +141,19 @@ public class MulticastRegistry extends AbstractRegistry {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
-
+    
     public void register(String service, URL url) {
         super.register(service, url);
-        send("register " + service + " " + url);
+        send(REGISTER + " " + url.toFullString());
     }
 
     public void unregister(String service, URL url) {
-        send("unregister " + service + " " + url);
+        send(UNREGISTER + " " + url.toFullString());
     }
 
-    public void subscribe(String service, Map<String, String> parameters, NotifyListener listener) {
-        super.subscribe(service, parameters, listener);
-        send("subscribe " + service + " " + StringUtils.toQueryString(parameters));
+    public void subscribe(String service, URL url, NotifyListener listener) {
+        super.subscribe(service, url, listener);
+        send(SUBSCRIBE + " " + url.toFullString());
         synchronized (this) {
             try {
                 this.wait(5000);
@@ -144,8 +162,8 @@ public class MulticastRegistry extends AbstractRegistry {
         }
     }
 
-    public void unsubscribe(String service, Map<String, String> query, NotifyListener listener) {
-        send("unsubscribe " + service + " " + StringUtils.toQueryString(query));
+    public void unsubscribe(String service, URL url, NotifyListener listener) {
+        send(UNSUBSCRIBE + " " + url.toFullString());
     }
 
     public boolean isAvailable() {

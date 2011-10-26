@@ -27,6 +27,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.registry.NotifyListener;
 
@@ -94,7 +95,7 @@ public class MulticastRegistryTest {
         final String subscribearg = "arg1=1&arg2=2";
         // verify lisener.
         final AtomicReference<Map<String, String>> args = new AtomicReference<Map<String, String>>();
-        registry.subscribe(service, StringUtils.parseQueryString(subscribearg), new NotifyListener() {
+        registry.subscribe(service, new URL("dubbo", NetUtils.getLocalHost(), 0, StringUtils.parseQueryString(subscribearg)), new NotifyListener() {
 
             public void notify(List<URL> urls) {
                 // FIXME assertEquals(MulticastRegistry.this.service, service);

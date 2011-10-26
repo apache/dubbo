@@ -68,7 +68,7 @@ public class SimpleRegistryService extends AbstractRegistryService {
     }
 
     @Override
-    public void subscribe(String service, Map<String, String> parameters, NotifyListener listener) {
+    public void subscribe(String service, URL url, NotifyListener listener) {
         String client = RpcContext.getContext().getRemoteAddressString();
         if (logger.isInfoEnabled()){
             logger.info("[subscribe] service: "+service + ",client:"+ client);
@@ -80,15 +80,15 @@ public class SimpleRegistryService extends AbstractRegistryService {
                     NetUtils.getLocalHost(), 
                     RpcContext.getContext().getLocalPort(), 
                     com.alibaba.dubbo.registry.RegistryService.class.getName(), 
-                    parameters));
+                    url.getParameters()));
             List<String> rs = registries;
             if (rs != null && rs.size() > 0) {
                 for (String registry : rs) {
-                    register(service, UrlUtils.parseURL(registry, parameters));
+                    register(service, UrlUtils.parseURL(registry, url.getParameters()));
                 }
             }
         }
-        super.subscribe(service, parameters, listener);
+        super.subscribe(service, url, listener);
         
         Map<String, NotifyListener> listeners = remoteListeners.get(client);
         if (listeners == null) {
@@ -105,8 +105,8 @@ public class SimpleRegistryService extends AbstractRegistryService {
     }
 
     @Override
-    public void unsubscribe(String service, Map<String, String> parameters, NotifyListener listener) {
-        super.unsubscribe(service, parameters, listener);
+    public void unsubscribe(String service, URL url, NotifyListener listener) {
+        super.unsubscribe(service, url, listener);
         String client = RpcContext.getContext().getRemoteAddressString();
         Map<String, NotifyListener> listeners = remoteListeners.get(client);
         if (listeners != null && listeners.size() > 0) {
@@ -133,7 +133,10 @@ public class SimpleRegistryService extends AbstractRegistryService {
         if (listeners != null && listeners.size() > 0) {
             for (Map.Entry<String, NotifyListener> entry : listeners.entrySet()) {
                 String service = entry.getKey();
-                super.unsubscribe(service, getSubscribed(service), entry.getValue());
+                super.unsubscribe(service, new URL("subscribe", 
+                        RpcContext.getContext().getRemoteHost(), 
+                        RpcContext.getContext().getRemotePort(), 
+                        com.alibaba.dubbo.registry.RegistryService.class.getName(), getSubscribed(service)), entry.getValue());
             }
         }
     }
