@@ -59,6 +59,9 @@ public class ZookeeperRegistry implements Registry {
     private final ConcurrentMap<String, Map<NotifyListener, NotifyWatcher>> wathers = new ConcurrentHashMap<String, Map<NotifyListener, NotifyWatcher>>();
 
     public ZookeeperRegistry(URL url) {
+        if (url == null) {
+            throw new IllegalArgumentException("registry url == null");
+        }
         this.url = url;
         try {
             String address = url.getAddress();
@@ -98,6 +101,9 @@ public class ZookeeperRegistry implements Registry {
     }
 
     public void register(URL url) {
+        if (url == null) {
+            throw new IllegalArgumentException("register url == null");
+        }
         try {
             String service = toServicePath(url);
             String provider = service + toProviderPath(url);
@@ -113,6 +119,9 @@ public class ZookeeperRegistry implements Registry {
     }
 
     public void unregister(URL url) {
+        if (url == null) {
+            throw new IllegalArgumentException("unregister url == null");
+        }
         try {
             String service = toServicePath(url);
             String provider = service + toProviderPath(url);
@@ -123,6 +132,12 @@ public class ZookeeperRegistry implements Registry {
     }
 
     public void subscribe(URL url, NotifyListener listener) {
+        if (url == null) {
+            throw new IllegalArgumentException("subscribe url == null");
+        }
+        if (listener == null) {
+            throw new IllegalArgumentException("subscribe listener == null");
+        }
         try {
             String service = toServicePath(url);
             NotifyWatcher wather = new NotifyWatcher(this, url, listener);
@@ -143,6 +158,12 @@ public class ZookeeperRegistry implements Registry {
     }
 
     public void unsubscribe(URL url, NotifyListener listener) {
+        if (url == null) {
+            throw new IllegalArgumentException("unsubscribe url == null");
+        }
+        if (listener == null) {
+            throw new IllegalArgumentException("unsubscribe listener == null");
+        }
         String service = toServicePath(url);
         Map<NotifyListener, NotifyWatcher> serviceWathers = wathers.remove(service);
         if (serviceWathers != null && serviceWathers.size() > 0) {
@@ -154,6 +175,9 @@ public class ZookeeperRegistry implements Registry {
     }
 
     public List<URL> lookup(URL url) {
+        if (url == null) {
+            throw new IllegalArgumentException("lookup url == null");
+        }
         try {
             String service = toServicePath(url);
             List<String> providers = zookeeper.getChildren(service, false);
