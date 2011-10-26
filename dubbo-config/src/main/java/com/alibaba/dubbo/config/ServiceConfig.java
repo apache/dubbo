@@ -42,7 +42,7 @@ import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.ProxyFactory;
 import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcStatus;
-import com.alibaba.dubbo.service.GenericService;
+import com.alibaba.dubbo.rpc.service.GenericService;
 
 /**
  * ServiceConfig

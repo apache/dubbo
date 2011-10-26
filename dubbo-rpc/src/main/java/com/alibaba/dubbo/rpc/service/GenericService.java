@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.service;
+package com.alibaba.dubbo.rpc.service;
 
 /**
  * 通用服务接口

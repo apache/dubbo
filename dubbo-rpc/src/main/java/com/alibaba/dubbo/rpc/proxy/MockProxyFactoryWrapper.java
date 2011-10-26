@@ -26,7 +26,7 @@ import com.alibaba.dubbo.common.utils.ReflectUtils;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.ProxyFactory;
 import com.alibaba.dubbo.rpc.RpcException;
-import com.alibaba.dubbo.service.GenericService;
+import com.alibaba.dubbo.rpc.service.GenericService;
 
 /**
  * MockProxyFactoryWrapper

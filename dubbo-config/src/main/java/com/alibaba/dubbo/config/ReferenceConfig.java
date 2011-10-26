@@ -46,7 +46,7 @@ import com.alibaba.dubbo.rpc.cluster.directory.StaticDirectory;
 import com.alibaba.dubbo.rpc.cluster.support.AvailableCluster;
 import com.alibaba.dubbo.rpc.cluster.support.ClusterUtils;
 import com.alibaba.dubbo.rpc.protocol.injvm.InjvmProtocol;
-import com.alibaba.dubbo.service.GenericService;
+import com.alibaba.dubbo.rpc.service.GenericService;
 
 /**
  * ReferenceConfig

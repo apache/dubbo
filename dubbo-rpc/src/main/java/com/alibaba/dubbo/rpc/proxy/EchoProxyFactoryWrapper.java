@@ -19,7 +19,7 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.ProxyFactory;
 import com.alibaba.dubbo.rpc.RpcException;
-import com.alibaba.dubbo.service.EchoService;
+import com.alibaba.dubbo.rpc.service.EchoService;
 
 /**
  * EchoProxyFactoryWrapper

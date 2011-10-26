@@ -30,10 +30,10 @@ import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.ProxyFactory;
+import com.alibaba.dubbo.rpc.service.GenericService;
 import com.alibaba.dubbo.rpc.support.DemoService;
 import com.alibaba.dubbo.rpc.support.DemoServiceImpl;
 import com.alibaba.dubbo.rpc.support.Type;
-import com.alibaba.dubbo.service.GenericService;
 
 public class EnumBak {
     
