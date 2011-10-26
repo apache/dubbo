@@ -29,7 +29,6 @@ import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
 import com.alibaba.dubbo.remoting.exchange.ExchangeHandler;
 import com.alibaba.dubbo.remoting.exchange.Exchangers;
 import com.alibaba.dubbo.remoting.exchange.ResponseFuture;
-import com.alibaba.dubbo.remoting.exchange.support.header.HeaderExchangeClient;
 import com.alibaba.dubbo.rpc.RpcConstants;
 
 /**
@@ -43,7 +42,7 @@ final class LazyConnectExchangeClient implements ExchangeClient {
 
     private final URL                     url;
     private final ExchangeHandler         requestHandler;
-    private volatile HeaderExchangeClient client;
+    private volatile ExchangeClient       client;
     private final Lock                    connectLock = new ReentrantLock();
     //lazy connect 如果没有初始化时的连接状态
     private final boolean                 initialState ;
@@ -65,8 +64,7 @@ final class LazyConnectExchangeClient implements ExchangeClient {
         try {
             if (client != null)
                 return;
-            this.client = new HeaderExchangeClient(Exchangers.connect(url, requestHandler));
-//            if (client == )
+            this.client = Exchangers.connect(url, requestHandler);
         } finally {
             connectLock.unlock();
         }
