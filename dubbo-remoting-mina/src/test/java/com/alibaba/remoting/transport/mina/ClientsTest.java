@@ -25,6 +25,7 @@ import org.junit.Test;
 
 import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.remoting.Transporter;
+import com.alibaba.dubbo.remoting.transport.mina.MinaTransporter;
 
 /**
  * @author ding.lid
