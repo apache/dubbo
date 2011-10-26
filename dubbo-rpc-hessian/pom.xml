@@ -31,5 +31,9 @@
 			<artifactId>dubbo-rpc</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
+		<dependency>
+		    <groupId>com.caucho</groupId>
+		    <artifactId>hessian</artifactId>
+		</dependency>
 	</dependencies>
 </project>

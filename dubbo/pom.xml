@@ -31,6 +31,85 @@
 			<artifactId>dubbo-container</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo-remoting-netty</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo-remoting-mina</artifactId>
+			<version>${project.parent.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.mina</groupId>
+					<artifactId>mina-core</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo-remoting-grizzly</artifactId>
+			<version>${project.parent.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.glassfish.grizzly</groupId>
+					<artifactId>grizzly-core</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo-rpc-default</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo-rpc-injvm</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo-rpc-rmi</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo-rpc-hessian</artifactId>
+			<version>${project.parent.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.caucho</groupId>
+    				<artifactId>hessian</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo-registry-default</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo-registry-multicast</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo-registry-zookeeper</artifactId>
+			<version>${project.parent.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.zookeeper</groupId>
+		    		<artifactId>zookeeper</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo-monitor-default</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
@@ -61,16 +140,21 @@
 								    <include>com.alibaba:hessian.lite</include>
 									<include>com.alibaba:dubbo-common</include>
 									<include>com.alibaba:dubbo-remoting</include>
+									<include>com.alibaba:dubbo-remoting-netty</include>
 									<include>com.alibaba:dubbo-remoting-mina</include>
 									<include>com.alibaba:dubbo-remoting-grizzly</include>
 									<include>com.alibaba:dubbo-rpc</include>
+									<include>com.alibaba:dubbo-rpc-default</include>
+									<include>com.alibaba:dubbo-rpc-injvm</include>
 									<include>com.alibaba:dubbo-rpc-rmi</include>
 									<include>com.alibaba:dubbo-rpc-hessian</include>
 									<include>com.alibaba:dubbo-cluster</include>
 									<include>com.alibaba:dubbo-registry</include>
+									<include>com.alibaba:dubbo-registry-default</include>
 									<include>com.alibaba:dubbo-registry-multicast</include>
 									<include>com.alibaba:dubbo-registry-zookeeper</include>
 									<include>com.alibaba:dubbo-monitor</include>
+									<include>com.alibaba:dubbo-monitor-default</include>
 									<include>com.alibaba:dubbo-config</include>
 									<include>com.alibaba:dubbo-container</include>
 								</includes>

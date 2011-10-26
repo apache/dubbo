@@ -37,16 +37,13 @@
 		<module>dubbo-rpc-injvm</module>
 		<module>dubbo-rpc-rmi</module>
 		<module>dubbo-rpc-hessian</module>
-		<module>dubbo-rpc-xfire</module>
 		<module>dubbo-cluster</module>
 		<module>dubbo-registry</module>
 		<module>dubbo-registry-default</module>
-		<module>dubbo-registry-jndi</module>
 		<module>dubbo-registry-multicast</module>
 		<module>dubbo-registry-zookeeper</module>
 		<module>dubbo-monitor</module>
 		<module>dubbo-monitor-default</module>
-		<module>dubbo-monitor-jmx</module>
 		<module>dubbo-config</module>
 		<module>dubbo-container</module>
 		<module>dubbo</module>
@@ -58,12 +55,13 @@
 		<netty_version>3.2.5.Final</netty_version>
 		<mina_version>1.1.7</mina_version>
 		<grizzly_version>2.1.4</grizzly_version>
-		<hessian_version>3.2.1</hessian_version>
+		<hessian_lite_version>3.2.1</hessian_lite_version>
 		<xstream_version>1.4.1</xstream_version>
 		<fastjson_version>1.1.6</fastjson_version>
 		<bsf_version>3.1</bsf_version>
 		<zookeeper_version>3.3.3</zookeeper_version>
 		<jfreechart_version>1.0.13</jfreechart_version>
+		<hessian_version>4.0.7</hessian_version>
 		<!-- Log libs -->
 		<log4j_version>1.2.16</log4j_version>
 		<slf4j_version>1.6.2</slf4j_version>
@@ -111,7 +109,7 @@
 			<dependency>
 				<groupId>com.alibaba</groupId>
 				<artifactId>hessian.lite</artifactId>
-				<version>${hessian_version}</version>
+				<version>${hessian_lite_version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.alibaba</groupId>
@@ -137,6 +135,11 @@
 				<groupId>jfree</groupId>
 				<artifactId>jfreechart</artifactId>
 				<version>${jfreechart_version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.caucho</groupId>
+				<artifactId>hessian</artifactId>
+				<version>${hessian_version}</version>
 			</dependency>
 			<!-- Log libs -->
 			<dependency>
