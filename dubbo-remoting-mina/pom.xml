@@ -31,5 +31,9 @@
 			<artifactId>dubbo-remoting</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.mina</groupId>
+			<artifactId>mina-core</artifactId>
+		</dependency>
 	</dependencies>
 </project>

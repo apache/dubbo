@@ -29,16 +29,24 @@
 	<modules>
 		<module>dubbo-common</module>
 		<module>dubbo-remoting</module>
+		<module>dubbo-remoting-netty</module>
 		<module>dubbo-remoting-mina</module>
 		<module>dubbo-remoting-grizzly</module>
 		<module>dubbo-rpc</module>
+		<module>dubbo-rpc-default</module>
+		<module>dubbo-rpc-injvm</module>
 		<module>dubbo-rpc-rmi</module>
 		<module>dubbo-rpc-hessian</module>
+		<module>dubbo-rpc-xfire</module>
 		<module>dubbo-cluster</module>
 		<module>dubbo-registry</module>
+		<module>dubbo-registry-default</module>
+		<module>dubbo-registry-jndi</module>
 		<module>dubbo-registry-multicast</module>
 		<module>dubbo-registry-zookeeper</module>
 		<module>dubbo-monitor</module>
+		<module>dubbo-monitor-default</module>
+		<module>dubbo-monitor-jmx</module>
 		<module>dubbo-config</module>
 		<module>dubbo-container</module>
 		<module>dubbo</module>
@@ -55,6 +63,7 @@
 		<fastjson_version>1.1.6</fastjson_version>
 		<bsf_version>3.1</bsf_version>
 		<zookeeper_version>3.3.3</zookeeper_version>
+		<jfreechart_version>1.0.13</jfreechart_version>
 		<!-- Log libs -->
 		<log4j_version>1.2.16</log4j_version>
 		<slf4j_version>1.6.2</slf4j_version>
@@ -123,6 +132,11 @@
 				<groupId>org.apache.zookeeper</groupId>
 				<artifactId>zookeeper</artifactId>
 				<version>${zookeeper_version}</version>
+			</dependency>
+			<dependency>
+				<groupId>jfree</groupId>
+				<artifactId>jfreechart</artifactId>
+				<version>${jfreechart_version}</version>
 			</dependency>
 			<!-- Log libs -->
 			<dependency>

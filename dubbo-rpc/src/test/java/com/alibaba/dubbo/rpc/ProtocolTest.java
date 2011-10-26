@@ -23,7 +23,6 @@ import org.junit.Test;
 
 import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.rpc.proxy.ProxyFactory;
 import com.alibaba.dubbo.rpc.support.IEcho;
 
 /**

@@ -27,7 +27,7 @@ import com.alibaba.dubbo.common.utils.NetUtils;
  * Thread local context. (API, ThreadLocal, ThreadSafe)
  * 
  * @see com.alibaba.dubbo.rpc.filter.ContextFilter
- * @see com.alibaba.dubbo.rpc.support.AbstractExporter#invoke(Invocation, InetSocketAddress)
+ * @see com.alibaba.dubbo.rpc.protocol.AbstractExporter#invoke(Invocation, InetSocketAddress)
  * @author qian.lei
  * @author william.liangf
  */

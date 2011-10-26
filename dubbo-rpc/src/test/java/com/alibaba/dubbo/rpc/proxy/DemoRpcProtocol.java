@@ -31,9 +31,9 @@ import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
-import com.alibaba.dubbo.rpc.support.AbstractExporter;
-import com.alibaba.dubbo.rpc.support.AbstractInvoker;
-import com.alibaba.dubbo.rpc.support.AbstractProtocol;
+import com.alibaba.dubbo.rpc.protocol.AbstractExporter;
+import com.alibaba.dubbo.rpc.protocol.AbstractInvoker;
+import com.alibaba.dubbo.rpc.protocol.AbstractProtocol;
 
 /**
  * TestProtocolSupport.

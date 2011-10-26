@@ -25,8 +25,8 @@ import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.registry.RegistryService;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Protocol;
+import com.alibaba.dubbo.rpc.ProxyFactory;
 import com.alibaba.dubbo.rpc.RpcConstants;
-import com.alibaba.dubbo.rpc.proxy.ProxyFactory;
 
 /**
  * SimpleRegistryExporter

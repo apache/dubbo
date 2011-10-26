@@ -28,9 +28,9 @@ import com.alibaba.dubbo.registry.RegistryService;
 import com.alibaba.dubbo.registry.support.UrlUtils;
 import com.alibaba.dubbo.rpc.Filter;
 import com.alibaba.dubbo.rpc.InvokerListener;
+import com.alibaba.dubbo.rpc.ProxyFactory;
 import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.cluster.Cluster;
-import com.alibaba.dubbo.rpc.proxy.ProxyFactory;
 
 /**
  * AbstractDefaultConfig

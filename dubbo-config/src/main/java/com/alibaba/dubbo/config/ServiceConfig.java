@@ -39,10 +39,10 @@ import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
+import com.alibaba.dubbo.rpc.ProxyFactory;
 import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcStatus;
-import com.alibaba.dubbo.rpc.proxy.ProxyFactory;
-import com.alibaba.dubbo.rpc.service.GenericService;
+import com.alibaba.dubbo.service.GenericService;
 
 /**
  * ServiceConfig

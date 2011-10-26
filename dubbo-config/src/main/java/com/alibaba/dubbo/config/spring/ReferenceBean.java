@@ -31,7 +31,7 @@ import com.alibaba.dubbo.config.ProtocolConfig;
 import com.alibaba.dubbo.config.ReferenceConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.config.ServiceConfig;
-import com.alibaba.dubbo.rpc.injvm.InjvmProtocol;
+import com.alibaba.dubbo.rpc.protocol.injvm.InjvmProtocol;
 
 /**
  * ReferenceFactoryBean

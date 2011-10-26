@@ -28,7 +28,7 @@ import com.alibaba.dubbo.config.ReferenceConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.config.ServiceConfig;
 import com.alibaba.dubbo.rpc.Protocol;
-import com.alibaba.dubbo.rpc.proxy.ProxyFactory;
+import com.alibaba.dubbo.rpc.ProxyFactory;
 import com.alibaba.dubbo.rpc.util.MyException;
 import com.alibaba.dubbo.rpc.util.MyService;
 import com.alibaba.dubbo.rpc.util.MyServiceImpl;

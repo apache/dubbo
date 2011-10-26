@@ -33,7 +33,7 @@ import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.StaticContext;
-import com.alibaba.dubbo.rpc.support.FutureAdapter;
+import com.alibaba.dubbo.rpc.protocol.FutureAdapter;
 
 /**
  * EventFilter

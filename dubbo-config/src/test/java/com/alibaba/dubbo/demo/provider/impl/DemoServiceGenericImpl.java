@@ -19,8 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.alibaba.dubbo.rpc.RpcContext;
-import com.alibaba.dubbo.rpc.service.GenericException;
-import com.alibaba.dubbo.rpc.service.GenericService;
+import com.alibaba.dubbo.service.GenericException;
+import com.alibaba.dubbo.service.GenericService;
 
 /**
  * DemoServiceGenericeImpl

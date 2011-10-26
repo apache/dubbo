@@ -28,7 +28,7 @@ import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
-import com.alibaba.dubbo.rpc.service.GenericException;
+import com.alibaba.dubbo.service.GenericException;
 
 /**
  * GenericInvokerFilter.

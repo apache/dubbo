@@ -20,7 +20,7 @@ import java.util.Map;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.alibaba.dubbo.rpc.service.GenericService;
+import com.alibaba.dubbo.service.GenericService;
 
 public class GenericConsumer {
 	

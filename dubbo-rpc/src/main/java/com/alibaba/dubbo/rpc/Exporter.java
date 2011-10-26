@@ -20,7 +20,7 @@ package com.alibaba.dubbo.rpc;
  * 
  * @see com.alibaba.dubbo.rpc.Protocol#export(Invoker)
  * @see com.alibaba.dubbo.rpc.ExporterListener
- * @see com.alibaba.dubbo.rpc.support.AbstractExporter
+ * @see com.alibaba.dubbo.rpc.protocol.AbstractExporter
  * @author william.liangf
  */
 public interface Exporter<T> {
