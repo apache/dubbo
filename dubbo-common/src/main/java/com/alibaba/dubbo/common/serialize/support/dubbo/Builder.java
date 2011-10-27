@@ -414,7 +414,7 @@ public abstract class Builder<T> implements GenericDataFlags
 				for( Field tf : fs )
 				{
 					int mod = tf.getModifiers();
-					if( Modifier.isStatic(mod) || Modifier.isFinal(mod) || tf.getName().equals("this$0") ) // skip static or inner-class's 'this$0' field.
+					if( Modifier.isStatic(mod) || tf.getName().equals("this$0") ) // skip static or inner-class's 'this$0' field.
 						continue;
 					if( Modifier.isTransient(mod) )
 					{
@@ -860,7 +860,6 @@ public abstract class Builder<T> implements GenericDataFlags
 
 	private static String defaultArg(Class<?> cl)
 	{
-	    if( !cl.isPrimitive() ) return "null";
 	    if( boolean.class == cl ) return "false";
 	    if( int.class == cl ) return "0";
 	    if( long.class == cl ) return "0l";
@@ -869,6 +868,8 @@ public abstract class Builder<T> implements GenericDataFlags
 	    if( short.class == cl ) return "(short)0";
 	    if( char.class == cl ) return "(char)0";
 	    if( byte.class == cl ) return "(byte)0";
+	    if( byte[].class == cl ) return "new byte[]{0}";
+	    if( !cl.isPrimitive() ) return "null";
 	    throw new UnsupportedOperationException();
 	}
 

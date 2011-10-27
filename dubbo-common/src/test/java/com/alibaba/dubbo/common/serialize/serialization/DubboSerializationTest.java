@@ -35,16 +35,6 @@ public class DubboSerializationTest extends AbstractSerializationPersionFailTest
     public void test_StringList_asListReturn() throws Exception {}
 
     // FIXME
-    @Ignore("NPE")
-    @Test
-    public void test_BigInteger() throws Exception {}
-    
-    // FIXME
-    @Ignore("NPE")
-    @Test
-    public void test_BigInteger_withType() throws Exception {}
-    
-    // FIXME
     @Ignore("StackOverflowError")
     @Test(timeout=3000)
     public void test_LoopReference() throws Exception {}
