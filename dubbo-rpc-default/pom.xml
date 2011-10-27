@@ -25,6 +25,9 @@
 	<packaging>jar</packaging>
 	<name>Dubbo Default RPC Module</name>
 	<description>The default rpc module of dubbo project</description>
+	<properties>
+		<skip_maven_deploy>true</skip_maven_deploy>
+	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>com.alibaba</groupId>
