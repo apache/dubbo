@@ -46,7 +46,7 @@ public class JavassistProxyFactory implements ProxyFactory {
     }
 
     public <T> Invoker<T> getInvoker(T proxy, Class<T> type, URL url) {
-        final Wrapper wrapper = Wrapper.getWrapper(proxy.getClass());
+        final Wrapper wrapper = Wrapper.getWrapper(type);
         return new InvokerWrapper<T>(proxy, type, url) {
             @Override
             protected Object doInvoke(T proxy, String methodName, 
