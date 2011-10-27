@@ -29,10 +29,16 @@ public class DubboSerializationTest extends AbstractSerializationPersionFailTest
         serialization = new DubboSerialization();
     }
     
-    // FIXME
-    @Ignore("DubboSerialization error: java.lang.IllegalAccessError: tried to access class java.util.Arrays$ArrayList from class com.alibaba.dubbo.common.serialize.support.dubbo.Builder$bc6")
+    /**
+     * @desc:DubboSerialization error: java.lang.IllegalAccessError: tried to access class java.util.Arrays$ArrayList from class com.alibaba.dubbo.common.serialize.support.dubbo.Builder$bc6
+     * @reason:in writeObject method, the first line is :java.util.Arrays$ArrayList v = (java.util.Arrays$ArrayList)$1; java.util.Arrays$ArrayList is a inter static class ,can not access.
+     * @tradeoff: how to resolve：we need change writeObject method, replace the first line with java.util.ArrayList v = new java.util.ArrayList((List)$1) , and in the same time, modify the defaultArg method ,return special construct args for ArrayList ... too ugly to support.  
+     */
+    @Ignore
     @Test
-    public void test_StringList_asListReturn() throws Exception {}
+    public void test_StringList_asListReturn() throws Exception {
+        super.test_StringList_asListReturn();
+    }
 
     // FIXME
     @Ignore("StackOverflowError")
