@@ -29,48 +29,40 @@ import com.alibaba.dubbo.rpc.protocol.AbstractExporter;
  * 
  * @author qian.lei
  */
-public class RmiExporter<T> extends AbstractExporter<T>
-{
-	private static final Logger Log = LoggerFactory.getLogger(RmiExporter.class);
+public class RmiExporter<T> extends AbstractExporter<T> {
+    
+    private static final Logger Log = LoggerFactory.getLogger(RmiExporter.class);
 
-	private Remote mRemote;
+    private Remote              remote;
 
-	private Registry mRmiRegistry;
+    private Registry            registry;
 
-	RmiExporter(Invoker<T> invoker) {
-		super(invoker);
-	}
+    public RmiExporter(Invoker<T> invoker, Remote remote, Registry registry) {
+        super(invoker);
+        this.remote = remote;
+        this.registry = registry;
+    }
 
-	public void unexport()
-	{
-		super.unexport();
+    public void unexport() {
+        super.unexport();
+        // unexport.
+        if (remote != null) {
+            try {
+                UnicastRemoteObject.unexportObject(remote, true);
+            } catch (Exception e) {
+                Log.warn("Unexport rmi object error.", e); //ignore it.
+            }
+            remote = null;
+        }
+        if (registry != null) {
+            try {
+                // unbind.
+                registry.unbind(getInvoker().getUrl().getPath());
+            } catch (Exception e) {
+                Log.warn("Unexport rmi object error.", e); //ignore it.
+            }
+            registry = null;
+        }
+    }
 
-		if( mRmiRegistry != null )
-		{
-			try
-			{
-				// unbind.
-				mRmiRegistry.unbind(getInvoker().getUrl().getPath());
-				// unexport.
-				if( mRemote != null )
-					UnicastRemoteObject.unexportObject(mRemote, true);
-			}
-			catch(Exception e)
-			{
-				Log.warn("Unexport rmi object error.", e); //ignore it.
-			}
-			mRemote = null;
-			mRmiRegistry = null;
-		}
-	}
-
-	void setRmiRegistry(Registry reg)
-	{
-		mRmiRegistry = reg;
-	}
-
-	void setRemoteObject(Remote remote)
-	{
-		mRemote = remote;
-	}
 }

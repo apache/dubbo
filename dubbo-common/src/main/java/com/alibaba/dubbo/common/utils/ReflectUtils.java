@@ -37,8 +37,8 @@ import javassist.NotFoundException;
  * @author qian.lei
  */
 
-public final class ReflectUtils
-{
+public final class ReflectUtils {
+    
 	/**
 	 * void(V).
 	 */
@@ -753,6 +753,20 @@ public final class ReflectUtils
 			}
 		}
 		return targetConstructor;
+    }
+
+    public static boolean isInstance(Object obj, String interfaceClazzName) {
+        for (Class<?> clazz = obj.getClass(); 
+                clazz != null && !clazz.equals(Object.class); 
+                clazz = clazz.getSuperclass()) {
+            Class<?>[] interfaces = clazz.getInterfaces();
+            for (Class<?> itf : interfaces) {
+                if (itf.getName().equals(interfaceClazzName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
     
 	private ReflectUtils(){}

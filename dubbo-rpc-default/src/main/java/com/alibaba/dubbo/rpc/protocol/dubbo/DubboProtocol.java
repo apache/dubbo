@@ -45,6 +45,7 @@ import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.RpcConstants;
+import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.protocol.AbstractProtocol;
@@ -123,8 +124,8 @@ public class DubboProtocol extends AbstractProtocol {
                         return null;
                     }
                 }
-                
-                return exporter.invoke(inv, channel.getRemoteAddress());
+                RpcContext.getContext().setRemoteAddress(channel.getRemoteAddress());
+                return exporter.getInvoker().invoke(inv);
             }
             throw new RemotingException(channel, "Unsupported request: " + message == null ? null : (message.getClass().getName() + ": " + message) + ", channel: consumer: " + channel.getRemoteAddress() + " --> provider: " + channel.getLocalAddress());
         }

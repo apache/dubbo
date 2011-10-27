@@ -113,10 +113,11 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
     }
 
     public Result invoke(Invocation inv) throws RpcException {
-        if(destroyed)
+        if(destroyed) {
             throw new RpcException("Rpc invoker for service " + this + " on consumer " + NetUtils.getLocalHost() 
                                             + " use dubbo version " + Version.getVersion()
                                             + " is DESTROYED, can not be invoked any more!");
+        }
         RpcInvocation invocation = (RpcInvocation) inv;
         Map<String, String> attachments = new HashMap<String, String>();
         if (attachment != null && attachment.size() > 0) {
@@ -130,32 +131,29 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
             attachments.putAll(invocation.getAttachments());
         }
         invocation.setAttachments(attachments);
-        RpcResult result = new RpcResult();
         try {
-            Object obj = doInvoke(invocation);
-            result.setResult(obj);
+            return doInvoke(invocation);
         } catch (InvocationTargetException e) { // biz exception
             Throwable te = e.getTargetException();
             if (te == null) {
-                result.setException(e);
+                return new RpcResult(e);
             } else {
                 if (te instanceof RpcException) {
                     ((RpcException) te).setCode(RpcException.BIZ_EXCEPTION);
                 }
-                result.setException(te);
+                return new RpcResult(te);
             }
         } catch (RpcException e) {
             if (e.isBiz()) {
-                result.setException(e);
+                return new RpcResult(e);
             } else {
                 throw e;
             }
         } catch (Throwable e) {
-            result.setException(e);
+            return new RpcResult(e);
         }
-        return result;
     }
 
-    protected abstract Object doInvoke(Invocation invocation) throws Throwable;
+    protected abstract Result doInvoke(Invocation invocation) throws Throwable;
 
 }

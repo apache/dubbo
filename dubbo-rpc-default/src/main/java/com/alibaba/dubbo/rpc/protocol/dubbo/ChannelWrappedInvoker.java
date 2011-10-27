@@ -52,7 +52,7 @@ public class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
     }
 
     @Override
-    protected Object doInvoke(Invocation invocation) throws Throwable {
+    protected Result doInvoke(Invocation invocation) throws Throwable {
         RpcInvocation inv = new RpcInvocation(invocation.getMethodName(),
                 invocation.getParameterTypes(), invocation.getArguments(),
                 invocation.getAttachments());
@@ -84,7 +84,7 @@ public class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
         } catch (Throwable e) { // here is non-biz exception, wrap it.
             throw new RpcException(e.getMessage(), e);
         }
-        return result.recreate();
+        return result;
     }
 
     public static class ChannelWrapper extends ClientDelegate {

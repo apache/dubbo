@@ -35,6 +35,7 @@
 			<groupId>org.springframework</groupId>
 			<artifactId>spring</artifactId>
 			<scope>provided</scope>
+			<optional>true</optional>
 		</dependency>
 	</dependencies>
 </project>

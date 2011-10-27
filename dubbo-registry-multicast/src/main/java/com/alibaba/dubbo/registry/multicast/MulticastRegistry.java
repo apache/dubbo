@@ -17,6 +17,7 @@ package com.alibaba.dubbo.registry.multicast;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
@@ -26,6 +27,7 @@ import java.util.List;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.support.AbstractRegistry;
@@ -52,6 +54,10 @@ public class MulticastRegistry extends AbstractRegistry {
     
     private MulticastSocket mutilcastSocket;
     
+    private InetSocketAddress datagramAddress;
+    
+    private DatagramSocket datagramSocket;
+    
     public MulticastRegistry(URL url) {
         super(url);
         if (! isMulticastAddress(url.getHost())) {
@@ -69,7 +75,11 @@ public class MulticastRegistry extends AbstractRegistry {
                     while (true) {
                         try {
                             mutilcastSocket.receive(recv);
-                            MulticastRegistry.this.receive(new String(recv.getData()).trim(), (InetSocketAddress) recv.getSocketAddress());
+                            String msg = new String(recv.getData()).trim();
+                            if (logger.isInfoEnabled()) {
+                                logger.info("Receive multicast message: " + msg + " from " + recv.getSocketAddress());
+                            }
+                            MulticastRegistry.this.receive(msg, (InetSocketAddress) recv.getSocketAddress());
                         } catch (IOException e) {
                             logger.error(e.getMessage(), e);
                         }
@@ -80,6 +90,41 @@ public class MulticastRegistry extends AbstractRegistry {
             thread.start();
         } catch (IOException e) {
             throw new IllegalStateException(e.getMessage(), e);
+        }
+        int port = 0;
+        String udp = url.getParameter("udp");
+        if (udp == null || udp.length() == 0 || "true".equals(udp)) {
+            port = NetUtils.getAvailablePort();
+        } else if (! "false".equals(udp)) {
+            port = Integer.parseInt(udp);
+        }
+        if (port > 0) {
+            try {
+                datagramAddress = new InetSocketAddress(NetUtils.getLocalHost(), url.getIntParameter("udp", NetUtils.getAvailablePort()));
+                datagramSocket = new DatagramSocket(datagramAddress);
+                Thread thread = new Thread(new Runnable() {
+                    public void run() {
+                        byte[] buf = new byte[1024];
+                        DatagramPacket recv = new DatagramPacket(buf, buf.length);
+                        while (true) {
+                            try {
+                                datagramSocket.receive(recv);
+                                String msg = new String(recv.getData()).trim();
+                                if (logger.isInfoEnabled()) {
+                                    logger.info("Receive udp message: " + msg + " from " + recv.getSocketAddress());
+                                }
+                                MulticastRegistry.this.receive(msg, (InetSocketAddress) recv.getSocketAddress());
+                            } catch (IOException e) {
+                                logger.error(e.getMessage(), e);
+                            }
+                        }
+                    }
+                }, "MulticastRegistryUDP");
+                thread.setDaemon(true);
+                thread.start();
+            } catch (IOException e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
         }
     }
     
@@ -123,10 +168,15 @@ public class MulticastRegistry extends AbstractRegistry {
                 notify(service, urls);
             }
         } else if (msg.startsWith(SUBSCRIBE)) {
-            String service = URL.valueOf(msg.substring(SUBSCRIBE.length()).trim()).getServiceKey();
+            URL url = URL.valueOf(msg.substring(SUBSCRIBE.length()).trim());
+            String service = url.getServiceKey();
             if (getRegistered().containsKey(service)) {
-                for (URL url : getRegistered().get(service)) {
-                    send(REGISTER + " " + url.toFullString());
+                for (URL u : getRegistered().get(service)) {
+                    if (datagramSocket != null && "udp".equals(url.getProtocol())) {
+                        sendTo(REGISTER + " " + u.toFullString(), url);
+                    } else {
+                        send(REGISTER + " " + u.toFullString());
+                    }
                 }
             }
         } else if (msg.startsWith(UNSUBSCRIBE)) {
@@ -134,10 +184,25 @@ public class MulticastRegistry extends AbstractRegistry {
     }
     
     private void send(String msg) {
-        DatagramPacket hi = new DatagramPacket(msg.getBytes(), msg.length(), mutilcastAddress, mutilcastSocket.getLocalPort());
+        if (logger.isInfoEnabled()) {
+            logger.info("Send multicast message: " + msg + " to " + mutilcastAddress + ":" + mutilcastSocket.getLocalPort());
+        }
         try {
+            DatagramPacket hi = new DatagramPacket(msg.getBytes(), msg.length(), mutilcastAddress, mutilcastSocket.getLocalPort());
             mutilcastSocket.send(hi);
-        } catch (IOException e) {
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+    
+    private void sendTo(String msg, URL url) {
+        if (logger.isInfoEnabled()) {
+            logger.info("Send udp message: " + msg + " to " + url.getAddress());
+        }
+        try {
+            DatagramPacket hi = new DatagramPacket(msg.getBytes(), msg.length(), InetAddress.getByName(url.getHost()), url.getPort());
+            datagramSocket.send(hi);
+        } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
@@ -153,6 +218,11 @@ public class MulticastRegistry extends AbstractRegistry {
 
     public void subscribe(String service, URL url, NotifyListener listener) {
         super.subscribe(service, url, listener);
+        if (datagramAddress != null) {
+            url = url.setProtocol("udp").setHost(datagramAddress.getAddress().getHostAddress()).setPort(datagramAddress.getPort());
+        } else {
+            url = url.setProtocol("multicast").setHost(mutilcastAddress.getHostAddress()).setPort(mutilcastSocket.getLocalPort());
+        }
         send(SUBSCRIBE + " " + url.toFullString());
         synchronized (this) {
             try {
@@ -163,6 +233,11 @@ public class MulticastRegistry extends AbstractRegistry {
     }
 
     public void unsubscribe(String service, URL url, NotifyListener listener) {
+        if (datagramAddress != null) {
+            url = url.setProtocol("udp").setHost(datagramAddress.getAddress().getHostAddress()).setPort(datagramAddress.getPort());
+        } else {
+            url = url.setProtocol("multicast").setHost(mutilcastAddress.getHostAddress()).setPort(mutilcastSocket.getLocalPort());
+        }
         send(UNSUBSCRIBE + " " + url.toFullString());
     }
 

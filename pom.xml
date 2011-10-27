@@ -32,6 +32,7 @@
 		<module>dubbo-remoting-netty</module>
 		<module>dubbo-remoting-mina</module>
 		<module>dubbo-remoting-grizzly</module>
+		<module>dubbo-remoting-http</module>
 		<module>dubbo-rpc</module>
 		<module>dubbo-rpc-default</module>
 		<module>dubbo-rpc-injvm</module>
@@ -62,6 +63,8 @@
 		<zookeeper_version>3.3.3</zookeeper_version>
 		<jfreechart_version>1.0.13</jfreechart_version>
 		<hessian_version>4.0.7</hessian_version>
+		<servlet_version>2.5</servlet_version>
+		<jetty_version>6.1.26</jetty_version>
 		<!-- Log libs -->
 		<log4j_version>1.2.16</log4j_version>
 		<slf4j_version>1.6.2</slf4j_version>
@@ -140,6 +143,16 @@
 				<groupId>com.caucho</groupId>
 				<artifactId>hessian</artifactId>
 				<version>${hessian_version}</version>
+			</dependency>
+			<dependency>
+				<groupId>javax.servlet</groupId>
+				<artifactId>servlet-api</artifactId>
+				<version>${servlet_version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.mortbay.jetty</groupId>
+				<artifactId>jetty</artifactId>
+				<version>${jetty_version}</version>
 			</dependency>
 			<!-- Log libs -->
 			<dependency>

@@ -52,7 +52,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
     }
 
     @Override
-    protected Object doInvoke(final Invocation invocation) throws Throwable {
+    protected Result doInvoke(final Invocation invocation) throws Throwable {
         RpcInvocation inv = null;
         final String methodName  ;
         if(Constants.$INVOKE.equals(invocation.getMethodName()) && invocation.getArguments() !=null && invocation.getArguments().length >0 && invocation.getArguments()[0] != null){
@@ -73,7 +73,6 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         } else {
             currentClient = clients[index.getAndIncrement() % clients.length];
         }
-        Result result = null ;
         try {
             // 不可靠异步
             boolean isAsync = getUrl().getMethodBooleanParameter(methodName, Constants.ASYNC_KEY);
@@ -91,18 +90,12 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                 return null;
             }
             RpcContext.getContext().setFuture(null);
-            result = (Result) currentClient.request(inv, timeout).get();
-        } catch (RpcException e) {
-            throw e;
+            return (Result) currentClient.request(inv, timeout).get();
         } catch (TimeoutException e) {
             throw new RpcException(RpcException.TIMEOUT_EXCEPTION, e.getMessage(), e);
         } catch (RemotingException e) {
             throw new RpcException(RpcException.NETWORK_EXCEPTION, e.getMessage(), e);
-        } catch (Throwable e) { // here is non-biz exception, wrap it.
-            throw new RpcException(e.getMessage(), e);
         }
-        //attention: recreate can not in try-catch block. 
-        return result == null ? null: result.recreate();
     }
     
     @Override

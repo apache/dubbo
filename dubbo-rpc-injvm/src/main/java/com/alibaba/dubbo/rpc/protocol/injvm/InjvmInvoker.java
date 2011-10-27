@@ -20,6 +20,7 @@ import java.util.Map;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.rpc.Exporter;
+import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Result;
@@ -42,19 +43,12 @@ class InjvmInvoker<T> extends AbstractInvoker<T> {
         this.exporterMap = exporterMap;
     }
 
-    public Object doInvoke(Invocation invocation) throws Throwable {
+    public Result doInvoke(Invocation invocation) throws Throwable {
         InjvmExporter<?> exporter = (InjvmExporter<?>) exporterMap.get(key);
         if (exporter == null)  {
             throw new RpcException("Service [" + key + "] not found.");
         }
-        Result result;
-        try {
-            result = exporter.invoke(invocation, NetUtils.LOCALHOST, 0);
-        } catch (RpcException e) {
-            throw e;
-        } catch (Throwable e) {
-            throw new RpcException(e);
-        }
-        return result.recreate();
+        RpcContext.getContext().setRemoteAddress(NetUtils.LOCALHOST, 0);
+        return exporter.getInvoker().invoke(invocation);
     }
 }
