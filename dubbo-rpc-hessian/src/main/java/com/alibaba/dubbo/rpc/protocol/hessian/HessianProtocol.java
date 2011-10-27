@@ -61,7 +61,7 @@ public class HessianProtocol extends AbstractProtocol {
             serverMap.put(addr, server);
         }
 
-        HessianRpcExporter<T> exporter = new HessianRpcExporter<T>(invoker) {
+        HessianRpcExporter<T> exporter = new HessianRpcExporter<T>(invoker, proxyFactory) {
             public void unexport() {
                 super.unexport();
                 exporterMap.remove(uri);
