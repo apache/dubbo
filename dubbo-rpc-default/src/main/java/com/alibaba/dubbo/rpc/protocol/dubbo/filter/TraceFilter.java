@@ -108,6 +108,9 @@ public class TraceFilter implements Filter {
                                          + "\r\nelapsed: "+(end - start) +" ms."
                                          + "\r\n\r\n" + prompt + "> ");
                             }
+                            if(count >= max - 1) {
+                                channels.remove(channel);
+                            }
                         } catch (Throwable e) {
                             channels.remove(channel);
                             logger.warn(e.getMessage(), e);
