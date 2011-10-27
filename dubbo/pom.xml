@@ -151,7 +151,7 @@
 							<promoteTransitiveDependencies>true</promoteTransitiveDependencies>
 							<artifactSet>
 								<includes>
-								    <include>com.alibaba:hessian.lite</include>
+								    <include>com.alibaba:hessian-lite</include>
 									<include>com.alibaba:dubbo-common</include>
 									<include>com.alibaba:dubbo-remoting</include>
 									<include>com.alibaba:dubbo-remoting-netty</include>

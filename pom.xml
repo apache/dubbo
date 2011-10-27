@@ -112,7 +112,7 @@
 			</dependency>
 			<dependency>
 				<groupId>com.alibaba</groupId>
-				<artifactId>hessian.lite</artifactId>
+				<artifactId>hessian-lite</artifactId>
 				<version>${hessian_lite_version}</version>
 			</dependency>
 			<dependency>
