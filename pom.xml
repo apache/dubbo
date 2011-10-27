@@ -58,7 +58,7 @@
 		<grizzly_version>2.1.4</grizzly_version>
 		<hessian_lite_version>3.2.1</hessian_lite_version>
 		<xstream_version>1.4.1</xstream_version>
-		<fastjson_version>1.1.6</fastjson_version>
+		<fastjson_version>1.1.8</fastjson_version>
 		<bsf_version>3.1</bsf_version>
 		<zookeeper_version>3.3.3</zookeeper_version>
 		<jfreechart_version>1.0.13</jfreechart_version>
