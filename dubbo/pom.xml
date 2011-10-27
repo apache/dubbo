@@ -25,6 +25,9 @@
 	<packaging>jar</packaging>
 	<name>Dubbo All In One</name>
 	<description>The all in one project of dubbo</description>
+	<properties>
+		<skip_maven_deploy>false</skip_maven_deploy>
+	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>com.alibaba</groupId>
@@ -58,7 +61,7 @@
 							<promoteTransitiveDependencies>true</promoteTransitiveDependencies>
 							<artifactSet>
 								<includes>
-								        <include>com.alibaba:hessian.lite</include>
+								        <include>com.alibaba:hessian-lite</include>
 									<include>com.alibaba:dubbo-common</include>
 									<include>com.alibaba:dubbo-remoting</include>
 									<include>com.alibaba:dubbo-rpc</include>

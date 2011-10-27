@@ -57,6 +57,7 @@
 		<jmockit_version>0.999.8</jmockit_version>
 		<!-- Build args -->
 		<argline>-Xms512m -Xmx512m</argline>
+		<skip_maven_deploy>false</skip_maven_deploy>
 		<!-- SCM urls -->
 		<project_url>http://code.alibabatech.com/wiki/display/dubbo/Home</project_url>
 		<project_scm_url>http://code.alibabatech.com/svn/dubbo/trunk</project_scm_url>
@@ -94,7 +95,7 @@
 			</dependency>
 			<dependency>
 				<groupId>com.alibaba</groupId>
-				<artifactId>hessian.lite</artifactId>
+				<artifactId>hessian-lite</artifactId>
 				<version>${hessian_version}</version>
 			</dependency>
 			<dependency>
@@ -269,6 +270,13 @@
 					</systemProperties>
 				</configuration>
 			</plugin>
+			<plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>${skip_maven_deploy}</skip>
+                </configuration>
+            </plugin>
 		</plugins>
 	</build>
 	<scm>
