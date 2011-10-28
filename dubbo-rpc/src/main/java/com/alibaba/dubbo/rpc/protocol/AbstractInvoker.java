@@ -102,8 +102,9 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
     }
 
     public void destroy() {
-        if (destroyed)
-            throw new IllegalStateException("The invoker " + this + " destroyed!");
+        if (destroyed) {
+            return;
+        }
         destroyed = true;
         setAvailable(false);
     }
