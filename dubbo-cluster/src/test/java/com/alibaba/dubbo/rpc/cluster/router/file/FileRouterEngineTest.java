@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.script.ScriptEngineManager;
+
 import junit.framework.Assert;
 
 import org.easymock.EasyMock;
@@ -56,6 +58,8 @@ public class FileRouterEngineTest {
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
     }
+    
+    private static boolean isScriptUnsupported = new ScriptEngineManager().getEngineByName("javascript") == null;
 
     @Before
     public void setUp() throws Exception {
@@ -65,6 +69,7 @@ public class FileRouterEngineTest {
 
     @Test
     public void testRouteNotAvailable() {
+        if (isScriptUnsupported) return;
         URL url = initUrl("notAvailablerule.javascript");
         initInvocation("method1");
         initDic(url);
@@ -81,6 +86,7 @@ public class FileRouterEngineTest {
 
     @Test
     public void testRouteAvailable() {
+        if (isScriptUnsupported) return;
         URL url = initUrl("availablerule.javascript");
         initInvocation("method1");
         initDic(url);
@@ -97,6 +103,7 @@ public class FileRouterEngineTest {
 
     @Test
     public void testRouteByMethodName() {
+        if (isScriptUnsupported) return;
         URL url = initUrl("methodrule.javascript");
         {
             initInvocation("method1");
