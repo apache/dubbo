@@ -61,7 +61,7 @@ public class ProtocolsTest
     		remoteService.getThreadName();
     		for(int i=0;i<100;i++) {
                 String say = remoteService.sayHello("abcd");
-                assertEquals("hello abcd@com.alibaba.dubbo.rpc.proxy.RemoteServiceImpl", say);
+                assertEquals("hello abcd@" + RemoteServiceImpl.class.getName(), say);
             }
     		rpcExporter.unexport();
 	    }

@@ -34,7 +34,6 @@ import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtNewMethod;
-import javassist.LoaderClassPath;
 import javassist.NotFoundException;
 
 import org.springframework.remoting.rmi.RmiInvocationHandler;
@@ -43,6 +42,7 @@ import org.springframework.remoting.support.RemoteInvocation;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.bytecode.ClassGenerator;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.rpc.Exporter;
@@ -80,7 +80,6 @@ public class RmiProtocol extends AbstractProtocol {
     
     @SuppressWarnings("unchecked")
     private <T> Invoker<T> getInvoker(final Remote remote, final Class<T> serviceType, final URL url) {
-        final Class<T> remoteType = RmiProtocol.getRemoteClass(serviceType);
         if (ReflectUtils.isInstance(remote, "org.springframework.remoting.rmi.RmiInvocationHandler")) {
             // is the Remote wrap type in spring? (spring rmi is used in Dubbo1)
             return new Invoker<T>() {
@@ -116,7 +115,7 @@ public class RmiProtocol extends AbstractProtocol {
                 }
             };
         } else {
-            return proxyFactory.getInvoker((T) remote, remoteType, url);
+            return proxyFactory.getInvoker((T) remote, serviceType, url);
         }
     }
 
@@ -198,29 +197,33 @@ public class RmiProtocol extends AbstractProtocol {
             return type;
         }
         try {
-            ClassPool pool = new ClassPool(true);
-            pool.appendClassPath(new LoaderClassPath(Thread.currentThread().getContextClassLoader()));
-            CtClass ctClass = pool.makeInterface(type.getName() + "$Remote");
-            ctClass.addInterface(pool.getCtClass(type.getName()));
-            ctClass.addInterface(pool.getCtClass(Remote.class.getName()));
-            Method[] methods = type.getMethods();
-            for (Method method : methods) {
-                CtClass[] parameters = new CtClass[method.getParameterTypes().length];
-                int i = 0;
-                for (Class<?> pt : method.getParameterTypes()) {
-                    parameters[i++] = pool.getCtClass(pt.getCanonicalName());
+            String remoteType = type.getName() + "$Remote";
+            try {
+                return (Class<T>) Class.forName(remoteType, true, Thread.currentThread().getContextClassLoader());
+            } catch (ClassNotFoundException e) {
+                ClassPool pool = ClassGenerator.getClassPool(Thread.currentThread().getContextClassLoader());
+                CtClass ctClass = pool.makeInterface(remoteType);
+                ctClass.addInterface(pool.getCtClass(type.getName()));
+                ctClass.addInterface(pool.getCtClass(Remote.class.getName()));
+                Method[] methods = type.getMethods();
+                for (Method method : methods) {
+                    CtClass[] parameters = new CtClass[method.getParameterTypes().length];
+                    int i = 0;
+                    for (Class<?> pt : method.getParameterTypes()) {
+                        parameters[i++] = pool.getCtClass(pt.getCanonicalName());
+                    }
+                    CtClass[] exceptions = new CtClass[method.getExceptionTypes().length + 1];
+                    exceptions[0] = pool.getCtClass(RemoteException.class.getName());
+                    i = 1;
+                    for (Class<?> et : method.getExceptionTypes()) {
+                        exceptions[i++] = pool.getCtClass(et.getCanonicalName());
+                    }
+                    ctClass.addMethod(CtNewMethod.abstractMethod(
+                            pool.getCtClass(method.getReturnType().getCanonicalName()),
+                            method.getName(), parameters, exceptions, ctClass));
                 }
-                CtClass[] exceptions = new CtClass[method.getExceptionTypes().length + 1];
-                exceptions[0] = pool.getCtClass(RemoteException.class.getName());
-                i = 1;
-                for (Class<?> et : method.getExceptionTypes()) {
-                    exceptions[i++] = pool.getCtClass(et.getCanonicalName());
-                }
-                ctClass.addMethod(CtNewMethod.abstractMethod(
-                        pool.getCtClass(method.getReturnType().getCanonicalName()),
-                        method.getName(), parameters, exceptions, ctClass));
+                return ctClass.toClass();
             }
-            return ctClass.toClass();
         } catch (CannotCompileException e) {
             throw new IllegalStateException(e.getMessage(), e);
         } catch (NotFoundException e) {
@@ -260,13 +263,14 @@ public class RmiProtocol extends AbstractProtocol {
     public <T> Invoker<T> refer(Class<T> serviceType, URL url) throws RpcException {
         Invoker<T> invoker;
         try {
+            serviceType = RmiProtocol.getRemoteClass(serviceType);
             Registry registry = LocateRegistry.getRegistry(url.getHost(), url.getPort());
             String path = url.getPath();
             if (path == null || path.length() == 0) {
                 path = serviceType.getName();
             }
-            final Remote rmt = registry.lookup(path);
-            invoker = new RmiInvoker<T>(getInvoker(rmt, serviceType, url));
+            final Remote remote = registry.lookup(path);
+            invoker = new RmiInvoker<T>(getInvoker(remote, serviceType, url));
         } catch (RemoteException e) {
             Throwable cause = e.getCause();
             boolean isExportedBySpringButNoSpringClass = ClassNotFoundException.class
