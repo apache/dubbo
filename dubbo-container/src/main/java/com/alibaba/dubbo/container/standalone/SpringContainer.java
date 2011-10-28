@@ -28,10 +28,10 @@ import com.alibaba.dubbo.container.Container;
  * 
  * @author william.liangf
  */
-@Extension("standalone")
-public class StandaloneContainer implements Container {
+@Extension("spring")
+public class SpringContainer implements Container {
 
-    private static final Logger LOGGER                = LoggerFactory.getLogger(StandaloneContainer.class);
+    private static final Logger LOGGER                = LoggerFactory.getLogger(SpringContainer.class);
 
     private static final String SPRING_CONFIG_KEY     = "spring.config";
     

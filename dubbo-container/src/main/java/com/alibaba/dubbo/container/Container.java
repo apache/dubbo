@@ -22,7 +22,7 @@ import com.alibaba.dubbo.common.Extension;
  * 
  * @author william.liangf
  */
-@Extension("standalone")
+@Extension("spring")
 public interface Container {
     
     void start();

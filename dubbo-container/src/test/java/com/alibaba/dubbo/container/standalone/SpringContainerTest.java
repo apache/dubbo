@@ -23,13 +23,13 @@ import org.junit.Test;
  * 
  * @author william.liangf
  */
-public class StandaloneContainerTest {
+public class SpringContainerTest {
     
     @Test
     public void testContainer() {
-        StandaloneContainer container = new StandaloneContainer();
+        SpringContainer container = new SpringContainer();
         container.start();
-        Assert.assertEquals(StandaloneContainer.class, container.getApplicationContext().getBean("container").getClass());
+        Assert.assertEquals(SpringContainer.class, container.getApplicationContext().getBean("container").getClass());
         container.stop();
     }
 

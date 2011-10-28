@@ -28,8 +28,7 @@ public class Main {
     
     private static final Logger logger            = LoggerFactory.getLogger(Main.class);
     
-    public static final String CONTAINER_TYPE_KEY = "dubbo.container.type";
-    
+    public static final String CONTAINER_TYPE_KEY = "container.type";
     
     public static void main(String[] args) {
         String type = null;
