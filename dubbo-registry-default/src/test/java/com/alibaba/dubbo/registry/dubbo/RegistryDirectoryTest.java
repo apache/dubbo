@@ -244,7 +244,7 @@ public class RegistryDirectoryTest {
             
             Invoker invoker = (Invoker) invokers.get(0);
             URL url = invoker.getUrl();
-            Assert.assertEquals(false,url.getBooleanParameter(Constants.CHECK_KEY));
+            Assert.assertEquals(false,url.getParameter(Constants.CHECK_KEY, false));
         }
         {
             serviceUrls.clear();

@@ -92,7 +92,7 @@ public class ServerPeer extends ServerDelegate implements Peer {
 
     @Override
     public void send(Object message) throws RemotingException {
-        send(message, getUrl().getBooleanParameter(Constants.SENT_KEY));
+        send(message, getUrl().getParameter(Constants.SENT_KEY, false));
     }
 
     @Override

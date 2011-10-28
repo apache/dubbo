@@ -39,9 +39,9 @@ public class CachedThreadPool implements ThreadPool {
 
     public Executor getExecutor(URL url) {
         String threadName = url.getParameter(Constants.THREAD_NAME_KEY, Constants.DEFAULT_THREAD_NAME);
-        int threads = url.getIntParameter(Constants.THREADS_KEY, Integer.MAX_VALUE);
-        int queues = url.getIntParameter(Constants.QUEUES_KEY, Constants.DEFAULT_QUEUES);
-        int keepalive = url.getIntParameter(Constants.THREAD_ALIVE_KEY, Constants.DEFAULT_THREAD_ALIVE);
+        int threads = url.getParameter(Constants.THREADS_KEY, Integer.MAX_VALUE);
+        int queues = url.getParameter(Constants.QUEUES_KEY, Constants.DEFAULT_QUEUES);
+        int keepalive = url.getParameter(Constants.THREAD_ALIVE_KEY, Constants.DEFAULT_THREAD_ALIVE);
         return new ThreadPoolExecutor(0, threads, keepalive, TimeUnit.MILLISECONDS, 
                                       queues <= 0 ? new SynchronousQueue<Runnable>() : new LinkedBlockingQueue<Runnable>(queues),
                                new NamedThreadFactory(threadName, true), new AbortPolicyWithReport(threadName, url));

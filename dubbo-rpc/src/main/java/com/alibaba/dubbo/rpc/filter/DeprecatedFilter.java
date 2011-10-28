@@ -44,7 +44,7 @@ public class DeprecatedFilter implements Filter {
         String key = invoker.getInterface().getName() + "." + invocation.getMethodName();
         if (! logged.contains(key)) {
             logged.add(key);
-            if (invoker.getUrl().getMethodBooleanParameter(invocation.getMethodName(), Constants.DEPRECATED_KEY)) {
+            if (invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.DEPRECATED_KEY, false)) {
                 LOGGER.error("The service method " + invoker.getInterface().getName() + "." + getMethodSignature(invocation) + " is DEPRECATED! Declare from " + invoker.getUrl());
             }
         }

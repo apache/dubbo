@@ -64,11 +64,11 @@ public class GrizzlyServer extends AbstractServer {
         config.setPoolName(SERVER_THREAD_POOL_NAME).setQueueLimit(-1);
         String threadpool = getUrl().getParameter(Constants.THREADPOOL_KEY, Constants.DEFAULT_THREADPOOL);
         if (Constants.DEFAULT_THREADPOOL.equals(threadpool)) {
-            int threads = getUrl().getPositiveIntParameter(Constants.THREADS_KEY, Constants.DEFAULT_THREADS);
+            int threads = getUrl().getPositiveParameter(Constants.THREADS_KEY, Constants.DEFAULT_THREADS);
             config.setCorePoolSize(threads).setMaxPoolSize(threads)
                 .setKeepAliveTime(0L, TimeUnit.SECONDS); 
         } else if ("cached".equals(threadpool)) {
-            int threads = getUrl().getPositiveIntParameter(Constants.THREADS_KEY, Integer.MAX_VALUE);
+            int threads = getUrl().getPositiveParameter(Constants.THREADS_KEY, Integer.MAX_VALUE);
             config.setCorePoolSize(0).setMaxPoolSize(threads)
                 .setKeepAliveTime(60L, TimeUnit.SECONDS);
         } else {

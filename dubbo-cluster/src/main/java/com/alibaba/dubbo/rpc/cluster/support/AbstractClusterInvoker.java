@@ -60,7 +60,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
             throw new IllegalArgumentException("service directory == null");
         
         this.directory = directory ;
-        this.availablecheck = url.getBooleanParameter(RpcConstants.CLUSTER_AVAILABLE_CHECK_KEY, RpcConstants.DEFAULT_CLUSTER_AVAILABLE_CHECK) ;
+        this.availablecheck = url.getParameter(RpcConstants.CLUSTER_AVAILABLE_CHECK_KEY, RpcConstants.DEFAULT_CLUSTER_AVAILABLE_CHECK) ;
     }
 
     public Class<T> getInterface() {
@@ -98,7 +98,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
             return null;
         String methodName = invocation == null ? "" : invocation.getMethodName();
         
-        boolean sticky = invokers.get(0).getUrl().getMethodBooleanParameter(methodName,RpcConstants.CLUSTER_STICKY_KEY, RpcConstants.DEFAULT_CLUSTER_STICKY) ;
+        boolean sticky = invokers.get(0).getUrl().getMethodParameter(methodName,RpcConstants.CLUSTER_STICKY_KEY, RpcConstants.DEFAULT_CLUSTER_STICKY) ;
         {
             //ignore overloaded method
             if ( stickyInvoker != null && !invokers.contains(stickyInvoker) ){

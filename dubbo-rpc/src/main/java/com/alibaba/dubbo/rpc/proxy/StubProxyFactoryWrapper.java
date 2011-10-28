@@ -80,7 +80,7 @@ public class StubProxyFactoryWrapper implements ProxyFactory {
                         proxy = (T) constructor.newInstance(new Object[] {proxy});
                         //export stub service
                         URL url = invoker.getUrl();
-                        if (url.getBooleanParameter(RpcConstants.STUB_EVENT_KEY, RpcConstants.DEFAULT_STUB_EVENT)){
+                        if (url.getParameter(RpcConstants.STUB_EVENT_KEY, RpcConstants.DEFAULT_STUB_EVENT)){
                             url = url.addParameter(RpcConstants.STUB_EVENT_METHODS_KEY, StringUtils.join(Wrapper.getWrapper(proxy.getClass()).getDeclaredMethodNames(), ","));
                             url = url.addParameter(RpcConstants.IS_SERVER_KEY, Boolean.FALSE.toString());
                             try{

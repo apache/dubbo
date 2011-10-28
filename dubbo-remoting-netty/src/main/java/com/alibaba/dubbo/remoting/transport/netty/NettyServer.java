@@ -62,7 +62,7 @@ public class NettyServer extends AbstractServer implements Server {
     protected void doOpen() throws Throwable {
         ExecutorService boss = Executors.newCachedThreadPool(new NamedThreadFactory("NettyServerBoss", true));
         ExecutorService worker = Executors.newCachedThreadPool(new NamedThreadFactory("NettyServerWorker", true));
-        ChannelFactory channelFactory = new NioServerSocketChannelFactory(boss, worker, getUrl().getPositiveIntParameter(Constants.IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS));
+        ChannelFactory channelFactory = new NioServerSocketChannelFactory(boss, worker, getUrl().getPositiveParameter(Constants.IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS));
         bootstrap = new ServerBootstrap(channelFactory);
         
         final NettyHandler nettyHandler = new NettyHandler(getUrl(), this);

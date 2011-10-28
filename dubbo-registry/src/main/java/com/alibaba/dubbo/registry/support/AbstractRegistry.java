@@ -42,11 +42,11 @@ public abstract class AbstractRegistry extends AbstractRegistryService implement
     }
 
     public InetSocketAddress getLocalAddress() {
-        return registryUrl.getInetSocketAddress();
+        return registryUrl.toInetSocketAddress();
     }
 
     public InetSocketAddress getRemoteAddress() {
-        return registryUrl.getInetSocketAddress();
+        return registryUrl.toInetSocketAddress();
     }
 
     public boolean isAvailable() {

@@ -73,7 +73,7 @@ public class GrizzlyClient extends AbstractClient {
     @Override
     protected void doConnect() throws Throwable {
         connection = transport.connect(getConnectAddress())
-                        .get(getUrl().getPositiveIntParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT), TimeUnit.MILLISECONDS);
+                        .get(getUrl().getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT), TimeUnit.MILLISECONDS);
     }
 
     @Override

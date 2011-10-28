@@ -49,7 +49,7 @@ public class FutureFilter implements Filter {
         fireInvokeCallback(invoker, invocation);
         //需要在调用前配置好是否有返回值，已供invoker判断是否需要返回future.
         Result result = invoker.invoke(invocation);
-        if (invoker.getUrl().getMethodBooleanParameter(invocation.getMethodName(), Constants.ASYNC_KEY)) {
+        if (invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.ASYNC_KEY, false)) {
             asyncCallback(invoker, invocation);
         } else {
             syncCallback(invoker, invocation, result);

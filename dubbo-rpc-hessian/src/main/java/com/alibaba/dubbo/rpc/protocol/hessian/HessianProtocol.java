@@ -42,7 +42,7 @@ public class HessianProtocol extends AbstractProtocol {
 
         final String uri = url.getPath(); // service uri also exporter cache key.
 
-        int threads = url.getIntParameter(Constants.THREADS_KEY, Constants.DEFAULT_THREADS);
+        int threads = url.getParameter(Constants.THREADS_KEY, Constants.DEFAULT_THREADS);
 
         String addr = url.getHost() + ":" + url.getPort();
         HttpServer server = serverMap.get(addr);

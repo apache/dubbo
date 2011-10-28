@@ -68,8 +68,8 @@ public class HeaderExchangeServer implements ExchangeServer {
             throw new IllegalArgumentException("server == null");
         }
         this.server = server;
-        this.heartbeat = server.getUrl().getIntParameter(Constants.HEARTBEAT_KEY, Constants.DEFAULT_HEARTBEAT);
-        this.heartbeatTimeout = server.getUrl().getIntParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartbeat * 3);
+        this.heartbeat = server.getUrl().getParameter(Constants.HEARTBEAT_KEY, Constants.DEFAULT_HEARTBEAT);
+        this.heartbeatTimeout = server.getUrl().getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartbeat * 3);
         if (heartbeatTimeout < heartbeat * 2) {
             throw new IllegalStateException("heartbeatTimeout < heartbeatInterval * 2");
         }
@@ -182,8 +182,8 @@ public class HeaderExchangeServer implements ExchangeServer {
         try {
             if (url.hasParameter(Constants.HEARTBEAT_KEY)
                     || url.hasParameter(Constants.HEARTBEAT_TIMEOUT_KEY)) {
-                int h = url.getIntParameter(Constants.HEARTBEAT_KEY, heartbeat);
-                int t = url.getIntParameter(Constants.HEARTBEAT_TIMEOUT_KEY, h * 3);
+                int h = url.getParameter(Constants.HEARTBEAT_KEY, heartbeat);
+                int t = url.getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, h * 3);
                 if (t < h * 2) {
                     throw new IllegalStateException("heartbeatTimeout < heartbeatInterval * 2");
                 }

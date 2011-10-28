@@ -36,7 +36,7 @@ public class ExecuteLimitFilter implements Filter {
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         URL url = invoker.getUrl();
         String methodName = invocation.getMethodName();
-        int max = url.getMethodIntParameter(methodName, Constants.EXECUTES_KEY);
+        int max = url.getMethodParameter(methodName, Constants.EXECUTES_KEY, 0);
         if (max > 0) {
             RpcStatus count = RpcStatus.getStatus(url, invocation.getMethodName());
             if (count.getActive() >= max) {

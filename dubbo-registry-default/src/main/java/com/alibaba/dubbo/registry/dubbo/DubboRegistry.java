@@ -90,7 +90,7 @@ public class DubboRegistry implements Registry {
         this.registryInvoker = registryInvoker;
         this.registryService = registryService;
         // 启动重连定时器
-        int reconnectPeriod = registryInvoker.getUrl().getIntParameter(RpcConstants.REGISTRY_RECONNECT_PERIOD_KEY, RECONNECT_PERIOD_DEFAULT);
+        int reconnectPeriod = registryInvoker.getUrl().getParameter(RpcConstants.REGISTRY_RECONNECT_PERIOD_KEY, RECONNECT_PERIOD_DEFAULT);
         reconnectFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
             public void run() {
                 // 检测并连接注册中心
@@ -101,7 +101,7 @@ public class DubboRegistry implements Registry {
                 }
             }
         }, reconnectPeriod, reconnectPeriod, TimeUnit.MILLISECONDS);
-        int retryFailedPeriod = registryInvoker.getUrl().getIntParameter(RpcConstants.REGISTRY_RETRY_FAILED_PERIOD_KEY,RETRY_FAILED_PERIOD_DEFAULT);
+        int retryFailedPeriod = registryInvoker.getUrl().getParameter(RpcConstants.REGISTRY_RETRY_FAILED_PERIOD_KEY,RETRY_FAILED_PERIOD_DEFAULT);
         this.retryFailedFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
             public void run() {
                 // 检测并连接注册中心
@@ -134,7 +134,7 @@ public class DubboRegistry implements Registry {
                 clientLock.unlock();
             }
         } catch (Throwable t) { // 忽略所有异常，等待下次重试
-             if (getUrl().getBooleanParameter(Constants.CHECK_KEY, true)) {
+             if (getUrl().getParameter(Constants.CHECK_KEY, true)) {
                  if (t instanceof RuntimeException) {
                      throw (RuntimeException) t;
                  }
@@ -280,7 +280,7 @@ public class DubboRegistry implements Registry {
             registryService.register(url);
             registered.add(url.toFullString());
         } catch (Exception t) {
-            if (getUrl().getBooleanParameter(Constants.CHECK_KEY, true)) {
+            if (getUrl().getParameter(Constants.CHECK_KEY, true)) {
                 throw new IllegalStateException("Failed to register " + url + ", cause: " + t.getMessage(), t);
             }
             // 记录失败，定时重试
@@ -297,7 +297,7 @@ public class DubboRegistry implements Registry {
             registryService.unregister(url);
             registered.remove(url.toFullString());
         } catch (Exception t) {
-            if (getUrl().getBooleanParameter(Constants.CHECK_KEY, true)) {
+            if (getUrl().getParameter(Constants.CHECK_KEY, true)) {
                 throw new IllegalStateException("Failed to unregister " + url + ", cause: " + t.getMessage(), t);
             }
             // 记录失败，定时重试
@@ -314,7 +314,7 @@ public class DubboRegistry implements Registry {
             registryService.subscribe(url, listener);
             subscribed.put(url.toFullString(), listener);
         } catch (Exception t) {
-            if (getUrl().getBooleanParameter(Constants.CHECK_KEY, true)) {
+            if (getUrl().getParameter(Constants.CHECK_KEY, true)) {
                 throw new IllegalStateException("Failed to subscribe " + url + ", cause: " + t.getMessage(), t);
             }
             // 记录失败，定时重试
@@ -331,7 +331,7 @@ public class DubboRegistry implements Registry {
             registryService.unsubscribe(url, listener);
             subscribed.remove(url.toFullString());
         } catch (Exception t) {
-            if (getUrl().getBooleanParameter(Constants.CHECK_KEY, true)) {
+            if (getUrl().getParameter(Constants.CHECK_KEY, true)) {
                 throw new IllegalStateException("Failed to unsubscribe " + url + ", cause: " + t.getMessage(), t);
             }
             // 记录失败，定时重试

@@ -95,7 +95,7 @@ public class FileExchangeGroup extends AbstractExchangeGroup {
                 connect(URL.valueOf(line));
             }
         } catch (IOException e) {
-            throw new RemotingException(new InetSocketAddress(NetUtils.getLocalHost(), 0), getUrl().getInetSocketAddress(), e.getMessage(), e);
+            throw new RemotingException(new InetSocketAddress(NetUtils.getLocalHost(), 0), getUrl().toInetSocketAddress(), e.getMessage(), e);
         }
     }
 
@@ -111,7 +111,7 @@ public class FileExchangeGroup extends AbstractExchangeGroup {
             }
             IOUtils.appendLines(file, new String[] {full});
         } catch (IOException e) {
-            throw new RemotingException(new InetSocketAddress(NetUtils.getLocalHost(), 0), getUrl().getInetSocketAddress(), e.getMessage(), e);
+            throw new RemotingException(new InetSocketAddress(NetUtils.getLocalHost(), 0), getUrl().toInetSocketAddress(), e.getMessage(), e);
         }
         return peer;
     }
@@ -131,7 +131,7 @@ public class FileExchangeGroup extends AbstractExchangeGroup {
             }
             IOUtils.appendLines(file, saves.toArray(new String[0]));
         } catch (IOException e) {
-            throw new RemotingException(new InetSocketAddress(NetUtils.getLocalHost(), 0), getUrl().getInetSocketAddress(), e.getMessage(), e);
+            throw new RemotingException(new InetSocketAddress(NetUtils.getLocalHost(), 0), getUrl().toInetSocketAddress(), e.getMessage(), e);
         }
     }
 

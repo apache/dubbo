@@ -68,15 +68,15 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     public AbstractClient(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
         
-        send_reconnect = url.getBooleanParameter(Constants.SEND_RECONNECT_KEY, false);
+        send_reconnect = url.getParameter(Constants.SEND_RECONNECT_KEY, false);
         
-        shutdown_timeout = url.getIntParameter(Constants.SHUTDOWN_TIMEOUT_KEY, Constants.DEFAULT_SHUTDOWN_TIMEOUT);
+        shutdown_timeout = url.getParameter(Constants.SHUTDOWN_TIMEOUT_KEY, Constants.DEFAULT_SHUTDOWN_TIMEOUT);
         
         try {
             doOpen();
         } catch (Throwable t) {
             close();
-            throw new RemotingException(url.getInetSocketAddress(), null, 
+            throw new RemotingException(url.toInetSocketAddress(), null, 
                                         "Failed to start " + getClass().getSimpleName() + " " + NetUtils.getLocalAddress() 
                                         + " connect to the server " + getRemoteAddress() + ", cause: " + t.getMessage(), t);
         }
@@ -87,7 +87,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                 logger.info("Start " + getClass().getSimpleName() + " " + NetUtils.getLocalAddress() + " connect to the server " + getRemoteAddress());
             }
         } catch (RemotingException t) {
-            if (url.getBooleanParameter(Constants.CHECK_KEY, true)) {
+            if (url.getParameter(Constants.CHECK_KEY, true)) {
                 close();
                 throw t;
             } else {
@@ -96,7 +96,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
             }
         } catch (Throwable t){
             close();
-            throw new RemotingException(url.getInetSocketAddress(), null, 
+            throw new RemotingException(url.toInetSocketAddress(), null, 
                     "Failed to start " + getClass().getSimpleName() + " " + NetUtils.getLocalAddress() 
                     + " connect to the server " + getRemoteAddress() + ", cause: " + t.getMessage(), t);
         }
@@ -180,7 +180,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     public InetSocketAddress getRemoteAddress() {
         Channel channel = getChannel();
         if (channel == null)
-            return getUrl().getInetSocketAddress();
+            return getUrl().toInetSocketAddress();
         return channel.getRemoteAddress();
     }
 

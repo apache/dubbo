@@ -74,7 +74,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
     }
     
     public void send(Object message) throws RemotingException {
-        send(message, getUrl().getBooleanParameter(Constants.SENT_KEY));
+        send(message, getUrl().getParameter(Constants.SENT_KEY, false));
     }
     
     public void send(Object message, boolean sent) throws RemotingException {
@@ -95,7 +95,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
     }
 
     public ResponseFuture request(Object request) throws RemotingException {
-        return request(request, channel.getUrl().getPositiveIntParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
+        return request(request, channel.getUrl().getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
     }
 
     public ResponseFuture request(Object request, int timeout) throws RemotingException {

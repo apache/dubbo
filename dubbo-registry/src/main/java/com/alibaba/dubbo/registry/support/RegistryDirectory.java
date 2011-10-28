@@ -334,7 +334,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         // 如果URL中指定了autodestroy=false，则不关闭旧的连接
         for(Invoker<T> invoker : newUrlInvokerMap.values() ){
             if (invoker != null && invoker.getUrl() != null){
-                autodestroy = invoker.getUrl().getBooleanParameter("refer.autodestroy", true);
+                autodestroy = invoker.getUrl().getParameter("refer.autodestroy", true);
             }
             break;
         }

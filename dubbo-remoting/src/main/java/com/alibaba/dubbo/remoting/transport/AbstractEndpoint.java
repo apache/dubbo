@@ -38,8 +38,8 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
     public AbstractEndpoint(URL url, ChannelHandler handler) {
         super(url, handler);
         this.codec = ExtensionLoader.getExtensionLoader(Codec.class).getExtension(url.getParameter(Constants.CODEC_KEY, "telnet"));
-        this.timeout = url.getPositiveIntParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
-        this.connectTimeout = url.getPositiveIntParameter(Constants.CONNECT_TIMEOUT_KEY, timeout);
+        this.timeout = url.getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+        this.connectTimeout = url.getPositiveParameter(Constants.CONNECT_TIMEOUT_KEY, timeout);
     }
 
     public void reset(URL url) {
@@ -49,7 +49,7 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
         }
         try {
             if (url.hasParameter(Constants.HEARTBEAT_KEY)) {
-                int t = url.getIntParameter(Constants.TIMEOUT_KEY);
+                int t = url.getParameter(Constants.TIMEOUT_KEY, 0);
                 if (t > 0) {
                     this.timeout = t;
                 }
@@ -59,7 +59,7 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
         }
         try {
             if (url.hasParameter(Constants.CONNECT_TIMEOUT_KEY)) {
-                int t = url.getIntParameter(Constants.CONNECT_TIMEOUT_KEY);
+                int t = url.getParameter(Constants.CONNECT_TIMEOUT_KEY, 0);
                 if (t > 0) {
                     this.connectTimeout = t;
                 }

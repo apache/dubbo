@@ -67,7 +67,7 @@ public class AbstractMockChannel implements Channel {
     }
 
     public void send(Object message) throws RemotingException {
-        if (remoteUrl.getBooleanParameter(ERROR_WHEN_SEND, Boolean.FALSE)){
+        if (remoteUrl.getParameter(ERROR_WHEN_SEND, Boolean.FALSE)){
             receivedMessage = null ;
             throw new RemotingException(localAddress, remoteAddress, "mock error");
         } else {

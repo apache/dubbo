@@ -48,7 +48,7 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T>{
         if (invokers == null || invokers.size() == 0)
             throw new RpcException("No provider available for service " + getInterface().getName() + " on consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() + ", Please check whether the service do exist or version is right firstly, and check the provider has started.");
 
-        int len = getUrl().getMethodIntParameter(invocation.getMethodName(), Constants.RETRIES_KEY, Constants.DEFAULT_RETRIES) + 1;
+        int len = getUrl().getMethodParameter(invocation.getMethodName(), Constants.RETRIES_KEY, Constants.DEFAULT_RETRIES) + 1;
         if (len <= 0)
             len = 1;
 

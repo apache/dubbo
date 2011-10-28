@@ -100,7 +100,7 @@ public class MulticastRegistry extends AbstractRegistry {
         }
         if (port > 0) {
             try {
-                datagramAddress = new InetSocketAddress(NetUtils.getLocalHost(), url.getIntParameter("udp", NetUtils.getAvailablePort()));
+                datagramAddress = new InetSocketAddress(NetUtils.getLocalHost(), url.getParameter("udp", NetUtils.getAvailablePort()));
                 datagramSocket = new DatagramSocket(datagramAddress);
                 Thread thread = new Thread(new Runnable() {
                     public void run() {

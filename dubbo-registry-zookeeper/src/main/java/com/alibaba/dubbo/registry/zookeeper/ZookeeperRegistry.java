@@ -69,7 +69,7 @@ public class ZookeeperRegistry implements Registry {
             if (backup != null && backup.length() > 0) {
                 address = address + "," + backup;
             }
-            this.zookeeper = new ZooKeeper(address, url.getPositiveIntParameter(
+            this.zookeeper = new ZooKeeper(address, url.getPositiveParameter(
                     Constants.TIMEOUT_KEY, 5000), new Watcher() {
                 public void process(WatchedEvent event) {
                 }

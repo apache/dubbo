@@ -54,7 +54,7 @@ public class MinaServer extends AbstractServer {
     @Override
     protected void doOpen() throws Throwable {
         // set thread pool.
-        acceptor = new SocketAcceptor(getUrl().getPositiveIntParameter(Constants.IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS),
+        acceptor = new SocketAcceptor(getUrl().getPositiveParameter(Constants.IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS),
                                        Executors.newCachedThreadPool(new NamedThreadFactory("MinaServerWorker",
                                                                                             true)));
         // config

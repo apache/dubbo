@@ -97,7 +97,7 @@ final class NettyChannel extends AbstractChannel {
         try {
             ChannelFuture future = channel.write(message);
             if (sent) {
-                timeout = getUrl().getPositiveIntParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+                timeout = getUrl().getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
                 success = future.await(timeout);
             }
         } catch (Throwable e) {

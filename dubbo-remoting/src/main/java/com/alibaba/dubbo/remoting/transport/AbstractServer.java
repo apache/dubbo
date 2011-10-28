@@ -54,20 +54,20 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
 
     public AbstractServer(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
-        localAddress = getUrl().getInetSocketAddress();
-        String host = url.getBooleanParameter(Constants.ANYHOST_KEY) 
+        localAddress = getUrl().toInetSocketAddress();
+        String host = url.getParameter(Constants.ANYHOST_KEY, false) 
                         || NetUtils.isInvalidLocalHost(getUrl().getHost()) 
                         ? NetUtils.ANYHOST : getUrl().getHost();
         bindAddress = new InetSocketAddress(host, getUrl().getPort());
-        this.accepts = url.getIntParameter(Constants.ACCEPTS_KEY, Constants.DEFAULT_ACCEPTS);
-        this.idleTimeout = url.getIntParameter(Constants.IDLE_TIMEOUT_KEY, Constants.DEFAULT_IDLE_TIMEOUT);
+        this.accepts = url.getParameter(Constants.ACCEPTS_KEY, Constants.DEFAULT_ACCEPTS);
+        this.idleTimeout = url.getParameter(Constants.IDLE_TIMEOUT_KEY, Constants.DEFAULT_IDLE_TIMEOUT);
         try {
             doOpen();
             if (logger.isInfoEnabled()) {
                 logger.info("Start " + getClass().getSimpleName() + " bind " + getBindAddress() + ", export " + getLocalAddress());
             }
         } catch (Throwable t) {
-            throw new RemotingException(url.getInetSocketAddress(), null, "Failed to bind " + getClass().getSimpleName() 
+            throw new RemotingException(url.toInetSocketAddress(), null, "Failed to bind " + getClass().getSimpleName() 
                                         + " on " + getLocalAddress() + ", cause: " + t.getMessage(), t);
         }
         if (handler instanceof WrappedChannelHandler ){
@@ -85,7 +85,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
         }
         try {
             if (url.hasParameter(Constants.ACCEPTS_KEY)) {
-                int a = url.getIntParameter(Constants.ACCEPTS_KEY);
+                int a = url.getParameter(Constants.ACCEPTS_KEY, 0);
                 if (a > 0) {
                     this.accepts = a;
                 }
@@ -95,7 +95,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
         }
         try {
             if (url.hasParameter(Constants.IDLE_TIMEOUT_KEY)) {
-                int t = url.getIntParameter(Constants.IDLE_TIMEOUT_KEY);
+                int t = url.getParameter(Constants.IDLE_TIMEOUT_KEY, 0);
                 if (t > 0) {
                     this.idleTimeout = t;
                 }
@@ -107,7 +107,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
             if (url.hasParameter(Constants.THREADS_KEY) 
                     && executor instanceof ThreadPoolExecutor && !executor.isShutdown()) {
                 ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) executor;
-                int threads = url.getIntParameter(Constants.THREADS_KEY);
+                int threads = url.getParameter(Constants.THREADS_KEY, 0);
                 int max = threadPoolExecutor.getMaximumPoolSize();
                 int core = threadPoolExecutor.getCorePoolSize();
                 if (threads > 0 && (threads != max || threads != core)) {

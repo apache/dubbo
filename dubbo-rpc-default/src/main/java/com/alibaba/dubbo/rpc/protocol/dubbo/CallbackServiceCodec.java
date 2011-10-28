@@ -195,7 +195,7 @@ public class CallbackServiceCodec {
     }
     private static boolean isInstancesOverLimit(Channel channel, String interfaceClass ,int instid, boolean isServer){
         Integer count = (Integer)channel.getAttribute(isServer ? getServerSideCountKey(channel,interfaceClass) : getClientSideCountKey(interfaceClass));
-        int limit = channel.getUrl().getIntParameter(RpcConstants.CALLBACK_INSTANCES_LIMIT_KEY, RpcConstants.DEFAULT_CALLBACK_INSTANCES);
+        int limit = channel.getUrl().getParameter(RpcConstants.CALLBACK_INSTANCES_LIMIT_KEY, RpcConstants.DEFAULT_CALLBACK_INSTANCES);
         if (count != null && count >= limit){
             //client side error
             throw new IllegalStateException("interface " + interfaceClass +" `s callback instances num exceed providers limit :"+ limit 

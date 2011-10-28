@@ -38,7 +38,7 @@ public class GenericImplFilter implements Filter {
     private static final Class<?>[] GENERIC_PARAMETER_TYPES = new Class<?>[] {String.class, String[].class, Object[].class};
 
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        if (invoker.getUrl().getBooleanParameter(Constants.GENERIC_KEY) 
+        if (invoker.getUrl().getParameter(Constants.GENERIC_KEY, false) 
                 && ! Constants.$INVOKE.equals(invocation.getMethodName())
                 && invocation instanceof RpcInvocation) {
             RpcInvocation invocation2 = (RpcInvocation) invocation;

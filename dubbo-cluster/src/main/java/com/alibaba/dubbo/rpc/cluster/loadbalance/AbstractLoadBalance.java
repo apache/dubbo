@@ -40,7 +40,7 @@ public abstract class AbstractLoadBalance implements LoadBalance {
     protected abstract <T> Invoker<T> doSelect(List<Invoker<T>> invokers, Invocation invocation);
 
     protected int getWeight(Invoker<?> invoker, Invocation invocation) {
-        return invoker.getUrl().getMethodIntParameter(invocation.getMethodName(), Constants.WEIGHT_KEY, Constants.DEFAULT_WEIGHT);
+        return invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.WEIGHT_KEY, Constants.DEFAULT_WEIGHT);
     }
 
 }

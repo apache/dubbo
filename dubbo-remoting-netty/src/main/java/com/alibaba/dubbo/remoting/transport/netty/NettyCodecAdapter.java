@@ -68,7 +68,7 @@ final class NettyCodecAdapter {
         this.upstreamCodec = upstreamCodec;
         this.url = url;
         this.handler = handler;
-        int b = url.getPositiveIntParameter(Constants.BUFFER_KEY, Constants.DEFAULT_BUFFER_SIZE);
+        int b = url.getPositiveParameter(Constants.BUFFER_KEY, Constants.DEFAULT_BUFFER_SIZE);
         this.bufferSize = b >= Constants.MIN_BUFFER_SIZE && b <= Constants.MAX_BUFFER_SIZE ? b : Constants.DEFAULT_BUFFER_SIZE;
     }
 

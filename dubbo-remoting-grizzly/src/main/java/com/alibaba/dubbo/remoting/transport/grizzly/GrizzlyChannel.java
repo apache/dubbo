@@ -100,7 +100,7 @@ final class GrizzlyChannel extends AbstractChannel {
         try {
             GrizzlyFuture future = connection.write(message);
             if (sent) {
-                timeout = getUrl().getPositiveIntParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+                timeout = getUrl().getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
                 future.get(timeout, TimeUnit.MILLISECONDS);
             }
         }

@@ -60,7 +60,7 @@ public class DubboMonitor implements Monitor {
     public DubboMonitor(Invoker<MonitorService> monitorInvoker, MonitorService monitorService) {
         this.monitorInvoker = monitorInvoker;
         this.monitorService = monitorService;
-        this.monitorInterval = monitorInvoker.getUrl().getPositiveIntParameter("interval", 60000);
+        this.monitorInterval = monitorInvoker.getUrl().getPositiveParameter("interval", 60000);
         // 启动统计信息收集定时器
         sendFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
             public void run() {
@@ -134,12 +134,12 @@ public class DubboMonitor implements Monitor {
     
     public void count(URL url) {
         // 读写统计变量
-        int success = url.getIntParameter(MonitorService.SUCCESS);
-        int failure = url.getIntParameter(MonitorService.FAILURE);
-        int input = url.getIntParameter(MonitorService.INPUT);
-        int output = url.getIntParameter(MonitorService.OUTPUT);
-        int elapsed = url.getIntParameter(MonitorService.ELAPSED);
-        int concurrent = url.getIntParameter(MonitorService.CONCURRENT);
+        int success = url.getParameter(MonitorService.SUCCESS, 0);
+        int failure = url.getParameter(MonitorService.FAILURE, 0);
+        int input = url.getParameter(MonitorService.INPUT, 0);
+        int output = url.getParameter(MonitorService.OUTPUT, 0);
+        int elapsed = url.getParameter(MonitorService.ELAPSED, 0);
+        int concurrent = url.getParameter(MonitorService.CONCURRENT, 0);
         // 初始化原子引用
         Statistics statistics = new Statistics(url);
         AtomicReference<long[]> reference = statisticsMap.get(statistics);

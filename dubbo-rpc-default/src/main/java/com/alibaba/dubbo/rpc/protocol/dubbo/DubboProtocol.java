@@ -173,7 +173,7 @@ public class DubboProtocol extends AbstractProtocol {
             invocation.setAttachment(Constants.GROUP_KEY, url.getParameter(Constants.GROUP_KEY));
             invocation.setAttachment(Constants.INTERFACE_KEY, url.getParameter(Constants.INTERFACE_KEY));
             invocation.setAttachment(Constants.VERSION_KEY, url.getParameter(Constants.VERSION_KEY));
-            if (url.getBooleanParameter(RpcConstants.STUB_EVENT_KEY)){
+            if (url.getParameter(RpcConstants.STUB_EVENT_KEY, false)){
                 invocation.setAttachment(RpcConstants.STUB_EVENT_KEY, Boolean.TRUE.toString());
             }
             return invocation;
@@ -214,7 +214,7 @@ public class DubboProtocol extends AbstractProtocol {
         // find server.
         String key = url.getAddress();
         //client 也可以暴露一个只有server可以调用的服务。
-        boolean isServer = url.getBooleanParameter(RpcConstants.IS_SERVER_KEY,true);
+        boolean isServer = url.getParameter(RpcConstants.IS_SERVER_KEY,true);
         if (isServer && ! serverMap.containsKey(key)) {
             serverMap.put(key, initServer(url));
         }
@@ -224,8 +224,8 @@ public class DubboProtocol extends AbstractProtocol {
         exporterMap.put(key, exporter);
         
         //export an stub service for dispaching event
-        Boolean isStubSupportEvent = url.getBooleanParameter(RpcConstants.STUB_EVENT_KEY,RpcConstants.DEFAULT_STUB_EVENT);
-        Boolean isCallbackservice = url.getBooleanParameter(RpcConstants.IS_CALLBACK_SERVICE);
+        Boolean isStubSupportEvent = url.getParameter(RpcConstants.STUB_EVENT_KEY,RpcConstants.DEFAULT_STUB_EVENT);
+        Boolean isCallbackservice = url.getParameter(RpcConstants.IS_CALLBACK_SERVICE, false);
         if (isStubSupportEvent && !isCallbackservice){
             String stubServiceMethods = url.getParameter(RpcConstants.STUB_EVENT_METHODS_KEY);
             if (stubServiceMethods == null || stubServiceMethods.length() == 0 ){
@@ -264,7 +264,7 @@ public class DubboProtocol extends AbstractProtocol {
 
     public <T> Invoker<T> refer(Class<T> serviceType, URL url) throws RpcException {
         // find client.
-        int channels = url.getPositiveIntParameter(Constants.CONNECTIONS_KEY, 1);
+        int channels = url.getPositiveParameter(Constants.CONNECTIONS_KEY, 1);
         ExchangeClient[] clients = new ExchangeClient[channels];
         for (int i = 0; i < clients.length; i++) {
             clients[i] = initClient(url);
@@ -290,7 +290,7 @@ public class DubboProtocol extends AbstractProtocol {
         }
         
         //设置连接应该是lazy的 
-        if (url.getBooleanParameter(RpcConstants.LAZY_CONNECT_KEY)){
+        if (url.getParameter(RpcConstants.LAZY_CONNECT_KEY, false)){
             return new LazyConnectExchangeClient(url ,requestHandler);
         }
         try {

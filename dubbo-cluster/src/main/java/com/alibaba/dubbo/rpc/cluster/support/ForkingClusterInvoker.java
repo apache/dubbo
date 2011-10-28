@@ -49,8 +49,8 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T>{
             
     public Result doInvoke(final Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
         final List<Invoker<T>> selected;
-        final int forks = getUrl().getIntParameter(Constants.FORKS_KEY, Constants.DEFAULT_FORKS);
-        final int timeout = getUrl().getIntParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+        final int forks = getUrl().getParameter(Constants.FORKS_KEY, Constants.DEFAULT_FORKS);
+        final int timeout = getUrl().getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
         if (forks <= 0 || forks >= invokers.size()) {
             selected = invokers;
         } else {

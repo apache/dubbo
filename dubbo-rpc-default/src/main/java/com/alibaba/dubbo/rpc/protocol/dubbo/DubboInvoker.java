@@ -76,15 +76,15 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         }
         try {
             // 不可靠异步
-            boolean isAsync = getUrl().getMethodBooleanParameter(methodName, Constants.ASYNC_KEY);
-            int timeout = getUrl().getMethodIntParameter(methodName, Constants.TIMEOUT_KEY,Constants.DEFAULT_TIMEOUT);
+            boolean isAsync = getUrl().getMethodParameter(methodName, Constants.ASYNC_KEY, false);
+            int timeout = getUrl().getMethodParameter(methodName, Constants.TIMEOUT_KEY,Constants.DEFAULT_TIMEOUT);
             if (isAsync) { 
-                boolean isReturn = getUrl().getMethodBooleanParameter(methodName, RpcConstants.RETURN_KEY, true);
+                boolean isReturn = getUrl().getMethodParameter(methodName, RpcConstants.RETURN_KEY, true);
                 if (isReturn) {
                     ResponseFuture future = currentClient.request(inv, timeout) ;
                     RpcContext.getContext().setFuture(new FutureAdapter<Object>(future));
                 } else {
-                    boolean isSent = getUrl().getMethodBooleanParameter(methodName, Constants.SENT_KEY);
+                    boolean isSent = getUrl().getMethodParameter(methodName, Constants.SENT_KEY, false);
                     currentClient.send(inv, isSent);
                     RpcContext.getContext().setFuture(null);
                 }

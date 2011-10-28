@@ -64,11 +64,11 @@ public class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
         ExchangeClient currentClient = new HeaderExchangeClient(new ChannelWrapper(this.channel));
 
         try {
-            if (getUrl().getMethodBooleanParameter(invocation.getMethodName(), Constants.ASYNC_KEY)) { // 不可靠异步
-                currentClient.send(inv,getUrl().getMethodBooleanParameter(invocation.getMethodName(), Constants.SENT_KEY));
+            if (getUrl().getMethodParameter(invocation.getMethodName(), Constants.ASYNC_KEY, false)) { // 不可靠异步
+                currentClient.send(inv,getUrl().getMethodParameter(invocation.getMethodName(), Constants.SENT_KEY, false));
                 return new RpcResult();
             }
-            int timeout = getUrl().getMethodIntParameter(invocation.getMethodName(),
+            int timeout = getUrl().getMethodParameter(invocation.getMethodName(),
                     Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
             if (timeout > 0) {
                 return (Result) currentClient.request(inv, timeout).get();

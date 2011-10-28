@@ -94,7 +94,7 @@ final class MinaChannel extends AbstractChannel {
         try {
             WriteFuture future = session.write(message);
             if (sent) {
-                timeout = getUrl().getPositiveIntParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+                timeout = getUrl().getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
                 success = future.join(timeout);
             }
         } catch (Throwable e) {

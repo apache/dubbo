@@ -46,7 +46,7 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
         for (int i = 0; i < length; i++) {
         	Invoker<T> invoker = invokers.get(i);
             int active = RpcStatus.getStatus(invoker.getUrl(), invocation.getMethodName()).getActive(); // 活跃数
-            int weight = invoker.getUrl().getMethodIntParameter(invocation.getMethodName(), Constants.WEIGHT_KEY, Constants.DEFAULT_WEIGHT); // 权重
+            int weight = invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.WEIGHT_KEY, Constants.DEFAULT_WEIGHT); // 权重
             if (leastActive == -1 || active < leastActive) { // 发现更小的活跃数，重新开始
                 leastActive = active; // 记录最小活跃数
                 leastCount = 1; // 重新统计相同最小活跃数的个数

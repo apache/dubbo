@@ -51,7 +51,7 @@ final class LazyConnectExchangeClient implements ExchangeClient {
         //lazy connect ,need set send.reconnect = true, to avoid channel bad status. 
         this.url = url.addParameter(Constants.SEND_RECONNECT_KEY, Boolean.TRUE.toString());
         this.requestHandler = requestHandler;
-        this.initialState = url.getBooleanParameter(RpcConstants.LAZY_CONNECT_INITIAL_STATE_KEY,RpcConstants.DEFAULT_LAZY_CONNECT_INITIAL_STATE);
+        this.initialState = url.getParameter(RpcConstants.LAZY_CONNECT_INITIAL_STATE_KEY,RpcConstants.DEFAULT_LAZY_CONNECT_INITIAL_STATE);
     }
 
     private void initClient() throws RemotingException {
