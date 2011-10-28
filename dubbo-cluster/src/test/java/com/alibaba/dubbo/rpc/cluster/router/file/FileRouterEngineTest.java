@@ -133,8 +133,8 @@ public class FileRouterEngineTest {
     }
 
     private URL initUrl(String filename) {
-        filename = FileRouterEngineTest.class.getResource(filename).toString();
-        URL url = URL.valueOf(filename.replaceAll("file:/", "file:///"));
+        filename = getClass().getClassLoader().getResource(getClass().getPackage().getName().replace('.', '/') + "/" + filename).toString();
+        URL url = URL.valueOf(filename);
         return url;
     }
 
