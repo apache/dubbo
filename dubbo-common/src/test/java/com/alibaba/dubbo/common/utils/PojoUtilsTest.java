@@ -19,6 +19,8 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,10 +39,14 @@ import com.alibaba.dubbo.common.model.person.Phone;
  * @author ding.lid
  */
 public class PojoUtilsTest {
-
+    
     public void assertObject(Object data) {
+        assertObject(data, null);
+    }
+    
+    public void assertObject(Object data, Type type) {
         Object generalize = PojoUtils.generalize(data);
-        Object realize = PojoUtils.realize(generalize, data.getClass());
+        Object realize = PojoUtils.realize(generalize, data.getClass(), type);
         assertEquals(data, realize);
     }
     
@@ -133,10 +139,22 @@ public class PojoUtilsTest {
         assertArrayObject(array);
     }
 
-    // FIXME
-    @Ignore("Type missing, Person -> Map")
+    public List<Person> returnListPersonMethod() {return null;}
+    public BigPerson returnBigPersonMethod() {return null;}
+    public Type getType(String methodName){
+        Method method;
+        try {
+            method = getClass().getDeclaredMethod(methodName, new Class<?>[]{} );
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+        Type gtype = method.getGenericReturnType();
+        return gtype;
+    }
+    
     @Test
     public void test_simpleCollection() throws Exception {
+        Type gtype = getType("returnListPersonMethod");
         List<Person> list = new ArrayList<Person>();
         list.add(new Person());
         {
@@ -144,9 +162,10 @@ public class PojoUtilsTest {
             person.setName("xxxx");
             list.add(person);
         }
-        assertObject(list);
+        assertObject(list,gtype);
     }
 
+    
     BigPerson bigPerson;
     {
         bigPerson = new BigPerson();
@@ -183,7 +202,8 @@ public class PojoUtilsTest {
     @Test
     public void test_total() throws Exception {
         Object generalize = PojoUtils.generalize(bigPerson);
-        Object realize = PojoUtils.realize(generalize, BigPerson.class);
+        Type gtype = getType("returnBigPersonMethod");
+        Object realize = PojoUtils.realize(generalize, BigPerson.class,gtype);
         assertEquals(bigPerson, realize);
     }
 
