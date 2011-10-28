@@ -116,6 +116,17 @@ public class ExtensionLoader<T> {
 		}
 		return (T) instance;
 	}
+	
+	/**
+	 * 返回缺省的扩展，如果没有设置则返回<code>null</code>。 
+	 */
+	public T getDefaultExtension() {
+        getExtensionClasses();
+	    if(null == cachedDefaultName || cachedDefaultName.length() == 0) {
+	        return null;
+	    }
+	    return getExtension(cachedDefaultName);
+	}
 
 	public boolean hasExtension(String name) {
 	    if (name == null || name.length() == 0)
@@ -131,6 +142,15 @@ public class ExtensionLoader<T> {
         Map<String, Class<?>> clazzes = getExtensionClasses();
         return Collections.unmodifiableSet(new TreeSet<String>(clazzes.keySet()));
     }
+	
+	/**
+	 * 返回缺省的扩展点名，如果没有设置缺省则返回<code>null</code>。 
+	 */
+	public String getDefaultExtensionName() {
+	    getExtensionClasses();
+	    return cachedDefaultName;
+	}
+	
 
     @SuppressWarnings("unchecked")
     public T getAdaptiveExtension() {

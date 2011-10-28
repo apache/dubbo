@@ -51,6 +51,24 @@ import com.alibaba.dubbo.common.extensionloader.ext6_inject.impl.Ext6Impl2;
  */
 public class ExtensionLoaderTest {
     @Test
+    public void test_getDefault() throws Exception {
+        Ext1 ext = ExtensionLoader.getExtensionLoader(Ext1.class).getDefaultExtension();
+        assertThat(ext, instanceOf(Ext1Impl1.class));
+        
+        String name = ExtensionLoader.getExtensionLoader(Ext1.class).getDefaultExtensionName();
+        assertEquals("impl1", name);
+    }
+    
+    @Test
+    public void test_getDefault_NULL() throws Exception {
+        Ext2 ext = ExtensionLoader.getExtensionLoader(Ext2.class).getDefaultExtension();
+        assertNull(ext);
+        
+        String name = ExtensionLoader.getExtensionLoader(Ext2.class).getDefaultExtensionName();
+        assertNull(name);
+    }
+    
+    @Test
     public void test_getExtension() throws Exception {
         assertTrue(ExtensionLoader.getExtensionLoader(Ext1.class).getExtension("impl1") instanceof Ext1Impl1);
         assertTrue(ExtensionLoader.getExtensionLoader(Ext1.class).getExtension("impl2") instanceof Ext1Impl2);
