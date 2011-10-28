@@ -23,6 +23,8 @@ import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -107,6 +109,8 @@ public final class ReflectUtils {
 	public static final Pattern SETTER_METHOD_DESC_PATTERN = Pattern.compile("set([A-Z][_a-zA-Z0-9]*)\\((" + DESC_REGEX + ")\\)V");
 
 	public static final Pattern IS_HAS_CAN_METHOD_DESC_PATTERN = Pattern.compile("(?:is|has|can)([A-Z][_a-zA-Z0-9]*)\\(\\)Z");
+	
+	private static final ConcurrentMap<String, Class<?>[]>  DESC_CLASSARRAY_CACHE = new ConcurrentHashMap<String, Class<?>[]>();
 
 	/**
 	 * is compatible.
@@ -668,7 +672,12 @@ public final class ReflectUtils {
 	 */
 	public static Class<?>[] desc2classArray(String desc) throws ClassNotFoundException
 	{
-		return desc2classArray(ClassHelper.getClassLoader(), desc);
+	    Class<?>[] ret = DESC_CLASSARRAY_CACHE.get(desc);
+	    if (ret == null){
+	        ret = desc2classArray(ClassHelper.getClassLoader(), desc);
+	        DESC_CLASSARRAY_CACHE.put(desc, ret);
+	    }
+		return ret;
 	}
 
 	/**
