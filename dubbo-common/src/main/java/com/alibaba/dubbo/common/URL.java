@@ -452,7 +452,7 @@ public final class URL implements Serializable {
 		StringBuilder buf = new StringBuilder();
 		if (getParameters().size() > 0) {
             boolean first = true;
-            for (Map.Entry<String, String> entry : getParameters().entrySet()) {
+            for (Map.Entry<String, String> entry : new TreeMap<String, String>(getParameters()).entrySet()) {
                 if (entry.getKey() != null && entry.getKey().length() > 0) {
                     if (first) {
                         first = false;
