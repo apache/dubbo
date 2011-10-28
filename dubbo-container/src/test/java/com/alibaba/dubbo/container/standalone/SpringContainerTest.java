@@ -18,6 +18,8 @@ package com.alibaba.dubbo.container.standalone;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.alibaba.dubbo.container.spring.SpringContainer;
+
 /**
  * StandaloneContainerTest
  * 

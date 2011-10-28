@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.container.standalone;
+package com.alibaba.dubbo.container.spring;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -50,7 +50,7 @@ public class SpringContainer implements Container {
         }
         context = new ClassPathXmlApplicationContext(configPath.split("[,\\s]+"));
         context.start();
-        LOGGER.info("Dubbo standalone container started!");
+        LOGGER.info("Dubbo spring container started!");
     }
 
     public void stop() {
@@ -64,7 +64,7 @@ public class SpringContainer implements Container {
         } catch (Throwable e) {
             LOGGER.error(e.getMessage(), e);
         }
-        LOGGER.info("Dubbo standalone container stopped!");
+        LOGGER.info("Dubbo spring container stopped!");
     }
 
 }
