@@ -247,6 +247,7 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<useSystemClassLoader>true</useSystemClassLoader>
+					<testFailureIgnore>true</testFailureIgnore>
 					<forkMode>pertest</forkMode>
 					<argLine>${argline}</argLine>
 					<systemProperties>
