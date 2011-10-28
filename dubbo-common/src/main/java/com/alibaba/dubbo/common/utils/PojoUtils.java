@@ -349,7 +349,8 @@ public class PojoUtils {
 	                        if (method != null) {
 	                            if (! method.isAccessible())
 	                                method.setAccessible(true);
-	                            value = realize(value, method.getParameterTypes()[0], history);
+	                            Type ptype = method.getGenericParameterTypes()[0];
+	                            value = realize(value, method.getParameterTypes()[0], ptype, history);
 	                            try {
 	                                method.invoke(dest, value);
 	                            } catch (Exception e) {

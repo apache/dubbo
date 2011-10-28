@@ -24,7 +24,6 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.alibaba.dubbo.common.model.Person;
@@ -197,8 +196,6 @@ public class PojoUtilsTest {
         bigPerson.setInfoProfile(pi);
     }
 
-    // FIXME
-    @Ignore("Type missing, List<Phone> -> List<Map>")
     @Test
     public void test_total() throws Exception {
         Object generalize = PojoUtils.generalize(bigPerson);
@@ -207,8 +204,6 @@ public class PojoUtilsTest {
         assertEquals(bigPerson, realize);
     }
 
-    // FIXME
-    @Ignore("Type missing, List<Phone> -> List<Map>") 
     @Test
     public void test_total_Array() throws Exception {
         Object[] persons = new Object[] { bigPerson, bigPerson, bigPerson };
