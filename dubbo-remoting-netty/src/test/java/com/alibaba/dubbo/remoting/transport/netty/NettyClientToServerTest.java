@@ -21,7 +21,6 @@ import com.alibaba.dubbo.remoting.exchange.ExchangeChannel;
 import com.alibaba.dubbo.remoting.exchange.ExchangeServer;
 import com.alibaba.dubbo.remoting.exchange.Exchangers;
 import com.alibaba.dubbo.remoting.exchange.support.Replier;
-import com.alibaba.dubbo.remoting.transport.ClientToServerTest;
 
 /**
  * NettyClientToServerTest

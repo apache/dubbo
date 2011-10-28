@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.remoting.transport;
+package com.alibaba.dubbo.remoting.transport.netty;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;

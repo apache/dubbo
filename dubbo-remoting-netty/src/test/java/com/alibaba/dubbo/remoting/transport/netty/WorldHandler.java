@@ -13,30 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.remoting.transport.mina;
+package com.alibaba.dubbo.remoting.transport.netty;
 
-import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.exchange.ExchangeChannel;
-import com.alibaba.dubbo.remoting.exchange.ExchangeServer;
-import com.alibaba.dubbo.remoting.exchange.Exchangers;
 import com.alibaba.dubbo.remoting.exchange.support.Replier;
 
 /**
- * MinaServerClientTest
+ * DataHandler
  * 
  * @author william.liangf
  */
-public class MinaClientToServerTest extends ClientToServerTest {
+public class WorldHandler implements Replier<World> {
 
-    @Override
-    protected ExchangeServer newServer(int port, Replier<?> receiver) throws RemotingException {
-        return Exchangers.bind(URL.valueOf("exchange://localhost:" + port + "?server=mina"), receiver);
+    public Class<World> interest() {
+        return World.class;
     }
 
-    @Override
-    protected ExchangeChannel newClient(int port) throws RemotingException {
-        return Exchangers.connect(URL.valueOf("exchange://localhost:" + port + "?client=mina"));
+    public Object reply(ExchangeChannel channel, World msg) throws RemotingException {
+        return new Hello("hello," + msg.getName());
     }
 
 }

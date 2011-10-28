@@ -13,25 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.remoting.transport;
+package com.alibaba.remoting.transport.mina;
 
 import java.io.Serializable;
 
 /**
- * Data
+ * Result
  * 
  * @author william.liangf
  */
-public class World implements Serializable {
+public class Hello implements Serializable {
 
     private static final long serialVersionUID = 8563900571013747774L;
     
     private String name;
     
-    public World() {
+    public Hello() {
     }
 
-    public World(String name) {
+    public Hello(String name) {
         this.name = name;
     }
 

@@ -13,25 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.remoting.transport;
+package com.alibaba.remoting.transport.mina;
 
-import com.alibaba.dubbo.remoting.RemotingException;
-import com.alibaba.dubbo.remoting.exchange.ExchangeChannel;
-import com.alibaba.dubbo.remoting.exchange.support.Replier;
+import java.io.Serializable;
 
 /**
- * DataHandler
+ * Data
  * 
  * @author william.liangf
  */
-public class WorldHandler implements Replier<World> {
+public class World implements Serializable {
 
-    public Class<World> interest() {
-        return World.class;
+    private static final long serialVersionUID = 8563900571013747774L;
+    
+    private String name;
+    
+    public World() {
     }
 
-    public Object reply(ExchangeChannel channel, World msg) throws RemotingException {
-        return new Hello("hello," + msg.getName());
+    public World(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
 }
