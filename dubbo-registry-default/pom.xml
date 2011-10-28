@@ -38,6 +38,13 @@
 			<groupId>com.alibaba</groupId>
 			<artifactId>dubbo-rpc-default</artifactId>
 			<version>${project.parent.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo-remoting-netty</artifactId>
+			<version>${project.parent.version}</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>
