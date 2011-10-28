@@ -15,6 +15,7 @@
  */
 package com.alibaba.dubbo.rpc.protocol.dubbo.filter;
 
+
 /**
  * <code>TestService</code>
  */
@@ -38,4 +39,11 @@ public interface DemoService
 	int stringLength(String str);
 
 	Type enumlength(Type... types);
+	
+//	Type enumlength(Type type);
+	
+	String get(CustomArgument arg1);
+	
+	byte getbyte(byte arg);
+	
 }

@@ -72,9 +72,25 @@ public class DemoServiceImpl implements DemoService
 			return Type.Lower;
 		return types[0];
 	}
+	
+	public Type enumlength(Type type)
+    {
+       return type;
+    }
 
 	public int stringLength(String str)
 	{
 		return str.length();
 	}
+	public String get(CustomArgument arg1){
+	    return arg1.toString();
+	}
+
+    public byte getbyte(byte arg) {
+        return arg;
+    }
+
+    public Person gerPerson(Person person) {
+        return person;
+    }
 }

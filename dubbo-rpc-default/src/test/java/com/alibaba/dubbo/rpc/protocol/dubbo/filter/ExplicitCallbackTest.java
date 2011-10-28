@@ -32,7 +32,6 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.ProtocolUtils;
 import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcException;
 

@@ -29,7 +29,6 @@ import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcResult;
-import com.alibaba.dubbo.rpc.support.DemoService;
 
 /**
  * EventFilterTest.java
