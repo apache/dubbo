@@ -30,10 +30,10 @@ import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.TimeoutException;
-import com.alibaba.dubbo.remoting.exchange.ResponseCallback;
-import com.alibaba.dubbo.remoting.exchange.ResponseFuture;
 import com.alibaba.dubbo.remoting.exchange.Request;
 import com.alibaba.dubbo.remoting.exchange.Response;
+import com.alibaba.dubbo.remoting.exchange.ResponseCallback;
+import com.alibaba.dubbo.remoting.exchange.ResponseFuture;
 
 /**
  * DefaultFuture.
@@ -143,18 +143,51 @@ public class DefaultFuture implements ResponseFuture {
         }
     }
     private void invokeCallback(ResponseCallback c){
-        if (c == null){
+        ResponseCallback callbackCopy = c;
+        if (callbackCopy == null){
             throw new NullPointerException("callback cannot be null.");
         }
-        ResponseCallback callbackCopy = c;
         c = null;
-        Object result = null;
-        try {
-            result = returnFromResponse();
-        } catch (Throwable e) {
-            callbackCopy.caught(e);
+        Response res = response;
+        if (res == null) {
+            throw new IllegalStateException("response cannot be null. url:"+channel.getUrl());
         }
-        callbackCopy.done(result);
+        
+        if (res.getStatus() == Response.OK) {
+            try {
+                callbackCopy.done(res.getResult());
+            } catch (Exception e) {
+                logger.error("callback invoke error .reasult:" + res.getResult() + ",url:" + channel.getUrl(), e);
+            }
+        } else if (res.getStatus() == Response.CLIENT_TIMEOUT || res.getStatus() == Response.SERVER_TIMEOUT) {
+            try {
+                TimeoutException te = new TimeoutException(res.getStatus() == Response.SERVER_TIMEOUT, channel, res.getErrorMessage());
+                callbackCopy.caught(te);
+            } catch (Exception e) {
+                logger.error("callback invoke error ,url:" + channel.getUrl(), e);
+            }
+        } else {
+            try {
+                RuntimeException re = new RuntimeException(res.getErrorMessage());
+                callbackCopy.caught(re);
+            } catch (Exception e) {
+                logger.error("callback invoke error ,url:" + channel.getUrl(), e);
+            }
+        }
+    }
+
+    private Object returnFromResponse() throws RemotingException {
+        Response res = response;
+        if (res == null) {
+            throw new IllegalStateException("response cannot be null");
+        }
+        if (res.getStatus() == Response.OK) {
+            return res.getResult();
+        }
+        if (res.getStatus() == Response.CLIENT_TIMEOUT || res.getStatus() == Response.SERVER_TIMEOUT) {
+            throw new TimeoutException(res.getStatus() == Response.SERVER_TIMEOUT, channel, res.getErrorMessage());
+        }
+        throw new RemotingException(channel, res.getErrorMessage());
     }
 
     private long getId() {
@@ -228,17 +261,6 @@ public class DefaultFuture implements ResponseFuture {
         }
     }
 
-    private Object returnFromResponse() throws RemotingException {
-        Response res = response;
-        if (res.getStatus() == Response.OK) {
-            return response.getResult();
-        }
-        if (res.getStatus() == Response.CLIENT_TIMEOUT || res.getStatus() == Response.SERVER_TIMEOUT) {
-            throw new TimeoutException(res.getStatus() == Response.SERVER_TIMEOUT, channel, res.getErrorMessage());
-        }
-        throw new RemotingException(channel, res.getErrorMessage());
-    }
-    
     private String getTimeoutMessage(boolean scan) {
         long nowTimestamp = System.currentTimeMillis();
         return (sent > 0 ? "Waiting server-side response timeout" : "Sending request timeout in client-side")
