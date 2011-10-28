@@ -70,8 +70,17 @@ public class FutureFilter implements Filter {
         if (f instanceof FutureAdapter) {
             ResponseFuture future = ((FutureAdapter<?>)f).getFuture();
             future.setCallback(new ResponseCallback() {
-                public void done(Object response) {
-                    Result result = (Result) response;
+                public void done(Object rpcResult) {
+                    if (rpcResult == null){
+                        logger.error(new IllegalStateException("invalid result value : null, expected "+Result.class.getName()));
+                        return;
+                    }
+                    ///must be rpcResult
+                    if (! (rpcResult instanceof Result)){
+                        logger.error(new IllegalStateException("invalid result type :" + rpcResult.getClass() + ", expected "+Result.class.getName()));
+                        return;
+                    }
+                    Result result = (Result) rpcResult;
                     if (result.hasException()) {
                         fireThrowCallback(invoker, invocation, result.getException());
                     } else {
