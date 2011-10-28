@@ -36,10 +36,10 @@ public class PageManager {
     
     private PageManager(){}
     
-    private final Map<String, PageFactory> pageFactorys = new ConcurrentHashMap<String, PageFactory>();
+    private final Map<String, PageFactory> pageFactories = new ConcurrentHashMap<String, PageFactory>();
     
     public void addPageFactory(PageFactory pageFactory) {
-        this.pageFactorys.put(pageFactory.getUri(), pageFactory);
+        this.pageFactories.put(pageFactory.getUri(), pageFactory);
     }
 
     public void addPageFactorys(Collection<PageFactory> pageFactorys) {
@@ -49,29 +49,29 @@ public class PageManager {
     }
 
     public void removePageFactory(String uri) {
-        this.pageFactorys.remove(uri);
+        this.pageFactories.remove(uri);
     }
 
     public void clearPageFactorys() {
-        this.pageFactorys.clear();
+        this.pageFactories.clear();
     }
 
-    public Collection<PageFactory> getPageFactorys() {
+    public Collection<PageFactory> getPageFactories() {
         TreeSet<PageFactory> set = new TreeSet<PageFactory>(new Comparator<PageFactory>() {
             public int compare(PageFactory o1, PageFactory o2) {
                 return o1.getUri().compareTo(o2.getUri());
             }
         });
-        set.addAll(pageFactorys.values());
+        set.addAll(pageFactories.values());
         return set;
     }
     
     public PageFactory getPageFactory(String uri) {
-        return this.pageFactorys.get(uri);
+        return this.pageFactories.get(uri);
     }
 
     public Page getPage(String uri, Map<String, String> params) {
-        PageFactory pageFactory = pageFactorys.get(uri);
+        PageFactory pageFactory = pageFactories.get(uri);
         if (pageFactory == null)
             return null;
         return pageFactory.getPage(params);
