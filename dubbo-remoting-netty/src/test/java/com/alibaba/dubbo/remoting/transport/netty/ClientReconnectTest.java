@@ -37,11 +37,11 @@ public class ClientReconnectTest {
     public void testReconnect() throws RemotingException, InterruptedException{
         {
             int port = NetUtils.getAvailablePort();
-            Client client = startClient(port,200);
+            Client client = startClient(port, 200);
             Assert.assertEquals(false, client.isConnected());
             Server server = startServer(port);
-            for(int i=0;i<5;i++){
-                Thread.sleep(100);
+            for (int i = 0; i < 50 && ! client.isConnected(); i++) {
+                Thread.sleep(10);
             }
             Assert.assertEquals(true, client.isConnected());
             client.close();
