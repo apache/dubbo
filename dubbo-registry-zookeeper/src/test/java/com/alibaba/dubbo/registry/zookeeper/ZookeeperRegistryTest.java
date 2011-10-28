@@ -50,7 +50,7 @@ public class ZookeeperRegistryTest {
         //registry.register(service, serviceUrl);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = IllegalStateException.class)
     public void testUrlerror() {
         URL errorUrl = URL.valueOf("zookeeper://zookeeper/");
         new ZookeeperRegistry(errorUrl);
