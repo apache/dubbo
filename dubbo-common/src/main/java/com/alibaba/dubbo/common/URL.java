@@ -135,7 +135,7 @@ public final class URL implements Serializable {
 		this.protocol = protocol;
 		this.username = username;
 		this.password = password;
-		this.host = NetUtils.filterLocalHost(host);
+		this.host = host != null && host.length() > 0 ? NetUtils.filterLocalHost(host) : host;
 		this.port = (port < 0 ? 0 : port);
 		this.path = path;
 		// trim the beginning "/"
