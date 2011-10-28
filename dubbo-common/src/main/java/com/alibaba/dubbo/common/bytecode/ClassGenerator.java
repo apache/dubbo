@@ -58,7 +58,7 @@ public final class ClassGenerator
 
 	public static ClassGenerator newInstance()
 	{
-		return new ClassGenerator(getClassPool(null));
+		return new ClassGenerator(getClassPool(Thread.currentThread().getContextClassLoader()));
 	}
 
 	public static ClassGenerator newInstance(ClassLoader loader)
