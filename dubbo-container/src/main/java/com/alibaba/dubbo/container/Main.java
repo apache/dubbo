@@ -16,7 +16,8 @@
 package com.alibaba.dubbo.container;
 
 import com.alibaba.dubbo.common.ExtensionLoader;
-import com.alibaba.dubbo.container.standalone.StandaloneContainer;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 
 /**
  * Main
@@ -25,18 +26,43 @@ import com.alibaba.dubbo.container.standalone.StandaloneContainer;
  */
 public class Main {
     
+    private static final Logger logger            = LoggerFactory.getLogger(Main.class);
+    
+    public static final String CONTAINER_TYPE_KEY = "dubbo.container.type";
+    
+    
     public static void main(String[] args) {
-        final Container container = ExtensionLoader.getExtensionLoader(Container.class).getAdaptiveExtension();
+        String type = null;
+        if(args.length > 0 && args[0].length() > 0) {
+            type = args[0];
+        }
+        if(null == type) {
+            type = System.getProperty(CONTAINER_TYPE_KEY);
+            if(type != null && type.length() > 0)
+                logger.info("Get Container type from system property " + CONTAINER_TYPE_KEY + ": " + type);
+        }
+        
+        final Container container;
+        if(null == type || type.length() == 0) {
+            container = ExtensionLoader.getExtensionLoader(Container.class).getDefaultExtension();
+            logger.info("Use default container type(" + ExtensionLoader.getExtensionLoader(Container.class).getDefaultExtensionName()
+            		+ ") to run dubbo serivce.");
+        }
+        else {
+            container = ExtensionLoader.getExtensionLoader(Container.class).getExtension(type);
+            logger.info("Use container type(" + type + ") to run dubbo serivce.");
+        }
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
                 container.stop();
             }
         });
         container.start();
-        synchronized (StandaloneContainer.class) {
+        
+        synchronized (Main.class) {
             for (;;) {
                 try {
-                    StandaloneContainer.class.wait();
+                    Main.class.wait();
                 } catch (Throwable e) {
                 }
             }
