@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.cluster.directory;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.alibaba.dubbo.common.URL;
@@ -34,8 +33,6 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
     
     private final List<Invoker<T>> invokers;
     
-    private static final List<Invoker<?>> EMPTY_INVOKERLIST = new ArrayList<Invoker<?>>(); 
-
     public StaticDirectory(List<Invoker<T>> invokers){
         this(null, invokers, null);
     }
@@ -60,6 +57,7 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
     }
 
     public boolean isAvailable() {
+        if (destroyed) return false;
         for (Invoker<T> invoker : invokers) {
             if (invoker.isAvailable()) {
                 return true;
@@ -69,6 +67,10 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
     }
 
     public void destroy() {
+        if(destroyed) {
+            return;
+        }
+        super.destroy();
         for (Invoker<T> invoker : invokers) {
             invoker.destroy();
         }

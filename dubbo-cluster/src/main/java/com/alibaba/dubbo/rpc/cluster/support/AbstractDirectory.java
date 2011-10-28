@@ -35,7 +35,7 @@ import com.alibaba.dubbo.rpc.cluster.RouterFactory;
 public abstract class AbstractDirectory<T> implements Directory<T> {
     
     private final URL url ;
-    private Boolean destroyed = false;
+    protected volatile boolean destroyed = false;
 
     private List<Router> routers = new ArrayList<Router>();
     
@@ -62,6 +62,9 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     }
     
     public List<Invoker<T>> list(Invocation invocation) throws RpcException {
+        if (destroyed){
+            throw new RpcException("Directory already destroyed .url: "+ getUrl());
+        }
         List<Invoker<T>> invokers = doList(invocation);
         for (Router router: routers){
             invokers = router.route(invokers, invocation);
@@ -83,5 +86,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         routers = r;
     }
     
-    
+    public void destroy(){
+        destroyed = true;
+    }
 }
