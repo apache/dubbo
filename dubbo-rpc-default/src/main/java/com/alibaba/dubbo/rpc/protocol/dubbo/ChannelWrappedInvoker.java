@@ -31,6 +31,7 @@ import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
+import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.protocol.AbstractInvoker;
 
 /**
@@ -61,19 +62,18 @@ public class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
         inv.setAttachment(RpcConstants.CALLBACK_SERVICE_KEY, serviceKey);
 
         ExchangeClient currentClient = new HeaderExchangeClient(new ChannelWrapper(this.channel));
-        Result result;
 
         try {
             if (getUrl().getMethodBooleanParameter(invocation.getMethodName(), Constants.ASYNC_KEY)) { // 不可靠异步
                 currentClient.send(inv,getUrl().getMethodBooleanParameter(invocation.getMethodName(), Constants.SENT_KEY));
-                return null;
+                return new RpcResult();
             }
             int timeout = getUrl().getMethodIntParameter(invocation.getMethodName(),
                     Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
             if (timeout > 0) {
-                result = (Result) currentClient.request(inv, timeout).get();
+                return (Result) currentClient.request(inv, timeout).get();
             } else {
-                result = (Result) currentClient.request(inv).get();
+                return (Result) currentClient.request(inv).get();
             }
         } catch (RpcException e) {
             throw e;
@@ -84,7 +84,6 @@ public class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
         } catch (Throwable e) { // here is non-biz exception, wrap it.
             throw new RpcException(e.getMessage(), e);
         }
-        return result;
     }
 
     public static class ChannelWrapper extends ClientDelegate {
