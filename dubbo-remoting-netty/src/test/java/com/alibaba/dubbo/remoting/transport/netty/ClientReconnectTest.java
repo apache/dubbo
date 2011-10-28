@@ -13,13 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.remoting;
+package com.alibaba.dubbo.remoting.transport.netty;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.utils.NetUtils;
+import com.alibaba.dubbo.remoting.Channel;
+import com.alibaba.dubbo.remoting.Client;
+import com.alibaba.dubbo.remoting.RemotingException;
+import com.alibaba.dubbo.remoting.Server;
 import com.alibaba.dubbo.remoting.exchange.Exchangers;
 import com.alibaba.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
 
