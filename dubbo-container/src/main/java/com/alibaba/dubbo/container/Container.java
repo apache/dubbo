@@ -25,8 +25,14 @@ import com.alibaba.dubbo.common.Extension;
 @Extension("spring")
 public interface Container {
     
+    /**
+     * start.
+     */
     void start();
     
+    /**
+     * stop.
+     */
     void stop();
 
 }

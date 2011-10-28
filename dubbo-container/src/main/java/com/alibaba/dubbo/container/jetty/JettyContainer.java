@@ -35,7 +35,7 @@ import com.alibaba.dubbo.container.page.PageServlet;
 @Extension("jetty")
 public class JettyContainer implements Container {
 
-    private static final Logger LOGGER             = LoggerFactory.getLogger(JettyContainer.class);
+    private static final Logger logger             = LoggerFactory.getLogger(JettyContainer.class);
 
     private static final String JETTY_PORT_KEY     = "jetty.port";
 
@@ -64,7 +64,7 @@ public class JettyContainer implements Container {
         } catch (Exception e) {
             throw new IllegalStateException("Failed to start jetty server on " + NetUtils.getLocalHost() + ":" + port + ", cause: " + e.getMessage(), e);
         }
-        LOGGER.info("Dubbo jetty container started!");
+        logger.info("Dubbo jetty container started!");
     }
 
     public void stop() {
@@ -73,9 +73,9 @@ public class JettyContainer implements Container {
                 connector.close();
             }
         } catch (Throwable e) {
-            LOGGER.error(e.getMessage(), e);
+            logger.error(e.getMessage(), e);
         }
-        LOGGER.info("Dubbo jetty container stopped!");
+        logger.info("Dubbo jetty container stopped!");
     }
 
 }

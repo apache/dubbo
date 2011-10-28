@@ -31,7 +31,7 @@ import com.alibaba.dubbo.container.Container;
 @Extension("spring")
 public class SpringContainer implements Container {
 
-    private static final Logger LOGGER                = LoggerFactory.getLogger(SpringContainer.class);
+    private static final Logger logger                = LoggerFactory.getLogger(SpringContainer.class);
 
     private static final String SPRING_CONFIG_KEY     = "spring.config";
     
@@ -50,21 +50,21 @@ public class SpringContainer implements Container {
         }
         context = new ClassPathXmlApplicationContext(configPath.split("[,\\s]+"));
         context.start();
-        LOGGER.info("Dubbo spring container started!");
+        logger.info("Dubbo spring container started!");
     }
 
     public void stop() {
         try {
             context.stop();
         } catch (Throwable e) {
-            LOGGER.error(e.getMessage(), e);
+            logger.error(e.getMessage(), e);
         }
         try {
             context.close();
         } catch (Throwable e) {
-            LOGGER.error(e.getMessage(), e);
+            logger.error(e.getMessage(), e);
         }
-        LOGGER.info("Dubbo spring container stopped!");
+        logger.info("Dubbo spring container stopped!");
     }
 
 }
