@@ -13,9 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.proxy;
+package com.alibaba.dubbo.rpc.protococol.injvm;
 
-import junit.framework.TestCase;
+
+import static junit.framework.Assert.assertEquals;
+
+import org.junit.Test;
 
 import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
@@ -23,23 +26,23 @@ import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.ProxyFactory;
 import com.alibaba.dubbo.rpc.service.EchoService;
 
-public class RpcFilterTest extends TestCase
+/**
+ * <code>ProxiesTest</code>
+ */
+
+public class ProtocolsTest
 {
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
     private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-    
-	public void testRpcFilter() throws Exception
+
+	@Test
+	public void testLocalProtocol() throws Exception
 	{
 		DemoService service = new DemoServiceImpl();
-		URL url = URL.valueOf("dubbo://127.0.0.1:9010/com.alibaba.dubbo.rpc.DemoService?service.filter=echo");
-		protocol.export(proxy.getInvoker(service, DemoService.class, url));
-		service = proxy.getProxy(protocol.refer(DemoService.class, url));
-		assertEquals("123",service.echo("123"));
-		// cast to EchoService
-		EchoService echo = proxy.getProxy(protocol.refer(EchoService.class, url));
-		assertEquals(echo.$echo("test"), "test");
-		assertEquals(echo.$echo("abcdefg"), "abcdefg");
-		assertEquals(echo.$echo(1234), 1234);
+		protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("injvm://127.0.0.1/TestService")));
+		service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("injvm://127.0.0.1/TestService")));
+		assertEquals(service.getSize(new String[]{"", "", ""}), 3);
+		service.invoke("injvm://127.0.0.1/TestService", "invoke");
 	}
 
 }

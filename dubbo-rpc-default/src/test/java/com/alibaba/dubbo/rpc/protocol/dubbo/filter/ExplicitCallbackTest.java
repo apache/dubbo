@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.callback;
+package com.alibaba.dubbo.rpc.protocol.dubbo.filter;
 
 import java.util.ArrayList;
 import java.util.List;

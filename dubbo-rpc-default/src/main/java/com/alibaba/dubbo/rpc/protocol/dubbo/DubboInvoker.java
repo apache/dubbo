@@ -28,6 +28,7 @@ import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
+import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.protocol.AbstractInvoker;
 
 /**
@@ -87,7 +88,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                     currentClient.send(inv, isSent);
                     RpcContext.getContext().setFuture(null);
                 }
-                return null;
+                return new RpcResult();
             }
             RpcContext.getContext().setFuture(null);
             return (Result) currentClient.request(inv, timeout).get();

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.callback;
+package com.alibaba.dubbo.rpc.protocol.dubbo.filter;
 
 
 import java.io.Serializable;
@@ -84,7 +84,7 @@ public class ImplicitCallBackTest{
     
     public void initOrResetUrl(boolean isAsync) throws Exception {
         int port = NetUtils.getAvailablePort() ;
-        consumerUrl = serviceURL =  URL.valueOf("dubbo://127.0.0.1:"+port+"/"+IDemoService.class.getName()+"?group=test&async="+isAsync+"&timeout=100000&reference.filter=event" );
+        consumerUrl = serviceURL =  URL.valueOf("dubbo://127.0.0.1:"+port+"/"+IDemoService.class.getName()+"?group=test&async="+isAsync+"&timeout=100000&reference.filter=future" );
         StaticContext.getSystemContext().clear();
     }
     

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.proxy;
+package com.alibaba.dubbo.rpc.protocol.dubbo.filter;
 
 
 import static junit.framework.Assert.assertEquals;
@@ -42,16 +42,6 @@ public class ProtocolsTest
 		protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("dubbo://127.0.0.1:9020/TestService?codec=exchange")));
 		service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:9020/TestService?codec=exchange")));
 		assertEquals(service.getSize(new String[]{"", "", ""}), 3);
-	}
-
-	@Test
-	public void testLocalProtocol() throws Exception
-	{
-		DemoService service = new DemoServiceImpl();
-		protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("injvm://127.0.0.1/TestService")));
-		service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("injvm://127.0.0.1/TestService")));
-		assertEquals(service.getSize(new String[]{"", "", ""}), 3);
-		service.invoke("injvm://127.0.0.1/TestService", "invoke");
 	}
 
 	@Test
