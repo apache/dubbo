@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import com.alibaba.dubbo.common.utils.CollectionUtils;
+import com.alibaba.dubbo.common.utils.NetUtils;
 
 /**
  * URL - Uniform Resource Locator (Immutable, ThreadSafe)
@@ -131,7 +132,7 @@ public final class URL implements Serializable {
 		this.protocol = protocol;
 		this.username = username;
 		this.password = password;
-		this.host = host;
+		this.host = NetUtils.filterLocalHost(host);
 		this.port = (port < 0 ? 0 : port);
 		this.path = path;
 		// trim the beginning "/"
