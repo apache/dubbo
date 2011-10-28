@@ -40,9 +40,9 @@ public class MulticastRegistryTest {
 
     String            service     = "com.alibaba.dubbo.test.injvmServie";
     URL               registryUrl = URL.valueOf("multicast://239.255.255.255/");
-    URL               serviceUrl  = URL.valueOf("multicast://multicast/" + service
-                                                + "?notify=false&methods=test1,test2");
-    URL               consumerUrl = URL.valueOf("multicast://consumer/" + service + "?notify=false&methods=test1,test2");
+    URL               serviceUrl  = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + "/" + service
+                                                + "?methods=test1,test2");
+    URL               consumerUrl = URL.valueOf("subscribe://" + NetUtils.getLocalHost() + "/" + service + "?arg1=1&arg2=2");
     MulticastRegistry registry    = new MulticastRegistry(registryUrl);
 
     /**
@@ -57,7 +57,7 @@ public class MulticastRegistryTest {
      */
     @Before
     public void setUp() throws Exception {
-        registry.register(service, serviceUrl);
+        registry.register(serviceUrl);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -95,7 +95,7 @@ public class MulticastRegistryTest {
         final String subscribearg = "arg1=1&arg2=2";
         // verify lisener.
         final AtomicReference<Map<String, String>> args = new AtomicReference<Map<String, String>>();
-        registry.subscribe(service, new URL("dubbo", NetUtils.getLocalHost(), 0, StringUtils.parseQueryString(subscribearg)), new NotifyListener() {
+        registry.subscribe(consumerUrl, new NotifyListener() {
 
             public void notify(List<URL> urls) {
                 // FIXME assertEquals(MulticastRegistry.this.service, service);
@@ -104,7 +104,7 @@ public class MulticastRegistryTest {
         });
         assertEquals(serviceUrl.toParameterString(), StringUtils.toQueryString(args.get()));
         Map<String, String> arg = registry.getSubscribed(service);
-        assertEquals(subscribearg, StringUtils.toQueryString(arg));
+        assertEquals(consumerUrl.toParameterString(), StringUtils.toQueryString(arg));
 
     }
 
