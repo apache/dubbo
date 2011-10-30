@@ -1,17 +1,17 @@
-/**
- * Project: dubbo-container
- * 
- * File Created at 2011-10-28
- * $Id$
- * 
- * Copyright 1999-2100 Alibaba.com Corporation Limited.
- * All rights reserved.
- *
- * This software is the confidential and proprietary information of
- * Alibaba Company. ("Confidential Information").  You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the license agreement you entered into
- * with Alibaba.com.
+/*
+ * Copyright 1999-2011 Alibaba Group.
+ *  
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *  
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *  
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.alibaba.dubbo.container.jetty;
 
@@ -28,7 +28,7 @@ import com.alibaba.dubbo.container.Container;
 import com.alibaba.dubbo.container.page.PageServlet;
 
 /**
- * TODO Comment of JettyContainer
+ * JettyContainer
  * 
  * @author william.liangf
  */
@@ -37,14 +37,14 @@ public class JettyContainer implements Container {
 
     private static final Logger logger             = LoggerFactory.getLogger(JettyContainer.class);
 
-    private static final String JETTY_PORT_KEY     = "jetty.port";
+    public static final String JETTY_PORT_KEY     = "jetty.port";
 
-    private static final int    DEFAULT_JETTY_PORT = 8080;
+    public static final int    DEFAULT_JETTY_PORT = 8080;
 
     private SelectChannelConnector connector;
 
     public void start() {
-        String serverPort = System.getProperty(JETTY_PORT_KEY);
+        String serverPort = System.getProperty(JETTY_PORT_KEY, System.getProperty("dubbo.service.console.port")); // compatible
         int port;
         if (serverPort == null || serverPort.length() == 0) {
             port = DEFAULT_JETTY_PORT;

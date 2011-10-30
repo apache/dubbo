@@ -24,7 +24,7 @@ import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.container.Container;
 
 /**
- * Standalone
+ * SpringContainer
  * 
  * @author william.liangf
  */
@@ -33,9 +33,9 @@ public class SpringContainer implements Container {
 
     private static final Logger logger                = LoggerFactory.getLogger(SpringContainer.class);
 
-    private static final String SPRING_CONFIG_KEY     = "spring.config";
+    public static final String SPRING_CONFIG_KEY     = "spring.config";
     
-    private static final String DEFAULT_SPRING_CONFIG = "classpath*:META-INF/spring/*.xml";
+    public static final String DEFAULT_SPRING_CONFIG = "classpath*:META-INF/spring/*.xml";
 
     private ClassPathXmlApplicationContext context;
 
@@ -44,7 +44,7 @@ public class SpringContainer implements Container {
     }
     
     public void start() {
-        String configPath = System.getProperty(SPRING_CONFIG_KEY);
+        String configPath = System.getProperty(SPRING_CONFIG_KEY, System.getProperty("dubbo.spring.config")); // compatible
         if (configPath == null || configPath.length() == 0) {
             configPath = DEFAULT_SPRING_CONFIG;
         }
