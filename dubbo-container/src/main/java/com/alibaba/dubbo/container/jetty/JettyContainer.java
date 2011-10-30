@@ -37,14 +37,14 @@ public class JettyContainer implements Container {
 
     private static final Logger logger = LoggerFactory.getLogger(JettyContainer.class);
 
-    public static final String JETTY_PORT_KEY = "jetty.port";
+    public static final String JETTY_PORT = "jetty.port";
 
     public static final int DEFAULT_JETTY_PORT = 8080;
 
     private SelectChannelConnector connector;
 
     public void start() {
-        String serverPort = System.getProperty(JETTY_PORT_KEY);
+        String serverPort = System.getProperty(JETTY_PORT);
         int port;
         if (serverPort == null || serverPort.length() == 0) {
             port = DEFAULT_JETTY_PORT;
