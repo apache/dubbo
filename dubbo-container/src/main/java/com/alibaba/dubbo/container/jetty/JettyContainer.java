@@ -28,7 +28,7 @@ import com.alibaba.dubbo.container.Container;
 import com.alibaba.dubbo.container.page.PageServlet;
 
 /**
- * JettyContainer
+ * JettyContainer. (SPI, Singleton, ThreadSafe)
  * 
  * @author william.liangf
  */

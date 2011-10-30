@@ -22,7 +22,7 @@ import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 
 /**
- * Main
+ * Main. (API, Static, ThreadSafe)
  * 
  * @author william.liangf
  */

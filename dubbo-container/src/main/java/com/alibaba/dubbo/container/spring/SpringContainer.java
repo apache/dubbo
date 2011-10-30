@@ -24,7 +24,7 @@ import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.container.Container;
 
 /**
- * SpringContainer
+ * SpringContainer. (SPI, Singleton, ThreadSafe)
  * 
  * @author william.liangf
  */

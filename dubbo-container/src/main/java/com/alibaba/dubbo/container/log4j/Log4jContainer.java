@@ -29,7 +29,7 @@ import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.container.Container;
 
 /**
- * Log4jContainer
+ * Log4jContainer. (SPI, Singleton, ThreadSafe)
  * 
  * @author william.liangf
  */

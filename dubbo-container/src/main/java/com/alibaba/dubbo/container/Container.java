@@ -18,7 +18,7 @@ package com.alibaba.dubbo.container;
 import com.alibaba.dubbo.common.Extension;
 
 /**
- * TODO Comment of Container
+ * Container. (SPI, Singleton, ThreadSafe)
  * 
  * @author william.liangf
  */
