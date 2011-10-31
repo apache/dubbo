@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.script.ScriptEngineManager;
+
 import junit.framework.Assert;
 
 import org.junit.Test;
@@ -28,6 +30,7 @@ import org.junit.Test;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.registry.RegistryFactory;
 import com.alibaba.dubbo.registry.support.RegistryDirectory;
 import com.alibaba.dubbo.registry.support.SimpleRegistryExporter;
@@ -51,14 +54,14 @@ public class RegistryDirectoryTest {
         SimpleRegistryExporter.exportIfAbsent(9092);
         SimpleRegistryExporter.exportIfAbsent(9093);
     }
-    public static URL  REGURL= URL.valueOf("dubbo://0.0.0.0:9090/"+service + "?callbacks=100");
-    public static URL  SERVICEURL= URL.valueOf("dubbo://0.0.0.0:9091/"+service + "?callbacks=100");
-    public static URL  SERVICEURL2= URL.valueOf("dubbo://0.0.0.0:9092/"+service + "?callbacks=100");
-    public static URL  SERVICEURL3= URL.valueOf("dubbo://0.0.0.0:9093/"+service + "?callbacks=100");
-    public static URL  SERVICEURL_DUBBO_NOPATH= URL.valueOf("dubbo://0.0.0.0:9092" + "?callbacks=100");
+    public static URL  REGURL= URL.valueOf("dubbo://"+NetUtils.getLocalHost()+":9090/"+service + "?callbacks=100");
+    public static URL  SERVICEURL= URL.valueOf("dubbo://"+NetUtils.getLocalHost()+":9091/"+service + "?callbacks=100");
+    public static URL  SERVICEURL2= URL.valueOf("dubbo://"+NetUtils.getLocalHost()+":9092/"+service + "?callbacks=100");
+    public static URL  SERVICEURL3= URL.valueOf("dubbo://"+NetUtils.getLocalHost()+":9093/"+service + "?callbacks=100");
+    public static URL  SERVICEURL_DUBBO_NOPATH= URL.valueOf("dubbo://"+NetUtils.getLocalHost()+":9092" + "?callbacks=100");
     
-    public static URL  ROUTERURL= URL.valueOf(RpcConstants.ROUTE_PROTOCOL + "://0.0.0.0:9096/");
-    public static URL  ROUTERURL2= URL.valueOf(RpcConstants.ROUTE_PROTOCOL + "://0.0.0.0:9097/");
+    public static URL  ROUTERURL= URL.valueOf(RpcConstants.ROUTE_PROTOCOL + "://"+NetUtils.getLocalHost()+":9096/");
+    public static URL  ROUTERURL2= URL.valueOf(RpcConstants.ROUTE_PROTOCOL + "://"+NetUtils.getLocalHost()+":9097/");
 
     
     List invokers = null;
@@ -283,8 +286,13 @@ public class RegistryDirectoryTest {
         //List<U> urls = mockRegistry.getSubscribedUrls();
         
         RpcInvocation inv = new RpcInvocation();
-        invokers = registryDirectory.list(inv);
-        Assert.assertEquals(0, invokers.size());
+        try {
+            invokers = registryDirectory.list(inv);
+            fail();
+        } catch (RpcException e) {
+            Assert.assertTrue(e.getMessage().contains("already destroyed"));
+        }
+        
     }
     
     @Test
@@ -303,7 +311,7 @@ public class RegistryDirectoryTest {
         invokers = registryDirectory.list(invocation);
         
         Assert.assertEquals(1, invokers.size());
-        Assert.assertEquals("dubbo://0.0.0.0:9092/com.alibaba.dubbo.demo.DemoService?callbacks=100&check=false&methods=getXXX1,getXXX2,getXXX3", invokers.get(0).toString());
+        Assert.assertEquals("dubbo://"+NetUtils.getLocalHost()+":9092/com.alibaba.dubbo.demo.DemoService?callbacks=100&check=false&methods=getXXX1,getXXX2,getXXX3", invokers.get(0).toString());
         
     }
     
@@ -360,6 +368,7 @@ public class RegistryDirectoryTest {
         Assert.assertEquals(2, invokers.size());
     }
     
+    private static boolean isScriptUnsupported = new ScriptEngineManager().getEngineByName("javascript") == null;
     /**
      * 1. notify twice, the second time notified router rules should completely replace the former one.
      * 2. notify with no router url, do nothing to current routers
@@ -367,6 +376,8 @@ public class RegistryDirectoryTest {
      */
     @Test
     public void testNotifyRouterUrls(){
+        if (isScriptUnsupported) return;
+        
         
         List<URL> serviceUrls = new ArrayList<URL> ();
         // without ROUTER_KEY, the first router should not be created.
