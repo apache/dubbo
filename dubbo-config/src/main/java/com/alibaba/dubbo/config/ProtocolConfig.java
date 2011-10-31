@@ -298,7 +298,7 @@ public class ProtocolConfig extends AbstractConfig {
         this.status = status;
     }
 
-    public Boolean getRegister() {
+    public Boolean isRegister() {
         return register;
     }
     

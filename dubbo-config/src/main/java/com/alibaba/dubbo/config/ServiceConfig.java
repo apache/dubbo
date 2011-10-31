@@ -41,7 +41,6 @@ import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.ProxyFactory;
 import com.alibaba.dubbo.rpc.RpcConstants;
-import com.alibaba.dubbo.rpc.RpcStatus;
 import com.alibaba.dubbo.rpc.service.GenericService;
 
 /**
@@ -189,10 +188,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             path = interfaceName;
         }
         doExportUrls();
-        for (URL url : urls) {
-            RpcStatus.getStatus(url).setReady(true);
-        }
-        doExportService();
         exported = true;
     }
 
@@ -261,7 +256,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (unexported) {
             return;
         }
-        unexported = true;
     	if (exporters != null && exporters.size() > 0) {
     		for (Exporter<?> exporter : exporters) {
     			try {
@@ -272,9 +266,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     		}
     		exporters.clear();
     	}
+        unexported = true;
     }
     
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private void doExportUrls() {
+        List<URL> registryURLs = loadRegistries();
         for (ProtocolConfig protocolConfig : protocols) {
             String name = protocolConfig.getName();
             if (name == null || name.length() == 0) {
@@ -293,7 +290,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                     logger.warn(e.getMessage(), e);
                 }
                 if (NetUtils.isInvalidLocalHost(host)) {
-                    List<URL> registryURLs = loadRegistries();
                     if (registryURLs != null && registryURLs.size() > 0) {
                         for (URL registryURL : registryURLs) {
                             try {
@@ -406,14 +402,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 contextPath = provider.getContextpath();
             }
             URL url = new URL(name, host, port, (contextPath == null || contextPath.length() == 0 ? "" : contextPath + "/") + path, map);
-            this.urls.add(url);
-        }
-    }
-    
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    private void doExportService() {
-        List<URL> registryURLs = loadRegistries();
-        for (URL url : urls) {
             if (logger.isInfoEnabled()) {
                 logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
             }
@@ -437,6 +425,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 Exporter<?> exporter = protocol.export(invoker);
                 exporters.add(exporter);
             }
+            this.urls.add(url);
         }
     }
 
@@ -515,7 +504,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         this.path = path;
     }
 
-    public Boolean getRegister() {
+    public Boolean isRegister() {
         return register;
     }
     

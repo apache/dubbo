@@ -151,8 +151,6 @@ public class RpcStatus {
 
     private final AtomicLong succeededMaxElapsed = new AtomicLong();
     
-    private volatile boolean ready = true;
-
     private RpcStatus() {}
 
     /**
@@ -302,22 +300,6 @@ public class RpcStatus {
      */
     public long getSucceededMaxElapsed() {
         return succeededMaxElapsed.get();
-    }
-    
-    /**
-     * 
-     * @return
-     */
-    public boolean isReady() {
-        return ready;
-    }
-    
-    /**
-     * 
-     * @param ready
-     */
-    public void setReady(boolean ready) {
-        this.ready = ready;
     }
 
 }

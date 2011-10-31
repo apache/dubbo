@@ -30,7 +30,7 @@ public final class RpcConstants {
             "consumercontext", "compatible", "deprecated", "collect", "genericimpl", "activelimit", "monitor", "future" }));
 
     public static final List<String> DEFAULT_SERVICE_FILTERS    = Collections.unmodifiableList(Arrays.asList(new String[] {
-            "ready", "context", "token", "exception", "echo", "generic", "accesslog", "trace", "classloader", "executelimit", "monitor" ,"timeout"}));
+            "context", "token", "exception", "echo", "generic", "accesslog", "trace", "classloader", "executelimit", "monitor" ,"timeout"}));
 
     public static final List<String> DEFAULT_INVOKER_LISTENERS = Collections.unmodifiableList(Arrays.asList(new String[] {
             "deprecated" }));
