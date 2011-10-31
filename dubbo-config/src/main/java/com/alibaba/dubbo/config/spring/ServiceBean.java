@@ -78,7 +78,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                 if (logger.isInfoEnabled()) {
                     logger.info("The service ready on spring started. service: " + getInterface());
                 }
-                ready();
+                doExport();
             }
         }
     }
@@ -164,12 +164,9 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                 setPath(beanName);
             }
         }
-	    Integer delay = getDelay();
-	    ProviderConfig provider = getProvider();
-	    if (delay == null && provider != null) {
-	        delay = provider.getDelay();
-	    }
-	    export(! isDelay());
+        if (! isDelay()) {
+            doExport();
+        }
     }
 
 }

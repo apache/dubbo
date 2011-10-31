@@ -105,8 +105,11 @@ public class ReferenceConfig<T> extends AbstractConsumerConfig {
     }
     
     public synchronized void destroy() {
+        if (ref == null) {
+            throw new IllegalStateException("Uninitialized.");
+        }
         if (destroyed){
-            throw new IllegalStateException("Already destroyed!");
+            return;
         }
         destroyed = true;
         try {

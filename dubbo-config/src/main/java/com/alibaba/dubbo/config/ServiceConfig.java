@@ -91,31 +91,25 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
     
     public synchronized void export() {
-        export(true);
-    }
-    
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    protected synchronized void ready() {
-        for (URL url : urls) {
-            RpcStatus.getStatus(url).setReady(true);
-        }
-        List<URL> registryURLs = loadRegistries();
-        if (registryURLs != null && registryURLs.size() > 0) {
-            for (URL url : urls) {
-                String providerURL = url.addParameter("enabled", "true").toFullString();
-                for (URL registryURL : registryURLs) {
-                    if (logger.isInfoEnabled()) {
-                        logger.info("Register dubbo service " + interfaceClass.getName() + " url " + providerURL + " to registry " + registryURL);
+        if (delay != null && delay > 0) {
+            Thread thread = new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        Thread.sleep(delay);
+                    } catch (Throwable e) {
                     }
-                    Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(RpcConstants.EXPORT_KEY, providerURL));
-                    Exporter<?> exporter = protocol.export(invoker);
-                    exporters.add(exporter);
+                    doExport();
                 }
-            }
+            });
+            thread.setDaemon(true);
+            thread.setName("DelayExportServiceThread");
+            thread.start();
+        } else {
+            doExport();
         }
     }
     
-    protected synchronized void export(boolean ready) {
+    protected synchronized void doExport() {
         if (unexported) {
             throw new IllegalStateException("Already unexported!");
         }
@@ -195,25 +189,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             path = interfaceName;
         }
         doExportUrls();
-        boolean r = (ready && (delay == null || delay <= 0));
         for (URL url : urls) {
-            RpcStatus.getStatus(url).setReady(r);
+            RpcStatus.getStatus(url).setReady(true);
         }
-        doExport(r);
-        if (delay != null && delay > 0) {
-            Thread thread = new Thread(new Runnable() {
-                public void run() {
-                    try {
-                        Thread.sleep(delay);
-                    } catch (Throwable e) {
-                    }
-                    ready();
-                }
-            });
-            thread.setDaemon(true);
-            thread.setName("DelayExportServiceThread");
-            thread.start();
-        }
+        doExportService();
         exported = true;
     }
 
@@ -276,8 +255,11 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     public synchronized void unexport() {
+        if (exported) {
+            throw new IllegalStateException("No exported!");
+        }
         if (unexported) {
-            throw new IllegalStateException("Already unexported!");
+            return;
         }
         unexported = true;
     	if (exporters != null && exporters.size() > 0) {
@@ -429,7 +411,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
     
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private void doExport(boolean ready) {
+    private void doExportService() {
         List<URL> registryURLs = loadRegistries();
         for (URL url : urls) {
             if (logger.isInfoEnabled()) {
@@ -442,7 +424,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                     if (monitorUrl != null) {
                         url = url.addParameterAndEncoded(Constants.MONITOR_KEY, monitorUrl.toFullString());
                     }
-                    String providerURL = url.addParameter("enabled", String.valueOf(ready)).toFullString();
+                    String providerURL = url.toFullString();
                     if (logger.isInfoEnabled()) {
                         logger.info("Register dubbo service " + interfaceClass.getName() + " url " + providerURL + " to registry " + registryURL);
                     }
