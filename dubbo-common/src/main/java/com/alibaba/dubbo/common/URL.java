@@ -293,12 +293,14 @@ public final class URL implements Serializable {
     }
 
     public String getServiceKey() {
+        String inf = getParameter(Constants.INTERFACE_KEY, path);
+        if (inf == null) return null;
         StringBuilder buf = new StringBuilder();
         String group = getParameter(Constants.GROUP_KEY);
         if (group != null && group.length() > 0) {
             buf.append(group).append("/");
         }
-        buf.append(getParameter(Constants.INTERFACE_KEY, path));
+        buf.append(inf);
         String version = getParameter(Constants.VERSION_KEY);
         if (version != null && version.length() > 0) {
             buf.append(":").append(version);
