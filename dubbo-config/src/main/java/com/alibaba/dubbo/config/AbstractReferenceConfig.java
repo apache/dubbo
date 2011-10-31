@@ -24,6 +24,8 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.common.utils.NetUtils;
+import com.alibaba.dubbo.common.utils.StringUtils;
+import com.alibaba.dubbo.monitor.MonitorService;
 import com.alibaba.dubbo.registry.RegistryService;
 import com.alibaba.dubbo.registry.support.UrlUtils;
 import com.alibaba.dubbo.rpc.Filter;
@@ -51,7 +53,7 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
     protected String               mock;
 
     // 服务监控
-    protected String               monitor;
+    protected MonitorConfig        monitor;
     
     // 代理类型
     protected String               proxy;
@@ -140,7 +142,7 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
             }
         }
     }
-
+    
     protected List<URL> loadRegistries() {
         checkRegistry();
         List<URL> registryList = new ArrayList<URL>();
@@ -163,6 +165,26 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
             }
         }
         return registryList;
+    }
+    
+    protected URL loadMonitor(URL registryURL) {
+        if (monitor == null) {
+            return null;
+        }
+        Map<String, String> map = new HashMap<String, String>();
+        map.put(Constants.INTERFACE_KEY, MonitorService.class.getName());
+        appendParameters(map, monitor);
+        if (monitor.getAddress() != null || monitor.getAddress().length() > 0) {
+            if (! map.containsKey("protocol")) {
+                map.put("protocol", "dubbo");
+            }
+            return UrlUtils.parseURL(monitor.getAddress(), map);
+        } else if (monitor.getProtocol() != null || monitor.getProtocol().length() > 0) {
+            return new URL(monitor.getProtocol(), NetUtils.getLocalHost(), 0, MonitorService.class.getName(), map);
+        } else if (registryURL != null) {
+            return registryURL.setProtocol("dubbo").addParameter(Constants.MONITOR_KEY, registryURL.getProtocol()).addParameterAndEncoded(RpcConstants.REFER_KEY, StringUtils.toQueryString(map));
+        }
+        return null;
     }
 
     /**
@@ -300,12 +322,16 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
         this.registries = (List<RegistryConfig>)registries;
     }
 
-    public String getMonitor() {
+    public MonitorConfig getMonitor() {
         return monitor;
     }
 
-    public void setMonitor(String monitor) {
+    public void setMonitor(MonitorConfig monitor) {
         this.monitor = monitor;
+    }
+
+    public void setMonitor(String monitor) {
+        this.monitor = new MonitorConfig(monitor);
     }
 
     public String getOwner() {

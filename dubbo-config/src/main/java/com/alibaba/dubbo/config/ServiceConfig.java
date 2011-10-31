@@ -129,8 +129,19 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             if (registries == null) {
                 registries = provider.getRegistries();
             }
+            if (monitor == null) {
+                monitor = provider.getMonitor();
+            }
             if (protocols == null) {
                 protocols = provider.getProtocols();
+            }
+        }
+        if (application != null) {
+            if (registries == null) {
+                registries = application.getRegistries();
+            }
+            if (monitor == null) {
+                monitor = application.getMonitor();
             }
         }
         if (ref instanceof GenericService) {
@@ -423,8 +434,11 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             }
             if (registryURLs != null && registryURLs.size() > 0) {
                 for (URL registryURL : registryURLs) {
-                    String providerURL = url.addParameter("enabled", String.valueOf(ready)).addParameter(Constants.MONITOR_KEY, 
-                                    convertMonitor(url.getParameter(Constants.MONITOR_KEY), registryURL)).toFullString();
+                    URL monitorUrl = loadMonitor(registryURL);
+                    if (monitorUrl != null) {
+                        url = url.addParameterAndEncoded(Constants.MONITOR_KEY, monitorUrl.toFullString());
+                    }
+                    String providerURL = url.addParameter("enabled", String.valueOf(ready)).toFullString();
                     if (logger.isInfoEnabled()) {
                         logger.info("Register dubbo service " + interfaceClass.getName() + " url " + providerURL + " to registry " + registryURL);
                     }

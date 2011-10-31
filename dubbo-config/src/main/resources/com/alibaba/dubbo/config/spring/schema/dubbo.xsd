@@ -44,6 +44,11 @@
 					<xsd:documentation><![CDATA[ The application environment, eg: dev/test/run ]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
+			<xsd:attribute name="registry" type="xsd:string" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[ The application registry. ]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
 			<xsd:attribute name="monitor" type="xsd:string" use="optional">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[ The application monitor. ]]></xsd:documentation>

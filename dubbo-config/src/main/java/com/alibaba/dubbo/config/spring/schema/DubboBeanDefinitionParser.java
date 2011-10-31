@@ -18,6 +18,7 @@ package com.alibaba.dubbo.config.spring.schema;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Date;
+import java.util.regex.Pattern;
 
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -39,6 +40,7 @@ import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.config.ArgumentConfig;
 import com.alibaba.dubbo.config.MethodConfig;
+import com.alibaba.dubbo.config.MonitorConfig;
 import com.alibaba.dubbo.config.ProtocolConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.rpc.Protocol;
@@ -183,6 +185,11 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                                     ProtocolConfig protocol = new ProtocolConfig();
                                     protocol.setName(value);
                                     reference = protocol;
+                                } else if ("monitor".equals(property) 
+                                        && (! parserContext.getRegistry().containsBeanDefinition(value)
+                                                || ! MonitorConfig.class.getName().equals(parserContext.getRegistry().getBeanDefinition(value).getBeanClassName()))) {
+                                    // 兼容旧版本配置
+                                    reference = convertMonitor(value);
                                 } else if ("onreturn".equals(property)) {
                                     int index = value.lastIndexOf(".");
                                     String returnRef = value.substring(0, index);
@@ -212,6 +219,31 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
             }
         }
         return beanDefinition;
+    }
+
+    private static final Pattern GROUP_AND_VERION = Pattern.compile("^[\\-.0-9_a-zA-Z]+(\\:[\\-.0-9_a-zA-Z]+)?$");
+    
+    protected static MonitorConfig convertMonitor(String monitor) {
+        if (monitor == null || monitor.length() == 0) {
+            return null;
+        }
+        if (GROUP_AND_VERION.matcher(monitor).matches()) {
+            String group;
+            String version;
+            int i = monitor.indexOf(':');
+            if (i > 0) {
+                group = monitor.substring(0, i);
+                version = monitor.substring(i + 1);
+            } else {
+                group = monitor;
+                version = null;
+            }
+            MonitorConfig monitorConfig = new MonitorConfig();
+            monitorConfig.setGroup(group);
+            monitorConfig.setVersion(version);
+            return monitorConfig;
+        }
+        return null;
     }
  
     private static boolean isPrimitive(Class<?> cls) {

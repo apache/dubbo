@@ -17,7 +17,6 @@ package com.alibaba.dubbo.config;
 
 import java.io.InputStream;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URLEncoder;
@@ -28,11 +27,8 @@ import java.util.regex.Pattern;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.ExtensionLoader;
-import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
-import com.alibaba.dubbo.monitor.MonitorService;
-import com.alibaba.dubbo.rpc.RpcConstants;
 
 /**
  * AbstractConfig
@@ -93,35 +89,6 @@ public abstract class AbstractConfig implements Serializable {
         return properties;
     }
     
-    private static final Pattern GROUP_AND_VERION = Pattern.compile("^[\\-.0-9_a-zA-Z]+(\\:[\\-.0-9_a-zA-Z]+)?$");
-    
-    protected static String convertMonitor(String monitor, URL registry) {
-        if (monitor == null || monitor.length() == 0) {
-            return null;
-        }
-        if (GROUP_AND_VERION.matcher(monitor).matches()) {
-            String group;
-            String version;
-            int i = monitor.indexOf(':');
-            if (i > 0) {
-                group = monitor.substring(0, i);
-                version = monitor.substring(i + 1);
-            } else {
-                group = monitor;
-                version = null;
-            }
-            monitor = registry.setProtocol("dubbo").addParameter(Constants.MONITOR_KEY, registry.getProtocol())
-                    .addParameterAndEncoded(RpcConstants.REFER_KEY, "group=" + group 
-                    + (version == null || version.length() == 0 ? "" : "&version=" + version) 
-                    + "&interface=" + MonitorService.class.getName()).toFullString();
-        }
-        try {
-            return URLEncoder.encode(monitor, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
-    }
-
     protected static void appendParameters(Map<String, String> parameters, Object config) {
         appendParameters(parameters, config, null);
     }

@@ -15,6 +15,9 @@
  */
 package com.alibaba.dubbo.config;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.alibaba.dubbo.common.Constants;
 
 
@@ -42,8 +45,11 @@ public class ApplicationConfig extends AbstractConfig {
     // 环境，如：dev/test/run
     private String            environment;
 
+    // 注册中心
+    protected List<RegistryConfig> registries;
+    
     // 服务监控
-    protected String          monitor;
+    private MonitorConfig     monitor;
     
     public ApplicationConfig() {
     }
@@ -103,12 +109,35 @@ public class ApplicationConfig extends AbstractConfig {
 		this.environment = environment;
 	}
 
-    public String getMonitor() {
+    public RegistryConfig getRegistry() {
+        return registries == null || registries.size() == 0 ? null : registries.get(0);
+    }
+
+    public void setRegistry(RegistryConfig registry) {
+        List<RegistryConfig> registries = new ArrayList<RegistryConfig>(1);
+        registries.add(registry);
+        this.registries = registries;
+    }
+
+    public List<RegistryConfig> getRegistries() {
+        return registries;
+    }
+
+    @SuppressWarnings({ "unchecked" })
+    public void setRegistries(List<? extends RegistryConfig> registries) {
+        this.registries = (List<RegistryConfig>)registries;
+    }
+
+    public MonitorConfig getMonitor() {
         return monitor;
     }
 
-    public void setMonitor(String monitor) {
+    public void setMonitor(MonitorConfig monitor) {
         this.monitor = monitor;
+    }
+
+    public void setMonitor(String monitor) {
+        this.monitor = new MonitorConfig(monitor);
     }
 
 	@Override

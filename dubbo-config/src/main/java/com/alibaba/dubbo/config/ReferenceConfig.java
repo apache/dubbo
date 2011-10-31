@@ -190,6 +190,17 @@ public class ReferenceConfig<T> extends AbstractConsumerConfig {
             if (registries == null) {
                 registries = consumer.getRegistries();
             }
+            if (monitor == null) {
+                monitor = consumer.getMonitor();
+            }
+        }
+        if (application != null) {
+            if (registries == null) {
+                registries = application.getRegistries();
+            }
+            if (monitor == null) {
+                monitor = application.getMonitor();
+            }
         }
         checkApplication();
         Map<String, String> map = new HashMap<String, String>();
@@ -282,9 +293,9 @@ public class ReferenceConfig<T> extends AbstractConsumerConfig {
             	List<URL> us = loadRegistries();
             	if (us != null && us.size() > 0) {
                 	for (URL u : us) {
-                	    String monitor = convertMonitor(map.get(Constants.MONITOR_KEY), u);
-                        if (monitor != null && monitor.length() > 0) {
-                            map.put(Constants.MONITOR_KEY, monitor);
+                	    URL monitorUrl = loadMonitor(u);
+                        if (monitorUrl != null) {
+                            map.put(Constants.MONITOR_KEY, URL.encode(monitorUrl.toFullString()));
                         }
                 	    urls.add(u.addParameterAndEncoded(RpcConstants.REFER_KEY, StringUtils.toQueryString(map)));
                     }
