@@ -123,7 +123,7 @@ public class NettyClient extends AbstractClient {
             } else if (future.getCause() != null) {
                 throw future.getCause();
             } else {
-                throw new RemotingException(this, "Faild to connect to server " + getRemoteAddress() + ", the future was not completed within the specified time limit, please check the timeout ["+ getConnectTimeout() +"] config .");
+                throw new RemotingException(this, "Failed to connect to server " + getRemoteAddress() + ", the future was not completed within the specified time limit, please check the timeout ["+ getConnectTimeout() +"] config .");
             }
             
         }catch (InterruptedException e) {
