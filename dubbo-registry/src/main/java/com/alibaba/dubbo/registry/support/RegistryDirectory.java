@@ -60,8 +60,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     
     private volatile boolean forbidden = false;
     
-    private volatile boolean destroyed = false;
-    
     private final String serviceKey;
 
     private final Class<T> serviceType;
@@ -104,7 +102,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         if(destroyed) {
             return;
         }
-        destroyed = true;
+        super.destroy();
         // unsubscribe.
         try {
             if(registry != null && registry.isAvailable()) {
@@ -424,6 +422,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     }
 
     public boolean isAvailable() {
+        if (destroyed) return false;
         Map<String, Invoker<T>> map = urlInvokerMap;
         if (map != null && map.size() > 0) {
             for (Invoker<T> invoker : new ArrayList<Invoker<T>>(map.values())) {
