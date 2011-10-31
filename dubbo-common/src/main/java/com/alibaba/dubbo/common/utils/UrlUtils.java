@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.registry.support;
+package com.alibaba.dubbo.common.utils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,11 +22,9 @@ import java.util.Map;
 import java.util.Set;
 
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
-import com.alibaba.dubbo.registry.RegistryFactory;
 
 public class UrlUtils {
     
@@ -53,11 +51,7 @@ public class UrlUtils {
 	    }
         String defaultProtocol = defaults == null ? null : defaults.get("protocol");
         if (defaultProtocol == null || defaultProtocol.length() == 0) {
-            if (ExtensionLoader.getExtensionLoader(RegistryFactory.class).hasExtension("remote")) {
-                defaultProtocol = "remote";
-            } else {
-                defaultProtocol = "dubbo";
-            }
+            defaultProtocol = "dubbo";
         }
         String defaultUsername = defaults == null ? null : defaults.get("username");
         String defaultPassword = defaults == null ? null : defaults.get("password");

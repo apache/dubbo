@@ -21,13 +21,15 @@ import java.util.List;
 import java.util.Map;
 
 import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
+import com.alibaba.dubbo.common.utils.UrlUtils;
 import com.alibaba.dubbo.monitor.MonitorService;
+import com.alibaba.dubbo.registry.RegistryFactory;
 import com.alibaba.dubbo.registry.RegistryService;
-import com.alibaba.dubbo.registry.support.UrlUtils;
 import com.alibaba.dubbo.rpc.Filter;
 import com.alibaba.dubbo.rpc.InvokerListener;
 import com.alibaba.dubbo.rpc.ProxyFactory;
@@ -155,6 +157,13 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
                     Map<String, String> map = new HashMap<String, String>();
                     appendParameters(map, config);
                     map.put("path", RegistryService.class.getName());
+                    if (! map.containsKey("protocol")) {
+                        if (ExtensionLoader.getExtensionLoader(RegistryFactory.class).hasExtension("remote")) {
+                            map.put("protocol", "remote");
+                        } else {
+                            map.put("protocol", "dubbo");
+                        }
+                    }
                     List<URL> urls = UrlUtils.parseURLs(config.getAddress(), map);
                     for (URL url : urls) {
                         url = url.addParameter(Constants.REGISTRY_KEY, url.getProtocol());
@@ -176,7 +185,11 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
         appendParameters(map, monitor);
         if (monitor.getAddress() != null || monitor.getAddress().length() > 0) {
             if (! map.containsKey("protocol")) {
-                map.put("protocol", "dubbo");
+                if (ExtensionLoader.getExtensionLoader(RegistryFactory.class).hasExtension("logstat")) {
+                    map.put("protocol", "logstat");
+                } else {
+                    map.put("protocol", "dubbo");
+                }
             }
             return UrlUtils.parseURL(monitor.getAddress(), map);
         } else if (monitor.getProtocol() != null || monitor.getProtocol().length() > 0) {
