@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.monitor.filter;
+package com.alibaba.dubbo.monitor.support;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
