@@ -67,6 +67,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     // 服务名称
     private String              path;
+    
+    // 是否注册
+    private Boolean             register;
 
     // 方法配置
     private List<MethodConfig>  methods;
@@ -432,7 +435,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             if (logger.isInfoEnabled()) {
                 logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
             }
-            if (registryURLs != null && registryURLs.size() > 0) {
+            if (registryURLs != null && registryURLs.size() > 0
+                    && url.getParameter("register", true)) {
                 for (URL registryURL : registryURLs) {
                     URL monitorUrl = loadMonitor(registryURL);
                     if (monitorUrl != null) {
@@ -529,6 +533,17 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         this.path = path;
     }
 
+    public Boolean getRegister() {
+        return register;
+    }
+    
+    public void setRegister(Boolean register) {
+        this.register = register;
+        if (Boolean.FALSE.equals(register)) {
+            setRegistry(new RegistryConfig(RegistryConfig.NO_AVAILABLE));
+        }
+    }
+    
 	public List<MethodConfig> getMethods() {
 		return methods;
 	}

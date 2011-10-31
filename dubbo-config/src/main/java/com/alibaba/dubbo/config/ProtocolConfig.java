@@ -100,6 +100,9 @@ public class ProtocolConfig extends AbstractConfig {
     // status检查
     private String              status;
     
+    // 是否注册
+    private Boolean             register;
+    
     // 参数
     private Map<String, String> parameters;
     
@@ -295,6 +298,14 @@ public class ProtocolConfig extends AbstractConfig {
         this.status = status;
     }
 
+    public Boolean getRegister() {
+        return register;
+    }
+    
+    public void setRegister(Boolean register) {
+        this.register = register;
+    }
+    
     public String getTransporter() {
         return transporter;
     }
@@ -333,5 +344,5 @@ public class ProtocolConfig extends AbstractConfig {
             ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(protocol).destroy();
         }
     }
-    
+
 }
