@@ -88,7 +88,7 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
                 setApplication(applicationConfig);
             }
         }
-        if (getRegistries() == null || getRegistries().size() == 0
+        if ((getRegistries() == null || getRegistries().size() == 0)
                 && (getConsumer() == null || getConsumer().getRegistries() == null || getConsumer().getRegistries().size() == 0)
                 && (getApplication() == null || getApplication().getRegistries() == null || getApplication().getRegistries().size() == 0)) {
             Map<String, RegistryConfig> registryConfigMap = applicationContext == null ? null : applicationContext.getBeansOfType(RegistryConfig.class, false, false);
