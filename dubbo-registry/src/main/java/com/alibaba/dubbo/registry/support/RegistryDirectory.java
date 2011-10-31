@@ -51,6 +51,7 @@ import com.alibaba.dubbo.rpc.cluster.support.ClusterUtils;
  * RegistryDirectory
  * 
  * @author william.liangf
+ * @author chao.liuc
  */
 public class RegistryDirectory<T> extends AbstractDirectory<T> implements NotifyListener {
 
@@ -137,7 +138,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                         invokerUrls.add(url);
                     }
                 } else {
-                    logger.error("Unsupported protocol " + url.getProtocol() + " in notified url " + url + " from registry " + getUrl().getAddress() + " to consumer " + NetUtils.getLocalHost());
+                    logger.error(new IllegalStateException("Unsupported protocol " + url.getProtocol() + " in notified url: " + url + " from registry " + getUrl().getAddress() + " to consumer " + NetUtils.getLocalHost() 
+                            + ", supported protocol: "+ExtensionLoader.getExtensionLoader(Protocol.class).getSupportedExtensions()));
                 }
             }
             
