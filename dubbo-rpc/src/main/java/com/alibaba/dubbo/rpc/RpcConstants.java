@@ -170,6 +170,8 @@ public final class RpcConstants {
     
     public static final String STUB_EVENT_METHODS_KEY = "dubbo.stub.event.methods";
     
+    public static final String REFER_AUTODESTROY_KEY = "refer.autodestroy";
+    
     private RpcConstants() {}
     
 }

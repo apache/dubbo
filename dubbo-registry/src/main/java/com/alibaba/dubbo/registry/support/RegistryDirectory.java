@@ -332,13 +332,13 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         // 如果URL中指定了autodestroy=false，则不关闭旧的连接
         for(Invoker<T> invoker : newUrlInvokerMap.values() ){
             if (invoker != null && invoker.getUrl() != null){
-                autodestroy = invoker.getUrl().getParameter("refer.autodestroy", true);
+                autodestroy = invoker.getUrl().getParameter(RpcConstants.REFER_AUTODESTROY_KEY, true);
             }
             break;
         }
         if(! autodestroy) {
             if(logger.isWarnEnabled()) {
-                logger.warn("url.param[refer.autodestroy=false] is false. may have reference leak. recommend(default) true");
+                logger.warn("url.param["+RpcConstants.REFER_AUTODESTROY_KEY+"=false] is false. may have reference leak. recommend(default) true");
             }
             return;
         }
