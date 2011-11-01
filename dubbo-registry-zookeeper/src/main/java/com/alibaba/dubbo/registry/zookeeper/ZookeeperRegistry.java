@@ -81,12 +81,12 @@ public class ZookeeperRegistry implements Registry {
             if (auth) {
                 zookeeper.addAuthInfo(url.getUsername(), url.getPassword().getBytes());
             }
-            String root = url.getParameter("root");
-            if (root != null && root.length() > 0) {
-                root = SEPARATOR + root;
-                this.root = root;
-                if (zookeeper.exists(root, false) == null) {
-                    zookeeper.create(root, new byte[0], auth ? Ids.CREATOR_ALL_ACL : Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+            String group = url.getParameter(Constants.GROUP_KEY);
+            if (group != null && group.length() > 0) {
+                group = SEPARATOR + group;
+                this.root = group;
+                if (zookeeper.exists(group, false) == null) {
+                    zookeeper.create(group, new byte[0], auth ? Ids.CREATOR_ALL_ACL : Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
                 }
             } else {
                 this.root = "";
