@@ -49,9 +49,9 @@ public class MulticastRegistry extends AbstractRegistry {
 
     private static final String UNSUBSCRIBE = "unsubscribe";
     
-    private InetAddress mutilcastAddress;
+    private final InetAddress mutilcastAddress;
     
-    private MulticastSocket mutilcastSocket;
+    private final MulticastSocket mutilcastSocket;
     
     public MulticastRegistry(URL url) {
         super(url);
@@ -85,7 +85,7 @@ public class MulticastRegistry extends AbstractRegistry {
                         }
                     }
                 }
-            }, "MulticastRegistry");
+            }, "MulticastRegistryReceiver");
             thread.setDaemon(true);
             thread.start();
         } catch (IOException e) {
@@ -137,7 +137,7 @@ public class MulticastRegistry extends AbstractRegistry {
             String service = url.getServiceKey();
             if (getRegistered().containsKey(service)) {
                 for (URL u : getRegistered().get(service)) {
-                    unicast(REGISTER + " " + u.toFullString(), url);
+                    unicast(REGISTER + " " + u.toFullString(), url.getHost());
                 }
             }
         } else if (msg.startsWith(UNSUBSCRIBE)) {
@@ -157,13 +157,13 @@ public class MulticastRegistry extends AbstractRegistry {
         }
     }
     
-    private void unicast(String msg, URL url) {
+    private void unicast(String msg, String host) {
         if (logger.isInfoEnabled()) {
-            logger.info("Send unicast message: " + msg + " to " + url.getAddress() + ":" + mutilcastSocket.getLocalPort());
+            logger.info("Send unicast message: " + msg + " to " + host + ":" + mutilcastSocket.getLocalPort());
         }
         try {
             byte[] data = (msg + "\n").getBytes();
-            DatagramPacket hi = new DatagramPacket(data, data.length, InetAddress.getByName(url.getHost()), mutilcastSocket.getLocalPort());
+            DatagramPacket hi = new DatagramPacket(data, data.length, InetAddress.getByName(host), mutilcastSocket.getLocalPort());
             mutilcastSocket.send(hi);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
