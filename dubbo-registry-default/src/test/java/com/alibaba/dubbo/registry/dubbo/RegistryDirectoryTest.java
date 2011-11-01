@@ -349,8 +349,8 @@ public class RegistryDirectoryTest {
         registryDirectory.destroy();
         Assert.assertEquals(false, registryDirectory.isAvailable());
         Assert.assertEquals(false, invokers.get(0).isAvailable());
-        
         registryDirectory.destroy();
+        
         
         Map<String, List<Invoker<RegistryDirectoryTest>>> methodInvokerMap = registryDirectory.getMethodInvokerMap();
         Map<String, Invoker<RegistryDirectoryTest>> urlInvokerMap = registryDirectory.getUrlInvokerMap();
@@ -366,7 +366,22 @@ public class RegistryDirectoryTest {
         } catch (RpcException e) {
             Assert.assertTrue(e.getMessage().contains("already destroyed"));
         }
-        
+    }
+    
+    @Test
+    public void testDestroy_WithDestroyRegistry(){
+        RegistryDirectory registryDirectory = getRegistryDirectory();
+        CountDownLatch latch = new CountDownLatch(1);
+        registryDirectory.setRegistry(new MockRegistry(latch));
+        registryDirectory.destroy();
+        Assert.assertEquals(0, latch.getCount());
+    }
+    
+    @Test
+    public void testDestroy_WithDestroyRegistry_WithError(){
+        RegistryDirectory registryDirectory = getRegistryDirectory();
+        registryDirectory.setRegistry(new MockRegistry(true));
+        registryDirectory.destroy();
     }
     
     @Test
@@ -490,8 +505,12 @@ public class RegistryDirectoryTest {
     private static interface DemoService {}
     private static class MockRegistry implements Registry{
         CountDownLatch latch ;
+        boolean destroyWithError ;
         public MockRegistry(CountDownLatch latch) {
             this.latch = latch;
+        }
+        public MockRegistry(boolean destroyWithError) {
+            this.destroyWithError = destroyWithError;
         }
         public void register(URL url) {
             
@@ -512,10 +531,12 @@ public class RegistryDirectoryTest {
             return null;
         }
         public boolean isAvailable() {
-            return false;
+            return true;
         }
         public void destroy() {
-            
+            if (destroyWithError){
+                throw new RpcException("test exception ignore.");
+            }
         }
     }
 }
