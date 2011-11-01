@@ -159,7 +159,7 @@ public class MulticastRegistry extends AbstractRegistry {
     
     private void unicast(String msg, URL url) {
         if (logger.isInfoEnabled()) {
-            logger.info("Send unicast message: " + msg + " to " + url.getAddress());
+            logger.info("Send unicast message: " + msg + " to " + url.getAddress() + ":" + mutilcastSocket.getLocalPort());
         }
         try {
             byte[] data = (msg + "\n").getBytes();
