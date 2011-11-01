@@ -250,7 +250,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     public synchronized void unexport() {
-        if (exported) {
+        if (!exported) {
             throw new IllegalStateException("No exported!");
         }
         if (unexported) {
