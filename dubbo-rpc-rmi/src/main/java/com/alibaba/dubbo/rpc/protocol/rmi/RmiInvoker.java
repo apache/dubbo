@@ -38,7 +38,16 @@ public class RmiInvoker<T> extends AbstractInvoker<T> {
     @Override
     protected Result doInvoke(Invocation invocation) throws RpcException {
         try {
-            return invoker.invoke(invocation);
+            Result result = invoker.invoke(invocation);
+            Throwable e = result.getException();
+            if (e != null) {
+                String name = e.getClass().getName();
+                if (name.startsWith("java.rmi.")
+                        || name.startsWith("javax.rmi.")) {
+                    throw new RpcException(e.getMessage(), e);
+                }
+            }
+            return result;
         } catch (RpcException e) {
             throw e;
         } catch (Throwable e) {
