@@ -92,7 +92,6 @@ public class MulticastRegistryTest {
      */
     @Test
     public void testSubscribe() {
-        final String subscribearg = "arg1=1&arg2=2";
         // verify lisener.
         final AtomicReference<Map<String, String>> args = new AtomicReference<Map<String, String>>();
         registry.subscribe(consumerUrl, new NotifyListener() {

@@ -21,6 +21,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.alibaba.dubbo.common.URL;
@@ -64,16 +65,21 @@ public class MulticastRegistry extends AbstractRegistry {
             mutilcastSocket.joinGroup(mutilcastAddress);
             Thread thread = new Thread(new Runnable() {
                 public void run() {
-                    byte[] buf = new byte[1024];
+                    byte[] buf = new byte[2048];
                     DatagramPacket recv = new DatagramPacket(buf, buf.length);
                     while (true) {
                         try {
                             mutilcastSocket.receive(recv);
                             String msg = new String(recv.getData()).trim();
+                            int i = msg.indexOf('\n');
+                            if (i > 0) {
+                                msg = msg.substring(0, i).trim();
+                            }
                             if (logger.isInfoEnabled()) {
                                 logger.info("Receive multicast message: " + msg + " from " + recv.getSocketAddress());
                             }
                             MulticastRegistry.this.receive(msg, (InetSocketAddress) recv.getSocketAddress());
+                            Arrays.fill(buf, (byte)0);
                         } catch (IOException e) {
                             logger.error(e.getMessage(), e);
                         }
@@ -140,10 +146,11 @@ public class MulticastRegistry extends AbstractRegistry {
     
     private void broadcast(String msg) {
         if (logger.isInfoEnabled()) {
-            logger.info("Send multicast message: " + msg + " to " + mutilcastAddress + ":" + mutilcastSocket.getLocalPort());
+            logger.info("Send broadcast message: " + msg + " to " + mutilcastAddress + ":" + mutilcastSocket.getLocalPort());
         }
         try {
-            DatagramPacket hi = new DatagramPacket(msg.getBytes(), msg.length(), mutilcastAddress, mutilcastSocket.getLocalPort());
+            byte[] data = (msg + "\n").getBytes();
+            DatagramPacket hi = new DatagramPacket(data, data.length, mutilcastAddress, mutilcastSocket.getLocalPort());
             mutilcastSocket.send(hi);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -152,10 +159,11 @@ public class MulticastRegistry extends AbstractRegistry {
     
     private void unicast(String msg, URL url) {
         if (logger.isInfoEnabled()) {
-            logger.info("Send udp message: " + msg + " to " + url.getAddress());
+            logger.info("Send unicast message: " + msg + " to " + url.getAddress());
         }
         try {
-            DatagramPacket hi = new DatagramPacket(msg.getBytes(), msg.length(), InetAddress.getByName(url.getHost()), mutilcastSocket.getLocalPort());
+            byte[] data = (msg + "\n").getBytes();
+            DatagramPacket hi = new DatagramPacket(data, data.length, InetAddress.getByName(url.getHost()), mutilcastSocket.getLocalPort());
             mutilcastSocket.send(hi);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -189,12 +197,19 @@ public class MulticastRegistry extends AbstractRegistry {
     }
 
     public boolean isAvailable() {
-        return mutilcastSocket.isConnected();
+        try {
+            return mutilcastSocket.isConnected();
+        } catch (Throwable t) {
+            return false;
+        }
     }
 
-    @Override
     public void destroy() {
-        mutilcastSocket.close();
+        try {
+            mutilcastSocket.close();
+        } catch (Throwable t) {
+            logger.warn(t.getMessage(), t);
+        }
     }
 
 }
