@@ -21,15 +21,18 @@ import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.dubbo.common.utils.CollectionUtils;
 import com.alibaba.dubbo.common.utils.NetUtils;
+import com.alibaba.dubbo.common.utils.StringUtils;
 
 /**
  * URL - Uniform Resource Locator (Immutable, ThreadSafe)
@@ -819,6 +822,13 @@ public final class URL implements Serializable {
         return addParameters(map);
     }
     
+    public URL addParameterString(String query) {
+        if (query == null || query.length() == 0) {
+            return this;
+        }
+        return addParameters(StringUtils.parseQueryString(query));
+    }
+    
     public URL removeParameter(String key) {
         if (key == null || key.length() == 0) {
             return this;
@@ -855,21 +865,47 @@ public final class URL implements Serializable {
     	return buildString(false, true); // no show username and password
     }
 
+    public String toString(String... parameters) {
+        return buildString(false, true, parameters); // no show username and password
+    }
+    
     public String toIdentityString() {
 		return buildString(false, false); // only return identity message, see the method "equals" and "hashCode"
 	}
 
+    public String toIdentityString(String... parameters) {
+        return buildString(false, false, parameters); // only return identity message, see the method "equals" and "hashCode"
+    }
+    
 	public String toFullString() {
 		return buildString(true, true);
 	}
 
-	public String toParameterString() {
+    public String toFullString(String... parameters) {
+        return buildString(true, true, parameters);
+    }
+    
+    public String toParameterString() {
+        return toParameterString(new String[0]);
+    }
+    
+	public String toParameterString(String... parameters) {
 		StringBuilder buf = new StringBuilder();
-		if (getParameters().size() > 0) {
+		buildParameters(buf, false, parameters);
+		return buf.toString();
+	}
+	
+	private void buildParameters(StringBuilder buf, boolean concat, String[] parameters) {
+	    if (getParameters().size() > 0) {
+            List<String> includes = (parameters == null || parameters.length == 0 ? null : Arrays.asList(parameters));
             boolean first = true;
             for (Map.Entry<String, String> entry : new TreeMap<String, String>(getParameters()).entrySet()) {
-                if (entry.getKey() != null && entry.getKey().length() > 0) {
+                if (entry.getKey() != null && entry.getKey().length() > 0
+                        && (includes == null || includes.contains(entry.getKey()))) {
                     if (first) {
+                        if (concat) {
+                            buf.append("?");
+                        }
                         first = false;
                     } else {
                         buf.append("&");
@@ -880,22 +916,9 @@ public final class URL implements Serializable {
                 }
             }
         }
-		return buf.toString();
 	}
 	
-	public java.net.URL toJavaURL() {
-		try {
-			return new java.net.URL(toString());
-		} catch (MalformedURLException e) {
-			throw new IllegalStateException(e.getMessage(), e);
-		}
-	}
-
-    public InetSocketAddress toInetSocketAddress() {
-        return new InetSocketAddress(host, port);
-    }
-
-	private String buildString(boolean u, boolean p) {
+	private String buildString(boolean u, boolean p, String... parameters) {
 		StringBuilder buf = new StringBuilder();
 		if (protocol != null && protocol.length() > 0) {
 			buf.append(protocol);
@@ -921,25 +944,22 @@ public final class URL implements Serializable {
 			buf.append(path);
 		}
 		if (p) {
-		    if (getParameters().size() > 0) {
-	            boolean first = true;
-	            for (Map.Entry<String, String> entry : new TreeMap<String, String>(getParameters()).entrySet()) {
-	                if (entry.getKey() != null && entry.getKey().length() > 0) {
-	                    if (first) {
-	                        buf.append("?");
-	                        first = false;
-	                    } else {
-	                        buf.append("&");
-	                    }
-	                    buf.append(entry.getKey());
-	                    buf.append("=");
-	                    buf.append(entry.getValue() == null ? "" : entry.getValue().trim());
-	                }
-	            }
-	        }
+		    buildParameters(buf, true, parameters);
 		}
 		return buf.toString();
 	}
+
+    public java.net.URL toJavaURL() {
+        try {
+            return new java.net.URL(toString());
+        } catch (MalformedURLException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    public InetSocketAddress toInetSocketAddress() {
+        return new InetSocketAddress(host, port);
+    }
 
 	public int hashCode() {
 		final int prime = 31;

@@ -124,6 +124,8 @@ public class ZookeeperRegistry implements Registry {
             }
             if (zookeeper.exists(provider, false) == null) {
                 zookeeper.create(provider, url.toParameterString().getBytes(), auth ? Ids.CREATOR_ALL_ACL : Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+            } else {
+                zookeeper.setData(provider, url.toParameterString().getBytes(), -1);
             }
         } catch (Throwable e) {
             throw new RpcException("Failed to register " + url + ", cause: " + e.getMessage(), e);
@@ -204,7 +206,7 @@ public class ZookeeperRegistry implements Registry {
     }
     
     private String toProviderPath(URL url) {
-        return SEPARATOR + URL.encode(url.toIdentityString());
+        return SEPARATOR + URL.encode(url.toIdentityString(Constants.GROUP_KEY, Constants.VERSION_KEY));
     }
     
     private List<URL> toUrls(URL consumer, List<String> providers) throws KeeperException, InterruptedException {
@@ -217,10 +219,10 @@ public class ZookeeperRegistry implements Registry {
             if (stat != null) {
                 byte[] data = zookeeper.getData(path, false, stat);
                 if (data != null && data.length > 0) {
-                    query = "?" + new String(data);
+                    query = new String(data);
                 }
             }
-            URL url = URL.valueOf(URL.decode(provider + query));
+            URL url = URL.valueOf(URL.decode(provider)).addParameterString(URL.decode(query));
             if (UrlUtils.isMatch(consumer, url)) {
                 urls.add(url);
             }
