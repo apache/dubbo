@@ -28,7 +28,6 @@ import javax.script.ScriptEngineManager;
 import junit.framework.Assert;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.alibaba.dubbo.common.Constants;
@@ -120,32 +119,6 @@ public class RegistryDirectoryTest {
         test_Notified1invokers(registryDirectory);
         test_Notified3invokers(registryDirectory);
         testforbid(registryDirectory);
-    }
-    @Test
-    @Ignore //FIXME
-    public void testNotified_CloseAutoDestroy() {
-        RegistryDirectory registryDirectory = getRegistryDirectory();
-        List<URL> serviceUrls = new ArrayList<URL> ();
-        serviceUrls.add(SERVICEURL);
-        serviceUrls.add(SERVICEURL2);
-        registryDirectory.notify(serviceUrls);
-        invocation = new RpcInvocation();
-        
-        List<Invoker> invokers = registryDirectory.list(invocation);
-        Assert.assertEquals(true,invokers.get(0).isAvailable());
-        Assert.assertEquals(true,invokers.get(1).isAvailable());
-        
-        serviceUrls = new ArrayList<URL> ();
-        serviceUrls.add(SERVICEURL2.addParameter(RpcConstants.REFER_AUTODESTROY_KEY, false));
-        registryDirectory.notify(serviceUrls);
-        Assert.assertEquals(true,invokers.get(0).isAvailable());
-        Assert.assertEquals(true,invokers.get(1).isAvailable());
-        
-        serviceUrls = new ArrayList<URL> ();
-        serviceUrls.add(SERVICEURL2);
-        registryDirectory.notify(serviceUrls);
-        Assert.assertEquals(false,invokers.get(0).isAvailable());
-        Assert.assertEquals(true,invokers.get(1).isAvailable());
     }
     @Test
     public void testNotified_WithError() {

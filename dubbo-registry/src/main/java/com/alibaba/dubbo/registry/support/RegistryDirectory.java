@@ -316,7 +316,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         }
         methodInvokerMap = null;
     }
-
+    
     /**
      * 检查缓存中的invoker是否需要被destroy
      * 如果url中指定refer.autodestroy=false，则只增加不减少，可能会有refer泄漏，
@@ -328,21 +328,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             destroyAllInvokers();
             return;
         }
-        boolean autodestroy = true ;
-        // 如果URL中指定了autodestroy=false，则不关闭旧的连接
-        for(Invoker<T> invoker : newUrlInvokerMap.values() ){
-            if (invoker != null && invoker.getUrl() != null){
-                autodestroy = invoker.getUrl().getParameter(RpcConstants.REFER_AUTODESTROY_KEY, true);
-            }
-            break;
-        }
-        if(! autodestroy) {
-            if(logger.isWarnEnabled()) {
-                logger.warn("url.param["+RpcConstants.REFER_AUTODESTROY_KEY+"=false] is false. may have reference leak. recommend(default) true");
-            }
-            return;
-        }
-        
         // check deleted invoker
         List<String> deleted = null;
         if (oldUrlInvokerMap != null) {
