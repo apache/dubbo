@@ -295,22 +295,6 @@ public final class URL implements Serializable {
         return new URL(protocol, username, password, host, port, path, getParameters());
     }
 
-    public String getServiceKey() {
-        String inf = getParameter(Constants.INTERFACE_KEY, path);
-        if (inf == null) return null;
-        StringBuilder buf = new StringBuilder();
-        String group = getParameter(Constants.GROUP_KEY);
-        if (group != null && group.length() > 0) {
-            buf.append(group).append("/");
-        }
-        buf.append(inf);
-        String version = getParameter(Constants.VERSION_KEY);
-        if (version != null && version.length() > 0) {
-            buf.append(":").append(version);
-        }
-        return buf.toString();
-    }
-
     public Map<String, String> getParameters() {
         return parameters;
     }
@@ -961,6 +945,30 @@ public final class URL implements Serializable {
         return new InetSocketAddress(host, port);
     }
 
+    public String getServiceKey() {
+        String inf = getServiceName();
+        if (inf == null) return null;
+        StringBuilder buf = new StringBuilder();
+        String group = getParameter(Constants.GROUP_KEY);
+        if (group != null && group.length() > 0) {
+            buf.append(group).append("/");
+        }
+        buf.append(inf);
+        String version = getParameter(Constants.VERSION_KEY);
+        if (version != null && version.length() > 0) {
+            buf.append(":").append(version);
+        }
+        return buf.toString();
+    }
+    
+    public String getServiceName() {
+        return getParameter(Constants.INTERFACE_KEY, path);
+    }
+    
+    public String getServiceUrl() {
+        return toFullString(Constants.GROUP_KEY, Constants.VERSION_KEY);
+    }
+    
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;

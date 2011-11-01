@@ -202,11 +202,11 @@ public class ZookeeperRegistry implements Registry {
     }
     
     private String toServicePath(URL url) {
-        return root + SEPARATOR + URL.encode(url.getParameter(Constants.INTERFACE_KEY, url.getPath()));
+        return root + SEPARATOR + URL.encode(url.getServiceName());
     }
     
     private String toProviderPath(URL url) {
-        return SEPARATOR + URL.encode(url.toIdentityString(Constants.GROUP_KEY, Constants.VERSION_KEY));
+        return SEPARATOR + URL.encode(url.getServiceUrl());
     }
     
     private List<URL> toUrls(URL consumer, List<String> providers) throws KeeperException, InterruptedException {
