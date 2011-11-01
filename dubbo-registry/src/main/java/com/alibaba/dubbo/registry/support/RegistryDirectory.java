@@ -44,6 +44,7 @@ import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.cluster.Router;
 import com.alibaba.dubbo.rpc.cluster.RouterFactory;
+import com.alibaba.dubbo.rpc.cluster.router.ScriptRouterFactory;
 import com.alibaba.dubbo.rpc.cluster.support.AbstractDirectory;
 import com.alibaba.dubbo.rpc.cluster.support.ClusterUtils;
 
@@ -108,7 +109,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 registry.unsubscribe(directoryUrl, this);
             }
         } catch (Throwable t) {
-            logger.warn("unexpeced error when unsubscribe service " + serviceKey + "from registry" + registry.getUrl().getAddress(), t);
+            logger.warn("unexpeced error when unsubscribe service " + serviceKey + "from registry" + registry.getUrl(), t);
         }
         try {
             destroyAllInvokers();
@@ -193,13 +194,18 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         
         if (urls != null && urls.size() > 0) {
             for (URL url : urls) {
-                String router_type = url.getParameter(RpcConstants.ROUTER_KEY);
+                String router_type = url.getParameter(RpcConstants.ROUTER_KEY, ScriptRouterFactory.NAME);
                 if (router_type == null || router_type.length() == 0){
                     logger.warn("Router url:\"" + url.toString() + "\" does not contain " + RpcConstants.ROUTER_KEY + ", router creation ignored!");
                     continue;
                 }
-                routers.add(ExtensionLoader.getExtensionLoader(RouterFactory.class).getExtension(router_type).getRouter(url));
-//                routers.add(routerFactory.getRouter(url.setProtocol(router_type)));
+                try{
+                Router router = ExtensionLoader.getExtensionLoader(RouterFactory.class).getExtension(router_type).getRouter(url);
+                if (!routers.contains(router))
+                    routers.add(router);
+                }catch (Throwable t) {
+                    logger.error("convert router url to router error, url: "+ url, t);
+                }
             }
         }
         return routers;

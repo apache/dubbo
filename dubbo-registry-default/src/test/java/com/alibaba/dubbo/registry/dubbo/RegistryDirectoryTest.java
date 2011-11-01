@@ -479,6 +479,7 @@ public class RegistryDirectoryTest {
         List<URL> serviceUrls = new ArrayList<URL> ();
         // without ROUTER_KEY, the first router should not be created.
         serviceUrls.add(routerurl.addParameter(RpcConstants.TYPE_KEY, "javascript")
+                                 .addParameter(RpcConstants.ROUTER_KEY, "notsupported")
                                  .addParameter(RpcConstants.RULE_KEY, "function test1(){}"));
         serviceUrls.add(routerurl2.addParameter(RpcConstants.TYPE_KEY, "javascript")
                                  .addParameter(RpcConstants.ROUTER_KEY, ScriptRouterFactory.NAME)
@@ -493,6 +494,29 @@ public class RegistryDirectoryTest {
         routers = registryDirectory.getRouters();
         Assert.assertEquals(1, routers.size());
         Assert.assertEquals(ScriptRouter.class, routers.get(0).getClass());
+        
+        serviceUrls.clear();
+        serviceUrls.add(routerurl.addParameter(RpcConstants.ROUTER_KEY, RpcConstants.ROUTER_TYPE_CLEAR));
+        registryDirectory.notify(serviceUrls);
+        routers = registryDirectory.getRouters();
+        Assert.assertEquals(0, routers.size());
+    }
+    
+    @Test
+    public void testNotifyRouterUrls_Clean(){
+        if (isScriptUnsupported) return;
+        RegistryDirectory registryDirectory = getRegistryDirectory();
+        URL  routerurl= URL.valueOf(RpcConstants.ROUTE_PROTOCOL + "://127.0.0.1:9096/")
+            .addParameter(RpcConstants.ROUTER_KEY, "javascript")
+             .addParameter(RpcConstants.RULE_KEY, "function test1(){}")
+             .addParameter(RpcConstants.ROUTER_KEY, "script"); //FIX BAD
+        
+        List<URL> serviceUrls = new ArrayList<URL> ();
+        // without ROUTER_KEY, the first router should not be created.
+        serviceUrls.add(routerurl);
+        registryDirectory.notify(serviceUrls);
+        List routers = registryDirectory.getRouters();
+        Assert.assertEquals(1, routers.size());
         
         serviceUrls.clear();
         serviceUrls.add(routerurl.addParameter(RpcConstants.ROUTER_KEY, RpcConstants.ROUTER_TYPE_CLEAR));
