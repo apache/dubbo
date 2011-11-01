@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.registry.Registry;
 import com.alibaba.dubbo.registry.RegistryFactory;
 import com.alibaba.dubbo.rpc.Exporter;
@@ -116,7 +117,7 @@ public class RegistryProtocol implements Protocol {
         RegistryDirectory<T> directory = new RegistryDirectory<T>(type, url);
         directory.setRegistry(registry);
         directory.setProtocol(protocol);
-        registry.subscribe(directory.getUrl(), directory);
+        registry.subscribe(directory.getUrl().setHost(NetUtils.getLocalHost()), directory);
         return cluster.merge(directory);
     }
 
