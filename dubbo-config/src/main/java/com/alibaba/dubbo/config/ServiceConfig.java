@@ -380,8 +380,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 }
             }
             if (generic) {
-                map.put("generic", "true");
-                map.put("methods", "*");
+                map.put("generic", String.valueOf(true));
+                map.put("methods", Constants.ANY_VALUE);
             } else {
                 map.put("revision", Version.getVersion(interfaceClass, version));
                 map.put("methods", StringUtils.join(new HashSet<String>(Arrays.asList(Wrapper.getWrapper(interfaceClass).getDeclaredMethodNames())), ","));

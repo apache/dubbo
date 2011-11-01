@@ -324,5 +324,14 @@ public class UrlUtils {
         }
 		return forbid;
 	}
-
+	
+	public static boolean isMatch(URL consumerUrl, URL providerUrl) {
+        String consumerGroup = consumerUrl.getParameter(Constants.GROUP_KEY);
+        String consumerVersion = consumerUrl.getParameter(Constants.VERSION_KEY);
+        String providerGroup = providerUrl.getParameter(Constants.GROUP_KEY);
+        String providerVersion = providerUrl.getParameter(Constants.VERSION_KEY);
+        return (Constants.ANY_VALUE.equals(consumerGroup) || StringUtils.isEquals(consumerGroup, providerGroup)) 
+                && (Constants.ANY_VALUE.equals(consumerVersion) || StringUtils.isEquals(consumerVersion, providerVersion));
+    }
+	
 }

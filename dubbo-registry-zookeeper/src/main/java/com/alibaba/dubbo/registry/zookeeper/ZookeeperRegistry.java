@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.registry.zookeeper;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +34,7 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.UrlUtils;
 import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.Registry;
 import com.alibaba.dubbo.rpc.RpcException;
@@ -51,6 +51,8 @@ public class ZookeeperRegistry implements Registry {
     private final static String SEPARATOR = "/";
 
     private final URL           url;
+    
+    private final String        root;
     
     private final boolean       auth;
 
@@ -79,7 +81,17 @@ public class ZookeeperRegistry implements Registry {
             if (auth) {
                 zookeeper.addAuthInfo(url.getUsername(), url.getPassword().getBytes());
             }
-        } catch (IOException e) {
+            String root = url.getParameter("root");
+            if (root != null && root.length() > 0) {
+                root = SEPARATOR + root;
+                this.root = root;
+                if (zookeeper.exists(root, false) == null) {
+                    zookeeper.create(root, new byte[0], auth ? Ids.CREATOR_ALL_ACL : Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+                }
+            } else {
+                this.root = "";
+            }
+        } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
@@ -148,7 +160,7 @@ public class ZookeeperRegistry implements Registry {
             }
             serviceWathers.put(listener, wather);
             List<String> providers = zookeeper.getChildren(service, wather);
-            List<URL> urls = toUrls(service, providers);
+            List<URL> urls = toUrls(url, providers);
             if (urls != null && urls.size() > 0) {
                 listener.notify(urls);
             }
@@ -173,7 +185,7 @@ public class ZookeeperRegistry implements Registry {
             }
         }
     }
-
+    
     public List<URL> lookup(URL url) {
         if (url == null) {
             throw new IllegalArgumentException("lookup url == null");
@@ -181,21 +193,22 @@ public class ZookeeperRegistry implements Registry {
         try {
             String service = toServicePath(url);
             List<String> providers = zookeeper.getChildren(service, false);
-            return toUrls(service, providers);
+            return toUrls(url, providers);
         } catch (Throwable e) {
             throw new RpcException("Failed to lookup " + url + ", cause: " + e.getMessage(), e);
         }
     }
     
     private String toServicePath(URL url) {
-        return SEPARATOR + URL.encode(url.getServiceKey());
+        return root + SEPARATOR + URL.encode(url.getParameter(Constants.INTERFACE_KEY, url.getPath()));
     }
     
     private String toProviderPath(URL url) {
         return SEPARATOR + URL.encode(url.toIdentityString());
     }
     
-    private List<URL> toUrls(String service, List<String> providers) throws KeeperException, InterruptedException {
+    private List<URL> toUrls(URL consumer, List<String> providers) throws KeeperException, InterruptedException {
+        String service = toServicePath(consumer);
         List<URL> urls = new ArrayList<URL>();
         for (String provider : providers) {
             String path = service + provider;
@@ -207,7 +220,10 @@ public class ZookeeperRegistry implements Registry {
                     query = "?" + new String(data);
                 }
             }
-            urls.add(URL.valueOf(URL.decode(provider + query)));
+            URL url = URL.valueOf(URL.decode(provider + query));
+            if (UrlUtils.isMatch(consumer, url)) {
+                urls.add(url);
+            }
         }
         return urls;
     }

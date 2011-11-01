@@ -57,8 +57,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     private static final Logger logger = LoggerFactory.getLogger(RegistryDirectory.class);
     
-    private static final String ALL_METHOD_NAME = "*";
-    
     private volatile boolean forbidden = false;
     
     private final String serviceKey;
@@ -278,7 +276,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                     if (methods != null && methods.length > 0) {
                         for (String method : methods) {
                             if (method != null && method.length() > 0 
-                                    && ! ALL_METHOD_NAME.equals(method)) {
+                                    && ! Constants.ANY_VALUE.equals(method)) {
                                 List<Invoker<T>> methodInvokers = methodInvokerMap.get(method);
                                 if (methodInvokers == null) {
                                     methodInvokers = new ArrayList<Invoker<T>>();
@@ -291,7 +289,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 }
                 invokersList.add(invoker);
             }
-            methodInvokerMap.put(ALL_METHOD_NAME, invokersList);
+            methodInvokerMap.put(Constants.ANY_VALUE, invokersList);
         }
         // sort and unmodifiable
         for (String method : new HashSet<String>(methodInvokerMap.keySet())) {
@@ -403,7 +401,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 invokers = methodInvokerMap.get(methodName);
             }
             if(invokers == null) {
-                invokers = methodInvokerMap.get(ALL_METHOD_NAME);
+                invokers = methodInvokerMap.get(Constants.ANY_VALUE);
             }
             if(invokers == null) {
                 Iterator<List<Invoker<T>>> iterator = methodInvokerMap.values().iterator();
