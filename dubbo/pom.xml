@@ -70,6 +70,14 @@
 					<groupId>javax.servlet</groupId>
 					<artifactId>servlet-api</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>org.mortbay.jetty</groupId>
+					<artifactId>jetty</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.httpcomponents</groupId>
+		    		<artifactId>httpclient</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>

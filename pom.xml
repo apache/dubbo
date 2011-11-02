@@ -56,6 +56,7 @@
 		<netty_version>3.2.5.Final</netty_version>
 		<mina_version>1.1.7</mina_version>
 		<grizzly_version>2.1.4</grizzly_version>
+		<httpclient_version>4.1.2</httpclient_version>
 		<hessian_lite_version>3.2.1</hessian_lite_version>
 		<xstream_version>1.4.1</xstream_version>
 		<fastjson_version>1.1.8</fastjson_version>
@@ -109,6 +110,11 @@
 				<groupId>org.glassfish.grizzly</groupId>
 				<artifactId>grizzly-core</artifactId>
 				<version>${grizzly_version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.httpcomponents</groupId>
+				<artifactId>httpclient</artifactId>
+				<version>${httpclient_version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.alibaba</groupId>
