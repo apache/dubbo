@@ -71,7 +71,7 @@ public class Constants {
 
     public static final String       DEFAULT_HTTP_SERVER            = "servlet";
 
-    public static final String       DEFAULT_HTTP_CLIENT            = "javanet";
+    public static final String       DEFAULT_HTTP_CLIENT            = "jdk";
 
     public static final String       DEFAULT_HTTP_SERIALIZATION     = "json";
 
