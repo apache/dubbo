@@ -15,6 +15,8 @@
  */
 package com.alibaba.dubbo.remoting;
 
+import com.alibaba.dubbo.common.Resetable;
+
 /**
  * Remoting Client. (API/SPI, Prototype, ThreadSafe)
  * 

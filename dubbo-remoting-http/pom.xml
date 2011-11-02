@@ -31,12 +31,8 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo-remoting</artifactId>
+			<artifactId>dubbo-common</artifactId>
 			<version>${project.parent.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>servlet-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.mortbay.jetty</groupId>

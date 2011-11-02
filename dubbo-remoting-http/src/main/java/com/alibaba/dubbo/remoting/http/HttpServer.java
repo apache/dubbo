@@ -17,8 +17,8 @@ package com.alibaba.dubbo.remoting.http;
 
 import java.net.InetSocketAddress;
 
+import com.alibaba.dubbo.common.Resetable;
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.remoting.Resetable;
 
 public interface HttpServer extends Resetable {
     

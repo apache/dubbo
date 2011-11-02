@@ -18,6 +18,8 @@ package com.alibaba.dubbo.remoting;
 import java.net.InetSocketAddress;
 import java.util.Collection;
 
+import com.alibaba.dubbo.common.Resetable;
+
 /**
  * Remoting Server. (API/SPI, Prototype, ThreadSafe)
  * 
