@@ -25,6 +25,7 @@ import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.protocol.AbstractInvoker;
 import com.caucho.hessian.HessianException;
+import com.caucho.hessian.client.HessianConnectionFactory;
 import com.caucho.hessian.client.HessianProxyFactory;
 
 /**
@@ -37,23 +38,23 @@ public class HessianRpcInvoker<T> extends AbstractInvoker<T> {
     protected static final String HESSIAN_EXCEPTION_PREFIX = HessianException.class.getPackage().getName() + "."; //fix by tony.chenl
 
     protected Invoker<T>   invoker;
+    
+    protected HessianConnectionFactory hessianConnectionFactory = new HttpClientConnectionFactory();
 
     @SuppressWarnings("unchecked")
     public HessianRpcInvoker(Class<T> serviceType, URL url, ProxyFactory proxyFactory){
         super(serviceType, url);
-        int timeout;
-        String t = url.getParameter(Constants.TIMEOUT_KEY);
-        if (t != null && t.length() > 0) {
-            timeout = Integer.parseInt(t);
-        } else {
-            timeout = Constants.DEFAULT_TIMEOUT;
-        }
-
-        java.net.URL httpUrl = url.setProtocol("http").toJavaURL();
         HessianProxyFactory hessianProxyFactory = new HessianProxyFactory();
+        String client = url.getParameter(Constants.CLIENT_KEY, Constants.DEFAULT_HTTP_CLIENT);
+        if ("httpclient".equals(client)) {
+            hessianProxyFactory.setConnectionFactory(hessianConnectionFactory);
+        } else if (client != null && client.length() > 0 && ! Constants.DEFAULT_HTTP_CLIENT.equals(client)) {
+            throw new IllegalStateException("Unsupported http protocol client=\"" + client + "\"!");
+        }
+        int timeout = url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
         hessianProxyFactory.setConnectTimeout(timeout);
         hessianProxyFactory.setReadTimeout(timeout);
-        invoker = proxyFactory.getInvoker((T)hessianProxyFactory.create(serviceType, httpUrl, Thread.currentThread().getContextClassLoader()), serviceType, url);
+        invoker = proxyFactory.getInvoker((T)hessianProxyFactory.create(serviceType, url.setProtocol("http").toJavaURL(), Thread.currentThread().getContextClassLoader()), serviceType, url);
     }
 
     @Override

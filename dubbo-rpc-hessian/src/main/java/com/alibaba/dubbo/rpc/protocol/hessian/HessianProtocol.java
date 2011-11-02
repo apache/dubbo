@@ -15,17 +15,20 @@
  */
 package com.alibaba.dubbo.rpc.protocol.hessian;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.alibaba.dubbo.common.Constants;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.remoting.http.HttpBinder;
+import com.alibaba.dubbo.remoting.http.HttpHandler;
 import com.alibaba.dubbo.remoting.http.HttpServer;
-import com.alibaba.dubbo.remoting.http.JettyHttpServer;
-import com.alibaba.dubbo.remoting.http.ServiceDispatcherServlet;
-import com.alibaba.dubbo.remoting.http.ServletHttpServer;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.ProxyFactory;
@@ -42,7 +45,13 @@ public class HessianProtocol extends AbstractProtocol {
 
     private final Map<String, HttpServer> serverMap = new ConcurrentHashMap<String, HttpServer>();
 
-    private ProxyFactory                  proxyFactory;
+    private HttpBinder               httpTransporter;
+
+    private ProxyFactory             proxyFactory;
+
+    public void setHttpTransporter(HttpBinder httpTransporter) {
+        this.httpTransporter = httpTransporter;
+    }
 
     public void setProxyFactory(ProxyFactory proxyFactory) {
         this.proxyFactory = proxyFactory;
@@ -51,28 +60,26 @@ public class HessianProtocol extends AbstractProtocol {
     public int getDefaultPort() {
         return 80;
     }
+    
+    private class HessianHandler implements HttpHandler {
+        
+        public void handle(HttpServletRequest request, HttpServletResponse response)
+                throws IOException, ServletException {
+            String uri = request.getRequestURI();
+            HessianRpcExporter<?> exporter = (HessianRpcExporter<?>) exporterMap.get(uri);
+            exporter.handle(request, response);
+        }
+        
+    }
 
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
-        URL url = invoker.getUrl();
-
-        final String uri = url.getPath(); // service uri also exporter cache key.
-
-        int threads = url.getParameter(Constants.THREADS_KEY, Constants.DEFAULT_THREADS);
+        final URL url = invoker.getUrl();
+        final String uri = url.getAbsolutePath(); // service uri also exporter cache key.
 
         String addr = url.getHost() + ":" + url.getPort();
         HttpServer server = serverMap.get(addr);
         if (server == null) {
-            String type = url.getParameter(Constants.SERVER_KEY, "jetty");
-            if ("servlet".equals(type)) {
-                server = new ServletHttpServer(url.getPort());
-            } else if ("jetty".equals(type)) {
-                // 和Dubbo协议一样，总是绑定到0.0.0.0上
-                server = new JettyHttpServer(url.getPort(), threads);
-            } else {
-                throw new IllegalArgumentException("Unsupported http server " + type
-                        + ", only support servlet, jetty!");
-            }
-            server.start();
+            server = httpTransporter.bind(url, new HessianHandler());
             serverMap.put(addr, server);
         }
 
@@ -83,7 +90,6 @@ public class HessianProtocol extends AbstractProtocol {
             }
         };
         exporterMap.put(uri, exporter);
-        ServiceDispatcherServlet.addProcessor(url.getPort(), uri, exporter);
         return exporter;
     }
 
@@ -100,9 +106,9 @@ public class HessianProtocol extends AbstractProtocol {
             if (server != null) {
                 try {
                     if (logger.isInfoEnabled()) {
-                        logger.info("Close hessian server 0.0.0.0:" + server.getPort());
+                        logger.info("Close hessian server " + server.getUrl());
                     }
-                    server.stop();
+                    server.close();
                 } catch (Throwable t) {
                     logger.warn(t.getMessage(), t);
                 }

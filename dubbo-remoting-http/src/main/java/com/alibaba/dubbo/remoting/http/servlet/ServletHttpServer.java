@@ -13,29 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.remoting.http;
+package com.alibaba.dubbo.remoting.http.servlet;
 
-import java.io.IOException;
+import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.remoting.http.HttpHandler;
+import com.alibaba.dubbo.remoting.http.support.AbstractHttpServer;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-/**
- * http invocation handler.
- * 
- * @author william.liangf
- */
-public interface HttpProcessor {
-
-    /**
-	 * invoke.
-	 * 
-	 * @param request request.
-	 * @param response response.
-	 * @throws IOException
-	 * @throws ServletException
-	 */
-    public abstract void invoke(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException;
-
+public class ServletHttpServer extends AbstractHttpServer {
+    
+    public ServletHttpServer(URL url, HttpHandler handler){
+        super(url, handler);
+        DispatcherServlet.addHttpInvoker(url.getPort(), handler);
+    }
+    
 }

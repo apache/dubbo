@@ -15,22 +15,27 @@
  */
 package com.alibaba.dubbo.remoting.http;
 
-public class ServletHttpServer implements HttpServer {
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+/**
+ * http invocation handler.
+ * 
+ * @author william.liangf
+ */
+public interface HttpHandler {
     
-    private final int port;
-
-	public ServletHttpServer(int port){
-        this.port = port;
-    }
-
-    public void start() {
-	}
-
-	public void stop() {
-	}
-
-    public int getPort() {
-        return port;
-    }
-
+    /**
+	 * invoke.
+	 * 
+	 * @param request request.
+	 * @param response response.
+	 * @throws IOException
+	 * @throws ServletException
+	 */
+    void handle(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException;
+    
 }
