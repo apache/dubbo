@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.protocol.dubbo.filter;
+package com.alibaba.dubbo.rpc.protocol.dubbo;
 
 
 import org.junit.Assert;
@@ -25,6 +25,7 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
 /**
  * dubbo protocol lazy connect test 

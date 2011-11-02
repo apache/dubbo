@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.protocol.dubbo.filter;
+package com.alibaba.dubbo.rpc.protocol.dubbo;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -27,6 +27,8 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.ProxyFactory;
+import com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService;
+import com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl;
 
 public class MultiThreadTest extends TestCase
 {

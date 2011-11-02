@@ -13,37 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.protocol.dubbo.filter;
+package com.alibaba.dubbo.rpc.protocol.dubbo.support;
 
-
-/**
- * <code>TestService</code>
- */
-
-public interface DemoService
+public enum Type
 {
-	void sayHello(String name);
-
-	String echo(String text);
-
-	long timestamp();
-
-	String getThreadName();
-
-	int getSize(String[] strs);
-
-	int getSize(Object[] os);
-
-	Object invoke(String service, String method) throws Exception;
-
-	int stringLength(String str);
-
-	Type enumlength(Type... types);
-	
-//	Type enumlength(Type type);
-	
-	String get(CustomArgument arg1);
-	
-	byte getbyte(byte arg);
-	
+	High, Normal, Lower
 }

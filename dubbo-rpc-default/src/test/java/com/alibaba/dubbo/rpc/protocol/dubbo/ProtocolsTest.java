@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.protocol.dubbo.filter;
+package com.alibaba.dubbo.rpc.protocol.dubbo;
 
 
 import static junit.framework.Assert.assertEquals;
@@ -24,6 +24,9 @@ import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.ProxyFactory;
+import com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService;
+import com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl;
+import com.alibaba.dubbo.rpc.protocol.dubbo.support.Type;
 import com.alibaba.dubbo.rpc.service.EchoService;
 
 /**

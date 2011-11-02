@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.protocol.dubbo.filter;
+package com.alibaba.dubbo.rpc.protocol.dubbo;
 
 import static org.junit.Assert.assertEquals;
 
@@ -29,6 +29,8 @@ import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcResult;
+import com.alibaba.dubbo.rpc.protocol.dubbo.filter.FutureFilter;
+import com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService;
 
 /**
  * EventFilterTest.java

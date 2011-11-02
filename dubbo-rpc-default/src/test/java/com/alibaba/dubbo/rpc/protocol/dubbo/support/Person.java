@@ -13,9 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.protocol.dubbo.filter;
+package com.alibaba.dubbo.rpc.protocol.dubbo.support;
 
-public enum Type
-{
-	High, Normal, Lower
+import java.io.Serializable;
+
+/**
+ * Person.java
+ * 
+ * @author tony.chenl
+ */
+public class Person implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+    private String            name;
+    private int               age;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
 }
