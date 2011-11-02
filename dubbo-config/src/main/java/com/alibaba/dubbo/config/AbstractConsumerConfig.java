@@ -44,6 +44,8 @@ public abstract class AbstractConsumerConfig extends AbstractReferenceConfig {
     // lazy create connection
     protected Boolean             lazy;
     
+    protected String              reconnect;
+    
     //stub是否支持event事件. //TODO slove merge problem 
     protected Boolean             stubevent ;//= RpcConstants.DEFAULT_STUB_EVENT;
     
@@ -124,5 +126,14 @@ public abstract class AbstractConsumerConfig extends AbstractReferenceConfig {
     @Parameter(key = RpcConstants.STUB_EVENT_KEY)
     public Boolean getStubevent() {
         return stubevent;
+    }
+    
+    @Parameter(key = Constants.RECONNECT_KEY)
+    public String getReconnect() {
+        return reconnect;
+    }
+
+    public void setReconnect(String reconnect) {
+        this.reconnect = reconnect;
     }
 }
