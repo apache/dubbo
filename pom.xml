@@ -230,6 +230,7 @@
 		</repository>
 	</repositories>
 	<build>
+		<sourceEncoding>UTF-8</sourceEncoding>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
