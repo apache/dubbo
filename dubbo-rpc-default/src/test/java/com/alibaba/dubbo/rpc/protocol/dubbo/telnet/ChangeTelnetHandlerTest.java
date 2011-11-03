@@ -26,6 +26,7 @@ import org.junit.Test;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.RemotingException;
+import com.alibaba.dubbo.remoting.exchange.ExchangeServer;
 import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
@@ -57,7 +58,7 @@ public class ChangeTelnetHandlerTest {
         mockChannel.removeAttribute("telnet.service");
         EasyMock.expectLastCall().anyTimes();
         EasyMock.expect(mockInvoker.getInterface()).andReturn(DemoService.class).anyTimes();
-        EasyMock.expect(mockInvoker.getUrl()).andReturn(URL.valueOf("dubbo://127.0.0.1:20880/demo")).anyTimes();
+        EasyMock.expect(mockInvoker.getUrl()).andReturn(URL.valueOf("dubbo://127.0.0.1:20883/demo")).anyTimes();
         EasyMock.replay(mockChannel, mockInvoker);
     }
 
@@ -68,6 +69,9 @@ public class ChangeTelnetHandlerTest {
 
     @After
     public void after() {
+        for (ExchangeServer server : DubboProtocol.getDubboProtocol().getServers()) {
+            server.close();
+        }
         EasyMock.reset(mockChannel, mockInvoker);
         DubboProtocol.getDubboProtocol().destroy();
     }
