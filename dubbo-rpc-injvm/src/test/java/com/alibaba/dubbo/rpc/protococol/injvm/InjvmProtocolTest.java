@@ -30,7 +30,7 @@ import com.alibaba.dubbo.rpc.service.EchoService;
  * <code>ProxiesTest</code>
  */
 
-public class ProtocolsTest
+public class InjvmProtocolTest
 {
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
     private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
