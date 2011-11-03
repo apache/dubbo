@@ -46,6 +46,8 @@ public abstract class AbstractConsumerConfig extends AbstractReferenceConfig {
     
     protected String              reconnect;
     
+    protected Boolean             sticky;
+    
     //stub是否支持event事件. //TODO slove merge problem 
     protected Boolean             stubevent ;//= RpcConstants.DEFAULT_STUB_EVENT;
     
@@ -135,5 +137,14 @@ public abstract class AbstractConsumerConfig extends AbstractReferenceConfig {
 
     public void setReconnect(String reconnect) {
         this.reconnect = reconnect;
+    }
+
+    @Parameter(key = RpcConstants.CLUSTER_STICKY_KEY)
+    public Boolean getSticky() {
+        return sticky;
+    }
+
+    public void setSticky(Boolean sticky) {
+        this.sticky = sticky;
     }
 }

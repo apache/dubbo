@@ -417,11 +417,6 @@
 						<xsd:documentation><![CDATA[ The service monitor. ]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
-				<xsd:attribute name="lazy" type="xsd:string" use="optional">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[ lazy create connection. ]]></xsd:documentation>
-					</xsd:annotation>
-				</xsd:attribute>
 				<xsd:attribute name="callbacks" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[ The callback instance limit peer connection.]]></xsd:documentation>
@@ -460,13 +455,18 @@
 					</xsd:annotation>
 				</xsd:attribute>
 				<xsd:attribute name="sticky" type="xsd:string" use="optional">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[ conection  ]]></xsd:documentation>
-					</xsd:annotation>
-				</xsd:attribute>
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[ Enable/Disable cluster sticky policy.Default false ]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
 				<xsd:attribute name="reconnect" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[ remoting reconnect timer. false represent close reconnect. integer represent interval(ms) .default true(2000ms).]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="lazy" type="xsd:string" use="optional">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[ lazy create connection. ]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
 			</xsd:extension>

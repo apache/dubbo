@@ -46,7 +46,7 @@ public class MethodConfig extends AbstractMethodConfig {
     // 是否过时
     private Boolean           deprecated;
     
-    // 是否需要返回
+    // 是否需要开启stiky策略
     private Boolean           sticky;
 
     // 是否需要返回
@@ -135,7 +135,7 @@ public class MethodConfig extends AbstractMethodConfig {
     public List<ArgumentConfig> getArguments() {
         return arguments;
     }
-
+    
     public Boolean getSticky() {
         return sticky;
     }
