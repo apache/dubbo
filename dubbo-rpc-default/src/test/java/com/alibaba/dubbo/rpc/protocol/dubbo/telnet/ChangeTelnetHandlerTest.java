@@ -26,11 +26,11 @@ import org.junit.Test;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.RemotingException;
-import com.alibaba.dubbo.remoting.exchange.ExchangeServer;
 import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
 import com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService;
+import com.alibaba.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
 /**
  * ChangeTelnetHandlerTest.java
@@ -69,11 +69,8 @@ public class ChangeTelnetHandlerTest {
 
     @After
     public void after() {
-        for (ExchangeServer server : DubboProtocol.getDubboProtocol().getServers()) {
-            server.close();
-        }
+        ProtocolUtils.closeAll();
         EasyMock.reset(mockChannel, mockInvoker);
-        DubboProtocol.getDubboProtocol().destroy();
     }
 
     @Test

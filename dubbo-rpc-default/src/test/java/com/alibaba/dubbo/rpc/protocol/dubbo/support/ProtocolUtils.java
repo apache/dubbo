@@ -15,36 +15,47 @@
  */
 package com.alibaba.dubbo.rpc.protocol.dubbo.support;
 
+import java.util.Collection;
+
 import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.remoting.exchange.ExchangeServer;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.ProxyFactory;
+import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
 /**
  * TODO Comment of ProtocolUtils
+ * 
  * @author william.liangf
- *
  */
 public class ProtocolUtils {
 
-    private static Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-    private static ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-    
+    private static Protocol     protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+    private static ProxyFactory proxy    = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+
     public static <T> T refer(Class<T> type, String url) {
         return refer(type, URL.valueOf(url));
     }
-    
+
     public static <T> T refer(Class<T> type, URL url) {
         return proxy.getProxy(protocol.refer(type, url));
     }
-    
+
     public static <T> Exporter<T> export(T instance, Class<T> type, String url) {
         return export(instance, type, URL.valueOf(url));
     }
-    
+
     public static <T> Exporter<T> export(T instance, Class<T> type, URL url) {
         return protocol.export(proxy.getInvoker(instance, type, url));
     }
 
+    public static void closeAll() {
+        DubboProtocol.getDubboProtocol().destroy();
+        Collection<ExchangeServer> servers = DubboProtocol.getDubboProtocol().getServers();
+        for (ExchangeServer server : servers) {
+            server.close();
+        }
+    }
 }

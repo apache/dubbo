@@ -16,11 +16,11 @@
 package com.alibaba.dubbo.rpc.protocol.dubbo.telnet;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Method;
 
 import org.easymock.EasyMock;
+import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -35,6 +35,7 @@ import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
 import com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService;
+import com.alibaba.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
 /**
  * CountTelnetHandlerTest.java
@@ -66,6 +67,11 @@ public class ListTelnetHandlerTest {
         }
         detailMethods = buf.toString();
         methodsName = buf2.toString();
+    }
+    
+    @After
+    public void after() {
+        ProtocolUtils.closeAll();
     }
 
     @SuppressWarnings("unchecked")
@@ -100,6 +106,7 @@ public class ListTelnetHandlerTest {
         EasyMock.reset(mockChannel, mockInvoker);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testList() throws RemotingException {
         mockInvoker = EasyMock.createMock(Invoker.class);
@@ -115,6 +122,7 @@ public class ListTelnetHandlerTest {
         EasyMock.reset(mockChannel);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testListDetail() throws RemotingException {
         mockInvoker = EasyMock.createMock(Invoker.class);
@@ -131,6 +139,7 @@ public class ListTelnetHandlerTest {
         EasyMock.reset(mockChannel);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testListDefault() throws RemotingException {
         mockInvoker = EasyMock.createMock(Invoker.class);
