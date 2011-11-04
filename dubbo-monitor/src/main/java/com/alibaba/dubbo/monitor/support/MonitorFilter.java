@@ -88,11 +88,11 @@ public class MonitorFilter implements Filter {
             // ---- 服务提供方监控 ----
             String server = context.getLocalAddressString(); // 本地提供方地址
             if (invoker.getUrl().getAddress().equals(server)) {
-                monitor.count(new URL(invoker.getUrl().getProtocol(), NetUtils.getLocalHost(), context.getLocalPort())
+                monitor.count(new URL(invoker.getUrl().getProtocol(), context.getRemoteHost(), 0, service + "/" + method)
                         .addParameters(MonitorService.APPLICATION, application, 
                                 MonitorService.INTERFACE, service, 
                                 MonitorService.METHOD, method,
-                                MonitorService.CLIENT, context.getRemoteHost(),
+                                MonitorService.SERVER, NetUtils.getLocalHost() + ":" + context.getLocalPort(),
                                 error ? MonitorService.FAILURE : MonitorService.SUCCESS, String.valueOf(1),
                                 MonitorService.ELAPSED, String.valueOf(elapsed),
                                 MonitorService.CONCURRENT, String.valueOf(concurrent)));
@@ -101,11 +101,11 @@ public class MonitorFilter implements Filter {
             context = RpcContext.getContext(); // 消费方必须在invoke()之后获取context信息
             server = context.getRemoteAddressString(); // 远程提供方地址
             if (invoker.getUrl().getAddress().equals(server)) {
-                monitor.count(new URL(invoker.getUrl().getProtocol(), NetUtils.getLocalHost(), 0)
+                monitor.count(new URL(invoker.getUrl().getProtocol(), context.getRemoteHost(), context.getRemotePort(), service + "/" + method)
                         .addParameters(MonitorService.APPLICATION, application, 
                                 MonitorService.INTERFACE, service, 
                                 MonitorService.METHOD, method,
-                                MonitorService.SERVER, server,
+                                MonitorService.CLIENT, NetUtils.getLocalHost(),
                                 error ? MonitorService.FAILURE : MonitorService.SUCCESS, String.valueOf(1),
                                 MonitorService.ELAPSED, String.valueOf(elapsed),
                                 MonitorService.CONCURRENT, String.valueOf(concurrent)));

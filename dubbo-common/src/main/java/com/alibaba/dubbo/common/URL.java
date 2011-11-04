@@ -965,10 +965,6 @@ public final class URL implements Serializable {
         return getParameter(Constants.INTERFACE_KEY, path);
     }
     
-    public String getServiceUrl() {
-        return toFullString(Constants.GROUP_KEY, Constants.VERSION_KEY);
-    }
-    
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;

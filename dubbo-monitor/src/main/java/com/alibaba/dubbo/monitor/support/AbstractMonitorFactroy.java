@@ -36,7 +36,7 @@ public abstract class AbstractMonitorFactroy implements MonitorFactory {
     private static final ReentrantLock LOCK = new ReentrantLock();
     
     // 注册中心集合 Map<RegistryAddress, Registry>
-    private static final Map<URL, Monitor> MONITORS = new ConcurrentHashMap<URL, Monitor>();
+    private static final Map<String, Monitor> MONITORS = new ConcurrentHashMap<String, Monitor>();
 
     public static Collection<Monitor> getMonitors() {
         return Collections.unmodifiableCollection(MONITORS.values());
@@ -45,7 +45,8 @@ public abstract class AbstractMonitorFactroy implements MonitorFactory {
     public Monitor getMonitor(URL url) {
         LOCK.lock();
         try {
-            Monitor monitor = MONITORS.get(url);
+            String uri = url.toIdentityString();
+            Monitor monitor = MONITORS.get(uri);
             if (monitor != null) {
                 return monitor;
             }
@@ -53,7 +54,7 @@ public abstract class AbstractMonitorFactroy implements MonitorFactory {
             if (monitor == null) {
                 throw new IllegalStateException("Can not create monitor " + url);
             }
-            MONITORS.put(url, monitor);
+            MONITORS.put(uri, monitor);
             return monitor;
         } finally {
             // 释放锁

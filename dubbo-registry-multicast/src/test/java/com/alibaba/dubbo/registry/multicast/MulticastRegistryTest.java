@@ -20,6 +20,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Before;
@@ -28,7 +29,6 @@ import org.junit.Test;
 
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
-import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.registry.NotifyListener;
 
 /**
@@ -71,17 +71,17 @@ public class MulticastRegistryTest {
      */
     @Test
     public void testRegister() {
-        List<URL> registered = null;
+        Set<String> registered = null;
         // clear first
-        registered = registry.getRegistered(service);
+        registered = registry.getRegistered();
 
         for (int i = 0; i < 2; i++) {
-            registry.register(service, serviceUrl);
-            registered = registry.getRegistered(service);
-            assertTrue(registered.contains(serviceUrl));
+            registry.register(serviceUrl);
+            registered = registry.getRegistered();
+            assertTrue(registered.contains(serviceUrl.toFullString()));
         }
         // confirm only 1 regist success;
-        registered = registry.getRegistered(service);
+        registered = registry.getRegistered();
         assertEquals(1, registered.size());
     }
 
@@ -93,17 +93,17 @@ public class MulticastRegistryTest {
     @Test
     public void testSubscribe() {
         // verify lisener.
-        final AtomicReference<Map<String, String>> args = new AtomicReference<Map<String, String>>();
+        final AtomicReference<URL> args = new AtomicReference<URL>();
         registry.subscribe(consumerUrl, new NotifyListener() {
 
             public void notify(List<URL> urls) {
                 // FIXME assertEquals(MulticastRegistry.this.service, service);
-                args.set(urls.get(0).getParameters());
+                args.set(urls.get(0));
             }
         });
-        assertEquals(serviceUrl.toParameterString(), StringUtils.toQueryString(args.get()));
-        Map<String, String> arg = registry.getSubscribed(service);
-        assertEquals(consumerUrl.toParameterString(), StringUtils.toQueryString(arg));
+        assertEquals(serviceUrl.toFullString(), args.get().toFullString());
+        Map<String, Set<NotifyListener>> arg = registry.getSubscribed();
+        assertEquals(consumerUrl.toFullString(), arg.keySet().iterator().next());
 
     }
 

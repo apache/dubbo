@@ -23,7 +23,6 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
@@ -41,8 +40,7 @@ public class EnumBak {
     public void testNormal(){
         int port = NetUtils.getAvailablePort();
         URL serviceurl = URL.valueOf("dubbo://127.0.0.1:"+port+"/test?proxy=jdk" 
-                + "&service.interface=com.alibaba.dubbo.rpc.DemoService"
-                + "&reference.filter=compatible"
+                + "&interface=com.alibaba.dubbo.rpc.DemoService"
         		+ "&timeout="+Integer.MAX_VALUE
                 );
         DemoService demo = new DemoServiceImpl();
@@ -152,7 +150,6 @@ public class EnumBak {
       int port = NetUtils.getAvailablePort();
       port = 20880;
       URL serviceurl = URL.valueOf("dubbo://127.0.0.1:"+port+"/test?timeout="+Integer.MAX_VALUE
-              + "&"+Constants.SERVICE_FILTER_KEY+"=ready,context,token,exception,echo,generic,accesslog,trace,classloader,executelimit,timeout"
               );
       DemoService demo = new DemoServiceImpl();
       Invoker<DemoService> invoker = proxy.getInvoker(demo, DemoService.class, serviceurl);
@@ -167,13 +164,12 @@ public class EnumBak {
     public void testGenericEnum() throws InterruptedException{
         int port = NetUtils.getAvailablePort();
         URL serviceurl = URL.valueOf("dubbo://127.0.0.1:"+port+"/test?timeout="+Integer.MAX_VALUE
-                + "&"+Constants.SERVICE_FILTER_KEY+"=ready,context,token,exception,echo,generic,accesslog,trace,classloader,executelimit,timeout"
                 );
         DemoService demo = new DemoServiceImpl();
         Invoker<DemoService> invoker = proxy.getInvoker(demo, DemoService.class, serviceurl);
         protocol.export(invoker);
         
-        URL consumerurl = serviceurl.addParameter(Constants.REFERENCE_FILTER_KEY, "consumercontext,compatible,deprecated,genericimpl,activelimit");
+        URL consumerurl = serviceurl;
         
         Invoker<GenericService> reference = protocol.refer(GenericService.class, consumerurl);
         

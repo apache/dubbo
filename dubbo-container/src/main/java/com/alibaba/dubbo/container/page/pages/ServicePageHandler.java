@@ -18,7 +18,7 @@ package com.alibaba.dubbo.container.page.pages;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
@@ -42,17 +42,13 @@ public class ServicePageHandler implements PageHandler {
         if (registries != null && registries.size() > 0) {
         	Registry registry = registries.iterator().next();
         	if (registry instanceof AbstractRegistry) {
-            	Map<String, List<URL>> services = ((AbstractRegistry) registry).getRegistered();
+            	Set<String> services = ((AbstractRegistry) registry).getRegistered();
                 if (services != null && services.size() > 0) {
-                    for (Map.Entry<String, List<URL>> entry : services.entrySet()) {
-                    	String service = entry.getKey();
-                    	List<URL> urls = entry.getValue();
-                    	for (URL ue : urls) {
-    	                    List<String> row = new ArrayList<String>();
-    	                    row.add(service.replace("<", "&lt;").replace(">", "&gt;"));
-    	                    row.add(ue.toString().replace("<", "&lt;").replace(">", "&gt;"));
-    	                    rows.add(row);
-                    	}
+                    for (String u : services) {
+                        List<String> row = new ArrayList<String>();
+                        row.add(URL.valueOf(u).getServiceName().replace("<", "&lt;").replace(">", "&gt;"));
+                        row.add(u.toString().replace("<", "&lt;").replace(">", "&gt;"));
+                        rows.add(row);
                     }
                 }
         	}

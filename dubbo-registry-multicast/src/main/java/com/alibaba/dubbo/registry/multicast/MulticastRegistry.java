@@ -20,7 +20,6 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -29,14 +28,14 @@ import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.registry.NotifyListener;
-import com.alibaba.dubbo.registry.support.AbstractRegistry;
+import com.alibaba.dubbo.registry.support.CacheRegistry;
 
 /**
  * MulticastRegistry
  * 
  * @author william.liangf
  */
-public class MulticastRegistry extends AbstractRegistry {
+public class MulticastRegistry extends CacheRegistry {
 
     // 日志输出
     private static final Logger logger = LoggerFactory.getLogger(MulticastRegistry.class);
@@ -108,35 +107,15 @@ public class MulticastRegistry extends AbstractRegistry {
     private void receive(String msg, InetSocketAddress remoteAddress) {
         if (msg.startsWith(REGISTER)) {
             URL url = URL.valueOf(msg.substring(REGISTER.length()).trim());
-            String service = url.getServiceKey();
-            if (getSubscribed().containsKey(service)) {
-                List<URL> urls = new ArrayList<URL>();
-                List<URL> notified = getNotified().get(service);
-                if (notified != null) {
-                    urls.addAll(notified);
-                }
-                if (! urls.contains(url)) {
-                    urls.add(url);
-                }
-                notify(service, urls);
-            }
+            registered(url);
         } else if (msg.startsWith(UNREGISTER)) {
             URL url = URL.valueOf(msg.substring(UNREGISTER.length()).trim());
-            String service = url.getServiceKey();
-            if (getSubscribed().containsKey(service)) {
-                List<URL> urls = new ArrayList<URL>();
-                List<URL> notified = getNotified().get(service);
-                if (notified != null) {
-                    urls.addAll(notified);
-                }
-                urls.remove(url);
-                notify(service, urls);
-            }
+            unregistered(url);
         } else if (msg.startsWith(SUBSCRIBE)) {
             URL url = URL.valueOf(msg.substring(SUBSCRIBE.length()).trim());
-            String service = url.getServiceKey();
-            if (getRegistered().containsKey(service)) {
-                for (URL u : getRegistered().get(service)) {
+            List<URL> urls = lookup(url);
+            if (urls != null && urls.size() > 0) {
+                for (URL u : urls) {
                     unicast(REGISTER + " " + u.toFullString(), url.getHost());
                 }
             }
@@ -170,28 +149,26 @@ public class MulticastRegistry extends AbstractRegistry {
         }
     }
     
-    public void register(String service, URL url) {
-        super.register(service, url);
+    protected void doRegister(URL url) {
         broadcast(REGISTER + " " + url.toFullString());
     }
 
-    public void unregister(String service, URL url) {
+    protected void doUnregister(URL url) {
         broadcast(UNREGISTER + " " + url.toFullString());
     }
 
-    public void subscribe(String service, URL url, NotifyListener listener) {
-        super.subscribe(service, url, listener);
+    protected void doSubscribe(URL url, NotifyListener listener) {
         url = url.setProtocol("multicast").setHost(mutilcastAddress.getHostAddress()).setPort(mutilcastSocket.getLocalPort());
         broadcast(SUBSCRIBE + " " + url.toFullString());
-        synchronized (this) {
+        synchronized (listener) {
             try {
-                this.wait(5000);
+                listener.wait(5000);
             } catch (InterruptedException e) {
             }
         }
     }
 
-    public void unsubscribe(String service, URL url, NotifyListener listener) {
+    protected void doUnsubscribe(URL url, NotifyListener listener) {
         url = url.setProtocol("multicast").setHost(mutilcastAddress.getHostAddress()).setPort(mutilcastSocket.getLocalPort());
         broadcast(UNSUBSCRIBE + " " + url.toFullString());
     }
@@ -205,6 +182,7 @@ public class MulticastRegistry extends AbstractRegistry {
     }
 
     public void destroy() {
+        super.destroy();
         try {
             mutilcastSocket.close();
         } catch (Throwable t) {

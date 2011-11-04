@@ -32,9 +32,9 @@ import com.alibaba.dubbo.common.URL;
  */
 public class RpcStatus {
 
-    private static final ConcurrentMap<URL, RpcStatus> SERVICE_STATISTICS = new ConcurrentHashMap<URL, RpcStatus>();
+    private static final ConcurrentMap<String, RpcStatus> SERVICE_STATISTICS = new ConcurrentHashMap<String, RpcStatus>();
 
-    private static final ConcurrentMap<URL, ConcurrentMap<String, RpcStatus>> METHOD_STATISTICS = new ConcurrentHashMap<URL, ConcurrentMap<String, RpcStatus>>();
+    private static final ConcurrentMap<String, ConcurrentMap<String, RpcStatus>> METHOD_STATISTICS = new ConcurrentHashMap<String, ConcurrentMap<String, RpcStatus>>();
 
     /**
      * 
@@ -42,10 +42,11 @@ public class RpcStatus {
      * @return
      */
     public static RpcStatus getStatus(URL url) {
-        RpcStatus status = SERVICE_STATISTICS.get(url);
+        String uri = url.toIdentityString();
+        RpcStatus status = SERVICE_STATISTICS.get(uri);
         if (status == null) {
-            SERVICE_STATISTICS.putIfAbsent(url, new RpcStatus());
-            status = SERVICE_STATISTICS.get(url);
+            SERVICE_STATISTICS.putIfAbsent(uri, new RpcStatus());
+            status = SERVICE_STATISTICS.get(uri);
         }
         return status;
     }
@@ -55,7 +56,8 @@ public class RpcStatus {
      * @param url
      */
     public static void removeStatus(URL url) {
-        SERVICE_STATISTICS.remove(url);
+        String uri = url.toIdentityString();
+        SERVICE_STATISTICS.remove(uri);
     }
     
     /**
@@ -65,10 +67,11 @@ public class RpcStatus {
      * @return
      */
     public static RpcStatus getStatus(URL url, String methodName) {
-        ConcurrentMap<String, RpcStatus> map = METHOD_STATISTICS.get(url);
+        String uri = url.toIdentityString();
+        ConcurrentMap<String, RpcStatus> map = METHOD_STATISTICS.get(uri);
         if (map == null) {
-            METHOD_STATISTICS.putIfAbsent(url, new ConcurrentHashMap<String, RpcStatus>());
-            map = METHOD_STATISTICS.get(url);
+            METHOD_STATISTICS.putIfAbsent(uri, new ConcurrentHashMap<String, RpcStatus>());
+            map = METHOD_STATISTICS.get(uri);
         }
         RpcStatus status = map.get(methodName);
         if (status == null) {
@@ -83,7 +86,8 @@ public class RpcStatus {
      * @param url
      */
     public static void removeStatus(URL url, String methodName) {
-        ConcurrentMap<String, RpcStatus> map = METHOD_STATISTICS.get(url);
+        String uri = url.toIdentityString();
+        ConcurrentMap<String, RpcStatus> map = METHOD_STATISTICS.get(uri);
         if (map != null) {
             map.remove(methodName);
         }
