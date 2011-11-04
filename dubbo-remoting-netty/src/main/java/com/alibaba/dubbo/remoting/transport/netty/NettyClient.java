@@ -121,16 +121,13 @@ public class NettyClient extends AbstractClient {
                     }
                 }
             } else if (future.getCause() != null) {
-                throw future.getCause();
+                throw new RemotingException(this, "Failed to connect to server " + getRemoteAddress() + ", error message is:" + future.getCause().getMessage(), future.getCause());
             } else {
-                throw new RemotingException(this, "Failed to connect to server " + getRemoteAddress() + ", the future was not completed within the specified time limit, please check the timeout ["+ getConnectTimeout() +"] config .");
+                throw new RemotingException(this, "Failed to connect to server " + getRemoteAddress() + " client-side timeout "
+                        + getConnectTimeout() + "ms (elapsed: " + (System.currentTimeMillis() - start)
+                        + "ms) from netty client " + NetUtils.getLocalHost() + " using dubbo version "
+                        + Version.getVersion());
             }
-            
-        }catch (InterruptedException e) {
-            throw new RemotingException(this, "Failed to connect to server " + getRemoteAddress() + " client-side timeout "
-                    + getConnectTimeout() + "ms (elapsed: " + (System.currentTimeMillis() - start)
-                    + "ms) from netty client " + NetUtils.getLocalHost() + " using dubbo version "
-                    + Version.getVersion() + ", cause: " + e.getMessage(), e);
         }finally{
             if (! isConnected()) {
                 future.cancel();
