@@ -60,15 +60,19 @@ public class HessianRpcInvoker<T> extends AbstractInvoker<T> {
     @Override
     protected Result doInvoke(Invocation invocation) throws Throwable {
         try {
-            return invoker.invoke(invocation);
+            Result result = invoker.invoke(invocation);
+            Throwable e = result.getException();
+            if (e != null) {
+                String name = e.getClass().getName();
+                if (name.startsWith(HESSIAN_EXCEPTION_PREFIX)) {
+                    throw new RpcException("Failed to invoke remote service: " + getInterface() + ", method: "
+                            + invocation.getMethodName() + ", cause: " + e.getMessage(), e);
+                }
+            }
+            return result;
         } catch (RpcException e) {
             throw e;
         } catch (Throwable e) {
-            //fix by tony.chenl
-            if (e.getClass().getName().startsWith(HESSIAN_EXCEPTION_PREFIX)) {
-                throw new RpcException("Failed to invoke remote service: " + getInterface() + ", method: "
-                                       + invocation.getMethodName() + ", cause: " + e.getMessage(), e);
-            }
             return new RpcResult(e);
         }
     }
