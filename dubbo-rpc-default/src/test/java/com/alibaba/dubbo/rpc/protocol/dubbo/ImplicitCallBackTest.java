@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -55,6 +56,11 @@ public class ImplicitCallBackTest{
         onReturnMethod = Nofify.class.getMethod("onreturn", new Class<?>[]{Person.class, Integer.class});
         onThrowMethod = Nofify.class.getMethod("onthrow", new Class<?>[]{Throwable.class, Integer.class});
         onInvokeMethod = Nofify.class.getMethod("oninvoke", new Class<?>[]{Integer.class});
+    }
+    
+    @After
+    public void tearDown(){
+        ProtocolUtils.closeAll();
     }
     
     public void initOrResetService(){
