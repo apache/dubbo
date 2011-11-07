@@ -15,10 +15,10 @@
  */
 package com.alibaba.dubbo.rpc.protocol.hessian;
 
-import org.junit.Test;
-
+import static org.junit.Assert.fail;
 import junit.framework.Assert;
-import junit.framework.TestCase;
+
+import org.junit.Test;
 
 import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
@@ -26,13 +26,15 @@ import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.ProxyFactory;
+import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.protocol.hessian.HessianServiceImpl.MyException;
 
 /**
  * HessianProtocolTest
  * 
  * @author william.liangf
  */
-public class HessianProtocolTest extends TestCase {
+public class HessianProtocolTest {
     
     @Test
     public void testHessianProtocol() {
@@ -64,6 +66,44 @@ public class HessianProtocolTest extends TestCase {
         String result = client.sayHello("haha");
         Assert.assertTrue(server.isCalled());
         Assert.assertEquals("Hello, haha", result);
+        invoker.destroy();
+        exporter.unexport();
+    }
+    
+    @Test
+    public void testTimeOut() {
+        HessianServiceImpl server = new HessianServiceImpl();
+        ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+        URL url = URL.valueOf("hessian://127.0.0.1:5342/" + HessianService.class.getName() + "?version=1.0.0&timeout=10");
+        Exporter<HessianService> exporter = protocol.export(proxyFactory.getInvoker(server, HessianService.class, url));
+        Invoker<HessianService> invoker = protocol.refer(HessianService.class, url);
+        HessianService client = proxyFactory.getProxy(invoker);
+        try {
+            client.timeOut(100000);
+            fail();
+        } catch (RpcException expected) {
+        }finally{
+            invoker.destroy();
+            exporter.unexport();
+        }
+        
+    }
+    
+    @Test
+    public void testCustomException() {
+        HessianServiceImpl server = new HessianServiceImpl();
+        ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+        URL url = URL.valueOf("hessian://127.0.0.1:5342/" + HessianService.class.getName() + "?version=1.0.0");
+        Exporter<HessianService> exporter = protocol.export(proxyFactory.getInvoker(server, HessianService.class, url));
+        Invoker<HessianService> invoker = protocol.refer(HessianService.class, url);
+        HessianService client = proxyFactory.getProxy(invoker);
+        try {
+            client.customException();
+            fail();
+        } catch (MyException expected) {
+        }
         invoker.destroy();
         exporter.unexport();
     }

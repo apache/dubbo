@@ -15,6 +15,7 @@
  */
 package com.alibaba.dubbo.rpc.protocol.hessian;
 
+
 /**
  * HessianService
  * 
@@ -23,5 +24,9 @@ package com.alibaba.dubbo.rpc.protocol.hessian;
 public interface HessianService {
     
     String sayHello(String name);
+    
+     void timeOut(int millis);
+    
+     String customException();
 
 }
