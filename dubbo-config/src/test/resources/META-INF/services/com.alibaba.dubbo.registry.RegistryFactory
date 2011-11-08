@@ -1,1 +1,1 @@
-com.alibaba.dubbo.config.test.MockRegistryFactory
+com.alibaba.dubbo.config.support.MockRegistryFactory
