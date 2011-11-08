@@ -122,8 +122,8 @@ public class RmiProtocol extends AbstractProtocol {
     private <T> Remote getRemote(final Invoker<T> invoker) {
         final Class<T> serviceType = invoker.getInterface();
         final URL url = invoker.getUrl();
-        String codec = url.getParameter(Constants.CODEC_KEY, "default");
-        if (! "spring".equals(codec) && ! "default".equals(codec) && ! "dubbo".equals(codec) && ! "dubbo2".equals(codec)) {
+        String codec = url.getParameter(Constants.CODEC_KEY, "spring");
+        if (! "spring".equals(codec) && ! "dubbo".equals(codec) && ! "dubbo2".equals(codec)) {
             throw new IllegalArgumentException("Unsupported protocol codec " + codec
                     + " for protocol RMI, Only support \"default\", \"spring\" codec.");
         }
