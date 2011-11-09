@@ -69,23 +69,23 @@ public class ZookeeperRegistry extends FailbackRegistry {
         } else {
             this.root = "";
         }
-        initZookeeper(url);
+        initZookeeper();
     }
 
     @Override
     protected void doRetry() {
         ZooKeeper zk = this.zookeeper;
         if (zk == null || zk.getState() == null || ! zk.getState().isAlive()) {
-            initZookeeper(getUrl());
+            initZookeeper();
         }
     }
 
-    private void initZookeeper(final URL url) {
+    private void initZookeeper() {
         zookeeperLock.lock();
         try {
             ZooKeeper zk = this.zookeeper;
             if (zk == null || zk.getState() == null || ! zk.getState().isAlive()) {
-                this.zookeeper = createZookeeper(url);
+                this.zookeeper = createZookeeper();
             }
             if (zk != null) {
                 zk.close();
@@ -97,7 +97,8 @@ public class ZookeeperRegistry extends FailbackRegistry {
         }
     }
     
-    private ZooKeeper createZookeeper(final URL url) throws Exception {
+    private ZooKeeper createZookeeper() throws Exception {
+        URL url = getUrl();
         String address = url.getAddress();
         String backup = url.getParameter(Constants.BACKUP_KEY);
         if (backup != null && backup.length() > 0) {
@@ -108,7 +109,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
             public void process(WatchedEvent event) {
                 try {
                     if (event.getState() == KeeperState.Expired) {
-                        initZookeeper(url);
+                        initZookeeper();
                     }
                     if (event.getType() != EventType.NodeChildrenChanged) {
                         return;
