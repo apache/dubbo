@@ -153,9 +153,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 zookeeper.create(service, new byte[0], auth ? Ids.CREATOR_ALL_ACL : Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
             }
             if (zookeeper.exists(provider, false) == null) {
-                zookeeper.create(provider, url.toParameterString().getBytes(), auth ? Ids.CREATOR_ALL_ACL : Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
-            } else {
-                zookeeper.setData(provider, url.toParameterString().getBytes(), -1);
+                zookeeper.create(provider, new byte[0], auth ? Ids.CREATOR_ALL_ACL : Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
             }
         } catch (Throwable e) {
             throw new RpcException("Failed to register " + url + ", cause: " + e.getMessage(), e);
