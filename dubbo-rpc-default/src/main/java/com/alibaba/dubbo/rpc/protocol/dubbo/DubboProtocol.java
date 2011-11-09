@@ -295,9 +295,9 @@ public class DubboProtocol extends AbstractProtocol {
         }
         try {
             return Exchangers.connect(url ,requestHandler);
-            
         } catch (RemotingException e) {
-            throw new RpcException(e.getMessage(), e);
+            throw new RpcException("Fail to create remoting client for service(" + url
+            		+ "):" + e.getMessage(), e);
         }
     }
 
