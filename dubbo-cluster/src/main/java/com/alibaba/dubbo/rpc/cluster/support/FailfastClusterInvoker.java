@@ -41,7 +41,8 @@ public class FailfastClusterInvoker<T> extends AbstractClusterInvoker<T>{
     }
     
     public Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
-        
+        if (invokers == null || invokers.size() == 0)
+            throw new RpcException("No provider available for service " + getInterface().getName() + " on consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() + ", Please check whether the service do exist or version is right firstly, and check the provider has started.");
         Invoker<T> invoker = select(loadbalance, invocation, invokers, null);
         try {
             return invoker.invoke(invocation);

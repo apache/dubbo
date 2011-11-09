@@ -15,6 +15,8 @@
  */
 package com.alibaba.dubbo.rpc.cluster.support;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.utils.LogUtil;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
@@ -104,6 +107,27 @@ public class FailSafeClusterInvokerTest {
         FailsafeClusterInvoker<DemoService> invoker = new FailsafeClusterInvoker<DemoService>(dic);
         Result ret = invoker.invoke(invocation);
         Assert.assertSame(result, ret);
+    }
+    
+    @Test()
+    public void testNoInvoke() {
+        dic = EasyMock.createMock(Directory.class);
+        invocation = EasyMock.createMock(Invocation.class);
+        
+        EasyMock.expect(dic.getUrl()).andReturn(url).anyTimes();
+        EasyMock.expect(dic.list(invocation)).andReturn(null).anyTimes();
+        EasyMock.expect(dic.getInterface()).andReturn(DemoService.class).anyTimes();
+        
+        EasyMock.expect(invocation.getMethodName()).andReturn("method1").anyTimes();
+        EasyMock.replay(dic,invocation);
+        
+        resetInvokerToNoException();
+        
+        FailsafeClusterInvoker<DemoService> invoker = new FailsafeClusterInvoker<DemoService>(dic);
+        LogUtil.start();
+        invoker.invoke(invocation);
+        assertEquals(1,LogUtil.findMessage("No provider"));
+        LogUtil.stop();
     }
 
 }

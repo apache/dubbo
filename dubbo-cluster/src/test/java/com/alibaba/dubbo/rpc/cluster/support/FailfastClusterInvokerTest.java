@@ -15,6 +15,8 @@
  */
 package com.alibaba.dubbo.rpc.cluster.support;
 
+import static org.junit.Assert.fail;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -104,5 +106,30 @@ public class FailfastClusterInvokerTest {
         Result ret = invoker.invoke(invocation);
         Assert.assertSame(result, ret);
     }
+    
+    @Test()
+    public void testNoInvoke() {
+        dic = EasyMock.createMock(Directory.class);
+        invocation = EasyMock.createMock(Invocation.class);
+        
+        EasyMock.expect(dic.getUrl()).andReturn(url).anyTimes();
+        EasyMock.expect(dic.list(invocation)).andReturn(null).anyTimes();
+        EasyMock.expect(dic.getInterface()).andReturn(FailfastClusterInvokerTest.class).anyTimes();
+        
+        EasyMock.expect(invocation.getMethodName()).andReturn("method1").anyTimes();
+        EasyMock.replay(dic,invocation);
+        
+        invokers.add(invoker1);
+        
+        resetInvoker1ToNoException();
+        
+        FailfastClusterInvoker<FailfastClusterInvokerTest> invoker = new FailfastClusterInvoker<FailfastClusterInvokerTest>(dic);
+        try {
+            invoker.invoke(invocation);
+            fail();
+        } catch (RpcException expected) {
+        }
+    }
+
 
 }

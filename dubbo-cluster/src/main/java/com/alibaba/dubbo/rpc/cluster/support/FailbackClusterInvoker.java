@@ -25,9 +25,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.NamedThreadFactory;
+import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
@@ -37,7 +39,7 @@ import com.alibaba.dubbo.rpc.cluster.Directory;
 import com.alibaba.dubbo.rpc.cluster.LoadBalance;
 
 /**
- * FailBackClusterInvoker.java
+ * 失败自动恢复，后台记录失败请求，定时重发，通常用于消息通知操作。
  * 
  * @author tony.chenl
  */
@@ -99,8 +101,10 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
     }
 
     protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
-        Invoker<T> invoker = select(loadbalance, invocation, invokers, null);
         try {
+            if (invokers == null || invokers.size() == 0)
+                throw new RpcException("No provider available for service " + getInterface().getName() + " on consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() + ", Please check whether the service do exist or version is right firstly, and check the provider has started.");
+            Invoker<T> invoker = select(loadbalance, invocation, invokers, null);
             return invoker.invoke(invocation);
         } catch (Throwable e) {
             logger.error("Failback to invoke " + invocation + ", wait for retry in background. Ignored exception: "
