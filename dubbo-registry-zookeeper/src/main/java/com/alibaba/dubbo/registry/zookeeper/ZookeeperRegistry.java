@@ -74,26 +74,26 @@ public class ZookeeperRegistry extends FailbackRegistry {
 
     @Override
     protected void doRetry() {
-        ZooKeeper zk = this.zookeeper;
-        if (zk == null || zk.getState() == null || ! zk.getState().isAlive()) {
-            initZookeeper();
-        }
+        initZookeeper();
     }
 
     private void initZookeeper() {
-        zookeeperLock.lock();
-        try {
-            ZooKeeper zk = this.zookeeper;
-            if (zk == null || zk.getState() == null || ! zk.getState().isAlive()) {
-                this.zookeeper = createZookeeper();
+        ZooKeeper zk = this.zookeeper;
+        if (zk == null || zk.getState() == null || ! zk.getState().isAlive()) {
+            zookeeperLock.lock();
+            try {
+                zk = this.zookeeper;
+                if (zk == null || zk.getState() == null || ! zk.getState().isAlive()) {
+                    this.zookeeper = createZookeeper();
+                }
+                if (zk != null) {
+                    zk.close();
+                }
+            } catch (Exception e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            } finally {
+                zookeeperLock.unlock();
             }
-            if (zk != null) {
-                zk.close();
-            }
-        } catch (Exception e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        } finally {
-            zookeeperLock.unlock();
         }
     }
     
