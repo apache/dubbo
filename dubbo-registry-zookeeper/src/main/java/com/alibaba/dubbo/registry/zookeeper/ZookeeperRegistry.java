@@ -75,7 +75,15 @@ public class ZookeeperRegistry extends FailbackRegistry {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
-    
+
+    @Override
+    protected void doRetry() {
+        ZooKeeper zk = this.zookeeper;
+        if (zk == null || zk.getState() == null || ! zk.getState().isAlive()) {
+            initZookeeper(getUrl());
+        }
+    }
+
     private void initZookeeper(final URL url) {
         zookeeperLock.lock();
         try {

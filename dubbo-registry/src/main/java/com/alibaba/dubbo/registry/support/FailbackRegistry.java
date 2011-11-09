@@ -187,6 +187,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
                 }
             }
         }
+        doRetry();
     }
     
     public void destroy() {
@@ -302,6 +303,8 @@ public abstract class FailbackRegistry extends AbstractRegistry {
     protected abstract void doSubscribe(URL url, NotifyListener listener);
     
     protected abstract void doUnsubscribe(URL url, NotifyListener listener);
+
+    protected void doRetry() {}
 
     public Set<String> getFailedRegistered() {
         return failedRegistered;
