@@ -60,20 +60,16 @@ public class ZookeeperRegistry extends FailbackRegistry {
 
     public ZookeeperRegistry(URL url) {
         super(url);
-        try {
-            initZookeeper(url);
-            this.auth = url.getUsername() != null && url.getUsername().length() > 0 
-                    && url.getPassword() != null && url.getPassword().length() > 0;
-            String group = url.getParameter(Constants.GROUP_KEY);
-            if (group != null && group.length() > 0) {
-                group = SEPARATOR + group;
-                this.root = group;
-            } else {
-                this.root = "";
-            }
-        } catch (Exception e) {
-            throw new IllegalStateException(e.getMessage(), e);
+        this.auth = url.getUsername() != null && url.getUsername().length() > 0 
+                && url.getPassword() != null && url.getPassword().length() > 0;
+        String group = url.getParameter(Constants.GROUP_KEY);
+        if (group != null && group.length() > 0) {
+            group = SEPARATOR + group;
+            this.root = group;
+        } else {
+            this.root = "";
         }
+        initZookeeper(url);
     }
 
     @Override
