@@ -250,7 +250,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                     }
                     url = ClusterUtils.mergeUrl(url, queryMap); // 合并消费端参数
                     this.directoryUrl = this.directoryUrl.addParametersIfAbsent(url.getParameters()); // 合并提供者参数
-                    url = url.addParameter(Constants.CHECK_KEY, String.valueOf(false));// 不检查连接是否成功，总是创建Invoker
+                    url = url.addParameter(Constants.CHECK_KEY, String.valueOf(false)); // 不检查连接是否成功，总是创建Invoker！
                     invoker = protocol.refer(serviceType, url);
                 } catch (Throwable t) {
                     logger.error("Failed to refer invoker for interface:"+serviceType+",url:("+url+")" + t.getMessage(), t);
