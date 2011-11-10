@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.proxy;
+package com.alibaba.dubbo.rpc.proxy.wrapper;
 
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invocation;
@@ -26,13 +26,13 @@ import com.alibaba.dubbo.rpc.RpcException;
  * 
  * @author william.liangf
  */
-public class MockInvoker<T> implements Invoker<T> {
+public class MockProxyInvoker<T> implements Invoker<T> {
     
     private final Invoker<T> invoker;
     
     private final Invoker<T> mockInvoker;
 
-    public MockInvoker(Invoker<T> invoker, Invoker<T> mockInvoker) {
+    public MockProxyInvoker(Invoker<T> invoker, Invoker<T> mockInvoker) {
         this.invoker = invoker;
         this.mockInvoker = mockInvoker;
     }

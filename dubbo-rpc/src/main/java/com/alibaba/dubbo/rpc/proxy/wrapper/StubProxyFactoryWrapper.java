@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.proxy;
+package com.alibaba.dubbo.rpc.proxy.wrapper;
 
 import java.lang.reflect.Constructor;
 
@@ -57,8 +57,8 @@ public class StubProxyFactoryWrapper implements ProxyFactory {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public <T> T getProxy(Invoker<T> invoker, Class<?>... types) throws RpcException {
-        T proxy = proxyFactory.getProxy(invoker, types);
+    public <T> T getProxy(Invoker<T> invoker) throws RpcException {
+        T proxy = proxyFactory.getProxy(invoker);
         if (GenericService.class != invoker.getInterface()) {
             String stub = invoker.getUrl().getParameter(Constants.STUB_KEY, invoker.getUrl().getParameter(Constants.LOCAL_KEY));
             if (ConfigUtils.isNotEmpty(stub)) {

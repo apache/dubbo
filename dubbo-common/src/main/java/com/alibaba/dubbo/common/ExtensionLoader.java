@@ -192,13 +192,11 @@ public class ExtensionLoader<T> {
             throw new IllegalStateException("No such extension " + type.getName() + " by name " + name);
         }
         try {
-            T instance = (T) clazz.newInstance();
-            injectExtension(instance);
+            T instance = injectExtension((T) clazz.newInstance());
             Set<Class<?>> wrapperClasses = cachedWrapperClasses;
             if (wrapperClasses != null && wrapperClasses.size() > 0) {
                 for (Class<?> wrapperClass : wrapperClasses) {
-                    instance = (T) wrapperClass.getConstructor(type).newInstance(instance);
-                    injectExtension(instance);
+                    instance = injectExtension((T) wrapperClass.getConstructor(type).newInstance(instance));
                 }
             }
             return instance;
@@ -208,7 +206,7 @@ public class ExtensionLoader<T> {
         }
     }
     
-    private void injectExtension(Object instance) {
+    private T injectExtension(T instance) {
         try {
             for (Method method : instance.getClass().getMethods()) {
                 if (method.getName().startsWith("set")
@@ -229,6 +227,7 @@ public class ExtensionLoader<T> {
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
+        return instance;
     }
     
 	private Class<?> getExtensionClass(String name) {
@@ -360,7 +359,7 @@ public class ExtensionLoader<T> {
     @SuppressWarnings("unchecked")
     private T createAdaptiveExtension() {
         try {
-            return (T) getAdaptiveExtensionClass().newInstance();
+            return injectExtension((T) getAdaptiveExtensionClass().newInstance());
         } catch (Exception e) {
             throw new IllegalStateException("Can not create adaptive extenstion " + type + ", cause: " + e.getMessage(), e);
         }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.proxy;
+package com.alibaba.dubbo.rpc.proxy.wrapper;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
@@ -44,7 +44,7 @@ public class MockProxyFactoryWrapper implements ProxyFactory {
     }
     
     @SuppressWarnings({ "unchecked"})
-    public <T> T getProxy(Invoker<T> invoker, Class<?>... types) throws RpcException {
+    public <T> T getProxy(Invoker<T> invoker) throws RpcException {
         String mock = invoker.getUrl().getParameter(Constants.MOCK_KEY);
         if (ConfigUtils.isNotEmpty(mock) && GenericService.class != invoker.getInterface()) {
             Class<?> serviceType = invoker.getInterface();
@@ -58,7 +58,7 @@ public class MockProxyFactoryWrapper implements ProxyFactory {
                 }
                 try {
                     T mockObject = (T) mockClass.newInstance();
-                    invoker = new MockInvoker<T>(invoker, proxyFactory.getInvoker(mockObject, invoker.getInterface(), invoker.getUrl()));
+                    invoker = new MockProxyInvoker<T>(invoker, proxyFactory.getInvoker(mockObject, invoker.getInterface(), invoker.getUrl()));
                 } catch (InstantiationException e) {
                     throw new IllegalStateException("No such empty constructor \"public " + mockClass.getSimpleName() + "()\" in mock implemention class " + mockClass.getName(), e);
                 }
@@ -67,7 +67,7 @@ public class MockProxyFactoryWrapper implements ProxyFactory {
                 // ignore
             }
         }
-        return proxyFactory.getProxy(invoker, types);
+        return proxyFactory.getProxy(invoker);
     }
     
     public <T> Invoker<T> getInvoker(T proxy, Class<T> type, URL url) throws RpcException {

@@ -32,11 +32,10 @@ public interface ProxyFactory {
      * create proxy.
      * 
      * @param invoker
-     * @param types
      * @return proxy
      */
     @Adaptive({Constants.PROXY_KEY})
-    <T> T getProxy(Invoker<T> invoker, Class<?>... types) throws RpcException;
+    <T> T getProxy(Invoker<T> invoker) throws RpcException;
 
     /**
      * create invoker.

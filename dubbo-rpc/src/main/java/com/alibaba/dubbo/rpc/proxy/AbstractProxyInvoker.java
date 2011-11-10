@@ -29,7 +29,7 @@ import com.alibaba.dubbo.rpc.RpcResult;
  * 
  * @author william.liangf
  */
-public abstract class InvokerWrapper<T> implements Invoker<T> {
+public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
     
     private final T proxy;
     
@@ -37,7 +37,7 @@ public abstract class InvokerWrapper<T> implements Invoker<T> {
     
     private final URL url;
 
-    public InvokerWrapper(T proxy, Class<T> type, URL url){
+    public AbstractProxyInvoker(T proxy, Class<T> type, URL url){
         if (proxy == null) {
             throw new IllegalArgumentException("proxy == null");
         }

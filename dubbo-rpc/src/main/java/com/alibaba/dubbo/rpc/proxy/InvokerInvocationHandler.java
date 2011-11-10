@@ -26,11 +26,11 @@ import com.alibaba.dubbo.rpc.RpcInvocation;
  * 
  * @author william.liangf
  */
-public class InvokerHandler implements InvocationHandler {
+public class InvokerInvocationHandler implements InvocationHandler {
 
     private final Invoker<?> invoker;
     
-    public InvokerHandler(Invoker<?> handler){
+    public InvokerInvocationHandler(Invoker<?> handler){
         this.invoker = handler;
     }
 

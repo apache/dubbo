@@ -21,9 +21,9 @@ import java.lang.reflect.Proxy;
 import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.ProxyFactory;
-import com.alibaba.dubbo.rpc.proxy.InvokerHandler;
-import com.alibaba.dubbo.rpc.proxy.InvokerWrapper;
+import com.alibaba.dubbo.rpc.proxy.AbstractProxyFactory;
+import com.alibaba.dubbo.rpc.proxy.InvokerInvocationHandler;
+import com.alibaba.dubbo.rpc.proxy.AbstractProxyInvoker;
 
 /**
  * JavaassistRpcProxyFactory
@@ -31,23 +31,15 @@ import com.alibaba.dubbo.rpc.proxy.InvokerWrapper;
  * @author william.liangf
  */
 @Extension("jdk")
-public class JdkProxyFactory implements ProxyFactory {
+public class JdkProxyFactory extends AbstractProxyFactory {
 
     @SuppressWarnings("unchecked")
-    public <T> T getProxy(Invoker<T> invoker, Class<?>... types) {
-        Class<?>[] interfaces;
-        if (types != null && types.length > 0) {
-            interfaces = new Class<?>[types.length + 1];
-            interfaces[0] = invoker.getInterface();
-            System.arraycopy(types, 0, interfaces, 1, types.length);
-        } else {
-            interfaces = new Class<?>[] {invoker.getInterface()};
-        }
-        return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), interfaces, new InvokerHandler(invoker));
+    public <T> T getProxy(Invoker<T> invoker, Class<?>[] interfaces) {
+        return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), interfaces, new InvokerInvocationHandler(invoker));
     }
 
     public <T> Invoker<T> getInvoker(T proxy, Class<T> type, URL url) {
-        return new InvokerWrapper<T>(proxy, type, url) {
+        return new AbstractProxyInvoker<T>(proxy, type, url) {
             @Override
             protected Object doInvoke(T proxy, String methodName, 
                                       Class<?>[] parameterTypes, 

@@ -20,9 +20,9 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.bytecode.Proxy;
 import com.alibaba.dubbo.common.bytecode.Wrapper;
 import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.ProxyFactory;
-import com.alibaba.dubbo.rpc.proxy.InvokerHandler;
-import com.alibaba.dubbo.rpc.proxy.InvokerWrapper;
+import com.alibaba.dubbo.rpc.proxy.AbstractProxyFactory;
+import com.alibaba.dubbo.rpc.proxy.InvokerInvocationHandler;
+import com.alibaba.dubbo.rpc.proxy.AbstractProxyInvoker;
 
 /**
  * JavaassistRpcProxyFactory 
@@ -30,25 +30,17 @@ import com.alibaba.dubbo.rpc.proxy.InvokerWrapper;
  * @author william.liangf
  */
 @Extension("javassist")
-public class JavassistProxyFactory implements ProxyFactory {
+public class JavassistProxyFactory extends AbstractProxyFactory {
 
     @SuppressWarnings("unchecked")
-    public <T> T getProxy(Invoker<T> invoker, Class<?>... types) {
-        Class<?>[] interfaces;
-        if (types != null && types.length > 0) {
-            interfaces = new Class<?>[types.length + 1];
-            interfaces[0] = invoker.getInterface();
-            System.arraycopy(types, 0, interfaces, 1, types.length);
-        } else {
-            interfaces = new Class<?>[] {invoker.getInterface()};
-        }
-        return (T) Proxy.getProxy(interfaces).newInstance(new InvokerHandler(invoker));
+    public <T> T getProxy(Invoker<T> invoker, Class<?>[] interfaces) {
+        return (T) Proxy.getProxy(interfaces).newInstance(new InvokerInvocationHandler(invoker));
     }
 
     public <T> Invoker<T> getInvoker(T proxy, Class<T> type, URL url) {
         // TODO Wrapper类不能正确处理带$的类名
         final Wrapper wrapper = Wrapper.getWrapper(proxy.getClass().getName().indexOf('$') < 0 ? proxy.getClass() : type);
-        return new InvokerWrapper<T>(proxy, type, url) {
+        return new AbstractProxyInvoker<T>(proxy, type, url) {
             @Override
             protected Object doInvoke(T proxy, String methodName, 
                                       Class<?>[] parameterTypes, 
