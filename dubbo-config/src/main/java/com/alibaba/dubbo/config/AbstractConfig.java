@@ -105,6 +105,20 @@ public abstract class AbstractConfig implements Serializable {
         appendMaps(parameters, config, prefix, true);
     }
     
+    private static boolean isPrimitive(Class<?> type) {
+        return type.isPrimitive() 
+                || type == String.class 
+                || type == Character.class
+                || type == Boolean.class
+                || type == Byte.class
+                || type == Short.class
+                || type == Integer.class 
+                || type == Long.class
+                || type == Float.class 
+                || type == Double.class
+                || type == Object.class;
+    }
+    
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private static void appendMaps(Map parameters, Object config, String prefix, boolean attribute) {
         if (config == null) {
@@ -118,16 +132,7 @@ public abstract class AbstractConfig implements Serializable {
                         && ! "getClass".equals(name)
                         && Modifier.isPublic(method.getModifiers()) 
                         && method.getParameterTypes().length == 0
-                        && (method.getReturnType() == String.class 
-                                || method.getReturnType() == Character.class
-                                || method.getReturnType() == Boolean.class
-                                || method.getReturnType() == Byte.class
-                                || method.getReturnType() == Short.class
-                                || method.getReturnType() == Integer.class 
-                                || method.getReturnType() == Long.class
-                                || method.getReturnType() == Float.class 
-                                || method.getReturnType() == Double.class
-                                || method.getReturnType() == Object.class)) {
+                        && isPrimitive(method.getReturnType())) {
                     Parameter parameter = method.getAnnotation(Parameter.class);
                     if (attribute){
                         if (parameter == null || !parameter.attribute())
@@ -270,6 +275,48 @@ public abstract class AbstractConfig implements Serializable {
                 ProtocolConfig.destroyAll();
             }
         }, "DubboShutdownHook"));
+    }
+    
+    @Override
+    public String toString() {
+        try {
+            String tag = getClass().getSimpleName();
+            if (tag.equals("Config")) {
+                tag = tag.substring(0, tag.length() - "Config".length());
+            }
+            tag = tag.toLowerCase();
+            StringBuilder buf = new StringBuilder();
+            buf.append("<dubbo:");
+            buf.append(tag);
+            Method[] methods = getClass().getMethods();
+            for (Method method : methods) {
+                try {
+                    String name = method.getName();
+                    if ((name.startsWith("get") || name.startsWith("is")) 
+                            && ! "getClass".equals(name)
+                            && Modifier.isPublic(method.getModifiers()) 
+                            && method.getParameterTypes().length == 0
+                            && isPrimitive(method.getReturnType())) {
+                        int i = name.startsWith("get") ? 3 : 2;
+                        String key = name.substring(i, i + 1).toLowerCase() + name.substring(i + 1);
+                        Object value = method.invoke(this, new Object[0]);
+                        if (value != null) {
+                            buf.append(" ");
+                            buf.append(key);
+                            buf.append("=\"");
+                            buf.append(value);
+                            buf.append("\"");
+                        }
+                    }
+                } catch (Exception e) {
+                    logger.warn(e.getMessage(), e);
+                }
+            }
+            buf.append(" />");
+            return buf.toString();
+        } catch (Throwable t) { // 防御性容错
+            return super.toString();
+        }
     }
 
 }

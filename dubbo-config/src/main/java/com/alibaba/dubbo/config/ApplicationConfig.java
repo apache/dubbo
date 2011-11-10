@@ -140,36 +140,4 @@ public class ApplicationConfig extends AbstractConfig {
         this.monitor = new MonitorConfig(monitor);
     }
 
-	@Override
-	public String toString() {
-		StringBuilder buf = new StringBuilder("<dubbo:application");
-		if (name != null && name.length() > 0) {
-			buf.append(" name=\"");
-			buf.append(name);
-			buf.append("\"");
-		}
-		if (owner != null && owner.length() > 0) {
-            buf.append(" owner=\"");
-            buf.append(owner);
-            buf.append("\"");
-        }
-		if (organization != null && organization.length() > 0) {
-			buf.append(" organization=\"");
-			buf.append(organization);
-			buf.append("\"");
-		}
-		if (architecture != null && architecture.length() > 0) {
-		    buf.append(" architecture=\"");
-		    buf.append(architecture);
-		    buf.append("\"");
-		}
-		if (environment != null && environment.length() > 0) {
-			buf.append(" environment=\"");
-			buf.append(environment);
-			buf.append("\"");
-		}
-		buf.append(" />");
-		return buf.toString();
-	}
-
 }
