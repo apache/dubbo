@@ -38,7 +38,6 @@ import javassist.NotFoundException;
  * 
  * @author qian.lei
  */
-
 public final class ReflectUtils {
     
 	/**
@@ -764,6 +763,15 @@ public final class ReflectUtils {
 		return targetConstructor;
     }
 
+    /**
+     * 检查对象是否是指定接口的实现。
+     * <p>
+     * 不会触发到指定接口的{@link Class}，所以如果ClassLoader中没有指定接口类时，也不会出错。
+     * 
+     * @param obj 要检查的对象
+     * @param interfaceClazzName 指定的接口名
+     * @return 返回{@code true}，如果对象实现了指定接口；否则返回{@code false}。
+     */
     public static boolean isInstance(Object obj, String interfaceClazzName) {
         for (Class<?> clazz = obj.getClass(); 
                 clazz != null && !clazz.equals(Object.class); 
