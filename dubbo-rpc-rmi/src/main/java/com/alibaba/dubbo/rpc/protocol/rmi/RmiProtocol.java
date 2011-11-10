@@ -263,7 +263,7 @@ public class RmiProtocol extends AbstractProtocol {
     public <T> Invoker<T> refer(Class<T> serviceType, URL url) throws RpcException {
         Invoker<T> invoker;
         try {
-            serviceType = RmiProtocol.getRemoteClass(serviceType);
+            RmiProtocol.getRemoteClass(serviceType);
             Registry registry = LocateRegistry.getRegistry(url.getHost(), url.getPort());
             String path = url.getPath();
             if (path == null || path.length() == 0) {
