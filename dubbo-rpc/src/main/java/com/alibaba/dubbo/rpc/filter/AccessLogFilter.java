@@ -89,7 +89,7 @@ public class AccessLogFilter implements Filter {
                             Set<String> logSet = entry.getValue();
                             File file = new File(accesslog);
                             File dir = file.getParentFile();
-                            if (! dir.exists()) {
+                            if (null!=dir&&! dir.exists()) {
                                 dir.mkdirs();
                             }
                             if (logger.isDebugEnabled()) {
