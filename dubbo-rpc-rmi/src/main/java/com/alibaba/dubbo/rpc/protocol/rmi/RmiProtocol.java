@@ -203,7 +203,7 @@ public class RmiProtocol extends AbstractProtocol {
             } catch (ClassNotFoundException e) {
                 ClassPool pool = ClassGenerator.getClassPool(type.getClassLoader());
                 CtClass ctClass = pool.makeInterface(remoteType);
-                ctClass.addInterface(pool.getCtClass(type.getName()));
+                // ctClass.addInterface(pool.getCtClass(type.getName()));
                 ctClass.addInterface(pool.getCtClass(Remote.class.getName()));
                 Method[] methods = type.getMethods();
                 for (Method method : methods) {
