@@ -257,8 +257,8 @@ public abstract class Wrapper
 				c3.append(" && ").append(" $3.length == ").append(len);
 				if (len > 0) {
 					for (int l = 0; l < len; l ++) {
-						c3.append(" && ").append(" $3[").append(l).append("]").append(" == ")
-							.append(m.getParameterTypes()[l].getCanonicalName()).append(".class");
+						c3.append(" && ").append(" $3[").append(l).append("].getName().equals(\"")
+							.append(m.getParameterTypes()[l].getName()).append("\")");
 					}
 				}
 			}
