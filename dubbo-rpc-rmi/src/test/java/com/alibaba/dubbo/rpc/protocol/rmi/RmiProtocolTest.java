@@ -28,14 +28,21 @@ import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.ProxyFactory;
 import com.alibaba.dubbo.rpc.service.EchoService;
 
-/**
- * <code>ProxiesTest</code>
- */
-
 public class RmiProtocolTest
 {
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
     private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+    
+    
+    public static interface NonStdRmiInterface {
+        void bark();
+    }
+    
+    @Test
+    public void test_getRemoteClass() throws Exception {
+        Class<NonStdRmiInterface> clazz = RmiProtocol.getRemoteClass(NonStdRmiInterface.class);
+        assertEquals(clazz, RmiProtocol.getRemoteClass(NonStdRmiInterface.class));
+    }
     
 	@Test
 	public void testRmiProtocol() throws Exception
