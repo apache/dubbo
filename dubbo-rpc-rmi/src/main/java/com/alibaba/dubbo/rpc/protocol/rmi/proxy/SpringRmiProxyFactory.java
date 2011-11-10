@@ -24,6 +24,7 @@ import java.rmi.server.ServerNotActiveException;
 import org.springframework.remoting.rmi.RmiInvocationHandler;
 import org.springframework.remoting.support.RemoteInvocation;
 
+import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
@@ -41,6 +42,7 @@ import com.alibaba.dubbo.rpc.protocol.rmi.RmiProxyFactory;
  * 
  * @author william.liangf
  */
+@Extension("spring")
 public class SpringRmiProxyFactory implements RmiProxyFactory {
 
     public boolean isSupported(Remote remote, Class<?> serviceType, URL url) {
