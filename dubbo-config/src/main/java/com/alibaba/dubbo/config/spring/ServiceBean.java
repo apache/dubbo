@@ -154,10 +154,8 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                 if (protocolConfigMap.size() > 1) {
                     throw new IllegalStateException("Found multi-protocols: " + protocolConfigMap.values() + ", You must be set default protocol in: <dubbo:provider protocol=\"dubbo\" />, or set service protocol in: <dubbo:service protocol=\"dubbo\" />");
                 }
-                Collection<ProtocolConfig> protocolConfigs = protocolConfigMap.values();
-                if (protocolConfigs != null && protocolConfigs.size() > 0) {
-                    setProtocols(new ArrayList<ProtocolConfig>(protocolConfigs));
-                }
+                ProtocolConfig protocolConfig = protocolConfigMap.values().iterator().next();
+                setProtocol(protocolConfig);
             }
         }
         if (getPath() == null || getPath().length() == 0) {
