@@ -23,6 +23,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ExecutorUtil;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.remoting.Channel;
@@ -39,6 +41,8 @@ import com.alibaba.dubbo.remoting.transport.handler.WrappedChannelHandler;
  * @author ding.lid
  */
 public abstract class AbstractServer extends AbstractEndpoint implements Server {
+    
+    private static final Logger logger = LoggerFactory.getLogger(AbstractServer.class);
 
     private InetSocketAddress              localAddress;
 

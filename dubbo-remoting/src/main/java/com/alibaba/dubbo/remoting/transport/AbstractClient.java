@@ -28,6 +28,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.Version;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ExecutorUtil;
 import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 import com.alibaba.dubbo.common.utils.NetUtils;
@@ -44,6 +46,8 @@ import com.alibaba.dubbo.remoting.transport.handler.WrappedChannelHandler;
  * @author chao.liuc
  */
 public abstract class AbstractClient extends AbstractEndpoint implements Client {
+    
+    private static final Logger logger = LoggerFactory.getLogger(AbstractClient.class);
     
     protected static final String CLIENT_THREAD_POOL_NAME  ="DubboClientHandler";
     
@@ -246,7 +250,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
             initConnectStatusCheckCommand();
             doConnect();
             if (! isConnected()) {
-                throw new RemotingException(this, "Failed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName()
+                throw new RemotingException(this, "Failed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
                                             + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
                                             + ", cause: Connect wait timeout: " + getTimeout() + "ms.");
             }
@@ -254,7 +258,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         } catch (RemotingException e) {
             throw e;
         } catch (Throwable e) {
-            throw new RemotingException(this, "Failed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName()
+            throw new RemotingException(this, "Failed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
                                         + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
                                         + ", cause: " + e.getMessage(), e);
         } finally {

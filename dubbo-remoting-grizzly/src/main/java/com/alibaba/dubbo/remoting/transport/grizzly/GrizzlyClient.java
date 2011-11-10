@@ -27,6 +27,8 @@ import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;
@@ -38,6 +40,8 @@ import com.alibaba.dubbo.remoting.transport.AbstractClient;
  * @author william.liangf
  */
 public class GrizzlyClient extends AbstractClient {
+    
+    private static final Logger logger = LoggerFactory.getLogger(GrizzlyClient.class);
 
     private TCPNIOTransport transport;
 

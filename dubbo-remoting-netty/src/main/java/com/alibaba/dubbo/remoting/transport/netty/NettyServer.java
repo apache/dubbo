@@ -31,6 +31,8 @@ import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.remoting.Channel;
@@ -47,6 +49,8 @@ import com.alibaba.dubbo.remoting.transport.handler.ChannelHandlers;
  * @author chao.liuc
  */
 public class NettyServer extends AbstractServer implements Server {
+    
+    private static final Logger logger = LoggerFactory.getLogger(NettyServer.class);
 
     private Map<String, Channel>  channels; // <ip:port, channel>
 

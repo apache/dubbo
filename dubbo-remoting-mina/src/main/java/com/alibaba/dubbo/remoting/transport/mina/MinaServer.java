@@ -29,6 +29,8 @@ import org.apache.mina.transport.socket.nio.SocketAcceptorConfig;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
@@ -44,6 +46,8 @@ import com.alibaba.dubbo.remoting.transport.handler.ChannelHandlers;
  * @author ding.lid
  */
 public class MinaServer extends AbstractServer {
+    
+    private static final Logger logger = LoggerFactory.getLogger(MinaServer.class);
 
     private SocketAcceptor acceptor;
 

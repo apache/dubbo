@@ -30,6 +30,8 @@ import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
@@ -43,6 +45,8 @@ import com.alibaba.dubbo.remoting.transport.handler.ChannelHandlers;
  * @author william.liangf
  */
 public class GrizzlyServer extends AbstractServer {
+    
+    private static final Logger logger = LoggerFactory.getLogger(GrizzlyServer.class);
 
     private final Map<String, Channel> channels = new ConcurrentHashMap<String, Channel>(); // <ip:port, channel>
     

@@ -19,6 +19,8 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.Resetable;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.Codec;
 
@@ -28,6 +30,8 @@ import com.alibaba.dubbo.remoting.Codec;
  * @author william.liangf
  */
 public abstract class AbstractEndpoint extends AbstractPeer implements Resetable {
+    
+    private static final Logger logger = LoggerFactory.getLogger(AbstractEndpoint.class);
 
     private Codec                 codec;
 

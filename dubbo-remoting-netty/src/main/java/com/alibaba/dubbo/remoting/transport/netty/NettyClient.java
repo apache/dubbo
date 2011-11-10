@@ -30,6 +30,8 @@ import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.Version;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.remoting.ChannelHandler;
@@ -44,6 +46,8 @@ import com.alibaba.dubbo.remoting.transport.handler.ChannelHandlers;
  * @author william.liangf
  */
 public class NettyClient extends AbstractClient {
+    
+    private static final Logger logger = LoggerFactory.getLogger(NettyClient.class);
 
     // 因ChannelFactory的关闭有DirectMemory泄露，采用静态化规避
     // https://issues.jboss.org/browse/NETTY-424

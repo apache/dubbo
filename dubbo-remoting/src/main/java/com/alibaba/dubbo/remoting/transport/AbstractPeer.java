@@ -34,7 +34,7 @@ import com.alibaba.dubbo.remoting.RemotingException;
  */
 public abstract class AbstractPeer implements Endpoint, ChannelHandler {
 
-    protected final Logger       logger = LoggerFactory.getLogger(getClass());
+    private static final Logger       logger = LoggerFactory.getLogger(AbstractPeer.class);
 
     private final ChannelHandler handler;
 
