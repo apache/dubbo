@@ -270,7 +270,7 @@ public class ReferenceConfig<T> extends AbstractConsumerConfig {
             j = consumer.isInjvm();
         }
         if (j != null && j) {
-            URL url = new URL("injvm", NetUtils.LOCALHOST, 1, interfaceClass.getName()).addParameters(map);
+            URL url = new URL("injvm", NetUtils.LOCALHOST, 0, interfaceClass.getName()).addParameters(map);
             invoker = protocol.refer(interfaceClass, url);
             if (logger.isInfoEnabled()) {
                 logger.info("Using injvm service " + interfaceClass.getName());

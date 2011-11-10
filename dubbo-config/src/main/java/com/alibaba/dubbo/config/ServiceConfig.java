@@ -394,6 +394,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 }
             }
             if ("injvm".equals(protocolConfig.getName())) {
+                protocolConfig.setPort(0);
+                protocolConfig.setRegister(false);
                 map.put("notify", "false");
             }
             // 导出服务

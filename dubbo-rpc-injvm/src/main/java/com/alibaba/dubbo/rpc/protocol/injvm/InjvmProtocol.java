@@ -34,7 +34,7 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
     
     public static final String NAME = "injvm";
 
-    public static final int DEFAULT_PORT = 1;
+    public static final int DEFAULT_PORT = 0;
 
     public int getDefaultPort() {
         return DEFAULT_PORT;
