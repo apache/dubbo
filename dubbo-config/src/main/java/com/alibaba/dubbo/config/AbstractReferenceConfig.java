@@ -28,6 +28,7 @@ import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.common.utils.UrlUtils;
+import com.alibaba.dubbo.monitor.MonitorFactory;
 import com.alibaba.dubbo.monitor.MonitorService;
 import com.alibaba.dubbo.registry.RegistryFactory;
 import com.alibaba.dubbo.registry.RegistryService;
@@ -186,7 +187,7 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
         appendParameters(map, monitor);
         if (ConfigUtils.isNotEmpty(monitor.getAddress())) {
             if (! map.containsKey(Constants.PROTOCOL_KEY)) {
-                if (ExtensionLoader.getExtensionLoader(RegistryFactory.class).hasExtension("logstat")) {
+                if (ExtensionLoader.getExtensionLoader(MonitorFactory.class).hasExtension("logstat")) {
                     map.put(Constants.PROTOCOL_KEY, "logstat");
                 } else {
                     map.put(Constants.PROTOCOL_KEY, "dubbo");
