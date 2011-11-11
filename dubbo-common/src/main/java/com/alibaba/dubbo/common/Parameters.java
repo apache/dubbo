@@ -30,7 +30,6 @@ import com.alibaba.dubbo.common.utils.StringUtils;
  * @author tony.chenl
  */
 @Deprecated
-@Extension
 public class Parameters {
         private final Map<String, String> parameters;
         
