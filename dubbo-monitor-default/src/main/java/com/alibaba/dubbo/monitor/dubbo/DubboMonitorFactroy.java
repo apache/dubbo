@@ -48,6 +48,13 @@ public class DubboMonitorFactroy extends AbstractMonitorFactroy {
     @Override
     protected Monitor createMonitor(URL url) {
         url = url.setProtocol(url.getParameter(Constants.PROTOCOL_KEY, "dubbo"));
+        String filter = url.getParameter(Constants.REFERENCE_FILTER_KEY);
+        if (filter == null || filter.length() == 0) {
+            filter = "";
+        } else {
+            filter = filter + ",";
+        }
+        url = url.addParameter(Constants.REFERENCE_FILTER_KEY, filter + "-monitor");
         Invoker<MonitorService> monitorInvoker = protocol.refer(MonitorService.class, url);
         MonitorService monitorService = proxyFactory.getProxy(monitorInvoker);
         return new DubboMonitor(monitorInvoker, monitorService);
