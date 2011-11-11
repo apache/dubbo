@@ -84,15 +84,13 @@ public abstract class FailbackRegistry extends AbstractRegistry {
                 if (logger.isInfoEnabled()) {
                     logger.info("Retry register " + failed);
                 }
-                if (! failed.isEmpty()) {
-                    try {
-                        for (String url : failed) {
-                            doRegister(URL.valueOf(url));
-                            failedRegistered.remove(url);
-                        }
-                    } catch (Throwable t) { // 忽略所有异常，等待下次重试
-                        logger.warn("Failed to retry register " + failed + ", waiting for again, cause: " + t.getMessage(), t);
+                try {
+                    for (String url : failed) {
+                        doRegister(URL.valueOf(url));
+                        failedRegistered.remove(url);
                     }
+                } catch (Throwable t) { // 忽略所有异常，等待下次重试
+                    logger.warn("Failed to retry register " + failed + ", waiting for again, cause: " + t.getMessage(), t);
                 }
             }
         }

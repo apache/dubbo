@@ -16,6 +16,7 @@
 package com.alibaba.dubbo.registry.zookeeper;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,6 +35,7 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
 import com.alibaba.dubbo.common.utils.UrlUtils;
 import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.support.FailbackRegistry;
@@ -56,6 +58,8 @@ public class ZookeeperRegistry extends FailbackRegistry {
 
     private final ReentrantLock zookeeperLock = new ReentrantLock();
 
+    private final Set<String> failedWatched = new ConcurrentHashSet<String>();
+    
     private volatile ZooKeeper  zookeeper;
 
     public ZookeeperRegistry(URL url) {
@@ -75,6 +79,54 @@ public class ZookeeperRegistry extends FailbackRegistry {
     @Override
     protected void doRetry() {
         initZookeeper();
+        if (failedWatched.size() > 0) {
+            Set<String> failed = new HashSet<String>(failedWatched);
+            if (failed.size() > 0) {
+                if (logger.isInfoEnabled()) {
+                    logger.info("Retry watch " + failed);
+                }
+                for (String service : failed) {
+                    try {
+                        zookeeper.getChildren(service, true);
+                        failedWatched.remove(service);
+                    } catch (Throwable t) {
+                        logger.warn("Failed to retry register " + failed + ", waiting for again, cause: " + t.getMessage(), t);
+                    }
+                }
+            }
+        }
+    }
+    
+    private List<String> watch(String service) {
+        try {
+            ZooKeeper zk = ZookeeperRegistry.this.zookeeper;
+            if (zk != null) {
+                List<String> result = zookeeper.getChildren(service, true);
+                failedWatched.remove(service);
+                return result;
+            }
+        } catch (Throwable e) {
+            logger.warn(e.getMessage(), e);
+        }
+        failedWatched.add(service);
+        return new ArrayList<String>(0);
+    }
+    
+    private void recover() {
+        for (String url : new HashSet<String>(getRegistered())) {
+            try {
+                register(URL.valueOf(url));
+            } catch (Throwable e) {
+                logger.warn(e.getMessage(), e);
+            }
+        }
+        for (String url : new HashSet<String>(getSubscribed().keySet())) {
+            try {
+                watch(toServicePath(URL.valueOf(url)));
+            } catch (Throwable e) {
+                logger.warn(e.getMessage(), e);
+            }
+        }
     }
 
     private void initZookeeper() {
@@ -85,6 +137,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 zk = this.zookeeper;
                 if (zk == null || zk.getState() == null || ! zk.getState().isAlive()) {
                     this.zookeeper = createZookeeper();
+                    recover();
                 }
                 if (zk != null) {
                     zk.close();
@@ -110,6 +163,9 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 try {
                     if (event.getState() == KeeperState.Expired) {
                         initZookeeper();
+                    } else if (event.getState() == KeeperState.SyncConnected
+                            && event.getType() == EventType.None) {
+                        recover();
                     }
                     if (event.getType() != EventType.NodeChildrenChanged) {
                         return;
@@ -118,8 +174,10 @@ public class ZookeeperRegistry extends FailbackRegistry {
                     if (path == null || path.length() == 0) {
                         return;
                     }
-                    ZooKeeper zk = ZookeeperRegistry.this.zookeeper;
-                    List<String> providers = zk.getChildren(path, true);
+                    List<String> providers = watch(path);
+                    if (providers == null || providers.size() == 0) {
+                        return;
+                    }
                     String service = path;
                     int i = service.lastIndexOf(SEPARATOR);
                     if (i >= 0) {
