@@ -18,7 +18,6 @@ package com.alibaba.dubbo.remoting.exchange.support;
 import java.net.InetSocketAddress;
 import java.util.Collection;
 
-import com.alibaba.dubbo.common.Parameters;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
@@ -59,7 +58,7 @@ public class ExchangeServerDelegate implements ExchangeServer {
     }
 
     @Deprecated
-    public void reset(Parameters parameters){
+    public void reset(com.alibaba.dubbo.common.Parameters parameters){
         reset(getUrl().addParameters(parameters.getParameters()));
     }
     

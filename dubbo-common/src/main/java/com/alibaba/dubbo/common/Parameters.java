@@ -29,6 +29,7 @@ import com.alibaba.dubbo.common.utils.StringUtils;
  * 兼容2.0.5之前版本
  * @author tony.chenl
  */
+@Deprecated
 @Extension
 public class Parameters {
         private final Map<String, String> parameters;

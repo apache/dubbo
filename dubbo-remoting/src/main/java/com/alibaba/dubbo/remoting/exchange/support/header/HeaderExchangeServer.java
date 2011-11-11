@@ -24,7 +24,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.Parameters;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
@@ -200,7 +199,7 @@ public class HeaderExchangeServer implements ExchangeServer {
     }
     
     @Deprecated
-    public void reset(Parameters parameters){
+    public void reset(com.alibaba.dubbo.common.Parameters parameters){
         reset(getUrl().addParameters(parameters.getParameters()));
     }
 

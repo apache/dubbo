@@ -52,5 +52,8 @@ public interface Server extends Endpoint, Resetable {
      * @return channel
      */
     Channel getChannel(InetSocketAddress remoteAddress);
+
+    @Deprecated
+    void reset(com.alibaba.dubbo.common.Parameters parameters);
     
 }

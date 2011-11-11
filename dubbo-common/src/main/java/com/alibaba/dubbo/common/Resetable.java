@@ -31,6 +31,4 @@ public interface Resetable {
      */
     void reset(URL url);
     
-    void reset(Parameters parameters);
-
 }
