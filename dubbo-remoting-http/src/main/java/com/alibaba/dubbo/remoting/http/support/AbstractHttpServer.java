@@ -17,6 +17,7 @@ package com.alibaba.dubbo.remoting.http.support;
 
 import java.net.InetSocketAddress;
 
+import com.alibaba.dubbo.common.Parameters;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.http.HttpHandler;
 import com.alibaba.dubbo.remoting.http.HttpServer;
@@ -54,6 +55,11 @@ public abstract class AbstractHttpServer implements HttpServer {
     }
 
     public void reset(URL url) {
+    }
+    
+    @Deprecated
+    public void reset(Parameters parameters){
+        reset(getUrl().addParameters(parameters.getParameters()));
     }
 
     public boolean isBound() {

@@ -20,6 +20,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.Parameters;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
@@ -141,6 +142,11 @@ final class LazyConnectExchangeClient implements ExchangeClient {
     public void reset(URL url) {
         checkClient();
         client.reset(url);
+    }
+    
+    @Deprecated
+    public void reset(Parameters parameters){
+        reset(getUrl().addParameters(parameters.getParameters()));
     }
 
     public void reconnect() throws RemotingException {

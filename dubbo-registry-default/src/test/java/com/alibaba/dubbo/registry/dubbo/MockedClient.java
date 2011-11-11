@@ -18,6 +18,7 @@ package com.alibaba.dubbo.registry.dubbo;
 import java.net.InetSocketAddress;
 import java.util.Map;
 
+import com.alibaba.dubbo.common.Parameters;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
@@ -254,6 +255,13 @@ public class MockedClient implements ExchangeClient {
     }
 
     public void reset(URL url) {
+    }
+
+    /* (non-Javadoc)
+     * @see com.alibaba.dubbo.common.Resetable#reset(com.alibaba.dubbo.common.Parameters)
+     */
+    public void reset(Parameters parameters) {
+        
     }
     
 }

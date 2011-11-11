@@ -17,6 +17,7 @@ package com.alibaba.dubbo.remoting.transport;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.ExtensionLoader;
+import com.alibaba.dubbo.common.Parameters;
 import com.alibaba.dubbo.common.Resetable;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
@@ -79,6 +80,11 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
         } catch (Throwable t) {
             logger.error(t.getMessage(), t);
         }
+    }
+    
+    @Deprecated
+    public void reset(Parameters parameters){
+        reset(getUrl().addParameters(parameters.getParameters()));
     }
 
     protected Codec getCodec() {
