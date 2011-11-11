@@ -185,16 +185,16 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
         map.put(Constants.INTERFACE_KEY, MonitorService.class.getName());
         appendParameters(map, monitor);
         if (ConfigUtils.isNotEmpty(monitor.getAddress())) {
-            if (! map.containsKey("protocol")) {
+            if (! map.containsKey(Constants.PROTOCOL_KEY)) {
                 if (ExtensionLoader.getExtensionLoader(RegistryFactory.class).hasExtension("logstat")) {
-                    map.put("protocol", "logstat");
+                    map.put(Constants.PROTOCOL_KEY, "logstat");
                 } else {
-                    map.put("protocol", "dubbo");
+                    map.put(Constants.PROTOCOL_KEY, "dubbo");
                 }
             }
             return UrlUtils.parseURL(monitor.getAddress(), map);
         } else if (ConfigUtils.isNotEmpty(monitor.getGroup()) && registryURL != null) {
-            return registryURL.setProtocol("dubbo").addParameter(Constants.MONITOR_KEY, registryURL.getProtocol()).addParameterAndEncoded(RpcConstants.REFER_KEY, StringUtils.toQueryString(map));
+            return registryURL.setProtocol("dubbo").addParameter(Constants.PROTOCOL_KEY, "registry").addParameterAndEncoded(RpcConstants.REFER_KEY, StringUtils.toQueryString(map));
         }
         return null;
     }

@@ -144,6 +144,8 @@ public class Constants {
 
     public static final String       MOCK_KEY                       = "mock";
 
+    public static final String       PROTOCOL_KEY                   = "protocol";
+
     public static final String       PROXY_KEY                      = "proxy";
 
     public static final String       WEIGHT_KEY                     = "weight";
