@@ -40,7 +40,7 @@ public class ProtocolTest {
     
     ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getExtension("javassist");
     
-    URL url = URL.valueOf("injvm://localhost:100/com.alibaba.dubbo.rpc.support.IEcho");
+    URL url = URL.valueOf("injvm://localhost:0/com.alibaba.dubbo.rpc.support.IEcho");
     
     Invoker<IEcho> invoker = proxyFactory.getInvoker(echo, IEcho.class, url);
     
