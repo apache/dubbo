@@ -317,11 +317,11 @@ public class ExtensionLoader<T> {
                                                 clazz.getConstructor();
                                                 Extension extension = clazz.getAnnotation(Extension.class);
                                                 if (extension == null) {
-                                                    throw new IllegalStateException("No such @Extension annotation in class " + type.getName());
+                                                    throw new IllegalStateException("No such @Extension annotation in class " + clazz.getName());
                                                 }
                                                 String name = extension.value();
                                                 if (name == null || name.length() == 0) {
-                                                    throw new IllegalStateException("Illegal @Extension annotation in class " + type.getName());
+                                                    throw new IllegalStateException("Illegal @Extension annotation in class " + clazz.getName());
                                                 }
                                                 String[] names = NAME_SEPARATOR.split(name);
                                                 for (String n : names) {
