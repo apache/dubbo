@@ -24,6 +24,7 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.Version;
+import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.common.utils.UrlUtils;
@@ -183,7 +184,7 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
         Map<String, String> map = new HashMap<String, String>();
         map.put(Constants.INTERFACE_KEY, MonitorService.class.getName());
         appendParameters(map, monitor);
-        if (monitor.getAddress() != null && monitor.getAddress().length() > 0) {
+        if (ConfigUtils.isNotEmpty(monitor.getAddress())) {
             if (! map.containsKey("protocol")) {
                 if (ExtensionLoader.getExtensionLoader(RegistryFactory.class).hasExtension("logstat")) {
                     map.put("protocol", "logstat");
@@ -192,9 +193,7 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
                 }
             }
             return UrlUtils.parseURL(monitor.getAddress(), map);
-        } else if (monitor.getProtocol() != null && monitor.getProtocol().length() > 0) {
-            return new URL(monitor.getProtocol(), NetUtils.getLocalHost(), 0, MonitorService.class.getName(), map);
-        } else if (registryURL != null) {
+        } else if (ConfigUtils.isNotEmpty(monitor.getGroup()) && registryURL != null) {
             return registryURL.setProtocol("dubbo").addParameter(Constants.MONITOR_KEY, registryURL.getProtocol()).addParameterAndEncoded(RpcConstants.REFER_KEY, StringUtils.toQueryString(map));
         }
         return null;
