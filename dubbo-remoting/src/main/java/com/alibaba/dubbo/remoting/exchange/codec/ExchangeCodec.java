@@ -339,7 +339,7 @@ public class ExchangeCodec extends TelnetCodec {
     }
 
     protected Object decodeResponseData(Channel channel, ObjectInput in) throws IOException {
-        return decodeRequestData(in);
+        return decodeResponseData(in);
     }
     
     @Override
