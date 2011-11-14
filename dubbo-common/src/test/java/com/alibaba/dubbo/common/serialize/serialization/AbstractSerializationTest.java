@@ -1185,4 +1185,12 @@ public abstract class AbstractSerializationTest {
         assertEquals("v1", output.get("k1"));
         assertSame(output, output.get("self"));
     }
+    
+    // ================ final field test ================
+    
+    @Test
+    public void test_URL_mutable() throws Exception {
+        URL url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan&noValue");
+        assertObject(url);
+    }
 }
