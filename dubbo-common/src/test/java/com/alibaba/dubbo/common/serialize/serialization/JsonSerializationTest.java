@@ -190,6 +190,11 @@ public class JsonSerializationTest extends AbstractSerializationPersionOkTest {
     @Test
     public void test_LoopReference() throws Exception {}
     
+    // FIXME DUBBO-63
+    @Ignore
+    @Test
+    public void test_URL_mutable_withType() throws Exception {}
+    
     // Person
     
     @Ignore("person type missing")
