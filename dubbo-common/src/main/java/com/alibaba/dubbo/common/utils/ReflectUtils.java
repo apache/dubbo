@@ -109,7 +109,7 @@ public final class ReflectUtils {
 
 	public static final Pattern IS_HAS_CAN_METHOD_DESC_PATTERN = Pattern.compile("(?:is|has|can)([A-Z][_a-zA-Z0-9]*)\\(\\)Z");
 	
-	private static final ConcurrentMap<String, Class<?>[]>  DESC_CLASSARRAY_CACHE = new ConcurrentHashMap<String, Class<?>[]>();
+	private static final ConcurrentMap<String, Class<?>>  DESC_CLASS_CACHE = new ConcurrentHashMap<String, Class<?>>();
 
 	/**
 	 * is compatible.
@@ -566,7 +566,7 @@ public final class ReflectUtils {
 	 * @param name name.
 	 * @return Class instance.
 	 */
-	public static Class<?> name2class(ClassLoader cl, String name) throws ClassNotFoundException
+	private static Class<?> name2class(ClassLoader cl, String name) throws ClassNotFoundException
 	{
 		int c = 0, index = name.indexOf('[');
 		if( index > 0 )
@@ -634,7 +634,7 @@ public final class ReflectUtils {
 	 * @return Class instance.
 	 * @throws ClassNotFoundException 
 	 */
-	public static Class<?> desc2class(ClassLoader cl, String desc) throws ClassNotFoundException
+	private static Class<?> desc2class(ClassLoader cl, String desc) throws ClassNotFoundException
 	{
 		switch( desc.charAt(0) )
 		{
@@ -659,7 +659,11 @@ public final class ReflectUtils {
 
 		if( cl == null )
 			cl = ClassHelper.getClassLoader();
-		return Class.forName(desc, true, cl);
+		Class<?> clazz = DESC_CLASS_CACHE.get(desc);
+		if(clazz==null){
+		    clazz = Class.forName(desc, true, cl);
+		}
+		return clazz;
 	}
 
 	/**
@@ -671,11 +675,7 @@ public final class ReflectUtils {
 	 */
 	public static Class<?>[] desc2classArray(String desc) throws ClassNotFoundException
 	{
-	    Class<?>[] ret = DESC_CLASSARRAY_CACHE.get(desc);
-	    if (ret == null){
-	        ret = desc2classArray(ClassHelper.getClassLoader(), desc);
-	        DESC_CLASSARRAY_CACHE.put(desc, ret);
-	    }
+	    Class<?>[] ret = desc2classArray(ClassHelper.getClassLoader(), desc);
 		return ret;
 	}
 
@@ -687,7 +687,7 @@ public final class ReflectUtils {
 	 * @return Class[] class array.
 	 * @throws ClassNotFoundException 
 	 */
-	public static Class<?>[] desc2classArray(ClassLoader cl, String desc) throws ClassNotFoundException
+	private static Class<?>[] desc2classArray(ClassLoader cl, String desc) throws ClassNotFoundException
 	{
 		if( desc.length() == 0 )
 			return EMPTY_CLASS_ARRAY;
