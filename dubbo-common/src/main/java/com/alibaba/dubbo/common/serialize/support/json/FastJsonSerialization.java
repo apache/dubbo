@@ -30,7 +30,7 @@ import com.alibaba.dubbo.common.serialize.Serialization;
  * 
  * @author william.liangf
  */
-@Extension("fastjson")
+@Extension("fastjson,json")
 public class FastJsonSerialization implements Serialization {
 
     public byte getContentTypeId() {
