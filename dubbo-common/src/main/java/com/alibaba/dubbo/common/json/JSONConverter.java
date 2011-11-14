@@ -13,28 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.common.extensionloader.ext1.impl;
+package com.alibaba.dubbo.common.json;
 
-import com.alibaba.dubbo.common.Extension;
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.extensionloader.ext1.Ext1;
+import java.io.IOException;
 
 /**
- * @author ding.lid
- *
+ * JSON converter.
+ * 
+ * @author qianlei
  */
-@Extension("impl3")
-public class Ext1Impl3 implements Ext1 {
-    public String echo(URL url, String s) {
-        return "Ext1Impl3-echo";
-    }
-    
-    public String yell(URL url, String s) {
-        return "Ext1Impl3-yell";
-    }
 
-    public String bang(URL url, int i) {
-        return "bang3";
-    }
-    
+public interface JSONConverter
+{
+	/**
+	 * write object.
+	 * 
+	 * @param obj obj.
+	 * @param builder builder.
+	 * @throws IOException
+	 */
+	void writeValue(Object obj, JSONWriter builder, boolean writeClass) throws IOException;
+
+	/**
+	 * convert json value to target class.
+	 * 
+	 * @param type target type.
+	 * @param jv json value.
+	 * @return target object.
+	 * @throws IOException.
+	 */
+	Object readValue(Class<?> type, Object jv) throws IOException;
 }

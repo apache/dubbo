@@ -15,15 +15,13 @@
  */
 package com.alibaba.dubbo.common.extensionloader;
 
-import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.anyOf;
-import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.junit.matchers.JUnitMatchers.containsString;
 
 import java.util.HashMap;
@@ -38,7 +36,6 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extensionloader.ext1.Ext1;
 import com.alibaba.dubbo.common.extensionloader.ext1.impl.Ext1Impl1;
 import com.alibaba.dubbo.common.extensionloader.ext1.impl.Ext1Impl2;
-import com.alibaba.dubbo.common.extensionloader.ext1.impl.Ext1Impl3;
 import com.alibaba.dubbo.common.extensionloader.ext2.Ext2;
 import com.alibaba.dubbo.common.extensionloader.ext2.UrlHolder;
 import com.alibaba.dubbo.common.extensionloader.ext3.Ext3;
@@ -75,8 +72,6 @@ public class ExtensionLoaderTest {
     public void test_getExtension() throws Exception {
         assertTrue(ExtensionLoader.getExtensionLoader(Ext1.class).getExtension("impl1") instanceof Ext1Impl1);
         assertTrue(ExtensionLoader.getExtensionLoader(Ext1.class).getExtension("impl2") instanceof Ext1Impl2);
-        assertTrue(ExtensionLoader.getExtensionLoader(Ext1.class).getExtension("impl3") instanceof Ext1Impl3);
-        assertTrue(ExtensionLoader.getExtensionLoader(Ext1.class).getExtension("impl88") instanceof Ext1Impl3);
     }
     
     @Test
@@ -156,7 +151,6 @@ public class ExtensionLoaderTest {
         expected.add("impl1");
         expected.add("impl2");
         expected.add("impl3");
-        expected.add("impl88");
         
         assertEquals(expected, exts);
     }

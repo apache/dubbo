@@ -26,15 +26,15 @@ import com.alibaba.dubbo.common.serialize.ObjectOutput;
 import com.alibaba.dubbo.common.serialize.Serialization;
 
 /**
- * FastJsonSerialization
+ * JsonSerialization
  * 
  * @author william.liangf
  */
-@Extension("fastjson")
-public class FastJsonSerialization implements Serialization {
+@Extension("json")
+public class JsonSerialization implements Serialization {
 
     public byte getContentTypeId() {
-        return 6;
+        return 5;
     }
 
     public String getContentType() {
@@ -42,11 +42,11 @@ public class FastJsonSerialization implements Serialization {
     }
     
     public ObjectOutput serialize(URL url, OutputStream output) throws IOException {
-        return new FastJsonObjectOutput(output);
+        return new JsonObjectOutput(output, url.getParameter("with.class", true));
     }
 
     public ObjectInput deserialize(URL url, InputStream input) throws IOException {
-        return new FastJsonObjectInput(input);
+        return new JsonObjectInput(input);
     }
-
+    
 }

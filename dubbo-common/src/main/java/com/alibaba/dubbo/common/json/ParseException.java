@@ -13,28 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.common.extensionloader.ext1.impl;
-
-import com.alibaba.dubbo.common.Extension;
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.extensionloader.ext1.Ext1;
+package com.alibaba.dubbo.common.json;
 
 /**
- * @author ding.lid
- *
+ * ParseException.
+ * 
+ * @author qian.lei
  */
-@Extension("impl3")
-public class Ext1Impl3 implements Ext1 {
-    public String echo(URL url, String s) {
-        return "Ext1Impl3-echo";
-    }
-    
-    public String yell(URL url, String s) {
-        return "Ext1Impl3-yell";
-    }
 
-    public String bang(URL url, int i) {
-        return "bang3";
-    }
-    
+public class ParseException extends Exception
+{
+	private static final long serialVersionUID = 8611884051738966316L;
+
+	public ParseException()
+	{
+		super();
+	}
+
+	public ParseException(String message)
+	{
+	    super(message);
+	}
 }
