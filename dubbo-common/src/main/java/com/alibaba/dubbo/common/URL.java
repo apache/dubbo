@@ -880,7 +880,7 @@ public final class URL implements Serializable {
 	}
 	
 	private void buildParameters(StringBuilder buf, boolean concat, String[] parameters) {
-	    if (getParameters().size() > 0) {
+	    if (getParameters() !=null && getParameters().size() > 0) {
             List<String> includes = (parameters == null || parameters.length == 0 ? null : Arrays.asList(parameters));
             boolean first = true;
             for (Map.Entry<String, String> entry : new TreeMap<String, String>(getParameters()).entrySet()) {
