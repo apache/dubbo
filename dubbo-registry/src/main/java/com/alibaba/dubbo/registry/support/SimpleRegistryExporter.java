@@ -49,7 +49,10 @@ public class SimpleRegistryExporter {
     }
     
     public static Exporter<RegistryService> export(int port) {
-        RegistryService registryService = new SimpleRegistryService();
+        return export(port, new SimpleRegistryService());
+    }
+    
+    public static Exporter<RegistryService> export(int port, RegistryService registryService) {
         return protocol.export(proxyFactory.getInvoker(registryService, RegistryService.class, 
                 new URL("dubbo", NetUtils.getLocalHost(), port, RegistryService.class.getName())
                 .setPath(RegistryService.class.getName())

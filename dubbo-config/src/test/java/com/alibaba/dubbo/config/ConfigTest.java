@@ -15,14 +15,20 @@
  */
 package com.alibaba.dubbo.config;
 
+import java.util.List;
+
 import junit.framework.Assert;
 
 import org.junit.Test;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.config.api.DemoService;
-import com.alibaba.dubbo.rpc.RpcContext;
+import com.alibaba.dubbo.registry.RegistryService;
+import com.alibaba.dubbo.registry.support.SimpleRegistryExporter;
+import com.alibaba.dubbo.registry.support.SimpleRegistryService;
+import com.alibaba.dubbo.rpc.Exporter;
 
 /**
  * ConfigTest
@@ -69,6 +75,26 @@ public class ConfigTest {
             ctx.start();
         } catch (BeanCreationException e) {
             Assert.assertTrue(e.getMessage().contains("Found multi-protocols"));
+        }
+    }
+
+    @Test
+    public void testMultiRegistry() {
+        SimpleRegistryService registryService1 = new SimpleRegistryService();
+        Exporter<RegistryService> exporter1 = SimpleRegistryExporter.export(4545, registryService1);
+        SimpleRegistryService registryService2 = new SimpleRegistryService();
+        Exporter<RegistryService> exporter2 = SimpleRegistryExporter.export(4546, registryService2);
+        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/multi-registry.xml");
+        ctx.start();
+        try {
+            List<URL> urls1 = registryService1.getRegistered().get("com.alibaba.dubbo.config.api.DemoService");
+            Assert.assertNull(urls1);
+            List<URL> urls2 = registryService2.getRegistered().get("com.alibaba.dubbo.config.api.DemoService");
+            Assert.assertNotNull(urls2);
+            Assert.assertEquals(1, urls2.size());
+        } finally {
+            exporter1.unexport();
+            exporter2.unexport();
         }
     }
 
