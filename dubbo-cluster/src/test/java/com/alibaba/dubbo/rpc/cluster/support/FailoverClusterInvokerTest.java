@@ -15,12 +15,13 @@
  */
 package com.alibaba.dubbo.rpc.cluster.support;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import junit.framework.Assert;
 
 import org.easymock.EasyMock;
 import org.junit.Before;
@@ -71,8 +72,8 @@ public class FailoverClusterInvokerTest {
     }
 
     
-    @Test(expected = RpcException.class)
-    public void testInvokeWithBizException() {
+    @Test
+    public void testInvokeWithRuntimeException() {
         EasyMock.reset(invoker1);
         EasyMock.expect(invoker1.invoke(invocation)).andThrow(new RuntimeException()).anyTimes();
         EasyMock.expect(invoker1.isAvailable()).andReturn(true).anyTimes();
@@ -88,7 +89,12 @@ public class FailoverClusterInvokerTest {
         EasyMock.replay(invoker2);
         
         FailoverClusterInvoker<FailoverClusterInvokerTest> invoker = new FailoverClusterInvoker<FailoverClusterInvokerTest>(dic);
-        invoker.invoke(invocation);
+        try {
+            invoker.invoke(invocation);
+            fail();
+        } catch (RpcException expected) {
+            assertEquals(0,expected.getCode());
+        }
     }
     
     @Test()
@@ -111,7 +117,7 @@ public class FailoverClusterInvokerTest {
         FailoverClusterInvoker<FailoverClusterInvokerTest> invoker = new FailoverClusterInvoker<FailoverClusterInvokerTest>(dic);
         for(int i=0;i<100;i++){
             Result ret = invoker.invoke(invocation);
-            Assert.assertSame(result, ret);
+            assertSame(result, ret);
         }
     }
     
@@ -119,7 +125,7 @@ public class FailoverClusterInvokerTest {
     public void testInvoke_retryTimes() {
         
         EasyMock.reset(invoker1);
-        EasyMock.expect(invoker1.invoke(invocation)).andThrow(new RpcException()).anyTimes();
+        EasyMock.expect(invoker1.invoke(invocation)).andThrow(new RpcException(RpcException.TIMEOUT_EXCEPTION)).anyTimes();
         EasyMock.expect(invoker1.isAvailable()).andReturn(false).anyTimes();
         EasyMock.expect(invoker1.getUrl()).andReturn(url).anyTimes();
         EasyMock.expect(invoker1.getInterface()).andReturn(FailoverClusterInvokerTest.class).anyTimes();
@@ -135,10 +141,11 @@ public class FailoverClusterInvokerTest {
         FailoverClusterInvoker<FailoverClusterInvokerTest> invoker = new FailoverClusterInvoker<FailoverClusterInvokerTest>(dic);
         try{
             Result ret = invoker.invoke(invocation);
-            Assert.assertSame(result, ret);
-        }catch (RpcException e) {
-            System.out.println(e.getMessage());
-            Assert.assertTrue(e.getMessage().indexOf((retries+1)+" times")>0);
+            assertSame(result, ret);
+            fail();
+        }catch (RpcException expected) {
+            assertTrue(expected.isTimeout());
+            assertTrue(expected.getMessage().indexOf((retries+1)+" times")>0);
         }
     }
     

@@ -53,7 +53,7 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T>{
             len = 1;
 
         // retry loop.
-        Throwable le = null; // last exception.
+        RpcException le = null; // last exception.
         List<Invoker<T>> invoked = new ArrayList<Invoker<T>>(invokers.size()); // invoked invokers.
         Set<URL> providers = new HashSet<URL>(len);
         for (int i = 0; i < len; i++) {
@@ -81,6 +81,6 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T>{
             if(invoker != null ) 
                 urls.add(invoker.getUrl());
         }
-        throw new RpcException("Tried " + len + " times to invoke providers " + providers + " " + loadbalance.getClass().getAnnotation(Extension.class).value() + " select from all providers " + invokers + " for service " + getInterface().getName() + " method " + invocation.getMethodName() + " on consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() + ", but no luck to perform the invocation. Last error is: " + (le != null ? le.getMessage() : ""), le);
+        throw new RpcException(le.getCode(),"Tried " + len + " times to invoke providers " + providers + " " + loadbalance.getClass().getAnnotation(Extension.class).value() + " select from all providers " + invokers + " for service " + getInterface().getName() + " method " + invocation.getMethodName() + " on consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() + ", but no luck to perform the invocation. Last error is: " + (le != null ? le.getMessage() : ""), le);
     }
 }
