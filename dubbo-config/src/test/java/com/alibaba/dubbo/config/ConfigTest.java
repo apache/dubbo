@@ -24,6 +24,7 @@ import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.config.api.DemoService;
 import com.alibaba.dubbo.registry.RegistryService;
 import com.alibaba.dubbo.registry.support.SimpleRegistryExporter;
@@ -73,8 +74,28 @@ public class ConfigTest {
         try {
             ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/multi-protocol-error.xml");
             ctx.start();
+            ctx.stop();
+            ctx.close();
         } catch (BeanCreationException e) {
             Assert.assertTrue(e.getMessage().contains("Found multi-protocols"));
+        }
+    }
+
+    @Test
+    public void testMultiProtocolRegister() {
+        SimpleRegistryService registryService = new SimpleRegistryService();
+        Exporter<RegistryService> exporter = SimpleRegistryExporter.export(4547, registryService);
+        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/multi-protocol-register.xml");
+        ctx.start();
+        try {
+            List<URL> urls = registryService.getRegistered().get("com.alibaba.dubbo.config.api.DemoService");
+            Assert.assertNotNull(urls);
+            Assert.assertEquals(1, urls.size());
+            Assert.assertEquals("dubbo://" + NetUtils.getLocalHost() + ":20824/com.alibaba.dubbo.config.api.DemoService", urls.get(0).toIdentityString());
+        } finally {
+            ctx.stop();
+            ctx.close();
+            exporter.unexport();
         }
     }
 
@@ -92,7 +113,10 @@ public class ConfigTest {
             List<URL> urls2 = registryService2.getRegistered().get("com.alibaba.dubbo.config.api.DemoService");
             Assert.assertNotNull(urls2);
             Assert.assertEquals(1, urls2.size());
+            Assert.assertEquals("dubbo://" + NetUtils.getLocalHost() + ":20880/com.alibaba.dubbo.config.api.DemoService", urls2.get(0).toIdentityString());
         } finally {
+            ctx.stop();
+            ctx.close();
             exporter1.unexport();
             exporter2.unexport();
         }
