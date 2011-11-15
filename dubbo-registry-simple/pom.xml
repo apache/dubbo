@@ -21,7 +21,7 @@
 		<artifactId>dubbo-parent</artifactId>
 		<version>2.0.8-SNAPSHOT</version>
 	</parent>
-	<artifactId>dubbo-registry-default</artifactId>
+	<artifactId>dubbo-registry-simple</artifactId>
 	<packaging>jar</packaging>
 	<name>Dubbo Default Registry Module</name>
 	<description>The default registry module of dubbo project</description>
