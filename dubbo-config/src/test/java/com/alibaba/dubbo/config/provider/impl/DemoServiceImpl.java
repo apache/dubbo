@@ -23,7 +23,9 @@ import com.alibaba.dubbo.config.api.DemoService;
  * @author william.liangf
  */
 public class DemoServiceImpl implements DemoService {
+    
     public String sayName(String name) {
         return "say:" + name;
     }
+    
 }
