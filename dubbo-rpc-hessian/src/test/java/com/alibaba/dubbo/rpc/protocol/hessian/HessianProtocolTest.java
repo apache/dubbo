@@ -80,9 +80,10 @@ public class HessianProtocolTest {
         Invoker<HessianService> invoker = protocol.refer(HessianService.class, url);
         HessianService client = proxyFactory.getProxy(invoker);
         try {
-            client.timeOut(100000);
+            client.timeOut(6000);
             fail();
         } catch (RpcException expected) {
+            Assert.assertEquals(true, expected.isTimeout());
         }finally{
             invoker.destroy();
             exporter.unexport();

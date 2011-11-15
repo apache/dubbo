@@ -15,6 +15,8 @@
  */
 package com.alibaba.dubbo.rpc.protocol.hessian;
 
+import java.net.SocketTimeoutException;
+
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invocation;
@@ -25,8 +27,10 @@ import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.protocol.AbstractInvoker;
 import com.caucho.hessian.HessianException;
+import com.caucho.hessian.client.HessianConnectionException;
 import com.caucho.hessian.client.HessianConnectionFactory;
 import com.caucho.hessian.client.HessianProxyFactory;
+import com.caucho.hessian.io.HessianMethodSerializationException;
 
 /**
  * hessian rpc invoker.
@@ -65,16 +69,37 @@ public class HessianRpcInvoker<T> extends AbstractInvoker<T> {
             if (e != null) {
                 String name = e.getClass().getName();
                 if (name.startsWith(HESSIAN_EXCEPTION_PREFIX)) {
-                    throw new RpcException("Failed to invoke remote service: " + getInterface() + ", method: "
+                    RpcException re = new RpcException("Failed to invoke remote service: " + getInterface() + ", method: "
                             + invocation.getMethodName() + ", cause: " + e.getMessage(), e);
+                    throw setRpcExceptionCode(e, re);
                 }
             }
             return result;
         } catch (RpcException e) {
-            throw e;
+            throw setRpcExceptionCode(e.getCause(), e);
+        } catch (HessianException e) {
+            throw setRpcExceptionCode(e, new RpcException("Failed to invoke remote service: " + getInterface() + ", method: "
+                    + invocation.getMethodName() + ", cause: " + e.getMessage(), e));
         } catch (Throwable e) {
             return new RpcResult(e);
         }
+    }
+    
+    private RpcException setRpcExceptionCode(Throwable e, RpcException re) {
+        if (e != null) {
+            if (e instanceof HessianConnectionException) {
+                re.setCode(RpcException.NETWORK_EXCEPTION);
+                if (e.getCause() != null) {
+                    Class<?> cls = e.getCause().getClass();
+                    if (SocketTimeoutException.class.equals(cls)) {
+                        re.setCode(RpcException.TIMEOUT_EXCEPTION);
+                    }
+                }
+            } else if (e instanceof HessianMethodSerializationException) {
+                re.setCode(RpcException.SERIALIZATION_EXCEPTION);
+            }
+        }
+        return re;
     }
 
 }
