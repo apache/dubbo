@@ -77,4 +77,11 @@ public class DemoServiceImpl implements DemoService
 	{
 		return str.length();
 	}
+
+    public void throwTimeout() {
+        try {
+            Thread.sleep(6000);
+        } catch (InterruptedException e) {
+        }
+    }
 }

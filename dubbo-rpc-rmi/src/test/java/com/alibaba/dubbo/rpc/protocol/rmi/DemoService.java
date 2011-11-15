@@ -26,6 +26,8 @@ public interface DemoService
 	String echo(String text);
 
 	long timestamp();
+	
+	void throwTimeout();
 
 	String getThreadName();
 

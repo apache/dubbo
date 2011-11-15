@@ -38,6 +38,8 @@ public class RpcException extends RuntimeException {
     
     public static final int FORBIDDEN_EXCEPTION = 4;
     
+    public static final int SERIALIZATION_EXCEPTION = 5;
+    
     private int code;
 
     public RpcException() {
@@ -84,10 +86,6 @@ public class RpcException extends RuntimeException {
         return code;
     }
     
-    public boolean isTimeout() {
-        return code == TIMEOUT_EXCEPTION;
-    }
-
     public boolean isBiz() {
         return code == BIZ_EXCEPTION;
     }
@@ -95,9 +93,17 @@ public class RpcException extends RuntimeException {
     public boolean isForbidded() {
         return code == FORBIDDEN_EXCEPTION;
     }
-    
+
+    public boolean isTimeout() {
+        return code == TIMEOUT_EXCEPTION;
+    }
+
     public boolean isNetwork() {
         return code == NETWORK_EXCEPTION;
+    }
+
+    public boolean isSerialization() {
+        return code == SERIALIZATION_EXCEPTION;
     }
 
 }

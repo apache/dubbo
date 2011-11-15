@@ -26,6 +26,7 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.ProxyFactory;
+import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.service.EchoService;
 
 public class RmiProtocolTest
@@ -42,6 +43,25 @@ public class RmiProtocolTest
     public void test_getRemoteClass() throws Exception {
         Class<NonStdRmiInterface> clazz = RmiProtocol.getRemoteClass(NonStdRmiInterface.class);
         assertEquals(clazz, RmiProtocol.getRemoteClass(NonStdRmiInterface.class));
+    }
+    
+    @Test
+    public void testRmiProtocolTimeout() throws Exception
+    {
+        System.setProperty("sun.rmi.transport.tcp.responseTimeout", "1000");
+        DemoService service = new DemoServiceImpl();
+        Exporter<?> rpcExporter = protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("rmi://127.0.0.1:9001/TestService")));
+        service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("rmi://127.0.0.1:9001/TestService")));
+        try {
+            try {
+                service.throwTimeout();
+            } catch (RpcException e) {
+                assertEquals(true, e.isTimeout());
+                assertEquals(true, e.getMessage().contains("Read timed out"));
+            }
+        } finally {
+            rpcExporter.unexport();
+        }
     }
     
 	@Test

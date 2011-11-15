@@ -15,6 +15,9 @@
  */
 package com.alibaba.dubbo.rpc.protocol.rmi;
 
+import java.io.IOException;
+import java.net.SocketTimeoutException;
+
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
@@ -44,15 +47,30 @@ public class RmiInvoker<T> extends AbstractInvoker<T> {
                 String name = e.getClass().getName();
                 if (name.startsWith("java.rmi.")
                         || name.startsWith("javax.rmi.")) {
-                    throw new RpcException(e.getMessage(), e);
+                    throw setRpcExceptionCode(e, new RpcException("Failed to invoke remote service: " + getInterface() + ", method: "
+                            + invocation.getMethodName() + ", cause: " + e.getMessage(), e));
                 }
             }
             return result;
         } catch (RpcException e) {
-            throw e;
+            throw setRpcExceptionCode(e.getCause(), e);
         } catch (Throwable e) {
-            throw new RpcException(e.getMessage(), e);
+            throw setRpcExceptionCode(e, new RpcException(e.getMessage(), e));
         }
+    }
+    
+    private RpcException setRpcExceptionCode(Throwable e, RpcException re) {
+        if (e != null && e.getCause() != null) {
+            Class<?> cls = e.getCause().getClass();
+            if (SocketTimeoutException.class.equals(cls)) {
+                re.setCode(RpcException.TIMEOUT_EXCEPTION);
+            } else if (IOException.class.isAssignableFrom(cls)) {
+                re.setCode(RpcException.NETWORK_EXCEPTION);
+            } else if (ClassNotFoundException.class.isAssignableFrom(cls)) {
+                re.setCode(RpcException.SERIALIZATION_EXCEPTION);
+            }
+        }
+        return re;
     }
 
 }
