@@ -122,4 +122,45 @@ public class ConfigTest {
         }
     }
 
+    @Test
+    public void testDelayFixedTime() throws Exception {
+        SimpleRegistryService registryService = new SimpleRegistryService();
+        Exporter<RegistryService> exporter = SimpleRegistryExporter.export(4548, registryService);
+        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/delay-fixed-time.xml");
+        ctx.start();
+        try {
+            List<URL> urls = registryService.getRegistered().get("com.alibaba.dubbo.config.api.DemoService");
+            Assert.assertNull(urls);
+            while (urls == null) {
+                urls = registryService.getRegistered().get("com.alibaba.dubbo.config.api.DemoService");
+                Thread.sleep(10);
+            }
+            Assert.assertNotNull(urls);
+            Assert.assertEquals(1, urls.size());
+            Assert.assertEquals("dubbo://" + NetUtils.getLocalHost() + ":20883/com.alibaba.dubbo.config.api.DemoService", urls.get(0).toIdentityString());
+        } finally {
+            ctx.stop();
+            ctx.close();
+            exporter.unexport();
+        }
+    }
+
+    @Test
+    public void testDelayOnInitialized() throws Exception {
+        SimpleRegistryService registryService = new SimpleRegistryService();
+        Exporter<RegistryService> exporter = SimpleRegistryExporter.export(4548, registryService);
+        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/delay-on-initialized.xml");
+        ctx.start();
+        try {
+            List<URL> urls = registryService.getRegistered().get("com.alibaba.dubbo.config.api.DemoService");
+            Assert.assertNotNull(urls);
+            Assert.assertEquals(1, urls.size());
+            Assert.assertEquals("dubbo://" + NetUtils.getLocalHost() + ":20883/com.alibaba.dubbo.config.api.DemoService", urls.get(0).toIdentityString());
+        } finally {
+            ctx.stop();
+            ctx.close();
+            exporter.unexport();
+        }
+    }
+
 }
