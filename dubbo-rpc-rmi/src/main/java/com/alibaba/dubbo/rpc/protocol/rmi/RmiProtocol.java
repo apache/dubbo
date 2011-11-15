@@ -142,7 +142,13 @@ public class RmiProtocol extends AbstractProtocol {
     public <T> Invoker<T> refer(Class<T> serviceType, URL url) throws RpcException {
         Invoker<T> invoker;
         try {
-            RmiProtocol.getRemoteClass(serviceType);
+            try {
+                if ("dubbo".equals(url.getParameter("codec"))) {
+                    RmiProtocol.getRemoteClass(serviceType);
+                }
+            } catch (Throwable t) {
+                logger.warn(t.getMessage(), t);
+            }
             Registry registry = LocateRegistry.getRegistry(url.getHost(), url.getPort());
             String path = url.getPath();
             if (path == null || path.length() == 0) {
