@@ -32,6 +32,7 @@ import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtNewMethod;
 import javassist.NotFoundException;
+import javassist.bytecode.Descriptor;
 
 import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
@@ -75,23 +76,22 @@ public class RmiProtocol extends AbstractProtocol {
             } catch (ClassNotFoundException e) {
                 ClassPool pool = ClassGenerator.getClassPool(type.getClassLoader());
                 CtClass ctClass = pool.makeInterface(remoteType);
-                // ctClass.addInterface(pool.getCtClass(type.getName()));
-                ctClass.addInterface(pool.getCtClass(Remote.class.getName()));
+                ctClass.addInterface(getCtClass(pool, Remote.class.getName()));
                 Method[] methods = type.getMethods();
                 for (Method method : methods) {
                     CtClass[] parameters = new CtClass[method.getParameterTypes().length];
                     int i = 0;
                     for (Class<?> pt : method.getParameterTypes()) {
-                        parameters[i++] = pool.getCtClass(pt.getCanonicalName());
+                        parameters[i++] = getCtClass(pool, pt.getCanonicalName());
                     }
                     CtClass[] exceptions = new CtClass[method.getExceptionTypes().length + 1];
-                    exceptions[0] = pool.getCtClass(RemoteException.class.getName());
+                    exceptions[0] = getCtClass(pool, RemoteException.class.getName());
                     i = 1;
                     for (Class<?> et : method.getExceptionTypes()) {
-                        exceptions[i++] = pool.getCtClass(et.getCanonicalName());
+                        exceptions[i++] = getCtClass(pool, et.getCanonicalName());
                     }
                     ctClass.addMethod(CtNewMethod.abstractMethod(
-                            pool.getCtClass(method.getReturnType().getCanonicalName()),
+                            getCtClass(pool, method.getReturnType().getCanonicalName()),
                             method.getName(), parameters, exceptions, ctClass));
                 }
                 return ctClass.toClass();
@@ -101,6 +101,13 @@ public class RmiProtocol extends AbstractProtocol {
         } catch (NotFoundException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
+    }
+    //fix javassist version problem (getCtClass is since 3.8.5 ,jboss )
+    private static CtClass getCtClass(ClassPool pool, String classname) throws NotFoundException{
+        if (classname.charAt(0) == '[')
+            return Descriptor.toCtClass(classname, pool);
+        else
+            return pool.get(classname);
     }
 
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
