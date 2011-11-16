@@ -278,6 +278,8 @@ public class Constants {
     public static final String       CONNECT_QUENE_WARNING_SIZE     = "connect.quene.warning.size";
     
     public static final int          DEFAULT_CONNECT_QUENE_WARNING_SIZE    = 1000;
+    
+    public static final String       CHANNEL_CANNOTWRITE_KEY        = "cannotwrite";
 
     private Constants(){
     }
