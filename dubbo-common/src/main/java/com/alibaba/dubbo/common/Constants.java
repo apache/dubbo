@@ -277,9 +277,13 @@ public class Constants {
     
     public static final String       CONNECT_QUENE_WARNING_SIZE     = "connect.quene.warning.size";
     
-    public static final int          DEFAULT_CONNECT_QUENE_WARNING_SIZE    = 1000;
+    public static final int          DEFAULT_CONNECT_QUENE_WARNING_SIZE  = 1000;
     
-    public static final String       CHANNEL_CANNOTWRITE_KEY        = "cannotwrite";
+    public static final String       CHANNEL_ATTRIBUTE_READONLY_KEY     = "channel.readonly";
+    
+    public static final String       CHANNEL_READONLYEVENT_SENT_KEY        = "channel.readonly.sent";
+    
+    public static final String       CHANNEL_SEND_READONLYEVENT_KEY        = "channel.readonly.send";
 
     private Constants(){
     }

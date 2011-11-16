@@ -180,4 +180,8 @@ final class LazyConnectExchangeClient implements ExchangeClient {
                     "LazyConnectExchangeClient state error. the client has not be init .url:" + url);
         }
     }
+    
+    public boolean isInited(){
+        return client == null ;
+    }
 }

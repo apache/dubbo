@@ -137,10 +137,12 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
     public void send(Object message, boolean sent) throws RemotingException {
         Collection<Channel> channels = getChannels();
         for (Channel channel : channels) {
-            channel.send(message, sent);
+            if (channel.isConnected()) {
+                channel.send(message, sent);
+            }
         }
     }
-
+    
     public void close() {
         ExecutorUtil.shutdownNow(executor ,100);
         try {

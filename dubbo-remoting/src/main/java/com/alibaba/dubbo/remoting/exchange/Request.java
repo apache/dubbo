@@ -24,7 +24,11 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author william.liangf
  */
 public class Request {
-
+    
+    public static final String HEARTBEAT_EVENT = null;
+    
+    public static final String READONLY_EVENT = "R";
+    
     private static final AtomicLong INVOKE_ID = new AtomicLong(0);
 
     private final long    mId;
@@ -32,8 +36,8 @@ public class Request {
     private String  mVersion;
 
     private boolean mTwoWay   = true;
-
-    private boolean mHeatbeat = false;
+    
+    private boolean mEvent = false;
 
     private boolean mBroken   = false;
 
@@ -67,12 +71,13 @@ public class Request {
         mTwoWay = twoWay;
     }
 
-    public boolean isHeartbeat() {
-        return mHeatbeat;
+    public boolean isEvent() {
+        return mEvent;
     }
 
-    public void setHeartbeat(boolean isHeartbeat) {
-        this.mHeatbeat = isHeartbeat;
+    public void setEvent(String event) {
+        mEvent = true;
+        mData = event;
     }
 
     public boolean isBroken() {
@@ -91,6 +96,17 @@ public class Request {
         mData = msg;
     }
 
+    public boolean isHeartbeat() {
+        return mEvent && HEARTBEAT_EVENT.equals(mData);
+    }
+
+    @Deprecated
+    public void setHeartbeat(boolean isHeartbeat) {
+        if (isHeartbeat) {
+            setEvent(HEARTBEAT_EVENT);
+        }
+    }
+
     private static long newId() {
         // getAndIncrement()增长到MAX_VALUE时，再增长会变为MIN_VALUE，负数也可以做为ID
         return INVOKE_ID.getAndIncrement();
@@ -98,7 +114,7 @@ public class Request {
 
     @Override
     public String toString() {
-        return "Request [id=" + mId + ", version=" + mVersion + ", twoway=" + mTwoWay + ", heatbeat=" + mHeatbeat
+        return "Request [id=" + mId + ", version=" + mVersion + ", twoway=" + mTwoWay + ", event=" + mEvent
                + ", broken=" + mBroken + ", data=" + (mData == this ? "this" : mData) + "]";
     }
 

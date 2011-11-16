@@ -15,6 +15,7 @@
  */
 package com.alibaba.dubbo.remoting.exchange.support.header;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.StringUtils;
@@ -49,14 +50,22 @@ public class HeaderExchangeHandler implements ChannelHandler {
         }
         this.handler = handler;
     }
+    
+    void handlerEvent(Channel channel, Request req) throws RemotingException{
+        if (req.getData() != null && req.getData().equals(Request.READONLY_EVENT)){
+            channel.setAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY, Boolean.TRUE);
+        }
+        if (req.isTwoWay()){
+            if (req.isHeartbeat()) {
+                Response res = new Response(req.getId(), req.getVersion());
+                res.setEvent(req.getData() == null ? null : req.getData().toString());
+                channel.send(res);
+            }
+        }
+    }
 
     Response handleRequest(ExchangeChannel channel, Request req) throws RemotingException {
         Response res = new Response(req.getId(), req.getVersion());
-        if (req.isHeartbeat()) {
-            res.setHeartbeat(true);
-            return res;
-        }
-
         if (req.isBroken()) {
             Object data = req.getData();
 
@@ -153,14 +162,18 @@ public class HeaderExchangeHandler implements ChannelHandler {
             if (message instanceof Request) {
                 // handle request.
                 Request request = (Request) message;
-                if (request.isTwoWay()) {
-                    Response response = handleRequest(exchangeChannel, request);
-                    if (response == null) {
-                        throw new RemotingException(channel, "Response is null.");
-                    }
-                    channel.send(response);
+                if (request.isEvent()){
+                    handlerEvent(channel, request);
                 } else {
-                    handler.received(exchangeChannel, request.getData());
+                    if (request.isTwoWay()) {
+                        Response response = handleRequest(exchangeChannel, request);
+                        if (response == null) {
+                            throw new RemotingException(channel, "Response is null.");
+                        }
+                        channel.send(response);
+                    } else {
+                        handler.received(exchangeChannel, request.getData());
+                    }
                 }
             } else if (message instanceof Response) {
                 handleResponse(channel, (Response) message);

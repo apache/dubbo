@@ -104,12 +104,21 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         if (!super.isAvailable())
             return false;
         for (ExchangeClient client : clients){
-            //cannot write == not Available ?
-//            if (client.isConnected() && !client.hasAttribute(Constants.CHANNEL_CANNOTWRITE_KEY)){
-//                return true;
-//            }
-            if (client.isConnected() ){
-                 return true;
+            if (client.isConnected()){
+                boolean isLazy = client.getUrl().getParameter(RpcConstants.LAZY_CONNECT_KEY, false);
+                //cannot write == not Available ?
+                if (! isLazy) {
+                    return true;
+                } else if (client instanceof LazyConnectExchangeClient) {
+                    LazyConnectExchangeClient lazyClient = (LazyConnectExchangeClient) client;
+                    if (lazyClient.isInited() && lazyClient.hasAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY)){
+                        return false;
+                    } else {
+                        return true;
+                    }
+                } else {
+                    return true;
+                }
             }
         }
         return false;

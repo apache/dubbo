@@ -22,6 +22,9 @@ package com.alibaba.dubbo.remoting.exchange;
  * @author william.liangf
  */
 public class Response {
+    public static final String HEARTBEAT_EVENT = null;
+    
+    public static final String READONLY_EVENT = "R";
 
     /**
      * ok.
@@ -69,7 +72,7 @@ public class Response {
 
     private byte             mStatus           = OK;
 
-    private boolean          mHeatbeat         = false;
+    private boolean          mEvent         = false;
 
     private String           mErrorMsg;
 
@@ -110,13 +113,25 @@ public class Response {
     public void setStatus(byte status) {
         mStatus = status;
     }
-
-    public boolean isHeartbeat() {
-        return mHeatbeat;
+    
+    public boolean isEvent() {
+        return mEvent;
     }
 
-    public void setHeartbeat(boolean isHeatbeat) {
-        this.mHeatbeat = isHeatbeat;
+    public void setEvent(String event) {
+        mEvent = true;
+        mResult = event;
+    }
+
+    public boolean isHeartbeat() {
+        return mEvent && HEARTBEAT_EVENT.equals(mResult);
+    }
+
+    @Deprecated
+    public void setHeartbeat(boolean isHeartbeat) {
+        if (isHeartbeat) {
+            setEvent(HEARTBEAT_EVENT);
+        }
     }
 
     public Object getResult() {
@@ -137,7 +152,7 @@ public class Response {
 
     @Override
     public String toString() {
-        return "Response [id=" + mId + ", version=" + mVersion + ", status=" + mStatus + ", heatbeat=" + mHeatbeat
+        return "Response [id=" + mId + ", version=" + mVersion + ", status=" + mStatus + ", event=" + mEvent
                + ", error=" + mErrorMsg + ", result=" + (mResult == this ? "this" : mResult) + "]";
     }
 }

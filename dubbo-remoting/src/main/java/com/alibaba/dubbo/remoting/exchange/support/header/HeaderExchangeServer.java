@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.NamedThreadFactory;
@@ -103,6 +104,9 @@ public class HeaderExchangeServer implements ExchangeServer {
         if (timeout > 0) {
             final long max = (long) timeout;
             final long start = System.currentTimeMillis();
+            if (getUrl().getParameter(Constants.CHANNEL_SEND_READONLYEVENT_KEY, false)){
+                sendChannelReadOnlyEvent();
+            }
             while (HeaderExchangeServer.this.isRunning() 
                     && System.currentTimeMillis() - start < max) {
                 try {
@@ -114,6 +118,22 @@ public class HeaderExchangeServer implements ExchangeServer {
         }
         doClose();
         server.close(timeout);
+    }
+    
+    private void sendChannelReadOnlyEvent(){
+        Request request = new Request();
+        request.setEvent(Request.READONLY_EVENT);
+        request.setTwoWay(false);
+        request.setVersion(Version.getVersion());
+        
+        Collection<Channel> channels = getChannels();
+        for (Channel channel : channels) {
+            try {
+                if (channel.isConnected())channel.send(request, getUrl().getParameter(Constants.CHANNEL_READONLYEVENT_SENT_KEY, true));
+            } catch (RemotingException e) {
+                logger.warn("send connot write messge error.", e);
+            }
+        }
     }
     
     private void doClose() {
@@ -245,7 +265,7 @@ public class HeaderExchangeServer implements ExchangeServer {
                             Request req = new Request();
                             req.setVersion("2.0.0");
                             req.setTwoWay(true);
-                            req.setHeartbeat(true);
+                            req.setEvent(Request.HEARTBEAT_EVENT);
                             channel.send(req);
                             if (logger.isDebugEnabled()) {
                                 logger.debug("Send heartbeat to client " + channel.getRemoteAddress() + ".");
