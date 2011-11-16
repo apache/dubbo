@@ -107,8 +107,8 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
             if (client.isConnected()){
                 boolean isLazy = client.getUrl().getParameter(RpcConstants.LAZY_CONNECT_KEY, false);
                 //cannot write == not Available ?
-                if (! isLazy) {
-                    return true;
+                if (! isLazy ) {
+                    return ! client.hasAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY);
                 } else if (client instanceof LazyConnectExchangeClient) {
                     LazyConnectExchangeClient lazyClient = (LazyConnectExchangeClient) client;
                     if (lazyClient.isInited() && lazyClient.hasAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY)){

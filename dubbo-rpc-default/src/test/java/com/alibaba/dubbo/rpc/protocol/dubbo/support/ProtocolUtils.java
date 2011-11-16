@@ -21,6 +21,7 @@ import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.exchange.ExchangeServer;
 import com.alibaba.dubbo.rpc.Exporter;
+import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.ProxyFactory;
 import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
@@ -41,6 +42,10 @@ public class ProtocolUtils {
 
     public static <T> T refer(Class<T> type, URL url) {
         return proxy.getProxy(protocol.refer(type, url));
+    }
+    
+    public static Invoker<?> referInvoker(Class<?> type, URL url) {
+        return (Invoker<?>)protocol.refer(type, url);
     }
 
     public static <T> Exporter<T> export(T instance, Class<T> type, String url) {
