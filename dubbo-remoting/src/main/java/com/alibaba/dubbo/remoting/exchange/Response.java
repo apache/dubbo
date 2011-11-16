@@ -124,7 +124,7 @@ public class Response {
     }
 
     public boolean isHeartbeat() {
-        return mEvent && HEARTBEAT_EVENT.equals(mResult);
+        return mEvent && HEARTBEAT_EVENT == mResult;
     }
 
     @Deprecated

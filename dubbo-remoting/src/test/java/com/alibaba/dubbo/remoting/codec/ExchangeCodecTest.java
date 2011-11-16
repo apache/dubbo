@@ -203,7 +203,7 @@ public class ExchangeCodecTest extends TelnetCodecTest{
         Assert.assertEquals(errorString, obj.getErrorMessage());
     }
     @Test
-    public void test_Decode_Return_Request_Heartbeat_Object() throws IOException{
+    public void test_Decode_Return_Request_Event_Object() throws IOException{
         //|10011111|20-stats=ok|id=0|length=0
         byte[] header = new byte[] { MAGIC_HIGH, MAGIC_LOW, (byte) 0xff, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         Person person = new Person();
@@ -212,10 +212,39 @@ public class ExchangeCodecTest extends TelnetCodecTest{
         Request obj = (Request)decode(request);
         Assert.assertEquals(person, obj.getData());
         Assert.assertEquals(true, obj.isTwoWay());
+        Assert.assertEquals(true, obj.isEvent());
+        Assert.assertEquals("2.0.0", obj.getVersion());
+        System.out.println(obj);
+    }
+    
+    @Test
+    public void test_Decode_Return_Request_Event_String() throws IOException{
+        //|10011111|20-stats=ok|id=0|length=0
+        byte[] header = new byte[] { MAGIC_HIGH, MAGIC_LOW, (byte) 0xff, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        String event = Request.READONLY_EVENT;
+        byte[] request = getRequestBytes(event, header);
+        
+        Request obj = (Request)decode(request);
+        Assert.assertEquals(event, obj.getData());
+        Assert.assertEquals(true, obj.isTwoWay());
+        Assert.assertEquals(true, obj.isEvent());
+        Assert.assertEquals("2.0.0", obj.getVersion());
+        System.out.println(obj);
+    }
+    
+    @Test
+    public void test_Decode_Return_Request_Heartbeat_Object() throws IOException{
+        //|10011111|20-stats=ok|id=0|length=0
+        byte[] header = new byte[] { MAGIC_HIGH, MAGIC_LOW, (byte) 0xff, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        byte[] request = getRequestBytes(null, header);
+        Request obj = (Request)decode(request);
+        Assert.assertEquals(null, obj.getData());
+        Assert.assertEquals(true, obj.isTwoWay());
         Assert.assertEquals(true, obj.isHeartbeat());
         Assert.assertEquals("2.0.0", obj.getVersion());
         System.out.println(obj);
     }
+    
     @Test
     public void test_Decode_Return_Request_Object() throws IOException{
         //|10011111|20-stats=ok|id=0|length=0
