@@ -76,6 +76,7 @@
 		<!-- Build args -->
 		<argline>-Xms512m -Xmx512m</argline>
 		<skip_maven_deploy>false</skip_maven_deploy>
+		<updateReleaseInfo>true</updateReleaseInfo>
 		<project.build.sourceEncoding>${file_encoding}</project.build.sourceEncoding>
 		<!-- SCM urls -->
 		<project_url>http://code.alibabatech.com/wiki/display/dubbo/Home</project_url>
