@@ -182,6 +182,6 @@ final class LazyConnectExchangeClient implements ExchangeClient {
     }
     
     public boolean isInited(){
-        return client == null ;
+        return client != null ;
     }
 }
