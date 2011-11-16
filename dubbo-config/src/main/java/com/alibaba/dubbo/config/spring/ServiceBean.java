@@ -62,6 +62,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
 		    try {
 	            Method method = applicationContext.getClass().getMethod("addApplicationListener", new Class<?>[]{ApplicationListener.class}); // 兼容Spring2.0.1
 	            method.invoke(applicationContext, new Object[] {this});
+	            Class.forName("org.springframework.context.event.ContextStartedEvent");
 	            supportedApplicationListener = true;
 	        } catch (Throwable t) {
 	        }
