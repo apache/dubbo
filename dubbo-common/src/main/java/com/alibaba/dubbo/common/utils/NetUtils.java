@@ -20,6 +20,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
+import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Random;
@@ -206,6 +207,18 @@ public class NetUtils {
 		return address;
     }
     
+    /**
+     * @param hostName
+     * @return ip address or hostName if UnknownHostException 
+     */
+    public static String getIpByHost(String hostName) {
+        try{
+            return InetAddress.getByName(hostName).getHostAddress();
+        }catch (UnknownHostException e) {
+            return hostName;
+        }
+    }
+
     public static String toAddressString(InetSocketAddress address) {
         return address.getAddress().getHostAddress() + ":" + address.getPort();
     }
