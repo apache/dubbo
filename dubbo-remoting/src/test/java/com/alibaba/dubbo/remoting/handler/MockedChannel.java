@@ -16,6 +16,8 @@
 package com.alibaba.dubbo.remoting.handler;
 
 import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.Channel;
@@ -30,6 +32,7 @@ public class MockedChannel implements Channel {
     private boolean isClosed ; 
     private URL url; 
     private ChannelHandler handler ;
+    private Map <String,Object> map = new HashMap<String, Object>(); 
     
     public MockedChannel() {
         super();
@@ -74,26 +77,22 @@ public class MockedChannel implements Channel {
     }
 
     public boolean isConnected() {
-        
         return false;
     }
 
     public boolean hasAttribute(String key) {
-        
-        return false;
+        return map.containsKey(key);
     }
 
     public Object getAttribute(String key) {
-        
-        return null;
+        return map.get(key);
     }
 
     public void setAttribute(String key, Object value) {
-        
+        map.put(key, value);
     }
 
     public void removeAttribute(String key) {
-        
+        map.remove(key);
     }
-    
 }

@@ -33,6 +33,7 @@ import com.alibaba.dubbo.remoting.exchange.support.DefaultFuture;
  * ExchangeReceiver
  * 
  * @author william.liangf
+ * @author chao.liuc
  */
 public class HeaderExchangeHandler implements ChannelHandler {
 
@@ -78,22 +79,16 @@ public class HeaderExchangeHandler implements ChannelHandler {
 
             return res;
         }
-
         // find handler by message class.
         Object msg = req.getData();
-        if (handler == null) {// no handler.
-            res.setStatus(Response.SERVICE_NOT_FOUND);
-            res.setErrorMessage("InvokeHandler not found, Unsupported protocol object: " + msg);
-        } else {
-            try {
-                // handle data.
-                Object result = handler.reply(channel, msg);
-                res.setStatus(Response.OK);
-                res.setResult(result);
-            } catch (Throwable e) {
-                res.setStatus(Response.SERVICE_ERROR);
-                res.setErrorMessage(StringUtils.toString(e));
-            }
+        try {
+            // handle data.
+            Object result = handler.reply(channel, msg);
+            res.setStatus(Response.OK);
+            res.setResult(result);
+        } catch (Throwable e) {
+            res.setStatus(Response.SERVICE_ERROR);
+            res.setErrorMessage(StringUtils.toString(e));
         }
         return res;
     }
@@ -167,9 +162,6 @@ public class HeaderExchangeHandler implements ChannelHandler {
                 } else {
                     if (request.isTwoWay()) {
                         Response response = handleRequest(exchangeChannel, request);
-                        if (response == null) {
-                            throw new RemotingException(channel, "Response is null.");
-                        }
                         channel.send(response);
                     } else {
                         handler.received(exchangeChannel, request.getData());
