@@ -23,6 +23,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -862,10 +863,10 @@ public abstract class Builder<T> implements GenericDataFlags
 	
 	private static boolean serializeIgnoreFinalModifier(Class cl)
     {
-//	    if (cl.isAssignableFrom(BigInteger.class)) return false;
-	    //for performance
-//	    if (cl.getName().startsWith("java")) return true;
-//	    if (cl.getClass().getName().startsWith("javax")) return true;
+	    if (cl.isAssignableFrom(BigInteger.class)) return false;
+//	    for performance
+	    if (cl.getName().startsWith("java")) return true;
+	    if (cl.getClass().getName().startsWith("javax")) return true;
 	    return false;
     }
 	@SuppressWarnings("unused")
