@@ -38,7 +38,15 @@ import com.alibaba.dubbo.rpc.service.GenericService;
 @Extension("exception")
 public class ExceptionFilter implements Filter {
 
-    private static final Logger logger = LoggerFactory.getLogger(ExceptionFilter.class);
+    private final Logger logger;
+    
+    public ExceptionFilter() {
+        this(LoggerFactory.getLogger(ExceptionFilter.class));
+    }
+    
+    public ExceptionFilter(Logger logger) {
+        this.logger = logger;
+    }
     
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         try {
@@ -73,7 +81,7 @@ public class ExceptionFilter implements Filter {
             }
             return result;
         } catch (RuntimeException e) {
-            logger.error("Got unchecked and undeclare service method invoke exception: " + e.getMessage(), e);
+            logger.error("Got unchecked and undeclare service " + invoker.getInterface().getName() + " method " + invocation.getMethodName() + " invoke exception: " + e.getMessage(), e);
             throw e;
         }
     }
