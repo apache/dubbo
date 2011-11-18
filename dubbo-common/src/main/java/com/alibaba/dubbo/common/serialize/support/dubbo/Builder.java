@@ -417,7 +417,8 @@ public abstract class Builder<T> implements GenericDataFlags
 					int mod = tf.getModifiers();
                     if (Modifier.isStatic(mod)
                             || (serializeIgnoreFinalModifier(c) && Modifier.isFinal(mod))
-                            || tf.getName().equals("this$0") ) // skip static or inner-class's 'this$0' field.
+                            || tf.getName().equals("this$0") // skip static or inner-class's 'this$0' field.
+                            || ! Modifier.isPublic(tf.getType().getModifiers()) ) //skip private inner-class field
 						continue;
 					if( Modifier.isTransient(mod) )
 					{
@@ -863,12 +864,14 @@ public abstract class Builder<T> implements GenericDataFlags
 	
 	private static boolean serializeIgnoreFinalModifier(Class cl)
     {
-	    if (cl.isAssignableFrom(BigInteger.class)) return false;
+//	    if (cl.isAssignableFrom(BigInteger.class)) return false;
 //	    for performance
-	    if (cl.getName().startsWith("java")) return true;
-	    if (cl.getClass().getName().startsWith("javax")) return true;
+//	    if (cl.getName().startsWith("java")) return true;
+//	    if (cl.getName().startsWith("javax")) return true;
+	    
 	    return false;
     }
+	
 	@SuppressWarnings("unused")
     private static boolean isPrimitiveOrPrimitiveArray1(Class<?> cl)
     {

@@ -20,6 +20,7 @@ import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 
 import java.io.Serializable;
+import java.lang.reflect.Modifier;
 import java.sql.Time;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -350,7 +351,9 @@ public class BuilderTest
 		assertEquals(node0, node0.next.prev);
 		assertEquals(node0.value, "0");
 	}
-
+    public static void main(String[] args) {
+        System.out.println(Modifier.isPublic(String.class.getModifiers()));
+    }
     @Test
 	public void testWithFC() throws Exception
 	{
