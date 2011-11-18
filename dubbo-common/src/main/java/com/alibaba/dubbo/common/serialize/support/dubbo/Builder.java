@@ -23,7 +23,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -384,7 +383,7 @@ public abstract class Builder<T> implements GenericDataFlags
 				{
 					f = c.getDeclaredField(fn);
 					int mod = f.getModifiers();
-					if( Modifier.isStatic(mod) || (!ignoreFinalModifier(c) && Modifier.isFinal(mod)) )
+					if( Modifier.isStatic(mod) || (serializeIgnoreFinalModifier(c) && Modifier.isFinal(mod)) )
 						throw new RuntimeException("Field [" + c.getName() + "." + fn + "] is static/final field.");
 					if( Modifier.isTransient(mod) )
 					{
@@ -416,7 +415,7 @@ public abstract class Builder<T> implements GenericDataFlags
 				{
 					int mod = tf.getModifiers();
                     if (Modifier.isStatic(mod)
-                            || (!ignoreFinalModifier(c) && Modifier.isFinal(mod))
+                            || (serializeIgnoreFinalModifier(c) && Modifier.isFinal(mod))
                             || tf.getName().equals("this$0") ) // skip static or inner-class's 'this$0' field.
 						continue;
 					if( Modifier.isTransient(mod) )
@@ -861,9 +860,12 @@ public abstract class Builder<T> implements GenericDataFlags
 		return s.length() == 1 || Character.isLowerCase(s.charAt(1)) ? Character.toLowerCase(s.charAt(0)) + s.substring(1) : s;
 	}
 	
-	private static boolean ignoreFinalModifier(Class cl)
+	private static boolean serializeIgnoreFinalModifier(Class cl)
     {
-	    if (cl.isAssignableFrom(BigInteger.class)) return true;
+//	    if (cl.isAssignableFrom(BigInteger.class)) return false;
+	    //for performance
+//	    if (cl.getName().startsWith("java")) return true;
+//	    if (cl.getClass().getName().startsWith("javax")) return true;
 	    return false;
     }
 	@SuppressWarnings("unused")

@@ -46,7 +46,8 @@ public class DubboSerializationTest extends AbstractSerializationPersionFailTest
     public void test_LoopReference() throws Exception {}
     
     // FIXME DUBBO-63
-    @Ignore
     @Test
-    public void test_URL_mutable_withType() throws Exception {}
+    public void test_URL_mutable_withType() throws Exception {
+        super.test_URL_mutable_withType();
+    }
 }
