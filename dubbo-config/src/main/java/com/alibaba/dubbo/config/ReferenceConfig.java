@@ -423,7 +423,21 @@ public class ReferenceConfig<T> extends AbstractConsumerConfig {
     }
 
 	public Class<?> getInterfaceClass() {
-		return interfaceClass == null ? GenericService.class : interfaceClass;
+	    if (interfaceClass != null) {
+	        return interfaceClass;
+	    }
+	    if ((generic != null && generic.booleanValue())
+	            || (consumer != null && consumer.isGeneric() != null 
+	                && consumer.isGeneric().booleanValue())) {
+	        return GenericService.class;
+	    }
+	    try {
+	        this.interfaceClass = Class.forName(interfaceName, true, Thread.currentThread()
+                    .getContextClassLoader());
+        } catch (ClassNotFoundException t) {
+            throw new IllegalStateException(t.getMessage(), t);
+        }
+	    return interfaceClass;
 	}
 	
 	/**
