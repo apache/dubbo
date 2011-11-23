@@ -50,13 +50,6 @@ public class ConfigUtils {
             }
         }
 	    List<String> names = new ArrayList<String>();
-	    String[] configs = cfg == null ? new String[0] : Constants.COMMA_SPLIT_PATTERN.split(cfg);
-        for (String config : configs) {
-            if(config != null && config.length() > 0) {
-                String[] fs = Constants.COMMA_SPLIT_PATTERN.split(config);
-                names.addAll(Arrays.asList(fs));
-            }
-        }
         if (! names.contains(Constants.REMOVE_VALUE_PREFIX + Constants.DEFAULT_KEY)) {
             int i = names.indexOf(Constants.DEFAULT_KEY);
             if (i > 0) {
@@ -65,6 +58,13 @@ public class ConfigUtils {
                 names.addAll(defaults);
             }
             names.remove(Constants.DEFAULT_KEY);
+        }
+        String[] configs = cfg == null ? new String[0] : Constants.COMMA_SPLIT_PATTERN.split(cfg);
+        for (String config : configs) {
+            if(config != null && config.length() > 0) {
+                String[] fs = Constants.COMMA_SPLIT_PATTERN.split(config);
+                names.addAll(Arrays.asList(fs));
+            }
         }
         for (String name : new ArrayList<String>(names)) {
             if (name.startsWith(Constants.REMOVE_VALUE_PREFIX)) {
