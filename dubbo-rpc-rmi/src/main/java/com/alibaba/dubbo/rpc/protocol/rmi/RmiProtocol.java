@@ -114,7 +114,7 @@ public class RmiProtocol extends AbstractProtocol {
         Remote remote = rmiProxyFactory.getProxy(invoker);
         // export.
         try {
-            UnicastRemoteObject.exportObject(remote);
+            UnicastRemoteObject.exportObject(remote, 0);
         } catch (RemoteException e) {
             if ("object already exported".equalsIgnoreCase(e.getMessage())) {
                 logger.warn("Ignore 'object already exported' exception.", e);
@@ -154,8 +154,7 @@ public class RmiProtocol extends AbstractProtocol {
             if (path == null || path.length() == 0) {
                 path = serviceType.getName();
             }
-            final Remote remote = registry.lookup(path);
-            invoker = new RmiInvoker<T>(rmiProxyFactory.getInvoker(remote, serviceType, url));
+            invoker = new RmiInvoker<T>(registry, rmiProxyFactory, rmiProxyFactory.getInvoker(registry.lookup(path), serviceType, url));
         } catch (RemoteException e) {
             Throwable cause = e.getCause();
             boolean isExportedBySpringButNoSpringClass = ClassNotFoundException.class

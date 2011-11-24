@@ -17,7 +17,20 @@ package com.alibaba.dubbo.rpc.protocol.rmi;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
+import java.rmi.ConnectException;
+import java.rmi.ConnectIOException;
+import java.rmi.NoSuchObjectException;
+import java.rmi.RemoteException;
+import java.rmi.StubNotFoundException;
+import java.rmi.UnknownHostException;
+import java.rmi.registry.Registry;
 
+import org.omg.CORBA.COMM_FAILURE;
+import org.omg.CORBA.CompletionStatus;
+import org.omg.CORBA.NO_RESPONSE;
+import org.omg.CORBA.SystemException;
+
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
@@ -30,12 +43,21 @@ import com.alibaba.dubbo.rpc.protocol.AbstractInvoker;
  * @author qian.lei
  */
 public class RmiInvoker<T> extends AbstractInvoker<T> {
+    
+    private Registry registry;
+    
+    private RmiProxyFactory rmiProxyFactory;
 
     private Invoker<T> invoker;
+    
+    private boolean reconnect;
 
-    public RmiInvoker(Invoker<T> invoker) {
+    public RmiInvoker(Registry registry, RmiProxyFactory rmiProxyFactory, Invoker<T> invoker) {
         super(invoker.getInterface(), invoker.getUrl());
+        this.registry = registry;
+        this.rmiProxyFactory = rmiProxyFactory;
         this.invoker = invoker;
+        this.reconnect = invoker.getUrl().getParameter(Constants.RECONNECT_KEY, true);
     }
 
     @Override
@@ -43,13 +65,14 @@ public class RmiInvoker<T> extends AbstractInvoker<T> {
         try {
             Result result = invoker.invoke(invocation);
             Throwable e = result.getException();
-            if (e != null) {
-                String name = e.getClass().getName();
-                if (name.startsWith("java.rmi.")
-                        || name.startsWith("javax.rmi.")) {
-                    throw setRpcExceptionCode(e, new RpcException("Failed to invoke remote service: " + getInterface() + ", method: "
-                            + invocation.getMethodName() + ", cause: " + e.getMessage(), e));
-                }
+            if (e != null && isConnectFailure(e) && reconnect) {
+                invoker = rmiProxyFactory.getInvoker(registry.lookup(invoker.getUrl().getPath()), invoker.getInterface(), invoker.getUrl());
+                result = invoker.invoke(invocation);
+                e = result.getException();
+            }
+            if (e != null && e instanceof RemoteException) {
+                throw setRpcExceptionCode(e, new RpcException("Failed to invoke remote service: " + getInterface() + ", method: "
+                        + invocation.getMethodName() + ", url: " + invoker.getUrl() + ", cause: " + e.getMessage(), e));
             }
             return result;
         } catch (RpcException e) {
@@ -73,4 +96,18 @@ public class RmiInvoker<T> extends AbstractInvoker<T> {
         return re;
     }
 
+    private static final String ORACLE_CONNECTION_EXCEPTION = "com.evermind.server.rmi.RMIConnectionException";
+
+    private static boolean isConnectFailure(Throwable ex) {
+        return (ex instanceof ConnectException || ex instanceof ConnectIOException ||
+                ex instanceof UnknownHostException || ex instanceof NoSuchObjectException ||
+                ex instanceof StubNotFoundException || isCorbaConnectFailure(ex.getCause()) ||
+                ORACLE_CONNECTION_EXCEPTION.equals(ex.getClass().getName()));
+    }
+
+    private static boolean isCorbaConnectFailure(Throwable ex) {
+        return ((ex instanceof COMM_FAILURE || ex instanceof NO_RESPONSE) &&
+                ((SystemException) ex).completed == CompletionStatus.COMPLETED_NO);
+    }
+    
 }
