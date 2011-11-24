@@ -74,6 +74,7 @@ public class JettyContainer implements Container {
         try {
             if (connector != null) {
                 connector.close();
+                connector = null;
             }
         } catch (Throwable e) {
             logger.error(e.getMessage(), e);

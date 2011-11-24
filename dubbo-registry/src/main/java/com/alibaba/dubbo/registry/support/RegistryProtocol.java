@@ -117,7 +117,7 @@ public class RegistryProtocol implements Protocol {
         RegistryDirectory<T> directory = new RegistryDirectory<T>(type, url);
         directory.setRegistry(registry);
         directory.setProtocol(protocol);
-        registry.subscribe(directory.getUrl().setHost(NetUtils.getLocalHost()), directory);
+        registry.subscribe(new URL(Constants.SUBSCRIBE_PROTOCOL, NetUtils.getLocalHost(), 0, type.getName(), directory.getUrl().getParameters()), directory);
         return cluster.merge(directory);
     }
 

@@ -22,13 +22,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
+import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.container.Container;
+import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.Registry;
 import com.alibaba.dubbo.registry.RegistryFactory;
 
@@ -49,6 +52,8 @@ public class RegistryContainer implements Container {
     private final Set<String> services = new ConcurrentHashSet<String>();
     
     private final Map<String, List<URL>> providers = new ConcurrentHashMap<String, List<URL>>();
+
+    private final Map<String, List<URL>> consumers = new ConcurrentHashMap<String, List<URL>>();
 
     private final Map<String, List<URL>> routes = new ConcurrentHashMap<String, List<URL>>();
     
@@ -76,13 +81,22 @@ public class RegistryContainer implements Container {
         return Collections.unmodifiableMap(providers);
     }
 
-    public Map<String, List<URL>> getRoutes() {
-        return Collections.unmodifiableMap(routes);
-    }
-
     public List<URL> getProviders(String service) {
         List<URL> urls = providers.get(service);
         return urls == null ? null : Collections.unmodifiableList(urls);
+    }
+
+    public Map<String, List<URL>> getConsumers() {
+        return Collections.unmodifiableMap(consumers);
+    }
+
+    public List<URL> getConsumers(String service) {
+        List<URL> urls = consumers.get(service);
+        return urls == null ? null : Collections.unmodifiableList(urls);
+    }
+
+    public Map<String, List<URL>> getRoutes() {
+        return Collections.unmodifiableMap(routes);
     }
 
     public List<URL> getRoutes(String service) {
@@ -91,14 +105,15 @@ public class RegistryContainer implements Container {
     }
 
     public void start() {
-        /*String url = System.getProperty(REGISTRY_URL);
+        String url = System.getProperty(REGISTRY_URL);
         if (url == null || url.length() == 0) {
             throw new IllegalArgumentException("Please set java start argument: -D" + REGISTRY_URL + "=zookeeper://127.0.0.1:2181");
         }
         URL registryUrl = URL.valueOf(url);
         registry = registryFactory.getRegistry(registryUrl);
         URL subscribeUrl = new URL(Constants.SUBSCRIBE_PROTOCOL, NetUtils.getLocalHost(), 0)
-                        .addParameters(Constants.INTERFACE_KEY, Constants.ANY_VALUE, 
+                        .addParameters(Constants.ADMIN_KEY, String.valueOf(true),
+                                Constants.INTERFACE_KEY, Constants.ANY_VALUE, 
                                 Constants.GROUP_KEY, Constants.ANY_VALUE, 
                                 Constants.VERSION_KEY, Constants.ANY_VALUE);
         registry.subscribe(subscribeUrl, new NotifyListener() {
@@ -109,35 +124,22 @@ public class RegistryContainer implements Container {
                 String service = urls.get(0).getServiceName();
                 services.add(service);
                 List<URL> proivderUrls = new ArrayList<URL>();
+                List<URL> consumerUrls = new ArrayList<URL>();
                 List<URL> routeUrls = new ArrayList<URL>();
                 for (URL url : urls) {
                     if (Constants.ROUTE_PROTOCOL.equals(url.getProtocol())) {
                         routeUrls.add(url);
+                    } else if (Constants.SUBSCRIBE_PROTOCOL.equals(url.getProtocol())) {
+                        consumerUrls.add(url);
                     } else {
                         proivderUrls.add(url);
                     }
                 }
                 providers.put(service, proivderUrls);
-                routes.put(service, proivderUrls);
+                consumers.put(service, consumerUrls);
+                routes.put(service, routeUrls);
             }
-        });*/
-        for (int i = 0; i < 5; i ++) {
-            String service = "com.alibaba.foo.BarService" + i;
-            services.add(service);
-            
-            List<URL> proivderUrls = new ArrayList<URL>();
-            for (int j = 0; j < 10; j ++) {
-                proivderUrls.add(URL.valueOf("dubbo://10.20.153." + j + ":20880/" + service));
-            }
-            providers.put(service, proivderUrls);
-            
-            List<URL> routeUrls = new ArrayList<URL>();
-            for (int j = 0; j < 10; j ++) {
-                routeUrls.add(URL.valueOf("registry://127.0.0.1:20880?type=js&rule=aaa" + j));
-            }
-            routes.put(service, routeUrls);
-        }
-        
+        });
     }
 
     public void stop() {

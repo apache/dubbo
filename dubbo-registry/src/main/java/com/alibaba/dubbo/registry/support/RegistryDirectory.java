@@ -37,6 +37,7 @@ import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.Registry;
+import com.alibaba.dubbo.registry.RegistryService;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
@@ -106,7 +107,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         // unsubscribe.
         try {
             if(registry != null && registry.isAvailable()) {
-                registry.unsubscribe(directoryUrl, this);
+                registry.unsubscribe(new URL(Constants.SUBSCRIBE_PROTOCOL, NetUtils.getLocalHost(), 0, RegistryService.class.getName(), getUrl().getParameters()), this);
             }
         } catch (Throwable t) {
             logger.warn("unexpeced error when unsubscribe service " + serviceKey + "from registry" + registry.getUrl(), t);

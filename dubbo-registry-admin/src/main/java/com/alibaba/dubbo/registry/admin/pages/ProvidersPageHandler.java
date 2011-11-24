@@ -46,7 +46,9 @@ public class ProvidersPageHandler implements PageHandler {
                     rows.add(row);
                 }
             }
-            nav = " &gt; <a href=\"services.html\">Services</a> &gt; " + service;
+            nav = "<a href=\"services.html\">Services</a> &gt; " + service 
+                    + " &gt; Providers | <a href=\"consumers.html?service=" + service 
+                    + "\">Consumers</a> | <a href=\"routes.html?service=" + service + "\">Routes</a>";
         } else {
             Collection<List<URL>> values = RegistryContainer.getInstance().getProviders().values();
             if (values != null && values.size() > 0) {
@@ -60,9 +62,9 @@ public class ProvidersPageHandler implements PageHandler {
                     }
                 }
             }
-            nav = "";
+            nav = "Providers";
         }
-        return new Page("<a href=\"/\">Home</a>" + nav + " &gt; Providers", "Providers (" + rows.size() + ")",
+        return new Page("<a href=\"/\">Home</a> &gt; " + nav, "Providers (" + rows.size() + ")",
                 new String[] { "Provider URL:" }, rows);
     }
 

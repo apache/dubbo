@@ -49,10 +49,12 @@ public class StatusPageHandler implements PageHandler {
             List<String> row = new ArrayList<String>();
             row.add(name);
             Status status = checker.check();
-            statuses.put(name, status);
-            row.add(getLevelHtml(status.getLevel()));
-            row.add(status.getMessage());
-            rows.add(row);
+            if (status != null && ! Status.Level.UNKNOWN.equals(status.getLevel())) {
+                statuses.put(name, status);
+                row.add(getLevelHtml(status.getLevel()));
+                row.add(status.getMessage());
+                rows.add(row);
+            }
         }
         Status status = StatusUtils.getSummaryStatus(statuses);
         if ("status".equals(url.getPath())) {
@@ -63,7 +65,7 @@ public class StatusPageHandler implements PageHandler {
             row.add(getLevelHtml(status.getLevel()));
             row.add("<a href=\"/status\" target=\"_blank\">summary</a>");
             rows.add(row);
-            return new Page("<a href=\"/\">Home</a> &gt; Status (<a href=\"/status\" target=\"_blank\">All</a>)", "Status", new String[] {"Name", "Status", "Description"}, rows);
+            return new Page("<a href=\"/\">Home</a> &gt; Status (<a href=\"/status\" target=\"_blank\">summary</a>)", "Status", new String[] {"Name", "Status", "Description"}, rows);
         }
     }
 

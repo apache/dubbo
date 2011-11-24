@@ -43,12 +43,13 @@ public class ServicesPageHandler implements PageHandler {
                 List<String> row = new ArrayList<String>();
                 row.add(service);
                 row.add("<a href=\"providers.html?service=" + service + "\">Providers</a>");
+                row.add("<a href=\"consumers.html?service=" + service + "\">Consumers</a>");
                 row.add("<a href=\"routes.html?service=" + service + "\">Routes</a>");
                 rows.add(row);
             }
         }
         return new Page("<a href=\"/\">Home</a> &gt; Services", "Services (" + rows.size() + ")",
-                new String[] { "Service Name:", "Providers", "Routes" }, rows);
+                new String[] { "Service Name:", "Providers", "Consumers", "Routes" }, rows);
     }
 
 }

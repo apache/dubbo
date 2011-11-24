@@ -55,12 +55,11 @@ public class SpringContainer implements Container {
 
     public void stop() {
         try {
-            context.stop();
-        } catch (Throwable e) {
-            logger.error(e.getMessage(), e);
-        }
-        try {
-            context.close();
+            if (context != null) {
+                context.stop();
+                context.close();
+                context = null;
+            }
         } catch (Throwable e) {
             logger.error(e.getMessage(), e);
         }

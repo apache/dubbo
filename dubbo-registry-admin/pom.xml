@@ -31,12 +31,27 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo-container</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
 			<artifactId>dubbo-registry</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo-container</artifactId>
+			<artifactId>dubbo-registry-simple</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo-registry-multicast</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo-registry-zookeeper</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
 	</dependencies>

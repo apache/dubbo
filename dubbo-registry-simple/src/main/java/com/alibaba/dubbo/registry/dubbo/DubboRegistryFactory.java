@@ -24,6 +24,7 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.bytecode.Wrapper;
+import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.registry.Registry;
 import com.alibaba.dubbo.registry.RegistryService;
@@ -79,7 +80,7 @@ public class DubboRegistryFactory extends AbstractRegistryFactory {
         directory.setRegistry(registry);
         directory.setProtocol(protocol);
         directory.notify(urls);
-        registryService.subscribe(url, directory);
+        registryService.subscribe(new URL(Constants.SUBSCRIBE_PROTOCOL, NetUtils.getLocalHost(), 0, RegistryService.class.getName(), url.getParameters()), directory);
         return registry;
     }
     

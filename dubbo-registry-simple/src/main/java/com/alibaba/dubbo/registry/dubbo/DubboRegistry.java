@@ -17,7 +17,6 @@ package com.alibaba.dubbo.registry.dubbo;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -160,16 +159,6 @@ public class DubboRegistry extends FailbackRegistry {
             logger.warn("Failed to cancel reconnect timer", t);
         }
         registryInvoker.destroy();
-    }
-
-    public List<URL> lookup(URL url) {
-        if (url == null) {
-            throw new IllegalArgumentException("lookup url == null");
-        }
-        if (logger.isInfoEnabled()){
-            logger.info("Lookup: " + url);
-        }
-        return registryService.lookup(url);
     }
     
     public void register(URL url) {
