@@ -1,5 +1,5 @@
 <assembly>
-	<id>dist</id>
+	<id>assembly</id>
 	<formats>
 		<format>tar.gz</format>
 	</formats>
