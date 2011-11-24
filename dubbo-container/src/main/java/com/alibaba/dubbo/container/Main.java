@@ -15,7 +15,9 @@
  */
 package com.alibaba.dubbo.container;
 
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 
 import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.logger.Logger;
@@ -56,6 +58,7 @@ public class Main {
         for (Container container : containers) {
             container.start();
         }
+        System.out.println(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]").format(new Date()) + " Dubbo service server started!");
         synchronized (Main.class) {
             for (;;) {
                 try {
