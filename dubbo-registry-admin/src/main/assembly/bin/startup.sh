@@ -50,7 +50,7 @@ fi
 LIB_JARS=`ls $LIB_DIR|grep .jar|awk '{print "'$LIB_DIR'/"$0}'|tr "\n" ":"`
 
 echo -e "Starting dubbo registry admin server on $SERVER_PORT \c"
-nohup java $JAVA_OPTS $JAVA_MEM_OPTS -classpath $CONF_DIR:$LIB_JARS com.alibaba.dubbo.container.Main properties log4j registry jetty >> $STDOUT_FILE 2>&1 &
+nohup java $JAVA_OPTS $JAVA_MEM_OPTS -classpath $CONF_DIR:$LIB_JARS com.alibaba.dubbo.container.Main properties log4j registry jetty > $STDOUT_FILE 2>&1 &
 
 COUNT=0
 while [ $COUNT -lt 1 ]; do    
