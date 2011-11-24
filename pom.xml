@@ -43,6 +43,7 @@
 		<module>dubbo-registry-simple</module>
 		<module>dubbo-registry-multicast</module>
 		<module>dubbo-registry-zookeeper</module>
+		<module>dubbo-registry-admin</module>
 		<module>dubbo-monitor</module>
 		<module>dubbo-monitor-simple</module>
 		<module>dubbo-config</module>
