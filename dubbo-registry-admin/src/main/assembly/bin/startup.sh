@@ -3,9 +3,10 @@ cd `dirname $0`
 BIN_DIR=`pwd`
 cd ..
 DEPLOY_DIR=`pwd`
-
+CONF_DIR=$DEPLOY_DIR/conf
 LIB_DIR=$DEPLOY_DIR/lib
 LOGS_DIR=$DEPLOY_DIR/logs
+
 STDOUT_FILE=$LOGS_DIR/stdout.log
 SERVER_PORT=$1
 
@@ -49,7 +50,7 @@ fi
 LIB_JARS=`ls $LIB_DIR|grep .jar|awk '{print "'$LIB_DIR'/"$0}'|tr "\n" ":"`
 
 echo -e "Starting dubbo registry admin server on $SERVER_PORT \c"
-nohup java $JAVA_OPTS $JAVA_MEM_OPTS -classpath $LIB_JARS com.alibaba.dubbo.container.Main properties log4j registry jetty >> $STDOUT_FILE 2>&1 &
+nohup java $JAVA_OPTS $JAVA_MEM_OPTS -classpath $CONF_DIR:$LIB_JARS com.alibaba.dubbo.container.Main properties log4j registry jetty >> $STDOUT_FILE 2>&1 &
 
 COUNT=0
 while [ $COUNT -lt 1 ]; do    
