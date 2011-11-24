@@ -22,6 +22,7 @@ import java.util.Set;
 
 import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.container.page.Menu;
 import com.alibaba.dubbo.container.page.Page;
 import com.alibaba.dubbo.container.page.PageHandler;
 import com.alibaba.dubbo.registry.Registry;
@@ -29,12 +30,13 @@ import com.alibaba.dubbo.registry.support.AbstractRegistry;
 import com.alibaba.dubbo.registry.support.AbstractRegistryFactory;
 
 /**
- * ServicePageHandler
+ * RegisteredPageHandler
  * 
  * @author william.liangf
  */
-@Extension("service")
-public class ServicePageHandler implements PageHandler {
+@Menu(name = "Registered", desc = "Registered", order = 11000)
+@Extension("registered")
+public class RegisteredPageHandler implements PageHandler {
 
     public Page handle(URL url) {
         List<List<String>> rows = new ArrayList<List<String>>();

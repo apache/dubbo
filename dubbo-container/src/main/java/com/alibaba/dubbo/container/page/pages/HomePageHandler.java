@@ -16,32 +16,35 @@
 package com.alibaba.dubbo.container.page.pages;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import com.alibaba.dubbo.common.Extension;
-import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.container.page.Menu;
 import com.alibaba.dubbo.container.page.Page;
 import com.alibaba.dubbo.container.page.PageHandler;
+import com.alibaba.dubbo.container.page.PageServlet;
 
 /**
  * HomePageHandler
  * 
  * @author william.liangf
  */
-@Extension("home")
+@Menu(name = "Home", desc = "Home", order = Integer.MIN_VALUE)
+@Extension("index")
 public class HomePageHandler implements PageHandler {
 
     public Page handle(URL url) {
-        Collection<String> informationProviders = ExtensionLoader.getExtensionLoader(PageHandler.class).getSupportedExtensions();
         List<List<String>> rows = new ArrayList<List<String>>();
-        for (String uri : informationProviders) {
+        for (PageHandler handler : PageServlet.getInstance().getMenus()) {
+            String uri = handler.getClass().getAnnotation(Extension.class).value();
+            Menu menu = handler.getClass().getAnnotation(Menu.class);
             List<String> row = new ArrayList<String>();
-            row.add("<a href=\"" + uri + ".html\">" + uri + "</a>");
+            row.add("<a href=\"" + uri + ".html\">" + menu.name() + "</a>");
+            row.add(menu.desc());
             rows.add(row);
         }
-        return new Page("Home", "Menus",  new String[] {"Menu"}, rows);
+        return new Page("Home", "Menus",  new String[] {"Menu Name:", "Menu Desc:"}, rows);
     }
 
 }

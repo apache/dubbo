@@ -22,16 +22,18 @@ import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.container.page.Menu;
 import com.alibaba.dubbo.container.page.Page;
 import com.alibaba.dubbo.container.page.PageHandler;
 
 /**
- * ConnectionPageHandler
+ * ConnectionsPageHandler
  * 
  * @author william.liangf
  */
-@Extension("connection")
-public class ConnectionPageHandler implements PageHandler {
+@Menu(name = "Connections", desc = "Connections", order = 12000)
+@Extension("connections")
+public class ConnectionsPageHandler implements PageHandler {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 

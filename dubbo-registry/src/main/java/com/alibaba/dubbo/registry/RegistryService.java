@@ -25,21 +25,21 @@ import com.alibaba.dubbo.common.URL;
  * @author william.liangf
  */
 public interface RegistryService {
-    
+
     /**
      * 注册服务
      * 
      * @param url 服务提供者地址
      */
     void register(URL url);
-    
+
     /**
      * 取消注册服务
      * 
      * @param url 服务提供者地址
      */
     void unregister(URL url);
-    
+
     /**
      * 订阅服务
      * 
@@ -47,7 +47,7 @@ public interface RegistryService {
      * @param listener 服务变更事件监听器
      */
     void subscribe(URL url, NotifyListener listener);
-    
+
     /**
      * 取消订阅服务
      * 
@@ -55,7 +55,7 @@ public interface RegistryService {
      * @param listener 服务变更事件监听器
      */
     void unsubscribe(URL url, NotifyListener listener);
-    
+
     /**
      * 查询服务
      * 
@@ -63,5 +63,5 @@ public interface RegistryService {
      * @return 服务提供者者列表
      */
     List<URL> lookup(URL url);
-    
+
 }

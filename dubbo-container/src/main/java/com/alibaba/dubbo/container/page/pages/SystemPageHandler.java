@@ -23,6 +23,7 @@ import java.util.Locale;
 
 import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.container.page.Menu;
 import com.alibaba.dubbo.container.page.Page;
 import com.alibaba.dubbo.container.page.PageHandler;
 
@@ -31,6 +32,7 @@ import com.alibaba.dubbo.container.page.PageHandler;
  * 
  * @author william.liangf
  */
+@Menu(name = "System", desc = "System", order = Integer.MAX_VALUE - 10000)
 @Extension("system")
 public class SystemPageHandler implements PageHandler {
 

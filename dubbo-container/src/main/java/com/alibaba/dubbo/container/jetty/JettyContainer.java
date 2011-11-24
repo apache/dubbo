@@ -39,6 +39,8 @@ public class JettyContainer implements Container {
 
     public static final String JETTY_PORT = "jetty.port";
 
+    public static final String JETTY_PAGES = "jetty.pages";
+
     public static final int DEFAULT_JETTY_PORT = 8080;
 
     private SelectChannelConnector connector;
@@ -55,6 +57,7 @@ public class JettyContainer implements Container {
         connector.setPort(port);
         ServletHandler handler = new ServletHandler();
         ServletHolder holder = handler.addServletWithMapping(PageServlet.class, "/*");
+        holder.setInitParameter("pages", System.getProperty(JETTY_PAGES));
         holder.setInitOrder(1);
         Server server = new Server();
         server.addConnector(connector);

@@ -27,6 +27,7 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.status.Status;
 import com.alibaba.dubbo.common.status.StatusChecker;
 import com.alibaba.dubbo.common.status.support.StatusUtils;
+import com.alibaba.dubbo.container.page.Menu;
 import com.alibaba.dubbo.container.page.Page;
 import com.alibaba.dubbo.container.page.PageHandler;
 
@@ -35,6 +36,7 @@ import com.alibaba.dubbo.container.page.PageHandler;
  * 
  * @author william.liangf
  */
+@Menu(name = "Status", desc = "Status", order = Integer.MAX_VALUE - 12000)
 @Extension("status")
 public class StatusPageHandler implements PageHandler {
 
@@ -53,12 +55,16 @@ public class StatusPageHandler implements PageHandler {
             rows.add(row);
         }
         Status status = StatusUtils.getSummaryStatus(statuses);
-        List<String> row = new ArrayList<String>();
-        row.add("summary");
-        row.add(getLevelHtml(status.getLevel()));
-        row.add("<a href=\"/status\" target=\"_blank\">summary</a>");
-        rows.add(row);
-        return new Page("<a href=\"/\">Home</a> &gt; Status (<a href=\"/status\" target=\"_blank\">All</a>)", "Status", new String[] {"Name", "Status", "Description"}, rows);
+        if ("status".equals(url.getPath())) {
+            return new Page("", "", "", status.getLevel().toString());
+        } else {
+            List<String> row = new ArrayList<String>();
+            row.add("summary");
+            row.add(getLevelHtml(status.getLevel()));
+            row.add("<a href=\"/status\" target=\"_blank\">summary</a>");
+            rows.add(row);
+            return new Page("<a href=\"/\">Home</a> &gt; Status (<a href=\"/status\" target=\"_blank\">All</a>)", "Status", new String[] {"Name", "Status", "Description"}, rows);
+        }
     }
 
     private String getLevelHtml(Status.Level level) {

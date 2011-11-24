@@ -285,6 +285,14 @@ public class Constants {
     
     public static final String       CHANNEL_SEND_READONLYEVENT_KEY        = "channel.readonly.send";
 
+    public static final String       SUBSCRIBE_PROTOCOL                 = "subscribe";
+
+    public static final String       LOOKUP_PROTOCOL                    = "lookup";
+
+    public static final String       FORBID_PROTOCOL                    = "forbid";
+
+    public static final String       ROUTE_PROTOCOL                     = "route";
+
     private Constants(){
     }
 

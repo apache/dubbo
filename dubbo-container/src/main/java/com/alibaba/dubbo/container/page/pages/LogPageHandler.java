@@ -33,6 +33,7 @@ import org.apache.log4j.LogManager;
 
 import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.container.page.Menu;
 import com.alibaba.dubbo.container.page.Page;
 import com.alibaba.dubbo.container.page.PageHandler;
 
@@ -41,6 +42,7 @@ import com.alibaba.dubbo.container.page.PageHandler;
  * 
  * @author william.liangf
  */
+@Menu(name = "Log", desc = "Log", order = Integer.MAX_VALUE - 11000)
 @Extension("log")
 public class LogPageHandler implements PageHandler {
 

@@ -17,19 +17,27 @@ package com.alibaba.dubbo.container.page;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.StringUtils;
 
 /**
  * PageServlet
@@ -44,21 +52,57 @@ public class PageServlet extends HttpServlet {
 
     protected final Random        random           = new Random();
 
-    protected String              applicationName;
+    protected final Map<String, PageHandler>  pages = new ConcurrentHashMap<String, PageHandler>();
 
-    public void setApplicationName(String applicationName) {
-        this.applicationName = applicationName;
+    protected final List<PageHandler>    menus = new ArrayList<PageHandler>();
+    
+    private static PageServlet INSTANCE;
+    
+    public static PageServlet getInstance() {
+        return INSTANCE;
     }
 
-    @SuppressWarnings("unchecked")
+    public List<PageHandler> getMenus() {
+        return Collections.unmodifiableList(menus);
+    }
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        INSTANCE = this;
+        String config = getServletConfig().getInitParameter("pages");
+        Collection<String> names;
+        if (config != null && config.length() > 0) {
+            names = Arrays.asList(Constants.COMMA_SPLIT_PATTERN.split(config));
+        } else {
+            names = ExtensionLoader.getExtensionLoader(PageHandler.class).getSupportedExtensions();
+        }
+        for (String name : names) {
+            PageHandler handler = ExtensionLoader.getExtensionLoader(PageHandler.class).getExtension(name);
+            pages.put(handler.getClass().getAnnotation(Extension.class).value(), handler);
+            Menu menu = handler.getClass().getAnnotation(Menu.class);
+            if (menu != null) {
+                menus.add(handler);
+            }
+        }
+        Collections.sort(menus, new MenuComparator());
+    }
+    
+    @Override
     protected final void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        doPost(request, response);
+    }
+
+    @Override
+    protected final void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         if (! response.isCommitted()) {
             PrintWriter writer = response.getWriter();
             String uri = request.getRequestURI();
             boolean isHtml = false;
             if (uri == null || uri.length() == 0 || "/".equals(uri)) {
-                uri = "home";
+                uri = "index";
                 isHtml = true;
             } else {
                 if (uri.startsWith("/")) {
@@ -69,21 +113,48 @@ public class PageServlet extends HttpServlet {
                     isHtml = true;
                 }
             }
-            PageHandler pageFactory = ExtensionLoader.getExtensionLoader(PageHandler.class).getExtension(uri);
+            PageHandler pageHandler = ExtensionLoader.getExtensionLoader(PageHandler.class).getExtension(uri);
             if (isHtml) {
-                writer.println("<html><head><title>" + applicationName + " service server</title>");
+                writer.println("<html><head><title>Dubbo</title>");
                 writer.println("<style type=\"text/css\">html, body {margin: 10;padding: 0;background-color: #6D838C;font-family: Arial, Verdana;font-size: 12px;color: #FFFFFF;text-align: center;vertical-align: middle;word-break: break-all; } table {width: 800px;margin: 0px auto;border-collapse: collapse;border: 8px solid #FFFFFF; } thead tr {background-color: #253c46; } tbody tr {background-color: #8da5af; } th {padding-top: 4px;padding-bottom: 4px;font-size: 14px;height: 20px; } td {margin: 3px;padding: 3px;border: 2px solid #FFFFFF;height: 25px; } a {color: #FFFFFF;cursor: pointer;text-decoration: underline; } a:hover {text-decoration: none; }</style>");
                 writer.println("</head><body>");
             }
-            if (pageFactory != null) {
-                Page page = pageFactory.handle(URL.valueOf(request.getRequestURL().toString()).addParameters(request.getParameterMap()));
+            if (pageHandler != null) {
+                Page page = null;
+                try {
+                    String query = request.getQueryString();
+                    page = pageHandler.handle(URL.valueOf(request.getRequestURL().toString() 
+                            + (query == null || query.length() == 0 ? "" : "?" + query)));
+                } catch (Throwable t) {
+                    if (isHtml) {
+                        writer.println("<table>");
+                        writer.println("<thead>");
+                        writer.println("    <tr>");
+                        writer.println("        <th>Error</th>");
+                        writer.println("    </tr>");
+                        writer.println("</thead>");
+                        writer.println("<tbody>");
+                        writer.println("    <tr>");
+                        writer.println("        <td>");
+                        writer.println("            " + StringUtils.toString(t).replace("<", "&lt;").replace(">", "&lt;").replace("\n", "<br/>"));
+                        writer.println("        </td>");
+                        writer.println("    </tr>");
+                        writer.println("</tbody>");
+                        writer.println("</table>");
+                        writer.println("<br/>");
+                    } else {
+                        writer.println(StringUtils.toString(t));
+                    }
+                }
                 if (page != null) {
                     if (isHtml) {
                         writeMenu(request, writer, page.getNavigation());
                         writeTable(writer, page.getTitle(), page.getColumns(),
                                 page.getRows());
                     } else {
-                        writer.println(page.getTitle());
+                        if (page.getRows().size() > 0 && page.getRows().get(0).size() > 0) {
+                            writer.println(page.getRows().get(0).get(0));
+                        }
                     }
                 }
             } else {
@@ -118,14 +189,16 @@ public class PageServlet extends HttpServlet {
         writer.println("<table>");
         writer.println("<thead>");
         writer.println("    <tr>");
-        for (String name : ExtensionLoader.getExtensionLoader(PageHandler.class).getSupportedExtensions()) {
-            writer.println("        <th><a href=\"" + name + ".html\">" + name + "</a></th>");
+        for (PageHandler handler : menus) {
+            String uri = handler.getClass().getAnnotation(Extension.class).value();
+            Menu menu = handler.getClass().getAnnotation(Menu.class);
+            writer.println("        <th><a href=\"" + uri + ".html\">" + menu.name() + "</a></th>");
         }
         writer.println("    </tr>");
         writer.println("</thead>");
         writer.println("<tbody>");
         writer.println("    <tr>");
-        writer.println("        <td style=\"text-align: left\" colspan=\"7\">");
+        writer.println("        <td style=\"text-align: left\" colspan=\"" + menus.size() + "\">");
         writer.println(nav);
         writer.println("        </td>");
         writer.println("    </tr>");
