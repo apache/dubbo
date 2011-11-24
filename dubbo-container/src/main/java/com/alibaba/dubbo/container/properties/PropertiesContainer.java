@@ -15,7 +15,9 @@
  */
 package com.alibaba.dubbo.container.properties;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.Properties;
 
@@ -38,8 +40,11 @@ public class PropertiesContainer implements Container {
         String file = System.getProperty(PROPERTIES_FILE, DEFAULT_PROPERTIES_FILE);
         Properties properties = new Properties();
         try {
-            properties.load(Thread.currentThread().getContextClassLoader()
-                    .getResourceAsStream(file));
+            InputStream input = Thread.currentThread().getContextClassLoader().getResourceAsStream(file);
+            if (input == null) {
+                throw new FileNotFoundException("Not found file " + file + " in classpath.");
+            }
+            properties.load(input);
             for (Map.Entry<Object, Object> entry : properties.entrySet()) {
                 System.setProperty((String) entry.getKey(), (String) entry.getValue());
             }
