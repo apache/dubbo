@@ -23,8 +23,7 @@ package com.alibaba.dubbo.registry.admin;
 public class Admin {
 
     public static void main(String[] args) {
-        System.setProperty(RegistryContainer.REGISTRY_URL, "zookeeper://10.20.153.10:2181");
-        com.alibaba.dubbo.container.Main.main(new String[] {"registry", "log4j", "jetty"});
+        com.alibaba.dubbo.container.Main.main(new String[] {"properties", "log4j", "registry", "jetty"});
     }
 
 }

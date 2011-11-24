@@ -38,18 +38,30 @@ public class ServicesPageHandler implements PageHandler {
     public Page handle(URL url) {
         Set<String> services = RegistryContainer.getInstance().getServices();
         List<List<String>> rows = new ArrayList<List<String>>();
+        int providerCount = 0;
+        int consumerCount = 0;
+        int routeCount = 0;
         if (services != null && services.size() > 0) {
             for (String service : services) {
                 List<String> row = new ArrayList<String>();
                 row.add(service);
-                row.add("<a href=\"providers.html?service=" + service + "\">Providers</a>");
-                row.add("<a href=\"consumers.html?service=" + service + "\">Consumers</a>");
-                row.add("<a href=\"routes.html?service=" + service + "\">Routes</a>");
+                List<URL> providers = RegistryContainer.getInstance().getProviders(service);
+                int providerSize = providers == null ? 0 : providers.size();
+                providerCount += providerSize;
+                row.add("<a href=\"providers.html?service=" + service + "\">Providers(" + providerSize + ")</a>");
+                List<URL> consumers = RegistryContainer.getInstance().getConsumers(service);
+                int consumerSize = consumers == null ? 0 : consumers.size();
+                consumerCount += consumerSize;
+                row.add("<a href=\"consumers.html?service=" + service + "\">Consumers(" + consumerSize + ")</a>");
+                List<URL> routes = RegistryContainer.getInstance().getRoutes(service);
+                int routeSize = routes == null ? 0 : routes.size();
+                routeCount += routeSize;
+                row.add("<a href=\"routes.html?service=" + service + "\">Routes(" + routeSize + ")</a>");
                 rows.add(row);
             }
         }
         return new Page("<a href=\"/\">Home</a> &gt; Services", "Services (" + rows.size() + ")",
-                new String[] { "Service Name:", "Providers", "Consumers", "Routes" }, rows);
+                new String[] { "Service Name:", "Providers(" + providerCount + ")", "Consumers(" + consumerCount + ")", "Routes(" + routeCount + ")" }, rows);
     }
 
 }

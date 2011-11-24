@@ -50,7 +50,6 @@ public class SpringContainer implements Container {
         }
         context = new ClassPathXmlApplicationContext(configPath.split("[,\\s]+"));
         context.start();
-        logger.info("Dubbo spring container started!");
     }
 
     public void stop() {
@@ -63,7 +62,6 @@ public class SpringContainer implements Container {
         } catch (Throwable e) {
             logger.error(e.getMessage(), e);
         }
-        logger.info("Dubbo spring container stopped!");
     }
 
 }

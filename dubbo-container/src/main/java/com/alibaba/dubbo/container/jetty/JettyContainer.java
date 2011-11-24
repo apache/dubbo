@@ -67,7 +67,6 @@ public class JettyContainer implements Container {
         } catch (Exception e) {
             throw new IllegalStateException("Failed to start jetty server on " + NetUtils.getLocalHost() + ":" + port + ", cause: " + e.getMessage(), e);
         }
-        logger.info("Dubbo jetty container started!");
     }
 
     public void stop() {
@@ -79,7 +78,6 @@ public class JettyContainer implements Container {
         } catch (Throwable e) {
             logger.error(e.getMessage(), e);
         }
-        logger.info("Dubbo jetty container stopped!");
     }
 
 }

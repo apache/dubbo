@@ -26,11 +26,13 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.KeeperException.NodeExistsException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.Watcher.Event.EventType;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
 import org.apache.zookeeper.ZooDefs.Ids;
+import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.ZooKeeper;
 
 import com.alibaba.dubbo.common.Constants;
@@ -57,6 +59,8 @@ public class ZookeeperRegistry extends FailbackRegistry {
     private final String        root;
     
     private final boolean       auth;
+    
+    private final List<ACL>     acl;
 
     private final ReentrantLock zookeeperLock = new ReentrantLock();
 
@@ -72,6 +76,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
         super(url);
         this.auth = url.getUsername() != null && url.getUsername().length() > 0 
                 && url.getPassword() != null && url.getPassword().length() > 0;
+        this.acl = auth ? Ids.CREATOR_ALL_ACL : Ids.OPEN_ACL_UNSAFE;
         String group = url.getParameter(Constants.GROUP_KEY);
         if (group != null && group.length() > 0) {
             group = SEPARATOR + group;
@@ -187,8 +192,11 @@ public class ZookeeperRegistry extends FailbackRegistry {
                     if (path.equals(toRootPath())) {
                         List<String> services = children;
                         if (services != null && services.size() > 0) {
-                            anyServices.addAll(services);
                             for (String service : services) {
+                                if (anyServices.contains(service)) {
+                                    continue;
+                                }
+                                anyServices.add(service);
                                 for (Map.Entry<String, Set<NotifyListener>> entry : anyNotifyListeners.entrySet()) {
                                     URL subscribeUrl = URL.valueOf(entry.getKey()).setPath(service).addParameters(
                                             Constants.INTERFACE_KEY, service, Constants.CHECK_KEY, String.valueOf(false),
@@ -213,11 +221,13 @@ public class ZookeeperRegistry extends FailbackRegistry {
                             String subscribeService = subscribe.getServiceName();
                             if (service.equals(subscribeService)) {
                                 List<URL> list = toUrls(subscribe, providers);
-                                if (logger.isInfoEnabled()) {
-                                    logger.info("Zookeeper service changed, service: " + service + ", urls: " + list);
-                                }
-                                for (NotifyListener listener : entry.getValue()) {
-                                    ZookeeperRegistry.this.notify(subscribe, listener, list);
+                                if (list != null && list.size() > 0) {
+                                    if (logger.isInfoEnabled()) {
+                                        logger.info("Zookeeper service changed, service: " + service + ", urls: " + list);
+                                    }
+                                    for (NotifyListener listener : entry.getValue()) {
+                                        ZookeeperRegistry.this.notify(subscribe, listener, list);
+                                    }
                                 }
                             }
                         }
@@ -231,7 +241,10 @@ public class ZookeeperRegistry extends FailbackRegistry {
             zk.addAuthInfo(url.getUsername(), url.getPassword().getBytes());
         }
         if (root != null && root.length() > 0 && zk.exists(root, false) == null) {
-            zk.create(root, new byte[0], auth ? Ids.CREATOR_ALL_ACL : Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+            try {
+                zk.create(root, new byte[0], acl, CreateMode.PERSISTENT);
+            } catch (NodeExistsException e) {
+            }
         }
         return zk;
     }
@@ -253,11 +266,20 @@ public class ZookeeperRegistry extends FailbackRegistry {
         try {
             String service = toServicePath(url);
             if (zookeeper.exists(service, false) == null) {
-                zookeeper.create(service, new byte[0], auth ? Ids.CREATOR_ALL_ACL : Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+                try {
+                    zookeeper.create(service, new byte[0], acl, CreateMode.PERSISTENT);
+                } catch (NodeExistsException e) {
+                }
             }
             String provider = toProviderPath(url);
             if (zookeeper.exists(provider, false) == null) {
-                zookeeper.create(provider, new byte[0], auth ? Ids.CREATOR_ALL_ACL : Ids.OPEN_ACL_UNSAFE, Constants.ROUTE_PROTOCOL.equals(url.getProtocol()) ? CreateMode.PERSISTENT : CreateMode.EPHEMERAL);
+                CreateMode createMode = Constants.ROUTE_PROTOCOL.equals(url.getProtocol()) ? CreateMode.PERSISTENT : CreateMode.EPHEMERAL;
+                try {
+                    zookeeper.create(provider, new byte[0], acl, createMode);
+                } catch (NodeExistsException e) {
+                    zookeeper.delete(provider, -1);
+                    zookeeper.create(provider, new byte[0], acl, createMode);
+                }
             }
         } catch (Throwable e) {
             throw new RpcException("Failed to register " + url + ", cause: " + e.getMessage(), e);

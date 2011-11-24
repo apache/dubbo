@@ -66,6 +66,9 @@ public class RegistryContainer implements Container {
     }
     
     public static RegistryContainer getInstance() {
+        if (INSTANCE == null) {
+            ExtensionLoader.getExtensionLoader(Container.class).getExtension("registry");
+        }
         return INSTANCE;
     }
 
@@ -135,9 +138,15 @@ public class RegistryContainer implements Container {
                         proivderUrls.add(url);
                     }
                 }
-                providers.put(service, proivderUrls);
-                consumers.put(service, consumerUrls);
-                routes.put(service, routeUrls);
+                if (proivderUrls != null && proivderUrls.size() > 0) {
+                    providers.put(service, proivderUrls);
+                }
+                if (consumerUrls != null && consumerUrls.size() > 0) {
+                    consumers.put(service, consumerUrls);
+                }
+                if (routeUrls != null && routeUrls.size() > 0) {
+                    routes.put(service, routeUrls);
+                }
             }
         });
     }

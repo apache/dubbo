@@ -24,8 +24,6 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.PropertyConfigurator;
 
 import com.alibaba.dubbo.common.Extension;
-import com.alibaba.dubbo.common.logger.Logger;
-import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.container.Container;
 
 /**
@@ -35,8 +33,6 @@ import com.alibaba.dubbo.container.Container;
  */
 @Extension("log4j")
 public class Log4jContainer implements Container {
-
-    private static final Logger logger = LoggerFactory.getLogger(Log4jContainer.class);
 
     public static final String LOG4J_FILE = "log4j.file";
 
@@ -74,11 +70,9 @@ public class Log4jContainer implements Container {
                 modifyLogDirectory(ls.nextElement(), subdirectory);
             }
         }
-        logger.info("Dubbo log4j container started!");
     }
 
     public void stop() {
-        logger.info("Dubbo log4j container stopped!");
     }
 
     @SuppressWarnings("unchecked")

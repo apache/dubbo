@@ -33,14 +33,15 @@ public class Main {
     private static final Logger logger    = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) {
+        ExtensionLoader<Container> loader = ExtensionLoader.getExtensionLoader(Container.class);
         final Container[] containers;
         if(null == args || args.length == 0) {
-            containers = new Container[] {ExtensionLoader.getExtensionLoader(Container.class).getDefaultExtension()};
-            logger.info("Use default container type(" + ExtensionLoader.getExtensionLoader(Container.class).getDefaultExtensionName() + ") to run dubbo serivce.");
+            containers = new Container[] {loader.getDefaultExtension()};
+            logger.info("Use default container type(" + loader.getDefaultExtensionName() + ") to run dubbo serivce.");
         } else {
             containers = new Container[args.length];
             for (int i = 0; i < args.length; i ++) {
-                containers[i] = ExtensionLoader.getExtensionLoader(Container.class).getExtension(args[i]);
+                containers[i] = loader.getExtension(args[i]);
             }
             logger.info("Use container type(" + Arrays.toString(args) + ") to run dubbo serivce.");
         }
@@ -49,6 +50,7 @@ public class Main {
                 for (Container container : containers) {
                     try {
                         container.stop();
+                        logger.info("Dubbo " + container.getClass().getSimpleName() + " stopped!");
                     } catch (Throwable t) {
                         logger.error(t.getMessage(), t);
                     }
@@ -57,6 +59,7 @@ public class Main {
         });
         for (Container container : containers) {
             container.start();
+            logger.info("Dubbo " + container.getClass().getSimpleName() + " started!");
         }
         System.out.println(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]").format(new Date()) + " Dubbo service server started!");
         synchronized (Main.class) {
