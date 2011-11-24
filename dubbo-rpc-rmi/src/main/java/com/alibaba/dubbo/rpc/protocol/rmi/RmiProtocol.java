@@ -114,7 +114,7 @@ public class RmiProtocol extends AbstractProtocol {
         Remote remote = rmiProxyFactory.getProxy(invoker);
         // export.
         try {
-            UnicastRemoteObject.exportObject(remote, 0);
+            UnicastRemoteObject.exportObject(remote);
         } catch (RemoteException e) {
             if ("object already exported".equalsIgnoreCase(e.getMessage())) {
                 logger.warn("Ignore 'object already exported' exception.", e);
