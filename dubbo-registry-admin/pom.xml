@@ -31,27 +31,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo-container</artifactId>
-			<version>${project.parent.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo-registry</artifactId>
-			<version>${project.parent.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo-registry-simple</artifactId>
-			<version>${project.parent.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo-registry-multicast</artifactId>
-			<version>${project.parent.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo-registry-zookeeper</artifactId>
+			<artifactId>dubbo</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
 	</dependencies>
