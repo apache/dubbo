@@ -141,11 +141,11 @@ public class UrlUtilsTest {
         String key = "dubbo.test.api.HelloService";
         Map<String, Map<String, String>> register = new HashMap<String, Map<String, String>>();
         Map<String, String> service = new HashMap<String, String>();
-        service.put("127.0.0.1:20880", "version=1.0.0&group=test&dubbo.version=2.0.0");
+        service.put("dubbo://127.0.0.1:20880/com.xxx.XxxService", "version=1.0.0&group=test&dubbo.version=2.0.0");
         register.put(key, service);
         Map<String, Map<String, String>> newRegister = UrlUtils.convertRegister(register);
         Map<String, String> newService = new HashMap<String, String>();
-        newService.put("127.0.0.1:20880", "dubbo.version=2.0.0");
+        newService.put("dubbo://127.0.0.1:20880/com.xxx.XxxService", "dubbo.version=2.0.0");
         assertEquals(newService, newRegister.get("test/dubbo.test.api.HelloService:1.0.0"));
     }
 
@@ -172,11 +172,11 @@ public class UrlUtilsTest {
         String key = "perf/dubbo.test.api.HelloService:1.0.0";
         Map<String, Map<String, String>> register = new HashMap<String, Map<String, String>>();
         Map<String, String> service = new HashMap<String, String>();
-        service.put("127.0.0.1:20880", null);
+        service.put("dubbo://127.0.0.1:20880/com.xxx.XxxService", null);
         register.put(key, service);
         Map<String, Map<String, String>> newRegister = UrlUtils.revertRegister(register);
         Map<String, Map<String, String>> expectedRegister = new HashMap<String, Map<String, String>>();
-        service.put("127.0.0.1:20880", "group=perf&version=1.0.0");
+        service.put("dubbo://127.0.0.1:20880/com.xxx.XxxService", "group=perf&version=1.0.0");
         expectedRegister.put("dubbo.test.api.HelloService", service);
         assertEquals(expectedRegister, newRegister);
     }
@@ -186,11 +186,11 @@ public class UrlUtilsTest {
         String key = "dubbo.test.api.HelloService";
         Map<String, Map<String, String>> register = new HashMap<String, Map<String, String>>();
         Map<String, String> service = new HashMap<String, String>();
-        service.put("127.0.0.1:20880", null);
+        service.put("dubbo://127.0.0.1:20880/com.xxx.XxxService", null);
         register.put(key, service);
         Map<String, Map<String, String>> newRegister = UrlUtils.revertRegister(register);
         Map<String, Map<String, String>> expectedRegister = new HashMap<String, Map<String, String>>();
-        service.put("127.0.0.1:20880", null);
+        service.put("dubbo://127.0.0.1:20880/com.xxx.XxxService", null);
         expectedRegister.put("dubbo.test.api.HelloService", service);
         assertEquals(expectedRegister, newRegister);
     }
@@ -220,11 +220,11 @@ public class UrlUtilsTest {
         String key = "dubbo.test.api.HelloService";
         Map<String, Map<String, String>> notify = new HashMap<String, Map<String, String>>();
         Map<String, String> service = new HashMap<String, String>();
-        service.put("127.0.0.1:20880", "group=perf&version=1.0.0");
+        service.put("dubbo://127.0.0.1:20880/com.xxx.XxxService", "group=perf&version=1.0.0");
         notify.put(key, service);
         Map<String, Map<String, String>> newRegister = UrlUtils.revertNotify(notify);
         Map<String, Map<String, String>> expectedRegister = new HashMap<String, Map<String, String>>();
-        service.put("127.0.0.1:20880", "group=perf&version=1.0.0");
+        service.put("dubbo://127.0.0.1:20880/com.xxx.XxxService", "group=perf&version=1.0.0");
         expectedRegister.put("perf/dubbo.test.api.HelloService:1.0.0", service);
         assertEquals(expectedRegister, newRegister);
     }
@@ -234,11 +234,11 @@ public class UrlUtilsTest {
         String key = "perf/dubbo.test.api.HelloService:1.0.0";
         Map<String, Map<String, String>> notify = new HashMap<String, Map<String, String>>();
         Map<String, String> service = new HashMap<String, String>();
-        service.put("127.0.0.1:20880", "group=perf&version=1.0.0");
+        service.put("dubbo://127.0.0.1:20880/com.xxx.XxxService", "group=perf&version=1.0.0");
         notify.put(key, service);
         Map<String, Map<String, String>> newRegister = UrlUtils.revertNotify(notify);
         Map<String, Map<String, String>> expectedRegister = new HashMap<String, Map<String, String>>();
-        service.put("127.0.0.1:20880", "group=perf&version=1.0.0");
+        service.put("dubbo://127.0.0.1:20880/com.xxx.XxxService", "group=perf&version=1.0.0");
         expectedRegister.put("perf/dubbo.test.api.HelloService:1.0.0", service);
         assertEquals(expectedRegister, newRegister);
     }
@@ -276,36 +276,36 @@ public class UrlUtilsTest {
 
     @Test
     public void testIsMatch() {
-        URL consumerUrl = URL.valueOf("?version=1.0.0&group=test");
-        URL providerUrl = URL.valueOf("127.0.0.1:8080/?version=1.0.0&group=test");
+        URL consumerUrl = URL.valueOf("dubbo://127.0.0.1:20880/com.xxx.XxxService?version=1.0.0&group=test");
+        URL providerUrl = URL.valueOf("http://127.0.0.1:8080/com.xxx.XxxService?version=1.0.0&group=test");
         assertTrue(UrlUtils.isMatch(consumerUrl, providerUrl));
     }
 
     @Test
     public void testIsMatch2() {
-        URL consumerUrl = URL.valueOf("?version=2.0.0&group=test");
-        URL providerUrl = URL.valueOf("127.0.0.1:8080/?version=1.0.0&group=test");
+        URL consumerUrl = URL.valueOf("dubbo://127.0.0.1:20880/com.xxx.XxxService?version=2.0.0&group=test");
+        URL providerUrl = URL.valueOf("http://127.0.0.1:8080/com.xxx.XxxService?version=1.0.0&group=test");
         assertFalse(UrlUtils.isMatch(consumerUrl, providerUrl));
     }
 
     @Test
     public void testIsMatch3() {
-        URL consumerUrl = URL.valueOf("?version=1.0.0&group=aa");
-        URL providerUrl = URL.valueOf("127.0.0.1:8080/?version=1.0.0&group=test");
+        URL consumerUrl = URL.valueOf("dubbo://127.0.0.1:20880/com.xxx.XxxService?version=1.0.0&group=aa");
+        URL providerUrl = URL.valueOf("http://127.0.0.1:8080/com.xxx.XxxService?version=1.0.0&group=test");
         assertFalse(UrlUtils.isMatch(consumerUrl, providerUrl));
     }
 
     @Test
     public void testIsMatch4() {
-        URL consumerUrl = URL.valueOf("?version=1.0.0&group=*");
-        URL providerUrl = URL.valueOf("127.0.0.1:8080/?version=1.0.0&group=test");
+        URL consumerUrl = URL.valueOf("dubbo://127.0.0.1:20880/com.xxx.XxxService?version=1.0.0&group=*");
+        URL providerUrl = URL.valueOf("http://127.0.0.1:8080/com.xxx.XxxService?version=1.0.0&group=test");
         assertTrue(UrlUtils.isMatch(consumerUrl, providerUrl));
     }
 
     @Test
     public void testIsMatch5() {
-        URL consumerUrl = URL.valueOf("?version=*&group=test");
-        URL providerUrl = URL.valueOf("127.0.0.1:8080/?version=1.0.0&group=test");
+        URL consumerUrl = URL.valueOf("dubbo://127.0.0.1:20880/com.xxx.XxxService?version=*&group=test");
+        URL providerUrl = URL.valueOf("http://127.0.0.1:8080/com.xxx.XxxService?version=1.0.0&group=test");
         assertTrue(UrlUtils.isMatch(consumerUrl, providerUrl));
     }
 }
