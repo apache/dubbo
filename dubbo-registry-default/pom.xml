@@ -21,18 +21,36 @@
 		<artifactId>dubbo-parent</artifactId>
 		<version>2.0.9-SNAPSHOT</version>
 	</parent>
-	<artifactId>dubbo-registry-simple</artifactId>
+	<artifactId>dubbo-registry-default</artifactId>
 	<packaging>jar</packaging>
-	<name>Dubbo Simple Registry Module</name>
-	<description>The simple registry module of dubbo project</description>
+	<name>Dubbo Default Registry Module</name>
+	<description>The default registry module of dubbo project</description>
 	<properties>
-		<skip_maven_deploy>false</skip_maven_deploy>
+		<skip_maven_deploy>true</skip_maven_deploy>
 	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo</artifactId>
+			<artifactId>dubbo-registry</artifactId>
 			<version>${project.parent.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo-rpc-default</artifactId>
+			<version>${project.parent.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo-remoting-netty</artifactId>
+			<version>${project.parent.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.bsf</groupId>
+			<artifactId>bsf-api</artifactId>
+			<scope>test</scope>
+			<optional>true</optional>
 		</dependency>
 	</dependencies>
 </project>

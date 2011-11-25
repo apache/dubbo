@@ -40,15 +40,17 @@
 		<module>dubbo-rpc-hessian</module>
 		<module>dubbo-cluster</module>
 		<module>dubbo-registry</module>
-		<module>dubbo-registry-simple</module>
+		<module>dubbo-registry-default</module>
 		<module>dubbo-registry-multicast</module>
 		<module>dubbo-registry-zookeeper</module>
 		<module>dubbo-monitor</module>
-		<module>dubbo-monitor-simple</module>
+		<module>dubbo-monitor-default</module>
 		<module>dubbo-config</module>
 		<module>dubbo-container</module>
 		<module>dubbo</module>
 		<module>dubbo-registry-admin</module>
+		<module>dubbo-registry-simple</module>
+		<module>dubbo-monitor-simple</module>
 	</modules>
 	<properties>
 		<!-- Common libs -->

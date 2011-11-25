@@ -21,17 +21,17 @@
 		<artifactId>dubbo-parent</artifactId>
 		<version>2.0.9-SNAPSHOT</version>
 	</parent>
-	<artifactId>dubbo-registry-simple</artifactId>
+	<artifactId>dubbo-monitor-default</artifactId>
 	<packaging>jar</packaging>
-	<name>Dubbo Simple Registry Module</name>
-	<description>The simple registry module of dubbo project</description>
+	<name>Dubbo Default Monitor Module</name>
+	<description>The default monitor module of dubbo project</description>
 	<properties>
-		<skip_maven_deploy>false</skip_maven_deploy>
+		<skip_maven_deploy>true</skip_maven_deploy>
 	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo</artifactId>
+			<artifactId>dubbo-monitor</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
 	</dependencies>

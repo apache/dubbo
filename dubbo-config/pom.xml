@@ -50,13 +50,13 @@
 		</dependency>
 		<dependency>
 			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo-registry-simple</artifactId>
+			<artifactId>dubbo-registry-default</artifactId>
 			<version>${project.parent.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo-monitor-simple</artifactId>
+			<artifactId>dubbo-monitor-default</artifactId>
 			<version>${project.parent.version}</version>
 			<scope>test</scope>
 		</dependency>

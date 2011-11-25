@@ -114,7 +114,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo-registry-simple</artifactId>
+			<artifactId>dubbo-registry-default</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
 		<dependency>
@@ -135,7 +135,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo-monitor-simple</artifactId>
+			<artifactId>dubbo-monitor-default</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
 	</dependencies>
@@ -179,11 +179,11 @@
 									<include>com.alibaba:dubbo-rpc-hessian</include>
 									<include>com.alibaba:dubbo-cluster</include>
 									<include>com.alibaba:dubbo-registry</include>
-									<include>com.alibaba:dubbo-registry-simple</include>
+									<include>com.alibaba:dubbo-registry-default</include>
 									<include>com.alibaba:dubbo-registry-multicast</include>
 									<include>com.alibaba:dubbo-registry-zookeeper</include>
 									<include>com.alibaba:dubbo-monitor</include>
-									<include>com.alibaba:dubbo-monitor-simple</include>
+									<include>com.alibaba:dubbo-monitor-default</include>
 									<include>com.alibaba:dubbo-config</include>
 									<include>com.alibaba:dubbo-container</include>
 								</includes>

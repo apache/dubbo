@@ -23,15 +23,15 @@
 	</parent>
 	<artifactId>dubbo-monitor-simple</artifactId>
 	<packaging>jar</packaging>
-	<name>Dubbo Default Monitor Module</name>
-	<description>The default monitor module of dubbo project</description>
+	<name>Dubbo Simple Monitor Module</name>
+	<description>The simple monitor module of dubbo project</description>
 	<properties>
-		<skip_maven_deploy>true</skip_maven_deploy>
+		<skip_maven_deploy>false</skip_maven_deploy>
 	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo-monitor</artifactId>
+			<artifactId>dubbo</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
 		<!--<dependency>

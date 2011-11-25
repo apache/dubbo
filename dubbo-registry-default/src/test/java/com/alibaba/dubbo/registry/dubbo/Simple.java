@@ -23,7 +23,6 @@ import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.registry.RegistryService;
-import com.alibaba.dubbo.registry.simple.SimpleRegistryService;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.ProxyFactory;
@@ -45,7 +44,7 @@ public class Simple {
     }
     
     public static Exporter<RegistryService> export(int port) {
-        return export(port, new SimpleRegistryService());
+        return export(port, new DubboRegistryService());
     }
     
     public static Exporter<RegistryService> export(int port, RegistryService registryService) {
