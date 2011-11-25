@@ -272,14 +272,15 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 }
             }
             String provider = toProviderPath(url);
-            if (zookeeper.exists(provider, false) == null) {
-                CreateMode createMode = Constants.ROUTE_PROTOCOL.equals(url.getProtocol()) ? CreateMode.PERSISTENT : CreateMode.EPHEMERAL;
-                try {
-                    zookeeper.create(provider, new byte[0], acl, createMode);
-                } catch (NodeExistsException e) {
-                    zookeeper.delete(provider, -1);
-                    zookeeper.create(provider, new byte[0], acl, createMode);
-                }
+            if (zookeeper.exists(provider, false) != null) {
+                zookeeper.delete(provider, -1);
+            }
+            CreateMode createMode = Constants.ROUTE_PROTOCOL.equals(url.getProtocol()) ? CreateMode.PERSISTENT : CreateMode.EPHEMERAL;
+            try {
+                zookeeper.create(provider, new byte[0], acl, createMode);
+            } catch (NodeExistsException e) {
+                zookeeper.delete(provider, -1);
+                zookeeper.create(provider, new byte[0], acl, createMode);
             }
         } catch (Throwable e) {
             throw new RpcException("Failed to register " + url + ", cause: " + e.getMessage(), e);
@@ -349,7 +350,17 @@ public class ZookeeperRegistry extends FailbackRegistry {
     }
     
     protected void doUnsubscribe(URL url, NotifyListener listener) {
-        // TODO remove listener
+        if (Constants.ANY_VALUE.equals(url.getServiceName())) {
+            String key = url.toFullString();
+            Set<NotifyListener> listeners = anyNotifyListeners.get(key);
+            if (listeners != null) {
+                listeners.remove(listener);
+            }
+        } else {
+            if (url.getParameter(Constants.REGISTER_KEY, true)) {
+                unregister(url);
+            }
+        }
     }
     
     private String toRootPath() {
@@ -383,6 +394,9 @@ public class ZookeeperRegistry extends FailbackRegistry {
                     }
                 }
             }
+        }
+        if (urls != null && urls.isEmpty() && consumer.getParameter(Constants.ADMIN_KEY, false)) {
+            urls.add(consumer.setProtocol(Constants.EMPTY_PROTOCOL));
         }
         return urls;
     }
