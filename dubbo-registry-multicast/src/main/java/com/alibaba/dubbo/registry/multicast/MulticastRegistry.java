@@ -23,6 +23,7 @@ import java.net.MulticastSocket;
 import java.util.Arrays;
 import java.util.List;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
@@ -158,7 +159,10 @@ public class MulticastRegistry extends CacheRegistry {
     }
 
     protected void doSubscribe(URL url, NotifyListener listener) {
-        url = url.setProtocol("multicast").setHost(mutilcastAddress.getHostAddress()).setPort(mutilcastSocket.getLocalPort());
+        if (! Constants.ANY_VALUE.equals(url.getServiceName())
+                && url.getParameter(Constants.REGISTER_KEY, true)) {
+            register(url);
+        }
         broadcast(SUBSCRIBE + " " + url.toFullString());
         synchronized (listener) {
             try {
@@ -169,13 +173,16 @@ public class MulticastRegistry extends CacheRegistry {
     }
 
     protected void doUnsubscribe(URL url, NotifyListener listener) {
-        url = url.setProtocol("multicast").setHost(mutilcastAddress.getHostAddress()).setPort(mutilcastSocket.getLocalPort());
+        if (! Constants.ANY_VALUE.equals(url.getServiceName())
+                && url.getParameter(Constants.REGISTER_KEY, true)) {
+            unregister(url);
+        }
         broadcast(UNSUBSCRIBE + " " + url.toFullString());
     }
 
     public boolean isAvailable() {
         try {
-            return mutilcastSocket.isConnected();
+            return mutilcastSocket != null;
         } catch (Throwable t) {
             return false;
         }

@@ -320,12 +320,16 @@ public class UrlUtils {
     }
 
     public static boolean isMatch(URL consumerUrl, URL providerUrl) {
+        String consumerInterface = consumerUrl.getServiceName();
         String consumerGroup = consumerUrl.getParameter(Constants.GROUP_KEY);
         String consumerVersion = consumerUrl.getParameter(Constants.VERSION_KEY);
+        String providerInterface = providerUrl.getServiceName();
         String providerGroup = providerUrl.getParameter(Constants.GROUP_KEY);
         String providerVersion = providerUrl.getParameter(Constants.VERSION_KEY);
-        return (Constants.ANY_VALUE.equals(consumerGroup) || StringUtils.isEquals(consumerGroup, providerGroup))
-               && (Constants.ANY_VALUE.equals(consumerVersion) || StringUtils.isEquals(consumerVersion, providerVersion));
+        return (Constants.ANY_VALUE.equals(consumerInterface) || StringUtils.isEquals(consumerInterface, providerInterface))
+               && (Constants.ANY_VALUE.equals(consumerGroup) || StringUtils.isEquals(consumerGroup, providerGroup))
+               && (Constants.ANY_VALUE.equals(consumerVersion) || StringUtils.isEquals(consumerVersion, providerVersion))
+               && (! Constants.SUBSCRIBE_PROTOCOL.equals(providerUrl.getProtocol()) || consumerUrl.getParameter(Constants.ADMIN_KEY, false));
     }
 
 }

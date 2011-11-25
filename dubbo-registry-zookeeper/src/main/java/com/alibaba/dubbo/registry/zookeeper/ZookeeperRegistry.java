@@ -123,23 +123,6 @@ public class ZookeeperRegistry extends FailbackRegistry {
         return new ArrayList<String>(0);
     }
     
-    private void recover() {
-        for (String url : new HashSet<String>(getRegistered())) {
-            try {
-                register(URL.valueOf(url));
-            } catch (Throwable e) {
-                logger.warn(e.getMessage(), e);
-            }
-        }
-        for (String url : new HashSet<String>(getSubscribed().keySet())) {
-            try {
-                watch(toServicePath(URL.valueOf(url)));
-            } catch (Throwable e) {
-                logger.warn(e.getMessage(), e);
-            }
-        }
-    }
-
     private void initZookeeper() {
         ZooKeeper zk = this.zookeeper;
         if (zk == null || zk.getState() == null || ! zk.getState().isAlive()) {
@@ -387,10 +370,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 if (provider.contains("://")) {
                     URL url = URL.valueOf(provider);
                     if (UrlUtils.isMatch(consumer, url)) {
-                        if (! Constants.SUBSCRIBE_PROTOCOL.equals(url.getProtocol())
-                                 || consumer.getParameter(Constants.ADMIN_KEY, false)) {
-                            urls.add(url);
-                        }
+                        urls.add(url);
                     }
                 }
             }

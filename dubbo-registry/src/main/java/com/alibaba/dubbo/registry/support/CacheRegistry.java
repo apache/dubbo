@@ -80,9 +80,9 @@ public abstract class CacheRegistry extends FailbackRegistry {
     }
     
     protected void subscribed(URL url, NotifyListener listener) {
-        Set<String> urls = notified.get(url.toFullString());
+        List<URL> urls = lookup(url);
         if (urls != null && urls.size() > 0) {
-            notify(url, listener, toList(urls));
+            notify(url, listener, urls);
         }
     }
 

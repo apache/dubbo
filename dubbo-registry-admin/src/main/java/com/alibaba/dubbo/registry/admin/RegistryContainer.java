@@ -17,6 +17,7 @@ package com.alibaba.dubbo.registry.admin;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -124,28 +125,43 @@ public class RegistryContainer implements Container {
                 if (urls == null || urls.size() == 0) {
                     return;
                 }
-                String service = urls.get(0).getServiceName();
-                services.add(service);
-                List<URL> proivderUrls = new ArrayList<URL>();
-                List<URL> consumerUrls = new ArrayList<URL>();
-                List<URL> routeUrls = new ArrayList<URL>();
+                Map<String, List<URL>> proivderMap = new HashMap<String, List<URL>>();
+                Map<String, List<URL>> consumerMap = new HashMap<String, List<URL>>();
+                Map<String, List<URL>> routeMap = new HashMap<String, List<URL>>();
                 for (URL url : urls) {
+                    String service = url.getServiceName();
+                    services.add(service);
                     if (Constants.ROUTE_PROTOCOL.equals(url.getProtocol())) {
-                        routeUrls.add(url);
+                        List<URL> list = routeMap.get(service);
+                        if (list == null) {
+                            list = new ArrayList<URL>();
+                            routeMap.put(service, list);
+                        }
+                        list.add(url);
                     } else if (Constants.SUBSCRIBE_PROTOCOL.equals(url.getProtocol())) {
-                        consumerUrls.add(url);
+                        List<URL> list = consumerMap.get(service);
+                        if (list == null) {
+                            list = new ArrayList<URL>();
+                            consumerMap.put(service, list);
+                        }
+                        list.add(url);
                     } else {
-                        proivderUrls.add(url);
+                        List<URL> list = proivderMap.get(service);
+                        if (list == null) {
+                            list = new ArrayList<URL>();
+                            proivderMap.put(service, list);
+                        }
+                        list.add(url);
                     }
                 }
-                if (proivderUrls != null && proivderUrls.size() > 0) {
-                    providers.put(service, proivderUrls);
+                if (proivderMap != null && proivderMap.size() > 0) {
+                    providers.putAll(proivderMap);
                 }
-                if (consumerUrls != null && consumerUrls.size() > 0) {
-                    consumers.put(service, consumerUrls);
+                if (consumerMap != null && consumerMap.size() > 0) {
+                    consumers.putAll(consumerMap);
                 }
-                if (routeUrls != null && routeUrls.size() > 0) {
-                    routes.put(service, routeUrls);
+                if (routeMap != null && routeMap.size() > 0) {
+                    routes.putAll(routeMap);
                 }
             }
         });

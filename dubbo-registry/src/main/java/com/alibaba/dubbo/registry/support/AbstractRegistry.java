@@ -15,6 +15,7 @@
  */
 package com.alibaba.dubbo.registry.support;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -117,6 +118,32 @@ public abstract class AbstractRegistry implements Registry {
         Set<NotifyListener> listeners = subscribed.get(key);
         if (listeners != null) {
             listeners.remove(listener);
+        }
+    }
+
+    protected void recover() throws Exception {
+        // register
+        Set<String> recoverRegistered = new HashSet<String>(getRegistered());
+        if (! recoverRegistered.isEmpty()) {
+            if (logger.isInfoEnabled()) {
+                logger.info("Recover register services " + recoverRegistered);
+            }
+            for (String url : recoverRegistered) {
+                register(URL.valueOf(url));
+            }
+        }
+        // subscribe
+        Map<String, Set<NotifyListener>> recoverSubscribed = new HashMap<String, Set<NotifyListener>>(getSubscribed());
+        if (recoverSubscribed.size() > 0) {
+            if (logger.isInfoEnabled()) {
+                logger.info("Recover subscribe services " + recoverSubscribed);
+            }
+            for (Map.Entry<String, Set<NotifyListener>> entry : recoverSubscribed.entrySet()) {
+                String url = entry.getKey();
+                for (NotifyListener listener : entry.getValue()) {
+                    subscribe(URL.valueOf(url), listener);
+                }
+            }
         }
     }
     
