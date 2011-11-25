@@ -291,7 +291,7 @@ public class Constants {
 
     public static final String       SUBSCRIBE_PROTOCOL                 = "subscribe";
 
-    public static final String       FORBID_PROTOCOL                    = "forbid";
+    public static final String       EMPTY_PROTOCOL                     = "empty";
 
     public static final String       ROUTE_PROTOCOL                     = "route";
 
