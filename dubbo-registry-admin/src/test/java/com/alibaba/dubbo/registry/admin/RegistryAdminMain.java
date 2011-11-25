@@ -20,7 +20,7 @@ package com.alibaba.dubbo.registry.admin;
  * 
  * @author william.liangf
  */
-public class Admin {
+public class RegistryAdminMain {
 
     public static void main(String[] args) {
         com.alibaba.dubbo.container.Main.main(new String[] {"properties", "log4j", "registry", "jetty"});
