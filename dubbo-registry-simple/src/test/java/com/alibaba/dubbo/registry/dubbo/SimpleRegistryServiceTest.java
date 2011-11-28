@@ -15,6 +15,8 @@
  */
 package com.alibaba.dubbo.registry.dubbo;
 
+import org.junit.Test;
+
 import com.alibaba.dubbo.registry.simple.SimpleRegistryService;
 
 /**
@@ -24,6 +26,7 @@ import com.alibaba.dubbo.registry.simple.SimpleRegistryService;
  */
 public class SimpleRegistryServiceTest {
 
+    @Test
     public void testRegistry() {
         new SimpleRegistryService();
     }

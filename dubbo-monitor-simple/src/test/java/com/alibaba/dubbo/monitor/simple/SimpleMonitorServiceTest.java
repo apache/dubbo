@@ -15,6 +15,8 @@
  */
 package com.alibaba.dubbo.monitor.simple;
 
+import org.junit.Test;
+
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
 
@@ -25,6 +27,7 @@ import com.alibaba.dubbo.common.utils.NetUtils;
  */
 public class SimpleMonitorServiceTest {
     
+    @Test
     public void testMonitor() {
         new SimpleMonitorService().count(new URL("dubbo", NetUtils.getLocalHost(), 0));
     }
