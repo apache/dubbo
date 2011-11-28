@@ -249,7 +249,7 @@ public class ExplicitCallbackTest {
         destroyService();
     }
     
-    @Ignore
+//    @Ignore
     @Test(expected=RpcException.class)
     public void TestCallbackDownStreamCodec() throws Exception {
         initOrResetBadUrl(); initOrResetService() ;

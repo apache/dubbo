@@ -131,8 +131,8 @@ public class CallbackServiceCodec {
     @SuppressWarnings("unchecked")
     private static Object referOrdestroyCallbackService(Channel channel, Class<?> clazz, Invocation inv ,int instid ,boolean isRefer){
         Object proxy = null;
-        String invokerCacheKey = getServerSideCallbackInvokerCacheKey(channel, instid);
-        String proxyCacheKey = getServerSideCallbackServiceCacheKey(channel, instid);
+        String invokerCacheKey = getServerSideCallbackInvokerCacheKey(channel, clazz.getName(), instid);
+        String proxyCacheKey = getServerSideCallbackServiceCacheKey(channel, clazz.getName(), instid);
         proxy = channel.getAttribute(proxyCacheKey) ;
         String countkey = getServerSideCountKey(channel, clazz.getName());
         if (isRefer){
@@ -180,11 +180,11 @@ public class CallbackServiceCodec {
     private static String getClientSideCallbackServiceCacheKey(int instid){
         return RpcConstants.CALLBACK_SERVICE_KEY+"."+instid;
     }
-    private static String getServerSideCallbackServiceCacheKey(Channel channel, int instid){
-        return RpcConstants.CALLBACK_SERVICE_PROXY_KEY+"."+System.identityHashCode(channel)+"."+instid;
+    private static String getServerSideCallbackServiceCacheKey(Channel channel, String interfaceClass, int instid){
+        return RpcConstants.CALLBACK_SERVICE_PROXY_KEY+"."+System.identityHashCode(channel)+"."+ interfaceClass +"."+instid;
     }
-    private static String getServerSideCallbackInvokerCacheKey(Channel channel, int instid){
-        return getServerSideCallbackServiceCacheKey(channel, instid) + "." + "invoker";
+    private static String getServerSideCallbackInvokerCacheKey(Channel channel, String interfaceClass, int instid){
+        return getServerSideCallbackServiceCacheKey(channel, interfaceClass, instid) + "." + "invoker";
     }
     
     private static String getClientSideCountKey(String interfaceClass){
