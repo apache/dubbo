@@ -114,7 +114,7 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
         if (isInjvm() == null 
                 && (getConsumer() == null || getConsumer().isInjvm() == null)
                 && applicationContext != null) {
-            Map<String, ServiceConfig<T>> serviceConfigMap = applicationContext.getBeansOfType(ServiceConfig.class);
+            Map<String, ServiceConfig<T>> serviceConfigMap = applicationContext.getBeansOfType(ServiceConfig.class, false, false);
             if (serviceConfigMap != null && serviceConfigMap.size() > 0) {
                 for (ServiceConfig<T> serviceConfig : serviceConfigMap.values()) {
                     if (isEquals(serviceConfig.getInterface(), getInterface())
