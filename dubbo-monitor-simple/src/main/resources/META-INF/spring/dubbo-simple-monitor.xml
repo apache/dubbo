@@ -4,13 +4,18 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
 	http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
 	
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE" />
+        <property name="location" value="classpath:system.properties" />
+    </bean>
+	
 	<dubbo:application name="simple-monitor" />
 	
-	<dubbo:registry address="127.0.0.1:9090" />
+	<dubbo:registry address="${registry.url}" />
 	
-	<dubbo:protocol port="7070" />
+	<dubbo:protocol port="${monitor.port}" />
 	
-	<dubbo:service interface="com.alibaba.dubbo.monitor.MonitorService" ref="monitorService" group="simple" />
+	<dubbo:service interface="com.alibaba.dubbo.monitor.MonitorService" ref="monitorService" />
 	
 	<bean id="monitorService" class="com.alibaba.dubbo.monitor.simple.SimpleMonitorService" />
 	

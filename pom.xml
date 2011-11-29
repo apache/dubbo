@@ -48,7 +48,6 @@
 		<module>dubbo-config</module>
 		<module>dubbo-container</module>
 		<module>dubbo</module>
-		<module>dubbo-registry-admin</module>
 		<module>dubbo-registry-simple</module>
 		<module>dubbo-monitor-simple</module>
 	</modules>

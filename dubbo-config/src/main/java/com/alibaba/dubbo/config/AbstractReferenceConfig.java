@@ -194,7 +194,7 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
                 }
             }
             return UrlUtils.parseURL(monitor.getAddress(), map);
-        } else if (ConfigUtils.isNotEmpty(monitor.getGroup()) && registryURL != null) {
+        } else if (Constants.REGISTRY_PROTOCOL.equals(monitor.getProtocol()) && registryURL != null) {
             return registryURL.setProtocol("dubbo").addParameter(Constants.PROTOCOL_KEY, "registry").addParameterAndEncoded(RpcConstants.REFER_KEY, StringUtils.toQueryString(map));
         }
         return null;

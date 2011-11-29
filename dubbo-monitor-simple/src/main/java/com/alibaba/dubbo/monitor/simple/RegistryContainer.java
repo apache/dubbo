@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.registry.admin;
+package com.alibaba.dubbo.monitor.simple;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -125,11 +126,13 @@ public class RegistryContainer implements Container {
                 if (urls == null || urls.size() == 0) {
                     return;
                 }
+                Set<String> notifiedServices = new HashSet<String>();
                 Map<String, List<URL>> proivderMap = new HashMap<String, List<URL>>();
                 Map<String, List<URL>> consumerMap = new HashMap<String, List<URL>>();
                 Map<String, List<URL>> routeMap = new HashMap<String, List<URL>>();
                 for (URL url : urls) {
                     String service = url.getServiceName();
+                    notifiedServices.add(service);
                     services.add(service);
                     if (Constants.ROUTE_PROTOCOL.equals(url.getProtocol())) {
                         List<URL> list = routeMap.get(service);
@@ -145,7 +148,7 @@ public class RegistryContainer implements Container {
                             consumerMap.put(service, list);
                         }
                         list.add(url);
-                    } else {
+                    } else if (! Constants.EMPTY_PROTOCOL.equals(url.getProtocol())) {
                         List<URL> list = proivderMap.get(service);
                         if (list == null) {
                             list = new ArrayList<URL>();
@@ -162,6 +165,17 @@ public class RegistryContainer implements Container {
                 }
                 if (routeMap != null && routeMap.size() > 0) {
                     routes.putAll(routeMap);
+                }
+                for (String service : notifiedServices) {
+                    if (! proivderMap.containsKey(service)) {
+                        providers.remove(service);
+                    }
+                    if (! consumerMap.containsKey(service)) {
+                        consumers.remove(service);
+                    }
+                    if (! routeMap.containsKey(service)) {
+                        routes.remove(service);
+                    }
                 }
             }
         });

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.container.page.pages;
+package com.alibaba.dubbo.registry.pages;
 
 import java.util.ArrayList;
 import java.util.Collection;

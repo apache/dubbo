@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.registry.admin.pages;
+package com.alibaba.dubbo.monitor.simple.pages;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,48 +23,48 @@ import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.container.page.Page;
 import com.alibaba.dubbo.container.page.PageHandler;
-import com.alibaba.dubbo.registry.admin.RegistryContainer;
+import com.alibaba.dubbo.monitor.simple.RegistryContainer;
 
 /**
- * ConsumersPageHandler
+ * ProvidersPageHandler
  * 
  * @author william.liangf
  */
-@Extension("consumers")
-public class ConsumersPageHandler implements PageHandler {
+@Extension("providers")
+public class ProvidersPageHandler implements PageHandler {
     
     public Page handle(URL url) {
         String service = url.getParameter("service");
         List<List<String>> rows = new ArrayList<List<String>>();
         String nav;
         if (service != null && service.length() > 0) {
-            List<URL> consumers = RegistryContainer.getInstance().getConsumers(service);
-            if (consumers != null && consumers.size() > 0) {
-                for (URL consumer : consumers) {
+            List<URL> providers = RegistryContainer.getInstance().getProviders(service);
+            if (providers != null && providers.size() > 0) {
+                for (URL provider : providers) {
                     List<String> row = new ArrayList<String>();
-                    row.add(consumer.toFullString());
+                    row.add(provider.toFullString());
                     rows.add(row);
                 }
             }
             nav = "<a href=\"services.html\">Services</a> &gt; " + service 
-                    + " &gt; <a href=\"providers.html?service=" + service 
-                    + "\">Providers</a> | Consumers | <a href=\"routes.html?service=" + service + "\">Routes</a>";
+                    + " &gt; Providers | <a href=\"consumers.html?service=" + service 
+                    + "\">Consumers</a>";
         } else {
-            Collection<List<URL>> values = RegistryContainer.getInstance().getConsumers().values();
+            Collection<List<URL>> values = RegistryContainer.getInstance().getProviders().values();
             if (values != null && values.size() > 0) {
-                for (List<URL> consumers : values) {
-                    if (consumers != null && consumers.size() > 0) {
-                        for (URL consumer : consumers) {
+                for (List<URL> providers : values) {
+                    if (providers != null && providers.size() > 0) {
+                        for (URL provider : providers) {
                             List<String> row = new ArrayList<String>();
-                            row.add(consumer.toFullString());
+                            row.add(provider.toFullString());
                             rows.add(row);
                         }
                     }
                 }
             }
-            nav = "Consumers";
+            nav = "Providers";
         }
-        return new Page("<a href=\"/\">Home</a> &gt; " + nav, "Consumers (" + rows.size() + ")",
+        return new Page("<a href=\"/\">Home</a> &gt; " + nav, "Providers (" + rows.size() + ")",
                 new String[] { "Provider URL:" }, rows);
     }
 

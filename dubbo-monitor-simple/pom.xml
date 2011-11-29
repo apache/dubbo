@@ -34,9 +34,9 @@
 			<artifactId>dubbo</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
-		<!--<dependency>
+		<dependency>
 			<groupId>jfree</groupId>
 			<artifactId>jfreechart</artifactId>
-		</dependency>-->
+		</dependency>
 	</dependencies>
 </project>
