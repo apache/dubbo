@@ -104,35 +104,27 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         if (!super.isAvailable())
             return false;
         for (ExchangeClient client : clients){
-            if (client.isConnected()){
-                boolean isLazy = client.getUrl().getParameter(RpcConstants.LAZY_CONNECT_KEY, false);
+            if (client.isConnected() && !client.hasAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY)){
                 //cannot write == not Available ?
-                if (! isLazy ) {
-                    return ! client.hasAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY);
-                } else if (client instanceof LazyConnectExchangeClient) {
-                    LazyConnectExchangeClient lazyClient = (LazyConnectExchangeClient) client;
-                    if (lazyClient.isInited() && lazyClient.hasAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY)){
-                        return false;
-                    } else {
-                        return true;
-                    }
-                } else {
-                    return true;
-                }
+                return true ;
             }
         }
         return false;
     }
 
     public void destroy() {
-        super.destroy();
-        for (ExchangeClient client : clients) {
-            try {
-                client.close();
-            } catch (Throwable t) {
-                logger.warn(t.getMessage(), t);
+        //防止client被关闭多次.在connect per jvm的情况下，client.close方法会调用计数器-1，当计数器小于等于0的情况下，才真正关闭
+        if (super.isDestroyed()){
+            return ;
+        } else {
+            super.destroy();
+            for (ExchangeClient client : clients) {
+                try {
+                    client.close();
+                } catch (Throwable t) {
+                    logger.warn(t.getMessage(), t);
+                }
             }
         }
     }
-    
 }

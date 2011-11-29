@@ -37,6 +37,7 @@ import com.alibaba.dubbo.rpc.RpcConstants;
  * 
  * @author chao.liuc
  */
+@SuppressWarnings("deprecation")
 final class LazyConnectExchangeClient implements ExchangeClient {
 
     private final static Logger logger = LoggerFactory.getLogger(LazyConnectExchangeClient.class); 
@@ -108,8 +109,7 @@ final class LazyConnectExchangeClient implements ExchangeClient {
     }
 
     public ExchangeHandler getExchangeHandler() {
-        checkClient();
-        return client.getExchangeHandler();
+        return requestHandler;
     }
 
     public void send(Object message) throws RemotingException {
@@ -155,8 +155,11 @@ final class LazyConnectExchangeClient implements ExchangeClient {
     }
 
     public Object getAttribute(String key) {
-        checkClient();
-        return client.getAttribute(key);
+        if (client == null){
+            return null;
+        } else {
+            return client.getAttribute(key);
+        }
     }
 
     public void setAttribute(String key, Object value) {
@@ -170,8 +173,11 @@ final class LazyConnectExchangeClient implements ExchangeClient {
     }
 
     public boolean hasAttribute(String key) {
-        checkClient();
-        return client.hasAttribute(key);
+        if (client == null){
+            return false;
+        } else {
+            return client.hasAttribute(key);
+        }
     }
 
     private void checkClient() {
@@ -179,9 +185,5 @@ final class LazyConnectExchangeClient implements ExchangeClient {
             throw new IllegalStateException(
                     "LazyConnectExchangeClient state error. the client has not be init .url:" + url);
         }
-    }
-    
-    public boolean isInited(){
-        return client != null ;
     }
 }

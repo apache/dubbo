@@ -102,11 +102,15 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
     }
 
     public void destroy() {
-        if (destroyed) {
+        if (isDestroyed()) {
             return;
         }
         destroyed = true;
         setAvailable(false);
+    }
+    
+    public boolean isDestroyed() {
+        return destroyed;
     }
 
     public String toString() {
