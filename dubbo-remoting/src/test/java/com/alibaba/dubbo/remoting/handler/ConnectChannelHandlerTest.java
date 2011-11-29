@@ -16,6 +16,7 @@
 package com.alibaba.dubbo.remoting.handler;
 
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.Assert;
 
@@ -24,6 +25,8 @@ import org.junit.Test;
 
 import com.alibaba.dubbo.remoting.ExecutionException;
 import com.alibaba.dubbo.remoting.RemotingException;
+import com.alibaba.dubbo.remoting.exchange.Request;
+import com.alibaba.dubbo.remoting.exchange.Response;
 import com.alibaba.dubbo.remoting.transport.handler.ConnectionOrderedChannelHandler;
 
 
@@ -102,5 +105,29 @@ public class ConnectChannelHandlerTest extends WrappedChannelHandlerTest{
         executor = (ThreadPoolExecutor)getField(handler, "executor", 1);
         executor.shutdown();
         handler.received(new MockedChannel(), "");
+    }
+    
+    /**
+     * 事件不通过线程池，直接在IO上执行
+     */
+    @SuppressWarnings("deprecation")
+    @Test
+    public void test_Received_Event_invoke_direct() throws RemotingException{
+        handler = new ConnectionOrderedChannelHandler(new BizChannelHander(false), url);
+        ThreadPoolExecutor executor = (ThreadPoolExecutor)getField(handler, "SHARED_EXECUTOR", 1);
+        executor.shutdown();
+        executor = (ThreadPoolExecutor)getField(handler, "executor", 1);
+        executor.shutdown();
+        Request req = new Request();
+        req.setHeartbeat(true);
+        final AtomicInteger count = new AtomicInteger(0);
+        handler.received(new MockedChannel(){
+            @Override
+            public void send(Object message) throws RemotingException {
+                Assert.assertEquals("response.heartbeat", true, ((Response)message).isHeartbeat());
+                count.incrementAndGet();
+            }
+        }, req);
+        Assert.assertEquals("channel.send must be invoke", 1, count.get());
     }
 }

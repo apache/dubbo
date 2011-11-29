@@ -28,6 +28,7 @@ import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.ExecutionException;
 import com.alibaba.dubbo.remoting.RemotingException;
+import com.alibaba.dubbo.remoting.exchange.Request;
 import com.alibaba.dubbo.remoting.transport.handler.ChannelEventRunnable.ChannelState;
 
 public class ConnectionOrderedChannelHandler extends WrappedChannelHandler {
@@ -66,6 +67,12 @@ public class ConnectionOrderedChannelHandler extends WrappedChannelHandler {
     }
 
     public void received(Channel channel, Object message) throws RemotingException {
+        //FIXME 包的依赖顺序有问题
+        if (message instanceof Request && ((Request)message).isEvent()){
+           super.received(channel, message);
+           return;
+        }
+        
         ExecutorService cexecutor = executor;
         if (cexecutor == null || cexecutor.isShutdown()) { 
             cexecutor = SHARED_EXECUTOR;
