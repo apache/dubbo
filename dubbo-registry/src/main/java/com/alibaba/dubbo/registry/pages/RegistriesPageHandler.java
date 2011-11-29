@@ -21,9 +21,9 @@ import java.util.List;
 
 import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.container.page.Menu;
-import com.alibaba.dubbo.container.page.Page;
-import com.alibaba.dubbo.container.page.PageHandler;
+import com.alibaba.dubbo.container.web.Menu;
+import com.alibaba.dubbo.container.web.Page;
+import com.alibaba.dubbo.container.web.PageHandler;
 import com.alibaba.dubbo.registry.Registry;
 import com.alibaba.dubbo.registry.support.AbstractRegistryFactory;
 

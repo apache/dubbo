@@ -1,3 +1,4 @@
-com.alibaba.dubbo.registry.admin.pages.ServicesPageHandler
-com.alibaba.dubbo.registry.admin.pages.ProvidersPageHandler
-com.alibaba.dubbo.registry.admin.pages.ConsumersPageHandler
+com.alibaba.dubbo.monitor.simple.pages.ServicesPageHandler
+com.alibaba.dubbo.monitor.simple.pages.ProvidersPageHandler
+com.alibaba.dubbo.monitor.simple.pages.ConsumersPageHandler
+com.alibaba.dubbo.monitor.simple.pages.StatisticsPageHandler

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.container.page.pages;
+package com.alibaba.dubbo.container.web.pages;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,9 +27,9 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.status.Status;
 import com.alibaba.dubbo.common.status.StatusChecker;
 import com.alibaba.dubbo.common.status.support.StatusUtils;
-import com.alibaba.dubbo.container.page.Menu;
-import com.alibaba.dubbo.container.page.Page;
-import com.alibaba.dubbo.container.page.PageHandler;
+import com.alibaba.dubbo.container.web.Menu;
+import com.alibaba.dubbo.container.web.Page;
+import com.alibaba.dubbo.container.web.PageHandler;
 
 /**
  * StatusPageHandler
@@ -65,7 +65,7 @@ public class StatusPageHandler implements PageHandler {
             row.add(getLevelHtml(status.getLevel()));
             row.add("<a href=\"/status\" target=\"_blank\">summary</a>");
             rows.add(row);
-            return new Page("<a href=\"/\">Home</a> &gt; Status (<a href=\"/status\" target=\"_blank\">summary</a>)", "Status", new String[] {"Name", "Status", "Description"}, rows);
+            return new Page("Status (<a href=\"/status\" target=\"_blank\">summary</a>)", "Status", new String[] {"Name", "Status", "Description"}, rows);
         }
     }
 

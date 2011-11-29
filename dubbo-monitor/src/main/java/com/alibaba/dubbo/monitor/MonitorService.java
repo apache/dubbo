@@ -34,9 +34,11 @@ public interface MonitorService {
 
     String VERSION = "version";
 
-    String CLIENT = "client";
+    String CONSUMER = "consumer";
 
-    String SERVER = "server";
+    String PROVIDER = "provider";
+    
+    String TIMESTAMP = "timestamp";
 
     String SUCCESS = "success";
 

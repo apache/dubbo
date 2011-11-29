@@ -19,13 +19,16 @@ import org.mortbay.jetty.Server;
 import org.mortbay.jetty.nio.SelectChannelConnector;
 import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.ServletHolder;
+import org.mortbay.jetty.servlet.ServletMapping;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.container.Container;
-import com.alibaba.dubbo.container.page.PageServlet;
+import com.alibaba.dubbo.container.web.PageServlet;
+import com.alibaba.dubbo.container.web.ResourceServlet;
 
 /**
  * JettyContainer. (SPI, Singleton, ThreadSafe)
@@ -38,6 +41,8 @@ public class JettyContainer implements Container {
     private static final Logger logger = LoggerFactory.getLogger(JettyContainer.class);
 
     public static final String JETTY_PORT = "dubbo.jetty.port";
+
+    public static final String JETTY_RESOURCES = "dubbo.jetty.resources";
 
     public static final String JETTY_PAGES = "dubbo.jetty.pages";
 
@@ -56,9 +61,35 @@ public class JettyContainer implements Container {
         SelectChannelConnector connector = new SelectChannelConnector();
         connector.setPort(port);
         ServletHandler handler = new ServletHandler();
-        ServletHolder holder = handler.addServletWithMapping(PageServlet.class, "/*");
-        holder.setInitParameter("pages", System.getProperty(JETTY_PAGES));
-        holder.setInitOrder(1);
+        
+        String resources = System.getProperty(JETTY_RESOURCES);
+        if (resources != null && resources.length() > 0) {
+            String[] directories = Constants.COMMA_SPLIT_PATTERN.split(resources);
+            ResourceServlet resourceServlet = new ResourceServlet();
+            resourceServlet.setResources(directories);
+            ServletHolder resourceHolder = new ServletHolder(resourceServlet);
+            resourceHolder.setInitOrder(1);
+            handler.addServlet(resourceHolder);
+            for (String directory : directories) {
+                directory = directory.replace('\\', '/');
+                int i = directory.lastIndexOf('/');
+                String name;
+                if (i >= 0) {
+                    name = directory.substring(i + 1);
+                } else {
+                    name = directory;
+                }
+                ServletMapping resourceMapping = new ServletMapping();
+                resourceMapping.setServletName(resourceHolder.getName());
+                resourceMapping.setPathSpec("/" + name + "/*");
+                handler.addServletMapping(resourceMapping);
+            }
+        }
+
+        ServletHolder pageHolder = handler.addServletWithMapping(PageServlet.class, "/*");
+        pageHolder.setInitParameter("pages", System.getProperty(JETTY_PAGES));
+        pageHolder.setInitOrder(2);
+        
         Server server = new Server();
         server.addConnector(connector);
         server.addHandler(handler);

@@ -21,9 +21,9 @@ import java.util.Set;
 
 import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.container.page.Menu;
-import com.alibaba.dubbo.container.page.Page;
-import com.alibaba.dubbo.container.page.PageHandler;
+import com.alibaba.dubbo.container.web.Menu;
+import com.alibaba.dubbo.container.web.Page;
+import com.alibaba.dubbo.container.web.PageHandler;
 import com.alibaba.dubbo.monitor.simple.RegistryContainer;
 
 /**
@@ -52,11 +52,12 @@ public class ServicesPageHandler implements PageHandler {
                 int consumerSize = consumers == null ? 0 : consumers.size();
                 consumerCount += consumerSize;
                 row.add("<a href=\"consumers.html?service=" + service + "\">Consumers(" + consumerSize + ")</a>");
+                row.add("<a href=\"statistics.html?service=" + service + "\">Statistics</a>");
                 rows.add(row);
             }
         }
-        return new Page("<a href=\"/\">Home</a> &gt; Services", "Services (" + rows.size() + ")",
-                new String[] { "Service Name:", "Providers(" + providerCount + ")", "Consumers(" + consumerCount + ")" }, rows);
+        return new Page("Services", "Services (" + rows.size() + ")",
+                new String[] { "Service Name:", "Providers(" + providerCount + ")", "Consumers(" + consumerCount + ")", "Statistics" }, rows);
     }
 
 }

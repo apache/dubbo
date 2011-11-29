@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.container.page.pages;
+package com.alibaba.dubbo.container.web.pages;
 
 import java.lang.management.ManagementFactory;
 import java.text.SimpleDateFormat;
@@ -26,9 +26,9 @@ import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.common.utils.NetUtils;
-import com.alibaba.dubbo.container.page.Menu;
-import com.alibaba.dubbo.container.page.Page;
-import com.alibaba.dubbo.container.page.PageHandler;
+import com.alibaba.dubbo.container.web.Menu;
+import com.alibaba.dubbo.container.web.Page;
+import com.alibaba.dubbo.container.web.PageHandler;
 
 /**
  * SystemPageHandler
@@ -84,7 +84,7 @@ public class SystemPageHandler implements PageHandler {
         row.add(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS Z").format(new Date()));
         rows.add(row);
         
-        return new Page("<a href=\"/\">Home</a> &gt; System", "System", new String[] {
+        return new Page("System", "System", new String[] {
                 "Property", "Value" }, rows);
     }
 

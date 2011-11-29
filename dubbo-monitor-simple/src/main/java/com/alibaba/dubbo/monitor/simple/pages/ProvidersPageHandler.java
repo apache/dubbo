@@ -16,13 +16,12 @@
 package com.alibaba.dubbo.monitor.simple.pages;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.container.page.Page;
-import com.alibaba.dubbo.container.page.PageHandler;
+import com.alibaba.dubbo.container.web.Page;
+import com.alibaba.dubbo.container.web.PageHandler;
 import com.alibaba.dubbo.monitor.simple.RegistryContainer;
 
 /**
@@ -35,37 +34,24 @@ public class ProvidersPageHandler implements PageHandler {
     
     public Page handle(URL url) {
         String service = url.getParameter("service");
-        List<List<String>> rows = new ArrayList<List<String>>();
-        String nav;
-        if (service != null && service.length() > 0) {
-            List<URL> providers = RegistryContainer.getInstance().getProviders(service);
-            if (providers != null && providers.size() > 0) {
-                for (URL provider : providers) {
-                    List<String> row = new ArrayList<String>();
-                    row.add(provider.toFullString());
-                    rows.add(row);
-                }
-            }
-            nav = "<a href=\"services.html\">Services</a> &gt; " + service 
-                    + " &gt; Providers | <a href=\"consumers.html?service=" + service 
-                    + "\">Consumers</a>";
-        } else {
-            Collection<List<URL>> values = RegistryContainer.getInstance().getProviders().values();
-            if (values != null && values.size() > 0) {
-                for (List<URL> providers : values) {
-                    if (providers != null && providers.size() > 0) {
-                        for (URL provider : providers) {
-                            List<String> row = new ArrayList<String>();
-                            row.add(provider.toFullString());
-                            rows.add(row);
-                        }
-                    }
-                }
-            }
-            nav = "Providers";
+        if (service == null || service.length() == 0) {
+            throw new IllegalArgumentException("Please input service parameter.");
         }
-        return new Page("<a href=\"/\">Home</a> &gt; " + nav, "Providers (" + rows.size() + ")",
-                new String[] { "Provider URL:" }, rows);
+        List<List<String>> rows = new ArrayList<List<String>>();
+        List<URL> providers = RegistryContainer.getInstance().getProviders(service);
+        if (providers != null && providers.size() > 0) {
+            for (URL provider : providers) {
+                List<String> row = new ArrayList<String>();
+                row.add(provider.toFullString().replace("&", "&amp;"));
+                row.add("<a href=\"statistics.html?service=" + service + "&provider=" + provider.getHost() + "\">Statistics</a>");
+                rows.add(row);
+            }
+        }
+        return new Page("<a href=\"services.html\">Services</a> &gt; " + service 
+                + " &gt; Providers | <a href=\"consumers.html?service=" + service 
+                + "\">Consumers</a> | <a href=\"statistics.html?service=" + service 
+                + "\">Statistics</a>", "Providers (" + rows.size() + ")",
+                new String[] { "Provider URL:", "Statistics" }, rows);
     }
 
 }

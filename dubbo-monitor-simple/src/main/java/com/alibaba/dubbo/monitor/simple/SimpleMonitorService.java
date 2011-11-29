@@ -32,41 +32,71 @@ import com.alibaba.dubbo.monitor.MonitorService;
  */
 public class SimpleMonitorService implements MonitorService {
     
-    private static final String[] keys = {SUCCESS, FAILURE, ELAPSED, INPUT, OUTPUT, CONCURRENT, MAX_ELAPSED, MAX_INPUT, MAX_OUTPUT, MAX_CONCURRENT};
+    private static final String[] types = {SUCCESS, FAILURE, ELAPSED, CONCURRENT, MAX_ELAPSED, MAX_CONCURRENT};
     
     private static final Logger logger = LoggerFactory.getLogger(SimpleMonitorService.class);
 
-    private File directory;
+    private String directory;
+    
+    private static SimpleMonitorService INSTANCE = null;
 
-    public void setDirectory(String directory) {
-        this.directory = new File(directory);
-        if (! this.directory.exists()) {
-            this.directory.mkdirs();
-        }
+    public static String[] getTypes() {
+        return types;
     }
 
+    public SimpleMonitorService() {
+        INSTANCE = this;
+    }
+    
+    public static SimpleMonitorService getInstance() {
+        return INSTANCE;
+    }
+
+    public String getDirectory() {
+        return directory;
+    }
+    
+    public void setDirectory(String directory) {
+        this.directory = directory;
+    }
+    
     public void count(URL statistics) {
         try {
             Date now = new Date();
-            File day = new File(directory, new SimpleDateFormat("yyyyMMdd").format(now) 
-                    + "/" + statistics.getServiceName() 
-                    + "/" + statistics.getParameter(METHOD));
-            if (! day.exists()) {
-                day.mkdirs();
-            }
+            String day = new SimpleDateFormat("yyyyMMdd").format(now);
             SimpleDateFormat format = new SimpleDateFormat("HHmm");
-            for (String key : keys) {
+            for (String key : types) {
                 try {
-                    String filename;
-                    if (statistics.hasParameter(SERVER)) {
-                        filename = statistics.getHost() + "-" + statistics.getParameter(SERVER) + "." + key + ".log";
+                    String type;
+                    String consumer;
+                    String provider;
+                    if (statistics.hasParameter(PROVIDER)) {
+                        type = PROVIDER;
+                        consumer = statistics.getHost();
+                        provider = statistics.getParameter(PROVIDER);
+                        int i = provider.indexOf(':');
+                        if (i > 0) {
+                            provider = provider.substring(0, i);
+                        }
                     } else {
-                        filename = statistics.getParameter(CLIENT) + "+" + statistics.getHost() + "." + key + ".log";
+                        type = CONSUMER;
+                        consumer = statistics.getParameter(CONSUMER);
+                        provider = statistics.getHost();
                     }
-                    File file = new File(day, filename);
+                    String filename = directory + "/" + statistics.getServiceName() 
+                            + "/" + statistics.getParameter(METHOD) 
+                            + "/" + consumer 
+                            + "/" + provider 
+                            + "/" + day 
+                            + "/" + type + "." + key;
+                    File file = new File(filename);
+                    File dir = file.getParentFile();
+                    if (dir != null && ! dir.exists()) {
+                        dir.mkdirs();
+                    }
                     FileWriter writer = new FileWriter(file, true);
                     try {
-                        writer.write(format.format(now) + " " + statistics.getParameter(key, 0));
+                        writer.write(format.format(now) + " " + statistics.getParameter(key, 0) + "\n");
                         writer.flush();
                     } finally {
                         writer.close();
@@ -79,5 +109,5 @@ public class SimpleMonitorService implements MonitorService {
             logger.error(t.getMessage(), t);
         }
     }
-    
+
 }

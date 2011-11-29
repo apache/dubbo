@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.container.page.pages;
+package com.alibaba.dubbo.container.web.pages;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,9 +22,9 @@ import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
-import com.alibaba.dubbo.container.page.Menu;
-import com.alibaba.dubbo.container.page.Page;
-import com.alibaba.dubbo.container.page.PageHandler;
+import com.alibaba.dubbo.container.web.Menu;
+import com.alibaba.dubbo.container.web.Page;
+import com.alibaba.dubbo.container.web.PageHandler;
 
 /**
  * ConnectionsPageHandler
@@ -56,7 +56,7 @@ public class ConnectionsPageHandler implements PageHandler {
         } catch (Throwable t) {
             logger.error(t.getMessage(), t);
         }*/
-        return new Page("<a href=\"/\">Home</a> &gt; Connection", "Connections (" + rows.size() + ")",
+        return new Page("Connections", "Connections (" + rows.size() + ")",
                 new String[] { "Client Address:" }, rows);
     }
 

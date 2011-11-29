@@ -15,6 +15,8 @@
  */
 package com.alibaba.dubbo.monitor.dubbo;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -78,6 +80,7 @@ public class DubboMonitor implements Monitor {
         if (logger.isInfoEnabled()) {
             logger.info("Send statistics to monitor " + getUrl());
         }
+        String timestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
         for (Map.Entry<Statistics, AtomicReference<long[]>> entry : statisticsMap.entrySet()) {
             // 获取已统计数据
             Statistics statistics = entry.getKey();
@@ -96,7 +99,8 @@ public class DubboMonitor implements Monitor {
              
             // 发送汇总信息
             URL url = statistics.getUrl()
-                    .addParameters(MonitorService.SUCCESS, String.valueOf(success),
+                    .addParameters(MonitorService.TIMESTAMP, timestamp,
+                            MonitorService.SUCCESS, String.valueOf(success),
                             MonitorService.FAILURE, String.valueOf(failure), 
                             MonitorService.INPUT, String.valueOf(input), 
                             MonitorService.OUTPUT, String.valueOf(output),
@@ -105,7 +109,8 @@ public class DubboMonitor implements Monitor {
                             MonitorService.MAX_INPUT, String.valueOf(maxInput),
                             MonitorService.MAX_OUTPUT, String.valueOf(maxOutput),
                             MonitorService.MAX_ELAPSED, String.valueOf(maxElapsed),
-                            MonitorService.MAX_CONCURRENT, String.valueOf(maxConcurrent));
+                            MonitorService.MAX_CONCURRENT, String.valueOf(maxConcurrent)
+                            );
             monitorService.count(url);
             
             // 减掉已统计数据
@@ -169,7 +174,7 @@ public class DubboMonitor implements Monitor {
                 update[2] = current[2] + input;
                 update[3] = current[3] + output;
                 update[4] = current[4] + elapsed;
-                update[5] = current[5] + concurrent;
+                update[5] = (current[5] + concurrent) / 2;
                 update[6] = current[6] > input ? current[6] : input;
                 update[7] = current[7] > output ? current[7] : output;
                 update[8] = current[8] > elapsed ? current[8] : elapsed;

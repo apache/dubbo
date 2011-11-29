@@ -67,7 +67,7 @@ public class DubboMonitorTest {
             .addParameter(MonitorService.APPLICATION, "morgan")
             .addParameter(MonitorService.INTERFACE, "MemberService")
             .addParameter(MonitorService.METHOD, "findPerson")
-            .addParameter(MonitorService.CLIENT, "10.20.153.11")
+            .addParameter(MonitorService.CONSUMER, "10.20.153.11")
             .addParameter(MonitorService.SUCCESS, 1)
             .addParameter(MonitorService.FAILURE, 0)
             .addParameter(MonitorService.ELAPSED, 3)

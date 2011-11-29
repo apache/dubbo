@@ -92,7 +92,7 @@ public class MonitorFilter implements Filter {
                         .addParameters(MonitorService.APPLICATION, application, 
                                 MonitorService.INTERFACE, service, 
                                 MonitorService.METHOD, method,
-                                MonitorService.SERVER, NetUtils.getLocalHost() + ":" + context.getLocalPort(),
+                                MonitorService.PROVIDER, NetUtils.getLocalHost() + ":" + context.getLocalPort(),
                                 error ? MonitorService.FAILURE : MonitorService.SUCCESS, String.valueOf(1),
                                 MonitorService.ELAPSED, String.valueOf(elapsed),
                                 MonitorService.CONCURRENT, String.valueOf(concurrent)));
@@ -105,7 +105,7 @@ public class MonitorFilter implements Filter {
                         .addParameters(MonitorService.APPLICATION, application, 
                                 MonitorService.INTERFACE, service, 
                                 MonitorService.METHOD, method,
-                                MonitorService.CLIENT, NetUtils.getLocalHost(),
+                                MonitorService.CONSUMER, NetUtils.getLocalHost(),
                                 error ? MonitorService.FAILURE : MonitorService.SUCCESS, String.valueOf(1),
                                 MonitorService.ELAPSED, String.valueOf(elapsed),
                                 MonitorService.CONCURRENT, String.valueOf(concurrent)));

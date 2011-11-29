@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.container.page;
+package com.alibaba.dubbo.container.web;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -133,6 +133,10 @@ public class PageServlet extends HttpServlet {
                             + (query == null || query.length() == 0 ? "" : "?" + query)));
                 } catch (Throwable t) {
                     logger.warn(t.getMessage(), t);
+                    String msg = t.getMessage();
+                    if (msg == null) {
+                        msg = StringUtils.toString(t);
+                    }
                     if (isHtml) {
                         writer.println("<table>");
                         writer.println("<thead>");
@@ -143,19 +147,27 @@ public class PageServlet extends HttpServlet {
                         writer.println("<tbody>");
                         writer.println("    <tr>");
                         writer.println("        <td>");
-                        writer.println("            " + StringUtils.toString(t).replace("<", "&lt;").replace(">", "&lt;").replace("\n", "<br/>"));
+                        writer.println("            " + msg.replace("<", "&lt;").replace(">", "&lt;").replace("\n", "<br/>"));
                         writer.println("        </td>");
                         writer.println("    </tr>");
                         writer.println("</tbody>");
                         writer.println("</table>");
                         writer.println("<br/>");
                     } else {
-                        writer.println(StringUtils.toString(t));
+                        writer.println(msg);
                     }
                 }
                 if (page != null) {
                     if (isHtml) {
-                        writeMenu(request, writer, page.getNavigation());
+                        String nav = page.getNavigation();
+                        if (nav == null || nav.length() == 0) {
+                            nav = pageHandler.getClass().getAnnotation(Extension.class).value();
+                            nav = nav.substring(0, 1).toUpperCase() + nav.substring(1);
+                        }
+                        if (! "index".equals(uri)) {
+                            nav = "<a href=\"/\">Home</a> &gt; " + nav;
+                        }
+                        writeMenu(request, writer, nav);
                         writeTable(writer, page.getTitle(), page.getColumns(),
                                 page.getRows());
                     } else {

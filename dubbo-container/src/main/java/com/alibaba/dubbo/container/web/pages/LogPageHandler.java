@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.container.page.pages;
+package com.alibaba.dubbo.container.web.pages;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,9 +33,9 @@ import org.apache.log4j.LogManager;
 
 import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.container.page.Menu;
-import com.alibaba.dubbo.container.page.Page;
-import com.alibaba.dubbo.container.page.PageHandler;
+import com.alibaba.dubbo.container.web.Menu;
+import com.alibaba.dubbo.container.web.Page;
+import com.alibaba.dubbo.container.web.PageHandler;
 
 /**
  * LogPageHandler
@@ -103,7 +103,7 @@ public class LogPageHandler implements PageHandler {
         List<String> row = new ArrayList<String>();
         row.add(content);
         rows.add(row);
-        return new Page("Home", "Log",  new String[] {(file == null ? "" : file.getName()) + ", " + size + " bytes, " + modified + ", " + level}, rows);
+        return new Page("Log", "Log",  new String[] {(file == null ? "" : file.getName()) + ", " + size + " bytes, " + modified + ", " + level}, rows);
     }
 
 }

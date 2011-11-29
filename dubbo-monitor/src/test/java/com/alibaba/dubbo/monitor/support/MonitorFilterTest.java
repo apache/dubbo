@@ -101,8 +101,8 @@ public class MonitorFilterTest {
         Assert.assertEquals(MonitorService.class.getName(), lastStatistics.getParameter(MonitorService.INTERFACE));
         Assert.assertEquals("aaa", lastStatistics.getParameter(MonitorService.METHOD));
         Assert.assertEquals(NetUtils.getLocalHost() + ":20880", lastStatistics.getAddress());
-        Assert.assertEquals(NetUtils.getLocalHost(), lastStatistics.getParameter(MonitorService.CLIENT));
-        Assert.assertEquals(null, lastStatistics.getParameter(MonitorService.SERVER));
+        Assert.assertEquals(NetUtils.getLocalHost(), lastStatistics.getParameter(MonitorService.CONSUMER));
+        Assert.assertEquals(null, lastStatistics.getParameter(MonitorService.PROVIDER));
         Assert.assertEquals(1, lastStatistics.getParameter(MonitorService.SUCCESS, 0));
         Assert.assertEquals(0, lastStatistics.getParameter(MonitorService.FAILURE, 0));
         Assert.assertEquals(1, lastStatistics.getParameter(MonitorService.CONCURRENT, 0));

@@ -52,8 +52,8 @@ public class Statistics implements Serializable {
         this.method = url.getParameter(MonitorService.METHOD);
         this.group = url.getParameter(MonitorService.GROUP);
         this.version = url.getParameter(MonitorService.VERSION);
-        this.client = url.getParameter(MonitorService.CLIENT);
-        this.server = url.getParameter(MonitorService.SERVER);
+        this.client = url.getParameter(MonitorService.CONSUMER);
+        this.server = url.getParameter(MonitorService.PROVIDER);
     }
 
     public URL getUrl() {

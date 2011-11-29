@@ -13,28 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.container.page;
+package com.alibaba.dubbo.container.web;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import com.alibaba.dubbo.common.URL;
 
 /**
- * Menu
+ * PageHandler
  * 
  * @author william.liangf
  */
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
-public @interface Menu {
+public interface PageHandler {
     
-    String name();
-    
-    String desc() default "";
-    
-    int order() default 0;
+    /**
+     * Handle the page.
+     * 
+     * @param url
+     * @return the page.
+     */
+    Page handle(URL url);
 
 }
