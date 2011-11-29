@@ -33,7 +33,7 @@ public class ZookeeperRegistryTest {
     URL               serviceUrl  = URL.valueOf("zookeeper://zookeeper/" + service
                                                 + "?notify=false&methods=test1,test2");
     URL               consumerUrl = URL.valueOf("zookeeper://consumer/" + service + "?notify=false&methods=test1,test2");
-    ZookeeperRegistry registry    = new ZookeeperRegistry(registryUrl);
+    // ZookeeperRegistry registry    = new ZookeeperRegistry(registryUrl);
 
     /**
      * @throws java.lang.Exception
