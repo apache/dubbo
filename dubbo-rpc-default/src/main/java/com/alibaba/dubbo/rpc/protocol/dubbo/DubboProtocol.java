@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.Extension;
@@ -66,7 +68,11 @@ public class DubboProtocol extends AbstractProtocol {
     
     public static final int DEFAULT_PORT = 20880;
     
+    public final ReentrantLock lock = new ReentrantLock();
+    
     private final Map<String, ExchangeServer> serverMap = new ConcurrentHashMap<String, ExchangeServer>(); // <host:port,Exchanger>
+    
+    private final Map<String, ExchangeClient> clientMap = new ConcurrentHashMap<String, ExchangeClient>(); // <host:port,Exchanger>
     
     //consumer side export a stub service for dispatching event
     //servicekey-stubmethods
@@ -266,13 +272,57 @@ public class DubboProtocol extends AbstractProtocol {
         // find client.
         int channels = url.getPositiveParameter(Constants.CONNECTIONS_KEY, 1);
         ExchangeClient[] clients = new ExchangeClient[channels];
-        for (int i = 0; i < clients.length; i++) {
-            clients[i] = initClient(url);
+        if ( channels == 1){
+            clients[0]  = getOrInitClient(url);
+        } else {
+            for (int i = 0; i < clients.length; i++) {
+                clients[i] = getOrInitClient(url);
+            }
         }
         // create rpc invoker.
         DubboInvoker<T> invoker = new DubboInvoker<T>(serviceType, url, clients);
         invokers.add(invoker);
         return invoker;
+    }
+    
+    private ExchangeClient getOrInitClient(URL url){
+        boolean connect_per_service = url.getParameter(RpcConstants.CONNECT_PER_SERVICE_KEY, true);
+        
+        if (connect_per_service ){
+            return initClient(url);
+        }
+        String key = url.getAddress();
+        ExchangeClient client = clientMap.get(key);
+        if ( client != null ){
+            if ( !client.isClosed()){
+                return new ReferenceCountExchangeClient(client, clientMap);
+            } else {
+                try {
+                    logger.warn(new IllegalStateException("client is closed,but stay in clientmap .client :"+ client));
+                    clientMap.remove(key);
+                    client.close();
+                } catch (Throwable e) {
+                    logger.warn(e);
+                }
+            }
+        }
+        client = initClient(url);
+        clientMap.put(key, client);
+        
+        lock.lock();
+        try {
+            AtomicInteger count = (AtomicInteger)client.getAttribute(RpcConstants.CLIENT_REFERENCE_COUNT);
+            if ((count == null)){
+                client.setAttribute(RpcConstants.CLIENT_REFERENCE_COUNT, new AtomicInteger(1));
+            } else {
+                count.getAndIncrement();
+            }
+        } catch (Throwable t) {
+            logger.warn(t.getMessage(), t);
+        } finally{
+            lock.unlock();
+        }
+        return new ReferenceCountExchangeClient(client, clientMap); 
     }
 
     private ExchangeClient initClient(URL url) {
@@ -289,16 +339,19 @@ public class DubboProtocol extends AbstractProtocol {
                     " supported client type is " + StringUtils.join(ExtensionLoader.getExtensionLoader(Transporter.class).getSupportedExtensions(), " "));
         }
         
-        //设置连接应该是lazy的 
-        if (url.getParameter(RpcConstants.LAZY_CONNECT_KEY, false)){
-            return new LazyConnectExchangeClient(url ,requestHandler);
-        }
+        ExchangeClient client ;
         try {
-            return Exchangers.connect(url ,requestHandler);
+            //设置连接应该是lazy的 
+            if (url.getParameter(RpcConstants.LAZY_CONNECT_KEY, false)){
+                client = new LazyConnectExchangeClient(url ,requestHandler);
+            } else {
+                client = Exchangers.connect(url ,requestHandler);
+            }
         } catch (RemotingException e) {
             throw new RpcException("Fail to create remoting client for service(" + url
-            		+ "): " + e.getMessage(), e);
+                    + "): " + e.getMessage(), e);
         }
+        return client;
     }
 
     public void destroy() {
@@ -311,6 +364,19 @@ public class DubboProtocol extends AbstractProtocol {
                         logger.info("Close dubbo server: " + server.getLocalAddress());
                     }
                     server.close(getServerShutdownTimeout());
+                } catch (Throwable t) {
+                    logger.warn(t.getMessage(), t);
+                }
+            }
+        }
+        for (String key : new ArrayList<String>(clientMap.keySet())) {
+            ExchangeClient client = clientMap.remove(key);
+            if (client != null) {
+                try {
+                    if (logger.isInfoEnabled()) {
+                        logger.info("Close dubbo connect: " + client.getLocalAddress() + "-->" + client.getRemoteAddress());
+                    }
+                    client.close();
                 } catch (Throwable t) {
                     logger.warn(t.getMessage(), t);
                 }

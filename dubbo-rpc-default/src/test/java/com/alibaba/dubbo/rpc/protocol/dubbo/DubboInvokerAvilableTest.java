@@ -31,6 +31,7 @@ import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
 import com.alibaba.dubbo.rpc.ProxyFactory;
+import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
 /**
@@ -76,16 +77,14 @@ public class DubboInvokerAvilableTest {
     
     @Test
     public void test_NoInvokers() throws Exception{
-        URL url = URL.valueOf("dubbo://127.0.0.1:20883/hi");
+        URL url = URL.valueOf("dubbo://127.0.0.1:20883/hi?");
         ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, url);
         
         DubboInvoker<?> invoker = (DubboInvoker<?>)protocol.refer(IDemoService.class, url);
         
         ExchangeClient[] clients = getClients(invoker);
         clients[0].close();
-        
         Assert.assertEquals(false, invoker.isAvailable());
-        
         
     }
     
