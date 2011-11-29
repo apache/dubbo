@@ -37,9 +37,9 @@ public class JettyContainer implements Container {
 
     private static final Logger logger = LoggerFactory.getLogger(JettyContainer.class);
 
-    public static final String JETTY_PORT = "jetty.port";
+    public static final String JETTY_PORT = "dubbo.jetty.port";
 
-    public static final String JETTY_PAGES = "jetty.pages";
+    public static final String JETTY_PAGES = "dubbo.jetty.pages";
 
     public static final int DEFAULT_JETTY_PORT = 8080;
 

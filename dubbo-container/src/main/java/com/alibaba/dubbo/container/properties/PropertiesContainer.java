@@ -32,9 +32,9 @@ import com.alibaba.dubbo.container.Container;
 @Extension("properties")
 public class PropertiesContainer implements Container {
 
-    public static final String PROPERTIES_FILE         = "properties.file";
+    public static final String PROPERTIES_FILE         = "dubbo.properties.file";
 
-    public static final String DEFAULT_PROPERTIES_FILE = "system.properties";
+    public static final String DEFAULT_PROPERTIES_FILE = "dubbo.properties";
 
     public void start() {
         String file = System.getProperty(PROPERTIES_FILE, DEFAULT_PROPERTIES_FILE);

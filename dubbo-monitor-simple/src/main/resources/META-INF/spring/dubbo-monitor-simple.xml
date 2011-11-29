@@ -6,14 +6,14 @@
 	
 	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE" />
-        <property name="location" value="classpath:system.properties" />
+        <property name="location" value="classpath:dubbo.properties" />
     </bean>
 	
-	<dubbo:application name="simple-monitor" />
+	<dubbo:application name="${dubbo.application.name}" />
 	
-	<dubbo:registry address="${registry.url}" />
+	<dubbo:registry address="${dubbo.registry.address}" />
 	
-	<dubbo:protocol port="${monitor.port}" />
+	<dubbo:protocol name="dubbo" port="${dubbo.protocol.port}" />
 	
 	<dubbo:service interface="com.alibaba.dubbo.monitor.MonitorService" ref="monitorService" />
 	

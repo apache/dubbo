@@ -34,11 +34,11 @@ import com.alibaba.dubbo.container.Container;
 @Extension("log4j")
 public class Log4jContainer implements Container {
 
-    public static final String LOG4J_FILE = "log4j.file";
+    public static final String LOG4J_FILE = "dubbo.log4j.file";
 
-    public static final String LOG4J_LEVEL = "log4j.level";
+    public static final String LOG4J_LEVEL = "dubbo.log4j.level";
 
-    public static final String LOG4J_SUBDIRECTORY = "log4j.subdirectory";
+    public static final String LOG4J_SUBDIRECTORY = "dubbo.log4j.subdirectory";
 
     public static final String DEFAULT_LOG4J_FILE = System.getProperty("user.home") + "/dubbo.log";
 

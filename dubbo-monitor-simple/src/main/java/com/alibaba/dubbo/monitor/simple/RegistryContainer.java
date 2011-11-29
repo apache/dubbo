@@ -47,7 +47,7 @@ public class RegistryContainer implements Container {
 
     private static final Logger logger = LoggerFactory.getLogger(RegistryContainer.class);
 
-    public static final String REGISTRY_URL = "registry.url";
+    public static final String REGISTRY_ADDRESS = "dubbo.registry.address";
 
     private final RegistryFactory registryFactory = ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
 
@@ -110,9 +110,9 @@ public class RegistryContainer implements Container {
     }
 
     public void start() {
-        String url = System.getProperty(REGISTRY_URL);
+        String url = System.getProperty(REGISTRY_ADDRESS);
         if (url == null || url.length() == 0) {
-            throw new IllegalArgumentException("Please set java start argument: -D" + REGISTRY_URL + "=zookeeper://127.0.0.1:2181");
+            throw new IllegalArgumentException("Please set java start argument: -D" + REGISTRY_ADDRESS + "=zookeeper://127.0.0.1:2181");
         }
         URL registryUrl = URL.valueOf(url);
         registry = registryFactory.getRegistry(registryUrl);
