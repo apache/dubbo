@@ -6,4 +6,5 @@ DEPLOY_DIR=`pwd`
 CR=`echo -e "\0015\c"`
 LOGS_FILE=`sed '/dubbo.log4j.file/!d;s/.*=//' conf/dubbo.properties | sed -e "s/$CR//g"`
 LOGS_DIR=`dirname $LOGS_FILE`
+STDOUT_FILE=$LOGS_DIR/stdout.log
 tail -f $STDOUT_FILE
