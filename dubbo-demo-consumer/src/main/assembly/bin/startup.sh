@@ -59,7 +59,7 @@ while [ $COUNT -lt 1 ]; do
     echo -e ".\c"
     sleep 1 
 	COUNT=`echo status | nc 127.0.0.1 $SERVER_PORT -i 1 | grep -c OK`
-	if [ $COUNT -lt 1 ]; then
+	if [ $COUNT -gt 0 ]; then
 		break
 	fi
 done
