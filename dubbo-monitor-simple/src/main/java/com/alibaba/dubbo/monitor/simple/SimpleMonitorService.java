@@ -23,6 +23,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -253,7 +254,7 @@ public class SimpleMonitorService implements MonitorService {
             xydataset.addSeries(timeseries);
         }
         JFreeChart jfreechart = ChartFactory.createTimeSeriesChart(
-                "max: " + summary[0] + (summary[1] >=0 ? ", min: " + summary[1] : "") + ", avg: " + summary[2] + (summary[3] >=0 ? ", sum: " + summary[3] : ""), toDisplayDate(date), key, xydataset, true, true, false);
+                "max: " + summary[0] + (summary[1] >=0 ? " min: " + summary[1] : "") + " avg: " + summary[2] + (summary[3] >=0 ? " sum: " + new DecimalFormat("###,##0").format(summary[3]) : ""), toDisplayDate(date), key, xydataset, true, true, false);
         jfreechart.setBackgroundPaint(Color.WHITE);
         XYPlot xyplot = (XYPlot) jfreechart.getPlot();
         xyplot.setBackgroundPaint(Color.WHITE);
