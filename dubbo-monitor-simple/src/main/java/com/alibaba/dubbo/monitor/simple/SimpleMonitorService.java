@@ -258,7 +258,7 @@ public class SimpleMonitorService implements MonitorService {
             xydataset.addSeries(timeseries);
         }
         JFreeChart jfreechart = ChartFactory.createTimeSeriesChart(
-                "max: " + summary[0] + (summary[1] >=0 ? " min: " + summary[1] : "") + " avg: " + summary[2] + (summary[3] >=0 ? " sum: " + new DecimalFormat("###,##0").format(summary[3]) : ""), toDisplayService(service) + "." + method + " " + toDisplayDate(date), key, xydataset, true, true, false);
+                "max: " + summary[0] + (summary[1] >=0 ? " min: " + summary[1] : "") + " avg: " + summary[2] + (summary[3] >=0 ? " sum: " + new DecimalFormat("###,##0").format(summary[3]) : ""), toDisplayService(service) + " " + method + " " + toDisplayDate(date), key, xydataset, true, true, false);
         jfreechart.setBackgroundPaint(Color.WHITE);
         XYPlot xyplot = (XYPlot) jfreechart.getPlot();
         xyplot.setBackgroundPaint(Color.WHITE);
