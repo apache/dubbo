@@ -5,13 +5,12 @@ cd ..
 DEPLOY_DIR=`pwd`
 CONF_DIR=$DEPLOY_DIR/conf
 LIB_DIR=$DEPLOY_DIR/lib
-LOGS_DIR=$DEPLOY_DIR/logs
-LOGS_FILE=`sed '/dubbo.log4j.file/!d;s/.*=//' conf/dubbo.properties`
+CR=`echo -e "\0015\c"`
+SERVER_PORT=`sed '/dubbo.protocol.port/!d;s/.*=//' conf/dubbo.properties | sed -e "s/$CR//g"`
+SERVER_NAME=`sed '/dubbo.application.name/!d;s/.*=//' conf/dubbo.properties | sed -e "s/$CR//g"`
+LOGS_FILE=`sed '/dubbo.log4j.file/!d;s/.*=//' conf/dubbo.properties | sed -e "s/$CR//g"`
 LOGS_DIR=`dirname $LOGS_FILE`
 STDOUT_FILE=$LOGS_DIR/stdout.log
-SERVER_PORT=`sed '/dubbo.protocol.port/!d;s/.*=//' conf/dubbo.properties | sed -e 's/
-//g'`
-SERVER_NAME=`sed '/dubbo.application.name/!d;s/.*=//' conf/dubbo.properties`
 
 if [ ! -d $LOGS_DIR ]; then
 	mkdir $LOGS_DIR
