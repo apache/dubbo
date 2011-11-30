@@ -62,29 +62,34 @@ public class RmiInvoker<T> extends AbstractInvoker<T> {
 
     @Override
     protected Result doInvoke(Invocation invocation) throws RpcException {
+        Result result = null;
         try {
-            Result result = invoker.invoke(invocation);
+            result = invoker.invoke(invocation);
+            
+            // 对Rmi的Connection问题进行重试
             Throwable e = result.getException();
             if (e != null && isConnectFailure(e) && reconnect) {
                 invoker = rmiProxyFactory.getInvoker(registry.lookup(invoker.getUrl().getPath()), invoker.getInterface(), invoker.getUrl());
                 result = invoker.invoke(invocation);
-                e = result.getException();
             }
-            if (e != null && e instanceof RemoteException) {
-                throw setRpcExceptionCode(e, new RpcException("Failed to invoke remote service: " + getInterface() + ", method: "
-                        + invocation.getMethodName() + ", url: " + invoker.getUrl() + ", cause: " + e.getMessage(), e));
-            }
-            return result;
         } catch (RpcException e) {
             throw setRpcExceptionCode(e.getCause(), e);
         } catch (Throwable e) {
             throw setRpcExceptionCode(e, new RpcException(e.getMessage(), e));
         }
+
+        Throwable e = result.getException();
+        if (e != null && e instanceof RemoteException) {
+            throw setRpcExceptionCode(e, new RpcException("Failed to invoke remote service: " + getInterface() + ", method: "
+                    + invocation.getMethodName() + ", url: " + invoker.getUrl() + ", cause: " + e.getMessage(), e));
+        }
+        return result;
     }
     
     private RpcException setRpcExceptionCode(Throwable e, RpcException re) {
         if (e != null && e.getCause() != null) {
             Class<?> cls = e.getCause().getClass();
+            // 是根据测试Case发现的问题，对RpcException.setCode进行设置
             if (SocketTimeoutException.class.equals(cls)) {
                 re.setCode(RpcException.TIMEOUT_EXCEPTION);
             } else if (IOException.class.isAssignableFrom(cls)) {
