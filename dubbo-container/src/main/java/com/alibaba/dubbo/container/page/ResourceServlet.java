@@ -44,10 +44,6 @@ public class ResourceServlet extends HttpServlet {
 
     private final Map<String, String> resourceMap = new ConcurrentHashMap<String, String>();
 
-    private final Map<String, byte[]> cacheMap = new ConcurrentHashMap<String, byte[]>();
-
-    private final Map<String, Long> cacheModified = new ConcurrentHashMap<String, Long>();
-
 	public ResourceServlet() {
 		start = System.currentTimeMillis();
 	}
@@ -96,27 +92,22 @@ public class ResourceServlet extends HttpServlet {
         	response.sendError(HttpServletResponse.SC_NOT_MODIFIED);
         	return;
         }
-        byte[] data = cacheMap.get(uri);
-        Long modified = cacheModified.get(uri);
-        if (data == null || modified == null || modified.longValue() < lastModified) {
-            InputStream input = getInputStream(uri);
-        	if (input == null) {
-            	response.sendError(HttpServletResponse.SC_NOT_FOUND);
-                return;
+        byte[] data;
+        InputStream input = getInputStream(uri);
+    	if (input == null) {
+        	response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+    	try {
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            byte[] buffer = new byte[8192];
+            int n = 0;
+            while (-1 != (n = input.read(buffer))) {
+                output.write(buffer, 0, n);
             }
-        	try {
-                ByteArrayOutputStream output = new ByteArrayOutputStream();
-                byte[] buffer = new byte[8192];
-                int n = 0;
-                while (-1 != (n = input.read(buffer))) {
-                    output.write(buffer, 0, n);
-                }
-                data = output.toByteArray();
-                cacheMap.put(uri, data);
-                cacheModified.put(uri, lastModified);
-            } finally {
-                input.close();
-            }
+            data = output.toByteArray();
+        } finally {
+            input.close();
         }
         response.setDateHeader("Last-Modified", lastModified);
         OutputStream output = response.getOutputStream();
