@@ -53,11 +53,12 @@ public class ServicesPageHandler implements PageHandler {
                 consumerCount += consumerSize;
                 row.add("<a href=\"consumers.html?service=" + service + "\">Consumers(" + consumerSize + ")</a>");
                 row.add("<a href=\"statistics.html?service=" + service + "\">Statistics</a>");
+                row.add("<a href=\"charts.html?service=" + service + "\">Charts</a>");
                 rows.add(row);
             }
         }
         return new Page("Services", "Services (" + rows.size() + ")",
-                new String[] { "Service Name:", "Providers(" + providerCount + ")", "Consumers(" + consumerCount + ")", "Statistics" }, rows);
+                new String[] { "Service Name:", "Providers(" + providerCount + ")", "Consumers(" + consumerCount + ")", "Statistics", "Charts" }, rows);
     }
 
 }

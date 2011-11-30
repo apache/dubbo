@@ -15,25 +15,20 @@
  */
 package com.alibaba.dubbo.monitor.simple.pages;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.logger.Logger;
-import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.container.page.Page;
 import com.alibaba.dubbo.container.page.PageHandler;
 import com.alibaba.dubbo.monitor.MonitorService;
+import com.alibaba.dubbo.monitor.simple.CountUtils;
 import com.alibaba.dubbo.monitor.simple.SimpleMonitorService;
 
 /**
@@ -43,8 +38,6 @@ import com.alibaba.dubbo.monitor.simple.SimpleMonitorService;
  */
 @Extension("statistics")
 public class StatisticsPageHandler implements PageHandler {
-
-    private static final Logger logger = LoggerFactory.getLogger(SimpleMonitorService.class);
 
     public Page handle(URL url) {
         String service = url.getParameter("service");
@@ -99,7 +92,11 @@ public class StatisticsPageHandler implements PageHandler {
         nav.append(service);
         nav.append("\">Providers</a> | <a href=\"consumers.html?service=");
         nav.append(service);
-        nav.append("\">Consumers</a> | Statistics &gt; <input type=\"text\" style=\"width: 65px;\" name=\"date\" value=\"");
+        nav.append("\">Consumers</a> | Statistics | <a href=\"charts.html?service=");
+        nav.append(service);
+        nav.append("&date=");
+        nav.append(date);
+        nav.append("\">Charts</a> &gt; <input type=\"text\" style=\"width: 65px;\" name=\"date\" value=\"");
         nav.append(date);
         nav.append("\" onkeyup=\"if (event.keyCode == 10 || event.keyCode == 13) {window.location.href='statistics.html?service=");
         nav.append(service);
@@ -145,18 +142,18 @@ public class StatisticsPageHandler implements PageHandler {
     }
     
     private void appendStatistics(File providerDir, long[] statistics) {
-        statistics[0] += countFile(new File(providerDir, MonitorService.CONSUMER + "." + MonitorService.SUCCESS), SUM);
-        statistics[1] += countFile(new File(providerDir, MonitorService.PROVIDER + "." + MonitorService.SUCCESS), SUM);
-        statistics[2] += countFile(new File(providerDir, MonitorService.CONSUMER + "." + MonitorService.FAILURE), SUM);
-        statistics[3] += countFile(new File(providerDir, MonitorService.PROVIDER + "." + MonitorService.FAILURE), SUM);
-        statistics[4] += countFile(new File(providerDir, MonitorService.CONSUMER + "." + MonitorService.ELAPSED), SUM);
-        statistics[5] += countFile(new File(providerDir, MonitorService.PROVIDER + "." + MonitorService.ELAPSED), SUM);
-        statistics[6] = Math.max(statistics[6], countFile(new File(providerDir, MonitorService.CONSUMER + "." + MonitorService.MAX_ELAPSED), MAX));
-        statistics[7] = Math.max(statistics[7], countFile(new File(providerDir, MonitorService.PROVIDER + "." + MonitorService.MAX_ELAPSED), MAX));
-        statistics[8] += countFile(new File(providerDir, MonitorService.CONSUMER + "." + MonitorService.CONCURRENT), AVG);
-        statistics[9] += countFile(new File(providerDir, MonitorService.PROVIDER + "." + MonitorService.CONCURRENT), AVG);
-        statistics[10] = Math.max(statistics[10], countFile(new File(providerDir, MonitorService.CONSUMER + "." + MonitorService.MAX_CONCURRENT), MAX));
-        statistics[11] = Math.max(statistics[11], countFile(new File(providerDir, MonitorService.PROVIDER + "." + MonitorService.MAX_CONCURRENT), MAX));
+        statistics[0] += CountUtils.sum(new File(providerDir, MonitorService.CONSUMER + "." + MonitorService.SUCCESS));
+        statistics[1] += CountUtils.sum(new File(providerDir, MonitorService.PROVIDER + "." + MonitorService.SUCCESS));
+        statistics[2] += CountUtils.sum(new File(providerDir, MonitorService.CONSUMER + "." + MonitorService.FAILURE));
+        statistics[3] += CountUtils.sum(new File(providerDir, MonitorService.PROVIDER + "." + MonitorService.FAILURE));
+        statistics[4] += CountUtils.sum(new File(providerDir, MonitorService.CONSUMER + "." + MonitorService.ELAPSED));
+        statistics[5] += CountUtils.sum(new File(providerDir, MonitorService.PROVIDER + "." + MonitorService.ELAPSED));
+        statistics[6] = Math.max(statistics[6], CountUtils.max(new File(providerDir, MonitorService.CONSUMER + "." + MonitorService.MAX_ELAPSED)));
+        statistics[7] = Math.max(statistics[7], CountUtils.max(new File(providerDir, MonitorService.PROVIDER + "." + MonitorService.MAX_ELAPSED)));
+        statistics[8] += CountUtils.avg(new File(providerDir, MonitorService.CONSUMER + "." + MonitorService.CONCURRENT));
+        statistics[9] += CountUtils.avg(new File(providerDir, MonitorService.PROVIDER + "." + MonitorService.CONCURRENT));
+        statistics[10] = Math.max(statistics[10], CountUtils.max(new File(providerDir, MonitorService.CONSUMER + "." + MonitorService.MAX_CONCURRENT)));
+        statistics[11] = Math.max(statistics[11], CountUtils.max(new File(providerDir, MonitorService.PROVIDER + "." + MonitorService.MAX_CONCURRENT)));
     }
     
     private List<String> toRow(String name, long[] statistics) {
@@ -172,49 +169,4 @@ public class StatisticsPageHandler implements PageHandler {
         return row;
     }
 
-    private static final Pattern NUMBER_PATTERN = Pattern.compile("\\d+");
-    
-    private static final int SUM = 0;
-    
-    private static final int MAX = 1;
-    
-    private static final int AVG = 2;
-    
-    private long countFile(File file, int op) {
-        if (file.exists()) {
-            try {
-                BufferedReader reader = new BufferedReader(new FileReader(file));
-                try {
-                    int times = 0;
-                    int count = 0;
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        int i = line.indexOf(" ");
-                        if (i > 0) {
-                            line = line.substring(i + 1).trim();
-                            if (NUMBER_PATTERN.matcher(line).matches()) {
-                                int value = Integer.parseInt(line);
-                                times ++;
-                                if (op == MAX) {
-                                    count = Math.max(count, value);
-                                } else {
-                                    count += value;
-                                }
-                            }
-                        }
-                    }
-                    if (op == AVG) {
-                        return count / times;
-                    }
-                    return count;
-                } finally {
-                    reader.close();
-                }
-            } catch (IOException e) {
-                logger.warn(e.getMessage(), e);
-            }
-        }
-        return 0;
-    }
-    
 }

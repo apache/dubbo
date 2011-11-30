@@ -104,7 +104,7 @@ public class SimpleMonitorService implements MonitorService {
                     logger.error("Unexpected error occur at reconnect, cause: " + t.getMessage(), t);
                 }
             }
-        }, 10, 20, TimeUnit.SECONDS);
+        }, 1, 1, TimeUnit.MINUTES);
         INSTANCE = this;
     }
 
@@ -123,50 +123,83 @@ public class SimpleMonitorService implements MonitorService {
             for (File serviceDir : serviceDirs) {
                 File[] methodDirs = serviceDir.listFiles();
                 for (File methodDir : methodDirs) {
-                    File methodChartFile = new File(chartsDirectory + "/" + dateDir.getName() + "/" + serviceDir.getName() + "/" + methodDir.getName() + "/success.png");
-                    File methodChartDir = methodChartFile.getParentFile();
-                    if (methodChartDir != null && ! methodChartDir.exists()) {
-                        methodChartDir.mkdirs();
-                    }
-                    long methodChartModified = methodChartFile.lastModified();
-                    boolean changed = false;
-                    Map<String, long[]> methodData = new HashMap<String, long[]>();
+                    String methodUri = chartsDirectory + "/" + dateDir.getName() + "/" + serviceDir.getName() + "/" + methodDir.getName();
+                    
+                    File successFile = new File(methodUri + "/" + SUCCESS + ".png");
+                    long successModified = successFile.lastModified();
+                    boolean successChanged = false;
+                    Map<String, long[]> successData = new HashMap<String, long[]>();
+                    long[] successSummary = new long[4];
+                    
+                    File elapsedFile = new File(methodUri + "/" + ELAPSED + ".png");
+                    long elapsedModified = elapsedFile.lastModified();
+                    boolean elapsedChanged = false;
+                    Map<String, long[]> elapsedData = new HashMap<String, long[]>();
+                    long[] elapsedSummary = new long[4];
+                    long elapsedMax = 0;
+                    
                     File[] consumerDirs = methodDir.listFiles();
                     for (File consumerDir : consumerDirs) {
                         File[] providerDirs = consumerDir.listFiles();
                         for (File providerDir : providerDirs) {
-                            File consumerFile = new File(providerDir, CONSUMER + ".success");
-                            File providerFile = new File(providerDir, PROVIDER + ".success");
-                            appendData(new File[] {consumerFile, providerFile}, methodData);
-                            if (consumerFile.lastModified() > methodChartModified || consumerFile.lastModified() > methodChartModified) {
-                                changed = true;
+                            File consumerSuccessFile = new File(providerDir, CONSUMER + "." + SUCCESS);
+                            File providerSuccessFile = new File(providerDir, PROVIDER + "." + SUCCESS);
+                            appendData(new File[] {consumerSuccessFile, providerSuccessFile}, successData, successSummary);
+                            if (consumerSuccessFile.lastModified() > successModified 
+                                    || providerSuccessFile.lastModified() > successModified) {
+                                successChanged = true;
+                            }
+                            
+                            File consumerElapsedFile = new File(providerDir, CONSUMER + "." + ELAPSED);
+                            File providerElapsedFile = new File(providerDir, PROVIDER + "." + ELAPSED);
+                            appendData(new File[] {consumerElapsedFile, providerElapsedFile}, elapsedData, elapsedSummary);
+                            elapsedMax = Math.max(elapsedMax, CountUtils.max(new File(providerDir, CONSUMER + "." + MAX_ELAPSED)));
+                            elapsedMax = Math.max(elapsedMax, CountUtils.max(new File(providerDir, PROVIDER + "." + MAX_ELAPSED)));
+                            if (consumerElapsedFile.lastModified() > elapsedModified 
+                                    || providerElapsedFile.lastModified() > elapsedModified) {
+                                elapsedChanged = true;
                             }
                         }
                     }
-                    if (changed) {
-                        JFreeChart chart = createChart("Success", dateDir.getName(), new String[] {CONSUMER, PROVIDER}, methodData);
-                        BufferedImage image = chart.createBufferedImage(500, 200);
-                        try {
-                            if (logger.isInfoEnabled()) {
-                                logger.info("write chart: " + methodChartFile.getAbsolutePath());
-                            }
-                            FileOutputStream output = new FileOutputStream(methodChartFile);
-                            try {
-                                ImageIO.write(image, "png", output);
-                                output.flush();
-                            } finally {
-                                output.close();
-                            }
-                        } catch (IOException e) {
-                            logger.warn(e.getMessage(), e);
-                        }
+                    if (elapsedChanged) {
+                        divData(elapsedData, successData);
+                        elapsedSummary[0] = elapsedMax;
+                        elapsedSummary[1] = -1;
+                        elapsedSummary[2] = successSummary[3] == 0 ? 0 : elapsedSummary[3] / successSummary[3];
+                        elapsedSummary[3] = -1;
+                        createChart(ELAPSED + "(ms)", dateDir.getName(), new String[] {CONSUMER, PROVIDER}, elapsedData, elapsedSummary, elapsedFile.getAbsolutePath());
+                    }
+                    if (successChanged) {
+                        divData(successData, 60);
+                        successSummary[0] = successSummary[0] / 60;
+                        successSummary[1] = successSummary[1] / 60;
+                        successSummary[2] = successSummary[2] / 60;
+                        createChart(SUCCESS + "/s", dateDir.getName(), new String[] {CONSUMER, PROVIDER}, successData, successSummary, successFile.getAbsolutePath());
                     }
                 }
             }
         }
     }
+    
+    private void divData(Map<String, long[]> successMap, long unit) {
+        for (long[] success : successMap.values()) {
+            for (int i = 0; i < success.length; i ++) {
+                success[i] = success[i] / unit;
+            }
+        }
+    }
+    
+    private void divData(Map<String, long[]> elapsedMap, Map<String, long[]> successMap) {
+        for (Map.Entry<String, long[]> entry : elapsedMap.entrySet()) {
+            long[] elapsed = entry.getValue();
+            long[] success = successMap.get(entry.getKey());
+            for (int i = 0; i < elapsed.length; i ++) {
+                elapsed[i] = success[i] == 0 ? 0 : elapsed[i] / success[i];
+            }
+        }
+    }
 
-    private void appendData(File[] files, Map<String, long[]> map) {
+    private void appendData(File[] files, Map<String, long[]> data, long[] summary) {
         for (int i = 0; i < files.length; i ++) {
             File file = files[i];
             if (! file.exists()) {
@@ -175,20 +208,26 @@ public class SimpleMonitorService implements MonitorService {
             try {
                 BufferedReader reader = new BufferedReader(new FileReader(file));
                 try {
+                    int t = 0;
                     String line;
                     while ((line = reader.readLine()) != null) {
                         int index = line.indexOf(" ");
                         if (index > 0) {
                             String key = line.substring(0, index).trim();
                             long value = Long.parseLong(line.substring(index + 1).trim());
-                            long[] values = map.get(key);
+                            long[] values = data.get(key);
                             if (values == null) {
                                 values = new long[files.length];
-                                map.put(key, values);
+                                data.put(key, values);
                             }
                             values[i] += value;
+                            summary[0] = Math.max(summary[0], values[i]);
+                            summary[1] = summary[1] == 0 ? values[i] : Math.min(summary[1], values[i]);
+                            summary[3] += value;
+                            t ++;
                         }
                     }
+                    summary[2] = summary[3] / t;
                 } finally {
                     reader.close();
                 }
@@ -198,7 +237,7 @@ public class SimpleMonitorService implements MonitorService {
         }
     }
     
-    private static JFreeChart createChart(String key, String date, String[] types, Map<String, long[]> data) {
+    private static void createChart(String key, String date, String[] types, Map<String, long[]> data, long[] summary, String path) {
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");
         TimeSeriesCollection xydataset = new TimeSeriesCollection();
         for (int i = 0; i < types.length; i ++) {
@@ -213,24 +252,36 @@ public class SimpleMonitorService implements MonitorService {
             }
             xydataset.addSeries(timeseries);
         }
-        JFreeChart jfreechart = ChartFactory.createTimeSeriesChart("Max: 1, Min: 1, Avg: 1, Sum: 1", toDisplayDate(date), key, xydataset, true, true, false);
+        JFreeChart jfreechart = ChartFactory.createTimeSeriesChart(
+                "max: " + summary[0] + (summary[1] >=0 ? ", min: " + summary[1] : "") + ", avg: " + summary[2] + (summary[3] >=0 ? ", sum: " + summary[3] : ""), toDisplayDate(date), key, xydataset, true, true, false);
         jfreechart.setBackgroundPaint(Color.WHITE);
         XYPlot xyplot = (XYPlot) jfreechart.getPlot();
         xyplot.setBackgroundPaint(Color.WHITE);
         xyplot.setDomainGridlinePaint(Color.WHITE);
         xyplot.setRangeGridlinePaint(Color.WHITE);
         xyplot.setAxisOffset(new RectangleInsets(5.0, 5.0, 5.0, 5.0));
-        /*xyplot.setDomainCrosshairVisible(true);
-        xyplot.setRangeCrosshairVisible(true);
-        XYItemRenderer xyitemrenderer = xyplot.getRenderer();
-        if (xyitemrenderer instanceof XYLineAndShapeRenderer) {
-            XYLineAndShapeRenderer xylineandshaperenderer = (XYLineAndShapeRenderer) xyitemrenderer;
-            xylineandshaperenderer.setBaseShapesVisible(true);
-            xylineandshaperenderer.setBaseShapesFilled(true);
-        }*/
         DateAxis dateaxis = (DateAxis) xyplot.getDomainAxis();
         dateaxis.setDateFormatOverride(new SimpleDateFormat("HH:mm"));
-        return jfreechart;
+        BufferedImage image = jfreechart.createBufferedImage(500, 200);
+        try {
+            if (logger.isInfoEnabled()) {
+                logger.info("write chart: " + path);
+            }
+            File methodChartFile = new File(path);
+            File methodChartDir = methodChartFile.getParentFile();
+            if (methodChartDir != null && ! methodChartDir.exists()) {
+                methodChartDir.mkdirs();
+            }
+            FileOutputStream output = new FileOutputStream(methodChartFile);
+            try {
+                ImageIO.write(image, "png", output);
+                output.flush();
+            } finally {
+                output.close();
+            }
+        } catch (IOException e) {
+            logger.warn(e.getMessage(), e);
+        }
     }
     
     private static String toDisplayDate(String date) {
@@ -240,7 +291,7 @@ public class SimpleMonitorService implements MonitorService {
             return date;
         }
     }
-    
+
     public void count(URL statistics) {
         try {
             Date now = new Date();
@@ -264,7 +315,7 @@ public class SimpleMonitorService implements MonitorService {
                         consumer = statistics.getParameter(CONSUMER);
                         provider = statistics.getHost();
                     }
-                    String filename = statistics 
+                    String filename = statisticsDirectory 
                             + "/" + day 
                             + "/" + statistics.getServiceName() 
                             + "/" + statistics.getParameter(METHOD) 

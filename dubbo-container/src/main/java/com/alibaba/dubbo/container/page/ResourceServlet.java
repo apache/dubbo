@@ -15,6 +15,7 @@
 package com.alibaba.dubbo.container.page;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -87,8 +88,9 @@ public class ResourceServlet extends HttpServlet {
         if (! uri.startsWith("/")) {
             uri = "/" + uri;
         }
+        long lastModified = getLastModified(uri);
         long since = request.getDateHeader("If-Modified-Since");
-        if (since >= start) {
+        if (since >= lastModified) {
         	response.sendError(HttpServletResponse.SC_NOT_MODIFIED);
         	return;
         }
@@ -112,11 +114,27 @@ public class ResourceServlet extends HttpServlet {
                 input.close();
             }
         }
-        response.setDateHeader("Last-Modified", System.currentTimeMillis());
+        response.setDateHeader("Last-Modified", lastModified);
         OutputStream output = response.getOutputStream();
         output.write(data);
         output.flush();
     }
+	
+	private long getLastModified(String uri) {
+	    int i = uri.indexOf('/', 1);
+        if (i >= 0) {
+            String name = uri.substring(1, i);
+            uri = uri.substring(i);
+            String resource = resourceMap.get(name);
+            if (resource != null && resource.length() > 0) {
+                String path = resource + uri;
+                if (path.indexOf(":") < 0) {
+                    return new File(path).lastModified();
+                }
+            }
+        }
+        return start;
+	}
 	
 	private InputStream getInputStream(String uri) {
 	    int i = uri.indexOf('/', 1);

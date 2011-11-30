@@ -49,7 +49,8 @@ public class ProvidersPageHandler implements PageHandler {
         return new Page("<a href=\"services.html\">Services</a> &gt; " + service 
                 + " &gt; Providers | <a href=\"consumers.html?service=" + service 
                 + "\">Consumers</a> | <a href=\"statistics.html?service=" + service 
-                + "\">Statistics</a>", "Providers (" + rows.size() + ")",
+                + "\">Statistics</a> | <a href=\"charts.html?service=" + service 
+                + "\">Charts</a>", "Providers (" + rows.size() + ")",
                 new String[] { "Provider URL:" }, rows);
     }
 

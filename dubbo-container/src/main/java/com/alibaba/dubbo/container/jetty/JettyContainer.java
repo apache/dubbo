@@ -42,7 +42,7 @@ public class JettyContainer implements Container {
 
     public static final String JETTY_PORT = "dubbo.jetty.port";
 
-    public static final String JETTY_RESOURCES = "dubbo.jetty.resources";
+    public static final String JETTY_DIRECTORY = "dubbo.jetty.directory";
 
     public static final String JETTY_PAGES = "dubbo.jetty.pages";
 
@@ -62,7 +62,7 @@ public class JettyContainer implements Container {
         connector.setPort(port);
         ServletHandler handler = new ServletHandler();
         
-        String resources = System.getProperty(JETTY_RESOURCES);
+        String resources = System.getProperty(JETTY_DIRECTORY);
         if (resources != null && resources.length() > 0) {
             String[] directories = Constants.COMMA_SPLIT_PATTERN.split(resources);
             ResourceServlet resourceServlet = new ResourceServlet();
