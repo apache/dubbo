@@ -256,7 +256,7 @@ public class DubboProtocol extends AbstractProtocol {
         try {
             server = Exchangers.bind(url, requestHandler);
         } catch (RemotingException e) {
-            throw new RpcException(e.getMessage(), e);
+            throw new RpcException("Fail to start server(url: " + url + ") " + e.getMessage(), e);
         }
         str = url.getParameter(Constants.CLIENT_KEY);
         if (str != null && str.length() > 0) {
