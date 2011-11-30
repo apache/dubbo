@@ -9,7 +9,7 @@ LOGS_FILE=`sed '/dubbo.log4j.file/!d;s/.*=//' conf/dubbo.properties`
 LOGS_DIR=`dirname $LOGS_FILE`
 STDOUT_FILE=$LOGS_DIR/stdout.log
 SERVER_PORT=`sed '/dubbo.protocol.port/!d;s/.*=//' conf/dubbo.properties`
-SERVER_NAME="Dubbo simple registry"
+SERVER_NAME=`sed '/dubbo.application.name/!d;s/.*=//' conf/dubbo.properties`
 
 if [ ! -d $LOGS_DIR ]; then
 	mkdir $LOGS_DIR

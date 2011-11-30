@@ -3,7 +3,7 @@ cd `dirname $0`
 BIN_DIR=`pwd`
 cd ..
 DEPLOY_DIR=`pwd`
-SERVER_NAME="Dubbo simple monitor"
+SERVER_NAME=`sed '/dubbo.application.name/!d;s/.*=//' conf/dubbo.properties`
 
 KILL_PIDS=`ps  --no-heading -C java -f --width 1000 | grep "$DEPLOY_DIR" |awk '{print $2}'`
 if [ -z "$KILL_PIDS" ]; then
