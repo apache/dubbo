@@ -27,6 +27,10 @@ if [ $SERVER_PORT_COUNT -gt 0 ]; then
 fi
 
 JAVA_OPTS=" -Djava.awt.headless=true -Djava.net.preferIPv4Stack=true "
+JAVA_DEBUG_OPTS=""
+if [ "$1" = "debug" ]; then
+JAVA_DEBUG_OPTS=" -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n "
+fi
 JAVA_MEM_OPTS=""
 BITS=`file $JAVA_HOME/bin/java | grep 64-bit`
 if [ -n "$BITS" ]; then
@@ -50,7 +54,7 @@ fi
 LIB_JARS=`ls $LIB_DIR|grep .jar|awk '{print "'$LIB_DIR'/"$0}'|tr "\n" ":"`
 
 echo -e "Starting dubbo registry admin server on $SERVER_PORT \c"
-nohup java $JAVA_OPTS $JAVA_MEM_OPTS -classpath $CONF_DIR:$LIB_JARS com.alibaba.dubbo.container.Main properties log4j spring > $STDOUT_FILE 2>&1 &
+nohup java $JAVA_OPTS $JAVA_MEM_OPTS $JAVA_DEBUG_OPTS -classpath $CONF_DIR:$LIB_JARS com.alibaba.dubbo.container.Main properties log4j spring > $STDOUT_FILE 2>&1 &
 
 COUNT=0
 while [ $COUNT -lt 1 ]; do    
