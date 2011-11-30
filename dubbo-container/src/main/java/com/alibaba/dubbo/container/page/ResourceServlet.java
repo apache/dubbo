@@ -46,6 +46,8 @@ public class ResourceServlet extends HttpServlet {
 
     private final Map<String, byte[]> cacheMap = new ConcurrentHashMap<String, byte[]>();
 
+    private final Map<String, Long> cacheModified = new ConcurrentHashMap<String, Long>();
+
 	public ResourceServlet() {
 		start = System.currentTimeMillis();
 	}
@@ -95,7 +97,8 @@ public class ResourceServlet extends HttpServlet {
         	return;
         }
         byte[] data = cacheMap.get(uri);
-        if (data == null) {
+        Long modified = cacheModified.get(uri);
+        if (data == null || modified == null || modified.longValue() < lastModified) {
             InputStream input = getInputStream(uri);
         	if (input == null) {
             	response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -110,6 +113,7 @@ public class ResourceServlet extends HttpServlet {
                 }
                 data = output.toByteArray();
                 cacheMap.put(uri, data);
+                cacheModified.put(uri, lastModified);
             } finally {
                 input.close();
             }
