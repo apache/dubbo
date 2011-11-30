@@ -32,7 +32,7 @@ public class Main {
 
     private static final Logger logger    = LoggerFactory.getLogger(Main.class);
 
-    public static void main(String[] args) throws Throwable {
+    public static void main(String[] args) {
         try {
             ExtensionLoader<Container> loader = ExtensionLoader.getExtensionLoader(Container.class);
             final Container[] containers;
@@ -64,10 +64,10 @@ public class Main {
                 logger.info("Dubbo " + container.getClass().getSimpleName() + " started!");
             }
             System.out.println(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]").format(new Date()) + " Dubbo service server started!");
-        } catch (Throwable t) {
-            t.printStackTrace();
-            logger.error(t.getMessage(), t);
-            throw t;
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            logger.error(e.getMessage(), e);
+            throw e;
         }
         synchronized (Main.class) {
             for (;;) {
