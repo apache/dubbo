@@ -662,6 +662,7 @@ public final class ReflectUtils {
 		Class<?> clazz = DESC_CLASS_CACHE.get(desc);
 		if(clazz==null){
 		    clazz = Class.forName(desc, true, cl);
+		    DESC_CLASS_CACHE.put(desc, clazz);
 		}
 		return clazz;
 	}
