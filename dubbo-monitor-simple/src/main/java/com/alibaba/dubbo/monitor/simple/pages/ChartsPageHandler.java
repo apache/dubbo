@@ -72,7 +72,7 @@ public class ChartsPageHandler implements PageHandler {
         nav.append(service);
         nav.append("&date=' + this.value;}\" />");
         return new Page(nav.toString(), "Charts (" + rows.size() + ")",
-                new String[] { "Method", "Requests per second", "Average response time (ms)"}, rows);
+                new String[] { "Method", "Requests per second (QPS)", "Average response time (ms)"}, rows);
     }
     
     private List<String> toRow(File dir, String uri) {
