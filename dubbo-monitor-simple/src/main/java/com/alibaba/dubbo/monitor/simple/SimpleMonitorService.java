@@ -43,7 +43,6 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.time.Minute;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
-import org.jfree.ui.RectangleInsets;
 
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
@@ -105,7 +104,7 @@ public class SimpleMonitorService implements MonitorService {
                     logger.error("Unexpected error occur at reconnect, cause: " + t.getMessage(), t);
                 }
             }
-        }, 1, 5, TimeUnit.MINUTES);
+        }, 1, 300, TimeUnit.SECONDS);
         INSTANCE = this;
     }
 
@@ -168,14 +167,14 @@ public class SimpleMonitorService implements MonitorService {
                         elapsedSummary[1] = -1;
                         elapsedSummary[2] = successSummary[3] == 0 ? 0 : elapsedSummary[3] / successSummary[3];
                         elapsedSummary[3] = -1;
-                        createChart(ELAPSED + "(ms)", serviceDir.getName(), methodDir.getName(), dateDir.getName(), new String[] {CONSUMER, PROVIDER}, elapsedData, elapsedSummary, elapsedFile.getAbsolutePath());
+                        createChart("ms/t", serviceDir.getName(), methodDir.getName(), dateDir.getName(), new String[] {CONSUMER, PROVIDER}, elapsedData, elapsedSummary, elapsedFile.getAbsolutePath());
                     }
                     if (successChanged) {
                         divData(successData, 60);
                         successSummary[0] = successSummary[0] / 60;
                         successSummary[1] = successSummary[1] / 60;
                         successSummary[2] = successSummary[2] / 60;
-                        createChart(SUCCESS + "/s", serviceDir.getName(), methodDir.getName(), dateDir.getName(), new String[] {CONSUMER, PROVIDER}, successData, successSummary, successFile.getAbsolutePath());
+                        createChart("t/s", serviceDir.getName(), methodDir.getName(), dateDir.getName(), new String[] {CONSUMER, PROVIDER}, successData, successSummary, successFile.getAbsolutePath());
                     }
                 }
             }
@@ -243,14 +242,15 @@ public class SimpleMonitorService implements MonitorService {
     }
     
     private static void createChart(String key, String service, String method, String date, String[] types, Map<String, long[]> data, long[] summary, String path) {
-        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
+        DecimalFormat numberFormat = new DecimalFormat("###,##0");
         TimeSeriesCollection xydataset = new TimeSeriesCollection();
         for (int i = 0; i < types.length; i ++) {
             String type = types[i];
             TimeSeries timeseries = new TimeSeries(type);
             for (Map.Entry<String, long[]> entry : data.entrySet()) {
                 try {
-                    timeseries.add(new Minute(format.parse(date + entry.getKey())), entry.getValue()[i]);
+                    timeseries.add(new Minute(dateFormat.parse(date + entry.getKey())), entry.getValue()[i]);
                 } catch (ParseException e) {
                     logger.error(e.getMessage(), e);
                 }
@@ -258,16 +258,19 @@ public class SimpleMonitorService implements MonitorService {
             xydataset.addSeries(timeseries);
         }
         JFreeChart jfreechart = ChartFactory.createTimeSeriesChart(
-                "max: " + summary[0] + (summary[1] >=0 ? " min: " + summary[1] : "") + " avg: " + summary[2] + (summary[3] >=0 ? " sum: " + new DecimalFormat("###,##0").format(summary[3]) : ""), toDisplayService(service) + " " + method + " " + toDisplayDate(date), key, xydataset, true, true, false);
+                "max: " + numberFormat.format(summary[0]) + (summary[1] >=0 ? " min: " + numberFormat.format(summary[1]) : "") 
+                + " avg: " + numberFormat.format(summary[2]) + (summary[3] >=0 ? " sum: " + numberFormat.format(summary[3]) : ""), 
+                toDisplayService(service) + "  " + method + "  " + toDisplayDate(date), key, xydataset, true, true, false);
         jfreechart.setBackgroundPaint(Color.WHITE);
         XYPlot xyplot = (XYPlot) jfreechart.getPlot();
         xyplot.setBackgroundPaint(Color.WHITE);
-        xyplot.setDomainGridlinePaint(Color.WHITE);
-        xyplot.setRangeGridlinePaint(Color.WHITE);
-        xyplot.setAxisOffset(new RectangleInsets(5.0, 5.0, 5.0, 5.0));
+        xyplot.setDomainGridlinePaint(Color.GRAY);
+        xyplot.setRangeGridlinePaint(Color.GRAY);
+        xyplot.setDomainGridlinesVisible(true);
+        xyplot.setRangeGridlinesVisible(true);
         DateAxis dateaxis = (DateAxis) xyplot.getDomainAxis();
         dateaxis.setDateFormatOverride(new SimpleDateFormat("HH:mm"));
-        BufferedImage image = jfreechart.createBufferedImage(500, 200);
+        BufferedImage image = jfreechart.createBufferedImage(600, 300);
         try {
             if (logger.isInfoEnabled()) {
                 logger.info("write chart: " + path);
