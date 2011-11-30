@@ -28,6 +28,7 @@ import com.alibaba.dubbo.remoting.exchange.ExchangeHandler;
 import com.alibaba.dubbo.remoting.exchange.Request;
 import com.alibaba.dubbo.remoting.exchange.Response;
 import com.alibaba.dubbo.remoting.exchange.support.DefaultFuture;
+import com.alibaba.dubbo.remoting.transport.ChannelHandlerDelegate;
 
 /**
  * ExchangeReceiver
@@ -35,8 +36,7 @@ import com.alibaba.dubbo.remoting.exchange.support.DefaultFuture;
  * @author william.liangf
  * @author chao.liuc
  */
-//如果实现implementChannelHandlerDelegate，方法getHandler需要返回this.否则getHandler返回的是ExchangeHandler，将丢失本handler附加的功能.
-public class HeaderExchangeHandler implements ChannelHandler {
+public class HeaderExchangeHandler implements ChannelHandlerDelegate {
 
     protected static final Logger logger              = LoggerFactory.getLogger(HeaderExchangeHandler.class);
 
@@ -203,6 +203,14 @@ public class HeaderExchangeHandler implements ChannelHandler {
             handler.caught(exchangeChannel, exception);
         } finally {
             HeaderExchangeChannel.removeChannelIfDisconnected(channel);
+        }
+    }
+
+    public ChannelHandler getHandler() {
+        if (handler instanceof ChannelHandlerDelegate) {
+            return ((ChannelHandlerDelegate) handler).getHandler();
+        } else {
+            return handler;
         }
     }
 }

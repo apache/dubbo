@@ -83,7 +83,23 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
             return handler;
         }
     }
-
+    
+    /**
+     * @return
+     */
+    @Deprecated
+    public ChannelHandler getHandler() {
+        return getDelegateHandler();
+    }
+    
+    /**
+     * 返回最终的handler，可能已被wrap,需要区别于getChannelHandler
+     * @return
+     */
+    public ChannelHandler getDelegateHandler() {
+        return handler;
+    }
+    
     public boolean isClosed() {
         return closed;
     }
@@ -120,10 +136,5 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
             logger.error("Exception on channel " + ch, ex);
         }
         handler.caught(ch, ex);
-    }
-
-    @Deprecated
-    public ChannelHandler getHandler() {
-        return getChannelHandler();
     }
 }
