@@ -145,7 +145,7 @@ public class MinaClient extends AbstractClient {
         try {
             finish.await(getTimeout(), TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
-            throw new RemotingException(this, "Failed to connect to server " + getRemoteAddress() + " client-side timeout "
+            throw new RemotingException(this, "client(url: " + getUrl() + ") failed to connect to server " + getRemoteAddress() + " client-side timeout "
                                         + getTimeout() + "ms (elapsed: " + (System.currentTimeMillis() - start)
                                         + "ms) from netty client " + NetUtils.getLocalHost() + " using dubbo version "
                                         + Version.getVersion() + ", cause: " + e.getMessage(), e);
