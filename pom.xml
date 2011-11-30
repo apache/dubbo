@@ -50,6 +50,9 @@
 		<module>dubbo</module>
 		<module>dubbo-registry-simple</module>
 		<module>dubbo-monitor-simple</module>
+		<module>dubbo-demo</module>
+		<module>dubbo-demo-consumer</module>
+		<module>dubbo-demo-provider</module>
 	</modules>
 	<properties>
 		<!-- Common libs -->
