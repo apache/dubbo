@@ -105,7 +105,7 @@ public class SimpleMonitorService implements MonitorService {
                     logger.error("Unexpected error occur at reconnect, cause: " + t.getMessage(), t);
                 }
             }
-        }, 1, 1, TimeUnit.MINUTES);
+        }, 1, 5, TimeUnit.MINUTES);
         INSTANCE = this;
     }
 
