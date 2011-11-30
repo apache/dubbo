@@ -209,7 +209,8 @@ public class SimpleMonitorService implements MonitorService {
             try {
                 BufferedReader reader = new BufferedReader(new FileReader(file));
                 try {
-                    int t = 0;
+                    int sum = 0;
+                    int cnt = 0;
                     String line;
                     while ((line = reader.readLine()) != null) {
                         int index = line.indexOf(" ");
@@ -224,11 +225,14 @@ public class SimpleMonitorService implements MonitorService {
                             values[i] += value;
                             summary[0] = Math.max(summary[0], values[i]);
                             summary[1] = summary[1] == 0 ? values[i] : Math.min(summary[1], values[i]);
-                            summary[3] += value;
-                            t ++;
+                            sum += value;
+                            cnt ++;
                         }
                     }
-                    summary[2] = summary[3] / t;
+                    if (i == 0) {
+                        summary[3] += sum;
+                        summary[2] = (summary[2] + (sum / cnt)) / 2;
+                    }
                 } finally {
                     reader.close();
                 }
