@@ -459,7 +459,21 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     public Class<?> getInterfaceClass() {
-        return interfaceClass == null ? GenericService.class : interfaceClass;
+        if (interfaceClass != null) {
+            return interfaceClass;
+        }
+        if (ref instanceof GenericService) {
+            return GenericService.class;
+        }
+        try {
+            if (interfaceName != null && interfaceName.length() > 0) {
+                this.interfaceClass = Class.forName(interfaceName, true, Thread.currentThread()
+                    .getContextClassLoader());
+            }
+        } catch (ClassNotFoundException t) {
+            throw new IllegalStateException(t.getMessage(), t);
+        }
+        return interfaceClass;
     }
 
     /**
