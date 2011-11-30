@@ -3,14 +3,15 @@ cd `dirname $0`
 BIN_DIR=`pwd`
 cd ..
 DEPLOY_DIR=`pwd`
+SERVER_NAME="Dubbo simple monitor"
 
 KILL_PIDS=`ps  --no-heading -C java -f --width 1000 | grep "$DEPLOY_DIR" |awk '{print $2}'`
 if [ -z "$KILL_PIDS" ]; then
-    echo "Dubbo registry admin server does not started!"
+    echo "$SERVER_NAME does not started!"
     exit 1;
 fi
 
-echo -e "Stopping dubbo registry admin server \c"
+echo -e "Stopping $SERVER_NAME \c"
 for PID in $KILL_PIDS ; do
 	echo -e "$PID \c"
 	kill $PID > /dev/null 2>&1
