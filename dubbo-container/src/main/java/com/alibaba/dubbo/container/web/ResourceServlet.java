@@ -50,7 +50,7 @@ public class ResourceServlet extends HttpServlet {
 	}
 
 	public void setResources(String[] resources) {
-	    if (resources == null || resources.length == 0) {
+	    if (resources != null && resources.length > 0) {
 	        for (String resource : resources) {
 	            resource = resource.replace('\\', '/');
                 int i = resource.lastIndexOf('/');
@@ -122,6 +122,7 @@ public class ResourceServlet extends HttpServlet {
 	    int i = uri.indexOf('/', 1);
 	    if (i >= 0) {
     	    String name = uri.substring(1, i);
+    	    uri = uri.substring(i);
     	    String resource = resourceMap.get(name);
     	    if (resource != null && resource.length() > 0) {
     	        String path = resource + uri;

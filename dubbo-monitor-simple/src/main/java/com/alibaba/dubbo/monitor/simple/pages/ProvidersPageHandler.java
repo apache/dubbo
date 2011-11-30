@@ -43,7 +43,6 @@ public class ProvidersPageHandler implements PageHandler {
             for (URL provider : providers) {
                 List<String> row = new ArrayList<String>();
                 row.add(provider.toFullString().replace("&", "&amp;"));
-                row.add("<a href=\"statistics.html?service=" + service + "&provider=" + provider.getHost() + "\">Statistics</a>");
                 rows.add(row);
             }
         }
@@ -51,7 +50,7 @@ public class ProvidersPageHandler implements PageHandler {
                 + " &gt; Providers | <a href=\"consumers.html?service=" + service 
                 + "\">Consumers</a> | <a href=\"statistics.html?service=" + service 
                 + "\">Statistics</a>", "Providers (" + rows.size() + ")",
-                new String[] { "Provider URL:", "Statistics" }, rows);
+                new String[] { "Provider URL:" }, rows);
     }
 
 }

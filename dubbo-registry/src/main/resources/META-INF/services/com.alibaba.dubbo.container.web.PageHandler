@@ -1,0 +1,2 @@
+com.alibaba.dubbo.registry.pages.RegistriesPageHandler
+com.alibaba.dubbo.registry.pages.RegisteredPageHandler

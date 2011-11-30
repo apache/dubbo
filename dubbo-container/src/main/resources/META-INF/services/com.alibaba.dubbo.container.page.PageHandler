@@ -1,7 +1,0 @@
-com.alibaba.dubbo.container.page.pages.HomePageHandler
-com.alibaba.dubbo.container.page.pages.RegisteredPageHandler
-com.alibaba.dubbo.container.page.pages.RegistriesPageHandler
-com.alibaba.dubbo.container.page.pages.ConnectionsPageHandler
-com.alibaba.dubbo.container.page.pages.StatusPageHandler
-com.alibaba.dubbo.container.page.pages.LogPageHandler
-com.alibaba.dubbo.container.page.pages.SystemPageHandler

@@ -18,7 +18,8 @@
 	<dubbo:service interface="com.alibaba.dubbo.monitor.MonitorService" ref="monitorService" />
 	
 	<bean id="monitorService" class="com.alibaba.dubbo.monitor.simple.SimpleMonitorService">
-		<property name="directory" value="${dubbo.monitor.directory}" />
+		<property name="statisticsDirectory" value="${dubbo.monitor.statistics.directory}" />
+		<property name="chartsDirectory" value="${dubbo.monitor.charts.directory}" />
 	</bean>
 	
 </beans>
