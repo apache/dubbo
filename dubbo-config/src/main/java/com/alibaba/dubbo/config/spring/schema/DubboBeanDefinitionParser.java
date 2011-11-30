@@ -190,19 +190,13 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                                                 || ! MonitorConfig.class.getName().equals(parserContext.getRegistry().getBeanDefinition(value).getBeanClassName()))) {
                                     // 兼容旧版本配置
                                     reference = convertMonitor(value);
-                                } else if ("oninvoke".equals(property)) {
-                                    int index = value.lastIndexOf(".");
-                                    String invokeRef = value.substring(0, index);
-                                    String invokeMethod = value.substring(index + 1);
-                                    reference = new RuntimeBeanReference(invokeRef);
-                                    beanDefinition.getPropertyValues().addPropertyValue("onreturnMethod", invokeMethod);
                                 } else if ("onreturn".equals(property)) {
                                     int index = value.lastIndexOf(".");
                                     String returnRef = value.substring(0, index);
                                     String returnMethod = value.substring(index + 1);
                                     reference = new RuntimeBeanReference(returnRef);
                                     beanDefinition.getPropertyValues().addPropertyValue("onreturnMethod", returnMethod);
-                                }else if ("onthrow".equals(property)) {
+                                } else if ("onthrow".equals(property)) {
                                     int index = value.lastIndexOf(".");
                                     String throwRef = value.substring(0, index);
                                     String throwMethod = value.substring(index + 1);
