@@ -134,11 +134,11 @@ public class StatisticsPageHandler implements PageHandler {
         }
         return new Page(nav.toString(), "Statistics (" + rows.size() + ")",
                 new String[] { "Method:", "Success", "Failure", "Avg Elapsed (ms)",
-                        "Max Elapsed (ms)", "Avg Concurrent", "Max Concurrent" }, rows);
+                        "Max Elapsed (ms)", "Max Concurrent" }, rows);
     }
     
     private long[] newStatistics() {
-        return new long[12];
+        return new long[10];
     }
     
     private void appendStatistics(File providerDir, long[] statistics) {
@@ -150,10 +150,8 @@ public class StatisticsPageHandler implements PageHandler {
         statistics[5] += CountUtils.sum(new File(providerDir, MonitorService.PROVIDER + "." + MonitorService.ELAPSED));
         statistics[6] = Math.max(statistics[6], CountUtils.max(new File(providerDir, MonitorService.CONSUMER + "." + MonitorService.MAX_ELAPSED)));
         statistics[7] = Math.max(statistics[7], CountUtils.max(new File(providerDir, MonitorService.PROVIDER + "." + MonitorService.MAX_ELAPSED)));
-        statistics[8] += CountUtils.avg(new File(providerDir, MonitorService.CONSUMER + "." + MonitorService.CONCURRENT));
-        statistics[9] += CountUtils.avg(new File(providerDir, MonitorService.PROVIDER + "." + MonitorService.CONCURRENT));
-        statistics[10] = Math.max(statistics[10], CountUtils.max(new File(providerDir, MonitorService.CONSUMER + "." + MonitorService.MAX_CONCURRENT)));
-        statistics[11] = Math.max(statistics[11], CountUtils.max(new File(providerDir, MonitorService.PROVIDER + "." + MonitorService.MAX_CONCURRENT)));
+        statistics[8] = Math.max(statistics[8], CountUtils.max(new File(providerDir, MonitorService.CONSUMER + "." + MonitorService.MAX_CONCURRENT)));
+        statistics[9] = Math.max(statistics[9], CountUtils.max(new File(providerDir, MonitorService.PROVIDER + "." + MonitorService.MAX_CONCURRENT)));
     }
     
     private List<String> toRow(String name, long[] statistics) {
@@ -164,8 +162,7 @@ public class StatisticsPageHandler implements PageHandler {
         row.add(String.valueOf(statistics[0] == 0 ? 0 : statistics[4] / statistics[0]) 
                 + " &gt;&gt; " + String.valueOf(statistics[1] == 0 ? 0 : statistics[5] / statistics[1]));
         row.add(String.valueOf(statistics[6]) + " &gt;&gt; " + String.valueOf(statistics[7]));
-        row.add(String.valueOf(statistics[7]) + " &gt;&gt; " + String.valueOf(statistics[9]));
-        row.add(String.valueOf(statistics[10]) + " &gt;&gt; " + String.valueOf(statistics[11]));
+        row.add(String.valueOf(statistics[8]) + " &gt;&gt; " + String.valueOf(statistics[9]));
         return row;
     }
 
