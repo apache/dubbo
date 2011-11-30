@@ -80,13 +80,13 @@ public class ChartsPageHandler implements PageHandler {
         row.add(dir.getName());
         if (new File(dir, MonitorService.SUCCESS + ".png").exists()) {
             String url = uri + MonitorService.SUCCESS + ".png";
-            row.add("<a target=\"_blank\" href=\"" + url + "\"><img src=\"" + url + "\" style=\"width: 100%;\" /></a>");
+            row.add("<a href=\"" + url + "\" target=\"_blank\"><img src=\"" + url + "\" style=\"width: 100%;\" border=\"0\" /></a>");
         } else {
             row.add("");
         }
         if (new File(dir, MonitorService.ELAPSED + ".png").exists()) {
             String url = uri + MonitorService.ELAPSED + ".png";
-            row.add("<a target=\"_blank\" href=\"" + url + "\"><img src=\"" + url + "\" style=\"width: 100%;\" /></a>");
+            row.add("<a href=\"" + url + "\" target=\"_blank\"><img src=\"" + url + "\" style=\"width: 100%;\" border=\"0\" /></a>");
         } else {
             row.add("");
         }
