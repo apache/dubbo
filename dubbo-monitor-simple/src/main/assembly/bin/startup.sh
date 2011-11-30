@@ -6,6 +6,8 @@ DEPLOY_DIR=`pwd`
 CONF_DIR=$DEPLOY_DIR/conf
 LIB_DIR=$DEPLOY_DIR/lib
 LOGS_DIR=$DEPLOY_DIR/logs
+LOGS_FILE=`sed '/dubbo.log4j.file/!d;s/.*=//' conf/dubbo.properties`
+LOGS_DIR=`dirname $LOGS_FILE`
 STDOUT_FILE=$LOGS_DIR/stdout.log
 SERVER_PORT=`sed '/dubbo.protocol.port/!d;s/.*=//' conf/dubbo.properties`
 SERVER_NAME="Dubbo simple monitor"
