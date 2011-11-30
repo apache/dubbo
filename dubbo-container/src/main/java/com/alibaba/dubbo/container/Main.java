@@ -32,7 +32,7 @@ public class Main {
 
     private static final Logger logger    = LoggerFactory.getLogger(Main.class);
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Throwable {
         try {
             ExtensionLoader<Container> loader = ExtensionLoader.getExtensionLoader(Container.class);
             final Container[] containers;
@@ -67,6 +67,7 @@ public class Main {
         } catch (Throwable t) {
             t.printStackTrace();
             logger.error(t.getMessage(), t);
+            throw t;
         }
         synchronized (Main.class) {
             for (;;) {
