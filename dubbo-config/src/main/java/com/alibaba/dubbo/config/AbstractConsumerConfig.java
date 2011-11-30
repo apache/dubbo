@@ -79,7 +79,8 @@ public abstract class AbstractConsumerConfig extends AbstractReferenceConfig {
     @Override
     public void setTimeout(Integer timeout) {
         super.setTimeout(timeout);
-        if (timeout != null && timeout > 0) {
+        if (timeout != null && timeout > 0
+                && System.getProperty("sun.rmi.transport.tcp.responseTimeout") == null) {
             System.setProperty("sun.rmi.transport.tcp.responseTimeout", String.valueOf(timeout));
         }
     }
