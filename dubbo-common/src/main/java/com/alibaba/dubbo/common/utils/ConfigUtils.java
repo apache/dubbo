@@ -15,14 +15,24 @@
  */
 package com.alibaba.dubbo.common.utils;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.Properties;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.ExtensionLoader;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 
+/**
+ * @author ding.lid
+ * @author william.liangf
+ */
 public class ConfigUtils {
+    private static final Logger logger = LoggerFactory.getLogger(ConfigUtils.class);
     
     public static boolean isNotEmpty(String value) {
         return ! isEmpty(value);
@@ -74,6 +84,64 @@ public class ConfigUtils {
         }
         return names;
 	}
+
+	/**
+	 * Load properties file to {@link Properties} from class path.
+	 * 
+	 * @param fileName properties file name. for example: <code>dubbo.properties</code>, <code>METE-INF/conf/foo.properties</code>
+	 * @param allowMultiFile if <code>false</code>, throw {@link IllegalStateException} when found multi file on the class path. 
+	 * @return loaded {@link Properties} content, merge multi properties file if found multi file 
+	 * @throws IllegalStateException not allow multi-file, but multi-file exsit on class path.
+	 */
+    public static Properties loadProperties(String fileName, boolean allowMultiFile) {
+        Properties properties = new Properties();
+        
+        List<java.net.URL> list = new ArrayList<java.net.URL>();
+        try {
+            Enumeration<java.net.URL> urls = ClassHelper.getClassLoader().getResources(fileName);
+            list = new ArrayList<java.net.URL>();
+            while (urls.hasMoreElements()) {
+                list.add(urls.nextElement());
+            }
+        }
+        catch (Throwable t) {
+            logger.warn("Fail to load " + fileName + " file: " + t.getMessage(), t);
+        }
+        
+        if(list.size() == 0) {
+            logger.warn("No " + fileName + " found on the class path.");
+            return properties;
+        }
+        if(!allowMultiFile && list.size() > 1) {
+            String errMsg = String.format("only 1 %s file is expected, but %d dubbo.properties files found on class path: %s",
+                    fileName, list.size(), list.toString());
+            logger.error(errMsg);
+            throw new IllegalStateException(errMsg);
+        }
+        
+        logger.info("load " + fileName + " properties file from " + list);
+
+        for(java.net.URL url : list) {
+            try {
+                Properties p = new Properties();
+                InputStream input = url.openStream();
+                if (input != null) {
+                    try {
+                        p.load(input);
+                        properties.putAll(p);
+                    } finally {
+                        try {
+                            input.close();
+                        } catch (Throwable t) {}
+                    }
+                }
+            } catch (Throwable e) {
+                logger.warn("Fail to load " + fileName + " file from " + url + "(ingore this file): " + e.getMessage(), e);
+            }
+        }
+        
+        return properties;
+    }
 
 	private ConfigUtils() {}
 	

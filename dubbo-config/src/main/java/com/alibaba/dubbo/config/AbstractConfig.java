@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.config;
 
-import java.io.InputStream;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -29,6 +28,8 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.ConfigUtils;
+import com.alibaba.dubbo.rpc.RpcConstants;
 
 /**
  * AbstractConfig
@@ -72,21 +73,7 @@ public abstract class AbstractConfig implements Serializable {
     }
     
     private static Properties loadProperties() {
-        Properties properties = new Properties();
-        try {
-            InputStream input = Thread.currentThread().getContextClassLoader()
-                    .getResourceAsStream("dubbo.properties");
-            if (input != null) {
-                try {
-                    properties.load(input);
-                } finally {
-                    input.close();
-                }
-            }
-        } catch (Throwable e) {
-            logger.warn("Fail to load dubbo.properties file: " + e.getMessage(), e);
-        }
-        return properties;
+        return ConfigUtils.loadProperties(RpcConstants.DEFAULT_DUBBO_CONF_PROPERTIES_FILE, false);
     }
     
     protected static void appendParameters(Map<String, String> parameters, Object config) {

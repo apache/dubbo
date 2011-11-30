@@ -15,8 +15,12 @@
  */
 package com.alibaba.dubbo.common.utils;
 
+import static org.junit.Assert.assertThat;
+import static org.junit.matchers.JUnitMatchers.containsString;
+
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -26,6 +30,7 @@ import com.alibaba.dubbo.common.serialize.support.dubbo.DubboSerialization;
 
 /**
  * @author tony.chenl
+ * @author ding.lid
  */
 public class ConfigUtilTest {
 
@@ -48,4 +53,72 @@ public class ConfigUtilTest {
                                                       Arrays.asList("ddd,default.eee,ccc"));
         Assert.assertEquals("[]", merged.toString());
     }
+    
+    @Test
+    public void test_loadProperties_noFile() throws Exception {
+        Properties p = ConfigUtils.loadProperties("notExisted", true);
+        Properties expected = new Properties();
+        Assert.assertEquals(expected, p);
+
+        p = ConfigUtils.loadProperties("notExisted", false);
+        Assert.assertEquals(expected, p);
+    }
+    
+    @Test
+    public void test_loadProperties_oneFile() throws Exception {
+        Properties p = ConfigUtils.loadProperties("properties.load", false);
+        
+        Properties expected = new Properties();
+        expected.put("a", "12");
+        expected.put("b", "34");
+        expected.put("c", "56");
+        
+        Assert.assertEquals(expected, p);
+    }
+    
+    @Test
+    public void test_loadProperties_oneFile_allowMulti() throws Exception {
+        Properties p = ConfigUtils.loadProperties("properties.load", true);
+        
+        Properties expected = new Properties();
+        expected.put("a", "12");
+        expected.put("b", "34");
+        expected.put("c", "56");
+        
+        Assert.assertEquals(expected, p);
+    }
+    
+    @Test
+    public void test_loadProperties_oneFile_notRootPath() throws Exception {
+        Properties p = ConfigUtils.loadProperties("META-INF/services/com.alibaba.dubbo.common.threadpool.ThreadPool", false);
+        
+        Properties expected = new Properties();
+        expected.put("com.alibaba.dubbo.common.threadpool.support.fixed.FixedThreadPool", "");
+        expected.put("com.alibaba.dubbo.common.threadpool.support.cached.CachedThreadPool", "");
+        
+        Assert.assertEquals(expected, p);
+    }
+    
+    @Test
+    public void test_loadProperties_multiFile_notRootPath_Exception() throws Exception {
+        try {
+            ConfigUtils.loadProperties("META-INF/services/com.alibaba.dubbo.common.status.StatusChecker", false);
+        } catch (IllegalStateException expected) {
+            assertThat(expected.getMessage(), containsString("only 1 META-INF/services/com.alibaba.dubbo.common.status.StatusChecker file is expected, but 2 dubbo.properties files found on class path:"));
+        }
+    }
+    
+    @Test
+    public void test_loadProperties_multiFile_notRootPath() throws Exception {
+        
+        Properties p = ConfigUtils.loadProperties("META-INF/services/com.alibaba.dubbo.common.status.StatusChecker", true);
+        
+        Properties expected = new Properties();
+        expected.put("com.alibaba.dubbo.common.status.support.MemoryStatusChecker", "");
+        expected.put("com.alibaba.dubbo.common.status.support.LoadStatusChecker", "");
+        expected.put("aa", "12");
+        
+        Assert.assertEquals(expected, p);
+    }
+    
 }
