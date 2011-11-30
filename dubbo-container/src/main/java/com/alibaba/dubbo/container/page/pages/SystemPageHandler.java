@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.container.web.pages;
+package com.alibaba.dubbo.container.page.pages;
 
 import java.lang.management.ManagementFactory;
 import java.text.SimpleDateFormat;
@@ -26,9 +26,9 @@ import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.common.utils.NetUtils;
-import com.alibaba.dubbo.container.web.Menu;
-import com.alibaba.dubbo.container.web.Page;
-import com.alibaba.dubbo.container.web.PageHandler;
+import com.alibaba.dubbo.container.page.Menu;
+import com.alibaba.dubbo.container.page.Page;
+import com.alibaba.dubbo.container.page.PageHandler;
 
 /**
  * SystemPageHandler

@@ -1,4 +1,0 @@
-com.alibaba.dubbo.container.web.pages.HomePageHandler
-com.alibaba.dubbo.container.web.pages.StatusPageHandler
-com.alibaba.dubbo.container.web.pages.LogPageHandler
-com.alibaba.dubbo.container.web.pages.SystemPageHandler

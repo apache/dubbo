@@ -22,9 +22,9 @@ import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
-import com.alibaba.dubbo.container.web.Menu;
-import com.alibaba.dubbo.container.web.Page;
-import com.alibaba.dubbo.container.web.PageHandler;
+import com.alibaba.dubbo.container.page.Menu;
+import com.alibaba.dubbo.container.page.Page;
+import com.alibaba.dubbo.container.page.PageHandler;
 
 /**
  * ConnectionsPageHandler

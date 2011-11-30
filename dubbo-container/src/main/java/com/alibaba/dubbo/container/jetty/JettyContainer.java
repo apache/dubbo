@@ -27,8 +27,8 @@ import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.container.Container;
-import com.alibaba.dubbo.container.web.PageServlet;
-import com.alibaba.dubbo.container.web.ResourceServlet;
+import com.alibaba.dubbo.container.page.PageServlet;
+import com.alibaba.dubbo.container.page.ResourceServlet;
 
 /**
  * JettyContainer. (SPI, Singleton, ThreadSafe)

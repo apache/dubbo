@@ -13,29 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.container.web;
+package com.alibaba.dubbo.container.page;
 
-import java.util.Comparator;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * MenuComparator
+ * Menu
  * 
  * @author william.liangf
  */
-public class MenuComparator implements Comparator<PageHandler> {
-
-    public int compare(PageHandler o1, PageHandler o2) {
-        if (o1 == null && o2 == null) {
-            return 0;
-        }
-        if (o1 == null) {
-            return -1;
-        }
-        if (o2 == null) {
-            return 1;
-        }
-        return o1.equals(o2) ? 0 : (o1.getClass().getAnnotation(Menu.class).order() 
-                > o2.getClass().getAnnotation(Menu.class).order() ? 1 : -1);
-    }
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE})
+public @interface Menu {
+    
+    String name();
+    
+    String desc() default "";
+    
+    int order() default 0;
 
 }
