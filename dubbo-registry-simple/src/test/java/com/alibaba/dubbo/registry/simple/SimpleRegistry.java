@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.registry.dubbo;
+package com.alibaba.dubbo.registry.simple;
 
-public class SimpleRegistryMain {
+public class SimpleRegistry {
     
     public static void main(String[] args) {
         com.alibaba.dubbo.container.Main.main(new String[] {"properties", "log4j", "spring"});
