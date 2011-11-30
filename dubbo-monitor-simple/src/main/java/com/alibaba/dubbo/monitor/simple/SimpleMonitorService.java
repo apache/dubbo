@@ -168,14 +168,14 @@ public class SimpleMonitorService implements MonitorService {
                         elapsedSummary[1] = -1;
                         elapsedSummary[2] = successSummary[3] == 0 ? 0 : elapsedSummary[3] / successSummary[3];
                         elapsedSummary[3] = -1;
-                        createChart(ELAPSED + "(ms)", dateDir.getName(), new String[] {CONSUMER, PROVIDER}, elapsedData, elapsedSummary, elapsedFile.getAbsolutePath());
+                        createChart(ELAPSED + "(ms)", serviceDir.getName(), methodDir.getName(), dateDir.getName(), new String[] {CONSUMER, PROVIDER}, elapsedData, elapsedSummary, elapsedFile.getAbsolutePath());
                     }
                     if (successChanged) {
                         divData(successData, 60);
                         successSummary[0] = successSummary[0] / 60;
                         successSummary[1] = successSummary[1] / 60;
                         successSummary[2] = successSummary[2] / 60;
-                        createChart(SUCCESS + "/s", dateDir.getName(), new String[] {CONSUMER, PROVIDER}, successData, successSummary, successFile.getAbsolutePath());
+                        createChart(SUCCESS + "/s", serviceDir.getName(), methodDir.getName(), dateDir.getName(), new String[] {CONSUMER, PROVIDER}, successData, successSummary, successFile.getAbsolutePath());
                     }
                 }
             }
@@ -242,7 +242,7 @@ public class SimpleMonitorService implements MonitorService {
         }
     }
     
-    private static void createChart(String key, String date, String[] types, Map<String, long[]> data, long[] summary, String path) {
+    private static void createChart(String key, String service, String method, String date, String[] types, Map<String, long[]> data, long[] summary, String path) {
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");
         TimeSeriesCollection xydataset = new TimeSeriesCollection();
         for (int i = 0; i < types.length; i ++) {
@@ -258,7 +258,7 @@ public class SimpleMonitorService implements MonitorService {
             xydataset.addSeries(timeseries);
         }
         JFreeChart jfreechart = ChartFactory.createTimeSeriesChart(
-                "max: " + summary[0] + (summary[1] >=0 ? " min: " + summary[1] : "") + " avg: " + summary[2] + (summary[3] >=0 ? " sum: " + new DecimalFormat("###,##0").format(summary[3]) : ""), toDisplayDate(date), key, xydataset, true, true, false);
+                "max: " + summary[0] + (summary[1] >=0 ? " min: " + summary[1] : "") + " avg: " + summary[2] + (summary[3] >=0 ? " sum: " + new DecimalFormat("###,##0").format(summary[3]) : ""), toDisplayService(service) + "." + method + " " + toDisplayDate(date), key, xydataset, true, true, false);
         jfreechart.setBackgroundPaint(Color.WHITE);
         XYPlot xyplot = (XYPlot) jfreechart.getPlot();
         xyplot.setBackgroundPaint(Color.WHITE);
@@ -287,6 +287,14 @@ public class SimpleMonitorService implements MonitorService {
         } catch (IOException e) {
             logger.warn(e.getMessage(), e);
         }
+    }
+    
+    private static String toDisplayService(String service) {
+        int i = service.lastIndexOf('.');
+        if (i >= 0) {
+            return service.substring(i + 1);
+        }
+        return service;
     }
     
     private static String toDisplayDate(String date) {
