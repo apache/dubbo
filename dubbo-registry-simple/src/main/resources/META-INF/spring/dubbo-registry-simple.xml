@@ -5,9 +5,14 @@
     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
     http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
 
-    <dubbo:application name="simple-registry" />
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE" />
+        <property name="location" value="classpath:dubbo.properties" />
+    </bean>
+	
+    <dubbo:application name="${dubbo.application.name}" />
     
-    <dubbo:protocol port="9090" />
+    <dubbo:protocol name="dubbo" port="${dubbo.protocol.port}" />
     
     <dubbo:service interface="com.alibaba.dubbo.registry.RegistryService" ref="registryService" registry="N/A" ondisconnect="disconnect" callbacks="1000">
         <dubbo:method name="subscribe"><dubbo:argument index="1" callback="true" /></dubbo:method>

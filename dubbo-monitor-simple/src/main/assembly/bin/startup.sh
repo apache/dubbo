@@ -6,22 +6,18 @@ DEPLOY_DIR=`pwd`
 CONF_DIR=$DEPLOY_DIR/conf
 LIB_DIR=$DEPLOY_DIR/lib
 LOGS_DIR=$DEPLOY_DIR/logs
-
 STDOUT_FILE=$LOGS_DIR/stdout.log
-SERVER_PORT=$1
+SERVER_PORT=`sed '/dubbo.protocol.port/!d;s/.*=//' conf/dubbo.properties`
+SERVER_NAME="Dubbo registry admin server"
 
 if [ ! -d $LOGS_DIR ]; then
 	mkdir $LOGS_DIR
 fi
 
-if [ -z "$SERVER_PORT" ]; then
-	SERVER_PORT=8080
-fi
-
 SERVER_PORT_COUNT=`netstat -tln | grep $SERVER_PORT | wc -l`
 if [ $SERVER_PORT_COUNT -gt 0 ]; then
 	echo "********************************************************************"
-	echo "** Error: Dubbo registry admin server port $SERVER_PORT already used!"
+	echo "** Error: $SERVER_NAME port $SERVER_PORT already used!"
 	echo "********************************************************************"
 	exit 1
 fi
@@ -46,21 +42,21 @@ fi
 
 EXIST_PIDS=`ps  --no-heading -C java -f --width 1000 | grep "$DEPLOY_DIR" |awk '{print $2}'`
 if [ ! -z "$EXIST_PIDS" ]; then
-    echo "Dubbo registry admin server already started!"
+    echo "$SERVER_NAME already started!"
     echo "PID: $EXIST_PIDS"
     exit;
 fi
 
 LIB_JARS=`ls $LIB_DIR|grep .jar|awk '{print "'$LIB_DIR'/"$0}'|tr "\n" ":"`
 
-echo -e "Starting dubbo registry admin server on $SERVER_PORT \c"
+echo -e "Starting $SERVER_NAME on $SERVER_PORT \c"
 nohup java $JAVA_OPTS $JAVA_MEM_OPTS $JAVA_DEBUG_OPTS -classpath $CONF_DIR:$LIB_JARS com.alibaba.dubbo.container.Main properties log4j registry spring jetty > $STDOUT_FILE 2>&1 &
 
 COUNT=0
 while [ $COUNT -lt 1 ]; do    
     echo -e ".\c"
     sleep 1 
-	COUNT=`curl -s "http://127.0.0.1:$SERVER_PORT/status" |grep -c "OK"`
+	COUNT=`echo status | nc 127.0.0.1 7070 -i 1 | grep -c OK`
 	if [ $COUNT -lt 1 ]; then
 		break
 	fi
