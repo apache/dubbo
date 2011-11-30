@@ -57,7 +57,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     
     private final static String SEPARATOR = "/";
 
-    private final static String SERVICES = "services";
+    private final static String DEFAULT_ROOT = "dubbo";
 
     private final static String PROVIDERS = "providers";
 
@@ -84,7 +84,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
         this.auth = url.getUsername() != null && url.getUsername().length() > 0 
                 && url.getPassword() != null && url.getPassword().length() > 0;
         this.acl = auth ? Ids.CREATOR_ALL_ACL : Ids.OPEN_ACL_UNSAFE;
-        String group = url.getParameter(Constants.GROUP_KEY, SERVICES);
+        String group = url.getParameter(Constants.GROUP_KEY, DEFAULT_ROOT);
         if (! group.startsWith(SEPARATOR)) {
             group = SEPARATOR + group;
         }
