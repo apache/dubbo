@@ -19,6 +19,7 @@ import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.Parameters;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.ChannelHandler;
@@ -26,6 +27,7 @@ import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
 import com.alibaba.dubbo.remoting.exchange.ExchangeHandler;
 import com.alibaba.dubbo.remoting.exchange.ResponseFuture;
+import com.alibaba.dubbo.rpc.RpcConstants;
 
 /**
  * dubbo protocol support class.
@@ -125,8 +127,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
      */
     public void close() {
         if (refenceCount.decrementAndGet() <= 0){
-            String key = client.getUrl().getAddress();
-            clientMap.remove(key);
+            clientMap.remove(url.getAddress());
             client.close();
             replaceWithLazyClient();
         }
@@ -140,9 +141,16 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
         }
     }
     
+    //幽灵client,
     private void replaceWithLazyClient(){
-        //FIXME close?
-//        client = new LazyConnectExchangeClient(url, client.getExchangeHandler());
+        //这个操作只为了防止程序bug错误关闭client做的防御措施，初始client必须为false状态
+        URL lazyUrl = url.addParameter(RpcConstants.LAZY_CONNECT_INITIAL_STATE_KEY, Boolean.FALSE)
+                .addParameter(Constants.RECONNECT_KEY, Boolean.FALSE)
+                .addParameter(Constants.SEND_RECONNECT_KEY, Boolean.TRUE.toString())
+                .addParameter("_client_memo", "referencecounthandler.replacewithlazyclient");
+        client = new LazyConnectExchangeClient(lazyUrl, client.getExchangeHandler());
+        //重新put进去，如果protocol处理有bug，可能会导致在protocol destroy时clientMap死循环
+//        clientMap.put(url.getAddress(), client);
     }
 
     public boolean isClosed() {

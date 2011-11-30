@@ -34,7 +34,7 @@ import com.alibaba.dubbo.remoting.RemotingException;
  */
 public abstract class AbstractPeer implements Endpoint, ChannelHandler {
 
-    private static final Logger       logger = LoggerFactory.getLogger(AbstractPeer.class);
+    private static final Logger  logger = LoggerFactory.getLogger(AbstractPeer.class);
 
     private final ChannelHandler handler;
 
@@ -42,7 +42,7 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
 
     private volatile boolean     closed;
 
-    public AbstractPeer(URL url, ChannelHandler handler)  {
+    public AbstractPeer(URL url, ChannelHandler handler) {
         if (url == null) {
             throw new IllegalArgumentException("url == null");
         }
@@ -52,14 +52,15 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
         this.url = url;
         this.handler = handler;
     }
-    
+
     public void send(Object message) throws RemotingException {
         send(message, url.getParameter(Constants.SENT_KEY, false));
     }
-    
+
     public void close() {
         closed = true;
     }
+
     public void close(int timeout) {
         close();
     }
@@ -67,7 +68,7 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
     public URL getUrl() {
         return url;
     }
-    
+
     protected void setUrl(URL url) {
         if (url == null) {
             throw new IllegalArgumentException("url == null");
@@ -76,9 +77,13 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
     }
 
     public ChannelHandler getChannelHandler() {
-        return handler;
+        if (handler instanceof ChannelHandlerDelegate) {
+            return ((ChannelHandlerDelegate) handler).getHandler();
+        } else {
+            return handler;
+        }
     }
-    
+
     public boolean isClosed() {
         return closed;
     }
@@ -117,8 +122,8 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
         handler.caught(ch, ex);
     }
 
+    @Deprecated
     public ChannelHandler getHandler() {
-        return handler;
+        return getChannelHandler();
     }
-
 }

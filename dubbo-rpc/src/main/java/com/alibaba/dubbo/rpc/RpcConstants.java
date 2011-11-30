@@ -173,7 +173,9 @@ public final class RpcConstants {
     //client被引用的个数，当被引用数(invoker)大于1时，invoker destroy时不能够关闭client
     public static final String CLIENT_REFERENCE_COUNT = "client.reference.count";
     
-    public static final String CONNECT_PER_SERVICE_KEY = "connect.per.service.key";
+    public static final String SERVICE_SHARECONNECT_KEY = "service.shareconnect";
+    
+    public static final boolean SERVICE_SHARECONNECT_DEFAULT = true;
     
     private RpcConstants() {}
     

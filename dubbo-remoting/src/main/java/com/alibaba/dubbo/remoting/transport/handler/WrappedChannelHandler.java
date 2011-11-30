@@ -29,8 +29,9 @@ import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.exchange.Request;
 import com.alibaba.dubbo.remoting.exchange.Response;
+import com.alibaba.dubbo.remoting.transport.ChannelHandlerDelegate;
 
-public class WrappedChannelHandler implements ChannelHandler {
+public class WrappedChannelHandler implements ChannelHandlerDelegate {
     
     protected static final Logger logger = LoggerFactory.getLogger(WrappedChannelHandler.class);
 
@@ -92,7 +93,11 @@ public class WrappedChannelHandler implements ChannelHandler {
     }
     
     public ChannelHandler getHandler() {
-        return handler;
+        if (handler instanceof ChannelHandlerDelegate) {
+            return ((ChannelHandlerDelegate) handler).getHandler();
+        } else {
+            return handler;
+        }
     }
     
     public URL getUrl() {

@@ -77,7 +77,7 @@ public class DubboInvokerAvilableTest {
     
     @Test
     public void test_NoInvokers() throws Exception{
-        URL url = URL.valueOf("dubbo://127.0.0.1:20883/hi?");
+        URL url = URL.valueOf("dubbo://127.0.0.1:20883/hi?"+RpcConstants.SERVICE_SHARECONNECT_KEY+"=false");
         ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, url);
         
         DubboInvoker<?> invoker = (DubboInvoker<?>)protocol.refer(IDemoService.class, url);

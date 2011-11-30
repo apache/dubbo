@@ -276,7 +276,8 @@ public class DubboProtocol extends AbstractProtocol {
             clients[0]  = getOrInitClient(url);
         } else {
             for (int i = 0; i < clients.length; i++) {
-                clients[i] = getOrInitClient(url);
+                //多连接的情况下,不能共享连接
+                clients[i] = initClient(url);
             }
         }
         // create rpc invoker.
@@ -286,7 +287,7 @@ public class DubboProtocol extends AbstractProtocol {
     }
     
     private ExchangeClient getOrInitClient(URL url){
-        boolean connect_per_service = url.getParameter(RpcConstants.CONNECT_PER_SERVICE_KEY, true);
+        boolean connect_per_service = url.getParameter(RpcConstants.SERVICE_SHARECONNECT_KEY, RpcConstants.SERVICE_SHARECONNECT_DEFAULT);
         
         if (connect_per_service ){
             return initClient(url);

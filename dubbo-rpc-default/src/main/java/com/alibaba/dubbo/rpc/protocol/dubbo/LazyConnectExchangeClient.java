@@ -38,7 +38,7 @@ import com.alibaba.dubbo.rpc.RpcConstants;
  * @author chao.liuc
  */
 @SuppressWarnings("deprecation")
-final class LazyConnectExchangeClient implements ExchangeClient {
+final class LazyConnectExchangeClient implements ExchangeClient{
 
     private final static Logger logger = LoggerFactory.getLogger(LazyConnectExchangeClient.class); 
 
