@@ -8,7 +8,7 @@ LIB_DIR=$DEPLOY_DIR/lib
 LOGS_DIR=$DEPLOY_DIR/logs
 STDOUT_FILE=$LOGS_DIR/stdout.log
 SERVER_PORT=`sed '/dubbo.protocol.port/!d;s/.*=//' conf/dubbo.properties`
-SERVER_NAME="Dubbo registry admin server"
+SERVER_NAME="Dubbo simple registry"
 
 if [ ! -d $LOGS_DIR ]; then
 	mkdir $LOGS_DIR
