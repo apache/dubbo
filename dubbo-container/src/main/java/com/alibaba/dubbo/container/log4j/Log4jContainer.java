@@ -24,6 +24,7 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.PropertyConfigurator;
 
 import com.alibaba.dubbo.common.Extension;
+import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.container.Container;
 
 /**
@@ -40,30 +41,27 @@ public class Log4jContainer implements Container {
 
     public static final String LOG4J_SUBDIRECTORY = "dubbo.log4j.subdirectory";
 
-    public static final String DEFAULT_LOG4J_FILE = System.getProperty("user.home") + "/dubbo.log";
-
     public static final String DEFAULT_LOG4J_LEVEL = "ERROR";
 
     @SuppressWarnings("unchecked")
     public void start() {
-        String file = System.getProperty(LOG4J_FILE);
-        if (file == null || file.length() == 0) {
-            file = DEFAULT_LOG4J_FILE;
+        String file = ConfigUtils.getProperty(LOG4J_FILE);
+        if (file != null && file.length() > 0) {
+            String level = ConfigUtils.getProperty(LOG4J_LEVEL);
+            if (level == null || level.length() == 0) {
+                level = DEFAULT_LOG4J_LEVEL;
+            }
+            Properties properties = new Properties();
+            properties.setProperty("log4j.rootLogger", level + ",application");
+            properties.setProperty("log4j.appender.application", "org.apache.log4j.DailyRollingFileAppender");
+            properties.setProperty("log4j.appender.application.File", file);
+            properties.setProperty("log4j.appender.application.Append", "true");
+            properties.setProperty("log4j.appender.application.DatePattern", "'.'yyyy-MM-dd");
+            properties.setProperty("log4j.appender.application.layout", "org.apache.log4j.PatternLayout");
+            properties.setProperty("log4j.appender.application.layout.ConversionPattern", "%d [%t] %-5p %C{6} (%F:%L) - %m%n");
+            PropertyConfigurator.configure(properties);
         }
-        String level = System.getProperty(LOG4J_LEVEL);
-        if (level == null || level.length() == 0) {
-            level = DEFAULT_LOG4J_LEVEL;
-        }
-        Properties properties = new Properties();
-        properties.setProperty("log4j.rootLogger", level + ",application");
-        properties.setProperty("log4j.appender.application", "org.apache.log4j.DailyRollingFileAppender");
-        properties.setProperty("log4j.appender.application.File", file);
-        properties.setProperty("log4j.appender.application.Append", "true");
-        properties.setProperty("log4j.appender.application.DatePattern", "'.'yyyy-MM-dd");
-        properties.setProperty("log4j.appender.application.layout", "org.apache.log4j.PatternLayout");
-        properties.setProperty("log4j.appender.application.layout.ConversionPattern", "%d [%t] %-5p %C{6} (%F:%L) - %m%n");
-        PropertyConfigurator.configure(properties);
-        String subdirectory = System.getProperty(LOG4J_SUBDIRECTORY);
+        String subdirectory = ConfigUtils.getProperty(LOG4J_SUBDIRECTORY);
         if (subdirectory != null && subdirectory.length() > 0) {
             Enumeration<org.apache.log4j.Logger> ls = LogManager.getCurrentLoggers();
             while (ls.hasMoreElements()) {
