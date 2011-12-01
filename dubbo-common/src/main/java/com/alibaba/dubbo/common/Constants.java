@@ -33,6 +33,8 @@ public class Constants {
     public static final List<String> DEFAULT_CHECK_STATUSES    = Collections.unmodifiableList(Arrays.asList(new String[] {
             "server", "registry", "threadpool", "datasource", "spring", "memory", "load" }));
 
+    public static final String       DUBBO_PROPERTIES               = "dubbo.properties";
+
     public static final String       SENT_KEY                       = "sent";
 
     public static final boolean      DEFAULT_SENT                   = false;

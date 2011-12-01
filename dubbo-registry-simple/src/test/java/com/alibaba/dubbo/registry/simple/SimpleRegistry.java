@@ -18,7 +18,7 @@ package com.alibaba.dubbo.registry.simple;
 public class SimpleRegistry {
     
     public static void main(String[] args) {
-        com.alibaba.dubbo.container.Main.main(new String[] {"properties", "log4j", "spring"});
+        com.alibaba.dubbo.container.Main.main(args);
     }
     
 }

@@ -98,7 +98,7 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
     protected void checkRegistry() {
         // 兼容旧版本
         if (registries == null || registries.size() == 0) {
-            String address = getLegacyProperty("dubbo.registry.address");
+            String address = ConfigUtils.getProperty("dubbo.registry.address");
             if (address != null && address.length() > 0) {
                 registries = new ArrayList<RegistryConfig>();
                 String[] as = address.split("\\s*[|]+\\s*");
@@ -124,7 +124,7 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
     protected void checkApplication() {
         // 兼容旧版本
         if (application == null) {
-            String app = getLegacyProperty("dubbo.application.name");
+            String app = ConfigUtils.getProperty("dubbo.application.name");
             if (app != null && app.length() > 0) {
                 application = new ApplicationConfig();
                 application.setName(app);
@@ -136,11 +136,11 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
         }
         
         
-        String wait = getLegacyProperty(RpcConstants.SHUTDOWN_TIMEOUT_KEY);
+        String wait = ConfigUtils.getProperty(RpcConstants.SHUTDOWN_TIMEOUT_KEY);
         if (wait != null && wait.trim().length() > 0) {
             System.setProperty(RpcConstants.SHUTDOWN_TIMEOUT_KEY, wait.trim());
         } else {
-            wait = getLegacyProperty(RpcConstants.SHUTDOWN_TIMEOUT_SECONDS_KEY);
+            wait = ConfigUtils.getProperty(RpcConstants.SHUTDOWN_TIMEOUT_SECONDS_KEY);
             if (wait != null && wait.trim().length() > 0) {
                 System.setProperty(RpcConstants.SHUTDOWN_TIMEOUT_SECONDS_KEY, wait.trim());
             }

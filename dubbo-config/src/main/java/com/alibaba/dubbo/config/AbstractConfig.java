@@ -20,7 +20,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URLEncoder;
 import java.util.Map;
-import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,8 +27,6 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
-import com.alibaba.dubbo.common.utils.ConfigUtils;
-import com.alibaba.dubbo.rpc.RpcConstants;
 
 /**
  * AbstractConfig
@@ -41,8 +38,6 @@ public abstract class AbstractConfig implements Serializable {
     private static final long serialVersionUID = 4267533505537413570L;
 
     protected static final Logger logger = LoggerFactory.getLogger(AbstractConfig.class);
-
-    private static final Properties PROPERTIES = loadProperties();
 
     private static final int MAX_LENGTH = 100;
 
@@ -57,24 +52,6 @@ public abstract class AbstractConfig implements Serializable {
     private static final Pattern PATTERN_NAME = Pattern.compile("[\\-._0-9a-zA-Z]+");
     
     private static final Pattern PATTERN_NAME_HAS_COLON= Pattern.compile("[:\\-._0-9a-zA-Z]+");
-    
-    protected static String getLegacyProperty(String key) {
-        String value = System.getProperty(key);
-        if (value == null || value.length() == 0) {
-            value = PROPERTIES.getProperty(key);
-        }
-        return value;
-    }
-    
-    public static void mergeProperties(Properties properties) {
-        if (properties != null) {
-            PROPERTIES.putAll(properties);
-        }
-    }
-    
-    private static Properties loadProperties() {
-        return ConfigUtils.loadProperties(RpcConstants.DEFAULT_DUBBO_CONF_PROPERTIES_FILE, false);
-    }
     
     protected static void appendParameters(Map<String, String> parameters, Object config) {
         appendParameters(parameters, config, null);

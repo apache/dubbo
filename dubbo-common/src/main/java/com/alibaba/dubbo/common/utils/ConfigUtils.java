@@ -32,6 +32,7 @@ import com.alibaba.dubbo.common.logger.LoggerFactory;
  * @author william.liangf
  */
 public class ConfigUtils {
+    
     private static final Logger logger = LoggerFactory.getLogger(ConfigUtils.class);
     
     public static boolean isNotEmpty(String value) {
@@ -85,6 +86,37 @@ public class ConfigUtils {
         return names;
 	}
 
+    private static volatile Properties PROPERTIES;
+    
+    public static Properties getProperties() {
+        if (PROPERTIES == null) {
+            synchronized (ConfigUtils.class) {
+                if (PROPERTIES == null) {
+                    PROPERTIES = ConfigUtils.loadProperties(Constants.DUBBO_PROPERTIES, false);
+                }
+            }
+        }
+        return PROPERTIES;
+    }
+    
+    public static void addProperties(Properties properties) {
+        if (properties != null) {
+            getProperties().putAll(properties);
+        }
+    }
+    
+	public static String getProperty(String key) {
+	    return getProperty(key, null);
+	}
+	
+    public static String getProperty(String key, String defaultValue) {
+        String value = System.getProperty(key);
+        if (value != null && value.length() > 0) {
+            return value;
+        }
+        return getProperties().getProperty(key, defaultValue);
+    }
+    
 	/**
 	 * Load properties file to {@link Properties} from class path.
 	 * 

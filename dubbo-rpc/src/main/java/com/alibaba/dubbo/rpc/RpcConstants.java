@@ -26,8 +26,6 @@ import java.util.List;
  */
 public final class RpcConstants {
     
-    public static final String DEFAULT_DUBBO_CONF_PROPERTIES_FILE = "dubbo.properties";
-
     public static final List<String> DEFAULT_REFERENCE_FILTERS = Collections.unmodifiableList(Arrays.asList(new String[] {
             "consumercontext", "compatible", "deprecated", "collect", "genericimpl", "activelimit", "monitor", "future" }));
 

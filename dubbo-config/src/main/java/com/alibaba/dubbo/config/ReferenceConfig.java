@@ -407,15 +407,15 @@ public class ReferenceConfig<T> extends AbstractConsumerConfig {
     private void checkDefault() {
         if (consumer == null) {
             consumer = new ConsumerConfig();
-            String t = getLegacyProperty("dubbo.service.invoke.timeout");
+            String t = ConfigUtils.getProperty("dubbo.service.invoke.timeout");
             if (t != null && t.length() > 0) {
                 consumer.setTimeout(Integer.parseInt(t.trim()));
             }
-            String r = getLegacyProperty("dubbo.service.max.retry.providers");
+            String r = ConfigUtils.getProperty("dubbo.service.max.retry.providers");
             if (r != null && r.length() > 0) {
                 consumer.setRetries(Integer.parseInt(r.trim()) - 1);
             }
-            String c = getLegacyProperty("dubbo.service.allow.no.provider");
+            String c = ConfigUtils.getProperty("dubbo.service.allow.no.provider");
             if (c != null && c.length() > 0) {
                 consumer.setCheck(!Boolean.parseBoolean(c));
             }

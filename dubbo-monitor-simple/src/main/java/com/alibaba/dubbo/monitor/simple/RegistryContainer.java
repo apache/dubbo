@@ -31,6 +31,7 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
+import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.container.Container;
 import com.alibaba.dubbo.registry.NotifyListener;
@@ -110,7 +111,7 @@ public class RegistryContainer implements Container {
     }
 
     public void start() {
-        String url = System.getProperty(REGISTRY_ADDRESS);
+        String url = ConfigUtils.getProperty(REGISTRY_ADDRESS);
         if (url == null || url.length() == 0) {
             throw new IllegalArgumentException("Please set java start argument: -D" + REGISTRY_ADDRESS + "=zookeeper://127.0.0.1:2181");
         }

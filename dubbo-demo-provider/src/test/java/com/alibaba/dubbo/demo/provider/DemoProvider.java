@@ -18,7 +18,7 @@ package com.alibaba.dubbo.demo.provider;
 public class DemoProvider {
 
 	public static void main(String[] args) {
-        com.alibaba.dubbo.container.Main.main(new String[] {"properties", "log4j", "spring", "jetty"});
+        com.alibaba.dubbo.container.Main.main(args);
 	}
 
 }

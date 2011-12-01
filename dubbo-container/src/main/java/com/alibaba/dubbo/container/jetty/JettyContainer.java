@@ -25,6 +25,7 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.container.Container;
 import com.alibaba.dubbo.container.page.PageServlet;
@@ -44,14 +45,14 @@ public class JettyContainer implements Container {
 
     public static final String JETTY_DIRECTORY = "dubbo.jetty.directory";
 
-    public static final String JETTY_PAGES = "dubbo.jetty.pages";
+    public static final String JETTY_PAGES = "dubbo.jetty.page";
 
     public static final int DEFAULT_JETTY_PORT = 8080;
 
     private SelectChannelConnector connector;
 
     public void start() {
-        String serverPort = System.getProperty(JETTY_PORT);
+        String serverPort = ConfigUtils.getProperty(JETTY_PORT);
         int port;
         if (serverPort == null || serverPort.length() == 0) {
             port = DEFAULT_JETTY_PORT;
@@ -62,7 +63,7 @@ public class JettyContainer implements Container {
         connector.setPort(port);
         ServletHandler handler = new ServletHandler();
         
-        String resources = System.getProperty(JETTY_DIRECTORY);
+        String resources = ConfigUtils.getProperty(JETTY_DIRECTORY);
         if (resources != null && resources.length() > 0) {
             String[] directories = Constants.COMMA_SPLIT_PATTERN.split(resources);
             ResourceServlet resourceServlet = new ResourceServlet();
@@ -87,7 +88,7 @@ public class JettyContainer implements Container {
         }
 
         ServletHolder pageHolder = handler.addServletWithMapping(PageServlet.class, "/*");
-        pageHolder.setInitParameter("pages", System.getProperty(JETTY_PAGES));
+        pageHolder.setInitParameter("pages", ConfigUtils.getProperty(JETTY_PAGES));
         pageHolder.setInitOrder(2);
         
         Server server = new Server();

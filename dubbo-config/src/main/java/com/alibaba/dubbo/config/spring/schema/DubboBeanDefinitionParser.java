@@ -38,6 +38,7 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.config.ArgumentConfig;
 import com.alibaba.dubbo.config.MethodConfig;
 import com.alibaba.dubbo.config.MonitorConfig;
@@ -163,12 +164,12 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                                             && ! "name".equals(property) 
                                             && ! "interface".equals(property)) {
                                         String sysProperty = element.getPrefix() + "." + element.getLocalName() + "." + id + "." + property;
-                                        String sysValue = System.getProperty(sysProperty);
+                                        String sysValue = ConfigUtils.getProperty(sysProperty);
                                         if (sysValue != null && sysValue.trim().length() > 0) {
                                             reference = sysValue.trim();
                                         } else {
                                             sysProperty = element.getPrefix() + "." + element.getLocalName() + "." + property;
-                                            sysValue = System.getProperty(sysProperty);
+                                            sysValue = ConfigUtils.getProperty(sysProperty);
                                             if (sysValue != null && sysValue.trim().length() > 0) {
                                                 reference = sysValue.trim();
                                             }
