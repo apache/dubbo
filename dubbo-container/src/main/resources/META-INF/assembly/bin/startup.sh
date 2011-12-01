@@ -3,8 +3,6 @@ cd `dirname $0`
 BIN_DIR=`pwd`
 cd ..
 DEPLOY_DIR=`pwd`
-CONF_DIR=$DEPLOY_DIR/conf
-LIB_DIR=$DEPLOY_DIR/lib
 
 CR=`echo -e "\0015\c"`
 SERVER_NAME=`sed '/dubbo.application.name/!d;s/.*=//' conf/dubbo.properties | sed -e "s/$CR//g"`
@@ -18,6 +16,8 @@ else
 	LOGS_DIR=$DEPLOY_DIR/logs
 fi
 
+CONF_DIR=$DEPLOY_DIR/conf
+LIB_DIR=$DEPLOY_DIR/lib
 STDOUT_FILE=$LOGS_DIR/stdout.log
 
 if [ ! -d $LOGS_DIR ]; then
