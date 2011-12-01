@@ -54,7 +54,7 @@ public class DubboMonitorFactroy extends AbstractMonitorFactroy {
         } else {
             filter = filter + ",";
         }
-        url = url.addParameter(Constants.REFERENCE_FILTER_KEY, filter + "-monitor");
+        url = url.addParameters(Constants.CLUSTER_KEY, "failsafe", Constants.REFERENCE_FILTER_KEY, filter + "-monitor");
         Invoker<MonitorService> monitorInvoker = protocol.refer(MonitorService.class, url);
         MonitorService monitorService = proxyFactory.getProxy(monitorInvoker);
         return new DubboMonitor(monitorInvoker, monitorService);
