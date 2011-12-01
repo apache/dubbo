@@ -22,58 +22,62 @@ if [ -z "$KILL_PIDS" ]; then
 fi
 
 if [ "$1" != "skip" ]; then
-	DUMP_DATE=`date +%Y%m%d%H%M%S`
-	DUMP_DIR=$LOGS_DIR/dump/dubbo-registry-$DUMP_DATE
+	DUMP_DIR=$LOGS_DIR/dump
 	if [ ! -d $DUMP_DIR ]; then
 		mkdir $DUMP_DIR
 	fi
+	DUMP_DATE=`date +%Y%m%d%H%M%S`
+	DATE_DIR=$DUMP_DIR/$DUMP_DATE
+	if [ ! -d $DATE_DIR ]; then
+		mkdir $DATE_DIR
+	fi
 	echo -e "Dumping $SERVER_NAME \c"
 	for PID in $KILL_PIDS ; do
-		$JAVA_HOME/bin/jstack $PID > $DUMP_DIR/jstack-$PID.dump 2>&1
+		$JAVA_HOME/bin/jstack $PID > $DATE_DIR/jstack-$PID.dump 2>&1
 		echo -e ".\c"
-		$JAVA_HOME/bin/jinfo $PID > $DUMP_DIR/jinfo-$PID.dump 2>&1
+		$JAVA_HOME/bin/jinfo $PID > $DATE_DIR/jinfo-$PID.dump 2>&1
 		echo -e ".\c"
-		$JAVA_HOME/bin/jstat -gcutil $PID > $DUMP_DIR/jstat-gcutil-$PID.dump 2>&1
+		$JAVA_HOME/bin/jstat -gcutil $PID > $DATE_DIR/jstat-gcutil-$PID.dump 2>&1
 		echo -e ".\c"
-		$JAVA_HOME/bin/jstat -gccapacity $PID > $DUMP_DIR/jstat-gccapacity-$PID.dump 2>&1
+		$JAVA_HOME/bin/jstat -gccapacity $PID > $DATE_DIR/jstat-gccapacity-$PID.dump 2>&1
 		echo -e ".\c"
-		$JAVA_HOME/bin/jmap $PID > $DUMP_DIR/jmap-$PID.dump 2>&1
+		$JAVA_HOME/bin/jmap $PID > $DATE_DIR/jmap-$PID.dump 2>&1
 		echo -e ".\c"
-		$JAVA_HOME/bin/jmap -heap $PID > $DUMP_DIR/jmap-heap-$PID.dump 2>&1
+		$JAVA_HOME/bin/jmap -heap $PID > $DATE_DIR/jmap-heap-$PID.dump 2>&1
 		echo -e ".\c"
-		$JAVA_HOME/bin/jmap -histo $PID > $DUMP_DIR/jmap-histo-$PID.dump 2>&1
+		$JAVA_HOME/bin/jmap -histo $PID > $DATE_DIR/jmap-histo-$PID.dump 2>&1
 		echo -e ".\c"
 		if [ -r /usr/sbin/lsof ]; then
-		/usr/sbin/lsof -p $PID > $DUMP_DIR/lsof-$PID.dump
+		/usr/sbin/lsof -p $PID > $DATE_DIR/lsof-$PID.dump
 		echo -e ".\c"
 		fi
 	done
 	if [ -r /usr/bin/sar ]; then
-	/usr/bin/sar > $DUMP_DIR/sar.dump
+	/usr/bin/sar > $DATE_DIR/sar.dump
 	echo -e ".\c"
 	fi
 	if [ -r /usr/bin/uptime ]; then
-	/usr/bin/uptime > $DUMP_DIR/uptime.dump
+	/usr/bin/uptime > $DATE_DIR/uptime.dump
 	echo -e ".\c"
 	fi
 	if [ -r /usr/bin/free ]; then
-	/usr/bin/free -t > $DUMP_DIR/free.dump
+	/usr/bin/free -t > $DATE_DIR/free.dump
 	echo -e ".\c"
 	fi
 	if [ -r /usr/bin/vmstat ]; then
-	/usr/bin/vmstat > $DUMP_DIR/vmstat.dump
+	/usr/bin/vmstat > $DATE_DIR/vmstat.dump
 	echo -e ".\c"
 	fi
 	if [ -r /usr/bin/mpstat ]; then
-	/usr/bin/mpstat > $DUMP_DIR/mpstat.dump
+	/usr/bin/mpstat > $DATE_DIR/mpstat.dump
 	echo -e ".\c"
 	fi
 	if [ -r /usr/bin/iostat ]; then
-	/usr/bin/iostat > $DUMP_DIR/iostat.dump
+	/usr/bin/iostat > $DATE_DIR/iostat.dump
 	echo -e ".\c"
 	fi
 	if [ -r /bin/netstat ]; then
-	/bin/netstat > $DUMP_DIR/netstat.dump
+	/bin/netstat > $DATE_DIR/netstat.dump
 	echo -e ".\c"
 	fi
 	echo "OK!"
@@ -81,7 +85,6 @@ fi
 
 echo -e "Stopping $SERVER_NAME \c"
 for PID in $KILL_PIDS ; do
-	echo -e "$PID \c"
 	kill $PID > /dev/null 2>&1
 done
 
