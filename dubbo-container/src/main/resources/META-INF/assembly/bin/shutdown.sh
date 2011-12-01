@@ -8,20 +8,26 @@ CR=`echo -e "\0015\c"`
 SERVER_NAME=`sed '/dubbo.application.name/!d;s/.*=//' conf/dubbo.properties | sed -e "s/$CR//g"`
 LOGS_FILE=`sed '/dubbo.log4j.file/!d;s/.*=//' conf/dubbo.properties | sed -e "s/$CR//g"`
 
-LOGS_DIR=""
-if [ -n "$LOGS_FILE" ]; then
-	LOGS_DIR=`dirname $LOGS_FILE`
-else
-	LOGS_DIR=$DEPLOY_DIR/logs
+if [ -z "$SERVER_NAME" ]; then
+	SERVER_NAME=`hostname`
 fi
 
-KILL_PIDS=`ps  --no-heading -C java -f --width 1000 | grep "$DEPLOY_DIR" |awk '{print $2}'`
-if [ -z "$KILL_PIDS" ]; then
+PIDS=`ps  --no-heading -C java -f --width 1000 | grep "$DEPLOY_DIR" |awk '{print $2}'`
+if [ -z "$PIDS" ]; then
     echo "ERROR: The $SERVER_NAME does not started!"
-    exit 1;
+    exit 1
 fi
 
 if [ "$1" != "skip" ]; then
+	LOGS_DIR=""
+	if [ -n "$LOGS_FILE" ]; then
+		LOGS_DIR=`dirname $LOGS_FILE`
+	else
+		LOGS_DIR=$DEPLOY_DIR/logs
+	fi
+	if [ ! -d $LOGS_DIR ]; then
+		mkdir $LOGS_DIR
+	fi
 	DUMP_DIR=$LOGS_DIR/dump
 	if [ ! -d $DUMP_DIR ]; then
 		mkdir $DUMP_DIR
@@ -32,7 +38,7 @@ if [ "$1" != "skip" ]; then
 		mkdir $DATE_DIR
 	fi
 	echo -e "Dumping the $SERVER_NAME ...\c"
-	for PID in $KILL_PIDS ; do
+	for PID in $PIDS ; do
 		jstack $PID > $DATE_DIR/jstack-$PID.dump 2>&1
 		echo -e ".\c"
 		jinfo $PID > $DATE_DIR/jinfo-$PID.dump 2>&1
@@ -84,7 +90,7 @@ if [ "$1" != "skip" ]; then
 fi
 
 echo -e "Stopping the $SERVER_NAME ...\c"
-for PID in $KILL_PIDS ; do
+for PID in $PIDS ; do
 	kill $PID > /dev/null 2>&1
 done
 
@@ -93,13 +99,13 @@ while [ $COUNT -lt 1 ]; do
     echo -e ".\c"
     sleep 1
     COUNT=1
-    for PID in $KILL_PIDS ; do
-		PID_PS=`ps --no-heading -p $PID`
-		if [ -n "$PID_PS" ]; then
+    for PID in $PIDS ; do
+		PID_EXIST=`ps --no-heading -p $PID`
+		if [ -n "$PID_EXIST" ]; then
 			COUNT=0
 			break
 		fi
 	done
 done
 echo "OK!"
-echo "PID: $KILL_PIDS"
+echo "PID: $PIDS"

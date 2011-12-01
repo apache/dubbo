@@ -9,26 +9,15 @@ SERVER_NAME=`sed '/dubbo.application.name/!d;s/.*=//' conf/dubbo.properties | se
 SERVER_PORT=`sed '/dubbo.protocol.port/!d;s/.*=//' conf/dubbo.properties | sed -e "s/$CR//g"`
 LOGS_FILE=`sed '/dubbo.log4j.file/!d;s/.*=//' conf/dubbo.properties | sed -e "s/$CR//g"`
 
-LOGS_DIR=""
-if [ -n "$LOGS_FILE" ]; then
-	LOGS_DIR=`dirname $LOGS_FILE`
-else
-	LOGS_DIR=$DEPLOY_DIR/logs
+if [ -z "$SERVER_NAME" ]; then
+	SERVER_NAME=`hostname`
 fi
 
-CONF_DIR=$DEPLOY_DIR/conf
-LIB_DIR=$DEPLOY_DIR/lib
-STDOUT_FILE=$LOGS_DIR/stdout.log
-
-if [ ! -d $LOGS_DIR ]; then
-	mkdir $LOGS_DIR
-fi
-
-EXIST_PIDS=`ps  --no-heading -C java -f --width 1000 | grep "$DEPLOY_DIR" |awk '{print $2}'`
-if [ -n "$EXIST_PIDS" ]; then
+PIDS=`ps  --no-heading -C java -f --width 1000 | grep "$DEPLOY_DIR" |awk '{print $2}'`
+if [ -n "$PIDS" ]; then
     echo "ERROR: The $SERVER_NAME already started!"
-    echo "PID: $EXIST_PIDS"
-    exit;
+    echo "PID: $PIDS"
+    exit 1
 fi
 
 if [ -n "$SERVER_PORT" ]; then
@@ -38,6 +27,21 @@ if [ -n "$SERVER_PORT" ]; then
 		exit 1
 	fi
 fi
+
+LOGS_DIR=""
+if [ -n "$LOGS_FILE" ]; then
+	LOGS_DIR=`dirname $LOGS_FILE`
+else
+	LOGS_DIR=$DEPLOY_DIR/logs
+fi
+if [ ! -d $LOGS_DIR ]; then
+	mkdir $LOGS_DIR
+fi
+STDOUT_FILE=$LOGS_DIR/stdout.log
+
+CONF_DIR=$DEPLOY_DIR/conf
+LIB_DIR=$DEPLOY_DIR/lib
+LIB_JARS=`ls $LIB_DIR|grep .jar|awk '{print "'$LIB_DIR'/"$0}'|tr "\n" ":"`
 
 JAVA_OPTS=" -Djava.awt.headless=true -Djava.net.preferIPv4Stack=true "
 JAVA_DEBUG_OPTS=""
@@ -57,8 +61,6 @@ else
 	JAVA_MEM_OPTS=" -server -Xms1024m -Xmx1024m -XX:PermSize=128m -XX:SurvivorRatio=2 -XX:+UseParallelGC "
 fi
 
-LIB_JARS=`ls $LIB_DIR|grep .jar|awk '{print "'$LIB_DIR'/"$0}'|tr "\n" ":"`
-
 echo -e "Starting the $SERVER_NAME ...\c"
 nohup java $JAVA_OPTS $JAVA_MEM_OPTS $JAVA_DEBUG_OPTS -classpath $CONF_DIR:$LIB_JARS com.alibaba.dubbo.container.Main > $STDOUT_FILE 2>&1 &
 
@@ -76,5 +78,5 @@ while [ $COUNT -lt 1 ]; do
 	fi
 done
 echo "OK!"
-START_PIDS=`ps  --no-heading -C java -f --width 1000 | grep "$DEPLOY_DIR" | awk '{print $2}'`
-echo "PID: $START_PIDS"
+PIDS=`ps  --no-heading -C java -f --width 1000 | grep "$DEPLOY_DIR" | awk '{print $2}'`
+echo "PID: $PIDS"
