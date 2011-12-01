@@ -24,12 +24,17 @@ if [ ! -d $LOGS_DIR ]; then
 	mkdir $LOGS_DIR
 fi
 
+EXIST_PIDS=`ps  --no-heading -C java -f --width 1000 | grep "$DEPLOY_DIR" |awk '{print $2}'`
+if [ -n "$EXIST_PIDS" ]; then
+    echo "ERROR: The $SERVER_NAME already started!"
+    echo "PID: $EXIST_PIDS"
+    exit;
+fi
+
 if [ -n "$SERVER_PORT" ]; then
 	SERVER_PORT_COUNT=`netstat -tln | grep $SERVER_PORT | wc -l`
 	if [ $SERVER_PORT_COUNT -gt 0 ]; then
-		echo "********************************************************************"
-		echo "** Error: $SERVER_NAME port $SERVER_PORT already used!"
-		echo "********************************************************************"
+		echo "ERROR: The $SERVER_NAME port $SERVER_PORT already used!"
 		exit 1
 	fi
 fi
@@ -52,16 +57,9 @@ else
 	JAVA_MEM_OPTS=" -server -Xms1024m -Xmx1024m -XX:PermSize=128m -XX:SurvivorRatio=2 -XX:+UseParallelGC "
 fi
 
-EXIST_PIDS=`ps  --no-heading -C java -f --width 1000 | grep "$DEPLOY_DIR" |awk '{print $2}'`
-if [ -n "$EXIST_PIDS" ]; then
-    echo "$SERVER_NAME already started!"
-    echo "PID: $EXIST_PIDS"
-    exit;
-fi
-
 LIB_JARS=`ls $LIB_DIR|grep .jar|awk '{print "'$LIB_DIR'/"$0}'|tr "\n" ":"`
 
-echo -e "Starting $SERVER_NAME ...\c"
+echo -e "Starting the $SERVER_NAME ...\c"
 nohup java $JAVA_OPTS $JAVA_MEM_OPTS $JAVA_DEBUG_OPTS -classpath $CONF_DIR:$LIB_JARS com.alibaba.dubbo.container.Main > $STDOUT_FILE 2>&1 &
 
 COUNT=0

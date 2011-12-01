@@ -17,7 +17,7 @@ fi
 
 KILL_PIDS=`ps  --no-heading -C java -f --width 1000 | grep "$DEPLOY_DIR" |awk '{print $2}'`
 if [ -z "$KILL_PIDS" ]; then
-    echo "$SERVER_NAME does not started!"
+    echo "ERROR: The $SERVER_NAME does not started!"
     exit 1;
 fi
 
@@ -31,7 +31,7 @@ if [ "$1" != "skip" ]; then
 	if [ ! -d $DATE_DIR ]; then
 		mkdir $DATE_DIR
 	fi
-	echo -e "Dumping $SERVER_NAME ...\c"
+	echo -e "Dumping the $SERVER_NAME ...\c"
 	for PID in $KILL_PIDS ; do
 		jstack $PID > $DATE_DIR/jstack-$PID.dump 2>&1
 		echo -e ".\c"
@@ -83,7 +83,7 @@ if [ "$1" != "skip" ]; then
 	echo "OK!"
 fi
 
-echo -e "Stopping $SERVER_NAME ...\c"
+echo -e "Stopping the $SERVER_NAME ...\c"
 for PID in $KILL_PIDS ; do
 	kill $PID > /dev/null 2>&1
 done
