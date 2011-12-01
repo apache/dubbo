@@ -80,5 +80,3 @@ done
 echo "OK!"
 START_PIDS=`ps  --no-heading -C java -f --width 1000 | grep "$DEPLOY_DIR" | awk '{print $2}'`
 echo "PID: $START_PIDS"
-echo "========================================================="
-tail -f $STDOUT_FILE
