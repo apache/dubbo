@@ -6,7 +6,7 @@
 	<includeBaseDirectory>true</includeBaseDirectory>
 	<fileSets>
 		<fileSet>
-			<directory>src/main/assembly/bin</directory>
+			<directory>${project.build.directory}/dubbo/META-INF/assembly/bin</directory>
 			<outputDirectory>bin</outputDirectory>
 			<fileMode>0755</fileMode>
 		</fileSet>

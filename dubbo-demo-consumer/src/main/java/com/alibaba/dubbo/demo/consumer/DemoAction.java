@@ -18,16 +18,17 @@ package com.alibaba.dubbo.demo.consumer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-
 import com.alibaba.dubbo.demo.DemoService;
 
-public class DemoConsumer {
-	
-	public static void main(String[] args) {
-		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[] {"classpath:META-INF/spring/consumer.xml"});      
-        context.start();
-        DemoService demoService = (DemoService)context.getBean("demoService");
+public class DemoAction {
+    
+    private DemoService demoService;
+
+    public void setDemoService(DemoService demoService) {
+        this.demoService = demoService;
+    }
+
+	public void start() {
         for (int i = 0; i < Integer.MAX_VALUE; i ++) {
             try {
             	String hello = demoService.sayHello("world" + i);

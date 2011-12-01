@@ -19,7 +19,7 @@
 	xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
 	http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
-		
+	
 	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE" />
         <property name="location" value="classpath:dubbo.properties" />
@@ -31,7 +31,10 @@
 	
 	<dubbo:monitor protocol="registry" />
 	
-	<!-- 引用远程服务配置 -->
 	<dubbo:reference id="demoService" interface="com.alibaba.dubbo.demo.DemoService" />
-
+	
+	<bean class="com.alibaba.dubbo.demo.consumer.DemoAction" init-method="start">
+		<property name="demoService" ref="demoService" />
+	</bean>
+	
 </beans>
