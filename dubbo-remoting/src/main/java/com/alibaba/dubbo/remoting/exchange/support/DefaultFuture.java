@@ -214,6 +214,10 @@ public class DefaultFuture implements ResponseFuture {
         return start;
     }
 
+    public static DefaultFuture getFuture(long id) {
+        return FUTURES.get(id);
+    }
+
     public static boolean hasFuture(Channel channel) {
         return CHANNELS.containsValue(channel);
     }

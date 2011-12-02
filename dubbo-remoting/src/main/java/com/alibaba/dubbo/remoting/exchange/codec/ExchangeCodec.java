@@ -37,6 +37,7 @@ import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.exchange.Request;
 import com.alibaba.dubbo.remoting.exchange.Response;
+import com.alibaba.dubbo.remoting.exchange.support.DefaultFuture;
 import com.alibaba.dubbo.remoting.telnet.codec.TelnetCodec;
 
 /**
@@ -169,7 +170,7 @@ public class ExchangeCodec extends TelnetCodec {
                     } else if (res.isEvent()) {
                         data = decodeEventData(channel, in);
                     } else {
-                        data = decodeResponseData(channel, in);
+                        data = decodeResponseData(channel, in, getRequestData(id));
                     }
                     res.setResult(data);
                 } catch (Throwable t) {
@@ -205,6 +206,16 @@ public class ExchangeCodec extends TelnetCodec {
             }
             return req;
         }
+    }
+
+    private Object getRequestData(long id) {
+        DefaultFuture future = DefaultFuture.getFuture(id);
+        if (future == null)
+            return null;
+        Request req = future.getRequest();
+        if (req == null)
+            return null;
+        return req.getData();
     }
 
     protected void encodeRequest(Channel channel, OutputStream os, Request req) throws IOException {
@@ -363,6 +374,10 @@ public class ExchangeCodec extends TelnetCodec {
 
     protected Object decodeResponseData(Channel channel, ObjectInput in) throws IOException {
         return decodeResponseData(in);
+    }
+
+    protected Object decodeResponseData(Channel channel, ObjectInput in, Object requestData) throws IOException {
+        return decodeResponseData(channel, in);
     }
     
     @Override
