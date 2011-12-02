@@ -15,6 +15,7 @@
  */
 package com.alibaba.dubbo.registry.dubbo;
 
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -140,6 +141,10 @@ public class DubboRegistry extends FailbackRegistry {
     
     protected void doUnsubscribe(URL url, NotifyListener listener) {
         registryService.unsubscribe(url, listener);
+    }
+
+    public List<URL> lookup(URL url) {
+        return registryService.lookup(url);
     }
     
 }

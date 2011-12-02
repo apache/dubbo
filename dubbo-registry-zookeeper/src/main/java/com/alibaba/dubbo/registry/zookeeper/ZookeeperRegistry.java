@@ -382,6 +382,24 @@ public class ZookeeperRegistry extends FailbackRegistry {
         }
     }
     
+    public List<URL> lookup(URL url) {
+        if (url == null) {
+            throw new IllegalArgumentException("lookup url == null");
+        }
+        try {
+            String register = toRegisterPath(url);
+            List<String> providers = getChildren(register);
+            if (url.getParameter(Constants.ADMIN_KEY, false)) {
+                String subscribe = toSubscribePath(url);
+                List<String> consumers = getChildren(subscribe);
+                providers.addAll(consumers);
+            }
+            return toUrls(url, providers);
+        } catch (Throwable e) {
+            throw new RpcException("Failed to lookup " + url + ", cause: " + e.getMessage(), e);
+        }
+    }
+    
     private String toRootDir() {
         if (root.equals(SEPARATOR)) {
             return root;

@@ -15,6 +15,8 @@
  */
 package com.alibaba.dubbo.registry;
 
+import java.util.List;
+
 import com.alibaba.dubbo.common.URL;
 
 /**
@@ -74,5 +76,13 @@ public interface RegistryService {
      * @param listener 服务变更事件监听器
      */
     void unsubscribe(URL url, NotifyListener listener);
+    
+    /**
+     * 查询服务列表，与订阅服务相同，拉模式，只返回一次结果。
+     * 
+     * @param url 服务查询键值对，如：subscribe://10.20.153.10/com.alibaba.foo.BarService?version=1.0.0&application=kylin
+     * @return 服务列表
+     */
+    List<URL> lookup(URL url);
 
 }
