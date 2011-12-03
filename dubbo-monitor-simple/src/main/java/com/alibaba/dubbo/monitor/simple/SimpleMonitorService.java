@@ -329,6 +329,10 @@ public class SimpleMonitorService implements MonitorService {
                     } else {
                         type = CONSUMER;
                         consumer = statistics.getParameter(CONSUMER);
+                        int i = consumer.indexOf(':');
+                        if (i > 0) {
+                            consumer = consumer.substring(0, i);
+                        }
                         provider = statistics.getHost();
                     }
                     String filename = statisticsDirectory 

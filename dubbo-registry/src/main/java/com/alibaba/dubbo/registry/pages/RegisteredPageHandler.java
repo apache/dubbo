@@ -22,7 +22,6 @@ import java.util.Set;
 
 import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.container.page.Menu;
 import com.alibaba.dubbo.container.page.Page;
 import com.alibaba.dubbo.container.page.PageHandler;
 import com.alibaba.dubbo.registry.Registry;
@@ -34,29 +33,45 @@ import com.alibaba.dubbo.registry.support.AbstractRegistryFactory;
  * 
  * @author william.liangf
  */
-@Menu(name = "Registered", desc = "Registered", order = 11000)
 @Extension("registered")
 public class RegisteredPageHandler implements PageHandler {
 
     public Page handle(URL url) {
+        String registryAddress = url.getParameter("registry");
         List<List<String>> rows = new ArrayList<List<String>>();
         Collection<Registry> registries = AbstractRegistryFactory.getRegistries();
+        StringBuilder select = new StringBuilder();
+        Registry registry = null;
         if (registries != null && registries.size() > 0) {
-        	Registry registry = registries.iterator().next();
-        	if (registry instanceof AbstractRegistry) {
-            	Set<String> services = ((AbstractRegistry) registry).getRegistered();
-                if (services != null && services.size() > 0) {
-                    for (String u : services) {
-                        List<String> row = new ArrayList<String>();
-                        row.add(URL.valueOf(u).getServiceName().replace("<", "&lt;").replace(">", "&gt;"));
-                        row.add(u.toString().replace("<", "&lt;").replace(">", "&gt;"));
-                        rows.add(row);
-                    }
+            select.append(" &gt; <select onchange=\"window.location.href='connections.html?port=' + this.value;\">");
+            for (Registry r : registries) {
+                String sp = r.getUrl().getAddress();
+                select.append("<option value=\">");
+                select.append(sp);
+                if (((registryAddress == null || registryAddress.length() == 0) && registry == null)
+                        || registryAddress.equals(sp)) {
+                    registry = r;
+                    select.append("\" selected=\"selected");
                 }
-        	}
+                select.append("\">");
+                select.append(sp);
+                select.append("</option>");
+            }
+            select.append("</select>");
         }
-        return new Page("<a href=\"/\">Home</a> &gt; Service", "Services (" + rows.size() + ")",
-                new String[] { "Service Type:", "URL:" }, rows);
+        if (registry instanceof AbstractRegistry) {
+            Set<String> services = ((AbstractRegistry) registry).getRegistered();
+            if (services != null && services.size() > 0) {
+                for (String u : services) {
+                    List<String> row = new ArrayList<String>();
+                    row.add(URL.valueOf(u).getServiceName().replace("<", "&lt;").replace(">", "&gt;"));
+                    row.add(u.toString().replace("<", "&lt;").replace(">", "&gt;"));
+                    rows.add(row);
+                }
+            }
+        }
+        return new Page("Registries" + select.toString() + " &gt; Registered", "Registered (" + rows.size() + ")",
+                new String[] { "Service:", "URL:" }, rows);
     }
 
 }

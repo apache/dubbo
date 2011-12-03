@@ -40,23 +40,21 @@ public class RegistriesPageHandler implements PageHandler {
         List<List<String>> rows = new ArrayList<List<String>>();
         Collection<Registry> registries = AbstractRegistryFactory.getRegistries();
         if (registries != null && registries.size() > 0) {
-            int i = 0;
             for (Registry registry : registries) {
-                i ++;
                 String server = registry.getUrl().getAddress();
                 List<String> row = new ArrayList<String>();
-                row.add(String.valueOf(i));
                 row.add(server);
                 if (registry.isAvailable()) {
-                    row.add("Connected");
+                    row.add("<font color=\"green\">Connected</font>");
                 } else {
-                    row.add("");
+                    row.add("<font color=\"red\">Disconnected</font>");
                 }
+                row.add("<a href=\"registered.html?registry=" + server + "\">Registered</a>");
                 rows.add(row);
             }
         }
-        return new Page("<a href=\"/\">Home</a> &gt; Registry", "Registries (" + rows.size() + ")",
-                new String[] { "Server Group:", "Server Address:", "Is Connected" }, rows);
+        return new Page("Registries", "Registries (" + rows.size() + ")",
+                new String[] { "Registry Address:", "Ststus:", "Registered" }, rows);
     }
 
 }
