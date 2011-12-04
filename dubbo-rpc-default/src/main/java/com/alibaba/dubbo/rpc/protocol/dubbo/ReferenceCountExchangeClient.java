@@ -16,7 +16,7 @@
 package com.alibaba.dubbo.rpc.protocol.dubbo;
 
 import java.net.InetSocketAddress;
-import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.alibaba.dubbo.common.Constants;
@@ -45,14 +45,17 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
     
     private final AtomicInteger refenceCount = new AtomicInteger(0);
     
-    private final Map<String, ExchangeClient> clientMap;
+    private final ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap;
     
-    public ReferenceCountExchangeClient(ExchangeClient client, Map<String, ExchangeClient> clientMap) {
+    
+    public ReferenceCountExchangeClient(ExchangeClient client, ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap) {
         this.client = client;
         refenceCount.incrementAndGet();
-        this.clientMap = clientMap;
         this.url = client.getUrl();
-//        this.handler = client.getExchangeHandler();
+        if (ghostClientMap == null){
+            throw new IllegalStateException("ghostClientMap can not be null");
+        }
+        this.ghostClientMap = ghostClientMap;
     }
 
     public void reset(URL url) {
@@ -126,34 +129,45 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
      * close方法将不再幂等,调用需要注意.
      */
     public void close() {
-        if (refenceCount.decrementAndGet() <= 0){
-            clientMap.remove(url.getAddress());
-            client.close();
-            replaceWithLazyClient();
-        }
+        close(0);
     }
 
     public void close(int timeout) {
         if (refenceCount.decrementAndGet() <= 0){
-            clientMap.remove(url.getAddress());
-            client.close(timeout);
-            replaceWithLazyClient();
+            if (timeout == 0){
+                client.close();
+            } else {
+                client.close(timeout);
+            }
+            client = replaceWithLazyClient();
         }
     }
     
     //幽灵client,
-    private void replaceWithLazyClient(){
+    private LazyConnectExchangeClient replaceWithLazyClient(){
         //这个操作只为了防止程序bug错误关闭client做的防御措施，初始client必须为false状态
         URL lazyUrl = url.addParameter(RpcConstants.LAZY_CONNECT_INITIAL_STATE_KEY, Boolean.FALSE)
                 .addParameter(Constants.RECONNECT_KEY, Boolean.FALSE)
                 .addParameter(Constants.SEND_RECONNECT_KEY, Boolean.TRUE.toString())
+                .addParameter("warning", Boolean.TRUE.toString())
+                .addParameter(LazyConnectExchangeClient.REQUEST_WITH_WARNING_KEY, true)
                 .addParameter("_client_memo", "referencecounthandler.replacewithlazyclient");
-        client = new LazyConnectExchangeClient(lazyUrl, client.getExchangeHandler());
-        //重新put进去，如果protocol处理有bug，可能会导致在protocol destroy时clientMap死循环
-//        clientMap.put(url.getAddress(), client);
+        
+        String key = url.getAddress();
+        //最差情况下只有一个幽灵连接
+        LazyConnectExchangeClient gclient = ghostClientMap.get(key);
+        if (gclient == null || gclient.isClosed()){
+            gclient = new LazyConnectExchangeClient(lazyUrl, client.getExchangeHandler());
+            ghostClientMap.put(key, gclient);
+        }
+        return gclient;
     }
 
     public boolean isClosed() {
         return client.isClosed();
+    }
+    
+    public void incrementAndGetCount(){
+        refenceCount.incrementAndGet();
     }
 }

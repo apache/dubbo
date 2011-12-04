@@ -15,6 +15,8 @@
  */
 package com.alibaba.dubbo.rpc.protocol.dubbo;
 
+import java.util.concurrent.locks.ReentrantLock;
+
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.AtomicPositiveInteger;
@@ -44,6 +46,8 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
     private final AtomicPositiveInteger index = new AtomicPositiveInteger();
 
     private final String                version;
+    
+    private final ReentrantLock     destroyLock = new ReentrantLock();
     
     public DubboInvoker(Class<T> serviceType, URL url, ExchangeClient[] clients){
         super(serviceType, url, new String[] {Constants.GROUP_KEY, Constants.TOKEN_KEY, Constants.TIMEOUT_KEY});
@@ -117,13 +121,22 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         if (super.isDestroyed()){
             return ;
         } else {
-            super.destroy();
-            for (ExchangeClient client : clients) {
-                try {
-                    client.close();
-                } catch (Throwable t) {
-                    logger.warn(t.getMessage(), t);
+            //dubbo check ,避免多次关闭
+            destroyLock.lock();
+            try{
+                if (super.isDestroyed()){
+                    return ;
                 }
+                super.destroy();
+                for (ExchangeClient client : clients) {
+                    try {
+                        client.close();
+                    } catch (Throwable t) {
+                        logger.warn(t.getMessage(), t);
+                    }
+                }
+            }finally {
+                destroyLock.unlock();
             }
         }
     }

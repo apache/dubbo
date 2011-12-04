@@ -74,7 +74,7 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
     // 负责人
     protected String               owner;
 
-    // 连接数限制
+    // 连接数限制,0表示共享连接，否则为该服务独享连接数
     protected Integer              connections;
     
     // 连接数限制

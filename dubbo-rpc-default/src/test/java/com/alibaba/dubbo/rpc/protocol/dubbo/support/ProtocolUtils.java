@@ -34,7 +34,7 @@ import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
 public class ProtocolUtils {
 
     private static Protocol     protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-    private static ProxyFactory proxy    = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+    public static ProxyFactory proxy    = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
     public static <T> T refer(Class<T> type, String url) {
         return refer(type, URL.valueOf(url));

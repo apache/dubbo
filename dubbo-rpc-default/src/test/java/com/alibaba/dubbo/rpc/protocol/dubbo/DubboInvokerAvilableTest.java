@@ -16,7 +16,7 @@
 package com.alibaba.dubbo.rpc.protocol.dubbo;
 
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import java.lang.reflect.Field;
 
@@ -31,7 +31,6 @@ import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
 import com.alibaba.dubbo.rpc.ProxyFactory;
-import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
 /**
@@ -73,11 +72,14 @@ public class DubboInvokerAvilableTest {
         getClients(invoker)[0].setAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY, Boolean.TRUE);
         
         Assert.assertEquals(false, invoker.isAvailable());
+     
+        //恢复状态，invoker共享连接
+        getClients(invoker)[0].removeAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY);
     }
     
     @Test
     public void test_NoInvokers() throws Exception{
-        URL url = URL.valueOf("dubbo://127.0.0.1:20883/hi?"+RpcConstants.SERVICE_SHARECONNECT_KEY+"=false");
+        URL url = URL.valueOf("dubbo://127.0.0.1:20883/hi?connections=1");
         ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, url);
         
         DubboInvoker<?> invoker = (DubboInvoker<?>)protocol.refer(IDemoService.class, url);
@@ -90,7 +92,7 @@ public class DubboInvokerAvilableTest {
     
     @Test
     public void test_Lazy_ChannelReadOnly() throws Exception{
-        URL url = URL.valueOf("dubbo://127.0.0.1:20883/hi?lazy=true");
+        URL url = URL.valueOf("dubbo://127.0.0.1:20883/hi?lazy=true&connections=1");
         ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, url);
         
         DubboInvoker<?> invoker = (DubboInvoker<?>)protocol.refer(IDemoService.class, url);

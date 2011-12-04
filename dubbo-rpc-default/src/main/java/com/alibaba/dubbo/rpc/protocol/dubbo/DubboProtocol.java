@@ -72,7 +72,9 @@ public class DubboProtocol extends AbstractProtocol {
     
     private final Map<String, ExchangeServer> serverMap = new ConcurrentHashMap<String, ExchangeServer>(); // <host:port,Exchanger>
     
-    private final Map<String, ExchangeClient> clientMap = new ConcurrentHashMap<String, ExchangeClient>(); // <host:port,Exchanger>
+    private final Map<String, ReferenceCountExchangeClient> referenceClientMap = new ConcurrentHashMap<String, ReferenceCountExchangeClient>(); // <host:port,Exchanger>
+    
+    private final ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap = new ConcurrentHashMap<String, LazyConnectExchangeClient>();
     
     //consumer side export a stub service for dispatching event
     //servicekey-stubmethods
@@ -222,7 +224,7 @@ public class DubboProtocol extends AbstractProtocol {
         //client 也可以暴露一个只有server可以调用的服务。
         boolean isServer = url.getParameter(RpcConstants.IS_SERVER_KEY,true);
         if (isServer && ! serverMap.containsKey(key)) {
-            serverMap.put(key, initServer(url));
+            serverMap.put(key, getServer(url));
         }
         // export service.
         key = serviceKey(url);
@@ -245,7 +247,7 @@ public class DubboProtocol extends AbstractProtocol {
         return exporter;
     }
     
-    private ExchangeServer initServer(URL url) {
+    private ExchangeServer getServer(URL url) {
         String str = url.getParameter(Constants.SERVER_KEY, Constants.DEFAULT_REMOTING_SERVER);
 
         if (str != null && str.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(str))
@@ -269,52 +271,55 @@ public class DubboProtocol extends AbstractProtocol {
     }
 
     public <T> Invoker<T> refer(Class<T> serviceType, URL url) throws RpcException {
-        // find client.
-        int channels = url.getPositiveParameter(Constants.CONNECTIONS_KEY, 1);
-        ExchangeClient[] clients = new ExchangeClient[channels];
-        if ( channels == 1){
-            clients[0]  = getOrInitClient(url);
-        } else {
-            for (int i = 0; i < clients.length; i++) {
-                //多连接的情况下,不能共享连接
-                clients[i] = initClient(url);
-            }
-        }
         // create rpc invoker.
-        DubboInvoker<T> invoker = new DubboInvoker<T>(serviceType, url, clients);
+        DubboInvoker<T> invoker = new DubboInvoker<T>(serviceType, url, getClients(url));
         invokers.add(invoker);
         return invoker;
     }
     
-    private ExchangeClient getOrInitClient(URL url){
-        boolean connect_per_service = url.getParameter(RpcConstants.SERVICE_SHARECONNECT_KEY, RpcConstants.SERVICE_SHARECONNECT_DEFAULT);
-        
-        if (connect_per_service ){
-            return initClient(url);
+    private ExchangeClient[] getClients(URL url){
+        //是否共享连接
+        boolean service_share_connect = false;
+        int connections = url.getParameter(Constants.CONNECTIONS_KEY, 0);
+        //如果connections不配置，则共享连接，否则每服务每连接
+        if (connections == 0){
+            service_share_connect = true;
+            connections = 1;
         }
-        String key = url.getAddress();
-        ExchangeClient client = clientMap.get(key);
-        if ( client != null ){
-            if ( !client.isClosed()){
-                return new ReferenceCountExchangeClient(client, clientMap);
+        
+        ExchangeClient[] clients = new ExchangeClient[connections];
+        for (int i = 0; i < clients.length; i++) {
+            if (service_share_connect){
+                clients[i] = getSharedClient(url);
             } else {
-                try {
-                    logger.warn(new IllegalStateException("client is closed,but stay in clientmap .client :"+ client));
-                    clientMap.remove(key);
-                    client.close();
-                } catch (Throwable e) {
-                    logger.warn(e);
-                }
+                clients[i] = initClient(url);
             }
         }
-        client = initClient(url);
-        clientMap.put(key, client);
+        return clients;
+    }
+    
+    /**
+     *获取共享连接 
+     */
+    private ExchangeClient getSharedClient(URL url){
+        String key = url.getAddress();
+        ReferenceCountExchangeClient client = referenceClientMap.get(key);
+        if ( client != null ){
+            if ( !client.isClosed()){
+                client.incrementAndGetCount();
+                return client;
+            } else {
+                logger.warn(new IllegalStateException("client is closed,but stay in clientmap .client :"+ client));
+                referenceClientMap.remove(key);
+            }
+        }
+        ExchangeClient exchagneclient = initClient(url);
         
         lock.lock();
         try {
-            AtomicInteger count = (AtomicInteger)client.getAttribute(RpcConstants.CLIENT_REFERENCE_COUNT);
+            AtomicInteger count = (AtomicInteger)exchagneclient.getAttribute(RpcConstants.CLIENT_REFERENCE_COUNT);
             if ((count == null)){
-                client.setAttribute(RpcConstants.CLIENT_REFERENCE_COUNT, new AtomicInteger(1));
+                exchagneclient.setAttribute(RpcConstants.CLIENT_REFERENCE_COUNT, new AtomicInteger(1));
             } else {
                 count.getAndIncrement();
             }
@@ -323,9 +328,16 @@ public class DubboProtocol extends AbstractProtocol {
         } finally{
             lock.unlock();
         }
-        return new ReferenceCountExchangeClient(client, clientMap); 
+        
+        client = new ReferenceCountExchangeClient(exchagneclient, ghostClientMap);
+        referenceClientMap.put(key, client);
+        ghostClientMap.remove(key);
+        return client; 
     }
 
+    /**
+     * 创建新连接.
+     */
     private ExchangeClient initClient(URL url) {
         // client type setting.
         String str = url.getParameter(Constants.CLIENT_KEY, url.getParameter(Constants.SERVER_KEY, Constants.DEFAULT_REMOTING_CLIENT));
@@ -370,8 +382,23 @@ public class DubboProtocol extends AbstractProtocol {
                 }
             }
         }
-        for (String key : new ArrayList<String>(clientMap.keySet())) {
-            ExchangeClient client = clientMap.remove(key);
+        
+        for (String key : new ArrayList<String>(referenceClientMap.keySet())) {
+            ExchangeClient client = referenceClientMap.remove(key);
+            if (client != null) {
+                try {
+                    if (logger.isInfoEnabled()) {
+                        logger.info("Close dubbo connect: " + client.getLocalAddress() + "-->" + client.getRemoteAddress());
+                    }
+                    client.close();
+                } catch (Throwable t) {
+                    logger.warn(t.getMessage(), t);
+                }
+            }
+        }
+        
+        for (String key : new ArrayList<String>(ghostClientMap.keySet())) {
+            ExchangeClient client = ghostClientMap.remove(key);
             if (client != null) {
                 try {
                     if (logger.isInfoEnabled()) {

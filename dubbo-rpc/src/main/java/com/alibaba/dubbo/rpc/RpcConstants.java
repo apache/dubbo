@@ -26,8 +26,10 @@ import java.util.List;
  */
 public final class RpcConstants {
     
+    public static final String DEFAULT_DUBBO_CONF_PROPERTIES_FILE = "dubbo.properties";
+
     public static final List<String> DEFAULT_REFERENCE_FILTERS = Collections.unmodifiableList(Arrays.asList(new String[] {
-            "consumercontext", "deprecated", "collect", "genericimpl", "activelimit", "monitor", "future" }));
+            "consumercontext", "compatible", "deprecated", "collect", "genericimpl", "activelimit", "monitor", "future" }));
 
     public static final List<String> DEFAULT_SERVICE_FILTERS    = Collections.unmodifiableList(Arrays.asList(new String[] {
             "context", "token", "exception", "echo", "generic", "accesslog", "trace", "classloader", "executelimit", "monitor" ,"timeout"}));
@@ -172,10 +174,6 @@ public final class RpcConstants {
     
     //client被引用的个数，当被引用数(invoker)大于1时，invoker destroy时不能够关闭client
     public static final String CLIENT_REFERENCE_COUNT = "client.reference.count";
-    
-    public static final String SERVICE_SHARECONNECT_KEY = "service.shareconnect";
-    
-    public static final boolean SERVICE_SHARECONNECT_DEFAULT = true;
     
     private RpcConstants() {}
     

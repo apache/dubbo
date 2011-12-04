@@ -125,9 +125,10 @@ public class ListTelnetHandlerTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testListDetail() throws RemotingException {
+        int port = NetUtils.getAvailablePort();
         mockInvoker = EasyMock.createMock(Invoker.class);
         EasyMock.expect(mockInvoker.getInterface()).andReturn(DemoService.class).anyTimes();
-        EasyMock.expect(mockInvoker.getUrl()).andReturn(URL.valueOf("dubbo://127.0.0.1:20885/demo")).anyTimes();
+        EasyMock.expect(mockInvoker.getUrl()).andReturn(URL.valueOf("dubbo://127.0.0.1:"+port+"/demo")).anyTimes();
         EasyMock.expect(mockInvoker.invoke((Invocation) EasyMock.anyObject())).andReturn(new RpcResult("ok")).anyTimes();
         mockChannel = EasyMock.createMock(Channel.class);
         EasyMock.expect(mockChannel.getAttribute("telnet.service")).andReturn(null).anyTimes();
@@ -135,7 +136,7 @@ public class ListTelnetHandlerTest {
         DubboProtocol.getDubboProtocol().export(mockInvoker);
         String result = list.telnet(mockChannel, "-l");
         assertEquals("com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService -> dubbo://" + NetUtils.getLocalHost()
-                     + ":20885/demo", result);
+                     + ":"+port+"/demo", result);
         EasyMock.reset(mockChannel);
     }
 
