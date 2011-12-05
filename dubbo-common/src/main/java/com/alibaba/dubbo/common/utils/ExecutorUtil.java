@@ -96,7 +96,9 @@ public class ExecutorUtil {
                     try {
                         for (int i=0;i<1000;i++){
                             es.shutdownNow();
-                            es.awaitTermination(10, TimeUnit.MILLISECONDS);
+                            if (es.awaitTermination(10, TimeUnit.MILLISECONDS)){
+                                break;
+                            }
                         }
                     } catch (InterruptedException ex) {
                         Thread.currentThread().interrupt();
