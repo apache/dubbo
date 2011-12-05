@@ -21,6 +21,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -64,6 +65,14 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     
     private final boolean send_reconnect ;
     
+    private final AtomicInteger reconnect_count = new AtomicInteger(0);
+    
+    //重连的error日志是否已经被调用过.
+    private final AtomicBoolean reconnect_error_log_flag = new AtomicBoolean(false) ;
+    
+    //重连warning的间隔.(waring多少次之后，warning一次) //for test
+    private final int reconnect_warning_period ;
+    
     //the last successed connected time
     private long lastConnectedTime = System.currentTimeMillis();
     
@@ -76,6 +85,9 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         send_reconnect = url.getParameter(Constants.SEND_RECONNECT_KEY, false);
         
         shutdown_timeout = url.getParameter(Constants.SHUTDOWN_TIMEOUT_KEY, Constants.DEFAULT_SHUTDOWN_TIMEOUT);
+        
+        //默认重连间隔2s，1800表示1小时warning一次.
+        reconnect_warning_period = url.getParameter("reconnect.waring.period", 1800);
         
         try {
             doOpen();
@@ -125,18 +137,24 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         int reconnect = getReconnectParam(getUrl());
         if(reconnect > 0 && reconnectExecutorFuture == null){
             Runnable connectStatusCheckCommand =  new Runnable() {
-                String errorMsg = "Unexpected error occur at client reconnect";
+                String errorMsg = "client reconnect to "+getUrl().getAddress()+" find error . url: "+ getUrl();
                 public void run() {
                     try {
                         if (! isConnected()) {
                             connect();
                         }
                     } catch (Throwable t) { 
+                        int count = reconnect_count.incrementAndGet();
                         // wait registry sync provider list
                         if (System.currentTimeMillis() - lastConnectedTime > shutdown_timeout){
+                            if (!reconnect_error_log_flag.get()){
+                                reconnect_error_log_flag.set(true);
+                                logger.error(errorMsg, t);
+                                return ;
+                            }
+                        }
+                        if ( count % reconnect_warning_period == 0){
                             logger.warn(errorMsg, t);
-                        } else {
-                            logger.error(errorMsg, t);
                         }
                     }
                 }
@@ -262,6 +280,8 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                                             + ", cause: Connect wait timeout: " + getTimeout() + "ms.");
             }
             lastConnectedTime = System.currentTimeMillis();
+            reconnect_count.set(0);
+            reconnect_error_log_flag.set(false);
         } catch (RemotingException e) {
             throw e;
         } catch (Throwable e) {

@@ -99,6 +99,19 @@ public class LogUtil {
         }
         return count;
     }
+    
+    public static int findMessage(Level expectedLevel, String expectedMessage) {
+        int count = 0;
+        List<Log> logList = DubboAppender.logList;
+        for (int i = 0; i < logList.size(); i++) {
+            Level logLevel = logList.get(i).getLogLevel();
+            if (logLevel.equals(expectedLevel)) {
+                String logMessage = logList.get(i).getLogMessage();
+                if (logMessage.contains(expectedMessage)) count++;
+            }
+        }
+        return count;
+    }
 
     public static <T> void printList(List<T> list) {
         Log.info("PrintList:");

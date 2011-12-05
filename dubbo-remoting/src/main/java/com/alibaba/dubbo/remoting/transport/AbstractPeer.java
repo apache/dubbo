@@ -15,12 +15,8 @@
  */
 package com.alibaba.dubbo.remoting.transport;
 
-import java.io.IOException;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.logger.Logger;
-import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.Endpoint;
@@ -33,8 +29,6 @@ import com.alibaba.dubbo.remoting.RemotingException;
  * @author william.liangf
  */
 public abstract class AbstractPeer implements Endpoint, ChannelHandler {
-
-    private static final Logger  logger = LoggerFactory.getLogger(AbstractPeer.class);
 
     private final ChannelHandler handler;
 
@@ -130,11 +124,6 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
     }
 
     public void caught(Channel ch, Throwable ex) throws RemotingException {
-        if (ex instanceof IOException || ex instanceof RemotingException) {
-            logger.warn("IOException on channel " + ch, ex);
-        } else {
-            logger.error("Exception on channel " + ch, ex);
-        }
         handler.caught(ch, ex);
     }
 }

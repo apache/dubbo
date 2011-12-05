@@ -15,10 +15,13 @@
  */
 package com.alibaba.dubbo.remoting.transport.netty;
 
+import org.apache.log4j.Level;
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.utils.DubboAppender;
+import com.alibaba.dubbo.common.utils.LogUtil;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.Client;
@@ -44,9 +47,8 @@ public class ClientReconnectTest {
                 Thread.sleep(10);
             }
             Assert.assertEquals(true, client.isConnected());
-            client.close();
-            server.close();
-            Thread.sleep(1000);
+            client.close(2000);
+            server.close(2000);
         }
         {
             int port = NetUtils.getAvailablePort();
@@ -57,9 +59,72 @@ public class ClientReconnectTest {
                 Thread.sleep(200);
             }
             Assert.assertEquals(false, client.isConnected());
-            client.close();
-            server.close();
+            client.close(2000);
+            server.close(2000);
         }
+    }
+    
+    /**
+     * 重连日志的校验
+     */
+    @Test
+    public void testReconnectNoLog() throws RemotingException, InterruptedException{
+        int port = NetUtils.getAvailablePort();
+        DubboAppender.doStart();
+        String url = "exchange://127.0.0.2:"+port + "/client.reconnect.test?check=false&"
+        +Constants.RECONNECT_KEY+"="+1 ; //1ms reconnect,保证有足够频率的重连
+        try{
+            Exchangers.connect(url);
+        }catch (Exception e) {
+            //do nothing
+        }
+        Thread.sleep(1000);//重连线程的运行
+        Assert.assertEquals("no error message ", 0 , LogUtil.findMessage(Level.ERROR, "client reconnect to "));
+        Assert.assertEquals("no warn message ", 0 , LogUtil.findMessage(Level.WARN, "client reconnect to "));
+        DubboAppender.doStop();
+    }
+  
+    /**
+     * 重连日志的校验，不能一直抛出error日志.
+     */
+    @Test
+    public void testReconnectErrorLog() throws RemotingException, InterruptedException{
+        int port = NetUtils.getAvailablePort();
+        DubboAppender.doStart();
+        String url = "exchange://127.0.0.3:"+port + "/client.reconnect.test?check=false&"
+        +Constants.RECONNECT_KEY+"="+1 + //1ms reconnect,保证有足够频率的重连
+        "&"+Constants.SHUTDOWN_TIMEOUT_KEY+ "=0";//shutdown时间足够短，确保error日志输出
+        try{
+            Exchangers.connect(url);
+        }catch (Exception e) {
+            //do nothing
+        }
+        Thread.sleep(1000);//重连线程的运行
+        Assert.assertEquals("only one error message ", 1 , LogUtil.findMessage(Level.ERROR, "client reconnect to "));
+        Assert.assertEquals("no warn message ", 0 , LogUtil.findMessage(Level.WARN, "client reconnect to "));
+        DubboAppender.doStop();
+    }
+    
+    /**
+     * 重连日志的校验
+     */
+    @Test
+    public void testReconnectWaringLog() throws RemotingException, InterruptedException{
+        int port = NetUtils.getAvailablePort();
+        DubboAppender.doStart();
+        String url = "exchange://127.0.0.4:"+port + "/client.reconnect.test?check=false&"
+        +Constants.RECONNECT_KEY+"="+1 //1ms reconnect,保证有足够频率的重连
+        +"&"+Constants.SHUTDOWN_TIMEOUT_KEY+ "=1"//shutdown时间足够短，确保error日志输出
+        +"&reconnect.waring.period=100";//每隔多少warning记录一次
+        try{
+            Exchangers.connect(url);
+        }catch (Exception e) {
+            //do nothing
+        }
+        Thread.sleep(1000);//重连线程的运行
+        int count =  LogUtil.findMessage(Level.WARN, "client reconnect to ") ;
+        Assert.assertTrue("warning message count must > 2, real :"+count, count> 2);
+        DubboAppender.doStop();
     }
     
     public Client startClient(int port , int reconnectPeriod) throws RemotingException{
