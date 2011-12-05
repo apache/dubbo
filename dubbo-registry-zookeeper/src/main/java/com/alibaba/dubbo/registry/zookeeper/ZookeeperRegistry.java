@@ -99,14 +99,14 @@ public class ZookeeperRegistry extends FailbackRegistry {
             Set<String> failed = new HashSet<String>(failedWatched);
             if (failed.size() > 0) {
                 if (logger.isInfoEnabled()) {
-                    logger.info("Retry watch " + failed);
+                    logger.info("Retry watch " + failed + " to zookeeper " + getUrl());
                 }
                 for (String service : failed) {
                     try {
                         getChildren(service);
                         failedWatched.remove(service);
                     } catch (Throwable t) {
-                        logger.warn("Failed to retry register " + failed + ", waiting for again, cause: " + t.getMessage(), t);
+                        logger.warn("Failed to retry register " + failed + " to zookeeper " + getUrl() + ", waiting for again, cause: " + t.getMessage(), t);
                     }
                 }
             }
@@ -122,7 +122,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 return result;
             }
         } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
+            logger.warn("Failed to watch path " + service + " to zookeeper" + getUrl() + ", cause: " + e.getMessage(), e);
         }
         failedWatched.add(service);
         return new ArrayList<String>(0);
@@ -225,7 +225,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                                 List<URL> list = toUrls(subscribe, notifies);
                                 if (list != null && list.size() > 0) {
                                     if (logger.isInfoEnabled()) {
-                                        logger.info("Zookeeper service changed, service: " + service + ", urls: " + list);
+                                        logger.info("Zookeeper service changed, service: " + service + ", urls: " + list + ", zookeeper: " + getUrl());
                                     }
                                     for (NotifyListener listener : entry.getValue()) {
                                         ZookeeperRegistry.this.notify(subscribe, listener, list);
@@ -235,7 +235,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                         }
                     }
                 } catch (Throwable e) {
-                    logger.error(e.getMessage(), e);
+                    logger.error("Failed to received event path " + event.getPath() + " from zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
                 }
             }
         });
@@ -260,7 +260,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
         try {
             zookeeper.close();
         } catch (Exception e) {
-            logger.warn(e.getMessage(), e);
+            logger.warn("Failed to close zookeeper client " + getUrl() + ", cause: " + e.getMessage(), e);
         }
     }
     
@@ -298,7 +298,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 zookeeper.create(provider, new byte[0], acl, createMode);
             }
         } catch (Throwable e) {
-            throw new RpcException("Failed to register " + url + ", cause: " + e.getMessage(), e);
+            throw new RpcException("Failed to register " + url + " to zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
         }
     }
 
@@ -307,7 +307,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
             String provider = toProviderPath(url);
             zookeeper.delete(provider, -1);
         } catch (Throwable e) {
-            throw new RpcException("Failed to unregister " + url + ", cause: " + e.getMessage(), e);
+            throw new RpcException("Failed to unregister " + url + " to zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
         }
     }
 
@@ -347,7 +347,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 }
             }
         } catch (Throwable e) {
-            throw new RpcException("Failed to subscribe " + url + ", cause: " + e.getMessage(), e);
+            throw new RpcException("Failed to subscribe " + url + " to zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
         }
     }
     
@@ -396,7 +396,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
             }
             return toUrls(url, providers);
         } catch (Throwable e) {
-            throw new RpcException("Failed to lookup " + url + ", cause: " + e.getMessage(), e);
+            throw new RpcException("Failed to lookup " + url + " from zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
         }
     }
     
