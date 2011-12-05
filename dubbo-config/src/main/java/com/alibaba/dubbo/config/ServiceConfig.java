@@ -85,6 +85,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     
     private transient boolean generic;
     
+    @Parameter(excluded = true)
     public boolean isExported() {
         return exported;
     }
