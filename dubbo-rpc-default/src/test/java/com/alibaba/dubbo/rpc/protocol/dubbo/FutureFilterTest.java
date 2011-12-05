@@ -54,6 +54,7 @@ public class FutureFilterTest {
 
     @Test
     public void testSyncCallback() {
+        @SuppressWarnings("unchecked")
         Invoker<DemoService> invoker = EasyMock.createMock(Invoker.class);
         EasyMock.expect(invoker.isAvailable()).andReturn(true).anyTimes();
         EasyMock.expect(invoker.getInterface()).andReturn(DemoService.class).anyTimes();
@@ -75,6 +76,7 @@ public class FutureFilterTest {
         EasyMock.expect(invocation.getArguments()).andReturn(new Object[] { "hello" }).anyTimes();
         EasyMock.expect(invocation.getAttachments()).andReturn(null).anyTimes();
         EasyMock.replay(invocation);
+        @SuppressWarnings("unchecked")
         Invoker<DemoService> invoker = EasyMock.createMock(Invoker.class);
         EasyMock.expect(invoker.isAvailable()).andReturn(true).anyTimes();
         EasyMock.expect(invoker.getInterface()).andReturn(DemoService.class).anyTimes();

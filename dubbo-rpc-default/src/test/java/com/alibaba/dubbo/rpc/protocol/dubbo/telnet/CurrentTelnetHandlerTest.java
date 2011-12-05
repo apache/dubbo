@@ -19,17 +19,11 @@ import static org.junit.Assert.assertEquals;
 
 import org.easymock.EasyMock;
 import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.Test;
 
-import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
-import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
-import com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService;
 
 /**
  * CountTelnetHandlerTest.java
