@@ -67,6 +67,8 @@ public class ListTelnetHandlerTest {
         }
         detailMethods = buf.toString();
         methodsName = buf2.toString();
+        
+        ProtocolUtils.closeAll();
     }
     
     @After
