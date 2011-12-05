@@ -22,6 +22,7 @@ import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.json.JSON;
 import com.alibaba.dubbo.common.utils.PojoUtils;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
+import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
 import com.alibaba.dubbo.remoting.telnet.support.Help;
@@ -112,7 +113,7 @@ public class InvokeTelnetHandler implements TelnetHandler {
                     buf.append(end - start);
                     buf.append(" ms.");
                 } catch (Throwable t) {
-                    return "Failed to invoke method " + invokeMethod.getName() + ", cause: " + t.getMessage();
+                    return "Failed to invoke method " + invokeMethod.getName() + ", cause: " + StringUtils.toString(t);
                 }
             } else {
                 buf.append("No such method " + method + " in service " + service);
