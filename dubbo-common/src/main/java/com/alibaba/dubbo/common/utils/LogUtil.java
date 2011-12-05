@@ -68,6 +68,17 @@ public class LogUtil {
         }
         return count;
     }
+    
+    public static int findLevelWithThreadName(Level expectedLevel,String threadName) {
+        int count = 0;
+        List<Log> logList = DubboAppender.logList;
+        for (int i = 0; i < logList.size(); i++) {
+            Log log = logList.get(i);
+            if (log.getLogLevel().equals(expectedLevel) && log.getLogThread().equals(threadName)) 
+                count++;
+        }
+        return count;
+    }
 
     public static int findThread(String expectedThread) {
         int count = 0;
