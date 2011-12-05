@@ -142,7 +142,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                     zk.close();
                 }
             } catch (Exception e) {
-                throw new IllegalStateException(e.getMessage(), e);
+                throw new IllegalStateException("Can not connect to zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
             } finally {
                 zookeeperLock.unlock();
             }
