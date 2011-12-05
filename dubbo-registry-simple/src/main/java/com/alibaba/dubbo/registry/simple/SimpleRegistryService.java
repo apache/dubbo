@@ -59,8 +59,8 @@ public class SimpleRegistryService extends CacheRegistry {
     public boolean isAvailable() {
         return true;
     }
-
-    public void doRegister(URL url) {
+    
+    public void register(URL url) {
         String client = RpcContext.getContext().getRemoteAddressString();
         Set<String> urls = remoteRegistered.get(client);
         if (urls == null) {
@@ -68,19 +68,27 @@ public class SimpleRegistryService extends CacheRegistry {
             urls = remoteRegistered.get(client);
         }
         urls.add(url.toFullString());
-        registered(url);
+        super.register(url);
     }
 
-    public void doUnregister(URL url) {
+    public void doRegister(URL url) {
+        registered(url);
+    }
+    
+    public void unregister(URL url) {
         String client = RpcContext.getContext().getRemoteAddressString();
         Set<String> urls = remoteRegistered.get(client);
         if (urls != null && urls.size() > 0) {
             urls.remove(url.toFullString());
         }
-        unregistered(url);
+        super.unregister(url);
     }
 
-    public void doSubscribe(URL url, NotifyListener listener) {
+    public void doUnregister(URL url) {
+        unregistered(url);
+    }
+    
+    public void subscribe(URL url, NotifyListener listener) {
         if (! Constants.ANY_VALUE.equals(url.getServiceName())
                 && url.getParameter(Constants.REGISTER_KEY, true)) {
             register(url);
@@ -113,10 +121,14 @@ public class SimpleRegistryService extends CacheRegistry {
             listeners = clientListeners.get(key);
         }
         listeners.add(listener);
+        super.subscribe(url, listener);
+    }
+
+    public void doSubscribe(URL url, NotifyListener listener) {
         subscribed(url, listener);
     }
     
-    public void doUnsubscribe(URL url, NotifyListener listener) {
+    public void unsubscribe(URL url, NotifyListener listener) {
         if (! Constants.ANY_VALUE.equals(url.getServiceName())
                 && url.getParameter(Constants.REGISTER_KEY, true)) {
             unregister(url);
@@ -130,6 +142,10 @@ public class SimpleRegistryService extends CacheRegistry {
                 listeners.remove(listener);
             }
         }
+        super.unregister(url);
+    }
+    
+    public void doUnsubscribe(URL url, NotifyListener listener) {
     }
     
     public void disconnect() {
