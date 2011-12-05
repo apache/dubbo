@@ -37,7 +37,6 @@ import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.transport.AbstractClient;
-import com.alibaba.dubbo.remoting.transport.handler.ChannelHandlers;
 
 /**
  * NettyClient.
@@ -61,11 +60,7 @@ public class NettyClient extends AbstractClient {
     public NettyClient(final URL url, final ChannelHandler handler) throws RemotingException{
         super(url, wrapChannelHandler(url, handler));
     }
-    protected static ChannelHandler wrapChannelHandler(URL url, ChannelHandler handler){
-        url = url.addParameter(Constants.THREAD_NAME_KEY, CLIENT_THREAD_POOL_NAME)
-            .addParameter(Constants.THREADPOOL_KEY, Constants.DEFAULT_CLIENT_THREADPOOL);
-        return ChannelHandlers.wrap(handler, url);
-    }
+    
     @Override
     protected void doOpen() throws Throwable {
         bootstrap = new ClientBootstrap(channelFactory);

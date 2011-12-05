@@ -59,7 +59,7 @@ public class NettyServer extends AbstractServer implements Server {
     private org.jboss.netty.channel.Channel channel;
 
     public NettyServer(URL url, ChannelHandler handler) throws RemotingException{
-        super(url, ChannelHandlers.wrap(handler, url.addParameter(Constants.THREAD_NAME_KEY, SERVER_THREAD_POOL_NAME)));
+        super(url, ChannelHandlers.wrap(handler, url.addParameterIfAbsent(Constants.THREAD_NAME_KEY, SERVER_THREAD_POOL_NAME)));
     }
 
     @Override

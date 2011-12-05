@@ -31,9 +31,16 @@ public class ClusterUtils {
     public static URL mergeUrl(URL remoteUrl, Map<String, String> localMap) {
         Map<String, String> map = new HashMap<String, String>();
         Map<String, String> remoteMap = remoteUrl.getParameters();
+        //线程池配置不使用提供者的
+        remoteMap.remove(Constants.THREAD_NAME_KEY);
+        remoteMap.remove(Constants.THREADS_KEY);
+        remoteMap.remove(Constants.QUEUES_KEY);
+        remoteMap.remove(Constants.THREAD_ALIVE_KEY);
+        
         if (remoteMap != null && remoteMap.size() > 0) {
             map.putAll(remoteMap);
         }
+        
         if (localMap != null && localMap.size() > 0) {
             map.putAll(localMap);
         }

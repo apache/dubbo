@@ -42,7 +42,6 @@ import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.transport.AbstractClient;
-import com.alibaba.dubbo.remoting.transport.handler.ChannelHandlers;
 
 /**
  * Mina client.
@@ -64,12 +63,6 @@ public class MinaClient extends AbstractClient {
 
     public MinaClient(final URL url, final ChannelHandler handler) throws RemotingException {
         super(url, wrapChannelHandler(url, handler));
-    }
-
-    protected static ChannelHandler wrapChannelHandler(URL url, ChannelHandler handler){
-        url = url.addParameter(Constants.THREAD_NAME_KEY, CLIENT_THREAD_POOL_NAME)
-            .addParameter(Constants.THREADPOOL_KEY, Constants.DEFAULT_CLIENT_THREADPOOL);
-        return ChannelHandlers.wrap(handler, url);
     }
     
     @Override

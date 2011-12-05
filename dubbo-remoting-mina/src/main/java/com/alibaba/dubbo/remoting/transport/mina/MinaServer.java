@@ -52,7 +52,7 @@ public class MinaServer extends AbstractServer {
     private SocketAcceptor acceptor;
 
     public MinaServer(URL url, ChannelHandler handler) throws RemotingException{
-        super(url, ChannelHandlers.wrap(handler, url.addParameter(Constants.THREAD_NAME_KEY, SERVER_THREAD_POOL_NAME)));
+        super(url, ChannelHandlers.wrap(handler, url.addParameterIfAbsent(Constants.THREAD_NAME_KEY, SERVER_THREAD_POOL_NAME)));
     }
 
     @Override
