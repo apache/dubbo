@@ -43,7 +43,6 @@
 			<groupId>com.alibaba</groupId>
 			<artifactId>dubbo-container</artifactId>
 			<version>${project.parent.version}</version>
-			<scope>provided</scope>
 			<exclusions>
 				<exclusion>
 					<groupId>org.mortbay.jetty</groupId>
