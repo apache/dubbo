@@ -97,9 +97,9 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
             RpcContext.getContext().setFuture(null);
             return (Result) currentClient.request(inv, timeout).get();
         } catch (TimeoutException e) {
-            throw new RpcException(RpcException.TIMEOUT_EXCEPTION, e.getMessage(), e);
+            throw new RpcException(RpcException.TIMEOUT_EXCEPTION, "Failed to invoke remote invocation " + invocation + " to " + getUrl() + ", cause: " + e.getMessage(), e);
         } catch (RemotingException e) {
-            throw new RpcException(RpcException.NETWORK_EXCEPTION, e.getMessage(), e);
+            throw new RpcException(RpcException.NETWORK_EXCEPTION, "Failed to invoke remote invocation " + invocation + " to " + getUrl() + ", cause: " + e.getMessage(), e);
         }
     }
     

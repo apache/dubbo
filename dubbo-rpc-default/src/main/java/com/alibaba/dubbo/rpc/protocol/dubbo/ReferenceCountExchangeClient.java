@@ -53,7 +53,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
         refenceCount.incrementAndGet();
         this.url = client.getUrl();
         if (ghostClientMap == null){
-            throw new IllegalStateException("ghostClientMap can not be null");
+            throw new IllegalStateException("ghostClientMap can not be null, url: " + url);
         }
         this.ghostClientMap = ghostClientMap;
     }
