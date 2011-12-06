@@ -15,7 +15,9 @@
  */
 package com.alibaba.dubbo.common.logger.support;
 
+import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.utils.NetUtils;
 
 public class FailsafeLogger implements Logger {
 
@@ -24,10 +26,14 @@ public class FailsafeLogger implements Logger {
 	public FailsafeLogger(Logger logger) {
 		this.logger = logger;
 	}
+	
+	private String getContextMessage() {
+	    return ", dubbo version: " + Version.getVersion() + ", current host: " + NetUtils.getLocalHost();
+	}
 
     public void trace(String msg, Throwable e) {
         try {
-            logger.trace(msg, e);
+            logger.trace(msg + getContextMessage(), e);
         } catch (Throwable t) {
         }
     }
@@ -41,14 +47,14 @@ public class FailsafeLogger implements Logger {
 
     public void trace(String msg) {
         try {
-            logger.trace(msg);
+            logger.trace(msg + getContextMessage());
         } catch (Throwable t) {
         }
     }
 
 	public void debug(String msg, Throwable e) {
 		try {
-			logger.debug(msg, e);
+			logger.debug(msg + getContextMessage(), e);
 		} catch (Throwable t) {
 		}
 	}
@@ -62,49 +68,49 @@ public class FailsafeLogger implements Logger {
 
 	public void debug(String msg) {
 		try {
-			logger.debug(msg);
+			logger.debug(msg + getContextMessage());
 		} catch (Throwable t) {
 		}
 	}
 
 	public void info(String msg, Throwable e) {
 		try {
-			logger.info(msg, e);
+			logger.info(msg + getContextMessage(), e);
 		} catch (Throwable t) {
 		}
 	}
 
 	public void info(String msg) {
 		try {
-			logger.info(msg);
+			logger.info(msg + getContextMessage());
 		} catch (Throwable t) {
 		}
 	}
 
 	public void warn(String msg, Throwable e) {
 		try {
-			logger.warn(msg, e);
+			logger.warn(msg + getContextMessage(), e);
 		} catch (Throwable t) {
 		}
 	}
 
 	public void warn(String msg) {
 		try {
-			logger.warn(msg);
+			logger.warn(msg + getContextMessage());
 		} catch (Throwable t) {
 		}
 	}
 
 	public void error(String msg, Throwable e) {
 		try {
-			logger.error(msg, e);
+			logger.error(msg + getContextMessage(), e);
 		} catch (Throwable t) {
 		}
 	}
 
 	public void error(String msg) {
 		try {
-			logger.error(msg);
+			logger.error(msg + getContextMessage());
 		} catch (Throwable t) {
 		}
 	}
