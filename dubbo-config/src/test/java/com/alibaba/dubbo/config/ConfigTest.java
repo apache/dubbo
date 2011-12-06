@@ -162,5 +162,17 @@ public class ConfigTest {
             exporter.unexport();
         }
     }
+    
+    @Test
+    public void testRmiTimeout() throws Exception {
+        if (System.getProperty("sun.rmi.transport.tcp.responseTimeout") != null) {
+            System.setProperty("sun.rmi.transport.tcp.responseTimeout", "");
+        }
+        ConsumerConfig consumer = new ConsumerConfig();
+        consumer.setTimeout(1000);
+        Assert.assertEquals("1000", System.getProperty("sun.rmi.transport.tcp.responseTimeout"));
+        consumer.setTimeout(2000);
+        Assert.assertEquals("1000", System.getProperty("sun.rmi.transport.tcp.responseTimeout"));
+    }
 
 }

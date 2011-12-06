@@ -24,4 +24,14 @@ public class ConsumerConfig extends AbstractConsumerConfig {
 
     private static final long serialVersionUID = 2827274711143680600L;
 
+    @Override
+    public void setTimeout(Integer timeout) {
+        super.setTimeout(timeout);
+        String rmiTimeout = System.getProperty("sun.rmi.transport.tcp.responseTimeout");
+        if (timeout != null && timeout > 0
+                && (rmiTimeout == null || rmiTimeout.length() == 0)) {
+            System.setProperty("sun.rmi.transport.tcp.responseTimeout", String.valueOf(timeout));
+        }
+    }
+
 }
