@@ -166,7 +166,7 @@ public class MulticastRegistry extends CacheRegistry {
         broadcast(SUBSCRIBE + " " + url.toFullString());
         synchronized (listener) {
             try {
-                listener.wait(5000);
+                listener.wait(url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT  * 2));
             } catch (InterruptedException e) {
             }
         }

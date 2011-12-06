@@ -52,10 +52,12 @@ public abstract class CacheRegistry extends FailbackRegistry {
                 }
                 urls.add(url.toFullString());
                 List<URL> list = toList(urls);
-                for (NotifyListener listener : entry.getValue()) {
-                    notify(subscribe, listener, list);
-                    synchronized (listener) {
-                        listener.notify();
+                if (list != null && list.size() > 0) {
+                    for (NotifyListener listener : entry.getValue()) {
+                        notify(subscribe, listener, list);
+                        synchronized (listener) {
+                            listener.notify();
+                        }
                     }
                 }
             }
@@ -72,13 +74,26 @@ public abstract class CacheRegistry extends FailbackRegistry {
                     urls.remove(url.toFullString());
                 }
                 List<URL> list = toList(urls);
-                for (NotifyListener listener : entry.getValue()) {
-                    notify(subscribe, listener, list);
+                if (list != null && list.size() > 0) {
+                    for (NotifyListener listener : entry.getValue()) {
+                        notify(subscribe, listener, list);
+                    }
                 }
             }
         }
     }
-    
+
+    public List<URL> lookup(URL url) {
+        List<URL> urls= new ArrayList<URL>();
+        for (String r: getRegistered()) {
+            URL u = URL.valueOf(r);
+            if (UrlUtils.isMatch(url, u)) {
+                urls.add(u);
+            }
+        }
+        return urls;
+    }
+
     protected void subscribed(URL url, NotifyListener listener) {
         List<URL> urls = lookup(url);
         if (urls != null && urls.size() > 0) {
@@ -94,17 +109,6 @@ public abstract class CacheRegistry extends FailbackRegistry {
             }
         }
         return list;
-    }
-
-    public List<URL> lookup(URL url) {
-        List<URL> urls= new ArrayList<URL>();
-        for (String r: getRegistered()) {
-            URL u = URL.valueOf(r);
-            if (UrlUtils.isMatch(url, u)) {
-                urls.add(u);
-            }
-        }
-        return urls;
     }
 
     public void register(URL url) {
@@ -124,6 +128,7 @@ public abstract class CacheRegistry extends FailbackRegistry {
 
     public void unsubscribe(URL url, NotifyListener listener) {
         super.unsubscribe(url, listener);
+        notified.remove(url.toFullString());
     }
 
     public Map<String, Set<String>> getNotified() {

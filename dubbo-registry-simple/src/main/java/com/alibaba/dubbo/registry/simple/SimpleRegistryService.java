@@ -71,10 +71,6 @@ public class SimpleRegistryService extends CacheRegistry {
         super.register(url);
     }
 
-    public void doRegister(URL url) {
-        registered(url);
-    }
-    
     public void unregister(URL url) {
         String client = RpcContext.getContext().getRemoteAddressString();
         Set<String> urls = remoteRegistered.get(client);
@@ -84,10 +80,6 @@ public class SimpleRegistryService extends CacheRegistry {
         super.unregister(url);
     }
 
-    public void doUnregister(URL url) {
-        unregistered(url);
-    }
-    
     public void subscribe(URL url, NotifyListener listener) {
         if (! Constants.ANY_VALUE.equals(url.getServiceName())
                 && url.getParameter(Constants.REGISTER_KEY, true)) {
@@ -124,10 +116,6 @@ public class SimpleRegistryService extends CacheRegistry {
         super.subscribe(url, listener);
     }
 
-    public void doSubscribe(URL url, NotifyListener listener) {
-        subscribed(url, listener);
-    }
-    
     public void unsubscribe(URL url, NotifyListener listener) {
         if (! Constants.ANY_VALUE.equals(url.getServiceName())
                 && url.getParameter(Constants.REGISTER_KEY, true)) {
@@ -143,6 +131,15 @@ public class SimpleRegistryService extends CacheRegistry {
             }
         }
         super.unregister(url);
+    }
+
+    public void doRegister(URL url) {
+    }
+    
+    public void doUnregister(URL url) {
+    }
+    
+    public void doSubscribe(URL url, NotifyListener listener) {
     }
     
     public void doUnsubscribe(URL url, NotifyListener listener) {

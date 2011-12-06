@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.registry.support;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -86,8 +85,12 @@ public abstract class FailbackRegistry extends AbstractRegistry {
                 }
                 try {
                     for (String url : failed) {
-                        doRegister(URL.valueOf(url));
-                        failedRegistered.remove(url);
+                        try {
+                            doRegister(URL.valueOf(url));
+                            failedRegistered.remove(url);
+                        } catch (Throwable t) { // 忽略所有异常，等待下次重试
+                            logger.warn("Failed to retry register " + failed + ", waiting for again, cause: " + t.getMessage(), t);
+                        }
                     }
                 } catch (Throwable t) { // 忽略所有异常，等待下次重试
                     logger.warn("Failed to retry register " + failed + ", waiting for again, cause: " + t.getMessage(), t);
@@ -102,8 +105,12 @@ public abstract class FailbackRegistry extends AbstractRegistry {
                 }
                 try {
                     for (String url : failed) {
-                        doUnregister(URL.valueOf(url));
-                        failedUnregistered.remove(url);
+                        try {
+                            doUnregister(URL.valueOf(url));
+                            failedUnregistered.remove(url);
+                        } catch (Throwable t) { // 忽略所有异常，等待下次重试
+                            logger.warn("Failed to retry unregister  " + failed + ", waiting for again, cause: " + t.getMessage(), t);
+                        }
                     }
                 } catch (Throwable t) { // 忽略所有异常，等待下次重试
                     logger.warn("Failed to retry unregister  " + failed + ", waiting for again, cause: " + t.getMessage(), t);
@@ -126,8 +133,12 @@ public abstract class FailbackRegistry extends AbstractRegistry {
                         URL url = URL.valueOf(entry.getKey());
                         Set<NotifyListener> listeners = entry.getValue();
                         for (NotifyListener listener : listeners) {
-                            doSubscribe(url, listener);
-                            listeners.remove(listener);
+                            try {
+                                doSubscribe(url, listener);
+                                listeners.remove(listener);
+                            } catch (Throwable t) { // 忽略所有异常，等待下次重试
+                                logger.warn("Failed to retry subscribe " + failed + ", waiting for again, cause: " + t.getMessage(), t);
+                            }
                         }
                     }
                 } catch (Throwable t) { // 忽略所有异常，等待下次重试
@@ -151,8 +162,12 @@ public abstract class FailbackRegistry extends AbstractRegistry {
                         URL url = URL.valueOf(entry.getKey());
                         Set<NotifyListener> listeners = entry.getValue();
                         for (NotifyListener listener : listeners) {
-                            doUnsubscribe(url, listener);
-                            listeners.remove(listener);
+                            try {
+                                doUnsubscribe(url, listener);
+                                listeners.remove(listener);
+                            } catch (Throwable t) { // 忽略所有异常，等待下次重试
+                                logger.warn("Failed to retry unsubscribe " + failed + ", waiting for again, cause: " + t.getMessage(), t);
+                            }
                         }
                     }
                 } catch (Throwable t) { // 忽略所有异常，等待下次重试
@@ -174,10 +189,14 @@ public abstract class FailbackRegistry extends AbstractRegistry {
                 try {
                     for (Map<NotifyListener, List<URL>> values : failed.values()) {
                         for (Map.Entry<NotifyListener, List<URL>> entry : values.entrySet()) {
-                            NotifyListener listener = entry.getKey();
-                            List<URL> urls = entry.getValue();
-                            listener.notify(urls);
-                            values.remove(listener);
+                            try {
+                                NotifyListener listener = entry.getKey();
+                                List<URL> urls = entry.getValue();
+                                listener.notify(urls);
+                                values.remove(listener);
+                            } catch (Throwable t) { // 忽略所有异常，等待下次重试
+                                logger.warn("Failed to retry notify " + failed + ", waiting for again, cause: " + t.getMessage(), t);
+                            }
                         }
                     }
                 } catch (Throwable t) { // 忽略所有异常，等待下次重试
@@ -202,6 +221,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         try {
             // 向服务器端发送注册请求
             doRegister(url);
+            removeFailedRegistered(url);
         } catch (Exception t) {
             if (getUrl().getParameter(Constants.CHECK_KEY, true)) { // 如果开启了启动时检测，则直接抛出异常
                 throw new IllegalStateException("Failed to register " + url + ", cause: " + t.getMessage(), t);
@@ -217,6 +237,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         try {
             // 向服务器端发送取消注册请求
             doUnregister(url);
+            removeFailedRegistered(url);
         } catch (Exception t) {
             if (getUrl().getParameter(Constants.CHECK_KEY, true)) { // 如果开启了启动时检测，则直接抛出异常
                 throw new IllegalStateException("Failed to uregister " + url + ", cause: " + t.getMessage(), t);
@@ -227,11 +248,34 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         }
     }
 
+    private void removeFailedRegistered(URL url) {
+        String key = url.toFullString();
+        failedRegistered.remove(key);
+        failedUnregistered.remove(key);
+    }
+
+    private void removeFailedSubscribed(URL url, NotifyListener listener) {
+        String key = url.toFullString();
+        Set<NotifyListener> listeners = failedSubscribed.get(key);
+        if (listeners != null) {
+            listeners.remove(listener);
+        }
+        listeners = failedUnsubscribed.get(key);
+        if (listeners != null) {
+            listeners.remove(listener);
+        }
+        Map<NotifyListener, List<URL>> notified = failedNotified.get(key);
+        if (notified != null) {
+            notified.remove(listener);
+        }
+    }
+
     public void subscribe(URL url, NotifyListener listener) {
         super.subscribe(url, listener);
         try {
             // 向服务器端发送订阅请求
             doSubscribe(url, listener);
+            removeFailedSubscribed(url, listener);
         } catch (Exception t) {
             if (getUrl().getParameter(Constants.CHECK_KEY, true)) { // 如果开启了启动时检测，则直接抛出异常
                 throw new IllegalStateException("Failed to subscribe " + url + ", cause: " + t.getMessage(), t);
@@ -253,6 +297,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         try {
             // 向服务器端发送取消订阅请求
             doUnsubscribe(url, listener);
+            removeFailedSubscribed(url, listener);
         } catch (Exception t) {
             if (getUrl().getParameter(Constants.CHECK_KEY, true)) { // 如果开启了启动时检测，则直接抛出异常
                 throw new IllegalStateException("Failed to unsubscribe " + url + ", cause: " + t.getMessage(), t);
@@ -276,8 +321,8 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         if (listener == null) {
             throw new IllegalArgumentException("notify listener == null");
         }
-        if (urls == null) {
-            urls = new ArrayList<URL>(0);
+        if (urls == null || urls.size() ==0) {
+            return;
         }
         try {
             listener.notify(urls);
