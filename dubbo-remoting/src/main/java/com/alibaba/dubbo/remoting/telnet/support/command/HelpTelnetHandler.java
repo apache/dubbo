@@ -21,6 +21,7 @@ import java.util.List;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.ExtensionLoader;
+import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
 import com.alibaba.dubbo.remoting.telnet.support.Help;
@@ -53,17 +54,16 @@ public class HelpTelnetHandler implements TelnetHandler {
         } else {
             List<List<String>> table = new ArrayList<List<String>>();
             String telnet = channel.getUrl().getParameter("telnet");
-            if (telnet != null && telnet.length() > 0) {
-                for (String cmd : Constants.COMMA_SPLIT_PATTERN.split(telnet)) {
-                    TelnetHandler handler = ExtensionLoader.getExtensionLoader(TelnetHandler.class).getExtension(cmd);
-                    Help help = handler.getClass().getAnnotation(Help.class);
-                    List<String> row = new ArrayList<String>();
-                    String parameter = " " + cmd + " " + (help != null ? help.parameter().replace("\r\n", " ").replace("\n", " ") : "");
-                    row.add(parameter.length() > 50 ? parameter.substring(0, 50) + "..." : parameter);
-                    String summary = help != null ? help.summary().replace("\r\n", " ").replace("\n", " ") : "";
-                    row.add(summary.length() > 50 ? summary.substring(0, 50) + "..." : summary);
-                    table.add(row);
-                }
+            List<String> cmds = ConfigUtils.mergeValues(TelnetHandler.class, telnet, Constants.DEFAULT_TELNET_COMMANDS);
+            for (String cmd : cmds) {
+                TelnetHandler handler = ExtensionLoader.getExtensionLoader(TelnetHandler.class).getExtension(cmd);
+                Help help = handler.getClass().getAnnotation(Help.class);
+                List<String> row = new ArrayList<String>();
+                String parameter = " " + cmd + " " + (help != null ? help.parameter().replace("\r\n", " ").replace("\n", " ") : "");
+                row.add(parameter.length() > 50 ? parameter.substring(0, 50) + "..." : parameter);
+                String summary = help != null ? help.summary().replace("\r\n", " ").replace("\n", " ") : "";
+                row.add(summary.length() > 50 ? summary.substring(0, 50) + "..." : summary);
+                table.add(row);
             }
             return "Please input \"help [command]\" show detail.\r\n" + TelnetUtils.toList(table);
         }
