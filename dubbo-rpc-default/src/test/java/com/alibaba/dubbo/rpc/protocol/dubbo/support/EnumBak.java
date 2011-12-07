@@ -40,8 +40,8 @@ public class EnumBak {
     public void testNormal(){
         int port = NetUtils.getAvailablePort();
         URL serviceurl = URL.valueOf("dubbo://127.0.0.1:"+port+"/test?proxy=jdk" 
-                + "&interface=com.alibaba.dubbo.rpc.DemoService"
-        		+ "&timeout="+Integer.MAX_VALUE
+                + "&interface=" + DemoService.class.getName()
+        		+ "&timeout=" + Integer.MAX_VALUE
                 );
         DemoService demo = new DemoServiceImpl();
         Invoker<DemoService> invoker = proxy.getInvoker(demo, DemoService.class, serviceurl);
@@ -51,7 +51,7 @@ public class EnumBak {
         Invoker<DemoService> reference = protocol.refer(DemoService.class, consumerurl);
         DemoService demoProxy = (DemoService)proxy.getProxy(reference);
 //        System.out.println(demoProxy.getThreadName());
-        System.out.println("byte:"+demoProxy.getbyte((byte)-128));
+        Assert.assertEquals((byte)-128, demoProxy.getbyte((byte)-128));
         
 //        invoker.destroy();
         reference.destroy();
