@@ -52,8 +52,18 @@ public class RegistryContainer implements Container {
 
     private final RegistryFactory registryFactory = ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
 
+    private final Set<String> applications = new ConcurrentHashSet<String>();
+
+    private final Map<String, Set<String>> providerServiceApplications = new ConcurrentHashMap<String, Set<String>>();
+
+    private final Map<String, Set<String>> providerApplicationServices = new ConcurrentHashMap<String, Set<String>>();
+
+    private final Map<String, Set<String>> consumerServiceApplications = new ConcurrentHashMap<String, Set<String>>();
+
+    private final Map<String, Set<String>> consumerApplicationServices = new ConcurrentHashMap<String, Set<String>>();
+
     private final Set<String> services = new ConcurrentHashSet<String>();
-    
+
     private final Map<String, List<URL>> providers = new ConcurrentHashMap<String, List<URL>>();
 
     private final Map<String, List<URL>> consumers = new ConcurrentHashMap<String, List<URL>>();
@@ -77,6 +87,42 @@ public class RegistryContainer implements Container {
 
     public Registry getRegistry() {
         return registry;
+    }
+
+    public Set<String> getApplications() {
+        return Collections.unmodifiableSet(applications);
+    }
+    
+    public Set<String> getDependencies(String application, boolean afferent) {
+        return afferent ? getAfferentDependencies(application) : getEfferentDependencies(application);
+    }
+
+    public Set<String> getAfferentDependencies(String application) {
+        Set<String> dependencies = new HashSet<String>();
+        Set<String> services = consumerApplicationServices.get(application);
+        if (services != null && services.size() > 0) {
+            for (String service : services) {
+                Set<String> applications = providerServiceApplications.get(service);
+                if (applications != null && applications.size() > 0) {
+                    dependencies.addAll(applications);
+                }
+            }
+        }
+        return dependencies;
+    }
+
+    public Set<String> getEfferentDependencies(String application) {
+        Set<String> dependencies = new HashSet<String>();
+        Set<String> services = providerApplicationServices.get(application);
+        if (services != null && services.size() > 0) {
+            for (String service : services) {
+                Set<String> applications = consumerServiceApplications.get(service);
+                if (applications != null && applications.size() > 0) {
+                    dependencies.addAll(applications);
+                }
+            }
+        }
+        return dependencies;
     }
 
     public Set<String> getServices() {
@@ -132,6 +178,10 @@ public class RegistryContainer implements Container {
                 Map<String, List<URL>> consumerMap = new HashMap<String, List<URL>>();
                 Map<String, List<URL>> routeMap = new HashMap<String, List<URL>>();
                 for (URL url : urls) {
+                    String application = url.getParameter(Constants.APPLICATION_KEY);
+                    if (application != null && application.length() > 0) {
+                        applications.add(application);
+                    }
                     String service = url.getServiceName();
                     notifiedServices.add(service);
                     services.add(service);
@@ -149,6 +199,22 @@ public class RegistryContainer implements Container {
                             consumerMap.put(service, list);
                         }
                         list.add(url);
+
+                        if (application != null && application.length() > 0) {
+                            Set<String> serviceApplications = consumerServiceApplications.get(service);
+                            if (serviceApplications == null) {
+                                consumerServiceApplications.put(service, new ConcurrentHashSet<String>());
+                                serviceApplications = consumerServiceApplications.get(service);
+                            }
+                            serviceApplications.add(application);
+    
+                            Set<String> applicationServices = consumerApplicationServices.get(application);
+                            if (applicationServices == null) {
+                                consumerApplicationServices.put(application, new ConcurrentHashSet<String>());
+                                applicationServices = consumerApplicationServices.get(application);
+                            }
+                            applicationServices.add(service);
+                        }
                     } else if (! Constants.EMPTY_PROTOCOL.equals(url.getProtocol())) {
                         List<URL> list = proivderMap.get(service);
                         if (list == null) {
@@ -156,6 +222,22 @@ public class RegistryContainer implements Container {
                             proivderMap.put(service, list);
                         }
                         list.add(url);
+
+                        if (application != null && application.length() > 0) {
+                            Set<String> serviceApplications = providerServiceApplications.get(service);
+                            if (serviceApplications == null) {
+                                providerServiceApplications.put(service, new ConcurrentHashSet<String>());
+                                serviceApplications = providerServiceApplications.get(service);
+                            }
+                            serviceApplications.add(application);
+    
+                            Set<String> applicationServices = providerApplicationServices.get(application);
+                            if (applicationServices == null) {
+                                providerApplicationServices.put(application, new ConcurrentHashSet<String>());
+                                applicationServices = providerApplicationServices.get(application);
+                            }
+                            applicationServices.add(service);
+                        }
                     }
                 }
                 if (proivderMap != null && proivderMap.size() > 0) {

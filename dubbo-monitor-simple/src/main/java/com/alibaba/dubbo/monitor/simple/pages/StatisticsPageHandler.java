@@ -157,12 +157,12 @@ public class StatisticsPageHandler implements PageHandler {
     private List<String> toRow(String name, long[] statistics) {
         List<String> row = new ArrayList<String>();
         row.add(name);
-        row.add(String.valueOf(statistics[0]) + " &gt;&gt; " + String.valueOf(statistics[1]));
-        row.add(String.valueOf(statistics[2]) + " &gt;&gt; " + String.valueOf(statistics[3]));
+        row.add(String.valueOf(statistics[0]) + " -&gt; " + String.valueOf(statistics[1]));
+        row.add(String.valueOf(statistics[2]) + " -&gt; " + String.valueOf(statistics[3]));
         row.add(String.valueOf(statistics[0] == 0 ? 0 : statistics[4] / statistics[0]) 
-                + " &gt;&gt; " + String.valueOf(statistics[1] == 0 ? 0 : statistics[5] / statistics[1]));
-        row.add(String.valueOf(statistics[6]) + " &gt;&gt; " + String.valueOf(statistics[7]));
-        row.add(String.valueOf(statistics[8]) + " &gt;&gt; " + String.valueOf(statistics[9]));
+                + " -&gt; " + String.valueOf(statistics[1] == 0 ? 0 : statistics[5] / statistics[1]));
+        row.add(String.valueOf(statistics[6]) + " -&gt; " + String.valueOf(statistics[7]));
+        row.add(String.valueOf(statistics[8]) + " -&gt; " + String.valueOf(statistics[9]));
         return row;
     }
 

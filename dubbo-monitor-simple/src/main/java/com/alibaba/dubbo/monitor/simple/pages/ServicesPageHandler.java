@@ -47,11 +47,11 @@ public class ServicesPageHandler implements PageHandler {
                 List<URL> providers = RegistryContainer.getInstance().getProviders(service);
                 int providerSize = providers == null ? 0 : providers.size();
                 providerCount += providerSize;
-                row.add("<a href=\"providers.html?service=" + service + "\">Providers(" + providerSize + ")</a>");
+                row.add(providerSize == 0 ? "<font color=\"red\">No provider</a>" : "<a href=\"providers.html?service=" + service + "\">Providers(" + providerSize + ")</a>");
                 List<URL> consumers = RegistryContainer.getInstance().getConsumers(service);
                 int consumerSize = consumers == null ? 0 : consumers.size();
                 consumerCount += consumerSize;
-                row.add("<a href=\"consumers.html?service=" + service + "\">Consumers(" + consumerSize + ")</a>");
+                row.add(consumerSize == 0 ? "<font color=\"blue\">No consumer</a>" : "<a href=\"consumers.html?service=" + service + "\">Consumers(" + consumerSize + ")</a>");
                 row.add("<a href=\"statistics.html?service=" + service + "\">Statistics</a>");
                 row.add("<a href=\"charts.html?service=" + service + "\">Charts</a>");
                 rows.add(row);
