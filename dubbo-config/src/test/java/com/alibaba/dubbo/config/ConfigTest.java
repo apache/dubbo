@@ -26,6 +26,8 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.config.api.DemoService;
+import com.alibaba.dubbo.config.consumer.DemoActionByAnnotation;
+import com.alibaba.dubbo.config.consumer.DemoActionBySetter;
 import com.alibaba.dubbo.config.provider.impl.DemoServiceImpl;
 import com.alibaba.dubbo.registry.RegistryService;
 import com.alibaba.dubbo.registry.support.SimpleRegistryExporter;
@@ -174,6 +176,43 @@ public class ConfigTest {
         Assert.assertEquals("1000", System.getProperty("sun.rmi.transport.tcp.responseTimeout"));
         consumer.setTimeout(2000);
         Assert.assertEquals("1000", System.getProperty("sun.rmi.transport.tcp.responseTimeout"));
+    }
+
+    @Test
+    public void testAutowireAndAOP() throws Exception {
+        ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/demo-provider.xml");
+        providerContext.start();
+        try {
+            ClassPathXmlApplicationContext byNameContext = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/aop-autowire-byname.xml");
+            byNameContext.start();
+            try {
+                DemoActionBySetter demoActionBySetter = (DemoActionBySetter) byNameContext.getBean("demoActionBySetter");
+                Assert.assertNotNull(demoActionBySetter.getDemoService());
+                Assert.assertEquals("aop:say:hello", demoActionBySetter.getDemoService().sayName("hello"));
+                DemoActionByAnnotation demoActionByAnnotation = (DemoActionByAnnotation) byNameContext.getBean("demoActionByAnnotation");
+                Assert.assertNotNull(demoActionByAnnotation.getDemoService());
+                Assert.assertEquals("aop:say:hello", demoActionByAnnotation.getDemoService().sayName("hello"));
+            } finally {
+                byNameContext.stop();
+                byNameContext.close();
+            }
+            ClassPathXmlApplicationContext byTypeContext = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/aop-autowire-bytype.xml");
+            byTypeContext.start();
+            try {
+                DemoActionBySetter demoActionBySetter = (DemoActionBySetter) byTypeContext.getBean("demoActionBySetter");
+                Assert.assertNotNull(demoActionBySetter.getDemoService());
+                Assert.assertEquals("aop:say:hello", demoActionBySetter.getDemoService().sayName("hello"));
+                DemoActionByAnnotation demoActionByAnnotation = (DemoActionByAnnotation) byTypeContext.getBean("demoActionByAnnotation");
+                Assert.assertNotNull(demoActionByAnnotation.getDemoService());
+                Assert.assertEquals("aop:say:hello", demoActionByAnnotation.getDemoService().sayName("hello"));
+            } finally {
+                byTypeContext.stop();
+                byTypeContext.close();
+            }
+        } finally {
+            providerContext.stop();
+            providerContext.close();
+        }
     }
     
     @Test
