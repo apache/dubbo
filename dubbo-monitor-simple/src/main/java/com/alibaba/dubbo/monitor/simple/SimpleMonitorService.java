@@ -129,13 +129,13 @@ public class SimpleMonitorService implements MonitorService {
                     long successModified = successFile.lastModified();
                     boolean successChanged = false;
                     Map<String, long[]> successData = new HashMap<String, long[]>();
-                    long[] successSummary = new long[4];
+                    double[] successSummary = new double[4];
                     
                     File elapsedFile = new File(methodUri + "/" + ELAPSED + ".png");
                     long elapsedModified = elapsedFile.lastModified();
                     boolean elapsedChanged = false;
                     Map<String, long[]> elapsedData = new HashMap<String, long[]>();
-                    long[] elapsedSummary = new long[4];
+                    double[] elapsedSummary = new double[4];
                     long elapsedMax = 0;
                     
                     File[] consumerDirs = methodDir.listFiles();
@@ -199,7 +199,7 @@ public class SimpleMonitorService implements MonitorService {
         }
     }
 
-    private void appendData(File[] files, Map<String, long[]> data, long[] summary) {
+    private void appendData(File[] files, Map<String, long[]> data, double[] summary) {
         for (int i = 0; i < files.length; i ++) {
             File file = files[i];
             if (! file.exists()) {
@@ -241,9 +241,9 @@ public class SimpleMonitorService implements MonitorService {
         }
     }
     
-    private static void createChart(String key, String service, String method, String date, String[] types, Map<String, long[]> data, long[] summary, String path) {
+    private static void createChart(String key, String service, String method, String date, String[] types, Map<String, long[]> data, double[] summary, String path) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
-        DecimalFormat numberFormat = new DecimalFormat("###,##0");
+        DecimalFormat numberFormat = new DecimalFormat("###,##0.##");
         TimeSeriesCollection xydataset = new TimeSeriesCollection();
         for (int i = 0; i < types.length; i ++) {
             String type = types[i];
