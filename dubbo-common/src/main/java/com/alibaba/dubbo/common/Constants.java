@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
 public class Constants {
 
     public static final List<String> DEFAULT_TELNET_COMMANDS    = Collections.unmodifiableList(Arrays.asList(new String[] {
-            "ls", "ps", "cd", "pwd", "invoke", "count", "trace", "status", "help", "clear", "exit","log" }));
+            "ls", "ps", "cd", "pwd", "invoke", "count", "trace", "status", "log", "help", "clear", "exit" }));
 
     public static final List<String> DEFAULT_CHECK_STATUSES    = Collections.unmodifiableList(Arrays.asList(new String[] {
             "server", "registry", "threadpool", "datasource", "spring", "memory", "load" }));
