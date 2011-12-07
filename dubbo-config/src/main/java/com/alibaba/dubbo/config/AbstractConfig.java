@@ -18,13 +18,13 @@ package com.alibaba.dubbo.config;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.net.URLEncoder;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.ExtensionLoader;
+import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 
@@ -115,10 +115,12 @@ public abstract class AbstractConfig implements Serializable {
                     }
                     Object value = method.invoke(config, new Object[0]);
                     if (attribute){
-                        if (prefix != null && prefix.length() > 0) {
-                            key = prefix + "." + key;
+                        if (value != null) {
+                            if (prefix != null && prefix.length() > 0) {
+                                key = prefix + "." + key;
+                            }
+                            parameters.put(key, value);
                         }
-                        if (value != null) parameters.put(key, value);
                     } else {
                         String str = String.valueOf(value).trim();
                         if (value != null && str.length() > 0) {
@@ -126,7 +128,13 @@ public abstract class AbstractConfig implements Serializable {
                                 key = prefix + "." + key;
                             }
                             if (parameter != null && parameter.escaped()) {
-                                str = URLEncoder.encode(str, "UTF-8");
+                                str = URL.encode(str);
+                            }
+                            if (parameter != null && parameter.append()) {
+                                String pre = (String)parameters.get(key);
+                                if (pre != null && pre.length() > 0) {
+                                    str = pre + "," + str;
+                                }
                             }
                             parameters.put(key, str);
                         } else if (parameter != null && parameter.required()) {

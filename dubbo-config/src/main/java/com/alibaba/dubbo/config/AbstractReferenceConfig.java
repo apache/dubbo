@@ -279,7 +279,7 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
         this.connections = connections;
     }
 
-    @Parameter(key = Constants.REFERENCE_FILTER_KEY)
+    @Parameter(key = Constants.REFERENCE_FILTER_KEY, append = true)
     public String getFilter() {
         return filter;
     }
@@ -289,7 +289,7 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
         this.filter = filter;
     }
 
-    @Parameter(key = Constants.INVOKER_LISTENER_KEY)
+    @Parameter(key = Constants.INVOKER_LISTENER_KEY, append = true)
     public String getListener() {
         checkMultiExtension(InvokerListener.class, "listener", listener);
         return listener;

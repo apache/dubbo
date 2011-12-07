@@ -40,5 +40,7 @@ public @interface Parameter {
     boolean escaped() default false;
     
     boolean attribute() default false;
+
+    boolean append() default false;
     
 }

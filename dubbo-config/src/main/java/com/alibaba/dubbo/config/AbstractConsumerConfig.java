@@ -76,12 +76,12 @@ public abstract class AbstractConsumerConfig extends AbstractReferenceConfig {
         this.injvm = injvm;
     }
 
-    @Parameter(key = Constants.REFERENCE_FILTER_KEY)
+    @Parameter(key = Constants.REFERENCE_FILTER_KEY, append = true)
     public String getFilter() {
         return super.getFilter();
     }
 
-    @Parameter(key = Constants.INVOKER_LISTENER_KEY)
+    @Parameter(key = Constants.INVOKER_LISTENER_KEY, append = true)
     public String getListener() {
         return super.getListener();
     }

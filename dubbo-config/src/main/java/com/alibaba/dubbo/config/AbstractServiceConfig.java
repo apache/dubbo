@@ -179,12 +179,12 @@ public abstract class AbstractServiceConfig extends AbstractReferenceConfig {
         this.executes = executes;
     }
 
-    @Parameter(key = Constants.SERVICE_FILTER_KEY)
+    @Parameter(key = Constants.SERVICE_FILTER_KEY, append = true)
     public String getFilter() {
         return super.getFilter();
     }
 
-    @Parameter(key = Constants.EXPORTER_LISTENER_KEY)
+    @Parameter(key = Constants.EXPORTER_LISTENER_KEY, append = true)
     public String getListener() {
         return super.getListener();
     }
