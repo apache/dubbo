@@ -123,7 +123,7 @@ public class ClientReconnectTest {
         }
         Thread.sleep(1000);//重连线程的运行
         int count =  LogUtil.findMessage(Level.WARN, "client reconnect to ") ;
-        Assert.assertTrue("warning message count must > 2, real :"+count, count> 2);
+        Assert.assertTrue("warning message count must >= 1, real :"+count, count>= 1);
         DubboAppender.doStop();
     }
     
