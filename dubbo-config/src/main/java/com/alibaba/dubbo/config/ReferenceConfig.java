@@ -93,7 +93,13 @@ public class ReferenceConfig<T> extends AbstractConsumerConfig {
     private transient boolean    initialized;
 
     private transient boolean    destroyed;
+
+    private final List<URL> urls = new ArrayList<URL>();
     
+    public List<URL> toUrls() {
+        return urls;
+    }
+
     public synchronized T get() {
         if (destroyed){
             throw new IllegalStateException("Already destroyed!");
@@ -106,7 +112,7 @@ public class ReferenceConfig<T> extends AbstractConsumerConfig {
     
     public synchronized void destroy() {
         if (ref == null) {
-            throw new IllegalStateException("Uninitialized.");
+            return;
         }
         if (destroyed){
             return;
@@ -276,7 +282,6 @@ public class ReferenceConfig<T> extends AbstractConsumerConfig {
                 logger.info("Using injvm service " + interfaceClass.getName());
             }
         } else {
-            List<URL> urls = new ArrayList<URL>();
             if (url != null && url.length() > 0) { // 用户指定URL，指定的URL可能是对点对直连地址，也可能是注册中心URL
                 String[] us = Constants.SEMICOLON_SPLIT_PATTERN.split(url);
                 if (us != null && us.length > 0) {

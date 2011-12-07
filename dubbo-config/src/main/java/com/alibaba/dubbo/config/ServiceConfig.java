@@ -85,11 +85,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     
     private transient boolean generic;
     
-    @Parameter(excluded = true)
-    public boolean isExported() {
-        return exported;
+    public List<URL> toUrls() {
+        return urls;
     }
-    
+
     public synchronized void export() {
         if (delay != null && delay > 0) {
             Thread thread = new Thread(new Runnable() {
@@ -251,8 +250,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     public synchronized void unexport() {
-        if (!exported) {
-            throw new IllegalStateException("No exported!");
+        if (! exported) {
+            return;
         }
         if (unexported) {
             return;
@@ -328,7 +327,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             }
             map.put("dubbo", Version.getVersion());
             appendParameters(map, application);
-            appendParameters(map, provider);
+            appendParameters(map, provider, Constants.DEFAULT_KEY);
             appendParameters(map, protocolConfig);
             appendParameters(map, this);
             map.put("prompt", "dubbo");

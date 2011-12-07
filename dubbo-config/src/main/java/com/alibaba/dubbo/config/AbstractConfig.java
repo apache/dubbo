@@ -124,17 +124,17 @@ public abstract class AbstractConfig implements Serializable {
                     } else {
                         String str = String.valueOf(value).trim();
                         if (value != null && str.length() > 0) {
-                            if (prefix != null && prefix.length() > 0) {
-                                key = prefix + "." + key;
-                            }
                             if (parameter != null && parameter.escaped()) {
                                 str = URL.encode(str);
                             }
                             if (parameter != null && parameter.append()) {
-                                String pre = (String)parameters.get(key);
+                                String pre = (String)parameters.get(Constants.DEFAULT_KEY + "." + key);
                                 if (pre != null && pre.length() > 0) {
                                     str = pre + "," + str;
                                 }
+                            }
+                            if (prefix != null && prefix.length() > 0) {
+                                key = prefix + "." + key;
                             }
                             parameters.put(key, str);
                         } else if (parameter != null && parameter.required()) {

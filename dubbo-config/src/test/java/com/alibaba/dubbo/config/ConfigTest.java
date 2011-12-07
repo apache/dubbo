@@ -26,6 +26,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.config.api.DemoService;
+import com.alibaba.dubbo.config.provider.impl.DemoServiceImpl;
 import com.alibaba.dubbo.registry.RegistryService;
 import com.alibaba.dubbo.registry.support.SimpleRegistryExporter;
 import com.alibaba.dubbo.registry.support.SimpleRegistryService;
@@ -173,6 +174,47 @@ public class ConfigTest {
         Assert.assertEquals("1000", System.getProperty("sun.rmi.transport.tcp.responseTimeout"));
         consumer.setTimeout(2000);
         Assert.assertEquals("1000", System.getProperty("sun.rmi.transport.tcp.responseTimeout"));
+    }
+    
+    @Test
+    public void testAppendFilter() throws Exception {
+        ProviderConfig provider = new ProviderConfig();
+        provider.setFilter("classloader,monitor");
+        ServiceConfig<DemoService> service = new ServiceConfig<DemoService>();
+        service.setFilter("accesslog,trace");
+        service.setProvider(provider);
+        service.setApplication(new ApplicationConfig("provider"));
+        service.setRegistry(new RegistryConfig(RegistryConfig.NO_AVAILABLE));
+        service.setInterface(DemoService.class);
+        service.setRef(new DemoServiceImpl());
+        try {
+            service.export();
+            List<URL> urls = service.toUrls();
+            Assert.assertNotNull(urls);
+            Assert.assertEquals(1, urls.size());
+            Assert.assertEquals("classloader,monitor,accesslog,trace", urls.get(0).getParameter("service.filter"));
+            
+            ConsumerConfig consumer = new ConsumerConfig();
+            consumer.setFilter("classloader,monitor");
+            ReferenceConfig<DemoService> reference = new ReferenceConfig<DemoService>();
+            reference.setFilter("accesslog,trace");
+            reference.setConsumer(consumer);
+            reference.setApplication(new ApplicationConfig("consumer"));
+            reference.setRegistry(new RegistryConfig(RegistryConfig.NO_AVAILABLE));
+            reference.setInterface(DemoService.class);
+            reference.setUrl("dubbo://" + NetUtils.getLocalHost() + ":20880?" + DemoService.class.getName() + "?check=false");
+            try {
+                reference.get();
+                urls = reference.toUrls();
+                Assert.assertNotNull(urls);
+                Assert.assertEquals(1, urls.size());
+                Assert.assertEquals("classloader,monitor,accesslog,trace", urls.get(0).getParameter("reference.filter"));
+            } finally {
+                reference.destroy();
+            }
+        } finally {
+            service.unexport();
+        }
     }
 
 }
