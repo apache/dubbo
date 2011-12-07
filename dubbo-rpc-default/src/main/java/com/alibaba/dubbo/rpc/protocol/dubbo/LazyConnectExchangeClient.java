@@ -25,6 +25,7 @@ import com.alibaba.dubbo.common.Parameters;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
@@ -93,9 +94,12 @@ final class LazyConnectExchangeClient implements ExchangeClient{
     }
 
     public InetSocketAddress getRemoteAddress() {
-        return client.getRemoteAddress();
+        if (client == null){
+            return InetSocketAddress.createUnresolved(url.getHost(), url.getPort());
+        } else {
+            return client.getRemoteAddress();
+        }
     }
-
     public ResponseFuture request(Object request, int timeout) throws RemotingException {
         warning(request);
         initClient();
@@ -129,8 +133,11 @@ final class LazyConnectExchangeClient implements ExchangeClient{
     }
 
     public InetSocketAddress getLocalAddress() {
-        checkClient();
-        return client.getLocalAddress();
+        if (client == null){
+            return InetSocketAddress.createUnresolved(NetUtils.getLocalHost(), 0);
+        } else {
+            return client.getLocalAddress();
+        }
     }
 
     public ExchangeHandler getExchangeHandler() {
