@@ -15,6 +15,9 @@
  */
 package com.alibaba.dubbo.rpc.protocol.dubbo.support;
 
+import java.util.Map;
+import java.util.Set;
+
 
 
 /**
@@ -24,6 +27,8 @@ package com.alibaba.dubbo.rpc.protocol.dubbo.support;
 public interface DemoService
 {
 	void sayHello(String name);
+	
+	Set<String> keys(Map<String, String> map);
 
 	String echo(String text);
 

@@ -15,6 +15,9 @@
  */
 package com.alibaba.dubbo.rpc.protocol.dubbo.support;
 
+import java.util.Map;
+import java.util.Set;
+
 import com.alibaba.dubbo.rpc.RpcContext;
 
 /**
@@ -92,5 +95,9 @@ public class DemoServiceImpl implements DemoService
 
     public Person gerPerson(Person person) {
         return person;
+    }
+
+    public Set<String> keys(Map<String, String> map) {
+        return map == null ? null : map.keySet();
     }
 }
