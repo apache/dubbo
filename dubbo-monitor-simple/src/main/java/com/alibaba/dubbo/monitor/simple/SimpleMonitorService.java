@@ -92,7 +92,9 @@ public class SimpleMonitorService implements MonitorService {
     }
 
     public void setChartsDirectory(String charts) {
-        this.chartsDirectory = charts;
+        if (charts != null) {
+            this.chartsDirectory = charts;
+        }
     }
     
     public SimpleMonitorService() {

@@ -45,20 +45,24 @@ public class ConnectionsPageHandler implements PageHandler {
         ExchangeServer server = null;
         StringBuilder select = new StringBuilder();
         if (servers != null && servers.size() > 0) {
-            select.append(" &gt; <select onchange=\"window.location.href='connections.html?port=' + this.value;\">");
-            for (ExchangeServer s : servers) {
-                int sp = s.getUrl().getPort();
-                select.append("<option value=\">");
-                select.append(sp);
-                if (p == 0 && server == null || p == sp) {
-                    server = s;
-                    select.append("\" selected=\"selected");
+            if (servers.size() == 1) {
+                select.append(" &gt; " + servers.iterator().next().getUrl().getPort());
+            } else {
+                select.append(" &gt; <select onchange=\"window.location.href='connections.html?port=' + this.value;\">");
+                for (ExchangeServer s : servers) {
+                    int sp = s.getUrl().getPort();
+                    select.append("<option value=\">");
+                    select.append(sp);
+                    if (p == 0 && server == null || p == sp) {
+                        server = s;
+                        select.append("\" selected=\"selected");
+                    }
+                    select.append("\">");
+                    select.append(sp);
+                    select.append("</option>");
                 }
-                select.append("\">");
-                select.append(sp);
-                select.append("</option>");
+                select.append("</select>");
             }
-            select.append("</select>");
         }
         List<List<String>> rows = new ArrayList<List<String>>();
         if (server != null) {
@@ -69,7 +73,7 @@ public class ConnectionsPageHandler implements PageHandler {
                 rows.add(row);
             }
         }
-        return new Page("Connections" + select.toString(), "Connections (" + rows.size() + ")", new String[]{"Consumer Address:"}, rows);
+        return new Page("Servers" + select.toString() + " &gt; Connections", "Connections (" + rows.size() + ")", new String[]{"Consumer Address:"}, rows);
     }
 
 }

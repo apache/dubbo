@@ -43,21 +43,25 @@ public class RegisteredPageHandler implements PageHandler {
         StringBuilder select = new StringBuilder();
         Registry registry = null;
         if (registries != null && registries.size() > 0) {
-            select.append(" &gt; <select onchange=\"window.location.href='connections.html?port=' + this.value;\">");
-            for (Registry r : registries) {
-                String sp = r.getUrl().getAddress();
-                select.append("<option value=\">");
-                select.append(sp);
-                if (((registryAddress == null || registryAddress.length() == 0) && registry == null)
-                        || registryAddress.equals(sp)) {
-                    registry = r;
-                    select.append("\" selected=\"selected");
+            if (registries.size() == 1) {
+                select.append(" &gt; " + registries.iterator().next().getUrl().getAddress());
+            } else {
+                select.append(" &gt; <select onchange=\"window.location.href='connections.html?port=' + this.value;\">");
+                for (Registry r : registries) {
+                    String sp = r.getUrl().getAddress();
+                    select.append("<option value=\">");
+                    select.append(sp);
+                    if (((registryAddress == null || registryAddress.length() == 0) && registry == null)
+                            || registryAddress.equals(sp)) {
+                        registry = r;
+                        select.append("\" selected=\"selected");
+                    }
+                    select.append("\">");
+                    select.append(sp);
+                    select.append("</option>");
                 }
-                select.append("\">");
-                select.append(sp);
-                select.append("</option>");
+                select.append("</select>");
             }
-            select.append("</select>");
         }
         if (registry instanceof AbstractRegistry) {
             Set<String> services = ((AbstractRegistry) registry).getRegistered();
