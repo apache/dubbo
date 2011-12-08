@@ -157,6 +157,7 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
                         throw new IllegalStateException("registry address == null");
                     }
                     Map<String, String> map = new HashMap<String, String>();
+                    appendParameters(map, application);
                     appendParameters(map, config);
                     map.put("path", RegistryService.class.getName());
                     if (! map.containsKey("protocol")) {
