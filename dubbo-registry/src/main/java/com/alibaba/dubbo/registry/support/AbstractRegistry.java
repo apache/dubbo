@@ -15,8 +15,10 @@
  */
 package com.alibaba.dubbo.registry.support;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,6 +28,7 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
+import com.alibaba.dubbo.common.utils.UrlUtils;
 import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.Registry;
 
@@ -40,13 +43,17 @@ public abstract class AbstractRegistry implements Registry {
     // 日志输出
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final URL registryUrl;
+    private URL registryUrl;
 
     private final Set<String> registered = new ConcurrentHashSet<String>();
 
     private final ConcurrentMap<String, Set<NotifyListener>> subscribed = new ConcurrentHashMap<String, Set<NotifyListener>>();
 
     public AbstractRegistry(URL url) {
+        setUrl(url);
+    }
+    
+    protected void setUrl(URL url) {
         if (url == null) {
             throw new IllegalArgumentException("registry url == null");
         }
@@ -63,6 +70,17 @@ public abstract class AbstractRegistry implements Registry {
 
     public URL getUrl() {
         return registryUrl;
+    }
+
+    public List<URL> lookup(URL url) {
+        List<URL> urls= new ArrayList<URL>();
+        for (String r: getRegistered()) {
+            URL u = URL.valueOf(r);
+            if (UrlUtils.isMatch(url, u)) {
+                urls.add(u);
+            }
+        }
+        return urls;
     }
 
     public void register(URL url) {

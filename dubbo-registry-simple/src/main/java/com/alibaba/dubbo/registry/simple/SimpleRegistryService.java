@@ -30,7 +30,7 @@ import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.common.utils.UrlUtils;
 import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.RegistryService;
-import com.alibaba.dubbo.registry.support.CacheRegistry;
+import com.alibaba.dubbo.registry.support.FailbackRegistry;
 import com.alibaba.dubbo.rpc.RpcContext;
 
 /**
@@ -38,7 +38,7 @@ import com.alibaba.dubbo.rpc.RpcContext;
  * 
  * @author william.liangf
  */
-public class SimpleRegistryService extends CacheRegistry {
+public class SimpleRegistryService extends FailbackRegistry {
 
     private final ConcurrentMap<String, Set<String>> remoteRegistered = new ConcurrentHashMap<String, Set<String>>();
 
@@ -46,16 +46,10 @@ public class SimpleRegistryService extends CacheRegistry {
     
     private final static Logger logger = LoggerFactory.getLogger(SimpleRegistryService.class);
 
-    private List<String> registries;
-    
     public SimpleRegistryService() {
-        this(0);
+        super(new URL("dubbo", NetUtils.getLocalHost(), 0, RegistryService.class.getName()));
     }
-    
-    public SimpleRegistryService(int port) {
-        super(new URL("dubbo", NetUtils.getLocalHost(), port, RegistryService.class.getName()));
-    }
-    
+
     public boolean isAvailable() {
         return true;
     }
@@ -69,6 +63,7 @@ public class SimpleRegistryService extends CacheRegistry {
         }
         urls.add(url.toFullString());
         super.register(url);
+        registered(url);
     }
 
     public void unregister(URL url) {
@@ -78,29 +73,22 @@ public class SimpleRegistryService extends CacheRegistry {
             urls.remove(url.toFullString());
         }
         super.unregister(url);
+        unregistered(url);
     }
 
     public void subscribe(URL url, NotifyListener listener) {
+        if (getUrl().getPort() == 0) {
+            URL registryUrl = RpcContext.getContext().getInvoker().getUrl();
+            if (registryUrl != null && registryUrl.getPort() > 0) {
+                super.setUrl(registryUrl);
+                super.register(registryUrl);
+            }
+        }
         if (! Constants.ANY_VALUE.equals(url.getServiceName())
                 && url.getParameter(Constants.REGISTER_KEY, true)) {
             register(url);
         }
         String client = RpcContext.getContext().getRemoteAddressString();
-        List<URL> urls = lookup(url);
-        if ((RegistryService.class.getName()).equals(url.getServiceName())
-                && (urls == null || urls.size() == 0)) {
-            register(new URL("dubbo", 
-                    NetUtils.getLocalHost(), 
-                    RpcContext.getContext().getLocalPort(), 
-                    com.alibaba.dubbo.registry.RegistryService.class.getName(), 
-                    url.getParameters()));
-            List<String> rs = registries;
-            if (rs != null && rs.size() > 0) {
-                for (String registry : rs) {
-                    register(UrlUtils.parseURL(registry, url.getParameters()));
-                }
-            }
-        }
         ConcurrentMap<String, Set<NotifyListener>> clientListeners = remoteSubscribed.get(client);
         if (clientListeners == null) {
             remoteSubscribed.putIfAbsent(client, new ConcurrentHashMap<String, Set<NotifyListener>>());
@@ -114,6 +102,7 @@ public class SimpleRegistryService extends CacheRegistry {
         }
         listeners.add(listener);
         super.subscribe(url, listener);
+        subscribed(url, listener);
     }
 
     public void unsubscribe(URL url, NotifyListener listener) {
@@ -131,6 +120,43 @@ public class SimpleRegistryService extends CacheRegistry {
             }
         }
         super.unregister(url);
+    }
+
+    protected void registered(URL url) {
+        for (Map.Entry<String, Set<NotifyListener>> entry : getSubscribed().entrySet()) {
+            String key = entry.getKey();
+            URL subscribe = URL.valueOf(key);
+            if (UrlUtils.isMatch(subscribe, url)) {
+                List<URL> list = lookup(subscribe);
+                if (list != null && list.size() > 0) {
+                    for (NotifyListener listener : entry.getValue()) {
+                        notify(subscribe, listener, list);
+                    }
+                }
+            }
+        }
+    }
+
+    protected void unregistered(URL url) {
+        for (Map.Entry<String, Set<NotifyListener>> entry : getSubscribed().entrySet()) {
+            String key = entry.getKey();
+            URL subscribe = URL.valueOf(key);
+            if (UrlUtils.isMatch(subscribe, url)) {
+                List<URL> list = lookup(subscribe);
+                if (list != null && list.size() > 0) {
+                    for (NotifyListener listener : entry.getValue()) {
+                        notify(subscribe, listener, list);
+                    }
+                }
+            }
+        }
+    }
+
+    protected void subscribed(URL url, NotifyListener listener) {
+        List<URL> urls = lookup(url);
+        if (urls != null && urls.size() > 0) {
+            notify(url, listener, urls);
+        }
     }
 
     public void doRegister(URL url) {
@@ -165,14 +191,6 @@ public class SimpleRegistryService extends CacheRegistry {
                 }
             }
         }
-    }
-
-    public List<String> getRegistries() {
-        return registries;
-    }
-
-    public void setRegistries(List<String> registries) {
-        this.registries = registries;
     }
 
 }

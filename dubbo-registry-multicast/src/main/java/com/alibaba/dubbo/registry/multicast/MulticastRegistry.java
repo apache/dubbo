@@ -20,24 +20,31 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
+import com.alibaba.dubbo.common.utils.UrlUtils;
 import com.alibaba.dubbo.registry.NotifyListener;
-import com.alibaba.dubbo.registry.support.CacheRegistry;
+import com.alibaba.dubbo.registry.support.FailbackRegistry;
 
 /**
  * MulticastRegistry
  * 
  * @author william.liangf
  */
-public class MulticastRegistry extends CacheRegistry {
+public class MulticastRegistry extends FailbackRegistry {
 
     // 日志输出
     private static final Logger logger = LoggerFactory.getLogger(MulticastRegistry.class);
@@ -53,7 +60,9 @@ public class MulticastRegistry extends CacheRegistry {
     private final InetAddress mutilcastAddress;
     
     private final MulticastSocket mutilcastSocket;
-    
+
+    private final ConcurrentMap<String, Set<String>> notified = new ConcurrentHashMap<String, Set<String>>();
+
     public MulticastRegistry(URL url) {
         super(url);
         if (! isMulticastAddress(url.getHost())) {
@@ -173,7 +182,7 @@ public class MulticastRegistry extends CacheRegistry {
         broadcast(SUBSCRIBE + " " + url.toFullString());
         synchronized (listener) {
             try {
-                listener.wait(url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT  * 2));
+                listener.wait(url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
             } catch (InterruptedException e) {
             }
         }
@@ -203,6 +212,90 @@ public class MulticastRegistry extends CacheRegistry {
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
         }
+    }
+
+    protected void registered(URL url) {
+        for (Map.Entry<String, Set<NotifyListener>> entry : getSubscribed().entrySet()) {
+            String key = entry.getKey();
+            URL subscribe = URL.valueOf(key);
+            if (UrlUtils.isMatch(subscribe, url)) {
+                Set<String> urls = notified.get(key);
+                if (urls == null) {
+                    notified.putIfAbsent(key, new ConcurrentHashSet<String>());
+                    urls = notified.get(key);
+                }
+                urls.add(url.toFullString());
+                List<URL> list = toList(urls);
+                if (list != null && list.size() > 0) {
+                    for (NotifyListener listener : entry.getValue()) {
+                        notify(subscribe, listener, list);
+                        synchronized (listener) {
+                            listener.notify();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    protected void unregistered(URL url) {
+        for (Map.Entry<String, Set<NotifyListener>> entry : getSubscribed().entrySet()) {
+            String key = entry.getKey();
+            URL subscribe = URL.valueOf(key);
+            if (UrlUtils.isMatch(subscribe, url)) {
+                Set<String> urls = notified.get(key);
+                if (urls != null) {
+                    urls.remove(url.toFullString());
+                }
+                List<URL> list = toList(urls);
+                if (list != null && list.size() > 0) {
+                    for (NotifyListener listener : entry.getValue()) {
+                        notify(subscribe, listener, list);
+                    }
+                }
+            }
+        }
+    }
+
+    protected void subscribed(URL url, NotifyListener listener) {
+        List<URL> urls = lookup(url);
+        if (urls != null && urls.size() > 0) {
+            notify(url, listener, urls);
+        }
+    }
+
+    private List<URL> toList(Set<String> urls) {
+        List<URL> list = new ArrayList<URL>();
+        if (urls != null && urls.size() > 0) {
+            for (String url : urls) {
+                list.add(URL.valueOf(url));
+            }
+        }
+        return list;
+    }
+
+    public void register(URL url) {
+        super.register(url);
+        registered(url);
+    }
+
+    public void unregister(URL url) {
+        super.unregister(url);
+        unregistered(url);
+    }
+
+    public void subscribe(URL url, NotifyListener listener) {
+        super.subscribe(url, listener);
+        subscribed(url, listener);
+    }
+
+    public void unsubscribe(URL url, NotifyListener listener) {
+        super.unsubscribe(url, listener);
+        notified.remove(url.toFullString());
+    }
+
+    public Map<String, Set<String>> getNotified() {
+        return notified;
     }
 
 }
