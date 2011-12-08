@@ -47,7 +47,7 @@ public class ConnectionsPageHandler implements PageHandler {
         if (servers != null && servers.size() > 0) {
             if (servers.size() == 1) {
                 server = servers.iterator().next();
-                select.append(" &gt; " + server.getUrl().getPort());
+                select.append(" &gt; " + server.getUrl().getAddress());
             } else {
                 select.append(" &gt; <select onchange=\"window.location.href='connections.html?port=' + this.value;\">");
                 for (ExchangeServer s : servers) {
@@ -59,7 +59,7 @@ public class ConnectionsPageHandler implements PageHandler {
                         select.append("\" selected=\"selected");
                     }
                     select.append("\">");
-                    select.append(sp);
+                    select.append(s.getUrl().getAddress());
                     select.append("</option>");
                 }
                 select.append("</select>");
