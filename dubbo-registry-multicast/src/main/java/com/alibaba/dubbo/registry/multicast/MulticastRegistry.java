@@ -27,6 +27,7 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.support.CacheRegistry;
@@ -67,16 +68,13 @@ public class MulticastRegistry extends CacheRegistry {
                 public void run() {
                     byte[] buf = new byte[2048];
                     DatagramPacket recv = new DatagramPacket(buf, buf.length);
-                    while (true) {
+                    while (! mutilcastSocket.isClosed()) {
                         try {
                             mutilcastSocket.receive(recv);
                             String msg = new String(recv.getData()).trim();
                             int i = msg.indexOf('\n');
                             if (i > 0) {
                                 msg = msg.substring(0, i).trim();
-                            }
-                            if (logger.isInfoEnabled()) {
-                                logger.info("Receive multicast message: " + msg + " from " + recv.getSocketAddress());
                             }
                             MulticastRegistry.this.receive(msg, (InetSocketAddress) recv.getSocketAddress());
                             Arrays.fill(buf, (byte)0);
@@ -106,6 +104,9 @@ public class MulticastRegistry extends CacheRegistry {
     }
 
     private void receive(String msg, InetSocketAddress remoteAddress) {
+        if (logger.isInfoEnabled()) {
+            logger.info("Receive multicast message: " + msg + " from " + remoteAddress);
+        }
         if (msg.startsWith(REGISTER)) {
             URL url = URL.valueOf(msg.substring(REGISTER.length()).trim());
             registered(url);
@@ -117,7 +118,13 @@ public class MulticastRegistry extends CacheRegistry {
             List<URL> urls = lookup(url);
             if (urls != null && urls.size() > 0) {
                 for (URL u : urls) {
-                    unicast(REGISTER + " " + u.toFullString(), url.getHost());
+                    String host = remoteAddress != null && remoteAddress.getAddress() != null 
+                            ? remoteAddress.getAddress().getHostAddress() : url.getHost();
+                    if (NetUtils.getLocalHost().equals(host)) { // 同机器多进程不能用unicast单播信息，否则只会有一个进程收到信息
+                        broadcast(REGISTER + " " + u.toFullString());
+                    } else {
+                        unicast(REGISTER + " " + u.toFullString(), host);
+                    }
                 }
             }
         } else if (msg.startsWith(UNSUBSCRIBE)) {
@@ -191,6 +198,7 @@ public class MulticastRegistry extends CacheRegistry {
     public void destroy() {
         super.destroy();
         try {
+            mutilcastSocket.leaveGroup(mutilcastAddress);
             mutilcastSocket.close();
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
