@@ -327,7 +327,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             }
             map.put("dubbo", Version.getVersion());
             appendParameters(map, application);
-            appendParameters(map, provider, Constants.DEFAULT_KEY);
+            appendParameters(map, provider);
             appendParameters(map, protocolConfig);
             appendParameters(map, this);
             map.put("prompt", "dubbo");

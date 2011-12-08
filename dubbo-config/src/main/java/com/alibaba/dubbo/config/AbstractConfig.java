@@ -132,6 +132,10 @@ public abstract class AbstractConfig implements Serializable {
                                 if (pre != null && pre.length() > 0) {
                                     str = pre + "," + str;
                                 }
+                                pre = (String)parameters.get(key);
+                                if (pre != null && pre.length() > 0) {
+                                    str = pre + "," + str;
+                                }
                             }
                             if (prefix != null && prefix.length() > 0) {
                                 key = prefix + "." + key;
