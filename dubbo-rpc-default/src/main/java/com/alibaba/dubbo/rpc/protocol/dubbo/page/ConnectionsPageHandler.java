@@ -46,7 +46,8 @@ public class ConnectionsPageHandler implements PageHandler {
         StringBuilder select = new StringBuilder();
         if (servers != null && servers.size() > 0) {
             if (servers.size() == 1) {
-                select.append(" &gt; " + servers.iterator().next().getUrl().getPort());
+                server = servers.iterator().next();
+                select.append(" &gt; " + server.getUrl().getPort());
             } else {
                 select.append(" &gt; <select onchange=\"window.location.href='connections.html?port=' + this.value;\">");
                 for (ExchangeServer s : servers) {

@@ -44,7 +44,8 @@ public class RegisteredPageHandler implements PageHandler {
         Registry registry = null;
         if (registries != null && registries.size() > 0) {
             if (registries.size() == 1) {
-                select.append(" &gt; " + registries.iterator().next().getUrl().getAddress());
+                registry = registries.iterator().next();
+                select.append(" &gt; " + registry.getUrl().getAddress());
             } else {
                 select.append(" &gt; <select onchange=\"window.location.href='connections.html?port=' + this.value;\">");
                 for (Registry r : registries) {
@@ -68,14 +69,13 @@ public class RegisteredPageHandler implements PageHandler {
             if (services != null && services.size() > 0) {
                 for (String u : services) {
                     List<String> row = new ArrayList<String>();
-                    row.add(URL.valueOf(u).getServiceName().replace("<", "&lt;").replace(">", "&gt;"));
-                    row.add(u.toString().replace("<", "&lt;").replace(">", "&gt;"));
+                    row.add(u.replace("<", "&lt;").replace(">", "&gt;"));
                     rows.add(row);
                 }
             }
         }
         return new Page("Registries" + select.toString() + " &gt; Registered", "Registered (" + rows.size() + ")",
-                new String[] { "Service:", "URL:" }, rows);
+                new String[] { "Service URL:" }, rows);
     }
 
 }
