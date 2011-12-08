@@ -44,7 +44,7 @@ public class HomePageHandler implements PageHandler {
             row.add(menu.desc());
             rows.add(row);
         }
-        return new Page("Home", "Menus",  new String[] {"Menu Name:", "Menu Desc:"}, rows);
+        return new Page("Home", "Menus",  new String[] {"Menu Name", "Menu Desc"}, rows);
     }
 
 }
