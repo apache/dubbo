@@ -33,7 +33,7 @@
 	
 	<dubbo:protocol name="dubbo" port="${dubbo.protocol.port}" />
 	
-	<dubbo:service interface="com.alibaba.dubbo.demo.DemoService" ref="demoService" />
+	<dubbo:service interface="com.alibaba.dubbo.demo.DemoService" ref="demoService" loadbalance="roundrobin" />
 	
 	<bean id="demoService" class="com.alibaba.dubbo.demo.provider.DemoServiceImpl" />
 	
