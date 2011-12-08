@@ -3,6 +3,7 @@ cd `dirname $0`
 BIN_DIR=`pwd`
 cd ..
 DEPLOY_DIR=`pwd`
+CONF_DIR=$DEPLOY_DIR/conf
 
 SERVER_NAME=`sed '/dubbo.application.name/!d;s/.*=//' conf/dubbo.properties | tr -d '\r'`
 SERVER_PORT=`sed '/dubbo.protocol.port/!d;s/.*=//' conf/dubbo.properties | tr -d '\r'`
@@ -12,7 +13,7 @@ if [ -z "$SERVER_NAME" ]; then
 	SERVER_NAME=`hostname`
 fi
 
-PIDS=`ps  --no-heading -C java -f --width 1000 | grep "$DEPLOY_DIR" |awk '{print $2}'`
+PIDS=`ps  --no-heading -C java -f --width 1000 | grep "$CONF_DIR" |awk '{print $2}'`
 if [ -n "$PIDS" ]; then
     echo "ERROR: The $SERVER_NAME already started!"
     echo "PID: $PIDS"
@@ -38,7 +39,6 @@ if [ ! -d $LOGS_DIR ]; then
 fi
 STDOUT_FILE=$LOGS_DIR/stdout.log
 
-CONF_DIR=$DEPLOY_DIR/conf
 LIB_DIR=$DEPLOY_DIR/lib
 LIB_JARS=`ls $LIB_DIR|grep .jar|awk '{print "'$LIB_DIR'/"$0}'|tr "\n" ":"`
 
