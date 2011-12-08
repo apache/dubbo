@@ -35,7 +35,7 @@ import com.alibaba.dubbo.container.page.PageHandler;
  * 
  * @author william.liangf
  */
-@Menu(name = "System", desc = "System", order = Integer.MAX_VALUE - 10000)
+@Menu(name = "System", desc = "Show system environment information.", order = Integer.MAX_VALUE - 10000)
 @Extension("system")
 public class SystemPageHandler implements PageHandler {
 

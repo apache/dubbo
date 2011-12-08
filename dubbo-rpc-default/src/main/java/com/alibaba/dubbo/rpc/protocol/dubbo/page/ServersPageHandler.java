@@ -21,6 +21,7 @@ import java.util.List;
 
 import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.container.page.Menu;
 import com.alibaba.dubbo.container.page.Page;
 import com.alibaba.dubbo.container.page.PageHandler;
@@ -32,7 +33,7 @@ import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
  * 
  * @author william.liangf
  */
-@Menu(name = "Servers", desc="Servers", order = 14000)
+@Menu(name = "Servers", desc="Show exported service servers.", order = 14000)
 @Extension("servers")
 public class ServersPageHandler implements PageHandler {
 
@@ -43,7 +44,8 @@ public class ServersPageHandler implements PageHandler {
         if (servers != null && servers.size() > 0) {
             for (ExchangeServer s : servers) {
                 List<String> row = new ArrayList<String>();
-                row.add(s.getUrl().getAddress());
+                String address = s.getUrl().getAddress();
+                row.add(NetUtils.getHostName(address) + "/" + address);
                 int clientSize = s.getExchangeChannels().size();
                 clientCount += clientSize;
                 row.add("<a href=\"clients.html?port=" + s.getUrl().getPort() + "\">Clients(" + clientSize + ")</a>");

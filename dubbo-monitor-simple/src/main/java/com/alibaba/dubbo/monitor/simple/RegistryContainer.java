@@ -64,12 +64,12 @@ public class RegistryContainer implements Container {
 
     private final Set<String> services = new ConcurrentHashSet<String>();
 
-    private final Map<String, List<URL>> providers = new ConcurrentHashMap<String, List<URL>>();
+    private final Map<String, List<URL>> serviceProviders = new ConcurrentHashMap<String, List<URL>>();
 
-    private final Map<String, List<URL>> consumers = new ConcurrentHashMap<String, List<URL>>();
+    private final Map<String, List<URL>> serviceConsumers = new ConcurrentHashMap<String, List<URL>>();
 
-    private final Map<String, List<URL>> routes = new ConcurrentHashMap<String, List<URL>>();
-    
+    private final Map<String, List<URL>> serviceRoutes = new ConcurrentHashMap<String, List<URL>>();
+
     private Registry registry;
     
     private static RegistryContainer INSTANCE = null;
@@ -93,66 +93,133 @@ public class RegistryContainer implements Container {
         return Collections.unmodifiableSet(applications);
     }
     
-    public Set<String> getDependencies(String application, boolean afferent) {
-        return afferent ? getAfferentDependencies(application) : getEfferentDependencies(application);
-    }
-
-    public Set<String> getAfferentDependencies(String application) {
-        Set<String> dependencies = new HashSet<String>();
-        Set<String> services = providerApplicationServices.get(application);
-        if (services != null && services.size() > 0) {
-            for (String service : services) {
-                Set<String> applications = consumerServiceApplications.get(service);
-                if (applications != null && applications.size() > 0) {
-                    dependencies.addAll(applications);
+    public Set<String> getDependencies(String application, boolean reverse) {
+        if (reverse) {
+            Set<String> dependencies = new HashSet<String>();
+            Set<String> services = providerApplicationServices.get(application);
+            if (services != null && services.size() > 0) {
+                for (String service : services) {
+                    Set<String> applications = consumerServiceApplications.get(service);
+                    if (applications != null && applications.size() > 0) {
+                        dependencies.addAll(applications);
+                    }
                 }
             }
-        }
-        return dependencies;
-    }
-
-    public Set<String> getEfferentDependencies(String application) {
-        Set<String> dependencies = new HashSet<String>();
-        Set<String> services = consumerApplicationServices.get(application);
-        if (services != null && services.size() > 0) {
-            for (String service : services) {
-                Set<String> applications = providerServiceApplications.get(service);
-                if (applications != null && applications.size() > 0) {
-                    dependencies.addAll(applications);
+            return dependencies;
+        } else {
+            Set<String> dependencies = new HashSet<String>();
+            Set<String> services = consumerApplicationServices.get(application);
+            if (services != null && services.size() > 0) {
+                for (String service : services) {
+                    Set<String> applications = providerServiceApplications.get(service);
+                    if (applications != null && applications.size() > 0) {
+                        dependencies.addAll(applications);
+                    }
                 }
             }
+            return dependencies;
         }
-        return dependencies;
     }
 
     public Set<String> getServices() {
         return Collections.unmodifiableSet(services);
     }
 
-    public Map<String, List<URL>> getProviders() {
-        return Collections.unmodifiableMap(providers);
+    public Map<String, List<URL>> getServiceProviders() {
+        return Collections.unmodifiableMap(serviceProviders);
     }
 
-    public List<URL> getProviders(String service) {
-        List<URL> urls = providers.get(service);
+    public List<URL> getProvidersByService(String service) {
+        List<URL> urls = serviceProviders.get(service);
         return urls == null ? null : Collections.unmodifiableList(urls);
     }
 
-    public Map<String, List<URL>> getConsumers() {
-        return Collections.unmodifiableMap(consumers);
+    public List<URL> getProvidersByHost(String host) {
+        List<URL> urls = new ArrayList<URL>();
+        if (host != null && host.length() > 0) {
+            for (List<URL> providers : serviceProviders.values()) {
+                for (URL url : providers) {
+                    if (host.equals(url.getHost())) {
+                        urls.add(url);
+                    }
+                }
+            }
+        }
+        return urls;
     }
 
-    public List<URL> getConsumers(String service) {
-        List<URL> urls = consumers.get(service);
+    public List<URL> getProvidersByApplication(String application) {
+        List<URL> urls = new ArrayList<URL>();
+        if (application != null && application.length() > 0) {
+            for (List<URL> providers : serviceProviders.values()) {
+                for (URL url : providers) {
+                    if (application.equals(url.getParameter(Constants.APPLICATION_KEY))) {
+                        urls.add(url);
+                    }
+                }
+            }
+        }
+        return urls;
+    }
+
+    public Set<String> getHosts() {
+        Set<String> addresses = new HashSet<String>();
+        for (List<URL> providers : serviceProviders.values()) {
+            for (URL url : providers) {
+                addresses.add(url.getHost());
+            }
+        }
+        for (List<URL> providers : serviceConsumers.values()) {
+            for (URL url : providers) {
+                addresses.add(url.getHost());
+            }
+        }
+        return addresses;
+    }
+
+    public Map<String, List<URL>> getServiceConsumers() {
+        return Collections.unmodifiableMap(serviceConsumers);
+    }
+
+    public List<URL> getConsumersByService(String service) {
+        List<URL> urls = serviceConsumers.get(service);
         return urls == null ? null : Collections.unmodifiableList(urls);
     }
 
-    public Map<String, List<URL>> getRoutes() {
-        return Collections.unmodifiableMap(routes);
+    public List<URL> getConsumersByHost(String host) {
+        List<URL> urls = new ArrayList<URL>();
+        if (host != null && host.length() > 0) {
+            for (List<URL> consumers : serviceConsumers.values()) {
+                for (URL url : consumers) {
+                    if (host.equals(url.getHost())) {
+                        urls.add(url);
+                    }
+                }
+            }
+        }
+        return Collections.unmodifiableList(urls);
     }
 
-    public List<URL> getRoutes(String service) {
-        List<URL> urls = routes.get(service);
+    public List<URL> getConsumersByApplication(String application) {
+        List<URL> urls = new ArrayList<URL>();
+        if (application != null && application.length() > 0) {
+            for (List<URL> consumers : serviceConsumers.values()) {
+                for (URL url : consumers) {
+                    if (application.equals(url.getParameter(Constants.APPLICATION_KEY))) {
+                        urls.add(url);
+                    }
+                }
+            }
+        }
+        return urls;
+    }
+
+    public Map<String, List<URL>> getServiceRoutes() {
+        return Collections.unmodifiableMap(serviceRoutes);
+    }
+
+    public List<URL> getRoutesByService(String service) {
+        List<URL> urls = serviceRoutes.get(service);
         return urls == null ? null : Collections.unmodifiableList(urls);
     }
 
@@ -241,23 +308,23 @@ public class RegistryContainer implements Container {
                     }
                 }
                 if (proivderMap != null && proivderMap.size() > 0) {
-                    providers.putAll(proivderMap);
+                    serviceProviders.putAll(proivderMap);
                 }
                 if (consumerMap != null && consumerMap.size() > 0) {
-                    consumers.putAll(consumerMap);
+                    serviceConsumers.putAll(consumerMap);
                 }
                 if (routeMap != null && routeMap.size() > 0) {
-                    routes.putAll(routeMap);
+                    serviceRoutes.putAll(routeMap);
                 }
                 for (String service : notifiedServices) {
                     if (! proivderMap.containsKey(service)) {
-                        providers.remove(service);
+                        serviceProviders.remove(service);
                     }
                     if (! consumerMap.containsKey(service)) {
-                        consumers.remove(service);
+                        serviceConsumers.remove(service);
                     }
                     if (! routeMap.containsKey(service)) {
-                        routes.remove(service);
+                        serviceRoutes.remove(service);
                     }
                 }
             }

@@ -21,6 +21,7 @@ import java.util.List;
 
 import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.container.page.Menu;
 import com.alibaba.dubbo.container.page.Page;
 import com.alibaba.dubbo.container.page.PageHandler;
@@ -33,7 +34,7 @@ import com.alibaba.dubbo.registry.support.AbstractRegistryFactory;
  * 
  * @author william.liangf
  */
-@Menu(name = "Registries", desc = "Registries", order = 10000)
+@Menu(name = "Registries", desc = "Show connected registries.", order = 10000)
 @Extension("registries")
 public class RegistriesPageHandler implements PageHandler {
 
@@ -46,7 +47,7 @@ public class RegistriesPageHandler implements PageHandler {
             for (Registry registry : registries) {
                 String server = registry.getUrl().getAddress();
                 List<String> row = new ArrayList<String>();
-                row.add(server);
+                row.add(NetUtils.getHostName(server) + "/" + server);
                 if (registry.isAvailable()) {
                     row.add("<font color=\"green\">Connected</font>");
                 } else {
@@ -66,7 +67,7 @@ public class RegistriesPageHandler implements PageHandler {
             }
         }
         return new Page("Registries", "Registries (" + rows.size() + ")",
-                new String[] { "Registry Address:", "Ststus:", "Registered(" + registeredCount + ")", "Subscribed(" + subscribedCount + ")" }, rows);
+                new String[] { "Registry Address:", "Ststus", "Registered(" + registeredCount + ")", "Subscribed(" + subscribedCount + ")" }, rows);
     }
 
 }

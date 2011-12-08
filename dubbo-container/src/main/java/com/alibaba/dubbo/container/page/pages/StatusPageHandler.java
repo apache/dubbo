@@ -36,7 +36,7 @@ import com.alibaba.dubbo.container.page.PageHandler;
  * 
  * @author william.liangf
  */
-@Menu(name = "Status", desc = "Status", order = Integer.MAX_VALUE - 12000)
+@Menu(name = "Status", desc = "Show system status.", order = Integer.MAX_VALUE - 12000)
 @Extension("status")
 public class StatusPageHandler implements PageHandler {
 

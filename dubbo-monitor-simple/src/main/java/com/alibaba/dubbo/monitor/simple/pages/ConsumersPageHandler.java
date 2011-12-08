@@ -20,6 +20,7 @@ import java.util.List;
 
 import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.container.page.Page;
 import com.alibaba.dubbo.container.page.PageHandler;
 import com.alibaba.dubbo.monitor.simple.RegistryContainer;
@@ -34,24 +35,51 @@ public class ConsumersPageHandler implements PageHandler {
     
     public Page handle(URL url) {
         String service = url.getParameter("service");
-        if (service == null || service.length() == 0) {
-            throw new IllegalArgumentException("Please input service parameter.");
-        }
-        List<List<String>> rows = new ArrayList<List<String>>();
-        List<URL> consumers = RegistryContainer.getInstance().getConsumers(service);
-        if (consumers != null && consumers.size() > 0) {
-            for (URL consumer : consumers) {
-                List<String> row = new ArrayList<String>();
-                row.add(consumer.toFullString().replace("&", "&amp;"));
-                rows.add(row);
+        String host = url.getParameter("host");
+        String application = url.getParameter("application");
+        if (service != null && service.length() > 0) {
+            List<List<String>> rows = new ArrayList<List<String>>();
+            List<URL> consumers = RegistryContainer.getInstance().getConsumersByService(service);
+            if (consumers != null && consumers.size() > 0) {
+                for (URL u : consumers) {
+                    List<String> row = new ArrayList<String>();
+                    row.add(u.toFullString().replace("&", "&amp;"));
+                    rows.add(row);
+                }
             }
+            return new Page("<a href=\"services.html\">Services</a> &gt; " + service 
+                    + " &gt; <a href=\"providers.html?service=" + service 
+                    + "\">Providers</a> | Consumers | <a href=\"statistics.html?service=" + service 
+                    + "\">Statistics</a> | <a href=\"charts.html?service=" + service 
+                    + "\">Charts</a>", "Consumers (" + rows.size() + ")",
+                    new String[] { "Consumer URL:" }, rows);
+        } else if (host != null && host.length() > 0) {
+            List<List<String>> rows = new ArrayList<List<String>>();
+            List<URL> consumers = RegistryContainer.getInstance().getConsumersByHost(host);
+            if (consumers != null && consumers.size() > 0) {
+                for (URL u : consumers) {
+                    List<String> row = new ArrayList<String>();
+                    row.add(u.toFullString().replace("&", "&amp;"));
+                    rows.add(row);
+                }
+            }
+            return new Page("<a href=\"hosts.html\">Hosts</a> &gt; " + NetUtils.getHostName(host) + "/" + host + " &gt; <a href=\"providers.html?host=" + host + "\">Providers</a> | Consumers", "Consumers (" + rows.size() + ")",
+                    new String[] { "Consumer URL:" }, rows);
+        } else if (application != null && application.length() > 0) {
+            List<List<String>> rows = new ArrayList<List<String>>();
+            List<URL> consumers = RegistryContainer.getInstance().getConsumersByApplication(application);
+            if (consumers != null && consumers.size() > 0) {
+                for (URL u : consumers) {
+                    List<String> row = new ArrayList<String>();
+                    row.add(u.toFullString().replace("&", "&amp;"));
+                    rows.add(row);
+                }
+            }
+            return new Page("<a href=\"applications.html\">Applications</a> &gt; " + application + " &gt; <a href=\"providers.html?application=" + application + "\">Providers</a> | Consumers", "Consumers (" + rows.size() + ")",
+                    new String[] { "Consumer URL:" }, rows);
+        } else {
+            throw new IllegalArgumentException("Please input service or host or application parameter.");
         }
-        return new Page("<a href=\"services.html\">Services</a> &gt; " + service 
-                + " &gt; <a href=\"providers.html?service=" + service 
-                + "\">Providers</a> | Consumers | <a href=\"statistics.html?service=" + service 
-                + "\">Statistics</a> | <a href=\"charts.html?service=" + service 
-                + "\">Charts</a>", "Consumers (" + rows.size() + ")",
-                new String[] { "Consumer URL:" }, rows);
     }
 
 }

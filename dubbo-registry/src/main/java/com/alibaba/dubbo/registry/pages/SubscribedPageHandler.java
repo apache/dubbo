@@ -75,7 +75,7 @@ public class SubscribedPageHandler implements PageHandler {
             }
         }
         return new Page("<a href=\"registries.html\">Registries</a>" + select.toString() + " &gt; <a href=\"registered.html?registry=" + registryAddress + "\">Registered</a> | Subscribed", "Subscribed (" + rows.size() + ")",
-                new String[] { "Subscribe URL:" }, rows);
+                new String[] { "Consumer URL:" }, rows);
     }
 
 }

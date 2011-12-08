@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.container.page.Menu;
@@ -31,7 +32,7 @@ import com.alibaba.dubbo.monitor.simple.RegistryContainer;
  * 
  * @author william.liangf
  */
-@Menu(name = "Services", desc = "Services", order = 1000)
+@Menu(name = "Services", desc = "Show registered services.", order = 2000)
 @Extension("services")
 public class ServicesPageHandler implements PageHandler {
     
@@ -44,11 +45,19 @@ public class ServicesPageHandler implements PageHandler {
             for (String service : services) {
                 List<String> row = new ArrayList<String>();
                 row.add(service);
-                List<URL> providers = RegistryContainer.getInstance().getProviders(service);
+                List<URL> providers = RegistryContainer.getInstance().getProvidersByService(service);
                 int providerSize = providers == null ? 0 : providers.size();
                 providerCount += providerSize;
+                if (providers != null && providers.size() > 0) {
+                    URL provider = providers.iterator().next();
+                    row.add(provider.getParameter(Constants.APPLICATION_KEY, ""));
+                    row.add(provider.getParameter("owner", "") + (provider.hasParameter("organization") ?  " (" + provider.getParameter("organization") + ")" : ""));
+                } else {
+                    row.add("");
+                    row.add("");
+                }
                 row.add(providerSize == 0 ? "<font color=\"red\">No provider</a>" : "<a href=\"providers.html?service=" + service + "\">Providers(" + providerSize + ")</a>");
-                List<URL> consumers = RegistryContainer.getInstance().getConsumers(service);
+                List<URL> consumers = RegistryContainer.getInstance().getConsumersByService(service);
                 int consumerSize = consumers == null ? 0 : consumers.size();
                 consumerCount += consumerSize;
                 row.add(consumerSize == 0 ? "<font color=\"blue\">No consumer</a>" : "<a href=\"consumers.html?service=" + service + "\">Consumers(" + consumerSize + ")</a>");
@@ -58,7 +67,7 @@ public class ServicesPageHandler implements PageHandler {
             }
         }
         return new Page("Services", "Services (" + rows.size() + ")",
-                new String[] { "Service Name:", "Providers(" + providerCount + ")", "Consumers(" + consumerCount + ")", "Statistics", "Charts" }, rows);
+                new String[] { "Service Name:", "Application", "Owner", "Providers(" + providerCount + ")", "Consumers(" + consumerCount + ")", "Statistics", "Charts" }, rows);
     }
 
 }

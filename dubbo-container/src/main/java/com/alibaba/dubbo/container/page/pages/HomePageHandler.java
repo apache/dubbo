@@ -30,7 +30,7 @@ import com.alibaba.dubbo.container.page.PageServlet;
  * 
  * @author william.liangf
  */
-@Menu(name = "Home", desc = "Home", order = Integer.MIN_VALUE)
+@Menu(name = "Home", desc = "Home page.", order = Integer.MIN_VALUE)
 @Extension("index")
 public class HomePageHandler implements PageHandler {
 

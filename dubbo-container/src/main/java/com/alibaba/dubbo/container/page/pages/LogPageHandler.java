@@ -42,7 +42,7 @@ import com.alibaba.dubbo.container.page.PageHandler;
  * 
  * @author william.liangf
  */
-@Menu(name = "Log", desc = "Log", order = Integer.MAX_VALUE - 11000)
+@Menu(name = "Log", desc = "Show system log.", order = Integer.MAX_VALUE - 11000)
 @Extension("log")
 public class LogPageHandler implements PageHandler {
 

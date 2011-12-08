@@ -39,22 +39,22 @@ public class DependenciesPageHandler implements PageHandler {
         if (application == null || application.length() == 0) {
             throw new IllegalArgumentException("Please input application parameter.");
         }
-        boolean afferent = "afferent".equals(url.getParameter("direction"));
+        boolean reverse = url.getParameter("reverse", false);
         List<List<String>> rows = new ArrayList<List<String>>();
-        appendDependency(rows, afferent, application, 0, new HashSet<String>());
+        appendDependency(rows, reverse, application, 0, new HashSet<String>());
         return new Page("<a href=\"applications.html\">Applications</a> &gt; " + application + 
-                (afferent ? " &gt; <a href=\"dependencies.html?direction=efferent&application=" + application + "\">Efferent Dependencies</a> | Afferent Dependencies" 
-                        : " &gt; Efferent Dependencies | <a href=\"dependencies.html?direction=afferent&application=" + application + "\">Afferent Dependencies</a>"), (afferent ? "Afferent Dependencies" : "Efferent Dependencies") + " (" + rows.size() + ")", new String[] { "Application Name:"}, rows);
+                (reverse ? " &gt; <a href=\"dependencies.html?application=" + application + "\">Depend On</a> | Used By" 
+                        : " &gt; Depend On | <a href=\"dependencies.html?reverse=true&application=" + application + "\">Used By</a>"), (reverse ? "Used By" : "Depend On") + " (" + rows.size() + ")", new String[] { "Application Name:"}, rows);
     }
     
-    private void appendDependency(List<List<String>> rows, boolean afferent, String application, int level, Set<String> appended) {
+    private void appendDependency(List<List<String>> rows, boolean reverse, String application, int level, Set<String> appended) {
         List<String> row = new ArrayList<String>();
         StringBuilder buf = new StringBuilder();
         if (level > 0) {
             for (int i = 0; i < level; i ++) {
                 buf.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|");
             }
-            buf.append(afferent ? "&lt;-- " : "--&gt; ");
+            buf.append(reverse ? "&lt;-- " : "--&gt; ");
         }
         boolean end = false;
         if (level > 5) {
@@ -74,10 +74,10 @@ public class DependenciesPageHandler implements PageHandler {
         }
         
         appended.add(application);
-        Set<String> dependencies = RegistryContainer.getInstance().getDependencies(application, afferent);
+        Set<String> dependencies = RegistryContainer.getInstance().getDependencies(application, reverse);
         if (dependencies != null && dependencies.size() > 0) {
             for (String dependency : dependencies) {
-                appendDependency(rows, afferent, dependency, level + 1, appended);
+                appendDependency(rows, reverse, dependency, level + 1, appended);
             }
         }
         appended.remove(application);

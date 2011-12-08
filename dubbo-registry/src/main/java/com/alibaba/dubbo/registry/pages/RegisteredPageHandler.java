@@ -75,7 +75,7 @@ public class RegisteredPageHandler implements PageHandler {
             }
         }
         return new Page("<a href=\"registries.html\">Registries</a>" + select.toString() + " &gt; Registered | <a href=\"subscribed.html?registry=" + registryAddress + "\">Subscribed</a>", "Registered (" + rows.size() + ")",
-                new String[] { "Register URL:" }, rows);
+                new String[] { "Provider URL:" }, rows);
     }
 
 }

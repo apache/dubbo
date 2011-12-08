@@ -68,7 +68,8 @@ public class ClientsPageHandler implements PageHandler {
             Collection<ExchangeChannel> channels = server.getExchangeChannels();
             for (ExchangeChannel c : channels) {
                 List<String> row = new ArrayList<String>();
-                row.add(NetUtils.toAddressString(c.getRemoteAddress()));
+                String address = NetUtils.toAddressString(c.getRemoteAddress());
+                row.add(NetUtils.getHostName(address) + "/" + address);
                 rows.add(row);
             }
         }
