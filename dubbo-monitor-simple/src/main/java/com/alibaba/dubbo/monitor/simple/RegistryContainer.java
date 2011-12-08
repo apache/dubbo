@@ -99,10 +99,10 @@ public class RegistryContainer implements Container {
 
     public Set<String> getAfferentDependencies(String application) {
         Set<String> dependencies = new HashSet<String>();
-        Set<String> services = consumerApplicationServices.get(application);
+        Set<String> services = providerApplicationServices.get(application);
         if (services != null && services.size() > 0) {
             for (String service : services) {
-                Set<String> applications = providerServiceApplications.get(service);
+                Set<String> applications = consumerServiceApplications.get(service);
                 if (applications != null && applications.size() > 0) {
                     dependencies.addAll(applications);
                 }
@@ -113,10 +113,10 @@ public class RegistryContainer implements Container {
 
     public Set<String> getEfferentDependencies(String application) {
         Set<String> dependencies = new HashSet<String>();
-        Set<String> services = providerApplicationServices.get(application);
+        Set<String> services = consumerApplicationServices.get(application);
         if (services != null && services.size() > 0) {
             for (String service : services) {
-                Set<String> applications = consumerServiceApplications.get(service);
+                Set<String> applications = providerServiceApplications.get(service);
                 if (applications != null && applications.size() > 0) {
                     dependencies.addAll(applications);
                 }

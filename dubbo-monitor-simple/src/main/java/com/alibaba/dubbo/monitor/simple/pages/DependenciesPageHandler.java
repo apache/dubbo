@@ -52,7 +52,7 @@ public class DependenciesPageHandler implements PageHandler {
         StringBuilder buf = new StringBuilder();
         if (level > 0) {
             for (int i = 0; i < level; i ++) {
-                buf.append("&nbsp;&nbsp;&nbsp;&nbsp;");
+                buf.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
             }
             buf.append(afferent ? "&lt;-- " : "--&gt; ");
         }
