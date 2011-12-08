@@ -54,7 +54,7 @@ public class DependenciesPageHandler implements PageHandler {
             for (int i = 0; i < level; i ++) {
                 buf.append("&nbsp;&nbsp;&nbsp;&nbsp;");
             }
-            buf.append(afferent ? "^-- " : "--&gt; ");
+            buf.append(afferent ? "&lt;-- " : "--&gt; ");
         }
         boolean end = false;
         if (level > 5) {
