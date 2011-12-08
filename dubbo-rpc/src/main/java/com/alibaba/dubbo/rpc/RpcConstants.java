@@ -170,9 +170,6 @@ public final class RpcConstants {
     
     public static final String STUB_EVENT_METHODS_KEY = "dubbo.stub.event.methods";
     
-    //client被引用的个数，当被引用数(invoker)大于1时，invoker destroy时不能够关闭client
-    public static final String CLIENT_REFERENCE_COUNT = "client.reference.count";
-    
     private RpcConstants() {}
     
 }

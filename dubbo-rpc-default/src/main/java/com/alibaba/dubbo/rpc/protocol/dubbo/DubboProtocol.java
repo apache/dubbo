@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.alibaba.dubbo.common.Constants;
@@ -314,20 +313,6 @@ public class DubboProtocol extends AbstractProtocol {
             }
         }
         ExchangeClient exchagneclient = initClient(url);
-        
-        lock.lock();
-        try {
-            AtomicInteger count = (AtomicInteger)exchagneclient.getAttribute(RpcConstants.CLIENT_REFERENCE_COUNT);
-            if ((count == null)){
-                exchagneclient.setAttribute(RpcConstants.CLIENT_REFERENCE_COUNT, new AtomicInteger(1));
-            } else {
-                count.getAndIncrement();
-            }
-        } catch (Throwable t) {
-            logger.warn(t.getMessage(), t);
-        } finally{
-            lock.unlock();
-        }
         
         client = new ReferenceCountExchangeClient(exchagneclient, ghostClientMap);
         referenceClientMap.put(key, client);
