@@ -29,12 +29,12 @@ import com.alibaba.dubbo.registry.support.AbstractRegistry;
 import com.alibaba.dubbo.registry.support.AbstractRegistryFactory;
 
 /**
- * RegisteredPageHandler
+ * SubscribedPageHandler
  * 
  * @author william.liangf
  */
-@Extension("registered")
-public class RegisteredPageHandler implements PageHandler {
+@Extension("subscribed")
+public class SubscribedPageHandler implements PageHandler {
 
     public Page handle(URL url) {
         String registryAddress = url.getParameter("registry", "");
@@ -47,7 +47,7 @@ public class RegisteredPageHandler implements PageHandler {
                 registry = registries.iterator().next();
                 select.append(" &gt; " + registry.getUrl().getAddress());
             } else {
-                select.append(" &gt; <select onchange=\"window.location.href='registered.html?registry=' + this.value;\">");
+                select.append(" &gt; <select onchange=\"window.location.href='subscribed.html?registry=' + this.value;\">");
                 for (Registry r : registries) {
                     String sp = r.getUrl().getAddress();
                     select.append("<option value=\">");
@@ -65,7 +65,7 @@ public class RegisteredPageHandler implements PageHandler {
             }
         }
         if (registry instanceof AbstractRegistry) {
-            Set<String> services = ((AbstractRegistry) registry).getRegistered();
+            Set<String> services = ((AbstractRegistry) registry).getSubscribed().keySet();
             if (services != null && services.size() > 0) {
                 for (String u : services) {
                     List<String> row = new ArrayList<String>();
@@ -74,8 +74,8 @@ public class RegisteredPageHandler implements PageHandler {
                 }
             }
         }
-        return new Page("<a href=\"registries.html\">Registries</a>" + select.toString() + " &gt; Registered | <a href=\"subscribed.html?registry=" + registryAddress + "\">Subscribed</a>", "Registered (" + rows.size() + ")",
-                new String[] { "Register URL:" }, rows);
+        return new Page("<a href=\"registries.html\">Registries</a>" + select.toString() + " &gt; <a href=\"registered.html?registry=" + registryAddress + "\">Registered</a> | Subscribed", "Subscribed (" + rows.size() + ")",
+                new String[] { "Subscribe URL:" }, rows);
     }
 
 }

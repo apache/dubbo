@@ -25,6 +25,7 @@ import com.alibaba.dubbo.container.page.Menu;
 import com.alibaba.dubbo.container.page.Page;
 import com.alibaba.dubbo.container.page.PageHandler;
 import com.alibaba.dubbo.registry.Registry;
+import com.alibaba.dubbo.registry.support.AbstractRegistry;
 import com.alibaba.dubbo.registry.support.AbstractRegistryFactory;
 
 /**
@@ -39,6 +40,8 @@ public class RegistriesPageHandler implements PageHandler {
     public Page handle(URL url) {
         List<List<String>> rows = new ArrayList<List<String>>();
         Collection<Registry> registries = AbstractRegistryFactory.getRegistries();
+        int registeredCount = 0;
+        int subscribedCount = 0;
         if (registries != null && registries.size() > 0) {
             for (Registry registry : registries) {
                 String server = registry.getUrl().getAddress();
@@ -49,12 +52,21 @@ public class RegistriesPageHandler implements PageHandler {
                 } else {
                     row.add("<font color=\"red\">Disconnected</font>");
                 }
-                row.add("<a href=\"registered.html?registry=" + server + "\">Registered</a>");
+                int registeredSize = 0;
+                int subscribedSize = 0;
+                if (registry instanceof AbstractRegistry) {
+                    registeredSize = ((AbstractRegistry) registry).getRegistered().size();
+                    registeredCount += registeredSize;
+                    subscribedSize = ((AbstractRegistry) registry).getSubscribed().size();
+                    subscribedCount += subscribedSize;
+                }
+                row.add("<a href=\"registered.html?registry=" + server + "\">Registered(" + registeredSize + ")</a>");
+                row.add("<a href=\"subscribed.html?registry=" + server + "\">Subscribed(" + subscribedSize + ")</a>");
                 rows.add(row);
             }
         }
         return new Page("Registries", "Registries (" + rows.size() + ")",
-                new String[] { "Registry Address:", "Ststus:", "Registered" }, rows);
+                new String[] { "Registry Address:", "Ststus:", "Registered(" + registeredCount + ")", "Subscribed(" + subscribedCount + ")" }, rows);
     }
 
 }

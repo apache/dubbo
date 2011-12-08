@@ -1,1 +1,2 @@
-com.alibaba.dubbo.rpc.protocol.dubbo.page.ConnectionsPageHandler
+com.alibaba.dubbo.rpc.protocol.dubbo.page.ServersPageHandler
+com.alibaba.dubbo.rpc.protocol.dubbo.page.ClientsPageHandler

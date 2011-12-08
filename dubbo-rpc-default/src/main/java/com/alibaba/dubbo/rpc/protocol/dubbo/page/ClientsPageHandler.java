@@ -22,7 +22,6 @@ import java.util.List;
 import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
-import com.alibaba.dubbo.container.page.Menu;
 import com.alibaba.dubbo.container.page.Page;
 import com.alibaba.dubbo.container.page.PageHandler;
 import com.alibaba.dubbo.remoting.exchange.ExchangeChannel;
@@ -30,13 +29,12 @@ import com.alibaba.dubbo.remoting.exchange.ExchangeServer;
 import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
 /**
- * ConnectionsPageHandler
+ * ClientsPageHandler
  * 
  * @author william.liangf
  */
-@Menu(name = "Connections", desc="Connecyions", order = 14000)
-@Extension("connections")
-public class ConnectionsPageHandler implements PageHandler {
+@Extension("clients")
+public class ClientsPageHandler implements PageHandler {
 
     public Page handle(URL url) {
         String port = url.getParameter("port");
@@ -49,7 +47,7 @@ public class ConnectionsPageHandler implements PageHandler {
                 server = servers.iterator().next();
                 select.append(" &gt; " + server.getUrl().getAddress());
             } else {
-                select.append(" &gt; <select onchange=\"window.location.href='connections.html?port=' + this.value;\">");
+                select.append(" &gt; <select onchange=\"window.location.href='clients.html?port=' + this.value;\">");
                 for (ExchangeServer s : servers) {
                     int sp = s.getUrl().getPort();
                     select.append("<option value=\">");
@@ -74,7 +72,7 @@ public class ConnectionsPageHandler implements PageHandler {
                 rows.add(row);
             }
         }
-        return new Page("Servers" + select.toString() + " &gt; Connections", "Connections (" + rows.size() + ")", new String[]{"Consumer Address:"}, rows);
+        return new Page("<a href=\"servers.html\">Servers</a>" + select.toString() + " &gt; Clients", "Clients (" + rows.size() + ")", new String[]{"Client Address:"}, rows);
     }
 
 }
