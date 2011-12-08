@@ -67,7 +67,7 @@ public class RegistriesPageHandler implements PageHandler {
             }
         }
         return new Page("Registries", "Registries (" + rows.size() + ")",
-                new String[] { "Registry Address:", "Ststus", "Registered(" + registeredCount + ")", "Subscribed(" + subscribedCount + ")" }, rows);
+                new String[] { "Registry Address:", "Status", "Registered(" + registeredCount + ")", "Subscribed(" + subscribedCount + ")" }, rows);
     }
 
 }
