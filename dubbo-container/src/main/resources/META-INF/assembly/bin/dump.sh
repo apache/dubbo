@@ -87,3 +87,4 @@ if [ -r /usr/bin/uptime ]; then
 echo -e ".\c"
 fi
 echo "OK!"
+echo "DUMP: $DATE_DIR"

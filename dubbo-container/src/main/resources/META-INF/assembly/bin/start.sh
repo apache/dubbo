@@ -79,3 +79,4 @@ done
 echo "OK!"
 PIDS=`ps  --no-heading -C java -f --width 1000 | grep "$DEPLOY_DIR" | awk '{print $2}'`
 echo "PID: $PIDS"
+echo "STDOUT: $STDOUT_FILE"
