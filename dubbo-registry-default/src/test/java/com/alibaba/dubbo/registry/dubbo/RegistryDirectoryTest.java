@@ -33,6 +33,7 @@ import org.junit.Test;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.utils.LogUtil;
 import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.Registry;
 import com.alibaba.dubbo.registry.RegistryFactory;
@@ -124,6 +125,22 @@ public class RegistryDirectoryTest {
         test_Notified3invokers(registryDirectory);
         testforbid(registryDirectory);
     }
+    
+    /**
+     * 测试推送只有router的情况
+     */
+    @Test
+    public void testNotified_Normal_withRouters() {
+        LogUtil.start();
+        RegistryDirectory registryDirectory = getRegistryDirectory();
+        test_Notified1invokers(registryDirectory);
+        test_Notified_only_routes(registryDirectory);
+        Assert.assertEquals(true, registryDirectory.isAvailable());
+        Assert.assertTrue("notify no invoker urls ,should not error", LogUtil.checkNoError());
+        LogUtil.stop();
+        test_Notified2invokers(registryDirectory);
+        
+    }
 
     @Test
     public void testNotified_WithError() {
@@ -190,6 +207,12 @@ public class RegistryDirectoryTest {
         Assert.assertEquals(DemoService.class.getName(), invokers.get(0).getUrl().getPath());
     }
 
+    // notify one invoker
+    private void test_Notified_only_routes(RegistryDirectory registryDirectory) {
+        List<URL> serviceUrls = new ArrayList<URL>();
+        serviceUrls.add(URL.valueOf("route://127.0.0.1/?router=clean"));
+        registryDirectory.notify(serviceUrls);
+    }
     // notify one invoker
     private void test_Notified1invokers(RegistryDirectory registryDirectory) {
 
@@ -582,7 +605,7 @@ public class RegistryDirectoryTest {
         }
 
         public void unsubscribe(URL url, NotifyListener listener) {
-            latch.countDown();
+            if (latch != null )latch.countDown();
         }
 
         public List<URL> lookup(URL url) {

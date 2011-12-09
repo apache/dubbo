@@ -143,29 +143,26 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 }
             }
             
-            Map<String, Invoker<T>> newUrlInvokerMap = null ;
-            Map<String, List<Invoker<T>>> newMethodInvokerMap = null ;
-            List<Router> routers = null ;
-            Map<String, Invoker<T>> oldUrlInvokerMap = urlInvokerMap;
-            //transaction convert
-            {
-                routers = toRouters(routerUrls);
-                newUrlInvokerMap = toInvokers(invokerUrls); // 将URL列表转成Invoker列表
-                newMethodInvokerMap = toMethodInvokers(newUrlInvokerMap); // 换方法名映射Invoker列表
-            }
-            // state change
-            {
+            //route 
+            if (routerUrls != null && routerUrls.size() >0 ){
+                List<Router> routers = toRouters(routerUrls);
                 if(routers != null){ // null - do nothing
                     setRouters(routers);
                 }
-//                如果计算错误，则不进行处理.
+            }
+            //invokers
+            if (invokerUrls != null && invokerUrls.size() >0 ) {
+                Map<String, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls) ;// 将URL列表转成Invoker列表
+                Map<String, List<Invoker<T>>> newMethodInvokerMap = toMethodInvokers(newUrlInvokerMap); // 换方法名映射Invoker列表
+                Map<String, Invoker<T>> oldUrlInvokerMap = urlInvokerMap;
+                // state change
+                //如果计算错误，则不进行处理.
                 if (newUrlInvokerMap == null || newUrlInvokerMap.size() == 0 ){
-                    logger.error(new IllegalStateException("urls to invokers error .urls.size :"+urls.size() + ", invoker.size :0"));
+                    logger.error(new IllegalStateException("urls to invokers error .invokerUrls.size :"+invokerUrls.size() + ", invoker.size :0. urls :"+urls.toString()));
                     return ;
                 }
                 this.methodInvokerMap = newMethodInvokerMap;
                 this.urlInvokerMap = newUrlInvokerMap;
-                
                 try{
                     destroyUnusedInvokers(oldUrlInvokerMap,newUrlInvokerMap); // 关闭未使用的Invoker
                 }catch (Exception e) {
