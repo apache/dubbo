@@ -15,6 +15,7 @@
  */
 package com.alibaba.dubbo.common.utils;
 
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -85,14 +86,21 @@ public class ConfigUtils {
         }
         return names;
 	}
-
+	
     private static volatile Properties PROPERTIES;
     
     public static Properties getProperties() {
         if (PROPERTIES == null) {
             synchronized (ConfigUtils.class) {
                 if (PROPERTIES == null) {
-                    PROPERTIES = ConfigUtils.loadProperties(Constants.DUBBO_PROPERTIES, false);
+                    String path = System.getProperty(Constants.DUBBO_PROPERTIES_KEY);
+                    if (path == null || path.length() == 0) {
+                        path = System.getenv(Constants.DUBBO_PROPERTIES_KEY);
+                        if (path == null || path.length() == 0) {
+                            path = Constants.DEFAULT_DUBBO_PROPERTIES;
+                        }
+                    }
+                    PROPERTIES = ConfigUtils.loadProperties(path);
                 }
             }
         }
@@ -102,6 +110,12 @@ public class ConfigUtils {
     public static void addProperties(Properties properties) {
         if (properties != null) {
             getProperties().putAll(properties);
+        }
+    }
+    
+    public static void setProperties(Properties properties) {
+        if (properties != null) {
+            PROPERTIES = properties;
         }
     }
     
@@ -117,6 +131,10 @@ public class ConfigUtils {
         return getProperties().getProperty(key, defaultValue);
     }
     
+    public static Properties loadProperties(String fileName) {
+        return loadProperties(fileName, false);
+    }
+    
 	/**
 	 * Load properties file to {@link Properties} from class path.
 	 * 
@@ -130,6 +148,14 @@ public class ConfigUtils {
 	 */
     public static Properties loadProperties(String fileName, boolean allowMultiFile) {
         Properties properties = new Properties();
+        if (fileName.startsWith("/")) {
+            try {
+                properties.load(new FileInputStream(fileName));
+            } catch (Throwable e) {
+                logger.warn("Failed to load " + fileName + " file from " + fileName + "(ingore this file): " + e.getMessage(), e);
+            }
+            return properties;
+        }
         
         List<java.net.URL> list = new ArrayList<java.net.URL>();
         try {

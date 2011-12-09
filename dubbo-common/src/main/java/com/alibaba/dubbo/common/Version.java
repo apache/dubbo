@@ -43,6 +43,7 @@ public final class Version {
     static {
         // 检查是否存在重复的jar包
     	Version.checkDuplicate(Version.class);
+    	Version.checkDuplicate(Constants.DEFAULT_DUBBO_PROPERTIES);
 	}
 
     public static String getVersion(){
