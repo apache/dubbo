@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.container.standalone;
+package com.alibaba.dubbo.container.spring;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.alibaba.dubbo.container.spring.SpringContainer;
+import com.alibaba.dubbo.common.ExtensionLoader;
+import com.alibaba.dubbo.container.Container;
 
 /**
  * StandaloneContainerTest
@@ -29,7 +30,7 @@ public class SpringContainerTest {
     
     @Test
     public void testContainer() {
-        SpringContainer container = new SpringContainer();
+        SpringContainer container = (SpringContainer) ExtensionLoader.getExtensionLoader(Container.class).getExtension("spring");
         container.start();
         Assert.assertEquals(SpringContainer.class, container.getApplicationContext().getBean("container").getClass());
         container.stop();

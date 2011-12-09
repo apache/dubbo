@@ -59,7 +59,7 @@ public class JettyContainer implements Container {
         } else {
             port = Integer.parseInt(serverPort);
         }
-        SelectChannelConnector connector = new SelectChannelConnector();
+        connector = new SelectChannelConnector();
         connector.setPort(port);
         ServletHandler handler = new ServletHandler();
         
@@ -110,6 +110,10 @@ public class JettyContainer implements Container {
         } catch (Throwable e) {
             logger.error(e.getMessage(), e);
         }
+    }
+
+    public SelectChannelConnector getConnector() {
+        return connector;
     }
 
 }
