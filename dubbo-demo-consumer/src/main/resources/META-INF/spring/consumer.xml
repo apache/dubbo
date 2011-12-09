@@ -25,7 +25,7 @@
         <property name="location" value="classpath:dubbo.properties" />
     </bean>
 	
-	<dubbo:application name="${dubbo.application.name}" />
+	<dubbo:application name="${dubbo.application.name}" owner="${dubbo.application.owner}" />
 	
 	<dubbo:registry address="${dubbo.registry.address}" />
 	

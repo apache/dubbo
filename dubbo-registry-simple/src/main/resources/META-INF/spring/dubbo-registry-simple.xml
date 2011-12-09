@@ -10,7 +10,7 @@
         <property name="location" value="classpath:dubbo.properties" />
     </bean>
 	
-    <dubbo:application name="${dubbo.application.name}" />
+    <dubbo:application name="${dubbo.application.name}" owner="${dubbo.application.owner}" />
     
     <dubbo:protocol name="dubbo" port="${dubbo.protocol.port}" />
     
