@@ -20,6 +20,7 @@ import static com.alibaba.dubbo.rpc.protocol.dubbo.CallbackServiceCodec.encodeIn
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -154,22 +155,6 @@ public class DubboCodec extends ExchangeCodec implements Codec {
         }
     }
 
-    private Class<?> getReturnType(Channel channel, RpcInvocation invocation) {
-        try {
-            if (channel != null && invocation != null) {
-                String service = channel.getUrl().getServiceName();
-                if (service != null && service.length() > 0) {
-                    Class<?> cls = ReflectUtils.forName(service);
-                    Method method = cls.getMethod(invocation.getMethodName(), invocation.getParameterTypes());
-                    return method.getReturnType();
-                }
-            }
-        } catch (Throwable t) {
-            logger.warn(t.getMessage(), t);
-        }
-        return null;
-    }
-
     @Override
     protected Object decodeResponseData(Channel channel, ObjectInput in, Object request) throws IOException {
         RpcInvocation invocation = (RpcInvocation) request;
@@ -181,8 +166,22 @@ public class DubboCodec extends ExchangeCodec implements Codec {
                 break;
             case RESPONSE_VALUE:
                 try {
-                    Class<?> returnType = getReturnType(channel, invocation);
-                    result.setResult(returnType == null ? in.readObject() : in.readObject(returnType));
+                    Class<?> returnType = null;
+                    Type genericType = null;
+                    try {
+                        if (channel != null && invocation != null) {
+                            String service = channel.getUrl().getServiceName();
+                            if (service != null && service.length() > 0) {
+                                Class<?> cls = ReflectUtils.forName(service);
+                                Method method = cls.getMethod(invocation.getMethodName(), invocation.getParameterTypes());
+                                returnType = method.getReturnType();
+                                genericType = method.getGenericReturnType();
+                            }
+                        }
+                    } catch (Throwable t) {
+                        logger.warn(t.getMessage(), t);
+                    }
+                    result.setResult(returnType == null ? in.readObject() : (genericType == null ? in.readObject(returnType) : in.readObject(returnType, genericType)));
                 } catch (ClassNotFoundException e) {
                     throw new IOException(StringUtils.toString("Read response data failed.", e));
                 }

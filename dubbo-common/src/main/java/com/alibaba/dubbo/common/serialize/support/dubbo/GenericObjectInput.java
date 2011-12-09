@@ -17,6 +17,7 @@ package com.alibaba.dubbo.common.serialize.support.dubbo;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -97,12 +98,18 @@ public class GenericObjectInput extends GenericDataInput implements ObjectInput
 			throw new IOException("Read object failed, class not found. " + StringUtils.toString(e));
 		}
 	}
-
+	
 	@SuppressWarnings("unchecked")
-	public <T> T readObject(Class<T> c) throws IOException,ClassNotFoundException
+	public <T> T readObject(Class<T> cls) throws IOException,ClassNotFoundException
 	{
 		return (T)readObject();
 	}
+
+    @SuppressWarnings("unchecked")
+    public <T> T readObject(Class<T> cls, Type type) throws IOException,ClassNotFoundException
+    {
+        return (T)readObject();
+    }
 
 	public void addRef(Object obj)
 	{

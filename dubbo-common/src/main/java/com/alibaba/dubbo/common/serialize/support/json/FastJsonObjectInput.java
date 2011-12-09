@@ -21,9 +21,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.lang.reflect.Type;
 import java.util.Map;
 
 import com.alibaba.dubbo.common.serialize.ObjectInput;
+import com.alibaba.dubbo.common.utils.PojoUtils;
 import com.alibaba.fastjson.JSON;
 
 /**
@@ -123,10 +125,20 @@ public class FastJsonObjectInput implements ObjectInput {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T readObject(Class<T> cls) throws IOException, ClassNotFoundException {
-        return JSON.parseObject(readLine(), cls);
+        Object value = readObject();
+        return (T) PojoUtils.realize(value, cls);
+        // return JSON.parseObject(readLine(), cls);
     }
-    
+
+    @SuppressWarnings("unchecked")
+    public <T> T readObject(Class<T> cls, Type type) throws IOException,ClassNotFoundException
+    {
+        Object value = readObject();
+        return (T) PojoUtils.realize(value, cls, type);
+    }
+
     private String readLine() throws IOException, EOFException {
         String line = reader.readLine();
         if(line == null || line.trim().length() == 0) throw new EOFException();

@@ -21,11 +21,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.lang.reflect.Type;
 import java.util.Map;
 
 import com.alibaba.dubbo.common.json.JSON;
 import com.alibaba.dubbo.common.json.ParseException;
 import com.alibaba.dubbo.common.serialize.ObjectInput;
+import com.alibaba.dubbo.common.utils.PojoUtils;
 
 /**
  * JsonObjectInput
@@ -130,12 +132,22 @@ public class JsonObjectInput implements ObjectInput {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T readObject(Class<T> cls) throws IOException, ClassNotFoundException {
-        try {
+        Object value = readObject();
+        return (T) PojoUtils.realize(value, cls);
+        /*try {
             return JSON.parse(readLine(), cls);
         } catch (ParseException e) {
             throw new IOException(e.getMessage());
-        }
+        }*/
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T readObject(Class<T> cls, Type type) throws IOException,ClassNotFoundException
+    {
+        Object value = readObject();
+        return (T) PojoUtils.realize(value, cls, type);
     }
 
     private String readLine() throws IOException, EOFException {
