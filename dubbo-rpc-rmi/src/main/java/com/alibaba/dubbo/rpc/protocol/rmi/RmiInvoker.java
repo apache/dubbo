@@ -86,7 +86,7 @@ public class RmiInvoker<T> extends AbstractInvoker<T> {
         return result;
     }
     
-    private RpcException setRpcExceptionCode(Throwable e, RpcException re) {
+    public static RpcException setRpcExceptionCode(Throwable e, RpcException re) {
         if (e != null && e.getCause() != null) {
             Class<?> cls = e.getCause().getClass();
             // 是根据测试Case发现的问题，对RpcException.setCode进行设置

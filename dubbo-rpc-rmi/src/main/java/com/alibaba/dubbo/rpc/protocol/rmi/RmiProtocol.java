@@ -35,6 +35,7 @@ import javassist.CtNewMethod;
 import javassist.NotFoundException;
 import javassist.bytecode.Descriptor;
 
+import org.springframework.remoting.RemoteAccessException;
 import org.springframework.remoting.rmi.RmiProxyFactoryBean;
 import org.springframework.remoting.rmi.RmiServiceExporter;
 
@@ -191,6 +192,7 @@ public class RmiProtocol extends AbstractProtocol {
                 && "spring".equals(url.getParameter("codec", "spring"))) {
             final RmiProxyFactoryBean rmiProxyFactoryBean = new RmiProxyFactoryBean();
             rmiProxyFactoryBean.setServiceUrl(url.toIdentityString());
+            rmiProxyFactoryBean.setServiceInterface(serviceType);
             rmiProxyFactoryBean.setCacheStub(true);
             rmiProxyFactoryBean.setLookupStubOnStartup(true);
             rmiProxyFactoryBean.setRefreshStubOnConnectFailure(true);
@@ -210,9 +212,22 @@ public class RmiProtocol extends AbstractProtocol {
                     try {
                         return new RpcResult(remoteObject.getClass().getMethod(invocation.getMethodName(), invocation.getParameterTypes()).invoke(remoteObject, invocation.getArguments()));
                     } catch (InvocationTargetException e) {
-                        return new RpcResult(e.getTargetException());
+                        Throwable t = e.getTargetException();
+                        if (t instanceof RemoteAccessException) {
+                            t = ((RemoteAccessException)t).getCause();
+                        }
+                        if (t instanceof RemoteException) {
+                            throw RmiInvoker.setRpcExceptionCode(t, new RpcException("Failed to invoke remote service: " + serviceType + ", method: "
+                                    + invocation.getMethodName() + ", url: " + url + ", cause: " + t.getMessage(), t));
+                        } else {
+                            return new RpcResult(t);
+                        }
                     } catch (Throwable e) {
-                        throw new RpcException(e.getMessage(), e);
+                        if (e instanceof RemoteAccessException) {
+                            e = ((RemoteAccessException)e).getCause();
+                        }
+                        throw RmiInvoker.setRpcExceptionCode(e, new RpcException("Failed to invoke remote service: " + serviceType + ", method: "
+                                + invocation.getMethodName() + ", url: " + url + ", cause: " + e.getMessage(), e));
                     }
                 }
                 public void destroy() {

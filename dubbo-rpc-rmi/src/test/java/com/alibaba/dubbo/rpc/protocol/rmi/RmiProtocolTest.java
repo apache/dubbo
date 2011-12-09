@@ -82,9 +82,9 @@ public class RmiProtocolTest
 
 	    {
     		RemoteService remoteService = new RemoteServiceImpl();
-    		Exporter<?> rpcExporter = protocol.export(proxy.getInvoker(remoteService, RemoteService.class, URL.valueOf("rmi://127.0.0.1:9001/remoteService")));
+    		Exporter<?> rpcExporter = protocol.export(proxy.getInvoker(remoteService, RemoteService.class, URL.valueOf("rmi://127.0.0.1:9002/remoteService")));
     		
-    		remoteService = proxy.getProxy(protocol.refer(RemoteService.class, URL.valueOf("rmi://127.0.0.1:9001/remoteService")));
+    		remoteService = proxy.getProxy(protocol.refer(RemoteService.class, URL.valueOf("rmi://127.0.0.1:9002/remoteService")));
     		remoteService.getThreadName();
     		for(int i=0;i<100;i++) {
                 String say = remoteService.sayHello("abcd");
