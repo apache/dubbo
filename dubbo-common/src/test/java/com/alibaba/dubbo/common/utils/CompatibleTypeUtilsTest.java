@@ -16,153 +16,137 @@
 package com.alibaba.dubbo.common.utils;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.matchers.JUnitMatchers.containsString;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.junit.Test;
 
 public class CompatibleTypeUtilsTest {
 
+    @SuppressWarnings("unchecked")
     @Test
-    public void testIsIntegerLikeType() {
-        Class<?>[] types = { byte.class, Byte.class, short.class, Short.class, int.class,
-                Integer.class, long.class, Long.class, };
-
-        for (Class<?> c : types) {
-            assertTrue(CompatibleTypeUtils.isIntegerLikeType(c));
-        }
-
-        assertFalse(CompatibleTypeUtils.isIntegerLikeType(double.class));
-        assertFalse(CompatibleTypeUtils.isIntegerLikeType(Date.class));
-    }
-
-    @Test
-    public void testIsFloatLikeType() {
-        Class<?>[] types = { float.class, Float.class, double.class, Double.class };
-
-        for (Class<?> c : types) {
-            assertTrue(CompatibleTypeUtils.isFloatLikeType(c));
-        }
-
-        assertFalse(CompatibleTypeUtils.isFloatLikeType(int.class));
-        assertFalse(CompatibleTypeUtils.isFloatLikeType(Date.class));
-    }
-
-    @Test
-    public void testConvertIntegerLikeType() {
-        {
-            Object v = CompatibleTypeUtils.convertIntegerLikeType(3, byte.class);
-            assertEquals((byte) 3, ((Byte) v).byteValue());
-        }
-        {
-            Object v = CompatibleTypeUtils.convertIntegerLikeType(3L, Short.class);
-            assertEquals((short) 3, ((Short) v).shortValue());
-        }
-        {
-            Object v = CompatibleTypeUtils.convertIntegerLikeType((short) 3, int.class);
-            assertEquals(3, ((Integer) v).intValue());
-        }
-        {
-            Object v = CompatibleTypeUtils.convertIntegerLikeType((short) 3, long.class);
-            assertEquals(Long.class, v.getClass());
-            assertEquals(3L, ((Long) v).longValue());
-        }
-        {
-            Object v = CompatibleTypeUtils.convertIntegerLikeType((short) 3, Long.class);
-            assertEquals(Long.class, v.getClass());
-            assertEquals(3L, ((Long) v).longValue());
-        }
-    }
-
-    @Test
-    public void testConvertFloatLikeType() {
-        {
-            Object v = CompatibleTypeUtils.convertFloatLikeType(3D, float.class);
-            assertEquals(Float.class, v.getClass());
-            assertEquals(3F, ((Float) v).floatValue(), 0);
-        }
-        {
-            Object v = CompatibleTypeUtils.convertFloatLikeType(3F, double.class);
-            assertEquals(Double.class, v.getClass());
-            assertEquals(3D, ((Double) v).doubleValue(), 0);
-        }
-        {
-            Object v = CompatibleTypeUtils.convertFloatLikeType(3F, Double.class);
-            assertEquals(Double.class, v.getClass());
-            assertEquals(3D, ((Double) v).doubleValue(), 0);
-        }
-    }
-
-    @Test
-    public void testIsCharType() {
-        Class<?>[] types = { char.class, Character.class, };
-
-        for (Class<?> c : types) {
-            assertTrue(CompatibleTypeUtils.isCharType(c));
-        }
-
-        assertFalse(CompatibleTypeUtils.isCharType(double.class));
-        assertFalse(CompatibleTypeUtils.isCharType(Date.class));
-    }
-
-    @Test
-    public void testCovert2Char() {
-        Character c = CompatibleTypeUtils.covert2Char("a");
-        assertEquals(Character.valueOf('a'), c);
-    }
-
-    @Test
-    public void testCovert2Char_exception_moreChar() {
-        try {
-            CompatibleTypeUtils.covert2Char("ab");
-            fail();
-        } catch (IllegalArgumentException expected) {
-            assertThat(expected.getMessage(), containsString("the String MUST only 1 char"));
-        }
-    }
-
-    @Test
-    public void testNeedCompatibleTypeConvert() {
-        assertTrue(CompatibleTypeUtils.needCompatibleTypeConvert("abc", char.class));
-        assertTrue(CompatibleTypeUtils.needCompatibleTypeConvert(3L, int.class));
-        assertTrue(CompatibleTypeUtils.needCompatibleTypeConvert(3F, double.class));
-
-        // 类型参数为null时，要返回False
-        assertFalse(CompatibleTypeUtils.needCompatibleTypeConvert("a", null));
+    public void testCompatibleTypeConvert() throws Exception {
+        Object result;
         
-        assertFalse(CompatibleTypeUtils.needCompatibleTypeConvert(null, String.class));
-        assertFalse(CompatibleTypeUtils.needCompatibleTypeConvert(null, int.class));
-        assertFalse(CompatibleTypeUtils.needCompatibleTypeConvert(null, Date.class));
-
-        assertFalse(CompatibleTypeUtils.needCompatibleTypeConvert("abc", String.class));
-        assertTrue(CompatibleTypeUtils.needCompatibleTypeConvert("abc", Date.class));
-        assertFalse(CompatibleTypeUtils.needCompatibleTypeConvert(3D, Double.class));
-    }
-
-    @Test
-    public void testCompatibleTypeConvert() {
-        {
-            Object v = CompatibleTypeUtils.compatibleTypeConvert("a", char.class);
-            assertEquals(Character.valueOf('a'), (Character) v);
-        }
-        {
-            Object v = CompatibleTypeUtils.compatibleTypeConvert(3L, int.class);
-            assertEquals(Integer.valueOf(3), (Integer) v);
-        }
-        {
-            Object v = CompatibleTypeUtils.compatibleTypeConvert(3F, Double.class);
-            assertEquals(Double.valueOf(3), (Double) v, 0);
-        }
         {
             Object input = new Object();
-            Object v = CompatibleTypeUtils.compatibleTypeConvert(input, Date.class);
-            assertSame(input, v);
+            result = CompatibleTypeUtils.compatibleTypeConvert(input, Date.class);
+            assertSame(input, result);
+            
+            result = CompatibleTypeUtils.compatibleTypeConvert(input, null);
+            assertSame(input, result);
+            
+            result = CompatibleTypeUtils.compatibleTypeConvert(null, Date.class);
+            assertNull(result);
         }
+        
+        {
+            result = CompatibleTypeUtils.compatibleTypeConvert("a", char.class);
+            assertEquals(Character.valueOf('a'), (Character) result);
+
+            result = CompatibleTypeUtils.compatibleTypeConvert("A", MyEnum.class);
+            assertEquals(MyEnum.A, (MyEnum) result);
+            
+            result = CompatibleTypeUtils.compatibleTypeConvert("3", BigInteger.class);
+            assertEquals(new BigInteger("3"), (BigInteger) result);
+            
+            result = CompatibleTypeUtils.compatibleTypeConvert("3", BigDecimal.class);
+            assertEquals(new BigDecimal("3"), (BigDecimal) result);
+            
+            result = CompatibleTypeUtils.compatibleTypeConvert("2011-12-11 12:24:12", Date.class);
+            assertEquals(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse("2011-12-11 12:24:12"), (Date) result);
+        }
+        
+        {
+            result = CompatibleTypeUtils.compatibleTypeConvert(3, byte.class);
+            assertEquals(Byte.valueOf((byte)3), (Byte) result);
+
+            result = CompatibleTypeUtils.compatibleTypeConvert((byte)3, int.class);
+            assertEquals(Integer.valueOf(3), (Integer) result);
+            
+            result = CompatibleTypeUtils.compatibleTypeConvert(3, short.class);
+            assertEquals(Short.valueOf((short)3), (Short) result);
+
+            result = CompatibleTypeUtils.compatibleTypeConvert((short)3, int.class);
+            assertEquals(Integer.valueOf(3), (Integer) result);
+
+            result = CompatibleTypeUtils.compatibleTypeConvert(3, int.class);
+            assertEquals(Integer.valueOf(3), (Integer) result);
+            
+            result = CompatibleTypeUtils.compatibleTypeConvert(3, long.class);
+            assertEquals(Long.valueOf(3), (Long) result);
+            
+            result = CompatibleTypeUtils.compatibleTypeConvert(3L, int.class);
+            assertEquals(Integer.valueOf(3), (Integer) result);
+
+            result = CompatibleTypeUtils.compatibleTypeConvert(3L, BigInteger.class);
+            assertEquals(BigInteger.valueOf(3L), (BigInteger) result);
+
+            result = CompatibleTypeUtils.compatibleTypeConvert(BigInteger.valueOf(3L), int.class);
+            assertEquals(Integer.valueOf(3), (Integer) result);
+        }
+        
+        {
+            result = CompatibleTypeUtils.compatibleTypeConvert(3D, float.class);
+            assertEquals(Float.valueOf(3), (Float) result);
+
+            result = CompatibleTypeUtils.compatibleTypeConvert(3F, double.class);
+            assertEquals(Double.valueOf(3), (Double) result);
+            
+            result = CompatibleTypeUtils.compatibleTypeConvert(3D, double.class);
+            assertEquals(Double.valueOf(3), (Double) result);
+
+            result = CompatibleTypeUtils.compatibleTypeConvert(3D, BigDecimal.class);
+            assertEquals(BigDecimal.valueOf(3D), (BigDecimal) result);
+
+            result = CompatibleTypeUtils.compatibleTypeConvert(BigDecimal.valueOf(3D), double.class);
+            assertEquals(Double.valueOf(3), (Double) result);
+        }
+        
+        {
+            List<String> list = new ArrayList<String>();
+            list.add("a");
+            list.add("b");
+            
+            Set<String> set = new HashSet<String>();
+            set.add("a");
+            set.add("b");
+            
+            result = CompatibleTypeUtils.compatibleTypeConvert(set, List.class);
+            assertEquals(ArrayList.class, result.getClass());
+            assertEquals(2, ((List<String>)result).size());
+            assertTrue(((List<String>)result).contains("a"));
+            assertTrue(((List<String>)result).contains("b"));
+
+            result = CompatibleTypeUtils.compatibleTypeConvert(set, CopyOnWriteArrayList.class);
+            assertEquals(CopyOnWriteArrayList.class, result.getClass());
+            assertEquals(2, ((List<String>)result).size());
+            assertTrue(((List<String>)result).contains("a"));
+            assertTrue(((List<String>)result).contains("b"));
+
+            result = CompatibleTypeUtils.compatibleTypeConvert(list, Set.class);
+            assertEquals(HashSet.class, result.getClass());
+            assertEquals(2, ((Set<String>)result).size());
+            assertTrue(((Set<String>)result).contains("a"));
+            assertTrue(((Set<String>)result).contains("b"));
+            
+            result = CompatibleTypeUtils.compatibleTypeConvert(list, ConcurrentHashSet.class);
+            assertEquals(ConcurrentHashSet.class, result.getClass());
+            assertEquals(2, ((Set<String>)result).size());
+            assertTrue(((Set<String>)result).contains("a"));
+            assertTrue(((Set<String>)result).contains("b"));
+        }
+        
     }
 }
