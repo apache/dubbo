@@ -15,6 +15,7 @@
  */
 package com.alibaba.dubbo.rpc.protocol.rmi;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
@@ -34,12 +35,19 @@ import javassist.CtNewMethod;
 import javassist.NotFoundException;
 import javassist.bytecode.Descriptor;
 
+import org.springframework.remoting.rmi.RmiProxyFactoryBean;
+import org.springframework.remoting.rmi.RmiServiceExporter;
+
 import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.bytecode.ClassGenerator;
 import com.alibaba.dubbo.rpc.Exporter;
+import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
+import com.alibaba.dubbo.rpc.ProxyFactory;
+import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.protocol.AbstractProtocol;
 
 /**
@@ -50,11 +58,17 @@ import com.alibaba.dubbo.rpc.protocol.AbstractProtocol;
 @Extension("rmi")
 public class RmiProtocol extends AbstractProtocol {
 
-    public static final int                   DEFAULT_PORT = 1099;
+    public static final int              DEFAULT_PORT = 1099;
 
-    private final Map<Integer, Registry>      registryMap  = new ConcurrentHashMap<Integer, Registry>();
+    private final Map<Integer, Registry> registryMap  = new ConcurrentHashMap<Integer, Registry>();
 
-    private RmiProxyFactory                   rmiProxyFactory;
+    private ProxyFactory                 proxyFactory;
+
+    private RmiProxyFactory              rmiProxyFactory;
+
+    public void setProxyFactory(ProxyFactory proxyFactory) {
+        this.proxyFactory = proxyFactory;
+    }
 
     public void setRmiProxyFactory(RmiProxyFactory rmiProxyFactory) {
         this.rmiProxyFactory = rmiProxyFactory;
@@ -102,6 +116,7 @@ public class RmiProtocol extends AbstractProtocol {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
+    
     //fix javassist version problem (getCtClass is since 3.8.5 ,jboss )
     private static CtClass getCtClass(ClassPool pool, String classname) throws NotFoundException{
         if (classname.charAt(0) == '[')
@@ -110,64 +125,129 @@ public class RmiProtocol extends AbstractProtocol {
             return pool.get(classname);
     }
 
-    public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
-        Remote remote = rmiProxyFactory.getProxy(invoker);
-        // export.
-        try {
-            UnicastRemoteObject.exportObject(remote, 0);
-        } catch (RemoteException e) {
-            if ("object already exported".equalsIgnoreCase(e.getMessage())) {
-                logger.warn("Ignore 'object already exported' exception.", e);
-            } else {
-                throw new RpcException("Export rmi service error.", e);
+    public <T> Exporter<T> export(final Invoker<T> invoker) throws RpcException {
+        if (! Remote.class.isAssignableFrom(invoker.getInterface())
+                && "spring".equals(invoker.getUrl().getParameter("codec", "spring"))) {
+            final RmiServiceExporter rmiServiceExporter = new RmiServiceExporter();
+            rmiServiceExporter.setRegistryPort(invoker.getUrl().getPort());
+            rmiServiceExporter.setServiceName(invoker.getUrl().getPath());
+            rmiServiceExporter.setServiceInterface(invoker.getInterface());
+            rmiServiceExporter.setService(proxyFactory.getProxy(invoker));
+            try {
+                rmiServiceExporter.afterPropertiesSet();
+            } catch (RemoteException e) {
+                throw new RpcException(e.getMessage(), e);
             }
+            Exporter<T> exporter = new Exporter<T>() {
+                public Invoker<T> getInvoker() {
+                    return invoker;
+                }
+                public void unexport() {
+                    try {
+                        rmiServiceExporter.destroy();
+                    } catch (Throwable e) {
+                        logger.warn(e.getMessage(), e);
+                    }
+                    try {
+                        invoker.destroy();
+                    } catch (Throwable e) {
+                        logger.warn(e.getMessage(), e);
+                    }
+                }
+            };
+            return exporter;
+        } else {
+            Remote remote = rmiProxyFactory.getProxy(invoker);
+            // export.
+            try {
+                UnicastRemoteObject.exportObject(remote, 0);
+            } catch (RemoteException e) {
+                if ("object already exported".equalsIgnoreCase(e.getMessage())) {
+                    logger.warn("Ignore 'object already exported' exception.", e);
+                } else {
+                    throw new RpcException("Export rmi service error.", e);
+                }
+            }
+            // register.
+            Registry registry = getOrCreateRegistry(invoker.getUrl().getPort());
+            try {
+                // bind service.
+                registry.bind(invoker.getUrl().getPath(), remote);
+            } catch (RemoteException e) {
+                throw new RpcException("Bind rmi service [" + invoker.getUrl().getPath() + "] error.",
+                        e);
+            } catch (AlreadyBoundException e) {
+                throw new RpcException("Bind rmi service error. Service name ["
+                        + invoker.getUrl().getPath() + "] already bound.", e);
+            }
+            RmiExporter<T> exporter = new RmiExporter<T>(invoker, remote, registry);
+            exporterMap.put(serviceKey(invoker.getUrl()), exporter);
+            return exporter;
         }
-        // register.
-        Registry registry = getOrCreateRegistry(invoker.getUrl().getPort());
-        try {
-            // bind service.
-            registry.bind(invoker.getUrl().getPath(), remote);
-        } catch (RemoteException e) {
-            throw new RpcException("Bind rmi service [" + invoker.getUrl().getPath() + "] error.",
-                    e);
-        } catch (AlreadyBoundException e) {
-            throw new RpcException("Bind rmi service error. Service name ["
-                    + invoker.getUrl().getPath() + "] already bound.", e);
-        }
-        RmiExporter<T> exporter = new RmiExporter<T>(invoker, remote, registry);
-        exporterMap.put(serviceKey(invoker.getUrl()), exporter);
-        return exporter;
     }
 
-    public <T> Invoker<T> refer(Class<T> serviceType, URL url) throws RpcException {
-        Invoker<T> invoker;
-        try {
-            if ("dubbo".equals(url.getParameter("codec"))) {
-                RmiProtocol.getRemoteClass(serviceType);
+    public <T> Invoker<T> refer(final Class<T> serviceType, final URL url) throws RpcException {
+        if (! Remote.class.isAssignableFrom(serviceType)
+                && "spring".equals(url.getParameter("codec", "spring"))) {
+            final RmiProxyFactoryBean rmiProxyFactoryBean = new RmiProxyFactoryBean();
+            rmiProxyFactoryBean.setServiceUrl(url.toIdentityString());
+            rmiProxyFactoryBean.setCacheStub(true);
+            rmiProxyFactoryBean.setLookupStubOnStartup(true);
+            rmiProxyFactoryBean.setRefreshStubOnConnectFailure(true);
+            rmiProxyFactoryBean.afterPropertiesSet();
+            final Object remoteObject = rmiProxyFactoryBean.getObject();
+            return new Invoker<T>() {
+                public Class<T> getInterface() {
+                    return serviceType;
+                }
+                public URL getUrl() {
+                    return url;
+                }
+                public boolean isAvailable() {
+                    return true;
+                }
+                public Result invoke(Invocation invocation) throws RpcException {
+                    try {
+                        return new RpcResult(remoteObject.getClass().getMethod(invocation.getMethodName(), invocation.getParameterTypes()).invoke(remoteObject, invocation.getArguments()));
+                    } catch (InvocationTargetException e) {
+                        return new RpcResult(e.getTargetException());
+                    } catch (Throwable e) {
+                        throw new RpcException(e.getMessage(), e);
+                    }
+                }
+                public void destroy() {
+                }
+            };
+        } else {
+            Invoker<T> invoker;
+            try {
+                if ("dubbo".equals(url.getParameter("codec"))) {
+                    RmiProtocol.getRemoteClass(serviceType);
+                }
+                Registry registry = LocateRegistry.getRegistry(url.getHost(), url.getPort());
+                String path = url.getPath();
+                if (path == null || path.length() == 0) {
+                    path = serviceType.getName();
+                }
+                invoker = new RmiInvoker<T>(registry, rmiProxyFactory, rmiProxyFactory.getInvoker(registry.lookup(path), serviceType, url));
+            } catch (RemoteException e) {
+                Throwable cause = e.getCause();
+                boolean isExportedBySpringButNoSpringClass = ClassNotFoundException.class
+                        .isInstance(cause)
+                        && cause.getMessage().contains(
+                                "org.springframework.remoting.rmi.RmiInvocationHandler");
+    
+                String msg = String
+                        .format("Can not create remote object%s. url = %s",
+                                isExportedBySpringButNoSpringClass ? "(Rmi object is exported by spring rmi but NO spring class org.springframework.remoting.rmi.RmiInvocationHandler at consumer side)"
+                                        : "", url);
+                throw new RpcException(msg, e);
+            } catch (NotBoundException e) {
+                throw new RpcException("Rmi service not found. url = " + url, e);
             }
-            Registry registry = LocateRegistry.getRegistry(url.getHost(), url.getPort());
-            String path = url.getPath();
-            if (path == null || path.length() == 0) {
-                path = serviceType.getName();
-            }
-            invoker = new RmiInvoker<T>(registry, rmiProxyFactory, rmiProxyFactory.getInvoker(registry.lookup(path), serviceType, url));
-        } catch (RemoteException e) {
-            Throwable cause = e.getCause();
-            boolean isExportedBySpringButNoSpringClass = ClassNotFoundException.class
-                    .isInstance(cause)
-                    && cause.getMessage().contains(
-                            "org.springframework.remoting.rmi.RmiInvocationHandler");
-
-            String msg = String
-                    .format("Can not create remote object%s. url = %s",
-                            isExportedBySpringButNoSpringClass ? "(Rmi object is exported by spring rmi but NO spring class org.springframework.remoting.rmi.RmiInvocationHandler at consumer side)"
-                                    : "", url);
-            throw new RpcException(msg, e);
-        } catch (NotBoundException e) {
-            throw new RpcException("Rmi service not found. url = " + url, e);
+            invokers.add(invoker);
+            return invoker;
         }
-        invokers.add(invoker);
-        return invoker;
     }
 
     protected Registry getOrCreateRegistry(int port) {
