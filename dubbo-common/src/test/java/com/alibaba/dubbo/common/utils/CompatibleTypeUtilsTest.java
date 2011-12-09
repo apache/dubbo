@@ -122,9 +122,23 @@ public class CompatibleTypeUtilsTest {
             Set<String> set = new HashSet<String>();
             set.add("a");
             set.add("b");
-            
+
+            String[] array = new String[] {"a", "b"};
+
+            result = CompatibleTypeUtils.compatibleTypeConvert(array, List.class);
+            assertEquals(ArrayList.class, result.getClass());
+            assertEquals(2, ((List<String>)result).size());
+            assertTrue(((List<String>)result).contains("a"));
+            assertTrue(((List<String>)result).contains("b"));
+
             result = CompatibleTypeUtils.compatibleTypeConvert(set, List.class);
             assertEquals(ArrayList.class, result.getClass());
+            assertEquals(2, ((List<String>)result).size());
+            assertTrue(((List<String>)result).contains("a"));
+            assertTrue(((List<String>)result).contains("b"));
+
+            result = CompatibleTypeUtils.compatibleTypeConvert(array, CopyOnWriteArrayList.class);
+            assertEquals(CopyOnWriteArrayList.class, result.getClass());
             assertEquals(2, ((List<String>)result).size());
             assertTrue(((List<String>)result).contains("a"));
             assertTrue(((List<String>)result).contains("b"));
@@ -135,17 +149,42 @@ public class CompatibleTypeUtilsTest {
             assertTrue(((List<String>)result).contains("a"));
             assertTrue(((List<String>)result).contains("b"));
 
-            result = CompatibleTypeUtils.compatibleTypeConvert(list, Set.class);
+            result = CompatibleTypeUtils.compatibleTypeConvert(set, String[].class);
+            assertEquals(String[].class, result.getClass());
+            assertEquals(2, ((String[])result).length);
+            assertTrue(((String[])result)[0].equals("a") || ((String[])result)[0].equals("b"));
+            assertTrue(((String[])result)[1].equals("a") || ((String[])result)[1].equals("b"));
+
+            result = CompatibleTypeUtils.compatibleTypeConvert(array, Set.class);
             assertEquals(HashSet.class, result.getClass());
             assertEquals(2, ((Set<String>)result).size());
             assertTrue(((Set<String>)result).contains("a"));
             assertTrue(((Set<String>)result).contains("b"));
             
+            result = CompatibleTypeUtils.compatibleTypeConvert(list, Set.class);
+            assertEquals(HashSet.class, result.getClass());
+            assertEquals(2, ((Set<String>)result).size());
+            assertTrue(((Set<String>)result).contains("a"));
+            assertTrue(((Set<String>)result).contains("b"));
+
+            result = CompatibleTypeUtils.compatibleTypeConvert(array, ConcurrentHashSet.class);
+            assertEquals(ConcurrentHashSet.class, result.getClass());
+            assertEquals(2, ((Set<String>)result).size());
+            assertTrue(((Set<String>)result).contains("a"));
+            assertTrue(((Set<String>)result).contains("b"));
+
             result = CompatibleTypeUtils.compatibleTypeConvert(list, ConcurrentHashSet.class);
             assertEquals(ConcurrentHashSet.class, result.getClass());
             assertEquals(2, ((Set<String>)result).size());
             assertTrue(((Set<String>)result).contains("a"));
             assertTrue(((Set<String>)result).contains("b"));
+
+            result = CompatibleTypeUtils.compatibleTypeConvert(list, String[].class);
+            assertEquals(String[].class, result.getClass());
+            assertEquals(2, ((String[])result).length);
+            assertTrue(((String[])result)[0].equals("a"));
+            assertTrue(((String[])result)[1].equals("b"));
+            
         }
         
     }

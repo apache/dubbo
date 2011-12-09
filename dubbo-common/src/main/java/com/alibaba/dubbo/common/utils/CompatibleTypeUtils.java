@@ -15,6 +15,7 @@
  */
 package com.alibaba.dubbo.common.utils;
 
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.ParseException;
@@ -94,7 +95,15 @@ public class CompatibleTypeUtils {
             }
         } else if(value instanceof Collection) {
             Collection collection = (Collection) value;
-            if (! type.isInterface()) {
+            if (type.isArray()) {
+                int length = collection.size();
+                Object array = Array.newInstance(type.getComponentType(), length);
+                int i = 0;
+                for (Object item : collection) {
+                    Array.set(array, i ++, item);
+                }
+                return array;
+            } else if (! type.isInterface()) {
                 try {
                     Collection result = (Collection) type.newInstance();
                     result.addAll(collection);
@@ -106,6 +115,24 @@ public class CompatibleTypeUtils {
             } else if (type == Set.class) {
                 return new HashSet<Object>(collection);
             }
+        } else if(value.getClass().isArray() && Collection.class.isAssignableFrom(type)) {
+            Collection collection;
+            if (! type.isInterface()) {
+                try {
+                    collection = (Collection) type.newInstance();
+                } catch (Throwable e) {
+                    collection = new ArrayList<Object>();
+                }
+            } else if (type == Set.class) {
+                collection = new HashSet<Object>();
+            } else {
+                collection = new ArrayList<Object>();
+            }
+            int length = Array.getLength(value);
+            for (int i = 0; i < length; i ++) {
+                collection.add(Array.get(value, i));
+            }
+            return collection;
         }
         return value;
     }

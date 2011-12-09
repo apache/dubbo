@@ -84,11 +84,15 @@ public class FastJsonObjectOutput implements ObjectOutput {
     }
 
     public void writeObject(Object obj) throws IOException {
-        SerializeWriter out = new SerializeWriter();
-        JSONSerializer serializer = new JSONSerializer(out);
-        serializer.config(SerializerFeature.WriteEnumUsingToString, true);
-        serializer.write(obj);
-        out.writeTo(writer);
+        if (obj instanceof Throwable) {
+            writer.write("{\"message\":\"" + ((Throwable)obj).getMessage() + "\"}");
+        } else {
+            SerializeWriter out = new SerializeWriter();
+            JSONSerializer serializer = new JSONSerializer(out);
+            serializer.config(SerializerFeature.WriteEnumUsingToString, true);
+            serializer.write(obj);
+            out.writeTo(writer);
+        }
         writer.println();
         writer.flush();
     }

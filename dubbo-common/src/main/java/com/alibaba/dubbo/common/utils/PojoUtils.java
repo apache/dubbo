@@ -17,6 +17,7 @@ package com.alibaba.dubbo.common.utils;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -363,6 +364,19 @@ public class PojoUtils {
 	                        }
 	                    }
                 	}
+                }
+                if (dest instanceof Throwable) {
+                    Object message = map.get("message");
+                    if (message instanceof String) {
+                        try {
+                            Field filed = Throwable.class.getDeclaredField("detailMessage");
+                            if(! filed.isAccessible()) {
+                                filed.setAccessible(true);
+                            }
+                            filed.set(dest, (String) message);
+                        } catch (Exception e) {
+                        }
+                    }
                 }
                 return dest;
             }
