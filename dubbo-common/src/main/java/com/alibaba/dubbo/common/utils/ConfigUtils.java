@@ -122,7 +122,10 @@ public class ConfigUtils {
 	 * 
 	 * @param fileName properties file name. for example: <code>dubbo.properties</code>, <code>METE-INF/conf/foo.properties</code>
 	 * @param allowMultiFile if <code>false</code>, throw {@link IllegalStateException} when found multi file on the class path. 
-	 * @return loaded {@link Properties} content, merge multi properties file if found multi file 
+	 * @return loaded {@link Properties} content. <ul>
+	 * <li>return empty Properties if no file found.
+	 * <li>merge multi properties file if found multi file
+	 * </ul>
 	 * @throws IllegalStateException not allow multi-file, but multi-file exsit on class path.
 	 */
     public static Properties loadProperties(String fileName, boolean allowMultiFile) {
