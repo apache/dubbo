@@ -308,7 +308,7 @@ public class DubboProtocol extends AbstractProtocol {
                 client.incrementAndGetCount();
                 return client;
             } else {
-                logger.warn(new IllegalStateException("client is closed,but stay in clientmap .client :"+ client));
+//                logger.warn(new IllegalStateException("client is closed,but stay in clientmap .client :"+ client));
                 referenceClientMap.remove(key);
             }
         }
