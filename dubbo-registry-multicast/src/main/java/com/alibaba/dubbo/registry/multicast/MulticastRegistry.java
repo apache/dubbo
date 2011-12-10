@@ -129,7 +129,7 @@ public class MulticastRegistry extends FailbackRegistry {
                 for (URL u : urls) {
                     String host = remoteAddress != null && remoteAddress.getAddress() != null 
                             ? remoteAddress.getAddress().getHostAddress() : url.getHost();
-                    if (url.getParameter("uni", true) // 消费者的机器是否只有一个进程
+                    if (url.getParameter("unicast", true) // 消费者的机器是否只有一个进程
                             && ! NetUtils.getLocalHost().equals(host)) { // 同机器多进程不能用unicast单播信息，否则只会有一个进程收到信息
                         unicast(REGISTER + " " + u.toFullString(), host);
                     } else {
