@@ -92,7 +92,7 @@ public class MulticastRegistry extends FailbackRegistry {
                         }
                     }
                 }
-            }, "MulticastRegistryReceiver");
+            }, "DubboMulticastRegistryReceiver");
             thread.setDaemon(true);
             thread.start();
         } catch (IOException e) {

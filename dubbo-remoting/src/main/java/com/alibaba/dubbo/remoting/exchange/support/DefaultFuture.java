@@ -306,7 +306,7 @@ public class DefaultFuture implements ResponseFuture {
     }
 
     static {
-        Thread th = new Thread(new RemotingInvocationTimeoutScan(), "remoting-invocation-timeout-scan");
+        Thread th = new Thread(new RemotingInvocationTimeoutScan(), "DubboResponseTimeoutScanTimer");
         th.setDaemon(true);
         th.start();
     }

@@ -46,7 +46,7 @@ public class DubboMonitor implements Monitor {
     private static final int LENGTH = 10;
     
     // 定时任务执行器
-    private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(3, new NamedThreadFactory("DubboMonitorSenderTimer", true));
+    private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(3, new NamedThreadFactory("DubboMonitorSendTimer", true));
 
     // 统计信息收集定时器
     private final ScheduledFuture<?> sendFuture;
