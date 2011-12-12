@@ -82,7 +82,7 @@ public class ServerPeer extends ServerDelegate implements Peer {
         if (channel == null) {
             for (Map.Entry<URL, Client> entry : clients.entrySet()) {
                 URL url = entry.getKey();
-                if (url.getHost().equals(host) && url.getPort() == port) {
+                if (url.getIp().equals(host) && url.getPort() == port) {
                     return entry.getValue();
                 }
             }

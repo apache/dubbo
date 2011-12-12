@@ -129,7 +129,7 @@ public class RpcContext {
             host = address.getAddress().getHostAddress();
         }
         return url.getPort() == address.getPort() && 
-                NetUtils.filterLocalHost(url.getHost()).equals(NetUtils.filterLocalHost(host));
+                NetUtils.filterLocalHost(url.getIp()).equals(NetUtils.filterLocalHost(host));
     }
     
     /**

@@ -84,7 +84,7 @@ public class DubboProtocol extends AbstractProtocol {
             InetSocketAddress address = channel.getRemoteAddress();
             URL url = channel.getUrl();
             return url.getPort() == address.getPort() && 
-                        NetUtils.filterLocalHost(channel.getUrl().getHost())
+                        NetUtils.filterLocalHost(channel.getUrl().getIp())
                         .equals(NetUtils.filterLocalHost(address.getAddress().getHostAddress()));
         }
         

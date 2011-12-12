@@ -76,7 +76,7 @@ public class HessianProtocol extends AbstractProtocol {
         final URL url = invoker.getUrl();
         final String uri = url.getAbsolutePath(); // service uri also exporter cache key.
 
-        String addr = url.getHost() + ":" + url.getPort();
+        String addr = url.getIp() + ":" + url.getPort();
         HttpServer server = serverMap.get(addr);
         if (server == null) {
             server = httpTransporter.bind(url, new HessianHandler());

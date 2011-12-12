@@ -95,7 +95,7 @@ public class ExchangeServerPeer extends ExchangeServerDelegate implements Exchan
         if (channel == null) {
             for (Map.Entry<URL, ExchangeClient> entry : clients.entrySet()) {
                 URL url = entry.getKey();
-                if (url.getHost().equals(host) && url.getPort() == port) {
+                if (url.getIp().equals(host) && url.getPort() == port) {
                     return entry.getValue();
                 }
             }

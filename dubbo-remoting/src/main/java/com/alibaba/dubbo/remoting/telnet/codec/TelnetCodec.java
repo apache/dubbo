@@ -189,7 +189,7 @@ public class TelnetCodec extends TransportCodec {
         InetSocketAddress address = channel.getRemoteAddress();
         URL url = channel.getUrl();
         return url.getPort() == address.getPort() && 
-                    NetUtils.filterLocalHost(url.getHost())
+                    NetUtils.filterLocalHost(url.getIp())
                     .equals(NetUtils.filterLocalHost(address.getAddress().getHostAddress()));
     }
 
