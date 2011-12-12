@@ -86,6 +86,8 @@ public final class URL implements Serializable {
 
     private final Map<String, String> parameters;
     
+    private volatile transient String ip;
+    
     private final transient Map<String, Number> numbers = new ConcurrentHashMap<String, Number>();
     
     protected URL() {
@@ -238,7 +240,25 @@ public final class URL implements Serializable {
 	public String getHost() {
 		return host;
 	}
-
+	
+	/**
+	 * 获取IP地址.
+	 * 
+	 * 请注意：
+	 * 如果和Socket的地址对比，
+	 * 或用地址作为Map的Key查找，
+	 * 请使用IP而不是Host，
+	 * 否则配置域名会有问题
+	 * 
+	 * @return ip
+	 */
+	public String getIp() {
+	    if (ip == null) {
+	        ip = NetUtils.getIpByHost(host);
+	    }
+	    return ip;
+	}
+	
 	public int getPort() {
 		return port;
 	}
