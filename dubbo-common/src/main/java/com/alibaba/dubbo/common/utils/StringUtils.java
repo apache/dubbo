@@ -148,7 +148,7 @@ public final class StringUtils
         PrintWriter p = new PrintWriter(w);
         p.print(e.getClass().getName());
         if (e.getMessage() != null) {
-            p.print(e.getMessage());
+            p.print(": " + e.getMessage());
         }
         p.println();
         try {
