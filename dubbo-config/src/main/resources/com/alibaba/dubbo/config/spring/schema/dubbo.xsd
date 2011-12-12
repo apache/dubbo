@@ -612,6 +612,11 @@
 					<xsd:documentation><![CDATA[ The buffer size. ]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
+			<xsd:attribute name="heartbeat" type="xsd:string" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[ The heartbeat interval.(ms) ]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
 			<xsd:attribute name="accesslog" type="xsd:string" use="optional">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[ The protocol use accesslog. ]]></xsd:documentation>

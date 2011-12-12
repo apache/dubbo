@@ -78,6 +78,9 @@ public class ProtocolConfig extends AbstractConfig {
     
     // 缓存区大小
     private Integer             buffer;
+    
+    // 心跳间隔
+    private Integer             heartbeat;
 
     // 访问日志
     private String              accesslog;
@@ -248,6 +251,14 @@ public class ProtocolConfig extends AbstractConfig {
 
     public void setBuffer(Integer buffer) {
         this.buffer = buffer;
+    }
+
+    public Integer getHeartbeat() {
+        return heartbeat;
+    }
+
+    public void setHeartbeat(Integer heartbeat) {
+        this.heartbeat = heartbeat;
     }
 
     public String getServer() {
