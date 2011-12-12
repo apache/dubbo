@@ -57,7 +57,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
 
     private final Lock            connectLock = new ReentrantLock();
     
-    private static final ScheduledThreadPoolExecutor reconnectExecutorService = new ScheduledThreadPoolExecutor(2, new NamedThreadFactory("client-connect-check-timer", true));
+    private static final ScheduledThreadPoolExecutor reconnectExecutorService = new ScheduledThreadPoolExecutor(2, new NamedThreadFactory("DubboClientReconnectTimer", true));
     
     private volatile  ScheduledFuture<?> reconnectExecutorFuture = null;
     
