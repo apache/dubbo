@@ -29,10 +29,10 @@ import com.alibaba.dubbo.common.serialize.Serialization;
 import com.alibaba.dubbo.common.serialize.support.dubbo.DubboSerialization;
 
 /**
- * @author tony.chenl
  * @author ding.lid
+ * @author tony.chenl
  */
-public class ConfigUtilTest {
+public class ConfigUtilsTest {
 
     /**
      * 测试点1：用户配置参数在最后 测试点2：用户配置参数如果带-，会删除同名的默认参数 测试点3：default开头的默认参数会被删除
