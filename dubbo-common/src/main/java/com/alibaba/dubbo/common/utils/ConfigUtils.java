@@ -164,8 +164,7 @@ public class ConfigUtils {
             while (urls.hasMoreElements()) {
                 list.add(urls.nextElement());
             }
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             logger.warn("Fail to load " + fileName + " file: " + t.getMessage(), t);
         }
         
@@ -173,15 +172,24 @@ public class ConfigUtils {
             logger.warn("No " + fileName + " found on the class path.");
             return properties;
         }
-        if(!allowMultiFile && list.size() > 1) {
-            String errMsg = String.format("only 1 %s file is expected, but %d dubbo.properties files found on class path: %s",
-                    fileName, list.size(), list.toString());
-            logger.error(errMsg);
-            throw new IllegalStateException(errMsg);
+        
+        if(! allowMultiFile) {
+            if (list.size() > 1) {
+                String errMsg = String.format("only 1 %s file is expected, but %d dubbo.properties files found on class path: %s",
+                        fileName, list.size(), list.toString());
+                logger.error(errMsg);
+                //throw new IllegalStateException(errMsg);
+            }
+            try {
+                properties.load(ClassHelper.getClassLoader().getResourceAsStream(fileName));
+            } catch (Throwable e) {
+                logger.warn("Failed to load " + fileName + " file from " + fileName + "(ingore this file): " + e.getMessage(), e);
+            }
+            return properties;
         }
         
         logger.info("load " + fileName + " properties file from " + list);
-
+        
         for(java.net.URL url : list) {
             try {
                 Properties p = new Properties();
