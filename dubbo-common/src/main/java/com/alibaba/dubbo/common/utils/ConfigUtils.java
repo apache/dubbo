@@ -178,7 +178,7 @@ public class ConfigUtils {
                 String errMsg = String.format("only 1 %s file is expected, but %d dubbo.properties files found on class path: %s",
                         fileName, list.size(), list.toString());
                 logger.error(errMsg);
-                //throw new IllegalStateException(errMsg);
+                // throw new IllegalStateException(errMsg); // see http://code.alibabatech.com/jira/browse/DUBBO-133
             }
             try {
                 properties.load(ClassHelper.getClassLoader().getResourceAsStream(fileName));
