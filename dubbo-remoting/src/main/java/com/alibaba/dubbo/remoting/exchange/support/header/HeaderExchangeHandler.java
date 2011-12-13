@@ -15,9 +15,13 @@
  */
 package com.alibaba.dubbo.remoting.exchange.support.header;
 
+import java.net.InetSocketAddress;
+
 import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
@@ -151,6 +155,14 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         }
     }
 
+    private static boolean isClientSide(Channel channel) {
+        InetSocketAddress address = channel.getRemoteAddress();
+        URL url = channel.getUrl();
+        return url.getPort() == address.getPort() && 
+                    NetUtils.filterLocalHost(url.getIp())
+                    .equals(NetUtils.filterLocalHost(address.getAddress().getHostAddress()));
+    }
+
     public void received(Channel channel, Object message) throws RemotingException {
         channel.setAttribute(KEY_READ_TIMESTAMP, System.currentTimeMillis());
         ExchangeChannel exchangeChannel = HeaderExchangeChannel.getOrAddChannel(channel);
@@ -171,9 +183,14 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
             } else if (message instanceof Response) {
                 handleResponse(channel, (Response) message);
             } else if (message instanceof String) {
-                String echo = handler.telnet(channel, (String) message);
-                if (echo != null && echo.length() > 0) {
-                    channel.send(echo);
+                if (isClientSide(channel)) {
+                    Exception e = new Exception("Dubbo client can not supported string message: " + message + " in channel: " + channel + ", url: " + channel.getUrl());
+                    logger.error(e.getMessage(), e);
+                } else {
+                    String echo = handler.telnet(channel, (String) message);
+                    if (echo != null && echo.length() > 0) {
+                        channel.send(echo);
+                    }
                 }
             } else {
                 handler.received(exchangeChannel, message);

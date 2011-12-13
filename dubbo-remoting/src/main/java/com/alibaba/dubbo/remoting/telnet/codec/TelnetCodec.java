@@ -164,6 +164,9 @@ public class TelnetCodec extends TransportCodec {
                 channel.setAttribute(HISTORY_LIST_KEY, history);
             }
             String result = toString(message, getCharset(channel));
+            if (history.size() > 100) {
+                history.clear();
+            }
             history.add(result);
             return result;
         }
