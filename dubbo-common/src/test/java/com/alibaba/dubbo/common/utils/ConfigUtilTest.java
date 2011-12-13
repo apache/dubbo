@@ -103,6 +103,7 @@ public class ConfigUtilTest {
     public void test_loadProperties_multiFile_notRootPath_Exception() throws Exception {
         try {
             ConfigUtils.loadProperties("META-INF/services/com.alibaba.dubbo.common.status.StatusChecker", false);
+            Assert.fail();
         } catch (IllegalStateException expected) {
             assertThat(expected.getMessage(), containsString("only 1 META-INF/services/com.alibaba.dubbo.common.status.StatusChecker file is expected, but 2 dubbo.properties files found on class path:"));
         }
