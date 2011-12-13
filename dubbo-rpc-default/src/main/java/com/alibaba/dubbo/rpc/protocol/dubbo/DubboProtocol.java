@@ -247,6 +247,8 @@ public class DubboProtocol extends AbstractProtocol {
     }
     
     private ExchangeServer getServer(URL url) {
+        //默认开启server关闭时发送readonly事件
+        url = url.addParameterIfAbsent(Constants.CHANNEL_READONLYEVENT_SENT_KEY, Boolean.TRUE.toString());
         String str = url.getParameter(Constants.SERVER_KEY, Constants.DEFAULT_REMOTING_SERVER);
 
         if (str != null && str.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(str))
@@ -324,6 +326,7 @@ public class DubboProtocol extends AbstractProtocol {
      * 创建新连接.
      */
     private ExchangeClient initClient(URL url) {
+        
         // client type setting.
         String str = url.getParameter(Constants.CLIENT_KEY, url.getParameter(Constants.SERVER_KEY, Constants.DEFAULT_REMOTING_CLIENT));
 
