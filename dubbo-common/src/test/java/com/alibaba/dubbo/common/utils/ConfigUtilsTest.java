@@ -15,7 +15,7 @@
  */
 package com.alibaba.dubbo.common.utils;
 
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 import static org.junit.matchers.JUnitMatchers.containsString;
 
 import java.util.Arrays;
@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.alibaba.dubbo.common.serialize.Serialization;
@@ -99,6 +100,8 @@ public class ConfigUtilsTest {
         Assert.assertEquals(expected, p);
     }
     
+    
+    @Ignore("see http://code.alibabatech.com/jira/browse/DUBBO-133")
     @Test
     public void test_loadProperties_multiFile_notRootPath_Exception() throws Exception {
         try {
