@@ -437,7 +437,7 @@ public class RpcContext {
      * @param key
      * @return
      */
-    public Object getAttachment(String key) {
+    public String getAttachment(String key) {
         return attachments.get(key);
     }
 
