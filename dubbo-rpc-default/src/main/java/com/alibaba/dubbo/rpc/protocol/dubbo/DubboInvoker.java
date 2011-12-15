@@ -50,7 +50,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
     private final ReentrantLock     destroyLock = new ReentrantLock();
     
     public DubboInvoker(Class<T> serviceType, URL url, ExchangeClient[] clients){
-        super(serviceType, url, new String[] {Constants.GROUP_KEY, Constants.TOKEN_KEY, Constants.TIMEOUT_KEY});
+        super(serviceType, url, new String[] {Constants.INTERFACE_KEY, Constants.GROUP_KEY, Constants.TOKEN_KEY, Constants.TIMEOUT_KEY});
         this.clients = clients;
         // get version.
         this.version = url.getParameter(Constants.VERSION_KEY, "0.0.0");
@@ -60,7 +60,10 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
     protected Result doInvoke(final Invocation invocation) throws Throwable {
         RpcInvocation inv = null;
         final String methodName  ;
-        if(Constants.$INVOKE.equals(invocation.getMethodName()) && invocation.getArguments() !=null && invocation.getArguments().length >0 && invocation.getArguments()[0] != null){
+        if(Constants.$INVOKE.equals(invocation.getMethodName()) 
+                && invocation.getArguments() != null 
+                && invocation.getArguments().length >0 
+                && invocation.getArguments()[0] != null){
             inv = (RpcInvocation) invocation;
             //the frist argument must be real method name;
             methodName = invocation.getArguments()[0].toString();

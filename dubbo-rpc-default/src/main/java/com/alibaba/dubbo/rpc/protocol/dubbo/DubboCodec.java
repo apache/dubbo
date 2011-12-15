@@ -170,7 +170,7 @@ public class DubboCodec extends ExchangeCodec implements Codec {
                     Type genericType = null;
                     try {
                         if (channel != null && invocation != null) {
-                            String service = channel.getUrl().getServiceName();
+                            String service = invocation.getAttachment(Constants.INTERFACE_KEY);
                             if (service != null && service.length() > 0) {
                                 Class<?> cls = ReflectUtils.forName(service);
                                 Method method = cls.getMethod(invocation.getMethodName(), invocation.getParameterTypes());
