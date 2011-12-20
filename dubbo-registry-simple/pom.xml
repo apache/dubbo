@@ -34,6 +34,10 @@
 			<artifactId>dubbo</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.mortbay.jetty</groupId>
+			<artifactId>jetty</artifactId>
+		</dependency>
 	</dependencies>
 	<build>
 	     <plugins>

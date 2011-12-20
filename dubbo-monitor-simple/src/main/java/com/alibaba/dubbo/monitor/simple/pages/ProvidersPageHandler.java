@@ -75,7 +75,7 @@ public class ProvidersPageHandler implements PageHandler {
                     rows.add(row);
                 }
             }
-            return new Page("<a href=\"applications.html\">Applications</a> &gt; " + application + " &gt; Providers | <a href=\"consumers.html?application=" + application + "\">Consumers</a>", "Providers (" + rows.size() + ")",
+            return new Page("<a href=\"applications.html\">Applications</a> &gt; " + application + " &gt; Providers | <a href=\"consumers.html?application=" + application + "\">Consumers</a> | <a href=\"dependencies.html?application=" + application + "\">Depend On</a> | <a href=\"dependencies.html?application=" + application + "&reverse=true\">Used By</a>", "Providers (" + rows.size() + ")",
                     new String[] { "Provider URL:" }, rows);
         } else {
             throw new IllegalArgumentException("Please input service or host or application parameter.");

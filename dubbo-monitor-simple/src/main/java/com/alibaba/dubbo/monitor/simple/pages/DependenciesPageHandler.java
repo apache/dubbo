@@ -43,8 +43,9 @@ public class DependenciesPageHandler implements PageHandler {
         List<List<String>> rows = new ArrayList<List<String>>();
         appendDependency(rows, reverse, application, 0, new HashSet<String>());
         return new Page("<a href=\"applications.html\">Applications</a> &gt; " + application + 
-                (reverse ? " &gt; <a href=\"dependencies.html?application=" + application + "\">Depend On</a> | Used By" 
-                        : " &gt; Depend On | <a href=\"dependencies.html?reverse=true&application=" + application + "\">Used By</a>"), (reverse ? "Used By" : "Depend On") + " (" + rows.size() + ")", new String[] { "Application Name:"}, rows);
+                " &gt; <a href=\"providers.html?application=" + application + "\">Providers</a> | <a href=\"consumers.html?application=" + application + "\">Consumers</a> | " +
+                (reverse ? "<a href=\"dependencies.html?application=" + application + "\">Depend On</a> | Used By" 
+                        : "Depend On | <a href=\"dependencies.html?application=" + application + "&reverse=true\">Used By</a>"), (reverse ? "Used By" : "Depend On") + " (" + rows.size() + ")", new String[] { "Application Name:"}, rows);
     }
     
     private void appendDependency(List<List<String>> rows, boolean reverse, String application, int level, Set<String> appended) {
