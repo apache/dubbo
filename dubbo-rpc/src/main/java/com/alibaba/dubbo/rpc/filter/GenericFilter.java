@@ -53,7 +53,7 @@ public class GenericFilter implements Filter {
                     args = new Object[params.length];
                 }
                 args = PojoUtils.realize(args, params);
-                Result result = invoker.invoke(new RpcInvocation(method, args));
+                Result result = invoker.invoke(new RpcInvocation(method, args, inv.getAttachments()));
                 if (result.hasException()) {
                     return new RpcResult(new GenericException(result.getException()));
                 }

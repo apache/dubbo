@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invocation;
 
 /**
@@ -49,6 +50,10 @@ public class MockInvocation implements Invocation {
         attachments.put(Constants.TOKEN_KEY, "sfag");
         attachments.put(Constants.TIMEOUT_KEY, "1000");
         return attachments;
+    }
+
+    public URL getUrl() {
+        return null;
     }
 
 }

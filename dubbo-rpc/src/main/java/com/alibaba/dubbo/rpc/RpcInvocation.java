@@ -21,6 +21,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.alibaba.dubbo.common.URL;
+
 /**
  * Rpc invocation.
  * 
@@ -39,28 +41,48 @@ public class RpcInvocation implements Invocation, Serializable {
 
     private Map<String, String> attachments;
 
+    private transient URL       url;
+
     public RpcInvocation() {
+    }
+    
+    public RpcInvocation(Invocation invocation) {
+        this(invocation.getMethodName(), invocation.getParameterTypes(), 
+                invocation.getArguments(), invocation.getAttachments(), invocation.getUrl());
     }
 
     public RpcInvocation(Method method, Object[] arguments) {
-        this(method.getName(), method.getParameterTypes(), arguments, null);
+        this(method.getName(), method.getParameterTypes(), arguments, null, null);
     }
 
     public RpcInvocation(Method method, Object[] arguments, Map<String, String> attachment) {
-        this(method.getName(), method.getParameterTypes(), arguments, attachment);
+        this(method.getName(), method.getParameterTypes(), arguments, attachment, null);
     }
 
     public RpcInvocation(String methodName, Class<?>[] parameterTypes, Object[] arguments) {
-        this(methodName, parameterTypes, arguments, null);
+        this(methodName, parameterTypes, arguments, null, null);
     }
 
     public RpcInvocation(String methodName, Class<?>[] parameterTypes, Object[] arguments, Map<String, String> attachments) {
+        this(methodName, parameterTypes, arguments, attachments, null);
+    }
+
+    public RpcInvocation(String methodName, Class<?>[] parameterTypes, Object[] arguments, Map<String, String> attachments, URL url) {
         this.methodName = methodName;
         this.parameterTypes = parameterTypes == null ? new Class<?>[0] : parameterTypes;
         this.arguments = arguments == null ? new Object[0] : arguments;
         this.attachments = attachments == null ? new HashMap<String, String>() : attachments;
+        this.url = url;
+    }
+    
+    public URL getUrl() {
+        return url;
     }
 
+    public void setUrl(URL url) {
+        this.url = url;
+    }
+    
     public String getMethodName() {
         return methodName;
     }
@@ -124,5 +146,5 @@ public class RpcInvocation implements Invocation, Serializable {
                 + Arrays.toString(parameterTypes) + ", arguments=" + Arrays.toString(arguments)
                 + ", attachments=" + attachments + "]";
     }
-    
+
 }

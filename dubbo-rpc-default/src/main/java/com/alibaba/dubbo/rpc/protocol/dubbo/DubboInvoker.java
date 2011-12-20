@@ -68,8 +68,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
             //the frist argument must be real method name;
             methodName = invocation.getArguments()[0].toString();
         }else {
-            inv = new RpcInvocation(invocation.getMethodName(), invocation.getParameterTypes(),
-                    invocation.getArguments(), invocation.getAttachments());
+            inv = new RpcInvocation(invocation);
             methodName = invocation.getMethodName();
         }
         inv.setAttachment(Constants.PATH_KEY, getUrl().getPath());

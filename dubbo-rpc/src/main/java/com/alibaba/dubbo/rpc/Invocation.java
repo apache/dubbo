@@ -17,6 +17,8 @@ package com.alibaba.dubbo.rpc;
 
 import java.util.Map;
 
+import com.alibaba.dubbo.common.URL;
+
 /**
  * Rpc invocation. (API, Prototype, ThreadSafe)
  * 
@@ -27,6 +29,13 @@ import java.util.Map;
  * @author william.liangf
  */
 public interface Invocation {
+    
+    /**
+     * get the url.
+     * 
+     * @return url.
+     */
+    URL getUrl();
     
 	/**
 	 * get method name.
