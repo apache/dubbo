@@ -23,6 +23,7 @@ import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Result;
+import com.alibaba.dubbo.rpc.RpcInvocation;
 
 /**
  * ConsumerContextInvokerFilter
@@ -39,6 +40,9 @@ public class ConsumerContextFilter implements Filter {
                 .setLocalAddress(NetUtils.getLocalHost(), 0)
                 .setRemoteAddress(invoker.getUrl().getHost(), 
                                   invoker.getUrl().getPort());
+        if (invocation instanceof RpcInvocation) {
+            ((RpcInvocation)invocation).setUrl(invoker.getUrl());
+        }
         return invoker.invoke(invocation);
     }
 

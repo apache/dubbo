@@ -26,6 +26,7 @@ import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.RpcInvocation;
 
 /**
  * ContextInvokerFilter
@@ -52,6 +53,9 @@ public class ContextFilter implements Filter {
                 .setAttachments(attachments)
                 .setLocalAddress(invoker.getUrl().getHost(), 
                                  invoker.getUrl().getPort());
+        if (invocation instanceof RpcInvocation) {
+            ((RpcInvocation)invocation).setUrl(invoker.getUrl());
+        }
         try {
             return invoker.invoke(invocation);
         } finally {
