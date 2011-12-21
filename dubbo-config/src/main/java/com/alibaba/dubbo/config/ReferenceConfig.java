@@ -227,7 +227,14 @@ public class ReferenceConfig<T> extends AbstractConsumerConfig {
         if (methods != null && methods.size() > 0) {
             for (MethodConfig method : methods) {
                 appendParameters(map, method, method.getName());
-                appendAttributes(attributes, method, prifix +"."+method.getName());
+                String retryKey = method.getName() + ".retry";
+                if (map.containsKey(retryKey)) {
+                    String retryValue = map.remove(retryKey);
+                    if ("false".equals(retryValue)) {
+                        map.put(method.getName() + ".retries", "0");
+                    }
+                }
+                appendAttributes(attributes, method, prifix + "." + method.getName());
                 checkAndConvertImplicitConfig(method, map, attributes);
             }
         }

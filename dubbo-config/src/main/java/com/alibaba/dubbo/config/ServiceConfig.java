@@ -334,6 +334,13 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             if (methods != null && methods.size() > 0) {
                 for (MethodConfig method : methods) {
                     appendParameters(map, method, method.getName());
+                    String retryKey = method.getName() + ".retry";
+                    if (map.containsKey(retryKey)) {
+                        String retryValue = map.remove(retryKey);
+                        if ("false".equals(retryValue)) {
+                            map.put(method.getName() + ".retries", "0");
+                        }
+                    }
                     List<ArgumentConfig> arguments = method.getArguments();
                     if (arguments != null && arguments.size() > 0) {
                         for (ArgumentConfig argument : arguments) {
