@@ -24,6 +24,8 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.Version;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
@@ -40,6 +42,8 @@ import com.alibaba.dubbo.rpc.cluster.LoadBalance;
  *
  */
 public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T>{
+    private static final Logger logger = LoggerFactory.getLogger(FailoverClusterInvoker.class);
+    
     public FailoverClusterInvoker(Directory<T> directory) {
         super(directory);
     }
@@ -57,7 +61,6 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T>{
         List<Invoker<T>> invoked = new ArrayList<Invoker<T>>(invokers.size()); // invoked invokers.
         Set<URL> providers = new HashSet<URL>(len);
         for (int i = 0; i < len; i++) {
-            //boolean pp = false; // is provider problem.
             Invoker<T> invoker = select(loadbalance, invocation, invokers, invoked);
             invoked.add(invoker);
             providers.add(invoker.getUrl());
@@ -67,20 +70,23 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T>{
                 if (e.isBiz()) throw e;
 
                 le = e;
-                //pp = true;
+                logger.warn("" + (i + 1) + "/" + len + " time fail to invoke providers " + providers + " " + loadbalance.getClass().getAnnotation(Extension.class).value()
+                        + " select from all providers " + invokers + " for service " + getInterface().getName() + " method " + invocation.getMethodName()
+                        + " on consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() + ": " + e.getMessage(), e);
             } catch (Throwable e) // biz exception.
             {
                 throw new RpcException(e.getMessage(), e);
-            } finally {
-                //if (pp) // if provider problem, fail over.
-                //    inv.setWeight(0);
-            }
+            } 
         }
         List<URL> urls = new ArrayList<URL>(invokers.size());
         for(Invoker<T> invoker : invokers){
             if(invoker != null ) 
                 urls.add(invoker.getUrl());
         }
-        throw new RpcException(le.getCode(),"Tried " + len + " times to invoke providers " + providers + " " + loadbalance.getClass().getAnnotation(Extension.class).value() + " select from all providers " + invokers + " for service " + getInterface().getName() + " method " + invocation.getMethodName() + " on consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() + ", but no luck to perform the invocation. Last error is: " + (le != null ? le.getMessage() : ""), le);
+        throw new RpcException(le.getCode(),
+                "Tried " + len + " times to invoke providers " + providers + " " + loadbalance.getClass().getAnnotation(Extension.class).value()
+                + " select from all providers " + invokers + " for service " + getInterface().getName() + " method " + invocation.getMethodName()
+                + " on consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion()
+                + ", but no luck to perform the invocation. Last error is: " + (le != null ? le.getMessage() : ""), le);
     }
 }
