@@ -22,6 +22,7 @@ package com.alibaba.dubbo.remoting.exchange;
  * @author william.liangf
  */
 public class Response {
+    
     public static final String HEARTBEAT_EVENT = null;
     
     public static final String READONLY_EVENT = "R";
@@ -45,6 +46,11 @@ public class Response {
      * request format error.
      */
     public static final byte BAD_REQUEST       = 40;
+
+    /**
+     * response format error.
+     */
+    public static final byte BAD_RESPONSE      = 50;
 
     /**
      * service not found.

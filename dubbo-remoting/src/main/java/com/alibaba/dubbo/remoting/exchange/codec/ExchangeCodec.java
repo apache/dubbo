@@ -35,6 +35,7 @@ import com.alibaba.dubbo.common.serialize.ObjectOutput;
 import com.alibaba.dubbo.common.serialize.Serialization;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.remoting.Channel;
+import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.exchange.Request;
 import com.alibaba.dubbo.remoting.exchange.Response;
 import com.alibaba.dubbo.remoting.exchange.support.DefaultFuture;
@@ -254,40 +255,63 @@ public class ExchangeCodec extends TelnetCodec {
     }
 
     protected void encodeResponse(Channel channel, OutputStream os, Response res) throws IOException {
-        Serialization serialization = getSerialization(channel);
-        // header.
-        byte[] header = new byte[HEADER_LENGTH];
-        // set magic number.
-        Bytes.short2bytes(MAGIC, header);
-        // set request and serialization flag.
-        header[2] = serialization.getContentTypeId();
-        if (res.isHeartbeat()) header[2] |= FLAG_EVENT;
-        // set response status.
-        byte status = res.getStatus();
-        header[3] = status;
-        // set request id.
-        Bytes.long2bytes(res.getId(), header, 4);
-
-        UnsafeByteArrayOutputStream bos = new UnsafeByteArrayOutputStream(1024);
-        ObjectOutput out = serialization.serialize(channel.getUrl(), bos);
-        // encode response data or error message.
-        if (status == Response.OK) {
-            if (res.isHeartbeat()) {
-                encodeHeartbeatData(channel, out, res.getResult());
-            } else {
-                encodeResponseData(channel, out, res.getResult());
+        try {
+            Serialization serialization = getSerialization(channel);
+            // header.
+            byte[] header = new byte[HEADER_LENGTH];
+            // set magic number.
+            Bytes.short2bytes(MAGIC, header);
+            // set request and serialization flag.
+            header[2] = serialization.getContentTypeId();
+            if (res.isHeartbeat()) header[2] |= FLAG_EVENT;
+            // set response status.
+            byte status = res.getStatus();
+            header[3] = status;
+            // set request id.
+            Bytes.long2bytes(res.getId(), header, 4);
+    
+            UnsafeByteArrayOutputStream bos = new UnsafeByteArrayOutputStream(1024);
+            ObjectOutput out = serialization.serialize(channel.getUrl(), bos);
+            // encode response data or error message.
+            if (status == Response.OK) {
+                if (res.isHeartbeat()) {
+                    encodeHeartbeatData(channel, out, res.getResult());
+                } else {
+                    encodeResponseData(channel, out, res.getResult());
+                }
+            }
+            else out.writeUTF(res.getErrorMessage());
+            out.flushBuffer();
+            bos.flush();
+            bos.close();
+    
+            byte[] data = bos.toByteArray();
+            Bytes.int2bytes(data.length, header, 12);
+            // write
+            os.write(header); // write header.
+            os.write(data); // write data.
+        } catch (Throwable t) {
+            if (! res.isEvent() && res.getStatus() != Response.BAD_RESPONSE) {
+                try {
+                    Response r = new Response(res.getId(), res.getVersion());
+                    r.setStatus(Response.BAD_RESPONSE);
+                    r.setErrorMessage("Failed to send response : " + res + ", cause: " + StringUtils.toString(t));
+                    channel.send(r);
+                    return;
+                } catch (RemotingException e) {
+                    logger.warn("Failed to send error response: " + res + ", cause: " + e.getMessage(), e);
+                }
+            }
+            if (t instanceof IOException) {
+                throw (IOException) t;
+            } else if (t instanceof RuntimeException) {
+                throw (RuntimeException) t;
+            } else if (t instanceof Error) {
+                throw (Error) t;
+            } else  {
+                throw new RuntimeException(t.getMessage(), t);
             }
         }
-        else out.writeUTF(res.getErrorMessage());
-        out.flushBuffer();
-        bos.flush();
-        bos.close();
-
-        byte[] data = bos.toByteArray();
-        Bytes.int2bytes(data.length, header, 12);
-        // write
-        os.write(header); // write header.
-        os.write(data); // write data.
     }
     
     private static final Serialization getSerializationById(Byte id) {
