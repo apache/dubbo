@@ -36,6 +36,7 @@ import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.Codec;
 import com.alibaba.dubbo.remoting.exchange.codec.ExchangeCodec;
+import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
@@ -157,7 +158,7 @@ public class DubboCodec extends ExchangeCodec implements Codec {
 
     @Override
     protected Object decodeResponseData(Channel channel, ObjectInput in, Object request) throws IOException {
-        RpcInvocation invocation = (RpcInvocation) request;
+        Invocation invocation = (Invocation) request;
         RpcResult result = new RpcResult();
 
         byte flag = in.readByte();
@@ -169,11 +170,10 @@ public class DubboCodec extends ExchangeCodec implements Codec {
                     Class<?> returnType = null;
                     Type genericType = null;
                     try {
-                        if (channel != null && invocation != null) {
-                            String service = invocation.getAttachment(Constants.INTERFACE_KEY);
-                            if (service == null || service.length() == 0) {
-                                service = invocation.getAttachment(Constants.PATH_KEY);
-                            }
+                        if (channel != null && invocation != null 
+                                && invocation.getUrl() != null
+                                && ! invocation.getMethodName().startsWith("$")) {
+                            String service = invocation.getUrl().getServiceName();
                             if (service != null && service.length() > 0) {
                                 Class<?> cls = ReflectUtils.forName(service);
                                 Method method = cls.getMethod(invocation.getMethodName(), invocation.getParameterTypes());
