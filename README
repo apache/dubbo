@@ -52,3 +52,50 @@
    tar zxvf dubbo-simple-registry-2.0.10-assembly.tar.gz
    cd dubbo-simple-registry-2.0.10/bin
    ./start.sh
+
+   cd dubbo-demo-provider/conf
+   vi dubbo.properties
+      - edit: dubbo.registry.adddress=dubbo://127.0.0.1:9090
+   cd ../bin
+   ./restart.sh
+
+   cd dubbo-demo-consumer/conf
+   vi dubbo.properties
+      - edit: dubbo.registry.adddress=dubbo://127.0.0.1:9090
+   cd ../bin
+   ./restart.sh
+
+   cd dubbo-simple-monitor/conf
+   vi dubbo.properties
+      - edit: dubbo.registry.adddress=dubbo://127.0.0.1:9090
+   cd ../bin
+   ./restart.sh
+
+8. Install the zookeeper registry:
+
+   wget http://www.apache.org/dist//zookeeper/zookeeper-3.3.3/zookeeper-3.3.3.tar.gz
+   tar zxvf zookeeper-3.3.3.tar.gz
+   cd zookeeper-3.3.3/conf
+   cp zoo_sample.cfg zoo.cfg
+   vi zoo.cfg
+      - edit: dataDir=/home/xxx/data
+   cd ../bin
+   ./zkServer.sh start
+
+   cd dubbo-demo-provider/conf
+   vi dubbo.properties
+      - edit: dubbo.registry.adddress=zookeeper://127.0.0.1:2181
+   cd ../bin
+   ./restart.sh
+
+   cd dubbo-demo-consumer/conf
+   vi dubbo.properties
+      - edit: dubbo.registry.adddress=zookeeper://127.0.0.1:2181
+   cd ../bin
+   ./restart.sh
+
+   cd dubbo-simple-monitor/conf
+   vi dubbo.properties
+      - edit: dubbo.registry.adddress=zookeeper://127.0.0.1:2181
+   cd ../bin
+   ./restart.sh
