@@ -75,7 +75,11 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
         if ((id == null || id.length() == 0) && required) {
         	String generatedBeanName = element.getAttribute("name");
         	if (generatedBeanName == null || generatedBeanName.length() == 0) {
-        		generatedBeanName = element.getAttribute("interface");
+        	    if (ProtocolConfig.class.equals(beanClass)) {
+        	        generatedBeanName = "dubbo";
+        	    } else {
+        	        generatedBeanName = element.getAttribute("interface");
+        	    }
         	}
         	if (generatedBeanName == null || generatedBeanName.length() == 0) {
         		generatedBeanName = beanClass.getName();
