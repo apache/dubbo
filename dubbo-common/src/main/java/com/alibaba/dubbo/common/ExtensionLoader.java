@@ -35,6 +35,7 @@ import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
 import com.alibaba.dubbo.common.utils.Reference;
+import com.alibaba.dubbo.common.utils.StringUtils;
 
 /**
  * Dubbo使用的扩展点获取。<p>
@@ -77,6 +78,8 @@ public class ExtensionLoader<T> {
     private Set<Class<?>> cachedWrapperClasses;
     
     private String cachedDefaultName;
+    
+    private Map<String, IllegalStateException> exceptions = new ConcurrentHashMap<String, IllegalStateException>();
     
     @SuppressWarnings("unchecked")
     public static <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
@@ -184,12 +187,26 @@ public class ExtensionLoader<T> {
         else
             throw new IllegalStateException(message + t.toString(), t);
     }
+    
+    private IllegalStateException findException(String name) {
+        for (Map.Entry<String, IllegalStateException> entry : exceptions.entrySet()) {
+            if (entry.getKey().toLowerCase().contains(name.toLowerCase())) {
+                return entry.getValue();
+            }
+        }
+        StringBuilder buf = new StringBuilder("No such extension " + type.getName() + " by name " + name + ", possible causes: ");
+        for (IllegalStateException e : exceptions.values()) {
+            buf.append("\r\n====================================");
+            buf.append(StringUtils.toString(e));
+        }
+        return new IllegalStateException(buf.toString());
+    }
 
     @SuppressWarnings("unchecked")
     private T createExtension(String name) {
         Class<?> clazz = getExtensionClasses().get(name);
         if (clazz == null) {
-            throw new IllegalStateException("No such extension " + type.getName() + " by name " + name);
+            throw findException(name);
         }
         try {
             T instance = injectExtension((T) clazz.newInstance());
@@ -335,8 +352,9 @@ public class ExtensionLoader<T> {
                                             }
                                         }
                                     } catch (Throwable t) {
-                                        logger.error("Exception when load extension class(interface: " +
-                                                type + ", class line: " + line + ") in " + url, t);
+                                        IllegalStateException e = new IllegalStateException("Failed to load extension class(interface: " + type + ", class line: " + line + ") in " + url + ", cause: " + t.getMessage(), t);
+                                        exceptions.put(line, e);
+                                        logger.info(e.getMessage(), e);
                                     }
                                 }
                             } // end of while read lines
