@@ -41,7 +41,7 @@
     tar zxvf dubbo-demo-consumer-2.0.10-assembly.tar.gz
     cd dubbo-demo-consumer-2.0.10/bin
     ./start.sh
-	cd ../logs
+    cd ../logs
     tail -f stdout.log
 
 6. Install the simple monitor:
