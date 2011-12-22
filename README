@@ -1,7 +1,7 @@
 0. Install the subversion and maven command line:
 
-	yum install subversion
-	or: apt-get install subversion
+    yum install subversion
+    or: apt-get install subversion
 
     wget http://www.apache.org/dist//maven/binaries/apache-maven-2.2.1-bin.tar.gz
     tar zxvf apache-maven-2.2.1-bin.tar.gz
@@ -10,18 +10,18 @@
 1. Checkout the dubbo source code:
 
     svn co http://code.alibabatech.com/svn/dubbo/trunk dubbo
-	cd dubbo
+    cd dubbo
 
 2. Build the dubbo binary package:
 
     mvn clean install -Dmaven.test.skip
-	cd dubbo/target
-	ls
+    cd dubbo/target
+    ls
 
 3. Import the dubbo source code to eclipse project:
 
     mvn eclipse:eclipse
-	Eclipse -> Menu -> Import -> Exsiting Projects to Workspace -> Browse -> Finish
+    Eclipse -> Menu -> Import -> Exsiting Projects to Workspace -> Browse -> Finish
 
 4. Install the demo provider:
 
