@@ -359,7 +359,6 @@ public class ExtensionLoader<T> {
                                     } catch (Throwable t) {
                                         IllegalStateException e = new IllegalStateException("Failed to load extension class(interface: " + type + ", class line: " + line + ") in " + url + ", cause: " + t.getMessage(), t);
                                         exceptions.put(line, e);
-                                        logger.info(e.getMessage(), e);
                                     }
                                 }
                             } // end of while read lines
