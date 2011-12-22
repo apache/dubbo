@@ -117,75 +117,101 @@ public class TelnetCodec extends TransportCodec {
             if (history == null || history.size() == 0) {
                 return NEED_MORE_INPUT;
             }
-            byte[] input = new byte[message.length - (up? UP.length:DOWN.length) ];
-            System.arraycopy(message, 0, input, 0, input.length);
-            Integer currentIndex = (Integer) channel.getAttribute(HISTORY_INDEX_KEY);
-            Integer targetIndex = currentIndex;
-            if (currentIndex == null) {
-                currentIndex = history.size() - 1;
-                //first up need point to the last history item
-                targetIndex = history.size();
-            }
-            if (up) {
-                if (targetIndex > 0 ){
-                    targetIndex = Math.min(targetIndex - 1, history.size() -1);
-                }
+            Integer index = (Integer) channel.getAttribute(HISTORY_INDEX_KEY);
+            Integer old = index;
+            if (index == null) {
+                index = history.size() - 1;
             } else {
-                if (targetIndex < history.size() - 1){
-                    targetIndex = Math.min(targetIndex + 1, history.size() -1);
+                if (up) {
+                    index = index - 1;
+                    if (index < 0) {
+                        index = history.size() - 1;
+                    }
+                } else {
+                    index = index + 1;
+                    if (index > history.size() - 1) {
+                        index = 0;
+                    }
                 }
-                //else current input?? message-down
             }
-            String value = history.get(targetIndex);
-            String out = getbackSpaceString(toString(input, getCharset(channel)));
-            value = out + value;
-            try {
-                channel.send(value);
-            } catch (RemotingException e) {
-                throw new IOException(StringUtils.toString(e));
+            if (old == null || ! old.equals(index)) {
+                channel.setAttribute(HISTORY_INDEX_KEY, index);
+                String value = history.get(index);
+                if (old != null && old >= 0 && old < history.size()) {
+                    String ov = history.get(old);
+                    StringBuilder buf = new StringBuilder();
+                    for (int i = 0; i < ov.length(); i ++) {
+                        buf.append("\b");
+                    }
+                    for (int i = 0; i < ov.length(); i ++) {
+                        buf.append(" ");
+                    }
+                    for (int i = 0; i < ov.length(); i ++) {
+                        buf.append("\b");
+                    }
+                    value = buf.toString() + value;
+                }
+                try {
+                    channel.send(value);
+                } catch (RemotingException e) {
+                    throw new IOException(StringUtils.toString(e));
+                }
             }
-            channel.setAttribute(HISTORY_INDEX_KEY, targetIndex);
             return NEED_MORE_INPUT;
-        } else {
-            byte[] enter = null;
-            for (Object command : ENTER) {
-                if (endsWith(message, (byte[]) command)) {
-                    enter = (byte[]) command;
-                    break;
+        }
+        for (Object command : EXIT) {
+            if (isEquals(message, (byte[]) command)) {
+                if (logger.isInfoEnabled()) {
+                    logger.info(new Exception("Close channel " + channel + " on exit command " + command));
+                }
+                channel.close();
+                return null;
+            }
+        }
+        byte[] enter = null;
+        for (Object command : ENTER) {
+            if (endsWith(message, (byte[]) command)) {
+                enter = (byte[]) command;
+                break;
+            }
+        }
+        if (enter == null) {
+            return NEED_MORE_INPUT;
+        }
+        LinkedList<String> history = (LinkedList<String>) channel.getAttribute(HISTORY_LIST_KEY);
+        Integer index = (Integer) channel.getAttribute(HISTORY_INDEX_KEY);
+        channel.removeAttribute(HISTORY_INDEX_KEY);
+        if (history != null && history.size() > 0 && index != null && index >= 0 && index < history.size()) {
+            String value = history.get(index);
+            if (value != null) {
+                byte[] b1 = value.getBytes();
+                if (message != null && message.length > 0) {
+                    byte[] b2 = new byte[b1.length + message.length];
+                    System.arraycopy(b1, 0, b2, 0, b1.length);
+                    System.arraycopy(message, 0, b2, b1.length, message.length);
+                    message = b2;
+                } else {
+                    message = b1;
                 }
             }
-            if (enter == null) {
-                return NEED_MORE_INPUT;
-            }             
-            LinkedList<String> history = (LinkedList<String>) channel.getAttribute(HISTORY_LIST_KEY);
-            if (history == null ) {
-                //telnet ignore concurrent
+        }
+        String result = toString(message, getCharset(channel));
+        if (result != null && result.trim().length() > 0) {
+            if (history == null) {
                 history = new LinkedList<String>();
                 channel.setAttribute(HISTORY_LIST_KEY, history);
             }
-            String result = toString(message, getCharset(channel));
-            if (history.size() > 100) {
-                history.clear();
+            if (history.size() == 0) {
+                history.addLast(result);
+            } else if (! result.equals(history.getLast())) {
+                history.remove(result);
+                history.addLast(result);
+                if (history.size() > 10) {
+                    history.removeFirst();
+                }
             }
-            history.add(result);
-            return result;
         }
-        
-        
-    }
-    private static String getbackSpaceString(String input){
-        StringBuffer buf = new StringBuffer(input.length()*3);
-        for (int i = 0; i < input.length(); i ++) {
-            buf.append("\b");
-        }
-        for (int i = 0; i < input.length(); i ++) {
-            buf.append(" ");
-        }
-        for (int i = 0; i < input.length(); i ++) {
-            buf.append("\b");
-        }
-        buf.append(input);
-        return buf.toString();
+        return result;
     }
     
     private static boolean isClientSide(Channel channel) {

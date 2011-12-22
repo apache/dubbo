@@ -337,7 +337,7 @@ public class TelnetCodecTest {
         url = url.removeParameter(AbstractMockChannel.ERROR_WHEN_SEND);
     }
     
-    @Test()
+    /*@Test()
     public void testDecode_History_UP_DOWN_MULTI() throws IOException{
         AbstractMockChannel channel = getServerSideChannel(url);
         
@@ -370,7 +370,7 @@ public class TelnetCodecTest {
         testDecode_assertEquals(channel, DOWN, Codec.NEED_MORE_INPUT, expected3);
         testDecode_assertEquals(channel, DOWN, Codec.NEED_MORE_INPUT, expected3);
         testDecode_assertEquals(channel, UP, Codec.NEED_MORE_INPUT, expected2);
-    }
+    }*/
     
     
     //=============================================================================================================================
