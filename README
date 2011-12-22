@@ -1,0 +1,45 @@
+0. Install maven:
+
+    wget http://www.apache.org/dist//maven/binaries/apache-maven-2.2.1-bin.tar.gz
+    tar zxvf apache-maven-2.2.1-bin.tar.gz
+    export PATH=$PATH:apache-maven-2.2.1/bin
+
+1. Build the dubbo binary package:
+
+    mvn clean install -Dmaven.test.skip
+	cp dubbo/target/dubbo-2.0.10.jar .
+
+2. Import the dubbo source code to eclipse project:
+
+    mvn eclipse:eclipse
+	Eclipse -> Menu -> Import -> Exsiting Projects to Workspace -> Browse -> Finish
+
+3. Install the demo provider:
+
+   cd dubbo-demo-provider/target
+   tar zxvf dubbo-demo-provider-2.0.10-assembly.tar.gz
+   cd dubbo-demo-provider-2.0.10/bin
+   ./start.sh
+
+4. Install the demo consumer:
+
+   cd dubbo-demo-consumer/target
+   tar zxvf dubbo-demo-consumer-2.0.10-assembly.tar.gz
+   cd dubbo-demo-consumer-2.0.10/bin
+   ./start.sh
+   tail -f ../logs/stdout.log
+
+5. Install the simple monitor:
+
+   cd dubbo-simple-monitor/target
+   tar zxvf dubbo-simple-monitor-2.0.10-assembly.tar.gz
+   cd dubbo-simple-monitor-2.0.10/bin
+   ./start.sh
+   http://127.0.0.1:8080
+
+6. Install the simple registry:
+
+   cd dubbo-simple-registry/target
+   tar zxvf dubbo-simple-registry-2.0.10-assembly.tar.gz
+   cd dubbo-simple-registry-2.0.10/bin
+   ./start.sh
