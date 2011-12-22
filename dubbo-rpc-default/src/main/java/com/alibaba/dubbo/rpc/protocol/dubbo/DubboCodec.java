@@ -155,6 +155,24 @@ public class DubboCodec extends ExchangeCodec implements Codec {
             out.writeObject(th);
         }
     }
+    
+    protected Type[] getReturnType(Invocation invocation) {
+        try {
+            if (invocation != null 
+                    && invocation.getUrl() != null
+                    && ! invocation.getMethodName().startsWith("$")) {
+                String service = invocation.getUrl().getServiceName();
+                if (service != null && service.length() > 0) {
+                    Class<?> cls = ReflectUtils.forName(service);
+                    Method method = cls.getMethod(invocation.getMethodName(), invocation.getParameterTypes());
+                    return new Type[]{method.getReturnType(), method.getGenericReturnType()};
+                }
+            }
+        } catch (Throwable t) {
+            logger.warn(t.getMessage(), t);
+        }
+        return null;
+    }
 
     @Override
     protected Object decodeResponseData(Channel channel, ObjectInput in, Object request) throws IOException {
@@ -167,24 +185,10 @@ public class DubboCodec extends ExchangeCodec implements Codec {
                 break;
             case RESPONSE_VALUE:
                 try {
-                    Class<?> returnType = null;
-                    Type genericType = null;
-                    try {
-                        if (channel != null && invocation != null 
-                                && invocation.getUrl() != null
-                                && ! invocation.getMethodName().startsWith("$")) {
-                            String service = invocation.getUrl().getServiceName();
-                            if (service != null && service.length() > 0) {
-                                Class<?> cls = ReflectUtils.forName(service);
-                                Method method = cls.getMethod(invocation.getMethodName(), invocation.getParameterTypes());
-                                returnType = method.getReturnType();
-                                genericType = method.getGenericReturnType();
-                            }
-                        }
-                    } catch (Throwable t) {
-                        logger.warn(t.getMessage(), t);
-                    }
-                    result.setResult(returnType == null ? in.readObject() : (genericType == null ? in.readObject(returnType) : in.readObject(returnType, genericType)));
+                    Type[] returnType = getReturnType(invocation);
+                    result.setResult(returnType == null || returnType.length == 0 ? in.readObject() : 
+                        (returnType.length == 1 ? in.readObject((Class<?>)returnType[0]) 
+                                : in.readObject((Class<?>)returnType[0], returnType[1])));
                 } catch (ClassNotFoundException e) {
                     throw new IOException(StringUtils.toString("Read response data failed.", e));
                 }

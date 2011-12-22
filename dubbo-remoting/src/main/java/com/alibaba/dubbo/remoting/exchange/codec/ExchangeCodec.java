@@ -208,7 +208,7 @@ public class ExchangeCodec extends TelnetCodec {
         }
     }
 
-    private Object getRequestData(long id) {
+    protected Object getRequestData(long id) {
         DefaultFuture future = DefaultFuture.getFuture(id);
         if (future == null)
             return null;
