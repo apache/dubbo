@@ -195,9 +195,14 @@ public class ExtensionLoader<T> {
             }
         }
         StringBuilder buf = new StringBuilder("No such extension " + type.getName() + " by name " + name + ", possible causes: ");
-        for (IllegalStateException e : exceptions.values()) {
-            buf.append("\r\n====================================");
-            buf.append(StringUtils.toString(e));
+        int i = 1;
+        for (Map.Entry<String, IllegalStateException> entry : exceptions.entrySet()) {
+            buf.append("\r\n(");
+            buf.append(i ++);
+            buf.append(") ");
+            buf.append(entry.getKey());
+            buf.append(":\r\n");
+            buf.append(StringUtils.toString(entry.getValue()));
         }
         return new IllegalStateException(buf.toString());
     }
