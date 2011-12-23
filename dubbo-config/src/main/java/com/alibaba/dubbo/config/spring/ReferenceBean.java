@@ -45,8 +45,20 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
 		this.applicationContext = applicationContext;
 	}
     
-    @SuppressWarnings({ "unchecked"})
     public Object getObject() throws Exception {
+        return get();
+    }
+
+    public Class<?> getObjectType() {
+        return getInterfaceClass();
+    }
+
+    public boolean isSingleton() {
+        return true;
+    }
+
+    @SuppressWarnings({ "unchecked"})
+    public void afterPropertiesSet() throws Exception {
         if (getConsumer() == null) {
             Map<String, ConsumerConfig> consumerConfigMap = applicationContext == null ? null  : applicationContext.getBeansOfType(ConsumerConfig.class, false, false);
             if (consumerConfigMap != null && consumerConfigMap.size() > 0) {
@@ -99,18 +111,6 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
                 super.setMonitor(monitorConfig);
             }
         }
-        return get();
-    }
-
-    public Class<?> getObjectType() {
-        return getInterfaceClass();
-    }
-
-    public boolean isSingleton() {
-        return true;
-    }
-
-    public void afterPropertiesSet() throws Exception {
         Boolean b = isInit();
         if (b == null && getConsumer() != null) {
             b = getConsumer().isInit();
