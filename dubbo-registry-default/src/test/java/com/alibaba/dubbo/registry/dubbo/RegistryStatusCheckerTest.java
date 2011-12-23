@@ -17,6 +17,7 @@ package com.alibaba.dubbo.registry.dubbo;
 
 import static org.junit.Assert.assertEquals;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -56,13 +57,9 @@ public class RegistryStatusCheckerTest {
     public void testCheckOK() {
         ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension().getRegistry(registryUrl);
         ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension().getRegistry(registryUrl2);
-        StringBuilder buf = new StringBuilder();
-        buf.append(registryUrl.getAddress());
-        buf.append("(connected)");
-        buf.append(",");
-        buf.append(registryUrl2.getAddress());
-        buf.append("(connected)");
         assertEquals(Status.Level.OK, new RegistryStatusChecker().check().getLevel());
-        assertEquals(buf.toString(), new RegistryStatusChecker().check().getMessage());
+        String message = new RegistryStatusChecker().check().getMessage();
+        Assert.assertTrue(message.contains(registryUrl.getAddress() + "(connected)"));
+        Assert.assertTrue(message.contains(registryUrl2.getAddress() + "(connected)"));
     }
 }
