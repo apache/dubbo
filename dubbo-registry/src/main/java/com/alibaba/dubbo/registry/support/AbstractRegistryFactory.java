@@ -100,7 +100,7 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
     }
     
     protected static String getCacheKey(URL url){
-        return url.getProtocol() + "://" + url.getUsername() + ":" + url.getPassword() + "@" + url.getAddress();
+        return url.getProtocol() + "://" + url.getUsername() + ":" + url.getPassword() + "@" + url.getIp() + ":" + url.getPort();
     }
     
 }
