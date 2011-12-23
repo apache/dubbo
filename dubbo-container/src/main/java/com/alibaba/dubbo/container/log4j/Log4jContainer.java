@@ -65,46 +65,37 @@ public class Log4jContainer implements Container {
         if (subdirectory != null && subdirectory.length() > 0) {
             Enumeration<org.apache.log4j.Logger> ls = LogManager.getCurrentLoggers();
             while (ls.hasMoreElements()) {
-                modifyLogDirectory(ls.nextElement(), subdirectory);
+                org.apache.log4j.Logger l = ls.nextElement();
+                if (l != null) {
+                    Enumeration<Appender> as = l.getAllAppenders();
+                    while (as.hasMoreElements()) {
+                        Appender a = as.nextElement();
+                        if (a instanceof FileAppender) {
+                            FileAppender fa = (FileAppender)a;
+                            String f = fa.getFile();
+                            if (f != null && f.length() > 0) {
+                                int i = f.replace('\\', '/').lastIndexOf('/');
+                                String path;
+                                if (i == -1) {
+                                    path = subdirectory;
+                                } else {
+                                    path = f.substring(0, i);
+                                    if (! path.endsWith(subdirectory)) {
+                                        path = path + "/" + subdirectory;
+                                    }
+                                    f = f.substring(i + 1);
+                                }
+                                fa.setFile(path + "/" + f);
+                                fa.activateOptions();
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 
     public void stop() {
-    }
-
-    @SuppressWarnings("unchecked")
-    private static String[] modifyLogDirectory(org.apache.log4j.Logger l, String subdirectory) {
-        String[] params = new String[3];
-        if (l != null) {
-            params[2] = l.getLevel() == null ? null : l.getLevel().toString();
-            Enumeration<Appender> as = l.getAllAppenders();
-            while (as.hasMoreElements()) {
-                Appender a = as.nextElement();
-                if (a instanceof FileAppender) {
-                    FileAppender fa = (FileAppender)a;
-                    String file = fa.getFile();
-                    if (file != null && file.length() > 0) {
-                        int i = file.replace('\\', '/').lastIndexOf('/');
-                        String path;
-                        if (i == -1) {
-                            path = subdirectory;
-                        } else {
-                            path = file.substring(0, i);
-                            if (! path.endsWith(subdirectory)) {
-                                path = path + "/" + subdirectory;
-                            }
-                            file = file.substring(i + 1);
-                        }
-                        params[0] = path;
-                        params[1] = file;
-                        fa.setFile(path + "/" + file);
-                        fa.activateOptions();
-                    }
-                }
-            }
-        }
-        return params;
     }
 
 }

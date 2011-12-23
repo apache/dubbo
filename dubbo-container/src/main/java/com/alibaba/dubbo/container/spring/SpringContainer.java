@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.container.spring;
 
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.alibaba.dubbo.common.Extension;
@@ -38,11 +37,7 @@ public class SpringContainer implements Container {
     
     public static final String DEFAULT_SPRING_CONFIG = "classpath*:META-INF/spring/*.xml";
 
-    private ClassPathXmlApplicationContext context;
-
-    public ApplicationContext getApplicationContext() {
-        return context;
-    }
+    ClassPathXmlApplicationContext context;
     
     public void start() {
         String configPath = ConfigUtils.getProperty(SPRING_CONFIG);

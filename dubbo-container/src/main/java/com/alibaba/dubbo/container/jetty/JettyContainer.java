@@ -49,7 +49,7 @@ public class JettyContainer implements Container {
 
     public static final int DEFAULT_JETTY_PORT = 8080;
 
-    private SelectChannelConnector connector;
+    SelectChannelConnector connector;
 
     public void start() {
         String serverPort = ConfigUtils.getProperty(JETTY_PORT);
@@ -110,10 +110,6 @@ public class JettyContainer implements Container {
         } catch (Throwable e) {
             logger.error(e.getMessage(), e);
         }
-    }
-
-    public SelectChannelConnector getConnector() {
-        return connector;
     }
 
 }
