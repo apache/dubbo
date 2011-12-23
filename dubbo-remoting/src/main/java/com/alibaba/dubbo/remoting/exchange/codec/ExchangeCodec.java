@@ -58,9 +58,9 @@ public class ExchangeCodec extends TelnetCodec {
     // magic header.
     protected static final short    MAGIC              = (short) 0xdabb;
     
-    protected static final byte     MAGIC_HIGH         = (byte) Bytes.short2bytes(MAGIC)[0];
+    protected static final byte     MAGIC_HIGH         = Bytes.short2bytes(MAGIC)[0];
     
-    protected static final byte     MAGIC_LOW          = (byte) Bytes.short2bytes(MAGIC)[1];
+    protected static final byte     MAGIC_LOW          = Bytes.short2bytes(MAGIC)[1];
 
     // message flag.
     protected static final byte     FLAG_REQUEST       = (byte) 0x80;
@@ -291,17 +291,24 @@ public class ExchangeCodec extends TelnetCodec {
             os.write(header); // write header.
             os.write(data); // write data.
         } catch (Throwable t) {
+            // 发送失败信息给Consumer，否则Consumer只能等超时了
             if (! res.isEvent() && res.getStatus() != Response.BAD_RESPONSE) {
                 try {
+                    // FIXME 在Codec中打印出错日志？在IoHanndler的caught中统一处理？
+                    logger.warn("Fail to encode response: " + res + ", send bad_response info instead, cause: " + t.getMessage(), t);
+                    
                     Response r = new Response(res.getId(), res.getVersion());
                     r.setStatus(Response.BAD_RESPONSE);
-                    r.setErrorMessage("Failed to send response : " + res + ", cause: " + StringUtils.toString(t));
+                    r.setErrorMessage("Failed to send response: " + res + ", cause: " + StringUtils.toString(t));
                     channel.send(r);
+                    
                     return;
                 } catch (RemotingException e) {
-                    logger.warn("Failed to send error response: " + res + ", cause: " + e.getMessage(), e);
+                    logger.warn("Failed to send bad_response info back: " + res + ", cause: " + e.getMessage(), e);
                 }
             }
+            
+            // 重新抛出收到的异常
             if (t instanceof IOException) {
                 throw (IOException) t;
             } else if (t instanceof RuntimeException) {

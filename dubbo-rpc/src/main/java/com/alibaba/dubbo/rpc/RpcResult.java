@@ -69,4 +69,8 @@ public class RpcResult implements Result, Serializable {
         return exception != null;
     }
 
+    @Override
+    public String toString() {
+        return "RpcResult [result=" + result + ", exception=" + exception + "]";
+    }
 }
