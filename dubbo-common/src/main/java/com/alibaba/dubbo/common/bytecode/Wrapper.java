@@ -244,6 +244,8 @@ public abstract class Wrapper
 
 			String mn = m.getName();
 			c3.append(" if( \"").append(mn).append("\".equals( $2 ) ");
+            int len = m.getParameterTypes().length;
+            c3.append(" && ").append(" $3.length == ").append(len);
 			
 			boolean override = false;
 			for( Method m2 : methods ) {
@@ -253,8 +255,6 @@ public abstract class Wrapper
 				}
 			}
 			if (override) {
-				int len = m.getParameterTypes().length;
-				c3.append(" && ").append(" $3.length == ").append(len);
 				if (len > 0) {
 					for (int l = 0; l < len; l ++) {
 						c3.append(" && ").append(" $3[").append(l).append("].getName().equals(\"")
