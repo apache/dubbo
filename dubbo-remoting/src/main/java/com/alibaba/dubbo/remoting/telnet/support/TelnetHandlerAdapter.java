@@ -35,6 +35,8 @@ public class TelnetHandlerAdapter extends ChannelHandlerAdapter implements Telne
     public String telnet(Channel channel, String message) throws RemotingException {
         String telnet = channel.getUrl().getParameter("telnet");
         String prompt = channel.getUrl().getParameter("prompt");
+        boolean noprompt = message.contains("--no-prompt");
+        message = message.replace("--no-prompt", "");
         List<String> commands = ConfigUtils.mergeValues(TelnetHandler.class, telnet, Constants.DEFAULT_TELNET_COMMANDS);
         StringBuilder buf = new StringBuilder();
         if (commands != null && commands.size() > 0) {
@@ -70,7 +72,7 @@ public class TelnetHandlerAdapter extends ChannelHandlerAdapter implements Telne
                 buf.append("\r\n");
             }
         }
-        if (prompt != null && prompt.length() > 0) {
+        if (prompt != null && prompt.length() > 0 && ! noprompt) {
             buf.append(prompt);
             buf.append(">");
         }
