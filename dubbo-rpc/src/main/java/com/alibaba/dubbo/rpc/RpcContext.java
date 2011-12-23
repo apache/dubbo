@@ -16,7 +16,9 @@
 package com.alibaba.dubbo.rpc;
 
 import java.net.InetSocketAddress;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 
@@ -61,9 +63,11 @@ public class RpcContext {
     private final Map<String, Object> values = new HashMap<String, Object>();
     
     private final Map<String, String> attachments = new HashMap<String, String>();
+
+    private List<Invoker<?>> invokers;
     
     private Invoker<?> invoker;
-    
+
     private Invocation invocation;
     
 	private InetSocketAddress localAddress;
@@ -130,6 +134,16 @@ public class RpcContext {
         }
         return url.getPort() == address.getPort() && 
                 NetUtils.filterLocalHost(url.getIp()).equals(NetUtils.filterLocalHost(host));
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public List<Invoker<?>> getInvokers() {
+        return invokers == null && invoker != null ? (List)Arrays.asList(invoker) : invokers;
+    }
+
+    public RpcContext setInvokers(List<Invoker<?>> invokers) {
+        this.invokers = invokers;
+        return this;
     }
     
     /**
@@ -460,5 +474,5 @@ public class RpcContext {
     public void setFuture(Future<?> future) {
         this.future = future;
     }
-    
+
 }

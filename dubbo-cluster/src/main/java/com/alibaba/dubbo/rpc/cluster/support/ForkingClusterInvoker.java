@@ -31,6 +31,7 @@ import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
+import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.cluster.Directory;
 import com.alibaba.dubbo.rpc.cluster.LoadBalance;
@@ -48,6 +49,7 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T>{
     
     private final ExecutorService executor = Executors.newCachedThreadPool(new NamedThreadFactory("forking-cluster-timer", true)); 
             
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public Result doInvoke(final Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
         if (invokers == null || invokers.size() == 0)
             throw new RpcException("No provider available for service " + getInterface().getName() + " on consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() + ", Please check whether the service do exist or version is right firstly, and check the provider has started.");
@@ -66,6 +68,7 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T>{
                 }
             }
         }
+        RpcContext.getContext().setInvokers((List)selected);
         final AtomicInteger count = new AtomicInteger();
         final BlockingQueue<Object> ref = new LinkedBlockingQueue<Object>();
         for (final Invoker<T> invoker : selected) {
