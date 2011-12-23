@@ -86,9 +86,9 @@ public class CompatibleTypeUtils {
                 return number.floatValue();
             } else if (type == double.class || type == Double.class) {
                 return number.doubleValue();
-            } else if (type == BigInteger.class || type == BigInteger.class) {
+            } else if (type == BigInteger.class) {
                 return BigInteger.valueOf(number.longValue());
-            } else if (type == BigDecimal.class || type == BigDecimal.class) {
+            } else if (type == BigDecimal.class) {
                 return BigDecimal.valueOf(number.doubleValue());
             } else if (type == Date.class) {
                 return new Date(number.longValue());

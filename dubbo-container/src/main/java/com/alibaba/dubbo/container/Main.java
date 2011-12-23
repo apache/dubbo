@@ -34,11 +34,13 @@ import com.alibaba.dubbo.common.utils.ConfigUtils;
  */
 public class Main {
 
+    public static final String CONTAINER_KEY = "dubbo.container";
+    
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
     private static final ExtensionLoader<Container> loader = ExtensionLoader.getExtensionLoader(Container.class);
     
-    public static final String CONTAINER_KEY = "dubbo.container";
+    private static volatile boolean running = true;
 
     public static void main(String[] args) {
         try {
@@ -62,6 +64,10 @@ public class Main {
                         } catch (Throwable t) {
                             logger.error(t.getMessage(), t);
                         }
+                        synchronized (Main.class) {
+                            running = false;
+                            Main.class.notify();
+                        }
                     }
                 }
             });
@@ -77,7 +83,7 @@ public class Main {
             throw e;
         }
         synchronized (Main.class) {
-            for (;;) {
+            while (running) {
                 try {
                     Main.class.wait();
                 } catch (Throwable e) {

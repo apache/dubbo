@@ -137,8 +137,8 @@ public class MulticastRegistry extends FailbackRegistry {
                     }
                 }
             }
-        } else if (msg.startsWith(UNSUBSCRIBE)) {
-        }
+        }/* else if (msg.startsWith(UNSUBSCRIBE)) {
+        }*/
     }
     
     private void broadcast(String msg) {

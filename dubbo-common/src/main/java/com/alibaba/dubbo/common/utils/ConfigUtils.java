@@ -150,7 +150,12 @@ public class ConfigUtils {
         Properties properties = new Properties();
         if (fileName.startsWith("/")) {
             try {
-                properties.load(new FileInputStream(fileName));
+                FileInputStream input = new FileInputStream(fileName);
+                try {
+                    properties.load(input);
+                } finally {
+                    input.close();
+                }
             } catch (Throwable e) {
                 logger.warn("Failed to load " + fileName + " file from " + fileName + "(ingore this file): " + e.getMessage(), e);
             }

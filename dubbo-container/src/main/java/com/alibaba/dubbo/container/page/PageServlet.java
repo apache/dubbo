@@ -52,8 +52,6 @@ public class PageServlet extends HttpServlet {
 
     protected final Random        random           = new Random();
     
-    protected final ExtensionLoader<PageHandler> pageHandlerLoader = ExtensionLoader.getExtensionLoader(PageHandler.class);
-
     protected final Map<String, PageHandler>  pages = new ConcurrentHashMap<String, PageHandler>();
 
     protected final List<PageHandler>    menus = new ArrayList<PageHandler>();
@@ -119,6 +117,7 @@ public class PageServlet extends HttpServlet {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
                 return;
             }
+            ExtensionLoader<PageHandler> pageHandlerLoader = ExtensionLoader.getExtensionLoader(PageHandler.class);
             PageHandler pageHandler = pageHandlerLoader.hasExtension(uri) ? pageHandlerLoader.getExtension(uri) : null;
             if (isHtml) {
                 writer.println("<html><head><title>Dubbo</title>");

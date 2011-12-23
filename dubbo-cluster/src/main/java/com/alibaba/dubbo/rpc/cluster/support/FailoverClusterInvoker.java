@@ -86,7 +86,7 @@ public Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBal
             if(invoker != null ) 
                 urls.add(invoker.getUrl());
         }
-        throw new RpcException(le.getCode(),
+        throw new RpcException(le != null ? le.getCode() : 0,
                 "Tried " + len + " times to invoke providers " + providers + " " + loadbalance.getClass().getAnnotation(Extension.class).value()
                 + " select from all providers " + invokers + " for service " + getInterface().getName() + " method " + invocation.getMethodName()
                 + " on consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion()
