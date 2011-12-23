@@ -127,9 +127,14 @@ public class ForkingClusterInvokerTest {
     public void testInvokeExceptoin() {
         resetInvokerToException();
         ForkingClusterInvoker<ForkingClusterInvokerTest> invoker = new ForkingClusterInvoker<ForkingClusterInvokerTest>(
-                                                                                                                        dic);
-        Assert.assertNull(invoker.invoke(invocation).getResult());
-        Assert.assertNotNull(invoker.invoke(invocation).getException());
+                                                                                     dic);
+        
+        try {
+            invoker.invoke(invocation);
+            Assert.fail();
+        } catch (RpcException e) {
+            Assert.assertTrue(e.getMessage().contains("Failed to forking invoke provider"));
+        }
     }
 
     @Test()
