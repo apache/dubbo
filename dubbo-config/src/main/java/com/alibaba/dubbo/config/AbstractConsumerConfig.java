@@ -35,15 +35,18 @@ public abstract class AbstractConsumerConfig extends AbstractReferenceConfig {
     // 检查服务提供者是否存在
     protected Boolean             check;
 
+    // 是否加载时即刻初始化
+    protected Boolean             init;
+
     // 是否使用泛接口
     protected Boolean             generic;
-    
+
     // 优先从JVM内获取引用实例
     protected Boolean             injvm;
     
     // lazy create connection
     protected Boolean             lazy;
-    
+
     protected String              reconnect;
     
     protected Boolean             sticky;
@@ -59,6 +62,14 @@ public abstract class AbstractConsumerConfig extends AbstractReferenceConfig {
         this.check = check;
     }
 
+    public Boolean isInit() {
+        return init;
+    }
+
+    public void setInit(Boolean init) {
+        this.init = init;
+    }
+
     @Parameter(excluded = true)
     public Boolean isGeneric() {
         return generic;
@@ -67,7 +78,7 @@ public abstract class AbstractConsumerConfig extends AbstractReferenceConfig {
     public void setGeneric(Boolean generic) {
         this.generic = generic;
     }
-    
+
     public Boolean isInjvm() {
         return injvm;
     }
@@ -139,4 +150,5 @@ public abstract class AbstractConsumerConfig extends AbstractReferenceConfig {
     public void setSticky(Boolean sticky) {
         this.sticky = sticky;
     }
+
 }

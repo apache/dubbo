@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -34,7 +35,7 @@ import com.alibaba.dubbo.config.RegistryConfig;
  * 
  * @author william.liangf
  */
-public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean, ApplicationContextAware {
+public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean, ApplicationContextAware, InitializingBean {
 
 	private static final long serialVersionUID = 213195494150089726L;
 	
@@ -107,6 +108,16 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
 
     public boolean isSingleton() {
         return true;
+    }
+
+    public void afterPropertiesSet() throws Exception {
+        Boolean b = isInit();
+        if (b == null && getConsumer() != null) {
+            b = getConsumer().isInit();
+        }
+        if (b != null && b.booleanValue()) {
+            getObject();
+        }
     }
 
 }
