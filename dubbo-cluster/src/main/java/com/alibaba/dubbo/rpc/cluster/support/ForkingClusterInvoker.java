@@ -32,7 +32,6 @@ import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
-import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.cluster.Directory;
 import com.alibaba.dubbo.rpc.cluster.LoadBalance;
 
@@ -68,7 +67,7 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T>{
             }
         }
         final AtomicInteger count = new AtomicInteger();
-        final BlockingQueue<Result> ref = new LinkedBlockingQueue<Result>();
+        final BlockingQueue<Object> ref = new LinkedBlockingQueue<Object>();
         for (final Invoker<T> invoker : selected) {
             executor.execute(new Runnable() {
                 public void run() {
@@ -78,16 +77,21 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T>{
                     } catch(Throwable e) {
                         int value = count.incrementAndGet();
                         if (value >= selected.size()) {
-                            ref.offer(new RpcResult(e));
+                            ref.offer(e);
                         }
                     }
                 }
             });
         }
         try {
-            return ref.poll(timeout, TimeUnit.MILLISECONDS);
+            Object ret = ref.poll(timeout, TimeUnit.MILLISECONDS);
+            if (ret instanceof Throwable) {
+                Throwable e = (Throwable) ret;
+                throw new RpcException(e instanceof RpcException ? ((RpcException)e).getCode() : 0, "Failed to forking invoke provider " + selected + ", but no luck to perform the invocation. Last error is: " + e.getMessage(), e);
+            }
+            return (Result) ret;
         } catch (InterruptedException e) {
-            throw new RpcException("Failed to forking invoke provider " + selected + ", cause: " + e.getMessage(), e);
+            throw new RpcException("Failed to forking invoke provider " + selected + ", but no luck to perform the invocation. Last error is: " + e.getMessage(), e);
         }
     }
 }
