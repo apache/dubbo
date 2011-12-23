@@ -40,7 +40,7 @@ public class ExecuteLimitFilter implements Filter {
         if (max > 0) {
             RpcStatus count = RpcStatus.getStatus(url, invocation.getMethodName());
             if (count.getActive() >= max) {
-                throw new RpcException("Failed to invoke invocation " + invocation + " in provider " + url + ", cause: The service using threads greater than <dubbo:service threads=\"" + max + "\" /> limited.");
+                throw new RpcException("Failed to invoke invocation " + invocation + " in provider " + url + ", cause: The service using threads greater than <dubbo:service executes=\"" + max + "\" /> limited.");
             }
         }
         long begin = System.currentTimeMillis();
