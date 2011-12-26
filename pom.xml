@@ -32,6 +32,7 @@
 		<module>dubbo-remoting-netty</module>
 		<module>dubbo-remoting-mina</module>
 		<module>dubbo-remoting-grizzly</module>
+		<module>dubbo-remoting-p2p</module>
 		<module>dubbo-remoting-http</module>
 		<module>dubbo-rpc</module>
 		<module>dubbo-rpc-default</module>
