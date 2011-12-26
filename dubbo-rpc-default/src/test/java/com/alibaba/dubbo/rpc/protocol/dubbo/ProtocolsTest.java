@@ -30,6 +30,8 @@ import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.ProxyFactory;
 import com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService;
 import com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl;
+import com.alibaba.dubbo.rpc.protocol.dubbo.support.RemoteService;
+import com.alibaba.dubbo.rpc.protocol.dubbo.support.RemoteServiceImpl;
 import com.alibaba.dubbo.rpc.protocol.dubbo.support.Type;
 import com.alibaba.dubbo.rpc.service.EchoService;
 
@@ -46,8 +48,8 @@ public class ProtocolsTest
 	public void testDemoProtocol() throws Exception
 	{
 		DemoService service = new DemoServiceImpl();
-		protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("dubbo://127.0.0.1:9020/TestService?codec=exchange")));
-		service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:9020/TestService?codec=exchange")));
+		protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("dubbo://127.0.0.1:9020/" + DemoService.class.getName() + "?codec=exchange")));
+		service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:9020/" + DemoService.class.getName() + "?codec=exchange")));
 		assertEquals(service.getSize(new String[]{"", "", ""}), 3);
 	}
 
@@ -65,7 +67,7 @@ public class ProtocolsTest
 		Set<String> set = service.keys(map);
 		assertEquals(set.size(), 1);
 		assertEquals(set.iterator().next(), "aa");
-		service.invoke("dubbo://127.0.0.1:9010/TestService", "invoke");
+		service.invoke("dubbo://127.0.0.1:9010/" + DemoService.class.getName() + "", "invoke");
 
 		service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:9010/" + DemoService.class.getName() + "?client=netty")));
 		// test netty client
@@ -82,12 +84,28 @@ public class ProtocolsTest
 		assertEquals(echo.$echo(1234), 1234);
 	}
 
+    @Test
+    public void testDubboProtocolMultiService() throws Exception
+    {
+        DemoService service = new DemoServiceImpl();
+        protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("dubbo://127.0.0.1:9010/" + DemoService.class.getName())));
+        service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:9010/" + DemoService.class.getName())));
+        
+        RemoteService remote = new RemoteServiceImpl();
+        protocol.export(proxy.getInvoker(remote, RemoteService.class, URL.valueOf("dubbo://127.0.0.1:9010/" + RemoteService.class.getName())));
+        remote = proxy.getProxy(protocol.refer(RemoteService.class, URL.valueOf("dubbo://127.0.0.1:9010/" + RemoteService.class.getName())));
+        
+        // test netty client
+        assertEquals("world", service.echo("world"));
+        assertEquals("hello world@" + RemoteServiceImpl.class.getName(), remote.sayHello("world"));
+    }
+
 	@Test
 	public void testPerm() throws Exception
 	{
 		DemoService service = new DemoServiceImpl();
-		protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("dubbo://127.0.0.1:9050/TestService?codec=exchange")));
-		service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:9050/TestService?codec=exchange")));
+		protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("dubbo://127.0.0.1:9050/" + DemoService.class.getName() + "?codec=exchange")));
+		service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:9050/" + DemoService.class.getName() + "?codec=exchange")));
 		long start = System.currentTimeMillis();
 		for(int i=0;i<1000;i++)
 			service.getSize(new String[]{"", "", ""});
