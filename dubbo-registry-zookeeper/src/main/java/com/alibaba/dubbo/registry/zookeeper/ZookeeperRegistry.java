@@ -244,12 +244,6 @@ public class ZookeeperRegistry extends FailbackRegistry {
         if (auth) {
             zk.addAuthInfo(url.getUsername(), url.getPassword().getBytes());
         }
-        if (root != null && root.length() > 0 && zk.exists(root, false) == null) {
-            try {
-                zk.create(root, new byte[0], acl, CreateMode.PERSISTENT);
-            } catch (NodeExistsException e) {
-            }
-        }
         return zk;
     }
 
@@ -266,24 +260,40 @@ public class ZookeeperRegistry extends FailbackRegistry {
         }
     }
     
+    private boolean exists(String node) {
+        try {
+            return zookeeper.exists(root, false) != null;
+        } catch (Throwable e) {
+            return false;
+        }
+    }
+    
     protected void doRegister(URL url) {
         try {
+            String root = toRootPath();
+            if (root != null && root.length() > 0 && ! SEPARATOR.equals(root)
+                    && ! exists(root)) {
+                try {
+                    zookeeper.create(root, new byte[0], acl, CreateMode.PERSISTENT);
+                } catch (NodeExistsException e) {
+                }
+            }
             String service = toServicePath(url);
-            if (zookeeper.exists(service, false) == null) {
+            if (! exists(service)) {
                 try {
                     zookeeper.create(service, new byte[0], acl, CreateMode.PERSISTENT);
                 } catch (NodeExistsException e) {
                 }
             }
             String category = toCategoryPath(url);
-            if (zookeeper.exists(category, false) == null) {
+            if (! exists(category)) {
                 try {
                     zookeeper.create(category, new byte[0], acl, CreateMode.PERSISTENT);
                 } catch (NodeExistsException e) {
                 }
             }
             String provider = toProviderPath(url);
-            if (zookeeper.exists(provider, false) != null) {
+            if (exists(provider)) {
                 try {
                     zookeeper.delete(provider, -1);
                 } catch (NoNodeException e) {
