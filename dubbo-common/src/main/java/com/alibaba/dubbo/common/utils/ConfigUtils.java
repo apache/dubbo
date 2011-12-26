@@ -21,7 +21,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.ExtensionLoader;
@@ -86,6 +89,30 @@ public class ConfigUtils {
         }
         return names;
 	}
+
+    private static Pattern VARIABLE_PATTERN = Pattern.compile(
+            "\\$\\s*\\{?\\s*([\\._0-9a-zA-Z]+)\\s*\\}?");
+    
+	public static String replaceProperty(String expression, Map<String, String> params) {
+        if (expression == null || expression.length() == 0 || expression.indexOf('$') < 0) {
+            return expression;
+        }
+        Matcher matcher = VARIABLE_PATTERN.matcher(expression);
+        StringBuffer sb = new StringBuffer();
+        while (matcher.find()) { // 逐个匹配
+            String key = matcher.group(1);
+            String value = System.getProperty(key);
+            if (value == null && params != null) {
+                value = params.get(key);
+            }
+            if (value == null) {
+                value = "";
+            }
+            matcher.appendReplacement(sb, Matcher.quoteReplacement(value));
+        }
+        matcher.appendTail(sb);
+        return sb.toString();
+    }
 	
     private static volatile Properties PROPERTIES;
     
@@ -123,12 +150,14 @@ public class ConfigUtils {
 	    return getProperty(key, null);
 	}
 	
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public static String getProperty(String key, String defaultValue) {
         String value = System.getProperty(key);
         if (value != null && value.length() > 0) {
             return value;
         }
-        return getProperties().getProperty(key, defaultValue);
+        Properties properties = getProperties();
+        return replaceProperty(properties.getProperty(key, defaultValue), (Map)properties);
     }
     
     public static Properties loadProperties(String fileName) {

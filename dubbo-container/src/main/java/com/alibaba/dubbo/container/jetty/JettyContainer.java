@@ -15,13 +15,13 @@
  */
 package com.alibaba.dubbo.container.jetty;
 
+import org.mortbay.jetty.Handler;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.nio.SelectChannelConnector;
+import org.mortbay.jetty.servlet.FilterHolder;
 import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.ServletHolder;
-import org.mortbay.jetty.servlet.ServletMapping;
 
-import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
@@ -29,7 +29,7 @@ import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.container.Container;
 import com.alibaba.dubbo.container.page.PageServlet;
-import com.alibaba.dubbo.container.page.ResourceServlet;
+import com.alibaba.dubbo.container.page.ResourceFilter;
 
 /**
  * JettyContainer. (SPI, Singleton, ThreadSafe)
@@ -65,28 +65,10 @@ public class JettyContainer implements Container {
         
         String resources = ConfigUtils.getProperty(JETTY_DIRECTORY);
         if (resources != null && resources.length() > 0) {
-            String[] directories = Constants.COMMA_SPLIT_PATTERN.split(resources);
-            ResourceServlet resourceServlet = new ResourceServlet();
-            resourceServlet.setResources(directories);
-            ServletHolder resourceHolder = new ServletHolder(resourceServlet);
-            resourceHolder.setInitOrder(1);
-            handler.addServlet(resourceHolder);
-            for (String directory : directories) {
-                directory = directory.replace('\\', '/');
-                int i = directory.lastIndexOf('/');
-                String name;
-                if (i >= 0) {
-                    name = directory.substring(i + 1);
-                } else {
-                    name = directory;
-                }
-                ServletMapping resourceMapping = new ServletMapping();
-                resourceMapping.setServletName(resourceHolder.getName());
-                resourceMapping.setPathSpec("/" + name + "/*");
-                handler.addServletMapping(resourceMapping);
-            }
+            FilterHolder resourceHolder = handler.addFilterWithMapping(ResourceFilter.class, "/*", Handler.DEFAULT);
+            resourceHolder.setInitParameter("resources", resources);
         }
-
+        
         ServletHolder pageHolder = handler.addServletWithMapping(PageServlet.class, "/*");
         pageHolder.setInitParameter("pages", ConfigUtils.getProperty(JETTY_PAGES));
         pageHolder.setInitOrder(2);

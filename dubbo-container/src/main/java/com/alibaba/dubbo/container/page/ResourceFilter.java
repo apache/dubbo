@@ -21,58 +21,56 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.alibaba.dubbo.common.Constants;
 
 /**
  * ResourceServlet
  * 
  * @author william.liangf
  */
-public class ResourceServlet extends HttpServlet {
+public class ResourceFilter implements Filter {
 
-    private static final long serialVersionUID = -8315200468240234179L;
-    
     private static final String CLASSPATH_PREFIX = "classpath:";
 
-    private final long start;
+    private final long start = System.currentTimeMillis();
 
-    private final Map<String, String> resourceMap = new ConcurrentHashMap<String, String>();
+    private final List<String> resources = new ArrayList<String>();
 
-	public ResourceServlet() {
-		start = System.currentTimeMillis();
-	}
-
-	public void setResources(String[] resources) {
-	    if (resources != null && resources.length > 0) {
-	        for (String resource : resources) {
-	            resource = resource.replace('\\', '/');
-                int i = resource.lastIndexOf('/');
-                String name;
-                if (i >= 0) {
-                    name = resource.substring(i + 1);
-                } else {
-                    name = resource;
+    public void init(FilterConfig filterConfig) throws ServletException {
+        String config = filterConfig.getInitParameter("resources");
+        if (config != null && config.length() > 0) {
+            String[] configs = Constants.COMMA_SPLIT_PATTERN.split(config);
+            for (String c : configs) {
+                if (c != null && c.length() > 0) {
+                    c = c.replace('\\', '/');
+                    if (c.endsWith("/")) {
+                        c = c.substring(0, c.length() - 1);
+                    }
+                    resources.add(c);
                 }
-                resourceMap.put(name, resource);
-	        }
-	    }
-	}
-
-    @Override
-    protected final void doPost(HttpServletRequest request,
-            HttpServletResponse response) throws ServletException, IOException {
-        doGet(request, response);
+            }
+        }
     }
 
-	@Override
-    protected final void doGet(HttpServletRequest request,
-            HttpServletResponse response) throws ServletException, IOException {
+    public void destroy() {
+    }
+    
+    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
+            throws IOException, ServletException {
+        HttpServletRequest request = (HttpServletRequest) req;
+        HttpServletResponse response = (HttpServletResponse) res;
         if (response.isCommitted()) {
             return;
         }
@@ -95,7 +93,7 @@ public class ResourceServlet extends HttpServlet {
         byte[] data;
         InputStream input = getInputStream(uri);
     	if (input == null) {
-        	response.sendError(HttpServletResponse.SC_NOT_FOUND);
+    	    chain.doFilter(req, res);
             return;
         }
     	try {
@@ -114,17 +112,20 @@ public class ResourceServlet extends HttpServlet {
         output.write(data);
         output.flush();
     }
+    
+    private boolean isFile(String path) {
+        return path.startsWith("/") || path.indexOf(":") <= 1;
+    }
 	
 	private long getLastModified(String uri) {
-	    int i = uri.indexOf('/', 1);
-        if (i >= 0) {
-            String name = uri.substring(1, i);
-            uri = uri.substring(i);
-            String resource = resourceMap.get(name);
+	    for (String resource : resources) {
             if (resource != null && resource.length() > 0) {
                 String path = resource + uri;
-                if (path.indexOf(":") < 0) {
-                    return new File(path).lastModified();
+                if (isFile(path)) {
+                    File file = new File(path);
+                    if (file.exists()) {
+                        return file.lastModified();
+                    }
                 }
             }
         }
@@ -132,25 +133,19 @@ public class ResourceServlet extends HttpServlet {
 	}
 	
 	private InputStream getInputStream(String uri) {
-	    int i = uri.indexOf('/', 1);
-	    if (i >= 0) {
-    	    String name = uri.substring(1, i);
-    	    uri = uri.substring(i);
-    	    String resource = resourceMap.get(name);
-    	    if (resource != null && resource.length() > 0) {
-    	        String path = resource + uri;
-    	        try {
-        	        if (path.startsWith(CLASSPATH_PREFIX)) {
-        	            return Thread.currentThread().getContextClassLoader().getResourceAsStream(path.substring(CLASSPATH_PREFIX.length()));
-        	        } else if (path.indexOf(":") > 0) {
-        	            return new URL(path).openStream();
-        	        } else {
-        	            return new FileInputStream(path);
-        	        }
-    	        } catch (IOException e) {
+        for (String resource : resources) {
+            String path = resource + uri;
+            try {
+                if (isFile(path)) {
+                    return new FileInputStream(path);
+                } else if (path.startsWith(CLASSPATH_PREFIX)) {
+                    return Thread.currentThread().getContextClassLoader().getResourceAsStream(path.substring(CLASSPATH_PREFIX.length()));
+                } else {
+                    return new URL(path).openStream();
                 }
-    	    }
-	    }
+            } catch (IOException e) {
+            }
+        }
         return null;
 	}
 
