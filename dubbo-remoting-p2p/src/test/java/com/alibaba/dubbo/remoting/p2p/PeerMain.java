@@ -17,8 +17,8 @@ package com.alibaba.dubbo.remoting.p2p;
 
 import java.util.Collection;
 
-import com.alibaba.dubbo.remoting.p2p.Networkers;
-import com.alibaba.dubbo.remoting.p2p.Peer;
+import com.alibaba.dubbo.remoting.Channel;
+import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.transport.ChannelHandlerAdapter;
 
 /**
