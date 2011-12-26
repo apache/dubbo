@@ -55,6 +55,8 @@ public class ZookeeperRegistry extends FailbackRegistry {
 
     private final static Logger logger = LoggerFactory.getLogger(ZookeeperRegistry.class);
     
+    private final static int DEFAULT_SESSION_TIMEOUT = 60 * 1000;
+    
     private final static String SEPARATOR = "/";
 
     private final static String DEFAULT_ROOT = "dubbo";
@@ -157,7 +159,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
             address = address + "," + backup;
         }
         ZooKeeper zk = new ZooKeeper(address, url.getPositiveParameter(
-                Constants.TIMEOUT_KEY, Integer.MAX_VALUE), new Watcher() {
+                Constants.TIMEOUT_KEY, DEFAULT_SESSION_TIMEOUT), new Watcher() {
             public void process(WatchedEvent event) {
                 try {
                     if (event.getState() == KeeperState.Expired) {
