@@ -98,6 +98,12 @@ public class ProtocolsTest
         // test netty client
         assertEquals("world", service.echo("world"));
         assertEquals("hello world@" + RemoteServiceImpl.class.getName(), remote.sayHello("world"));
+        
+        EchoService serviceEcho = (EchoService)service;
+        assertEquals(serviceEcho.$echo("test"), "test");
+        
+        EchoService remoteEecho = (EchoService)remote;
+        assertEquals(remoteEecho.$echo("ok"), "ok");
     }
 
 	@Test
