@@ -48,7 +48,9 @@ public class MulticastRegistry extends FailbackRegistry {
 
     // 日志输出
     private static final Logger logger = LoggerFactory.getLogger(MulticastRegistry.class);
-    
+
+    private static final int DEFAULT_MULTICAST_PORT = 1234;
+
     private static final String REGISTER = "register";
 
     private static final String UNREGISTER = "unregister";
@@ -70,7 +72,7 @@ public class MulticastRegistry extends FailbackRegistry {
         }
         try {
             mutilcastAddress = InetAddress.getByName(url.getHost());
-            mutilcastSocket = new MulticastSocket(url.getPort());
+            mutilcastSocket = new MulticastSocket(url.getPort() == 0 ? DEFAULT_MULTICAST_PORT : url.getPort());
             mutilcastSocket.setLoopbackMode(false);
             mutilcastSocket.joinGroup(mutilcastAddress);
             Thread thread = new Thread(new Runnable() {
@@ -297,6 +299,10 @@ public class MulticastRegistry extends FailbackRegistry {
 
     public Map<String, Set<String>> getNotified() {
         return notified;
+    }
+
+    public MulticastSocket getMutilcastSocket() {
+        return mutilcastSocket;
     }
 
 }

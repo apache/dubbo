@@ -54,6 +54,8 @@ import com.alibaba.dubbo.rpc.RpcException;
 public class ZookeeperRegistry extends FailbackRegistry {
 
     private final static Logger logger = LoggerFactory.getLogger(ZookeeperRegistry.class);
+
+    private final static int DEFAULT_ZOOKEEPER_PORT = 2181;
     
     private final static int DEFAULT_SESSION_TIMEOUT = 60 * 1000;
     
@@ -151,14 +153,29 @@ public class ZookeeperRegistry extends FailbackRegistry {
         }
     }
     
+    static String appendDefaultPort(String address) {
+        if (address != null && address.length() > 0) {
+            int i = address.indexOf(':');
+            if (i < 0) {
+                return address + ":" + DEFAULT_ZOOKEEPER_PORT;
+            } else if (Integer.parseInt(address.substring(i + 1)) == 0) {
+                return address.substring(0, i + 1) + DEFAULT_ZOOKEEPER_PORT;
+            }
+        }
+        return address;
+    }
+    
     private ZooKeeper createZookeeper() throws Exception {
         URL url = getUrl();
-        String address = url.getAddress();
-        String backup = url.getParameter(Constants.BACKUP_KEY);
-        if (backup != null && backup.length() > 0) {
-            address = address + "," + backup;
+        StringBuilder address = new StringBuilder(appendDefaultPort(url.getAddress()));
+        String[] backups = url.getParameter(Constants.BACKUP_KEY, new String[0]);
+        if (backups != null && backups.length > 0) {
+            for (String backup : backups) {
+                address.append(",");
+                address.append(appendDefaultPort(backup));
+            }
         }
-        ZooKeeper zk = new ZooKeeper(address, url.getPositiveParameter(
+        ZooKeeper zk = new ZooKeeper(address.toString(), url.getPositiveParameter(
                 Constants.TIMEOUT_KEY, DEFAULT_SESSION_TIMEOUT), new Watcher() {
             public void process(WatchedEvent event) {
                 try {

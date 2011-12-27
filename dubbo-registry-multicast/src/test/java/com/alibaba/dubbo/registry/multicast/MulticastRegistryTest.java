@@ -18,10 +18,13 @@ package com.alibaba.dubbo.registry.multicast;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.net.MulticastSocket;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+
+import junit.framework.Assert;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -105,6 +108,17 @@ public class MulticastRegistryTest {
         Map<String, Set<NotifyListener>> arg = registry.getSubscribed();
         assertEquals(consumerUrl.toFullString(), arg.keySet().iterator().next());
 
+    }
+
+    @Test
+    public void testDefaultPort() {
+        MulticastRegistry multicastRegistry = new MulticastRegistry(URL.valueOf("multicast://224.5.6.7"));
+        try {
+            MulticastSocket multicastSocket = multicastRegistry.getMutilcastSocket();
+            Assert.assertEquals(1234, multicastSocket.getLocalPort());
+        } finally {
+            multicastRegistry.destroy();
+        }
     }
 
 }

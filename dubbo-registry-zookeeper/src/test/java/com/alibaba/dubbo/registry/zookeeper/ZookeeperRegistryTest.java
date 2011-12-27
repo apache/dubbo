@@ -15,6 +15,8 @@
  */
 package com.alibaba.dubbo.registry.zookeeper;
 
+import junit.framework.Assert;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -54,6 +56,12 @@ public class ZookeeperRegistryTest {
     public void testUrlerror() {
         URL errorUrl = URL.valueOf("zookeeper://zookeeper/");
         new ZookeeperRegistry(errorUrl);
+    }
+    
+    @Test
+    public void testDefaultPort() {
+        Assert.assertEquals("10.20.153.10:2181", ZookeeperRegistry.appendDefaultPort("10.20.153.10:0"));
+        Assert.assertEquals("10.20.153.10:2181", ZookeeperRegistry.appendDefaultPort("10.20.153.10"));
     }
 
     /**
