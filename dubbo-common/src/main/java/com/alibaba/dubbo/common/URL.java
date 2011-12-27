@@ -353,6 +353,14 @@ public final class URL implements Serializable {
         return value;
     }
 
+    public String[] getParameter(String key, String[] defaultValue) {
+        String value = getParameter(key);
+        if (value == null || value.length() == 0) {
+            return defaultValue;
+        }
+        return Constants.COMMA_SPLIT_PATTERN.split(value);
+    }
+
     public double getParameter(String key, double defaultValue) {
         Number n = numbers.get(key);
         if (n != null) {
