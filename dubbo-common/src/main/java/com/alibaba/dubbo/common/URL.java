@@ -149,13 +149,15 @@ public final class URL implements Serializable {
 		}
 		if (parameters == null) {
 		    parameters = new HashMap<String, String>();
+		} else {
+		    parameters = new HashMap<String, String>(parameters);
 		}
 		if (NetUtils.isAnyHost(host)) {
 		    parameters.put("anyhost", "true");
 		} else if (NetUtils.isLocalHost(host)) {
             parameters.put("localhost", "true");
         }
-		this.parameters = Collections.unmodifiableMap(new HashMap<String, String>(parameters));
+		this.parameters = Collections.unmodifiableMap(parameters);
 	}
 
     /**
