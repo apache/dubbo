@@ -15,9 +15,13 @@
  */
 package com.alibaba.dubbo.config;
 
-import java.util.List;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
+import static org.junit.matchers.JUnitMatchers.*;
 
-import junit.framework.Assert;
+import java.util.List;
 
 import org.junit.Test;
 import org.springframework.beans.factory.BeanCreationException;
@@ -33,6 +37,8 @@ import com.alibaba.dubbo.registry.RegistryService;
 import com.alibaba.dubbo.registry.support.SimpleRegistryExporter;
 import com.alibaba.dubbo.registry.support.SimpleRegistryService;
 import com.alibaba.dubbo.rpc.Exporter;
+import com.alibaba.dubbo.rpc.RpcContext;
+import com.alibaba.dubbo.rpc.RpcException;
 
 /**
  * ConfigTest
@@ -57,12 +63,12 @@ public class ConfigTest {
         reference.setRegistry(new RegistryConfig(RegistryConfig.NO_AVAILABLE));
         reference.setInterface(DemoService.class);
         reference.setUrl("dubbo://127.0.0.1:20881");
-        Assert.assertEquals("<dubbo:reference url=\"dubbo://127.0.0.1:20881\" interface=\"com.alibaba.dubbo.config.api.DemoService\" />", reference.toString());
+        assertEquals("<dubbo:reference url=\"dubbo://127.0.0.1:20881\" interface=\"com.alibaba.dubbo.config.api.DemoService\" />", reference.toString());
         String str = reference.toString();
-        Assert.assertTrue(str.startsWith("<dubbo:reference "));
-        Assert.assertTrue(str.contains(" url=\"dubbo://127.0.0.1:20881\" "));
-        Assert.assertTrue(str.contains(" interface=\"com.alibaba.dubbo.config.api.DemoService\" "));
-        Assert.assertTrue(str.endsWith(" />"));
+        assertTrue(str.startsWith("<dubbo:reference "));
+        assertTrue(str.contains(" url=\"dubbo://127.0.0.1:20881\" "));
+        assertTrue(str.contains(" interface=\"com.alibaba.dubbo.config.api.DemoService\" "));
+        assertTrue(str.endsWith(" />"));
     }
     
     @Test
@@ -71,7 +77,7 @@ public class ConfigTest {
         ctx.start();
         DemoService demoService = refer("dubbo://127.0.0.1:20881");
         String hello = demoService.sayName("hello");
-        Assert.assertEquals("say:hello", hello);
+        assertEquals("say:hello", hello);
         ctx.stop();
         ctx.close();
     }
@@ -82,7 +88,7 @@ public class ConfigTest {
         ctx.start();
         DemoService demoService = refer("rmi://127.0.0.1:10991");
         String hello = demoService.sayName("hello");
-        Assert.assertEquals("say:hello", hello);
+        assertEquals("say:hello", hello);
         ctx.stop();
         ctx.close();
     }
@@ -95,7 +101,7 @@ public class ConfigTest {
             ctx.stop();
             ctx.close();
         } catch (BeanCreationException e) {
-            Assert.assertTrue(e.getMessage().contains("Found multi-protocols"));
+            assertTrue(e.getMessage().contains("Found multi-protocols"));
         }
     }
 
@@ -107,9 +113,9 @@ public class ConfigTest {
         ctx.start();
         try {
             List<URL> urls = registryService.getRegistered().get("com.alibaba.dubbo.config.api.DemoService");
-            Assert.assertNotNull(urls);
-            Assert.assertEquals(1, urls.size());
-            Assert.assertEquals("dubbo://" + NetUtils.getLocalHost() + ":20824/com.alibaba.dubbo.config.api.DemoService", urls.get(0).toIdentityString());
+            assertNotNull(urls);
+            assertEquals(1, urls.size());
+            assertEquals("dubbo://" + NetUtils.getLocalHost() + ":20824/com.alibaba.dubbo.config.api.DemoService", urls.get(0).toIdentityString());
         } finally {
             ctx.stop();
             ctx.close();
@@ -127,11 +133,11 @@ public class ConfigTest {
         ctx.start();
         try {
             List<URL> urls1 = registryService1.getRegistered().get("com.alibaba.dubbo.config.api.DemoService");
-            Assert.assertNull(urls1);
+            assertNull(urls1);
             List<URL> urls2 = registryService2.getRegistered().get("com.alibaba.dubbo.config.api.DemoService");
-            Assert.assertNotNull(urls2);
-            Assert.assertEquals(1, urls2.size());
-            Assert.assertEquals("dubbo://" + NetUtils.getLocalHost() + ":20880/com.alibaba.dubbo.config.api.DemoService", urls2.get(0).toIdentityString());
+            assertNotNull(urls2);
+            assertEquals(1, urls2.size());
+            assertEquals("dubbo://" + NetUtils.getLocalHost() + ":20880/com.alibaba.dubbo.config.api.DemoService", urls2.get(0).toIdentityString());
         } finally {
             ctx.stop();
             ctx.close();
@@ -148,14 +154,14 @@ public class ConfigTest {
         ctx.start();
         try {
             List<URL> urls = registryService.getRegistered().get("com.alibaba.dubbo.config.api.DemoService");
-            Assert.assertNull(urls);
+            assertNull(urls);
             while (urls == null) {
                 urls = registryService.getRegistered().get("com.alibaba.dubbo.config.api.DemoService");
                 Thread.sleep(10);
             }
-            Assert.assertNotNull(urls);
-            Assert.assertEquals(1, urls.size());
-            Assert.assertEquals("dubbo://" + NetUtils.getLocalHost() + ":20883/com.alibaba.dubbo.config.api.DemoService", urls.get(0).toIdentityString());
+            assertNotNull(urls);
+            assertEquals(1, urls.size());
+            assertEquals("dubbo://" + NetUtils.getLocalHost() + ":20883/com.alibaba.dubbo.config.api.DemoService", urls.get(0).toIdentityString());
         } finally {
             ctx.stop();
             ctx.close();
@@ -171,9 +177,9 @@ public class ConfigTest {
         ctx.start();
         try {
             List<URL> urls = registryService.getRegistered().get("com.alibaba.dubbo.config.api.DemoService");
-            Assert.assertNotNull(urls);
-            Assert.assertEquals(1, urls.size());
-            Assert.assertEquals("dubbo://" + NetUtils.getLocalHost() + ":20883/com.alibaba.dubbo.config.api.DemoService", urls.get(0).toIdentityString());
+            assertNotNull(urls);
+            assertEquals(1, urls.size());
+            assertEquals("dubbo://" + NetUtils.getLocalHost() + ":20883/com.alibaba.dubbo.config.api.DemoService", urls.get(0).toIdentityString());
         } finally {
             ctx.stop();
             ctx.close();
@@ -188,9 +194,9 @@ public class ConfigTest {
         }
         ConsumerConfig consumer = new ConsumerConfig();
         consumer.setTimeout(1000);
-        Assert.assertEquals("1000", System.getProperty("sun.rmi.transport.tcp.responseTimeout"));
+        assertEquals("1000", System.getProperty("sun.rmi.transport.tcp.responseTimeout"));
         consumer.setTimeout(2000);
-        Assert.assertEquals("1000", System.getProperty("sun.rmi.transport.tcp.responseTimeout"));
+        assertEquals("1000", System.getProperty("sun.rmi.transport.tcp.responseTimeout"));
     }
 
     @Test
@@ -202,11 +208,11 @@ public class ConfigTest {
             byNameContext.start();
             try {
                 DemoActionBySetter demoActionBySetter = (DemoActionBySetter) byNameContext.getBean("demoActionBySetter");
-                Assert.assertNotNull(demoActionBySetter.getDemoService());
-                Assert.assertEquals("aop:say:hello", demoActionBySetter.getDemoService().sayName("hello"));
+                assertNotNull(demoActionBySetter.getDemoService());
+                assertEquals("aop:say:hello", demoActionBySetter.getDemoService().sayName("hello"));
                 DemoActionByAnnotation demoActionByAnnotation = (DemoActionByAnnotation) byNameContext.getBean("demoActionByAnnotation");
-                Assert.assertNotNull(demoActionByAnnotation.getDemoService());
-                Assert.assertEquals("aop:say:hello", demoActionByAnnotation.getDemoService().sayName("hello"));
+                assertNotNull(demoActionByAnnotation.getDemoService());
+                assertEquals("aop:say:hello", demoActionByAnnotation.getDemoService().sayName("hello"));
             } finally {
                 byNameContext.stop();
                 byNameContext.close();
@@ -215,11 +221,11 @@ public class ConfigTest {
             byTypeContext.start();
             try {
                 DemoActionBySetter demoActionBySetter = (DemoActionBySetter) byTypeContext.getBean("demoActionBySetter");
-                Assert.assertNotNull(demoActionBySetter.getDemoService());
-                Assert.assertEquals("aop:say:hello", demoActionBySetter.getDemoService().sayName("hello"));
+                assertNotNull(demoActionBySetter.getDemoService());
+                assertEquals("aop:say:hello", demoActionBySetter.getDemoService().sayName("hello"));
                 DemoActionByAnnotation demoActionByAnnotation = (DemoActionByAnnotation) byTypeContext.getBean("demoActionByAnnotation");
-                Assert.assertNotNull(demoActionByAnnotation.getDemoService());
-                Assert.assertEquals("aop:say:hello", demoActionByAnnotation.getDemoService().sayName("hello"));
+                assertNotNull(demoActionByAnnotation.getDemoService());
+                assertEquals("aop:say:hello", demoActionByAnnotation.getDemoService().sayName("hello"));
             } finally {
                 byTypeContext.stop();
                 byTypeContext.close();
@@ -244,9 +250,9 @@ public class ConfigTest {
         try {
             service.export();
             List<URL> urls = service.toUrls();
-            Assert.assertNotNull(urls);
-            Assert.assertEquals(1, urls.size());
-            Assert.assertEquals("classloader,monitor,accesslog,trace", urls.get(0).getParameter("service.filter"));
+            assertNotNull(urls);
+            assertEquals(1, urls.size());
+            assertEquals("classloader,monitor,accesslog,trace", urls.get(0).getParameter("service.filter"));
             
             ConsumerConfig consumer = new ConsumerConfig();
             consumer.setFilter("classloader,monitor");
@@ -260,9 +266,9 @@ public class ConfigTest {
             try {
                 reference.get();
                 urls = reference.toUrls();
-                Assert.assertNotNull(urls);
-                Assert.assertEquals(1, urls.size());
-                Assert.assertEquals("classloader,monitor,accesslog,trace", urls.get(0).getParameter("reference.filter"));
+                assertNotNull(urls);
+                assertEquals(1, urls.size());
+                assertEquals("classloader,monitor,accesslog,trace", urls.get(0).getParameter("reference.filter"));
             } finally {
                 reference.destroy();
             }
@@ -280,7 +286,7 @@ public class ConfigTest {
             ctx.start();
             try {
                 DemoService demoService = (DemoService)ctx.getBean("demoService");
-                Assert.assertEquals("say:world", demoService.sayName("world"));
+                assertEquals("say:world", demoService.sayName("world"));
             } finally {
                 ctx.stop();
                 ctx.close();
@@ -290,7 +296,70 @@ public class ConfigTest {
             providerContext.close();
         }
     }
+    
+    // DUBBO-147   通过RpcContext可以获得所有尝试过的Invoker
+    @Test
+    public void test_RpcContext_getInvokers() throws Exception {
+        ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(
+                ConfigTest.class.getPackage().getName().replace('.', '/') + "/demo-provider-long-waiting.xml");
+        providerContext.start();
 
+        try {
+            ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(
+                    ConfigTest.class.getPackage().getName().replace('.', '/')
+                            + "/init-reference-getInvokers.xml");
+            ctx.start();
+            try {
+                DemoService demoService = (DemoService) ctx.getBean("demoService");
+                try {
+                    demoService.sayName("Haha");
+                    fail();
+                } catch (RpcException expected) {
+                    assertThat(expected.getMessage(), containsString("Tried 3 times to invoke providers"));
+                }
+
+                assertEquals(3, RpcContext.getContext().getInvokers().size());
+            } finally {
+                ctx.stop();
+                ctx.close();
+            }
+        } finally {
+            providerContext.stop();
+            providerContext.close();
+        }
+    }
+    
+    // BUG: DUBBO-846 2.0.9中，服务方法上的retry="false"设置失效
+    @Test
+    public void test_retry_effective() throws Exception {
+        ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(
+                ConfigTest.class.getPackage().getName().replace('.', '/') + "/demo-provider-long-waiting.xml");
+        providerContext.start();
+
+        try {
+            ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(
+                    ConfigTest.class.getPackage().getName().replace('.', '/')
+                            + "/init-reference-retry-false.xml");
+            ctx.start();
+            try {
+                DemoService demoService = (DemoService) ctx.getBean("demoService");
+                try {
+                    demoService.sayName("Haha");
+                    fail();
+                } catch (RpcException expected) {
+                    assertThat(expected.getMessage(), containsString("Tried 1 times to invoke providers"));
+                }
+
+                assertEquals(1, RpcContext.getContext().getInvokers().size());
+            } finally {
+                ctx.stop();
+                ctx.close();
+            }
+        } finally {
+            providerContext.stop();
+            providerContext.close();
+        }
+    }
     @Test
     public void testSystemPropertyOverrideProtocol() throws Exception {
         System.setProperty("dubbo.protocol.port", "20812");
@@ -298,7 +367,7 @@ public class ConfigTest {
         providerContext.start();
         try {
             ProtocolConfig dubbo = (ProtocolConfig) providerContext.getBean("dubbo");
-            Assert.assertEquals(20812, dubbo.getPort().intValue());
+            assertEquals(20812, dubbo.getPort().intValue());
         } finally {
             providerContext.stop();
             providerContext.close();
@@ -314,9 +383,9 @@ public class ConfigTest {
         providerContext.start();
         try {
             ProtocolConfig dubbo = (ProtocolConfig) providerContext.getBean("dubbo");
-            Assert.assertEquals(20814, dubbo.getPort().intValue());
+            assertEquals(20814, dubbo.getPort().intValue());
             ProtocolConfig rmi = (ProtocolConfig) providerContext.getBean("rmi");
-            Assert.assertEquals(10914, rmi.getPort().intValue());
+            assertEquals(10914, rmi.getPort().intValue());
         } finally {
             providerContext.stop();
             providerContext.close();
@@ -324,5 +393,4 @@ public class ConfigTest {
             System.setProperty("dubbo.protocol.rmi.port", "");
         }
     }
-    
 }

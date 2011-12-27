@@ -70,6 +70,7 @@ public Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBal
             try {
                 return invoker.invoke(invocation);
             } catch (RpcException e) {
+                // FIXME 与Failfast的逻辑不一致，有问题！
                 if (e.isBiz()) throw e;
 
                 le = e;
