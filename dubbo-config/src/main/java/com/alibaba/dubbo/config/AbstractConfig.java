@@ -253,14 +253,17 @@ public abstract class AbstractConfig implements Serializable {
         }, "DubboShutdownHook"));
     }
     
+    private static final String[] SUFFIXS = new String[] {"Config", "Bean"};
+    
     @Override
     public String toString() {
         try {
             String tag = getClass().getSimpleName();
-            if (tag.endsWith("Config")) {
-                tag = tag.substring(0, tag.length() - "Config".length());
-            } else if (tag.endsWith("Bean")) {
-                tag = tag.substring(0, tag.length() - "Bean".length());
+            for (String suffix : SUFFIXS) {
+                if (tag.endsWith(suffix)) {
+                    tag = tag.substring(0, tag.length() - suffix.length());
+                    break;
+                }
             }
             tag = tag.toLowerCase();
             StringBuilder buf = new StringBuilder();
