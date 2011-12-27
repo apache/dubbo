@@ -1,0 +1,8 @@
+com.alibaba.dubbo.rpc.protocol.dubbo.telnet.ListTelnetHandler
+com.alibaba.dubbo.rpc.protocol.dubbo.telnet.ChangeTelnetHandler
+com.alibaba.dubbo.rpc.protocol.dubbo.telnet.CurrentTelnetHandler
+com.alibaba.dubbo.rpc.protocol.dubbo.telnet.InvokeTelnetHandler
+com.alibaba.dubbo.rpc.protocol.dubbo.telnet.TraceTelnetHandler
+com.alibaba.dubbo.rpc.protocol.dubbo.telnet.CountTelnetHandler
+com.alibaba.dubbo.rpc.protocol.dubbo.telnet.PortTelnetHandler
+com.alibaba.dubbo.rpc.protocol.dubbo.telnet.LogTelnetHandler
