@@ -15,6 +15,7 @@
  */
 package com.alibaba.dubbo.config.provider.impl;
 
+import com.alibaba.dubbo.config.api.Box;
 import com.alibaba.dubbo.config.api.DemoService;
 
 /**
@@ -26,6 +27,10 @@ public class DemoServiceImpl implements DemoService {
     
     public String sayName(String name) {
         return "say:" + name;
+    }
+    
+    public Box getBox() {
+        return null;
     }
     
 }

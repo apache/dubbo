@@ -20,6 +20,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.*;
 import static org.junit.matchers.JUnitMatchers.*;
+import static org.hamcrest.core.IsNot.*;
 
 import java.util.List;
 
@@ -330,7 +331,7 @@ public class ConfigTest {
     
     // BUG: DUBBO-846 2.0.9中，服务方法上的retry="false"设置失效
     @Test
-    public void test_retry_effective() throws Exception {
+    public void test_retrySettingFail() throws Exception {
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(
                 ConfigTest.class.getPackage().getName().replace('.', '/') + "/demo-provider-long-waiting.xml");
         providerContext.start();
@@ -359,6 +360,34 @@ public class ConfigTest {
             providerContext.close();
         }
     }
+    
+    // BUG: DUBBO-146 Dubbo序列化失败（如传输对象没有实现Serialiable接口），Provider端也没有异常输出，Consumer端超时出错
+    @Test
+    public void test_returnSerializationFail() throws Exception {
+        ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/demo-provider-UnserializableBox.xml");
+        providerContext.start();
+        try {
+            ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/init-reference.xml");
+            ctx.start();
+            try {
+                DemoService demoService = (DemoService)ctx.getBean("demoService");
+                try {
+                    demoService.getBox();
+                    fail();
+                } catch (RpcException expected) {
+                    assertThat(expected.getMessage(), containsString("must implement java.io.Serializable"));
+                    assertThat(expected.getMessage(), not(containsString("timeout")));
+                }
+            } finally {
+                ctx.stop();
+                ctx.close();
+            }
+        } finally {
+            providerContext.stop();
+            providerContext.close();
+        }
+    }
+    
     @Test
     public void testSystemPropertyOverrideProtocol() throws Exception {
         System.setProperty("dubbo.protocol.port", "20812");

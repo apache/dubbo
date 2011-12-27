@@ -23,4 +23,6 @@ package com.alibaba.dubbo.config.api;
  */
 public interface DemoService {
     String sayName(String name);
+    
+    Box getBox();
 }

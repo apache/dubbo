@@ -23,18 +23,14 @@ import com.alibaba.dubbo.config.api.DemoService;
  * 
  * @author william.liangf
  */
-public class DemoServiceImpl_LongWaiting implements DemoService {
+public class UnserializableBoxDemoServiceImpl implements DemoService {
     
     public String sayName(String name) {
-        try {
-            Thread.sleep(100 * 1000);
-        } catch (InterruptedException e) {}
-        
         return "say:" + name;
     }
     
     public Box getBox() {
-        return null;
+        return new UnserializableBox();
     }
     
 }

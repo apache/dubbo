@@ -13,28 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.config.provider.impl;
-
-import com.alibaba.dubbo.config.api.Box;
-import com.alibaba.dubbo.config.api.DemoService;
+package com.alibaba.dubbo.config.api;
 
 /**
- * DemoServiceImpl
- * 
- * @author william.liangf
+ * @author ding.lid
  */
-public class DemoServiceImpl_LongWaiting implements DemoService {
-    
-    public String sayName(String name) {
-        try {
-            Thread.sleep(100 * 1000);
-        } catch (InterruptedException e) {}
-        
-        return "say:" + name;
-    }
-    
-    public Box getBox() {
-        return null;
-    }
-    
+public interface Box {
+    String getName();
 }

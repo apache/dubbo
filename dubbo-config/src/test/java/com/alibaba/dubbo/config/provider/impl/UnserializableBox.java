@@ -16,25 +16,34 @@
 package com.alibaba.dubbo.config.provider.impl;
 
 import com.alibaba.dubbo.config.api.Box;
-import com.alibaba.dubbo.config.api.DemoService;
 
 /**
- * DemoServiceImpl
- * 
- * @author william.liangf
+ * @author ding.lid
  */
-public class DemoServiceImpl_LongWaiting implements DemoService {
+public class UnserializableBox implements Box {
+    private static final long serialVersionUID = -4141012025649711421L;
     
-    public String sayName(String name) {
-        try {
-            Thread.sleep(100 * 1000);
-        } catch (InterruptedException e) {}
-        
-        return "say:" + name;
+    private int    count = 3;
+    private String name  = "Jerry";
+
+    public int getCount() {
+        return count;
     }
-    
-    public Box getBox() {
-        return null;
+
+    public void setCount(int count) {
+        this.count = count;
     }
-    
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String toString() {
+        return "Box [count=" + count + ", name=" + name + "]";
+    }
 }
