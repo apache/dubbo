@@ -49,6 +49,16 @@ public class ConfigTest {
         reference.setUrl(url);
         return reference.get();
     }
+
+    @Test
+    public void testToString() {
+        ReferenceConfig<DemoService> reference = new ReferenceConfig<DemoService>();
+        reference.setApplication(new ApplicationConfig("consumer"));
+        reference.setRegistry(new RegistryConfig(RegistryConfig.NO_AVAILABLE));
+        reference.setInterface(DemoService.class);
+        reference.setUrl("dubbo://127.0.0.1:20881");
+        Assert.assertEquals("<dubbo:reference url=\"dubbo://127.0.0.1:20881\" interface=\"com.alibaba.dubbo.config.api.DemoService\" />", reference.toString());
+    }
     
     @Test
     public void testMultiProtocol() {
