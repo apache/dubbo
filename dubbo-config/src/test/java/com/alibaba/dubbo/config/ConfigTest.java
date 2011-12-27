@@ -255,5 +255,25 @@ public class ConfigTest {
             service.unexport();
         }
     }
+    
+    @Test
+    public void testInitReference() throws Exception {
+        ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/demo-provider.xml");
+        providerContext.start();
+        try {
+            ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/init-reference.xml");
+            ctx.start();
+            try {
+                DemoService demoService = (DemoService)ctx.getBean("demoService");
+                Assert.assertEquals("say:world", demoService.sayName("world"));
+            } finally {
+                ctx.stop();
+                ctx.close();
+            }
+        } finally {
+            providerContext.stop();
+            providerContext.close();
+        }
+    }
 
 }
