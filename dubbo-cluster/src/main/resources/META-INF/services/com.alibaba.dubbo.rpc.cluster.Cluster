@@ -1,6 +1,0 @@
-com.alibaba.dubbo.rpc.cluster.support.FailoverCluster
-com.alibaba.dubbo.rpc.cluster.support.FailfastCluster
-com.alibaba.dubbo.rpc.cluster.support.FailsafeCluster
-com.alibaba.dubbo.rpc.cluster.support.FailbackCluster
-com.alibaba.dubbo.rpc.cluster.support.ForkingCluster
-com.alibaba.dubbo.rpc.cluster.support.AvailableCluster

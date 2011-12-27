@@ -1,6 +1,0 @@
-com.alibaba.dubbo.common.serialize.support.dubbo.DubboSerialization
-com.alibaba.dubbo.common.serialize.support.hessian.Hessian2Serialization
-com.alibaba.dubbo.common.serialize.support.java.JavaSerialization
-com.alibaba.dubbo.common.serialize.support.java.CompactedJavaSerialization
-com.alibaba.dubbo.common.serialize.support.json.JsonSerialization
-com.alibaba.dubbo.common.serialize.support.json.FastJsonSerialization

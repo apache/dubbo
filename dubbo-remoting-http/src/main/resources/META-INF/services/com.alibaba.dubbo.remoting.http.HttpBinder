@@ -1,2 +1,0 @@
-com.alibaba.dubbo.remoting.http.servlet.ServletHttpBinder
-com.alibaba.dubbo.remoting.http.jetty.JettyHttpBinder

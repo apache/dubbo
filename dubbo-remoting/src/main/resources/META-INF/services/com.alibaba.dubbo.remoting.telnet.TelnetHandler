@@ -1,4 +1,0 @@
-com.alibaba.dubbo.remoting.telnet.support.command.ClearTelnetHandler
-com.alibaba.dubbo.remoting.telnet.support.command.ExitTelnetHandler
-com.alibaba.dubbo.remoting.telnet.support.command.HelpTelnetHandler
-com.alibaba.dubbo.remoting.telnet.support.command.StatusTelnetHandler

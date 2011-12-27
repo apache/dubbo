@@ -1,2 +1,0 @@
-com.alibaba.dubbo.rpc.cluster.router.FileRouterFactory
-com.alibaba.dubbo.rpc.cluster.router.ScriptRouterFactory
