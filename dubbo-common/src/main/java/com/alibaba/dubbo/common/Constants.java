@@ -281,11 +281,11 @@ public class Constants {
 
     public static final Pattern      SEMICOLON_SPLIT_PATTERN        = Pattern.compile("\\s*[;]+\\s*");
     
-    public static final String       CONNECT_QUENE_CAPACITY         = "connect.quene.capacity";
+    public static final String       CONNECT_QUEUE_CAPACITY         = "connect.queue.capacity";
     
-    public static final String       CONNECT_QUENE_WARNING_SIZE     = "connect.quene.warning.size";
+    public static final String       CONNECT_QUEUE_WARNING_SIZE     = "connect.queue.warning.size";
     
-    public static final int          DEFAULT_CONNECT_QUENE_WARNING_SIZE  = 1000;
+    public static final int          DEFAULT_CONNECT_QUEUE_WARNING_SIZE  = 1000;
     
     public static final String       CHANNEL_ATTRIBUTE_READONLY_KEY     = "channel.readonly";
     

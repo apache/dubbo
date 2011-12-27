@@ -41,11 +41,11 @@ public class ConnectionOrderedChannelHandler extends WrappedChannelHandler {
         String threadName = url.getParameter(Constants.THREAD_NAME_KEY,Constants.DEFAULT_THREAD_NAME);
         connectionExecutor = new ThreadPoolExecutor(1, 1,
                                      0L, TimeUnit.MILLISECONDS,
-                                     new LinkedBlockingQueue<Runnable>(url.getPositiveParameter(Constants.CONNECT_QUENE_CAPACITY, Integer.MAX_VALUE)),
+                                     new LinkedBlockingQueue<Runnable>(url.getPositiveParameter(Constants.CONNECT_QUEUE_CAPACITY, Integer.MAX_VALUE)),
                                      new NamedThreadFactory(threadName, true),
                                      new AbortPolicyWithReport(threadName, url)
             );  // FIXME 没有地方释放connectionExecutor！
-        queuewarninglimit = url.getParameter(Constants.CONNECT_QUENE_WARNING_SIZE, Constants.DEFAULT_CONNECT_QUENE_WARNING_SIZE);
+        queuewarninglimit = url.getParameter(Constants.CONNECT_QUEUE_WARNING_SIZE, Constants.DEFAULT_CONNECT_QUEUE_WARNING_SIZE);
     }
 
     public void connected(Channel channel) throws RemotingException {
@@ -98,7 +98,7 @@ public class ConnectionOrderedChannelHandler extends WrappedChannelHandler {
     
     private void checkQueueLength(){
         if (connectionExecutor.getQueue().size() > queuewarninglimit){
-            logger.warn(new IllegalThreadStateException("connectionordered channel handler `quene size: "+connectionExecutor.getQueue().size()+" exceed the warning limit number :"+queuewarninglimit));
+            logger.warn(new IllegalThreadStateException("connectionordered channel handler `queue size: "+connectionExecutor.getQueue().size()+" exceed the warning limit number :"+queuewarninglimit));
         }
     }
 }

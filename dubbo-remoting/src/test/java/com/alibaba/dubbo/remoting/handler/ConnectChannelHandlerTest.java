@@ -51,7 +51,7 @@ public class ConnectChannelHandlerTest extends WrappedChannelHandlerTest{
             handler.disconnected(new MockedChannel());
             Assert.assertTrue(executor.getActiveCount() + " must <=1" ,executor.getActiveCount() <= 1);
         }
-        //quene.size 
+        //queue.size 
         Assert.assertEquals(taskCount -1 , executor.getQueue().size());
         
         for( int i=0;i<taskCount; i++){
