@@ -286,4 +286,38 @@ public class ConfigTest {
         }
     }
 
+    @Test
+    public void testSystemPropertyOverrideProtocol() throws Exception {
+        System.setProperty("dubbo.protocol.port", "20812");
+        ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/override-protocol.xml");
+        providerContext.start();
+        try {
+            ProtocolConfig dubbo = (ProtocolConfig) providerContext.getBean("dubbo");
+            Assert.assertEquals(20812, dubbo.getPort().intValue());
+        } finally {
+            providerContext.stop();
+            providerContext.close();
+            System.setProperty("dubbo.protocol.port", "");
+        }
+    }
+
+    @Test
+    public void testSystemPropertyOverrideMultiProtocol() throws Exception {
+        System.setProperty("dubbo.protocol.dubbo.port", "20814");
+        System.setProperty("dubbo.protocol.rmi.port", "10914");
+        ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/override-multi-protocol.xml");
+        providerContext.start();
+        try {
+            ProtocolConfig dubbo = (ProtocolConfig) providerContext.getBean("dubbo");
+            Assert.assertEquals(20814, dubbo.getPort().intValue());
+            ProtocolConfig rmi = (ProtocolConfig) providerContext.getBean("rmi");
+            Assert.assertEquals(10914, rmi.getPort().intValue());
+        } finally {
+            providerContext.stop();
+            providerContext.close();
+            System.setProperty("dubbo.protocol.dubbo.port", "");
+            System.setProperty("dubbo.protocol.rmi.port", "");
+        }
+    }
+    
 }
