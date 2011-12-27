@@ -533,4 +533,20 @@ public class URLTest {
         assertEquals("admin:hello1234@10.20.130.230:20880", url.getAuthority());
         assertEquals("/context/path?version=1.0.0&application=morgan", url.getFile());
     }
+
+    @Test
+    public void test_Anyhost() throws Exception {
+        URL url = URL.valueOf("dubbo://0.0.0.0:20880");
+        assertEquals("true", url.getParameter("anyhost"));
+    }
+    
+    @Test
+    public void test_Localhost() throws Exception {
+        URL url = URL.valueOf("dubbo://127.0.0.1:20880");
+        assertEquals("true", url.getParameter("localhost"));
+        
+        url = URL.valueOf("dubbo://localhost:20880");
+        assertEquals("true", url.getParameter("localhost"));
+    }
+    
 }

@@ -147,7 +147,15 @@ public final class URL implements Serializable {
 		while(path != null && path.startsWith("/")) {
 		    path = path.substring(1);
 		}
-		this.parameters = Collections.unmodifiableMap(parameters != null ? new HashMap<String, String>(parameters) : new HashMap<String, String>(0));
+		if (parameters == null) {
+		    parameters = new HashMap<String, String>();
+		}
+		if (NetUtils.isAnyHost(host)) {
+		    parameters.put("anyhost", "true");
+		} else if (NetUtils.isLocalHost(host)) {
+            parameters.put("localhost", "true");
+        }
+		this.parameters = Collections.unmodifiableMap(new HashMap<String, String>(parameters));
 	}
 
     /**

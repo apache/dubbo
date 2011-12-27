@@ -86,6 +86,17 @@ public class NetUtils {
     }
 
     private static final Pattern LOCAL_IP_PATTERN = Pattern.compile("127(\\.\\d{1,3}){3}$");
+    
+    public static boolean isLocalHost(String host) {
+        return host != null 
+                && (LOCAL_IP_PATTERN.matcher(host).matches() 
+                        || host.equalsIgnoreCase("localhost"));
+    }
+
+    public static boolean isAnyHost(String host) {
+        return "0.0.0.0".equals(host);
+    }
+    
     public static boolean isInvalidLocalHost(String host) {
         return host == null 
         			|| host.length() == 0
