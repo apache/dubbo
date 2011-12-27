@@ -58,6 +58,11 @@ public class ConfigTest {
         reference.setInterface(DemoService.class);
         reference.setUrl("dubbo://127.0.0.1:20881");
         Assert.assertEquals("<dubbo:reference url=\"dubbo://127.0.0.1:20881\" interface=\"com.alibaba.dubbo.config.api.DemoService\" />", reference.toString());
+        String str = reference.toString();
+        Assert.assertTrue(str.startsWith("<dubbo:reference "));
+        Assert.assertTrue(str.contains(" url=\"dubbo://127.0.0.1:20881\" "));
+        Assert.assertTrue(str.contains(" interface=\"com.alibaba.dubbo.config.api.DemoService\" "));
+        Assert.assertTrue(str.endsWith(" />"));
     }
     
     @Test
