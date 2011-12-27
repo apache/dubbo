@@ -138,7 +138,7 @@ public class ListTelnetHandlerTest {
         DubboProtocol.getDubboProtocol().export(mockInvoker);
         String result = list.telnet(mockChannel, "-l");
         assertEquals("com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService -> dubbo://" + NetUtils.getLocalHost()
-                     + ":"+port+"/demo", result);
+                     + ":"+port+"/demo?localhost=true", result);
         EasyMock.reset(mockChannel);
     }
 
