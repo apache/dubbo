@@ -45,6 +45,7 @@ import com.alibaba.dubbo.common.extensionloader.ext5.impl.Ext5Wrapper1;
 import com.alibaba.dubbo.common.extensionloader.ext5.impl.Ext5Wrapper2;
 import com.alibaba.dubbo.common.extensionloader.ext6_inject.Ext6;
 import com.alibaba.dubbo.common.extensionloader.ext6_inject.impl.Ext6Impl2;
+import com.alibaba.dubbo.common.extensionloader.ext7.Ext7;
 
 /**
  * @author ding.lid
@@ -418,5 +419,20 @@ public class ExtensionLoaderTest {
         
         Ext6Impl2 impl = (Ext6Impl2) ext;
         assertNull(impl.getList());
+    }
+    
+    @Test
+    public void test_InitError() throws Exception {
+        ExtensionLoader<Ext7> loader = ExtensionLoader.getExtensionLoader(Ext7.class);
+        
+        loader.getExtension("ok");
+        
+        try {
+            loader.getExtension("error");
+            fail();
+        } catch (IllegalStateException expected) {
+            assertThat(expected.getMessage(), containsString("Failed to load extension class(interface: interface com.alibaba.dubbo.common.extensionloader.ext7.Ext7"));
+            assertThat(expected.getCause(), instanceOf(ExceptionInInitializerError.class));
+        }
     }
 }
