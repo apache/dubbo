@@ -26,6 +26,8 @@
 	<packaging>pom</packaging>
 	<name>Dubbo Parent POM</name>
 	<description>The parent project of dubbo</description>
+	<url>http://code.alibabatech.com/wiki/display/dubbo</url>
+	<inceptionYear>2011</inceptionYear>
 	<licenses>
 		<license>
 			<name>Apache 2</name>
@@ -34,6 +36,39 @@
 			<comments>A business-friendly OSS license</comments>
 		</license>
 	</licenses>
+	<organization>
+		<name>Alibaba</name>
+		<url>http://www.alibaba.com</url>
+	</organization>
+	<properties>
+		<!-- Common libs -->
+		<spring_version>2.5.6.SEC03</spring_version>
+		<javassist_version>3.15.0-GA</javassist_version>
+		<netty_version>3.2.5.Final</netty_version>
+		<mina_version>1.1.7</mina_version>
+		<grizzly_version>2.1.4</grizzly_version>
+		<httpclient_version>4.1.2</httpclient_version>
+		<hessian_lite_version>3.2.1</hessian_lite_version>
+		<xstream_version>1.4.1</xstream_version>
+		<fastjson_version>1.1.8</fastjson_version>
+		<bsf_version>3.1</bsf_version>
+		<zookeeper_version>3.3.3</zookeeper_version>
+		<jfreechart_version>1.0.13</jfreechart_version>
+		<hessian_version>4.0.7</hessian_version>
+		<servlet_version>2.5</servlet_version>
+		<jetty_version>6.1.26</jetty_version>
+		<!-- Log libs -->
+		<log4j_version>1.2.16</log4j_version>
+		<slf4j_version>1.6.2</slf4j_version>
+		<!-- Test libs -->
+		<junit_version>4.10</junit_version>
+		<easymock_version>3.0</easymock_version>
+		<jmockit_version>0.999.8</jmockit_version>
+		<!-- Build args -->
+		<argline>-Xms512m -Xmx512m</argline>
+		<skip_maven_deploy>false</skip_maven_deploy>
+		<updateReleaseInfo>true</updateReleaseInfo>
+	</properties>
 	<modules>
 		<module>dubbo-common</module>
 		<module>dubbo-remoting</module>
@@ -63,42 +98,6 @@
 		<module>dubbo-demo-consumer</module>
 		<module>dubbo-demo-provider</module>
 	</modules>
-	<properties>
-		<!-- Common libs -->
-		<spring_version>2.5.6.SEC03</spring_version>
-		<javassist_version>3.15.0-GA</javassist_version>
-		<netty_version>3.2.5.Final</netty_version>
-		<mina_version>1.1.7</mina_version>
-		<grizzly_version>2.1.4</grizzly_version>
-		<httpclient_version>4.1.2</httpclient_version>
-		<hessian_lite_version>3.2.1</hessian_lite_version>
-		<xstream_version>1.4.1</xstream_version>
-		<fastjson_version>1.1.8</fastjson_version>
-		<bsf_version>3.1</bsf_version>
-		<zookeeper_version>3.3.3</zookeeper_version>
-		<jfreechart_version>1.0.13</jfreechart_version>
-		<hessian_version>4.0.7</hessian_version>
-		<servlet_version>2.5</servlet_version>
-		<jetty_version>6.1.26</jetty_version>
-		<!-- Log libs -->
-		<log4j_version>1.2.16</log4j_version>
-		<slf4j_version>1.6.2</slf4j_version>
-		<!-- Test libs -->
-		<junit_version>4.10</junit_version>
-		<easymock_version>3.0</easymock_version>
-		<jmockit_version>0.999.8</jmockit_version>
-		<!-- Build args -->
-		<argline>-Xms512m -Xmx512m</argline>
-		<skip_maven_deploy>false</skip_maven_deploy>
-		<updateReleaseInfo>true</updateReleaseInfo>
-		<project.build.sourceEncoding>${file_encoding}</project.build.sourceEncoding>
-		<!-- SCM urls -->
-		<project_url>http://code.alibabatech.com/wiki/display/dubbo/Home</project_url>
-		<project_scm_url>http://code.alibabatech.com/svn/dubbo/trunk</project_scm_url>
-		<project_scm_connection>scm:svn:http://code.alibabatech.com/svn/dubbo/trunk</project_scm_connection>
-		<project_issue_url>http://code.alibabatech.com/jira/browse/DUBBO</project_issue_url>
-		<project_site_url>http://code.alibabatech.com/wiki/display/dubbo/Home</project_site_url>
-	</properties>
 	<dependencyManagement>
 		<dependencies>
 			<!-- Common libs -->
@@ -233,18 +232,6 @@
 			<artifactId>jmockit</artifactId>
 		</dependency>
 	</dependencies>
-	<repositories>
-		<repository>
-			<id>opensesame.releases</id>
-			<url>http://code.alibabatech.com/mvn/releases</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
 	<build>
 		<plugins>
 			<plugin>
@@ -258,9 +245,6 @@
 							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
 							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
 						</manifest>
-						<manifestEntries>
-							<Implementation-Build>${timestamp}</Implementation-Build>
-						</manifestEntries>
 					</archive>
 				</configuration>
 			</plugin>
@@ -344,11 +328,35 @@
             </plugin>
 		</plugins>
 	</build>
+	<repositories>
+		<repository>
+			<id>opensesame.releases</id>
+			<url>http://code.alibabatech.com/mvn/releases</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+	<issueManagement>
+		<system>jira</system>
+		<url>http://code.alibabatech.com/jira/browse/DUBBO</url>
+	</issueManagement>
 	<scm>
-		<connection>${project_scm_connection}</connection>
-		<developerConnection>${project_scm_connection}</developerConnection>
-		<url>${project_scm_url}</url>
+		<url>http://code.alibabatech.com/svn/dubbo/trunk</url>
+		<connection>scm:svn:http://code.alibabatech.com/svn/dubbo/trunk</connection>
 	</scm>
+	<mailingLists>
+		<mailingList>
+			<name>Dubbo User Mailling List</name>
+			<subscribe>dubbo-subscribe AT googlegroups DOT com</subscribe>
+			<unsubscribe>dubbo-unsubscribe AT googlegroups DOT com</unsubscribe>
+			<post>dubbo AT googlegroups DOT com</post>
+			<archive>http://groups.google.com/group/dubbo</archive>
+		</mailingList>
+	</mailingLists>
 	<developers>
 		<developer>
 			<name>QianXiao(Shawn)</name>
