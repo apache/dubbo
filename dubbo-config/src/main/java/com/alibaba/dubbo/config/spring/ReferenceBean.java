@@ -27,6 +27,7 @@ import org.springframework.context.ApplicationContextAware;
 import com.alibaba.dubbo.config.ApplicationConfig;
 import com.alibaba.dubbo.config.ConsumerConfig;
 import com.alibaba.dubbo.config.MonitorConfig;
+import com.alibaba.dubbo.config.Parameter;
 import com.alibaba.dubbo.config.ReferenceConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
 
@@ -53,6 +54,7 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
         return getInterfaceClass();
     }
 
+    @Parameter(excluded = true)
     public boolean isSingleton() {
         return true;
     }

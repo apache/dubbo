@@ -257,8 +257,10 @@ public abstract class AbstractConfig implements Serializable {
     public String toString() {
         try {
             String tag = getClass().getSimpleName();
-            if (tag.equals("Config")) {
+            if (tag.endsWith("Config")) {
                 tag = tag.substring(0, tag.length() - "Config".length());
+            } else if (tag.endsWith("Bean")) {
+                tag = tag.substring(0, tag.length() - "Bean".length());
             }
             tag = tag.toLowerCase();
             StringBuilder buf = new StringBuilder();
