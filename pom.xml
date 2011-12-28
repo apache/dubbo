@@ -324,9 +324,8 @@
 				<executions>
                     <execution>
                         <id>attach-javadoc</id>
-						<phase>package</phase>
                         <goals>
-                            <goal>javadoc</goal>
+                            <goal>jar</goal>
                         </goals>
                     </execution>
                 </executions>
