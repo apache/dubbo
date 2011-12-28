@@ -338,7 +338,7 @@
 					<excludePackageNames>com.alibaba.com.*</excludePackageNames>
 					<links>
 						<link>http://docs.oracle.com/javase/6/docs/api</link>
-					<links>
+					</links>
 				</configuration>
 			</plugin>
 			<plugin>
