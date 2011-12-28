@@ -91,8 +91,37 @@ public class ChannelEventRunnable implements Runnable {
                 }
         }
     
+    /**
+     * ChannelState
+     * 
+     * @author william.liangf
+     */
     public enum ChannelState{
-        CONNECTED,DISCONNECTED,SENT,RECEIVED,CAUGHT
+        
+        /**
+         * CONNECTED
+         */
+        CONNECTED,
+        
+        /**
+         * DISCONNECTED
+         */
+        DISCONNECTED,
+        
+        /**
+         * SENT
+         */
+        SENT,
+        
+        /**
+         * RECEIVED
+         */
+        RECEIVED,
+        
+        /**
+         * CAUGHT
+         */
+        CAUGHT
     }
 
 }

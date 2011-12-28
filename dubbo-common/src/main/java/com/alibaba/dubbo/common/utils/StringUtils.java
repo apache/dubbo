@@ -77,7 +77,7 @@ public final class StringUtils
      * 
      * @param s1
      * @param s2
-     * @return
+     * @return equals
      */
     public static boolean isEquals(String s1, String s2) {
         if (s1 == null && s2 == null)
@@ -91,7 +91,7 @@ public final class StringUtils
      * is integer string.
      * 
      * @param str
-     * @return
+     * @return is integer
      */
     public static boolean isInteger(String str) {
     	if (str == null || str.length() == 0)
@@ -125,7 +125,7 @@ public final class StringUtils
      * 
      * @param values
      * @param value
-     * @return
+     * @return contains
      */
     public static boolean isContains(String[] values, String value) {
         if (value != null && value.length() > 0 && values != null && values.length > 0) {
@@ -141,7 +141,7 @@ public final class StringUtils
     /**
      * 
      * @param e
-     * @return
+     * @return string
      */
     public static String toString(Throwable e) {
     	UnsafeStringWriter w = new UnsafeStringWriter();
@@ -163,7 +163,7 @@ public final class StringUtils
      * 
      * @param msg
      * @param e
-     * @return
+     * @return string
      */
     public static String toString(String msg, Throwable e) {
     	UnsafeStringWriter w = new UnsafeStringWriter();

@@ -110,7 +110,6 @@ public class JSONObject implements JSONNode
 	 * get string value.
 	 * 
 	 * @param key key.
-	 * @param def default value.
 	 * @return value or default value.
 	 */
 	public String getString(String key)
@@ -123,7 +122,6 @@ public class JSONObject implements JSONNode
 	 * get JSONArray value.
 	 * 
 	 * @param key key.
-	 * @param def default value.
 	 * @return value or default value.
 	 */
 	public JSONArray getArray(String key)
@@ -136,7 +134,6 @@ public class JSONObject implements JSONNode
 	 * get JSONObject value.
 	 * 
 	 * @param key key.
-	 * @param def default value.
 	 * @return value or default value.
 	 */
 	public JSONObject getObject(String key)
@@ -205,7 +202,6 @@ public class JSONObject implements JSONNode
 	 * 
 	 * @param jc json converter.
 	 * @param jb json builder.
-	 * @return json string.
 	 */
 	public void writeJSON(JSONConverter jc, JSONWriter jb, boolean writeClass) throws IOException
 	{

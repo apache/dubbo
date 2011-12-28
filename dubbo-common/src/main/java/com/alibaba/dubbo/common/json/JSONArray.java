@@ -110,7 +110,6 @@ public class JSONArray implements JSONNode
 	 * get string value.
 	 * 
 	 * @param index index.
-	 * @param def default value.
 	 * @return value or default value.
 	 */
 	public String getString(int index)
@@ -123,7 +122,6 @@ public class JSONArray implements JSONNode
 	 * get JSONArray value.
 	 * 
 	 * @param index index.
-	 * @param def default value.
 	 * @return value or default value.
 	 */
 	public JSONArray getArray(int index)
@@ -136,7 +134,6 @@ public class JSONArray implements JSONNode
 	 * get JSONObject value.
 	 * 
 	 * @param index index.
-	 * @param def default value.
 	 * @return value or default value.
 	 */
 	public JSONObject getObject(int index)
@@ -185,7 +182,6 @@ public class JSONArray implements JSONNode
 	 * 
 	 * @param jc json converter
 	 * @param jb json builder.
-	 * @return json string.
 	 */
 	public void writeJSON(JSONConverter jc, JSONWriter jb, boolean writeClass) throws IOException
 	{

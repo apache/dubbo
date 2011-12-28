@@ -37,7 +37,7 @@ public interface Cluster {
      * 
      * @param <T>
      * @param directory
-     * @return
+     * @return cluster invoker
      * @throws RpcException
      */
     @Adaptive

@@ -29,7 +29,6 @@ import com.alibaba.dubbo.common.utils.NetUtils;
  * Thread local context. (API, ThreadLocal, ThreadSafe)
  * 
  * @see com.alibaba.dubbo.rpc.filter.ContextFilter
- * @see com.alibaba.dubbo.rpc.protocol.AbstractExporter#invoke(Invocation, InetSocketAddress)
  * @author qian.lei
  * @author william.liangf
  */
@@ -338,7 +337,7 @@ public class RpcContext {
     /**
      * get values.
      * 
-     * @return
+     * @return values
      */
     public Map<String, Object> get() {
         return values;
@@ -348,7 +347,7 @@ public class RpcContext {
      * set values
      * 
      * @param values
-     * @return
+     * @return context
      */
     public RpcContext set(Map<String, Object> value) {
         this.values.clear();
@@ -398,7 +397,7 @@ public class RpcContext {
     /**
      * get attachments.
      * 
-     * @return
+     * @return attachments
      */
     public Map<String, String> getAttachments() {
         return attachments;
@@ -408,7 +407,7 @@ public class RpcContext {
      * set attachments
      * 
      * @param attachment
-     * @return
+     * @return context
      */
     public RpcContext setAttachments(Map<String, String> attachment) {
         this.attachments.clear();
@@ -423,7 +422,7 @@ public class RpcContext {
      * 
      * @param key
      * @param value
-     * @return
+     * @return context
      */
     public RpcContext setAttachment(String key, String value) {
         if (value == null) {
@@ -438,7 +437,7 @@ public class RpcContext {
      * remove attachment.
      * 
      * @param key
-     * @return
+     * @return context
      */
     public RpcContext removeAttachment(String key) {
         attachments.remove(key);
@@ -449,7 +448,7 @@ public class RpcContext {
      * get attachment.
      * 
      * @param key
-     * @return
+     * @return attachment
      */
     public String getAttachment(String key) {
         return attachments.get(key);
@@ -459,7 +458,7 @@ public class RpcContext {
      * get future.
      * 
      * @param <T>
-     * @return
+     * @return future
      */
     @SuppressWarnings("unchecked")
     public <T> Future<T> getFuture() {

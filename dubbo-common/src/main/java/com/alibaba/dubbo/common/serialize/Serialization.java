@@ -35,7 +35,7 @@ public interface Serialization {
     /**
      * get content type id
      * 
-     * @return
+     * @return content type id
      */
     byte getContentTypeId();
 

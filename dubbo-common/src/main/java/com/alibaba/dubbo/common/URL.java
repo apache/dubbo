@@ -1088,8 +1088,8 @@ public final class URL implements Serializable {
 	}
 
 	/**
-     * @deprecated Replace to <code>getMethodParameter(String, int)</code>
-     * @see #getMethodParameter(String, int)
+     * @deprecated Replace to <code>getMethodParameter(String, String, int)</code>
+     * @see #getMethodParameter(String, String, int)
      */
     @Deprecated
     public int getMethodIntParameter(String method, String key) {
@@ -1097,8 +1097,8 @@ public final class URL implements Serializable {
     }
 
     /**
-     * @deprecated Replace to <code>getMethodParameter(String, int)</code>
-     * @see #getMethodParameter(String, int)
+     * @deprecated Replace to <code>getMethodParameter(String, String, int)</code>
+     * @see #getMethodParameter(String, String, int)
      */
     @Deprecated
     public int getMethodIntParameter(String method, String key, int defaultValue) {
@@ -1106,8 +1106,8 @@ public final class URL implements Serializable {
     }
 
     /**
-     * @deprecated Replace to <code>getMethodPositiveParameter(String, int)</code>
-     * @see #getMethodPositiveParameter(String, int)
+     * @deprecated Replace to <code>getMethodPositiveParameter(String, String, int)</code>
+     * @see #getMethodPositiveParameter(String, String, int)
      */
     @Deprecated
     public int getMethodPositiveIntParameter(String method, String key, int defaultValue) {
@@ -1115,8 +1115,8 @@ public final class URL implements Serializable {
     }
 
     /**
-     * @deprecated Replace to <code>getMethodParameter(String, boolean)</code>
-     * @see #getMethodParameter(String, boolean)
+     * @deprecated Replace to <code>getMethodParameter(String, String, boolean)</code>
+     * @see #getMethodParameter(String, String, boolean)
      */
     @Deprecated
     public boolean getMethodBooleanParameter(String method, String key) {
@@ -1124,8 +1124,8 @@ public final class URL implements Serializable {
     }
 
     /**
-     * @deprecated Replace to <code>getMethodParameter(String, boolean)</code>
-     * @see #getMethodParameter(String, boolean)
+     * @deprecated Replace to <code>getMethodParameter(String, String, boolean)</code>
+     * @see #getMethodParameter(String, String, boolean)
      */
     @Deprecated
     public boolean getMethodBooleanParameter(String method, String key, boolean defaultValue) {

@@ -31,7 +31,7 @@ public interface MonitorFactory {
      * Create monitor.
      * 
      * @param url
-     * @return
+     * @return monitor
      */
     @Adaptive("protocol")
     Monitor getMonitor(URL url);

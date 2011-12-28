@@ -19,7 +19,6 @@ package com.alibaba.dubbo.common.logger;
  * 日志接口 <p/> 声明：引用自commons-logging
  *
  * @author william.liangf
- *
  */
 public interface Logger {
 
@@ -99,7 +98,7 @@ public interface Logger {
 	/**
      * 输出警告信息
      *
-     * @param msg e 异常信息
+     * @param e 异常信息
      */
 	public void warn(Throwable e);
 

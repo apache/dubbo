@@ -161,7 +161,7 @@ public class IOUtils
 	/**
 	 * read lines.
 	 * 
-	 * @param file file.
+	 * @param is input stream.
 	 * @return lines.
 	 * @throws IOException.
 	 */
@@ -185,7 +185,7 @@ public class IOUtils
 	/**
 	 * write lines.
 	 * 
-	 * @param file file.
+	 * @param os output stream.
 	 * @param lines lines.
 	 * @throws IOException.
 	 */

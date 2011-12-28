@@ -104,7 +104,7 @@ public class Stack<E>
 	 * remove.
 	 * 
 	 * @param index
-	 * @return
+	 * @return element
 	 */
 	public E remove(int index)
 	{

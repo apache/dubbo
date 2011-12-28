@@ -203,7 +203,7 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
 
     /**
      * @deprecated Replace to <code>getStub()</code>
-     * @return
+     * @return local
      */
     @Deprecated
     public String getLocal() {

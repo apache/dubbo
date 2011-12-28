@@ -17,12 +17,10 @@ package com.alibaba.dubbo.common.logger;
 
 import java.io.File;
 
-
 /**
  * 日志输出器供给器
  *
- * @author liangfei0201@163.com
- *
+ * @author william.liangf
  */
 public interface LoggerFactorySupport {
 	
@@ -45,25 +43,28 @@ public interface LoggerFactorySupport {
 	/**
 	 * 设置输出等级
 	 * 
-	 * @param level
+	 * @param level 输出等级
 	 */
 	void setLevel(Level level);
 	
 	/**
+	 * 获取当前日志等级
 	 * 
-	 * @return
+	 * @return 当前日志等级
 	 */
 	Level getLevel();
 	
 	/**
+	 * 获取当前日志文件
 	 * 
-	 * @return
+	 * @return 当前日志文件
 	 */
 	File getFile();
 	
 	/**
+	 * 设置输出日志文件
 	 * 
-	 * @param file
+	 * @param file 输出日志文件
 	 */
 	void setFile(File file);
 

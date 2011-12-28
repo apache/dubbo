@@ -20,8 +20,8 @@ import com.alibaba.dubbo.remoting.RemotingException;
 /**
  * Future. (API/SPI, Prototype, ThreadSafe)
  * 
- * @see com.alibaba.dubbo.remoting.Channel#request(Object)
- * @see com.alibaba.dubbo.remoting.Channel#request(Object, int)
+ * @see com.alibaba.dubbo.remoting.exchange.ExchangeChannel#request(Object)
+ * @see com.alibaba.dubbo.remoting.exchange.ExchangeChannel#request(Object, int)
  * @author qian.lei
  * @author william.liangf
  */

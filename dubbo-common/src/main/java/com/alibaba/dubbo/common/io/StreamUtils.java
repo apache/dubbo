@@ -105,9 +105,6 @@ public class StreamUtils
 		};
 	}
 	
-	/**
-	 * @author ding.lid
-	 */
 	public static InputStream markSupportedInputStream(final InputStream is, final int markBufferSize) {
 	    if(is.markSupported()) {
 	        return is;
@@ -211,9 +208,6 @@ public class StreamUtils
         };
 	}
 	
-	/**
-	 * @author ding.lid
-	 */
 	public static InputStream markSupportedInputStream(final InputStream is) {
 	    return markSupportedInputStream(is, 1024);
 	}

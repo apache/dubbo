@@ -16,21 +16,20 @@
 package com.alibaba.dubbo.registry;
 
 import java.util.List;
-import java.util.Map;
 
 import com.alibaba.dubbo.common.URL;
 
 /**
  * NotifyListener. (API, Prototype, ThreadSafe)
  * 
- * @see com.alibaba.dubbo.registry.Registry#subscribe(URL, NotifyListener)
+ * @see com.alibaba.dubbo.registry.RegistryService#subscribe(URL, NotifyListener)
  * @author william.liangf
  */
 public interface NotifyListener {
     
     /**
      * 当收到服务变更通知时触发
-     * @param urls 含义同{@link Registry#register(String, Map)}的urls参数。
+     * @param urls 含义同{@link com.alibaba.dubbo.registry.RegistryService#register(URL)}的urls参数。
      */
     void notify(List<URL> urls);
     

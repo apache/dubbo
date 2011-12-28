@@ -23,8 +23,8 @@ import java.net.InetSocketAddress;
  * @see com.alibaba.dubbo.remoting.exchange.ResponseFuture#get()
  * @see com.alibaba.dubbo.remoting.exchange.ResponseFuture#get(int)
  * @see com.alibaba.dubbo.remoting.Channel#send(Object, boolean)
- * @see com.alibaba.dubbo.remoting.Channel#request(Object)
- * @see com.alibaba.dubbo.remoting.Channel#request(Object, int)
+ * @see com.alibaba.dubbo.remoting.exchange.ExchangeChannel#request(Object)
+ * @see com.alibaba.dubbo.remoting.exchange.ExchangeChannel#request(Object, int)
  * @see com.alibaba.dubbo.remoting.Transporter#bind(com.alibaba.dubbo.common.URL, ChannelHandler)
  * @see com.alibaba.dubbo.remoting.Transporter#connect(com.alibaba.dubbo.common.URL, ChannelHandler)
  * @author qian.lei

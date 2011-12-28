@@ -52,7 +52,6 @@ import com.alibaba.dubbo.common.utils.StringUtils;
  * 
  * @see Extension
  * @see Adaptive
- * @see Autoproxy
  */
 public class ExtensionLoader<T> {
     

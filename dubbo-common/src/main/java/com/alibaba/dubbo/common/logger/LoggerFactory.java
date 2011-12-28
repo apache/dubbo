@@ -24,8 +24,7 @@ import com.alibaba.dubbo.common.logger.support.Log4jLoggerFactory;
 /**
  * 日志输出器工厂
  * 
- * @author liangfei0201@163.com
- * 
+ * @author william.liangf
  */
 public class LoggerFactory {
 

@@ -151,8 +151,8 @@ public abstract class Wrapper
 	 * set property value.
 	 * 
 	 * @param instance instance.
-	 * @param pn property name array.
-	 * @param pv property value array.
+	 * @param pns property name array.
+	 * @param pvs property value array.
 	 */
 	public void setPropertyValues(Object instance, String[] pns, Object[] pvs) throws NoSuchPropertyException, IllegalArgumentException
 	{

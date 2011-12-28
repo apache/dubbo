@@ -704,7 +704,7 @@ public final class ReflectUtils {
 	 * 根据方法签名从类中找出方法。
 	 * 
 	 * @param clazz 查找的类。
-	 * @param methodSignature 方法签名，形如method1(int, String)。也允许只给方法名不参数只有方法名，形如method2。
+	 * @param methodName 方法签名，形如method1(int, String)。也允许只给方法名不参数只有方法名，形如method2。
 	 * @return 返回查找到的方法。
 	 * @throws NoSuchMethodException
 	 * @throws ClassNotFoundException  

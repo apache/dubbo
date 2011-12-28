@@ -31,7 +31,7 @@ public interface RouterFactory {
      * Create router.
      * 
      * @param url
-     * @return
+     * @return router
      */
     @Adaptive("protocol")
     Router getRouter(URL url);

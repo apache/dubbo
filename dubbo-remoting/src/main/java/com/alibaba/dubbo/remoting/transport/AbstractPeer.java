@@ -79,7 +79,7 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
     }
     
     /**
-     * @return
+     * @return ChannelHandler
      */
     @Deprecated
     public ChannelHandler getHandler() {
@@ -88,7 +88,7 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
     
     /**
      * 返回最终的handler，可能已被wrap,需要区别于getChannelHandler
-     * @return
+     * @return ChannelHandler
      */
     public ChannelHandler getDelegateHandler() {
         return handler;

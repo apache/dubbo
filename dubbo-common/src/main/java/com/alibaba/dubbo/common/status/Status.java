@@ -26,7 +26,25 @@ public class Status {
      * Level
      */
     public static enum Level {
-        OK, WARN, ERROR, UNKNOWN
+        /**
+         * OK
+         */
+        OK, 
+        
+        /**
+         * WARN
+         */
+        WARN, 
+        
+        /**
+         * ERROR
+         */
+        ERROR, 
+        
+        /**
+         * UNKNOWN
+         */
+        UNKNOWN
     }
     
     private final Level level;

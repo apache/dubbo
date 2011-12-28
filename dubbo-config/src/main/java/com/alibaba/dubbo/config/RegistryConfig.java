@@ -132,7 +132,7 @@ public class RegistryConfig extends AbstractConfig {
     /**
      * @deprecated
      * @see com.alibaba.dubbo.config.ProviderConfig#getWait()
-     * @return
+     * @return wait
      */
     @Deprecated
     public Integer getWait() {
@@ -171,7 +171,7 @@ public class RegistryConfig extends AbstractConfig {
     /**
      * @deprecated
      * @see #getTransporter()
-     * @return
+     * @return transport
      */
     @Deprecated
     @Parameter(excluded = true)

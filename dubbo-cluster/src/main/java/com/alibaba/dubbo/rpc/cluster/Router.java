@@ -33,7 +33,7 @@ public interface Router {
      * 
      * @param invokers
      * @param invocation
-     * @return
+     * @return routed invokers
      * @throws RpcException
      */
 	<T> List<Invoker<T>> route(List<Invoker<T>> invokers, Invocation invocation) throws RpcException;

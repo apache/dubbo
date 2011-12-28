@@ -26,7 +26,7 @@ import com.alibaba.dubbo.common.URL;
  * <a href="http://en.wikipedia.org/wiki/Transport_Layer">Transport Layer</a>
  * <a href="http://en.wikipedia.org/wiki/Client%E2%80%93server_model">Client/Server</a>
  * 
- * @see com.alibaba.dubbo.remoting.exchange.Exchangers
+ * @see com.alibaba.dubbo.remoting.Transporters
  * @author ding.lid
  * @author william.liangf
  */
@@ -36,7 +36,7 @@ public interface Transporter {
     /**
      * Bind a server.
      * 
-     * @see com.alibaba.dubbo.remoting.exchange.Exchangers#bind(URL, Receiver, ChannelHandler)
+     * @see com.alibaba.dubbo.remoting.Transporters#bind(URL, Receiver, ChannelHandler)
      * @param url server url
      * @param handler
      * @return server
@@ -48,7 +48,7 @@ public interface Transporter {
     /**
      * Connect to a server.
      * 
-     * @see com.alibaba.dubbo.remoting.Remoting#connect(URL, Receiver, ChannelListener)
+     * @see com.alibaba.dubbo.remoting.Transporters#connect(URL, Receiver, ChannelListener)
      * @param url server url
      * @param handler
      * @return client

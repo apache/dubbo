@@ -20,7 +20,7 @@ package com.alibaba.dubbo.rpc;
  * 
  * @serial Don't change the class name and properties.
  * @since 1.0
- * @see com.alibaba.dubbo.rpc.Invoker#invoke(RpcInvocation)
+ * @see com.alibaba.dubbo.rpc.Invoker#invoke(Invocation)
  * @author shawn.qianx
  * @author william.liangf
  */

@@ -34,7 +34,7 @@ public interface ChannelHandlerWrapper {
      * 
      * @param handler
      * @param url
-     * @return
+     * @return channel handler
      */
     @Adaptive({Constants.CHANNEL_HANDLER_KEY})
     ChannelHandler wrap(ChannelHandler handler, URL url);

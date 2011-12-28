@@ -25,9 +25,9 @@ import com.alibaba.dubbo.common.URL;
 /**
  * URL statistics. (API, Cached, ThreadSafe)
  * 
- * @see com.alibaba.dubbo.rpc.filter.CountFilter
  * @see com.alibaba.dubbo.rpc.filter.ActiveLimitFilter
- * @see com.alibaba.dubbo.routing.loadbalance.LeastActiveLoadBalance
+ * @see com.alibaba.dubbo.rpc.filter.ExecuteLimitFilter
+ * @see com.alibaba.dubbo.rpc.cluster.loadbalance.LeastActiveLoadBalance
  * @author william.liangf
  */
 public class RpcStatus {
@@ -39,7 +39,7 @@ public class RpcStatus {
     /**
      * 
      * @param url
-     * @return
+     * @return status
      */
     public static RpcStatus getStatus(URL url) {
         String uri = url.toIdentityString();
@@ -64,7 +64,7 @@ public class RpcStatus {
      * 
      * @param url
      * @param methodName
-     * @return
+     * @return status
      */
     public static RpcStatus getStatus(URL url, String methodName) {
         String uri = url.toIdentityString();

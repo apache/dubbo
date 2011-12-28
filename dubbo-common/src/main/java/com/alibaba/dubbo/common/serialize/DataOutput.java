@@ -94,7 +94,7 @@ public interface DataOutput {
 	 * @param v value.
 	 * @throws IOException.
 	 */
-	void writeBytes(byte[] b) throws IOException;
+	void writeBytes(byte[] v) throws IOException;
 
 	/**
 	 * Write byte array.
@@ -104,12 +104,11 @@ public interface DataOutput {
 	 * @param len length.
 	 * @throws IOException.
 	 */
-	void writeBytes(byte[] b, int off, int len) throws IOException;
+	void writeBytes(byte[] v, int off, int len) throws IOException;
 
 	/**
 	 * Flush buffer.
 	 * 
-	 * @param v value.
 	 * @throws IOException.
 	 */
 	void flushBuffer() throws IOException;

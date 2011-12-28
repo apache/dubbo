@@ -22,7 +22,6 @@ import com.alibaba.dubbo.common.Resetable;
  * 
  * <a href="http://en.wikipedia.org/wiki/Client%E2%80%93server_model">Client/Server</a>
  * 
- * @see com.alibaba.dubbo.remoting.exchange.Exchangers#connect(com.alibaba.dubbo.common.URL, ChannelHandler...)
  * @see com.alibaba.dubbo.remoting.Transporter#connect(com.alibaba.dubbo.common.URL, ChannelHandler)
  * @author qian.lei
  */
