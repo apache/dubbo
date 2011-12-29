@@ -165,7 +165,7 @@ public class ConfigUtils {
     }
     
     public static Properties loadProperties(String fileName, boolean allowMultiFile) {
-        return loadProperties(fileName, false, false);
+        return loadProperties(fileName, allowMultiFile, false);
     }
     
 	/**
