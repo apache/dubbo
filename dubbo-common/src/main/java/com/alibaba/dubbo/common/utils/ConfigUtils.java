@@ -127,7 +127,7 @@ public class ConfigUtils {
                             path = Constants.DEFAULT_DUBBO_PROPERTIES;
                         }
                     }
-                    PROPERTIES = ConfigUtils.loadProperties(path);
+                    PROPERTIES = ConfigUtils.loadProperties(path, false, true);
                 }
             }
         }
@@ -161,7 +161,11 @@ public class ConfigUtils {
     }
     
     public static Properties loadProperties(String fileName) {
-        return loadProperties(fileName, false);
+        return loadProperties(fileName, false, false);
+    }
+    
+    public static Properties loadProperties(String fileName, boolean allowMultiFile) {
+        return loadProperties(fileName, false, false);
     }
     
 	/**
@@ -175,7 +179,7 @@ public class ConfigUtils {
 	 * </ul>
 	 * @throws IllegalStateException not allow multi-file, but multi-file exsit on class path.
 	 */
-    public static Properties loadProperties(String fileName, boolean allowMultiFile) {
+    public static Properties loadProperties(String fileName, boolean allowMultiFile, boolean allowEmptyFile) {
         Properties properties = new Properties();
         if (fileName.startsWith("/")) {
             try {
@@ -203,7 +207,9 @@ public class ConfigUtils {
         }
         
         if(list.size() == 0) {
-            logger.warn("No " + fileName + " found on the class path.");
+            if (allowEmptyFile) {
+                logger.warn("No " + fileName + " found on the class path.");
+            }
             return properties;
         }
         
