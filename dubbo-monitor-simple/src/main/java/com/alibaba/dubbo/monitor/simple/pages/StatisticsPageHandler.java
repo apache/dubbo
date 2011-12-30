@@ -80,7 +80,8 @@ public class StatisticsPageHandler implements PageHandler {
                 rows.add(toRow(methodDir.getName(), statistics));
                 if (expandMap != null && expandMap.size() > 0) {
                     for (Map.Entry<String, long[]> entry : expandMap.entrySet()) {
-                        rows.add(toRow(" &nbsp;&nbsp;&nbsp;&nbsp; |-- " + entry.getKey(), entry.getValue()));
+                        String node = MonitorService.CONSUMER.equals(expand) ? "&lt;--" : "--&gt;";
+                        rows.add(toRow(" &nbsp;&nbsp;&nbsp;&nbsp; |" + node + " " + entry.getKey(), entry.getValue()));
                     }
                 }
             }
@@ -157,12 +158,12 @@ public class StatisticsPageHandler implements PageHandler {
     private List<String> toRow(String name, long[] statistics) {
         List<String> row = new ArrayList<String>();
         row.add(name);
-        row.add(String.valueOf(statistics[0]) + " -&gt; " + String.valueOf(statistics[1]));
-        row.add(String.valueOf(statistics[2]) + " -&gt; " + String.valueOf(statistics[3]));
+        row.add(String.valueOf(statistics[0]) + " --&gt; " + String.valueOf(statistics[1]));
+        row.add(String.valueOf(statistics[2]) + " --&gt; " + String.valueOf(statistics[3]));
         row.add(String.valueOf(statistics[0] == 0 ? 0 : statistics[4] / statistics[0]) 
-                + " -&gt; " + String.valueOf(statistics[1] == 0 ? 0 : statistics[5] / statistics[1]));
-        row.add(String.valueOf(statistics[6]) + " -&gt; " + String.valueOf(statistics[7]));
-        row.add(String.valueOf(statistics[8]) + " -&gt; " + String.valueOf(statistics[9]));
+                + " --&gt; " + String.valueOf(statistics[1] == 0 ? 0 : statistics[5] / statistics[1]));
+        row.add(String.valueOf(statistics[6]) + " --&gt; " + String.valueOf(statistics[7]));
+        row.add(String.valueOf(statistics[8]) + " --&gt; " + String.valueOf(statistics[9]));
         return row;
     }
 

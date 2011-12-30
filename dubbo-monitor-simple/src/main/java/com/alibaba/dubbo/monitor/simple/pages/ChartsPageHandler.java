@@ -66,6 +66,8 @@ public class ChartsPageHandler implements PageHandler {
         nav.append(service);
         nav.append("\">Consumers</a> | <a href=\"statistics.html?service=");
         nav.append(service);
+        nav.append("&date=");
+        nav.append(date);
         nav.append("\">Statistics</a> | Charts &gt; <input type=\"text\" style=\"width: 65px;\" name=\"date\" value=\"");
         nav.append(date);
         nav.append("\" onkeyup=\"if (event.keyCode == 10 || event.keyCode == 13) {window.location.href='charts.html?service=");
