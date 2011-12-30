@@ -41,14 +41,17 @@ public class DependenciesPageHandler implements PageHandler {
         }
         boolean reverse = url.getParameter("reverse", false);
         List<List<String>> rows = new ArrayList<List<String>>();
-        appendDependency(rows, reverse, application, 0, new HashSet<String>());
+        Set<String> directly = RegistryContainer.getInstance().getDependencies(application, reverse);
+        Set<String> indirectly = new HashSet<String>();
+        appendDependency(rows, reverse, application, 0, new HashSet<String>(), indirectly);
+        indirectly.remove(application);
         return new Page("<a href=\"applications.html\">Applications</a> &gt; " + application + 
                 " &gt; <a href=\"providers.html?application=" + application + "\">Providers</a> | <a href=\"consumers.html?application=" + application + "\">Consumers</a> | " +
                 (reverse ? "<a href=\"dependencies.html?application=" + application + "\">Depend On</a> | Used By" 
-                        : "Depend On | <a href=\"dependencies.html?application=" + application + "&reverse=true\">Used By</a>"), (reverse ? "Used By" : "Depend On") + " (" + rows.size() + ")", new String[] { "Application Name:"}, rows);
+                        : "Depend On | <a href=\"dependencies.html?application=" + application + "&reverse=true\">Used By</a>"), (reverse ? "Used By" : "Depend On") + " (" + directly.size() + "/" + indirectly.size() + ")", new String[] { "Application Name:"}, rows);
     }
     
-    private void appendDependency(List<List<String>> rows, boolean reverse, String application, int level, Set<String> appended) {
+    private void appendDependency(List<List<String>> rows, boolean reverse, String application, int level, Set<String> appended, Set<String> indirectly) {
         List<String> row = new ArrayList<String>();
         StringBuilder buf = new StringBuilder();
         if (level > 0) {
@@ -75,10 +78,11 @@ public class DependenciesPageHandler implements PageHandler {
         }
         
         appended.add(application);
+        indirectly.add(application);
         Set<String> dependencies = RegistryContainer.getInstance().getDependencies(application, reverse);
         if (dependencies != null && dependencies.size() > 0) {
             for (String dependency : dependencies) {
-                appendDependency(rows, reverse, dependency, level + 1, appended);
+                appendDependency(rows, reverse, dependency, level + 1, appended, indirectly);
             }
         }
         appended.remove(application);
