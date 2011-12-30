@@ -43,27 +43,29 @@ public class ServicesPageHandler implements PageHandler {
         int consumerCount = 0;
         if (services != null && services.size() > 0) {
             for (String service : services) {
-                List<String> row = new ArrayList<String>();
-                row.add(service);
                 List<URL> providers = RegistryContainer.getInstance().getProvidersByService(service);
                 int providerSize = providers == null ? 0 : providers.size();
                 providerCount += providerSize;
                 List<URL> consumers = RegistryContainer.getInstance().getConsumersByService(service);
                 int consumerSize = consumers == null ? 0 : consumers.size();
                 consumerCount += consumerSize;
-                if (providers != null && providers.size() > 0) {
-                    URL provider = providers.iterator().next();
-                    row.add(provider.getParameter(Constants.APPLICATION_KEY, ""));
-                    row.add(provider.getParameter("owner", "") + (provider.hasParameter("organization") ?  " (" + provider.getParameter("organization") + ")" : ""));
-                } else {
-                    row.add("");
-                    row.add("");
+                List<String> row = new ArrayList<String>();
+                row.add(service);
+                if (providerSize > 0 || consumerSize > 0) {
+                    if (providerSize > 0) {
+                        URL provider = providers.iterator().next();
+                        row.add(provider.getParameter(Constants.APPLICATION_KEY, ""));
+                        row.add(provider.getParameter("owner", "") + (provider.hasParameter("organization") ?  " (" + provider.getParameter("organization") + ")" : ""));
+                    } else {
+                        row.add("");
+                        row.add("");
+                    }
+                    row.add(providerSize == 0 ? "<font color=\"red\">No provider</a>" : "<a href=\"providers.html?service=" + service + "\">Providers(" + providerSize + ")</a>");
+                    row.add(consumerSize == 0 ? "<font color=\"blue\">No consumer</a>" : "<a href=\"consumers.html?service=" + service + "\">Consumers(" + consumerSize + ")</a>");
+                    row.add("<a href=\"statistics.html?service=" + service + "\">Statistics</a>");
+                    row.add("<a href=\"charts.html?service=" + service + "\">Charts</a>");
+                    rows.add(row);
                 }
-                row.add(providerSize == 0 ? (consumerSize == 0 ? "<font color=\"blue\">No provider</a>" : "<font color=\"red\">No provider</a>") : "<a href=\"providers.html?service=" + service + "\">Providers(" + providerSize + ")</a>");
-                row.add(consumerSize == 0 ? "<font color=\"blue\">No consumer</a>" : "<a href=\"consumers.html?service=" + service + "\">Consumers(" + consumerSize + ")</a>");
-                row.add("<a href=\"statistics.html?service=" + service + "\">Statistics</a>");
-                row.add("<a href=\"charts.html?service=" + service + "\">Charts</a>");
-                rows.add(row);
             }
         }
         return new Page("Services", "Services (" + rows.size() + ")",
