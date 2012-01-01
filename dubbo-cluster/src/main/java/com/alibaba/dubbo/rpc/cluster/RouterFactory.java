@@ -18,10 +18,15 @@ package com.alibaba.dubbo.rpc.cluster;
 import com.alibaba.dubbo.common.Adaptive;
 import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.rpc.Invocation;
 
 /**
  * RouterFactory. (SPI, Singleton, ThreadSafe)
  * 
+ * <a href="http://en.wikipedia.org/wiki/Routing">Routing</a>
+ * 
+ * @see com.alibaba.dubbo.rpc.cluster.Cluster#merge(Directory)
+ * @see com.alibaba.dubbo.rpc.cluster.Directory#list(Invocation)
  * @author chao.liuc
  */
 @Extension
