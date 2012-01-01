@@ -279,7 +279,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     
     private boolean exists(String node) {
         try {
-            return zookeeper.exists(root, false) != null;
+            return zookeeper.exists(node, false) != null;
         } catch (Throwable e) {
             return false;
         }
