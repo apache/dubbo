@@ -28,12 +28,12 @@ import com.alibaba.dubbo.rpc.cluster.Directory;
 import com.alibaba.dubbo.rpc.cluster.LoadBalance;
 
 /**
- * 快速失败，只发起一次调用，失败立即报错，通常用于非幂等性的写操作。</br> 
+ * 快速失败，只发起一次调用，失败立即报错，通常用于非幂等性的写操作。
+ * 
  * <a href="http://en.wikipedia.org/wiki/Fail-fast">Fail-fast</a>
  * 
  * @author william.liangf
  * @author chao.liuc
- *
  */
 public class FailfastClusterInvoker<T> extends AbstractClusterInvoker<T>{
     public FailfastClusterInvoker(Directory<T> directory) {

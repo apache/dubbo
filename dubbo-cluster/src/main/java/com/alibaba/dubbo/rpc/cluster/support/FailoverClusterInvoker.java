@@ -39,8 +39,8 @@ import com.alibaba.dubbo.rpc.cluster.LoadBalance;
  * 失败转移，当出现失败，重试其它服务器，通常用于读操作，但重试会带来更长延迟。
  * 
  * <a href="http://en.wikipedia.org/wiki/Failover">Failover</a>
+ * 
  * @author william.liangf
- *
  */
 public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T>{
     private static final Logger logger = LoggerFactory.getLogger(FailoverClusterInvoker.class);
