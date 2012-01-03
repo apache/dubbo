@@ -45,8 +45,8 @@ import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.cluster.Router;
 import com.alibaba.dubbo.rpc.cluster.RouterFactory;
+import com.alibaba.dubbo.rpc.cluster.directory.AbstractDirectory;
 import com.alibaba.dubbo.rpc.cluster.router.ScriptRouterFactory;
-import com.alibaba.dubbo.rpc.cluster.support.AbstractDirectory;
 import com.alibaba.dubbo.rpc.cluster.support.ClusterUtils;
 
 /**

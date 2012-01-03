@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.cluster.support;
+package com.alibaba.dubbo.rpc.cluster.directory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +30,7 @@ import com.alibaba.dubbo.rpc.cluster.RouterFactory;
 
 /**
  * 增加router的Directory
+ * 
  * @author chao.liuc
  */
 public abstract class AbstractDirectory<T> implements Directory<T> {
