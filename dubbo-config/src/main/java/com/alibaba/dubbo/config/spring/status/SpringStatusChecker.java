@@ -69,20 +69,12 @@ public class SpringStatusChecker implements StatusChecker {
                 }
                 String[] configs = (String[]) method.invoke(context, new Object[0]);
                 if (configs != null && configs.length > 0) {
-                    String dubboConfig = configs[0];
                     for (String config : configs) {
-                        if (config.contains("dubbo") 
-                                || config.contains("provider") 
-                                || config.contains("server")) {
-                            dubboConfig = config;
-                            break;
+                        if (buf.length() > 0) {
+                            buf.append(",");
                         }
+                        buf.append(config);
                     }
-                    int i = dubboConfig.lastIndexOf('/');
-                    if (i > 0) {
-                        dubboConfig = dubboConfig.substring(i + 1);
-                    }
-                    buf.append(dubboConfig);
                 }
             }
         } catch (Throwable t) {
