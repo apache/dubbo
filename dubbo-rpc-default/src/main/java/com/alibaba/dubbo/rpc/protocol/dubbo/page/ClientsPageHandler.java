@@ -45,7 +45,8 @@ public class ClientsPageHandler implements PageHandler {
         if (servers != null && servers.size() > 0) {
             if (servers.size() == 1) {
                 server = servers.iterator().next();
-                select.append(" &gt; " + server.getUrl().getAddress());
+                String address = server.getUrl().getAddress();
+                select.append(" &gt; " + NetUtils.getHostName(address) + "/" + address);
             } else {
                 select.append(" &gt; <select onchange=\"window.location.href='clients.html?port=' + this.value;\">");
                 for (ExchangeServer s : servers) {
