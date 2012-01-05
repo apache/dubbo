@@ -69,7 +69,7 @@ public class ApplicationsPageHandler implements PageHandler {
                 Set<String> efferents = RegistryContainer.getInstance().getDependencies(application, false);
                 int efferentSize = efferents == null ? 0 : efferents.size();
                 efferentCount += efferentSize;
-                row.add(efferentSize == 0 ? "<font color=\"blue\">No depends</font>" : "<a href=\"dependencies.html?application=" + application + "\">Depend On(" + efferentSize + ")</a>");
+                row.add(efferentSize == 0 ? "<font color=\"blue\">No dependency</font>" : "<a href=\"dependencies.html?application=" + application + "\">Depend On(" + efferentSize + ")</a>");
                 
                 Set<String> afferents = RegistryContainer.getInstance().getDependencies(application, true);
                 int afferentSize = afferents == null ? 0 : afferents.size();
