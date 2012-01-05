@@ -45,26 +45,32 @@ public class MockProxyFactoryWrapper implements ProxyFactory {
     
     @SuppressWarnings({ "unchecked"})
     public <T> T getProxy(Invoker<T> invoker) throws RpcException {
-        String mock = invoker.getUrl().getParameter(Constants.MOCK_KEY);
-        if (ConfigUtils.isNotEmpty(mock) && GenericService.class != invoker.getInterface()) {
-            Class<?> serviceType = invoker.getInterface();
-            if (ConfigUtils.isDefault(mock)) {
-                mock = serviceType.getName() + "Mock";
-            }
-            try {
-                Class<?> mockClass = ReflectUtils.forName(mock);
-                if (! serviceType.isAssignableFrom(mockClass)) {
-                    throw new IllegalArgumentException("The mock implemention class " + mockClass.getName() + " not implement interface " + serviceType.getName());
+        final URL url = invoker.getUrl();
+        String mock = url.getParameterAndDecoded(Constants.MOCK_KEY);
+        boolean methodMock = url.hasMethodParameter(null, Constants.MOCK_KEY);
+        if ((methodMock || ConfigUtils.isNotEmpty(mock)) && GenericService.class != invoker.getInterface()) {
+            if (methodMock || mock.startsWith(Constants.RETURN_PREFIX)) {
+                invoker = new MockReturnInvoker<T>(invoker);
+            } else {
+                Class<?> serviceType = invoker.getInterface();
+                if (ConfigUtils.isDefault(mock)) {
+                    mock = serviceType.getName() + "Mock";
                 }
                 try {
-                    T mockObject = (T) mockClass.newInstance();
-                    invoker = new MockProxyInvoker<T>(invoker, proxyFactory.getInvoker(mockObject, invoker.getInterface(), invoker.getUrl()));
-                } catch (InstantiationException e) {
-                    throw new IllegalStateException("No such empty constructor \"public " + mockClass.getSimpleName() + "()\" in mock implemention class " + mockClass.getName(), e);
+                    Class<?> mockClass = ReflectUtils.forName(mock);
+                    if (! serviceType.isAssignableFrom(mockClass)) {
+                        throw new IllegalArgumentException("The mock implemention class " + mockClass.getName() + " not implement interface " + serviceType.getName());
+                    }
+                    try {
+                        T mockObject = (T) mockClass.newInstance();
+                        invoker = new MockProxyInvoker<T>(invoker, proxyFactory.getInvoker(mockObject, invoker.getInterface(), invoker.getUrl()));
+                    } catch (InstantiationException e) {
+                        throw new IllegalStateException("No such empty constructor \"public " + mockClass.getSimpleName() + "()\" in mock implemention class " + mockClass.getName(), e);
+                    }
+                } catch (Throwable t) {
+                    LOGGER.error("Failed to create mock implemention class " + mock + " in consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() + ", cause: " + t.getMessage(), t);
+                    // ignore
                 }
-            } catch (Throwable t) {
-                LOGGER.error("Failed to create mock implemention class " + mock + " in consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() + ", cause: " + t.getMessage(), t);
-                // ignore
             }
         }
         return proxyFactory.getProxy(invoker);

@@ -298,6 +298,8 @@ public class Constants {
     public static final String       EMPTY_PROTOCOL                     = "empty";
 
     public static final String       ROUTE_PROTOCOL                     = "route";
+    
+    public static final String       RETURN_PREFIX                      = "return ";
 
     private Constants(){
     }

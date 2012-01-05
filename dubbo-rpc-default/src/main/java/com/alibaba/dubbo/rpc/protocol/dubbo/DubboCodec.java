@@ -19,7 +19,6 @@ import static com.alibaba.dubbo.rpc.protocol.dubbo.CallbackServiceCodec.decodeIn
 import static com.alibaba.dubbo.rpc.protocol.dubbo.CallbackServiceCodec.encodeInvocationArgument;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,8 +26,6 @@ import java.util.Map;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.Version;
-import com.alibaba.dubbo.common.logger.Logger;
-import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.serialize.ObjectInput;
 import com.alibaba.dubbo.common.serialize.ObjectOutput;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
@@ -40,6 +37,7 @@ import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
+import com.alibaba.dubbo.rpc.support.RpcUtils;
 
 /**
  * Dubbo codec.
@@ -49,8 +47,6 @@ import com.alibaba.dubbo.rpc.RpcResult;
  */
 @Extension(value=DubboCodec.NAME)
 public class DubboCodec extends ExchangeCodec implements Codec {
-
-    private static final Logger     logger                  = LoggerFactory.getLogger(DubboCodec.class);
 
     public static final String      NAME                    = "dubbo";
 
@@ -156,24 +152,6 @@ public class DubboCodec extends ExchangeCodec implements Codec {
         }
     }
     
-    protected Type[] getReturnType(Invocation invocation) {
-        try {
-            if (invocation != null 
-                    && invocation.getUrl() != null
-                    && ! invocation.getMethodName().startsWith("$")) {
-                String service = invocation.getUrl().getServiceName();
-                if (service != null && service.length() > 0) {
-                    Class<?> cls = ReflectUtils.forName(service);
-                    Method method = cls.getMethod(invocation.getMethodName(), invocation.getParameterTypes());
-                    return new Type[]{method.getReturnType(), method.getGenericReturnType()};
-                }
-            }
-        } catch (Throwable t) {
-            logger.warn(t.getMessage(), t);
-        }
-        return null;
-    }
-
     @Override
     protected Object decodeResponseData(Channel channel, ObjectInput in, Object request) throws IOException {
         Invocation invocation = (Invocation) request;
@@ -185,7 +163,7 @@ public class DubboCodec extends ExchangeCodec implements Codec {
                 break;
             case RESPONSE_VALUE:
                 try {
-                    Type[] returnType = getReturnType(invocation);
+                    Type[] returnType = RpcUtils.getReturnTypes(invocation);
                     result.setResult(returnType == null || returnType.length == 0 ? in.readObject() : 
                         (returnType.length == 1 ? in.readObject((Class<?>)returnType[0]) 
                                 : in.readObject((Class<?>)returnType[0], returnType[1])));

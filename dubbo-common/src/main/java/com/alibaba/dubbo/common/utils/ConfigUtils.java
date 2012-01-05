@@ -45,7 +45,6 @@ public class ConfigUtils {
 	
 	public static boolean isEmpty(String value) {
 		return value == null || value.length() == 0 
-    			|| "null".equalsIgnoreCase(value) 
     			|| "false".equalsIgnoreCase(value) 
     			|| "N/A".equalsIgnoreCase(value);
 	}

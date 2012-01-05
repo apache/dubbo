@@ -34,7 +34,6 @@ import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.common.bytecode.Wrapper;
 import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.common.utils.NetUtils;
-import com.alibaba.dubbo.common.utils.ReflectUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invoker;
@@ -150,7 +149,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
-            checkInterface();
+            checkInterfaceAndMethods(interfaceClass, methods);
+            checkRef();
             generic = false;
         }
         if(local !=null){
@@ -184,6 +184,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         checkApplication();
         checkRegistry();
         checkProtocol();
+        checkStubAndMock(interfaceClass);
         if (path == null || path.length() == 0) {
             path = interfaceName;
         }
@@ -191,11 +192,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         exported = true;
     }
 
-    private void checkInterface() {
-     // 检查接口不为空，并且类型必需为接口
-        if (interfaceClass == null) {
-            throw new IllegalStateException("interface not allow null!");
-        }
+    private void checkRef() {
         // 检查引用不为空，并且引用必需实现接口
         if (ref == null) {
             throw new IllegalStateException("ref not allow null!");
@@ -204,48 +201,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             throw new IllegalStateException("The class "
                     + ref.getClass().getName() + " unimplemented interface "
                     + interfaceClass + "!");
-        }
-        // 检查方法是否在接口中存在
-        if (methods != null && methods.size() > 0) {
-            for (MethodConfig methodBean : methods) {
-                String methodName = methodBean.getName();
-                if (methodName == null || methodName.length() == 0) {
-                    throw new IllegalStateException("<dubbo:method> name attribute is required! Please check: <dubbo:service interface=\"" + interfaceClass.getName() + "\" ... ><dubbo:method name=\"\" ... /></<dubbo:reference>");
-                }
-                boolean hasMethod = false;
-                for (java.lang.reflect.Method method : interfaceClass.getMethods()) {
-                    if (method.getName().equals(methodName)) {
-                        hasMethod = true;
-                        break;
-                    }
-                }
-                if (!hasMethod) {
-                    throw new IllegalStateException("The interface " + interfaceClass.getName()
-                            + " not found method " + methodName);
-                }
-            }
-        }
-        if (ConfigUtils.isNotEmpty(stub)) {
-            Class<?> localClass = ConfigUtils.isDefault(stub) ? ReflectUtils.forName(interfaceClass.getName() + "Stub") : ReflectUtils.forName(stub);
-            if (! interfaceClass.isAssignableFrom(localClass)) {
-                throw new IllegalStateException("The local implemention class " + localClass.getName() + " not implement interface " + interfaceClass.getName());
-            }
-            try {
-                ReflectUtils.findConstructor(localClass, interfaceClass);
-            } catch (NoSuchMethodException e) {
-                throw new IllegalStateException("No such constructor \"public " + localClass.getSimpleName() + "(" + interfaceClass.getName() + ")\" in local implemention class " + localClass.getName());
-            }
-        }
-        if (ConfigUtils.isNotEmpty(mock)) {
-            Class<?> mockClass = ConfigUtils.isDefault(mock) ? ReflectUtils.forName(interfaceClass.getName() + "Mock") : ReflectUtils.forName(mock);
-            if (! interfaceClass.isAssignableFrom(mockClass)) {
-                throw new IllegalStateException("The mock implemention class " + mockClass.getName() + " not implement interface " + interfaceClass.getName());
-            }
-            try {
-                mockClass.getConstructor(new Class<?>[0]);
-            } catch (NoSuchMethodException e) {
-                throw new IllegalStateException("No such empty constructor \"public " + mockClass.getSimpleName() + "()\" in mock implemention class " + mockClass.getName());
-            }
         }
     }
 

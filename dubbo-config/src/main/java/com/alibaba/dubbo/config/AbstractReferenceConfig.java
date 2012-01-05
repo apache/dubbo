@@ -26,6 +26,7 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.common.utils.NetUtils;
+import com.alibaba.dubbo.common.utils.ReflectUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.common.utils.UrlUtils;
 import com.alibaba.dubbo.monitor.MonitorFactory;
@@ -37,6 +38,7 @@ import com.alibaba.dubbo.rpc.InvokerListener;
 import com.alibaba.dubbo.rpc.ProxyFactory;
 import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.cluster.Cluster;
+import com.alibaba.dubbo.rpc.proxy.wrapper.MockReturnInvoker;
 
 /**
  * AbstractDefaultConfig
@@ -52,9 +54,6 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
 
     // 服务接口的本地实现类名
     protected String               stub;
-
-    // 服务接口的失败mock实现类名
-    protected String               mock;
 
     // 服务监控
     protected MonitorConfig        monitor;
@@ -200,6 +199,71 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
         }
         return null;
     }
+    
+    protected void checkInterfaceAndMethods(Class<?> interfaceClass, List<MethodConfig> methods) {
+        // 接口不能为空
+        if (interfaceClass == null) {
+            throw new IllegalStateException("interface not allow null!");
+        }
+        // 检查接口类型必需为接口
+        if(! interfaceClass.isInterface()) { 
+            throw new IllegalStateException("The interface class " + interfaceClass + " is not a interface!");
+        }
+        // 检查方法是否在接口中存在
+        if (methods != null && methods.size() > 0) {
+            for (MethodConfig methodBean : methods) {
+                String methodName = methodBean.getName();
+                if (methodName == null || methodName.length() == 0) {
+                    throw new IllegalStateException("<dubbo:method> name attribute is required! Please check: <dubbo:service interface=\"" + interfaceClass.getName() + "\" ... ><dubbo:method name=\"\" ... /></<dubbo:reference>");
+                }
+                boolean hasMethod = false;
+                for (java.lang.reflect.Method method : interfaceClass.getMethods()) {
+                    if (method.getName().equals(methodName)) {
+                        hasMethod = true;
+                        break;
+                    }
+                }
+                if (!hasMethod) {
+                    throw new IllegalStateException("The interface " + interfaceClass.getName()
+                            + " not found method " + methodName);
+                }
+            }
+        }
+    }
+    
+    protected void checkStubAndMock(Class<?> interfaceClass) {
+        if (ConfigUtils.isNotEmpty(stub)) {
+            Class<?> localClass = ConfigUtils.isDefault(stub) ? ReflectUtils.forName(interfaceClass.getName() + "Stub") : ReflectUtils.forName(stub);
+            if (! interfaceClass.isAssignableFrom(localClass)) {
+                throw new IllegalStateException("The local implemention class " + localClass.getName() + " not implement interface " + interfaceClass.getName());
+            }
+            try {
+                ReflectUtils.findConstructor(localClass, interfaceClass);
+            } catch (NoSuchMethodException e) {
+                throw new IllegalStateException("No such constructor \"public " + localClass.getSimpleName() + "(" + interfaceClass.getName() + ")\" in local implemention class " + localClass.getName());
+            }
+        }
+        if (ConfigUtils.isNotEmpty(mock)) {
+            if (mock.startsWith(Constants.RETURN_PREFIX)) {
+                String value = mock.substring(Constants.RETURN_PREFIX.length());
+                try {
+                    MockReturnInvoker.parseMockValue(value);
+                } catch (Exception e) {
+                    throw new IllegalStateException("Illegal mock json value in <dubbo:service ... mock=\"" + mock + "\" />");
+                }
+            } else {
+                Class<?> mockClass = ConfigUtils.isDefault(mock) ? ReflectUtils.forName(interfaceClass.getName() + "Mock") : ReflectUtils.forName(mock);
+                if (! interfaceClass.isAssignableFrom(mockClass)) {
+                    throw new IllegalStateException("The mock implemention class " + mockClass.getName() + " not implement interface " + interfaceClass.getName());
+                }
+                try {
+                    mockClass.getConstructor(new Class<?>[0]);
+                } catch (NoSuchMethodException e) {
+                    throw new IllegalStateException("No such empty constructor \"public " + mockClass.getSimpleName() + "()\" in mock implemention class " + mockClass.getName());
+                }
+            }
+        }
+    }
 
     /**
      * @deprecated Replace to <code>getStub()</code>
@@ -220,15 +284,11 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
         this.local = local;
     }
 
-    public String getStub() {
-        return stub;
-    }
-
-    public void setStub(String stub) {
-        checkName("stub", stub);
-        this.stub = stub;
-    }
-    
+    /**
+     * @deprecated Replace to <code>setStub(Boolean)</code>
+     * @param local
+     */
+    @Deprecated
     public void setLocal(Boolean local) {
         if (local == null) {
             setLocal((String) null);
@@ -237,23 +297,23 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
         }
     }
     
-    public String getMock() {
-        return mock;
+    public String getStub() {
+        return stub;
     }
 
-    public void setMock(String mock) {
-        checkName("mock", mock);
-        this.mock = mock;
+    public void setStub(String stub) {
+        checkName("stub", stub);
+        this.stub = stub;
     }
-    
-    public void setMock(Boolean mock) {
-        if (mock == null) {
-            setMock((String) null);
+
+    public void setStub(Boolean stub) {
+        if (local == null) {
+            setStub((String) null);
         } else {
-            setMock(String.valueOf(mock));
+            setStub(String.valueOf(stub));
         }
     }
-
+    
     public String getCluster() {
         return cluster;
     }

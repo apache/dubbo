@@ -532,6 +532,14 @@ public final class URL implements Serializable {
         return value != null && value.length() > 0;
     }
 
+    public String getMethodParameterAndDecoded(String method, String key) {
+        return URL.decode(getMethodParameter(method, key));
+    }
+
+    public String getMethodParameterAndDecoded(String method, String key, String defaultValue) {
+        return URL.decode(getMethodParameter(method, key, defaultValue));
+    }
+
     public String getMethodParameter(String method, String key) {
         String value = parameters.get(method + "." + key);
         if (value == null || value.length() == 0) {
@@ -723,7 +731,25 @@ public final class URL implements Serializable {
         return Boolean.parseBoolean(value);
     }
 
-    public boolean hasMethodParamter(String method, String key) {
+    public boolean hasMethodParameter(String method, String key) {
+        if (method == null) {
+            String suffix = "." + key;
+            for (String fullKey : parameters.keySet()) {
+                if (fullKey.endsWith(suffix)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        if (key == null) {
+            String prefix = method + ".";
+            for (String fullKey : parameters.keySet()) {
+                if (fullKey.startsWith(prefix)) {
+                    return true;
+                }
+            }
+            return false;
+        }
         String value = getMethodParameter(method, key);
         return value != null && value.length() > 0;
     }

@@ -15,6 +15,7 @@
  */
 package com.alibaba.dubbo.common.utils;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -22,7 +23,11 @@ import java.net.URL;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Matcher;
@@ -785,6 +790,34 @@ public final class ReflectUtils {
             }
         }
         return false;
+    }
+    
+    public static Object getEmptyObject(Class<?> returnType) {
+        Object value = null;
+        if (returnType == null) {
+            value = null;
+        } else if (returnType.isPrimitive()) {
+            value = null;
+        } else if (returnType.isArray()) {
+            value = Array.newInstance(returnType.getComponentType(), 0);
+        } else if (List.class.equals(returnType)) {
+            value = new ArrayList<Object>(0);
+        } else if (Set.class.equals(returnType)) {
+            value = new HashSet<Object>(0);
+        } else if (Map.class.equals(returnType)) {
+            value = new HashMap<Object, Object>(0);
+        } else if (String.class.equals(returnType)) {
+            value = "";
+        } else if (! returnType.isInterface()) {
+            try {
+                value = returnType.newInstance();
+            } catch (Exception e) {
+                value = null;
+            }
+        } else {
+            value = null;
+        }
+        return value;
     }
     
 	private ReflectUtils(){}

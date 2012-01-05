@@ -257,6 +257,11 @@
 				<xsd:documentation><![CDATA[ The async method return await message sent ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
+		<xsd:attribute name="mock" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ Use service mock implemention. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
 	</xsd:complexType>
 	
 	<xsd:element name="method">
@@ -365,11 +370,6 @@
 				<xsd:attribute name="stub" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[ Use service local implemention. ]]></xsd:documentation>
-					</xsd:annotation>
-				</xsd:attribute>
-				<xsd:attribute name="mock" type="xsd:string" use="optional">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[ Use service mock implemention. ]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
 				<xsd:attribute name="proxy" type="xsd:string" use="optional">

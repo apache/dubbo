@@ -152,7 +152,7 @@ public class ReferenceConfig<T> extends AbstractConsumerConfig {
 			} catch (ClassNotFoundException e) {
 				throw new IllegalStateException(e.getMessage(), e);
 			}
-            checkInterface();
+            checkInterfaceAndMethods(interfaceClass, methods);
         }
         String resolve = System.getProperty(interfaceName);
         String resolveFile = null;
@@ -212,6 +212,7 @@ public class ReferenceConfig<T> extends AbstractConsumerConfig {
             }
         }
         checkApplication();
+        checkStubAndMock(interfaceClass);
         Map<String, String> map = new HashMap<String, String>();
         Map<Object, Object> attributes = new HashMap<Object, Object>();
         map.put("dubbo", Version.getVersion());
@@ -354,66 +355,6 @@ public class ReferenceConfig<T> extends AbstractConsumerConfig {
         }
         // 创建服务代理
         return (T) proxyFactory.getProxy(invoker);
-    }
-
-    private void checkInterface() {
-        // 检查接口类型必需为接口
-        if(! interfaceClass.isInterface()) { 
-        	throw new IllegalStateException("The interface class " + interfaceClass + " is not a interface!");
-        }
-        // 检查方法是否在接口中存在
-        if (methods != null && methods.size() > 0) {
-            for (MethodConfig methodBean : methods) {
-                String methodName = methodBean.getName();
-                if (methodName == null || methodName.length() == 0) {
-                    throw new IllegalStateException("<dubbo:method> name attribute is required! Please check: <dubbo:reference interface=\"" + interfaceClass.getName() + "\" ... ><dubbo:method name=\"\" ... /></<dubbo:reference>");
-                }
-                boolean hasMethod = false;
-                for (Method method : interfaceClass.getMethods()) {
-                    if (method.getName().equals(methodName)) {
-                        hasMethod = true;
-                        break;
-                    }
-                }
-                if (! hasMethod) {
-                    throw new IllegalStateException("The interface " + interfaceClass.getName()
-                            + " not found method " + methodName);
-                }
-            }
-        }
-        if (ConfigUtils.isNotEmpty(local)) {
-            Class<?> localClass = ConfigUtils.isDefault(local) ? ReflectUtils.forName(interfaceClass.getName() + "Local") : ReflectUtils.forName(local);
-            if (! interfaceClass.isAssignableFrom(localClass)) {
-                throw new IllegalStateException("The local implemention class " + localClass.getName() + " not implement interface " + interfaceClass.getName());
-            }
-            try {
-                ReflectUtils.findConstructor(localClass, interfaceClass);
-            } catch (NoSuchMethodException e) {
-                throw new IllegalStateException("No such constructor \"public " + localClass.getSimpleName() + "(" + interfaceClass.getName() + ")\" in local implemention class " + localClass.getName());
-            }
-        }
-        if (ConfigUtils.isNotEmpty(stub)) {
-            Class<?> localClass = ConfigUtils.isDefault(stub) ? ReflectUtils.forName(interfaceClass.getName() + "Stub") : ReflectUtils.forName(stub);
-            if (! interfaceClass.isAssignableFrom(localClass)) {
-                throw new IllegalStateException("The stub implemention class " + localClass.getName() + " not implement interface " + interfaceClass.getName());
-            }
-            try {
-                ReflectUtils.findConstructor(localClass, interfaceClass);
-            } catch (NoSuchMethodException e) {
-                throw new IllegalStateException("No such constructor \"public " + localClass.getSimpleName() + "(" + interfaceClass.getName() + ")\" in local implemention class " + localClass.getName());
-            }
-        }
-        if (ConfigUtils.isNotEmpty(mock)) {
-            Class<?> mockClass = ConfigUtils.isDefault(mock) ? ReflectUtils.forName(interfaceClass.getName() + "Mock") : ReflectUtils.forName(mock);
-            if (! interfaceClass.isAssignableFrom(mockClass)) {
-                throw new IllegalStateException("The mock implemention class " + mockClass.getName() + " not implement interface " + interfaceClass.getName());
-            }
-            try {
-                mockClass.getConstructor(new Class<?>[0]);
-            } catch (NoSuchMethodException e) {
-                throw new IllegalStateException("No such empty constructor \"public " + mockClass.getSimpleName() + "()\" in mock implemention class " + mockClass.getName());
-            }
-        }
     }
 
     private void checkDefault() {
