@@ -30,6 +30,6 @@
 	
 	<dubbo:monitor protocol="registry" />
 	
-	<dubbo:protocol name="dubbo" port="${dubbo.protocol.port}" />
+	<dubbo:protocol name="${dubbo.protocol.name}" port="${dubbo.protocol.port}" />
 	
 </beans>
