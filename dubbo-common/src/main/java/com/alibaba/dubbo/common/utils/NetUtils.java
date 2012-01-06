@@ -128,7 +128,7 @@ public class NetUtils {
     
     public static String getLocalHost(){
         InetAddress address = getLocalAddress();
-        return address == null ? null : address.getHostAddress();
+        return address == null ? LOCALHOST : address.getHostAddress();
     }
     
     public static String filterLocalHost(String host) {
@@ -146,11 +146,16 @@ public class NetUtils {
      * @return 本地网卡IP
      */
     public static InetAddress getLocalAddress() {
-    	if (LOCAL_ADDRESS != null)
-    		return LOCAL_ADDRESS;
-    	InetAddress localAddress = getLocalAddress0();
-    	LOCAL_ADDRESS = localAddress;
-    	return localAddress;
+        if (LOCAL_ADDRESS != null)
+            return LOCAL_ADDRESS;
+        InetAddress localAddress = getLocalAddress0();
+        LOCAL_ADDRESS = localAddress;
+        return localAddress;
+    }
+    
+    public static String getLogHost() {
+        InetAddress address = LOCAL_ADDRESS;
+        return address == null ? LOCALHOST : address.getHostAddress();
     }
     
     private static InetAddress getLocalAddress0() {
