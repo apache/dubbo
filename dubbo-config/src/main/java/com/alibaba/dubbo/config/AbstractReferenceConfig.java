@@ -232,6 +232,17 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
     }
     
     protected void checkStubAndMock(Class<?> interfaceClass) {
+        if (ConfigUtils.isNotEmpty(local)) {
+            Class<?> localClass = ConfigUtils.isDefault(local) ? ReflectUtils.forName(interfaceClass.getName() + "Local") : ReflectUtils.forName(local);
+            if (! interfaceClass.isAssignableFrom(localClass)) {
+                throw new IllegalStateException("The local implemention class " + localClass.getName() + " not implement interface " + interfaceClass.getName());
+            }
+            try {
+                ReflectUtils.findConstructor(localClass, interfaceClass);
+            } catch (NoSuchMethodException e) {
+                throw new IllegalStateException("No such constructor \"public " + localClass.getSimpleName() + "(" + interfaceClass.getName() + ")\" in local implemention class " + localClass.getName());
+            }
+        }
         if (ConfigUtils.isNotEmpty(stub)) {
             Class<?> localClass = ConfigUtils.isDefault(stub) ? ReflectUtils.forName(interfaceClass.getName() + "Stub") : ReflectUtils.forName(stub);
             if (! interfaceClass.isAssignableFrom(localClass)) {
