@@ -17,7 +17,9 @@ package com.alibaba.dubbo.config;
 
 import java.lang.reflect.Method;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -248,12 +250,16 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                     if (registryURLs != null && registryURLs.size() > 0) {
                         for (URL registryURL : registryURLs) {
                             try {
-                                Socket socket = new Socket(registryURL.getHost(), registryURL.getPort());
+                                Socket socket = new Socket();
                                 try {
+                                    SocketAddress addr = new InetSocketAddress(registryURL.getHost(), registryURL.getPort());
+                                    socket.connect(addr, 1000);
                                     host = socket.getLocalAddress().getHostAddress();
                                     break;
                                 } finally {
-                                    socket.close();
+                                    try {
+                                        socket.close();
+                                    } catch (Throwable e) {}
                                 }
                             } catch (Exception e) {
                                 logger.warn(e.getMessage(), e);
