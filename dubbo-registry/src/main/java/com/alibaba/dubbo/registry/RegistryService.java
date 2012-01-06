@@ -26,6 +26,7 @@ import com.alibaba.dubbo.common.URL;
  * 1. 支持username=foo&password=bar权限认证
  * 2. 支持timeout=1000超时设置
  * 3. 支持backup=10.20.153.10备选注册中心地址
+ * 4. 支持file=registry.cache本地磁盘缓存
  * 
  * @author william.liangf
  */
@@ -57,12 +58,13 @@ public interface RegistryService {
      * 
      * 订阅需处理契约：<br>
      * 1. 当URL设置了check=false时，订阅失败后不报错，在后台定时重试<br>
-     * 2. 当URL设置了admin=true时，结果不只包含服务提供者的URL和路由规则URL，还需包含所有服务订阅者的URL<br>
-     * 3. 允许以interface,group,version,classifier作为条件查询，如：interface=com.alibaba.foo.BarService&group=foo&version=1.0.0&classifier=william<br>
-     * 4. 允许星号通配，订阅所有接口的所有分组的所有版本，如：interface=*&group=*&version=*&classifier=* <br>
-     * 5. 允许URI相同但参数不同的URL并存，不能覆盖。<br>
-     * 6. 当服务消费者出现断电等情况异常退出时，需自动删除当前消费者URL。<br>
-     * 7. 当注册中心重启恢复时，需自动恢复订阅请求。<br>
+     * 2. 当URL设置了register=false时，不记录订阅者的URL<br>
+     * 3. 当URL设置了admin=true时，结果不只包含服务提供者的URL和路由规则URL，还需包含所有服务订阅者的URL<br>
+     * 4. 允许以interface,group,version,classifier作为条件查询，如：interface=com.alibaba.foo.BarService&group=foo&version=1.0.0&classifier=william<br>
+     * 5. 允许星号通配，订阅所有接口的所有分组的所有版本，如：interface=*&group=*&version=*&classifier=* <br>
+     * 6. 允许URI相同但参数不同的URL并存，不能覆盖。<br>
+     * 7. 当服务消费者出现断电等情况异常退出时，需自动删除当前消费者URL。<br>
+     * 8. 当注册中心重启恢复时，需自动恢复订阅请求。<br>
      * 
      * @param url 服务查询键值对，如：subscribe://10.20.153.10/com.alibaba.foo.BarService?version=1.0.0&application=kylin
      * @param listener 服务变更事件监听器
