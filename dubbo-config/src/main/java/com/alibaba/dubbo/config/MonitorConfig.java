@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.config;
 
-import java.io.Serializable;
 import java.util.Map;
 
 /**
