@@ -16,10 +16,9 @@
 -->
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd"
+	default-autowire="byName">
 	
-	<bean class="com.alibaba.dubbo.demo.consumer.DemoAction" init-method="start">
-		<property name="demoService" ref="demoService" />
-	</bean>
+	<bean class="com.alibaba.dubbo.demo.consumer.DemoAction" init-method="start" />
 	
 </beans>

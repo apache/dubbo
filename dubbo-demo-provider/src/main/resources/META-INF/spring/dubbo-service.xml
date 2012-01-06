@@ -20,6 +20,8 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
 	http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
 	
-	<dubbo:service interface="com.alibaba.dubbo.demo.DemoService" ref="demoService" loadbalance="roundrobin" />
+	<dubbo:service interface="com.alibaba.dubbo.demo.DemoService" ref="demoService" loadbalance="roundrobin">
+		<dubbo:method name="sayHello" mock="return ok1" />
+	</dubbo:service>
 	
 </beans>

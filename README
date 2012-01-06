@@ -31,15 +31,15 @@
 4. Install the demo provider:
 
     cd ~/dubbo/dubbo-demo-provider/target
-    tar zxvf dubbo-demo-provider-2.0.10-assembly.tar.gz
-    cd dubbo-demo-provider-2.0.10/bin
+    tar zxvf dubbo-demo-provider-2.1.0-SNAPSHOT-assembly.tar.gz
+    cd dubbo-demo-provider-2.1.0-SNAPSHOT/bin
     ./start.sh
 
 5. Install the demo consumer:
 
     cd ~/dubbo/dubbo-demo-consumer/target
-    tar zxvf dubbo-demo-consumer-2.0.10-assembly.tar.gz
-    cd dubbo-demo-consumer-2.0.10/bin
+    tar zxvf dubbo-demo-consumer-2.1.0-SNAPSHOT-assembly.tar.gz
+    cd dubbo-demo-consumer-2.1.0-SNAPSHOT/bin
     ./start.sh
     cd ../logs
     tail -f stdout.log
@@ -47,16 +47,16 @@
 6. Install the simple monitor:
 
     cd ~/dubbo/dubbo-simple-monitor/target
-    tar zxvf dubbo-simple-monitor-2.0.10-assembly.tar.gz
-    cd dubbo-simple-monitor-2.0.10/bin
+    tar zxvf dubbo-simple-monitor-2.1.0-SNAPSHOT-assembly.tar.gz
+    cd dubbo-simple-monitor-2.1.0-SNAPSHOT/bin
     ./start.sh
     http://127.0.0.1:8080
 
 7. Install the simple registry:
 
     cd ~/dubbo/dubbo-simple-registry/target
-    tar zxvf dubbo-simple-registry-2.0.10-assembly.tar.gz
-    cd dubbo-simple-registry-2.0.10/bin
+    tar zxvf dubbo-simple-registry-2.1.0-SNAPSHOT-assembly.tar.gz
+    cd dubbo-simple-registry-2.1.0-SNAPSHOT/bin
     ./start.sh
 
     cd ~/dubbo/dubbo-demo-provider/conf
