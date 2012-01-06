@@ -130,8 +130,8 @@ public class DubboMonitor implements Monitor {
                     update[1] = current[1] - failure;
                     update[2] = current[2] - input;
                     update[3] = current[3] - output;
-                    update[4] = current[4] - output;
-                    update[5] = current[5] - output;
+                    update[4] = current[4] - elapsed;
+                    update[5] = current[5] - concurrent;
                 }
             } while (! reference.compareAndSet(current, update));
         }
