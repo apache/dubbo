@@ -16,6 +16,7 @@
 package com.alibaba.dubbo.config;
 
 import java.io.Serializable;
+import java.util.Map;
 
 /**
  * MonitorConfig
@@ -37,7 +38,10 @@ public class MonitorConfig implements Serializable {
 	private String group;
 
     private String version;
-    
+
+    // 自定义参数
+    private Map<String, String> parameters;
+
     public MonitorConfig() {
     }
 
@@ -95,6 +99,15 @@ public class MonitorConfig implements Serializable {
 
     public void setVersion(String version) {
         this.version = version;
+    }
+
+    public Map<String, String> getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(Map<String, String> parameters) {
+        checkParameterName(parameters);
+        this.parameters = parameters;
     }
 
 }

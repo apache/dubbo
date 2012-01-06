@@ -15,6 +15,8 @@
  */
 package com.alibaba.dubbo.config;
 
+import java.util.Map;
+
 import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.registry.support.AbstractRegistryFactory;
 import com.alibaba.dubbo.remoting.Transporter;
@@ -77,7 +79,10 @@ public class RegistryConfig extends AbstractConfig {
     
     // 在该注册中心上服务是否引用
     private Boolean           subscribe;
-    
+
+    // 自定义参数
+    private Map<String, String> parameters;
+
     public RegistryConfig() {
     }
     
@@ -275,6 +280,15 @@ public class RegistryConfig extends AbstractConfig {
 
     public void setVersion(String version) {
         this.version = version;
+    }
+
+    public Map<String, String> getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(Map<String, String> parameters) {
+        checkParameterName(parameters);
+        this.parameters = parameters;
     }
 
 }

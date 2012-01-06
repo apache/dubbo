@@ -86,15 +86,6 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
         this.async = async;
     }
 
-    public Map<String, String> getParameters() {
-        return parameters;
-    }
-
-    public void setParameters(Map<String, String> parameters) {
-        checkParameterName(parameters);
-        this.parameters = parameters;
-    }
-
     public Integer getActives() {
         return actives;
     }
@@ -131,6 +122,15 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
         } else {
             setMock(String.valueOf(mock));
         }
+    }
+
+    public Map<String, String> getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(Map<String, String> parameters) {
+        checkParameterName(parameters);
+        this.parameters = parameters;
     }
 
 }

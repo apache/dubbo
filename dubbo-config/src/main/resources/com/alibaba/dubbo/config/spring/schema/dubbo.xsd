@@ -62,6 +62,9 @@
 			<xsd:documentation><![CDATA[ The registry config ]]></xsd:documentation> 
 		</xsd:annotation>
 		<xsd:complexType>
+			<xsd:sequence minOccurs="0" maxOccurs="unbounded">
+				<xsd:element ref="parameter" minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
 			<xsd:attribute name="id" type="xsd:ID">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[ The unique identifier for a bean. ]]></xsd:documentation>
@@ -165,6 +168,9 @@
 			<xsd:documentation><![CDATA[ The logstat monitor config ]]></xsd:documentation> 
 		</xsd:annotation>
 		<xsd:complexType>
+			<xsd:sequence minOccurs="0" maxOccurs="unbounded">
+				<xsd:element ref="parameter" minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
 			<xsd:attribute name="address" type="xsd:string" use="optional">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[ The monitor address. ]]></xsd:documentation>
