@@ -239,7 +239,7 @@ public class DefaultFuture implements ResponseFuture {
             if (future != null) {
                 future.doReceived(response);
             } else {
-                logger.warn("The timeout reponse finally returned at " 
+                logger.warn("The timeout response finally returned at " 
                             + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date())) 
                             + ", response " + response 
                             + (channel == null ? "" : ", channel: " + channel.getLocalAddress() 
