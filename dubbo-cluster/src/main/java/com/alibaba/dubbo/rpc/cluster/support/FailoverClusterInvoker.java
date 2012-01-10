@@ -87,10 +87,13 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 providers.add(invoker.getUrl().getAddress());
             }
         }
-        throw new RpcException(le != null ? le.getCode() : 0,
-                "Tried " + len + " times of the providers " + providers + " from the registry " + directory.getUrl().getAddress() + " to invoke the method " + invocation.getMethodName() + " of the service " + getInterface().getName()
-                + " on the consumer " + NetUtils.getLocalHost() + " using the dubbo version " + Version.getVersion()
-                + ", but no luck to perform the invocation. Last error is: " + (le != null ? le.getMessage() : ""), le);
+        throw new RpcException(le != null ? le.getCode() : 0, "Tried " + len
+                + " times of the providers " + providers + " from the registry "
+                + directory.getUrl().getAddress() + " to invoke the method "
+                + invocation.getMethodName() + " of the service " + getInterface().getName()
+                + " on the consumer " + NetUtils.getLocalHost() + " using the dubbo version "
+                + Version.getVersion() + ", but no luck to perform the invocation. Last error is: "
+                + (le != null ? le.getMessage() : ""), le);
     }
 
 }
