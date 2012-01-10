@@ -41,6 +41,9 @@ public class RpcUtils {
                 if (service != null && service.length() > 0) {
                     Class<?> cls = ReflectUtils.forName(service);
                     Method method = cls.getMethod(invocation.getMethodName(), invocation.getParameterTypes());
+                    if (method.getReturnType() == void.class) {
+                        return null;
+                    }
                     return method.getReturnType();
                 }
             }
@@ -59,6 +62,9 @@ public class RpcUtils {
                 if (service != null && service.length() > 0) {
                     Class<?> cls = ReflectUtils.forName(service);
                     Method method = cls.getMethod(invocation.getMethodName(), invocation.getParameterTypes());
+                    if (method.getReturnType() == void.class) {
+                        return null;
+                    }
                     return new Type[]{method.getReturnType(), method.getGenericReturnType()};
                 }
             }
