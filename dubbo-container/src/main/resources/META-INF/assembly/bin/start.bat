@@ -1,7 +1,9 @@
 @echo off & setlocal enabledelayedexpansion
 
-set LIB_JARS = ""
+set LIB_JARS=""
+cd ..\lib
 for %%i in (*) do set LIB_JARS=!LIB_JARS!;..\lib\%%i
+cd ..\bin
 
 if ""%1"" == ""debug"" goto debug
 if ""%1"" == ""jmx"" goto jmx
