@@ -234,7 +234,7 @@ public class ExtensionLoader<T> {
                         && method.getParameterTypes().length == 1
                         && Modifier.isPublic(method.getModifiers())) {
                     Class<?> pt = method.getParameterTypes()[0];
-                    if (pt.isInterface()) {
+                    if (pt.isInterface() && pt.isAnnotationPresent(Extension.class)) {
                         try {
                             Object adaptive = getExtensionLoader(pt).getAdaptiveExtension();
                             method.invoke(instance, adaptive);

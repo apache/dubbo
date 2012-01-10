@@ -26,6 +26,11 @@ import com.alibaba.dubbo.common.extensionloader.ext6_inject.Ext6;
 @Extension(value = "impl1")
 public class Ext6Impl1 implements Ext6 {
     Ext1 ext1;
+    Dao obj;
+    
+    public void setDao(Dao obj){
+        this.obj = obj;
+    }
     
     public void setExt1(Ext1 ext1) {
         this.ext1 = ext1;
@@ -33,6 +38,10 @@ public class Ext6Impl1 implements Ext6 {
 
     public String echo(URL url, String s) {
         return "Ext6Impl1-echo-" + ext1.echo(url, s);
+    }
+    
+    public static interface Dao{
+        
     }
 
 }

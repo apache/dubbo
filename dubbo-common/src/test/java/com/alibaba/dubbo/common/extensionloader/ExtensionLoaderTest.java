@@ -29,6 +29,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import junit.framework.Assert;
+
 import org.junit.Test;
 
 import com.alibaba.dubbo.common.ExtensionLoader;
@@ -46,6 +48,7 @@ import com.alibaba.dubbo.common.extensionloader.ext5.impl.Ext5Wrapper2;
 import com.alibaba.dubbo.common.extensionloader.ext6_inject.Ext6;
 import com.alibaba.dubbo.common.extensionloader.ext6_inject.impl.Ext6Impl2;
 import com.alibaba.dubbo.common.extensionloader.ext7.Ext7;
+import com.alibaba.dubbo.common.utils.LogUtil;
 
 /**
  * @author ding.lid
@@ -402,6 +405,7 @@ public class ExtensionLoaderTest {
     
     @Test
     public void test_getAdaptiveExtension_inject() throws Exception {
+        LogUtil.start();
         Ext6 ext = ExtensionLoader.getExtensionLoader(Ext6.class).getAdaptiveExtension();
 
         URL url = new URL("p1", "1.2.3.4", 1010, "path1");
@@ -409,8 +413,12 @@ public class ExtensionLoaderTest {
         
         assertEquals("Ext6Impl1-echo-Ext1Impl1-echo", ext.echo(url, "ha"));
         
+        Assert.assertTrue("can not find error.", LogUtil.checkNoError());
+        LogUtil.stop();
+        
         url = url.addParameters("ext1", "impl2");
         assertEquals("Ext6Impl1-echo-Ext1Impl2-echo", ext.echo(url, "ha"));
+        
     }
     
     @Test
