@@ -235,8 +235,12 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
     }
     
     protected void checkInvokers(List<Invoker<T>> invokers) {
-        if (invokers == null || invokers.size() == 0)
-            throw new RpcException("No provider available for the service " + getInterface().getName() + " from the registry " + directory.getUrl() + " on the consumer " + NetUtils.getLocalHost() + " using the dubbo version " + Version.getVersion() + ". Please check the provider has started.");
+        if (invokers == null || invokers.size() == 0) {
+            throw new RpcException("No provider available for the service "
+                    + getInterface().getName() + " from the registry " + directory.getUrl().getAddress()
+                    + " on the consumer " + NetUtils.getLocalHost() + " using the dubbo version "
+                    + Version.getVersion() + ". Please check the provider has started.");
+        }
     }
 
     protected abstract Result doInvoke(Invocation invocation, List<Invoker<T>> invokers,
