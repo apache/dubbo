@@ -30,6 +30,7 @@ import com.alibaba.dubbo.rpc.cluster.LoadBalance;
  * @author william.liangf
  */
 public class AvailableClusterInvoker<T> extends AbstractClusterInvoker<T> {
+
     public AvailableClusterInvoker(Directory<T> directory) {
         super(directory);
     }
@@ -42,4 +43,5 @@ public class AvailableClusterInvoker<T> extends AbstractClusterInvoker<T> {
         }
         throw new RpcException("No provider available in " + invokers);
     }
+
 }

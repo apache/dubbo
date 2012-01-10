@@ -25,9 +25,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.common.utils.NamedThreadFactory;
-import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
@@ -44,17 +42,16 @@ import com.alibaba.dubbo.rpc.cluster.LoadBalance;
  * @author william.liangf
  */
 public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T>{
-    
+
+    private final ExecutorService executor = Executors.newCachedThreadPool(new NamedThreadFactory("forking-cluster-timer", true)); 
+
     public ForkingClusterInvoker(Directory<T> directory) {
         super(directory);
     }
-    
-    private final ExecutorService executor = Executors.newCachedThreadPool(new NamedThreadFactory("forking-cluster-timer", true)); 
-            
+
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public Result doInvoke(final Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
-        if (invokers == null || invokers.size() == 0)
-            throw new RpcException("No provider available for service " + getInterface().getName() + " on consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() + ", Please check whether the service do exist or version is right firstly, and check the provider has started.");
+        checkInvokers(invokers);
         final List<Invoker<T>> selected;
         final int forks = getUrl().getParameter(Constants.FORKS_KEY, Constants.DEFAULT_FORKS);
         final int timeout = getUrl().getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);

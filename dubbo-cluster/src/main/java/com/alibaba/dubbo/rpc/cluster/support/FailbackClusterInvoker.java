@@ -25,11 +25,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.NamedThreadFactory;
-import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
@@ -45,22 +43,19 @@ import com.alibaba.dubbo.rpc.cluster.LoadBalance;
  */
 public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
+    private static final Logger logger = LoggerFactory.getLogger(FailbackClusterInvoker.class);
+
+    private static final long RETRY_FAILED_PERIOD = 5 * 1000;
+
+    private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2, new NamedThreadFactory("failback-cluster-timer", true));
+
+    private volatile ScheduledFuture<?> retryFuture;
+
+    private final ConcurrentMap<Invocation, AbstractClusterInvoker<?>> failed = new ConcurrentHashMap<Invocation, AbstractClusterInvoker<?>>();
+
     public FailbackClusterInvoker(Directory<T> directory){
         super(directory);
     }
-
-    private static final Logger                                        logger                   = LoggerFactory.getLogger(FailbackClusterInvoker.class);
-
-    private static final long                                          RETRY_FAILED_PERIOD      = 5 * 1000;
-
-    private final ScheduledExecutorService                             scheduledExecutorService = Executors.newScheduledThreadPool(2,
-                                                                                                                                   new NamedThreadFactory(
-                                                                                                                                                          "failback-cluster-timer",
-                                                                                                                                                          true));
-
-    private volatile ScheduledFuture<?>                                retryFuture;
-
-    private final ConcurrentMap<Invocation, AbstractClusterInvoker<?>> failed                   = new ConcurrentHashMap<Invocation, AbstractClusterInvoker<?>>();
 
     private void addFailed(Invocation invocation, AbstractClusterInvoker<?> router) {
         if (retryFuture == null) {
@@ -83,7 +78,7 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
         failed.put(invocation, router);
     }
 
-     void retryFailed() {
+    void retryFailed() {
         if (failed.size() == 0) {
             return;
         }
@@ -102,8 +97,7 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
     protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
         try {
-            if (invokers == null || invokers.size() == 0)
-                throw new RpcException("No provider available for service " + getInterface().getName() + " on consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() + ", Please check whether the service do exist or version is right firstly, and check the provider has started.");
+            checkInvokers(invokers);
             Invoker<T> invoker = select(loadbalance, invocation, invokers, null);
             return invoker.invoke(invocation);
         } catch (Throwable e) {

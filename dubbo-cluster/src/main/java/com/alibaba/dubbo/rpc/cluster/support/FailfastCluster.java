@@ -30,6 +30,7 @@ import com.alibaba.dubbo.rpc.cluster.Directory;
  */
 @Extension(FailfastCluster.NAME)
 public class FailfastCluster implements Cluster {
+
     public final static String NAME = "failfast";
 
     public <T> Invoker<T> merge(Directory<T> directory) throws RpcException {

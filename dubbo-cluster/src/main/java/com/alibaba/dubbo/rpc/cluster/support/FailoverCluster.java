@@ -34,7 +34,7 @@ public class FailoverCluster implements Cluster {
     public final static String NAME = "failover";
 
     public <T> Invoker<T> merge(Directory<T> directory) throws RpcException {
-
         return new FailoverClusterInvoker<T>(directory);
     }
+
 }

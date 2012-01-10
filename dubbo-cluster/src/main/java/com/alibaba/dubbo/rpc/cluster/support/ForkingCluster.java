@@ -36,4 +36,5 @@ public class ForkingCluster implements Cluster {
     public <T> Invoker<T> merge(Directory<T> directory) throws RpcException {
         return new ForkingClusterInvoker<T>(directory);
     }
+
 }

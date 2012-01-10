@@ -50,4 +50,5 @@ public class AvailableCluster implements Cluster {
         };
         
     }
+
 }

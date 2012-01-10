@@ -36,4 +36,5 @@ public class FailsafeCluster implements Cluster {
     public <T> Invoker<T> merge(Directory<T> directory) throws RpcException {
         return new FailsafeClusterInvoker<T>(directory);
     }
+
 }
