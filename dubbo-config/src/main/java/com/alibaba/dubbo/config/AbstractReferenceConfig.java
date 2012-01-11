@@ -127,6 +127,7 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
             String applicationName = ConfigUtils.getProperty("dubbo.application.name");
             if (applicationName != null && applicationName.length() > 0) {
                 application = new ApplicationConfig();
+                application.setName(applicationName);
                 appendProperties(application, ConfigUtils.getProperties(), "dubbo.application");
             }
         }
