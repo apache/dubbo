@@ -315,7 +315,7 @@ public class ConfigTest {
                     demoService.sayName("Haha");
                     fail();
                 } catch (RpcException expected) {
-                    assertThat(expected.getMessage(), containsString("Tried 3 times to invoke providers"));
+                    assertThat(expected.getMessage(), containsString("Tried 3 times"));
                 }
 
                 assertEquals(3, RpcContext.getContext().getInvokers().size());
@@ -347,7 +347,7 @@ public class ConfigTest {
                     demoService.sayName("Haha");
                     fail();
                 } catch (RpcException expected) {
-                    assertThat(expected.getMessage(), containsString("Tried 1 times to invoke providers"));
+                    assertThat(expected.getMessage(), containsString("Tried 1 times"));
                 }
 
                 assertEquals(1, RpcContext.getContext().getInvokers().size());

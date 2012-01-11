@@ -36,12 +36,13 @@ import com.alibaba.dubbo.rpc.cluster.LoadBalance;
  * @author chao.liuc
  */
 public class FailfastClusterInvoker<T> extends AbstractClusterInvoker<T>{
+
     public FailfastClusterInvoker(Directory<T> directory) {
         super(directory);
     }
     
     public Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
-        checkInvokers(invokers);
+        checkInvokers(invokers, invocation);
         Invoker<T> invoker = select(loadbalance, invocation, invokers, null);
         try {
             return invoker.invoke(invocation);

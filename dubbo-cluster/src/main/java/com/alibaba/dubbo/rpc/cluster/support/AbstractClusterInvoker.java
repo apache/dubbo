@@ -51,10 +51,10 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
     private volatile Invoker<T>                stickyInvoker                     = null;
 
-    
     public AbstractClusterInvoker(Directory<T> directory) {
         this(directory, directory.getUrl());
     }
+    
     public AbstractClusterInvoker(Directory<T> directory, URL url) {
         if (directory == null)
             throw new IllegalArgumentException("service directory == null");
@@ -234,12 +234,15 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         return getInterface() + " -> " + getUrl().toString();
     }
     
-    protected void checkInvokers(List<Invoker<T>> invokers) {
+    protected void checkInvokers(List<Invoker<T>> invokers, Invocation invocation) {
         if (invokers == null || invokers.size() == 0) {
-            throw new RpcException("No provider available for the service "
-                    + getInterface().getName() + " from the registry " + directory.getUrl().getAddress()
-                    + " on the consumer " + NetUtils.getLocalHost() + " using the dubbo version "
-                    + Version.getVersion() + ". Please check the provider has started.");
+            throw new RpcException("Failed to invoke the method "
+                    + invocation.getMethodName() + " in the service " + getInterface().getName() 
+                    + ". No provider available for the service " + directory.getUrl().getServiceKey()
+                    + " from registry " + directory.getUrl().getAddress() 
+                    + " on the consumer " + NetUtils.getLocalHost()
+                    + " using the dubbo version " + Version.getVersion()
+                    + ". Please check if the providers have been started and registered.");
         }
     }
 

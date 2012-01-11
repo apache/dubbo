@@ -49,8 +49,8 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {checkInvokers(invokers);
-        checkInvokers(invokers);
+    public Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
+        checkInvokers(invokers, invocation);
         int len = getUrl().getMethodParameter(invocation.getMethodName(), Constants.RETRIES_KEY, Constants.DEFAULT_RETRIES) + 1;
         if (len <= 0) {
             len = 1;
@@ -67,7 +67,7 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 Result result = invoker.invoke(invocation);
                 if (le != null && logger.isWarnEnabled()) {
                     logger.warn("Although retry the method " + invocation.getMethodName()
-                            + " of the service " + getInterface().getName()
+                            + " in the service " + getInterface().getName()
                             + " was successful by the provider " + invoker.getUrl().getAddress()
                             + ", but there have been failed providers " + providers
                             + " from the registry " + directory.getUrl().getAddress()
@@ -87,12 +87,12 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 providers.add(invoker.getUrl().getAddress());
             }
         }
-        throw new RpcException(le != null ? le.getCode() : 0, "Tried " + len
-                + " times of the providers " + providers + " from the registry "
-                + directory.getUrl().getAddress() + " to invoke the method "
-                + invocation.getMethodName() + " of the service " + getInterface().getName()
+        throw new RpcException(le != null ? le.getCode() : 0, "Failed to invoke the method "
+                + invocation.getMethodName() + " in the service " + getInterface().getName() 
+                + ". Tried " + len + " times of the providers " + providers + " from the registry "
+                + directory.getUrl().getAddress()
                 + " on the consumer " + NetUtils.getLocalHost() + " using the dubbo version "
-                + Version.getVersion() + ", but no luck to perform the invocation. Last error is: "
+                + Version.getVersion() + ". Last error is: "
                 + (le != null ? le.getMessage() : ""), le);
     }
 

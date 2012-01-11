@@ -97,7 +97,7 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
     protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
         try {
-            checkInvokers(invokers);
+            checkInvokers(invokers, invocation);
             Invoker<T> invoker = select(loadbalance, invocation, invokers, null);
             return invoker.invoke(invocation);
         } catch (Throwable e) {
