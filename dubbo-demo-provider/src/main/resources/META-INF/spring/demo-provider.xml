@@ -16,18 +16,12 @@
 -->
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
-		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
-		http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+	http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
 	
-    <context:property-placeholder location="classpath:dubbo.properties" /> 
+	<bean id="demoService" class="com.alibaba.dubbo.demo.provider.DemoServiceImpl" />
 	
-	<dubbo:application name="${dubbo.application.name}" owner="${dubbo.application.owner}" />
-	
-	<dubbo:registry address="${dubbo.registry.address}" />
-	
-	<dubbo:monitor protocol="registry" />
+	<dubbo:service interface="com.alibaba.dubbo.demo.DemoService" ref="demoService" loadbalance="" />
 	
 </beans>
