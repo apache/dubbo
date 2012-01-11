@@ -66,9 +66,9 @@ public abstract class AbstractConfig implements Serializable {
         for (Method method : methods) {
             try {
                 String name = method.getName();
-                if (name.startsWith("set") && Modifier.isPublic(method.getModifiers()) 
+                if (name.length() > 3 && name.startsWith("set") && Modifier.isPublic(method.getModifiers()) 
                         && method.getParameterTypes().length == 1 && isPrimitive(method.getParameterTypes()[0])) {
-                    String key = name.substring(3);
+                    String key = name.substring(3, 4).toLowerCase() + name.substring(4);
                     if (prefix != null && prefix.length() > 0) {
                         key = prefix + "." + key;
                     }

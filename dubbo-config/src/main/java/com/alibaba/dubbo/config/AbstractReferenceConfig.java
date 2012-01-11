@@ -127,7 +127,6 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
             String applicationName = ConfigUtils.getProperty("dubbo.application.name");
             if (applicationName != null && applicationName.length() > 0) {
                 application = new ApplicationConfig();
-                application.setName(applicationName);
                 appendProperties(application, ConfigUtils.getProperties(), "dubbo.application");
             }
         }
@@ -182,7 +181,15 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
     
     protected URL loadMonitor(URL registryURL) {
         if (monitor == null) {
-            return null;
+            String monitorAddress = ConfigUtils.getProperty("dubbo.monitor.address");
+            String monitorProtocol = ConfigUtils.getProperty("dubbo.monitor.protocol");
+            if (monitorAddress != null && monitorAddress.length() > 0
+                    || monitorProtocol != null && monitorProtocol.length() > 0) {
+                monitor = new MonitorConfig();
+                appendProperties(monitor, ConfigUtils.getProperties(), "dubbo.monitor");
+            } else {
+                return null;
+            }
         }
         Map<String, String> map = new HashMap<String, String>();
         map.put(Constants.INTERFACE_KEY, MonitorService.class.getName());
