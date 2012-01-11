@@ -15,8 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.cluster.support;
 
-import static org.junit.Assert.assertTrue;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,16 +26,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
-import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.cluster.Directory;
-import com.alibaba.dubbo.rpc.cluster.directory.StaticDirectory;
-import com.alibaba.dubbo.rpc.cluster.filter.DemoService;
 
 /**
  * ForkingClusterInvokerTest
