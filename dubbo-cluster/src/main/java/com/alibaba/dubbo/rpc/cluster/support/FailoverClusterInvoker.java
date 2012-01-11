@@ -90,8 +90,9 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
         }
         throw new RpcException(le != null ? le.getCode() : 0, "Failed to invoke the method "
                 + invocation.getMethodName() + " in the service " + getInterface().getName() 
-                + ". Tried " + len + " times of the providers " + providers + " (" + providers.size() + "/" + invokers.size() + ") from the registry "
-                + directory.getUrl().getAddress()
+                + ". Tried " + len + " times of the providers " + providers 
+                + " (" + providers.size() + "/" + invokers.size() 
+                + ") from the registry " + directory.getUrl().getAddress()
                 + " on the consumer " + NetUtils.getLocalHost() + " using the dubbo version "
                 + Version.getVersion() + ". Last error is: "
                 + (le != null ? le.getMessage() : ""), le);
