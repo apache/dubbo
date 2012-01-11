@@ -103,6 +103,7 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
                 String[] as = address.split("\\s*[|]+\\s*");
                 for (String a : as) {
                     RegistryConfig registryConfig = new RegistryConfig();
+                    appendProperties(registryConfig, ConfigUtils.getProperties(), "dubbo.registry");
                     registryConfig.setAddress(a);
                     registries.add(registryConfig);
                 }
@@ -123,10 +124,10 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
     protected void checkApplication() {
         // 兼容旧版本
         if (application == null) {
-            String app = ConfigUtils.getProperty("dubbo.application.name");
-            if (app != null && app.length() > 0) {
+            String applicationName = ConfigUtils.getProperty("dubbo.application.name");
+            if (applicationName != null && applicationName.length() > 0) {
                 application = new ApplicationConfig();
-                application.setName(app);
+                appendProperties(application, ConfigUtils.getProperties(), "dubbo.application");
             }
         }
         if (application == null) {

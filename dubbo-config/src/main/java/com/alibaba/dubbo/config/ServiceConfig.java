@@ -405,24 +405,25 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
     	// 兼容旧版本
         if (protocols == null || protocols.size() == 0) {
-            ProtocolConfig providerBean = new ProtocolConfig();
+            ProtocolConfig protocolConfig = new ProtocolConfig();
             String p = ConfigUtils.getProperty("dubbo.service.protocol");
             if (p != null && p.length() > 0) {
-                providerBean.setName(p);
+                protocolConfig.setName(p);
             }
             String h = ConfigUtils.getProperty("dubbo.service.server.host");
             if (h != null && h.length() > 0) {
-                providerBean.setHost(h);
+                protocolConfig.setHost(h);
             }
             String o = ConfigUtils.getProperty("dubbo.service.server.port");
             if (o != null && o.length() > 0) {
-                providerBean.setPort(Integer.parseInt(o.trim()));
+                protocolConfig.setPort(Integer.parseInt(o.trim()));
             }
             String t = ConfigUtils.getProperty("dubbo.service.max.thread.pool.size");
             if (t != null && t.length() > 0) {
-                providerBean.setThreads(Integer.parseInt(t.trim()));
+                protocolConfig.setThreads(Integer.parseInt(t.trim()));
             }
-            setProtocol(providerBean);
+            appendProperties(protocolConfig, ConfigUtils.getProperties(), "dubbo.protocol");
+            setProtocol(protocolConfig);
         }
     }
 
