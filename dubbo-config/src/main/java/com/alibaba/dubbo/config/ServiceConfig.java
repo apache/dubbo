@@ -119,6 +119,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (interfaceName == null || interfaceName.length() == 0) {
             throw new IllegalStateException("<dubbo:service interface=\"\" /> interface not allow null!");
         }
+        checkDefault();
         if (provider != null) {
             if (application == null) {
                 application = provider.getApplication();
@@ -395,6 +396,13 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 exporters.add(exporter);
             }
             this.urls.add(url);
+        }
+    }
+
+    private void checkDefault() {
+        if (provider == null) {
+            provider = new ProviderConfig();
+            appendProperties(provider, ConfigUtils.getProperties(), "dubbo.provider");
         }
     }
 
