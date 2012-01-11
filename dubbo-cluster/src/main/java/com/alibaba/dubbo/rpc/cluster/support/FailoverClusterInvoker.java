@@ -69,7 +69,7 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
                     logger.warn("Although retry the method " + invocation.getMethodName()
                             + " in the service " + getInterface().getName()
                             + " was successful by the provider " + invoker.getUrl().getAddress()
-                            + ", but there have been failed providers " + providers
+                            + ", but there have been failed providers " + providers + "/" + invokers.size()
                             + " from the registry " + directory.getUrl().getAddress()
                             + " on the consumer " + NetUtils.getLocalHost()
                             + " using the dubbo version " + Version.getVersion() + ". Last error is: "
@@ -89,7 +89,7 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
         }
         throw new RpcException(le != null ? le.getCode() : 0, "Failed to invoke the method "
                 + invocation.getMethodName() + " in the service " + getInterface().getName() 
-                + ". Tried " + len + " times of the providers " + providers + " from the registry "
+                + ". Tried " + len + " times of the providers " + providers + "/" + invokers.size() + " from the registry "
                 + directory.getUrl().getAddress()
                 + " on the consumer " + NetUtils.getLocalHost() + " using the dubbo version "
                 + Version.getVersion() + ". Last error is: "
