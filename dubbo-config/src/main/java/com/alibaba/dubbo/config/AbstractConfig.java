@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Map;
-import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,6 +27,7 @@ import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.ConfigUtils;
 
 /**
  * AbstractConfig
@@ -54,11 +54,11 @@ public abstract class AbstractConfig implements Serializable {
     
     private static final Pattern PATTERN_NAME_HAS_COLON= Pattern.compile("[:\\-._0-9a-zA-Z]+");
     
-    protected static void appendProperties(Object config, Properties properties) {
-        appendProperties(config, properties, null);
+    protected static void appendProperties(Object config) {
+        appendProperties(config, null);
     }
 
-    protected static void appendProperties(Object config, Properties properties, String prefix) {
+    protected static void appendProperties(Object config, String prefix) {
         if (config == null) {
             return;
         }
@@ -72,7 +72,7 @@ public abstract class AbstractConfig implements Serializable {
                     if (prefix != null && prefix.length() > 0) {
                         key = prefix + "." + key;
                     }
-                    String value = properties.getProperty(key);
+                    String value = ConfigUtils.getProperty(key);
                     if (value != null && value.length() > 0) {
                         method.invoke(config, new Object[] {convertPrimitive(method.getParameterTypes()[0], value)});
                     }
