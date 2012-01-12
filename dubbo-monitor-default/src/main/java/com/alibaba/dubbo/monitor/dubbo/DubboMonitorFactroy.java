@@ -47,7 +47,7 @@ public class DubboMonitorFactroy extends AbstractMonitorFactroy {
     
     @Override
     protected Monitor createMonitor(URL url) {
-        url = url.setProtocol(url.getParameter(Constants.PROTOCOL_KEY, "dubbo"));
+        url = url.setProtocol(url.getParameter(Constants.PROTOCOL_KEY, "dubbo")).setPath(MonitorService.class.getName());
         String filter = url.getParameter(Constants.REFERENCE_FILTER_KEY);
         if (filter == null || filter.length() == 0) {
             filter = "";
