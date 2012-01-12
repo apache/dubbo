@@ -76,7 +76,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     //the last successed connected time
     private long lastConnectedTime = System.currentTimeMillis();
     
-    private final int shutdown_timeout ;
+    private final long shutdown_timeout ;
     
     
     public AbstractClient(URL url, ChannelHandler handler) throws RemotingException {
@@ -137,13 +137,15 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         int reconnect = getReconnectParam(getUrl());
         if(reconnect > 0 && reconnectExecutorFuture == null){
             Runnable connectStatusCheckCommand =  new Runnable() {
-                String errorMsg = "client reconnect to "+getUrl().getAddress()+" find error . url: "+ getUrl();
                 public void run() {
                     try {
                         if (! isConnected()) {
                             connect();
+                        } else {
+                            lastConnectedTime = System.currentTimeMillis();
                         }
                     } catch (Throwable t) { 
+                        String errorMsg = "client reconnect to "+getUrl().getAddress()+" find error . url: "+ getUrl();
                         int count = reconnect_count.incrementAndGet();
                         // wait registry sync provider list
                         if (System.currentTimeMillis() - lastConnectedTime > shutdown_timeout){
@@ -280,7 +282,6 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                                             + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
                                             + ", cause: Connect wait timeout: " + getTimeout() + "ms.");
             }
-            lastConnectedTime = System.currentTimeMillis();
             reconnect_count.set(0);
             reconnect_error_log_flag.set(false);
         } catch (RemotingException e) {

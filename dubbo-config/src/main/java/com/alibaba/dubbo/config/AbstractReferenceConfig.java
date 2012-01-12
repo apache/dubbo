@@ -103,7 +103,7 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
                 String[] as = address.split("\\s*[|]+\\s*");
                 for (String a : as) {
                     RegistryConfig registryConfig = new RegistryConfig();
-                    appendProperties(registryConfig, ConfigUtils.getProperties(), "dubbo.registry");
+                    appendProperties(registryConfig, "dubbo.registry");
                     registryConfig.setAddress(a);
                     registries.add(registryConfig);
                 }
@@ -127,7 +127,7 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
             String applicationName = ConfigUtils.getProperty("dubbo.application.name");
             if (applicationName != null && applicationName.length() > 0) {
                 application = new ApplicationConfig();
-                appendProperties(application, ConfigUtils.getProperties(), "dubbo.application");
+                appendProperties(application, "dubbo.application");
             }
         }
         if (application == null) {
@@ -186,7 +186,7 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
             if (monitorAddress != null && monitorAddress.length() > 0
                     || monitorProtocol != null && monitorProtocol.length() > 0) {
                 monitor = new MonitorConfig();
-                appendProperties(monitor, ConfigUtils.getProperties(), "dubbo.monitor");
+                appendProperties(monitor, "dubbo.monitor");
             } else {
                 return null;
             }
