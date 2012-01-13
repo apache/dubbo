@@ -132,18 +132,21 @@ public class JsonObjectInput implements ObjectInput {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T readObject(Class<T> cls) throws IOException, ClassNotFoundException {
-        try {
+        Object value = readObject();
+        return (T) PojoUtils.realize(value, cls);
+        /*try {
             return JSON.parse(readLine(), cls);
         } catch (ParseException e) {
             throw new IOException(e.getMessage());
-        }
+        }*/
     }
 
     @SuppressWarnings("unchecked")
     public <T> T readObject(Class<T> cls, Type type) throws IOException,ClassNotFoundException
     {
-        Object value = readObject(cls);
+        Object value = readObject();
         return (T) PojoUtils.realize(value, cls, type);
     }
 
