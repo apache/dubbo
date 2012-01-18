@@ -159,5 +159,12 @@ public interface Logger {
 	 * @return 是否开启
 	 */
 	public boolean isWarnEnabled();
+	
+	/**
+	 * 错误信息是否开启
+	 *
+	 * @return 是否开启
+	 */
+	public boolean isErrorEnabled();
 
 }

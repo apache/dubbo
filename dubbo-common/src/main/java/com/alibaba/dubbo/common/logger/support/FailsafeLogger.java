@@ -167,5 +167,13 @@ public class FailsafeLogger implements Logger {
 			return false;
 		}
 	}
+	
+	public boolean isErrorEnabled() {
+	    try {
+	        return logger.isErrorEnabled();
+	    } catch (Throwable t) {
+	        return false;
+	    }
+	}
 
 }

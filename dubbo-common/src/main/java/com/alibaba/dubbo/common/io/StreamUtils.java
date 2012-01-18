@@ -22,6 +22,7 @@ import java.io.InputStream;
  * Stream utils.
  * 
  * @author qian.lei
+ * @author ding.lid
  */
 
 public class StreamUtils
