@@ -38,7 +38,7 @@ For more, please refer to:
     dubbo-monitor-simple/src/test/java/com.alibaba.dubbo.monitor.simple.SimpleMonitor
     dubbo-registry-simple/src/test/java/com.alibaba.dubbo.registry.simple.SimpleRegistry
 
-    Double click -> Edit Config:
+    Edit Config:
     dubbo-demo-provider/src/test/resources/dubbo.properties
     dubbo-demo-consumer/src/test/resources/dubbo.properties
     dubbo-monitor-simple/src/test/resources/dubbo.properties
