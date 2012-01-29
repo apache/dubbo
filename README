@@ -19,14 +19,7 @@ For more, please refer to:
     cd ~
     svn co http://code.alibabatech.com/svn/dubbo/trunk dubbo
 
-2. Build the dubbo binary package:
-
-    cd ~/dubbo
-    mvn clean install -Dmaven.test.skip
-    cd dubbo/target
-    ls
-
-3. Import the dubbo source code to eclipse project:
+2. Import the dubbo source code to eclipse project:
 
     cd ~/dubbo
     mvn eclipse:eclipse
@@ -43,6 +36,13 @@ For more, please refer to:
     dubbo-demo-consumer/src/test/resources/dubbo.properties
     dubbo-monitor-simple/src/test/resources/dubbo.properties
     dubbo-registry-simple/src/test/resources/dubbo.properties
+
+3. Build the dubbo binary package:
+
+    cd ~/dubbo
+    mvn clean install -Dmaven.test.skip
+    cd dubbo/target
+    ls
 
 4. Install the demo provider:
 
