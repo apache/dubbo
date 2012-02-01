@@ -26,6 +26,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 
 import com.alibaba.dubbo.config.ApplicationConfig;
 import com.alibaba.dubbo.config.MonitorConfig;
@@ -62,7 +63,6 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
 		    try {
 	            Method method = applicationContext.getClass().getMethod("addApplicationListener", new Class<?>[]{ApplicationListener.class}); // 兼容Spring2.0.1
 	            method.invoke(applicationContext, new Object[] {this});
-	            Class.forName("org.springframework.context.event.ContextStartedEvent");
 	            supportedApplicationListener = true;
 	        } catch (Throwable t) {
 	        }
@@ -74,7 +74,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
     }
 
     public void onApplicationEvent(ApplicationEvent event) {
-        if ("org.springframework.context.event.ContextStartedEvent".equals(event.getClass().getName())) { // 兼容Spring2.0.1
+        if (ContextRefreshedEvent.class.getName().equals(event.getClass().getName())) {
             if (isDelay()) {
                 if (logger.isInfoEnabled()) {
                     logger.info("The service ready on spring started. service: " + getInterface());
