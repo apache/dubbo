@@ -174,7 +174,7 @@ public class ConfigTest {
         SimpleRegistryService registryService = new SimpleRegistryService();
         Exporter<RegistryService> exporter = SimpleRegistryExporter.export(4548, registryService);
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/delay-on-initialized.xml");
-        ctx.start();
+        //ctx.start();
         try {
             List<URL> urls = registryService.getRegistered().get("com.alibaba.dubbo.config.api.DemoService");
             assertNotNull(urls);
