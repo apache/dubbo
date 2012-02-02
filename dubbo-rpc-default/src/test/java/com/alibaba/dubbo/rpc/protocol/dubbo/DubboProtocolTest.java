@@ -22,14 +22,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import junit.framework.Assert;
+
 import org.junit.Test;
 
 import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.ProxyFactory;
+import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService;
 import com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl;
+import com.alibaba.dubbo.rpc.protocol.dubbo.support.NonSerialized;
 import com.alibaba.dubbo.rpc.protocol.dubbo.support.RemoteService;
 import com.alibaba.dubbo.rpc.protocol.dubbo.support.RemoteServiceImpl;
 import com.alibaba.dubbo.rpc.protocol.dubbo.support.Type;
@@ -39,7 +43,7 @@ import com.alibaba.dubbo.rpc.service.EchoService;
  * <code>ProxiesTest</code>
  */
 
-public class ProtocolsTest
+public class DubboProtocolTest
 {
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
     private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
@@ -119,4 +123,32 @@ public class ProtocolsTest
 			service.getSize(new String[]{"", "", ""});
 		System.out.println("take:"+(System.currentTimeMillis()-start));
 	}
+
+    @Test
+    public void testNonSerializedParameter() throws Exception
+    {
+        DemoService service = new DemoServiceImpl();
+        protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("dubbo://127.0.0.1:9050/" + DemoService.class.getName() + "?codec=exchange")));
+        service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:9050/" + DemoService.class.getName() + "?codec=exchange")));
+        try {
+            service.nonSerializedParameter(new NonSerialized());
+            Assert.fail();
+        } catch (RpcException e) {
+            Assert.assertTrue(e.getMessage().contains("com.alibaba.dubbo.rpc.protocol.dubbo.support.NonSerialized must implement java.io.Serializable"));
+        }
+    }
+
+    @Test
+    public void testReturnNonSerialized() throws Exception
+    {
+        DemoService service = new DemoServiceImpl();
+        protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("dubbo://127.0.0.1:9050/" + DemoService.class.getName() + "?codec=exchange")));
+        service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:9050/" + DemoService.class.getName() + "?codec=exchange")));
+        try {
+            service.returnNonSerialized();
+            Assert.fail();
+        } catch (RpcException e) {
+            Assert.assertTrue(e.getMessage().contains("com.alibaba.dubbo.rpc.protocol.dubbo.support.NonSerialized must implement java.io.Serializable"));
+        }
+    }
 }

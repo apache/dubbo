@@ -100,4 +100,11 @@ public class DemoServiceImpl implements DemoService
     public Set<String> keys(Map<String, String> map) {
         return map == null ? null : map.keySet();
     }
+
+    public void nonSerializedParameter(NonSerialized ns) {
+    }
+
+    public NonSerialized returnNonSerialized() {
+        return new NonSerialized();
+    }
 }

@@ -52,4 +52,8 @@ public interface DemoService
 	
 	byte getbyte(byte arg);
 	
+	void nonSerializedParameter(NonSerialized ns);
+	
+	NonSerialized returnNonSerialized();
+	
 }
