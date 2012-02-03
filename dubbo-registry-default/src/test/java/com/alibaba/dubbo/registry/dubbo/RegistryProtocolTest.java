@@ -72,7 +72,7 @@ public class RegistryProtocolTest {
         registryProtocol.setCluster(new FailfastCluster());
         registryProtocol.setRegistryFactory(ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension());
 
-        Protocol dubboProtocol = new DubboProtocol();
+        Protocol dubboProtocol = DubboProtocol.getDubboProtocol();
         registryProtocol.setProtocol(dubboProtocol);
         registryUrl = registryUrl.addParameter(RpcConstants.EXPORT_KEY, serviceUrl);
         DubboInvoker<DemoService> invoker = new DubboInvoker<DemoService>(DemoService.class,
