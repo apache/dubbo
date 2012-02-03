@@ -397,9 +397,9 @@ public class ConfigTest {
             ProtocolConfig dubbo = (ProtocolConfig) providerContext.getBean("dubbo");
             assertEquals(20812, dubbo.getPort().intValue());
         } finally {
+            System.setProperty("dubbo.protocol.port", "");
             providerContext.stop();
             providerContext.close();
-            System.setProperty("dubbo.protocol.port", "");
         }
     }
 
@@ -415,10 +415,36 @@ public class ConfigTest {
             ProtocolConfig rmi = (ProtocolConfig) providerContext.getBean("rmi");
             assertEquals(10914, rmi.getPort().intValue());
         } finally {
-            providerContext.stop();
-            providerContext.close();
             System.setProperty("dubbo.protocol.dubbo.port", "");
             System.setProperty("dubbo.protocol.rmi.port", "");
+            providerContext.stop();
+            providerContext.close();
+        }
+    }
+    
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testSystemPropertyOverride() throws Exception {
+        System.setProperty("dubbo.application.name", "sysover");
+        System.setProperty("dubbo.registry.address", "N/A");
+        System.setProperty("dubbo.protocol.name", "dubbo");
+        System.setProperty("dubbo.protocol.port", "20819");
+        ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/system-properties-override.xml");
+        providerContext.start();
+        try {
+            ServiceConfig<DemoService> serviceConfig = (ServiceConfig<DemoService>) providerContext.getBean("demoServiceConfig");
+            assertEquals("sysover", serviceConfig.getApplication().getName());
+            assertEquals("N/A", serviceConfig.getRegistry().getAddress());
+            assertEquals("dubbo", serviceConfig.getProtocol().getName());
+            assertEquals(20819, serviceConfig.getProtocol().getPort().intValue());
+        } finally {
+            System.setProperty("dubbo.application.name", "");
+            System.setProperty("dubbo.registry.address", "");
+            System.setProperty("dubbo.protocol.name", "");
+            System.setProperty("dubbo.protocol.port", "");
+            providerContext.stop();
+            providerContext.close();
         }
     }
 }
