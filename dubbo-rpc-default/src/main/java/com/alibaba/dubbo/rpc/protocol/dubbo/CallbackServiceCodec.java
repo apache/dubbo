@@ -29,6 +29,7 @@ import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.remoting.Channel;
+import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
@@ -41,7 +42,7 @@ import com.alibaba.dubbo.rpc.RpcInvocation;
  * @author chao.liuc
  *
  */
-public class CallbackServiceCodec {
+class CallbackServiceCodec {
     private static final Logger     logger             = LoggerFactory.getLogger(CallbackServiceCodec.class);
     
     private static final ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
@@ -69,16 +70,15 @@ public class CallbackServiceCodec {
     
     /**
      * client 端export callback service
-     * @param inst
-     * @param clazz
      * @param channel
-     * @param out
+     * @param clazz
+     * @param inst
      * @param export
+     * @param out
      * @throws IOException
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private static String exportOrunexportCallbackService(Channel channel, Class clazz, Object inst, Boolean export) throws IOException{
-        URL url = channel.getUrl();
+    private static String exportOrunexportCallbackService(Channel channel, URL url, Class clazz, Object inst, Boolean export) throws IOException{
         int instid = System.identityHashCode(inst);
         
         Map<String,String> params = new HashMap<String,String>(3);
@@ -104,7 +104,7 @@ public class CallbackServiceCodec {
         if(export){
             //同一个channel 可以有多个callback instance. 不同的instance不重新export
             if( ! channel.hasAttribute(cacheKey)){
-                if (!isInstancesOverLimit(channel, clazz.getName(), instid, false)) {
+                if (!isInstancesOverLimit(channel, url, clazz.getName(), instid, false)) {
                     Invoker<?> invoker = proxyFactory.getInvoker(inst, clazz, exporturl);
                     //资源销毁？
                     Exporter<?> exporter = protocol.export(invoker);
@@ -127,9 +127,10 @@ public class CallbackServiceCodec {
     
     /**
      * server端 应用一个callbackservice
+     * @param url 
      */
     @SuppressWarnings("unchecked")
-    private static Object referOrdestroyCallbackService(Channel channel, Class<?> clazz, Invocation inv ,int instid ,boolean isRefer){
+    private static Object referOrdestroyCallbackService(Channel channel, URL url, Class<?> clazz ,Invocation inv ,int instid, boolean isRefer){
         Object proxy = null;
         String invokerCacheKey = getServerSideCallbackInvokerCacheKey(channel, clazz.getName(), instid);
         String proxyCacheKey = getServerSideCallbackServiceCacheKey(channel, clazz.getName(), instid);
@@ -137,9 +138,10 @@ public class CallbackServiceCodec {
         String countkey = getServerSideCountKey(channel, clazz.getName());
         if (isRefer){
             if( proxy == null ){
-                if (!isInstancesOverLimit(channel, clazz.getName(), instid, true)){
+                if (!isInstancesOverLimit(channel, url, clazz.getName(), instid, true)){
+                    url = url.setPath(clazz.getName());
                     @SuppressWarnings("rawtypes")
-                    Invoker<?> invoker = new ChannelWrappedInvoker(clazz, channel, String.valueOf(instid));
+                    Invoker<?> invoker = new ChannelWrappedInvoker(clazz, channel, url, String.valueOf(instid));
                     proxy = proxyFactory.getProxy(invoker);
                     channel.setAttribute(proxyCacheKey, proxy);
                     channel.setAttribute(invokerCacheKey, invoker);
@@ -193,9 +195,9 @@ public class CallbackServiceCodec {
     private static String getServerSideCountKey(Channel channel, String interfaceClass){
         return RpcConstants.CALLBACK_SERVICE_PROXY_KEY+"."+System.identityHashCode(channel)+"."+interfaceClass+".COUNT";
     }
-    private static boolean isInstancesOverLimit(Channel channel, String interfaceClass ,int instid, boolean isServer){
+    private static boolean isInstancesOverLimit(Channel channel, URL url ,String interfaceClass, int instid, boolean isServer){
         Integer count = (Integer)channel.getAttribute(isServer ? getServerSideCountKey(channel,interfaceClass) : getClientSideCountKey(interfaceClass));
-        int limit = channel.getUrl().getParameter(RpcConstants.CALLBACK_INSTANCES_LIMIT_KEY, RpcConstants.DEFAULT_CALLBACK_INSTANCES);
+        int limit = url.getParameter(RpcConstants.CALLBACK_INSTANCES_LIMIT_KEY, RpcConstants.DEFAULT_CALLBACK_INSTANCES);
         if (count != null && count >= limit){
             //client side error
             throw new IllegalStateException("interface " + interfaceClass +" `s callback instances num exceed providers limit :"+ limit 
@@ -233,38 +235,47 @@ public class CallbackServiceCodec {
     }
     
     public static Object encodeInvocationArgument(Channel channel, RpcInvocation inv, int paraIndex) throws IOException{
-        byte callbackstatus = isCallBack(channel == null ? null : channel.getUrl(), inv.getMethodName(), paraIndex);
+        //encode时可直接获取url
+        URL url = inv.getUrl();
+        byte callbackstatus = isCallBack(channel == null ? null : url, inv.getMethodName(), paraIndex);
         Object[] args = inv.getArguments();
         Class<?>[] pts = inv.getParameterTypes();
         switch (callbackstatus) {
             case CallbackServiceCodec.CALLBACK_NONE:
                 return args[paraIndex];
             case CallbackServiceCodec.CALLBACK_CREATE:
-                inv.setAttachment(INV_ATT_CALLBACK_KEY + paraIndex , exportOrunexportCallbackService(channel, pts[paraIndex], args[paraIndex], true));
+                inv.setAttachment(INV_ATT_CALLBACK_KEY + paraIndex , exportOrunexportCallbackService(channel, url, pts[paraIndex], args[paraIndex], true));
                 return null;
             case CallbackServiceCodec.CALLBACK_DESTROY:
-                inv.setAttachment(INV_ATT_CALLBACK_KEY + paraIndex, exportOrunexportCallbackService(channel, pts[paraIndex], args[paraIndex], false));
+                inv.setAttachment(INV_ATT_CALLBACK_KEY + paraIndex, exportOrunexportCallbackService(channel, url, pts[paraIndex], args[paraIndex], false));
                 return null;
             default:
                 return args[paraIndex];
         }
     }
     public static Object decodeInvocationArgument(Channel channel, RpcInvocation inv, Class<?>[] pts, int paraIndex, Object inObject) throws IOException{
-      //如果是callback，则创建proxy到客户端，方法的执行可通过channel调用到client端的callback接口
-        byte callbackstatus = isCallBack(channel.getUrl(), inv.getMethodName(), paraIndex);
+        //如果是callback，则创建proxy到客户端，方法的执行可通过channel调用到client端的callback接口
+        //decode时需要根据channel及env获取url
+        URL url = null ;
+        try {
+            url = DubboProtocol.getDubboProtocol().getInvoker(channel, inv).getUrl();
+        } catch (RemotingException e) {
+            throw new IOException(StringUtils.toString("get invoker error", e));
+        }
+        byte callbackstatus = isCallBack(url, inv.getMethodName(), paraIndex);
         switch (callbackstatus) {
             case CallbackServiceCodec.CALLBACK_NONE:
                 return inObject;
             case CallbackServiceCodec.CALLBACK_CREATE:
                 try{
-                    return referOrdestroyCallbackService(channel, pts[paraIndex], inv, Integer.parseInt(inv.getAttachment(INV_ATT_CALLBACK_KEY + paraIndex)), true);
+                    return referOrdestroyCallbackService(channel, url, pts[paraIndex], inv, Integer.parseInt(inv.getAttachment(INV_ATT_CALLBACK_KEY + paraIndex)), true);
                 }catch (Exception e) {
                     logger.error(e);
                     throw new IOException(StringUtils.toString(e));
                 }
             case CallbackServiceCodec.CALLBACK_DESTROY:
                 try{
-                    return referOrdestroyCallbackService(channel, pts[paraIndex], inv, Integer.parseInt(inv.getAttachment(INV_ATT_CALLBACK_KEY + paraIndex)), false);
+                    return referOrdestroyCallbackService(channel, url, pts[paraIndex], inv, Integer.parseInt(inv.getAttachment(INV_ATT_CALLBACK_KEY + paraIndex)), false);
                 }catch (Exception e) {
                     throw new IOException(StringUtils.toString(e));
                 }

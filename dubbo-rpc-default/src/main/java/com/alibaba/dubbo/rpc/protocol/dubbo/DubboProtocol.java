@@ -78,42 +78,18 @@ public class DubboProtocol extends AbstractProtocol {
     //consumer side export a stub service for dispatching event
     //servicekey-stubmethods
     private final ConcurrentMap<String, String> stubServiceMethodsMap = new ConcurrentHashMap<String, String>();
+    
+    private static final String IS_CALLBACK_SERVICE_INVOKE = "_isCallBackServiceInvoke";
 
     private ExchangeHandler requestHandler = new ExchangeHandlerAdapter() {
-        private boolean isClientSide(Channel channel) {
-            InetSocketAddress address = channel.getRemoteAddress();
-            URL url = channel.getUrl();
-            return url.getPort() == address.getPort() && 
-                        NetUtils.filterLocalHost(channel.getUrl().getIp())
-                        .equals(NetUtils.filterLocalHost(address.getAddress().getHostAddress()));
-        }
         
         public Object reply(ExchangeChannel channel, Object message) throws RemotingException {
             if (message instanceof Invocation) {
-                boolean isCallBackServiceInvoke = false;
-                boolean isStubServiceInvoke = false;
                 Invocation inv = (Invocation) message;
-                int port = channel.getLocalAddress().getPort();
-                String path = inv.getAttachments().get(Constants.PATH_KEY);
-                //如果是客户端的回调服务.
-                isStubServiceInvoke = Boolean.TRUE.toString().equals(inv.getAttachments().get(RpcConstants.STUB_EVENT_KEY));
-                if (isStubServiceInvoke){
-                    port = channel.getRemoteAddress().getPort();
-                }
-                //callback
-                isCallBackServiceInvoke = isClientSide(channel) && !isStubServiceInvoke;
-                if(isCallBackServiceInvoke){
-                    path = inv.getAttachments().get(Constants.PATH_KEY)+"."+inv.getAttachments().get(RpcConstants.CALLBACK_SERVICE_KEY);
-                }
-                String serviceKey = serviceKey(port, path, inv.getAttachments().get(Constants.VERSION_KEY), inv.getAttachments().get(Constants.GROUP_KEY));
-    
-                DubboExporter<?> exporter = (DubboExporter<?>) exporterMap.get(serviceKey);
-                
-                if (exporter == null)
-                    throw new RemotingException(channel, "Not found exported service: " + serviceKey + " in " + exporterMap.keySet() + ", may be version or group mismatch " + ", channel: consumer: " + channel.getRemoteAddress() + " --> provider: " + channel.getLocalAddress() + ", message:"+message);
-    
-                if (isCallBackServiceInvoke){
-                    String methodsStr = exporter.getInvoker().getUrl().getParameters().get("methods");
+                Invoker<?> invoker = getInvoker(channel, inv);
+                //如果是callback 需要处理高版本调用低版本的问题
+                if (Boolean.TRUE.toString().equals(inv.getAttachments().get(IS_CALLBACK_SERVICE_INVOKE))){
+                    String methodsStr = invoker.getUrl().getParameters().get("methods");
                     boolean hasMethod = false;
                     if (methodsStr == null || methodsStr.indexOf(",") == -1){
                         hasMethod = inv.getMethodName().equals(methodsStr);
@@ -127,12 +103,12 @@ public class DubboProtocol extends AbstractProtocol {
                         }
                     }
                     if (!hasMethod){
-                        logger.warn(new IllegalStateException("The methodName "+inv.getMethodName()+" not found in callback service interface ,invoke will be ignored. please update the api interface. url is:" + exporter.getInvoker().getUrl()) +" ,invocation is :"+inv );
+                        logger.warn(new IllegalStateException("The methodName "+inv.getMethodName()+" not found in callback service interface ,invoke will be ignored. please update the api interface. url is:" + invoker.getUrl()) +" ,invocation is :"+inv );
                         return null;
                     }
                 }
                 RpcContext.getContext().setRemoteAddress(channel.getRemoteAddress());
-                return exporter.getInvoker().invoke(inv);
+                return invoker.invoke(inv);
             }
             throw new RemotingException(channel, "Unsupported request: " + message == null ? null : (message.getClass().getName() + ": " + message) + ", channel: consumer: " + channel.getRemoteAddress() + " --> provider: " + channel.getLocalAddress());
         }
@@ -207,7 +183,45 @@ public class DubboProtocol extends AbstractProtocol {
     public Collection<Exporter<?>> getExporters() {
         return Collections.unmodifiableCollection(exporterMap.values());
     }
+    
+    Map<String, Exporter<?>> getExporterMap(){
+        return exporterMap;
+    }
+    
+    private boolean isClientSide(Channel channel) {
+        InetSocketAddress address = channel.getRemoteAddress();
+        URL url = channel.getUrl();
+        return url.getPort() == address.getPort() && 
+                    NetUtils.filterLocalHost(channel.getUrl().getIp())
+                    .equals(NetUtils.filterLocalHost(address.getAddress().getHostAddress()));
+    }
+    
+    Invoker<?> getInvoker(Channel channel, Invocation inv) throws RemotingException{
+        boolean isCallBackServiceInvoke = false;
+        boolean isStubServiceInvoke = false;
+        int port = channel.getLocalAddress().getPort();
+        String path = inv.getAttachments().get(Constants.PATH_KEY);
+        //如果是客户端的回调服务.
+        isStubServiceInvoke = Boolean.TRUE.toString().equals(inv.getAttachments().get(RpcConstants.STUB_EVENT_KEY));
+        if (isStubServiceInvoke){
+            port = channel.getRemoteAddress().getPort();
+        }
+        //callback
+        isCallBackServiceInvoke = isClientSide(channel) && !isStubServiceInvoke;
+        if(isCallBackServiceInvoke){
+            path = inv.getAttachments().get(Constants.PATH_KEY)+"."+inv.getAttachments().get(RpcConstants.CALLBACK_SERVICE_KEY);
+            inv.getAttachments().put(IS_CALLBACK_SERVICE_INVOKE, Boolean.TRUE.toString());
+        }
+        String serviceKey = serviceKey(port, path, inv.getAttachments().get(Constants.VERSION_KEY), inv.getAttachments().get(Constants.GROUP_KEY));
 
+        DubboExporter<?> exporter = (DubboExporter<?>) exporterMap.get(serviceKey);
+        
+        if (exporter == null)
+            throw new RemotingException(channel, "Not found exported service: " + serviceKey + " in " + exporterMap.keySet() + ", may be version or group mismatch " + ", channel: consumer: " + channel.getRemoteAddress() + " --> provider: " + channel.getLocalAddress() + ", message:" + inv);
+
+        return exporter.getInvoker();
+    }
+    
     public Collection<Invoker<?>> getInvokers() {
         return Collections.unmodifiableCollection(invokers);
     }

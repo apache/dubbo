@@ -39,6 +39,7 @@ import com.alibaba.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 public class ExplicitCallbackTest {
     
     protected Exporter<IDemoService> exporter = null;
+    protected Exporter<IHelloService> hello_exporter = null;
     protected Invoker<IDemoService> reference = null;
     
     @After
@@ -47,6 +48,9 @@ public class ExplicitCallbackTest {
     }
     
     public void exportService(){
+      //先export一个service,测试共享连接的问题
+        serviceURL=serviceURL.addParameter("connections", 1);
+//        hello_exporter = ProtocolUtils.export(new HelloServiceImpl(), IHelloService.class, "dubbo://127.0.0.1:"+serviceURL.getPort()+"/"+IHelloService.class);
         exporter = ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, serviceURL);
     }
     void referService() {
@@ -66,6 +70,7 @@ public class ExplicitCallbackTest {
                 +"&xxx2.0.callback=true"
                 +"&unxxx2.0.callback=false"
                 +"&timeout="+timeout
+                +"&retries=0"
                 +"&"+RpcConstants.CALLBACK_INSTANCES_LIMIT_KEY+"="+callbacks
                 );
         //      uncomment is unblock invoking
@@ -87,6 +92,7 @@ public class ExplicitCallbackTest {
         demoProxy = null ;
         try {
             if (exporter!=null) exporter.unexport();
+            if (hello_exporter!=null) hello_exporter.unexport();
             if (reference!=null) reference.destroy();
         }catch (Exception e) {
         }
@@ -95,6 +101,10 @@ public class ExplicitCallbackTest {
     interface IDemoCallback{
         String yyy(String msg);
     }
+    interface IHelloService{
+        public String sayHello();
+    }
+    
     interface IDemoService{
         public String get();
         public int getCallbackCount();
@@ -103,6 +113,12 @@ public class ExplicitCallbackTest {
         public void unxxx2(IDemoCallback callback);
     }
     
+    class HelloServiceImpl implements IHelloService{
+        public String sayHello() {
+            return "hello";
+        }
+        
+    }
     class DemoServiceImpl  implements IDemoService {
         public String get(){
             return "ok" ;
@@ -184,7 +200,8 @@ public class ExplicitCallbackTest {
     IDemoService demoProxy = null; 
     @Test
     public void TestCallbackNormal() throws Exception {
-        initOrResetUrl(1, 1000); initOrResetService() ;
+        
+        initOrResetUrl(1, 10000000); initOrResetService() ;
         final AtomicInteger count = new AtomicInteger(0);
         
         demoProxy.xxx(new IDemoCallback() {
@@ -195,8 +212,11 @@ public class ExplicitCallbackTest {
             }
         },"other custom args" , 10 , 100);
         System.out.println("Async...");
+//        Thread.sleep(10000000);
         assertCallbackCount(10,100,count);
         destroyService();
+        
+        
     }
     
     @Test

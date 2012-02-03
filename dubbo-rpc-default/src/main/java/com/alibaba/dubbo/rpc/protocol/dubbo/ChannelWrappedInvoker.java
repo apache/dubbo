@@ -39,14 +39,14 @@ import com.alibaba.dubbo.rpc.protocol.AbstractInvoker;
  * 
  * @author chao.liuc
  */
-public class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
+class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
 
     private final Channel channel;
     private final String serviceKey ; 
 
-    public ChannelWrappedInvoker(Class<T> serviceType, Channel channel, String serviceKey) {
+    public ChannelWrappedInvoker(Class<T> serviceType, Channel channel, URL url, String serviceKey) {
 
-        super(serviceType, channel.getUrl(), new String[] { Constants.GROUP_KEY,
+        super(serviceType, url, new String[] { Constants.GROUP_KEY,
                 Constants.TOKEN_KEY, Constants.TIMEOUT_KEY });
         this.channel = channel;
         this.serviceKey = serviceKey;
