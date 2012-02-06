@@ -424,7 +424,32 @@ public class ConfigTest {
     
     @SuppressWarnings("unchecked")
     @Test
-    public void testSystemPropertyOverride() throws Exception {
+    public void testSystemPropertyOverrideXmlDefault() throws Exception {
+        System.setProperty("dubbo.application.name", "sysover");
+        System.setProperty("dubbo.registry.address", "N/A");
+        System.setProperty("dubbo.protocol.name", "dubbo");
+        System.setProperty("dubbo.protocol.port", "20819");
+        ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/system-properties-override-default.xml");
+        providerContext.start();
+        try {
+            ServiceConfig<DemoService> service = (ServiceConfig<DemoService>) providerContext.getBean("demoServiceConfig");
+            assertEquals("sysover", service.getApplication().getName());
+            assertEquals("N/A", service.getRegistry().getAddress());
+            assertEquals("dubbo", service.getProtocol().getName());
+            assertEquals(20819, service.getProtocol().getPort().intValue());
+        } finally {
+            System.setProperty("dubbo.application.name", "");
+            System.setProperty("dubbo.registry.address", "");
+            System.setProperty("dubbo.protocol.name", "");
+            System.setProperty("dubbo.protocol.port", "");
+            providerContext.stop();
+            providerContext.close();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testSystemPropertyOverrideXml() throws Exception {
         System.setProperty("dubbo.application.name", "sysover");
         System.setProperty("dubbo.registry.address", "N/A");
         System.setProperty("dubbo.protocol.name", "dubbo");
@@ -432,11 +457,11 @@ public class ConfigTest {
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/system-properties-override.xml");
         providerContext.start();
         try {
-            ServiceConfig<DemoService> serviceConfig = (ServiceConfig<DemoService>) providerContext.getBean("demoServiceConfig");
-            assertEquals("sysover", serviceConfig.getApplication().getName());
-            assertEquals("N/A", serviceConfig.getRegistry().getAddress());
-            assertEquals("dubbo", serviceConfig.getProtocol().getName());
-            assertEquals(20819, serviceConfig.getProtocol().getPort().intValue());
+            ServiceConfig<DemoService> service = (ServiceConfig<DemoService>) providerContext.getBean("demoServiceConfig");
+            URL url = service.toUrls().get(0);
+            assertEquals("sysover", url.getParameter("application"));
+            assertEquals("dubbo", url.getProtocol());
+            assertEquals(20819, url.getPort());
         } finally {
             System.setProperty("dubbo.application.name", "");
             System.setProperty("dubbo.registry.address", "");
@@ -499,8 +524,8 @@ public class ConfigTest {
             service.setProtocol(protocol);
             service.export();
             
-            URL url = service.toUrls().get(0);
             try {
+                URL url = service.toUrls().get(0);
                 assertEquals("sysover", url.getParameter("application"));
                 assertEquals("dubbo", url.getProtocol());
                 assertEquals(20834, url.getPort());

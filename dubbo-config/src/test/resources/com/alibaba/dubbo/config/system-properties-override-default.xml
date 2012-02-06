@@ -20,15 +20,6 @@
     http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd
     ">
 
-    <!-- 当前应用信息配置 -->
-    <dubbo:application name="demo-provider" />
-    
-    <!-- 连接注册中心配置 -->
-    <dubbo:registry address="127.0.0.1" />
-     
-    <!-- 暴露服务协议配置 -->
-    <dubbo:protocol name="rmi" port="20813" />
-    
     <!-- 暴露服务配置 -->
     <dubbo:service id="demoServiceConfig" interface="com.alibaba.dubbo.config.api.DemoService" ref="demoService" />
      
