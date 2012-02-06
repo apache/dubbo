@@ -422,7 +422,6 @@ public class ConfigTest {
         }
     }
     
-
     @SuppressWarnings("unchecked")
     @Test
     public void testSystemPropertyOverride() throws Exception {
@@ -445,6 +444,74 @@ public class ConfigTest {
             System.setProperty("dubbo.protocol.port", "");
             providerContext.stop();
             providerContext.close();
+        }
+    }
+
+    @Test
+    public void testSystemPropertyOverrideApiDefault() throws Exception {
+        System.setProperty("dubbo.application.name", "sysover");
+        System.setProperty("dubbo.registry.address", "N/A");
+        System.setProperty("dubbo.protocol.name", "dubbo");
+        System.setProperty("dubbo.protocol.port", "20834");
+        try {
+            ServiceConfig<DemoService> serviceConfig = new ServiceConfig<DemoService>();
+            serviceConfig.setInterface(DemoService.class);
+            serviceConfig.setRef(new DemoServiceImpl());
+            serviceConfig.export();
+            try {
+                assertEquals("sysover", serviceConfig.getApplication().getName());
+                assertEquals("N/A", serviceConfig.getRegistry().getAddress());
+                assertEquals("dubbo", serviceConfig.getProtocol().getName());
+                assertEquals(20834, serviceConfig.getProtocol().getPort().intValue());
+            } finally {
+                serviceConfig.unexport();
+            }
+        } finally {
+            System.setProperty("dubbo.application.name", "");
+            System.setProperty("dubbo.registry.address", "");
+            System.setProperty("dubbo.protocol.name", "");
+            System.setProperty("dubbo.protocol.port", "");
+        }
+    }
+
+    @Test
+    public void testSystemPropertyOverrideApi() throws Exception {
+        System.setProperty("dubbo.application.name", "sysover");
+        System.setProperty("dubbo.registry.address", "N/A");
+        System.setProperty("dubbo.protocol.name", "dubbo");
+        System.setProperty("dubbo.protocol.port", "20834");
+        try {
+            ApplicationConfig application = new ApplicationConfig();
+            application.setName("aaa");
+            
+            RegistryConfig registry = new RegistryConfig();
+            registry.setAddress("127.0.0.1");
+            
+            ProtocolConfig protocol = new ProtocolConfig();
+            protocol.setName("rmi");
+            protocol.setPort(1099);
+            
+            ServiceConfig<DemoService> service = new ServiceConfig<DemoService>();
+            service.setInterface(DemoService.class);
+            service.setRef(new DemoServiceImpl());
+            service.setApplication(application);
+            service.setRegistry(registry);
+            service.setProtocol(protocol);
+            service.export();
+            
+            URL url = service.toUrls().get(0);
+            try {
+                assertEquals("sysover", url.getParameter("application"));
+                assertEquals("dubbo", url.getProtocol());
+                assertEquals(20834, url.getPort());
+            } finally {
+                service.unexport();
+            }
+        } finally {
+            System.setProperty("dubbo.application.name", "");
+            System.setProperty("dubbo.registry.address", "");
+            System.setProperty("dubbo.protocol.name", "");
+            System.setProperty("dubbo.protocol.port", "");
         }
     }
 }

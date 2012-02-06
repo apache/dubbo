@@ -152,8 +152,9 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
         List<URL> registryList = new ArrayList<URL>();
         if (registries != null && registries.size() > 0) {
             for (RegistryConfig config : registries) {
-                if (! RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(config.getAddress())) {
-                    if (config.getAddress() == null || config.getAddress().length() == 0) {
+                String address = System.getProperty("dubbo.registry.address", config.getAddress());
+                if (! RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) {
+                    if (address == null || address.length() == 0) {
                         throw new IllegalStateException("registry address == null");
                     }
                     Map<String, String> map = new HashMap<String, String>();
@@ -167,7 +168,7 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
                             map.put("protocol", "dubbo");
                         }
                     }
-                    List<URL> urls = UrlUtils.parseURLs(config.getAddress(), map);
+                    List<URL> urls = UrlUtils.parseURLs(address, map);
                     for (URL url : urls) {
                         url = url.addParameter(Constants.REGISTRY_KEY, url.getProtocol());
                         url = url.setProtocol(Constants.REGISTRY_PROTOCOL);
@@ -194,7 +195,8 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
         Map<String, String> map = new HashMap<String, String>();
         map.put(Constants.INTERFACE_KEY, MonitorService.class.getName());
         appendParameters(map, monitor);
-        if (ConfigUtils.isNotEmpty(monitor.getAddress())) {
+        String address = System.getProperty("dubbo.monitor.address", monitor.getAddress());
+        if (ConfigUtils.isNotEmpty(address)) {
             if (! map.containsKey(Constants.PROTOCOL_KEY)) {
                 if (ExtensionLoader.getExtensionLoader(MonitorFactory.class).hasExtension("logstat")) {
                     map.put(Constants.PROTOCOL_KEY, "logstat");
@@ -202,7 +204,7 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
                     map.put(Constants.PROTOCOL_KEY, "dubbo");
                 }
             }
-            return UrlUtils.parseURL(monitor.getAddress(), map);
+            return UrlUtils.parseURL(address, map);
         } else if (Constants.REGISTRY_PROTOCOL.equals(monitor.getProtocol()) && registryURL != null) {
             return registryURL.setProtocol("dubbo").addParameter(Constants.PROTOCOL_KEY, "registry").addParameterAndEncoded(RpcConstants.REFER_KEY, StringUtils.toQueryString(map));
         }

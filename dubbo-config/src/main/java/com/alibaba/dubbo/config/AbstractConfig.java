@@ -83,6 +83,18 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
     
+    private static String getTagName(Class<?> cls) {
+        String tag = cls.getSimpleName();
+        for (String suffix : SUFFIXS) {
+            if (tag.endsWith(suffix)) {
+                tag = tag.substring(0, tag.length() - suffix.length());
+                break;
+            }
+        }
+        tag = tag.toLowerCase();
+        return tag;
+    }
+    
     protected static void appendParameters(Map<String, String> parameters, Object config) {
         appendParameters(parameters, config, null);
     }
@@ -92,6 +104,7 @@ public abstract class AbstractConfig implements Serializable {
         if (config == null) {
             return;
         }
+        String tag = getTagName(config.getClass());
         Method[] methods = config.getClass().getMethods();
         for (Method method : methods) {
             try {
@@ -105,12 +118,13 @@ public abstract class AbstractConfig implements Serializable {
                     if (method.getReturnType() == Object.class || parameter != null && parameter.excluded()) {
                         continue;
                     }
+                    int i = name.startsWith("get") ? 3 : 2;
+                    String prop = name.substring(i, i + 1).toLowerCase() + name.substring(i + 1);
                     String key;
                     if (parameter != null && parameter.key() != null && parameter.key().length() > 0) {
                         key = parameter.key();
                     } else {
-                        int i = name.startsWith("get") ? 3 : 2;
-                        key = name.substring(i, i + 1).toLowerCase() + name.substring(i + 1);
+                        key = prop;
                     }
                     Object value = method.invoke(config, new Object[0]);
                     String str = String.valueOf(value).trim();
@@ -126,6 +140,12 @@ public abstract class AbstractConfig implements Serializable {
                             pre = (String)parameters.get(key);
                             if (pre != null && pre.length() > 0) {
                                 str = pre + "," + str;
+                            }
+                        }
+                        if (tag != null && tag.length() > 0) {
+                            String sysval = System.getProperty("dubbo." + tag + "." + prop);
+                            if (sysval != null && sysval.trim().length() > 0) {
+                                str = sysval.trim();
                             }
                         }
                         if (prefix != null && prefix.length() > 0) {
@@ -324,17 +344,9 @@ public abstract class AbstractConfig implements Serializable {
     @Override
     public String toString() {
         try {
-            String tag = getClass().getSimpleName();
-            for (String suffix : SUFFIXS) {
-                if (tag.endsWith(suffix)) {
-                    tag = tag.substring(0, tag.length() - suffix.length());
-                    break;
-                }
-            }
-            tag = tag.toLowerCase();
             StringBuilder buf = new StringBuilder();
             buf.append("<dubbo:");
-            buf.append(tag);
+            buf.append(getTagName(getClass()));
             Method[] methods = getClass().getMethods();
             for (Method method : methods) {
                 try {
