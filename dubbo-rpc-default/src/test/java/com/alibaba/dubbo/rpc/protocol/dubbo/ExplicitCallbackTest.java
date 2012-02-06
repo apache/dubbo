@@ -50,7 +50,8 @@ public class ExplicitCallbackTest {
     public void exportService(){
       //先export一个service,测试共享连接的问题
         serviceURL=serviceURL.addParameter("connections", 1);
-//        hello_exporter = ProtocolUtils.export(new HelloServiceImpl(), IHelloService.class, "dubbo://127.0.0.1:"+serviceURL.getPort()+"/"+IHelloService.class);
+        URL hellourl = serviceURL.setPath(IHelloService.class.getName());
+        hello_exporter = ProtocolUtils.export(new HelloServiceImpl(), IHelloService.class, hellourl);
         exporter = ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, serviceURL);
     }
     void referService() {
