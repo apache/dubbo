@@ -15,6 +15,7 @@
  */
 package com.alibaba.dubbo.rpc.protocol.dubbo;
 
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.alibaba.dubbo.common.Constants;
@@ -25,6 +26,7 @@ import com.alibaba.dubbo.remoting.TimeoutException;
 import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
 import com.alibaba.dubbo.remoting.exchange.ResponseFuture;
 import com.alibaba.dubbo.rpc.Invocation;
+import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcContext;
@@ -49,11 +51,18 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
     
     private final ReentrantLock     destroyLock = new ReentrantLock();
     
+    private final Set<Invoker<?>> invokers;
+    
     public DubboInvoker(Class<T> serviceType, URL url, ExchangeClient[] clients){
+        this(serviceType, url, clients, null);
+    }
+    
+    public DubboInvoker(Class<T> serviceType, URL url, ExchangeClient[] clients, Set<Invoker<?>> invokers){
         super(serviceType, url, new String[] {Constants.INTERFACE_KEY, Constants.GROUP_KEY, Constants.TOKEN_KEY, Constants.TIMEOUT_KEY});
         this.clients = clients;
         // get version.
         this.version = url.getParameter(Constants.VERSION_KEY, "0.0.0");
+        this.invokers = invokers; 
     }
 
     @Override
@@ -130,6 +139,9 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                     return ;
                 }
                 super.destroy();
+                if (invokers != null){
+                    invokers.remove(this);
+                }
                 for (ExchangeClient client : clients) {
                     try {
                         client.close();
@@ -137,6 +149,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                         logger.warn(t.getMessage(), t);
                     }
                 }
+                
             }finally {
                 destroyLock.unlock();
             }

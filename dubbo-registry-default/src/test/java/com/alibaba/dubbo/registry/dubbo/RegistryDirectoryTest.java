@@ -551,6 +551,132 @@ public class RegistryDirectoryTest {
         routers = registryDirectory.getRouters();
         Assert.assertEquals(0, routers.size());
     }
+    
+    /**
+     * 测试overwride规则是否优先
+     * 场景：先推送overwride，后推送invoker
+     */
+    @Test
+    public void testNotifyoverwrideUrls_beforeInvoker(){
+        RegistryDirectory registryDirectory = getRegistryDirectory();
+        List<URL> overwrideUrls = new ArrayList<URL>();
+        overwrideUrls.add(URL.valueOf("overwride://10.20.30.40?timeout=1&connections=5"));
+        registryDirectory.notify(overwrideUrls);
+        //注册中心初始只推送overwride，dirctory状态应该是false，因为没有invoker存在。
+        Assert.assertEquals(false, registryDirectory.isAvailable());
+        
+        //在推送两个provider,directory状态恢复为true
+        List<URL> serviceUrls = new ArrayList<URL>();
+        serviceUrls.add(SERVICEURL.addParameter("timeout", "1000"));
+        serviceUrls.add(SERVICEURL2.addParameter("timeout", "1000").addParameter("connections", "10"));
+
+        registryDirectory.notify(serviceUrls);
+        Assert.assertEquals(true, registryDirectory.isAvailable());
+        
+        //开始验证参数值
+
+        invocation = new RpcInvocation();
+
+        List<Invoker<?>> invokers = registryDirectory.list(invocation);
+        Assert.assertEquals(2, invokers.size());
+        
+        Assert.assertEquals("overwride rute must be first priority", "1", invokers.get(0).getUrl().getParameter("timeout"));
+        Assert.assertEquals("overwride rute must be first priority", "5", invokers.get(0).getUrl().getParameter("connections"));
+    }
+    
+    /**
+     * 测试overwride规则是否优先
+     * 场景：先推送overwride，后推送invoker
+     */
+    @Test
+    public void testNotifyoverwrideUrls_afterInvoker(){
+        RegistryDirectory registryDirectory = getRegistryDirectory();
+        
+        //在推送两个provider,directory状态恢复为true
+        List<URL> serviceUrls = new ArrayList<URL>();
+        serviceUrls.add(SERVICEURL.addParameter("timeout", "1000"));
+        serviceUrls.add(SERVICEURL2.addParameter("timeout", "1000").addParameter("connections", "10"));
+
+        registryDirectory.notify(serviceUrls);
+        Assert.assertEquals(true, registryDirectory.isAvailable());
+        
+        List<URL> overwrideUrls = new ArrayList<URL>();
+        overwrideUrls.add(URL.valueOf("overwride://10.20.30.40?timeout=1&connections=5"));
+        registryDirectory.notify(overwrideUrls);
+        
+        //开始验证参数值
+
+        invocation = new RpcInvocation();
+
+        List<Invoker<?>> invokers = registryDirectory.list(invocation);
+        Assert.assertEquals(2, invokers.size());
+        
+        Assert.assertEquals("overwride rute must be first priority", "1", invokers.get(0).getUrl().getParameter("timeout"));
+        Assert.assertEquals("overwride rute must be first priority", "5", invokers.get(0).getUrl().getParameter("connections"));
+    }
+    
+    /**
+     * 测试overwride规则是否优先
+     * 场景：与invoker 一起推动overwride规则
+     */
+    @Test
+    public void testNotifyoverwrideUrls_withInvoker(){
+        RegistryDirectory registryDirectory = getRegistryDirectory();
+        
+        List<URL> durls = new ArrayList<URL>();
+        durls.add(SERVICEURL.addParameter("timeout", "1000"));
+        durls.add(SERVICEURL2.addParameter("timeout", "1000").addParameter("connections", "10"));
+        durls.add(URL.valueOf("overwride://10.20.30.40?timeout=1&connections=5"));
+
+        registryDirectory.notify(durls);
+        Assert.assertEquals(true, registryDirectory.isAvailable());
+        
+        //开始验证参数值
+
+        invocation = new RpcInvocation();
+
+        List<Invoker<?>> invokers = registryDirectory.list(invocation);
+        Assert.assertEquals(2, invokers.size());
+        
+        Assert.assertEquals("overwride rute must be first priority", "1", invokers.get(0).getUrl().getParameter("timeout"));
+        Assert.assertEquals("overwride rute must be first priority", "5", invokers.get(0).getUrl().getParameter("connections"));
+    }
+    
+    /**
+     * 测试overwride规则是否优先
+     * 场景：推送的规则与provider的参数是一样的
+     * 期望：不需要重新引用
+     */
+    @Test
+    public void testNotifyoverwrideUrls_Nouse(){
+        RegistryDirectory registryDirectory = getRegistryDirectory();
+        invocation = new RpcInvocation();
+        
+        List<URL> durls = new ArrayList<URL>();
+        durls.add(SERVICEURL.addParameter("timeout", "1"));//一个一样，一个不一样
+        durls.add(SERVICEURL2.addParameter("timeout", "1").addParameter("connections", "5"));
+        registryDirectory.notify(durls);
+        List<Invoker<?>> invokers = registryDirectory.list(invocation);
+        Assert.assertEquals(2, invokers.size());
+        Invoker<?> a1Invoker = invokers.get(0);
+        Invoker<?> b1Invoker = invokers.get(1);
+        
+        durls = new ArrayList<URL>();
+        durls.add(URL.valueOf("overwride://10.20.30.40?timeout=1&connections=5"));
+        registryDirectory.notify(durls);
+        Assert.assertEquals(true, registryDirectory.isAvailable());
+        
+        invokers = registryDirectory.list(invocation);
+        Assert.assertEquals(2, invokers.size());
+        
+        Invoker<?> a2Invoker = invokers.get(0);
+        Invoker<?> b2Invoker = invokers.get(1);
+        //参数不一样，必须重新引用
+        Assert.assertFalse("object not same",a1Invoker == a2Invoker);
+        
+        //参数一样，不能重新引用
+        Assert.assertTrue("object same",b1Invoker == b2Invoker);
+    }
 
     @Test
     public void testNotifyRouterUrls_Clean() {

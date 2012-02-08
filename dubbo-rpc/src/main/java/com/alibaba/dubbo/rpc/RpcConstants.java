@@ -150,6 +150,8 @@ public final class RpcConstants {
     
     public static final String ON_THROW_INSTANCE_KEY = "onthrow.instance";
     
+    public static final String OVERWRIDE_PROTOCOL = "overwride";
+    
     public static final String ROUTE_PROTOCOL = "route";
     
     public static final String RULE_KEY = "rule";
