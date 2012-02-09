@@ -69,13 +69,13 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     private volatile Map<String, String> queryMap;
     
-    /*overwride规则 
-     * 优先级：overwride>-D>consumer>provider
+    /*override规则 
+     * 优先级：override>-D>consumer>provider
      * 第一种规则：针对某个provider <ip:port,timeout=100>
      * 第二种规则：针对所有provider <* ,timeout=5000>
      * 第三种规则：表达式匹配的provider <10.20.*.*, timeout=1000> 
      */
-    private volatile Map<String, Map<String, String>> overwrideMap;
+    private volatile Map<String, Map<String, String>> overrideMap;
     
     // Map<url, Invoker> cache service url to invoker mapping.
     private Map<String, Invoker<T>> urlInvokerMap = new ConcurrentHashMap<String, Invoker<T>>();
@@ -136,15 +136,15 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             this.forbidden = false; // 允许访问
             List<URL> invokerUrls = new ArrayList<URL>();
             List<URL> routerUrls = new ArrayList<URL>();
-            List<URL> overwrideUrls = new ArrayList<URL>();
+            List<URL> overrideUrls = new ArrayList<URL>();
             for (URL url : urls) {
                 if (RpcConstants.ROUTE_PROTOCOL.equals(url.getProtocol())) {
                     if (! routerUrls.contains(url)) {
                         routerUrls.add(url);
                     }
-                } else if (RpcConstants.OVERWRIDE_PROTOCOL.equals(url.getProtocol())) {
-                    if (! overwrideUrls.contains(url)) {
-                        overwrideUrls.add(url);
+                } else if (RpcConstants.OVERRIDE_PROTOCOL.equals(url.getProtocol())) {
+                    if (! overrideUrls.contains(url)) {
+                        overrideUrls.add(url);
                     }
                 } else if (ExtensionLoader.getExtensionLoader(Protocol.class).hasExtension(url.getProtocol())) {
                     if (! invokerUrls.contains(url)) {
@@ -156,9 +156,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 }
             }
             
-            //overwrides 
-            if (overwrideUrls != null && overwrideUrls.size() >0 ){
-                overwrideMap = tooverwrides(overwrideUrls);
+            //overrides 
+            if (overrideUrls != null && overrideUrls.size() >0 ){
+                overrideMap = toOverrides(overrideUrls);
             }
             
             //route 
@@ -178,7 +178,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * 根据invokerURL列表转换为invoker列表。转换规则如下：
      * 1.如果url已经被转换为invoker，则不在重新引用，直接从缓存中获取，注意如果url中任何一个参数变更也会重新引用
      * 2.如果传入的invoker列表不为空，则表示最新的invoker列表
-     * 3.如果传入的invokerUrl列表是空，则表示只是下发的overwride规则或route规则，需要重新交叉对比，决定是否需要重新引用。
+     * 3.如果传入的invokerUrl列表是空，则表示只是下发的override规则或route规则，需要重新交叉对比，决定是否需要重新引用。
      * @param invokerUrls 传入的参数不能为null
      */
     private void refreshInvoker(List<URL> invokerUrls){
@@ -207,23 +207,23 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     }
     
     /**
-     * 将overwrideURL转换为map，供重新refer时使用.
+     * 将overrideURL转换为map，供重新refer时使用.
      * 每次下发全部规则，全部重新组装计算
-     * overwride url: overwride://* /servicename?para1=value1...
+     * override url: override://* /servicename?para1=value1...
      * @param urls
      * @return
      */
-    private Map<String, Map<String, String>> tooverwrides(List<URL> urls){
+    private Map<String, Map<String, String>> toOverrides(List<URL> urls){
         if (urls == null || urls.size() == 0){
             return null;
         }
-        Map<String, Map<String, String>> overwrides = new ConcurrentHashMap<String, Map<String,String>>(urls.size());
+        Map<String, Map<String, String>> overrides = new ConcurrentHashMap<String, Map<String,String>>(urls.size());
         for(URL url : urls){
             //TODO 暂时只支持对某个服务的全局设置
-            overwrides.put("*", url.getParameters());
+            overrides.put("*", url.getParameters());
             break ;
         }
-        return overwrides;
+        return overrides;
     }
     
     /**
@@ -273,7 +273,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * 将urls转成invokers,如果url已经被refer过，不再重新引用。
      * 
      * @param urls
-     * @param overwrides
+     * @param overrides
      * @param query
      * @return invokers
      */
@@ -284,7 +284,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         Map<String, Invoker<T>> newUrlInvokerMap = new ConcurrentHashMap<String, Invoker<T>>();
         Set<String> keys = new HashSet<String>();
         for (URL url : urls) {
-            url = mergeUrl(url, overwrideMap);
+            url = mergeUrl(url, overrideMap);
             
             String key = url.toFullString(); // URL参数是排序的
             if (keys.contains(key)) { // 重复URL
@@ -311,20 +311,20 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     }
     
     /**
-     * 合并url参数 顺序为overwride > -D >Consumer > Provider
+     * 合并url参数 顺序为override > -D >Consumer > Provider
      * @param url
-     * @param overwrides
+     * @param overrides
      * @return
      */
-    private URL mergeUrl(URL url, Map<String, Map<String, String>> overwrides){
-        Map<String, String> alloverwride = overwrides == null ? new HashMap<String,String>() : overwrides.get("*");
+    private URL mergeUrl(URL url, Map<String, Map<String, String>> overrides){
+        Map<String, String> alloverride = overrides == null ? new HashMap<String,String>() : overrides.get("*");
         url = ClusterUtils.mergeUrl(url, queryMap); // 合并消费端参数
         url = url.addParameter(Constants.CHECK_KEY, String.valueOf(false)); // 不检查连接是否成功，总是创建Invoker！
         //当前只支持全局覆盖
-        url = url.addParameters(alloverwride);//合并overwride参数
+        url = url.addParameters(alloverride);//合并override参数
         
         this.directoryUrl = this.directoryUrl.addParametersIfAbsent(url.getParameters()); // 合并提供者参数
-        this.directoryUrl = this.directoryUrl.addParameters(alloverwride);//合并overwride参数
+        this.directoryUrl = this.directoryUrl.addParameters(alloverride);//合并override参数
         
         if ((url.getPath() == null || url.getPath().length() == 0)
                 && "dubbo".equals(url.getProtocol())) { // 兼容1.0
