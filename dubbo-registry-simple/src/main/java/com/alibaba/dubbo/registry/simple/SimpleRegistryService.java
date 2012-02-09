@@ -54,7 +54,7 @@ public class SimpleRegistryService extends FailbackRegistry {
         return true;
     }
     
-    public void register(URL url) {
+    public void register(URL url, NotifyListener listener) {
         String client = RpcContext.getContext().getRemoteAddressString();
         Set<String> urls = remoteRegistered.get(client);
         if (urls == null) {
@@ -62,17 +62,17 @@ public class SimpleRegistryService extends FailbackRegistry {
             urls = remoteRegistered.get(client);
         }
         urls.add(url.toFullString());
-        super.register(url);
+        super.register(url, listener);
         registered(url);
     }
 
-    public void unregister(URL url) {
+    public void unregister(URL url, NotifyListener listener) {
         String client = RpcContext.getContext().getRemoteAddressString();
         Set<String> urls = remoteRegistered.get(client);
         if (urls != null && urls.size() > 0) {
             urls.remove(url.toFullString());
         }
-        super.unregister(url);
+        super.unregister(url, listener);
         unregistered(url);
     }
 
@@ -81,12 +81,12 @@ public class SimpleRegistryService extends FailbackRegistry {
             URL registryUrl = RpcContext.getContext().getInvoker().getUrl();
             if (registryUrl != null && registryUrl.getPort() > 0) {
                 super.setUrl(registryUrl);
-                super.register(registryUrl);
+                super.register(registryUrl, null);
             }
         }
         if (! Constants.ANY_VALUE.equals(url.getServiceName())
                 && url.getParameter(Constants.REGISTER_KEY, true)) {
-            register(url);
+            register(url, null);
         }
         String client = RpcContext.getContext().getRemoteAddressString();
         ConcurrentMap<String, Set<NotifyListener>> clientListeners = remoteSubscribed.get(client);
@@ -108,7 +108,7 @@ public class SimpleRegistryService extends FailbackRegistry {
     public void unsubscribe(URL url, NotifyListener listener) {
         if (! Constants.ANY_VALUE.equals(url.getServiceName())
                 && url.getParameter(Constants.REGISTER_KEY, true)) {
-            unregister(url);
+            unregister(url, null);
         }
         String client = RpcContext.getContext().getRemoteAddressString();
         Map<String, Set<NotifyListener>> clientListeners = remoteSubscribed.get(client);
@@ -119,7 +119,7 @@ public class SimpleRegistryService extends FailbackRegistry {
                 listeners.remove(listener);
             }
         }
-        super.unregister(url);
+        super.unregister(url, null);
     }
 
     protected void registered(URL url) {
@@ -179,7 +179,7 @@ public class SimpleRegistryService extends FailbackRegistry {
         Set<String> urls = remoteRegistered.get(client);
         if (urls != null && urls.size() > 0) {
             for (String url : urls) {
-                unregister(URL.valueOf(url));
+                unregister(URL.valueOf(url), null);
             }
         }
         Map<String, Set<NotifyListener>> listeners = remoteSubscribed.get(client);

@@ -83,7 +83,7 @@ public abstract class AbstractRegistry implements Registry {
         return urls;
     }
 
-    public void register(URL url) {
+    public void register(URL url, NotifyListener listener) {
         if (url == null) {
             throw new IllegalArgumentException("register url == null");
         }
@@ -93,7 +93,7 @@ public abstract class AbstractRegistry implements Registry {
         registered.add(url.toFullString());
     }
     
-    public void unregister(URL url) {
+    public void unregister(URL url, NotifyListener listener) {
         if (url == null) {
             throw new IllegalArgumentException("unregister url == null");
         }
@@ -147,7 +147,7 @@ public abstract class AbstractRegistry implements Registry {
                 logger.info("Recover register services " + recoverRegistered);
             }
             for (String url : recoverRegistered) {
-                register(URL.valueOf(url));
+                register(URL.valueOf(url), null);
             }
         }
         // subscribe
@@ -171,7 +171,7 @@ public abstract class AbstractRegistry implements Registry {
         }
         for (String url : new HashSet<String>(registered)) {
             try {
-                unregister(URL.valueOf(url));
+                unregister(URL.valueOf(url), null);
             } catch (Throwable t) {
                 logger.warn(t.getMessage(), t);
             }

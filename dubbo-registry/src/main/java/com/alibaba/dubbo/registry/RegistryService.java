@@ -43,15 +43,17 @@ public interface RegistryService {
      * 5. 当注册中心重启恢复时，需自动恢复注册数据。<br>
      * 
      * @param url 服务提供者地址，如：dubbo://10.20.153.10/com.alibaba.foo.BarService?version=1.0.0&application=kylin
+     * @param listener 服务变更事件监听器
      */
-    void register(URL url);
+    void register(URL url, NotifyListener listener);
 
     /**
      * 取消注册服务
      * 
      * @param url 服务提供者地址，如：dubbo://10.20.153.10/com.alibaba.foo.BarService?version=1.0.0&application=kylin
+     * @param  listener 服务变更事件监听器
      */
-    void unregister(URL url);
+    void unregister(URL url, NotifyListener listener);
 
     /**
      * 订阅服务

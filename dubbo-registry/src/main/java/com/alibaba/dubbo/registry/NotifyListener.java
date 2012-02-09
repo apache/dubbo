@@ -29,7 +29,7 @@ public interface NotifyListener {
     
     /**
      * 当收到服务变更通知时触发
-     * @param urls 含义同{@link com.alibaba.dubbo.registry.RegistryService#register(URL)}的urls参数。
+     * @param urls 含义同{@link com.alibaba.dubbo.registry.RegistryService#register(URL, NotifyListener)}的urls参数。
      */
     void notify(List<URL> urls);
     

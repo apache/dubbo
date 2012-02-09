@@ -216,8 +216,8 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         }
     }
     
-    public void register(URL url) {
-        super.register(url);
+    public void register(URL url, NotifyListener listener) {
+        super.register(url, listener);
         try {
             // 向服务器端发送注册请求
             doRegister(url);
@@ -232,8 +232,8 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         }
     }
 
-    public void unregister(URL url) {
-        super.unregister(url);
+    public void unregister(URL url, NotifyListener listener) {
+        super.unregister(url, listener);
         try {
             // 向服务器端发送取消注册请求
             doUnregister(url);

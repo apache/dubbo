@@ -22,6 +22,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.registry.NotifyListener;
 
 /**
  * ZookeeperRegistryTest
@@ -65,7 +66,7 @@ public class ZookeeperRegistryTest {
     }
 
     /**
-     * Test method for {@link com.alibaba.dubbo.registry.support.injvm.InjvmRegistry#register(java.util.Map)}.
+     * Test method for {@link com.alibaba.dubbo.registry.support.injvm.InjvmRegistry#register(java.util.Map, NotifyListener)}.
      */
     @Test
     public void testRegister() {

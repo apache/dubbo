@@ -55,14 +55,14 @@ public abstract class AbstractRegistryService implements RegistryService {
     // Map<serviceName, List<notificationListener>>
     private final ConcurrentMap<String, List<NotifyListener>> notifyListeners = new ConcurrentHashMap<String, List<NotifyListener>>();
     
-    public void register(URL url) {
+    public void register(URL url, NotifyListener listener) {
         if (logger.isInfoEnabled()) {
             logger.info("Register service: " + url.getServiceKey() + ",url:" + url);
         }
         register(url.getServiceKey(), url);
     }
 
-    public void unregister(URL url) {
+    public void unregister(URL url, NotifyListener listener) {
         if (logger.isInfoEnabled()) {
             logger.info("Unregister service: " + url.getServiceKey() + ",url:" + url);
         }

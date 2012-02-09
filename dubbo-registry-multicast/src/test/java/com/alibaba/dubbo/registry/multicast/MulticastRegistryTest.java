@@ -60,7 +60,7 @@ public class MulticastRegistryTest {
      */
     @Before
     public void setUp() throws Exception {
-        registry.register(serviceUrl);
+        registry.register(serviceUrl, null);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -70,7 +70,7 @@ public class MulticastRegistryTest {
     }
 
     /**
-     * Test method for {@link com.alibaba.dubbo.registry.support.injvm.InjvmRegistry#register(java.util.Map)}.
+     * Test method for {@link com.alibaba.dubbo.registry.support.injvm.InjvmRegistry#register(java.util.Map, NotifyListener)}.
      */
     @Test
     public void testRegister() {
@@ -79,7 +79,7 @@ public class MulticastRegistryTest {
         registered = registry.getRegistered();
 
         for (int i = 0; i < 2; i++) {
-            registry.register(serviceUrl);
+            registry.register(serviceUrl, null);
             registered = registry.getRegistered();
             assertTrue(registered.contains(serviceUrl.toFullString()));
         }

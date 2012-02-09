@@ -361,7 +361,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 }
             } else {
                 if (url.getParameter(Constants.REGISTER_KEY, true)) {
-                    register(url);
+                    register(url, null);
                 }
                 String register = toRegisterPath(url);
                 List<String> providers = getChildren(register);
@@ -407,7 +407,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 listeners.remove(listener);
             }
         } else if (url.getParameter(Constants.REGISTER_KEY, true)) {
-            unregister(url);
+            unregister(url, null);
         }
     }
     

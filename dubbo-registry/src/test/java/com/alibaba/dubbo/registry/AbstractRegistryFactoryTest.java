@@ -49,10 +49,10 @@ public class AbstractRegistryFactoryTest {
                 public void destroy() {
                 }
 
-                public void register(URL url) {
+                public void register(URL url, NotifyListener listener) {
                 }
 
-                public void unregister(URL url) {
+                public void unregister(URL url, NotifyListener listener) {
                 }
 
                 public void subscribe(URL url, NotifyListener listener) {

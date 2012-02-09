@@ -94,7 +94,7 @@ public class RegistryProtocol implements Protocol {
         final Exporter<T> serviceExporter = exporter;
         final URL serviceUrl = url.removeParameters(getFilteredKeys(url));
         final Registry registry = registryFactory.getRegistry(registryUrl);
-        registry.register(serviceUrl);
+        registry.register(serviceUrl, null);
         
         return new Exporter<T>() {
             public Invoker<T> getInvoker() {
@@ -103,7 +103,7 @@ public class RegistryProtocol implements Protocol {
             public void unexport() {
                 bounds.remove(key);
                 try {
-                    registry.unregister(serviceUrl);
+                    registry.unregister(serviceUrl, null);
                 } finally {
                     serviceExporter.unexport();
                 }

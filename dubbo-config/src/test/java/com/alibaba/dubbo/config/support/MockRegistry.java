@@ -60,14 +60,14 @@ public class MockRegistry implements Registry {
     /* 
      * @see com.alibaba.dubbo.registry.RegistryService#register(com.alibaba.dubbo.common.URL)
      */
-    public void register(URL url) {
+    public void register(URL url, NotifyListener listener) {
         
     }
 
     /* 
      * @see com.alibaba.dubbo.registry.RegistryService#unregister(com.alibaba.dubbo.common.URL)
      */
-    public void unregister(URL url) {
+    public void unregister(URL url, NotifyListener listener) {
         
     }
 

@@ -180,7 +180,7 @@ public class MulticastRegistry extends FailbackRegistry {
     protected void doSubscribe(URL url, NotifyListener listener) {
         if (! Constants.ANY_VALUE.equals(url.getServiceName())
                 && url.getParameter(Constants.REGISTER_KEY, true)) {
-            register(url);
+            register(url, null);
         }
         broadcast(SUBSCRIBE + " " + url.toFullString());
         synchronized (listener) {
@@ -194,7 +194,7 @@ public class MulticastRegistry extends FailbackRegistry {
     protected void doUnsubscribe(URL url, NotifyListener listener) {
         if (! Constants.ANY_VALUE.equals(url.getServiceName())
                 && url.getParameter(Constants.REGISTER_KEY, true)) {
-            unregister(url);
+            unregister(url, null);
         }
         broadcast(UNSUBSCRIBE + " " + url.toFullString());
     }
@@ -277,13 +277,13 @@ public class MulticastRegistry extends FailbackRegistry {
         return list;
     }
 
-    public void register(URL url) {
-        super.register(url);
+    public void register(URL url, NotifyListener listener) {
+        super.register(url, listener);
         registered(url);
     }
 
-    public void unregister(URL url) {
-        super.unregister(url);
+    public void unregister(URL url, NotifyListener listener) {
+        super.unregister(url, listener);
         unregistered(url);
     }
 
