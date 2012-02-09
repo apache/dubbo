@@ -69,7 +69,7 @@ public class ApplicationsPageHandler implements PageHandler {
                 Set<String> efferents = RegistryContainer.getInstance().getDependencies(application, false);
                 int efferentSize = efferents == null ? 0 : efferents.size();
                 efferentCount += efferentSize;
-                row.add(efferentSize == 0 ? "<font color=\"blue\">No dependency</font>" : "<a href=\"dependencies.html?application=" + application + "\">Depend On(" + efferentSize + ")</a>");
+                row.add(efferentSize == 0 ? "<font color=\"blue\">No dependency</font>" : "<a href=\"dependencies.html?application=" + application + "\">Depends On(" + efferentSize + ")</a>");
                 
                 Set<String> afferents = RegistryContainer.getInstance().getDependencies(application, true);
                 int afferentSize = afferents == null ? 0 : afferents.size();
@@ -79,7 +79,7 @@ public class ApplicationsPageHandler implements PageHandler {
             }
         }
         return new Page("Applications", "Applications (" + rows.size() + ")",
-                new String[] { "Application Name:", "Owner", "Providers(" + providersCount + ")", "Consumers(" + consumersCount + ")", "Depend On(" + efferentCount + ")", "Used By(" + afferentCount + ")" }, rows);
+                new String[] { "Application Name:", "Owner", "Providers(" + providersCount + ")", "Consumers(" + consumersCount + ")", "Depends On(" + efferentCount + ")", "Used By(" + afferentCount + ")" }, rows);
     }
     
 }

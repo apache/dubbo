@@ -47,8 +47,8 @@ public class DependenciesPageHandler implements PageHandler {
         indirectly.remove(application);
         return new Page("<a href=\"applications.html\">Applications</a> &gt; " + application + 
                 " &gt; <a href=\"providers.html?application=" + application + "\">Providers</a> | <a href=\"consumers.html?application=" + application + "\">Consumers</a> | " +
-                (reverse ? "<a href=\"dependencies.html?application=" + application + "\">Depend On</a> | Used By" 
-                        : "Depend On | <a href=\"dependencies.html?application=" + application + "&reverse=true\">Used By</a>"), (reverse ? "Used By" : "Depend On") + " (" + directly.size() + "/" + indirectly.size() + ")", new String[] { "Application Name:"}, rows);
+                (reverse ? "<a href=\"dependencies.html?application=" + application + "\">Depends On</a> | Used By" 
+                        : "Depends On | <a href=\"dependencies.html?application=" + application + "&reverse=true\">Used By</a>"), (reverse ? "Used By" : "Depends On") + " (" + directly.size() + "/" + indirectly.size() + ")", new String[] { "Application Name:"}, rows);
     }
     
     private void appendDependency(List<List<String>> rows, boolean reverse, String application, int level, Set<String> appended, Set<String> indirectly) {
