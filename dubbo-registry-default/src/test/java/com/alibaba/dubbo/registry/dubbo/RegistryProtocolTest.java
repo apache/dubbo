@@ -17,19 +17,30 @@ package com.alibaba.dubbo.registry.dubbo;
 
 import static org.junit.Assert.assertEquals;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.RegistryFactory;
+import com.alibaba.dubbo.registry.support.AbstractRegistry;
 import com.alibaba.dubbo.registry.support.RegistryProtocol;
+import com.alibaba.dubbo.registry.support.RegistryProtocol.InvokerDelegete;
 import com.alibaba.dubbo.registry.support.SimpleRegistryExporter;
 import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
 import com.alibaba.dubbo.rpc.Exporter;
+import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
+import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.cluster.support.FailfastCluster;
+import com.alibaba.dubbo.rpc.protocol.AbstractInvoker;
 import com.alibaba.dubbo.rpc.protocol.dubbo.DubboInvoker;
 import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
@@ -39,14 +50,16 @@ import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
  * @author tony.chenl
  */
 public class RegistryProtocolTest {
+    
+    final private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
 
     static {
         SimpleRegistryExporter.exportIfAbsent(9090);
     }
 
-    String service     = "com.alibaba.dubbo.registry.protocol.DemoService:1.0.0";
-    String serviceUrl  = "dubbo://127.0.0.1:9453/" + service + "?notify=true&methods=test1,test2";
-    URL    registryUrl = URL.valueOf("dubbo://127.0.0.1:9090/");
+    final String service     = "com.alibaba.dubbo.registry.protocol.DemoService:1.0.0";
+    final String serviceUrl  = "dubbo://127.0.0.1:9453/" + service + "?notify=true&methods=test1,test2";
+    final URL    registryUrl = URL.valueOf("registry://127.0.0.1:9090/");
 
     @Test
     public void testDefaultPort() {
@@ -74,12 +87,79 @@ public class RegistryProtocolTest {
 
         Protocol dubboProtocol = DubboProtocol.getDubboProtocol();
         registryProtocol.setProtocol(dubboProtocol);
-        registryUrl = registryUrl.addParameter(RpcConstants.EXPORT_KEY, serviceUrl);
+        URL newRegistryUrl = registryUrl.addParameter(RpcConstants.EXPORT_KEY, serviceUrl);
         DubboInvoker<DemoService> invoker = new DubboInvoker<DemoService>(DemoService.class,
-                registryUrl, new ExchangeClient[] { new MockedClient("10.20.20.20", 2222, true) });
+                newRegistryUrl, new ExchangeClient[] { new MockedClient("10.20.20.20", 2222, true) });
         Exporter<DemoService> exporter = registryProtocol.export(invoker);
-        assertEquals(invoker, exporter.getInvoker());
+        Assert.assertTrue(exporter.getInvoker() instanceof InvokerDelegete);
+        InvokerDelegete<?> delegeteinvoker =  (InvokerDelegete<?>)exporter.getInvoker();
+        assertEquals(invoker, delegeteinvoker.getInvoker());
         exporter.unexport();
+    }
+    
+    @Test
+    public void testNotifyOverride() throws Exception{
+        URL newRegistryUrl = registryUrl.addParameter(RpcConstants.EXPORT_KEY, serviceUrl);
+        Invoker<RegistryProtocolTest> invoker = new MockInvoker<RegistryProtocolTest>(RegistryProtocolTest.class, newRegistryUrl);
+        Exporter<?> exporter = protocol.export(invoker);
+        RegistryProtocol rprotocol = RegistryProtocol.getRegistryProtocol();
+        NotifyListener listener = getListener(rprotocol);
+        List<URL> urls = new ArrayList<URL>();
+        urls.add(URL.valueOf("override://10.10.10.10/"+ service + "?timeout=100"));
+//        urls.add(URL.valueOf("override://10.10.10.10/"+ service + "?x=y"));
+        listener.notify(urls);
+        assertEquals(true, exporter.getInvoker().isAvailable());
+        assertEquals("100", exporter.getInvoker().getUrl().getParameter("timeout"));
+        //TODO
+//        assertEquals("y", exporter.getInvoker().getUrl().getParameter("x"));
+    }
+    
+    /**
+     * 服务名称不匹配，不能override invoker
+     * 服务名称匹配，服务版本号不匹配
+     */
+    @Test
+    public void testNotifyOverride_notmatch() throws Exception{
+        URL newRegistryUrl = registryUrl.addParameter(RpcConstants.EXPORT_KEY, serviceUrl);
+        Invoker<RegistryProtocolTest> invoker = new MockInvoker<RegistryProtocolTest>(RegistryProtocolTest.class, newRegistryUrl);
+        Exporter<?> exporter = protocol.export(invoker);
+        RegistryProtocol rprotocol = RegistryProtocol.getRegistryProtocol();
+        NotifyListener listener = getListener(rprotocol);
+        List<URL> urls = new ArrayList<URL>();
+        urls.add(URL.valueOf("override://10.10.10.10/com.alibaba.dubbo.registry.protocol.DemoService?timeout=100"));
+        listener.notify(urls);
+        assertEquals(true, exporter.getInvoker().isAvailable());
+        assertEquals(null, exporter.getInvoker().getUrl().getParameter("timeout"));
+    }
+    
+    private NotifyListener getListener(RegistryProtocol protocol) throws Exception {
+        Field field = RegistryProtocol.class.getDeclaredField("listener");
+        field.setAccessible(true);
+        NotifyListener listener = (NotifyListener) field.get(protocol);
+        return listener;
+    }
+    
+    static class MockInvoker<T> extends AbstractInvoker<T>{
+        public MockInvoker(Class<T> type, URL url) {
+            super(type, url);
+        }
+
+        @Override
+        protected Result doInvoke(Invocation invocation) throws Throwable {
+            //do nothing
+            return null;
+        }
+    }
+    
+    static class MockRegistry extends AbstractRegistry{
+
+        public MockRegistry(URL url) {
+            super(url);
+        }
+
+        public boolean isAvailable() {
+            return true;
+        }
     }
 
 }

@@ -59,14 +59,14 @@ public abstract class AbstractRegistryService implements RegistryService {
         if (logger.isInfoEnabled()) {
             logger.info("Register service: " + url.getServiceKey() + ",url:" + url);
         }
-        register(url.getServiceKey(), url);
+        register(url.getServiceKey(), url, listener);
     }
 
     public void unregister(URL url, NotifyListener listener) {
         if (logger.isInfoEnabled()) {
             logger.info("Unregister service: " + url.getServiceKey() + ",url:" + url);
         }
-        unregister(url.getServiceKey(), url);
+        unregister(url.getServiceKey(), url, listener);
     }
 
     public void subscribe(URL url, NotifyListener listener) {
@@ -87,7 +87,7 @@ public abstract class AbstractRegistryService implements RegistryService {
         return getRegistered(url.getServiceKey());
     }
 
-    public void register(String service, URL url) {
+    public void register(String service, URL url, NotifyListener listener) {
         if (service == null) {
             throw new IllegalArgumentException("service == null");
         }
@@ -102,9 +102,10 @@ public abstract class AbstractRegistryService implements RegistryService {
         if (! urls.contains(url)) {
             urls.add(url);
         }
+        addListener(service, listener);
     }
     
-    public void unregister(String service, URL url) {
+    public void unregister(String service, URL url, NotifyListener listener) {
         if (service == null) {
             throw new IllegalArgumentException("service == null");
         }
@@ -115,6 +116,7 @@ public abstract class AbstractRegistryService implements RegistryService {
         if (urls != null) {
             urls.remove(url);
         }
+        removeListener(service, listener);
     }
     
     public void subscribe(String service, URL url, NotifyListener listener) {
@@ -128,12 +130,7 @@ public abstract class AbstractRegistryService implements RegistryService {
             throw new IllegalArgumentException("listener == null");
         }
         subscribed.put(service, url.getParameters()); 
-        List<NotifyListener> listeners = notifyListeners.get(service);
-        if (listeners == null) {
-            notifyListeners.putIfAbsent(service, new CopyOnWriteArrayList<NotifyListener>());
-            listeners = notifyListeners.get(service);
-        }
-        listeners.add(listener);
+        addListener(service, listener);
     }
 
     public void unsubscribe(String service, URL url, NotifyListener listener) {
@@ -147,6 +144,28 @@ public abstract class AbstractRegistryService implements RegistryService {
             throw new IllegalArgumentException("listener == null");
         }
         subscribed.remove(service);
+        removeListener(service, listener);
+    }
+    
+    //consumer 与 provider的 listener可以一起存储,都是根据服务名称共享
+    private void addListener(final String service, final NotifyListener listener){
+        if (listener == null) {
+            return;
+        }
+        List<NotifyListener> listeners = notifyListeners.get(service);
+        if (listeners == null) {
+            notifyListeners.putIfAbsent(service, new CopyOnWriteArrayList<NotifyListener>());
+            listeners = notifyListeners.get(service);
+        }
+        if (listeners != null && !listeners.contains(listener)){
+            listeners.add(listener);
+        }
+    }
+    
+    private void removeListener(final String service, final NotifyListener listener){
+        if (listener == null) {
+            return;
+        }
         List<NotifyListener> listeners = notifyListeners.get(service);
         if (listeners != null) {
             listeners.remove(listener);

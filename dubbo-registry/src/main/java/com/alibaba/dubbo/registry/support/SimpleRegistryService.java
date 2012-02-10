@@ -45,8 +45,8 @@ public class SimpleRegistryService extends AbstractRegistryService {
     private List<String> registries;
     
     @Override
-    public void register(String service, URL url) {
-        super.register(service, url);
+    public void register(String service, URL url, NotifyListener listener) {
+        super.register(service, url, listener);
         String client = RpcContext.getContext().getRemoteAddressString();
         Map<String, URL> urls = remoteRegistered.get(client);
         if (urls == null) {
@@ -58,8 +58,8 @@ public class SimpleRegistryService extends AbstractRegistryService {
     }
 
     @Override
-    public void unregister(String service, URL url) {
-        super.unregister(service, url);
+    public void unregister(String service, URL url, NotifyListener listener) {
+        super.unregister(service, url, listener);
         String client = RpcContext.getContext().getRemoteAddressString();
         Map<String, URL> urls = remoteRegistered.get(client);
         if (urls != null && urls.size() > 0) {
@@ -81,11 +81,11 @@ public class SimpleRegistryService extends AbstractRegistryService {
                     NetUtils.getLocalHost(), 
                     RpcContext.getContext().getLocalPort(), 
                     com.alibaba.dubbo.registry.RegistryService.class.getName(), 
-                    url.getParameters()));
+                    url.getParameters()), null);
             List<String> rs = registries;
             if (rs != null && rs.size() > 0) {
                 for (String registry : rs) {
-                    register(service, UrlUtils.parseURL(registry, url.getParameters()));
+                    register(service, UrlUtils.parseURL(registry, url.getParameters()), null);
                 }
             }
         }
@@ -127,7 +127,7 @@ public class SimpleRegistryService extends AbstractRegistryService {
         ConcurrentMap<String, URL> urls = remoteRegistered.get(client);
         if (urls != null && urls.size() > 0) {
             for (Map.Entry<String, URL> entry : urls.entrySet()) {
-                super.unregister(entry.getKey(), entry.getValue());
+                super.unregister(entry.getKey(), entry.getValue(), null);
             }
         }
         Map<String, NotifyListener> listeners = remoteListeners.get(client);

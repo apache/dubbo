@@ -22,8 +22,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.Extension;
+import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.NetUtils;
+import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.Registry;
 import com.alibaba.dubbo.registry.RegistryFactory;
 import com.alibaba.dubbo.rpc.Exporter;
@@ -38,6 +42,7 @@ import com.alibaba.dubbo.rpc.protocol.InvokerWrapper;
  * RegistryProtocol
  * 
  * @author william.liangf
+ * @author chao.liuc
  */
 @Extension(Constants.REGISTRY_PROTOCOL)
 public class RegistryProtocol implements Protocol {
@@ -64,53 +69,107 @@ public class RegistryProtocol implements Protocol {
         return 9090;
     }
     
-    private final Map<String, Exporter<?>> bounds = new ConcurrentHashMap<String, Exporter<?>>();
+    private static RegistryProtocol INSTANCE;
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public RegistryProtocol() {
+        INSTANCE = this;
+    }
+    
+    public static RegistryProtocol getRegistryProtocol() {
+        if (INSTANCE == null) {
+            ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(Constants.REGISTRY_PROTOCOL); // load
+        }
+        return INSTANCE;
+    }
+    
+    //用于解决rmi重复暴露端口冲突的问题
+    private final Map<String, ExporterWrapper<?>> bounds = new ConcurrentHashMap<String, ExporterWrapper<?>>();
+    
+    private final NotifyListener listener = new OverrideListener();
+    
+    private final static Logger logger = LoggerFactory.getLogger(RegistryProtocol.class);
+    
     public <T> Exporter<T> export(final Invoker<T> invoker) throws RpcException {
-        String export = invoker.getUrl().getParameterAndDecoded(RpcConstants.EXPORT_KEY);
-        if (export == null || export.length() == 0) {
-            throw new IllegalArgumentException("The registry export url is null! registry: " + invoker.getUrl());
-        }
-        
-        URL url = URL.valueOf(export);
-        final String key = url.removeParameters("dynamic", "enabled").toFullString();
-        Exporter<T> exporter = (Exporter) bounds.get(key);
-        if (exporter == null) {
-            synchronized (bounds) {
-                exporter = (Exporter) bounds.get(key);
-                if (exporter == null) {
-                    exporter = protocol.export(new InvokerWrapper<T>(invoker, url));
-                    bounds.put(key, exporter);
-                }
-            }
-        }
-        
+        Exporter<T>  exporter = doLocolExport(invoker);
+        doRegister(invoker);
+        return exporter;
+    }
+    
+    private Registry getRegistry(Invoker<?> invoker){
         URL registryUrl = invoker.getUrl();
         if (Constants.REGISTRY_PROTOCOL.equals(registryUrl.getProtocol())) {
             String protocol = registryUrl.getParameter(Constants.REGISTRY_KEY, Constants.DEFAULT_DIRECTORY);
             registryUrl = registryUrl.setProtocol(protocol).removeParameter(Constants.REGISTRY_KEY);
         }
-        final Exporter<T> serviceExporter = exporter;
-        final URL serviceUrl = url.removeParameters(getFilteredKeys(url));
-        final Registry registry = registryFactory.getRegistry(registryUrl);
-        registry.register(serviceUrl, null);
+        return registryFactory.getRegistry(registryUrl);
+    }
+    
+    private void doRegister(final Invoker<?> invoker){
+        final Registry registry = getRegistry(invoker);
+        final URL registedProviderUrl = getRegistedProviderUrl(invoker);
+        registry.register(registedProviderUrl, listener);
+    }
+    
+    private URL getRegistedProviderUrl(final Invoker<?> invoker){
+        URL providerUrl = getProviderUrl(invoker);
+        //注册中心看到的地址
+        final URL registedProviderUrl = providerUrl.removeParameters(getFilteredKeys(providerUrl));
+        return registedProviderUrl;
+    }
+    
+    private URL getProviderUrl(final Invoker<?> invoker){
+        Invoker<?> oinvoker = invoker;
+        if (invoker instanceof InvokerDelegete){
+            oinvoker = ((InvokerDelegete<?>)invoker).getInvoker();
+        } else {
+            oinvoker = invoker;
+        }
         
-        return new Exporter<T>() {
-            public Invoker<T> getInvoker() {
-                return invoker;
-            }
-            public void unexport() {
-                bounds.remove(key);
-                try {
-                    registry.unregister(serviceUrl, null);
-                } finally {
-                    serviceExporter.unexport();
+        String export = oinvoker.getUrl().getParameterAndDecoded(RpcConstants.EXPORT_KEY);
+        if (export == null || export.length() == 0) {
+            throw new IllegalArgumentException("The registry export url is null! registry: " + oinvoker.getUrl());
+        }
+        
+        URL providerUrl = URL.valueOf(export);
+        return providerUrl;
+    }
+    
+    @SuppressWarnings("unchecked")
+    private <T> Exporter<T>  doLocolExport(final Invoker<T> invoker){
+        String key = getCacheKey(invoker);
+        ExporterWrapper<T> exporter = (ExporterWrapper<T>) bounds.get(key);
+        if (exporter == null) {
+            synchronized (bounds) {
+                exporter = (ExporterWrapper<T>) bounds.get(key);
+                if (exporter == null) {
+                    Invoker<?> dinvoker = new InvokerDelegete<T>(invoker, getProviderUrl(invoker));
+                    exporter = new ExporterWrapper<T>((Exporter<T>)protocol.export(dinvoker), invoker);
+                    bounds.put(key, exporter);
                 }
             }
-        };
+        }
+        return (Exporter<T>) exporter;
+    }
+    
+    @SuppressWarnings("unchecked")
+    private <T> void doChangeLocolExport(final Invoker<T> invoker, URL newInvokerUrl){
+        String key = getCacheKey(invoker);
+        ExporterWrapper<T> exporter = (ExporterWrapper<T>) bounds.get(key);
+        if (exporter == null){
+            logger.warn(new IllegalStateException("error state, exporter should not be null"));
+            return ;//不存在是异常场景 直接返回 
+        } else {
+            final Invoker<T> invokerDelegete = new InvokerDelegete<T>(invoker, newInvokerUrl);
+            exporter.setExporter(protocol.export(invokerDelegete));
+        }
     }
 
+    private String getCacheKey(final Invoker<?> invoker){
+        URL providerUrl = getProviderUrl(invoker);
+        String key = providerUrl.removeParameters("dynamic", "enabled").toFullString();
+        return key;
+    }
+    
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
         url = url.setProtocol(url.getParameter(Constants.REGISTRY_KEY, Constants.DEFAULT_REGISTRY)).removeParameter(Constants.REGISTRY_KEY);
         Registry registry = registryFactory.getRegistry(url);
@@ -139,5 +198,89 @@ public class RegistryProtocol implements Protocol {
     
     public void destroy() {
     }
+    
+    /*重新export 1.protocol中的exporter destory问题 
+     *1.要求registryprotocol返回的exporter可以正常destroy
+     *2.notify后不需要重新向注册中心注册 
+     *3.export 方法传入的invoker最好能一直作为exporter的invoker.
+     */
+    private class OverrideListener implements NotifyListener {
 
+        public void notify(List<URL> urls) {
+            List<ExporterWrapper<?>> exporters = new ArrayList<ExporterWrapper<?>>(bounds.values());
+            for (ExporterWrapper<?> exporter : exporters){
+                for (URL overrideUrl : urls){
+                    Invoker<?> invoker = exporter.getOriginInvoker();
+                    final Invoker<?> originInvoker ;
+                    if (invoker instanceof InvokerDelegete){
+                        originInvoker = ((InvokerDelegete<?>)invoker).getInvoker();
+                    }else {
+                        originInvoker = invoker;
+                    }
+                    URL providerUrl = RegistryProtocol.this.getProviderUrl(invoker);
+                    if ((overrideUrl.getServiceName() != null && overrideUrl.getServiceName().equals(providerUrl.getServiceName()))){
+                        URL newUrl = providerUrl.addParameters(overrideUrl.getParameters());
+                        if (! providerUrl.toFullString().equals(newUrl.toFullString())){
+                            RegistryProtocol.this.doChangeLocolExport(originInvoker, newUrl);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    public static class InvokerDelegete<T> extends InvokerWrapper<T>{
+        private final Invoker<T> invoker;
+        public InvokerDelegete(Invoker<T> invoker, URL url){
+            super(invoker, url);
+            this.invoker = invoker;
+        }
+        public Invoker<T> getInvoker(){
+            if (invoker instanceof InvokerDelegete){
+                return ((InvokerDelegete<T>)invoker).getInvoker();
+            } else {
+                return invoker;
+            }
+        }
+    }
+    
+    /**
+     * exporter代理 可替换exporter
+     * @author chao.liuc
+     *
+     * @param <T>
+     */
+    private class ExporterWrapper<T> implements Exporter<T>{
+        private Exporter<T> exporter;
+        private final Invoker<T> originInvoker;
+
+        public ExporterWrapper(Exporter<T> exporter, Invoker<T> originInvoker){
+            this.exporter = exporter;
+            this.originInvoker = originInvoker;
+        }
+        
+        public Invoker<T> getOriginInvoker() {
+            return originInvoker;
+        }
+
+        public Invoker<T> getInvoker() {
+            return exporter.getInvoker();
+        }
+        
+        public void setExporter(Exporter<T> exporter){
+            this.exporter = exporter;
+        }
+        
+        public void unexport() {
+            Invoker<?> invoker = exporter.getInvoker();
+            Registry registry = getRegistry(invoker);
+            String key = getCacheKey(invoker);
+            bounds.remove(key);
+            try {
+                registry.unregister(getRegistedProviderUrl(invoker), listener);
+            } finally {
+                exporter.unexport();
+            }
+        }
+    }
 }
