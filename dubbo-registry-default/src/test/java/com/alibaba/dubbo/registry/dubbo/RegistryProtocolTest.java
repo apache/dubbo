@@ -105,14 +105,21 @@ public class RegistryProtocolTest {
         RegistryProtocol rprotocol = RegistryProtocol.getRegistryProtocol();
         NotifyListener listener = getListener(rprotocol);
         List<URL> urls = new ArrayList<URL>();
-        urls.add(URL.valueOf("override://10.10.10.10/"+ service + "?timeout=100"));
-//        urls.add(URL.valueOf("override://10.10.10.10/"+ service + "?x=y"));
+        urls.add(URL.valueOf("override://0.0.0.0/?timeout=1000"));
+        urls.add(URL.valueOf("override://0.0.0.0/"+ service + "?timeout=100"));
+        urls.add(URL.valueOf("override://0.0.0.0/"+ service + "?x=y"));
         listener.notify(urls);
+        
         assertEquals(true, exporter.getInvoker().isAvailable());
         assertEquals("100", exporter.getInvoker().getUrl().getParameter("timeout"));
-        //TODO
-//        assertEquals("y", exporter.getInvoker().getUrl().getParameter("x"));
+        assertEquals("y", exporter.getInvoker().getUrl().getParameter("x"));
+        
+        exporter.unexport();
+        assertEquals(false, exporter.getInvoker().isAvailable());
+        destroyRegistryProtocol();
+        
     }
+    
     
     /**
      * 服务名称不匹配，不能override invoker
@@ -126,12 +133,32 @@ public class RegistryProtocolTest {
         RegistryProtocol rprotocol = RegistryProtocol.getRegistryProtocol();
         NotifyListener listener = getListener(rprotocol);
         List<URL> urls = new ArrayList<URL>();
-        urls.add(URL.valueOf("override://10.10.10.10/com.alibaba.dubbo.registry.protocol.DemoService?timeout=100"));
+        urls.add(URL.valueOf("override://0.0.0.0/com.alibaba.dubbo.registry.protocol.HackService?timeout=100"));
         listener.notify(urls);
         assertEquals(true, exporter.getInvoker().isAvailable());
         assertEquals(null, exporter.getInvoker().getUrl().getParameter("timeout"));
+        exporter.unexport();
+        destroyRegistryProtocol();
     }
     
+    /**
+     *测试destory registry ，exporter是否能够正常被destroy掉 
+     */
+    @Test
+    public void testDestoryRegistry(){
+        URL newRegistryUrl = registryUrl.addParameter(RpcConstants.EXPORT_KEY, serviceUrl);
+        Invoker<RegistryProtocolTest> invoker = new MockInvoker<RegistryProtocolTest>(RegistryProtocolTest.class, newRegistryUrl);
+        Exporter<?> exporter = protocol.export(invoker);
+        destroyRegistryProtocol();
+        assertEquals(false, exporter.getInvoker().isAvailable());
+        
+    }
+    
+    private void destroyRegistryProtocol(){
+        Protocol registry = RegistryProtocol.getRegistryProtocol();
+        registry.destroy();
+    }
+
     private NotifyListener getListener(RegistryProtocol protocol) throws Exception {
         Field field = RegistryProtocol.class.getDeclaredField("listener");
         field.setAccessible(true);
