@@ -57,6 +57,7 @@
 		<hessian_version>4.0.7</hessian_version>
 		<servlet_version>2.5</servlet_version>
 		<jetty_version>6.1.26</jetty_version>
+		<validation_version>1.0.0.GA</validation_version>
 		<!-- Log libs -->
 		<log4j_version>1.2.16</log4j_version>
 		<slf4j_version>1.6.2</slf4j_version>
@@ -89,6 +90,7 @@
 		<module>dubbo-registry-zookeeper</module>
 		<module>dubbo-monitor</module>
 		<module>dubbo-monitor-default</module>
+		<module>dubbo-validation</module>
 		<module>dubbo-config</module>
 		<module>dubbo-container</module>
 		<module>dubbo</module>
@@ -175,6 +177,11 @@
 				<groupId>org.mortbay.jetty</groupId>
 				<artifactId>jetty</artifactId>
 				<version>${jetty_version}</version>
+			</dependency>
+			<dependency>
+				<groupId>javax.validation</groupId>
+				<artifactId>validation-api</artifactId>
+				<version>${validation_version}</version>
 			</dependency>
 			<!-- Log libs -->
 			<dependency>
