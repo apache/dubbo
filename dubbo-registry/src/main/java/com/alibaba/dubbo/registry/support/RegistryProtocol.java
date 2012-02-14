@@ -36,6 +36,7 @@ import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.cluster.Cluster;
+import com.alibaba.dubbo.rpc.cluster.support.MergeableCluster;
 import com.alibaba.dubbo.rpc.protocol.InvokerWrapper;
 
 /**
@@ -165,6 +166,48 @@ public class RegistryProtocol implements Protocol {
     
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
         url = url.setProtocol(url.getParameter(Constants.REGISTRY_KEY, Constants.DEFAULT_REGISTRY)).removeParameter(Constants.REGISTRY_KEY);
+
+        String group = url.getParameter( Constants.GROUP_KEY );
+        String clusterType = url.getParameter( Constants.CLUSTER_KEY );
+        String[] groups;
+        if ( MergeableCluster.NAME.equalsIgnoreCase( clusterType )  ) {
+
+            if ( group != null && !"".equals( group.trim() )
+                    // group 列表由逗号(,)分隔
+                    && ( groups = group.split( "," ) ).length > 1 ) {
+
+                Registry registry = registryFactory.getRegistry( url );
+
+                URL gUrl = url.removeParameter( Constants.CLUSTER_KEY );
+
+                CompositeDirectory<T> directory = new CompositeDirectory<T>( type, url );
+
+                for ( String g : groups ) {
+
+                    gUrl = gUrl.removeParameter( Constants.GROUP_KEY )
+                            .addParameter( Constants.GROUP_KEY, g );
+
+                    RegistryDirectory<T> gDirectory = new RegistryDirectory<T>( type, gUrl );
+
+                    gDirectory.setRegistry( registry );
+
+                    gDirectory.setProtocol( protocol );
+
+                    registry.subscribe( new URL( Constants.SUBSCRIBE_PROTOCOL,
+                                                 NetUtils.getLocalHost(), 0, type.getName(),
+                                                 gDirectory.getUrl().getParameters() ),
+                                        gDirectory );
+
+                    directory.addInvoker( g, cluster.merge( gDirectory ) );
+
+                    return cluster.merge( directory );
+                }
+            } else {
+                url = url.removeParameter( Constants.CLUSTER_KEY );
+            }
+
+        }
+
         Registry registry = registryFactory.getRegistry(url);
         RegistryDirectory<T> directory = new RegistryDirectory<T>(type, url);
         directory.setRegistry(registry);

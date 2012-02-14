@@ -211,12 +211,8 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
     
     public Result invoke(final Invocation invocation) throws RpcException {
 
-        if(destroyed){
-            throw new RpcException("Rpc invoker for " + getInterface() + " on consumer " + NetUtils.getLocalHost() 
-                    + " use dubbo version " + Version.getVersion()
-                    + " is not destroyed! Can not invoke any more.");
-        }
-        
+        checkWheatherDestoried();
+
         LoadBalance loadbalance;
         
         List<Invoker<T>> invokers = directory.list(invocation);
@@ -228,7 +224,16 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         }
         return doInvoke(invocation, invokers, loadbalance);
     }
-    
+
+    protected void checkWheatherDestoried() {
+
+        if(destroyed){
+            throw new RpcException("Rpc invoker for " + getInterface() + " on consumer " + NetUtils.getLocalHost()
+                    + " use dubbo version " + Version.getVersion()
+                    + " is not destroyed! Can not invoke any more.");
+        }
+    }
+
     @Override
     public String toString() {
         return getInterface() + " -> " + getUrl().toString();

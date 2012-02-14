@@ -301,6 +301,8 @@ public class Constants {
     
     public static final String       RETURN_PREFIX                      = "return ";
 
+    public static final String       MERGER_KEY                          = "merger";
+
     private Constants(){
     }
 
