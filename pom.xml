@@ -99,6 +99,7 @@
 		<module>dubbo-demo</module>
 		<module>dubbo-demo-consumer</module>
 		<module>dubbo-demo-provider</module>
+		<module>dubbo-examples</module>
 	</modules>
 	<dependencyManagement>
 		<dependencies>
