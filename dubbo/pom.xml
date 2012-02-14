@@ -143,11 +143,19 @@
 			<artifactId>dubbo-monitor-default</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
+		<!--
 		<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>dubbo-validation</artifactId>
 			<version>${project.parent.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>javax.validation</groupId>
+					<artifactId>validation-api</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
+		-->
 	</dependencies>
 	<build>
 		<plugins>
