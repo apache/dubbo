@@ -74,7 +74,7 @@ public class DubboRegistryFactory extends AbstractRegistryFactory {
             }
         }
         RegistryDirectory<RegistryService> directory = new RegistryDirectory<RegistryService>(RegistryService.class, url.addParameter(Constants.INTERFACE_KEY, RegistryService.class.getName()).addParameterAndEncoded(RpcConstants.REFER_KEY, url.toParameterString()));
-        Invoker<RegistryService> registryInvoker = cluster.merge(directory);
+        Invoker<RegistryService> registryInvoker = cluster.join(directory);
         RegistryService registryService = proxyFactory.getProxy(registryInvoker);
         DubboRegistry registry = new DubboRegistry(registryInvoker, registryService);
         directory.setRegistry(registry);

@@ -198,9 +198,9 @@ public class RegistryProtocol implements Protocol {
                                                  gDirectory.getUrl().getParameters() ),
                                         gDirectory );
 
-                    directory.addInvoker( g, cluster.merge( gDirectory ) );
+                    directory.addInvoker( g, cluster.join( gDirectory ) );
 
-                    return cluster.merge( directory );
+                    return cluster.join( directory );
                 }
             } else {
                 url = url.removeParameter( Constants.CLUSTER_KEY );
@@ -213,7 +213,7 @@ public class RegistryProtocol implements Protocol {
         directory.setRegistry(registry);
         directory.setProtocol(protocol);
         registry.subscribe(new URL(Constants.SUBSCRIBE_PROTOCOL, NetUtils.getLocalHost(), 0, type.getName(), directory.getUrl().getParameters()), directory);
-        return cluster.merge(directory);
+        return cluster.join(directory);
     }
 
     //过滤URL中不需要输出的参数(以点号开头的)

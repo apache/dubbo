@@ -28,7 +28,7 @@ import com.alibaba.dubbo.rpc.cluster.loadbalance.RandomLoadBalance;
  * 
  * <a href="http://en.wikipedia.org/wiki/Load_balancing_(computing)">Load-Balancing</a>
  * 
- * @see com.alibaba.dubbo.rpc.cluster.Cluster#merge(Directory)
+ * @see com.alibaba.dubbo.rpc.cluster.Cluster#join(Directory)
  * @author qian.lei
  * @author william.liangf
  */

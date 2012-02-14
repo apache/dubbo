@@ -334,9 +334,9 @@ public class ReferenceConfig<T> extends AbstractConsumerConfig {
                 if (registryURL != null) { // 有 注册中心协议的URL
                     // 对有注册中心的Cluster 只用 AvailableCluster
                     URL u = registryURL.addParameter(Constants.CLUSTER_KEY, AvailableCluster.NAME); 
-                    invoker = cluster.merge(new StaticDirectory(u, invokers));
+                    invoker = cluster.join(new StaticDirectory(u, invokers));
                 }  else { // 不是 注册中心的URL
-                    invoker = cluster.merge(new StaticDirectory(invokers));
+                    invoker = cluster.join(new StaticDirectory(invokers));
                 }
             }
         }

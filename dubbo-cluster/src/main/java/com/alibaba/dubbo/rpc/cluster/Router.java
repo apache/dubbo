@@ -26,7 +26,7 @@ import com.alibaba.dubbo.rpc.RpcException;
  * 
  * <a href="http://en.wikipedia.org/wiki/Routing">Routing</a>
  * 
- * @see com.alibaba.dubbo.rpc.cluster.Cluster#merge(Directory)
+ * @see com.alibaba.dubbo.rpc.cluster.Cluster#join(Directory)
  * @see com.alibaba.dubbo.rpc.cluster.Directory#list(Invocation)
  * @author chao.liuc
  */

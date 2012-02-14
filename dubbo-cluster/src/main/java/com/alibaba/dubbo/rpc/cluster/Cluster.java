@@ -41,6 +41,6 @@ public interface Cluster {
      * @throws RpcException
      */
     @Adaptive
-    <T> Invoker<T> merge(Directory<T> directory) throws RpcException;
+    <T> Invoker<T> join(Directory<T> directory) throws RpcException;
 
 }

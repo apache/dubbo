@@ -33,7 +33,7 @@ public class FailfastCluster implements Cluster {
 
     public final static String NAME = "failfast";
 
-    public <T> Invoker<T> merge(Directory<T> directory) throws RpcException {
+    public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
         return new FailfastClusterInvoker<T>(directory);
     }
 
