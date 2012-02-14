@@ -87,7 +87,7 @@ public class Constants {
 
     public static final String       DEFAULT_THREAD_NAME            = "Dubbo";
 
-    public static final int          DEFAULT_THREADS                = 100;
+    public static final int          DEFAULT_THREADS                = 200;
 
     public static final int          DEFAULT_QUEUES                 = 0;
 
