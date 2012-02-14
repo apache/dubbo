@@ -13,23 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.examples.merge;
+package com.alibaba.dubbo.examples.merge.api;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
- * MenuServiceImpl
+ * MergeService
  * 
  * @author william.liangf
  */
-public class MergeServiceImpl2 implements MergeService {
+public interface MergeService {
     
-    public List<String> mergeResult() {
-        List<String> menus = new ArrayList<String>();
-        menus.add("u1");
-        menus.add("u2");
-        return menus;
-    }
+    List<String> mergeResult();
 
 }

@@ -19,6 +19,8 @@ import java.util.List;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.alibaba.dubbo.examples.merge.api.MergeService;
+
 /**
  * MergeConsumer2
  * 

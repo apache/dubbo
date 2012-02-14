@@ -13,17 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.examples.merge;
-
-import java.util.List;
+package com.alibaba.dubbo.examples.callback.api;
 
 /**
- * MergeService
+ * CallbackListener
  * 
  * @author william.liangf
  */
-public interface MergeService {
+public interface CallbackListener {
     
-    List<String> mergeResult();
+    void changed(String msg);
 
 }

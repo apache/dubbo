@@ -24,6 +24,6 @@
     
     <dubbo:registry address="multicast://224.5.6.7:1234" />
     
-	<dubbo:reference id="callbackService" interface="com.alibaba.dubbo.examples.callback.CallbackService" />
+	<dubbo:reference id="callbackService" interface="com.alibaba.dubbo.examples.callback.api.CallbackService" />
 
 </beans>

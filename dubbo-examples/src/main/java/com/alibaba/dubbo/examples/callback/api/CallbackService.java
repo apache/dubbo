@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.examples.callback;
+package com.alibaba.dubbo.examples.callback.api;
 
 /**
- * CallbackListener
+ * CallbackService
  * 
  * @author william.liangf
  */
-public interface CallbackListener {
+public interface CallbackService {
     
-    void changed(String msg);
+    void addListener(String key, CallbackListener listener);
 
 }

@@ -13,12 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.examples.callback;
+package com.alibaba.dubbo.examples.callback.impl;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import com.alibaba.dubbo.examples.callback.api.CallbackListener;
+import com.alibaba.dubbo.examples.callback.api.CallbackService;
 
 /**
  * CallbackServiceImpl

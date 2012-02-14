@@ -26,8 +26,8 @@
     
     <dubbo:protocol name="dubbo" port="20880" />
     
-	<bean id="mergeService" class="com.alibaba.dubbo.examples.merge.MergeServiceImpl" />
+	<bean id="mergeService" class="com.alibaba.dubbo.examples.merge.impl.MergeServiceImpl" />
 	
-	<dubbo:service group="merge" interface="com.alibaba.dubbo.examples.merge.MergeService" ref="mergeService" />
+	<dubbo:service group="merge" interface="com.alibaba.dubbo.examples.merge.api.MergeService" ref="mergeService" />
 	
 </beans>
