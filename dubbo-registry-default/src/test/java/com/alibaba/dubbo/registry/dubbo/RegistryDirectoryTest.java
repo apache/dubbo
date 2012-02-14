@@ -560,7 +560,7 @@ public class RegistryDirectoryTest {
     public void testNotifyoverrideUrls_beforeInvoker(){
         RegistryDirectory registryDirectory = getRegistryDirectory();
         List<URL> overrideUrls = new ArrayList<URL>();
-        overrideUrls.add(URL.valueOf("override://10.20.30.40?timeout=1&connections=5"));
+        overrideUrls.add(URL.valueOf("override://0.0.0.0?timeout=1&connections=5"));
         registryDirectory.notify(overrideUrls);
         //注册中心初始只推送override，dirctory状态应该是false，因为没有invoker存在。
         Assert.assertEquals(false, registryDirectory.isAvailable());
@@ -601,7 +601,7 @@ public class RegistryDirectoryTest {
         Assert.assertEquals(true, registryDirectory.isAvailable());
         
         List<URL> overrideUrls = new ArrayList<URL>();
-        overrideUrls.add(URL.valueOf("override://10.20.30.40?timeout=1&connections=5"));
+        overrideUrls.add(URL.valueOf("override://0.0.0.0?timeout=1&connections=5"));
         registryDirectory.notify(overrideUrls);
         
         //开始验证参数值
@@ -617,7 +617,7 @@ public class RegistryDirectoryTest {
     
     /**
      * 测试override规则是否优先
-     * 场景：与invoker 一起推动override规则
+     * 场景：与invoker 一起推override规则
      */
     @Test
     public void testNotifyoverrideUrls_withInvoker(){
@@ -626,7 +626,7 @@ public class RegistryDirectoryTest {
         List<URL> durls = new ArrayList<URL>();
         durls.add(SERVICEURL.addParameter("timeout", "1000"));
         durls.add(SERVICEURL2.addParameter("timeout", "1000").addParameter("connections", "10"));
-        durls.add(URL.valueOf("override://10.20.30.40?timeout=1&connections=5"));
+        durls.add(URL.valueOf("override://0.0.0.0?timeout=1&connections=5"));
 
         registryDirectory.notify(durls);
         Assert.assertEquals(true, registryDirectory.isAvailable());
@@ -662,7 +662,7 @@ public class RegistryDirectoryTest {
         Invoker<?> b1Invoker = invokers.get(1);
         
         durls = new ArrayList<URL>();
-        durls.add(URL.valueOf("override://10.20.30.40?timeout=1&connections=5"));
+        durls.add(URL.valueOf("override://0.0.0.0?timeout=1&connections=5"));
         registryDirectory.notify(durls);
         Assert.assertEquals(true, registryDirectory.isAvailable());
         
@@ -676,6 +676,79 @@ public class RegistryDirectoryTest {
         
         //参数一样，不能重新引用
         Assert.assertTrue("object same",b1Invoker == b2Invoker);
+    }
+    
+    /**
+     * 测试针对某个provider的Override规则
+     */
+    @Test
+    public void testNofityOverrideUrls_Provider(){
+        RegistryDirectory registryDirectory = getRegistryDirectory();
+        invocation = new RpcInvocation();
+        
+        List<URL> durls = new ArrayList<URL>();
+        durls.add(SERVICEURL.setHost("10.20.30.140").addParameter("timeout", "1"));//一个一样，一个不一样
+        durls.add(SERVICEURL2.setHost("10.20.30.141").addParameter("timeout", "2"));
+        registryDirectory.notify(durls);
+        
+        durls = new ArrayList<URL>();
+        durls.add(URL.valueOf("override://0.0.0.0?timeout=3"));
+        durls.add(URL.valueOf("override://10.20.30.141:9092?timeout=4"));
+        registryDirectory.notify(durls);
+        
+        List<Invoker<?>> invokers = registryDirectory.list(invocation);
+        Invoker<?> aInvoker = invokers.get(0);
+        Invoker<?> bInvoker = invokers.get(1);
+        Assert.assertEquals("3",aInvoker.getUrl().getParameter("timeout"));
+        Assert.assertEquals("4",bInvoker.getUrl().getParameter("timeout"));
+    }
+    
+    /**
+     * 测试清除override规则，
+     * 测试是否能够恢复到推送时的providerUrl
+     */
+    @Test
+    public void testNofityOverrideUrls_Clean(){
+        RegistryDirectory registryDirectory = getRegistryDirectory();
+        invocation = new RpcInvocation();
+        
+        List<URL> durls = new ArrayList<URL>();
+        durls.add(SERVICEURL.setHost("10.20.30.140").addParameter("timeout", "1"));
+        registryDirectory.notify(durls);
+        
+        durls = new ArrayList<URL>();
+        durls.add(URL.valueOf("override://0.0.0.0?timeout=3"));
+        durls.add(URL.valueOf("override://0.0.0.0"));
+        registryDirectory.notify(durls);
+        
+        List<Invoker<?>> invokers = registryDirectory.list(invocation);
+        Invoker<?> aInvoker = invokers.get(0);
+        //需要恢复到最初的providerUrl
+        Assert.assertEquals("1",aInvoker.getUrl().getParameter("timeout"));
+    }
+    
+    /**
+     * 测试同时推送清除override和针对某个provider的override
+     * 看override是否能够生效
+     */
+    @Test
+    public void testNofityOverrideUrls_CleanNOverride(){
+        RegistryDirectory registryDirectory = getRegistryDirectory();
+        invocation = new RpcInvocation();
+        
+        List<URL> durls = new ArrayList<URL>();
+        durls.add(SERVICEURL.setHost("10.20.30.140").addParameter("timeout", "1"));
+        registryDirectory.notify(durls);
+        
+        durls = new ArrayList<URL>();
+        durls.add(URL.valueOf("override://0.0.0.0?timeout=3"));
+        durls.add(URL.valueOf("override://0.0.0.0"));
+        durls.add(URL.valueOf("override://10.20.30.140:9091?timeout=4"));
+        registryDirectory.notify(durls);
+        
+        List<Invoker<?>> invokers = registryDirectory.list(invocation);
+        Invoker<?> aInvoker = invokers.get(0);
+        Assert.assertEquals("4",aInvoker.getUrl().getParameter("timeout"));
     }
 
     @Test

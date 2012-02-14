@@ -90,6 +90,8 @@ public final class URL implements Serializable {
     
     private final transient Map<String, Number> numbers = new ConcurrentHashMap<String, Number>();
     
+    private static final String ANYHOST="0.0.0.0";
+    
     protected URL() {
         this.protocol = null;
         this.username = null;
@@ -752,6 +754,14 @@ public final class URL implements Serializable {
         }
         String value = getMethodParameter(method, key);
         return value != null && value.length() > 0;
+    }
+    
+    public boolean isAnyHost(){
+        if (ANYHOST.equals(host) || getParameter(Constants.ANYHOST_KEY, false)){
+            return true;
+        } else {
+            return false;
+        }
     }
     
     public URL addParameterAndEncoded(String key, String value) {

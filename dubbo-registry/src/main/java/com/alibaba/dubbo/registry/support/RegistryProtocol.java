@@ -232,7 +232,7 @@ public class RegistryProtocol implements Protocol {
         
         private URL getNewInvokerUrl(final URL originUrl, final List<URL> urls){
             URL newUrl = originUrl;
-            //override://0.0.0.0/?timeout=10
+            //override://0.0.0.0/?timeout=10 ip:port无意义
             for (URL overrideUrl : urls){
                 if (overrideUrl.getServiceName() == null){
                     newUrl = newUrl.addParameters(overrideUrl.getParameters());

@@ -48,6 +48,7 @@ import com.alibaba.dubbo.rpc.cluster.RouterFactory;
 import com.alibaba.dubbo.rpc.cluster.directory.AbstractDirectory;
 import com.alibaba.dubbo.rpc.cluster.router.ScriptRouterFactory;
 import com.alibaba.dubbo.rpc.cluster.support.ClusterUtils;
+import com.alibaba.dubbo.rpc.protocol.InvokerWrapper;
 
 /**
  * RegistryDirectory
@@ -139,17 +140,16 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             List<URL> overrideUrls = new ArrayList<URL>();
             for (URL url : urls) {
                 if (RpcConstants.ROUTE_PROTOCOL.equals(url.getProtocol())) {
-                    if (! routerUrls.contains(url)) {
-                        routerUrls.add(url);
-                    }
+                    routerUrls.add(url);
                 } else if (RpcConstants.OVERRIDE_PROTOCOL.equals(url.getProtocol())) {
-                    if (! overrideUrls.contains(url)) {
+                    //url equals bug
+//                    if (! overrideUrls.contains(url)) {
                         overrideUrls.add(url);
-                    }
+//                    }
                 } else if (ExtensionLoader.getExtensionLoader(Protocol.class).hasExtension(url.getProtocol())) {
-                    if (! invokerUrls.contains(url)) {
+//                    if (! invokerUrls.contains(url)) {
                         invokerUrls.add(url);
-                    }
+//                    }
                 } else {
                     logger.error(new IllegalStateException("Unsupported protocol " + url.getProtocol() + " in notified url: " + url + " from registry " + getUrl().getAddress() + " to consumer " + NetUtils.getLocalHost() 
                             + ", supported protocol: "+ExtensionLoader.getExtensionLoader(Protocol.class).getSupportedExtensions()));
@@ -185,7 +185,13 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         if (invokerUrls.size() == 0){
             List<Invoker<T>> invokerList = new ArrayList<Invoker<T>>(urlInvokerMap.values());
             for (Invoker<T> invoker : invokerList) {
-                invokerUrls.add(invoker.getUrl());
+                URL url ;
+                if (invoker instanceof InvokerDelegete){
+                    url =  ((InvokerDelegete<T>)invoker).getProviderUrl();
+                } else {
+                    url = invoker.getUrl();
+                }
+                invokerUrls.add(url);
             }
         }
         Map<String, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls) ;// 将URL列表转成Invoker列表
@@ -209,8 +215,12 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     /**
      * 将overrideURL转换为map，供重新refer时使用.
      * 每次下发全部规则，全部重新组装计算
-     * override url: override://* /servicename?para1=value1...
      * @param urls
+     * 契约：
+     * </br>1.override://0.0.0.0/...(或override://ip:port...?anyhost=true)&para1=value1...表示全局规则(对所有的提供者全部生效)
+     * </br>2.override://ip:port...?anyhost=false 特例规则（只针对某个提供者生效）
+     * </br>3.不支持override://规则... 需要注册中心自行计算.
+     * </br>4.不带参数的override://0.0.0.0/ 表示清除override 
      * @return
      */
     private Map<String, Map<String, String>> toOverrides(List<URL> urls){
@@ -219,9 +229,19 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         }
         Map<String, Map<String, String>> overrides = new ConcurrentHashMap<String, Map<String,String>>(urls.size());
         for(URL url : urls){
-            //TODO 暂时只支持对某个服务的全局设置
-            overrides.put("*", url.getParameters());
-            break ;
+            Map<String,String> override = new HashMap<String, String>(url.getParameters());
+            //override 上的anyhost可能是自动添加的，不能影响改变url判断
+            override.remove(Constants.ANYHOST_KEY);
+            if (override.size() == 0){
+                overrides.clear();
+                continue;
+            }
+            if (url.isAnyHost()){
+                overrides.put(Constants.ANY_VALUE, override);
+            } else {
+                //需要ip:port 一个ip可能启动多个服务实例
+                overrides.put(url.getAddress(), override);
+            }
         }
         return overrides;
     }
@@ -283,8 +303,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         }
         Map<String, Invoker<T>> newUrlInvokerMap = new ConcurrentHashMap<String, Invoker<T>>();
         Set<String> keys = new HashSet<String>();
-        for (URL url : urls) {
-            url = mergeUrl(url, overrideMap);
+        for (URL providerUrl : urls) {
+            URL url = mergeUrl(providerUrl);
             
             String key = url.toFullString(); // URL参数是排序的
             if (keys.contains(key)) { // 重复URL
@@ -295,7 +315,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             Invoker<T> invoker = urlInvokerMap.get(key);
             if (invoker == null) { // 缓存中没有，重新refer
                 try {
-                    invoker = protocol.refer(serviceType, url);
+                    invoker = new InvokerDelegete<T>(protocol.refer(serviceType, url), url, providerUrl);
                 } catch (Throwable t) {
                     logger.error("Failed to refer invoker for interface:"+serviceType+",url:("+url+")" + t.getMessage(), t);
                 }
@@ -312,22 +332,28 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     
     /**
      * 合并url参数 顺序为override > -D >Consumer > Provider
-     * @param url
+     * @param providerUrl
      * @param overrides
      * @return
      */
-    private URL mergeUrl(URL url, Map<String, Map<String, String>> overrides){
-        Map<String, String> alloverride = overrides == null ? new HashMap<String,String>() : overrides.get("*");
-        url = ClusterUtils.mergeUrl(url, queryMap); // 合并消费端参数
-        url = url.addParameter(Constants.CHECK_KEY, String.valueOf(false)); // 不检查连接是否成功，总是创建Invoker！
-        //当前只支持全局覆盖
-        url = url.addParameters(alloverride);//合并override参数
+    private URL mergeUrl(URL providerUrl){
+        Map<String, String> alloverride = overrideMap == null ? new HashMap<String,String>() : overrideMap.get(Constants.ANY_VALUE);
+        providerUrl = ClusterUtils.mergeUrl(providerUrl, queryMap); // 合并消费端参数
+        providerUrl = providerUrl.addParameter(Constants.CHECK_KEY, String.valueOf(false)); // 不检查连接是否成功，总是创建Invoker！
+        //先做全局覆盖
+        providerUrl = providerUrl.addParameters(alloverride);//合并override参数
+        //然后做特定覆盖
+        Map<String, String> oneOverride = overrideMap == null ? null : overrideMap.get(providerUrl.getAddress());
+        if(oneOverride != null && overrideMap.get(providerUrl.getAddress()).size() > 0){
+            providerUrl = providerUrl.addParameters(oneOverride);//合并override参数
+        }
         
-        this.directoryUrl = this.directoryUrl.addParametersIfAbsent(url.getParameters()); // 合并提供者参数
+        this.directoryUrl = this.directoryUrl.addParametersIfAbsent(providerUrl.getParameters()); // 合并提供者参数
+        //directoryUrl只合并全局override设置
         this.directoryUrl = this.directoryUrl.addParameters(alloverride);//合并override参数
         
-        if ((url.getPath() == null || url.getPath().length() == 0)
-                && "dubbo".equals(url.getProtocol())) { // 兼容1.0
+        if ((providerUrl.getPath() == null || providerUrl.getPath().length() == 0)
+                && "dubbo".equals(providerUrl.getProtocol())) { // 兼容1.0
             //fix by tony.chenl DUBBO-44
             String path = directoryUrl.getParameter(Constants.INTERFACE_KEY);
             int i = path.indexOf('/');
@@ -338,9 +364,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             if (i >= 0) {
                 path = path.substring(0, i);
             }
-            url = url.setPath(path);
+            providerUrl = providerUrl.setPath(path);
         }
-        return url;
+        return providerUrl;
     }
 
     /**
@@ -532,5 +558,22 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         }
 
     }
-
+    
+    /**
+     * 代理类，主要用于存储注册中心下发的url地址，用于重新重新refer时能够根据providerURL queryMap overrideMap重新组装
+     * 
+     * @author chao.liuc
+     *
+     * @param <T>
+     */
+    private static class InvokerDelegete<T> extends InvokerWrapper<T>{
+        private URL providerUrl;
+        public InvokerDelegete(Invoker<T> invoker, URL url, URL providerUrl) {
+            super(invoker, url);
+            this.providerUrl = providerUrl;
+        }
+        public URL getProviderUrl() {
+            return providerUrl;
+        }
+    }
 }
