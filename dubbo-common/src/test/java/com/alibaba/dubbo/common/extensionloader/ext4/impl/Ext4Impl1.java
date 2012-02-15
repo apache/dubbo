@@ -17,13 +17,11 @@ package com.alibaba.dubbo.common.extensionloader.ext4.impl;
 
 import java.util.List;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.extensionloader.ext4.Ext4;
 
 /**
  * @author ding.lid
  */
-@Extension(value = "impl1")
 public class Ext4Impl1 implements Ext4 {
     public String bark(String name, List<Object> list) {
         return null;

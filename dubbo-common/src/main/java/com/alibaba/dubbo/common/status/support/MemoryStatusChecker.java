@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.common.status.support;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.status.Status;
 import com.alibaba.dubbo.common.status.StatusChecker;
 
@@ -24,7 +23,6 @@ import com.alibaba.dubbo.common.status.StatusChecker;
  * 
  * @author william.liangf
  */
-@Extension("memory")
 public class MemoryStatusChecker implements StatusChecker {
 
     public Status check() {

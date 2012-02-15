@@ -24,9 +24,12 @@ import java.lang.annotation.Target;
 /**
  * 扩展点实现的元信息。
  * 
+ * @deprecated 请在META-INF/services/配置文件中声明扩展点名称，如：fixed=com.xxx.FixedThreadPool
+ * 
  * @author william.liangf
  * @author ding.lid
  */
+@Deprecated
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})

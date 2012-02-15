@@ -21,7 +21,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.json.JSON;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
@@ -39,7 +38,6 @@ import com.alibaba.dubbo.rpc.RpcException;
  * 
  * @author william.liangf
  */
-@Extension("trace")
 public class TraceFilter implements Filter {
     
     private static final Logger logger = LoggerFactory.getLogger(TraceFilter.class);

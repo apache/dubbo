@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
@@ -46,7 +45,6 @@ import com.alibaba.dubbo.rpc.protocol.InvokerWrapper;
  * @author william.liangf
  * @author chao.liuc
  */
-@Extension(Constants.REGISTRY_PROTOCOL)
 public class RegistryProtocol implements Protocol {
 
     private Cluster cluster;

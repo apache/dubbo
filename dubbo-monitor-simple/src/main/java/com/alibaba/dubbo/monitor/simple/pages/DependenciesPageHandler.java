@@ -20,7 +20,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.container.page.Page;
 import com.alibaba.dubbo.container.page.PageHandler;
@@ -31,7 +30,6 @@ import com.alibaba.dubbo.monitor.simple.RegistryContainer;
  * 
  * @author william.liangf
  */
-@Extension("dependencies")
 public class DependenciesPageHandler implements PageHandler {
     
     public Page handle(URL url) {

@@ -16,7 +16,7 @@
 package com.alibaba.dubbo.rpc.cluster;
 
 import com.alibaba.dubbo.common.Adaptive;
-import com.alibaba.dubbo.common.Extension;
+import com.alibaba.dubbo.common.Default;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.cluster.support.FailoverCluster;
@@ -29,7 +29,7 @@ import com.alibaba.dubbo.rpc.cluster.support.FailoverCluster;
  * 
  * @author william.liangf
  */
-@Extension(FailoverCluster.NAME)
+@Default(FailoverCluster.NAME)
 public interface Cluster {
 
     /**

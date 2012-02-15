@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.common.serialize.ObjectInput;
 import com.alibaba.dubbo.common.serialize.ObjectOutput;
@@ -45,7 +44,6 @@ import com.alibaba.dubbo.rpc.support.RpcUtils;
  * @author qianlei
  * @author chao.liuc
  */
-@Extension(value=DubboCodec.NAME)
 public class DubboCodec extends ExchangeCodec implements Codec {
 
     public static final String      NAME                    = "dubbo";

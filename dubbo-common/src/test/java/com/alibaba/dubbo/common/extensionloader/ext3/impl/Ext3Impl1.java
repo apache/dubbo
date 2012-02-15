@@ -15,14 +15,12 @@
  */
 package com.alibaba.dubbo.common.extensionloader.ext3.impl;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extensionloader.ext3.Ext3;
 
 /**
  * @author ding.lid
  */
-@Extension(value = "impl1")
 public class Ext3Impl1 implements Ext3 {
     public String echo(URL url, String s) {
         return "Ext3Impl3-echo";

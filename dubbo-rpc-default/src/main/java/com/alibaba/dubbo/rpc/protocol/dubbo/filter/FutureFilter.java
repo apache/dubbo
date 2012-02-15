@@ -20,7 +20,6 @@ import java.lang.reflect.Method;
 import java.util.concurrent.Future;
 
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.remoting.exchange.ResponseCallback;
@@ -40,7 +39,6 @@ import com.alibaba.dubbo.rpc.protocol.dubbo.FutureAdapter;
  * @author chao.liuc
  * @author william.liangf
  */
-@Extension("future")
 public class FutureFilter implements Filter {
 
     protected static final Logger logger = LoggerFactory.getLogger(FutureFilter.class);

@@ -21,7 +21,7 @@ import java.io.OutputStream;
 
 import com.alibaba.dubbo.common.Adaptive;
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.Extension;
+import com.alibaba.dubbo.common.Default;
 
 /**
  * Codec. (SPI, Singleton, ThreadSafe)
@@ -30,7 +30,7 @@ import com.alibaba.dubbo.common.Extension;
  * @author ding.lid
  * @author william.liangf
  */
-@Extension
+@Default
 public interface Codec {
 
 	/**

@@ -29,7 +29,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.json.JSON;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
@@ -37,11 +36,11 @@ import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
 import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 import com.alibaba.dubbo.rpc.Filter;
+import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
+import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
-import com.alibaba.dubbo.rpc.Invocation;
-import com.alibaba.dubbo.rpc.Result;
 
 /**
  * 记录Service的Access Log。
@@ -58,7 +57,6 @@ import com.alibaba.dubbo.rpc.Result;
  * 
  * @author ding.lid
  */
-@Extension("accesslog")
 public class AccessLogFilter implements Filter {
     
     private static final Logger logger            = LoggerFactory.getLogger(AccessLogFilter.class);

@@ -1,2 +1,2 @@
-com.alibaba.dubbo.rpc.protocol.ProtocolFilterWrapper
-com.alibaba.dubbo.rpc.protocol.ProtocolListenerWrapper
+filter=com.alibaba.dubbo.rpc.protocol.ProtocolFilterWrapper
+listener=com.alibaba.dubbo.rpc.protocol.ProtocolListenerWrapper

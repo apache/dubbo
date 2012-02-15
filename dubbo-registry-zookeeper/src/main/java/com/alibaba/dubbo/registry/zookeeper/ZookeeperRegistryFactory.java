@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.registry.zookeeper;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.registry.Registry;
 import com.alibaba.dubbo.registry.support.AbstractRegistryFactory;
@@ -25,7 +24,6 @@ import com.alibaba.dubbo.registry.support.AbstractRegistryFactory;
  * 
  * @author william.liangf
  */
-@Extension("zookeeper")
 public class ZookeeperRegistryFactory extends AbstractRegistryFactory {
 
     public Registry createRegistry(URL url) {

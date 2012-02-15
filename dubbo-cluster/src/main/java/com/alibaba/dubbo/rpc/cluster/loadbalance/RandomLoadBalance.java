@@ -18,9 +18,8 @@ package com.alibaba.dubbo.rpc.cluster.loadbalance;
 import java.util.List;
 import java.util.Random;
 
-import com.alibaba.dubbo.common.Extension;
-import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Invocation;
+import com.alibaba.dubbo.rpc.Invoker;
 
 /**
  * random load balance.
@@ -28,7 +27,6 @@ import com.alibaba.dubbo.rpc.Invocation;
  * @author qianlei
  * @author william.liangf
  */
-@Extension(RandomLoadBalance.NAME)
 public class RandomLoadBalance extends AbstractLoadBalance {
     public static final String NAME = "random";
 

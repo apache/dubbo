@@ -15,16 +15,14 @@
  */
 package com.alibaba.dubbo.rpc.cluster.merger;
 
-import com.alibaba.dubbo.common.Extension;
-import com.alibaba.dubbo.rpc.cluster.Merger;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import com.alibaba.dubbo.rpc.cluster.Merger;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-@Extension( MapMerger.NAME )
 public class MapMerger implements Merger<Map<Object, Object>> {
 
     public static final String NAME = "map";

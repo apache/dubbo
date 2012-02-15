@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Set;
 
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.container.page.Menu;
@@ -34,7 +33,6 @@ import com.alibaba.dubbo.monitor.simple.RegistryContainer;
  * @author william.liangf
  */
 @Menu(name = "Hosts", desc = "Show provider and consumer hosts", order = 3000)
-@Extension("hosts")
 public class HostsPageHandler implements PageHandler {
     
     public Page handle(URL url) {

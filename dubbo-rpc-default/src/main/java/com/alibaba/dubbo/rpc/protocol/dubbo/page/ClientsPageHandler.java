@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.container.page.Page;
@@ -33,7 +32,6 @@ import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
  * 
  * @author william.liangf
  */
-@Extension("clients")
 public class ClientsPageHandler implements PageHandler {
 
     public Page handle(URL url) {

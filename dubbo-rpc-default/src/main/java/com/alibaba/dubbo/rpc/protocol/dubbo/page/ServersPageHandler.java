@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.container.page.Menu;
@@ -34,7 +33,6 @@ import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
  * @author william.liangf
  */
 @Menu(name = "Servers", desc="Show exported service servers.", order = 14000)
-@Extension("servers")
 public class ServersPageHandler implements PageHandler {
 
     public Page handle(URL url) {

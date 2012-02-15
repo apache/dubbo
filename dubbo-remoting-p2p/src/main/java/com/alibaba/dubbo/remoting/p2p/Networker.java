@@ -15,7 +15,7 @@
  */
 package com.alibaba.dubbo.remoting.p2p;
 
-import com.alibaba.dubbo.common.Extension;
+import com.alibaba.dubbo.common.Default;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.RemotingException;
 
@@ -26,7 +26,7 @@ import com.alibaba.dubbo.remoting.RemotingException;
  * 
  * @author william.liangf
  */
-@Extension
+@Default
 public interface Networker {
 
     /**

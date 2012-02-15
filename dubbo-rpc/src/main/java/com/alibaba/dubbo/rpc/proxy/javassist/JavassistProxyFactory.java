@@ -15,21 +15,19 @@
  */
 package com.alibaba.dubbo.rpc.proxy.javassist;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.bytecode.Proxy;
 import com.alibaba.dubbo.common.bytecode.Wrapper;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.proxy.AbstractProxyFactory;
-import com.alibaba.dubbo.rpc.proxy.InvokerInvocationHandler;
 import com.alibaba.dubbo.rpc.proxy.AbstractProxyInvoker;
+import com.alibaba.dubbo.rpc.proxy.InvokerInvocationHandler;
 
 /**
  * JavaassistRpcProxyFactory 
 
  * @author william.liangf
  */
-@Extension("javassist")
 public class JavassistProxyFactory extends AbstractProxyFactory {
 
     @SuppressWarnings("unchecked")

@@ -16,7 +16,7 @@
 package com.alibaba.dubbo.rpc;
 
 import com.alibaba.dubbo.common.Adaptive;
-import com.alibaba.dubbo.common.Extension;
+import com.alibaba.dubbo.common.Default;
 import com.alibaba.dubbo.common.URL;
 
 /**
@@ -24,7 +24,7 @@ import com.alibaba.dubbo.common.URL;
  * 
  * @author william.liangf
  */
-@Extension("dubbo")
+@Default("dubbo")
 public interface Protocol {
     
     /**

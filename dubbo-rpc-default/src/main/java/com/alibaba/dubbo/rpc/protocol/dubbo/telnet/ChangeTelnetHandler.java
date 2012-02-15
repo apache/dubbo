@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.protocol.dubbo.telnet;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
 import com.alibaba.dubbo.remoting.telnet.support.Help;
@@ -28,7 +27,6 @@ import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
  * @author william.liangf
  */
 @Help(parameter = "[service]", summary = "Change default service.", detail = "Change default service.")
-@Extension("cd")
 public class ChangeTelnetHandler implements TelnetHandler {
     
     public static final String SERVICE_KEY = "telnet.service";

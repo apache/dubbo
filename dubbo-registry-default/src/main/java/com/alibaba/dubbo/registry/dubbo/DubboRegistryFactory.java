@@ -21,7 +21,6 @@ import java.util.HashSet;
 import java.util.List;
 
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.bytecode.Wrapper;
 import com.alibaba.dubbo.common.utils.NetUtils;
@@ -41,7 +40,6 @@ import com.alibaba.dubbo.rpc.cluster.Cluster;
  * 
  * @author william.liangf
  */
-@Extension("dubbo")
 public class DubboRegistryFactory extends AbstractRegistryFactory {
     
     private Protocol protocol;

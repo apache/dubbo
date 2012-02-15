@@ -1,4 +1,4 @@
-com.alibaba.dubbo.rpc.protocol.rmi.proxy.RmiProxyFactoryAdaptive
-com.alibaba.dubbo.rpc.protocol.rmi.proxy.NativeProxyFactory
-com.alibaba.dubbo.rpc.protocol.rmi.proxy.DubboRmiProxyFactory
-com.alibaba.dubbo.rpc.protocol.rmi.proxy.SpringRmiProxyFactory
+adaptive=com.alibaba.dubbo.rpc.protocol.rmi.proxy.RmiProxyFactoryAdaptive
+native=com.alibaba.dubbo.rpc.protocol.rmi.proxy.NativeProxyFactory
+dubbo=com.alibaba.dubbo.rpc.protocol.rmi.proxy.DubboRmiProxyFactory
+spring=com.alibaba.dubbo.rpc.protocol.rmi.proxy.SpringRmiProxyFactory

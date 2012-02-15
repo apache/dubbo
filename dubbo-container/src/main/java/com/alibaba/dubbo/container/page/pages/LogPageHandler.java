@@ -31,7 +31,6 @@ import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.container.page.Menu;
 import com.alibaba.dubbo.container.page.Page;
@@ -43,7 +42,6 @@ import com.alibaba.dubbo.container.page.PageHandler;
  * @author william.liangf
  */
 @Menu(name = "Log", desc = "Show system log.", order = Integer.MAX_VALUE - 11000)
-@Extension("log")
 public class LogPageHandler implements PageHandler {
 
     private static final int SHOW_LOG_LENGTH = 30000;

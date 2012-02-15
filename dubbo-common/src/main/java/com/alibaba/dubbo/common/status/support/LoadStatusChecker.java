@@ -19,7 +19,6 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.lang.reflect.Method;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.status.Status;
 import com.alibaba.dubbo.common.status.StatusChecker;
 
@@ -28,7 +27,6 @@ import com.alibaba.dubbo.common.status.StatusChecker;
  * 
  * @author william.liangf
  */
-@Extension("load")
 public class LoadStatusChecker implements StatusChecker {
 
     public Status check() {

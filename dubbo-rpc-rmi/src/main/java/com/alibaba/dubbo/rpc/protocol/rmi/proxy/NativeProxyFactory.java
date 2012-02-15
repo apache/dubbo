@@ -19,7 +19,6 @@ import java.rmi.Remote;
 import java.rmi.server.RemoteServer;
 import java.rmi.server.ServerNotActiveException;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
@@ -34,7 +33,6 @@ import com.alibaba.dubbo.rpc.protocol.rmi.RmiProxyFactory;
  * 
  * @author william.liangf
  */
-@Extension("native")
 public class NativeProxyFactory implements RmiProxyFactory {
 
     private ProxyFactory                      proxyFactory;

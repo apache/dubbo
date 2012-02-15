@@ -18,19 +18,17 @@ package com.alibaba.dubbo.rpc.proxy.jdk;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.proxy.AbstractProxyFactory;
-import com.alibaba.dubbo.rpc.proxy.InvokerInvocationHandler;
 import com.alibaba.dubbo.rpc.proxy.AbstractProxyInvoker;
+import com.alibaba.dubbo.rpc.proxy.InvokerInvocationHandler;
 
 /**
  * JavaassistRpcProxyFactory
 
  * @author william.liangf
  */
-@Extension("jdk")
 public class JdkProxyFactory extends AbstractProxyFactory {
 
     @SuppressWarnings("unchecked")

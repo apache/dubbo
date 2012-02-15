@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.registry.multicast;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.registry.Registry;
 import com.alibaba.dubbo.registry.support.AbstractRegistryFactory;
@@ -25,7 +24,6 @@ import com.alibaba.dubbo.registry.support.AbstractRegistryFactory;
  * 
  * @author william.liangf
  */
-@Extension("multicast")
 public class MulticastRegistryFactory extends AbstractRegistryFactory {
 
     public Registry createRegistry(URL url) {

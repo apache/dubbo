@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.remoting.transport.netty;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.Client;
@@ -26,7 +25,6 @@ import com.alibaba.dubbo.remoting.Transporter;
 /**
  * @author ding.lid
  */
-@Extension(NettyTransporter.NAME)
 public class NettyTransporter implements Transporter {
 
     public static final String NAME = "netty";

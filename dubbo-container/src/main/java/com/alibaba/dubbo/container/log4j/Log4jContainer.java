@@ -23,7 +23,6 @@ import org.apache.log4j.FileAppender;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.PropertyConfigurator;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.container.Container;
 
@@ -32,7 +31,6 @@ import com.alibaba.dubbo.container.Container;
  * 
  * @author william.liangf
  */
-@Extension("log4j")
 public class Log4jContainer implements Container {
 
     public static final String LOG4J_FILE = "dubbo.log4j.file";

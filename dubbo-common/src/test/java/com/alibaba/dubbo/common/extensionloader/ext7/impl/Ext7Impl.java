@@ -15,14 +15,12 @@
  */
 package com.alibaba.dubbo.common.extensionloader.ext7.impl;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extensionloader.ext7.Ext7;
 
 /**
  * @author ding.lid
  */
-@Extension(value = "ok")
 public class Ext7Impl implements Ext7 {
     public String echo(URL url, String s) {
         return "";

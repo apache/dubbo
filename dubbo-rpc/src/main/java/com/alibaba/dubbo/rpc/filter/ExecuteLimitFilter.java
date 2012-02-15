@@ -16,21 +16,19 @@
 package com.alibaba.dubbo.rpc.filter;
 
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Filter;
-import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.RpcStatus;
-import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.Invocation;
+import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
+import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.RpcStatus;
 
 /**
  * ThreadLimitInvokerFilter
  * 
  * @author william.liangf
  */
-@Extension("executelimit")
 public class ExecuteLimitFilter implements Filter {
 
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {

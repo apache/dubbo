@@ -26,7 +26,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.Version;
@@ -58,7 +57,6 @@ import com.alibaba.dubbo.rpc.protocol.AbstractProtocol;
  * @author william.liangf
  * @author chao.liuc
  */
-@Extension(DubboProtocol.NAME)
 public class DubboProtocol extends AbstractProtocol {
 
     public static final String NAME = "dubbo";

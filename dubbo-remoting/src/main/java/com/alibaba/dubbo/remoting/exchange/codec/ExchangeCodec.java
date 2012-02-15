@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.io.Bytes;
 import com.alibaba.dubbo.common.io.StreamUtils;
@@ -47,7 +46,6 @@ import com.alibaba.dubbo.remoting.telnet.codec.TelnetCodec;
  * @author qianlei
  * @author william.liangf
  */
-@Extension("exchange")
 public class ExchangeCodec extends TelnetCodec {
 
     private static final Logger     logger             = LoggerFactory.getLogger(ExchangeCodec.class);

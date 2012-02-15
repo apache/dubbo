@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.serialize.ObjectInput;
 import com.alibaba.dubbo.common.serialize.ObjectOutput;
 import com.alibaba.dubbo.common.utils.StringUtils;
@@ -31,7 +30,6 @@ import com.alibaba.dubbo.remoting.transport.AbstractCodec;
  * 
  * @author william.liangf
  */
-@Extension("transport")
 public class TransportCodec extends AbstractCodec {
 
     public void encode(Channel channel, OutputStream output, Object message) throws IOException {

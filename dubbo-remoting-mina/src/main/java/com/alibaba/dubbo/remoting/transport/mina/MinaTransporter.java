@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.remoting.transport.mina;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.Client;
@@ -26,7 +25,6 @@ import com.alibaba.dubbo.remoting.Transporter;
 /**
  * @author ding.lid
  */
-@Extension(MinaTransporter.NAME)
 public class MinaTransporter implements Transporter {
     
     public static final String NAME = "mina";

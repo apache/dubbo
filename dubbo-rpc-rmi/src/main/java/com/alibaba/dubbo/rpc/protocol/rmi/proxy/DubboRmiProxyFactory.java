@@ -27,7 +27,6 @@ import javassist.CtClass;
 import javassist.CtNewMethod;
 import javassist.NotFoundException;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.bytecode.ClassGenerator;
 import com.alibaba.dubbo.rpc.Invocation;
@@ -43,7 +42,6 @@ import com.alibaba.dubbo.rpc.protocol.rmi.RmiProxyFactory;
  * 
  * @author william.liangf
  */
-@Extension("dubbo")
 public class DubboRmiProxyFactory implements RmiProxyFactory {
     
     private ProxyFactory proxyFactory;

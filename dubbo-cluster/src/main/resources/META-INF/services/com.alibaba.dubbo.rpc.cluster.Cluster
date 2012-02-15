@@ -1,7 +1,7 @@
-com.alibaba.dubbo.rpc.cluster.support.FailoverCluster
-com.alibaba.dubbo.rpc.cluster.support.FailfastCluster
-com.alibaba.dubbo.rpc.cluster.support.FailsafeCluster
-com.alibaba.dubbo.rpc.cluster.support.FailbackCluster
-com.alibaba.dubbo.rpc.cluster.support.ForkingCluster
-com.alibaba.dubbo.rpc.cluster.support.AvailableCluster
-com.alibaba.dubbo.rpc.cluster.support.MergeableCluster
+failover=com.alibaba.dubbo.rpc.cluster.support.FailoverCluster
+failfast=com.alibaba.dubbo.rpc.cluster.support.FailfastCluster
+failsafe=com.alibaba.dubbo.rpc.cluster.support.FailsafeCluster
+failback=com.alibaba.dubbo.rpc.cluster.support.FailbackCluster
+forking=com.alibaba.dubbo.rpc.cluster.support.ForkingCluster
+available=com.alibaba.dubbo.rpc.cluster.support.AvailableCluster
+mergeable=com.alibaba.dubbo.rpc.cluster.support.MergeableCluster

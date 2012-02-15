@@ -15,14 +15,12 @@
  */
 package com.alibaba.dubbo.common.extensionloader.ext7.impl;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extensionloader.ext7.Ext7;
 
 /**
  * @author ding.lid
  */
-@Extension(value = "error")
 public class Ext7InitErrorImpl implements Ext7 {
     
     static {

@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.remoting.Channel;
@@ -33,7 +32,6 @@ import com.alibaba.dubbo.remoting.telnet.support.TelnetUtils;
  * @author william.liangf
  */
 @Help(parameter = "[command]", summary = "Show help.", detail = "Show help.")
-@Extension("help")
 public class HelpTelnetHandler implements TelnetHandler {
 
     public String telnet(Channel channel, String message) {

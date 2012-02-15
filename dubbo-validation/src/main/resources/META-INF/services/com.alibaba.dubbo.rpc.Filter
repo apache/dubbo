@@ -1,1 +1,1 @@
-com.alibaba.dubbo.validation.ValidationFilter
+validation=com.alibaba.dubbo.validation.ValidationFilter

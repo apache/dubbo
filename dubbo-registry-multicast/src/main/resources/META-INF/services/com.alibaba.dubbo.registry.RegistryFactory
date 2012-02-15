@@ -1,1 +1,1 @@
-com.alibaba.dubbo.registry.multicast.MulticastRegistryFactory
+multicast=com.alibaba.dubbo.registry.multicast.MulticastRegistryFactory

@@ -22,7 +22,6 @@ import org.mortbay.jetty.servlet.FilterHolder;
 import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.ServletHolder;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ConfigUtils;
@@ -36,7 +35,6 @@ import com.alibaba.dubbo.container.page.ResourceFilter;
  * 
  * @author william.liangf
  */
-@Extension("jetty")
 public class JettyContainer implements Container {
 
     private static final Logger logger = LoggerFactory.getLogger(JettyContainer.class);

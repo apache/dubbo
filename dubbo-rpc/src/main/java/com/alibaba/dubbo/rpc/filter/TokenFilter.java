@@ -18,21 +18,19 @@ package com.alibaba.dubbo.rpc.filter;
 import java.util.Map;
 
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.rpc.Filter;
+import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
+import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
-import com.alibaba.dubbo.rpc.Invocation;
-import com.alibaba.dubbo.rpc.Result;
 
 /**
  * TokenInvokerFilter
  * 
  * @author william.liangf
  */
-@Extension("token")
 public class TokenFilter implements Filter {
 
 	public Result invoke(Invoker<?> invoker, Invocation inv)

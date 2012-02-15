@@ -1,1 +1,1 @@
-com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol
+dubbo=com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol

@@ -22,7 +22,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.threadpool.ThreadPool;
 import com.alibaba.dubbo.common.threadpool.support.AbortPolicyWithReport;
@@ -34,7 +33,6 @@ import com.alibaba.dubbo.common.utils.NamedThreadFactory;
  * @see java.util.concurrent.Executors#newCachedThreadPool()
  * @author william.liangf
  */
-@Extension("cached")
 public class CachedThreadPool implements ThreadPool {
 
     public Executor getExecutor(URL url) {

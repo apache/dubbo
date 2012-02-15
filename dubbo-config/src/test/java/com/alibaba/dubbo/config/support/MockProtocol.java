@@ -15,7 +15,7 @@
  */
 package com.alibaba.dubbo.config.support;
 
-import com.alibaba.dubbo.common.Extension;
+import com.alibaba.dubbo.common.Default;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invocation;
@@ -29,7 +29,6 @@ import com.alibaba.dubbo.rpc.RpcException;
  * @author haomin.liuhm
  *
  */
-@Extension("mockprotocol")
 public class MockProtocol implements Protocol {
 
     /* (non-Javadoc)

@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.remoting.transport.grizzly;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.Client;
@@ -28,7 +27,6 @@ import com.alibaba.dubbo.remoting.Transporter;
  * 
  * @author william.liangf
  */
-@Extension(GrizzlyTransporter.NAME)
 public class GrizzlyTransporter implements Transporter {
 
     public static final String NAME = "grizzly";

@@ -18,7 +18,6 @@ package com.alibaba.dubbo.monitor.simple.pages;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.container.page.Page;
@@ -30,7 +29,6 @@ import com.alibaba.dubbo.monitor.simple.RegistryContainer;
  * 
  * @author william.liangf
  */
-@Extension("providers")
 public class ProvidersPageHandler implements PageHandler {
     
     public Page handle(URL url) {

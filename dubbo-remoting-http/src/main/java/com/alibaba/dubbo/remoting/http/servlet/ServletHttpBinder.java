@@ -16,7 +16,6 @@
 package com.alibaba.dubbo.remoting.http.servlet;
 
 import com.alibaba.dubbo.common.Adaptive;
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.http.HttpBinder;
 import com.alibaba.dubbo.remoting.http.HttpHandler;
@@ -27,7 +26,6 @@ import com.alibaba.dubbo.remoting.http.HttpServer;
  * 
  * @author william.liangf
  */
-@Extension("servlet")
 public class ServletHttpBinder implements HttpBinder {
     
     @Adaptive()

@@ -1,1 +1,1 @@
-com.alibaba.dubbo.remoting.exchange.support.header.HeaderExchanger
+header=com.alibaba.dubbo.remoting.exchange.support.header.HeaderExchanger

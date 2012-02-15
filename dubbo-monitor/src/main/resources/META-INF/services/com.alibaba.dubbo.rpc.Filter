@@ -1,1 +1,1 @@
-com.alibaba.dubbo.monitor.support.MonitorFilter
+monitor=com.alibaba.dubbo.monitor.support.MonitorFilter

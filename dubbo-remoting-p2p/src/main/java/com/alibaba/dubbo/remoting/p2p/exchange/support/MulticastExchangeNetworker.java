@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.remoting.p2p.exchange.support;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.p2p.exchange.ExchangeGroup;
@@ -26,7 +25,6 @@ import com.alibaba.dubbo.remoting.p2p.exchange.ExchangeNetworker;
  * 
  * @author william.liangf
  */
-@Extension("multicast")
 public class MulticastExchangeNetworker implements ExchangeNetworker {
 
     public ExchangeGroup lookup(URL url) throws RemotingException {

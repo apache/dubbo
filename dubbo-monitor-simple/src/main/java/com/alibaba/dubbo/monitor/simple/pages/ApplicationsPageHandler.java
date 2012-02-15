@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.container.page.Menu;
 import com.alibaba.dubbo.container.page.Page;
@@ -32,7 +31,6 @@ import com.alibaba.dubbo.monitor.simple.RegistryContainer;
  * @author william.liangf
  */
 @Menu(name = "Applications", desc = "Show application dependencies.", order = 1000)
-@Extension("applications")
 public class ApplicationsPageHandler implements PageHandler {
 
     public Page handle(URL url) {

@@ -17,7 +17,6 @@ package com.alibaba.dubbo.rpc.protocol.dubbo.telnet;
 
 import java.lang.reflect.Method;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
@@ -33,7 +32,6 @@ import com.alibaba.dubbo.rpc.protocol.dubbo.filter.TraceFilter;
  * @author william.liangf
  */
 @Help(parameter = "[service] [method] [times]", summary = "Trace the service.", detail = "Trace the service.")
-@Extension("trace")
 public class TraceTelnetHandler implements TelnetHandler {
 
     public String telnet(Channel channel, String message) {

@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.protocol.dubbo.telnet;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
 import com.alibaba.dubbo.remoting.telnet.support.Help;
@@ -26,7 +25,6 @@ import com.alibaba.dubbo.remoting.telnet.support.Help;
  * @author william.liangf
  */
 @Help(parameter = "", summary = "Print working default service.", detail = "Print working default service.")
-@Extension("pwd")
 public class CurrentTelnetHandler implements TelnetHandler {
     
     public String telnet(Channel channel, String message) {

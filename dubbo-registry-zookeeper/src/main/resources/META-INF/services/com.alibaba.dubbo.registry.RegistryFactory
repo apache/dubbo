@@ -1,1 +1,1 @@
-com.alibaba.dubbo.registry.zookeeper.ZookeeperRegistryFactory
+zookeeper=com.alibaba.dubbo.registry.zookeeper.ZookeeperRegistryFactory

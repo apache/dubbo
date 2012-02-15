@@ -94,8 +94,8 @@ public class ConfigUtilsTest {
         Properties p = ConfigUtils.loadProperties("META-INF/services/com.alibaba.dubbo.common.threadpool.ThreadPool", false);
         
         Properties expected = new Properties();
-        expected.put("com.alibaba.dubbo.common.threadpool.support.fixed.FixedThreadPool", "");
-        expected.put("com.alibaba.dubbo.common.threadpool.support.cached.CachedThreadPool", "");
+        expected.put("fixed", "com.alibaba.dubbo.common.threadpool.support.fixed.FixedThreadPool");
+        expected.put("cached", "com.alibaba.dubbo.common.threadpool.support.cached.CachedThreadPool");
         
         Assert.assertEquals(expected, p);
     }
@@ -118,8 +118,8 @@ public class ConfigUtilsTest {
         Properties p = ConfigUtils.loadProperties("META-INF/services/com.alibaba.dubbo.common.status.StatusChecker", true);
         
         Properties expected = new Properties();
-        expected.put("com.alibaba.dubbo.common.status.support.MemoryStatusChecker", "");
-        expected.put("com.alibaba.dubbo.common.status.support.LoadStatusChecker", "");
+        expected.put("memory", "com.alibaba.dubbo.common.status.support.MemoryStatusChecker");
+        expected.put("load", "com.alibaba.dubbo.common.status.support.LoadStatusChecker");
         expected.put("aa", "12");
         
         Assert.assertEquals(expected, p);

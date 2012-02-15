@@ -16,7 +16,6 @@
 package com.alibaba.dubbo.rpc.listener;
 
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.rpc.Invoker;
@@ -27,7 +26,6 @@ import com.alibaba.dubbo.rpc.RpcException;
  * 
  * @author william.liangf
  */
-@Extension("deprecated")
 public class DeprecatedInvokerListener extends InvokerListenerAdapter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeprecatedInvokerListener.class);

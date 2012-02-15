@@ -26,7 +26,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
@@ -43,7 +42,6 @@ import com.alibaba.dubbo.remoting.transport.codec.TransportCodec;
  * @author william.liangf
  * @author chao.liuc
  */
-@Extension("telnet")
 public class TelnetCodec extends TransportCodec {
 
     private static final Logger  logger = LoggerFactory.getLogger(TelnetCodec.class);

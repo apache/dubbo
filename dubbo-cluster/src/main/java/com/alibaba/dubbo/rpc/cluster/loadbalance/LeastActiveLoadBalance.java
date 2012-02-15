@@ -19,17 +19,15 @@ import java.util.List;
 import java.util.Random;
 
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.Extension;
+import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcStatus;
-import com.alibaba.dubbo.rpc.Invocation;
 
 /**
  * LeastActiveLoadBalance
  * 
  * @author william.liangf
  */
-@Extension(LeastActiveLoadBalance.NAME)
 public class LeastActiveLoadBalance extends AbstractLoadBalance {
     public static final String NAME = "leastactive";
     

@@ -18,7 +18,6 @@ package com.alibaba.dubbo.rpc.protocol.dubbo.telnet;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.json.JSON;
 import com.alibaba.dubbo.common.utils.PojoUtils;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
@@ -38,7 +37,6 @@ import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
  * @author william.liangf
  */
 @Help(parameter = "[service.]method(args)", summary = "Invoke the service method.", detail = "Invoke the service method.")
-@Extension("invoke")
 public class InvokeTelnetHandler implements TelnetHandler {
 
     @SuppressWarnings("unchecked")

@@ -17,14 +17,12 @@ package com.alibaba.dubbo.common.extensionloader.ext6_inject.impl;
 
 import java.util.List;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extensionloader.ext6_inject.Ext6;
 
 /**
  * @author ding.lid
  */
-@Extension("impl2")
 public class Ext6Impl2 implements Ext6 {
     List<String> list;
 

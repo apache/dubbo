@@ -19,7 +19,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.remoting.Channel;
@@ -38,7 +37,6 @@ import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
  * @author william.liangf
  */
 @Help(parameter = "[service] [method] [times]", summary = "Count the service.", detail = "Count the service.")
-@Extension("count")
 public class CountTelnetHandler implements TelnetHandler {
 
     public String telnet(final Channel channel, String message) {

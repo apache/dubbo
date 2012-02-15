@@ -16,13 +16,13 @@
 package com.alibaba.dubbo.common.extensionloader.ext3;
 
 import com.alibaba.dubbo.common.Adaptive;
-import com.alibaba.dubbo.common.Extension;
+import com.alibaba.dubbo.common.Default;
 import com.alibaba.dubbo.common.URL;
 
 /**
  * @author ding.lid
  */
-@Extension("impl3")
+@Default("impl3")
 public interface Ext3 {
     @Adaptive({"key1", "protocol"})
     String echo(URL url, String s);

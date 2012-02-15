@@ -15,9 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.cluster.merger;
 
-import com.alibaba.dubbo.common.Extension;
-import com.alibaba.dubbo.rpc.cluster.Merger;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -25,10 +22,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import com.alibaba.dubbo.rpc.cluster.Merger;
+
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-@Extension( CollectionMerger.NAME )
 public class CollectionMerger implements Merger<Collection<Object>> {
 
     public static final String NAME = "collection";

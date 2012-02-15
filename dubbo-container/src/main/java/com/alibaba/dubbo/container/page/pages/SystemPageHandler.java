@@ -22,7 +22,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.common.utils.NetUtils;
@@ -36,7 +35,6 @@ import com.alibaba.dubbo.container.page.PageHandler;
  * @author william.liangf
  */
 @Menu(name = "System", desc = "Show system environment information.", order = Integer.MAX_VALUE - 10000)
-@Extension("system")
 public class SystemPageHandler implements PageHandler {
 
     public Page handle(URL url) {

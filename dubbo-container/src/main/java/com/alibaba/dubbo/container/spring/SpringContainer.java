@@ -17,7 +17,6 @@ package com.alibaba.dubbo.container.spring;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ConfigUtils;
@@ -28,7 +27,6 @@ import com.alibaba.dubbo.container.Container;
  * 
  * @author william.liangf
  */
-@Extension("spring")
 public class SpringContainer implements Container {
 
     private static final Logger logger = LoggerFactory.getLogger(SpringContainer.class);

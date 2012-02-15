@@ -13,26 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.common.extensionloader.ext1.impl;
+package com.alibaba.dubbo.common;
 
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.extensionloader.ext1.Ext1;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
+ * 扩展点实现的元信息。
+ * 
+ * @author william.liangf
  * @author ding.lid
- *
  */
-public class Ext1Impl2 implements Ext1 {
-    public String echo(URL url, String s) {
-        return "Ext1Impl2-echo";
-    }
-    
-    public String yell(URL url, String s) {
-        return "Ext1Impl2-yell";
-    }
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE})
+public @interface Default {
 
-    public String bang(URL url, int i) {
-        return "bang2";
-    }
-    
+    /**
+     * 扩展点名称。<br>
+     * 
+     * 如果注解在扩展的接口上，则缺省的扩展点。<p>
+     */
+	String value() default "";
 }

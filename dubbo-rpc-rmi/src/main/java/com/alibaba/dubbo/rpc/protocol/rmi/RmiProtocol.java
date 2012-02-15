@@ -39,7 +39,6 @@ import org.springframework.remoting.RemoteAccessException;
 import org.springframework.remoting.rmi.RmiProxyFactoryBean;
 import org.springframework.remoting.rmi.RmiServiceExporter;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.bytecode.ClassGenerator;
 import com.alibaba.dubbo.rpc.Exporter;
@@ -56,7 +55,6 @@ import com.alibaba.dubbo.rpc.protocol.AbstractProtocol;
  * 
  * @author qian.lei
  */
-@Extension("rmi")
 public class RmiProtocol extends AbstractProtocol {
 
     public static final int              DEFAULT_PORT = 1099;

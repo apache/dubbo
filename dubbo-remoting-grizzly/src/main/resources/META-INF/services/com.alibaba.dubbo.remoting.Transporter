@@ -1,1 +1,1 @@
-com.alibaba.dubbo.remoting.transport.grizzly.GrizzlyTransporter
+grizzly=com.alibaba.dubbo.remoting.transport.grizzly.GrizzlyTransporter

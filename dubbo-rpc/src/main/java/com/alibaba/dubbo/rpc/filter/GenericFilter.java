@@ -18,14 +18,13 @@ package com.alibaba.dubbo.rpc.filter;
 import java.lang.reflect.Method;
 
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.utils.PojoUtils;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
 import com.alibaba.dubbo.rpc.Filter;
-import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.Invocation;
+import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
+import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.service.GenericException;
@@ -35,7 +34,6 @@ import com.alibaba.dubbo.rpc.service.GenericException;
  * 
  * @author william.liangf
  */
-@Extension("generic")
 public class GenericFilter implements Filter {
     
     public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {

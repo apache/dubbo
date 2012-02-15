@@ -1,1 +1,1 @@
-com.alibaba.dubbo.registry.support.RegistryProtocol
+registry=com.alibaba.dubbo.registry.support.RegistryProtocol

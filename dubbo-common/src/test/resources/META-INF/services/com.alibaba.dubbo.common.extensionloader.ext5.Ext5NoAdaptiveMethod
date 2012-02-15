@@ -1,4 +1,4 @@
-com.alibaba.dubbo.common.extensionloader.ext5.impl.Ext5Impl1
-com.alibaba.dubbo.common.extensionloader.ext5.impl.Ext5Impl2
-com.alibaba.dubbo.common.extensionloader.ext5.impl.Ext5Wrapper1
-com.alibaba.dubbo.common.extensionloader.ext5.impl.Ext5Wrapper2
+impl1=com.alibaba.dubbo.common.extensionloader.ext5.impl.Ext5Impl1
+impl2=com.alibaba.dubbo.common.extensionloader.ext5.impl.Ext5Impl2
+wrapper1=com.alibaba.dubbo.common.extensionloader.ext5.impl.Ext5Wrapper1
+wrapper2=com.alibaba.dubbo.common.extensionloader.ext5.impl.Ext5Wrapper2

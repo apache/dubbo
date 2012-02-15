@@ -19,7 +19,6 @@ import java.util.Collection;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.status.Status;
 import com.alibaba.dubbo.common.status.StatusChecker;
 import com.alibaba.dubbo.remoting.ChannelHandler;
@@ -34,7 +33,6 @@ import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
  * 
  * @author william.liangf
  */
-@Extension("threadpool")
 public class ThreadPoolStatusChecker implements StatusChecker {
 
     public Status check() {

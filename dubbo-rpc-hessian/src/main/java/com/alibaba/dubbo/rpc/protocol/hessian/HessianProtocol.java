@@ -24,7 +24,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.http.HttpBinder;
 import com.alibaba.dubbo.remoting.http.HttpHandler;
@@ -40,7 +39,6 @@ import com.alibaba.dubbo.rpc.protocol.AbstractProtocol;
  * 
  * @author qianlei
  */
-@Extension("hessian")
 public class HessianProtocol extends AbstractProtocol {
 
     private final Map<String, HttpServer> serverMap = new ConcurrentHashMap<String, HttpServer>();

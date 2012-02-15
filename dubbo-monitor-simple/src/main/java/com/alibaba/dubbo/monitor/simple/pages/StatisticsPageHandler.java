@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.container.page.Page;
 import com.alibaba.dubbo.container.page.PageHandler;
@@ -36,7 +35,6 @@ import com.alibaba.dubbo.monitor.simple.SimpleMonitorService;
  * 
  * @author william.liangf
  */
-@Extension("statistics")
 public class StatisticsPageHandler implements PageHandler {
 
     public Page handle(URL url) {

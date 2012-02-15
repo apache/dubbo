@@ -1,1 +1,1 @@
-com.alibaba.dubbo.remoting.transport.mina.MinaTransporter
+mina=com.alibaba.dubbo.remoting.transport.mina.MinaTransporter

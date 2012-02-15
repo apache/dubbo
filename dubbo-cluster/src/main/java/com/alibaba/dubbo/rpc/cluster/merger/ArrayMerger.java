@@ -15,15 +15,13 @@
  */
 package com.alibaba.dubbo.rpc.cluster.merger;
 
-import com.alibaba.dubbo.common.Extension;
-import com.alibaba.dubbo.rpc.cluster.Merger;
-
 import java.lang.reflect.Array;
+
+import com.alibaba.dubbo.rpc.cluster.Merger;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-@Extension( ArrayMerger.NAME )
 public class ArrayMerger implements Merger<Object> {
 
     public static final String NAME = "array";

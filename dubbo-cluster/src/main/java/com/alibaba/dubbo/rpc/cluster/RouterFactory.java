@@ -16,7 +16,7 @@
 package com.alibaba.dubbo.rpc.cluster;
 
 import com.alibaba.dubbo.common.Adaptive;
-import com.alibaba.dubbo.common.Extension;
+import com.alibaba.dubbo.common.Default;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invocation;
 
@@ -29,7 +29,7 @@ import com.alibaba.dubbo.rpc.Invocation;
  * @see com.alibaba.dubbo.rpc.cluster.Directory#list(Invocation)
  * @author chao.liuc
  */
-@Extension
+@Default
 public interface RouterFactory {
     
     /**

@@ -1,1 +1,1 @@
-com.alibaba.dubbo.monitor.simple.RegistryContainer
+registry=com.alibaba.dubbo.monitor.simple.RegistryContainer

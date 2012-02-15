@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.status.Status;
@@ -37,7 +36,6 @@ import com.alibaba.dubbo.container.page.PageHandler;
  * @author william.liangf
  */
 @Menu(name = "Status", desc = "Show system status.", order = Integer.MAX_VALUE - 12000)
-@Extension("status")
 public class StatusPageHandler implements PageHandler {
 
     public Page handle(URL url) {

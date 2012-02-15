@@ -19,14 +19,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.IOUtils;
 import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.cluster.Router;
 import com.alibaba.dubbo.rpc.cluster.RouterFactory;
 
-@Extension(FileRouterFactory.NAME)
 public class FileRouterFactory implements RouterFactory {
     
     public static final String NAME = "file";

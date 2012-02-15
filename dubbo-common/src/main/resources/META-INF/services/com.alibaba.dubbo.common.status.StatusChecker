@@ -1,2 +1,2 @@
-com.alibaba.dubbo.common.status.support.MemoryStatusChecker
-com.alibaba.dubbo.common.status.support.LoadStatusChecker
+memory=com.alibaba.dubbo.common.status.support.MemoryStatusChecker
+load=com.alibaba.dubbo.common.status.support.LoadStatusChecker

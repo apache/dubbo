@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.protocol.dubbo.telnet;
+package com.alibaba.dubbo.remoting.telnet.support.command;
 
 
 import java.io.File;

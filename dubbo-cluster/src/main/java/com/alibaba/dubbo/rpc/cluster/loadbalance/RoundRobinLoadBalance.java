@@ -19,10 +19,9 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.utils.AtomicPositiveInteger;
-import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Invocation;
+import com.alibaba.dubbo.rpc.Invoker;
 
 /**
  * Round robin load balance.
@@ -30,7 +29,6 @@ import com.alibaba.dubbo.rpc.Invocation;
  * @author qian.lei
  * @author william.liangf
  */
-@Extension(RoundRobinLoadBalance.NAME)
 public class RoundRobinLoadBalance extends AbstractLoadBalance {
     public static final String NAME = "roundrobin"; 
     

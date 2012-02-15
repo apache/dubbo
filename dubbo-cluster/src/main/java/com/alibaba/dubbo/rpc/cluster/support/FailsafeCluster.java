@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.cluster.support;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.cluster.Cluster;
@@ -28,7 +27,6 @@ import com.alibaba.dubbo.rpc.cluster.Directory;
  * 
  * @author william.liangf
  */
-@Extension(FailsafeCluster.NAME)
 public class FailsafeCluster implements Cluster {
 
     public final static String NAME = "failsafe";

@@ -17,7 +17,7 @@ package com.alibaba.dubbo.remoting;
 
 import com.alibaba.dubbo.common.Adaptive;
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.Extension;
+import com.alibaba.dubbo.common.Default;
 import com.alibaba.dubbo.common.URL;
 
 /**
@@ -30,7 +30,7 @@ import com.alibaba.dubbo.common.URL;
  * @author ding.lid
  * @author william.liangf
  */
-@Extension("netty")
+@Default("netty")
 public interface Transporter {
 
     /**

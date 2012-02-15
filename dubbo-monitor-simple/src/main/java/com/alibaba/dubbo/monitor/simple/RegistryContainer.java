@@ -25,7 +25,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
@@ -43,7 +42,6 @@ import com.alibaba.dubbo.registry.RegistryFactory;
  * 
  * @author william.liangf
  */
-@Extension("registry")
 public class RegistryContainer implements Container {
 
     private static final Logger logger = LoggerFactory.getLogger(RegistryContainer.class);

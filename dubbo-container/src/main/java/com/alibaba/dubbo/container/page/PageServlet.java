@@ -32,7 +32,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
@@ -79,7 +78,7 @@ public class PageServlet extends HttpServlet {
         }
         for (String name : names) {
             PageHandler handler = ExtensionLoader.getExtensionLoader(PageHandler.class).getExtension(name);
-            pages.put(handler.getClass().getAnnotation(Extension.class).value(), handler);
+            pages.put(ExtensionLoader.getExtensionLoader(PageHandler.class).getExtensionName(handler), handler);
             Menu menu = handler.getClass().getAnnotation(Menu.class);
             if (menu != null) {
                 menus.add(handler);
@@ -160,7 +159,7 @@ public class PageServlet extends HttpServlet {
                     if (isHtml) {
                         String nav = page.getNavigation();
                         if (nav == null || nav.length() == 0) {
-                            nav = pageHandler.getClass().getAnnotation(Extension.class).value();
+                            nav = ExtensionLoader.getExtensionLoader(PageHandler.class).getExtensionName(pageHandler);
                             nav = nav.substring(0, 1).toUpperCase() + nav.substring(1);
                         }
                         if (! "index".equals(uri)) {
@@ -208,7 +207,7 @@ public class PageServlet extends HttpServlet {
         writer.println("<thead>");
         writer.println("    <tr>");
         for (PageHandler handler : menus) {
-            String uri = handler.getClass().getAnnotation(Extension.class).value();
+            String uri = ExtensionLoader.getExtensionLoader(PageHandler.class).getExtensionName(handler);
             Menu menu = handler.getClass().getAnnotation(Menu.class);
             writer.println("        <th><a href=\"" + uri + ".html\">" + menu.name() + "</a></th>");
         }

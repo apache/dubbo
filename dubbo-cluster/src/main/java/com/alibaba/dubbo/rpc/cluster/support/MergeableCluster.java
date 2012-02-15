@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.cluster.support;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.cluster.Cluster;
@@ -24,7 +23,6 @@ import com.alibaba.dubbo.rpc.cluster.Directory;
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-@Extension( MergeableCluster.NAME )
 public class MergeableCluster implements Cluster {
 
     public static final String NAME = "mergeable";

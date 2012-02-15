@@ -50,7 +50,7 @@ import com.alibaba.dubbo.common.utils.StringUtils;
  * @author william.liangf
  * @author ding.lid
  * 
- * @see Extension
+ * @see Default
  * @see Adaptive
  */
 public class ExtensionLoader<T> {
@@ -64,6 +64,8 @@ public class ExtensionLoader<T> {
     private static final ConcurrentMap<Class<?>, ExtensionLoader<?>> EXTENSION_LOADERS = new ConcurrentHashMap<Class<?>, ExtensionLoader<?>>();
 
     private final Class<?> type;
+
+    private final ConcurrentMap<Class<?>, String> cachedNames = new ConcurrentHashMap<Class<?>, String>();
     
     private final Reference<Map<String, Class<?>>> cachedClasses = new Reference<Map<String,Class<?>>>();
     
@@ -96,7 +98,15 @@ public class ExtensionLoader<T> {
     private ExtensionLoader(Class<?> type) {
         this.type = type;
     }
-	
+    
+    public String getExtensionName(T extensionInstance) {
+        return getExtensionName(extensionInstance.getClass());
+    }
+
+    public String getExtensionName(Class<?> extensionClass) {
+        return cachedNames.get(extensionClass);
+    }
+    
 	@SuppressWarnings("unchecked")
 	public T getExtension(String name) {
 		if (name == null || name.length() == 0)
@@ -277,7 +287,7 @@ public class ExtensionLoader<T> {
 	}
 	
     private Map<String, Class<?>> loadExtensionClasses() {
-        final Extension defaultAnnotation = type.getAnnotation(Extension.class);
+        final Default defaultAnnotation = type.getAnnotation(Default.class);
         if(defaultAnnotation != null) {
             String[] names = NAME_SEPARATOR.split(defaultAnnotation.value());
             if(names.length > 1) {
@@ -311,6 +321,12 @@ public class ExtensionLoader<T> {
                                 line = line.trim();
                                 if (line.length() > 0) {
                                     try {
+                                        String name = null;
+                                        int i = line.indexOf('=');
+                                        if (i > 0) {
+                                            name = line.substring(0, i).trim();
+                                            line = line.substring(i + 1).trim();
+                                        }
                                         Class<?> clazz = Class.forName(line, true, classLoader);
                                         if (! type.isAssignableFrom(clazz)) {
                                             throw new IllegalStateException("Error when load extension class(interface: " +
@@ -336,16 +352,22 @@ public class ExtensionLoader<T> {
                                                 wrappers.add(clazz);
                                             } catch (NoSuchMethodException e) {
                                                 clazz.getConstructor();
-                                                Extension extension = clazz.getAnnotation(Extension.class);
-                                                if (extension == null) {
-                                                    throw new IllegalStateException("No such @Extension annotation in class " + clazz.getName());
-                                                }
-                                                String name = extension.value();
                                                 if (name == null || name.length() == 0) {
-                                                    throw new IllegalStateException("Illegal @Extension annotation in class " + clazz.getName());
+                                                    name = findAnnotationName(clazz);
+                                                    if (name == null || name.length() == 0) {
+                                                        if (clazz.getSimpleName().length() > type.getSimpleName().length()
+                                                                && clazz.getSimpleName().endsWith(type.getSimpleName())) {
+                                                            name = clazz.getSimpleName().substring(0, clazz.getSimpleName().length() - type.getSimpleName().length()).toLowerCase();
+                                                        } else {
+                                                            throw new IllegalStateException("No such extension name for the class " + clazz.getName() + " in the config " + url);
+                                                        }
+                                                    }
                                                 }
                                                 String[] names = NAME_SEPARATOR.split(name);
                                                 for (String n : names) {
+                                                    if (! cachedNames.containsKey(clazz)) {
+                                                        cachedNames.put(clazz, n);
+                                                    }
                                                     Class<?> c = extensionClasses.get(n);
                                                     if (c == null) {
                                                         extensionClasses.put(n, clazz);
@@ -375,6 +397,12 @@ public class ExtensionLoader<T> {
                     type + ", description file: " + fileName + ").", t);
         }
         return extensionClasses;
+    }
+    
+    @SuppressWarnings("deprecation")
+    private String findAnnotationName(Class<?> clazz) {
+        Extension extension = clazz.getAnnotation(Extension.class);
+        return extension == null ? null : extension.value();
     }
     
     @SuppressWarnings("unchecked")

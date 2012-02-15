@@ -17,14 +17,12 @@ package com.alibaba.dubbo.common.extensionloader.ext5.impl;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extensionloader.ext5.Ext5NoAdaptiveMethod;
 
 /**
  * @author ding.lid
  */
-@Extension("XXX")
 public class Ext5Wrapper1 implements Ext5NoAdaptiveMethod {
     Ext5NoAdaptiveMethod instance;
     

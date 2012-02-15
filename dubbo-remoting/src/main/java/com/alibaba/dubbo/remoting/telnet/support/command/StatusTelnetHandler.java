@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.status.Status;
 import com.alibaba.dubbo.common.status.StatusChecker;
@@ -38,7 +37,6 @@ import com.alibaba.dubbo.remoting.telnet.support.TelnetUtils;
  * @author william.liangf
  */
 @Help(parameter = "[-l]", summary = "Show status.", detail = "Show status.")
-@Extension("status")
 public class StatusTelnetHandler implements TelnetHandler {
 
     public String telnet(Channel channel, String message) {

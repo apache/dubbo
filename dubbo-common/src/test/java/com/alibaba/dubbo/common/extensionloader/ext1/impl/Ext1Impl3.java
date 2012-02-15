@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.common.extensionloader.ext1.impl;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extensionloader.ext1.Ext1;
 
@@ -23,7 +22,6 @@ import com.alibaba.dubbo.common.extensionloader.ext1.Ext1;
  * @author ding.lid
  *
  */
-@Extension("impl3")
 public class Ext1Impl3 implements Ext1 {
     public String echo(URL url, String s) {
         return "Ext1Impl3-echo";

@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Set;
 
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.container.page.Menu;
 import com.alibaba.dubbo.container.page.Page;
@@ -33,7 +32,6 @@ import com.alibaba.dubbo.monitor.simple.RegistryContainer;
  * @author william.liangf
  */
 @Menu(name = "Services", desc = "Show registered services.", order = 2000)
-@Extension("services")
 public class ServicesPageHandler implements PageHandler {
     
     public Page handle(URL url) {

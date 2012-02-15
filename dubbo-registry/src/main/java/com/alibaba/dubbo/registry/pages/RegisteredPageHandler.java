@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.container.page.Page;
 import com.alibaba.dubbo.container.page.PageHandler;
@@ -33,7 +32,6 @@ import com.alibaba.dubbo.registry.support.AbstractRegistryFactory;
  * 
  * @author william.liangf
  */
-@Extension("registered")
 public class RegisteredPageHandler implements PageHandler {
 
     public Page handle(URL url) {

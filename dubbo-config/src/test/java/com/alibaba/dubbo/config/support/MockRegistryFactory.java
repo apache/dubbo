@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.config.support;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.registry.Registry;
 import com.alibaba.dubbo.registry.RegistryFactory;
@@ -25,7 +24,6 @@ import com.alibaba.dubbo.registry.RegistryFactory;
  * @author haomin.liuhm
  *
  */
-@Extension("mockregistry")
 public class MockRegistryFactory implements RegistryFactory {
 
     /* 

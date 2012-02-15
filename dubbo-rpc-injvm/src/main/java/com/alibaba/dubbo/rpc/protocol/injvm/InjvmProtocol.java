@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.protocol.injvm;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invoker;
@@ -29,7 +28,6 @@ import com.alibaba.dubbo.rpc.protocol.AbstractProtocol;
  * @author qian.lei
  * @author william.liangf
  */
-@Extension(InjvmProtocol.NAME)
 public class InjvmProtocol extends AbstractProtocol implements Protocol {
     
     public static final String NAME = "injvm";

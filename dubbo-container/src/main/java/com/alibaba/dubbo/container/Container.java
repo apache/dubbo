@@ -15,14 +15,14 @@
  */
 package com.alibaba.dubbo.container;
 
-import com.alibaba.dubbo.common.Extension;
+import com.alibaba.dubbo.common.Default;
 
 /**
  * Container. (SPI, Singleton, ThreadSafe)
  * 
  * @author william.liangf
  */
-@Extension("spring")
+@Default("spring")
 public interface Container {
     
     /**
