@@ -58,6 +58,8 @@
 		<servlet_version>2.5</servlet_version>
 		<jetty_version>6.1.26</jetty_version>
 		<validation_version>1.0.0.GA</validation_version>
+		<jta_version>1.1</jta_version>
+		<wagon_version>2.2</wagon_version>
 		<!-- Log libs -->
 		<log4j_version>1.2.16</log4j_version>
 		<slf4j_version>1.6.2</slf4j_version>
@@ -86,7 +88,6 @@
 		<module>dubbo-rpc-hessian</module>
 		<module>dubbo-cluster</module>
 		<module>dubbo-validation</module>
-		<module>dubbo-transaction</module>
 		<module>dubbo-registry</module>
 		<module>dubbo-registry-default</module>
 		<module>dubbo-registry-multicast</module>
@@ -185,6 +186,16 @@
 				<groupId>javax.validation</groupId>
 				<artifactId>validation-api</artifactId>
 				<version>${validation_version}</version>
+			</dependency>
+			<dependency>
+				<groupId>javax.transaction</groupId>
+				<artifactId>jta</artifactId>
+				<version>${jta_version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-webdav-jackrabbit</artifactId>
+				<version>${wagon_version}</version>
 			</dependency>
 			<!-- Log libs -->
 			<dependency>
