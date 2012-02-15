@@ -306,12 +306,16 @@
 							<xsd:documentation><![CDATA[ The method deprecated. ]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:attribute>
+					<xsd:attribute name="merger" type="xsd:string" use="optional">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[ The multi-group result merger ]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
 					<xsd:attribute name="sticky" type="xsd:string" use="optional">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[ Enable/Disable cluster sticky policy.Default false ]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:attribute>
-					
 					<xsd:attribute name="return" type="xsd:string" use="optional" >
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[ Method result is return. default is true.]]></xsd:documentation>
