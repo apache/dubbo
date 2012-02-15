@@ -84,13 +84,14 @@
 		<module>dubbo-rpc-rmi</module>
 		<module>dubbo-rpc-hessian</module>
 		<module>dubbo-cluster</module>
+		<module>dubbo-validation</module>
+		<module>dubbo-transaction</module>
 		<module>dubbo-registry</module>
 		<module>dubbo-registry-default</module>
 		<module>dubbo-registry-multicast</module>
 		<module>dubbo-registry-zookeeper</module>
 		<module>dubbo-monitor</module>
 		<module>dubbo-monitor-default</module>
-		<module>dubbo-validation</module>
 		<module>dubbo-config</module>
 		<module>dubbo-container</module>
 		<module>dubbo</module>
