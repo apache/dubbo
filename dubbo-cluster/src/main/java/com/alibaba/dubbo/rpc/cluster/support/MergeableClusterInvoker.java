@@ -90,7 +90,6 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
                 if ( firstFlag ) {
                     firstFlag = false;
                     result = r.getResult();
-                    timeout = 0;
                 } else {
                     if ( result == null ) {
                         result = r.getResult();
