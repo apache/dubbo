@@ -50,7 +50,7 @@ public abstract class AbstractExporter<T> implements Exporter<T> {
 
     public void unexport() {
         if (unexported) {
-            throw new IllegalStateException("The exporter " + this + " unexported!");
+            return ;
         }
         unexported = true;
         getInvoker().destroy();
