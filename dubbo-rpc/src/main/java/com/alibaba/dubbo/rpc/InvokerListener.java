@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.rpc;
 
-import com.alibaba.dubbo.common.Default;
 import com.alibaba.dubbo.common.URL;
 
 /**
@@ -23,7 +22,6 @@ import com.alibaba.dubbo.common.URL;
  * 
  * @author william.liangf
  */
-@Default
 public interface InvokerListener {
 
     /**

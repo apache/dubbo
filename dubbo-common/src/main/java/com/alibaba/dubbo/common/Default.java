@@ -22,7 +22,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 扩展点实现的元信息。
+ * 扩展点缺省值声明
  * 
  * @author william.liangf
  * @author ding.lid
@@ -33,9 +33,8 @@ import java.lang.annotation.Target;
 public @interface Default {
 
     /**
-     * 扩展点名称。<br>
-     * 
-     * 如果注解在扩展的接口上，则缺省的扩展点。<p>
+     * 扩展点缺省值
      */
-	String value() default "";
+	String value();
+
 }

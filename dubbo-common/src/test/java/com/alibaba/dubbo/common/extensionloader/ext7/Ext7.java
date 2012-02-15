@@ -16,7 +16,6 @@
 package com.alibaba.dubbo.common.extensionloader.ext7;
 
 import com.alibaba.dubbo.common.Adaptive;
-import com.alibaba.dubbo.common.Default;
 import com.alibaba.dubbo.common.URL;
 
 /**
@@ -25,7 +24,6 @@ import com.alibaba.dubbo.common.URL;
  * 
  * @author ding.lid
  */
-@Default
 public interface Ext7 {
     @Adaptive
     String echo(URL url, String s);

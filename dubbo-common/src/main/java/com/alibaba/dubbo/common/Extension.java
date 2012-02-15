@@ -41,4 +41,5 @@ public @interface Extension {
      * 如果注解在扩展的接口上，则缺省的扩展点。<p>
      */
 	String value() default "";
+
 }
