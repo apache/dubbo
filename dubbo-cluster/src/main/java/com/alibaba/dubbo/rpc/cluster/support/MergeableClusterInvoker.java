@@ -56,8 +56,9 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
         this.directory = directory;
     }
 
+    @SuppressWarnings("unchecked")
     public Result invoke(final Invocation invocation) throws RpcException {
-        int timeout = getUrl().getParameter( Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT );
+        int timeout = getUrl().getMethodParameter(invocation.getMethodName(), Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
         List<Invoker<T>> invokers = directory.list(invocation);
         
         Map<String, Future<Result>> results = new HashMap<String, Future<Result>>();
@@ -94,7 +95,7 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
                     if ( result == null ) {
                         result = r.getResult();
                     } else {
-                        String merger = getUrl().getParameter( Constants.MERGER_KEY );
+                        String merger = getUrl().getMethodParameter(invocation.getMethodName(), Constants.MERGER_KEY);
                         if ( merger != null && ! "".equals( merger.trim() ) ) {
                             Method method = returnType.getMethod( merger, returnType );
                             if ( method != null ) {
