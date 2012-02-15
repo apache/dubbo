@@ -80,7 +80,7 @@ public class Main {
         } catch (RuntimeException e) {
             e.printStackTrace();
             logger.error(e.getMessage(), e);
-            throw e;
+            System.exit(1);
         }
         synchronized (Main.class) {
             while (running) {
