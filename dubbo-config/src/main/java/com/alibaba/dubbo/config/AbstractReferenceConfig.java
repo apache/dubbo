@@ -387,7 +387,7 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
     }
 
     public void setLayer(String layer) {
-        checkNameHasColon("layer", layer);
+        checkNameHasSymbol("layer", layer);
         this.layer = layer;
     }
 

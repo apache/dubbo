@@ -76,7 +76,7 @@ public abstract class AbstractServiceConfig extends AbstractReferenceConfig {
     }
 
     public void setGroup(String group) {
-        checkName("group", group);
+        checkNameHasSymbol("group", group);
         this.group = group;
     }
 

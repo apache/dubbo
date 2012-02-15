@@ -13,17 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.cluster.support;
-
-import java.util.List;
+package com.alibaba.dubbo.rpc.cluster;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-public interface MenuService {
-    
-    public Menu getMenu();
-    
-    public void addMenu( String menu, List<String> items );
+public interface Merger<T> {
+
+    T merge(T r1, T r2);
 
 }

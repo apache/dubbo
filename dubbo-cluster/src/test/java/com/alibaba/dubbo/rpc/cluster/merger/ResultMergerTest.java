@@ -1,32 +1,33 @@
-/**
- * File Created at 2012-02-09
- * $Id$
- *
- * Copyright 2008 Alibaba.com Croporation Limited.
- * All rights reserved.
- *
- * This software is the confidential and proprietary information of
- * Alibaba Company. ("Confidential Information").  You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the license agreement you entered into
- * with Alibaba.com.
+/*
+ * Copyright 1999-2011 Alibaba Group.
+ *  
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *  
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *  
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.cluster.utils;
-
-import com.alibaba.dubbo.common.ExtensionLoader;
-import com.alibaba.dubbo.rpc.cluster.utils.ArrayMerger;
-import com.alibaba.dubbo.rpc.cluster.utils.ResultMerger;
-import org.junit.Assert;
-import org.junit.Test;
+package com.alibaba.dubbo.rpc.cluster.merger;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+import com.alibaba.dubbo.common.ExtensionLoader;
+import com.alibaba.dubbo.rpc.cluster.Merger;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
@@ -36,7 +37,7 @@ public class ResultMergerTest {
     @Test
     public void testCollectionMerger() throws Exception {
 
-        ResultMerger merger = ExtensionLoader.getExtensionLoader( ResultMerger.class )
+        Merger merger = ExtensionLoader.getExtensionLoader( Merger.class )
                 .getExtension( CollectionMerger.NAME );
 
         List<String> r1 = new ArrayList<String>();
@@ -73,7 +74,7 @@ public class ResultMergerTest {
     @Test
     public void testMapMerger() throws Exception {
         
-        ResultMerger merger = ExtensionLoader.getExtensionLoader( ResultMerger.class )
+        Merger merger = ExtensionLoader.getExtensionLoader( Merger.class )
                 .getExtension( MapMerger.NAME );
         
         Map<String, String> m1 = new HashMap<String, String>();
@@ -99,7 +100,7 @@ public class ResultMergerTest {
         
         String[] one1 = new String[] { "1", "2", "3" };
         String[] one2 = new String[] { "4", "5", "6" };
-        Object result = ExtensionLoader.getExtensionLoader( ResultMerger.class )
+        Object result = ExtensionLoader.getExtensionLoader( Merger.class )
                 .getExtension( ArrayMerger.NAME ).merge( one1, one2 );
         Assert.assertTrue( result.getClass().isArray() );
         Assert.assertEquals( 6, Array.getLength( result ) );
@@ -116,7 +117,7 @@ public class ResultMergerTest {
                 {"1","1","1",},
         };
         
-        result = ExtensionLoader.getExtensionLoader( ResultMerger.class )
+        result = ExtensionLoader.getExtensionLoader( Merger.class )
                 .getExtension( ArrayMerger.NAME ).merge( two1, two2 );
         Assert.assertTrue( result.getClass().isArray() );
         Assert.assertEquals( 2, ArrayMerger.getDimensions( result ) );

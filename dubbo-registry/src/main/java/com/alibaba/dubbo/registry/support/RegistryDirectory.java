@@ -43,9 +43,11 @@ import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.cluster.Cluster;
 import com.alibaba.dubbo.rpc.cluster.Router;
 import com.alibaba.dubbo.rpc.cluster.RouterFactory;
 import com.alibaba.dubbo.rpc.cluster.directory.AbstractDirectory;
+import com.alibaba.dubbo.rpc.cluster.directory.StaticDirectory;
 import com.alibaba.dubbo.rpc.cluster.router.ScriptRouterFactory;
 import com.alibaba.dubbo.rpc.cluster.support.ClusterUtils;
 import com.alibaba.dubbo.rpc.protocol.InvokerWrapper;
@@ -60,11 +62,15 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     private static final Logger logger = LoggerFactory.getLogger(RegistryDirectory.class);
     
+    private static final Cluster cluster = ExtensionLoader.getExtensionLoader(Cluster.class).getAdaptiveExtension();
+    
     private volatile boolean forbidden = false;
     
     private final String serviceKey;
 
     private final Class<T> serviceType;
+    
+    private final boolean multiGroup;
 
     private volatile URL directoryUrl;
 
@@ -98,6 +104,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         this.serviceKey = url.getServiceKey();
         this.queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(RpcConstants.REFER_KEY));
         this.directoryUrl = url.removeParameter(RpcConstants.REFER_KEY).addParameters(queryMap);
+        this.multiGroup = "*".equals(directoryUrl.getParameter(Constants.GROUP_KEY));
     }
 
     public void setProtocol(Protocol protocol) {
@@ -203,13 +210,43 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             logger.error(new IllegalStateException("urls to invokers error .invokerUrls.size :"+invokerUrls.size() + ", invoker.size :0. urls :"+invokerUrls.toString()));
             return ;
         }
-        this.methodInvokerMap = newMethodInvokerMap;
+        this.methodInvokerMap = multiGroup ? toMergeMethodInvokerMap(newMethodInvokerMap) : newMethodInvokerMap;
         this.urlInvokerMap = newUrlInvokerMap;
         try{
             destroyUnusedInvokers(oldUrlInvokerMap,newUrlInvokerMap); // 关闭未使用的Invoker
         }catch (Exception e) {
             logger.warn("destroyUnusedInvokers error. ", e);
         }
+    }
+    
+    private Map<String, List<Invoker<T>>> toMergeMethodInvokerMap(Map<String, List<Invoker<T>>> methodMap) {
+        Map<String, List<Invoker<T>>> result = new HashMap<String, List<Invoker<T>>>();
+        for (Map.Entry<String, List<Invoker<T>>> entry : methodMap.entrySet()) {
+            String method = entry.getKey();
+            List<Invoker<T>> invokers = entry.getValue();
+            Map<String, List<Invoker<T>>> groupMap = new HashMap<String, List<Invoker<T>>>();
+            for (Invoker<T> invoker : invokers) {
+                String group = invoker.getUrl().getParameter(Constants.GROUP_KEY, "");
+                List<Invoker<T>> groupInvokers = groupMap.get(group);
+                if (groupInvokers == null) {
+                    groupInvokers = new ArrayList<Invoker<T>>();
+                    groupMap.put(group, groupInvokers);
+                }
+                groupInvokers.add(invoker);
+            }
+            if (groupMap.size() == 1) {
+                result.put(method, groupMap.values().iterator().next());
+            } else if (groupMap.size() > 1) {
+                List<Invoker<T>> groupInvokers = new ArrayList<Invoker<T>>();
+                for (List<Invoker<T>> groupList : groupMap.values()) {
+                    groupInvokers.add(cluster.join(new StaticDirectory<T>(groupList)));
+                }
+                result.put(method, groupInvokers);
+            } else {
+                result.put(method, invokers);
+            }
+        }
+        return result;
     }
     
     /**

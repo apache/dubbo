@@ -1,34 +1,19 @@
-/**
- * File Created at 2012-02-09
- * $Id$
- *
- * Copyright 2008 Alibaba.com Croporation Limited.
- * All rights reserved.
- *
- * This software is the confidential and proprietary information of
- * Alibaba Company. ("Confidential Information").  You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the license agreement you entered into
- * with Alibaba.com.
+/*
+ * Copyright 1999-2011 Alibaba Group.
+ *  
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *  
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *  
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.alibaba.dubbo.rpc.cluster.support;
-
-import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.ExtensionLoader;
-import com.alibaba.dubbo.common.logger.Logger;
-import com.alibaba.dubbo.common.logger.LoggerFactory;
-import com.alibaba.dubbo.common.utils.NamedThreadFactory;
-import com.alibaba.dubbo.rpc.Invocation;
-import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.Result;
-import com.alibaba.dubbo.rpc.RpcException;
-import com.alibaba.dubbo.rpc.RpcResult;
-import com.alibaba.dubbo.rpc.cluster.Directory;
-import com.alibaba.dubbo.rpc.cluster.LoadBalance;
-import com.alibaba.dubbo.rpc.cluster.utils.ArrayMerger;
-import com.alibaba.dubbo.rpc.cluster.utils.CollectionMerger;
-import com.alibaba.dubbo.rpc.cluster.utils.MapMerger;
-import com.alibaba.dubbo.rpc.cluster.utils.ResultMerger;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -42,50 +27,52 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.ExtensionLoader;
+import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.utils.NamedThreadFactory;
+import com.alibaba.dubbo.rpc.Invocation;
+import com.alibaba.dubbo.rpc.Invoker;
+import com.alibaba.dubbo.rpc.Result;
+import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.RpcInvocation;
+import com.alibaba.dubbo.rpc.RpcResult;
+import com.alibaba.dubbo.rpc.cluster.Directory;
+import com.alibaba.dubbo.rpc.cluster.Merger;
+import com.alibaba.dubbo.rpc.cluster.merger.ArrayMerger;
+import com.alibaba.dubbo.rpc.cluster.merger.CollectionMerger;
+import com.alibaba.dubbo.rpc.cluster.merger.MapMerger;
+
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
+public class MergeableClusterInvoker<T> implements Invoker<T> {
 
-    private static final Logger log = LoggerFactory.getLogger( MergeableClusterInvoker.class );
+    private ExecutorService executor = Executors.newCachedThreadPool(new NamedThreadFactory("mergeable-cluster-executor", true));
     
-    private ExecutorService executor = Executors.newCachedThreadPool(
-            new NamedThreadFactory("mergeable-cluster-executor", true));
+    private final Directory<T> directory;
 
-    public MergeableClusterInvoker( Directory<T> directory ) {
-        super( directory );
+    public MergeableClusterInvoker(Directory<T> directory) {
+        this.directory = directory;
     }
 
-    @Override
-    public Result invoke( final Invocation invocation ) throws RpcException {
-
-        checkWheatherDestoried();
-
+    public Result invoke(final Invocation invocation) throws RpcException {
         int timeout = getUrl().getParameter( Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT );
-
-        List<Invoker<T>> invokers = directory.list( invocation );
-
+        List<Invoker<T>> invokers = directory.list(invocation);
+        
         Map<String, Future<Result>> results = new HashMap<String, Future<Result>>();
-
         for( final Invoker<T> invoker : invokers ) {
-
             Future<Result> future = executor.submit( new Callable<Result>() {
-
                 public Result call() throws Exception {
-
-                    return invoker.invoke( invocation );
+                    return invoker.invoke(new RpcInvocation(invocation, invoker.getUrl()));
                 }
             } );
-
             results.put( invoker.getUrl().getServiceKey(), future );
-
         }
 
         boolean firstFlag = true;
         Object result = null;
-
         Class<?> returnType;
-
         try {
             returnType = getInterface().getMethod(
                     invocation.getMethodName(), invocation.getParameterTypes() ).getReturnType();
@@ -96,30 +83,25 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
         for ( Map.Entry<String, Future<Result>> entry : results.entrySet() ) {
             Future<Result> future = entry.getValue();
             try {
-
                 Result r = future.get( timeout, TimeUnit.MILLISECONDS );
-
-                if ( returnType == void.class ) { continue; }
-
+                if (returnType == void.class) {
+                    continue;
+                }
                 if ( firstFlag ) {
                     firstFlag = false;
                     result = r.getResult();
                     timeout = 0;
                 } else {
-
                     if ( result == null ) {
                         result = r.getResult();
                     } else {
-
                         String merger = getUrl().getParameter( Constants.MERGER_KEY );
-                        
                         if ( merger != null && ! "".equals( merger.trim() ) ) {
                             Method method = returnType.getMethod( merger, returnType );
                             if ( method != null ) {
                                 if ( !Modifier.isPublic( method.getModifiers() ) ) {
                                     method.setAccessible( true );
                                 }
-                                
                                 if ( method.getReturnType() != void.class
                                         && method.getReturnType().isAssignableFrom( result.getClass() ) ) {
                                     result = method.invoke( result, r.getResult() );
@@ -136,7 +118,6 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
                                                                 .toString() );
                             }
                         } else {
-
                             String hint;
                             if ( returnType.isArray() ) {
                                 hint = ArrayMerger.NAME;
@@ -147,24 +128,18 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
                             } else {
                                 throw new RpcException( "There is no merger to merge multi result" );
                             }
-
-                            if ( ExtensionLoader.getExtensionLoader( ResultMerger.class )
+                            if ( ExtensionLoader.getExtensionLoader( Merger.class )
                                     .hasExtension( hint ) ) {
-                                result = ExtensionLoader.getExtensionLoader( ResultMerger.class )
+                                result = ExtensionLoader.getExtensionLoader( Merger.class )
                                         .getExtension( hint ).merge( result, r.getResult() );
                             } else {
                                 throw new RpcException(
                                         "Could not merge multi result because of missing merger" );
                             }
-
                         }
-                        
                     }
-
                 }
-
             } catch ( Exception e ) {
-
                 throw new RpcException( new StringBuilder( 32 )
                                                 .append( "Failed to invoke service " )
                                                 .append( entry.getKey() )
@@ -178,9 +153,20 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
         return new RpcResult( result );
     }
 
-    @Override
-    protected Result doInvoke( Invocation invocation, List list, LoadBalance loadbalance ) throws RpcException {
-        throw new UnsupportedOperationException();
+    public Class<T> getInterface() {
+        return directory.getInterface();
+    }
+
+    public URL getUrl() {
+        return directory.getUrl();
+    }
+
+    public boolean isAvailable() {
+        return directory.isAvailable();
+    }
+
+    public void destroy() {
+        directory.destroy();
     }
 
 }

@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 
 /**
@@ -45,7 +46,31 @@ public class RpcInvocation implements Invocation, Serializable {
 
     public RpcInvocation() {
     }
-    
+
+    public RpcInvocation(Invocation invocation, URL url) {
+        this(invocation.getMethodName(), invocation.getParameterTypes(), 
+                invocation.getArguments(), invocation.getAttachments(), invocation.getUrl());
+        setAttachment(Constants.PATH_KEY, url.getPath());
+        if (url.hasParameter(Constants.INTERFACE_KEY)) {
+            setAttachment(Constants.INTERFACE_KEY, url.getParameter(Constants.INTERFACE_KEY));
+        }
+        if (url.hasParameter(Constants.GROUP_KEY)) {
+            setAttachment(Constants.GROUP_KEY, url.getParameter(Constants.GROUP_KEY));
+        }
+        if (url.hasParameter(Constants.VERSION_KEY)) {
+            setAttachment(Constants.VERSION_KEY, url.getParameter(Constants.VERSION_KEY, "0.0.0"));
+        }
+        if (url.hasParameter(Constants.TIMEOUT_KEY)) {
+            setAttachment(Constants.TIMEOUT_KEY, url.getParameter(Constants.TIMEOUT_KEY));
+        }
+        if (url.hasParameter(Constants.TOKEN_KEY)) {
+            setAttachment(Constants.TOKEN_KEY, url.getParameter(Constants.TOKEN_KEY));
+        }
+        if (url.hasParameter(Constants.APPLICATION_KEY)) {
+            setAttachment(Constants.APPLICATION_KEY, url.getParameter(Constants.APPLICATION_KEY));
+        }
+    }
+
     public RpcInvocation(Invocation invocation) {
         this(invocation.getMethodName(), invocation.getParameterTypes(), 
                 invocation.getArguments(), invocation.getAttachments(), invocation.getUrl());

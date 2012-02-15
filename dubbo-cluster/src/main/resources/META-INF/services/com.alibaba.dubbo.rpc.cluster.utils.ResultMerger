@@ -1,3 +1,0 @@
-com.alibaba.dubbo.rpc.cluster.utils.CollectionMerger
-com.alibaba.dubbo.rpc.cluster.utils.MapMerger
-com.alibaba.dubbo.rpc.cluster.utils.ArrayMerger

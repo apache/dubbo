@@ -44,16 +44,16 @@ public abstract class AbstractConfig implements Serializable {
 
     private static final int MAX_PATH_LENGTH = 200;
 
-    private static final Pattern PATTERN_PATH = Pattern.compile("[\\-._/0-9a-zA-Z]+");
+    private static final Pattern PATTERN_NAME = Pattern.compile("[\\-._0-9a-zA-Z]+");
 
-    private static final Pattern PATTERN_MULTI_NAME = Pattern.compile("[\\-._,0-9a-zA-Z]+");
+    private static final Pattern PATTERN_MULTI_NAME = Pattern.compile("[,\\-._0-9a-zA-Z]+");
 
     private static final Pattern PATTERN_METHOD_NAME = Pattern.compile("[a-zA-Z][0-9a-zA-Z]*");
     
-    private static final Pattern PATTERN_NAME = Pattern.compile("[\\-._0-9a-zA-Z]+");
-    
-    private static final Pattern PATTERN_NAME_HAS_COLON= Pattern.compile("[:\\-._0-9a-zA-Z]+");
-    
+    private static final Pattern PATTERN_PATH = Pattern.compile("[/\\-._0-9a-zA-Z]+");
+
+    private static final Pattern PATTERN_NAME_HAS_SYMBOL = Pattern.compile("[:*,/\\-._0-9a-zA-Z]+");
+
     protected static void appendProperties(Object config) {
         appendProperties(config, null);
     }
@@ -287,8 +287,8 @@ public abstract class AbstractConfig implements Serializable {
         checkProperty(property, value, MAX_LENGTH, PATTERN_NAME);
     }
     
-    protected static void checkNameHasColon(String property, String value) {
-        checkProperty(property, value, MAX_LENGTH, PATTERN_NAME_HAS_COLON);
+    protected static void checkNameHasSymbol(String property, String value) {
+        checkProperty(property, value, MAX_LENGTH, PATTERN_NAME_HAS_SYMBOL);
     }
     
     protected static void checkMultiName(String property, String value) {
@@ -309,7 +309,7 @@ public abstract class AbstractConfig implements Serializable {
         }
         for (Map.Entry<String, String> entry : parameters.entrySet()) {
             //change by tony.chenl parameter value maybe has colon.for example napoli address
-            checkNameHasColon(entry.getKey(), entry.getValue());
+            checkNameHasSymbol(entry.getKey(), entry.getValue());
         }
     }
     
