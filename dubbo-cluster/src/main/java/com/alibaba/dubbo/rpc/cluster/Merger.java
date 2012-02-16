@@ -20,6 +20,6 @@ package com.alibaba.dubbo.rpc.cluster;
  */
 public interface Merger<T> {
 
-    T merge(T r1, T r2);
+    T merge(T... items);
 
 }

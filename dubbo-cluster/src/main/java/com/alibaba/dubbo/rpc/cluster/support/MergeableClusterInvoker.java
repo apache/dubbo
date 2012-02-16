@@ -15,20 +15,7 @@
  */
 package com.alibaba.dubbo.rpc.cluster.support;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 import com.alibaba.dubbo.rpc.Invocation;
@@ -38,10 +25,23 @@ import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.cluster.Directory;
-import com.alibaba.dubbo.rpc.cluster.Merger;
 import com.alibaba.dubbo.rpc.cluster.merger.ArrayMerger;
-import com.alibaba.dubbo.rpc.cluster.merger.CollectionMerger;
+import com.alibaba.dubbo.rpc.cluster.merger.ListMerger;
 import com.alibaba.dubbo.rpc.cluster.merger.MapMerger;
+import com.alibaba.dubbo.rpc.cluster.merger.SetMerger;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
@@ -58,7 +58,7 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
 
     @SuppressWarnings("unchecked")
     public Result invoke(final Invocation invocation) throws RpcException {
-        int timeout = getUrl().getMethodParameter(invocation.getMethodName(), Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+        int timeout = getUrl().getMethodParameter( invocation.getMethodName(), Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT );
         List<Invoker<T>> invokers = directory.list(invocation);
         
         Map<String, Future<Result>> results = new HashMap<String, Future<Result>>();
@@ -71,7 +71,6 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
             results.put( invoker.getUrl().getServiceKey(), future );
         }
 
-        boolean firstFlag = true;
         Object result = null;
         Class<?> returnType;
         try {
@@ -81,64 +80,12 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
             throw new RpcException( e.getMessage(), e );
         }
 
+        List<Result> resultList = new ArrayList<Result>( results.size() );
+        
         for ( Map.Entry<String, Future<Result>> entry : results.entrySet() ) {
             Future<Result> future = entry.getValue();
             try {
-                Result r = future.get( timeout, TimeUnit.MILLISECONDS );
-                if (returnType == void.class) {
-                    continue;
-                }
-                if ( firstFlag ) {
-                    firstFlag = false;
-                    result = r.getResult();
-                } else {
-                    if ( result == null ) {
-                        result = r.getResult();
-                    } else {
-                        String merger = getUrl().getMethodParameter(invocation.getMethodName(), Constants.MERGER_KEY);
-                        if ( merger != null && ! "".equals( merger.trim() ) ) {
-                            Method method = returnType.getMethod( merger, returnType );
-                            if ( method != null ) {
-                                if ( !Modifier.isPublic( method.getModifiers() ) ) {
-                                    method.setAccessible( true );
-                                }
-                                if ( method.getReturnType() != void.class
-                                        && method.getReturnType().isAssignableFrom( result.getClass() ) ) {
-                                    result = method.invoke( result, r.getResult() );
-                                } else {
-                                    method.invoke( result, r.getResult() );
-                                }
-                            } else {
-                                throw new RpcException( new StringBuilder( 32 )
-                                                                .append( "Can not merge result because missing method [ " )
-                                                                .append( merger )
-                                                                .append( " ] in class [ " )
-                                                                .append( result.getClass().getName() )
-                                                                .append( " ]" )
-                                                                .toString() );
-                            }
-                        } else {
-                            String hint;
-                            if ( returnType.isArray() ) {
-                                hint = ArrayMerger.NAME;
-                            } else if ( Collection.class.isAssignableFrom( returnType ) ) {
-                                hint = CollectionMerger.NAME;
-                            } else if ( Map.class.isAssignableFrom( returnType ) ) {
-                                hint = MapMerger.NAME;
-                            } else {
-                                throw new RpcException( "There is no merger to merge multi result" );
-                            }
-                            if ( ExtensionLoader.getExtensionLoader( Merger.class )
-                                    .hasExtension( hint ) ) {
-                                result = ExtensionLoader.getExtensionLoader( Merger.class )
-                                        .getExtension( hint ).merge( result, r.getResult() );
-                            } else {
-                                throw new RpcException(
-                                        "Could not merge multi result because of missing merger" );
-                            }
-                        }
-                    }
-                }
+                resultList.add( future.get( timeout, TimeUnit.MILLISECONDS ) );
             } catch ( Exception e ) {
                 throw new RpcException( new StringBuilder( 32 )
                                                 .append( "Failed to invoke service " )
@@ -147,7 +94,83 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
                                                 .append( e.getMessage() ).toString(),
                                         e );
             }
+        }
 
+        if ( returnType != void.class && resultList.size() > 0 ) {
+            String merger = getUrl().getMethodParameter( invocation.getMethodName(), Constants.MERGER_KEY );
+            if ( merger != null && !"".equals( merger.trim() ) ) {
+                Method method;
+                try {
+                    method = returnType.getMethod( merger, returnType );
+                } catch ( NoSuchMethodException e ) {
+                    throw new RpcException( new StringBuilder( 32 )
+                                                    .append( "Can not merge result because missing method [ " )
+                                                    .append( merger )
+                                                    .append( " ] in class [ " )
+                                                    .append( returnType.getClass().getName() )
+                                                    .append( " ]" )
+                                                    .toString() );
+                }
+                if ( method != null ) {
+                    if ( !Modifier.isPublic( method.getModifiers() ) ) {
+                        method.setAccessible( true );
+                    }
+                    result = resultList.remove( 0 ).getResult();
+                    try {
+                        if ( method.getReturnType() != void.class
+                                && method.getReturnType().isAssignableFrom( result.getClass() ) ) {
+                            for ( Result r : resultList ) {
+                                result = method.invoke( result, r.getResult() );
+                            }
+                        } else {
+                            for ( Result r : resultList ) {
+                                method.invoke( result, r.getResult() );
+                            }
+                        }
+                    } catch ( Exception e ) {
+                        throw new RpcException( 
+                                new StringBuilder( 32 )
+                                        .append( "Can not merge result: " )
+                                        .append( e.getMessage() ).toString(), 
+                                e );
+                    }
+                } else {
+                    throw new RpcException(
+                            new StringBuilder( 32 )
+                                    .append( "Can not merge result because missing method [ " )
+                                    .append( merger )
+                                    .append( " ] in class [ " )
+                                    .append( returnType.getClass().getName() )
+                                    .append( " ]" )
+                                    .toString() );
+                }
+            } else if ( List.class.isAssignableFrom( returnType ) ) {
+                List<List> args = new ArrayList<List>();
+                for( Result r : resultList ) {
+                    args.add( ( List ) r.getResult() );
+                }
+                result = ListMerger.INSTANCE.merge( args.toArray( new List[ args.size() ] ) );
+            } else if ( Set.class.isAssignableFrom( returnType ) ) {
+                List<Set> args = new ArrayList<Set>();
+                for( Result r : resultList ) {
+                    args.add( ( Set ) r.getResult() );
+                }
+                result = SetMerger.INSTANCE.merge( args.toArray( new Set[args.size()] ) );
+            } else if ( Map.class.isAssignableFrom( returnType ) ) {
+                List<Map> args = new ArrayList<Map>();
+                for( Result r : resultList ) {
+                    args.add( ( Map ) r.getResult() );
+                }
+                result = MapMerger.INSTANCE.merge( args.toArray( new Map[args.size()] ) );
+            } else if ( returnType.isArray() ) {
+                List<Object> args = new ArrayList<Object>();
+                for( Result r : resultList ) {
+                    args.add( r.getResult() );
+                }
+                result = ArrayMerger.INSTANCE.merge( args.toArray( new Object[args.size()] ) );
+            } else {
+                throw new RpcException( "There is no merger to merge result." );
+            }
         }
 
         return new RpcResult( result );

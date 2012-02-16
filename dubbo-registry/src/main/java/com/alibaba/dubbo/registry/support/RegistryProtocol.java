@@ -166,21 +166,14 @@ public class RegistryProtocol implements Protocol {
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
         url = url.setProtocol(url.getParameter(Constants.REGISTRY_KEY, Constants.DEFAULT_REGISTRY)).removeParameter(Constants.REGISTRY_KEY);
         Registry registry = registryFactory.getRegistry(url);
-        
+
         // group="a,b" or group="*"
         Map<String, String> qs = StringUtils.parseQueryString(url.getParameterAndDecoded(RpcConstants.REFER_KEY));
         String group = qs.get(Constants.GROUP_KEY);
-        if (group != null && group.length() > 0) {
-            String[] groups;
-            if ((groups = Constants.COMMA_SPLIT_PATTERN.split(group)).length > 1) {
-                List<Invoker<T>> invokers = new ArrayList<Invoker<T>>();
-                for (String g : groups) {
-                    qs.put(Constants.GROUP_KEY, g);
-                    invokers.add(doRefer(cluster, registry, type, url.addParameterAndEncoded(RpcConstants.REFER_KEY, StringUtils.toQueryString(qs))));
-                }
-                return getMergeableCluster().join(new StaticDirectory<T>(invokers));
-            } else if ("*".equals(group)) {
-                return doRefer(getMergeableCluster(), registry, type, url);
+        if (group != null && group.length() > 0 ) {
+            if ( ( Constants.COMMA_SPLIT_PATTERN.split( group ) ).length > 1
+                    || "*".equals( group ) ) {
+                return doRefer( getMergeableCluster(), registry, type, url );
             }
         }
         return doRefer(cluster, registry, type, url);

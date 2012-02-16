@@ -15,65 +15,48 @@
  */
 package com.alibaba.dubbo.rpc.cluster.merger;
 
-import java.lang.reflect.Array;
-
 import com.alibaba.dubbo.rpc.cluster.Merger;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
+@SuppressWarnings( "unchecked" )
 public class ArrayMerger implements Merger<Object> {
 
     public static final String NAME = "array";
 
-    public Object merge(Object r1, Object r2) {
+    public static final ArrayMerger INSTANCE = new ArrayMerger();
 
-        if ( r1 == null ) {
-            if ( r2 != null ) {
-                return r2;
-            } else {
-                return null;
-            }
-        } else if ( r2 == null ) {
-            return r1;
-        }
+    public Object merge(Object... others) {
 
-        Object result = null;
+        if ( others.length == 0 ) { return null; }
 
-        if ( r1.getClass().isArray() && r2.getClass().isArray() ) {
-
-            int len1 = Array.getLength( r1 );
-            int len2 = Array.getLength( r2 );
-            
-            if ( len1 == 0 ) {
-                if ( len2 == 0 ) {
-                    return r1;
-                } else {
-                    return r2;
-                }
-            } else if ( len2 == 0 ) {
-                return r1;
-            }
-            
-            int dim1 = getDimensions( r1 );
-            int dim2 = getDimensions( r2 );
-
-            if ( dim1 != dim2 ) {
-                throw new UnsupportedOperationException(
-                        new StringBuilder( 32 )
-                                .append( "Can not merge different dimensions of arrays: r1 " )
-                                .append( dim1 ).append( " and r2 " ).append( dim2 ).toString() );
-            }
-
-            Object item = Array.get( r1, 0 );
-
-            result = Array.newInstance( item.getClass(), len1 + len2 );
-            System.arraycopy( r1, 0, result, 0, len1 );
-            System.arraycopy( r2, 0, result, len1, len2 );
-
-        }
+        List list = new ArrayList();
         
-        return result;
+        for( int i = 0; i < others.length; i++ ) {
+            Object item = others[i];
+            if ( item != null ) {
+                if ( item.getClass().isArray() ) {
+                    int len = Array.getLength( item );
+                    for( int j = 0; j < len; j++ ) {
+                        Object obj = Array.get( item, j );
+                        if ( obj != null ) {
+                            list.add( obj );
+                        }
+                    }
+                } else {
+                    throw new IllegalArgumentException( 
+                            new StringBuilder(32).append( i + 1 )
+                                    .append( "th argument is not an array" ).toString() );
+                }
+            }
+        }
+
+        return list.toArray();
 
     }
     

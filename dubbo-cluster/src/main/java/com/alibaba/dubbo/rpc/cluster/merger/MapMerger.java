@@ -15,45 +15,34 @@
  */
 package com.alibaba.dubbo.rpc.cluster.merger;
 
+import com.alibaba.dubbo.rpc.cluster.Merger;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import com.alibaba.dubbo.rpc.cluster.Merger;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-public class MapMerger implements Merger<Map<Object, Object>> {
+@SuppressWarnings( "unchecked" )
+public class MapMerger<T extends Map> implements Merger<T> {
 
     public static final String NAME = "map";
 
-    public Map<Object, Object> merge(Map<Object, Object> r1, Map<Object, Object> r2) {
+    public static final MapMerger INSTANCE = new MapMerger();
 
-        if ( r1 == null ) {
-            if ( r2 != null ) {
-                return r2;
-            } else {
-                return null;
-            }
-        } else if ( r2 == null ) {
-            return r1;
-        }
+    public T merge(T ... items) {
 
-        Map<Object, Object> result = null;
+        if ( items.length == 0 ) { return  null; }
+
+        Map result = new HashMap();
         
-        if ( r1 instanceof Map && r2 instanceof Map ) {
-            
-            Map<Object, Object> map1 = ( Map<Object, Object> ) r1;
-            Map<Object, Object> map2 = ( Map<Object, Object> ) r2;
-
-            result = new HashMap<Object, Object>( map1.size() + map2.size() );
-
-            result.putAll( map1 );
-            result.putAll( map2 );
-
+        for( Map item : items ) {
+            if ( item != null ) {
+                result.putAll( item );
+            }
         }
 
-        return result;
+        return (T)result;
     }
 
 }
