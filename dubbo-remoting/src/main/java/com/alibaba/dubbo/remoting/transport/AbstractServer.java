@@ -144,6 +144,9 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
     }
     
     public void close() {
+        if (logger.isInfoEnabled()) {
+            logger.info("Close " + getClass().getSimpleName() + " bind " + getBindAddress() + ", export " + getLocalAddress());
+        }
         ExecutorUtil.shutdownNow(executor ,100);
         try {
             super.close();
