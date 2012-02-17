@@ -104,7 +104,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         this.serviceKey = url.getServiceKey();
         this.queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(RpcConstants.REFER_KEY));
         this.directoryUrl = url.removeParameter(RpcConstants.REFER_KEY).addParameters(queryMap);
-        String group = directoryUrl.getParameter( Constants.GROUP_KEY );
+        String group = directoryUrl.getParameter( Constants.GROUP_KEY, "" );
         this.multiGroup = "*".equals(group) || group.contains( "," );
     }
 
