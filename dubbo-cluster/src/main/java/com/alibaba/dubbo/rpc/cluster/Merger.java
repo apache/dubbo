@@ -15,9 +15,12 @@
  */
 package com.alibaba.dubbo.rpc.cluster;
 
+import com.alibaba.dubbo.common.Extension;
+
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
+@Extension
 public interface Merger<T> {
 
     T merge(T... items);

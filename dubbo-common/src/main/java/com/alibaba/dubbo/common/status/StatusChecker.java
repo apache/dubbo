@@ -15,11 +15,14 @@
  */
 package com.alibaba.dubbo.common.status;
 
+import com.alibaba.dubbo.common.Extension;
+
 /**
  * StatusChecker
  * 
  * @author william.liangf
  */
+@Extension
 public interface StatusChecker {
     
     /**

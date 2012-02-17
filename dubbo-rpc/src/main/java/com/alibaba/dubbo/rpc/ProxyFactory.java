@@ -17,7 +17,7 @@ package com.alibaba.dubbo.rpc;
 
 import com.alibaba.dubbo.common.Adaptive;
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.Default;
+import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 
 /**
@@ -25,7 +25,7 @@ import com.alibaba.dubbo.common.URL;
  * 
  * @author william.liangf
  */
-@Default("javassist")
+@Extension("javassist")
 public interface ProxyFactory {
 
     /**

@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.config.support;
 
-import com.alibaba.dubbo.common.Default;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invocation;

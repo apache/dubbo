@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.remoting.p2p.exchange.support;
 
-import com.alibaba.dubbo.common.Default;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.p2p.exchange.ExchangeGroup;

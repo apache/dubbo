@@ -22,23 +22,18 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 扩展点实现的元信息。
- * 
- * @deprecated 请在META-INF/services/配置文件中声明扩展点名称，如：fixed=com.xxx.FixedThreadPool
+ * 扩展点接口的标识。
  * 
  * @author william.liangf
  * @author ding.lid
  */
-@Deprecated
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface Extension {
 
     /**
-     * 扩展点名称。<br>
-     * 
-     * 如果注解在扩展的接口上，则缺省的扩展点。<p>
+     * 缺省扩展点名。
      */
 	String value() default "";
 

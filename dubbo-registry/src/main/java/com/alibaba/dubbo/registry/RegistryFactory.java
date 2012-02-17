@@ -16,7 +16,7 @@
 package com.alibaba.dubbo.registry;
 
 import com.alibaba.dubbo.common.Adaptive;
-import com.alibaba.dubbo.common.Default;
+import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 
 /**
@@ -27,7 +27,7 @@ import com.alibaba.dubbo.common.URL;
  * @see com.alibaba.dubbo.registry.support.AbstractRegistryFactory
  * @author william.liangf
  */
-@Default("dubbo")
+@Extension("dubbo")
 public interface RegistryFactory {
 
     /**

@@ -16,6 +16,7 @@
 package com.alibaba.dubbo.common.extensionloader.ext6_inject;
 
 import com.alibaba.dubbo.common.Adaptive;
+import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 
 /**
@@ -23,6 +24,7 @@ import com.alibaba.dubbo.common.URL;
  * 
  * @author ding.lid
  */
+@Extension
 public interface Ext6 {
     @Adaptive
     String echo(URL url, String s);

@@ -15,6 +15,7 @@
  */
 package com.alibaba.dubbo.container.page;
 
+import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 
 /**
@@ -22,6 +23,7 @@ import com.alibaba.dubbo.common.URL;
  * 
  * @author william.liangf
  */
+@Extension
 public interface PageHandler {
     
     /**

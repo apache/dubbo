@@ -15,6 +15,8 @@
  */
 package com.alibaba.dubbo.remoting;
 
+import com.alibaba.dubbo.common.Extension;
+
 
 /**
  * ChannelHandler. (API, Prototype, ThreadSafe)
@@ -24,6 +26,7 @@ package com.alibaba.dubbo.remoting;
  * @author qian.lei
  * @author william.liangf
  */
+@Extension
 public interface ChannelHandler {
 
     /**

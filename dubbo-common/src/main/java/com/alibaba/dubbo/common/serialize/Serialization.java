@@ -20,7 +20,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import com.alibaba.dubbo.common.Adaptive;
-import com.alibaba.dubbo.common.Default;
+import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 
 /**
@@ -29,7 +29,7 @@ import com.alibaba.dubbo.common.URL;
  * @author ding.lid
  * @author william.liangf
  */
-@Default("hessian2")
+@Extension("hessian2")
 public interface Serialization {
 
     /**

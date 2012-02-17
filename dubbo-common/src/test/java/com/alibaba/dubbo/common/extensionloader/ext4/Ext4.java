@@ -18,12 +18,12 @@ package com.alibaba.dubbo.common.extensionloader.ext4;
 import java.util.List;
 
 import com.alibaba.dubbo.common.Adaptive;
-import com.alibaba.dubbo.common.Default;
+import com.alibaba.dubbo.common.Extension;
 
 /**
  * @author ding.lid
  */
-@Default("impl1")
+@Extension("impl1")
 public interface Ext4 {
     @Adaptive
     String bark(String name, List<Object> list); // 没有URL参数的方法

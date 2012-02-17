@@ -17,7 +17,7 @@ package com.alibaba.dubbo.remoting.http;
 
 import com.alibaba.dubbo.common.Adaptive;
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.Default;
+import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 
 /**
@@ -25,7 +25,7 @@ import com.alibaba.dubbo.common.URL;
  * 
  * @author william.liangf
  */
-@Default("jetty")
+@Extension("jetty")
 public interface HttpBinder {
     
     /**

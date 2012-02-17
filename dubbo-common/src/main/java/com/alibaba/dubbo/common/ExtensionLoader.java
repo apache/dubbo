@@ -50,7 +50,6 @@ import com.alibaba.dubbo.common.utils.StringUtils;
  * @author william.liangf
  * @author ding.lid
  * 
- * @see Default
  * @see Adaptive
  */
 public class ExtensionLoader<T> {
@@ -287,7 +286,7 @@ public class ExtensionLoader<T> {
 	}
 	
     private Map<String, Class<?>> loadExtensionClasses() {
-        final Default defaultAnnotation = type.getAnnotation(Default.class);
+        final Extension defaultAnnotation = type.getAnnotation(Extension.class);
         if(defaultAnnotation != null) {
             String[] names = NAME_SEPARATOR.split(defaultAnnotation.value());
             if(names.length > 1) {
@@ -399,7 +398,6 @@ public class ExtensionLoader<T> {
         return extensionClasses;
     }
     
-    @SuppressWarnings("deprecation")
     private String findAnnotationName(Class<?> clazz) {
         Extension extension = clazz.getAnnotation(Extension.class);
         return extension == null ? null : extension.value();
