@@ -436,7 +436,7 @@ public class ReferenceConfig<T> extends AbstractConsumerConfig {
     }
 
     public void setGroup(String group) {
-        checkNameHasSymbol("group", group);
+        checkKey("group", group);
         this.group = group;
     }
 

@@ -54,6 +54,8 @@ public abstract class AbstractConfig implements Serializable {
 
     private static final Pattern PATTERN_NAME_HAS_SYMBOL = Pattern.compile("[:*,/\\-._0-9a-zA-Z]+");
 
+    private static final Pattern PATTERN_KEY = Pattern.compile("[*,\\-._0-9a-zA-Z]+");
+
     protected static void appendProperties(Object config) {
         appendProperties(config, null);
     }
@@ -289,6 +291,10 @@ public abstract class AbstractConfig implements Serializable {
     
     protected static void checkNameHasSymbol(String property, String value) {
         checkProperty(property, value, MAX_LENGTH, PATTERN_NAME_HAS_SYMBOL);
+    }
+
+    protected static void checkKey(String property, String value) {
+        checkProperty(property, value, MAX_LENGTH, PATTERN_KEY);
     }
     
     protected static void checkMultiName(String property, String value) {
