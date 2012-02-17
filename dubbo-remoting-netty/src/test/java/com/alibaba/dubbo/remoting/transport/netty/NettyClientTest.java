@@ -38,8 +38,6 @@ public class NettyClientTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        /*int port = (int) (1000 * Math.random() + 10000);
-        //System.out.println(port);*/
         server = Exchangers.bind(URL.valueOf("exchange://localhost:10001?server=netty"), new TelnetServerHandler());
     }
 
@@ -61,7 +59,6 @@ public class NettyClientTest {
     public void testServerClose() throws Exception {
         for (int i = 0; i < 100; i++) {
             Server aServer = Exchangers.bind(URL.valueOf("exchange://localhost:" + (5000 + i) + "?client=netty"), new TelnetServerHandler());
-            System.out.println(i);
             aServer.close();
         }
     }
@@ -71,8 +68,6 @@ public class NettyClientTest {
         try {
             if (server != null)
                 server.close();
-        } finally {
-
-        }
+        } finally {}
     }
 }
