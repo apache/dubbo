@@ -50,7 +50,7 @@ public class ValidationParameter implements Serializable {
     @Past // 必须为一个过去的时间
     private Date loginDate;
 
-    @Future // 必须为一个过去的时间
+    @Future // 必须为一个未来的时间
     private Date expiryDate;
 
     public String getName() {
