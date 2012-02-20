@@ -27,7 +27,6 @@
 	<description>The simple monitor module of dubbo project</description>
 	<properties>
 		<skip_maven_deploy>false</skip_maven_deploy>
-		<eclipse.useProjectReferences>false</eclipse.useProjectReferences>
 	</properties>
 	<dependencies>
 		<dependency>
