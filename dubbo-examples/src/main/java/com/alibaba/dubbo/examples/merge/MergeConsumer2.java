@@ -29,7 +29,7 @@ import com.alibaba.dubbo.examples.merge.api.MergeService;
 public class MergeConsumer2 {
     
     public static void main(String[] args) throws Exception {
-        String config = MergeConsumer.class.getPackage().getName().replace('.', '/') + "/merge-consumer2.xml";
+        String config = MergeConsumer2.class.getPackage().getName().replace('.', '/') + "/merge-consumer2.xml";
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(config);
         context.start();
         MergeService mergeService = (MergeService)context.getBean("mergeService");
