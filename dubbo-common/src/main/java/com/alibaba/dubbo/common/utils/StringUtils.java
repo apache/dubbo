@@ -121,6 +121,13 @@ public final class StringUtils
         return true;
     }
     
+    public static boolean isContains(String values, String value) {
+        if (values == null || values.length() == 0) {
+            return false;
+        }
+        return isContains(Constants.COMMA_SPLIT_PATTERN.split(values), value);
+    }
+    
     /**
      * 
      * @param values

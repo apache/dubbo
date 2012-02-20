@@ -327,7 +327,7 @@ public class UrlUtils {
         String providerGroup = providerUrl.getParameter(Constants.GROUP_KEY);
         String providerVersion = providerUrl.getParameter(Constants.VERSION_KEY);
         return (Constants.ANY_VALUE.equals(consumerInterface) || StringUtils.isEquals(consumerInterface, providerInterface))
-               && (Constants.ANY_VALUE.equals(consumerGroup) || StringUtils.isContains( Constants.COMMA_SPLIT_PATTERN.split( consumerGroup ), providerGroup ))
+               && (Constants.ANY_VALUE.equals(consumerGroup) || StringUtils.isEquals(consumerGroup, providerGroup) || StringUtils.isContains(consumerGroup, providerGroup))
                && (Constants.ANY_VALUE.equals(consumerVersion) || StringUtils.isEquals(consumerVersion, providerVersion))
                && (! Constants.SUBSCRIBE_PROTOCOL.equals(providerUrl.getProtocol()) || consumerUrl.getParameter(Constants.ADMIN_KEY, false));
     }
