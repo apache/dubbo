@@ -15,14 +15,14 @@
  */
 package com.alibaba.dubbo.validation;
 
-import java.lang.reflect.Method;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 import javax.validation.Validation;
 import javax.validation.ValidationException;
 import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
@@ -41,22 +41,27 @@ public class ValidationFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(ValidationFilter.class);
     
-    private final ValidatorFactory factory;
-
     private final Validator validator;
     
     public ValidationFilter() {
-        factory = Validation.buildDefaultValidatorFactory(); 
-        validator = factory.getValidator();
+        validator = Validation.buildDefaultValidatorFactory().getValidator();
     }
     
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         try {
-            Class<?> cls = invoker.getInterface();
-            Method method = cls.getMethod(invocation.getMethodName(), invocation.getParameterTypes());
+            Class<?> clazz = invoker.getInterface();
+            String methodName = invocation.getMethodName();
+            String clazzName = clazz.getName() + "$" + methodName.substring(0, 1).toUpperCase() + methodName.substring(1);
+            try {
+                clazz = Class.forName(clazzName, false, Thread.currentThread().getContextClassLoader());
+            } catch (ClassNotFoundException e) {
+            }
+            Set<ConstraintViolation<?>> violations = new HashSet<ConstraintViolation<?>>();
             for (Object arg : invocation.getArguments()) {
-                // TODO
-                validator.validate(arg);
+                violations.addAll(validator.validate(arg, clazz));
+            }
+            if (violations.size() > 0) {
+                throw new ConstraintViolationException(violations);
             }
         } catch (ValidationException e) {
             throw e;
