@@ -89,8 +89,10 @@ public class MulticastRegistry extends FailbackRegistry {
                             }
                             MulticastRegistry.this.receive(msg, (InetSocketAddress) recv.getSocketAddress());
                             Arrays.fill(buf, (byte)0);
-                        } catch (IOException e) {
-                            logger.error(e.getMessage(), e);
+                        } catch (Throwable e) {
+                            if (! mutilcastSocket.isClosed()) {
+                                logger.error(e.getMessage(), e);
+                            }
                         }
                     }
                 }
