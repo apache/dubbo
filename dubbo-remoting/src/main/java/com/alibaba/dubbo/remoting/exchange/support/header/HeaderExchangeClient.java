@@ -16,8 +16,19 @@
 package com.alibaba.dubbo.remoting.exchange.support.header;
 
 import java.net.InetSocketAddress;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.NamedThreadFactory;
+import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.Client;
 import com.alibaba.dubbo.remoting.RemotingException;
@@ -33,6 +44,22 @@ import com.alibaba.dubbo.remoting.exchange.ResponseFuture;
  */
 public class HeaderExchangeClient implements ExchangeClient {
 
+    private static final Logger logger = LoggerFactory.getLogger( HeaderExchangeClient.class );
+
+    private final ScheduledExecutorService scheduled =
+            Executors.newScheduledThreadPool( 1,
+                                              new NamedThreadFactory(
+                                                      "dubbo-remoting-client-heartbeat",
+                                                      true ) );
+
+    // 心跳定时器
+    private ScheduledFuture<?> heatbeatTimer;
+
+    // 心跳超时，毫秒。缺省0，不会执行心跳。
+    private int heartbeat;
+
+    private int heartbeatTimeout;
+    
     private final Client client;
 
     private final ExchangeChannel channel;
@@ -43,6 +70,12 @@ public class HeaderExchangeClient implements ExchangeClient {
         }
         this.client = client;
         this.channel = new HeaderExchangeChannel(client);
+        this.heartbeat = client.getUrl().getParameter( Constants.HEARTBEAT_KEY, Constants.DEFAULT_HEARTBEAT );
+        this.heartbeatTimeout = client.getUrl().getParameter( Constants.HEARTBEAT_TIMEOUT_KEY, heartbeat * 3 );
+        if ( heartbeatTimeout < heartbeat * 2 ) {
+            throw new IllegalStateException( "heartbeatTimeout < heartbeatInterval * 2" );
+        }
+        startHeatbeatTimer();
     }
 
     public ResponseFuture request(Object request) throws RemotingException {
@@ -124,6 +157,26 @@ public class HeaderExchangeClient implements ExchangeClient {
 
     public boolean hasAttribute(String key) {
         return channel.hasAttribute(key);
+    }
+
+    private void startHeatbeatTimer() {
+        try {
+            ScheduledFuture<?> timer = heatbeatTimer;
+            if ( timer != null && !timer.isCancelled() ) {
+                timer.cancel( true );
+            }
+        } catch ( Throwable t ) {
+            logger.warn( t.getMessage(), t );
+        }
+        if ( heartbeat > 0 ) {
+            heatbeatTimer = scheduled.scheduleWithFixedDelay(
+                    new HeartBeatTask( new HeartBeatTask.ChannelProvider() {
+                        public Collection<Channel> getChannels() {
+                            return Collections.<Channel>singletonList( channel );
+                        }
+                    }, heartbeat, heartbeatTimeout ),
+                    heartbeat, heartbeat, TimeUnit.MILLISECONDS );
+        }
     }
 
 }

@@ -18,6 +18,7 @@ package com.alibaba.dubbo.remoting.exchange.support.header;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -247,42 +248,14 @@ public class HeaderExchangeServer implements ExchangeServer {
             logger.warn(t.getMessage(), t);
         }
         if (heartbeat > 0) {
-            heatbeatTimer = scheduled.scheduleWithFixedDelay(new HeartBeatTask(), heartbeat, heartbeat,
-                                                             TimeUnit.MILLISECONDS);
-        }
-    }
-
-    private class HeartBeatTask implements Runnable {
-        public void run() {
-            try {
-                long now = System.currentTimeMillis();
-                for (Channel channel : getChannels()) {
-                    try {
-                        Long lastRead = (Long) channel.getAttribute(HeaderExchangeHandler.KEY_READ_TIMESTAMP);
-                        Long lastWrite = (Long) channel.getAttribute(HeaderExchangeHandler.KEY_WRITE_TIMESTAMP);
-                        if ((lastRead != null && now - lastRead > heartbeat)
-                            || (lastWrite != null && now - lastWrite > heartbeat)) {
-                            Request req = new Request();
-                            req.setVersion("2.0.0");
-                            req.setTwoWay(true);
-                            req.setEvent(Request.HEARTBEAT_EVENT);
-                            channel.send(req);
-                            if (logger.isDebugEnabled()) {
-                                logger.debug("Send heartbeat to client " + channel.getRemoteAddress() + ".");
-                            }
+            heatbeatTimer = scheduled.scheduleWithFixedDelay(
+                    new HeartBeatTask( new HeartBeatTask.ChannelProvider() {
+                        public Collection<Channel> getChannels() {
+                            return Collections.unmodifiableCollection(
+                                    HeaderExchangeServer.this.getChannels() );
                         }
-                        if (lastRead != null && now - lastRead > heartbeatTimeout) {
-                            logger.warn("Close remote client " + channel.getRemoteAddress()
-                                        + ", because heartbeat read idle time out.");
-                            channel.close();
-                        }
-                    } catch (Throwable t) {
-                        logger.warn("Exception when heartbeat to client " + (InetSocketAddress) channel.getRemoteAddress(), t);
-                    }
-                }
-            } catch (Throwable t) {
-                logger.info("Exception when heartbeat to clients: ", t);
-            }
+                    }, heartbeat, heartbeatTimeout), 
+                    heartbeat, heartbeat,TimeUnit.MILLISECONDS);
         }
     }
 
