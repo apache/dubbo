@@ -23,6 +23,7 @@ import javax.validation.ConstraintViolationException;
 import javax.validation.Validation;
 import javax.validation.ValidationException;
 import javax.validation.Validator;
+import javax.validation.groups.Default;
 
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
@@ -58,7 +59,7 @@ public class ValidationFilter implements Filter {
             }
             Set<ConstraintViolation<?>> violations = new HashSet<ConstraintViolation<?>>();
             for (Object arg : invocation.getArguments()) {
-                violations.addAll(validator.validate(arg, clazz));
+                violations.addAll(validator.validate(arg, Default.class, clazz));
             }
             if (violations.size() > 0) {
                 throw new ConstraintViolationException(violations);
