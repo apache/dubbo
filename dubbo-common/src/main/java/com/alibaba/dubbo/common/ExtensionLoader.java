@@ -81,10 +81,18 @@ public class ExtensionLoader<T> {
     
     private Map<String, IllegalStateException> exceptions = new ConcurrentHashMap<String, IllegalStateException>();
     
+    private static <T> boolean withExtensionAnnotation(Class<T> type) {
+        return type.isAnnotationPresent(Extension.class);
+    }
+    
     @SuppressWarnings("unchecked")
     public static <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
         if (type == null)
             throw new IllegalArgumentException("Extension type == null");
+        if(!withExtensionAnnotation(type)) {
+            throw new IllegalArgumentException("Extension type(" + type + 
+            		") is not extension, because WITHOUT @Extension Annotation!");
+        }
         
         ExtensionLoader<T> loader = (ExtensionLoader<T>) EXTENSION_LOADERS.get(type);
         if (loader == null) {
@@ -243,7 +251,7 @@ public class ExtensionLoader<T> {
                         && method.getParameterTypes().length == 1
                         && Modifier.isPublic(method.getModifiers())) {
                     Class<?> pt = method.getParameterTypes()[0];
-                    if (pt.isInterface() && getExtensionLoader(pt).getSupportedExtensions().size() > 0) {
+                    if (pt.isInterface() && withExtensionAnnotation(pt) && getExtensionLoader(pt).getSupportedExtensions().size() > 0) {
                         try {
                             Object adaptive = getExtensionLoader(pt).getAdaptiveExtension();
                             method.invoke(instance, adaptive);

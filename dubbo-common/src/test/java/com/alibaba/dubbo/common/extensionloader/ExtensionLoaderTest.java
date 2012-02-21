@@ -161,8 +161,16 @@ public class ExtensionLoaderTest {
     
     @Test
     public void test_getSupportedExtensions_NoExtension() throws Exception {
-        Set<String> exts = ExtensionLoader.getExtensionLoader(ExtensionLoaderTest.class).getSupportedExtensions();
-        assertEquals(0, exts.size());
+        try {
+            ExtensionLoader.getExtensionLoader(ExtensionLoaderTest.class).getSupportedExtensions();
+            fail();
+        } catch (IllegalArgumentException expected) {
+            assertThat(expected.getMessage(), 
+                    allOf(containsString("com.alibaba.dubbo.common.extensionloader.ExtensionLoaderTest"),
+                            containsString("is not extension"),
+                            containsString("WITHOUT @Extension Annotation")));
+       
+        }
     }
     
     @Test
