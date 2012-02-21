@@ -52,14 +52,19 @@ public class ValidationFilter implements Filter {
         try {
             Class<?> clazz = invoker.getInterface();
             String methodName = invocation.getMethodName();
-            String clazzName = clazz.getName() + "$" + methodName.substring(0, 1).toUpperCase() + methodName.substring(1);
+            String methodClassName = clazz.getName() + "$" + methodName.substring(0, 1).toUpperCase() + methodName.substring(1);
+            Class<?> methodClass = null;
             try {
-                clazz = Class.forName(clazzName, false, Thread.currentThread().getContextClassLoader());
+                methodClass = Class.forName(methodClassName, false, Thread.currentThread().getContextClassLoader());
             } catch (ClassNotFoundException e) {
             }
             Set<ConstraintViolation<?>> violations = new HashSet<ConstraintViolation<?>>();
             for (Object arg : invocation.getArguments()) {
-                violations.addAll(validator.validate(arg, Default.class, clazz));
+                if (methodClass != null) {
+                    violations.addAll(validator.validate(arg, Default.class, clazz, methodClass));
+                } else {
+                    violations.addAll(validator.validate(arg, Default.class, clazz));
+                }
             }
             if (violations.size() > 0) {
                 throw new ConstraintViolationException(violations);
