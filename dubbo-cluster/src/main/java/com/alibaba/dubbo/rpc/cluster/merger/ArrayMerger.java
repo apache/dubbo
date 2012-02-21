@@ -59,24 +59,5 @@ public class ArrayMerger implements Merger<Object> {
         return list.toArray();
 
     }
-    
-    static int getDimensions( Object array ) {
-
-        int result = 0;
-
-        if ( array.getClass().isArray() ) {
-            result++;
-            int len = Array.getLength( array );
-            if ( len > 0 ) {
-                Object item = Array.get( array, 0 );
-                if ( item.getClass().isArray() ) {
-                    result += getDimensions( item );
-                }
-            }
-        }
-
-        return result;
-        
-    }
 
 }

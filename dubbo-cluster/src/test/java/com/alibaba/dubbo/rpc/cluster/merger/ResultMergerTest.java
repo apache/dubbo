@@ -15,24 +15,63 @@
  */
 package com.alibaba.dubbo.rpc.cluster.merger;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.alibaba.dubbo.common.ExtensionLoader;
-import com.alibaba.dubbo.rpc.cluster.Merger;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
 public class ResultMergerTest {
 
+    @Test
+    public void testListMerger() throws Exception {
+        List<String> list1 = new ArrayList<String>();
+        list1.add( null );
+        list1.add( "1" );
+        list1.add( "2" );
+        List<String> list2 = new ArrayList<String>();
+        list2.add( "3" );
+        list2.add( "4" );
+        
+        List result = ListMerger.INSTANCE.merge( list1, list2 );
+        Assert.assertEquals(5, result.size());
+        Assert.assertEquals( new ArrayList<String>(){
+            {
+                add( null );
+                add( "1" );
+                add( "2" );
+                add( "3" );
+                add( "4" );
+            }
+        }, result);
+    }
+    
+    @Test
+    public void testSetMerger() throws Exception {
+        Set<String> set1 = new HashSet<String>();
+        set1.add( null );
+        set1.add( "1" );
+        set1.add( "2" );
+        Set<String> set2 = new HashSet<String>();
+        set2.add( "2" );
+        set2.add( "3" );
+        
+        Set result = SetMerger.INSTANCE.merge( set1, set2 );
+        
+        Assert.assertEquals( 4, result.size() );
+        Assert.assertEquals( new HashSet<String>(){
+            {
+                add( null );
+                add( "1" );
+                add( "2" );
+                add( "3" );
+            }
+        }, result);
+    }
 
 }
