@@ -288,12 +288,15 @@ public class ExtensionLoader<T> {
     private Map<String, Class<?>> loadExtensionClasses() {
         final Extension defaultAnnotation = type.getAnnotation(Extension.class);
         if(defaultAnnotation != null) {
-            String[] names = NAME_SEPARATOR.split(defaultAnnotation.value());
-            if(names.length > 1) {
-                throw new IllegalStateException("more than 1 default extension name on extension " + type.getName()
-                        + ": " + Arrays.toString(names));
+            String value = defaultAnnotation.value();
+            if(value != null && (value = value.trim()).length() > 0) {
+                String[] names = NAME_SEPARATOR.split(value);
+                if(names.length > 1) {
+                    throw new IllegalStateException("more than 1 default extension name on extension " + type.getName()
+                            + ": " + Arrays.toString(names));
+                }
+                if(names.length == 1) cachedDefaultName = names[0];
             }
-            if(names.length == 1) cachedDefaultName = names[0];
         }
         
         ClassLoader classLoader = findClassLoader();
