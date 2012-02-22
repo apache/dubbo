@@ -18,7 +18,6 @@ package com.alibaba.dubbo.common.utils;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +53,19 @@ public class ConfigUtils {
 				|| "default".equalsIgnoreCase(value);
 	}
 	
+	/**
+	 * 扩展点列表中插入缺省扩展点。
+	 * <p>
+	 * 扩展点列表支持<ul>
+	 * <li>特殊值<code><strong>default</strong></code>，表示缺省扩展点插入的位置
+	 * <li>特殊符号<code><strong>-</strong></code>，表示剔除。 <code>-foo1</code>，剔除添加缺省扩展点foo1。<code>-default</code>，剔除添加所有缺省扩展点。
+	 * </ul>
+	 * 
+	 * @param type 扩展点类型
+	 * @param cfg 扩展点名列表
+	 * @param def 缺省的扩展点的列表
+	 * @return 完成缺省的扩展点列表插入后的列表
+	 */
 	public static List<String> mergeValues(Class<?> type, String cfg, List<String> def) {
 	    List<String> defaults = new ArrayList<String>();
         if (def != null) {
@@ -63,23 +75,33 @@ public class ConfigUtils {
                 }
             }
         }
+        
 	    List<String> names = new ArrayList<String>();
+	    
+	    // 加入初始值
+        String[] configs = (cfg == null || cfg.trim().length() == 0) ? new String[0] : Constants.COMMA_SPLIT_PATTERN.split(cfg);
+        for (String config : configs) {
+            if(config != null && config.trim().length() > 0) {
+                names.add(config);
+            }
+        }
+
+        // 不包含 -default
         if (! names.contains(Constants.REMOVE_VALUE_PREFIX + Constants.DEFAULT_KEY)) {
+            // 加入 插入缺省扩展点
             int i = names.indexOf(Constants.DEFAULT_KEY);
             if (i > 0) {
                 names.addAll(i, defaults);
             } else {
-                names.addAll(defaults);
+                names.addAll(0, defaults);
             }
             names.remove(Constants.DEFAULT_KEY);
         }
-        String[] configs = cfg == null ? new String[0] : Constants.COMMA_SPLIT_PATTERN.split(cfg);
-        for (String config : configs) {
-            if(config != null && config.length() > 0) {
-                String[] fs = Constants.COMMA_SPLIT_PATTERN.split(config);
-                names.addAll(Arrays.asList(fs));
-            }
+        else {
+            names.remove(Constants.DEFAULT_KEY);
         }
+        
+        // 合并-的配置项
         for (String name : new ArrayList<String>(names)) {
             if (name.startsWith(Constants.REMOVE_VALUE_PREFIX)) {
                 names.remove(name);
