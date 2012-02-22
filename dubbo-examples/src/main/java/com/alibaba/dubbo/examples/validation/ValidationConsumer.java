@@ -16,7 +16,9 @@
 package com.alibaba.dubbo.examples.validation;
 
 import java.util.Date;
+import java.util.Set;
 
+import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -55,8 +57,9 @@ public class ValidationConsumer {
             validationService.save(parameter);
             System.out.println("Validation ERROR");
         } catch (RpcException e) {
-            ConstraintViolationException violationException = (ConstraintViolationException)e.getCause();
-            System.out.println(violationException.getConstraintViolations());
+            ConstraintViolationException ve = (ConstraintViolationException)e.getCause();
+            Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
+            System.out.println(violations);
         }
     }
 
