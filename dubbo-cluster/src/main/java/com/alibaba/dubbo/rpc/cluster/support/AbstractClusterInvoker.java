@@ -34,7 +34,7 @@ import com.alibaba.dubbo.rpc.cluster.Directory;
 import com.alibaba.dubbo.rpc.cluster.LoadBalance;
 
 /**
- * AbstractRpcRouter
+ * AbstractClusterInvoker
  * 
  * @author william.liangf
  * @author chao.liuc
@@ -60,6 +60,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
             throw new IllegalArgumentException("service directory == null");
         
         this.directory = directory ;
+        //sticky 需要检测 avaliablecheck 
         this.availablecheck = url.getParameter(RpcConstants.CLUSTER_AVAILABLE_CHECK_KEY, RpcConstants.DEFAULT_CLUSTER_AVAILABLE_CHECK) ;
     }
 
