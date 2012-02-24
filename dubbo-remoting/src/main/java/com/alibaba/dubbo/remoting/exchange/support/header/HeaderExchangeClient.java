@@ -123,10 +123,12 @@ public class HeaderExchangeClient implements ExchangeClient {
     }
 
     public void close() {
+        doClose();
         channel.close();
     }
 
     public void close(int timeout) {
+        doClose();
         channel.close(timeout);
     }
 
@@ -160,14 +162,7 @@ public class HeaderExchangeClient implements ExchangeClient {
     }
 
     private void startHeatbeatTimer() {
-        try {
-            ScheduledFuture<?> timer = heatbeatTimer;
-            if ( timer != null && !timer.isCancelled() ) {
-                timer.cancel( true );
-            }
-        } catch ( Throwable t ) {
-            logger.warn( t.getMessage(), t );
-        }
+        stopHeartbeatTimer();
         if ( heartbeat > 0 ) {
             heatbeatTimer = scheduled.scheduleWithFixedDelay(
                     new HeartBeatTask( new HeartBeatTask.ChannelProvider() {
@@ -179,4 +174,27 @@ public class HeaderExchangeClient implements ExchangeClient {
         }
     }
 
+    private void stopHeartbeatTimer() {
+        if (heatbeatTimer != null && ! heatbeatTimer.isCancelled()) {
+            try {
+                heatbeatTimer.cancel(true);
+            } catch ( Throwable e ) {
+                if (logger.isWarnEnabled()) {
+                    logger.warn(e.getMessage(), e);
+                }
+            }
+        }
+        heatbeatTimer =null;
+    }
+
+    private void doClose() {
+        stopHeartbeatTimer();
+        try {
+            scheduled.shutdown();
+        } catch (Throwable e) {
+            if (logger.isWarnEnabled()) {
+                logger.warn(e.getMessage(), e);
+            }
+        }
+    }
 }

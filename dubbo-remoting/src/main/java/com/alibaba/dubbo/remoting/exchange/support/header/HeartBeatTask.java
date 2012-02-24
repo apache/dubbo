@@ -46,6 +46,9 @@ final class HeartBeatTask implements Runnable {
         try {
             long now = System.currentTimeMillis();
             for ( Channel channel : channelProvider.getChannels() ) {
+                if (channel.isClosed()) {
+                    continue;
+                }
                 try {
                     Long lastRead = ( Long ) channel.getAttribute(
                             HeaderExchangeHandler.KEY_READ_TIMESTAMP );

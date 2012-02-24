@@ -142,14 +142,7 @@ public class HeaderExchangeServer implements ExchangeServer {
             return;
         }
         closed = true;
-        try {
-            if (null != heatbeatTimer) {
-                heatbeatTimer.cancel(true);
-                heatbeatTimer = null;
-            }
-        } catch (Throwable t) {
-            logger.warn(t.getMessage(), t);
-        }
+        stopHeartbeatTimer();
         try {
             scheduled.shutdown();
         } catch (Throwable t) {
@@ -239,14 +232,7 @@ public class HeaderExchangeServer implements ExchangeServer {
     }
 
     private void startHeatbeatTimer() {
-        try {
-            ScheduledFuture<?> timer = heatbeatTimer;
-            if (timer != null && ! timer.isCancelled()) {
-                timer.cancel(true);
-            }
-        } catch (Throwable t) {
-            logger.warn(t.getMessage(), t);
-        }
+        stopHeartbeatTimer();
         if (heartbeat > 0) {
             heatbeatTimer = scheduled.scheduleWithFixedDelay(
                     new HeartBeatTask( new HeartBeatTask.ChannelProvider() {
@@ -256,6 +242,19 @@ public class HeaderExchangeServer implements ExchangeServer {
                         }
                     }, heartbeat, heartbeatTimeout), 
                     heartbeat, heartbeat,TimeUnit.MILLISECONDS);
+        }
+    }
+
+    private void stopHeartbeatTimer() {
+        try {
+            ScheduledFuture<?> timer = heatbeatTimer;
+            if (timer != null && ! timer.isCancelled()) {
+                timer.cancel(true);
+            }
+        } catch (Throwable t) {
+            logger.warn(t.getMessage(), t);
+        } finally {
+            heatbeatTimer =null;
         }
     }
 
