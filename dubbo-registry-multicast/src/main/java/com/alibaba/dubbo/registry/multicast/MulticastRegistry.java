@@ -158,7 +158,10 @@ public class MulticastRegistry extends FailbackRegistry {
         }
         if (msg.startsWith(REGISTER)) {
             URL url = URL.valueOf(msg.substring(REGISTER.length()).trim());
-            heartbeatStat.put(remoteAddress, Provider.create(url, System.currentTimeMillis()));
+            if (! NetUtils.isLocalHost(remoteAddress.getAddress().getHostAddress())
+                    && ! NetUtils.getLocalHost().equals(remoteAddress.getAddress().getHostAddress())) {
+                heartbeatStat.put(remoteAddress, Provider.create(url, System.currentTimeMillis()));
+            }
             registered(url);
         } else if (msg.startsWith(UNREGISTER)) {
             URL url = URL.valueOf(msg.substring(UNREGISTER.length()).trim());
