@@ -56,11 +56,17 @@ public abstract class AbstractConfig implements Serializable {
 
     private static final Pattern PATTERN_KEY = Pattern.compile("[*,\\-._0-9a-zA-Z]+");
 
-    protected static void appendProperties(Object config) {
-        appendProperties(config, null);
+    protected String id;
+
+    public String getId() {
+        return id;
     }
 
-    protected static void appendProperties(Object config, String prefix) {
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    protected static void appendProperties(AbstractConfig config, String prefix) {
         if (config == null) {
             return;
         }
@@ -74,7 +80,13 @@ public abstract class AbstractConfig implements Serializable {
                     if (prefix != null && prefix.length() > 0) {
                         key = prefix + "." + key;
                     }
-                    String value = ConfigUtils.getProperty(key);
+                    String value = null;
+                    if (config.getId() != null && config.getId().length() > 0) {
+                        value = ConfigUtils.getProperty(key + "." + config.getId());
+                    }
+                    if (value == null || value.length() == 0) {
+                        value = ConfigUtils.getProperty(key);
+                    }
                     if (value != null && value.length() > 0) {
                         method.invoke(config, new Object[] {convertPrimitive(method.getParameterTypes()[0], value)});
                     }

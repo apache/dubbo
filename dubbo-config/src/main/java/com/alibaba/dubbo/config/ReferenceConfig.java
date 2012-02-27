@@ -372,8 +372,8 @@ public class ReferenceConfig<T> extends AbstractConsumerConfig {
             if (c != null && c.length() > 0) {
                 consumer.setCheck(!Boolean.parseBoolean(c));
             }
-            appendProperties(consumer, "dubbo.consumer");
         }
+        appendProperties(consumer, "dubbo.consumer");
     }
 
 	public Class<?> getInterfaceClass() {

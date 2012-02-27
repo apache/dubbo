@@ -403,8 +403,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private void checkDefault() {
         if (provider == null) {
             provider = new ProviderConfig();
-            appendProperties(provider, "dubbo.provider");
         }
+        appendProperties(provider, "dubbo.provider");
     }
 
     private void checkProtocol() {
@@ -431,8 +431,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             if (t != null && t.length() > 0) {
                 protocolConfig.setThreads(Integer.parseInt(t.trim()));
             }
-            appendProperties(protocolConfig, "dubbo.protocol");
             setProtocol(protocolConfig);
+        }
+        for (ProtocolConfig protocolConfig : protocols) {
+            appendProperties(protocolConfig, "dubbo.protocol");
         }
     }
 

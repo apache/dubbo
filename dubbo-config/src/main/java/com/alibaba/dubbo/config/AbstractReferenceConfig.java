@@ -103,7 +103,6 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
                 String[] as = address.split("\\s*[|]+\\s*");
                 for (String a : as) {
                     RegistryConfig registryConfig = new RegistryConfig();
-                    appendProperties(registryConfig, "dubbo.registry");
                     registryConfig.setAddress(a);
                     registries.add(registryConfig);
                 }
@@ -118,6 +117,9 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
                                                     + Version.getVersion()
                                                     + ", Please add <dubbo:registry address=\"...\" /> to your spring config. If you want unregister, please set <dubbo:service registry=\"N/A\" />");
         }
+        for (RegistryConfig registryConfig : registries) {
+            appendProperties(registryConfig, "dubbo.registry");
+        }
     }
 
     @SuppressWarnings("deprecation")
@@ -127,14 +129,13 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
             String applicationName = ConfigUtils.getProperty("dubbo.application.name");
             if (applicationName != null && applicationName.length() > 0) {
                 application = new ApplicationConfig();
-                appendProperties(application, "dubbo.application");
             }
         }
         if (application == null) {
             throw new IllegalStateException(
                                             "No such application config! Please add <dubbo:application name=\"...\" /> to your spring config.");
         }
-        
+        appendProperties(application, "dubbo.application");
         
         String wait = ConfigUtils.getProperty(RpcConstants.SHUTDOWN_TIMEOUT_KEY);
         if (wait != null && wait.trim().length() > 0) {
@@ -187,11 +188,11 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
             if (monitorAddress != null && monitorAddress.length() > 0
                     || monitorProtocol != null && monitorProtocol.length() > 0) {
                 monitor = new MonitorConfig();
-                appendProperties(monitor, "dubbo.monitor");
             } else {
                 return null;
             }
         }
+        appendProperties(monitor, "dubbo.monitor");
         Map<String, String> map = new HashMap<String, String>();
         map.put(Constants.INTERFACE_KEY, MonitorService.class.getName());
         appendParameters(map, monitor);
