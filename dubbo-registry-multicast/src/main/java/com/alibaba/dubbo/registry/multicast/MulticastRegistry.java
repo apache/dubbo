@@ -133,7 +133,7 @@ public class MulticastRegistry extends FailbackRegistry {
         }
 
         this.heartbeat = url.getParameter(Constants.HEARTBEAT_KEY, Constants.DEFAULT_HEARTBEAT);
-        this.heartbeatTimeout = url.getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartbeat * 3);
+        this.heartbeatTimeout = url.getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartbeat * 5);
         if (heartbeatTimeout < heartbeat * 2) {
             throw new IllegalStateException("heartbeatTimeout < heartbeatInterval * 2");
         }
@@ -158,13 +158,18 @@ public class MulticastRegistry extends FailbackRegistry {
         }
         if (msg.startsWith(REGISTER)) {
             URL url = URL.valueOf(msg.substring(REGISTER.length()).trim());
-            if (! NetUtils.isLocalHost(remoteAddress.getAddress().getHostAddress())
-                    && ! NetUtils.getLocalHost().equals(remoteAddress.getAddress().getHostAddress())) {
-                heartbeatStat.put(remoteAddress, Provider.create(url, System.currentTimeMillis()));
+            if (!getRegistered().contains(url.toFullString())) {
+                Provider provider = heartbeatStat.get(remoteAddress);
+                if (provider == null) {
+                    provider = Provider.create(System.currentTimeMillis());
+                    heartbeatStat.put(remoteAddress, provider);
+                }
+                provider.urls.add(url);
             }
             registered(url);
         } else if (msg.startsWith(UNREGISTER)) {
             URL url = URL.valueOf(msg.substring(UNREGISTER.length()).trim());
+            heartbeatStat.remove(remoteAddress);
             unregistered(url);
         } else if (msg.startsWith(SUBSCRIBE)) {
             URL url = URL.valueOf(msg.substring(SUBSCRIBE.length()).trim());
@@ -363,25 +368,27 @@ public class MulticastRegistry extends FailbackRegistry {
         Map<InetSocketAddress, Provider> map = new HashMap<InetSocketAddress, Provider>(heartbeatStat);
         long now = System.currentTimeMillis();
         for (Map.Entry<InetSocketAddress, Provider> entry : map.entrySet()) {
+            if (entry.getValue().urls.size() <= 0) { continue; }
             if (entry.getValue().lastRead + heartbeatTimeout > now) {
-                try {
-                    unregister(entry.getValue().url, null);
-                    if (logger.isInfoEnabled()) {
-                        logger.info(new StringBuilder(32)
-                                            .append("Unregister unavailable provider ")
-                                            .append(entry.getValue().url).toString());
+                for ( URL url : entry.getValue().urls) {
+                    try {
+                        unregistered(url);
+                        if (logger.isInfoEnabled()) {
+                            logger.info(new StringBuilder(32)
+                                                .append("Unregister unavailable provider ")
+                                                .append(url).toString());
+                        }
+                    } catch (Throwable e) {
+                        if (logger.isErrorEnabled()) {
+                            logger.error(
+                                    new StringBuilder(32)
+                                            .append("Failed to unregister service ")
+                                            .append(url.toFullString()).toString(),
+                                    e);
+                        }
                     }
-                } catch (Throwable e) {
-                    if (logger.isErrorEnabled()) {
-                        logger.error(
-                                new StringBuilder(32)
-                                        .append("Failed to unregister service ")
-                                        .append(entry.getValue().url.toFullString()).toString(),
-                                e);
-                    }
-                } finally {
-                    heartbeatStat.remove(entry.getKey());
                 }
+                heartbeatStat.remove(entry.getKey());
             }
         }
     }
@@ -435,14 +442,13 @@ public class MulticastRegistry extends FailbackRegistry {
 
     private static class Provider {
 
-        static Provider create(URL url, long lastRead) {
+        static Provider create(long lastRead) {
             Provider result = new Provider();
-            result.url = url;
             result.lastRead = lastRead;
             return result;
         }
 
-        URL  url;
+        List<URL>  urls = new ArrayList<URL>();
 
         long lastRead;
     }
