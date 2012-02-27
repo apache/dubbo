@@ -150,10 +150,11 @@ public class MockedClient implements ExchangeClient {
 	}
 
 	public void close(int timeout) {
+	    close();
 	}
 
 	public boolean isOpen() {
-		return false;
+		return closed;
 	}
 
 	public Codec getCodec() {

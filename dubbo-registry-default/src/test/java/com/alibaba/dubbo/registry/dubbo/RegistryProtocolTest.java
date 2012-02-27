@@ -30,7 +30,6 @@ import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.RegistryFactory;
 import com.alibaba.dubbo.registry.support.AbstractRegistry;
 import com.alibaba.dubbo.registry.support.RegistryProtocol;
-import com.alibaba.dubbo.registry.support.RegistryProtocol.InvokerDelegete;
 import com.alibaba.dubbo.registry.support.SimpleRegistryExporter;
 import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
 import com.alibaba.dubbo.rpc.Exporter;
@@ -91,10 +90,12 @@ public class RegistryProtocolTest {
         DubboInvoker<DemoService> invoker = new DubboInvoker<DemoService>(DemoService.class,
                 newRegistryUrl, new ExchangeClient[] { new MockedClient("10.20.20.20", 2222, true) });
         Exporter<DemoService> exporter = registryProtocol.export(invoker);
-        Assert.assertTrue(exporter.getInvoker() instanceof InvokerDelegete);
-        InvokerDelegete<?> delegeteinvoker =  (InvokerDelegete<?>)exporter.getInvoker();
-        assertEquals(invoker, delegeteinvoker.getInvoker());
+        Exporter<DemoService> exporter2 = registryProtocol.export(invoker);
+        //同一个invoker，多次export的exporter不同
+        Assert.assertNotSame(exporter, exporter2);
         exporter.unexport();
+        exporter2.unexport();
+        
     }
     
     @Test

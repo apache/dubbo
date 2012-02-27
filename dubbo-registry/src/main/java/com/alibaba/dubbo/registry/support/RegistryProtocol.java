@@ -36,7 +36,6 @@ import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.cluster.Cluster;
-import com.alibaba.dubbo.rpc.cluster.directory.StaticDirectory;
 import com.alibaba.dubbo.rpc.protocol.InvokerWrapper;
 
 /**
@@ -82,40 +81,58 @@ public class RegistryProtocol implements Protocol {
         return INSTANCE;
     }
     
-    //用于解决rmi重复暴露端口冲突的问题
-    private final Map<String, ExporterWrapper<?>> bounds = new ConcurrentHashMap<String, ExporterWrapper<?>>();
+    //用于解决rmi重复暴露端口冲突的问题，已经暴露过的服务不再重新暴露
+    //providerurl <--> exporter
+    private final Map<String, ExporterChangeableWrapper<?>> bounds = new ConcurrentHashMap<String, ExporterChangeableWrapper<?>>();
     
     private final NotifyListener listener = new OverrideListener();
     
     private final static Logger logger = LoggerFactory.getLogger(RegistryProtocol.class);
     
-    public <T> Exporter<T> export(final Invoker<T> invoker) throws RpcException {
-        ExporterWrapper<T>  exporter = doLocolExport(invoker);
-        doRegister(exporter);
-        return exporter;
+    public <T> Exporter<T> export(final Invoker<T> originInvoker) throws RpcException {
+        //export invoker
+        final ExporterChangeableWrapper<T>  exporter = doLocolExport(originInvoker);
+        //registry provider
+        Registry registry = doRegister(originInvoker);
+        //设置exporter与registry的关系 (for unexport)
+        exporter.setRegistry(registry);
+        //保证每次export都返回一个新的exporter实例
+        return new Exporter<T>() {
+            public Invoker<T> getInvoker() {
+                return exporter.getInvoker();
+            }
+            public void unexport() {
+                exporter.unexport();
+            }
+        };
     }
     
     @SuppressWarnings("unchecked")
-    private <T> ExporterWrapper<T>  doLocolExport(final Invoker<T> originInvoker){
+    private <T> ExporterChangeableWrapper<T>  doLocolExport(final Invoker<T> originInvoker){
         String key = getCacheKey(originInvoker);
-        ExporterWrapper<T> exporter = (ExporterWrapper<T>) bounds.get(key);
+        ExporterChangeableWrapper<T> exporter = (ExporterChangeableWrapper<T>) bounds.get(key);
         if (exporter == null) {
             synchronized (bounds) {
-                exporter = (ExporterWrapper<T>) bounds.get(key);
+                exporter = (ExporterChangeableWrapper<T>) bounds.get(key);
                 if (exporter == null) {
-                    Invoker<?> dinvoker = new InvokerDelegete<T>(originInvoker, getProviderUrl(originInvoker));
-                    exporter = new ExporterWrapper<T>((Exporter<T>)protocol.export(dinvoker), originInvoker);
+                    final Invoker<?> invokerDelegete = new InvokerDelegete<T>(originInvoker, getProviderUrl(originInvoker));
+                    exporter = new ExporterChangeableWrapper<T>((Exporter<T>)protocol.export(invokerDelegete), originInvoker);
                     bounds.put(key, exporter);
                 }
             }
         }
-        return (ExporterWrapper<T>) exporter;
+        return (ExporterChangeableWrapper<T>) exporter;
     }
     
+    /**
+     * 对修改了url的invoker重新export
+     * @param originInvoker
+     * @param newInvokerUrl
+     */
     @SuppressWarnings("unchecked")
     private <T> void doChangeLocolExport(final Invoker<T> originInvoker, URL newInvokerUrl){
         String key = getCacheKey(originInvoker);
-        ExporterWrapper<T> exporter = (ExporterWrapper<T>) bounds.get(key);
+        final ExporterChangeableWrapper<T> exporter = (ExporterChangeableWrapper<T>) bounds.get(key);
         if (exporter == null){
             logger.warn(new IllegalStateException("error state, exporter should not be null"));
             return ;//不存在是异常场景 直接返回 
@@ -125,14 +142,25 @@ public class RegistryProtocol implements Protocol {
         }
     }
 
-    private void doRegister(final ExporterWrapper<?>  exporter){
-        final Registry registry = getRegistry(exporter);
-        final URL registedProviderUrl = getRegistedProviderUrl(exporter);
+    /**
+     * 注册 provider
+     * @param originInvoker
+     * @return
+     */
+    private Registry doRegister(final Invoker<?> originInvoker){
+        final Registry registry = getRegistry(originInvoker);
+        final URL registedProviderUrl = getRegistedProviderUrl(originInvoker);
         registry.register(registedProviderUrl, listener);
+        return registry;
     }
 
-    private Registry getRegistry(final ExporterWrapper<?>  exporter){
-        URL registryUrl = exporter.getOriginInvoker().getUrl();
+    /**
+     * 根据invoker的地址获取registry实例
+     * @param originInvoker
+     * @return
+     */
+    private Registry getRegistry(final Invoker<?> originInvoker){
+        URL registryUrl = originInvoker.getUrl();
         if (Constants.REGISTRY_PROTOCOL.equals(registryUrl.getProtocol())) {
             String protocol = registryUrl.getParameter(Constants.REGISTRY_KEY, Constants.DEFAULT_DIRECTORY);
             registryUrl = registryUrl.setProtocol(protocol).removeParameter(Constants.REGISTRY_KEY);
@@ -140,13 +168,23 @@ public class RegistryProtocol implements Protocol {
         return registryFactory.getRegistry(registryUrl);
     }
 
-    private URL getRegistedProviderUrl(final ExporterWrapper<?>  exporter){
-        URL providerUrl = getProviderUrl(exporter.getOriginInvoker());
+    /**
+     * 返回注册到注册中心的URL，对URL参数进行一次过滤
+     * @param originInvoker
+     * @return
+     */
+    private URL getRegistedProviderUrl(final Invoker<?> originInvoker){
+        URL providerUrl = getProviderUrl(originInvoker);
         //注册中心看到的地址
         final URL registedProviderUrl = providerUrl.removeParameters(getFilteredKeys(providerUrl));
         return registedProviderUrl;
     }
 
+    /**
+     * 通过invoker的url 获取 providerUrl的地址
+     * @param origininvoker
+     * @return
+     */
     private URL getProviderUrl(final Invoker<?> origininvoker){
         String export = origininvoker.getUrl().getParameterAndDecoded(RpcConstants.EXPORT_KEY);
         if (export == null || export.length() == 0) {
@@ -157,6 +195,11 @@ public class RegistryProtocol implements Protocol {
         return providerUrl;
     }
 
+    /**
+     * 获取invoker在bounds中缓存的key
+     * @param originInvoker
+     * @return
+     */
     private String getCacheKey(final Invoker<?> originInvoker){
         URL providerUrl = getProviderUrl(originInvoker);
         String key = providerUrl.removeParameters("dynamic", "enabled").toFullString();
@@ -229,8 +272,8 @@ public class RegistryProtocol implements Protocol {
          *  override://0.0.0.0/?timeout=10
          */
         public void notify(List<URL> urls) {
-            List<ExporterWrapper<?>> exporters = new ArrayList<ExporterWrapper<?>>(bounds.values());
-            for (ExporterWrapper<?> exporter : exporters){
+            List<ExporterChangeableWrapper<?>> exporters = new ArrayList<ExporterChangeableWrapper<?>>(bounds.values());
+            for (ExporterChangeableWrapper<?> exporter : exporters){
                 Invoker<?> invoker = exporter.getOriginInvoker();
                 final Invoker<?> originInvoker ;
                 if (invoker instanceof InvokerDelegete){
@@ -269,6 +312,10 @@ public class RegistryProtocol implements Protocol {
     
     public static class InvokerDelegete<T> extends InvokerWrapper<T>{
         private final Invoker<T> invoker;
+        /**
+         * @param invoker 
+         * @param url invoker.getUrl返回此值
+         */
         public InvokerDelegete(Invoker<T> invoker, URL url){
             super(invoker, url);
             this.invoker = invoker;
@@ -283,16 +330,18 @@ public class RegistryProtocol implements Protocol {
     }
     
     /**
-     * exporter代理 可替换exporter
+     * exporter代理,建立返回的exporter与protocol export出的exporter的对应关系，在override时可以进行关系修改.
+     * 
      * @author chao.liuc
      *
      * @param <T>
      */
-    private class ExporterWrapper<T> implements Exporter<T>{
+    private class ExporterChangeableWrapper<T> implements Exporter<T>{
         private Exporter<T> exporter;
         private final Invoker<T> originInvoker;
+        private Registry registry;
 
-        public ExporterWrapper(Exporter<T> exporter, Invoker<T> originInvoker){
+        public ExporterChangeableWrapper(Exporter<T> exporter, Invoker<T> originInvoker){
             this.exporter = exporter;
             this.originInvoker = originInvoker;
         }
@@ -309,12 +358,20 @@ public class RegistryProtocol implements Protocol {
             this.exporter = exporter;
         }
         
+        public void setRegistry(final Registry registry) {
+            if (this.registry != null){
+                logger.warn(new IllegalStateException("registry can not be changed!"));
+            } 
+            this.registry = registry;
+        }
+
         public void unexport() {
-            Registry registry = getRegistry(this);
             String key = getCacheKey(this.originInvoker);
             bounds.remove(key);
             try {
-                registry.unregister(getRegistedProviderUrl(this), listener);
+                if (registry != null && registry.isAvailable()) {
+                    registry.unregister(getRegistedProviderUrl(originInvoker), listener);
+                }
             } finally {
                 exporter.unexport();
             }
