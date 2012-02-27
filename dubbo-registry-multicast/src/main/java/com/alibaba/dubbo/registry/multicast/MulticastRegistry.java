@@ -22,24 +22,17 @@ import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
-import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.common.utils.UrlUtils;
@@ -66,33 +59,11 @@ public class MulticastRegistry extends FailbackRegistry {
 
     private static final String UNSUBSCRIBE = "unsubscribe";
     
-    private static final String HEARTBEAT = "heartbeat";
-    
-    private static final String HEARTBEAT_REQUEST = "req";
-    
-    private static final String HEARTBEAT_RESPONSE = "res";
-    
     private final InetAddress mutilcastAddress;
     
     private final MulticastSocket mutilcastSocket;
 
     private final ConcurrentMap<String, Set<String>> notified = new ConcurrentHashMap<String, Set<String>>();
-
-    private final ScheduledExecutorService schedule =
-            Executors.newScheduledThreadPool(1,
-                                             new NamedThreadFactory(
-                                                     "dubbo-multicast-registry-heartbeat",
-                                                     true));
-
-    private ScheduledFuture<?> heartbeatFuture;
-
-    private int                heartbeat;
-
-    private int                heartbeatTimeout;
-
-    // host -> last read time
-    ConcurrentMap<InetSocketAddress, Provider> heartbeatStat =
-            new ConcurrentHashMap<InetSocketAddress, Provider>();
 
     public MulticastRegistry(URL url) {
         super(url);
@@ -131,13 +102,6 @@ public class MulticastRegistry extends FailbackRegistry {
         } catch (IOException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
-
-        this.heartbeat = url.getParameter(Constants.HEARTBEAT_KEY, Constants.DEFAULT_HEARTBEAT);
-        this.heartbeatTimeout = url.getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartbeat * 5);
-        if (heartbeatTimeout < heartbeat * 2) {
-            throw new IllegalStateException("heartbeatTimeout < heartbeatInterval * 2");
-        }
-        startHeartbeatSchedule();
     }
     
     private static boolean isMulticastAddress(String ip) {
@@ -158,18 +122,9 @@ public class MulticastRegistry extends FailbackRegistry {
         }
         if (msg.startsWith(REGISTER)) {
             URL url = URL.valueOf(msg.substring(REGISTER.length()).trim());
-            if (!getRegistered().contains(url.toFullString())) {
-                Provider provider = heartbeatStat.get(remoteAddress);
-                if (provider == null) {
-                    provider = Provider.create(System.currentTimeMillis());
-                    heartbeatStat.put(remoteAddress, provider);
-                }
-                provider.urls.add(url);
-            }
             registered(url);
         } else if (msg.startsWith(UNREGISTER)) {
             URL url = URL.valueOf(msg.substring(UNREGISTER.length()).trim());
-            heartbeatStat.remove(remoteAddress);
             unregistered(url);
         } else if (msg.startsWith(SUBSCRIBE)) {
             URL url = URL.valueOf(msg.substring(SUBSCRIBE.length()).trim());
@@ -186,18 +141,8 @@ public class MulticastRegistry extends FailbackRegistry {
                     }
                 }
             }
-        } else if (msg.startsWith(HEARTBEAT)) {
-            String hbMsg = msg.substring(HEARTBEAT.length()).trim();
-            if (HEARTBEAT_REQUEST.equals(hbMsg)) {
-                unicast(HEARTBEAT + " " + HEARTBEAT_RESPONSE,
-                        remoteAddress.getAddress().getHostAddress());
-            } else if (HEARTBEAT_RESPONSE.equals(hbMsg)) {
-                Provider provider = heartbeatStat.get(remoteAddress);
-                if (provider != null) {
-                    provider.lastRead = System.currentTimeMillis();
-                }
-            }
-        }
+        }/* else if (msg.startsWith(UNSUBSCRIBE)) {
+        }*/
     }
     
     private void broadcast(String msg) {
@@ -269,8 +214,6 @@ public class MulticastRegistry extends FailbackRegistry {
         try {
             mutilcastSocket.leaveGroup(mutilcastAddress);
             mutilcastSocket.close();
-            stopHeartbeatSchedule();
-            schedule.shutdown();
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
         }
@@ -362,95 +305,6 @@ public class MulticastRegistry extends FailbackRegistry {
 
     public MulticastSocket getMutilcastSocket() {
         return mutilcastSocket;
-    }
-
-    private void checkProviderAlive() {
-        Map<InetSocketAddress, Provider> map = new HashMap<InetSocketAddress, Provider>(heartbeatStat);
-        long now = System.currentTimeMillis();
-        for (Map.Entry<InetSocketAddress, Provider> entry : map.entrySet()) {
-            if (entry.getValue().urls.size() <= 0) { continue; }
-            if (entry.getValue().lastRead + heartbeatTimeout > now) {
-                for ( URL url : entry.getValue().urls) {
-                    try {
-                        unregistered(url);
-                        if (logger.isInfoEnabled()) {
-                            logger.info(new StringBuilder(32)
-                                                .append("Unregister unavailable provider ")
-                                                .append(url).toString());
-                        }
-                    } catch (Throwable e) {
-                        if (logger.isErrorEnabled()) {
-                            logger.error(
-                                    new StringBuilder(32)
-                                            .append("Failed to unregister service ")
-                                            .append(url.toFullString()).toString(),
-                                    e);
-                        }
-                    }
-                }
-                heartbeatStat.remove(entry.getKey());
-            }
-        }
-    }
-
-    private void sendHeartbeat() {
-        Set<InetSocketAddress> set = new HashSet<InetSocketAddress>(heartbeatStat.keySet());
-        for (InetSocketAddress address : set) {
-            try {
-                unicast(HEARTBEAT + " " + HEARTBEAT_REQUEST, address.getAddress().getHostAddress());
-            } catch (Throwable e) {
-                if (logger.isErrorEnabled()) {
-                    logger.error(
-                            new StringBuilder(32)
-                                    .append("Failed to send heartbeat to host ")
-                                    .append(address.getAddress().getHostAddress()).toString(),
-                            e);
-                }
-            }
-        }
-    }
-
-    private void startHeartbeatSchedule() {
-        stopHeartbeatSchedule();
-
-        if (heartbeat > 0) {
-            heartbeatFuture = schedule.scheduleWithFixedDelay(new Runnable() {
-
-                public void run() {
-                    if (mutilcastSocket.isClosed()) {
-                        return;
-                    }
-                    sendHeartbeat();
-                    checkProviderAlive();
-                }
-            }, heartbeat, heartbeatTimeout, TimeUnit.MILLISECONDS);
-        }
-    }
-
-    private void stopHeartbeatSchedule() {
-        ScheduledFuture<?> future = heartbeatFuture;
-        try {
-            if (future != null && !future.isCancelled()) {
-                future.cancel(true);
-            }
-        } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
-        } finally {
-            heartbeatFuture = null;
-        }
-    }
-
-    private static class Provider {
-
-        static Provider create(long lastRead) {
-            Provider result = new Provider();
-            result.lastRead = lastRead;
-            return result;
-        }
-
-        List<URL>  urls = new ArrayList<URL>();
-
-        long lastRead;
     }
 
 }
