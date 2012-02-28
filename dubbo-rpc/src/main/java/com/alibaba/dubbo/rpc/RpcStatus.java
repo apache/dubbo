@@ -306,4 +306,16 @@ public class RpcStatus {
         return succeededMaxElapsed.get();
     }
 
+    /**
+     * Calculate average TPS (Transaction per second).
+     *
+     * @return tps
+     */
+    public long getAverageTps() {
+        if (getTotalElapsed() >= 1000L) {
+            return getTotal() / (getTotalElapsed() / 1000L);
+        }
+        return getTotal();
+    }
+
 }

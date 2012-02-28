@@ -302,6 +302,8 @@ public class Constants {
     public static final String       RETURN_PREFIX                      = "return ";
 
     public static final String       MERGER_KEY                          = "merger";
+    
+    public static final String       TPS_MAX_KEY                         = "tps.max";
 
     private Constants(){
     }
