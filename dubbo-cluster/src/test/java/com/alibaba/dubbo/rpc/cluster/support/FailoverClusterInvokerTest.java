@@ -16,6 +16,7 @@
 package com.alibaba.dubbo.rpc.cluster.support;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -94,6 +95,7 @@ public class FailoverClusterInvokerTest {
             fail();
         } catch (RpcException expected) {
             assertEquals(0,expected.getCode());
+            assertFalse(expected.getCause() instanceof RpcException);
         }
     }
     
@@ -169,7 +171,7 @@ public class FailoverClusterInvokerTest {
             invoker.invoke(invocation);
             fail();
         } catch (RpcException expected) {
-            expected.printStackTrace();
+            assertFalse(expected.getCause() instanceof RpcException);
         }
     }
     

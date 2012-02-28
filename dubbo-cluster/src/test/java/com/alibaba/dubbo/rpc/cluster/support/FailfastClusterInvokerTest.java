@@ -15,6 +15,7 @@
  */
 package com.alibaba.dubbo.rpc.cluster.support;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -128,6 +129,7 @@ public class FailfastClusterInvokerTest {
             invoker.invoke(invocation);
             fail();
         } catch (RpcException expected) {
+            assertFalse(expected.getCause() instanceof RpcException);
         }
     }
 

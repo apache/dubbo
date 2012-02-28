@@ -15,6 +15,8 @@
  */
 package com.alibaba.dubbo.rpc.cluster.support;
 
+import static org.junit.Assert.assertFalse;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -130,8 +132,9 @@ public class ForkingClusterInvokerTest {
         try {
             invoker.invoke(invocation);
             Assert.fail();
-        } catch (RpcException e) {
-            Assert.assertTrue(e.getMessage().contains("Failed to forking invoke provider"));
+        } catch (RpcException expected) {
+            Assert.assertTrue(expected.getMessage().contains("Failed to forking invoke provider"));
+            assertFalse(expected.getCause() instanceof RpcException);
         }
     }
 
