@@ -539,4 +539,16 @@ public class ConfigTest {
             System.setProperty("dubbo.protocol.port", "");
         }
     }
+    
+    @Test
+    public void testPath() throws Exception {
+        ServiceConfig<DemoService> service = new ServiceConfig<DemoService>();
+        service.setPath("a/b$c");
+        try {
+            service.setPath("a?b");
+            fail();
+        } catch (IllegalStateException e) {
+            assertTrue(e.getMessage().contains(""));
+        }
+    }
 }
