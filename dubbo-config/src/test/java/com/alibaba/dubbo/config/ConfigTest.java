@@ -426,6 +426,7 @@ public class ConfigTest {
     @Test
     public void testSystemPropertyOverrideXmlDefault() throws Exception {
         System.setProperty("dubbo.application.name", "sysover");
+        System.setProperty("dubbo.application.owner", "sysowner");
         System.setProperty("dubbo.registry.address", "N/A");
         System.setProperty("dubbo.protocol.name", "dubbo");
         System.setProperty("dubbo.protocol.port", "20819");
@@ -434,11 +435,13 @@ public class ConfigTest {
         try {
             ServiceConfig<DemoService> service = (ServiceConfig<DemoService>) providerContext.getBean("demoServiceConfig");
             assertEquals("sysover", service.getApplication().getName());
+            assertEquals("sysowner", service.getApplication().getOwner());
             assertEquals("N/A", service.getRegistry().getAddress());
             assertEquals("dubbo", service.getProtocol().getName());
             assertEquals(20819, service.getProtocol().getPort().intValue());
         } finally {
             System.setProperty("dubbo.application.name", "");
+            System.setProperty("dubbo.application.owner", "");
             System.setProperty("dubbo.registry.address", "");
             System.setProperty("dubbo.protocol.name", "");
             System.setProperty("dubbo.protocol.port", "");
@@ -451,6 +454,7 @@ public class ConfigTest {
     @Test
     public void testSystemPropertyOverrideXml() throws Exception {
         System.setProperty("dubbo.application.name", "sysover");
+        System.setProperty("dubbo.application.owner", "sysowner");
         System.setProperty("dubbo.registry.address", "N/A");
         System.setProperty("dubbo.protocol.name", "dubbo");
         System.setProperty("dubbo.protocol.port", "20819");
@@ -460,10 +464,12 @@ public class ConfigTest {
             ServiceConfig<DemoService> service = (ServiceConfig<DemoService>) providerContext.getBean("demoServiceConfig");
             URL url = service.toUrls().get(0);
             assertEquals("sysover", url.getParameter("application"));
+            assertEquals("sysowner", url.getParameter("owner"));
             assertEquals("dubbo", url.getProtocol());
             assertEquals(20819, url.getPort());
         } finally {
             System.setProperty("dubbo.application.name", "");
+            System.setProperty("dubbo.application.owner", "");
             System.setProperty("dubbo.registry.address", "");
             System.setProperty("dubbo.protocol.name", "");
             System.setProperty("dubbo.protocol.port", "");
@@ -475,6 +481,7 @@ public class ConfigTest {
     @Test
     public void testSystemPropertyOverrideApiDefault() throws Exception {
         System.setProperty("dubbo.application.name", "sysover");
+        System.setProperty("dubbo.application.owner", "sysowner");
         System.setProperty("dubbo.registry.address", "N/A");
         System.setProperty("dubbo.protocol.name", "dubbo");
         System.setProperty("dubbo.protocol.port", "20834");
@@ -485,6 +492,7 @@ public class ConfigTest {
             serviceConfig.export();
             try {
                 assertEquals("sysover", serviceConfig.getApplication().getName());
+                assertEquals("sysowner", serviceConfig.getApplication().getOwner());
                 assertEquals("N/A", serviceConfig.getRegistry().getAddress());
                 assertEquals("dubbo", serviceConfig.getProtocol().getName());
                 assertEquals(20834, serviceConfig.getProtocol().getPort().intValue());
@@ -493,6 +501,7 @@ public class ConfigTest {
             }
         } finally {
             System.setProperty("dubbo.application.name", "");
+            System.setProperty("dubbo.application.owner", "");
             System.setProperty("dubbo.registry.address", "");
             System.setProperty("dubbo.protocol.name", "");
             System.setProperty("dubbo.protocol.port", "");
@@ -502,6 +511,7 @@ public class ConfigTest {
     @Test
     public void testSystemPropertyOverrideApi() throws Exception {
         System.setProperty("dubbo.application.name", "sysover");
+        System.setProperty("dubbo.application.owner", "sysowner");
         System.setProperty("dubbo.registry.address", "N/A");
         System.setProperty("dubbo.protocol.name", "dubbo");
         System.setProperty("dubbo.protocol.port", "20834");
@@ -527,6 +537,7 @@ public class ConfigTest {
             try {
                 URL url = service.toUrls().get(0);
                 assertEquals("sysover", url.getParameter("application"));
+                assertEquals("sysowner", url.getParameter("owner"));
                 assertEquals("dubbo", url.getProtocol());
                 assertEquals(20834, url.getPort());
             } finally {
@@ -534,6 +545,7 @@ public class ConfigTest {
             }
         } finally {
             System.setProperty("dubbo.application.name", "");
+            System.setProperty("dubbo.application.owner", "");
             System.setProperty("dubbo.registry.address", "");
             System.setProperty("dubbo.protocol.name", "");
             System.setProperty("dubbo.protocol.port", "");
