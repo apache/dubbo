@@ -115,6 +115,11 @@ public class ProtocolConfig extends AbstractConfig {
     public ProtocolConfig(String name) {
         setName(name);
     }
+
+    public ProtocolConfig(String name, int port) {
+        setName(name);
+        setPort(port);
+    }
     
     @Parameter(excluded = true)
     public String getName() {

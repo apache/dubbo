@@ -22,7 +22,11 @@ package com.alibaba.dubbo.config.api;
  * @author william.liangf
  */
 public interface DemoService {
+    
     String sayName(String name);
     
     Box getBox();
+    
+    void throwDemoException() throws DemoException;
+    
 }

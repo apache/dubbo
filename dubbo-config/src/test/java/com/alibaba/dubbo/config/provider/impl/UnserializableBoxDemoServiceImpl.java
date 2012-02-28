@@ -16,6 +16,7 @@
 package com.alibaba.dubbo.config.provider.impl;
 
 import com.alibaba.dubbo.config.api.Box;
+import com.alibaba.dubbo.config.api.DemoException;
 import com.alibaba.dubbo.config.api.DemoService;
 
 /**
@@ -31,6 +32,10 @@ public class UnserializableBoxDemoServiceImpl implements DemoService {
     
     public Box getBox() {
         return new UnserializableBox();
+    }
+
+    public void throwDemoException() throws DemoException {
+        throw new DemoException("Unserializable");
     }
     
 }

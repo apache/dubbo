@@ -15,7 +15,12 @@
  */
 package com.alibaba.dubbo.rpc.filter;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+
 import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.PojoUtils;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
 import com.alibaba.dubbo.rpc.Filter;
@@ -25,6 +30,7 @@ import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
+import com.alibaba.dubbo.rpc.service.GenericException;
 
 /**
  * GenericImplInvokerFilter
@@ -32,6 +38,8 @@ import com.alibaba.dubbo.rpc.RpcResult;
  * @author william.liangf
  */
 public class GenericImplFilter implements Filter {
+    
+    private static final Logger logger = LoggerFactory.getLogger(GenericImplFilter.class);
 
     private static final Class<?>[] GENERIC_PARAMETER_TYPES = new Class<?>[] {String.class, String[].class, Object[].class};
 
@@ -61,6 +69,43 @@ public class GenericImplFilter implements Filter {
                     return new RpcResult(PojoUtils.realize(value, invoker.getInterface().getMethod(methodName, parameterTypes).getReturnType()));
                 } catch (NoSuchMethodException e) {
                     throw new RpcException(e.getMessage(), e);
+                }
+            } else if (result.getException() instanceof GenericException) {
+                GenericException exception = (GenericException) result.getException();
+                try {
+                    String className = exception.getExceptionClass();
+                    Class<?> clazz = ReflectUtils.forName(className);
+                    Throwable targetException = null;
+                    Throwable lastException = null;
+                    try {
+                        targetException = (Throwable) clazz.newInstance();
+                    } catch (Throwable e) {
+                        lastException = e;
+                        for (Constructor<?> constructor : clazz.getConstructors()) {
+                            try {
+                                targetException = (Throwable) constructor.newInstance(new Object[constructor.getParameterTypes().length]);
+                                break;
+                            } catch (Throwable e1) {
+                                lastException = e1;
+                            }
+                        }
+                    }
+                    if (targetException != null) {
+                        try {
+                            Field field = Throwable.class.getDeclaredField("detailMessage");
+                            if (! field.isAccessible()) {
+                                field.setAccessible(true);
+                            }
+                            field.set(targetException, exception.getExceptionMessage());
+                        } catch (Throwable e) {
+                            logger.warn(e.getMessage(), e);
+                        }
+                        result = new RpcResult(targetException);
+                    } else if (lastException != null) {
+                        throw lastException;
+                    }
+                } catch (Throwable e) {
+                    throw new RpcException("Can not deserialize exception " + exception.getExceptionClass() + ", message: " + exception.getExceptionMessage(), e);
                 }
             }
             return result;

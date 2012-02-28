@@ -16,6 +16,7 @@
 package com.alibaba.dubbo.config.provider.impl;
 
 import com.alibaba.dubbo.config.api.Box;
+import com.alibaba.dubbo.config.api.DemoException;
 import com.alibaba.dubbo.config.api.DemoService;
 
 /**
@@ -35,6 +36,10 @@ public class DemoServiceImpl_LongWaiting implements DemoService {
     
     public Box getBox() {
         return null;
+    }
+
+    public void throwDemoException() throws DemoException {
+        throw new DemoException("LongWaiting");
     }
     
 }

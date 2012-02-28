@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
+ * Copyright 1999-2012 Alibaba Group.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,29 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.config.provider.impl;
-
-import com.alibaba.dubbo.config.api.Box;
-import com.alibaba.dubbo.config.api.DemoException;
-import com.alibaba.dubbo.config.api.DemoService;
+package com.alibaba.dubbo.config.api;
 
 /**
- * DemoServiceImpl
+ * DemoException
  * 
  * @author william.liangf
  */
-public class DemoServiceImpl implements DemoService {
-    
-    public String sayName(String name) {
-        return "say:" + name;
-    }
-    
-    public Box getBox() {
-        return null;
+public class DemoException extends Exception {
+
+    private static final long serialVersionUID = -8213943026163641747L;
+
+    public DemoException() {
+        super();
     }
 
-    public void throwDemoException() throws DemoException {
-        throw new DemoException("DemoServiceImpl");
+    public DemoException(String message, Throwable cause) {
+        super(message, cause);
     }
-    
+
+    public DemoException(String message) {
+        super(message);
+    }
+
+    public DemoException(Throwable cause) {
+        super(cause);
+    }
+
 }
