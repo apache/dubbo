@@ -22,7 +22,7 @@ import com.alibaba.dubbo.demo.DemoService;
 public class ExitConsumer {
 	
 	public static void main(String[] args) {
-	    ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[] {"META-INF/spring/dubbo-common.xml", "META-INF/spring/dubbo-reference.xml"});
+	    ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[] {"META-INF/spring/dubbo-demo-consumer.xml"});
 	    context.start();
 	    DemoService demoService = (DemoService)context.getBean("demoService");
         String hello = demoService.sayHello("world");

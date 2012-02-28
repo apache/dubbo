@@ -20,7 +20,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class ExitProvider {
 	
 	public static void main(String[] args) throws Exception {
-	    ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[] {"META-INF/spring/dubbo-common.xml", "META-INF/spring/dubbo-service.xml", "META-INF/spring/demo-impl.xml"});
+	    ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[] {"META-INF/spring/dubbo-demo-provider.xml"});
 	    context.start();
 	    System.out.print("Press any key to exit: ");
         System.in.read();

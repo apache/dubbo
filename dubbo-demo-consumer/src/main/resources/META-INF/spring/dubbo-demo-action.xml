@@ -20,6 +20,8 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
 	http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
 
-	<dubbo:reference id="demoService" interface="com.alibaba.dubbo.demo.DemoService" />
+	<bean class="com.alibaba.dubbo.demo.consumer.DemoAction" init-method="start">
+		<property name="demoService" ref="demoService" />
+	</bean>
 
 </beans>
