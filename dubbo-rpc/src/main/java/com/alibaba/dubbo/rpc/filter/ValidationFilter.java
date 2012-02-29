@@ -19,7 +19,10 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javassist.ClassPool;
@@ -98,11 +101,7 @@ public class ValidationFilter implements Filter {
                 }
             }
             for (Object arg : invocation.getArguments()) {
-                if (methodClass != null) {
-                    violations.addAll(validator.validate(arg, Default.class, clazz, methodClass));
-                } else {
-                    violations.addAll(validator.validate(arg, Default.class, clazz));
-                }
+                validate(violations, arg, clazz, methodClass);
             }
             if (violations.size() > 0) {
                 ConstraintViolationException e = new ConstraintViolationException("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + violations, violations);
@@ -114,6 +113,43 @@ public class ValidationFilter implements Filter {
             logger.error(t.getMessage(), t);
         }
         return invoker.invoke(invocation);
+    }
+    
+    private void validate(Set<ConstraintViolation<?>> violations, Object arg, Class<?> clazz, Class<?> methodClass) {
+        if (arg != null && ! isPrimitives(arg.getClass())) {
+            if (Object[].class.isInstance(arg)) {
+                for (Object item : (Object[]) arg) {
+                    validate(violations, item, clazz, methodClass);
+                }
+            } else if (Collection.class.isInstance(arg)) {
+                for (Object item : (Collection<?>) arg) {
+                    validate(violations, item, clazz, methodClass);
+                }
+            } else if (Map.class.isInstance(arg)) {
+                for (Map.Entry<?, ?> entry : ((Map<?, ?>) arg).entrySet()) {
+                    validate(violations, entry.getKey(), clazz, methodClass);
+                    validate(violations, entry.getValue(), clazz, methodClass);
+                }
+            } else {
+                if (methodClass != null) {
+                    violations.addAll(validator.validate(arg, Default.class, clazz, methodClass));
+                } else {
+                    violations.addAll(validator.validate(arg, Default.class, clazz));
+                }
+            }
+        }
+    }
+    
+    private static boolean isPrimitives(Class<?> cls) {
+        if (cls.isArray()) {
+            return isPrimitive(cls.getComponentType());
+        }
+        return isPrimitive(cls);
+    }
+    
+    private static boolean isPrimitive(Class<?> cls) {
+        return cls.isPrimitive() || cls == String.class || cls == Boolean.class || cls == Character.class 
+                || Number.class.isAssignableFrom(cls) || Date.class.isAssignableFrom(cls);
     }
     
     private static Object getMethodParameterBean(Class<?> clazz, Method method, Object[] args) {
