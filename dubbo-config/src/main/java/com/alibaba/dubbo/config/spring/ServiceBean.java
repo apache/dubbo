@@ -34,6 +34,7 @@ import com.alibaba.dubbo.config.ProtocolConfig;
 import com.alibaba.dubbo.config.ProviderConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.config.ServiceConfig;
+import com.alibaba.dubbo.config.spring.extension.SpringObjectFactory;
 
 /**
  * ServiceFactoryBean
@@ -58,6 +59,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
 
 	public void setApplicationContext(ApplicationContext applicationContext) {
 		this.applicationContext = applicationContext;
+		SpringObjectFactory.addApplicationContext(applicationContext);
 		if (applicationContext != null) {
 		    SPRING_CONTEXT = applicationContext;
 		    try {

@@ -30,6 +30,7 @@ import com.alibaba.dubbo.config.MonitorConfig;
 import com.alibaba.dubbo.config.Parameter;
 import com.alibaba.dubbo.config.ReferenceConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
+import com.alibaba.dubbo.config.spring.extension.SpringObjectFactory;
 
 /**
  * ReferenceFactoryBean
@@ -44,6 +45,7 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
 
 	public void setApplicationContext(ApplicationContext applicationContext) {
 		this.applicationContext = applicationContext;
+		SpringObjectFactory.addApplicationContext(applicationContext);
 	}
     
     public Object getObject() throws Exception {

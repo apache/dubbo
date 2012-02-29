@@ -31,6 +31,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
 import com.alibaba.dubbo.common.bytecode.ClassGenerator;
+import com.alibaba.dubbo.common.extension.ObjectFactory;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
@@ -80,6 +81,8 @@ public class ExtensionLoader<T> {
     private String cachedDefaultName;
     
     private Map<String, IllegalStateException> exceptions = new ConcurrentHashMap<String, IllegalStateException>();
+
+    private final ObjectFactory objectFactory;
     
     private static <T> boolean withExtensionAnnotation(Class<T> type) {
         return type.isAnnotationPresent(Extension.class);
@@ -104,6 +107,7 @@ public class ExtensionLoader<T> {
 
     private ExtensionLoader(Class<?> type) {
         this.type = type;
+        objectFactory = (type == ObjectFactory.class ? null : ExtensionLoader.getExtensionLoader(ObjectFactory.class).getAdaptiveExtension());
     }
     
     public String getExtensionName(T extensionInstance) {
@@ -258,6 +262,17 @@ public class ExtensionLoader<T> {
                         } catch (Exception e) {
                             logger.error("fail to inject via method " + method.getName()
                             		+ " of interface " + type.getName() + ": " + e.getMessage(), e);
+                        }
+                    } else if (objectFactory != null) {
+                        try {
+                            String property = method.getName().length() > 3 ? method.getName().substring(3, 4).toLowerCase() + method.getName().substring(4) : "";
+                            Object object = objectFactory.getObject(pt, property);
+                            if (object != null) {
+                                method.invoke(instance, object);
+                            }
+                        } catch (Exception e) {
+                            logger.error("fail to inject via method " + method.getName()
+                                    + " of interface " + type.getName() + ": " + e.getMessage(), e);
                         }
                     }
                 }

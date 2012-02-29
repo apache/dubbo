@@ -15,12 +15,14 @@
  */
 package com.alibaba.dubbo.config;
 
+import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.*;
-import static org.junit.matchers.JUnitMatchers.*;
-import static org.hamcrest.core.IsNot.*;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.matchers.JUnitMatchers.containsString;
 
 import java.util.List;
 
@@ -28,16 +30,19 @@ import org.junit.Test;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.config.api.DemoService;
 import com.alibaba.dubbo.config.consumer.DemoActionByAnnotation;
 import com.alibaba.dubbo.config.consumer.DemoActionBySetter;
 import com.alibaba.dubbo.config.provider.impl.DemoServiceImpl;
+import com.alibaba.dubbo.config.support.MockFilter;
 import com.alibaba.dubbo.registry.RegistryService;
 import com.alibaba.dubbo.registry.support.SimpleRegistryExporter;
 import com.alibaba.dubbo.registry.support.SimpleRegistryService;
 import com.alibaba.dubbo.rpc.Exporter;
+import com.alibaba.dubbo.rpc.Filter;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 
@@ -47,7 +52,20 @@ import com.alibaba.dubbo.rpc.RpcException;
  * @author william.liangf
  */
 public class ConfigTest {
-    
+
+    @Test
+    public void testSpringExtensionInject() {
+        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/spring-extension-inject.xml");
+        ctx.start();
+        try {
+            MockFilter filter = (MockFilter) ExtensionLoader.getExtensionLoader(Filter.class).getExtension("mymock");
+            assertNotNull(filter.getMockDao());
+        } finally {
+            ctx.stop();
+            ctx.close();
+        }
+    }
+
     private DemoService refer(String url) {
         ReferenceConfig<DemoService> reference = new ReferenceConfig<DemoService>();
         reference.setApplication(new ApplicationConfig("consumer"));
@@ -75,22 +93,28 @@ public class ConfigTest {
     public void testMultiProtocol() {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/multi-protocol.xml");
         ctx.start();
-        DemoService demoService = refer("dubbo://127.0.0.1:20881");
-        String hello = demoService.sayName("hello");
-        assertEquals("say:hello", hello);
-        ctx.stop();
-        ctx.close();
+        try {
+            DemoService demoService = refer("dubbo://127.0.0.1:20881");
+            String hello = demoService.sayName("hello");
+            assertEquals("say:hello", hello);
+        } finally {
+            ctx.stop();
+            ctx.close();
+        }
     }
 
     @Test
     public void testMultiProtocolDefault() {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/multi-protocol-default.xml");
         ctx.start();
-        DemoService demoService = refer("rmi://127.0.0.1:10991");
-        String hello = demoService.sayName("hello");
-        assertEquals("say:hello", hello);
-        ctx.stop();
-        ctx.close();
+        try {
+            DemoService demoService = refer("rmi://127.0.0.1:10991");
+            String hello = demoService.sayName("hello");
+            assertEquals("say:hello", hello);
+        } finally {
+            ctx.stop();
+            ctx.close();
+        }
     }
     
     @Test
@@ -563,4 +587,5 @@ public class ConfigTest {
             assertTrue(e.getMessage().contains(""));
         }
     }
+    
 }

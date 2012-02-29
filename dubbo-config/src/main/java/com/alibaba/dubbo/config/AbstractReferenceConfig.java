@@ -153,11 +153,13 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
         List<URL> registryList = new ArrayList<URL>();
         if (registries != null && registries.size() > 0) {
             for (RegistryConfig config : registries) {
-                String address = System.getProperty("dubbo.registry.address", config.getAddress());
-                if (! RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) {
-                    if (address == null || address.length() == 0) {
-                        throw new IllegalStateException("registry address == null");
-                    }
+                String address = config.getAddress();
+                if (address == null || address.length() == 0) {
+                    throw new IllegalStateException("registry address == null");
+                }
+                address = System.getProperty("dubbo.registry.address", address);
+                if (address != null && address.length() > 0 
+                        && ! RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) {
                     Map<String, String> map = new HashMap<String, String>();
                     appendParameters(map, application);
                     appendParameters(map, config);
