@@ -53,6 +53,7 @@
 		<fastjson_version>1.1.8</fastjson_version>
 		<bsf_version>3.1</bsf_version>
 		<zookeeper_version>3.3.3</zookeeper_version>
+		<jedis_version>2.0.0</jedis_version>
 		<jfreechart_version>1.0.13</jfreechart_version>
 		<hessian_version>4.0.7</hessian_version>
 		<servlet_version>2.5</servlet_version>
@@ -91,6 +92,7 @@
 		<module>dubbo-registry-default</module>
 		<module>dubbo-registry-multicast</module>
 		<module>dubbo-registry-zookeeper</module>
+		<module>dubbo-registry-redis</module>
 		<module>dubbo-monitor</module>
 		<module>dubbo-monitor-default</module>
 		<module>dubbo-config</module>
@@ -160,6 +162,11 @@
 				<groupId>org.apache.zookeeper</groupId>
 				<artifactId>zookeeper</artifactId>
 				<version>${zookeeper_version}</version>
+			</dependency>
+			<dependency>
+				<groupId>redis.clients</groupId>
+				<artifactId>jedis</artifactId>
+				<version>${jedis_version}</version>
 			</dependency>
 			<dependency>
 				<groupId>jfree</groupId>
