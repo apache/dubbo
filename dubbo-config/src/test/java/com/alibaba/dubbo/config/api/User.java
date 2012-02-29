@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
+ * Copyright 1999-2012 Alibaba Group.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,22 +15,28 @@
  */
 package com.alibaba.dubbo.config.api;
 
-import java.util.List;
-
-
 /**
- * DemoService
+ * User
  * 
  * @author william.liangf
  */
-public interface DemoService {
+public class User {
     
-    String sayName(String name);
-    
-    Box getBox();
-    
-    void throwDemoException() throws DemoException;
-    
-    List<User> getUsers(List<User> users);
-    
+    private String name;
+
+    public User() {
+    }
+
+    public User(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
 }

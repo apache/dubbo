@@ -17,6 +17,7 @@ package com.alibaba.dubbo.rpc.filter;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.logger.Logger;
@@ -66,7 +67,8 @@ public class GenericImplFilter implements Filter {
             if (! result.hasException()) {
                 Object value = result.getResult();
                 try {
-                    return new RpcResult(PojoUtils.realize(value, invoker.getInterface().getMethod(methodName, parameterTypes).getReturnType()));
+                    Method method = invoker.getInterface().getMethod(methodName, parameterTypes);
+                    return new RpcResult(PojoUtils.realize(value, method.getReturnType(), method.getGenericReturnType()));
                 } catch (NoSuchMethodException e) {
                     throw new RpcException(e.getMessage(), e);
                 }

@@ -15,9 +15,12 @@
  */
 package com.alibaba.dubbo.config.provider.impl;
 
+import java.util.List;
+
 import com.alibaba.dubbo.config.api.Box;
 import com.alibaba.dubbo.config.api.DemoException;
 import com.alibaba.dubbo.config.api.DemoService;
+import com.alibaba.dubbo.config.api.User;
 
 /**
  * DemoServiceImpl
@@ -36,6 +39,10 @@ public class DemoServiceImpl implements DemoService {
 
     public void throwDemoException() throws DemoException {
         throw new DemoException("DemoServiceImpl");
+    }
+
+    public List<User> getUsers(List<User> users) {
+        return users;
     }
     
 }

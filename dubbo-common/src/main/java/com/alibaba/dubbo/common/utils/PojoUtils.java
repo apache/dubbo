@@ -68,6 +68,17 @@ public class PojoUtils {
         return dests;
     }
 
+    public static Object[] realize(Object[] objs, Class<?>[] types, Type[] gtypes) {
+        if (objs.length != types.length
+                || objs.length != gtypes.length)
+            throw new IllegalArgumentException("args.length != types.length");
+        Object[] dests = new Object[objs.length];
+        for (int i = 0; i < objs.length; i ++) {
+            dests[i] = realize(objs[i], types[i], gtypes[i]);
+        }
+        return dests;
+    }
+
     public static Object generalize(Object pojo) {
         return generalize(pojo, new HashMap<Integer, Object>());
     }
