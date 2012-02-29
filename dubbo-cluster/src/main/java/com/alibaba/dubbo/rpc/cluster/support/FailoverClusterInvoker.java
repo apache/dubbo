@@ -95,7 +95,7 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 + ") from the registry " + directory.getUrl().getAddress()
                 + " on the consumer " + NetUtils.getLocalHost() + " using the dubbo version "
                 + Version.getVersion() + ". Last error is: "
-                + (le != null ? le.getMessage() : ""), le.getCause() != null ? le.getCause() : le);
+                + (le != null ? le.getMessage() : ""), le != null && le.getCause() != null ? le.getCause() : le);
     }
 
 }
