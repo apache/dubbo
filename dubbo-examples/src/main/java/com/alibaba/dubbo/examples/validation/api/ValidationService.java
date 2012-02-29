@@ -15,6 +15,8 @@
  */
 package com.alibaba.dubbo.examples.validation.api;
 
+import javax.validation.constraints.Min;
+
 
 /**
  * ValidationService
@@ -28,5 +30,7 @@ public interface ValidationService { // 缺省可按服务接口区分验证场�
 
     @interface Update{} // 与方法同名接口，首字母大写，用于区分验证场景，如：@NotNull(groups = ValidationService.Update.class)，可选
     void update(ValidationParameter parameter);
+    
+    void delete(@Min(1) long id);
 
 }

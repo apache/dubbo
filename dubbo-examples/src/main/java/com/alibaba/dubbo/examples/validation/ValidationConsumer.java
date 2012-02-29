@@ -41,7 +41,7 @@ public class ValidationConsumer {
         
         ValidationService validationService = (ValidationService)context.getBean("validationService");
         
-        // OK
+        // Save OK
         ValidationParameter parameter = new ValidationParameter();
         parameter.setName("liangfei");
         parameter.setEmail("liangfei@liang.fei");
@@ -49,13 +49,27 @@ public class ValidationConsumer {
         parameter.setLoginDate(new Date(System.currentTimeMillis() - 1000000));
         parameter.setExpiryDate(new Date(System.currentTimeMillis() + 1000000));
         validationService.save(parameter);
-        System.out.println("Validation OK");
+        System.out.println("Validation Save OK");
         
-        // Error
+        // Save Error
         try {
             parameter = new ValidationParameter();
             validationService.save(parameter);
-            System.out.println("Validation ERROR");
+            System.out.println("Validation Save ERROR");
+        } catch (RpcException e) {
+            ConstraintViolationException ve = (ConstraintViolationException)e.getCause();
+            Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
+            System.out.println(violations);
+        }
+        
+        // Delete OK
+        validationService.delete(2);
+        System.out.println("Validation Delete OK");
+        
+        // Delete Error
+        try {
+            validationService.delete(0);
+            System.out.println("Validation Delete ERROR");
         } catch (RpcException e) {
             ConstraintViolationException ve = (ConstraintViolationException)e.getCause();
             Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();

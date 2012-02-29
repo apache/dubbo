@@ -34,5 +34,15 @@
 			<artifactId>dubbo-common</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
+				<dependency>
+			<groupId>javax.validation</groupId>
+			<artifactId>validation-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-validator</artifactId>
+			<scope>provided</scope>
+		</dependency>
 	</dependencies>
 </project>
