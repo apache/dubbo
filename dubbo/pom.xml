@@ -146,7 +146,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<dependency>
+		<!--<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>dubbo-registry-redis</artifactId>
 			<version>${project.parent.version}</version>
@@ -156,7 +156,7 @@
 					<artifactId>jedis</artifactId>
 				</exclusion>
 			</exclusions>
-		</dependency>
+		</dependency>-->
 		<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>dubbo-monitor-default</artifactId>
@@ -229,7 +229,7 @@
 									<include>com.alibaba:dubbo-registry-default</include>
 									<include>com.alibaba:dubbo-registry-multicast</include>
 									<include>com.alibaba:dubbo-registry-zookeeper</include>
-									<include>com.alibaba:dubbo-registry-redis</include>
+									<!--<include>com.alibaba:dubbo-registry-redis</include>-->
 									<include>com.alibaba:dubbo-monitor</include>
 									<include>com.alibaba:dubbo-monitor-default</include>
 									<include>com.alibaba:dubbo-validation</include>
