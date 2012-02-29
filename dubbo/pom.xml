@@ -38,14 +38,6 @@
 					<groupId>org.mortbay.jetty</groupId>
 					<artifactId>jetty</artifactId>
 				</exclusion>
-				<exclusion>
-					<groupId>javax.validation</groupId>
-					<artifactId>validation-api</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.hibernate</groupId>
-					<artifactId>hibernate-validator</artifactId>
-				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
