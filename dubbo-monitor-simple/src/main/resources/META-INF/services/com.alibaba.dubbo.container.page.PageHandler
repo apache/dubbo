@@ -1,0 +1,8 @@
+com.alibaba.dubbo.monitor.simple.pages.ServicesPageHandler
+com.alibaba.dubbo.monitor.simple.pages.ProvidersPageHandler
+com.alibaba.dubbo.monitor.simple.pages.ConsumersPageHandler
+com.alibaba.dubbo.monitor.simple.pages.StatisticsPageHandler
+com.alibaba.dubbo.monitor.simple.pages.ChartsPageHandler
+com.alibaba.dubbo.monitor.simple.pages.ApplicationsPageHandler
+com.alibaba.dubbo.monitor.simple.pages.DependenciesPageHandler
+com.alibaba.dubbo.monitor.simple.pages.HostsPageHandler
