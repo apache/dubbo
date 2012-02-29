@@ -250,20 +250,12 @@ public class ExtensionLoader<T> {
     
     private T injectExtension(T instance) {
         try {
-            for (Method method : instance.getClass().getMethods()) {
-                if (method.getName().startsWith("set")
-                        && method.getParameterTypes().length == 1
-                        && Modifier.isPublic(method.getModifiers())) {
-                    Class<?> pt = method.getParameterTypes()[0];
-                    if (pt.isInterface() && withExtensionAnnotation(pt) && getExtensionLoader(pt).getSupportedExtensions().size() > 0) {
-                        try {
-                            Object adaptive = getExtensionLoader(pt).getAdaptiveExtension();
-                            method.invoke(instance, adaptive);
-                        } catch (Exception e) {
-                            logger.error("fail to inject via method " + method.getName()
-                            		+ " of interface " + type.getName() + ": " + e.getMessage(), e);
-                        }
-                    } else if (objectFactory != null) {
+            if (objectFactory != null) {
+                for (Method method : instance.getClass().getMethods()) {
+                    if (method.getName().startsWith("set")
+                            && method.getParameterTypes().length == 1
+                            && Modifier.isPublic(method.getModifiers())) {
+                        Class<?> pt = method.getParameterTypes()[0];
                         try {
                             String property = method.getName().length() > 3 ? method.getName().substring(3, 4).toLowerCase() + method.getName().substring(4) : "";
                             Object object = objectFactory.getObject(pt, property);

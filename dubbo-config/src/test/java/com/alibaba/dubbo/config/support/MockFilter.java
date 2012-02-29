@@ -18,8 +18,10 @@ package com.alibaba.dubbo.config.support;
 import com.alibaba.dubbo.rpc.Filter;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
+import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.cluster.LoadBalance;
 
 /**
  * MockFilter
@@ -27,6 +29,10 @@ import com.alibaba.dubbo.rpc.RpcException;
  * @author william.liangf
  */
 public class MockFilter implements Filter {
+    
+    private LoadBalance loadBalance;
+
+    private Protocol protocol;
     
     private MockDao mockDao;
 
@@ -36,6 +42,22 @@ public class MockFilter implements Filter {
 
     public void setMockDao(MockDao mockDao) {
         this.mockDao = mockDao;
+    }
+
+    public LoadBalance getLoadBalance() {
+        return loadBalance;
+    }
+
+    public void setLoadBalance(LoadBalance loadBalance) {
+        this.loadBalance = loadBalance;
+    }
+
+    public Protocol getProtocol() {
+        return protocol;
+    }
+
+    public void setProtocol(Protocol protocol) {
+        this.protocol = protocol;
     }
 
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {

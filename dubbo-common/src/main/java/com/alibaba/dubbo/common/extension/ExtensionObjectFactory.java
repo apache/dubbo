@@ -16,22 +16,23 @@
 package com.alibaba.dubbo.common.extension;
 
 import com.alibaba.dubbo.common.Extension;
+import com.alibaba.dubbo.common.ExtensionLoader;
 
 /**
- * ObjectFactory
+ * ExtensionObjectFactory
  * 
  * @author william.liangf
  */
-@Extension
-public interface ObjectFactory {
+public class ExtensionObjectFactory implements ObjectFactory {
 
-    /**
-     * Get object.
-     * 
-     * @param type object type.
-     * @param name object name.
-     * @return object instance.
-     */
-    <T> T getObject(Class<T> type, String name);
+    public <T> T getObject(Class<T> type, String name) {
+        if (type.isInterface() && type.isAnnotationPresent(Extension.class)) {
+            ExtensionLoader<T> loader = ExtensionLoader.getExtensionLoader(type);
+            if (loader.getSupportedExtensions().size() > 0) {
+                return loader.getAdaptiveExtension();
+            }
+        }
+        return null;
+    }
 
 }

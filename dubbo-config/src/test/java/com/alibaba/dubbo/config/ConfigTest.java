@@ -60,6 +60,8 @@ public class ConfigTest {
         try {
             MockFilter filter = (MockFilter) ExtensionLoader.getExtensionLoader(Filter.class).getExtension("mymock");
             assertNotNull(filter.getMockDao());
+            assertNotNull(filter.getProtocol());
+            assertNotNull(filter.getLoadBalance());
         } finally {
             ctx.stop();
             ctx.close();
