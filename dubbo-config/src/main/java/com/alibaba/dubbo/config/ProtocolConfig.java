@@ -356,8 +356,12 @@ public class ProtocolConfig extends AbstractConfig {
 
     public static void destroyAll() {
         AbstractRegistryFactory.destroyAll();
-        for (String protocol : ExtensionLoader.getExtensionLoader(Protocol.class).getSupportedExtensions()) {
-            ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(protocol).destroy();
+        for (String protocol : ExtensionLoader.getExtensionLoader(Protocol.class).getLoadedExtensions()) {
+            try {
+                ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(protocol).destroy();
+            } catch (Throwable t) {
+                logger.warn(t.getMessage(), t);
+            }
         }
     }
 

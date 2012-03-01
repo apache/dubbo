@@ -167,7 +167,11 @@ public class ExtensionLoader<T> {
         Map<String, Class<?>> clazzes = getExtensionClasses();
         return Collections.unmodifiableSet(new TreeSet<String>(clazzes.keySet()));
     }
-	
+
+    public Set<String> getLoadedExtensions() {
+        return Collections.unmodifiableSet(new TreeSet<String>(cachedInstances.keySet()));
+    }
+    
 	/**
 	 * 返回缺省的扩展点名，如果没有设置缺省则返回<code>null</code>。 
 	 */
