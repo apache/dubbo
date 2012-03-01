@@ -157,7 +157,10 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
                 if (address == null || address.length() == 0) {
                     throw new IllegalStateException("registry address == null");
                 }
-                address = System.getProperty("dubbo.registry.address", address);
+                String sysaddress = System.getProperty("dubbo.registry.address");
+                if (sysaddress != null && sysaddress.length() > 0) {
+                    address = sysaddress;
+                }
                 if (address != null && address.length() > 0 
                         && ! RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) {
                     Map<String, String> map = new HashMap<String, String>();
@@ -198,7 +201,11 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
         Map<String, String> map = new HashMap<String, String>();
         map.put(Constants.INTERFACE_KEY, MonitorService.class.getName());
         appendParameters(map, monitor);
-        String address = System.getProperty("dubbo.monitor.address", monitor.getAddress());
+        String address = monitor.getAddress();
+        String sysaddress = System.getProperty("dubbo.monitor.address");
+        if (sysaddress != null && sysaddress.length() > 0) {
+            address = sysaddress;
+        }
         if (ConfigUtils.isNotEmpty(address)) {
             if (! map.containsKey(Constants.PROTOCOL_KEY)) {
                 if (ExtensionLoader.getExtensionLoader(MonitorFactory.class).hasExtension("logstat")) {

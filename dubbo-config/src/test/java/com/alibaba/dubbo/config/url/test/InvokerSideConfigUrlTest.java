@@ -191,6 +191,12 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
         
         refConf                 = new ReferenceConfig<DemoService>();
         consumerConf            = new ConsumerConfig();
+
+        methodConfForReference.setName("sayName");
+        regConfForReference.setAddress("127.0.0.1:9090");
+        regConfForReference.setProtocol("mockregistry");
+        appConfForReference.setName("ConfigTests");
+        refConf.setInterface("com.alibaba.dubbo.config.api.DemoService");
         
         refConf.setApplication(appConfForReference);
         consumerConf.setApplication(appConfForConsumer);
@@ -201,12 +207,6 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
         refConf.setConsumer(consumerConf);
         
         refConf.setMethods(Arrays.asList(new MethodConfig[]{methodConfForReference}));
-        
-        methodConfForReference.setName("sayName");
-        regConfForReference.setAddress("127.0.0.1:9090");
-        regConfForReference.setProtocol("mockregistry");
-        appConfForReference.setName("ConfigTests");
-        refConf.setInterface("com.alibaba.dubbo.config.api.DemoService");
     }
     
     private <T> void verifyInvokerUrlGeneration(T config, Object[][] dataTable){

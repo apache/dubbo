@@ -82,10 +82,32 @@ public abstract class AbstractConfig implements Serializable {
                     }
                     String value = null;
                     if (config.getId() != null && config.getId().length() > 0) {
-                        value = ConfigUtils.getProperty(key + "." + config.getId());
+                        value = System.getProperty(key + "." + config.getId());
                     }
                     if (value == null || value.length() == 0) {
-                        value = ConfigUtils.getProperty(key);
+                        value = System.getProperty(key);
+                    }
+                    if (value == null || value.length() == 0) {
+                        Method getter;
+                        try {
+                            getter = config.getClass().getMethod("get" + name.substring(3), new Class<?>[0]);
+                        } catch (NoSuchMethodException e) {
+                            try {
+                                getter = config.getClass().getMethod("is" + name.substring(3), new Class<?>[0]);
+                            } catch (NoSuchMethodException e2) {
+                                getter = null;
+                            }
+                        }
+                        if (getter != null) {
+                            if (getter.invoke(config, new Object[0]) == null) {
+                                if (config.getId() != null && config.getId().length() > 0) {
+                                    value = ConfigUtils.getProperty(key + "." + config.getId());
+                                }
+                                if (value == null || value.length() == 0) {
+                                    value = ConfigUtils.getProperty(key);
+                                }
+                            }
+                        }
                     }
                     if (value != null && value.length() > 0) {
                         method.invoke(config, new Object[] {convertPrimitive(method.getParameterTypes()[0], value)});

@@ -231,11 +231,19 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private void doExportUrls() {
         List<URL> registryURLs = loadRegistries();
         for (ProtocolConfig protocolConfig : protocols) {
-            String name = System.getProperty("dubbo.protocol.name", protocolConfig.getName());
+            String name = protocolConfig.getName();
+            String sysname = System.getProperty("dubbo.protocol.name");
+            if (sysname != null && sysname.length() > 0) {
+                name = sysname;
+            }
             if (name == null || name.length() == 0) {
                 name = "dubbo";
             }
-            String host = System.getProperty("dubbo.protocol.host", protocolConfig.getHost());
+            String host = protocolConfig.getHost();
+            String syshost = System.getProperty("dubbo.protocol.host");
+            if (syshost != null && syshost.length() > 0) {
+                host = syshost;
+            }
             if (provider != null && (host == null || host.length() == 0)) {
                 host = provider.getHost();
             }
