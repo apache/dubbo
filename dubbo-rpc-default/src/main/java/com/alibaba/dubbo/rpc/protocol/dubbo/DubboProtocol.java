@@ -230,15 +230,9 @@ public class DubboProtocol extends AbstractProtocol {
 
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
         URL url = invoker.getUrl().addParameterIfAbsent(Constants.DOWNSTREAM_CODEC_KEY, DubboCodec.NAME);
-        // find server.
-        String key = url.getAddress();
-        //client 也可以暴露一个只有server可以调用的服务。
-        boolean isServer = url.getParameter(RpcConstants.IS_SERVER_KEY,true);
-        if (isServer && ! serverMap.containsKey(key)) {
-            serverMap.put(key, getServer(url));
-        }
+        
         // export service.
-        key = serviceKey(url);
+        String key = serviceKey(url);
         DubboExporter<T> exporter = new DubboExporter<T>(invoker, key, exporterMap);
         exporterMap.put(key, exporter);
         
@@ -255,7 +249,20 @@ public class DubboProtocol extends AbstractProtocol {
                 stubServiceMethodsMap.put(url.getServiceKey(), stubServiceMethods);
             }
         }
+
+        openServer(url);
+        
         return exporter;
+    }
+    
+    private void openServer(URL url) {
+        // find server.
+        String key = url.getAddress();
+        //client 也可以暴露一个只有server可以调用的服务。
+        boolean isServer = url.getParameter(RpcConstants.IS_SERVER_KEY,true);
+        if (isServer && ! serverMap.containsKey(key)) {
+            serverMap.put(key, getServer(url));
+        }
     }
     
     private ExchangeServer getServer(URL url) {
