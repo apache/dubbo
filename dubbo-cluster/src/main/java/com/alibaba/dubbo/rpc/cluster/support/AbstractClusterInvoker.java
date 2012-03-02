@@ -30,6 +30,7 @@ import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.cluster.Directory;
 import com.alibaba.dubbo.rpc.cluster.LoadBalance;
 
@@ -254,5 +255,23 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
     protected abstract Result doInvoke(Invocation invocation, List<Invoker<T>> invokers,
                                        LoadBalance loadbalance) throws RpcException;
+    
+    /**
+     * 返回MockInvoker
+     * 契约：
+     * directory根据invocation中是否有RpcConstants.INVOCATION_NEED_MOCK，来判断获取的是一个normal invoker 还是一个 mock invoker
+     * 如果directorylist 返回多个mock invoker，只使用第一个invoker.
+     * @param invocation
+     * @return 返回一个invoker or null
+     */
+    protected Invoker<T> selectMockInvoker(Invocation invocation){
+        if (invocation instanceof RpcInvocation){
+            ((RpcInvocation)invocation).setAttachment(RpcConstants.INVOCATION_NEED_MOCK, Boolean.TRUE.toString());
+            List<Invoker<T>> invokers = directory.list(invocation);
+            return invokers == null ? null : invokers.get(0);
+        } else {
+            return null;
+        }
+    }
     
 }
