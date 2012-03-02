@@ -389,7 +389,28 @@ public class ConfigTest {
             providerContext.close();
         }
     }
-    
+
+    @Test
+    public void testXmlOverrideProperties() throws Exception {
+        ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/xml-override-properties.xml");
+        providerContext.start();
+        try {
+            ApplicationConfig application = (ApplicationConfig) providerContext.getBean("application");
+            assertEquals("demo-provider", application.getName());
+            assertEquals("world", application.getOwner());
+            
+            RegistryConfig registry = (RegistryConfig) providerContext.getBean("registry");
+            assertEquals("N/A", registry.getAddress());
+            
+            ProtocolConfig dubbo = (ProtocolConfig) providerContext.getBean("dubbo");
+            assertEquals(20813, dubbo.getPort().intValue());
+            
+        } finally {
+            providerContext.stop();
+            providerContext.close();
+        }
+    }
+
     @Test
     public void testSystemPropertyOverrideProtocol() throws Exception {
         System.setProperty("dubbo.protocol.port", "20812");
