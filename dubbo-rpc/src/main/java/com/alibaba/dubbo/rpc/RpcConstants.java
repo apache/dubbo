@@ -171,6 +171,8 @@ public final class RpcConstants {
     public static final boolean DEFAULT_STUB_EVENT = false;
     
     public static final String STUB_EVENT_METHODS_KEY = "dubbo.stub.event.methods";
+    //invocation attachment属性中如果有此值，则选择mock invoker
+    public static final String INVOCATION_NEED_MOCK = "invocation.need.mock";
     
     private RpcConstants() {}
     
