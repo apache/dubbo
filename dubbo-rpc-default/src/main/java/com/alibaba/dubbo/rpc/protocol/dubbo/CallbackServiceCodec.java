@@ -168,7 +168,7 @@ class CallbackServiceCodec {
                     }
                     invoker.destroy();
                 }catch (Exception e) {
-                    logger.error(e);
+                    logger.error(e.getMessage(), e);
                 }
                 //取消refer 直接在map中去除，
                 channel.removeAttribute(proxyCacheKey);
@@ -217,7 +217,7 @@ class CallbackServiceCodec {
             }
             channel.setAttribute(countkey, count);
         }catch (Exception e) {
-            logger.error(e);
+            logger.error(e.getMessage(), e);
         }
     }
     private static void decreaseInstanceCount(Channel channel, String countkey){
@@ -230,7 +230,7 @@ class CallbackServiceCodec {
             }
             channel.setAttribute(countkey, count);
         }catch (Exception e) {
-            logger.error(e);
+            logger.error(e.getMessage(), e);
         }
     }
     
@@ -260,7 +260,7 @@ class CallbackServiceCodec {
         try {
             url = DubboProtocol.getDubboProtocol().getInvoker(channel, inv).getUrl();
         } catch (RemotingException e) {
-            logger.warn("get invoker error", e);
+            logger.warn(e.getMessage(), e);
             return inObject;
         }
         byte callbackstatus = isCallBack(url, inv.getMethodName(), paraIndex);
@@ -271,7 +271,7 @@ class CallbackServiceCodec {
                 try{
                     return referOrdestroyCallbackService(channel, url, pts[paraIndex], inv, Integer.parseInt(inv.getAttachment(INV_ATT_CALLBACK_KEY + paraIndex)), true);
                 }catch (Exception e) {
-                    logger.error(e);
+                    logger.error(e.getMessage(), e);
                     throw new IOException(StringUtils.toString(e));
                 }
             case CallbackServiceCodec.CALLBACK_DESTROY:
