@@ -40,8 +40,8 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-validator</artifactId>
+			<groupId>javax.cache</groupId>
+			<artifactId>cache-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
