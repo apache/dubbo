@@ -15,6 +15,7 @@
  */
 package com.alibaba.dubbo.rpc;
 
+import com.alibaba.dubbo.common.Node;
 import com.alibaba.dubbo.common.URL;
 
 /**
@@ -25,7 +26,7 @@ import com.alibaba.dubbo.common.URL;
  * @see com.alibaba.dubbo.rpc.protocol.AbstractInvoker
  * @author william.liangf
  */
-public interface Invoker<T> {
+public interface Invoker<T> extends Node {
 
     /**
      * get service interface.
@@ -35,20 +36,6 @@ public interface Invoker<T> {
     Class<T> getInterface();
 
     /**
-     * get service url.
-     * 
-     * @return service url.
-     */
-    URL getUrl();
-    
-    /**
-     * is available.
-     * 
-     * @return available.
-     */
-    boolean isAvailable();
-
-    /**
      * invoke.
      * 
      * @param invocation
@@ -56,10 +43,5 @@ public interface Invoker<T> {
      * @throws RpcException
      */
     Result invoke(Invocation invocation) throws RpcException;
-
-    /**
-     * destroy.
-     */
-    void destroy();
 
 }

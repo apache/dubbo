@@ -26,13 +26,6 @@ package com.alibaba.dubbo.rpc;
  */
 public interface Result {
 
-    /**
-     * Has exception.
-     * 
-     * @return has exception.
-     */
-    boolean hasException();
-
 	/**
 	 * Get invoke result.
 	 * 
@@ -47,6 +40,13 @@ public interface Result {
 	 * @return exception if no exception return null.
 	 */
 	Throwable getException();
+
+    /**
+     * Has exception.
+     * 
+     * @return has exception.
+     */
+    boolean hasException();
 
     /**
      * Recreate.
