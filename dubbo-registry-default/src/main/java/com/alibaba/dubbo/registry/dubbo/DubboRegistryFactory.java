@@ -32,7 +32,6 @@ import com.alibaba.dubbo.registry.support.RegistryDirectory;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.ProxyFactory;
-import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.cluster.Cluster;
 
 /**
@@ -71,7 +70,7 @@ public class DubboRegistryFactory extends AbstractRegistryFactory {
                 urls.add(url.setAddress(address));
             }
         }
-        RegistryDirectory<RegistryService> directory = new RegistryDirectory<RegistryService>(RegistryService.class, url.addParameter(Constants.INTERFACE_KEY, RegistryService.class.getName()).addParameterAndEncoded(RpcConstants.REFER_KEY, url.toParameterString()));
+        RegistryDirectory<RegistryService> directory = new RegistryDirectory<RegistryService>(RegistryService.class, url.addParameter(Constants.INTERFACE_KEY, RegistryService.class.getName()).addParameterAndEncoded(Constants.REFER_KEY, url.toParameterString()));
         Invoker<RegistryService> registryInvoker = cluster.join(directory);
         RegistryService registryService = proxyFactory.getProxy(registryInvoker);
         DubboRegistry registry = new DubboRegistry(registryInvoker, registryService);
@@ -84,18 +83,18 @@ public class DubboRegistryFactory extends AbstractRegistryFactory {
     
     private static URL getRegistryURL(URL url) {
         return url.setPath(RegistryService.class.getName())
-                .removeParameter(RpcConstants.EXPORT_KEY).removeParameter(RpcConstants.REFER_KEY)
+                .removeParameter(Constants.EXPORT_KEY).removeParameter(Constants.REFER_KEY)
                 .addParameter(Constants.INTERFACE_KEY, RegistryService.class.getName())
-                .addParameter(RpcConstants.CLUSTER_STICKY_KEY, "true")
-                .addParameter(RpcConstants.LAZY_CONNECT_KEY, "true")
+                .addParameter(Constants.CLUSTER_STICKY_KEY, "true")
+                .addParameter(Constants.LAZY_CONNECT_KEY, "true")
                 .addParameter(Constants.RECONNECT_KEY, "false")
                 .addParameterIfAbsent(Constants.TIMEOUT_KEY, "10000")
-                .addParameterIfAbsent(RpcConstants.CALLBACK_INSTANCES_LIMIT_KEY, "10000")
+                .addParameterIfAbsent(Constants.CALLBACK_INSTANCES_LIMIT_KEY, "10000")
                 .addParameterIfAbsent(Constants.CONNECT_TIMEOUT_KEY, "10000")
                 .addParameter(Constants.METHODS_KEY, StringUtils.join(new HashSet<String>(Arrays.asList(Wrapper.getWrapper(RegistryService.class).getDeclaredMethodNames())), ","))
                 //.addParameter(Constants.STUB_KEY, RegistryServiceStub.class.getName())
-                //.addParameter(RpcConstants.STUB_EVENT_KEY, Boolean.TRUE.toString()) //for event dispatch
-                //.addParameter(RpcConstants.ON_DISCONNECT_KEY, "disconnect")
+                //.addParameter(Constants.STUB_EVENT_KEY, Boolean.TRUE.toString()) //for event dispatch
+                //.addParameter(Constants.ON_DISCONNECT_KEY, "disconnect")
                 .addParameter("subscribe.1.callback", "true")
                 .addParameter("unsubscribe.1.callback", "false");
     }

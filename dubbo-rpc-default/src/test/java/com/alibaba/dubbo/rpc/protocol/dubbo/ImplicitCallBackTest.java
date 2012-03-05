@@ -31,11 +31,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.StaticContext;
 import com.alibaba.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
@@ -95,17 +95,17 @@ public class ImplicitCallBackTest{
     }
     
     public void initImplicitCallBackURL_onlyOnthrow() throws Exception {
-        StaticContext.getSystemContext().put(StaticContext.getKey(consumerUrl, "get", RpcConstants.ON_THROW_METHOD_KEY),onThrowMethod);
-        StaticContext.getSystemContext().put(StaticContext.getKey(consumerUrl, "get", RpcConstants.ON_THROW_INSTANCE_KEY),notify);
+        StaticContext.getSystemContext().put(StaticContext.getKey(consumerUrl, "get", Constants.ON_THROW_METHOD_KEY),onThrowMethod);
+        StaticContext.getSystemContext().put(StaticContext.getKey(consumerUrl, "get", Constants.ON_THROW_INSTANCE_KEY),notify);
     }
     public void initImplicitCallBackURL_onlyOnreturn() throws Exception {
-        StaticContext.getSystemContext().put(StaticContext.getKey(consumerUrl, "get", RpcConstants.ON_RETURN_METHOD_KEY),onReturnMethod);
-        StaticContext.getSystemContext().put(StaticContext.getKey(consumerUrl, "get", RpcConstants.ON_RETURN_INSTANCE_KEY),notify);
+        StaticContext.getSystemContext().put(StaticContext.getKey(consumerUrl, "get", Constants.ON_RETURN_METHOD_KEY),onReturnMethod);
+        StaticContext.getSystemContext().put(StaticContext.getKey(consumerUrl, "get", Constants.ON_RETURN_INSTANCE_KEY),notify);
         
     }
     public void initImplicitCallBackURL_onlyOninvoke() throws Exception {
-        StaticContext.getSystemContext().put(StaticContext.getKey(consumerUrl, "get", RpcConstants.ON_INVOKE_METHOD_KEY),onInvokeMethod);
-        StaticContext.getSystemContext().put(StaticContext.getKey(consumerUrl, "get", RpcConstants.ON_INVOKE_INSTANCE_KEY),notify);
+        StaticContext.getSystemContext().put(StaticContext.getKey(consumerUrl, "get", Constants.ON_INVOKE_METHOD_KEY),onInvokeMethod);
+        StaticContext.getSystemContext().put(StaticContext.getKey(consumerUrl, "get", Constants.ON_INVOKE_INSTANCE_KEY),notify);
     }
     
     //================================================================================================

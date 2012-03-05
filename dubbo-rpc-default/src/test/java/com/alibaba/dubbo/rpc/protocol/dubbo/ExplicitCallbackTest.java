@@ -32,7 +32,6 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
@@ -72,7 +71,7 @@ public class ExplicitCallbackTest {
                 +"&unxxx2.0.callback=false"
                 +"&timeout="+timeout
                 +"&retries=0"
-                +"&"+RpcConstants.CALLBACK_INSTANCES_LIMIT_KEY+"="+callbacks
+                +"&"+Constants.CALLBACK_INSTANCES_LIMIT_KEY+"="+callbacks
                 );
         //      uncomment is unblock invoking
 //        serviceURL = serviceURL.addParameter("yyy."+Constants.ASYNC_KEY,String.valueOf(true));
@@ -315,7 +314,7 @@ public class ExplicitCallbackTest {
     public void TestCallbackProviderLimit() throws Exception {
         initOrResetUrl(1, 1000);
         //api的方式 url 无法自动从服务端传递到客户端，需要手动制定
-        serviceURL = serviceURL.addParameter(RpcConstants.CALLBACK_INSTANCES_LIMIT_KEY, 1+"");
+        serviceURL = serviceURL.addParameter(Constants.CALLBACK_INSTANCES_LIMIT_KEY, 1+"");
         initOrResetService() ;
         final AtomicInteger count = new AtomicInteger(0);
         demoProxy.xxx(new IDemoCallback() {

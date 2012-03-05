@@ -41,7 +41,6 @@ import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.ProxyFactory;
-import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.service.GenericService;
 
 /**
@@ -395,7 +394,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                     if (logger.isInfoEnabled()) {
                         logger.info("Register dubbo service " + interfaceClass.getName() + " url " + providerURL + " to registry " + registryURL);
                     }
-                    Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(RpcConstants.EXPORT_KEY, providerURL));
+                    Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, providerURL));
                     Exporter<?> exporter = protocol.export(invoker);
                     exporters.add(exporter);
                 }

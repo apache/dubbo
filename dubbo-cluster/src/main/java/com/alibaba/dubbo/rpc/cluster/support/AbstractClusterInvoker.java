@@ -28,7 +28,6 @@ import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
-import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.cluster.Directory;
@@ -62,7 +61,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         
         this.directory = directory ;
         //sticky 需要检测 avaliablecheck 
-        this.availablecheck = url.getParameter(RpcConstants.CLUSTER_AVAILABLE_CHECK_KEY, RpcConstants.DEFAULT_CLUSTER_AVAILABLE_CHECK) ;
+        this.availablecheck = url.getParameter(Constants.CLUSTER_AVAILABLE_CHECK_KEY, Constants.DEFAULT_CLUSTER_AVAILABLE_CHECK) ;
     }
 
     public Class<T> getInterface() {
@@ -100,7 +99,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
             return null;
         String methodName = invocation == null ? "" : invocation.getMethodName();
         
-        boolean sticky = invokers.get(0).getUrl().getMethodParameter(methodName,RpcConstants.CLUSTER_STICKY_KEY, RpcConstants.DEFAULT_CLUSTER_STICKY) ;
+        boolean sticky = invokers.get(0).getUrl().getMethodParameter(methodName,Constants.CLUSTER_STICKY_KEY, Constants.DEFAULT_CLUSTER_STICKY) ;
         {
             //ignore overloaded method
             if ( stickyInvoker != null && !invokers.contains(stickyInvoker) ){
@@ -259,14 +258,14 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
     /**
      * 返回MockInvoker
      * 契约：
-     * directory根据invocation中是否有RpcConstants.INVOCATION_NEED_MOCK，来判断获取的是一个normal invoker 还是一个 mock invoker
+     * directory根据invocation中是否有Constants.INVOCATION_NEED_MOCK，来判断获取的是一个normal invoker 还是一个 mock invoker
      * 如果directorylist 返回多个mock invoker，只使用第一个invoker.
      * @param invocation
      * @return 返回一个invoker or null
      */
     protected Invoker<T> selectMockInvoker(Invocation invocation){
         if (invocation instanceof RpcInvocation){
-            ((RpcInvocation)invocation).setAttachment(RpcConstants.INVOCATION_NEED_MOCK, Boolean.TRUE.toString());
+            ((RpcInvocation)invocation).setAttachment(Constants.INVOCATION_NEED_MOCK, Boolean.TRUE.toString());
             List<Invoker<T>> invokers = directory.list(invocation);
             return invokers == null ? null : invokers.get(0);
         } else {

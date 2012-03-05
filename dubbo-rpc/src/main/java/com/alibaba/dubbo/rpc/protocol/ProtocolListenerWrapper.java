@@ -29,7 +29,6 @@ import com.alibaba.dubbo.rpc.Filter;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.InvokerListener;
 import com.alibaba.dubbo.rpc.Protocol;
-import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.listener.ListenerExporterWrapper;
 import com.alibaba.dubbo.rpc.listener.ListenerInvokerWrapper;
@@ -59,7 +58,7 @@ public class ProtocolListenerWrapper implements Protocol {
             return protocol.export(invoker);
         }
         return new ListenerExporterWrapper<T>(protocol.export(invoker), 
-                buildServiceListeners(invoker.getUrl().getParameter(Constants.EXPORTER_LISTENER_KEY), RpcConstants.DEFAULT_EXPORTER_LISTENERS));
+                buildServiceListeners(invoker.getUrl().getParameter(Constants.EXPORTER_LISTENER_KEY), Constants.DEFAULT_EXPORTER_LISTENERS));
     }
 
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
@@ -67,7 +66,7 @@ public class ProtocolListenerWrapper implements Protocol {
             return protocol.refer(type, url);
         }
         return new ListenerInvokerWrapper<T>(protocol.refer(type, url), 
-                buildReferenceListeners(url.getParameter(Constants.INVOKER_LISTENER_KEY), RpcConstants.DEFAULT_INVOKER_LISTENERS));
+                buildReferenceListeners(url.getParameter(Constants.INVOKER_LISTENER_KEY), Constants.DEFAULT_INVOKER_LISTENERS));
     }
 
     public void destroy() {

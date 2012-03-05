@@ -32,7 +32,6 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
 import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 import com.alibaba.dubbo.registry.NotifyListener;
-import com.alibaba.dubbo.rpc.RpcConstants;
 
 /**
  * FailbackRegistry
@@ -62,7 +61,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
     
     public FailbackRegistry(URL url) {
         super(url);
-        int retryPeriod = url.getParameter(RpcConstants.REGISTRY_RETRY_PERIOD_KEY, DEFAULT_RETRY_PERIOD);
+        int retryPeriod = url.getParameter(Constants.REGISTRY_RETRY_PERIOD_KEY, DEFAULT_RETRY_PERIOD);
         this.retryFuture = retryExecutor.scheduleWithFixedDelay(new Runnable() {
             public void run() {
                 // 检测并连接注册中心

@@ -17,10 +17,10 @@ package com.alibaba.dubbo.config;
 
 import java.util.Map;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.registry.support.AbstractRegistryFactory;
 import com.alibaba.dubbo.remoting.Transporter;
-import com.alibaba.dubbo.rpc.RpcConstants;
 
 /**
  * RegistryConfig
@@ -153,7 +153,7 @@ public class RegistryConfig extends AbstractConfig {
     public void setWait(Integer wait) {
         this.wait = wait;
         if( wait!=null && wait>0)
-            System.setProperty(RpcConstants.SHUTDOWN_TIMEOUT_KEY, String.valueOf(wait));
+            System.setProperty(Constants.SHUTDOWN_WAIT_KEY, String.valueOf(wait));
     }
     
     public Boolean isCheck() {

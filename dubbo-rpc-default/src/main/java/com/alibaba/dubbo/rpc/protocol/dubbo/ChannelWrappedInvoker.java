@@ -28,7 +28,6 @@ import com.alibaba.dubbo.remoting.exchange.support.header.HeaderExchangeClient;
 import com.alibaba.dubbo.remoting.transport.ClientDelegate;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Result;
-import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
@@ -57,7 +56,7 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
         RpcInvocation inv = new RpcInvocation(invocation);
         //拿不到client端export 的service path.约定为interface的名称.
         inv.setAttachment(Constants.PATH_KEY, getInterface().getName());
-        inv.setAttachment(RpcConstants.CALLBACK_SERVICE_KEY, serviceKey);
+        inv.setAttachment(Constants.CALLBACK_SERVICE_KEY, serviceKey);
 
         ExchangeClient currentClient = new HeaderExchangeClient(new ChannelWrapper(this.channel));
 

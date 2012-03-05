@@ -44,7 +44,6 @@ import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
-import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
@@ -122,7 +121,7 @@ public class DubboProtocol extends AbstractProtocol {
 
         @Override
         public void connected(Channel channel) throws RemotingException {
-            invoke(channel, RpcConstants.ON_CONNECT_KEY);
+            invoke(channel, Constants.ON_CONNECT_KEY);
         }
 
         @Override
@@ -130,7 +129,7 @@ public class DubboProtocol extends AbstractProtocol {
             if(logger.isInfoEnabled()){
                 logger.info("disconected from "+ channel.getRemoteAddress() + ",url:" + channel.getUrl());
             }
-            invoke(channel, RpcConstants.ON_DISCONNECT_KEY);
+            invoke(channel, Constants.ON_DISCONNECT_KEY);
         }
         
         private void invoke(Channel channel, String methodKey) {
@@ -154,8 +153,8 @@ public class DubboProtocol extends AbstractProtocol {
             invocation.setAttachment(Constants.GROUP_KEY, url.getParameter(Constants.GROUP_KEY));
             invocation.setAttachment(Constants.INTERFACE_KEY, url.getParameter(Constants.INTERFACE_KEY));
             invocation.setAttachment(Constants.VERSION_KEY, url.getParameter(Constants.VERSION_KEY));
-            if (url.getParameter(RpcConstants.STUB_EVENT_KEY, false)){
-                invocation.setAttachment(RpcConstants.STUB_EVENT_KEY, Boolean.TRUE.toString());
+            if (url.getParameter(Constants.STUB_EVENT_KEY, false)){
+                invocation.setAttachment(Constants.STUB_EVENT_KEY, Boolean.TRUE.toString());
             }
             return invocation;
         }
@@ -200,14 +199,14 @@ public class DubboProtocol extends AbstractProtocol {
         int port = channel.getLocalAddress().getPort();
         String path = inv.getAttachments().get(Constants.PATH_KEY);
         //如果是客户端的回调服务.
-        isStubServiceInvoke = Boolean.TRUE.toString().equals(inv.getAttachments().get(RpcConstants.STUB_EVENT_KEY));
+        isStubServiceInvoke = Boolean.TRUE.toString().equals(inv.getAttachments().get(Constants.STUB_EVENT_KEY));
         if (isStubServiceInvoke){
             port = channel.getRemoteAddress().getPort();
         }
         //callback
         isCallBackServiceInvoke = isClientSide(channel) && !isStubServiceInvoke;
         if(isCallBackServiceInvoke){
-            path = inv.getAttachments().get(Constants.PATH_KEY)+"."+inv.getAttachments().get(RpcConstants.CALLBACK_SERVICE_KEY);
+            path = inv.getAttachments().get(Constants.PATH_KEY)+"."+inv.getAttachments().get(Constants.CALLBACK_SERVICE_KEY);
             inv.getAttachments().put(IS_CALLBACK_SERVICE_INVOKE, Boolean.TRUE.toString());
         }
         String serviceKey = serviceKey(port, path, inv.getAttachments().get(Constants.VERSION_KEY), inv.getAttachments().get(Constants.GROUP_KEY));
@@ -237,10 +236,10 @@ public class DubboProtocol extends AbstractProtocol {
         exporterMap.put(key, exporter);
         
         //export an stub service for dispaching event
-        Boolean isStubSupportEvent = url.getParameter(RpcConstants.STUB_EVENT_KEY,RpcConstants.DEFAULT_STUB_EVENT);
-        Boolean isCallbackservice = url.getParameter(RpcConstants.IS_CALLBACK_SERVICE, false);
+        Boolean isStubSupportEvent = url.getParameter(Constants.STUB_EVENT_KEY,Constants.DEFAULT_STUB_EVENT);
+        Boolean isCallbackservice = url.getParameter(Constants.IS_CALLBACK_SERVICE, false);
         if (isStubSupportEvent && !isCallbackservice){
-            String stubServiceMethods = url.getParameter(RpcConstants.STUB_EVENT_METHODS_KEY);
+            String stubServiceMethods = url.getParameter(Constants.STUB_EVENT_METHODS_KEY);
             if (stubServiceMethods == null || stubServiceMethods.length() == 0 ){
                 if (logger.isWarnEnabled()){
                     logger.warn( new IllegalStateException("consumer ["+url.getParameter(Constants.INTERFACE_KEY)+"], has set stubproxy support event ,but no stub methods founded."));
@@ -259,7 +258,7 @@ public class DubboProtocol extends AbstractProtocol {
         // find server.
         String key = url.getAddress();
         //client 也可以暴露一个只有server可以调用的服务。
-        boolean isServer = url.getParameter(RpcConstants.IS_SERVER_KEY,true);
+        boolean isServer = url.getParameter(Constants.IS_SERVER_KEY,true);
         if (isServer && ! serverMap.containsKey(key)) {
             serverMap.put(key, getServer(url));
         }
@@ -362,7 +361,7 @@ public class DubboProtocol extends AbstractProtocol {
         ExchangeClient client ;
         try {
             //设置连接应该是lazy的 
-            if (url.getParameter(RpcConstants.LAZY_CONNECT_KEY, false)){
+            if (url.getParameter(Constants.LAZY_CONNECT_KEY, false)){
                 client = new LazyConnectExchangeClient(url ,requestHandler);
             } else {
                 client = Exchangers.connect(url ,requestHandler);

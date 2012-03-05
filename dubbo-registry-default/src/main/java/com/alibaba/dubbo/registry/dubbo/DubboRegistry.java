@@ -33,7 +33,6 @@ import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.RegistryService;
 import com.alibaba.dubbo.registry.support.FailbackRegistry;
 import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.RpcConstants;
 
 /**
  * DubboRegistry
@@ -65,7 +64,7 @@ public class DubboRegistry extends FailbackRegistry {
         this.registryInvoker = registryInvoker;
         this.registryService = registryService;
         // 启动重连定时器
-        int reconnectPeriod = registryInvoker.getUrl().getParameter(RpcConstants.REGISTRY_RECONNECT_PERIOD_KEY, RECONNECT_PERIOD_DEFAULT);
+        int reconnectPeriod = registryInvoker.getUrl().getParameter(Constants.REGISTRY_RECONNECT_PERIOD_KEY, RECONNECT_PERIOD_DEFAULT);
         reconnectFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
             public void run() {
                 // 检测并连接注册中心

@@ -40,7 +40,6 @@ import com.alibaba.dubbo.registry.RegistryFactory;
 import com.alibaba.dubbo.registry.support.RegistryDirectory;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
-import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.cluster.Router;
@@ -107,14 +106,14 @@ public class RegistryDirectoryTest {
 
     @Test
     public void test_Constructor_CheckStatus() throws Exception {
-        URL url = URL.valueOf("notsupported://10.20.30.40/" + service + "?a=b").addParameterAndEncoded(RpcConstants.REFER_KEY,
+        URL url = URL.valueOf("notsupported://10.20.30.40/" + service + "?a=b").addParameterAndEncoded(Constants.REFER_KEY,
                                                                                                        "foo=bar");
         RegistryDirectory reg = getRegistryDirectory(url);
         Field field = reg.getClass().getDeclaredField("queryMap");
         field.setAccessible(true);
         Map<String, String> queryMap = (Map<String, String>) field.get(reg);
         Assert.assertEquals("bar", queryMap.get("foo"));
-        Assert.assertEquals(url.removeParameter(RpcConstants.REFER_KEY), reg.getUrl());
+        Assert.assertEquals(url.removeParameter(Constants.REFER_KEY), reg.getUrl());
     }
 
     @Test
@@ -302,7 +301,7 @@ public class RegistryDirectoryTest {
     @Test
     public void testParametersMerge() {
         RegistryDirectory registryDirectory = getRegistryDirectory();
-        URL regurl = noMeaningUrl.addParameter("test", "reg").addParameterAndEncoded(RpcConstants.REFER_KEY,
+        URL regurl = noMeaningUrl.addParameter("test", "reg").addParameterAndEncoded(Constants.REFER_KEY,
                                                                                      "key=query&"
                                                                                              + Constants.LOADBALANCE_KEY
                                                                                              + "="
@@ -523,16 +522,16 @@ public class RegistryDirectoryTest {
     public void testNotifyRouterUrls() {
         if (isScriptUnsupported) return;
         RegistryDirectory registryDirectory = getRegistryDirectory();
-        URL routerurl = URL.valueOf(RpcConstants.ROUTE_PROTOCOL + "://127.0.0.1:9096/");
-        URL routerurl2 = URL.valueOf(RpcConstants.ROUTE_PROTOCOL + "://127.0.0.1:9097/");
+        URL routerurl = URL.valueOf(Constants.ROUTE_PROTOCOL + "://127.0.0.1:9096/");
+        URL routerurl2 = URL.valueOf(Constants.ROUTE_PROTOCOL + "://127.0.0.1:9097/");
 
         List<URL> serviceUrls = new ArrayList<URL>();
         // without ROUTER_KEY, the first router should not be created.
-        serviceUrls.add(routerurl.addParameter(RpcConstants.TYPE_KEY, "javascript").addParameter(RpcConstants.ROUTER_KEY,
-                                                                                                 "notsupported").addParameter(RpcConstants.RULE_KEY,
+        serviceUrls.add(routerurl.addParameter(Constants.TYPE_KEY, "javascript").addParameter(Constants.ROUTER_KEY,
+                                                                                                 "notsupported").addParameter(Constants.RULE_KEY,
                                                                                                                               "function test1(){}"));
-        serviceUrls.add(routerurl2.addParameter(RpcConstants.TYPE_KEY, "javascript").addParameter(RpcConstants.ROUTER_KEY,
-                                                                                                  ScriptRouterFactory.NAME).addParameter(RpcConstants.RULE_KEY,
+        serviceUrls.add(routerurl2.addParameter(Constants.TYPE_KEY, "javascript").addParameter(Constants.ROUTER_KEY,
+                                                                                                  ScriptRouterFactory.NAME).addParameter(Constants.RULE_KEY,
                                                                                                                                          "function test1(){}"));
 
         registryDirectory.notify(serviceUrls);
@@ -546,7 +545,7 @@ public class RegistryDirectoryTest {
         Assert.assertEquals(ScriptRouter.class, routers.get(0).getClass());
 
         serviceUrls.clear();
-        serviceUrls.add(routerurl.addParameter(RpcConstants.ROUTER_KEY, RpcConstants.ROUTER_TYPE_CLEAR));
+        serviceUrls.add(routerurl.addParameter(Constants.ROUTER_KEY, Constants.ROUTER_TYPE_CLEAR));
         registryDirectory.notify(serviceUrls);
         routers = registryDirectory.getRouters();
         Assert.assertEquals(0, routers.size());
@@ -755,9 +754,9 @@ public class RegistryDirectoryTest {
     public void testNotifyRouterUrls_Clean() {
         if (isScriptUnsupported) return;
         RegistryDirectory registryDirectory = getRegistryDirectory();
-        URL routerurl = URL.valueOf(RpcConstants.ROUTE_PROTOCOL + "://127.0.0.1:9096/").addParameter(RpcConstants.ROUTER_KEY,
-                                                                                                     "javascript").addParameter(RpcConstants.RULE_KEY,
-                                                                                                                                "function test1(){}").addParameter(RpcConstants.ROUTER_KEY,
+        URL routerurl = URL.valueOf(Constants.ROUTE_PROTOCOL + "://127.0.0.1:9096/").addParameter(Constants.ROUTER_KEY,
+                                                                                                     "javascript").addParameter(Constants.RULE_KEY,
+                                                                                                                                "function test1(){}").addParameter(Constants.ROUTER_KEY,
                                                                                                                                                                    "script"); // FIX
                                                                                                                                                                               // BAD
 
@@ -769,7 +768,7 @@ public class RegistryDirectoryTest {
         Assert.assertEquals(1, routers.size());
 
         serviceUrls.clear();
-        serviceUrls.add(routerurl.addParameter(RpcConstants.ROUTER_KEY, RpcConstants.ROUTER_TYPE_CLEAR));
+        serviceUrls.add(routerurl.addParameter(Constants.ROUTER_KEY, Constants.ROUTER_TYPE_CLEAR));
         registryDirectory.notify(serviceUrls);
         routers = registryDirectory.getRouters();
         Assert.assertEquals(0, routers.size());

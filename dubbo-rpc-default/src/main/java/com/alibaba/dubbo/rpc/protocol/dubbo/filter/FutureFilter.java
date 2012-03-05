@@ -28,7 +28,6 @@ import com.alibaba.dubbo.rpc.Filter;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
-import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.StaticContext;
@@ -93,8 +92,8 @@ public class FutureFilter implements Filter {
     }
 
     private void fireInvokeCallback(final Invoker<?> invoker, final Invocation invocation) {
-        final Method onInvokeMethod = (Method)StaticContext.getSystemContext().get(StaticContext.getKey(invoker.getUrl(), invocation.getMethodName(), RpcConstants.ON_INVOKE_METHOD_KEY));
-        final Object onInvokeInst = StaticContext.getSystemContext().get(StaticContext.getKey(invoker.getUrl(), invocation.getMethodName(), RpcConstants.ON_INVOKE_INSTANCE_KEY));
+        final Method onInvokeMethod = (Method)StaticContext.getSystemContext().get(StaticContext.getKey(invoker.getUrl(), invocation.getMethodName(), Constants.ON_INVOKE_METHOD_KEY));
+        final Object onInvokeInst = StaticContext.getSystemContext().get(StaticContext.getKey(invoker.getUrl(), invocation.getMethodName(), Constants.ON_INVOKE_INSTANCE_KEY));
         
         if (onInvokeMethod == null  &&  onInvokeInst == null ){
             return ;
@@ -117,8 +116,8 @@ public class FutureFilter implements Filter {
     }
     
     private void fireReturnCallback(final Invoker<?> invoker, final Invocation invocation, final Object result) {
-        final Method onReturnMethod = (Method)StaticContext.getSystemContext().get(StaticContext.getKey(invoker.getUrl(), invocation.getMethodName(), RpcConstants.ON_RETURN_METHOD_KEY));
-        final Object onReturnInst = StaticContext.getSystemContext().get(StaticContext.getKey(invoker.getUrl(), invocation.getMethodName(), RpcConstants.ON_RETURN_INSTANCE_KEY));
+        final Method onReturnMethod = (Method)StaticContext.getSystemContext().get(StaticContext.getKey(invoker.getUrl(), invocation.getMethodName(), Constants.ON_RETURN_METHOD_KEY));
+        final Object onReturnInst = StaticContext.getSystemContext().get(StaticContext.getKey(invoker.getUrl(), invocation.getMethodName(), Constants.ON_RETURN_INSTANCE_KEY));
 
         //not set onreturn callback
         if (onReturnMethod == null  &&  onReturnInst == null ){
@@ -158,8 +157,8 @@ public class FutureFilter implements Filter {
     }
     
     private void fireThrowCallback(final Invoker<?> invoker, final Invocation invocation, final Throwable exception) {
-        final Method onthrowMethod = (Method)StaticContext.getSystemContext().get(StaticContext.getKey(invoker.getUrl(), invocation.getMethodName(), RpcConstants.ON_THROW_METHOD_KEY));
-        final Object onthrowInst = StaticContext.getSystemContext().get(StaticContext.getKey(invoker.getUrl(), invocation.getMethodName(), RpcConstants.ON_THROW_INSTANCE_KEY));
+        final Method onthrowMethod = (Method)StaticContext.getSystemContext().get(StaticContext.getKey(invoker.getUrl(), invocation.getMethodName(), Constants.ON_THROW_METHOD_KEY));
+        final Object onthrowInst = StaticContext.getSystemContext().get(StaticContext.getKey(invoker.getUrl(), invocation.getMethodName(), Constants.ON_THROW_INSTANCE_KEY));
 
         //没有设置onthrow callback.
         if (onthrowMethod == null  &&  onthrowInst == null ){

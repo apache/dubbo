@@ -17,7 +17,6 @@ package com.alibaba.dubbo.config;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.rpc.InvokerListener;
-import com.alibaba.dubbo.rpc.RpcConstants;
 
 
 /**
@@ -52,7 +51,7 @@ public abstract class AbstractConsumerConfig extends AbstractReferenceConfig {
     protected Boolean             sticky;
     
     //stub是否支持event事件. //TODO slove merge problem 
-    protected Boolean             stubevent ;//= RpcConstants.DEFAULT_STUB_EVENT;
+    protected Boolean             stubevent ;//= Constants.DEFAULT_STUB_EVENT;
     
     public Boolean isCheck() {
         return check;
@@ -103,7 +102,7 @@ public abstract class AbstractConsumerConfig extends AbstractReferenceConfig {
         super.setListener(listener);
     }
 
-    @Parameter(key = RpcConstants.LAZY_CONNECT_KEY)
+    @Parameter(key = Constants.LAZY_CONNECT_KEY)
     public Boolean getLazy() {
         return lazy;
     }
@@ -128,7 +127,7 @@ public abstract class AbstractConsumerConfig extends AbstractReferenceConfig {
         super.setOndisconnect(ondisconnect);
     }
 
-    @Parameter(key = RpcConstants.STUB_EVENT_KEY)
+    @Parameter(key = Constants.STUB_EVENT_KEY)
     public Boolean getStubevent() {
         return stubevent;
     }
@@ -142,7 +141,7 @@ public abstract class AbstractConsumerConfig extends AbstractReferenceConfig {
         this.reconnect = reconnect;
     }
 
-    @Parameter(key = RpcConstants.CLUSTER_STICKY_KEY)
+    @Parameter(key = Constants.CLUSTER_STICKY_KEY)
     public Boolean getSticky() {
         return sticky;
     }

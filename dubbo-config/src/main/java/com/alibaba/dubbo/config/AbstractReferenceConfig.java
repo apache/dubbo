@@ -36,7 +36,6 @@ import com.alibaba.dubbo.registry.RegistryService;
 import com.alibaba.dubbo.rpc.Filter;
 import com.alibaba.dubbo.rpc.InvokerListener;
 import com.alibaba.dubbo.rpc.ProxyFactory;
-import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.cluster.Cluster;
 import com.alibaba.dubbo.rpc.proxy.wrapper.MockReturnInvoker;
 
@@ -137,13 +136,13 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
         }
         appendProperties(application, "dubbo.application");
         
-        String wait = ConfigUtils.getProperty(RpcConstants.SHUTDOWN_TIMEOUT_KEY);
+        String wait = ConfigUtils.getProperty(Constants.SHUTDOWN_WAIT_KEY);
         if (wait != null && wait.trim().length() > 0) {
-            System.setProperty(RpcConstants.SHUTDOWN_TIMEOUT_KEY, wait.trim());
+            System.setProperty(Constants.SHUTDOWN_WAIT_KEY, wait.trim());
         } else {
-            wait = ConfigUtils.getProperty(RpcConstants.SHUTDOWN_TIMEOUT_SECONDS_KEY);
+            wait = ConfigUtils.getProperty(Constants.SHUTDOWN_WAIT_SECONDS_KEY);
             if (wait != null && wait.trim().length() > 0) {
-                System.setProperty(RpcConstants.SHUTDOWN_TIMEOUT_SECONDS_KEY, wait.trim());
+                System.setProperty(Constants.SHUTDOWN_WAIT_SECONDS_KEY, wait.trim());
             }
         }
     }
@@ -216,7 +215,7 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
             }
             return UrlUtils.parseURL(address, map);
         } else if (Constants.REGISTRY_PROTOCOL.equals(monitor.getProtocol()) && registryURL != null) {
-            return registryURL.setProtocol("dubbo").addParameter(Constants.PROTOCOL_KEY, "registry").addParameterAndEncoded(RpcConstants.REFER_KEY, StringUtils.toQueryString(map));
+            return registryURL.setProtocol("dubbo").addParameter(Constants.PROTOCOL_KEY, "registry").addParameterAndEncoded(Constants.REFER_KEY, StringUtils.toQueryString(map));
         }
         return null;
     }

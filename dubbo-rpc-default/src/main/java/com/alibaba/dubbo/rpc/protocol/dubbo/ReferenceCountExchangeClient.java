@@ -27,7 +27,6 @@ import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
 import com.alibaba.dubbo.remoting.exchange.ExchangeHandler;
 import com.alibaba.dubbo.remoting.exchange.ResponseFuture;
-import com.alibaba.dubbo.rpc.RpcConstants;
 
 /**
  * dubbo protocol support class.
@@ -146,7 +145,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
     //幽灵client,
     private LazyConnectExchangeClient replaceWithLazyClient(){
         //这个操作只为了防止程序bug错误关闭client做的防御措施，初始client必须为false状态
-        URL lazyUrl = url.addParameter(RpcConstants.LAZY_CONNECT_INITIAL_STATE_KEY, Boolean.FALSE)
+        URL lazyUrl = url.addParameter(Constants.LAZY_CONNECT_INITIAL_STATE_KEY, Boolean.FALSE)
                 .addParameter(Constants.RECONNECT_KEY, Boolean.FALSE)
                 .addParameter(Constants.SEND_RECONNECT_KEY, Boolean.TRUE.toString())
                 .addParameter("warning", Boolean.TRUE.toString())

@@ -41,7 +41,6 @@ import com.alibaba.dubbo.registry.RegistryService;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
-import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.cluster.Cluster;
 import com.alibaba.dubbo.rpc.cluster.Router;
@@ -102,8 +101,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             throw new IllegalArgumentException("registry serviceKey is null.");
         this.serviceType = serviceType;
         this.serviceKey = url.getServiceKey();
-        this.queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(RpcConstants.REFER_KEY));
-        this.directoryUrl = url.removeParameters(RpcConstants.REFER_KEY, RpcConstants.EXPORT_KEY).addParameters(queryMap);
+        this.queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(Constants.REFER_KEY));
+        this.directoryUrl = url.removeParameters(Constants.REFER_KEY, Constants.EXPORT_KEY).addParameters(queryMap);
         String group = directoryUrl.getParameter( Constants.GROUP_KEY, "" );
         this.multiGroup = group != null && ("*".equals(group) || group.contains( "," ));
     }
@@ -147,9 +146,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             List<URL> routerUrls = new ArrayList<URL>();
             List<URL> overrideUrls = new ArrayList<URL>();
             for (URL url : urls) {
-                if (RpcConstants.ROUTE_PROTOCOL.equals(url.getProtocol())) {
+                if (Constants.ROUTE_PROTOCOL.equals(url.getProtocol())) {
                     routerUrls.add(url);
-                } else if (RpcConstants.OVERRIDE_PROTOCOL.equals(url.getProtocol())) {
+                } else if (Constants.OVERRIDE_PROTOCOL.equals(url.getProtocol())) {
                     //url equals bug
 //                    if (! overrideUrls.contains(url)) {
                         overrideUrls.add(url);
@@ -303,16 +302,16 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         if(urls.size() == 1){
            URL u = urls.get(0);
            // clean current routers
-           if(RpcConstants.ROUTER_TYPE_CLEAR.equals(u.getParameter(RpcConstants.ROUTER_KEY))){
+           if(Constants.ROUTER_TYPE_CLEAR.equals(u.getParameter(Constants.ROUTER_KEY))){
                return routers;
            }
         }
         
         if (urls != null && urls.size() > 0) {
             for (URL url : urls) {
-                String router_type = url.getParameter(RpcConstants.ROUTER_KEY, ScriptRouterFactory.NAME);
+                String router_type = url.getParameter(Constants.ROUTER_KEY, ScriptRouterFactory.NAME);
                 if (router_type == null || router_type.length() == 0){
-                    logger.warn("Router url:\"" + url.toString() + "\" does not contain " + RpcConstants.ROUTER_KEY + ", router creation ignored!");
+                    logger.warn("Router url:\"" + url.toString() + "\" does not contain " + Constants.ROUTER_KEY + ", router creation ignored!");
                     continue;
                 }
                 try{

@@ -28,7 +28,6 @@ import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.Result;
-import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcException;
 
 /**
@@ -55,14 +54,14 @@ public class ProtocolFilterWrapper implements Protocol {
         if (Constants.REGISTRY_PROTOCOL.equals(invoker.getUrl().getProtocol())) {
             return protocol.export(invoker);
         }
-        return protocol.export(buildInvokerChain(invoker, invoker.getUrl().getParameter(Constants.SERVICE_FILTER_KEY), RpcConstants.DEFAULT_SERVICE_FILTERS));
+        return protocol.export(buildInvokerChain(invoker, invoker.getUrl().getParameter(Constants.SERVICE_FILTER_KEY), Constants.DEFAULT_SERVICE_FILTERS));
     }
 
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
         if (Constants.REGISTRY_PROTOCOL.equals(url.getProtocol())) {
             return protocol.refer(type, url);
         }
-        return buildInvokerChain(protocol.refer(type, url), url.getParameter(Constants.REFERENCE_FILTER_KEY), RpcConstants.DEFAULT_REFERENCE_FILTERS);
+        return buildInvokerChain(protocol.refer(type, url), url.getParameter(Constants.REFERENCE_FILTER_KEY), Constants.DEFAULT_REFERENCE_FILTERS);
     }
 
     public void destroy() {

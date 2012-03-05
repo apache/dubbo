@@ -28,12 +28,12 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.cluster.Router;
@@ -54,10 +54,10 @@ public class ScriptRouter implements Router {
     private final String rule;
     
     public ScriptRouter(URL url) {
-        String type = url.getParameter(RpcConstants.TYPE_KEY);
-        String rule = url.getParameterAndDecoded(RpcConstants.RULE_KEY);
+        String type = url.getParameter(Constants.TYPE_KEY);
+        String rule = url.getParameterAndDecoded(Constants.RULE_KEY);
         if (type == null || type.length() == 0){
-            type = RpcConstants.DEFAULT_SCRIPT_TYPE_KEY;
+            type = Constants.DEFAULT_SCRIPT_TYPE_KEY;
         }
         if (rule == null || rule.length() == 0){
             throw new IllegalStateException(new IllegalStateException("route rule can not be empty. rule:" + rule));

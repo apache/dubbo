@@ -32,7 +32,6 @@ import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
 import com.alibaba.dubbo.remoting.exchange.ExchangeHandler;
 import com.alibaba.dubbo.remoting.exchange.Exchangers;
 import com.alibaba.dubbo.remoting.exchange.ResponseFuture;
-import com.alibaba.dubbo.rpc.RpcConstants;
 
 /**
  * dubbo protocol support class.
@@ -62,7 +61,7 @@ final class LazyConnectExchangeClient implements ExchangeClient{
         //lazy connect ,need set send.reconnect = true, to avoid channel bad status. 
         this.url = url.addParameter(Constants.SEND_RECONNECT_KEY, Boolean.TRUE.toString());
         this.requestHandler = requestHandler;
-        this.initialState = url.getParameter(RpcConstants.LAZY_CONNECT_INITIAL_STATE_KEY,RpcConstants.DEFAULT_LAZY_CONNECT_INITIAL_STATE);
+        this.initialState = url.getParameter(Constants.LAZY_CONNECT_INITIAL_STATE_KEY,Constants.DEFAULT_LAZY_CONNECT_INITIAL_STATE);
         this.requestWithWarning = url.getParameter(REQUEST_WITH_WARNING_KEY, false);
     }
     

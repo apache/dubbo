@@ -39,7 +39,6 @@ import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.ProxyFactory;
-import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.StaticContext;
 import com.alibaba.dubbo.rpc.cluster.Cluster;
 import com.alibaba.dubbo.rpc.cluster.directory.StaticDirectory;
@@ -250,19 +249,19 @@ public class ReferenceConfig<T> extends AbstractConsumerConfig {
             throw new IllegalStateException("method config error : return attribute must be set true when onreturn or onthrow has been setted.");
         }
         //convert onreturn methodName to Method
-        String onReturnMethodKey = StaticContext.getKey(map,method.getName(),RpcConstants.ON_RETURN_METHOD_KEY);
+        String onReturnMethodKey = StaticContext.getKey(map,method.getName(),Constants.ON_RETURN_METHOD_KEY);
         Object onReturnMethod = attributes.get(onReturnMethodKey);
         if (onReturnMethod != null && onReturnMethod instanceof String){
             attributes.put(onReturnMethodKey, getMethodByName(method.getOnreturn().getClass(), onReturnMethod.toString()));
         }
         //convert onthrow methodName to Method
-        String onThrowMethodKey = StaticContext.getKey(map,method.getName(),RpcConstants.ON_THROW_METHOD_KEY);
+        String onThrowMethodKey = StaticContext.getKey(map,method.getName(),Constants.ON_THROW_METHOD_KEY);
         Object onThrowMethod = attributes.get(onThrowMethodKey);
         if (onThrowMethod != null && onThrowMethod instanceof String){
             attributes.put(onThrowMethodKey, getMethodByName(method.getOnthrow().getClass(), onThrowMethod.toString()));
         }
         //convert oninvoke methodName to Method
-        String onInvokeMethodKey = StaticContext.getKey(map,method.getName(),RpcConstants.ON_INVOKE_METHOD_KEY);
+        String onInvokeMethodKey = StaticContext.getKey(map,method.getName(),Constants.ON_INVOKE_METHOD_KEY);
         Object onInvokeMethod = attributes.get(onInvokeMethodKey);
         if (onInvokeMethod != null && onInvokeMethod instanceof String){
             attributes.put(onInvokeMethodKey, getMethodByName(method.getOninvoke().getClass(), onInvokeMethod.toString()));
@@ -299,7 +298,7 @@ public class ReferenceConfig<T> extends AbstractConsumerConfig {
                             url = url.setPath(interfaceName);
                         }
                         if (Constants.REGISTRY_PROTOCOL.equals(url.getProtocol())) {
-                            urls.add(url.addParameterAndEncoded(RpcConstants.REFER_KEY, StringUtils.toQueryString(map)));
+                            urls.add(url.addParameterAndEncoded(Constants.REFER_KEY, StringUtils.toQueryString(map)));
                         } else {
                             urls.add(ClusterUtils.mergeUrl(url, map));
                         }
@@ -313,7 +312,7 @@ public class ReferenceConfig<T> extends AbstractConsumerConfig {
                         if (monitorUrl != null) {
                             map.put(Constants.MONITOR_KEY, URL.encode(monitorUrl.toFullString()));
                         }
-                	    urls.add(u.addParameterAndEncoded(RpcConstants.REFER_KEY, StringUtils.toQueryString(map)));
+                	    urls.add(u.addParameterAndEncoded(Constants.REFER_KEY, StringUtils.toQueryString(map)));
                     }
             	}
             	if (urls == null || urls.size() == 0) {

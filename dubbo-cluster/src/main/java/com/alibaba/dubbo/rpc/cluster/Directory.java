@@ -41,7 +41,7 @@ public interface Directory<T> extends Node {
 
     /**
      * list invokers.
-     * directory根据invocation中attachment是否有RpcConstants.INVOCATION_NEED_MOCK，来判断获取的是normal invokers or mock invokers
+     * directory根据invocation中attachment是否有Constants.INVOCATION_NEED_MOCK，来判断获取的是normal invokers or mock invokers
      * 
      * @return invokers
      */

@@ -21,12 +21,12 @@ import org.easymock.EasyMock;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Filter;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
-import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.protocol.dubbo.filter.FutureFilter;
@@ -83,7 +83,7 @@ public class FutureFilterTest {
         RpcResult result = new RpcResult();
         result.setException(new RuntimeException());
         EasyMock.expect(invoker.invoke(invocation)).andReturn(result).anyTimes();
-        URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1&"+RpcConstants.ON_THROW_METHOD_KEY+"=echo");
+        URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1&"+Constants.ON_THROW_METHOD_KEY+"=echo");
         EasyMock.expect(invoker.getUrl()).andReturn(url).anyTimes();
         EasyMock.replay(invoker);
         eventFilter.invoke(invoker, invocation).recreate();

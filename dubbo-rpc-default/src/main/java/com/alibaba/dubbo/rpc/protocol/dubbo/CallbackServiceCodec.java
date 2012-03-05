@@ -34,7 +34,6 @@ import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.ProxyFactory;
-import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 
 /**
@@ -83,9 +82,9 @@ class CallbackServiceCodec {
         
         Map<String,String> params = new HashMap<String,String>(3);
         //不需要在重新new client
-        params.put(RpcConstants.IS_SERVER_KEY, Boolean.FALSE.toString());
+        params.put(Constants.IS_SERVER_KEY, Boolean.FALSE.toString());
         //标识callback 变于排查问题
-        params.put(RpcConstants.IS_CALLBACK_SERVICE, Boolean.TRUE.toString());
+        params.put(Constants.IS_CALLBACK_SERVICE, Boolean.TRUE.toString());
         String group = url.getParameter(Constants.GROUP_KEY);
         if (group != null && group.length() > 0){
             params.put(Constants.GROUP_KEY,group);
@@ -149,11 +148,11 @@ class CallbackServiceCodec {
                     
                     //convert error fail fast .
                     //ignore concurrent problem. 
-                    Set<Invoker<?>> callbackInvokers = (Set<Invoker<?>>)channel.getAttribute(RpcConstants.CHANNEL_CALLBACK_KEY);
+                    Set<Invoker<?>> callbackInvokers = (Set<Invoker<?>>)channel.getAttribute(Constants.CHANNEL_CALLBACK_KEY);
                     if (callbackInvokers == null){
                         callbackInvokers = new ConcurrentHashSet<Invoker<?>>(1);
                         callbackInvokers.add(invoker);
-                        channel.setAttribute(RpcConstants.CHANNEL_CALLBACK_KEY, callbackInvokers);
+                        channel.setAttribute(Constants.CHANNEL_CALLBACK_KEY, callbackInvokers);
                     }
                     logger.info ("method "+inv.getMethodName()+" include a callback service :"+invoker.getUrl() +", a proxy :"+invoker +" has been created.") ;
                 }
@@ -162,7 +161,7 @@ class CallbackServiceCodec {
             if(proxy != null){
                 Invoker<?> invoker = (Invoker<?>)channel.getAttribute(invokerCacheKey);
                 try{
-                    Set<Invoker<?>> callbackInvokers = (Set<Invoker<?>>)channel.getAttribute(RpcConstants.CHANNEL_CALLBACK_KEY);
+                    Set<Invoker<?>> callbackInvokers = (Set<Invoker<?>>)channel.getAttribute(Constants.CHANNEL_CALLBACK_KEY);
                     if (callbackInvokers != null ) {
                         callbackInvokers.remove(invoker);
                     }
@@ -180,24 +179,24 @@ class CallbackServiceCodec {
     }
     
     private static String getClientSideCallbackServiceCacheKey(int instid){
-        return RpcConstants.CALLBACK_SERVICE_KEY+"."+instid;
+        return Constants.CALLBACK_SERVICE_KEY+"."+instid;
     }
     private static String getServerSideCallbackServiceCacheKey(Channel channel, String interfaceClass, int instid){
-        return RpcConstants.CALLBACK_SERVICE_PROXY_KEY+"."+System.identityHashCode(channel)+"."+ interfaceClass +"."+instid;
+        return Constants.CALLBACK_SERVICE_PROXY_KEY+"."+System.identityHashCode(channel)+"."+ interfaceClass +"."+instid;
     }
     private static String getServerSideCallbackInvokerCacheKey(Channel channel, String interfaceClass, int instid){
         return getServerSideCallbackServiceCacheKey(channel, interfaceClass, instid) + "." + "invoker";
     }
     
     private static String getClientSideCountKey(String interfaceClass){
-        return RpcConstants.CALLBACK_SERVICE_KEY+"."+interfaceClass+".COUNT";
+        return Constants.CALLBACK_SERVICE_KEY+"."+interfaceClass+".COUNT";
     }
     private static String getServerSideCountKey(Channel channel, String interfaceClass){
-        return RpcConstants.CALLBACK_SERVICE_PROXY_KEY+"."+System.identityHashCode(channel)+"."+interfaceClass+".COUNT";
+        return Constants.CALLBACK_SERVICE_PROXY_KEY+"."+System.identityHashCode(channel)+"."+interfaceClass+".COUNT";
     }
     private static boolean isInstancesOverLimit(Channel channel, URL url ,String interfaceClass, int instid, boolean isServer){
         Integer count = (Integer)channel.getAttribute(isServer ? getServerSideCountKey(channel,interfaceClass) : getClientSideCountKey(interfaceClass));
-        int limit = url.getParameter(RpcConstants.CALLBACK_INSTANCES_LIMIT_KEY, RpcConstants.DEFAULT_CALLBACK_INSTANCES);
+        int limit = url.getParameter(Constants.CALLBACK_INSTANCES_LIMIT_KEY, Constants.DEFAULT_CALLBACK_INSTANCES);
         if (count != null && count >= limit){
             //client side error
             throw new IllegalStateException("interface " + interfaceClass +" `s callback instances num exceed providers limit :"+ limit 

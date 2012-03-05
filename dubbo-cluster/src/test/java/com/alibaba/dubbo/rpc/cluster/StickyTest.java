@@ -25,11 +25,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
-import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.cluster.Directory;
@@ -68,8 +68,8 @@ public class StickyTest {
     }
     URL url = URL.valueOf("test://test:11/test?" 
             +"&loadbalance=roundrobin"
-//            +"&"+RpcConstants.CLUSTER_AVAILABLE_CHECK_KEY+"=true"
-            +"&"+RpcConstants.CLUSTER_STICKY_KEY+"=true"
+//            +"&"+Constants.CLUSTER_AVAILABLE_CHECK_KEY+"=true"
+            +"&"+Constants.CLUSTER_STICKY_KEY+"=true"
             );
     
     int runs = 1;
@@ -109,9 +109,9 @@ public class StickyTest {
     
     public int testSticky(String methodName, boolean check) {
         if (methodName == null){
-            url = url.addParameter(RpcConstants.CLUSTER_STICKY_KEY, String.valueOf(check));
+            url = url.addParameter(Constants.CLUSTER_STICKY_KEY, String.valueOf(check));
         }else {
-            url = url.addParameter(methodName+"."+RpcConstants.CLUSTER_STICKY_KEY, String.valueOf(check));
+            url = url.addParameter(methodName+"."+Constants.CLUSTER_STICKY_KEY, String.valueOf(check));
         }
         EasyMock.reset(invoker1);
         EasyMock.expect(invoker1.invoke(invocation)).andReturn(result).anyTimes();

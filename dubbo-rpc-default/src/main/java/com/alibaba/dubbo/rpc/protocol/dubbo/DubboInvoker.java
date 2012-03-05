@@ -28,7 +28,6 @@ import com.alibaba.dubbo.remoting.exchange.ResponseFuture;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
-import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
@@ -94,7 +93,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
             boolean isAsync = getUrl().getMethodParameter(methodName, Constants.ASYNC_KEY, false);
             int timeout = getUrl().getMethodParameter(methodName, Constants.TIMEOUT_KEY,Constants.DEFAULT_TIMEOUT);
             if (isAsync) { 
-                boolean isReturn = getUrl().getMethodParameter(methodName, RpcConstants.RETURN_KEY, true);
+                boolean isReturn = getUrl().getMethodParameter(methodName, Constants.RETURN_KEY, true);
                 if (isReturn) {
                     ResponseFuture future = currentClient.request(inv, timeout) ;
                     RpcContext.getContext().setFuture(new FutureAdapter<Object>(future));

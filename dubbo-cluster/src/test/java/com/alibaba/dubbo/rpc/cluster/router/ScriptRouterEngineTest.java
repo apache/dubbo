@@ -25,9 +25,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.cluster.Router;
 
@@ -44,7 +44,7 @@ public class ScriptRouterEngineTest {
     private URL SCRIPT_URL = URL.valueOf("script://javascript?type=javascript");
     
     private URL getRouteUrl(String rule) {
-        return SCRIPT_URL.addParameterAndEncoded(RpcConstants.RULE_KEY, rule);
+        return SCRIPT_URL.addParameterAndEncoded(Constants.RULE_KEY, rule);
     }
     
     @Test

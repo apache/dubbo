@@ -28,13 +28,13 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
-import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.cluster.Directory;
@@ -117,7 +117,7 @@ public class AbstractClusterInvokerTest {
             }
         };
         
-        cluster_nocheck = new AbstractClusterInvoker(dic,url.addParameterIfAbsent(RpcConstants.CLUSTER_AVAILABLE_CHECK_KEY, Boolean.FALSE.toString())) {
+        cluster_nocheck = new AbstractClusterInvoker(dic,url.addParameterIfAbsent(Constants.CLUSTER_AVAILABLE_CHECK_KEY, Boolean.FALSE.toString())) {
             @Override
             protected Result doInvoke(Invocation invocation, List invokers, LoadBalance loadbalance)
                     throws RpcException {

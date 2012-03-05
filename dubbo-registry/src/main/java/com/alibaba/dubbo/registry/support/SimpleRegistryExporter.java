@@ -26,7 +26,6 @@ import com.alibaba.dubbo.registry.RegistryService;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.ProxyFactory;
-import com.alibaba.dubbo.rpc.RpcConstants;
 
 /**
  * SimpleRegistryExporter
@@ -57,8 +56,8 @@ public class SimpleRegistryExporter {
                 new URL("dubbo", NetUtils.getLocalHost(), port, RegistryService.class.getName())
                 .setPath(RegistryService.class.getName())
                 .addParameter(Constants.INTERFACE_KEY, RegistryService.class.getName())
-                .addParameter(RpcConstants.CLUSTER_STICKY_KEY, "true")
-                .addParameter(RpcConstants.CALLBACK_INSTANCES_LIMIT_KEY, "1000")
+                .addParameter(Constants.CLUSTER_STICKY_KEY, "true")
+                .addParameter(Constants.CALLBACK_INSTANCES_LIMIT_KEY, "1000")
                 .addParameter("ondisconnect", "disconnect")
                 .addParameter("subscribe.1.callback", "true")
                 .addParameter("unsubscribe.1.callback", "false")));

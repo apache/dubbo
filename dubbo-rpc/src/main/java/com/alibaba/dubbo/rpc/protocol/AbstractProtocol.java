@@ -29,7 +29,6 @@ import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
-import com.alibaba.dubbo.rpc.RpcConstants;
 
 /**
  * abstract ProtocolSupport.
@@ -97,15 +96,15 @@ public abstract class AbstractProtocol implements Protocol {
 	}
 	@SuppressWarnings("deprecation")
     protected static int getServerShutdownTimeout() {
-        int timeout = RpcConstants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
-        String value = ConfigUtils.getProperty(RpcConstants.SHUTDOWN_TIMEOUT_KEY);
+        int timeout = Constants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
+        String value = ConfigUtils.getProperty(Constants.SHUTDOWN_WAIT_KEY);
         if (value != null && value.length() > 0) {
             try{
                 timeout = Integer.parseInt(value);
             }catch (Exception e) {
             }        
         } else {
-            value = ConfigUtils.getProperty(RpcConstants.SHUTDOWN_TIMEOUT_SECONDS_KEY);
+            value = ConfigUtils.getProperty(Constants.SHUTDOWN_WAIT_SECONDS_KEY);
             if (value != null && value.length() > 0) {
                 try{
                     timeout = Integer.parseInt(value) * 1000;

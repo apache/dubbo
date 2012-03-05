@@ -60,4 +60,8 @@ public class MockInvocation implements Invocation {
         return getAttachments().get(key);
     }
 
+    public String getAttachment(String key, String defaultValue) {
+        return getAttachments().get(key);
+    }
+
 }

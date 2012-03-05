@@ -24,6 +24,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.registry.NotifyListener;
@@ -37,7 +38,6 @@ import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.Result;
-import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.cluster.support.FailfastCluster;
 import com.alibaba.dubbo.rpc.protocol.AbstractInvoker;
 import com.alibaba.dubbo.rpc.protocol.dubbo.DubboInvoker;
@@ -86,7 +86,7 @@ public class RegistryProtocolTest {
 
         Protocol dubboProtocol = DubboProtocol.getDubboProtocol();
         registryProtocol.setProtocol(dubboProtocol);
-        URL newRegistryUrl = registryUrl.addParameter(RpcConstants.EXPORT_KEY, serviceUrl);
+        URL newRegistryUrl = registryUrl.addParameter(Constants.EXPORT_KEY, serviceUrl);
         DubboInvoker<DemoService> invoker = new DubboInvoker<DemoService>(DemoService.class,
                 newRegistryUrl, new ExchangeClient[] { new MockedClient("10.20.20.20", 2222, true) });
         Exporter<DemoService> exporter = registryProtocol.export(invoker);
@@ -100,7 +100,7 @@ public class RegistryProtocolTest {
     
     @Test
     public void testNotifyOverride() throws Exception{
-        URL newRegistryUrl = registryUrl.addParameter(RpcConstants.EXPORT_KEY, serviceUrl);
+        URL newRegistryUrl = registryUrl.addParameter(Constants.EXPORT_KEY, serviceUrl);
         Invoker<RegistryProtocolTest> invoker = new MockInvoker<RegistryProtocolTest>(RegistryProtocolTest.class, newRegistryUrl);
         Exporter<?> exporter = protocol.export(invoker);
         RegistryProtocol rprotocol = RegistryProtocol.getRegistryProtocol();
@@ -128,7 +128,7 @@ public class RegistryProtocolTest {
      */
     @Test
     public void testNotifyOverride_notmatch() throws Exception{
-        URL newRegistryUrl = registryUrl.addParameter(RpcConstants.EXPORT_KEY, serviceUrl);
+        URL newRegistryUrl = registryUrl.addParameter(Constants.EXPORT_KEY, serviceUrl);
         Invoker<RegistryProtocolTest> invoker = new MockInvoker<RegistryProtocolTest>(RegistryProtocolTest.class, newRegistryUrl);
         Exporter<?> exporter = protocol.export(invoker);
         RegistryProtocol rprotocol = RegistryProtocol.getRegistryProtocol();
@@ -147,7 +147,7 @@ public class RegistryProtocolTest {
      */
     @Test
     public void testDestoryRegistry(){
-        URL newRegistryUrl = registryUrl.addParameter(RpcConstants.EXPORT_KEY, serviceUrl);
+        URL newRegistryUrl = registryUrl.addParameter(Constants.EXPORT_KEY, serviceUrl);
         Invoker<RegistryProtocolTest> invoker = new MockInvoker<RegistryProtocolTest>(RegistryProtocolTest.class, newRegistryUrl);
         Exporter<?> exporter = protocol.export(invoker);
         destroyRegistryProtocol();

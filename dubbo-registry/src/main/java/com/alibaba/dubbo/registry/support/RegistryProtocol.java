@@ -33,7 +33,6 @@ import com.alibaba.dubbo.registry.RegistryFactory;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
-import com.alibaba.dubbo.rpc.RpcConstants;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.cluster.Cluster;
 import com.alibaba.dubbo.rpc.protocol.InvokerWrapper;
@@ -186,7 +185,7 @@ public class RegistryProtocol implements Protocol {
      * @return
      */
     private URL getProviderUrl(final Invoker<?> origininvoker){
-        String export = origininvoker.getUrl().getParameterAndDecoded(RpcConstants.EXPORT_KEY);
+        String export = origininvoker.getUrl().getParameterAndDecoded(Constants.EXPORT_KEY);
         if (export == null || export.length() == 0) {
             throw new IllegalArgumentException("The registry export url is null! registry: " + origininvoker.getUrl());
         }
@@ -211,7 +210,7 @@ public class RegistryProtocol implements Protocol {
         Registry registry = registryFactory.getRegistry(url);
 
         // group="a,b" or group="*"
-        Map<String, String> qs = StringUtils.parseQueryString(url.getParameterAndDecoded(RpcConstants.REFER_KEY));
+        Map<String, String> qs = StringUtils.parseQueryString(url.getParameterAndDecoded(Constants.REFER_KEY));
         String group = qs.get(Constants.GROUP_KEY);
         if (group != null && group.length() > 0 ) {
             if ( ( Constants.COMMA_SPLIT_PATTERN.split( group ) ).length > 1
