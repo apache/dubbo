@@ -1,1 +1,1 @@
-http\://code.alibabatech.com/schema/dubbo/dubbo.xsd=com/alibaba/dubbo/config/spring/schema/dubbo.xsd
+http\://code.alibabatech.com/schema/dubbo/dubbo.xsd=META-INF/dubbo.xsd
