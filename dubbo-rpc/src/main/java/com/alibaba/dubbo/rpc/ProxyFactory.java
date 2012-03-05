@@ -21,7 +21,7 @@ import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 
 /**
- * ProxyFactory. (SPI, Singleton, ThreadSafe)
+ * ProxyFactory. (API/SPI, Singleton, ThreadSafe)
  * 
  * @author william.liangf
  */

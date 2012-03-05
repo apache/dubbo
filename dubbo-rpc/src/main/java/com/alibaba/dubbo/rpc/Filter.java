@@ -29,7 +29,10 @@ public interface Filter {
 	 * do invoke filter.
 	 * 
 	 * <code>
-     *     return invoker.invoke(invocation);
+	 * // before filter
+     * Result result = invoker.invoke(invocation);
+     * // after filter
+     * return result;
      * </code>
      * 
      * @see com.alibaba.dubbo.rpc.Invoker#invoke(Invocation)

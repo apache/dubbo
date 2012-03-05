@@ -20,7 +20,7 @@ import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 
 /**
- * Protocol. (SPI, Singleton, ThreadSafe)
+ * Protocol. (API/SPI, Singleton, ThreadSafe)
  * 
  * @author william.liangf
  */

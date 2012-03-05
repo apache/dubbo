@@ -25,7 +25,7 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 
 /**
- * Rpc invocation.
+ * RPC Invocation.
  * 
  * @serial Don't change the class name and properties.
  * @author qian.lei

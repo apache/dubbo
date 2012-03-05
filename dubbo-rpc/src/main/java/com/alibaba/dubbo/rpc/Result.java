@@ -16,9 +16,9 @@
 package com.alibaba.dubbo.rpc;
 
 /**
- * RPC invoke result. (API, Prototype, ThreadSafe)
+ * RPC invoke result. (API, Prototype, NonThreadSafe)
  * 
- * @serial Don't change the class name.
+ * @serial Don't change the class name and package name.
  * @see com.alibaba.dubbo.rpc.Invoker#invoke(Invocation)
  * @see com.alibaba.dubbo.rpc.RpcResult
  * @author qianlei

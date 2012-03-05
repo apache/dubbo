@@ -18,23 +18,15 @@ package com.alibaba.dubbo.rpc;
 import java.util.Map;
 
 /**
- * Rpc invocation. (API, Prototype, ThreadSafe)
+ * Invocation. (API, Prototype, NonThreadSafe)
  * 
- * @serial Don't change the class name.
+ * @serial Don't change the class name and package name.
  * @see com.alibaba.dubbo.rpc.Invoker#invoke(Invocation)
  * @see com.alibaba.dubbo.rpc.RpcInvocation
  * @author qian.lei
  * @author william.liangf
  */
 public interface Invocation {
-
-    /**
-     * get the Invoker.
-     * 
-     * @transient
-     * @return url.
-     */
-    Invoker<?> getInvoker();
 
 	/**
 	 * get method name.
@@ -75,5 +67,21 @@ public interface Invocation {
      * @return attachment value.
      */
 	String getAttachment(String key);
+	
+	/**
+     * get attachment by key with default value.
+     * 
+     * @serial
+     * @return attachment value.
+     */
+	String getAttachment(String key, String defaultValue);
+
+    /**
+     * get the invoker in current context.
+     * 
+     * @transient
+     * @return invoker.
+     */
+    Invoker<?> getInvoker();
 
 }
