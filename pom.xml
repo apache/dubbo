@@ -60,6 +60,7 @@
 		<jetty_version>6.1.26</jetty_version>
 		<validation_version>1.0.0.GA</validation_version>
 		<hibernate_validator_version>4.2.0.Final</hibernate_validator_version>
+		<jcache_version>0.4</jcache_version>
 		<!-- Log libs -->
 		<log4j_version>1.2.16</log4j_version>
 		<slf4j_version>1.6.2</slf4j_version>
@@ -196,6 +197,11 @@
 				<groupId>org.hibernate</groupId>
 				<artifactId>hibernate-validator</artifactId>
 				<version>${hibernate_validator_version}</version>
+			</dependency>
+			<dependency>
+				<groupId>javax.cache</groupId>
+				<artifactId>cache-api</artifactId>
+				<version>${jcache_version}</version>
 			</dependency>
 			<!-- Log libs -->
 			<dependency>
