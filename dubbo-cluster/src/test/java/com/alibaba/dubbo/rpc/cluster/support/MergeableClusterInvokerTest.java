@@ -112,7 +112,7 @@ public class MergeableClusterInvokerTest {
         EasyMock.expect( invocation.getArguments() ).andReturn( new Object[]{ } ).anyTimes();
         EasyMock.expect( invocation.getAttachments() ).andReturn( new HashMap<String, String>() )
                 .anyTimes();
-        EasyMock.expect( invocation.getInvoker().getUrl() ).andReturn( url ).anyTimes();
+        EasyMock.expect( invocation.getInvoker() ).andReturn( firstInvoker ).anyTimes();
         EasyMock.replay( invocation );
 
         EasyMock.expect( firstInvoker.getUrl() ).andReturn(
@@ -172,7 +172,7 @@ public class MergeableClusterInvokerTest {
                 .anyTimes();
         EasyMock.expect( invocation.getAttachments() ).andReturn( new HashMap<String, String>() )
                 .anyTimes();
-        EasyMock.expect( invocation.getInvoker().getUrl() ).andReturn( url ).anyTimes();
+        EasyMock.expect( invocation.getInvoker() ).andReturn( firstInvoker ).anyTimes();
         EasyMock.replay( invocation );
 
         EasyMock.expect( firstInvoker.getUrl() ).andReturn(
