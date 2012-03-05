@@ -16,12 +16,11 @@
 package com.alibaba.dubbo.rpc;
 
 import com.alibaba.dubbo.common.Node;
-import com.alibaba.dubbo.common.URL;
 
 /**
  * Invoker. (API/SPI, Prototype, ThreadSafe)
  * 
- * @see com.alibaba.dubbo.rpc.Protocol#refer(Class, URL)
+ * @see com.alibaba.dubbo.rpc.Protocol#refer(Class, com.alibaba.dubbo.common.URL)
  * @see com.alibaba.dubbo.rpc.InvokerListener
  * @see com.alibaba.dubbo.rpc.protocol.AbstractInvoker
  * @author william.liangf
