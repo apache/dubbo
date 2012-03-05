@@ -65,7 +65,7 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
         for( final Invoker<T> invoker : invokers ) {
             Future<Result> future = executor.submit( new Callable<Result>() {
                 public Result call() throws Exception {
-                    return invoker.invoke(new RpcInvocation(invocation, invoker.getUrl()));
+                    return invoker.invoke(new RpcInvocation(invocation, invoker));
                 }
             } );
             results.put( invoker.getUrl().getServiceKey(), future );
