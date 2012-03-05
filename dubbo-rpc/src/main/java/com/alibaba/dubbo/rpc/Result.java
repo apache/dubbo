@@ -54,7 +54,7 @@ public interface Result {
      * if (hasException()) {
      *     throw getException();
      * } else {
-     *     return getResult();
+     *     return getValue();
      * }
      * </code>
      * 

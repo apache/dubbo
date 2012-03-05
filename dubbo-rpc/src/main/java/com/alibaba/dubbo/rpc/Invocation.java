@@ -67,5 +67,13 @@ public interface Invocation {
 	 * @return attachments.
 	 */
 	Map<String, String> getAttachments();
+	
+	/**
+     * get attachment by key.
+     * 
+     * @serial
+     * @return attachment value.
+     */
+	String getAttachment(String key);
 
 }
