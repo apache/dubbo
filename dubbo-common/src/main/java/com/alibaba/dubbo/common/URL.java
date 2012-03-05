@@ -545,9 +545,6 @@ public final class URL implements Serializable {
     public String getMethodParameter(String method, String key) {
         String value = parameters.get(method + "." + key);
         if (value == null || value.length() == 0) {
-            value = parameters.get(Constants.HIDE_KEY_PREFIX + method + "." + key);
-        }
-        if (value == null || value.length() == 0) {
             return getParameter(key);
         }
         return value;
