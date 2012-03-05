@@ -56,7 +56,7 @@ public class GenericFilter implements Filter {
                         && ! (result.getException() instanceof GenericException)) {
                     return new RpcResult(new GenericException(result.getException()));
                 }
-                return new RpcResult(PojoUtils.generalize(result.getResult()));
+                return new RpcResult(PojoUtils.generalize(result.getValue()));
             } catch (NoSuchMethodException e) {
                 throw new RpcException(e.getMessage(), e);
             } catch (ClassNotFoundException e) {

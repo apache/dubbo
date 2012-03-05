@@ -56,7 +56,7 @@ public class EchoFilterTest {
         EasyMock.expect(invoker.getUrl()).andReturn(url).anyTimes();
         EasyMock.replay(invoker);
         Result filterResult = echoFilter.invoke(invoker, invocation);
-        assertEquals("hello", filterResult.getResult());
+        assertEquals("hello", filterResult.getValue());
     }
 
     @SuppressWarnings("unchecked")
@@ -78,6 +78,6 @@ public class EchoFilterTest {
         EasyMock.expect(invoker.getUrl()).andReturn(url).anyTimes();
         EasyMock.replay(invoker);
         Result filterResult = echoFilter.invoke(invoker, invocation);
-        assertEquals("High", filterResult.getResult());
+        assertEquals("High", filterResult.getValue());
     }
 }

@@ -102,7 +102,7 @@ public class TraceFilter implements Filter {
                                 channel.send("\r\n" + RpcContext.getContext().getRemoteAddress() + " -> "  
                                          + invoker.getInterface().getName() 
                                          + "." + invocation.getMethodName() 
-                                         + "(" + JSON.json(invocation.getArguments()) + ")" + " -> " + JSON.json(result.getResult())
+                                         + "(" + JSON.json(invocation.getArguments()) + ")" + " -> " + JSON.json(result.getValue())
                                          + "\r\nelapsed: "+(end - start) +" ms."
                                          + "\r\n\r\n" + prompt + "> ");
                             }

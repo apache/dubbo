@@ -29,15 +29,14 @@ public interface Result {
 	/**
 	 * Get invoke result.
 	 * 
-	 * @return result if has exception throw it.
-	 * @throws Throwable.
+	 * @return result. if no result return null.
 	 */
-	Object getResult();
+	Object getValue();
 
 	/**
 	 * Get exception.
 	 * 
-	 * @return exception if no exception return null.
+	 * @return exception. if no exception return null.
 	 */
 	Throwable getException();
 
@@ -58,7 +57,17 @@ public interface Result {
      *     return getResult();
      * }
      * </code>
+     * 
+     * @return result.
+     * @throws if has exception throw it.
      */
     Object recreate() throws Throwable;
+
+    /**
+     * @deprecated Replace to getValue()
+     * @see com.alibaba.dubbo.rpc.Result#getValue()
+     */
+    @Deprecated
+    Object getResult();
 
 }

@@ -42,7 +42,7 @@ public class CompatibleFilter implements Filter {
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         Result result = invoker.invoke(invocation);
         if (! invocation.getMethodName().startsWith("$") && ! result.hasException()) {
-            Object value = result.getResult();
+            Object value = result.getValue();
             if (value != null) {
                 try {
                     Method method = invoker.getInterface().getMethod(invocation.getMethodName(), invocation.getParameterTypes());

@@ -65,7 +65,7 @@ public class FutureFilterTest {
         EasyMock.expect(invoker.getUrl()).andReturn(url).anyTimes();
         EasyMock.replay(invoker);
         Result filterResult = eventFilter.invoke(invoker, invocation);
-        assertEquals("High", filterResult.getResult());
+        assertEquals("High", filterResult.getValue());
     }
 
     @Test(expected = RuntimeException.class)

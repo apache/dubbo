@@ -65,7 +65,7 @@ public class GenericImplFilter implements Filter {
             Result result = invoker.invoke(invocation2);
             
             if (! result.hasException()) {
-                Object value = result.getResult();
+                Object value = result.getValue();
                 try {
                     Method method = invoker.getInterface().getMethod(methodName, parameterTypes);
                     return new RpcResult(PojoUtils.realize(value, method.getReturnType(), method.getGenericReturnType()));

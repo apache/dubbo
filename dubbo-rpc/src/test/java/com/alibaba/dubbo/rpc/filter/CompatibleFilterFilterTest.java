@@ -105,7 +105,7 @@ public class CompatibleFilterFilterTest {
         EasyMock.expect(invoker.getUrl()).andReturn(url).anyTimes();
         EasyMock.replay(invoker);
         Result filterResult = compatibleFilter.invoke(invoker, invocation);
-        assertEquals(Type.High, filterResult.getResult());
+        assertEquals(Type.High, filterResult.getValue());
     }
 
     @Test
@@ -125,7 +125,7 @@ public class CompatibleFilterFilterTest {
         EasyMock.expect(invoker.getUrl()).andReturn(url).anyTimes();
         EasyMock.replay(invoker);
         Result filterResult = compatibleFilter.invoke(invoker, invocation);
-        assertEquals(Type.High, filterResult.getResult());
+        assertEquals(Type.High, filterResult.getValue());
     }
     
     @Test
@@ -145,7 +145,7 @@ public class CompatibleFilterFilterTest {
         EasyMock.expect(invoker.getUrl()).andReturn(url).anyTimes();
         EasyMock.replay(invoker);
         Result filterResult = compatibleFilter.invoke(invoker, invocation);
-        assertArrayEquals(new String[]{"High"}, (String[])filterResult.getResult());
+        assertArrayEquals(new String[]{"High"}, (String[])filterResult.getValue());
     }
 
     @Test
@@ -165,6 +165,6 @@ public class CompatibleFilterFilterTest {
         EasyMock.expect(invoker.getUrl()).andReturn(url).anyTimes();
         EasyMock.replay(invoker);
         Result filterResult = compatibleFilter.invoke(invoker, invocation);
-        assertEquals("hello", filterResult.getResult());
+        assertEquals("hello", filterResult.getValue());
     }
 }

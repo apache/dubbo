@@ -59,7 +59,7 @@ public class FutureFilter implements Filter {
         if (result.hasException()) {
             fireThrowCallback(invoker, invocation, result.getException());
         } else {
-            fireReturnCallback(invoker, invocation, result.getResult());
+            fireReturnCallback(invoker, invocation, result.getValue());
         }
     }
     
@@ -82,7 +82,7 @@ public class FutureFilter implements Filter {
                     if (result.hasException()) {
                         fireThrowCallback(invoker, invocation, result.getException());
                     } else {
-                        fireReturnCallback(invoker, invocation, result.getResult());
+                        fireReturnCallback(invoker, invocation, result.getValue());
                     }
                 }
                 public void caught(Throwable exception) {

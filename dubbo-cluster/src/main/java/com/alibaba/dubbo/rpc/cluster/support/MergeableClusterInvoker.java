@@ -115,16 +115,16 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
                     if ( !Modifier.isPublic( method.getModifiers() ) ) {
                         method.setAccessible( true );
                     }
-                    result = resultList.remove( 0 ).getResult();
+                    result = resultList.remove( 0 ).getValue();
                     try {
                         if ( method.getReturnType() != void.class
                                 && method.getReturnType().isAssignableFrom( result.getClass() ) ) {
                             for ( Result r : resultList ) {
-                                result = method.invoke( result, r.getResult() );
+                                result = method.invoke( result, r.getValue() );
                             }
                         } else {
                             for ( Result r : resultList ) {
-                                method.invoke( result, r.getResult() );
+                                method.invoke( result, r.getValue() );
                             }
                         }
                     } catch ( Exception e ) {
@@ -147,25 +147,25 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
             } else if ( List.class.isAssignableFrom( returnType ) ) {
                 List<List> args = new ArrayList<List>();
                 for( Result r : resultList ) {
-                    args.add( ( List ) r.getResult() );
+                    args.add( ( List ) r.getValue() );
                 }
                 result = ListMerger.INSTANCE.merge( args.toArray( new List[ args.size() ] ) );
             } else if ( Set.class.isAssignableFrom( returnType ) ) {
                 List<Set> args = new ArrayList<Set>();
                 for( Result r : resultList ) {
-                    args.add( ( Set ) r.getResult() );
+                    args.add( ( Set ) r.getValue() );
                 }
                 result = SetMerger.INSTANCE.merge( args.toArray( new Set[args.size()] ) );
             } else if ( Map.class.isAssignableFrom( returnType ) ) {
                 List<Map> args = new ArrayList<Map>();
                 for( Result r : resultList ) {
-                    args.add( ( Map ) r.getResult() );
+                    args.add( ( Map ) r.getValue() );
                 }
                 result = MapMerger.INSTANCE.merge( args.toArray( new Map[args.size()] ) );
             } else if ( returnType.isArray() ) {
                 List<Object> args = new ArrayList<Object>();
                 for( Result r : resultList ) {
-                    args.add( r.getResult() );
+                    args.add( r.getValue() );
                 }
                 result = ArrayMerger.INSTANCE.merge( args.toArray( new Object[args.size()] ) );
             } else {

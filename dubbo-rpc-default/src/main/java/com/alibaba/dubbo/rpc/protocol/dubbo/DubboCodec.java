@@ -137,7 +137,7 @@ public class DubboCodec extends ExchangeCodec implements Codec {
 
         Throwable th = result.getException();
         if (th == null) {
-            Object ret = result.getResult();
+            Object ret = result.getValue();
             if (ret == null) {
                 out.writeByte(RESPONSE_NULL_VALUE);
             } else {
