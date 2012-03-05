@@ -52,7 +52,7 @@ public class ContextFilter implements Filter {
                 .setLocalAddress(invoker.getUrl().getHost(), 
                                  invoker.getUrl().getPort());
         if (invocation instanceof RpcInvocation) {
-            ((RpcInvocation)invocation).setUrl(invoker.getUrl());
+            ((RpcInvocation)invocation).setInvoker(invoker);
         }
         try {
             return invoker.invoke(invocation);

@@ -124,7 +124,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
                                             + " is DESTROYED, can not be invoked any more!");
         }
         RpcInvocation invocation = (RpcInvocation) inv;
-        invocation.setUrl(getUrl());
+        invocation.setInvoker(this);
         Map<String, String> attachments = new HashMap<String, String>();
         if (attachment != null && attachment.size() > 0) {
             attachments.putAll(attachment);

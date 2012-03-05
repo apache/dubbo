@@ -17,8 +17,6 @@ package com.alibaba.dubbo.rpc;
 
 import java.util.Map;
 
-import com.alibaba.dubbo.common.URL;
-
 /**
  * Rpc invocation. (API, Prototype, ThreadSafe)
  * 
@@ -29,17 +27,19 @@ import com.alibaba.dubbo.common.URL;
  * @author william.liangf
  */
 public interface Invocation {
-    
+
     /**
-     * get the url.
+     * get the Invoker.
      * 
+     * @transient
      * @return url.
      */
-    URL getUrl();
-    
+    Invoker<?> getInvoker();
+
 	/**
 	 * get method name.
 	 * 
+	 * @serial
 	 * @return method name.
 	 */
 	String getMethodName();
@@ -47,6 +47,7 @@ public interface Invocation {
 	/**
 	 * get parameter types.
 	 * 
+	 * @serial
 	 * @return parameter types.
 	 */
 	Class<?>[] getParameterTypes();
@@ -54,6 +55,7 @@ public interface Invocation {
 	/**
 	 * get arguments.
 	 * 
+	 * @serial
 	 * @return arguments.
 	 */
 	Object[] getArguments();
@@ -61,6 +63,7 @@ public interface Invocation {
 	/**
 	 * get attachments.
 	 * 
+	 * @serial
 	 * @return attachments.
 	 */
 	Map<String, String> getAttachments();

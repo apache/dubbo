@@ -21,6 +21,7 @@ import java.util.Map;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invocation;
+import com.alibaba.dubbo.rpc.Invoker;
 
 /**
  * MockInvocation.java
@@ -52,7 +53,7 @@ public class MockInvocation implements Invocation {
         return attachments;
     }
 
-    public URL getUrl() {
+    public Invoker<?> getInvoker() {
         return null;
     }
 

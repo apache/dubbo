@@ -34,10 +34,10 @@ public class RpcUtils {
 
     public static Class<?> getReturnType(Invocation invocation) {
         try {
-            if (invocation != null 
-                    && invocation.getUrl() != null
+            if (invocation != null && invocation.getInvoker() != null
+                    && invocation.getInvoker().getUrl() != null
                     && ! invocation.getMethodName().startsWith("$")) {
-                String service = invocation.getUrl().getServiceName();
+                String service = invocation.getInvoker().getUrl().getServiceName();
                 if (service != null && service.length() > 0) {
                     Class<?> cls = ReflectUtils.forName(service);
                     Method method = cls.getMethod(invocation.getMethodName(), invocation.getParameterTypes());
@@ -55,10 +55,10 @@ public class RpcUtils {
 
     public static Type[] getReturnTypes(Invocation invocation) {
         try {
-            if (invocation != null 
-                    && invocation.getUrl() != null
+            if (invocation != null && invocation.getInvoker() != null
+                    && invocation.getInvoker().getUrl() != null
                     && ! invocation.getMethodName().startsWith("$")) {
-                String service = invocation.getUrl().getServiceName();
+                String service = invocation.getInvoker().getUrl().getServiceName();
                 if (service != null && service.length() > 0) {
                     Class<?> cls = ReflectUtils.forName(service);
                     Method method = cls.getMethod(invocation.getMethodName(), invocation.getParameterTypes());
