@@ -15,13 +15,13 @@
  */
 package com.alibaba.dubbo.common.extensionloader.ext5;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.extension.SPI;
 
 /**
  * @author ding.lid
  */
-@Extension("impl1")
+@SPI("impl1")
 public interface Ext5NoAdaptiveMethod {
     String echo(URL url, String s);
     

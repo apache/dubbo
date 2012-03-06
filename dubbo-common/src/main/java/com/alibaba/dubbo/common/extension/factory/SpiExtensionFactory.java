@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
+ * Copyright 1999-2012 Alibaba Group.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,27 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.container.spring;
+package com.alibaba.dubbo.common.extension.factory;
 
-import org.junit.Assert;
-import org.junit.Test;
-
+import com.alibaba.dubbo.common.extension.ExtensionFactory;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
-import com.alibaba.dubbo.container.Container;
+import com.alibaba.dubbo.common.extension.SPI;
 
 /**
- * StandaloneContainerTest
+ * SpiExtensionFactory
  * 
  * @author william.liangf
  */
-public class SpringContainerTest {
-    
-    @Test
-    public void testContainer() {
-        SpringContainer container = (SpringContainer) ExtensionLoader.getExtensionLoader(Container.class).getExtension("spring");
-        container.start();
-        Assert.assertEquals(SpringContainer.class, container.context.getBean("container").getClass());
-        container.stop();
+public class SpiExtensionFactory implements ExtensionFactory {
+
+    public <T> T getExtension(Class<T> type, String name) {
+        if (type.isInterface() && type.isAnnotationPresent(SPI.class)) {
+            ExtensionLoader<T> loader = ExtensionLoader.getExtensionLoader(type);
+            if (loader.getSupportedExtensions().size() > 0) {
+                return loader.getAdaptiveExtension();
+            }
+        }
+        return null;
     }
 
 }

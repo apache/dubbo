@@ -16,8 +16,8 @@
 package com.alibaba.dubbo.remoting.transport.handler;
 
 
-import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.ChannelHandlerWrapper;
 

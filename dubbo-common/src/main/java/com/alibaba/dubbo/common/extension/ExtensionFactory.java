@@ -15,24 +15,22 @@
  */
 package com.alibaba.dubbo.common.extension;
 
-import com.alibaba.dubbo.common.Extension;
-import com.alibaba.dubbo.common.ExtensionLoader;
 
 /**
- * ExtensionObjectFactory
+ * ExtensionFactory
  * 
  * @author william.liangf
  */
-public class ExtensionObjectFactory implements ObjectFactory {
+@SPI
+public interface ExtensionFactory {
 
-    public <T> T getObject(Class<T> type, String name) {
-        if (type.isInterface() && type.isAnnotationPresent(Extension.class)) {
-            ExtensionLoader<T> loader = ExtensionLoader.getExtensionLoader(type);
-            if (loader.getSupportedExtensions().size() > 0) {
-                return loader.getAdaptiveExtension();
-            }
-        }
-        return null;
-    }
+    /**
+     * Get extension.
+     * 
+     * @param type object type.
+     * @param name object name.
+     * @return object instance.
+     */
+    <T> T getExtension(Class<T> type, String name);
 
 }

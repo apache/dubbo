@@ -17,7 +17,7 @@ package com.alibaba.dubbo.rpc.cluster;
 
 import java.util.List;
 
-import com.alibaba.dubbo.common.Extension;
+import com.alibaba.dubbo.common.extension.SPI;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcException;
@@ -32,7 +32,7 @@ import com.alibaba.dubbo.rpc.cluster.loadbalance.RandomLoadBalance;
  * @author qian.lei
  * @author william.liangf
  */
-@Extension(RandomLoadBalance.NAME)
+@SPI(RandomLoadBalance.NAME)
 public interface LoadBalance {
 
 	/**

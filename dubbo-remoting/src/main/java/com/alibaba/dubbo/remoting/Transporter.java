@@ -17,10 +17,10 @@ package com.alibaba.dubbo.remoting;
 
 import javax.sound.midi.Receiver;
 
-import com.alibaba.dubbo.common.Adaptive;
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.extension.Adaptive;
+import com.alibaba.dubbo.common.extension.SPI;
 
 /**
  * Transporter. (SPI, Singleton, ThreadSafe)
@@ -32,7 +32,7 @@ import com.alibaba.dubbo.common.URL;
  * @author ding.lid
  * @author william.liangf
  */
-@Extension("netty")
+@SPI("netty")
 public interface Transporter {
 
     /**

@@ -15,16 +15,16 @@
  */
 package com.alibaba.dubbo.common.extensionloader.ext6_inject;
 
-import com.alibaba.dubbo.common.Adaptive;
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.extension.Adaptive;
+import com.alibaba.dubbo.common.extension.SPI;
 
 /**
  * 无Default
  * 
  * @author ding.lid
  */
-@Extension
+@SPI
 public interface Ext6 {
     @Adaptive
     String echo(URL url, String s);

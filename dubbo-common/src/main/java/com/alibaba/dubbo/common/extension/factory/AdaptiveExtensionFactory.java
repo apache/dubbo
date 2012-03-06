@@ -13,37 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.common.extension;
+package com.alibaba.dubbo.common.extension.factory;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.alibaba.dubbo.common.Adaptive;
-import com.alibaba.dubbo.common.ExtensionLoader;
+import com.alibaba.dubbo.common.extension.Adaptive;
+import com.alibaba.dubbo.common.extension.ExtensionFactory;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
 
 /**
- * ExtensionFactoryAdaptive
+ * AdaptiveExtensionFactory
  * 
  * @author william.liangf
  */
 @Adaptive
-public class ObjectFactoryAdaptive implements ObjectFactory {
+public class AdaptiveExtensionFactory implements ExtensionFactory {
     
-    private final List<ObjectFactory> factories;
+    private final List<ExtensionFactory> factories;
     
-    public ObjectFactoryAdaptive() {
-        ExtensionLoader<ObjectFactory> loader = ExtensionLoader.getExtensionLoader(ObjectFactory.class);
-        List<ObjectFactory> list = new ArrayList<ObjectFactory>();
+    public AdaptiveExtensionFactory() {
+        ExtensionLoader<ExtensionFactory> loader = ExtensionLoader.getExtensionLoader(ExtensionFactory.class);
+        List<ExtensionFactory> list = new ArrayList<ExtensionFactory>();
         for (String name : loader.getSupportedExtensions()) {
             list.add(loader.getExtension(name));
         }
         factories = Collections.unmodifiableList(list);
     }
 
-    public <T> T getObject(Class<T> type, String name) {
-        for (ObjectFactory factory : factories) {
-            T extension = factory.getObject(type, name);
+    public <T> T getExtension(Class<T> type, String name) {
+        for (ExtensionFactory factory : factories) {
+            T extension = factory.getExtension(type, name);
             if (extension != null) {
                 return extension;
             }

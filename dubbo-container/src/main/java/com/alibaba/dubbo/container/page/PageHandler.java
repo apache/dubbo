@@ -15,15 +15,15 @@
  */
 package com.alibaba.dubbo.container.page;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.extension.SPI;
 
 /**
  * PageHandler
  * 
  * @author william.liangf
  */
-@Extension
+@SPI
 public interface PageHandler {
     
     /**

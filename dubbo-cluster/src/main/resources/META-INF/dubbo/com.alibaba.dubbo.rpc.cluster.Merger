@@ -1,0 +1,4 @@
+com.alibaba.dubbo.rpc.cluster.merger.ArrayMerger
+com.alibaba.dubbo.rpc.cluster.merger.ListMerger
+com.alibaba.dubbo.rpc.cluster.merger.SetMerger
+com.alibaba.dubbo.rpc.cluster.merger.MapMerger

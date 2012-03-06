@@ -15,9 +15,9 @@
  */
 package com.alibaba.dubbo.registry;
 
-import com.alibaba.dubbo.common.Adaptive;
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.extension.Adaptive;
+import com.alibaba.dubbo.common.extension.SPI;
 
 /**
  * RegistryFactory. (SPI, Singleton, ThreadSafe)
@@ -27,7 +27,7 @@ import com.alibaba.dubbo.common.URL;
  * @see com.alibaba.dubbo.registry.support.AbstractRegistryFactory
  * @author william.liangf
  */
-@Extension("dubbo")
+@SPI("dubbo")
 public interface RegistryFactory {
 
     /**

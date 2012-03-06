@@ -229,8 +229,32 @@
 								</includes>
 							</artifactSet>
 							<transformers>
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+								<transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/dubbo/com.alibaba.dubbo.common.extension.ExtensionFactory</resource>
+									<resource>META-INF/dubbo/com.alibaba.dubbo.common.serialize.Serialization</resource>
+									<resource>META-INF/dubbo/com.alibaba.dubbo.common.status.StatusChecker</resource>
+									<resource>META-INF/dubbo/com.alibaba.dubbo.common.threadpool.ThreadPool</resource>
+									<resource>META-INF/dubbo/com.alibaba.dubbo.container.Container</resource>
+									<resource>META-INF/dubbo/com.alibaba.dubbo.container.page.PageHandler</resource>
+									<resource>META-INF/dubbo/com.alibaba.dubbo.monitor.MonitorFactory</resource>
+									<resource>META-INF/dubbo/com.alibaba.dubbo.registry.RegistryFactory</resource>
+									<resource>META-INF/dubbo/com.alibaba.dubbo.remoting.ChannelHandlerWrapper</resource>
+									<resource>META-INF/dubbo/com.alibaba.dubbo.remoting.Codec</resource>
+									<resource>META-INF/dubbo/com.alibaba.dubbo.remoting.exchange.Exchanger</resource>
+									<resource>META-INF/dubbo/com.alibaba.dubbo.remoting.http.HttpBinder</resource>
+									<resource>META-INF/dubbo/com.alibaba.dubbo.remoting.p2p.Networker</resource>
+									<resource>META-INF/dubbo/com.alibaba.dubbo.remoting.telnet.TelnetHandler</resource>
+									<resource>META-INF/dubbo/com.alibaba.dubbo.remoting.Transporter</resource>
+									<resource>META-INF/dubbo/com.alibaba.dubbo.rpc.cluster.Cluster</resource>
+									<resource>META-INF/dubbo/com.alibaba.dubbo.rpc.cluster.LoadBalance</resource>
+									<resource>META-INF/dubbo/com.alibaba.dubbo.rpc.cluster.Merger</resource>
+									<resource>META-INF/dubbo/com.alibaba.dubbo.rpc.cluster.RouterFactory</resource>
+									<resource>META-INF/dubbo/com.alibaba.dubbo.rpc.Filter</resource>
+									<resource>META-INF/dubbo/com.alibaba.dubbo.rpc.InvokerListener</resource>
+									<resource>META-INF/dubbo/com.alibaba.dubbo.rpc.Protocol</resource>
+									<resource>META-INF/dubbo/com.alibaba.dubbo.rpc.protocol.rmi.RmiProxyFactory</resource>
+									<resource>META-INF/dubbo/com.alibaba.dubbo.rpc.ProxyFactory</resource>
+								</transformer>
 							</transformers>
 						</configuration>
 					</execution>

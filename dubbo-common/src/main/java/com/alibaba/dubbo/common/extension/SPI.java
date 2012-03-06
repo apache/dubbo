@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2012 Alibaba Group.
+ * Copyright 1999-2011 Alibaba Group.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,23 +15,28 @@
  */
 package com.alibaba.dubbo.common.extension;
 
-import com.alibaba.dubbo.common.Extension;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * ObjectFactory
+ * 扩展点接口的标识。
  * 
  * @author william.liangf
+ * @author ding.lid
  */
-@Extension
-public interface ObjectFactory {
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE})
+public @interface SPI {
 
     /**
-     * Get object.
-     * 
-     * @param type object type.
-     * @param name object name.
-     * @return object instance.
+     * 缺省扩展点名。
      */
-    <T> T getObject(Class<T> type, String name);
+	String value() default "";
+
+	String adaptive() default "";
 
 }

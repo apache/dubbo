@@ -22,19 +22,21 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 扩展点接口的标识。
- * 
+ * 请使用KV格式的配置文件：META-INF/dubbo/com.xxx.Protocol，文件内容：xxx=com.xxx.XxxProtocol
+ * @deprecated
  * @author william.liangf
  * @author ding.lid
  */
+@Deprecated
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface Extension {
 
     /**
-     * 缺省扩展点名。
+     * @deprecated
      */
+    @Deprecated
 	String value() default "";
 
 }

@@ -15,17 +15,17 @@
  */
 package com.alibaba.dubbo.rpc;
 
-import com.alibaba.dubbo.common.Adaptive;
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.extension.Adaptive;
+import com.alibaba.dubbo.common.extension.SPI;
 
 /**
  * ProxyFactory. (API/SPI, Singleton, ThreadSafe)
  * 
  * @author william.liangf
  */
-@Extension("javassist")
+@SPI("javassist")
 public interface ProxyFactory {
 
     /**

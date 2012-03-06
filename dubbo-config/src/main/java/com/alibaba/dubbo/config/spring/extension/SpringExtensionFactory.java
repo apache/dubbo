@@ -19,7 +19,7 @@ import java.util.Set;
 
 import org.springframework.context.ApplicationContext;
 
-import com.alibaba.dubbo.common.extension.ObjectFactory;
+import com.alibaba.dubbo.common.extension.ExtensionFactory;
 import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
 
 /**
@@ -27,7 +27,7 @@ import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
  * 
  * @author william.liangf
  */
-public class SpringObjectFactory implements ObjectFactory {
+public class SpringExtensionFactory implements ExtensionFactory {
     
     private static final Set<ApplicationContext> contexts = new ConcurrentHashSet<ApplicationContext>();
     
@@ -40,7 +40,7 @@ public class SpringObjectFactory implements ObjectFactory {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T getObject(Class<T> type, String name) {
+    public <T> T getExtension(Class<T> type, String name) {
         for (ApplicationContext context : contexts) {
             if (context.containsBean(name)) {
                 Object bean = context.getBean(name);

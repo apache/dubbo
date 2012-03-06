@@ -15,7 +15,7 @@
  */
 package com.alibaba.dubbo.remoting.telnet;
 
-import com.alibaba.dubbo.common.Extension;
+import com.alibaba.dubbo.common.extension.SPI;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.RemotingException;
 
@@ -24,7 +24,7 @@ import com.alibaba.dubbo.remoting.RemotingException;
  * 
  * @author william.liangf
  */
-@Extension
+@SPI
 public interface TelnetHandler {
 
     /**

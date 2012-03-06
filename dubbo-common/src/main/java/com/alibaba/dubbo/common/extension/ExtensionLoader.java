@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.common;
+package com.alibaba.dubbo.common.extension;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -30,8 +30,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
+import javassist.ClassPool;
+
+import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.bytecode.ClassGenerator;
-import com.alibaba.dubbo.common.extension.ObjectFactory;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
@@ -59,6 +61,8 @@ public class ExtensionLoader<T> {
     
 	private static final String SERVICES_DIRECTORY = "META-INF/services/";
 
+    private static final String DUBBO_DIRECTORY = "META-INF/dubbo/";
+
     private static final Pattern NAME_SEPARATOR = Pattern.compile("\\s*[,]+\\s*");
     
     private static final ConcurrentMap<Class<?>, ExtensionLoader<?>> EXTENSION_LOADERS = new ConcurrentHashMap<Class<?>, ExtensionLoader<?>>();
@@ -84,10 +88,10 @@ public class ExtensionLoader<T> {
     
     private Map<String, IllegalStateException> exceptions = new ConcurrentHashMap<String, IllegalStateException>();
 
-    private final ObjectFactory objectFactory;
+    private final ExtensionFactory objectFactory;
     
     private static <T> boolean withExtensionAnnotation(Class<T> type) {
-        return type.isAnnotationPresent(Extension.class);
+        return type.isAnnotationPresent(SPI.class);
     }
     
     @SuppressWarnings("unchecked")
@@ -109,7 +113,7 @@ public class ExtensionLoader<T> {
 
     private ExtensionLoader(Class<?> type) {
         this.type = type;
-        objectFactory = (type == ObjectFactory.class ? null : ExtensionLoader.getExtensionLoader(ObjectFactory.class).getAdaptiveExtension());
+        objectFactory = (type == ExtensionFactory.class ? null : ExtensionLoader.getExtensionLoader(ExtensionFactory.class).getAdaptiveExtension());
     }
     
     public String getExtensionName(T extensionInstance) {
@@ -269,7 +273,7 @@ public class ExtensionLoader<T> {
                         Class<?> pt = method.getParameterTypes()[0];
                         try {
                             String property = method.getName().length() > 3 ? method.getName().substring(3, 4).toLowerCase() + method.getName().substring(4) : "";
-                            Object object = objectFactory.getObject(pt, property);
+                            Object object = objectFactory.getExtension(pt, property);
                             if (object != null) {
                                 method.invoke(instance, object);
                             }
@@ -312,7 +316,7 @@ public class ExtensionLoader<T> {
 	}
 	
     private Map<String, Class<?>> loadExtensionClasses() {
-        final Extension defaultAnnotation = type.getAnnotation(Extension.class);
+        final SPI defaultAnnotation = type.getAnnotation(SPI.class);
         if(defaultAnnotation != null) {
             String value = defaultAnnotation.value();
             if(value != null && (value = value.trim()).length() > 0) {
@@ -325,12 +329,17 @@ public class ExtensionLoader<T> {
             }
         }
         
-        ClassLoader classLoader = findClassLoader();
         Map<String, Class<?>> extensionClasses = new HashMap<String, Class<?>>();
-        String fileName = null;
+        loadFile(extensionClasses, DUBBO_DIRECTORY);
+        loadFile(extensionClasses, SERVICES_DIRECTORY);
+        return extensionClasses;
+    }
+    
+    private void loadFile(Map<String, Class<?>> extensionClasses, String dir) {
+        String fileName = dir + type.getName();
         try {
-            fileName = SERVICES_DIRECTORY + type.getName();
             Enumeration<java.net.URL> urls;
+            ClassLoader classLoader = findClassLoader();
             if (classLoader != null) {
                 urls = classLoader.getResources(fileName);
             } else {
@@ -424,11 +433,10 @@ public class ExtensionLoader<T> {
             logger.error("Exception when load extension class(interface: " +
                     type + ", description file: " + fileName + ").", t);
         }
-        return extensionClasses;
     }
     
     private String findAnnotationName(Class<?> clazz) {
-        Extension extension = clazz.getAnnotation(Extension.class);
+        SPI extension = clazz.getAnnotation(SPI.class);
         return extension == null ? null : extension.value();
     }
     
@@ -465,6 +473,8 @@ public class ExtensionLoader<T> {
             throw new IllegalStateException("No adaptive method on extension " + type.getName() + ", refuse to create the adaptive class!");
         
         ClassGenerator cg = ClassGenerator.newInstance(classLoader);
+        ClassPool pool = cg.getClassPool();
+        pool.importPackage(ExtensionLoader.class.getPackage().getName());
         cg.setClassName(type.getName() + "$Adpative");
         cg.addInterface(type);
         cg.addDefaultConstructor();
@@ -586,7 +596,7 @@ public class ExtensionLoader<T> {
                 code.append(s);
                 
                 s = String.format("%s extension = (%<s)%s.getExtensionLoader(%s.class).getExtension(extName);",
-                        type.getName(), ExtensionLoader.class.getName(), type.getName());
+                        type.getName(), ExtensionLoader.class.getSimpleName(), type.getName());
                 code.append(s);
                 
                 // return statement
@@ -603,7 +613,7 @@ public class ExtensionLoader<T> {
                 }
                 code.append(");");
             }
-            
+            System.out.println(code);
             cg.addMethod(method.getName(), method.getModifiers(), rt, pts,
                     method.getExceptionTypes(), code.toString());
         }

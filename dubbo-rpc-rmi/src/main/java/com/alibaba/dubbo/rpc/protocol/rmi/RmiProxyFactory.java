@@ -17,8 +17,8 @@ package com.alibaba.dubbo.rpc.protocol.rmi;
 
 import java.rmi.Remote;
 
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.extension.SPI;
 import com.alibaba.dubbo.rpc.Invoker;
 
 /**
@@ -26,7 +26,7 @@ import com.alibaba.dubbo.rpc.Invoker;
  * 
  * @author william.liangf
  */
-@Extension
+@SPI
 public interface RmiProxyFactory {
 
     <T> Remote getProxy(Invoker<T> invoker);

@@ -33,8 +33,8 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
-import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.extensionloader.ext1.Ext1;
 import com.alibaba.dubbo.common.extensionloader.ext1.impl.Ext1Impl1;
 import com.alibaba.dubbo.common.extensionloader.ext1.impl.Ext1Impl2;

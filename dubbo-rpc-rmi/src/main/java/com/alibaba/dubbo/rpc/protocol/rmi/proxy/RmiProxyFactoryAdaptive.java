@@ -17,9 +17,9 @@ package com.alibaba.dubbo.rpc.protocol.rmi.proxy;
 
 import java.rmi.Remote;
 
-import com.alibaba.dubbo.common.Adaptive;
-import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.extension.Adaptive;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.protocol.rmi.RmiProxyFactory;
 

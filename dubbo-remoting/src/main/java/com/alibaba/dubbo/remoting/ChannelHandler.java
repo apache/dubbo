@@ -15,7 +15,7 @@
  */
 package com.alibaba.dubbo.remoting;
 
-import com.alibaba.dubbo.common.Extension;
+import com.alibaba.dubbo.common.extension.SPI;
 
 
 /**
@@ -26,7 +26,7 @@ import com.alibaba.dubbo.common.Extension;
  * @author qian.lei
  * @author william.liangf
  */
-@Extension
+@SPI
 public interface ChannelHandler {
 
     /**

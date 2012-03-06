@@ -15,16 +15,16 @@
  */
 package com.alibaba.dubbo.common.extensionloader.ext2;
 
-import com.alibaba.dubbo.common.Adaptive;
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.extension.Adaptive;
+import com.alibaba.dubbo.common.extension.SPI;
 
 /**
  * 无Default
  * 
  * @author ding.lid
  */
-@Extension
+@SPI
 public interface Ext2 {
     @Adaptive
     String echo(UrlHolder holder, String s);

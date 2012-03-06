@@ -1,2 +1,0 @@
-adaptive=com.alibaba.dubbo.common.extension.ObjectFactoryAdaptive
-extension=com.alibaba.dubbo.common.extension.ExtensionObjectFactory

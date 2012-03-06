@@ -15,10 +15,10 @@
  */
 package com.alibaba.dubbo.remoting;
 
-import com.alibaba.dubbo.common.Adaptive;
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.extension.Adaptive;
+import com.alibaba.dubbo.common.extension.SPI;
 import com.alibaba.dubbo.remoting.transport.handler.DefaultChannelHandlerWrapper;
 
 /**
@@ -26,7 +26,7 @@ import com.alibaba.dubbo.remoting.transport.handler.DefaultChannelHandlerWrapper
  * 
  * @author chao.liuc
  */
-@Extension(DefaultChannelHandlerWrapper.NAME)
+@SPI(DefaultChannelHandlerWrapper.NAME)
 public interface ChannelHandlerWrapper {
     
     /**

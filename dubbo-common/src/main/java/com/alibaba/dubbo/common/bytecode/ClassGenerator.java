@@ -284,6 +284,10 @@ public final class ClassGenerator
 		return this;
 	}
 
+	public ClassPool getClassPool() {
+	    return mPool;
+	}
+
 	public Class<?> toClass()
 	{
 		if( mCtc != null )

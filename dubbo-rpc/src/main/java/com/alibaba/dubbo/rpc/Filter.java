@@ -15,14 +15,14 @@
  */
 package com.alibaba.dubbo.rpc;
 
-import com.alibaba.dubbo.common.Extension;
+import com.alibaba.dubbo.common.extension.SPI;
 
 /**
  * Filter. (SPI, Singleton, ThreadSafe)
  * 
  * @author william.liangf
  */
-@Extension
+@SPI
 public interface Filter {
 
 	/**

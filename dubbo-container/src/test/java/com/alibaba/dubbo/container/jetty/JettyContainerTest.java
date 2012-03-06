@@ -18,7 +18,7 @@ package com.alibaba.dubbo.container.jetty;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.alibaba.dubbo.common.ExtensionLoader;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.container.Container;
 
 /**

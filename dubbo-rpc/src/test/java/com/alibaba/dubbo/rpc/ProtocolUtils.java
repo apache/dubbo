@@ -15,8 +15,8 @@
  */
 package com.alibaba.dubbo.rpc;
 
-import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
 
 /**
  * TODO Comment of ProtocolUtils

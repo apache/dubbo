@@ -23,7 +23,7 @@ import static org.junit.matchers.JUnitMatchers.containsString;
 
 import org.junit.Test;
 
-import com.alibaba.dubbo.common.ExtensionLoader;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.remoting.Transporter;
 
 /**
