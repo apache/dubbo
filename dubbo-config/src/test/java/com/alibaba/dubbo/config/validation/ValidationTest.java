@@ -51,8 +51,7 @@ public class ValidationTest {
             ReferenceConfig<ValidationService> reference = new ReferenceConfig<ValidationService>();
             reference.setApplication(new ApplicationConfig("validation-consumer"));
             reference.setInterface(ValidationService.class);
-            reference.setUrl("dubbo://127.0.0.1:29582");
-            reference.setFilter("validation");
+            reference.setUrl("dubbo://127.0.0.1:29582?validation=true");
             ValidationService validationService = reference.get();
             try {
                 // Save OK
