@@ -30,11 +30,11 @@ public class ResultMergerTest {
 
     @Test
     public void testListMerger() throws Exception {
-        List<String> list1 = new ArrayList<String>();
+        List<Object> list1 = new ArrayList<Object>();
         list1.add( null );
         list1.add( "1" );
         list1.add( "2" );
-        List<String> list2 = new ArrayList<String>();
+        List<Object> list2 = new ArrayList<Object>();
         list2.add( "3" );
         list2.add( "4" );
         
@@ -53,11 +53,11 @@ public class ResultMergerTest {
     
     @Test
     public void testSetMerger() throws Exception {
-        Set<String> set1 = new HashSet<String>();
+        Set<Object> set1 = new HashSet<Object>();
         set1.add( null );
         set1.add( "1" );
         set1.add( "2" );
-        Set<String> set2 = new HashSet<String>();
+        Set<Object> set2 = new HashSet<Object>();
         set2.add( "2" );
         set2.add( "3" );
         
