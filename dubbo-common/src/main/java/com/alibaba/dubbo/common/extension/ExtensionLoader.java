@@ -195,13 +195,13 @@ public class ExtensionLoader<T> {
         String[] mismatchs = activate.mismatch();
         for (String key : keys) {
             String value = url.getParameter(key);
-            if (matchs != null && matchs.length == 0) {
+            if (matchs != null && matchs.length > 0) {
                 for (String match : matchs) {
                     if (StringUtils.isEquals(value, match)) {
                         return true;
                     }
                 }
-            } else if (mismatchs != null && mismatchs.length == 0) {
+            } else if (mismatchs != null && mismatchs.length > 0) {
                 for (String match : matchs) {
                     if (! StringUtils.isEquals(value, match)) {
                         return true;
