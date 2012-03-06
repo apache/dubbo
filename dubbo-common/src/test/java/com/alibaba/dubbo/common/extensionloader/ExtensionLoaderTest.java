@@ -168,7 +168,7 @@ public class ExtensionLoaderTest {
             assertThat(expected.getMessage(), 
                     allOf(containsString("com.alibaba.dubbo.common.extensionloader.ExtensionLoaderTest"),
                             containsString("is not extension"),
-                            containsString("WITHOUT @Extension Annotation")));
+                            containsString("WITHOUT @SPI Annotation")));
        
         }
     }
