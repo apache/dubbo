@@ -72,7 +72,7 @@ import com.alibaba.dubbo.rpc.RpcException;
  * 
  * @author william.liangf
  */
-@Activate(group = Constants.PROVIDER, value = Constants.VALIDATION_KEY)
+@Activate(group = {Constants.CONSUMER, Constants.PROVIDER}, value = Constants.VALIDATION_KEY)
 public class ValidationFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(ValidationFilter.class);
@@ -84,36 +84,38 @@ public class ValidationFilter implements Filter {
     }
 
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        try {
-            Class<?> clazz = invoker.getInterface();
-            String methodName = invocation.getMethodName();
-            String methodClassName = clazz.getName() + "$" + toUpperMethoName(methodName);
-            Class<?> methodClass = null;
+        if (invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.VALIDATION_KEY, false)) {
             try {
-                methodClass = Class.forName(methodClassName, false, Thread.currentThread().getContextClassLoader());
-            } catch (ClassNotFoundException e) {
-            }
-            Set<ConstraintViolation<?>> violations = new HashSet<ConstraintViolation<?>>();
-            Method method = clazz.getMethod(methodName, invocation.getParameterTypes());
-            Object parameterBean = getMethodParameterBean(clazz, method, invocation.getArguments());
-            if (parameterBean != null) {
-                if (methodClass != null) {
-                    violations.addAll(validator.validate(parameterBean, Default.class, clazz, methodClass));
-                } else {
-                    violations.addAll(validator.validate(parameterBean, Default.class, clazz));
+                Class<?> clazz = invoker.getInterface();
+                String methodName = invocation.getMethodName();
+                String methodClassName = clazz.getName() + "$" + toUpperMethoName(methodName);
+                Class<?> methodClass = null;
+                try {
+                    methodClass = Class.forName(methodClassName, false, Thread.currentThread().getContextClassLoader());
+                } catch (ClassNotFoundException e) {
                 }
+                Set<ConstraintViolation<?>> violations = new HashSet<ConstraintViolation<?>>();
+                Method method = clazz.getMethod(methodName, invocation.getParameterTypes());
+                Object parameterBean = getMethodParameterBean(clazz, method, invocation.getArguments());
+                if (parameterBean != null) {
+                    if (methodClass != null) {
+                        violations.addAll(validator.validate(parameterBean, Default.class, clazz, methodClass));
+                    } else {
+                        violations.addAll(validator.validate(parameterBean, Default.class, clazz));
+                    }
+                }
+                for (Object arg : invocation.getArguments()) {
+                    validate(violations, arg, clazz, methodClass);
+                }
+                if (violations.size() > 0) {
+                    ConstraintViolationException e = new ConstraintViolationException("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + violations, violations);
+                    throw new RpcException(e.getMessage(), e);
+                }
+            } catch (RpcException e) {
+                throw e;
+            } catch (Throwable t) {
+                logger.error(t.getMessage(), t);
             }
-            for (Object arg : invocation.getArguments()) {
-                validate(violations, arg, clazz, methodClass);
-            }
-            if (violations.size() > 0) {
-                ConstraintViolationException e = new ConstraintViolationException("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + violations, violations);
-                throw new RpcException(e.getMessage(), e);
-            }
-        } catch (RpcException e) {
-            throw e;
-        } catch (Throwable t) {
-            logger.error(t.getMessage(), t);
         }
         return invoker.invoke(invocation);
     }
