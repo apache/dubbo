@@ -170,21 +170,6 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                                         value = null;
                                     }
                                     reference = value;
-                                    if (! "id".equals(property) 
-                                            && ! "name".equals(property) 
-                                            && ! "interface".equals(property)) {
-                                        String sysProperty = element.getPrefix() + "." + element.getLocalName() + "." + id + "." + property;
-                                        String sysValue = System.getProperty(sysProperty);
-                                        if (sysValue != null && sysValue.trim().length() > 0) {
-                                            reference = sysValue.trim();
-                                        } else {
-                                            sysProperty = element.getPrefix() + "." + element.getLocalName() + "." + property;
-                                            sysValue = System.getProperty(sysProperty);
-                                            if (sysValue != null && sysValue.trim().length() > 0) {
-                                                reference = sysValue.trim();
-                                            }
-                                        }
-                                    }
                                 } else if ("protocol".equals(property) 
                                         && ExtensionLoader.getExtensionLoader(Protocol.class).hasExtension(value)
                                         && (! parserContext.getRegistry().containsBeanDefinition(value)
