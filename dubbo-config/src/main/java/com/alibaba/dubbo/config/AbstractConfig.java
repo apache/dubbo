@@ -139,7 +139,6 @@ public abstract class AbstractConfig implements Serializable {
         if (config == null) {
             return;
         }
-        String tag = getTagName(config.getClass());
         Method[] methods = config.getClass().getMethods();
         for (Method method : methods) {
             try {
@@ -175,12 +174,6 @@ public abstract class AbstractConfig implements Serializable {
                             pre = (String)parameters.get(key);
                             if (pre != null && pre.length() > 0) {
                                 str = pre + "," + str;
-                            }
-                        }
-                        if (tag != null && tag.length() > 0) {
-                            String sysval = System.getProperty("dubbo." + tag + "." + prop);
-                            if (sysval != null && sysval.trim().length() > 0) {
-                                str = sysval.trim();
                             }
                         }
                         if (prefix != null && prefix.length() > 0) {
