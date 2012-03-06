@@ -46,6 +46,16 @@
 		</dependency>
 		<dependency>
 			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo-validation</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo-cache</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
 			<artifactId>dubbo-registry-default</artifactId>
 			<version>${project.parent.version}</version>
 			<scope>test</scope>
@@ -103,7 +113,7 @@
 							<goal>upload-single</goal>
 						</goals>
 						<configuration>
-							<fromFile>${basedir}/src/main/resources/com/alibaba/dubbo/config/spring/schema/dubbo.xsd</fromFile>
+							<fromFile>${basedir}/src/main/resources/META-INF/dubbo.xsd</fromFile>
 							<url>dav:http://code.alibabatech.com/schema/dubbo/</url>
 							<serverId>opensesame.releases.account</serverId>
 						</configuration>

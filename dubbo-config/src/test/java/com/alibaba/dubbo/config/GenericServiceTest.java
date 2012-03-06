@@ -68,19 +68,19 @@ public class GenericServiceTest {
             DemoService demoService = reference.get();
             try {
                 // say name
-                //Assert.assertEquals("Generic Haha", demoService.sayName("Haha"));
+                Assert.assertEquals("Generic Haha", demoService.sayName("Haha"));
                 // get users
                 List<User> users = new ArrayList<User>();
                 users.add(new User("Aaa"));
                 users = demoService.getUsers(users);
                 Assert.assertEquals("Aaa", users.get(0).getName());
                 // throw demo exception
-                /*try {
+                try {
                     demoService.throwDemoException();
                     Assert.fail();
                 } catch (DemoException e) {
                     Assert.assertEquals("Generic", e.getMessage());
-                }*/
+                }
             } finally {
                 reference.destroy();
             }

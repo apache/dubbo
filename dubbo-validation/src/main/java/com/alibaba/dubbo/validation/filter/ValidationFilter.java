@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.filter;
+package com.alibaba.dubbo.validation.filter;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;

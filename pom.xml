@@ -87,6 +87,8 @@
 		<module>dubbo-rpc-injvm</module>
 		<module>dubbo-rpc-rmi</module>
 		<module>dubbo-rpc-hessian</module>
+		<module>dubbo-validation</module>
+		<module>dubbo-cache</module>
 		<module>dubbo-cluster</module>
 		<module>dubbo-registry</module>
 		<module>dubbo-registry-default</module>

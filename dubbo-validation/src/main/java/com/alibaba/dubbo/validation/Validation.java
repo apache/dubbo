@@ -13,34 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.config.api;
+package com.alibaba.dubbo.validation;
 
-import java.io.Serializable;
+import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.extension.SPI;
 
 /**
- * User
+ * Validation
  * 
  * @author william.liangf
  */
-public class User implements Serializable {
-    
-    private static final long serialVersionUID = 1L;
-    
-    private String name;
+@SPI
+public interface Validation {
 
-    public User() {
-    }
-
-    public User(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
+    void validate(URL url, Class<?> type, String methodName, Class<?>[] ptypes, Object[] args) throws Exception;
 
 }

@@ -216,6 +216,8 @@
 									<include>com.alibaba:dubbo-rpc-injvm</include>
 									<include>com.alibaba:dubbo-rpc-rmi</include>
 									<include>com.alibaba:dubbo-rpc-hessian</include>
+									<include>com.alibaba:dubbo-validation</include>
+									<include>com.alibaba:dubbo-cache</include>
 									<include>com.alibaba:dubbo-cluster</include>
 									<include>com.alibaba:dubbo-registry</include>
 									<include>com.alibaba:dubbo-registry-default</include>
@@ -229,6 +231,10 @@
 								</includes>
 							</artifactSet>
 							<transformers>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/dubbo/com.alibaba.dubbo.cache.CacheFactory</resource>
+								</transformer>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
 									<resource>META-INF/dubbo/com.alibaba.dubbo.common.extension.ExtensionFactory</resource>

@@ -19,5 +19,7 @@ package com.alibaba.dubbo.config.api;
  * @author ding.lid
  */
 public interface Box {
+    
     String getName();
+    
 }
