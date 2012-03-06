@@ -83,6 +83,9 @@ public class MethodConfig extends AbstractMethodConfig {
     public void setName(String name) {
         checkMethodName("name", name);
         this.name = name;
+        if (id == null || id.length() == 0) {
+            id = name;
+        }
     }
     
     public Integer getStat() {

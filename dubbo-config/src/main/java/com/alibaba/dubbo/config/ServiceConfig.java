@@ -411,7 +411,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (provider == null) {
             provider = new ProviderConfig();
         }
-        appendProperties(provider, "dubbo.provider");
+        appendProperties(provider);
     }
 
     private void checkProtocol() {
@@ -441,7 +441,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             setProtocol(protocolConfig);
         }
         for (ProtocolConfig protocolConfig : protocols) {
-            appendProperties(protocolConfig, "dubbo.protocol");
+            appendProperties(protocolConfig);
         }
     }
 
@@ -478,6 +478,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     public void setInterface(String interfaceName) {
         this.interfaceName = interfaceName;
+        if (id == null || id.length() == 0) {
+            id = interfaceName;
+        }
     }
     
     public void setInterface(Class<?> interfaceClass) {
@@ -485,7 +488,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             throw new IllegalStateException("The interface class " + interfaceClass + " is not a interface!");
         }
         this.interfaceClass = interfaceClass;
-        this.interfaceName = interfaceClass == null ? null : interfaceClass.getName();
+        setInterface(interfaceClass == null ? (String) null : interfaceClass.getName());
     }
 
     public T getRef() {

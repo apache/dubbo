@@ -30,7 +30,7 @@
     <dubbo:protocol name="dubbo" port="20813" />
     <dubbo:protocol name="rmi" port="10913" />
     
-    <dubbo:provider protocol="dubbo" />
+    <dubbo:provider protocol="dubbo,rmi" />
     
     <!-- 暴露服务配置 -->
     <dubbo:service interface="com.alibaba.dubbo.config.api.DemoService" ref="demoService" />

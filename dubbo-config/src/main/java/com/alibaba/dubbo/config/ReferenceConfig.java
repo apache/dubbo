@@ -372,7 +372,7 @@ public class ReferenceConfig<T> extends AbstractConsumerConfig {
                 consumer.setCheck(!Boolean.parseBoolean(c));
             }
         }
-        appendProperties(consumer, "dubbo.consumer");
+        appendProperties(consumer);
     }
 
 	public Class<?> getInterfaceClass() {
@@ -411,6 +411,9 @@ public class ReferenceConfig<T> extends AbstractConsumerConfig {
 
     public void setInterface(String interfaceName) {
         this.interfaceName = interfaceName;
+        if (id == null || id.length() == 0) {
+            id = interfaceName;
+        }
     }
     
     public void setInterface(Class<?> interfaceClass) {
@@ -418,7 +421,7 @@ public class ReferenceConfig<T> extends AbstractConsumerConfig {
             throw new IllegalStateException("The interface class " + interfaceClass + " is not a interface!");
         }
         this.interfaceClass = interfaceClass;
-        this.interfaceName = interfaceClass == null ? null : interfaceClass.getName();
+        setInterface(interfaceClass == null ? (String) null : interfaceClass.getName());
     }
     
     public String getVersion() {

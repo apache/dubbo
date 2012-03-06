@@ -99,6 +99,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
         		throw new IllegalStateException("Duplicate spring bean id " + id);
         	}
             parserContext.getRegistry().registerBeanDefinition(id, beanDefinition);
+            beanDefinition.getPropertyValues().addPropertyValue("id", id);
         }
         if (ProtocolConfig.class.equals(beanClass)) {
             for (String name : parserContext.getRegistry().getBeanDefinitionNames()) {

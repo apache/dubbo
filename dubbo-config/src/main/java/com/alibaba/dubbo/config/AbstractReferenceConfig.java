@@ -117,7 +117,7 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
                                                     + ", Please add <dubbo:registry address=\"...\" /> to your spring config. If you want unregister, please set <dubbo:service registry=\"N/A\" />");
         }
         for (RegistryConfig registryConfig : registries) {
-            appendProperties(registryConfig, "dubbo.registry");
+            appendProperties(registryConfig);
         }
     }
 
@@ -134,7 +134,7 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
             throw new IllegalStateException(
                                             "No such application config! Please add <dubbo:application name=\"...\" /> to your spring config.");
         }
-        appendProperties(application, "dubbo.application");
+        appendProperties(application);
         
         String wait = ConfigUtils.getProperty(Constants.SHUTDOWN_WAIT_KEY);
         if (wait != null && wait.trim().length() > 0) {
@@ -196,7 +196,7 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
                 return null;
             }
         }
-        appendProperties(monitor, "dubbo.monitor");
+        appendProperties(monitor);
         Map<String, String> map = new HashMap<String, String>();
         map.put(Constants.INTERFACE_KEY, MonitorService.class.getName());
         appendParameters(map, monitor);

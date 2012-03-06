@@ -66,26 +66,24 @@ public abstract class AbstractConfig implements Serializable {
         this.id = id;
     }
 
-    protected static void appendProperties(AbstractConfig config, String prefix) {
+    protected static void appendProperties(AbstractConfig config) {
         if (config == null) {
             return;
         }
+        String prefix = "dubbo." + getTagName(config.getClass()) + ".";
         Method[] methods = config.getClass().getMethods();
         for (Method method : methods) {
             try {
                 String name = method.getName();
                 if (name.length() > 3 && name.startsWith("set") && Modifier.isPublic(method.getModifiers()) 
                         && method.getParameterTypes().length == 1 && isPrimitive(method.getParameterTypes()[0])) {
-                    String key = name.substring(3, 4).toLowerCase() + name.substring(4);
-                    if (prefix != null && prefix.length() > 0) {
-                        key = prefix + "." + key;
-                    }
+                    String property = name.substring(3, 4).toLowerCase() + name.substring(4);
                     String value = null;
                     if (config.getId() != null && config.getId().length() > 0) {
-                        value = System.getProperty(key + "." + config.getId());
+                        value = System.getProperty(prefix + config.getId() + "." + property);
                     }
                     if (value == null || value.length() == 0) {
-                        value = System.getProperty(key);
+                        value = System.getProperty(prefix + property);
                     }
                     if (value == null || value.length() == 0) {
                         Method getter;
@@ -101,10 +99,10 @@ public abstract class AbstractConfig implements Serializable {
                         if (getter != null) {
                             if (getter.invoke(config, new Object[0]) == null) {
                                 if (config.getId() != null && config.getId().length() > 0) {
-                                    value = ConfigUtils.getProperty(key + "." + config.getId());
+                                    value = ConfigUtils.getProperty(prefix + config.getId() + "." + property);
                                 }
                                 if (value == null || value.length() == 0) {
-                                    value = ConfigUtils.getProperty(key);
+                                    value = ConfigUtils.getProperty(prefix + property);
                                 }
                             }
                         }
