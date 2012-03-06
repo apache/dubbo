@@ -20,6 +20,8 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.junit.Test;
+
 public class StringUtilsTest extends TestCase
 {
 	public void testJoin() throws Exception
@@ -55,4 +57,13 @@ public class StringUtilsTest extends TestCase
 	    String out = StringUtils.join(list, ":");
 	    assertEquals("v1:v2:v3", out);
 	}
+	
+	@Test
+	public void testCamelToSplitName() throws Exception
+    {
+	    assertEquals("ab-cd-ef", StringUtils.camelToSplitName("abCdEf", "-"));
+        assertEquals("ab-cd-ef", StringUtils.camelToSplitName("AbCdEf", "-"));
+        assertEquals("ab-cd-ef", StringUtils.camelToSplitName("ab-cd-ef", "-"));
+        assertEquals("abcdef", StringUtils.camelToSplitName("abcdef", "-"));
+    }
 }
