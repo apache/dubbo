@@ -36,7 +36,7 @@ import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.transport.AbstractServer;
-import com.alibaba.dubbo.remoting.transport.handler.ChannelHandlers;
+import com.alibaba.dubbo.remoting.transport.dispather.ChannelHandlers;
 
 /**
  * MinaServer

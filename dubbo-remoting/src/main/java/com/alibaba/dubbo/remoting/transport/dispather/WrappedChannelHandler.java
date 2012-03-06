@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.remoting.transport.handler;
+package com.alibaba.dubbo.remoting.transport.dispather;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

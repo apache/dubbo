@@ -22,6 +22,7 @@ import com.alibaba.dubbo.common.serialize.Serialization;
 import com.alibaba.dubbo.common.status.StatusChecker;
 import com.alibaba.dubbo.common.threadpool.ThreadPool;
 import com.alibaba.dubbo.registry.support.AbstractRegistryFactory;
+import com.alibaba.dubbo.remoting.ChannelDispather;
 import com.alibaba.dubbo.remoting.Codec;
 import com.alibaba.dubbo.remoting.Transporter;
 import com.alibaba.dubbo.remoting.exchange.Exchanger;
@@ -90,6 +91,12 @@ public class ProtocolConfig extends AbstractConfig {
     
     // 信息交换方式
     private String              exchanger;
+    
+    // 信息线程模型派发方式
+    private String              dispather;
+
+    // 对称网络组网方式
+    private String              networker;
     
     // 服务器端实现
     private String              server;
@@ -341,6 +348,23 @@ public class ProtocolConfig extends AbstractConfig {
     public void setExchanger(String exchanger) {
         checkExtension(Exchanger.class, "exchanger", exchanger);
         this.exchanger = exchanger;
+    }
+
+    public String getDispather() {
+        return dispather;
+    }
+
+    public void setDispather(String dispather) {
+        checkExtension(ChannelDispather.class, "dispather", exchanger);
+        this.dispather = dispather;
+    }
+
+    public String getNetworker() {
+        return networker;
+    }
+
+    public void setNetworker(String networker) {
+        this.networker = networker;
     }
 
     public Map<String, String> getParameters() {

@@ -1,5 +1,0 @@
-default=com.alibaba.dubbo.remoting.transport.handler.DefaultChannelHandlerWrapper
-direct=com.alibaba.dubbo.remoting.transport.handler.DirectChannelHandlerWrapper
-execution=com.alibaba.dubbo.remoting.transport.handler.ExecutionChannelHandlerWrapper
-message=com.alibaba.dubbo.remoting.transport.handler.MessageOnlyChannelHandlerWrapper
-connection=com.alibaba.dubbo.remoting.transport.handler.ConnectionOrderedChannelHandlerWrapper

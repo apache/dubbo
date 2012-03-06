@@ -29,7 +29,7 @@ import com.alibaba.dubbo.remoting.exchange.ExchangeChannel;
 import com.alibaba.dubbo.remoting.exchange.ExchangeServer;
 import com.alibaba.dubbo.remoting.exchange.Exchangers;
 import com.alibaba.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
-import com.alibaba.dubbo.remoting.transport.handler.ExecutionChannelHandlerWrapper;
+import com.alibaba.dubbo.remoting.transport.dispather.execution.ExecutionChannelDispather;
 
 /**
  * PerformanceServer
@@ -88,7 +88,7 @@ public class PerformanceServerTest extends TestCase {
         final int threads = PerformanceUtils.getIntProperty(Constants.THREADS_KEY, Constants.DEFAULT_THREADS);
         final int iothreads = PerformanceUtils.getIntProperty(Constants.IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS);
         final int buffer = PerformanceUtils.getIntProperty(Constants.BUFFER_KEY, Constants.DEFAULT_BUFFER_SIZE);
-        final String channelHandler = PerformanceUtils.getProperty(Constants.CHANNEL_HANDLER_KEY, ExecutionChannelHandlerWrapper.NAME);
+        final String channelHandler = PerformanceUtils.getProperty(Constants.CHANNEL_HANDLER_KEY, ExecutionChannelDispather.NAME);
         
         
         // 启动服务器

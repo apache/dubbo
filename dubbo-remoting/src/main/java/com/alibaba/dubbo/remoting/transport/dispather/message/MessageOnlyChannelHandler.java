@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.remoting.transport.handler;
+package com.alibaba.dubbo.remoting.transport.dispather.message;
 
 import java.util.concurrent.ExecutorService;
 
@@ -23,7 +23,9 @@ import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.ExecutionException;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.exchange.Request;
-import com.alibaba.dubbo.remoting.transport.handler.ChannelEventRunnable.ChannelState;
+import com.alibaba.dubbo.remoting.transport.dispather.ChannelEventRunnable;
+import com.alibaba.dubbo.remoting.transport.dispather.WrappedChannelHandler;
+import com.alibaba.dubbo.remoting.transport.dispather.ChannelEventRunnable.ChannelState;
 
 public class MessageOnlyChannelHandler extends WrappedChannelHandler {
     

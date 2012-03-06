@@ -19,6 +19,7 @@ import java.util.Arrays;
 
 import com.alibaba.dubbo.common.status.StatusChecker;
 import com.alibaba.dubbo.common.threadpool.ThreadPool;
+import com.alibaba.dubbo.remoting.ChannelDispather;
 import com.alibaba.dubbo.remoting.Transporter;
 import com.alibaba.dubbo.remoting.exchange.Exchanger;
 import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
@@ -80,6 +81,12 @@ public class ProviderConfig extends AbstractServiceConfig {
     
     // 信息交换方式
     private String              exchanger;
+
+    // 信息线程模型派发方式
+    private String              dispather;
+
+    // 对称网络组网方式
+    private String              networker;
     
     // 服务器端实现
     private String              server;
@@ -328,7 +335,24 @@ public class ProviderConfig extends AbstractServiceConfig {
         checkExtension(Exchanger.class, "exchanger", exchanger);
         this.exchanger = exchanger;
     }
-    
+
+    public String getDispather() {
+        return dispather;
+    }
+
+    public void setDispather(String dispather) {
+        checkExtension(ChannelDispather.class, "dispather", exchanger);
+        this.dispather = dispather;
+    }
+
+    public String getNetworker() {
+        return networker;
+    }
+
+    public void setNetworker(String networker) {
+        this.networker = networker;
+    }
+
     public Integer getWait() {
         return wait;
     }

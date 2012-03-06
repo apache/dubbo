@@ -13,23 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.remoting.transport.handler;
+package com.alibaba.dubbo.remoting.transport.dispather.all;
 
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.ChannelHandler;
-import com.alibaba.dubbo.remoting.ChannelHandlerWrapper;
+import com.alibaba.dubbo.remoting.ChannelDispather;
 
 /**
  * 默认的线程池配置
  * 
  * @author chao.liuc
  */
-public class DefaultChannelHandlerWrapper implements ChannelHandlerWrapper {
+public class AllChannelDispather implements ChannelDispather {
     
-    public static final String NAME = "default";
+    public static final String NAME = "all";
 
-    public ChannelHandler wrap(ChannelHandler handler, URL url) {
-        return new DefaultChannelHandler(handler, url);
+    public ChannelHandler dispath(ChannelHandler handler, URL url) {
+        return new AllChannelHandler(handler, url);
     }
 
 }

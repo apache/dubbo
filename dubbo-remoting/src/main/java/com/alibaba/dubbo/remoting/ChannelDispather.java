@@ -13,23 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.remoting.transport.handler;
+package com.alibaba.dubbo.remoting;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.remoting.ChannelHandler;
-import com.alibaba.dubbo.remoting.ChannelHandlerWrapper;
+import com.alibaba.dubbo.common.extension.Adaptive;
+import com.alibaba.dubbo.common.extension.SPI;
+import com.alibaba.dubbo.remoting.transport.dispather.all.AllChannelDispather;
 
 /**
- * connect disconnect 保证顺序.
+ * ChannelHandlerWrapper (SPI, Singleton, ThreadSafe)
  * 
  * @author chao.liuc
  */
-public class ConnectionOrderedChannelHandlerWrapper implements ChannelHandlerWrapper {
+@SPI(AllChannelDispather.NAME)
+public interface ChannelDispather {
 
-    public static final String NAME = "connection";
-
-    public ChannelHandler wrap(ChannelHandler handler, URL url) {
-        return new ConnectionOrderedChannelHandler(handler, url);
-    }
+    /**
+     * dispath.
+     * 
+     * @param handler
+     * @param url
+     * @return channel handler
+     */
+    @Adaptive({Constants.DISPATHER_KEY, Constants.CHANNEL_HANDLER_KEY})
+    ChannelHandler dispath(ChannelHandler handler, URL url);
 
 }
