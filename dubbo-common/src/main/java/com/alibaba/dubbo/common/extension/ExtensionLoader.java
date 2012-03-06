@@ -662,26 +662,37 @@ public class ExtensionLoader<T> {
                     value = new String[] {sb.toString()};
                 }
                 
+                String m = adaptiveAnnotation.method();
+                
                 String defaultExtName = cachedDefaultName;
                 String getNameCode = null;
                 for (int i = value.length - 1; i >= 0; --i) {
                     if(i == value.length - 1) {
                         if(null != defaultExtName) {
                             if(!"protocol".equals(value[i]))
-                                getNameCode = String.format("url.getParameter(\"%s\", \"%s\")", value[i], defaultExtName);
+                                if (m != null && m.length() > 0) 
+                                    getNameCode = String.format("url.getMethodParameter(arg%s, \"%s\", \"%s\")", m, value[i], defaultExtName);
+                                else
+                                    getNameCode = String.format("url.getParameter(\"%s\", \"%s\")", value[i], defaultExtName);
                             else
                                 getNameCode = String.format("( url.getProtocol() == null ? \"%s\" : url.getProtocol() )", defaultExtName);
                         }
                         else {
                             if(!"protocol".equals(value[i]))
-                                getNameCode = String.format("url.getParameter(\"%s\")", value[i]);
+                                if (m != null && m.length() > 0) 
+                                    getNameCode = String.format("url.getMethodParameter(arg%s, \"%s\", \"%s\")", m, value[i], defaultExtName);
+                                else
+                                    getNameCode = String.format("url.getParameter(\"%s\")", value[i]);
                             else
                                 getNameCode = "url.getProtocol()";
                         }
                     }
                     else {
                         if(!"protocol".equals(value[i]))
-                            getNameCode = String.format("url.getParameter(\"%s\", %s)", value[i], getNameCode);
+                            if (m != null && m.length() > 0) 
+                                getNameCode = String.format("url.getMethodParameter(arg%s, \"%s\", \"%s\")", m, value[i], defaultExtName);
+                            else
+                                getNameCode = String.format("url.getParameter(\"%s\", %s)", value[i], getNameCode);
                         else
                             getNameCode = String.format("( url.getProtocol() == null ? (%s) : url.getProtocol() )", getNameCode);
                     }

@@ -86,11 +86,17 @@ public final class URL implements Serializable {
 
     private final Map<String, String> parameters;
     
-    private volatile transient String ip;
-    
     private final transient Map<String, Number> numbers = new ConcurrentHashMap<String, Number>();
+
+    private volatile transient String ip;
+
+    private volatile transient String fullString;
+
+    private volatile transient String identityString;
     
-    private static final String ANYHOST="0.0.0.0";
+    private volatile transient String parameterString;
+
+    private volatile transient String string;
     
     protected URL() {
         this.protocol = null;
@@ -754,7 +760,7 @@ public final class URL implements Serializable {
     }
     
     public boolean isAnyHost(){
-        if (ANYHOST.equals(host) || getParameter(Constants.ANYHOST_KEY, false)){
+        if (Constants.ANYHOST.equals(host) || getParameter(Constants.ANYHOST_KEY, false)){
             return true;
         } else {
             return false;
@@ -917,7 +923,10 @@ public final class URL implements Serializable {
     }
     
 	public String toString() {
-    	return buildString(false, true); // no show username and password
+	    if (string != null) {
+            return string;
+        }
+        return string = buildString(false, true); // no show username and password
     }
 
     public String toString(String... parameters) {
@@ -925,7 +934,10 @@ public final class URL implements Serializable {
     }
     
     public String toIdentityString() {
-		return buildString(false, false); // only return identity message, see the method "equals" and "hashCode"
+        if (identityString != null) {
+            return identityString;
+        }
+        return identityString = buildString(false, false); // only return identity message, see the method "equals" and "hashCode"
 	}
 
     public String toIdentityString(String... parameters) {
@@ -933,7 +945,10 @@ public final class URL implements Serializable {
     }
     
 	public String toFullString() {
-		return buildString(true, true);
+	    if (fullString != null) {
+	        return fullString;
+	    }
+		return fullString = buildString(true, true);
 	}
 
     public String toFullString(String... parameters) {
@@ -941,7 +956,10 @@ public final class URL implements Serializable {
     }
     
     public String toParameterString() {
-        return toParameterString(new String[0]);
+        if (parameterString != null) {
+            return parameterString;
+        }
+        return parameterString = toParameterString(new String[0]);
     }
     
 	public String toParameterString(String... parameters) {
