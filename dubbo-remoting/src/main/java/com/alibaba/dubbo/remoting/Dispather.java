@@ -19,15 +19,15 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.Adaptive;
 import com.alibaba.dubbo.common.extension.SPI;
-import com.alibaba.dubbo.remoting.transport.dispather.all.AllChannelDispather;
+import com.alibaba.dubbo.remoting.transport.dispather.all.AllDispather;
 
 /**
  * ChannelHandlerWrapper (SPI, Singleton, ThreadSafe)
  * 
  * @author chao.liuc
  */
-@SPI(AllChannelDispather.NAME)
-public interface ChannelDispather {
+@SPI(AllDispather.NAME)
+public interface Dispather {
 
     /**
      * dispath.

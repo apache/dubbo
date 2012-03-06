@@ -1,5 +1,0 @@
-all=com.alibaba.dubbo.remoting.transport.dispather.all.AllChannelDispather
-direct=com.alibaba.dubbo.remoting.transport.dispather.direct.DirectChannelDispather
-message=com.alibaba.dubbo.remoting.transport.dispather.message.MessageOnlyChannelDispather
-execution=com.alibaba.dubbo.remoting.transport.dispather.execution.ExecutionChannelDispather
-connection=com.alibaba.dubbo.remoting.transport.dispather.connection.ConnectionOrderedChannelDispather

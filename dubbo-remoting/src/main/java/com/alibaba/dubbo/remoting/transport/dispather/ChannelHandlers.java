@@ -19,7 +19,7 @@ package com.alibaba.dubbo.remoting.transport.dispather;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.remoting.ChannelHandler;
-import com.alibaba.dubbo.remoting.ChannelDispather;
+import com.alibaba.dubbo.remoting.Dispather;
 
 /**
  * @author chao.liuc
@@ -28,7 +28,7 @@ import com.alibaba.dubbo.remoting.ChannelDispather;
 public class ChannelHandlers {
 
     public static ChannelHandler wrap(ChannelHandler handler, URL url){
-        return ExtensionLoader.getExtensionLoader(ChannelDispather.class)
+        return ExtensionLoader.getExtensionLoader(Dispather.class)
             .getAdaptiveExtension().dispath(handler, url);
     }
 

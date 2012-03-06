@@ -17,14 +17,14 @@ package com.alibaba.dubbo.remoting.transport.dispather.connection;
 
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.ChannelHandler;
-import com.alibaba.dubbo.remoting.ChannelDispather;
+import com.alibaba.dubbo.remoting.Dispather;
 
 /**
  * connect disconnect 保证顺序.
  * 
  * @author chao.liuc
  */
-public class ConnectionOrderedChannelDispather implements ChannelDispather {
+public class ConnectionOrderedDispather implements Dispather {
 
     public static final String NAME = "connection";
 

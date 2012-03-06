@@ -13,23 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.remoting.transport.dispather.message;
+package com.alibaba.dubbo.remoting.transport.dispather.all;
 
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.ChannelHandler;
-import com.alibaba.dubbo.remoting.ChannelDispather;
+import com.alibaba.dubbo.remoting.Dispather;
 
 /**
- * 只有message receive使用线程池.
+ * 默认的线程池配置
  * 
  * @author chao.liuc
  */
-public class MessageOnlyChannelDispather implements ChannelDispather {
-
-    public static final String NAME = "message";
+public class AllDispather implements Dispather {
+    
+    public static final String NAME = "all";
 
     public ChannelHandler dispath(ChannelHandler handler, URL url) {
-        return new MessageOnlyChannelHandler(handler, url);
+        return new AllChannelHandler(handler, url);
     }
 
 }

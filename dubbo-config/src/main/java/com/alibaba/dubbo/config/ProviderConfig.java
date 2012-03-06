@@ -19,7 +19,7 @@ import java.util.Arrays;
 
 import com.alibaba.dubbo.common.status.StatusChecker;
 import com.alibaba.dubbo.common.threadpool.ThreadPool;
-import com.alibaba.dubbo.remoting.ChannelDispather;
+import com.alibaba.dubbo.remoting.Dispather;
 import com.alibaba.dubbo.remoting.Transporter;
 import com.alibaba.dubbo.remoting.exchange.Exchanger;
 import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
@@ -341,7 +341,7 @@ public class ProviderConfig extends AbstractServiceConfig {
     }
 
     public void setDispather(String dispather) {
-        checkExtension(ChannelDispather.class, "dispather", exchanger);
+        checkExtension(Dispather.class, "dispather", exchanger);
         this.dispather = dispather;
     }
 
