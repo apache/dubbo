@@ -28,6 +28,7 @@ import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ConfigUtils;
+import com.alibaba.dubbo.common.utils.StringUtils;
 
 /**
  * AbstractConfig
@@ -77,7 +78,7 @@ public abstract class AbstractConfig implements Serializable {
                 String name = method.getName();
                 if (name.length() > 3 && name.startsWith("set") && Modifier.isPublic(method.getModifiers()) 
                         && method.getParameterTypes().length == 1 && isPrimitive(method.getParameterTypes()[0])) {
-                    String property = name.substring(3, 4).toLowerCase() + name.substring(4);
+                    String property = StringUtils.camelToSplitName(name.substring(3, 4).toLowerCase() + name.substring(4), "-");
                     String value = null;
                     if (config.getId() != null && config.getId().length() > 0) {
                         value = System.getProperty(prefix + config.getId() + "." + property);
