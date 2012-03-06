@@ -107,7 +107,7 @@ public class SpringRmiProxyFactory implements RmiProxyFactory {
                     i.setMethodName(invocation.getMethodName());
                     i.setParameterTypes(invocation.getParameterTypes());
                     i.setArguments(invocation.getArguments());
-                    result.setResult(((RmiInvocationHandler) remote).invoke(i));
+                    result.setValue(((RmiInvocationHandler) remote).invoke(i));
                 } catch (InvocationTargetException e) {
                     result.setException(e.getTargetException());
                 } catch (Exception e) {

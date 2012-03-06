@@ -59,7 +59,7 @@ public class MockInvoker<T> implements Invoker<T> {
     public Result invoke(Invocation invocation) throws RpcException {
         RpcResult result = new RpcResult();
         if (hasException == false) {
-            result.setResult("alibaba");
+            result.setValue("alibaba");
             return result;
         } else {
             result.setException(new RuntimeException("mocked exception"));

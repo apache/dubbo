@@ -58,7 +58,7 @@ public class CompatibleFilterFilterTest {
         EasyMock.expect(invoker.isAvailable()).andReturn(true).anyTimes();
         EasyMock.expect(invoker.getInterface()).andReturn(DemoService.class).anyTimes();
         RpcResult result = new RpcResult();
-        result.setResult("High");
+        result.setValue("High");
         EasyMock.expect(invoker.invoke(invocation)).andReturn(result).anyTimes();
         URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1");
         EasyMock.expect(invoker.getUrl()).andReturn(url).anyTimes();
@@ -79,7 +79,7 @@ public class CompatibleFilterFilterTest {
         EasyMock.expect(invoker.getInterface()).andReturn(DemoService.class).anyTimes();
         RpcResult result = new RpcResult();
         result.setException(new RuntimeException());
-        result.setResult("High");
+        result.setValue("High");
         EasyMock.expect(invoker.invoke(invocation)).andReturn(result).anyTimes();
         URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1");
         EasyMock.expect(invoker.getUrl()).andReturn(url).anyTimes();
@@ -99,7 +99,7 @@ public class CompatibleFilterFilterTest {
         EasyMock.expect(invoker.isAvailable()).andReturn(true).anyTimes();
         EasyMock.expect(invoker.getInterface()).andReturn(DemoService.class).anyTimes();
         RpcResult result = new RpcResult();
-        result.setResult("High");
+        result.setValue("High");
         EasyMock.expect(invoker.invoke(invocation)).andReturn(result).anyTimes();
         URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1&serialization=json");
         EasyMock.expect(invoker.getUrl()).andReturn(url).anyTimes();
@@ -119,7 +119,7 @@ public class CompatibleFilterFilterTest {
         EasyMock.expect(invoker.isAvailable()).andReturn(true).anyTimes();
         EasyMock.expect(invoker.getInterface()).andReturn(DemoService.class).anyTimes();
         RpcResult result = new RpcResult();
-        result.setResult("High");
+        result.setValue("High");
         EasyMock.expect(invoker.invoke(invocation)).andReturn(result).anyTimes();
         URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1");
         EasyMock.expect(invoker.getUrl()).andReturn(url).anyTimes();
@@ -139,7 +139,7 @@ public class CompatibleFilterFilterTest {
         EasyMock.expect(invoker.isAvailable()).andReturn(true).anyTimes();
         EasyMock.expect(invoker.getInterface()).andReturn(DemoService.class).anyTimes();
         RpcResult result = new RpcResult();
-        result.setResult(new String[]{"High"});
+        result.setValue(new String[]{"High"});
         EasyMock.expect(invoker.invoke(invocation)).andReturn(result).anyTimes();
         URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1");
         EasyMock.expect(invoker.getUrl()).andReturn(url).anyTimes();
@@ -159,7 +159,7 @@ public class CompatibleFilterFilterTest {
         EasyMock.expect(invoker.isAvailable()).andReturn(true).anyTimes();
         EasyMock.expect(invoker.getInterface()).andReturn(DemoService.class).anyTimes();
         RpcResult result = new RpcResult();
-        result.setResult("hello");
+        result.setValue("hello");
         EasyMock.expect(invoker.invoke(invocation)).andReturn(result).anyTimes();
         URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1");
         EasyMock.expect(invoker.getUrl()).andReturn(url).anyTimes();

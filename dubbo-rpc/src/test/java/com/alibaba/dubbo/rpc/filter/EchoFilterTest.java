@@ -50,7 +50,7 @@ public class EchoFilterTest {
         EasyMock.expect(invoker.isAvailable()).andReturn(true).anyTimes();
         EasyMock.expect(invoker.getInterface()).andReturn(DemoService.class).anyTimes();
         RpcResult result = new RpcResult();
-        result.setResult("High");
+        result.setValue("High");
         EasyMock.expect(invoker.invoke(invocation)).andReturn(result).anyTimes();
         URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1");
         EasyMock.expect(invoker.getUrl()).andReturn(url).anyTimes();
@@ -72,7 +72,7 @@ public class EchoFilterTest {
         EasyMock.expect(invoker.isAvailable()).andReturn(true).anyTimes();
         EasyMock.expect(invoker.getInterface()).andReturn(DemoService.class).anyTimes();
         RpcResult result = new RpcResult();
-        result.setResult("High");
+        result.setValue("High");
         EasyMock.expect(invoker.invoke(invocation)).andReturn(result).anyTimes();
         URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1");
         EasyMock.expect(invoker.getUrl()).andReturn(url).anyTimes();

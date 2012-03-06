@@ -71,8 +71,8 @@ public class RpcResult implements Result, Serializable {
         return result;
     }
 
-    public void setValue(Object result) {
-        this.result = result;
+    public void setValue(Object value) {
+        this.result = value;
     }
 
     public Throwable getException() {
