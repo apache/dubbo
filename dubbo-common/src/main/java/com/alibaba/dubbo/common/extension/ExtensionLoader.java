@@ -237,6 +237,11 @@ public class ExtensionLoader<T> {
 	public T getExtension(String name) {
 		if (name == null || name.length() == 0)
 		    throw new IllegalArgumentException("Extension name == null");
+		if ("true".equals(name) || "default".equals(name)) {
+		    return getDefaultExtension();
+		} else if ("adaptive".equals(name)) {
+		    return getAdaptiveExtension();
+		}
 		Reference<Object> reference = cachedInstances.get(name);
 		if (reference == null) {
 		    cachedInstances.putIfAbsent(name, new Reference<Object>());
@@ -259,11 +264,12 @@ public class ExtensionLoader<T> {
 	 * 返回缺省的扩展，如果没有设置则返回<code>null</code>。 
 	 */
 	public T getDefaultExtension() {
-        getExtensionClasses();
-	    if(null == cachedDefaultName || cachedDefaultName.length() == 0) {
-	        return null;
-	    }
-	    return getExtension(cachedDefaultName);
+	    getExtensionClasses();
+        if(null == cachedDefaultName || cachedDefaultName.length() == 0
+                || "true".equals(cachedDefaultName) || "default".equals(cachedDefaultName)) {
+            return null;
+        }
+        return getExtension(cachedDefaultName);
 	}
 
 	public boolean hasExtension(String name) {
