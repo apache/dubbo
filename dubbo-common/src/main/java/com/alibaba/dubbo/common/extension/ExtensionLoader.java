@@ -237,10 +237,8 @@ public class ExtensionLoader<T> {
 	public T getExtension(String name) {
 		if (name == null || name.length() == 0)
 		    throw new IllegalArgumentException("Extension name == null");
-		if ("true".equals(name) || "default".equals(name)) {
+		if ("true".equals(name)) {
 		    return getDefaultExtension();
-		} else if ("adaptive".equals(name)) {
-		    return getAdaptiveExtension();
 		}
 		Reference<Object> reference = cachedInstances.get(name);
 		if (reference == null) {
@@ -266,7 +264,7 @@ public class ExtensionLoader<T> {
 	public T getDefaultExtension() {
 	    getExtensionClasses();
         if(null == cachedDefaultName || cachedDefaultName.length() == 0
-                || "true".equals(cachedDefaultName) || "default".equals(cachedDefaultName)) {
+                || "true".equals(cachedDefaultName)) {
             return null;
         }
         return getExtension(cachedDefaultName);
