@@ -55,7 +55,7 @@ public class ValidationConsumer {
         try {
             parameter = new ValidationParameter();
             validationService.save(parameter);
-            System.out.println("Validation Save ERROR");
+            System.err.println("Validation Save ERROR");
         } catch (RpcException e) {
             ConstraintViolationException ve = (ConstraintViolationException)e.getCause();
             Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
@@ -69,7 +69,7 @@ public class ValidationConsumer {
         // Delete Error
         try {
             validationService.delete(0);
-            System.out.println("Validation Delete ERROR");
+            System.err.println("Validation Delete ERROR");
         } catch (RpcException e) {
             ConstraintViolationException ve = (ConstraintViolationException)e.getCause();
             Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
