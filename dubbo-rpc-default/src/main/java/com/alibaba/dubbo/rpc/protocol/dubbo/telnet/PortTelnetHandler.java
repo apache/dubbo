@@ -17,6 +17,7 @@ package com.alibaba.dubbo.rpc.protocol.dubbo.telnet;
 
 import java.util.Collection;
 
+import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.exchange.ExchangeChannel;
@@ -30,6 +31,7 @@ import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
  * 
  * @author william.liangf
  */
+@Activate
 @Help(parameter = "[-l] [port]", summary = "Print server ports and connections.", detail = "Print server ports and connections.")
 public class PortTelnetHandler implements TelnetHandler {
 

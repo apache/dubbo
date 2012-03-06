@@ -37,6 +37,4 @@ public @interface SPI {
      */
 	String value() default "";
 
-	String adaptive() default "";
-
 }

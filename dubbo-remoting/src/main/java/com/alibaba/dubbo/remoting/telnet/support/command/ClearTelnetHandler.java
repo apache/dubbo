@@ -15,6 +15,7 @@
  */
 package com.alibaba.dubbo.remoting.telnet.support.command;
 
+import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
@@ -25,6 +26,7 @@ import com.alibaba.dubbo.remoting.telnet.support.Help;
  * 
  * @author william.liangf
  */
+@Activate
 @Help(parameter = "[lines]", summary = "Clear screen.", detail = "Clear screen.")
 public class ClearTelnetHandler implements TelnetHandler {
 

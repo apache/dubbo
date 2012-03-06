@@ -15,17 +15,13 @@
  */
 package com.alibaba.dubbo.rpc.protocol;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
-import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.ExporterListener;
-import com.alibaba.dubbo.rpc.Filter;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.InvokerListener;
 import com.alibaba.dubbo.rpc.Protocol;
@@ -58,7 +54,8 @@ public class ProtocolListenerWrapper implements Protocol {
             return protocol.export(invoker);
         }
         return new ListenerExporterWrapper<T>(protocol.export(invoker), 
-                buildServiceListeners(invoker.getUrl().getParameter(Constants.EXPORTER_LISTENER_KEY), Constants.DEFAULT_EXPORTER_LISTENERS));
+                Collections.unmodifiableList(ExtensionLoader.getExtensionLoader(ExporterListener.class)
+                        .getActivateExtension(invoker.getUrl(), Constants.EXPORTER_LISTENER_KEY)));
     }
 
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
@@ -66,33 +63,13 @@ public class ProtocolListenerWrapper implements Protocol {
             return protocol.refer(type, url);
         }
         return new ListenerInvokerWrapper<T>(protocol.refer(type, url), 
-                buildReferenceListeners(url.getParameter(Constants.INVOKER_LISTENER_KEY), Constants.DEFAULT_INVOKER_LISTENERS));
+                Collections.unmodifiableList(
+                        ExtensionLoader.getExtensionLoader(InvokerListener.class)
+                        .getActivateExtension(url, Constants.INVOKER_LISTENER_KEY)));
     }
 
     public void destroy() {
         protocol.destroy();
-    }
-    
-    private static List<ExporterListener> buildServiceListeners(String config, List<String> defaults) {
-        List<String> names = ConfigUtils.mergeValues(Filter.class, config, defaults);
-        List<ExporterListener> listeners = new ArrayList<ExporterListener>();
-        if (names.size() > 0) {
-            for (String name : names) {
-                listeners.add(ExtensionLoader.getExtensionLoader(ExporterListener.class).getExtension(name));
-            }
-        }
-        return Collections.unmodifiableList(listeners);
-    }
-    
-    private static List<InvokerListener> buildReferenceListeners(String config, List<String> defaults) {
-        List<String> names = ConfigUtils.mergeValues(Filter.class, config, defaults);
-        List<InvokerListener> listeners = new ArrayList<InvokerListener>();
-        if (names.size() > 0) {
-            for (String name : names) {
-                listeners.add(ExtensionLoader.getExtensionLoader(InvokerListener.class).getExtension(name));
-            }
-        }
-        return Collections.unmodifiableList(listeners);
     }
 
 }

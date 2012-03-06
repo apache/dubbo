@@ -17,6 +17,8 @@ package com.alibaba.dubbo.rpc.filter;
 
 import java.lang.reflect.Method;
 
+import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
@@ -34,6 +36,7 @@ import com.alibaba.dubbo.rpc.service.GenericService;
  * 
  * @author william.liangf
  */
+@Activate(group = Constants.PROVIDER)
 public class ExceptionFilter implements Filter {
 
     private final Logger logger;

@@ -17,6 +17,7 @@
 package com.alibaba.dubbo.rpc.filter;
 
 import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.rpc.Filter;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
@@ -29,6 +30,7 @@ import com.alibaba.dubbo.rpc.RpcStatus;
  *
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
+@Activate(group = Constants.PROVIDER, value = Constants.TPS_MAX_KEY)
 public class TpsLimitFilter implements Filter {
 
 // TODO 现在依赖 ActiveLimitFilter 或 ExecuteLimitFilter 的计数,需要放到这两个 filter 后执行

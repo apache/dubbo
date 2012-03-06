@@ -15,6 +15,8 @@
  */
 package com.alibaba.dubbo.rpc.filter;
 
+import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.rpc.Filter;
 import com.alibaba.dubbo.rpc.Invocation;
@@ -29,6 +31,7 @@ import com.alibaba.dubbo.rpc.RpcInvocation;
  * 
  * @author william.liangf
  */
+@Activate(group = Constants.CONSUMER, order = -10000)
 public class ConsumerContextFilter implements Filter {
 
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {

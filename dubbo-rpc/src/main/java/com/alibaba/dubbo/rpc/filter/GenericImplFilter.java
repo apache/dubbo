@@ -20,6 +20,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.PojoUtils;
@@ -38,6 +39,7 @@ import com.alibaba.dubbo.rpc.service.GenericException;
  * 
  * @author william.liangf
  */
+@Activate(group = Constants.CONSUMER, value = Constants.GENERIC_KEY)
 public class GenericImplFilter implements Filter {
     
     private static final Logger logger = LoggerFactory.getLogger(GenericImplFilter.class);

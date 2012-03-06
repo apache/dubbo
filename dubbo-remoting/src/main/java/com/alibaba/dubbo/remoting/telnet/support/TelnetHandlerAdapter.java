@@ -17,9 +17,7 @@ package com.alibaba.dubbo.remoting.telnet.support;
 
 import java.util.List;
 
-import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
-import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
@@ -31,15 +29,16 @@ import com.alibaba.dubbo.remoting.transport.ChannelHandlerAdapter;
  * @author william.liangf
  */
 public class TelnetHandlerAdapter extends ChannelHandlerAdapter implements TelnetHandler {
-    
+
+    private final ExtensionLoader<TelnetHandler> extensionLoader = ExtensionLoader.getExtensionLoader(TelnetHandler.class);
+
     public String telnet(Channel channel, String message) throws RemotingException {
-        String telnet = channel.getUrl().getParameter("telnet");
         String prompt = channel.getUrl().getParameter("prompt");
         boolean noprompt = message.contains("--no-prompt");
         message = message.replace("--no-prompt", "");
-        List<String> commands = ConfigUtils.mergeValues(TelnetHandler.class, telnet, Constants.DEFAULT_TELNET_COMMANDS);
+        List<TelnetHandler> handlers = extensionLoader.getActivateExtension(channel.getUrl(), "telnet");
         StringBuilder buf = new StringBuilder();
-        if (commands != null && commands.size() > 0) {
+        if (handlers != null && handlers.size() > 0) {
             message = message.trim();
             String command;
             if (message.length() > 0) {
@@ -54,8 +53,8 @@ public class TelnetHandlerAdapter extends ChannelHandlerAdapter implements Telne
             } else {
                 command = "";
             }
-            if (commands.contains(command)) {
-                TelnetHandler handler = ExtensionLoader.getExtensionLoader(TelnetHandler.class).getExtension(command);
+            TelnetHandler handler = ExtensionLoader.getExtensionLoader(TelnetHandler.class).getExtension(command);
+            if (handlers.contains(handler)) {
                 try {
                     String result = handler.telnet(channel, message);
                     if (result != null) {

@@ -17,6 +17,8 @@ package com.alibaba.dubbo.rpc.filter;
 
 import java.util.Arrays;
 
+import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.rpc.Filter;
@@ -30,6 +32,7 @@ import com.alibaba.dubbo.rpc.RpcException;
  * 
  * @author chao.liuc
  */
+@Activate(group = Constants.PROVIDER)
 public class TimeoutFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(TimeoutFilter.class);

@@ -15,9 +15,6 @@
  */
 package com.alibaba.dubbo.common;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -27,11 +24,13 @@ import java.util.regex.Pattern;
  */
 public class Constants {
 
-    public static final List<String> DEFAULT_TELNET_COMMANDS    = Collections.unmodifiableList(Arrays.asList(new String[] {
-            "ls", "ps", "cd", "pwd", "invoke", "count", "trace", "status", "log", "help", "clear", "exit" }));
+    public static final String       PROVIDER                       = "provider";
 
-    public static final List<String> DEFAULT_CHECK_STATUSES    = Collections.unmodifiableList(Arrays.asList(new String[] {
-            "server", "registry", "threadpool", "datasource", "spring", "memory", "load" }));
+    public static final String       CONSUMER                       = "consumer";
+
+    public static final String       VALIDATION_KEY                 = "validation";
+
+    public static final String       CACHE_KEY                      = "cache";
     
     public static final String       DUBBO_PROPERTIES_KEY           = "dubbo.properties.file";
     
@@ -305,17 +304,6 @@ public class Constants {
     public static final String       MERGER_KEY                          = "merger";
     
     public static final String       TPS_MAX_KEY                         = "tps.max";
-
-    public static final List<String> DEFAULT_REFERENCE_FILTERS = Collections.unmodifiableList(Arrays.asList(new String[] {
-            "consumercontext", "deprecated", "collect", "genericimpl", "activelimit", "monitor", "future" }));
-
-    public static final List<String> DEFAULT_SERVICE_FILTERS    = Collections.unmodifiableList(Arrays.asList(new String[] {
-            "context", "token", "exception", "echo", "generic", "accesslog", "trace", "classloader", "executelimit", "monitor" ,"timeout"}));
-
-    public static final List<String> DEFAULT_INVOKER_LISTENERS = Collections.unmodifiableList(Arrays.asList(new String[] {
-            "deprecated" }));
-
-    public static final List<String> DEFAULT_EXPORTER_LISTENERS = Collections.unmodifiableList(Arrays.asList(new String[] { }));
 
     /**
      * 集群时是否排除非available的invoker

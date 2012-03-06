@@ -15,13 +15,11 @@
  */
 package com.alibaba.dubbo.rpc.protocol;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
-import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Filter;
 import com.alibaba.dubbo.rpc.Invocation;
@@ -54,60 +52,54 @@ public class ProtocolFilterWrapper implements Protocol {
         if (Constants.REGISTRY_PROTOCOL.equals(invoker.getUrl().getProtocol())) {
             return protocol.export(invoker);
         }
-        return protocol.export(buildInvokerChain(invoker, invoker.getUrl().getParameter(Constants.SERVICE_FILTER_KEY), Constants.DEFAULT_SERVICE_FILTERS));
+        return protocol.export(buildInvokerChain(invoker, Constants.SERVICE_FILTER_KEY, Constants.PROVIDER));
     }
 
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
         if (Constants.REGISTRY_PROTOCOL.equals(url.getProtocol())) {
             return protocol.refer(type, url);
         }
-        return buildInvokerChain(protocol.refer(type, url), url.getParameter(Constants.REFERENCE_FILTER_KEY), Constants.DEFAULT_REFERENCE_FILTERS);
+        return buildInvokerChain(protocol.refer(type, url), Constants.REFERENCE_FILTER_KEY, Constants.CONSUMER);
     }
 
     public void destroy() {
         protocol.destroy();
     }
 
-    private static <T> Invoker<T> buildInvokerChain(final Invoker<T> invoker, String config, List<String> defaults) {
-        List<String> names = ConfigUtils.mergeValues(Filter.class, config, defaults);
+    private static <T> Invoker<T> buildInvokerChain(final Invoker<T> invoker, String key, String group) {
         Invoker<T> last = invoker;
-        if (names.size() > 0) {
-            List<Filter> filters = new ArrayList<Filter>(names.size());
-            for (String name : names) {
-                filters.add(ExtensionLoader.getExtensionLoader(Filter.class).getExtension(name));
-            }
-            if (filters.size() > 0) {
-                for (int i = filters.size() - 1; i >= 0; i --) {
-                    final Filter filter = filters.get(i);
-                    final Invoker<T> next = last;
-                    last = new Invoker<T>() {
+        List<Filter> filters = ExtensionLoader.getExtensionLoader(Filter.class).getActivateExtension(invoker.getUrl(), key, group);
+        if (filters.size() > 0) {
+            for (int i = filters.size() - 1; i >= 0; i --) {
+                final Filter filter = filters.get(i);
+                final Invoker<T> next = last;
+                last = new Invoker<T>() {
 
-                        public Class<T> getInterface() {
-                            return invoker.getInterface();
-                        }
+                    public Class<T> getInterface() {
+                        return invoker.getInterface();
+                    }
 
-                        public URL getUrl() {
-                            return invoker.getUrl();
-                        }
+                    public URL getUrl() {
+                        return invoker.getUrl();
+                    }
 
-                        public boolean isAvailable() {
-                            return invoker.isAvailable();
-                        }
+                    public boolean isAvailable() {
+                        return invoker.isAvailable();
+                    }
 
-                        public Result invoke(Invocation invocation) throws RpcException {
-                            return filter.invoke(next, invocation);
-                        }
+                    public Result invoke(Invocation invocation) throws RpcException {
+                        return filter.invoke(next, invocation);
+                    }
 
-                        public void destroy() {
-                            invoker.destroy();
-                        }
+                    public void destroy() {
+                        invoker.destroy();
+                    }
 
-                        @Override
-                        public String toString() {
-                            return invoker.toString();
-                        }
-                    };
-                }
+                    @Override
+                    public String toString() {
+                        return invoker.toString();
+                    }
+                };
             }
         }
         return last;

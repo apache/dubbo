@@ -17,6 +17,7 @@ package com.alibaba.dubbo.rpc.protocol.dubbo.telnet;
 
 import java.lang.reflect.Method;
 
+import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
@@ -30,6 +31,7 @@ import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
  * 
  * @author william.liangf
  */
+@Activate
 @Help(parameter = "[-l] [service]", summary = "List services and methods.", detail = "List services and methods.")
 public class ListTelnetHandler implements TelnetHandler {
 

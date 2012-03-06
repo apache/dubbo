@@ -15,11 +15,14 @@
  */
 package com.alibaba.dubbo.rpc;
 
+import com.alibaba.dubbo.common.extension.SPI;
+
 /**
  * ExporterListener. (SPI, Singleton, ThreadSafe)
  * 
  * @author william.liangf
  */
+@SPI
 public interface ExporterListener {
 
     /**

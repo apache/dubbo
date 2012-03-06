@@ -56,7 +56,9 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.groups.Default;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.bytecode.ClassGenerator;
+import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.rpc.Filter;
@@ -70,16 +72,17 @@ import com.alibaba.dubbo.rpc.RpcException;
  * 
  * @author william.liangf
  */
+@Activate(group = Constants.PROVIDER, value = Constants.VALIDATION_KEY)
 public class ValidationFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(ValidationFilter.class);
-    
+
     private final Validator validator;
-    
+
     public ValidationFilter() {
         validator = Validation.buildDefaultValidatorFactory().getValidator();
     }
-    
+
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         try {
             Class<?> clazz = invoker.getInterface();

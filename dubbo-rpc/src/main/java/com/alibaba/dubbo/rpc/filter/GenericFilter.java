@@ -18,6 +18,7 @@ package com.alibaba.dubbo.rpc.filter;
 import java.lang.reflect.Method;
 
 import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.utils.PojoUtils;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
 import com.alibaba.dubbo.rpc.Filter;
@@ -34,6 +35,7 @@ import com.alibaba.dubbo.rpc.service.GenericException;
  * 
  * @author william.liangf
  */
+@Activate(group = Constants.PROVIDER)
 public class GenericFilter implements Filter {
     
     public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {

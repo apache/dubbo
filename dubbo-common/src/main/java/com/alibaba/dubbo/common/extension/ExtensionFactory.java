@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.common.extension;
 
-
 /**
  * ExtensionFactory
  * 

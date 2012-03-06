@@ -21,11 +21,11 @@ import java.util.List;
 import java.util.Map;
 
 import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.status.Status;
 import com.alibaba.dubbo.common.status.StatusChecker;
 import com.alibaba.dubbo.common.status.support.StatusUtils;
-import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
 import com.alibaba.dubbo.remoting.telnet.support.Help;
@@ -36,29 +36,31 @@ import com.alibaba.dubbo.remoting.telnet.support.TelnetUtils;
  * 
  * @author william.liangf
  */
+@Activate
 @Help(parameter = "[-l]", summary = "Show status.", detail = "Show status.")
 public class StatusTelnetHandler implements TelnetHandler {
 
+    private final ExtensionLoader<StatusChecker> extensionLoader = ExtensionLoader.getExtensionLoader(StatusChecker.class);
+
     public String telnet(Channel channel, String message) {
         if (message.equals("-l")) {
-            String status = channel.getUrl().getParameter("status");
-            List<String> ss = ConfigUtils.mergeValues(StatusChecker.class, status, Constants.DEFAULT_CHECK_STATUSES);
+            List<StatusChecker> checkers = extensionLoader.getActivateExtension(channel.getUrl(), "status");
             String[] header = new String[] {"resource", "status", "message"};
             List<List<String>> table = new ArrayList<List<String>>();
             Map<String, Status> statuses = new HashMap<String, Status>();
-            if (ss != null && ss.size() > 0) {
-                for (String s : ss) {
-                    StatusChecker handler = ExtensionLoader.getExtensionLoader(StatusChecker.class).getExtension(s);
+            if (checkers != null && checkers.size() > 0) {
+                for (StatusChecker checker : checkers) {
+                    String name = extensionLoader.getExtensionName(checker);
                     Status stat;
                     try {
-                        stat = handler.check();
+                        stat = checker.check();
                     } catch (Throwable t) {
                         stat = new Status(Status.Level.ERROR, t.getMessage());
                     }
-                    statuses.put(s, stat);
+                    statuses.put(name, stat);
                     if (stat.getLevel() != null && stat.getLevel() != Status.Level.UNKNOWN) {
                         List<String> row = new ArrayList<String>();
-                        row.add(s);
+                        row.add(name);
                         row.add(String.valueOf(stat.getLevel()));
                         row.add(stat.getMessage() == null ? "" : stat.getMessage());
                         table.add(row);
@@ -80,7 +82,7 @@ public class StatusTelnetHandler implements TelnetHandler {
         if (status != null && status.length() > 0) {
             String[] ss = Constants.COMMA_SPLIT_PATTERN.split(status);
             for (String s : ss) {
-                StatusChecker handler = ExtensionLoader.getExtensionLoader(StatusChecker.class).getExtension(s);
+                StatusChecker handler = extensionLoader.getExtension(s);
                 Status stat;
                 try {
                     stat = handler.check();

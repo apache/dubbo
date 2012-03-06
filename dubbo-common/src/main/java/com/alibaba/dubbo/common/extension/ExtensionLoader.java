@@ -19,10 +19,12 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -32,11 +34,14 @@ import java.util.regex.Pattern;
 
 import javassist.ClassPool;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.bytecode.ClassGenerator;
+import com.alibaba.dubbo.common.extension.support.ActivateComparator;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
+import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.common.utils.Reference;
 import com.alibaba.dubbo.common.utils.StringUtils;
 
@@ -74,6 +79,8 @@ public class ExtensionLoader<T> {
     private final ConcurrentMap<Class<?>, String> cachedNames = new ConcurrentHashMap<Class<?>, String>();
     
     private final Reference<Map<String, Class<?>>> cachedClasses = new Reference<Map<String,Class<?>>>();
+
+    private final Map<String, Activate> cachedActivates = new ConcurrentHashMap<String, Activate>();
     
 	private final ConcurrentMap<String, Reference<Object>> cachedInstances = new ConcurrentHashMap<String, Reference<Object>>();
 	
@@ -100,7 +107,7 @@ public class ExtensionLoader<T> {
             throw new IllegalArgumentException("Extension type == null");
         if(!withExtensionAnnotation(type)) {
             throw new IllegalArgumentException("Extension type(" + type + 
-            		") is not extension, because WITHOUT @Extension Annotation!");
+            		") is not extension, because WITHOUT @" + SPI.class.getSimpleName() + " Annotation!");
         }
         
         ExtensionLoader<T> loader = (ExtensionLoader<T>) EXTENSION_LOADERS.get(type);
@@ -122,6 +129,91 @@ public class ExtensionLoader<T> {
 
     public String getExtensionName(Class<?> extensionClass) {
         return cachedNames.get(extensionClass);
+    }
+
+    public List<T> getActivateExtension(URL url, String key) {
+        return getActivateExtension(url, key, null);
+    }
+
+    public List<T> getActivateExtension(URL url, String[] values) {
+        return getActivateExtension(url, values, null);
+    }
+
+    public List<T> getActivateExtension(URL url, String key, String group) {
+        String value = url.getParameter(key);
+        return getActivateExtension(url, value == null || value.length() == 0 ? null : Constants.COMMA_SPLIT_PATTERN.split(value), group);
+    }
+
+    public List<T> getActivateExtension(URL url, String[] values, String group) {
+        List<T> exts = new ArrayList<T>();
+        List<String> names = values == null ? new ArrayList<String>(0) : Arrays.asList(values);
+        if (! names.contains(Constants.REMOVE_VALUE_PREFIX + Constants.DEFAULT_KEY)) {
+            getExtensionClasses();
+            for (Map.Entry<String, Activate> entry : cachedActivates.entrySet()) {
+                String name = entry.getKey();
+                Activate activate = entry.getValue();
+                if (isMatchGroup(group, activate.group())) {
+                    T ext = getExtension(name);
+                    if (! names.contains(name)
+                            && ! names.contains(Constants.REMOVE_VALUE_PREFIX + name) 
+                            && isActive(activate, url)) {
+                        exts.add(ext);
+                    }
+                }
+            }
+        }
+        Collections.sort(exts, ActivateComparator.COMPARATOR);
+        for (String name : names) {
+            if (! name.startsWith(Constants.REMOVE_VALUE_PREFIX)) {
+                T ext = getExtension(name);
+                exts.add(ext);
+            }
+        }
+        return exts;
+    }
+    
+    private boolean isMatchGroup(String group, String[] groups) {
+        if (group == null || group.length() == 0) {
+            return true;
+        }
+        if (groups != null && groups.length > 0) {
+            for (String g : groups) {
+                if (group.equals(g)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    private boolean isActive(Activate activate, URL url) {
+        String[] keys = activate.value();
+        if (keys == null || keys.length == 0) {
+            return true;
+        }
+        String[] matchs = activate.match();
+        String[] mismatchs = activate.mismatch();
+        for (String key : keys) {
+            String value = url.getParameter(key);
+            if (matchs != null && matchs.length == 0) {
+                for (String match : matchs) {
+                    if (StringUtils.isEquals(value, match)) {
+                        return true;
+                    }
+                }
+            } else if (mismatchs != null && mismatchs.length == 0) {
+                for (String match : matchs) {
+                    if (! StringUtils.isEquals(value, match)) {
+                        return true;
+                    }
+                }
+            } else {
+                if (ConfigUtils.isNotEmpty(value)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
     
 	@SuppressWarnings("unchecked")
@@ -401,15 +493,21 @@ public class ExtensionLoader<T> {
                                                     }
                                                 }
                                                 String[] names = NAME_SEPARATOR.split(name);
-                                                for (String n : names) {
-                                                    if (! cachedNames.containsKey(clazz)) {
-                                                        cachedNames.put(clazz, n);
+                                                if (names != null && names.length > 0) {
+                                                    Activate activate = clazz.getAnnotation(Activate.class);
+                                                    if (activate != null) {
+                                                        cachedActivates.put(names[0], activate);
                                                     }
-                                                    Class<?> c = extensionClasses.get(n);
-                                                    if (c == null) {
-                                                        extensionClasses.put(n, clazz);
-                                                    } else if (c != clazz) {
-                                                        throw new IllegalStateException("Duplicate extension " + type.getName() + " name " + n + " on " + c.getName() + " and " + clazz.getName());
+                                                    for (String n : names) {
+                                                        if (! cachedNames.containsKey(clazz)) {
+                                                            cachedNames.put(clazz, n);
+                                                        }
+                                                        Class<?> c = extensionClasses.get(n);
+                                                        if (c == null) {
+                                                            extensionClasses.put(n, clazz);
+                                                        } else if (c != clazz) {
+                                                            throw new IllegalStateException("Duplicate extension " + type.getName() + " name " + n + " on " + c.getName() + " and " + clazz.getName());
+                                                        }
                                                     }
                                                 }
                                             }
@@ -613,7 +711,6 @@ public class ExtensionLoader<T> {
                 }
                 code.append(");");
             }
-            System.out.println(code);
             cg.addMethod(method.getName(), method.getModifiers(), rt, pts,
                     method.getExceptionTypes(), code.toString());
         }

@@ -24,6 +24,7 @@ import javax.sql.DataSource;
 
 import org.springframework.context.ApplicationContext;
 
+import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.status.Status;
@@ -35,6 +36,7 @@ import com.alibaba.dubbo.config.spring.ServiceBean;
  * 
  * @author william.liangf
  */
+@Activate
 public class DataSourceStatusChecker implements StatusChecker {
 
     private static final Logger logger = LoggerFactory.getLogger(DataSourceStatusChecker.class);

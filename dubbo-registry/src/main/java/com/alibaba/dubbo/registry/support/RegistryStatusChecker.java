@@ -17,6 +17,7 @@ package com.alibaba.dubbo.registry.support;
 
 import java.util.Collection;
 
+import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.status.Status;
 import com.alibaba.dubbo.common.status.StatusChecker;
 import com.alibaba.dubbo.registry.Registry;
@@ -26,6 +27,7 @@ import com.alibaba.dubbo.registry.Registry;
  * 
  * @author william.liangf
  */
+@Activate
 public class RegistryStatusChecker implements StatusChecker {
 
     public Status check() {

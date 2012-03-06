@@ -13,25 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.remoting.telnet.support.command;
+package com.alibaba.dubbo.common.extension;
 
-import com.alibaba.dubbo.common.extension.Activate;
-import com.alibaba.dubbo.remoting.Channel;
-import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
-import com.alibaba.dubbo.remoting.telnet.support.Help;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * ExitTelnetHandler
+ * Activate.
  * 
  * @author william.liangf
  */
-@Activate
-@Help(parameter = "", summary = "Exit the telnet.", detail = "Exit the telnet.")
-public class ExitTelnetHandler implements TelnetHandler {
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.METHOD})
+public @interface Activate {
 
-    public String telnet(Channel channel, String message) {
-        channel.close();
-        return null;
-    }
+    String[] group() default {};
+
+    String[] value() default {};
+
+    String[] match() default {};
+
+    String[] mismatch() default {};
+
+    int order() default 0;
 
 }

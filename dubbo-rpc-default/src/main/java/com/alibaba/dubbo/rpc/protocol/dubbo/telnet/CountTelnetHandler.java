@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.RemotingException;
@@ -36,6 +37,7 @@ import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
  * 
  * @author william.liangf
  */
+@Activate
 @Help(parameter = "[service] [method] [times]", summary = "Count the service.", detail = "Count the service.")
 public class CountTelnetHandler implements TelnetHandler {
 

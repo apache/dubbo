@@ -23,6 +23,7 @@ import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.logger.Level;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.StringUtils;
@@ -35,6 +36,7 @@ import com.alibaba.dubbo.remoting.telnet.support.Help;
  * @author chao.liuc
  * 
  */
+@Activate
 @Help(parameter = "level", summary = "Change log level or show log ", detail = "Change log level or show log")
 public class LogTelnetHandler implements TelnetHandler {
     
