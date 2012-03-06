@@ -28,6 +28,6 @@
     
 	<bean id="validationService" class="com.alibaba.dubbo.examples.validation.impl.ValidationServiceImpl" />
 	
-	<dubbo:service interface="com.alibaba.dubbo.examples.validation.api.ValidationService" ref="validationService" filter="validation" />
+	<dubbo:service interface="com.alibaba.dubbo.examples.validation.api.ValidationService" ref="validationService" validation="true" />
 	
 </beans>
