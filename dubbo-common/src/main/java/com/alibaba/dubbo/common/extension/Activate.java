@@ -40,5 +40,7 @@ public @interface Activate {
     String[] mismatch() default {};
 
     int order() default 0;
+    
+    boolean method() default true;
 
 }
