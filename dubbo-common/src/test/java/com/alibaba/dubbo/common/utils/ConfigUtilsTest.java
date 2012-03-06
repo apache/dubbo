@@ -125,7 +125,7 @@ public class ConfigUtilsTest {
     
     @Test
     public void test_loadProperties_oneFile_notRootPath() throws Exception {
-        Properties p = ConfigUtils.loadProperties("META-INF/services/com.alibaba.dubbo.common.threadpool.ThreadPool", false);
+        Properties p = ConfigUtils.loadProperties("META-INF/dubbo/com.alibaba.dubbo.common.threadpool.ThreadPool", false);
         
         Properties expected = new Properties();
         expected.put("fixed", "com.alibaba.dubbo.common.threadpool.support.fixed.FixedThreadPool");
@@ -149,7 +149,7 @@ public class ConfigUtilsTest {
     @Test
     public void test_loadProperties_multiFile_notRootPath() throws Exception {
         
-        Properties p = ConfigUtils.loadProperties("META-INF/services/com.alibaba.dubbo.common.status.StatusChecker", true);
+        Properties p = ConfigUtils.loadProperties("META-INF/dubbo/com.alibaba.dubbo.common.status.StatusChecker", true);
         
         Properties expected = new Properties();
         expected.put("memory", "com.alibaba.dubbo.common.status.support.MemoryStatusChecker");
