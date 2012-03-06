@@ -50,6 +50,12 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
     // 服务接口的失败mock实现类名
     protected String              mock;
 
+    // 服务接口的失败mock实现类名
+    protected String              cache;
+
+    // 服务接口的失败mock实现类名
+    protected String              validation;
+
     // 自定义参数
     protected Map<String, String> parameters;
 
@@ -122,6 +128,22 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
         } else {
             setMock(String.valueOf(mock));
         }
+    }
+
+    public String getCache() {
+        return cache;
+    }
+
+    public void setCache(String cache) {
+        this.cache = cache;
+    }
+
+    public String getValidation() {
+        return validation;
+    }
+
+    public void setValidation(String validation) {
+        this.validation = validation;
     }
 
     public Map<String, String> getParameters() {
