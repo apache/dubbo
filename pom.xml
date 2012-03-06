@@ -69,7 +69,7 @@
 		<easymock_version>3.0</easymock_version>
 		<jmockit_version>0.999.8</jmockit_version>
 		<!-- Build args -->
-		<argline>-Xms512m -Xmx512m</argline>
+		<argline>-server -Xms128m -Xmx512m -XX:PermSize=64m -XX:MaxPermSize=256m</argline>
 		<skip_maven_deploy>false</skip_maven_deploy>
 		<updateReleaseInfo>true</updateReleaseInfo>
         <project.build.sourceEncoding>${file_encoding}</project.build.sourceEncoding>
