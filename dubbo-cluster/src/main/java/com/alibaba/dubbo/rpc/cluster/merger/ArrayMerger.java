@@ -24,40 +24,35 @@ import java.util.List;
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-@SuppressWarnings( "unchecked" )
 public class ArrayMerger implements Merger<Object> {
 
-    public static final String NAME = "array";
+    public static final String      NAME     = "array";
 
     public static final ArrayMerger INSTANCE = new ArrayMerger();
 
     public Object merge(Object... others) {
-
-        if ( others.length == 0 ) { return null; }
-
-        List list = new ArrayList();
-        
-        for( int i = 0; i < others.length; i++ ) {
+        if (others.length == 0) {
+            return null;
+        }
+        List<Object> list = new ArrayList<Object>();
+        for (int i = 0; i < others.length; i++) {
             Object item = others[i];
-            if ( item != null ) {
-                if ( item.getClass().isArray() ) {
-                    int len = Array.getLength( item );
-                    for( int j = 0; j < len; j++ ) {
-                        Object obj = Array.get( item, j );
-                        if ( obj != null ) {
-                            list.add( obj );
+            if (item != null) {
+                if (item.getClass().isArray()) {
+                    int len = Array.getLength(item);
+                    for (int j = 0; j < len; j++) {
+                        Object obj = Array.get(item, j);
+                        if (obj != null) {
+                            list.add(obj);
                         }
                     }
                 } else {
-                    throw new IllegalArgumentException( 
-                            new StringBuilder(32).append( i + 1 )
-                                    .append( "th argument is not an array" ).toString() );
+                    throw new IllegalArgumentException(new StringBuilder(32).append(i + 1)
+                            .append("th argument is not an array").toString());
                 }
             }
         }
-
         return list.toArray();
-
     }
 
 }

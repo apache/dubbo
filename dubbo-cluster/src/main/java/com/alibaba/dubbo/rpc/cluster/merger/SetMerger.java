@@ -16,31 +16,30 @@
 
 package com.alibaba.dubbo.rpc.cluster.merger;
 
-import com.alibaba.dubbo.rpc.cluster.Merger;
-
 import java.util.HashSet;
 import java.util.Set;
+
+import com.alibaba.dubbo.rpc.cluster.Merger;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-@SuppressWarnings( "unchecked" )
-public class SetMerger implements Merger<Set>{
+public class SetMerger implements Merger<Set<Object>> {
 
-    public static final String NAME = "set";
+    public static final String    NAME     = "set";
 
     public static final SetMerger INSTANCE = new SetMerger();
 
-    public Set merge( Set... items ) {
+    public Set<Object> merge(Set<Object>... items) {
 
-        Set result = new HashSet();
-        
-        for( Set item : items ) {
-            if ( item != null ) {
-                result.addAll( item );
+        Set<Object> result = new HashSet<Object>();
+
+        for (Set<Object> item : items) {
+            if (item != null) {
+                result.addAll(item);
             }
         }
-        
+
         return result;
     }
 }

@@ -16,31 +16,27 @@
 
 package com.alibaba.dubbo.rpc.cluster.merger;
 
-import com.alibaba.dubbo.rpc.cluster.Merger;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import com.alibaba.dubbo.rpc.cluster.Merger;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-@SuppressWarnings( "unchecked" )
-public class ListMerger implements Merger<List>{
+public class ListMerger implements Merger<List<Object>> {
 
-    public static final String NAME = "list";
+    public static final String     NAME     = "list";
 
     public static final ListMerger INSTANCE = new ListMerger();
 
-    public List merge( List... items ) {
-
-        List result = new ArrayList();
-        
-        for( List item : items ) {
-            if ( item != null ) {
-                result.addAll( item );
+    public List<Object> merge(List<Object>... items) {
+        List<Object> result = new ArrayList<Object>();
+        for (List<Object> item : items) {
+            if (item != null) {
+                result.addAll(item);
             }
         }
-        
         return result;
     }
 
