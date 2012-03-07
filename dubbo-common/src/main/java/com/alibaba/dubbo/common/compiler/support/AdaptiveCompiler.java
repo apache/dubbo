@@ -37,8 +37,9 @@ public class AdaptiveCompiler implements Compiler {
     public Class<?> compile(String code, ClassLoader classLoader) {
         Compiler compiler;
         ExtensionLoader<Compiler> loader = ExtensionLoader.getExtensionLoader(Compiler.class);
-        if (DEFAULT_COMPILER != null && DEFAULT_COMPILER.length() > 0) {
-            compiler = loader.getExtension(DEFAULT_COMPILER);
+        String name = DEFAULT_COMPILER; // copy reference
+        if (name != null && name.length() > 0) {
+            compiler = loader.getExtension(name);
         } else {
             compiler = loader.getDefaultExtension();
         }
