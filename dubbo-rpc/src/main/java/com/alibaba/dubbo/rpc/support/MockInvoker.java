@@ -19,7 +19,6 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Pattern;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
@@ -50,7 +49,6 @@ final public class MockInvoker<T> implements Invoker<T> {
 	private final static Logger logger = LoggerFactory.getLogger(MockInvoker.class);
 	private final static ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
     private final static Map<String, Invoker<?>> mocks = new ConcurrentHashMap<String, Invoker<?>>();
-    private final static Pattern NUMBER_PATTERN = Pattern.compile("^[0-9]");
     
     private final URL url ;
     
@@ -80,7 +78,7 @@ final public class MockInvoker<T> implements Invoker<T> {
                     Object value = parseMockValue(mock, returnTypes);
                     return new RpcResult(value);
                 } catch (Exception ew) {
-                	logger.warn("mock return invoke error .invocation :" + invocation + ", mock:" + mock + ", url: "+ url);
+                	logger.warn("mock return invoke error .invocation :" + invocation + ", mock:" + mock + ", url: "+ url , ew);
                 	//进入return流程就必须返回结果
                 	return getNullResult();
                 }
@@ -175,7 +173,7 @@ final public class MockInvoker<T> implements Invoker<T> {
         } else if (mock.length() >=2 && (mock.startsWith("\"") && mock.endsWith("\"")
                 || mock.startsWith("\'") && mock.endsWith("\'"))) {
             value = mock.subSequence(1, mock.length() - 1);
-        } else if (NUMBER_PATTERN.matcher(mock).matches()) {
+        } else if (StringUtils.isNumeric(mock)) {
             value = JSON.parse(mock);
         } else if (mock.startsWith("{")) {
             value = JSON.parse(mock, Map.class);
