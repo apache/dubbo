@@ -23,7 +23,7 @@ import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcStatus;
 import com.alibaba.dubbo.rpc.support.MockInvocation;
-import com.alibaba.dubbo.rpc.support.MockInvoker;
+import com.alibaba.dubbo.rpc.support.TestInvoker;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -38,7 +38,7 @@ public class TpsLimitFilterTest {
     public void testWithoutCount() throws Exception {
         URL url = URL.valueOf("test://test");
         url = url.addParameter(Constants.TPS_MAX_KEY, 5);
-        Invoker<TpsLimitFilterTest> invoker = new MockInvoker<TpsLimitFilterTest>(url);
+        Invoker<TpsLimitFilterTest> invoker = new TestInvoker<TpsLimitFilterTest>(url);
         Invocation invocation = new MockInvocation();
         filter.invoke(invoker, invocation);
     }
@@ -47,7 +47,7 @@ public class TpsLimitFilterTest {
     public void testFail() throws Exception {
         URL url = URL.valueOf("test://test");
         url = url.addParameter(Constants.TPS_MAX_KEY, 5);
-        Invoker<TpsLimitFilterTest> invoker = new MockInvoker<TpsLimitFilterTest>(url);
+        Invoker<TpsLimitFilterTest> invoker = new TestInvoker<TpsLimitFilterTest>(url);
         Invocation invocation = new MockInvocation();
         for (int i = 0; i < 10; i++) {
             RpcStatus.beginCount(url, invocation.getMethodName());

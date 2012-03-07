@@ -37,6 +37,6 @@ final public class MockProtocol extends AbstractProtocol {
 	}
 
 	public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
-		return new MockReturnInvoker<T>(url);
+		return new MockInvoker<T>(url);
 	}
 }

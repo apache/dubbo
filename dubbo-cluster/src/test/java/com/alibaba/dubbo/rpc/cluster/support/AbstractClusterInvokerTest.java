@@ -503,11 +503,11 @@ public class AbstractClusterInvokerTest {
 	@Test
 	public void testMockInvokerInvoke_failmock(){
 		URL url = URL.valueOf("remote://1.2.3.4/"+IHelloService.class.getName())
-				.addParameter(Constants.MOCK_KEY, "fail" )
+				.addParameter(Constants.MOCK_KEY, "fail:return null" )
 				.addParameter("invoke_return_error", "true" );
 		Invoker<IHelloService> cluster = getClusterInvoker(url);        
         URL mockUrl = URL.valueOf("mock://localhost/"+IHelloService.class.getName()
-				+"?getSomething.mock=return aa");
+				+"?getSomething.mock=return aa").addParameters(url.getParameters());
 		
 		Protocol protocol = new MockProtocol();
 		Invoker<IHelloService> mInvoker1 = protocol.refer(IHelloService.class, mockUrl);
@@ -539,10 +539,11 @@ public class AbstractClusterInvokerTest {
 	@Test
 	public void testMockInvokerInvoke_forcemock(){
 		URL url = URL.valueOf("remote://1.2.3.4/"+IHelloService.class.getName());
-		url = url.addParameter(Constants.MOCK_KEY, "force" );
+		url = url.addParameter(Constants.MOCK_KEY, "force:return null" );
 		Invoker<IHelloService> cluster = getClusterInvoker(url);        
 	    URL mockUrl = URL.valueOf("mock://localhost/"+IHelloService.class.getName()
-				+"?getSomething.mock=return aa&getSomething3xx.mock=return xx");
+				+"?getSomething.mock=return aa&getSomething3xx.mock=return xx")
+				.addParameters(url.getParameters());
 		
 		Protocol protocol = new MockProtocol();
 		Invoker<IHelloService> mInvoker1 = protocol.refer(IHelloService.class, mockUrl);
@@ -640,7 +641,7 @@ public class AbstractClusterInvokerTest {
 	@Test
 	public void testMockInvokerFromOverride_Invoke_Fock_WithDefault(){
 		URL url = URL.valueOf("remote://1.2.3.4/"+IHelloService.class.getName())
-				.addParameter("mock","fail")
+				.addParameter("mock","fail:return null")
 				.addParameter("getSomething.mock","fail:return x")
 				.addParameter("getSomething2.mock","force:return y")
 				.addParameter("invoke_return_error", "true" );
@@ -786,7 +787,7 @@ public class AbstractClusterInvokerTest {
         Result ret = cluster.invoke(invocation);
         Assert.assertEquals("x", ret.getValue());
         
-      //如果没有配置mock，则直接返回null
+        //如果没有配置mock，则直接返回null
         invocation = new RpcInvocation();
 		invocation.setMethodName("getSomething3");
 		try{

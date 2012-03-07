@@ -25,7 +25,7 @@ import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.support.MockInvocation;
-import com.alibaba.dubbo.rpc.support.MockInvoker;
+import com.alibaba.dubbo.rpc.support.TestInvoker;
 
 /**
  * ActiveLimitFilterTest.java
@@ -40,7 +40,7 @@ public class ActiveLimitFilterTest {
     @Test
     public void testInvokeNoActives() {
         URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives=0");
-        Invoker<ActiveLimitFilterTest> invoker = new MockInvoker<ActiveLimitFilterTest>(url);
+        Invoker<ActiveLimitFilterTest> invoker = new TestInvoker<ActiveLimitFilterTest>(url);
         Invocation invocation = new MockInvocation();
         activeLimitFilter.invoke(invoker, invocation);
     }
@@ -48,7 +48,7 @@ public class ActiveLimitFilterTest {
     @Test
     public void testInvokeLessActives() {
         URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives=10");
-        Invoker<ActiveLimitFilterTest> invoker = new MockInvoker<ActiveLimitFilterTest>(url);
+        Invoker<ActiveLimitFilterTest> invoker = new TestInvoker<ActiveLimitFilterTest>(url);
         Invocation invocation = new MockInvocation();
         activeLimitFilter.invoke(invoker, invocation);
     }
@@ -56,7 +56,7 @@ public class ActiveLimitFilterTest {
     @Test
     public void testInvokeGreaterActives() {
         URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives=1&timeout=1");
-        final Invoker<ActiveLimitFilterTest> invoker = new MockInvoker<ActiveLimitFilterTest>(url);
+        final Invoker<ActiveLimitFilterTest> invoker = new TestInvoker<ActiveLimitFilterTest>(url);
         final Invocation invocation = new MockInvocation();
         for (int i = 0; i < 100; i++) {
             Thread thread = new Thread(new Runnable() {

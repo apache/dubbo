@@ -40,6 +40,8 @@ public class RpcException extends RuntimeException {
     
     public static final int SERIALIZATION_EXCEPTION = 5;
     
+    public static final int MOCK_EXCEPTION = 5;
+    
     private int code;
 
     public RpcException() {
@@ -104,6 +106,10 @@ public class RpcException extends RuntimeException {
 
     public boolean isSerialization() {
         return code == SERIALIZATION_EXCEPTION;
+    }
+    
+    public boolean isMock() {
+        return code == MOCK_EXCEPTION;
     }
 
 }

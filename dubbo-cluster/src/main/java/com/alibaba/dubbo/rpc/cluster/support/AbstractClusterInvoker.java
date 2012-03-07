@@ -34,7 +34,7 @@ import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.cluster.Directory;
 import com.alibaba.dubbo.rpc.cluster.LoadBalance;
-import com.alibaba.dubbo.rpc.support.MockReturnInvoker;
+import com.alibaba.dubbo.rpc.support.MockInvoker;
 
 /**
  * AbstractClusterInvoker
@@ -280,17 +280,14 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
     protected abstract Result doInvoke(Invocation invocation, List<Invoker<T>> invokers,
                                        LoadBalance loadbalance) throws RpcException;
-    
-    /**
-     * mock invoke不能抛出任何异常，有异常的情况下，直接返回 null result //TODO?
-     */
+
     @SuppressWarnings({ "unchecked", "rawtypes" })
 	private Result doMockInvoke(Invocation invocation,RpcException e){
     	Result result = null;
     	List<Invoker<T>> mockInvokers = selectMockInvoker(invocation);
     	Invoker<T> invoker ;
 		if (mockInvokers.size() == 0){
-			invoker = (Invoker<T>) new MockReturnInvoker(directory.getUrl());
+			invoker = (Invoker<T>) new MockInvoker(directory.getUrl());
 			
 		} else {
 			invoker = mockInvokers.get(0);
@@ -310,6 +307,15 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 		if (result == null){
 			result = new RpcResult();
 			((RpcResult)result).setValue(null);
+		} else {
+			if (result.hasException()){
+				if (e != null) {
+					logger.warn("mock invoker invoke error : error :" + StringUtils.toString(result.getException()), e);
+					throw e;
+				} else {
+					logger.warn("mock invoker invoke error", result.getException());
+				}
+			}
 		}
 		return result;
     }

@@ -306,6 +306,7 @@ public class Constants {
     public static final String       MOCK_PROTOCOL                     	= "mock";
     
     public static final String       RETURN_PREFIX                      = "return ";
+    public static final String       THROW_PREFIX                      =  "throw ";
     
     public static final String       FAIL_PREFIX                      = "fail:";
     

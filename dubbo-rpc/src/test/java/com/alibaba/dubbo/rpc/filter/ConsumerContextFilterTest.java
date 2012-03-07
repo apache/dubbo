@@ -27,7 +27,7 @@ import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.support.DemoService;
 import com.alibaba.dubbo.rpc.support.MockInvocation;
-import com.alibaba.dubbo.rpc.support.MockInvoker;
+import com.alibaba.dubbo.rpc.support.TestInvoker;
 
 /**
  * ConsumerContextFilterTest.java
@@ -38,7 +38,7 @@ public class ConsumerContextFilterTest {
     @Test
     public void testSetContext(){
         URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1");
-        Invoker<DemoService> invoker = new MockInvoker<DemoService>(url);
+        Invoker<DemoService> invoker = new TestInvoker<DemoService>(url);
         Invocation invocation = new MockInvocation();
         consumerContextFilter.invoke(invoker, invocation);
         assertEquals(invoker,RpcContext.getContext().getInvoker());
