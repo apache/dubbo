@@ -536,19 +536,20 @@ public class RegistryDirectoryTest {
 
         registryDirectory.notify(serviceUrls);
         List<Router> routers = registryDirectory.getRouters();
-        Assert.assertEquals(1, routers.size());
+        //default invocation selector
+        Assert.assertEquals(1+1, routers.size());
         Assert.assertEquals(ScriptRouter.class, routers.get(0).getClass());
 
         registryDirectory.notify(new ArrayList<URL>());
         routers = registryDirectory.getRouters();
-        Assert.assertEquals(1, routers.size());
+        Assert.assertEquals(1 + 1, routers.size());
         Assert.assertEquals(ScriptRouter.class, routers.get(0).getClass());
 
         serviceUrls.clear();
         serviceUrls.add(routerurl.addParameter(Constants.ROUTER_KEY, Constants.ROUTER_TYPE_CLEAR));
         registryDirectory.notify(serviceUrls);
         routers = registryDirectory.getRouters();
-        Assert.assertEquals(0, routers.size());
+        Assert.assertEquals(0 + 1, routers.size());
     }
     
     /**
@@ -765,15 +766,41 @@ public class RegistryDirectoryTest {
         serviceUrls.add(routerurl);
         registryDirectory.notify(serviceUrls);
         List routers = registryDirectory.getRouters();
-        Assert.assertEquals(1, routers.size());
+        Assert.assertEquals(1 + 1, routers.size());
 
         serviceUrls.clear();
         serviceUrls.add(routerurl.addParameter(Constants.ROUTER_KEY, Constants.ROUTER_TYPE_CLEAR));
         registryDirectory.notify(serviceUrls);
         routers = registryDirectory.getRouters();
-        Assert.assertEquals(0, routers.size());
+        Assert.assertEquals(0 + 1, routers.size());
     }
 
+    // mock protocol
+    /**
+     * 测试mock provider下发
+     */
+    @Test
+    public void testNotify_MockProviderOnly() {
+    	RegistryDirectory registryDirectory = getRegistryDirectory();
+    	
+    	List<URL> serviceUrls = new ArrayList<URL>();
+        serviceUrls.add(SERVICEURL.addParameter("methods", "getXXX1"));
+        serviceUrls.add(SERVICEURL2.addParameter("methods", "getXXX1,getXXX2"));
+        serviceUrls.add(SERVICEURL.setProtocol(Constants.MOCK_PROTOCOL));
+
+        registryDirectory.notify(serviceUrls);
+        Assert.assertEquals(true, registryDirectory.isAvailable());
+        invocation = new RpcInvocation();
+
+        List invokers = registryDirectory.list(invocation);
+        Assert.assertEquals(2, invokers.size());
+    	
+        RpcInvocation mockinvocation = new RpcInvocation();
+        mockinvocation.setAttachment(Constants.INVOCATION_NEED_MOCK, "true");
+        invokers = registryDirectory.list(mockinvocation);
+        Assert.assertEquals(1, invokers.size());
+    }
+    
     private static interface DemoService {
     }
 

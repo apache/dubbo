@@ -27,6 +27,7 @@ import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.cluster.Directory;
 import com.alibaba.dubbo.rpc.cluster.Router;
 import com.alibaba.dubbo.rpc.cluster.RouterFactory;
+import com.alibaba.dubbo.rpc.cluster.router.MockInvokersSelector;
 
 /**
  * 增加router的Directory
@@ -57,9 +58,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             RouterFactory routerFactory = ExtensionLoader.getExtensionLoader(RouterFactory.class).getExtension(routerkey);
             routers.add(routerFactory.getRouter(url));
         }
-        if (routers != null) {
-            setRouters(routers);
-        }
+        setRouters(routers);
     }
     
     public List<Invoker<T>> list(Invocation invocation) throws RpcException {
@@ -67,6 +66,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             throw new RpcException("Directory already destroyed .url: "+ getUrl());
         }
         List<Invoker<T>> invokers = doList(invocation);
+
         for (Router router: routers){
             invokers = router.route(invokers, invocation);
         }
@@ -83,8 +83,10 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     
     protected abstract List<Invoker<T>> doList(Invocation invocation) throws RpcException ;
     
-    protected void setRouters(List<Router> r){
+    protected void setRouters(final List<Router> r){
         routers = r;
+        //mock invoker选择器开启
+        routers.add(new MockInvokersSelector());
     }
     
     public void destroy(){

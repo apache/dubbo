@@ -79,7 +79,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * 优先级：override>-D>consumer>provider
      * 第一种规则：针对某个provider <ip:port,timeout=100>
      * 第二种规则：针对所有provider <* ,timeout=5000>
-     * 第三种规则：表达式匹配的provider <10.20.*.*, timeout=1000> 
      */
     private volatile Map<String, Map<String, String>> overrideMap;
     
@@ -200,6 +199,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 }
                 invokerUrls.add(url);
             }
+        }
+        if (invokerUrls.size() ==0 ){
+        	return;
         }
         Map<String, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls) ;// 将URL列表转成Invoker列表
         Map<String, List<Invoker<T>>> newMethodInvokerMap = toMethodInvokers(newUrlInvokerMap); // 换方法名映射Invoker列表

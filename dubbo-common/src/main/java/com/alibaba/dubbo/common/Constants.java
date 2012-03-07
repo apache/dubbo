@@ -303,7 +303,13 @@ public class Constants {
 
     public static final String       ROUTE_PROTOCOL                     = "route";
     
+    public static final String       MOCK_PROTOCOL                     	= "mock";
+    
     public static final String       RETURN_PREFIX                      = "return ";
+    
+    public static final String       FAIL_PREFIX                      = "fail:";
+    
+    public static final String       FORCE_PREFIX                      = "force:";
 
     public static final String       MERGER_KEY                          = "merger";
     
