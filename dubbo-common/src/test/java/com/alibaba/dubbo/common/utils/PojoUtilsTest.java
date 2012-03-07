@@ -24,6 +24,8 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
+import junit.framework.Assert;
+
 import org.junit.Test;
 
 import com.alibaba.dubbo.common.model.Person;
@@ -81,6 +83,12 @@ public class PojoUtilsTest {
         assertObject(new Person());
         assertObject(new SerializablePerson());
     }
+    
+    @Test
+	public void test_int(){
+		Object obj = PojoUtils.realize("1688", int.class, int.class);
+		Assert.assertEquals(new Integer(1688), (Integer)obj);
+	}
 
     @Test
     public void test_PrimitiveArray() throws Exception {
