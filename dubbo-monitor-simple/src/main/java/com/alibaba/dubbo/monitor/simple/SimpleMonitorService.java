@@ -339,7 +339,7 @@ public class SimpleMonitorService implements MonitorService {
                     }
                     String filename = statisticsDirectory 
                             + "/" + day 
-                            + "/" + statistics.getServiceName() 
+                            + "/" + statistics.getServiceInterface() 
                             + "/" + statistics.getParameter(METHOD) 
                             + "/" + consumer 
                             + "/" + provider 

@@ -294,7 +294,7 @@ public class RegistryProtocol implements Protocol {
             URL newUrl = originUrl;
             //override://0.0.0.0/?timeout=10 ip:port无意义
             for (URL overrideUrl : urls){
-                if (overrideUrl.getServiceName() == null){
+                if (overrideUrl.getServiceInterface() == null){
                     newUrl = newUrl.addParameters(overrideUrl.getParameters());
                 }
             }

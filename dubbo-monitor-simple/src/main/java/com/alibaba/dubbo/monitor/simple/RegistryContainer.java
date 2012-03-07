@@ -247,7 +247,7 @@ public class RegistryContainer implements Container {
                     if (application != null && application.length() > 0) {
                         applications.add(application);
                     }
-                    String service = url.getServiceName();
+                    String service = url.getServiceInterface();
                     notifiedServices.add(service);
                     services.add(service);
                     if (Constants.ROUTE_PROTOCOL.equals(url.getProtocol())) {

@@ -1035,7 +1035,7 @@ public final class URL implements Serializable {
     }
 
     public String getServiceKey() {
-        String inf = getServiceName();
+        String inf = getServiceInterface();
         if (inf == null) return null;
         StringBuilder buf = new StringBuilder();
         String group = getParameter(Constants.GROUP_KEY);
@@ -1049,11 +1049,16 @@ public final class URL implements Serializable {
         }
         return buf.toString();
     }
-    
+
+    @Deprecated
     public String getServiceName() {
+        return getServiceInterface();
+    }
+
+    public String getServiceInterface() {
         return getParameter(Constants.INTERFACE_KEY, path);
     }
-    
+
     public int hashCode() {
         final int prime = 31;
         int result = 1;

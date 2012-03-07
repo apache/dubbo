@@ -84,7 +84,7 @@ public class SimpleRegistryService extends FailbackRegistry {
                 super.register(registryUrl, null);
             }
         }
-        if (! Constants.ANY_VALUE.equals(url.getServiceName())
+        if (! Constants.ANY_VALUE.equals(url.getServiceInterface())
                 && url.getParameter(Constants.REGISTER_KEY, true)) {
             register(url, null);
         }
@@ -106,7 +106,7 @@ public class SimpleRegistryService extends FailbackRegistry {
     }
 
     public void unsubscribe(URL url, NotifyListener listener) {
-        if (! Constants.ANY_VALUE.equals(url.getServiceName())
+        if (! Constants.ANY_VALUE.equals(url.getServiceInterface())
                 && url.getParameter(Constants.REGISTER_KEY, true)) {
             unregister(url, null);
         }

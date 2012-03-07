@@ -239,7 +239,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                             } else if (CONSUMERS.equals(action)) {
                                 continue;
                             }
-                            String subscribeService = subscribe.getServiceName();
+                            String subscribeService = subscribe.getServiceInterface();
                             if (service.equals(subscribeService)) {
                                 List<URL> list = toUrls(subscribe, notifies);
                                 if (list != null && list.size() > 0) {
@@ -342,7 +342,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
 
     protected void doSubscribe(URL url, NotifyListener listener) {
         try {
-            if (Constants.ANY_VALUE.equals(url.getServiceName())) {
+            if (Constants.ANY_VALUE.equals(url.getServiceInterface())) {
                 String key = url.toFullString();
                 Set<NotifyListener> listeners = anyNotifyListeners.get(key);
                 if (listeners == null) {
@@ -400,7 +400,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     }
     
     protected void doUnsubscribe(URL url, NotifyListener listener) {
-        if (Constants.ANY_VALUE.equals(url.getServiceName())) {
+        if (Constants.ANY_VALUE.equals(url.getServiceInterface())) {
             String key = url.toFullString();
             Set<NotifyListener> listeners = anyNotifyListeners.get(key);
             if (listeners != null) {
@@ -441,7 +441,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     }
     
     private String toServicePath(URL url) {
-        String name = url.getServiceName();
+        String name = url.getServiceInterface();
         if (Constants.ANY_VALUE.equals(name)) {
             return toRootPath();
         }

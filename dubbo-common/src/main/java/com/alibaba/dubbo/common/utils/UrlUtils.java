@@ -320,10 +320,10 @@ public class UrlUtils {
     }
 
     public static boolean isMatch(URL consumerUrl, URL providerUrl) {
-        String consumerInterface = consumerUrl.getServiceName();
+        String consumerInterface = consumerUrl.getServiceInterface();
         String consumerGroup = consumerUrl.getParameter(Constants.GROUP_KEY);
         String consumerVersion = consumerUrl.getParameter(Constants.VERSION_KEY);
-        String providerInterface = providerUrl.getServiceName();
+        String providerInterface = providerUrl.getServiceInterface();
         String providerGroup = providerUrl.getParameter(Constants.GROUP_KEY);
         String providerVersion = providerUrl.getParameter(Constants.VERSION_KEY);
         return (Constants.ANY_VALUE.equals(consumerInterface) || StringUtils.isEquals(consumerInterface, providerInterface))

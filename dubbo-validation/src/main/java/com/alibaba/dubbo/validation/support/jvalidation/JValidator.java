@@ -79,7 +79,7 @@ public class JValidator implements Validator {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public JValidator(URL url) {
-        this.clazz = ReflectUtils.forName(url.getServiceName());
+        this.clazz = ReflectUtils.forName(url.getServiceInterface());
         String jvalidation = url.getParameter("jvalidation");
         ValidatorFactory factory;
         if (jvalidation != null && jvalidation.length() > 0) {

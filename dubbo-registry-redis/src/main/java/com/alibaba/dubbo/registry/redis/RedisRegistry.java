@@ -86,27 +86,27 @@ public class RedisRegistry extends FailbackRegistry {
 
     @Override
     public void doRegister(URL url) {
-        jedis.publish(url.getServiceName(), REGISTER + " " + url.toFullString());
+        jedis.publish(url.getServiceInterface(), REGISTER + " " + url.toFullString());
     }
 
     @Override
     public void doUnregister(URL url) {
-        jedis.publish(url.getServiceName(), UNREGISTER + " " + url.toFullString());
+        jedis.publish(url.getServiceInterface(), UNREGISTER + " " + url.toFullString());
     }
 
     @Override
     public void doSubscribe(URL url, NotifyListener listener) {
-        if (Constants.ANY_VALUE.equals(url.getServiceName())) {
-            jedis.psubscribe(sub, url.getServiceName());
+        if (Constants.ANY_VALUE.equals(url.getServiceInterface())) {
+            jedis.psubscribe(sub, url.getServiceInterface());
         } else {
-            jedis.subscribe(sub, url.getServiceName());
+            jedis.subscribe(sub, url.getServiceInterface());
         }
-        jedis.publish(url.getServiceName(), SUBSCRIBE + " " + url.toFullString());
+        jedis.publish(url.getServiceInterface(), SUBSCRIBE + " " + url.toFullString());
     }
     
     @Override
     public void doUnsubscribe(URL url, NotifyListener listener) {
-        jedis.publish(url.getServiceName(), UNSUBSCRIBE + " " + url.toFullString());
+        jedis.publish(url.getServiceInterface(), UNSUBSCRIBE + " " + url.toFullString());
     }
 
     private class NotifySub extends JedisPubSub {
@@ -124,7 +124,7 @@ public class RedisRegistry extends FailbackRegistry {
                 List<URL> urls = lookup(url);
                 if (urls != null && urls.size() > 0) {
                     for (URL u : urls) {
-                        jedis.publish(url.getServiceName(), REGISTER + " " + u.toFullString());
+                        jedis.publish(url.getServiceInterface(), REGISTER + " " + u.toFullString());
                     }
                 }
             } /*else if (msg.startsWith(UNSUBSCRIBE)) {

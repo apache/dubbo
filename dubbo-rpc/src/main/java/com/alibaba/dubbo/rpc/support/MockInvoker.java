@@ -85,7 +85,7 @@ final public class MockInvoker<T> implements Invoker<T> {
             } else if (mock.equalsIgnoreCase(Constants.THROW_PREFIX)) {
                 return getErrorResult();
             } else {
-            	 Class<T> serviceType = (Class<T>)ReflectUtils.forName(url.getServiceName());
+            	 Class<T> serviceType = (Class<T>)ReflectUtils.forName(url.getServiceInterface());
                  if (ConfigUtils.isDefault(mock)) {
                      mock = serviceType.getName() + "Mock";
                  }
@@ -141,7 +141,7 @@ final public class MockInvoker<T> implements Invoker<T> {
     	if (mock == null || mock.trim().length() ==0){
     		return mock;
     	} else if (ConfigUtils.isDefault(mock) || "fail".equalsIgnoreCase(mock.trim()) || "force".equalsIgnoreCase(mock.trim())){
-    		mock = url.getServiceName()+"Mock";
+    		mock = url.getServiceInterface()+"Mock";
     	}
     	if (mock.startsWith(Constants.FAIL_PREFIX)) {
             mock = mock.substring(Constants.FAIL_PREFIX.length()).trim();
