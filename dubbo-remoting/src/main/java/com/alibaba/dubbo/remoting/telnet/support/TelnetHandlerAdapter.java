@@ -15,6 +15,7 @@
  */
 package com.alibaba.dubbo.remoting.telnet.support;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.RemotingException;
@@ -31,7 +32,7 @@ public class TelnetHandlerAdapter extends ChannelHandlerAdapter implements Telne
     private final ExtensionLoader<TelnetHandler> extensionLoader = ExtensionLoader.getExtensionLoader(TelnetHandler.class);
 
     public String telnet(Channel channel, String message) throws RemotingException {
-        String prompt = channel.getUrl().getParameterAndDecoded("prompt", "dubbo>");
+        String prompt = channel.getUrl().getParameterAndDecoded(Constants.PROMPT_KEY, Constants.DEFAULT_PROMPT);
         boolean noprompt = message.contains("--no-prompt");
         message = message.replace("--no-prompt", "");
         StringBuilder buf = new StringBuilder();
@@ -53,9 +54,10 @@ public class TelnetHandlerAdapter extends ChannelHandlerAdapter implements Telne
             if (extensionLoader.hasExtension(command)) {
                 try {
                     String result = extensionLoader.getExtension(command).telnet(channel, message);
-                    if (result != null) {
-                        buf.append(result);
+                    if (result == null) {
+                        return null;
                     }
+                    buf.append(result);
                 } catch (Throwable t) {
                     buf.append(t.getMessage());
                 }

@@ -207,7 +207,11 @@ public class Constants {
     public static final String       TIMEOUT_KEY                    = "timeout";
 
     public static final String       RETRIES_KEY                    = "retries";
+    
+    public static final String       PROMPT_KEY                     = "prompt";
 
+    public static final String       DEFAULT_PROMPT                 = "dubbo>";
+    
     public static final String       CODEC_KEY                      = "codec";
     public static final String       DOWNSTREAM_CODEC_KEY           = "codec.downstream";
 

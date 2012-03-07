@@ -101,13 +101,13 @@ public class TraceFilter implements Filter {
                             }
                             count = c.getAndIncrement();
                             if (count < max) {
-                                String prompt = channel.getUrl().getParameter("prompt", "telnet");
+                                String prompt = channel.getUrl().getParameter(Constants.PROMPT_KEY, Constants.DEFAULT_PROMPT);
                                 channel.send("\r\n" + RpcContext.getContext().getRemoteAddress() + " -> "  
                                          + invoker.getInterface().getName() 
                                          + "." + invocation.getMethodName() 
                                          + "(" + JSON.json(invocation.getArguments()) + ")" + " -> " + JSON.json(result.getValue())
                                          + "\r\nelapsed: "+(end - start) +" ms."
-                                         + "\r\n\r\n" + prompt + "> ");
+                                         + "\r\n\r\n" + prompt);
                             }
                             if(count >= max - 1) {
                                 channels.remove(channel);

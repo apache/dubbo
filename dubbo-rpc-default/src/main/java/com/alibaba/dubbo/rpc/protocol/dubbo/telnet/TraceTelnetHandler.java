@@ -42,10 +42,6 @@ public class TraceTelnetHandler implements TelnetHandler {
                 && (message == null || message.length() == 0)) {
             return "Please input service name, eg: \r\ntrace XxxService\r\ntrace XxxService xxxMethod\r\ntrace XxxService xxxMethod 10\r\nor \"cd XxxService\" firstly.";
         }
-        StringBuilder buf = new StringBuilder();
-        if (service != null && service.length() > 0) {
-            buf.append("Use default service " + service + ".\r\n");
-        }
         String[] parts = message.split("\\s+");
         String method;
         String times;
@@ -88,9 +84,9 @@ public class TraceTelnetHandler implements TelnetHandler {
             }
             TraceFilter.addTracer(invoker.getInterface(), method, channel, Integer.parseInt(times));
         } else {
-            buf.append("No such service " + service);
+            return "No such service " + service;
         }
-        return buf.toString();
+        return null;
     }
 
 }
