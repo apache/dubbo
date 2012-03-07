@@ -57,7 +57,7 @@ public final class Version {
         return COMPATIBLE;
     }
     
-    public static boolean hasResource(String path) {
+    private static boolean hasResource(String path) {
         try {
             return Version.class.getClassLoader().getResource(path) != null;
         } catch (Throwable t) {

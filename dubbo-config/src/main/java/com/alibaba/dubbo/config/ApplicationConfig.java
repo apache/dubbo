@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.compiler.support.AdaptiveCompiler;
 
 
 /**
@@ -45,6 +46,9 @@ public class ApplicationConfig extends AbstractConfig {
     // 环境，如：dev/test/run
     private String            environment;
 
+    // Java代码编译器
+    private String            compiler;
+    
     // 注册中心
     protected List<RegistryConfig> registries;
     
@@ -141,6 +145,15 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setMonitor(String monitor) {
         this.monitor = new MonitorConfig(monitor);
+    }
+
+    public String getCompiler() {
+        return compiler;
+    }
+
+    public void setCompiler(String compiler) {
+        this.compiler = compiler;
+        AdaptiveCompiler.setDefaultCompiler(compiler);
     }
 
 }
