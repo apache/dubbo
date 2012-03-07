@@ -215,6 +215,7 @@ public class ReferenceConfig<T> extends AbstractConsumerConfig {
         Map<String, String> map = new HashMap<String, String>();
         Map<Object, Object> attributes = new HashMap<Object, Object>();
         map.put("dubbo", Version.getVersion());
+        map.put(Constants.TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
         if (! generic) {
             map.put("revision", Version.getVersion(interfaceClass, version));
             map.put("methods", StringUtils.join(new HashSet<String>(Arrays.asList(Wrapper.getWrapper(interfaceClass).getDeclaredMethodNames())), ","));

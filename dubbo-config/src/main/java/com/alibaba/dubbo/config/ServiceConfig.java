@@ -295,12 +295,13 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             if (anyhost) {
                 map.put(Constants.ANYHOST_KEY, "true");
             }
+            map.put("prompt", "dubbo");
             map.put("dubbo", Version.getVersion());
+            map.put(Constants.TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
             appendParameters(map, application);
             appendParameters(map, provider);
             appendParameters(map, protocolConfig);
             appendParameters(map, this);
-            map.put("prompt", "dubbo");
             if (methods != null && methods.size() > 0) {
                 for (MethodConfig method : methods) {
                     appendParameters(map, method, method.getName());
