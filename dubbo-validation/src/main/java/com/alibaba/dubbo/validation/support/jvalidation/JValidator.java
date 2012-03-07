@@ -53,6 +53,7 @@ import javax.validation.Constraint;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validation;
+import javax.validation.ValidatorFactory;
 import javax.validation.groups.Default;
 
 import com.alibaba.dubbo.common.URL;
@@ -76,9 +77,17 @@ public class JValidator implements Validator {
     
     private final javax.validation.Validator validator;
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public JValidator(URL url) {
         this.clazz = ReflectUtils.forName(url.getServiceName());
-        this.validator = Validation.buildDefaultValidatorFactory().getValidator();
+        String jvalidation = url.getParameter("jvalidation");
+        ValidatorFactory factory;
+        if (jvalidation != null && jvalidation.length() > 0) {
+            factory = Validation.byProvider((Class)ReflectUtils.forName(jvalidation)).configure().buildValidatorFactory();
+        } else {
+            factory = Validation.buildDefaultValidatorFactory();
+        }
+        this.validator = factory.getValidator();
     }
 
     public void validate(Invocation invocation) throws Exception {
