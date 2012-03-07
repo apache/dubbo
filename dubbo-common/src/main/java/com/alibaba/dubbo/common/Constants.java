@@ -203,7 +203,7 @@ public class Constants {
     public static final String       HEARTBEAT_TIMEOUT_KEY          = "heartbeat.timeout";
 
     public static final String       CONNECT_TIMEOUT_KEY            = "connect.timeout";
-    
+
     public static final String       TIMEOUT_KEY                    = "timeout";
 
     public static final String       RETRIES_KEY                    = "retries";
@@ -238,6 +238,8 @@ public class Constants {
     public static final String       SHUTDOWN_TIMEOUT_KEY           =  "shutdown.timeout";
     
     public static final int          DEFAULT_SHUTDOWN_TIMEOUT       =  1000 * 60 * 5;
+
+    public static final String       TIMESTAMP_KEY                  = "timestamp";
 
     public static final String       CHECK_KEY                      = "check";
 
