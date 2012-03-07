@@ -34,6 +34,7 @@ import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.cluster.Directory;
 import com.alibaba.dubbo.rpc.cluster.LoadBalance;
@@ -139,9 +140,8 @@ public class FileRouterEngineTest {
     }
 
     private void initInvocation(String methodName) {
-        invocation = EasyMock.createMock(Invocation.class);
-        EasyMock.expect(invocation.getMethodName()).andReturn(methodName).anyTimes();
-        EasyMock.replay(invocation);
+        invocation = new RpcInvocation();
+        ((RpcInvocation)invocation).setMethodName(methodName);
     }
 
     private void initInvokers(URL url) {
