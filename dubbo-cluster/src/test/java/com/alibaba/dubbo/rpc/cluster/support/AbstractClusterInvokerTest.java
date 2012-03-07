@@ -900,6 +900,22 @@ public class AbstractClusterInvokerTest {
 		}
 	}
 	
+	@Test
+	public void testMockInvokerFromOverride_Invoke_mock_false(){
+		URL url = URL.valueOf("remote://1.2.3.4/"+IHelloService.class.getName())
+				.addParameter("mock","false")
+				.addParameter("invoke_return_error", "true" );
+		Invoker<IHelloService> cluster = getClusterInvoker(url);        
+		//方法配置了mock
+        RpcInvocation invocation = new RpcInvocation();
+		invocation.setMethodName("getBoolean2");
+		try {
+			cluster.invoke(invocation);
+			Assert.fail();
+		} catch (RpcException e) {
+			Assert.assertTrue(e.isTimeout());
+		}
+	}
 	
 	@SuppressWarnings("unchecked")
 	private Invoker<IHelloService> getClusterInvoker(URL url){
@@ -916,25 +932,13 @@ public class AbstractClusterInvokerTest {
             protected Result doInvoke(Invocation invocation, List invokers, LoadBalance loadbalance)
                     throws RpcException {
             	if (durl.getParameter("invoke_return_error", false)){
-            		throw new RpcException("test rpc exception");
+            		throw new RpcException(RpcException.TIMEOUT_EXCEPTION, "test rpc exception");
             	} else {
             		return ((Invoker<?>)invokers.get(0)).invoke(invocation);
             	}
             }
         };
         return cluster;
-	}
-	
-//	@Test
-	public void testJavassist(){
-		ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getExtension("javassist");
-		Invoker<IHelloService> invoker1 = proxy.getInvoker(new HelloService(), IHelloService.class, url);
-		RpcInvocation invocation = new RpcInvocation();
-		invocation.setMethodName("getSomething");
-		invocation.setParameterTypes(new Class<?>[]{});
-		invocation.setArguments(new Object[]{});
-		Result result = invoker1.invoke(invocation);
-		System.out.println(result.getValue());
 	}
 	
 	public static interface IHelloService{

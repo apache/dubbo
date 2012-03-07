@@ -229,8 +229,8 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         
         Result result = null;
         
-        String value = directory.getUrl().getMethodParameter(invocation.getMethodName(), Constants.MOCK_KEY, Boolean.FALSE.toString()); 
-        if (value == null || value.trim().length() ==0 || value.equalsIgnoreCase("false")){
+        String value = directory.getUrl().getMethodParameter(invocation.getMethodName(), Constants.MOCK_KEY, Boolean.FALSE.toString()).trim(); 
+        if (value.length() == 0 || value.equalsIgnoreCase("false")){
         	//no mock
         	result = doInvoke(invocation, invokers, loadbalance);
         } else if (value.startsWith("force")) {
