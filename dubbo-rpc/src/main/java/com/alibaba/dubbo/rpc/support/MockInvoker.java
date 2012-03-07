@@ -46,18 +46,16 @@ import com.alibaba.dubbo.rpc.RpcResult;
  * 
  */
 final public class MockInvoker<T> implements Invoker<T> {
-	public static final int ERRORCODE = -1;
 	private final static Logger logger = LoggerFactory.getLogger(MockInvoker.class);
-	private final static ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getExtension("jdk");
-    private final URL url ;
+	private final static ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
     private final static Map<String, Invoker<?>> mocks = new ConcurrentHashMap<String, Invoker<?>>();
+    private final static Pattern NUMBER_PATTERN = Pattern.compile("^[0-9]");
+    
+    private final URL url ;
+    
     public MockInvoker(URL url) {
         this.url = url;
     }
-    
-    private static final Pattern NUMBER_PATTERN = Pattern.compile("^[0-9]");
-    private static final Result errorResult = new RpcResult(new RpcException(RpcException.MOCK_EXCEPTION));
-
     @SuppressWarnings("unchecked")
 	public Result invoke(Invocation invocation) throws RpcException {
     	String mock = getUrl().getParameter(invocation.getMethodName()+"."+Constants.MOCK_KEY);
@@ -83,8 +81,8 @@ final public class MockInvoker<T> implements Invoker<T> {
                 	//进入return流程就必须返回结果
                 	return getNullResult();
                 }
-            } else if (mock.startsWith(Constants.THROW_PREFIX)) {
-                return errorResult;
+            } else if (mock.equalsIgnoreCase(Constants.THROW_PREFIX)) {
+                return getErrorResult();
             } else {
             	 Class<T> serviceType = (Class<T>)ReflectUtils.forName(url.getServiceName());
                  if (ConfigUtils.isDefault(mock)) {
@@ -101,12 +99,16 @@ final public class MockInvoker<T> implements Invoker<T> {
                      logger.error("Failed to create mock implemention class " + mock + " in consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() + ", cause: " + t.getMessage(), t);
                      // ignore
                  }
-                 return errorResult ;
+                 return getErrorResult() ;
             }
         } else {
         	//没有mock的方法 直接抛出异常
-        	return errorResult ;
+        	return getErrorResult() ;
         }
+    }
+    
+    private Result getErrorResult(){
+    	return new RpcResult(new RpcException(RpcException.MOCK_EXCEPTION));
     }
     
     @SuppressWarnings("unchecked")

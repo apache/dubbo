@@ -248,7 +248,6 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 				}
 			}
         }
-        
         return result;
     }
 
@@ -297,7 +296,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 			result = minvoker.invoke(invocation);
 		} catch (RpcException me) {
 			if (e != null) {
-				logger.warn("mock invoker invoke error : error :" + StringUtils.toString(me), e);
+				logger.warn("mock invoker invoke error : " + StringUtils.toString(me), e);
 			} else {
 				logger.warn("mock invoker invoke error", me);
 			}
@@ -307,15 +306,14 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 		if (result == null){
 			result = new RpcResult();
 			((RpcResult)result).setValue(null);
-		} else {
-			if (result.hasException()){
+		} else if (result.hasException()){
+			//如果exception是mock exception则抛出
+			if (result.getException() instanceof RpcException && ((RpcException)result.getException()).isMock()){
 				if (e != null) {
-					logger.warn("mock invoker invoke error : error :" + StringUtils.toString(result.getException()), e);
-					throw e;
-				} else {
-					logger.warn("mock invoker invoke error", result.getException());
+					logger.error(e);
 				}
-			}
+				throw (RpcException)result.getException();
+			} 
 		}
 		return result;
     }

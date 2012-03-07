@@ -844,20 +844,78 @@ public class AbstractClusterInvokerTest {
         Assert.assertEquals("somethingmock", ret.getValue());
 	}
 	
+	@Test
+	public void testMockInvokerFromOverride_Invoke_check_int(){
+		URL url = URL.valueOf("remote://1.2.3.4/"+IHelloService.class.getName())
+				.addParameter("getInt1.mock","force:return 1688")
+				.addParameter("invoke_return_error", "true" );
+		Invoker<IHelloService> cluster = getClusterInvoker(url);        
+		//方法配置了mock
+        RpcInvocation invocation = new RpcInvocation();
+		invocation.setMethodName("getInt1");
+        Result ret = cluster.invoke(invocation);
+        Assert.assertEquals(1688, Integer.parseInt(ret.getValue().toString()));
+	}
+	
+	@Test
+	public void testMockInvokerFromOverride_Invoke_check_boolean(){
+		URL url = URL.valueOf("remote://1.2.3.4/"+IHelloService.class.getName())
+				.addParameter("getBoolean1.mock","force:return true")
+				.addParameter("invoke_return_error", "true" );
+		Invoker<IHelloService> cluster = getClusterInvoker(url);        
+		//方法配置了mock
+        RpcInvocation invocation = new RpcInvocation();
+		invocation.setMethodName("getBoolean1");
+        Result ret = cluster.invoke(invocation);
+        Assert.assertEquals(true, Boolean.parseBoolean(ret.getValue().toString()));
+	}
+	
+	@Test
+	public void testMockInvokerFromOverride_Invoke_check_Boolean(){
+		URL url = URL.valueOf("remote://1.2.3.4/"+IHelloService.class.getName())
+				.addParameter("getBoolean2.mock","force:return true")
+				.addParameter("invoke_return_error", "true" );
+		Invoker<IHelloService> cluster = getClusterInvoker(url);        
+		//方法配置了mock
+        RpcInvocation invocation = new RpcInvocation();
+		invocation.setMethodName("getBoolean2");
+        Result ret = cluster.invoke(invocation);
+        Assert.assertEquals(true, Boolean.parseBoolean(ret.getValue().toString()));
+	}
+	
+	@Test
+	public void testMockInvokerFromOverride_Invoke_force_throw(){
+		URL url = URL.valueOf("remote://1.2.3.4/"+IHelloService.class.getName())
+				.addParameter("getBoolean2.mock","force:throw ")
+				.addParameter("invoke_return_error", "true" );
+		Invoker<IHelloService> cluster = getClusterInvoker(url);        
+		//方法配置了mock
+        RpcInvocation invocation = new RpcInvocation();
+		invocation.setMethodName("getBoolean2");
+		try {
+			cluster.invoke(invocation);
+			Assert.fail();
+		} catch (RpcException e) {
+			Assert.assertTrue(e.isMock());
+		}
+	}
+	
+	
 	@SuppressWarnings("unchecked")
-	private Invoker<IHelloService> getClusterInvoker(final URL url){
+	private Invoker<IHelloService> getClusterInvoker(URL url){
+		//javasssit方式对方法参数类型判断严格,如果invocation数据设置不全，调用会失败.
+		final URL durl = url.addParameter("proxy", "jdk");
 		invokers.clear();
-		//TODO JAVASSIST ERROR
 		ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getExtension("jdk");
-		Invoker<IHelloService> invoker1 = proxy.getInvoker(new HelloService(), IHelloService.class, url);
+		Invoker<IHelloService> invoker1 = proxy.getInvoker(new HelloService(), IHelloService.class, durl);
 		invokers.add(invoker1);
 		
-		Directory<IHelloService> dic = new StaticDirectory<IHelloService>(url, invokers, null);
+		Directory<IHelloService> dic = new StaticDirectory<IHelloService>(durl, invokers, null);
 		AbstractClusterInvoker<IHelloService> cluster = new AbstractClusterInvoker(dic) {
             @Override
             protected Result doInvoke(Invocation invocation, List invokers, LoadBalance loadbalance)
                     throws RpcException {
-            	if (url.getParameter("invoke_return_error", false)){
+            	if (durl.getParameter("invoke_return_error", false)){
             		throw new RpcException("test rpc exception");
             	} else {
             		return ((Invoker<?>)invokers.get(0)).invoke(invocation);
@@ -867,10 +925,25 @@ public class AbstractClusterInvokerTest {
         return cluster;
 	}
 	
+//	@Test
+	public void testJavassist(){
+		ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getExtension("javassist");
+		Invoker<IHelloService> invoker1 = proxy.getInvoker(new HelloService(), IHelloService.class, url);
+		RpcInvocation invocation = new RpcInvocation();
+		invocation.setMethodName("getSomething");
+		invocation.setParameterTypes(new Class<?>[]{});
+		invocation.setArguments(new Object[]{});
+		Result result = invoker1.invoke(invocation);
+		System.out.println(result.getValue());
+	}
+	
 	public static interface IHelloService{
 		String getSomething();
 		String getSomething2();
 		String getSomething3();
+		int getInt1();
+		boolean getBoolean1();
+		Boolean getBoolean2();
 		void sayHello();
 	}
 	public static class HelloService implements IHelloService {
@@ -883,14 +956,21 @@ public class AbstractClusterInvokerTest {
 		public String getSomething3() {
 			return "something3";
 		}
+		public int getInt1() {
+			return 1;
+		}
+		public boolean getBoolean1() {
+			return false;
+		}
+		public Boolean getBoolean2() {
+			return Boolean.FALSE;
+		}
 		public void sayHello() {
 			System.out.println("hello prety");
 		}
 	}
 	
 	public static class IHelloServiceMock implements IHelloService {
-		
-		
 		public IHelloServiceMock() {
 			
 		}
@@ -902,6 +982,15 @@ public class AbstractClusterInvokerTest {
 		}
 		public String getSomething3() {
 			return "something3mock";
+		}
+		public int getInt1() {
+			return 1;
+		}
+		public boolean getBoolean1() {
+			return false;
+		}
+		public Boolean getBoolean2() {
+			return Boolean.FALSE;
 		}
 		public void sayHello() {
 			System.out.println("hello prety");
