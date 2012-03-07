@@ -175,7 +175,7 @@ public class RegistryProtocol implements Protocol {
     private URL getRegistedProviderUrl(final Invoker<?> originInvoker){
         URL providerUrl = getProviderUrl(originInvoker);
         //注册中心看到的地址
-        final URL registedProviderUrl = providerUrl.removeParameters(getFilteredKeys(providerUrl));
+        final URL registedProviderUrl = providerUrl.removeParameters(getFilteredKeys(providerUrl)).removeParameter(Constants.MONITOR_KEY);
         return registedProviderUrl;
     }
 

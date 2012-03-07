@@ -217,7 +217,10 @@ public class ReferenceConfig<T> extends AbstractConsumerConfig {
         map.put("dubbo", Version.getVersion());
         map.put(Constants.TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
         if (! generic) {
-            map.put("revision", Version.getVersion(interfaceClass, version));
+            String revision = Version.getVersion(interfaceClass, version);
+            if (revision != null && revision.length() > 0) {
+                map.put("revision", revision);
+            }
             map.put("methods", StringUtils.join(new HashSet<String>(Arrays.asList(Wrapper.getWrapper(interfaceClass).getDeclaredMethodNames())), ","));
         }
         map.put(Constants.INTERFACE_KEY, interfaceName);

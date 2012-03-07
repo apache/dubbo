@@ -59,6 +59,7 @@ public abstract class AbstractConfig implements Serializable {
 
     protected String id;
 
+    @Parameter(excluded = true)
     public String getId() {
         return id;
     }
