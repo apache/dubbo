@@ -65,16 +65,6 @@ public class CompatibleTypeUtils {
                 return new BigInteger(string);
             } else if(type == BigDecimal.class) {
                 return new BigDecimal(string);
-            } else if(type == Short.class || type == short.class) {
-                return new Short(string);
-            } else if(type == Integer.class || type == int.class) {
-                return new Integer(string);
-            } else if(type == Long.class || type == long.class) {
-                return new Long(string);
-            } else if(type == Double.class || type == double.class) {
-                return new Double(string);
-            } else if(type == Float.class || type == float.class) {
-                return new Float(string);
             } else if(type == Date.class) {
                 try {
                     return new SimpleDateFormat(DATE_FORMAT).parse((String) value);
