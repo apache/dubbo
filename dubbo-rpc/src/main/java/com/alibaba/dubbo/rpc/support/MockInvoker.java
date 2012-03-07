@@ -38,6 +38,7 @@ import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.ProxyFactory;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
 
 /**
@@ -59,7 +60,9 @@ final public class MockInvoker<T> implements Invoker<T> {
     @SuppressWarnings("unchecked")
 	public Result invoke(Invocation invocation) throws RpcException {
     	String mock = getUrl().getParameter(invocation.getMethodName()+"."+Constants.MOCK_KEY);
-    	
+    	if (invocation instanceof RpcInvocation) {
+    		((RpcInvocation) invocation).setInvoker(this);
+    	}
     	if (StringUtils.isBlank(mock)){
     		mock = getUrl().getParameter(Constants.MOCK_KEY);
     	}

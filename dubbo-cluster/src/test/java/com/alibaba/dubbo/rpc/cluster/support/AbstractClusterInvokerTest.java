@@ -854,7 +854,7 @@ public class AbstractClusterInvokerTest {
         RpcInvocation invocation = new RpcInvocation();
 		invocation.setMethodName("getInt1");
         Result ret = cluster.invoke(invocation);
-        Assert.assertEquals(1688, Integer.parseInt(ret.getValue().toString()));
+        Assert.assertEquals(new Integer(1688), (Integer)ret.getValue());
 	}
 	
 	@Test
