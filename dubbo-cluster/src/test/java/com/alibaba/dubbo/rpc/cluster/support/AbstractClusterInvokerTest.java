@@ -776,7 +776,7 @@ public class AbstractClusterInvokerTest {
 	 * 测试mock策略是否正常-fail-mock
 	 */
 	@Test
-	public void testMockInvokerFromOverride_Invoke_checkCompatible(){
+	public void testMockInvokerFromOverride_Invoke_checkCompatible_return(){
 		URL url = URL.valueOf("remote://1.2.3.4/"+IHelloService.class.getName())
 				.addParameter("getSomething.mock","return x")
 				.addParameter("invoke_return_error", "true" );
@@ -796,6 +796,52 @@ public class AbstractClusterInvokerTest {
 		}catch(RpcException e){
 			
 		}
+	}
+	
+	/**
+	 * 测试mock策略是否正常-fail-mock
+	 */
+	@Test
+	public void testMockInvokerFromOverride_Invoke_checkCompatible_ImplMock(){
+		URL url = URL.valueOf("remote://1.2.3.4/"+IHelloService.class.getName())
+				.addParameter("mock","true")
+				.addParameter("invoke_return_error", "true" );
+		Invoker<IHelloService> cluster = getClusterInvoker(url);        
+		//方法配置了mock
+        RpcInvocation invocation = new RpcInvocation();
+		invocation.setMethodName("getSomething");
+        Result ret = cluster.invoke(invocation);
+        Assert.assertEquals("somethingmock", ret.getValue());
+	}
+	
+	/**
+	 * 测试mock策略是否正常-fail-mock
+	 */
+	@Test
+	public void testMockInvokerFromOverride_Invoke_checkCompatible_ImplMock2(){
+		URL url = URL.valueOf("remote://1.2.3.4/"+IHelloService.class.getName())
+				.addParameter("mock","fail")
+				.addParameter("invoke_return_error", "true" );
+		Invoker<IHelloService> cluster = getClusterInvoker(url);        
+		//方法配置了mock
+        RpcInvocation invocation = new RpcInvocation();
+		invocation.setMethodName("getSomething");
+        Result ret = cluster.invoke(invocation);
+        Assert.assertEquals("somethingmock", ret.getValue());
+	}
+	/**
+	 * 测试mock策略是否正常-fail-mock
+	 */
+	@Test
+	public void testMockInvokerFromOverride_Invoke_checkCompatible_ImplMock3(){
+		URL url = URL.valueOf("remote://1.2.3.4/"+IHelloService.class.getName())
+				.addParameter("mock","force");
+		Invoker<IHelloService> cluster = getClusterInvoker(url);        
+		//方法配置了mock
+        RpcInvocation invocation = new RpcInvocation();
+		invocation.setMethodName("getSomething");
+        Result ret = cluster.invoke(invocation);
+        Assert.assertEquals("somethingmock", ret.getValue());
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -841,4 +887,25 @@ public class AbstractClusterInvokerTest {
 			System.out.println("hello prety");
 		}
 	}
+	
+	public static class IHelloServiceMock implements IHelloService {
+		
+		
+		public IHelloServiceMock() {
+			
+		}
+		public String getSomething() {
+			return "somethingmock";
+		}
+		public String getSomething2() {
+			return "something2mock";
+		}
+		public String getSomething3() {
+			return "something3mock";
+		}
+		public void sayHello() {
+			System.out.println("hello prety");
+		}
+	}
+	
 }

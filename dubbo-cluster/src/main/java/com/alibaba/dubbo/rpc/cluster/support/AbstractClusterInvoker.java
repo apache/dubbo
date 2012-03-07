@@ -230,7 +230,13 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         Result result = null;
         
         String value = directory.getUrl().getMethodParameter(invocation.getMethodName(), Constants.MOCK_KEY, Boolean.FALSE.toString()); 
-        if (value.startsWith("fail") || value.startsWith(Constants.RETURN_PREFIX)) {
+        if (value == null || value.trim().length() ==0 || value.equalsIgnoreCase("false")){
+        	//no mock
+        	result = doInvoke(invocation, invokers, loadbalance);
+        } else if (value.startsWith("force")) {
+        	//force:direct mock
+        	result = doMockInvoke(invocation, null);
+        } else {
         	//fail-mock
         	try {
         		result = doInvoke(invocation, invokers, loadbalance) ;
@@ -241,12 +247,6 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 					result = doMockInvoke(invocation, e);
 				}
 			}
-        } else if (value.startsWith("force")) {
-        	//force:direct mock
-        	result = doMockInvoke(invocation, null);
-        } else {
-        	//no mock
-        	result = doInvoke(invocation, invokers, loadbalance);
         }
         
         return result;
@@ -285,16 +285,16 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 	private Result doMockInvoke(Invocation invocation,RpcException e){
     	Result result = null;
     	List<Invoker<T>> mockInvokers = selectMockInvoker(invocation);
-    	Invoker<T> invoker ;
+    	Invoker<T> minvoker ;
 		if (mockInvokers.size() == 0){
-			invoker = (Invoker<T>) new MockInvoker(directory.getUrl());
+			minvoker = (Invoker<T>) new MockInvoker(directory.getUrl());
 			
 		} else {
-			invoker = mockInvokers.get(0);
+			minvoker = mockInvokers.get(0);
 		}
 		try {
 //			result = doInvoke(invocation, mockInvokers, loadbalance) ;
-			result = invoker.invoke(invocation);
+			result = minvoker.invoke(invocation);
 		} catch (RpcException me) {
 			if (e != null) {
 				logger.warn("mock invoker invoke error : error :" + StringUtils.toString(me), e);
