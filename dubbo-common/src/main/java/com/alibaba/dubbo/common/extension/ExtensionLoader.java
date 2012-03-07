@@ -191,43 +191,14 @@ public class ExtensionLoader<T> {
         if (keys == null || keys.length == 0) {
             return true;
         }
-        String[] matchs = activate.match();
-        String[] mismatchs = activate.mismatch();
         for (String key : keys) {
-            if (activate.method()) {
-                for (Map.Entry<String, String> entry : url.getParameters().entrySet()) {
-                    String k = entry.getKey();
-                    String v = entry.getValue();
-                    if ((k.equals(key) || k.endsWith("." + key))
-                            && isMatchActive(v, matchs, mismatchs)) {
-                        return true;
-                    }
-                }
-            } else {
-                if (isMatchActive(url.getParameter(key), matchs, mismatchs)) {
+            for (Map.Entry<String, String> entry : url.getParameters().entrySet()) {
+                String k = entry.getKey();
+                String v = entry.getValue();
+                if ((k.equals(key) || k.endsWith("." + key))
+                        && ConfigUtils.isNotEmpty(v)) {
                     return true;
                 }
-            }
-        }
-        return false;
-    }
-    
-    private boolean isMatchActive(String value, String[] matchs, String[] mismatchs) {
-        if (matchs != null && matchs.length > 0) {
-            for (String match : matchs) {
-                if (StringUtils.isEquals(value, match)) {
-                    return true;
-                }
-            }
-        } else if (mismatchs != null && mismatchs.length > 0) {
-            for (String match : matchs) {
-                if (! StringUtils.isEquals(value, match)) {
-                    return true;
-                }
-            }
-        } else {
-            if (ConfigUtils.isNotEmpty(value)) {
-                return true;
             }
         }
         return false;

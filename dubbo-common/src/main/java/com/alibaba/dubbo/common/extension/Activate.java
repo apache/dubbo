@@ -35,12 +35,6 @@ public @interface Activate {
 
     String[] value() default {};
 
-    String[] match() default {};
-
-    String[] mismatch() default {};
-
     int order() default 0;
-    
-    boolean method() default true;
 
 }
