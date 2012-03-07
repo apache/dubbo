@@ -15,20 +15,15 @@
  */
 package com.alibaba.dubbo.validation;
 
-import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.extension.Adaptive;
-import com.alibaba.dubbo.common.extension.SPI;
+import com.alibaba.dubbo.rpc.Invocation;
 
 /**
- * Validation
+ * Validator
  * 
  * @author william.liangf
  */
-@SPI("jvalidation")
-public interface Validation {
+public interface Validator {
 
-    @Adaptive(Constants.VALIDATION_KEY)
-    Validator getValidator(URL url);
+    void validate(Invocation invocation) throws Exception;
 
 }

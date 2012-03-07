@@ -13,22 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.validation;
+package com.alibaba.dubbo.validation.support.jvalidation;
 
-import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.extension.Adaptive;
-import com.alibaba.dubbo.common.extension.SPI;
+import com.alibaba.dubbo.validation.Validator;
+import com.alibaba.dubbo.validation.support.AbstractValidation;
 
 /**
- * Validation
+ * JValidation
  * 
  * @author william.liangf
  */
-@SPI("jvalidation")
-public interface Validation {
+public class JValidation extends AbstractValidation {
 
-    @Adaptive(Constants.VALIDATION_KEY)
-    Validator getValidator(URL url);
+    @Override
+    protected Validator createValidator(URL url) {
+        return new JValidator(url);
+    }
 
 }

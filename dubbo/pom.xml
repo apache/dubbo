@@ -331,6 +331,10 @@
 									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
 									<resource>META-INF/dubbo/com.alibaba.dubbo.rpc.ProxyFactory</resource>
 								</transformer>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/dubbo/com.alibaba.dubbo.validation.Validation</resource>
+								</transformer>
 							</transformers>
 						</configuration>
 					</execution>
