@@ -27,18 +27,18 @@ import com.alibaba.dubbo.rpc.RpcResult;
  * 
  * @author tony.chenl
  */
-public class TestInvoker<T> implements Invoker<T> {
+public class MyInvoker<T> implements Invoker<T> {
 
     URL      url;
     Class<T> type;
     boolean  hasException = false;
 
-    public TestInvoker(URL url){
+    public MyInvoker(URL url){
         this.url = url;
         type = (Class<T>) DemoService.class;
     }
 
-    public TestInvoker(URL url, boolean hasException){
+    public MyInvoker(URL url, boolean hasException){
         this.url = url;
         type = (Class<T>) DemoService.class;
         this.hasException = hasException;
