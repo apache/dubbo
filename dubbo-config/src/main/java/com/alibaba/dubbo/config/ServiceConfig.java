@@ -295,7 +295,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             if (anyhost) {
                 map.put(Constants.ANYHOST_KEY, "true");
             }
-            map.put("prompt", "dubbo");
             map.put("dubbo", Version.getVersion());
             map.put(Constants.TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
             appendParameters(map, application);

@@ -106,6 +106,9 @@ public class ProtocolConfig extends AbstractConfig {
     
     // 支持的telnet命令，多个命令用逗号分隔
     private String              telnet;
+    
+    // 命令行提示符
+    private String              prompt;
 
     // status检查
     private String              status;
@@ -313,6 +316,15 @@ public class ProtocolConfig extends AbstractConfig {
     public void setTelnet(String telnet) {
         checkMultiExtension(TelnetHandler.class, "telnet", telnet);
         this.telnet = telnet;
+    }
+
+    @Parameter(escaped = true)
+    public String getPrompt() {
+        return prompt;
+    }
+
+    public void setPrompt(String prompt) {
+        this.prompt = prompt;
     }
 
     public String getStatus() {
