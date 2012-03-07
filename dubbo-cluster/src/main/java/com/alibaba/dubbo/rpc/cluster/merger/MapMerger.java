@@ -23,18 +23,18 @@ import com.alibaba.dubbo.rpc.cluster.Merger;
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-public class MapMerger implements Merger<Map<Object, Object>> {
+public class MapMerger implements Merger<Map<?, ?>> {
 
     public static final String    NAME     = "map";
 
     public static final MapMerger INSTANCE = new MapMerger();
 
-    public Map<Object, Object> merge(Map<Object, Object>... items) {
+    public Map<?, ?> merge(Map<?, ?>... items) {
         if (items.length == 0) {
             return null;
         }
         Map<Object, Object> result = new HashMap<Object, Object>();
-        for (Map<Object, Object> item : items) {
+        for (Map<?, ?> item : items) {
             if (item != null) {
                 result.putAll(item);
             }

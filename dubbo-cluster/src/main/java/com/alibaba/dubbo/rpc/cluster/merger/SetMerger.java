@@ -24,17 +24,17 @@ import com.alibaba.dubbo.rpc.cluster.Merger;
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-public class SetMerger implements Merger<Set<Object>> {
+public class SetMerger implements Merger<Set<?>> {
 
     public static final String    NAME     = "set";
 
     public static final SetMerger INSTANCE = new SetMerger();
 
-    public Set<Object> merge(Set<Object>... items) {
+    public Set<Object> merge(Set<?>... items) {
 
         Set<Object> result = new HashSet<Object>();
 
-        for (Set<Object> item : items) {
+        for (Set<?> item : items) {
             if (item != null) {
                 result.addAll(item);
             }
