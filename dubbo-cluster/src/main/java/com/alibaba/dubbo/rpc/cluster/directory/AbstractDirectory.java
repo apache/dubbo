@@ -84,7 +84,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     protected abstract List<Invoker<T>> doList(Invocation invocation) throws RpcException ;
     
     protected void setRouters(final List<Router> r){
-        routers = r;
+    	routers = new ArrayList<Router>(r);
         //mock invoker选择器开启
         routers.add(new MockInvokersSelector());
     }
