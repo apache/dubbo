@@ -388,8 +388,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         }
         
         this.directoryUrl = this.directoryUrl.addParametersIfAbsent(providerUrl.getParameters()); // 合并提供者参数
-        //directoryUrl只合并全局override设置
-        this.directoryUrl = this.directoryUrl.addParameters(alloverride);//合并override参数
         
         if ((providerUrl.getPath() == null || providerUrl.getPath().length() == 0)
                 && "dubbo".equals(providerUrl.getProtocol())) { // 兼容1.0
@@ -552,7 +550,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     }
 
     public URL getUrl() {
-        return directoryUrl;
+    	//合并override参数;
+    	return overrideMap == null ? directoryUrl : directoryUrl.addParameters(overrideMap.get(Constants.ANY_VALUE));
     }
 
     public boolean isAvailable() {
