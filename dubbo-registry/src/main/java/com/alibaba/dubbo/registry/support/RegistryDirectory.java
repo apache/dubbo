@@ -380,6 +380,10 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         Map<String, String> alloverride = overrideMap == null ? new HashMap<String,String>() : overrideMap.get(Constants.ANY_VALUE);
         providerUrl = ClusterUtils.mergeUrl(providerUrl, queryMap); // 合并消费端参数
         providerUrl = providerUrl.addParameter(Constants.CHECK_KEY, String.valueOf(false)); // 不检查连接是否成功，总是创建Invoker！
+        
+        //directoryUrl 与 override 合并是在notify的最后，这里不能够处理
+        this.directoryUrl = this.directoryUrl.addParametersIfAbsent(providerUrl.getParameters()); // 合并提供者参数        
+        
         //先做全局覆盖
         providerUrl = providerUrl.addParameters(alloverride);//合并override参数
         //然后做特定覆盖
@@ -387,8 +391,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         if(oneOverride != null && overrideMap.get(providerUrl.getAddress()).size() > 0){
             providerUrl = providerUrl.addParameters(oneOverride);//合并override参数
         }
-        
-        this.directoryUrl = this.directoryUrl.addParametersIfAbsent(providerUrl.getParameters()); // 合并提供者参数
         
         if ((providerUrl.getPath() == null || providerUrl.getPath().length() == 0)
                 && "dubbo".equals(providerUrl.getProtocol())) { // 兼容1.0

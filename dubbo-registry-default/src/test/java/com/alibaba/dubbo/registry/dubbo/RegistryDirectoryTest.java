@@ -743,14 +743,16 @@ public class RegistryDirectoryTest {
         List<URL> durls = new ArrayList<URL>();
         durls.add(SERVICEURL.setHost("10.20.30.140").addParameter("timeout", "1"));
         registryDirectory.notify(durls);
+        Assert.assertEquals(null,registryDirectory.getUrl().getParameter("mock"));
         
         //override
         durls = new ArrayList<URL>();
-        durls.add(URL.valueOf("override://0.0.0.0?timeout=1000"));
+        durls.add(URL.valueOf("override://0.0.0.0?timeout=1000&mock=fail"));
         registryDirectory.notify(durls);
         List<Invoker<?>> invokers = registryDirectory.list(invocation);
         Invoker<?> aInvoker = invokers.get(0);
         Assert.assertEquals("1000",aInvoker.getUrl().getParameter("timeout"));
+        Assert.assertEquals("fail",registryDirectory.getUrl().getParameter("mock"));
         
         //override clean
         durls = new ArrayList<URL>();
@@ -760,6 +762,8 @@ public class RegistryDirectoryTest {
         aInvoker = invokers.get(0);
         //需要恢复到最初的providerUrl
         Assert.assertEquals("1",aInvoker.getUrl().getParameter("timeout"));
+        
+        Assert.assertEquals(null,registryDirectory.getUrl().getParameter("mock"));
     }
     
     /**
