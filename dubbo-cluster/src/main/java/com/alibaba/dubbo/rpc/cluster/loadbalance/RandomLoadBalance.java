@@ -28,6 +28,7 @@ import com.alibaba.dubbo.rpc.Invoker;
  * @author william.liangf
  */
 public class RandomLoadBalance extends AbstractLoadBalance {
+
     public static final String NAME = "random";
 
     private final Random random = new Random();
@@ -61,4 +62,5 @@ public class RandomLoadBalance extends AbstractLoadBalance {
         // 如果权重相同或权重为0则均等随机
         return invokers.get(random.nextInt(length));
     }
+
 }

@@ -29,6 +29,7 @@ import com.alibaba.dubbo.rpc.RpcStatus;
  * @author william.liangf
  */
 public class LeastActiveLoadBalance extends AbstractLoadBalance {
+
     public static final String NAME = "leastactive";
     
     private final Random random = new Random();

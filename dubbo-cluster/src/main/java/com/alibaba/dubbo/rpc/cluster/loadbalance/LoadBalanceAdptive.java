@@ -34,6 +34,7 @@ import com.alibaba.dubbo.rpc.cluster.LoadBalance;
  */
 @Adaptive
 public class LoadBalanceAdptive implements LoadBalance {
+
     public <T> Invoker<T> select(List<Invoker<T>> invokers, Invocation invocation) throws RpcException {
         if (invokers == null || invokers.size() == 0) {
             return null;
@@ -49,4 +50,5 @@ public class LoadBalanceAdptive implements LoadBalance {
         LoadBalance loadbalance = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(name);
         return loadbalance.select(invokers, invocation);
     }
+
 }

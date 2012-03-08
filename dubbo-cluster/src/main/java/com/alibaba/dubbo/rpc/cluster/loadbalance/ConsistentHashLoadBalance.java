@@ -48,8 +48,9 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, Invocation invocation) {
         String key = invokers.get(0).getInterface().getName() + "." + invocation.getMethodName();
         ConsistentHashSelector<T> selector = (ConsistentHashSelector<T>) selectors.get(key);
-        if (selector == null || selector.getIdentityHashCode() != System.identityHashCode(invokers)) {
-            selectors.put(key, new ConsistentHashSelector<T>(invokers));
+        int identityHashCode = System.identityHashCode(invokers);
+        if (selector == null || selector.getIdentityHashCode() != identityHashCode) {
+            selectors.put(key, new ConsistentHashSelector<T>(invokers, identityHashCode));
             selector = (ConsistentHashSelector<T>) selectors.get(key);
         }
         return selector.select(invocation);
@@ -63,7 +64,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
         
         private final int                       identityHashCode;
 
-        public ConsistentHashSelector(List<Invoker<T>> invokers) {
+        public ConsistentHashSelector(List<Invoker<T>> invokers, int identityHashCode) {
             this.virtualInvokers = new TreeMap<Long, Invoker<T>>();
             this.identityHashCode = System.identityHashCode(invokers);
             this.replicaNumber = invokers.get(0).getUrl().getParameter("replica", 160);
