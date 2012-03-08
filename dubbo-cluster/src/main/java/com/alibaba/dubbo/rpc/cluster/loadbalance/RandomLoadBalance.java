@@ -38,17 +38,14 @@ public class RandomLoadBalance extends AbstractLoadBalance {
         int totalWeight = 0; // 总权重
         boolean sameWeight = true; // 权重是否都一样
         for (int i = 0; i < length; i++) {
-            // 获取权重
             int weight = getWeight(invokers.get(i), invocation);
-            // 累计总权重
-            totalWeight += weight;
-            // 判断所有权重是否一样
+            totalWeight += weight; // 累计总权重
             if (sameWeight && i > 0
                     && weight != getWeight(invokers.get(i - 1), invocation)) {
-                sameWeight = false;
+                sameWeight = false; // 计算所有权重是否一样
             }
         }
-        if (!sameWeight && totalWeight > 0) {
+        if (totalWeight > 0 && ! sameWeight) {
             // 如果权重不相同且权重大于0则按总权重数随机
             int offset = random.nextInt(totalWeight);
             // 并确定随机值落在哪个片断上
