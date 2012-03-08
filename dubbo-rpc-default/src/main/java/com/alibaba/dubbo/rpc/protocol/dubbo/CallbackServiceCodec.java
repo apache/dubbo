@@ -259,7 +259,7 @@ class CallbackServiceCodec {
         try {
             url = DubboProtocol.getDubboProtocol().getInvoker(channel, inv).getUrl();
         } catch (RemotingException e) {
-            logger.warn(e.getMessage(), e);
+            logger.info(e.getMessage(), e);
             return inObject;
         }
         byte callbackstatus = isCallBack(url, inv.getMethodName(), paraIndex);
