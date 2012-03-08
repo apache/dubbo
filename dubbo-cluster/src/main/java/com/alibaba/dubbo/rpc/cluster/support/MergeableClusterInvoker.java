@@ -56,7 +56,6 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
         this.directory = directory;
     }
 
-    @SuppressWarnings("unchecked")
     public Result invoke(final Invocation invocation) throws RpcException {
         int timeout = getUrl().getMethodParameter( invocation.getMethodName(), Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT );
         List<Invoker<T>> invokers = directory.list(invocation);
@@ -145,21 +144,21 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
                                     .toString() );
                 }
             } else if ( List.class.isAssignableFrom( returnType ) ) {
-                List<List> args = new ArrayList<List>();
+                List<List<?>> args = new ArrayList<List<?>>();
                 for( Result r : resultList ) {
-                    args.add( ( List ) r.getValue() );
+                    args.add( ( List<?> ) r.getValue() );
                 }
                 result = ListMerger.INSTANCE.merge( args.toArray( new List[ args.size() ] ) );
             } else if ( Set.class.isAssignableFrom( returnType ) ) {
-                List<Set> args = new ArrayList<Set>();
+                List<Set<?>> args = new ArrayList<Set<?>>();
                 for( Result r : resultList ) {
-                    args.add( ( Set ) r.getValue() );
+                    args.add( ( Set<?> ) r.getValue() );
                 }
                 result = SetMerger.INSTANCE.merge( args.toArray( new Set[args.size()] ) );
             } else if ( Map.class.isAssignableFrom( returnType ) ) {
-                List<Map> args = new ArrayList<Map>();
+                List<Map<?,?>> args = new ArrayList<Map<?,?>>();
                 for( Result r : resultList ) {
-                    args.add( ( Map ) r.getValue() );
+                    args.add( ( Map<?,?> ) r.getValue() );
                 }
                 result = MapMerger.INSTANCE.merge( args.toArray( new Map[args.size()] ) );
             } else if ( returnType.isArray() ) {

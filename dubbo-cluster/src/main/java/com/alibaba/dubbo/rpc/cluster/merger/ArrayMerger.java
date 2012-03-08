@@ -49,7 +49,6 @@ public class ArrayMerger implements Merger<Object> {
         Class<?> type = others[0].getClass().getComponentType();
 
         Object result = Array.newInstance(type, totalLen);
-        int index = 0;
         if (boolean.class == type) {
             mergeArray(result, BOOLEAN_ARRAY_FILLER, others);
         } else if (char.class == type) {
