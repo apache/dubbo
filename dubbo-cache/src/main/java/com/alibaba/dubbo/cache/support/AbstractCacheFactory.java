@@ -20,6 +20,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import com.alibaba.dubbo.cache.Cache;
 import com.alibaba.dubbo.cache.CacheFactory;
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 
 /**
@@ -32,7 +33,7 @@ public abstract class AbstractCacheFactory implements CacheFactory {
     private final ConcurrentMap<String, Cache> caches = new ConcurrentHashMap<String, Cache>();
 
     public Cache getCache(URL url, String name) {
-        String key = url.toFullString() + "#" + name;
+        String key = url.toFullString() + Constants.SEMICOLON_SEPARATOR + name;
         Cache cache = caches.get(key);
         if (cache == null) {
             caches.put(key, createCache(url));

@@ -73,7 +73,7 @@ public class CacheFilter implements Filter {
         StringBuilder buf = new StringBuilder();
         for (Object arg : args) {
             if (buf.length() > 0) {
-                buf.append("+");
+                buf.append(Constants.COMMA_SEPARATOR);
             }
             try {
                 buf.append(JSON.json(arg));

@@ -25,6 +25,7 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.json.JSON;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
@@ -107,7 +108,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
             StringBuilder buf = new StringBuilder();
             for (Object arg : args) {
                 if (buf.length() > 0) {
-                    buf.append("+");
+                    buf.append(Constants.COMMA_SEPARATOR);
                 }
                 try {
                     buf.append(JSON.json(arg));
