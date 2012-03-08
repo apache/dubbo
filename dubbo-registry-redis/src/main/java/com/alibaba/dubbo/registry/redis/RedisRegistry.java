@@ -16,20 +16,28 @@
 package com.alibaba.dubbo.registry.redis;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.commons.pool.impl.GenericObjectPool;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPubSub;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
-import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
 import com.alibaba.dubbo.common.utils.UrlUtils;
 import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.support.FailbackRegistry;
@@ -45,40 +53,78 @@ public class RedisRegistry extends FailbackRegistry {
 
     private static final int DEFAULT_REDIS_PORT = 6379;
 
-    private static final String REGISTER = "register";
+    private final static String DEFAULT_ROOT = "dubbo";
 
-    private static final String UNREGISTER = "unregister";
+    private final String root;
 
-    private static final String SUBSCRIBE = "subscribe";
+    private final JedisPool jedisPool;
 
-    private static final String UNSUBSCRIBE = "unsubscribe";
-    
-    private final ConcurrentMap<String, Set<String>> notified = new ConcurrentHashMap<String, Set<String>>();
-
-    private final Jedis jedis;
-    
     private final NotifySub sub = new NotifySub();
+    
+    private final ConcurrentMap<String, Notifier> notifiers = new ConcurrentHashMap<String, Notifier>();
+    
+    private final int reconnectPeriod;
 
     public RedisRegistry(URL url) {
         super(url);
-        this.jedis = new Jedis(url.getHost(), url.getPort() == 0 ? DEFAULT_REDIS_PORT : url.getPort());
-        this.jedis.connect();
+        GenericObjectPool.Config config = new GenericObjectPool.Config();
+        config.testOnBorrow = url.getParameter("test.on.borrow", true);
+        config.testOnReturn = url.getParameter("test.on.return", false);
+        config.testWhileIdle = url.getParameter("test.while.idle", false);
+        if (url.getParameter("max.idle", 0) > 0)
+            config.maxIdle = url.getParameter("max.idle", 0);
+        if (url.getParameter("min.idle", 0) > 0)
+            config.minIdle = url.getParameter("min.idle", 0);
+        if (url.getParameter("max.active", 0) > 0)
+            config.maxActive = url.getParameter("max.active", 0);
+        if (url.getParameter("max.wait", 0) > 0)
+            config.maxWait = url.getParameter("max.wait", 0);
+        if (url.getParameter("num.tests.per.eviction.run", 0) > 0)
+            config.numTestsPerEvictionRun = url.getParameter("num.tests.per.eviction.run", 0);
+        if (url.getParameter("time.between.eviction.runs.millis", 0) > 0)
+            config.timeBetweenEvictionRunsMillis = url.getParameter("time.between.eviction.runs.millis", 0);
+        if (url.getParameter("min.evictable.idle.time.millis", 0) > 0)
+            config.minEvictableIdleTimeMillis = url.getParameter("min.evictable.idle.time.millis", 0);
+        
+        this.jedisPool = new JedisPool(config, url.getHost(), 
+                url.getPort() == 0 ? DEFAULT_REDIS_PORT : url.getPort(), 
+                url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
+        this.reconnectPeriod = url.getParameter(Constants.REGISTRY_RECONNECT_PERIOD_KEY, Constants.DEFAULT_REGISTRY_RECONNECT_PERIOD);
+        String group = url.getParameter(Constants.GROUP_KEY, DEFAULT_ROOT);
+        if (! group.startsWith(Constants.PATH_SEPARATOR)) {
+            group = Constants.PATH_SEPARATOR + group;
+        }
+        if (! group.endsWith(Constants.PATH_SEPARATOR)) {
+            group = group + Constants.PATH_SEPARATOR;
+        }
+        this.root = group;
     }
 
     public boolean isAvailable() {
-        return jedis.isConnected();
+        try {
+            Jedis jedis = jedisPool.getResource();
+            try {
+                return jedis.isConnected();
+            } finally {
+                jedisPool.returnResource(jedis);
+            }
+        } catch (Throwable t) {
+            return false;
+        }
     }
 
     @Override
     public void destroy() {
         super.destroy();
         try {
-            jedis.disconnect();
+            jedisPool.destroy();
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
         }
         try {
-            jedis.quit();
+            for (Notifier notifier : notifiers.values()) {
+                notifier.shutdown();
+            }
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
         }
@@ -86,49 +132,244 @@ public class RedisRegistry extends FailbackRegistry {
 
     @Override
     public void doRegister(URL url) {
-        jedis.publish(url.getServiceInterface(), REGISTER + " " + url.toFullString());
+        Jedis jedis = jedisPool.getResource();
+        try {
+            jedis.sadd(toRegisterPath(url), url.toFullString());
+            jedis.publish(toServicePath(url), Constants.REGISTER);
+        } finally {
+            jedisPool.returnResource(jedis);
+        }
     }
 
     @Override
     public void doUnregister(URL url) {
-        jedis.publish(url.getServiceInterface(), UNREGISTER + " " + url.toFullString());
-    }
-
-    @Override
-    public void doSubscribe(URL url, NotifyListener listener) {
-        if (Constants.ANY_VALUE.equals(url.getServiceInterface())) {
-            jedis.psubscribe(sub, url.getServiceInterface());
-        } else {
-            jedis.subscribe(sub, url.getServiceInterface());
+        Jedis jedis = jedisPool.getResource();
+        try {
+            jedis.srem(toRegisterPath(url), url.toFullString());
+            jedis.publish(toServicePath(url), Constants.UNREGISTER);
+        } finally {
+            jedisPool.returnResource(jedis);
         }
-        jedis.publish(url.getServiceInterface(), SUBSCRIBE + " " + url.toFullString());
+    }
+    
+    private class Notifier extends Thread {
+
+        private final String service;
+
+        private volatile Jedis jedis;
+
+        private volatile boolean running = true;
+        
+        private final AtomicInteger connectSkip = new AtomicInteger();
+
+        private final AtomicInteger connectSkiped = new AtomicInteger();
+
+        private final Random random = new Random();
+        
+        private volatile int connectRandom;
+
+        private void resetSkip() {
+            connectSkip.set(0);
+            connectSkiped.set(0);
+            connectRandom = 0;
+        }
+        
+        private boolean isSkip() {
+            int skip = connectSkip.get(); // 跳过次数增长
+            if (skip >= 10) { // 如果跳过次数增长超过10，取随机数
+                if (connectRandom == 0) {
+                    connectRandom = random.nextInt(10);
+                }
+                skip = 10 + connectRandom;
+            }
+            if (connectSkiped.getAndIncrement() < skip) { // 检查跳过次数
+                return true;
+            }
+            connectSkip.incrementAndGet();
+            connectSkiped.set(0);
+            connectRandom = 0;
+            return false;
+        }
+        
+        public Notifier(String service) {
+            super.setDaemon(true);
+            super.setName("DubboRedisSubscribe");
+            this.service = service;
+        }
+        
+        @Override
+        public void run() {
+            while (running) {
+                try {
+                    if (! isSkip()) {
+                        try {
+                            jedis = jedisPool.getResource();
+                            try {
+                                if (service.endsWith(Constants.ANY_VALUE)) {
+                                    for (String s : getServices(jedis, service)) {
+                                        doNotify(jedis, s, false);
+                                    }
+                                    resetSkip();
+                                    jedis.psubscribe(sub, service);
+                                } else {
+                                    doNotify(jedis, service, false);
+                                    resetSkip();
+                                    jedis.subscribe(sub, service);
+                                }
+                            } finally {
+                                jedisPool.returnBrokenResource(jedis);
+                            }
+                        } catch (Throwable t) {
+                            logger.error(t.getMessage(), t);
+                            sleep(reconnectPeriod);
+                        }
+                    }
+                } catch (Throwable t) {
+                    logger.error(t.getMessage(), t);
+                }
+            }
+        }
+        
+        public void shutdown() {
+            try {
+                running = false;
+                jedis.disconnect();
+            } catch (Throwable t) {
+                logger.warn(t.getMessage(), t);
+            }
+        }
+        
     }
     
     @Override
+    public void doSubscribe(final URL url, final NotifyListener listener) {
+        String service = toServicePath(url);
+        Notifier notifier = notifiers.get(service);
+        if (notifier == null) {
+            Notifier newNotifier = new Notifier(service);
+            notifiers.putIfAbsent(service, newNotifier);
+            notifier = notifiers.get(service);
+            if (notifier == newNotifier) {
+                notifier.start();
+            }
+        }
+        Jedis jedis = jedisPool.getResource();
+        try {
+            if (service.endsWith(Constants.ANY_VALUE)) {
+                for (String s : getServices(jedis, service)) {
+                    doNotify(jedis, s, url, listener);
+                }
+            } else {
+                jedis.sadd(toSubscribePath(url), url.toFullString());
+                jedis.publish(toServicePath(url), Constants.SUBSCRIBE);
+                doNotify(jedis, service, url, listener);
+            }
+        } finally {
+            jedisPool.returnResource(jedis);
+        }
+    }
+
+    @Override
     public void doUnsubscribe(URL url, NotifyListener listener) {
-        jedis.publish(url.getServiceInterface(), UNSUBSCRIBE + " " + url.toFullString());
+        if (! Constants.ANY_VALUE.equals(url.getServiceInterface())) {
+            Jedis jedis = jedisPool.getResource();
+            try {
+                jedis.srem(toSubscribePath(url), url.toFullString());
+                jedis.publish(toServicePath(url), Constants.UNSUBSCRIBE);
+            } finally {
+                jedisPool.returnResource(jedis);
+            }
+        }
+    }
+
+    private Set<String> getServices(Jedis jedis, String service) {
+        Set<String> keys = jedis.keys(service);
+        Set<String> services = new HashSet<String>();
+        if (keys != null && keys.size() > 0) {
+            for (String key : keys) {
+                int i = key.indexOf(Constants.PATH_SEPARATOR, root.length());
+                services.add(i > 0 ? key.substring(0, i) : key);
+            }
+        }
+        return services;
+    }
+
+    private void doNotify(Jedis jedis, String service, boolean consumer) {
+        for (Map.Entry<String, Set<NotifyListener>> entry : new HashMap<String, Set<NotifyListener>>(getSubscribed()).entrySet()) {
+            URL url = URL.valueOf(entry.getKey());
+            if (Constants.ANY_VALUE.equals(url.getServiceInterface()) 
+                    || (! consumer && toServicePath(url).equals(service))) {
+                doNotify(jedis, service, url, new HashSet<NotifyListener>(entry.getValue()));
+            }
+        }
+    }
+    
+    private void doNotify(Jedis jedis, String service, URL url, NotifyListener listener) {
+        doNotify(jedis, service, url, Arrays.asList(listener));
+    }
+
+    private void doNotify(Jedis jedis, String service, URL url, Collection<NotifyListener> listeners) {
+        Set<String> providers;
+        providers = jedis.smembers(service + Constants.PATH_SEPARATOR + Constants.PROVIDERS);
+        if (url.getParameter(Constants.ADMIN_KEY, false)) {
+            Set<String> consumers = jedis.smembers(service + Constants.PATH_SEPARATOR + Constants.CONSUMERS);
+            if (consumers != null && consumers.size() > 0) {
+                providers = providers == null ? new HashSet<String>() : new HashSet<String>(providers);
+                providers.addAll(consumers);
+            }
+        }
+        if (logger.isInfoEnabled()) {
+            logger.info("redis notify: " + service + " = " + providers);
+        }
+        
+        List<URL> urls = new ArrayList<URL>();
+        if (providers != null && providers.size() > 0) {
+            for (String provider : providers) {
+                URL u = URL.valueOf(provider);
+                if (UrlUtils.isMatch(url, u)) {
+                    urls.add(u);
+                }
+            }
+        }
+        for (NotifyListener listener : listeners) {
+            notify(url, listener, urls);
+        }
+    }
+
+    private String toServicePath(URL url) {
+        String name = url.getServiceInterface();
+        if (! Constants.ANY_VALUE.equals(name)) {
+            name = URL.encode(name);
+        }
+        return root + name;
+    }
+
+    private String toRegisterPath(URL url) {
+        return toServicePath(url) + Constants.PATH_SEPARATOR + Constants.PROVIDERS;
+    }
+
+    private String toSubscribePath(URL url) {
+        return toServicePath(url) + Constants.PATH_SEPARATOR + Constants.CONSUMERS;
     }
 
     private class NotifySub extends JedisPubSub {
 
         @Override
         public void onMessage(String key, String msg) {
-            if (msg.startsWith(REGISTER)) {
-                URL url = URL.valueOf(msg.substring(REGISTER.length()).trim());
-                registered(url);
-            } else if (msg.startsWith(UNREGISTER)) {
-                URL url = URL.valueOf(msg.substring(UNREGISTER.length()).trim());
-                unregistered(url);
-            } else if (msg.startsWith(SUBSCRIBE)) {
-                URL url = URL.valueOf(msg.substring(SUBSCRIBE.length()).trim());
-                List<URL> urls = lookup(url);
-                if (urls != null && urls.size() > 0) {
-                    for (URL u : urls) {
-                        jedis.publish(url.getServiceInterface(), REGISTER + " " + u.toFullString());
-                    }
+            if (logger.isInfoEnabled()) {
+                logger.info("redis event: " + key + " = " + msg);
+            }
+            if (msg.equals(Constants.REGISTER) 
+                    || msg.equals(Constants.UNREGISTER)
+                    || msg.equals(Constants.SUBSCRIBE) 
+                    || msg.equals(Constants.UNSUBSCRIBE)) {
+                Jedis jedis = jedisPool.getResource();
+                try {
+                    doNotify(jedis, key, msg.equals(Constants.SUBSCRIBE) || msg.equals(Constants.UNSUBSCRIBE));
+                } finally {
+                    jedisPool.returnResource(jedis);
                 }
-            } /*else if (msg.startsWith(UNSUBSCRIBE)) {
-            }*/
+            }
         }
 
         @Override
@@ -154,87 +395,4 @@ public class RedisRegistry extends FailbackRegistry {
 
     }
 
-    protected void registered(URL url) {
-        for (Map.Entry<String, Set<NotifyListener>> entry : getSubscribed().entrySet()) {
-            String key = entry.getKey();
-            URL subscribe = URL.valueOf(key);
-            if (UrlUtils.isMatch(subscribe, url)) {
-                Set<String> urls = notified.get(key);
-                if (urls == null) {
-                    notified.putIfAbsent(key, new ConcurrentHashSet<String>());
-                    urls = notified.get(key);
-                }
-                urls.add(url.toFullString());
-                List<URL> list = toList(urls);
-                if (list != null && list.size() > 0) {
-                    for (NotifyListener listener : entry.getValue()) {
-                        notify(subscribe, listener, list);
-                        synchronized (listener) {
-                            listener.notify();
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    protected void unregistered(URL url) {
-        for (Map.Entry<String, Set<NotifyListener>> entry : getSubscribed().entrySet()) {
-            String key = entry.getKey();
-            URL subscribe = URL.valueOf(key);
-            if (UrlUtils.isMatch(subscribe, url)) {
-                Set<String> urls = notified.get(key);
-                if (urls != null) {
-                    urls.remove(url.toFullString());
-                }
-                List<URL> list = toList(urls);
-                if (list != null && list.size() > 0) {
-                    for (NotifyListener listener : entry.getValue()) {
-                        notify(subscribe, listener, list);
-                    }
-                }
-            }
-        }
-    }
-
-    protected void subscribed(URL url, NotifyListener listener) {
-        List<URL> urls = lookup(url);
-        if (urls != null && urls.size() > 0) {
-            notify(url, listener, urls);
-        }
-    }
-
-    private List<URL> toList(Set<String> urls) {
-        List<URL> list = new ArrayList<URL>();
-        if (urls != null && urls.size() > 0) {
-            for (String url : urls) {
-                list.add(URL.valueOf(url));
-            }
-        }
-        return list;
-    }
-
-    public void register(URL url, NotifyListener listener) {
-        super.register(url, listener);
-        registered(url);
-    }
-
-    public void unregister(URL url, NotifyListener listener) {
-        super.unregister(url, listener);
-        unregistered(url);
-    }
-
-    public void subscribe(URL url, NotifyListener listener) {
-        super.subscribe(url, listener);
-        subscribed(url, listener);
-    }
-
-    public void unsubscribe(URL url, NotifyListener listener) {
-        super.unsubscribe(url, listener);
-        notified.remove(url.toFullString());
-    }
-
-    public Map<String, Set<String>> getNotified() {
-        return notified;
-    }
 }
