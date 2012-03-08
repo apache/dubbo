@@ -74,7 +74,7 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
             sequence = sequences.get(key);
         }
         // 取模轮循
-        return invokers.get(sequence.getAndIncrement() % invokers.size());
+        return invokers.get(sequence.getAndIncrement() % length);
     }
 
 }
