@@ -39,7 +39,7 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
     private final ConcurrentMap<String, AtomicPositiveInteger> weightSequences = new ConcurrentHashMap<String, AtomicPositiveInteger>();
 
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, Invocation invocation) {
-        String key = invokers.get(0).getInterface().getName() + "." + invocation.getMethodName();
+        String key = invokers.get(0).getUrl().getServiceKey() + "." + invocation.getMethodName();
         int length = invokers.size(); // 总个数
         int maxWeight = 0; // 最大权重
         int minWeight = Integer.MAX_VALUE; // 最小权重

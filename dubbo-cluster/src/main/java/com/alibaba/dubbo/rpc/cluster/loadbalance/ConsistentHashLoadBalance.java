@@ -24,7 +24,8 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import com.alibaba.dubbo.common.utils.StringUtils;
+import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 
@@ -40,11 +41,11 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
     @SuppressWarnings("unchecked")
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, Invocation invocation) {
-        String key = invokers.get(0).getInterface().getName() + "." + invocation.getMethodName();
+        String key = invokers.get(0).getUrl().getServiceKey() + "." + invocation.getMethodName();
         int identityHashCode = System.identityHashCode(invokers);
         ConsistentHashSelector<T> selector = (ConsistentHashSelector<T>) selectors.get(key);
         if (selector == null || selector.getIdentityHashCode() != identityHashCode) {
-            selectors.put(key, new ConsistentHashSelector<T>(invokers, identityHashCode));
+            selectors.put(key, new ConsistentHashSelector<T>(invokers, invocation.getMethodName(), identityHashCode));
             selector = (ConsistentHashSelector<T>) selectors.get(key);
         }
         return selector.select(invocation);
@@ -57,11 +58,19 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
         private final int                       replicaNumber;
         
         private final int                       identityHashCode;
+        
+        private final int[]                     argumentIndex;
 
-        public ConsistentHashSelector(List<Invoker<T>> invokers, int identityHashCode) {
+        public ConsistentHashSelector(List<Invoker<T>> invokers, String methodName, int identityHashCode) {
             this.virtualInvokers = new TreeMap<Long, Invoker<T>>();
             this.identityHashCode = System.identityHashCode(invokers);
-            this.replicaNumber = invokers.get(0).getUrl().getParameter("replica", 160);
+            URL url = invokers.get(0).getUrl();
+            this.replicaNumber = url.getMethodParameter(methodName, "hash.nodes", 160);
+            String[] index = Constants.COMMA_SPLIT_PATTERN.split(url.getMethodParameter(methodName, "hash.arguments", "0"));
+            argumentIndex = new int[index.length];
+            for (int i = 0; i < index.length; i ++) {
+                argumentIndex[i] = Integer.parseInt(index[i]);
+            }
             for (Invoker<T> invoker : invokers) {
                 for (int i = 0; i < replicaNumber / 4; i++) {
                     byte[] digest = md5(invoker.getUrl().toFullString() + i);
@@ -78,10 +87,20 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
         }
 
         public Invoker<T> select(Invocation invocation) {
-            String key = StringUtils.toArgumentString(invocation.getArguments());
+            String key = toKey(invocation.getArguments());
             byte[] digest = md5(key);
             Invoker<T> invoker = sekectForKey(hash(digest, 0));
             return invoker;
+        }
+
+        private String toKey(Object[] args) {
+            StringBuilder buf = new StringBuilder();
+            for (int i : argumentIndex) {
+                if (i >= 0 && i < args.length) {
+                    buf.append(args[i]);
+                }
+            }
+            return buf.toString();
         }
 
         private Invoker<T> sekectForKey(long hash) {
