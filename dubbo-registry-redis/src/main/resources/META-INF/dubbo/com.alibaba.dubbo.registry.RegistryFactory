@@ -1,1 +1,1 @@
-redis=com.alibaba.dubbo.registry.redis.RedisRegistry
+redis=com.alibaba.dubbo.registry.redis.RedisRegistryFactory
