@@ -33,7 +33,7 @@ public class DemoAction {
             try {
             	String hello = demoService.sayHello("world" + i);
                 System.out.println("[" + new SimpleDateFormat("HH:mm:ss").format(new Date()) + "] " + hello);
-                Thread.sleep(1000);
+                Thread.sleep(2000);
             } catch (Exception e) {
                 e.printStackTrace();
             }
