@@ -417,6 +417,7 @@ public class MockClusterInvokerTest {
         RpcInvocation invocation = new RpcInvocation();
 		invocation.setMethodName("getInt1");
         Result ret = cluster.invoke(invocation);
+        Assert.assertTrue("result type must be integer but was : " + ret.getValue().getClass(), ret.getValue() instanceof Integer);
         Assert.assertEquals(new Integer(1688), (Integer)ret.getValue());
 	}
 	
@@ -430,6 +431,7 @@ public class MockClusterInvokerTest {
         RpcInvocation invocation = new RpcInvocation();
 		invocation.setMethodName("getBoolean1");
         Result ret = cluster.invoke(invocation);
+        Assert.assertTrue("result type must be Boolean but was : " + ret.getValue().getClass(), ret.getValue() instanceof Boolean);
         Assert.assertEquals(true, Boolean.parseBoolean(ret.getValue().toString()));
 	}
 	
