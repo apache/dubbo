@@ -80,7 +80,7 @@ public class Constants {
 
     public static final String       DEFAULT_CHARSET                = "UTF-8";
 
-    public static final int          DEFAULT_WEIGHT                 = 5;
+    public static final int          DEFAULT_WEIGHT                 = 100;
 
     public static final int          DEFAULT_FORKS                  = 2;
 
