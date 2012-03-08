@@ -331,6 +331,13 @@ public class RedisRegistry extends FailbackRegistry {
                 }
             }
         }
+        if (urls != null && urls.isEmpty() && url.getParameter(Constants.ADMIN_KEY, false)) {
+            URL empty = url.setProtocol(Constants.EMPTY_PROTOCOL);
+            if (Constants.ANY_VALUE.equals(empty.getServiceInterface())) {
+                empty = empty.setServiceInterface(service.substring(root.length()));
+            }
+            urls.add(empty);
+        }
         for (NotifyListener listener : listeners) {
             notify(url, listener, urls);
         }

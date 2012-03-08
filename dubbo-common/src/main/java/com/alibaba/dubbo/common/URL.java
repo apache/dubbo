@@ -1059,6 +1059,10 @@ public final class URL implements Serializable {
         return getParameter(Constants.INTERFACE_KEY, path);
     }
 
+    public URL setServiceInterface(String service) {
+        return addParameter(Constants.INTERFACE_KEY, service);
+    }
+
     public int hashCode() {
         final int prime = 31;
         int result = 1;
