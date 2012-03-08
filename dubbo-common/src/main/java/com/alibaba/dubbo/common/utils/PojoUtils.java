@@ -27,7 +27,6 @@ import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -103,7 +102,7 @@ public class PojoUtils {
             return values;
         }
         
-        if (isBase(pojo.getClass())) {
+        if (ReflectUtils.isPrimitives(pojo.getClass())) {
             return pojo;
         }
         
@@ -234,7 +233,7 @@ public class PojoUtils {
     		return Enum.valueOf((Class<Enum>)type, (String)pojo);
     	}
         
-        if (isBase(pojo.getClass()) 
+        if (ReflectUtils.isPrimitives(pojo.getClass()) 
         		&& ! (type != null && type.isArray() 
         				&& type.getComponentType().isEnum()
         				&& pojo.getClass() == String[].class)) {
@@ -462,20 +461,9 @@ public class PojoUtils {
     }
     
     public static boolean isPojo(Class<?> cls) {
-        return ! isBase(cls)
+        return ! ReflectUtils.isPrimitives(cls)
                 && ! Collection.class.isAssignableFrom(cls) 
                 && ! Map.class.isAssignableFrom(cls);
     }
 
-    private static boolean isBase(Class<?> cls) {
-        if (cls.isArray()) {
-            return isPrimitive(cls.getComponentType());
-        }
-        return isPrimitive(cls);
-    }
-    
-    private static boolean isPrimitive(Class<?> cls) {
-        return cls.isPrimitive() || cls == String.class || cls == Boolean.class || cls == Character.class 
-                || Number.class.isAssignableFrom(cls) || Date.class.isAssignableFrom(cls);
-    }
 }

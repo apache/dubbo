@@ -15,16 +15,12 @@
  */
 package com.alibaba.dubbo.cache.filter;
 
-import java.io.IOException;
-
 import com.alibaba.dubbo.cache.Cache;
 import com.alibaba.dubbo.cache.CacheFactory;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.Activate;
-import com.alibaba.dubbo.common.json.JSON;
-import com.alibaba.dubbo.common.logger.Logger;
-import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ConfigUtils;
+import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.rpc.Filter;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
@@ -40,8 +36,6 @@ import com.alibaba.dubbo.rpc.RpcResult;
 @Activate(group = {Constants.CONSUMER, Constants.PROVIDER}, value = Constants.CACHE_KEY)
 public class CacheFilter implements Filter {
 
-    private static final Logger logger = LoggerFactory.getLogger(CacheFilter.class);
-
     private CacheFactory cacheFactory;
 
     public void setCacheFactory(CacheFactory cacheFactory) {
@@ -52,7 +46,7 @@ public class CacheFilter implements Filter {
         if (cacheFactory != null && ConfigUtils.isNotEmpty(invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.CACHE_KEY))) {
             Cache cache = cacheFactory.getCache(invoker.getUrl(), invocation.getMethodName());
             if (cache != null) {
-                String key = toKey(invocation.getArguments());
+                String key = StringUtils.toArgumentString(invocation.getArguments());
                 if (cache != null && key != null) {
                     Object value = cache.get(key);
                     if (value != null) {
@@ -67,22 +61,6 @@ public class CacheFilter implements Filter {
             }
         }
         return invoker.invoke(invocation);
-    }
-
-    private String toKey(Object[] args) {
-        StringBuilder buf = new StringBuilder();
-        for (Object arg : args) {
-            if (buf.length() > 0) {
-                buf.append(Constants.COMMA_SEPARATOR);
-            }
-            try {
-                buf.append(JSON.json(arg));
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
-                buf.append(arg);
-            }
-        }
-        return buf.toString(); 
     }
 
 }

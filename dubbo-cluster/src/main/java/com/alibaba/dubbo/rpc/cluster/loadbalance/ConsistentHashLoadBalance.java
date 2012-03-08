@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.cluster.loadbalance;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -25,10 +24,7 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.json.JSON;
-import com.alibaba.dubbo.common.logger.Logger;
-import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 
@@ -38,8 +34,6 @@ import com.alibaba.dubbo.rpc.Invoker;
  * @author william.liangf
  */
 public class ConsistentHashLoadBalance extends AbstractLoadBalance {
-
-    private static final Logger logger = LoggerFactory.getLogger(ConsistentHashLoadBalance.class);
 
     private final ConcurrentMap<String, ConsistentHashSelector<?>> selectors = new ConcurrentHashMap<String, ConsistentHashSelector<?>>();
 
@@ -84,7 +78,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
         }
 
         public Invoker<T> select(Invocation invocation) {
-            String key = toKey(invocation.getArguments());
+            String key = StringUtils.toArgumentString(invocation.getArguments());
             byte[] digest = md5(key);
             Invoker<T> invoker = sekectForKey(hash(digest, 0));
             return invoker;
@@ -103,22 +97,6 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
             }
             invoker = virtualInvokers.get(key);
             return invoker;
-        }
-
-        private String toKey(Object[] args) {
-            StringBuilder buf = new StringBuilder();
-            for (Object arg : args) {
-                if (buf.length() > 0) {
-                    buf.append(Constants.COMMA_SEPARATOR);
-                }
-                try {
-                    buf.append(JSON.json(arg));
-                } catch (IOException e) {
-                    logger.error(e.getMessage(), e);
-                    buf.append(arg);
-                }
-            }
-            return buf.toString();
         }
 
         private long hash(byte[] digest, int number) {

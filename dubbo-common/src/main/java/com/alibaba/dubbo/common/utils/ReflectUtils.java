@@ -23,6 +23,7 @@ import java.net.URL;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -115,7 +116,19 @@ public final class ReflectUtils {
 	public static final Pattern IS_HAS_CAN_METHOD_DESC_PATTERN = Pattern.compile("(?:is|has|can)([A-Z][_a-zA-Z0-9]*)\\(\\)Z");
 	
 	private static final ConcurrentMap<String, Class<?>>  DESC_CLASS_CACHE = new ConcurrentHashMap<String, Class<?>>();
-
+    
+	public static boolean isPrimitives(Class<?> cls) {
+        if (cls.isArray()) {
+            return isPrimitive(cls.getComponentType());
+        }
+        return isPrimitive(cls);
+    }
+    
+	public static boolean isPrimitive(Class<?> cls) {
+        return cls.isPrimitive() || cls == String.class || cls == Boolean.class || cls == Character.class 
+                || Number.class.isAssignableFrom(cls) || Date.class.isAssignableFrom(cls);
+    }
+	
 	/**
 	 * is compatible.
 	 * 

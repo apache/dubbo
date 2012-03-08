@@ -15,6 +15,7 @@
  */
 package com.alibaba.dubbo.common.utils;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,6 +28,9 @@ import java.util.regex.Pattern;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.io.UnsafeStringWriter;
+import com.alibaba.dubbo.common.json.JSON;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 
 /**
  * StringUtils
@@ -34,8 +38,10 @@ import com.alibaba.dubbo.common.io.UnsafeStringWriter;
  * @author qian.lei
  */
 
-public final class StringUtils
-{
+public final class StringUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(StringUtils.class);
+
 	public static final String[] EMPTY_STRING_ARRAY = new String[0];
 
 	private static final Pattern KVP_PATTERN = Pattern.compile("([_.a-zA-Z0-9][-_.a-zA-Z0-9]*)[=](.*)"); //key value pair pattern.
@@ -424,6 +430,26 @@ public final class StringUtils
 	        }
 	    }
 	    return buf == null ? camelName : buf.toString();
+	}
+	
+	public static String toArgumentString(Object[] args) {
+	    StringBuilder buf = new StringBuilder();
+        for (Object arg : args) {
+            if (buf.length() > 0) {
+                buf.append(Constants.COMMA_SEPARATOR);
+            }
+            if (arg == null || ReflectUtils.isPrimitives(arg.getClass())) {
+                buf.append(arg);
+            } else {
+                try {
+                    buf.append(JSON.json(arg));
+                } catch (IOException e) {
+                    logger.warn(e.getMessage(), e);
+                    buf.append(arg);
+                }
+            }
+        }
+        return buf.toString();
 	}
 
 	private StringUtils(){}
