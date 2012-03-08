@@ -33,6 +33,10 @@ public class Page {
     private final List<String> columns;
 
     private final List<List<String>> rows;
+    
+    public Page(String navigation) {
+        this(navigation, (String) null, (String[]) null, (List<List<String>>) null);
+    }
 
     public Page(String navigation, String title,
                        String column, String row) {

@@ -59,13 +59,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     
     private final static int DEFAULT_SESSION_TIMEOUT = 60 * 1000;
     
-    private final static String SEPARATOR = "/";
-
     private final static String DEFAULT_ROOT = "dubbo";
-
-    private final static String PROVIDERS = "providers";
-
-    private final static String CONSUMERS = "consumers";
 
     private final String        root;
     
@@ -89,8 +83,8 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 && url.getPassword() != null && url.getPassword().length() > 0;
         this.acl = auth ? Ids.CREATOR_ALL_ACL : Ids.OPEN_ACL_UNSAFE;
         String group = url.getParameter(Constants.GROUP_KEY, DEFAULT_ROOT);
-        if (! group.startsWith(SEPARATOR)) {
-            group = SEPARATOR + group;
+        if (! group.startsWith(Constants.PATH_SEPARATOR)) {
+            group = Constants.PATH_SEPARATOR + group;
         }
         this.root = group;
         initZookeeper();
@@ -214,12 +208,12 @@ public class ZookeeperRegistry extends FailbackRegistry {
                         }
                     } else {
                         String dir = toRootDir();
-                        String action = PROVIDERS;
+                        String action = Constants.PROVIDERS;
                         String service = path;
                         if (service.startsWith(dir)) {
                             service = service.substring(dir.length());
                         }
-                        int i = service.indexOf(SEPARATOR);
+                        int i = service.indexOf(Constants.PATH_SEPARATOR);
                         if (i >= 0) {
                             action = service.substring(i + 1);
                             service = service.substring(0, i);
@@ -232,23 +226,21 @@ public class ZookeeperRegistry extends FailbackRegistry {
                             List<String> notifies = children;
                             if (subscribe.getParameter(Constants.ADMIN_KEY, false)) {
                                 if (adminChildren == null) {
-                                    adminChildren = getChildren(path.substring(0, path.lastIndexOf(SEPARATOR) + 1) + (CONSUMERS.equals(action) ? PROVIDERS : CONSUMERS));
+                                    adminChildren = getChildren(path.substring(0, path.lastIndexOf(Constants.PATH_SEPARATOR) + 1) + (Constants.CONSUMERS.equals(action) ? Constants.PROVIDERS : Constants.CONSUMERS));
                                     adminChildren.addAll(children);
                                 }
                                 notifies = adminChildren;
-                            } else if (CONSUMERS.equals(action)) {
+                            } else if (Constants.CONSUMERS.equals(action)) {
                                 continue;
                             }
                             String subscribeService = subscribe.getServiceInterface();
                             if (service.equals(subscribeService)) {
                                 List<URL> list = toUrls(subscribe, notifies);
-                                if (list != null && list.size() > 0) {
-                                    if (logger.isInfoEnabled()) {
-                                        logger.info("Zookeeper service changed, service: " + service + ", urls: " + list + ", zookeeper: " + getUrl());
-                                    }
-                                    for (NotifyListener listener : entry.getValue()) {
-                                        ZookeeperRegistry.this.notify(subscribe, listener, list);
-                                    }
+                                if (logger.isInfoEnabled()) {
+                                    logger.info("Zookeeper service changed, service: " + service + ", urls: " + list + ", zookeeper: " + getUrl());
+                                }
+                                for (NotifyListener listener : entry.getValue()) {
+                                    ZookeeperRegistry.this.notify(subscribe, listener, list);
                                 }
                             }
                         }
@@ -288,7 +280,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     protected void doRegister(URL url) {
         try {
             String root = toRootPath();
-            if (root != null && root.length() > 0 && ! SEPARATOR.equals(root)
+            if (root != null && root.length() > 0 && ! Constants.PATH_SEPARATOR.equals(root)
                     && ! exists(root)) {
                 try {
                     zookeeper.create(root, new byte[0], acl, CreateMode.PERSISTENT);
@@ -371,9 +363,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                     providers.addAll(consumers);
                 }
                 List<URL> urls = toUrls(url, providers);
-                if (urls != null && urls.size() > 0) {
-                    notify(url, listener, urls);
-                }
+                notify(url, listener, urls);
             }
         } catch (Throwable e) {
             throw new RpcException("Failed to subscribe " + url + " to zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
@@ -430,10 +420,10 @@ public class ZookeeperRegistry extends FailbackRegistry {
     }
     
     private String toRootDir() {
-        if (root.equals(SEPARATOR)) {
+        if (root.equals(Constants.PATH_SEPARATOR)) {
             return root;
         }
-        return root + SEPARATOR;
+        return root + Constants.PATH_SEPARATOR;
     }
     
     private String toRootPath() {
@@ -457,15 +447,15 @@ public class ZookeeperRegistry extends FailbackRegistry {
     }
 
     private String toRegisterPath(URL url) {
-        return toServicePath(url) + SEPARATOR + PROVIDERS;
+        return toServicePath(url) + Constants.PATH_SEPARATOR + Constants.PROVIDERS;
     }
 
     private String toSubscribePath(URL url) {
-        return toServicePath(url) + SEPARATOR + CONSUMERS;
+        return toServicePath(url) + Constants.PATH_SEPARATOR + Constants.CONSUMERS;
     }
 
     private String toProviderPath(URL url) {
-        return toCategoryPath(url) + SEPARATOR + URL.encode(url.toFullString());
+        return toCategoryPath(url) + Constants.PATH_SEPARATOR + URL.encode(url.toFullString());
     }
     
     private List<URL> toUrls(URL consumer, List<String> providers) throws KeeperException, InterruptedException {

@@ -128,10 +128,8 @@ public class SimpleRegistryService extends FailbackRegistry {
             URL subscribe = URL.valueOf(key);
             if (UrlUtils.isMatch(subscribe, url)) {
                 List<URL> list = lookup(subscribe);
-                if (list != null && list.size() > 0) {
-                    for (NotifyListener listener : entry.getValue()) {
-                        notify(subscribe, listener, list);
-                    }
+                for (NotifyListener listener : entry.getValue()) {
+                    notify(subscribe, listener, list);
                 }
             }
         }
@@ -143,10 +141,8 @@ public class SimpleRegistryService extends FailbackRegistry {
             URL subscribe = URL.valueOf(key);
             if (UrlUtils.isMatch(subscribe, url)) {
                 List<URL> list = lookup(subscribe);
-                if (list != null && list.size() > 0) {
-                    for (NotifyListener listener : entry.getValue()) {
-                        notify(subscribe, listener, list);
-                    }
+                for (NotifyListener listener : entry.getValue()) {
+                    notify(subscribe, listener, list);
                 }
             }
         }
@@ -154,9 +150,7 @@ public class SimpleRegistryService extends FailbackRegistry {
 
     protected void subscribed(URL url, NotifyListener listener) {
         List<URL> urls = lookup(url);
-        if (urls != null && urls.size() > 0) {
-            notify(url, listener, urls);
-        }
+        notify(url, listener, urls);
     }
 
     public void doRegister(URL url) {

@@ -51,14 +51,6 @@ public class MulticastRegistry extends FailbackRegistry {
 
     private static final int DEFAULT_MULTICAST_PORT = 1234;
 
-    private static final String REGISTER = "register";
-
-    private static final String UNREGISTER = "unregister";
-
-    private static final String SUBSCRIBE = "subscribe";
-
-    private static final String UNSUBSCRIBE = "unsubscribe";
-    
     private final InetAddress mutilcastAddress;
     
     private final MulticastSocket mutilcastSocket;
@@ -120,14 +112,14 @@ public class MulticastRegistry extends FailbackRegistry {
         if (logger.isInfoEnabled()) {
             logger.info("Receive multicast message: " + msg + " from " + remoteAddress);
         }
-        if (msg.startsWith(REGISTER)) {
-            URL url = URL.valueOf(msg.substring(REGISTER.length()).trim());
+        if (msg.startsWith(Constants.REGISTER)) {
+            URL url = URL.valueOf(msg.substring(Constants.REGISTER.length()).trim());
             registered(url);
-        } else if (msg.startsWith(UNREGISTER)) {
-            URL url = URL.valueOf(msg.substring(UNREGISTER.length()).trim());
+        } else if (msg.startsWith(Constants.UNREGISTER)) {
+            URL url = URL.valueOf(msg.substring(Constants.UNREGISTER.length()).trim());
             unregistered(url);
-        } else if (msg.startsWith(SUBSCRIBE)) {
-            URL url = URL.valueOf(msg.substring(SUBSCRIBE.length()).trim());
+        } else if (msg.startsWith(Constants.SUBSCRIBE)) {
+            URL url = URL.valueOf(msg.substring(Constants.SUBSCRIBE.length()).trim());
             List<URL> urls = lookup(url);
             if (urls != null && urls.size() > 0) {
                 for (URL u : urls) {
@@ -135,9 +127,9 @@ public class MulticastRegistry extends FailbackRegistry {
                             ? remoteAddress.getAddress().getHostAddress() : url.getIp();
                     if (url.getParameter("unicast", true) // 消费者的机器是否只有一个进程
                             && ! NetUtils.getLocalHost().equals(host)) { // 同机器多进程不能用unicast单播信息，否则只会有一个进程收到信息
-                        unicast(REGISTER + " " + u.toFullString(), host);
+                        unicast(Constants.REGISTER + " " + u.toFullString(), host);
                     } else {
-                        broadcast(REGISTER + " " + u.toFullString());
+                        broadcast(Constants.REGISTER + " " + u.toFullString());
                     }
                 }
             }
@@ -172,11 +164,11 @@ public class MulticastRegistry extends FailbackRegistry {
     }
     
     protected void doRegister(URL url) {
-        broadcast(REGISTER + " " + url.toFullString());
+        broadcast(Constants.REGISTER + " " + url.toFullString());
     }
 
     protected void doUnregister(URL url) {
-        broadcast(UNREGISTER + " " + url.toFullString());
+        broadcast(Constants.UNREGISTER + " " + url.toFullString());
     }
 
     protected void doSubscribe(URL url, NotifyListener listener) {
@@ -184,7 +176,7 @@ public class MulticastRegistry extends FailbackRegistry {
                 && url.getParameter(Constants.REGISTER_KEY, true)) {
             register(url, null);
         }
-        broadcast(SUBSCRIBE + " " + url.toFullString());
+        broadcast(Constants.SUBSCRIBE + " " + url.toFullString());
         synchronized (listener) {
             try {
                 listener.wait(url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
@@ -198,7 +190,7 @@ public class MulticastRegistry extends FailbackRegistry {
                 && url.getParameter(Constants.REGISTER_KEY, true)) {
             unregister(url, null);
         }
-        broadcast(UNSUBSCRIBE + " " + url.toFullString());
+        broadcast(Constants.UNSUBSCRIBE + " " + url.toFullString());
     }
 
     public boolean isAvailable() {
@@ -231,12 +223,10 @@ public class MulticastRegistry extends FailbackRegistry {
                 }
                 urls.add(url.toFullString());
                 List<URL> list = toList(urls);
-                if (list != null && list.size() > 0) {
-                    for (NotifyListener listener : entry.getValue()) {
-                        notify(subscribe, listener, list);
-                        synchronized (listener) {
-                            listener.notify();
-                        }
+                for (NotifyListener listener : entry.getValue()) {
+                    notify(subscribe, listener, list);
+                    synchronized (listener) {
+                        listener.notify();
                     }
                 }
             }
@@ -253,10 +243,8 @@ public class MulticastRegistry extends FailbackRegistry {
                     urls.remove(url.toFullString());
                 }
                 List<URL> list = toList(urls);
-                if (list != null && list.size() > 0) {
-                    for (NotifyListener listener : entry.getValue()) {
-                        notify(subscribe, listener, list);
-                    }
+                for (NotifyListener listener : entry.getValue()) {
+                    notify(subscribe, listener, list);
                 }
             }
         }
@@ -264,9 +252,7 @@ public class MulticastRegistry extends FailbackRegistry {
 
     protected void subscribed(URL url, NotifyListener listener) {
         List<URL> urls = lookup(url);
-        if (urls != null && urls.size() > 0) {
-            notify(url, listener, urls);
-        }
+        notify(url, listener, urls);
     }
 
     private List<URL> toList(Set<String> urls) {

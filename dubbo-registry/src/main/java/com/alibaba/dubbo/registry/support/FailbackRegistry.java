@@ -40,9 +40,6 @@ import com.alibaba.dubbo.registry.NotifyListener;
  */
 public abstract class FailbackRegistry extends AbstractRegistry {
 
-    // 重试周期
-    private static final int DEFAULT_RETRY_PERIOD =  5 * 1000;
-    
     // 定时任务执行器
     private final ScheduledExecutorService retryExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("DubboRegistryFailedRetryTimer", true));
 
@@ -61,7 +58,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
     
     public FailbackRegistry(URL url) {
         super(url);
-        int retryPeriod = url.getParameter(Constants.REGISTRY_RETRY_PERIOD_KEY, DEFAULT_RETRY_PERIOD);
+        int retryPeriod = url.getParameter(Constants.REGISTRY_RETRY_PERIOD_KEY, Constants.DEFAULT_REGISTRY_RETRY_PERIOD);
         this.retryFuture = retryExecutor.scheduleWithFixedDelay(new Runnable() {
             public void run() {
                 // 检测并连接注册中心
@@ -239,7 +236,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             removeFailedRegistered(url);
         } catch (Exception t) {
             if (getUrl().getParameter(Constants.CHECK_KEY, true)) { // 如果开启了启动时检测，则直接抛出异常
-                throw new IllegalStateException("Failed to uregister " + url + ", cause: " + t.getMessage(), t);
+                throw new IllegalStateException("Failed to unregister " + url + ", cause: " + t.getMessage(), t);
             }
             // 否则，将失败的取消注册请求记录到失败列表，定时重试
             failedUnregistered.add(url.toFullString());
@@ -320,7 +317,8 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         if (listener == null) {
             throw new IllegalArgumentException("notify listener == null");
         }
-        if (urls == null || urls.size() ==0) {
+        if ((urls == null || urls.size() == 0) 
+                && ! url.getParameter(Constants.ADMIN_KEY, false)) {
             return;
         }
         try {
