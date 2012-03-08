@@ -231,18 +231,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         List<URL> registryURLs = loadRegistries();
         for (ProtocolConfig protocolConfig : protocols) {
             String name = protocolConfig.getName();
-            String sysname = System.getProperty("dubbo.protocol.name");
-            if (sysname != null && sysname.length() > 0) {
-                name = sysname;
-            }
             if (name == null || name.length() == 0) {
                 name = "dubbo";
             }
             String host = protocolConfig.getHost();
-            String syshost = System.getProperty("dubbo.protocol.host");
-            if (syshost != null && syshost.length() > 0) {
-                host = syshost;
-            }
             if (provider != null && (host == null || host.length() == 0)) {
                 host = provider.getHost();
             }
@@ -279,8 +271,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                     }
                 }
             }
-            String sp = System.getProperty("dubbo.protocol.port");
-            Integer port = (sp != null && sp.length() > 0 ? Integer.valueOf(sp) : protocolConfig.getPort());
+            Integer port = protocolConfig.getPort();
             if (provider != null && (port == null || port == 0)) {
                 port = provider.getPort();
             }
@@ -424,24 +415,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
     	// 兼容旧版本
         if (protocols == null || protocols.size() == 0) {
-            ProtocolConfig protocolConfig = new ProtocolConfig();
-            String p = ConfigUtils.getProperty("dubbo.service.protocol");
-            if (p != null && p.length() > 0) {
-                protocolConfig.setName(p);
-            }
-            String h = ConfigUtils.getProperty("dubbo.service.server.host");
-            if (h != null && h.length() > 0) {
-                protocolConfig.setHost(h);
-            }
-            String o = ConfigUtils.getProperty("dubbo.service.server.port");
-            if (o != null && o.length() > 0) {
-                protocolConfig.setPort(Integer.parseInt(o.trim()));
-            }
-            String t = ConfigUtils.getProperty("dubbo.service.max.thread.pool.size");
-            if (t != null && t.length() > 0) {
-                protocolConfig.setThreads(Integer.parseInt(t.trim()));
-            }
-            setProtocol(protocolConfig);
+            setProtocol(new ProtocolConfig());
         }
         for (ProtocolConfig protocolConfig : protocols) {
             appendProperties(protocolConfig);

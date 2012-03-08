@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.config;
 
-import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -403,7 +402,6 @@ public class ConfigTest {
                     fail();
                 } catch (RpcException expected) {
                     assertThat(expected.getMessage(), containsString("must implement java.io.Serializable"));
-                    assertThat(expected.getMessage(), not(containsString("timeout")));
                 }
             } finally {
                 ctx.stop();
@@ -433,6 +431,49 @@ public class ConfigTest {
         } finally {
             providerContext.stop();
             providerContext.close();
+        }
+    }
+
+    @Test
+    public void testApiOverrideProperties() throws Exception {
+        ApplicationConfig application = new ApplicationConfig();
+        application.setName("api-override-properties");
+        
+        RegistryConfig registry = new RegistryConfig();
+        registry.setAddress("N/A");
+        
+        ProtocolConfig protocol = new ProtocolConfig();
+        protocol.setName("dubbo");
+        protocol.setPort(13123);
+        
+        ServiceConfig<DemoService> service = new ServiceConfig<DemoService>();
+        service.setInterface(DemoService.class);
+        service.setRef(new DemoServiceImpl());
+        service.setApplication(application);
+        service.setRegistry(registry);
+        service.setProtocol(protocol);
+        service.export();
+        
+        try {
+            URL url = service.toUrls().get(0);
+            assertEquals("api-override-properties", url.getParameter("application"));
+            assertEquals("world", url.getParameter("owner"));
+            assertEquals(13123, url.getPort());
+            
+            ReferenceConfig<DemoService> reference = new ReferenceConfig<DemoService>();
+            reference.setApplication(new ApplicationConfig("consumer"));
+            reference.setRegistry(new RegistryConfig(RegistryConfig.NO_AVAILABLE));
+            reference.setInterface(DemoService.class);
+            reference.setUrl("dubbo://127.0.0.1:13123");
+            reference.get();
+            try {
+                url = reference.toUrls().get(0);
+                assertEquals("2000", url.getParameter("timeout"));
+            } finally {
+                reference.destroy();
+            }
+        } finally {
+            service.unexport();
         }
     }
 
