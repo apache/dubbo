@@ -54,16 +54,17 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
                 weightSequences.putIfAbsent(key, new AtomicPositiveInteger());
                 weightSequence = weightSequences.get(key);
             }
-            int w = weightSequence.getAndIncrement() % maxWeight;
+            int currentWeight = weightSequence.getAndIncrement() % maxWeight;
             List<Invoker<T>> weightInvokers = new ArrayList<Invoker<T>>();
             for (Invoker<T> invoker : invokers) { // 筛选权重大于当前权重基数的Invoker
-                if (getWeight(invoker, invocation) > w) {
+                if (getWeight(invoker, invocation) > currentWeight) {
                     weightInvokers.add(invoker);
                 }
             }
-            if (weightInvokers.size() == 1) {
+            int weightLength = weightInvokers.size();
+            if (weightLength == 1) {
                 return weightInvokers.get(0);
-            } else if (weightInvokers.size() > 1) {
+            } else if (weightLength > 1) {
                 invokers = weightInvokers;
                 length = invokers.size();
             }
