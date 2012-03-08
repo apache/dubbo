@@ -37,7 +37,7 @@ import com.alibaba.dubbo.rpc.Filter;
 import com.alibaba.dubbo.rpc.InvokerListener;
 import com.alibaba.dubbo.rpc.ProxyFactory;
 import com.alibaba.dubbo.rpc.cluster.Cluster;
-import com.alibaba.dubbo.rpc.proxy.wrapper.MockReturnInvoker;
+import com.alibaba.dubbo.rpc.support.MockInvoker;
 
 /**
  * AbstractDefaultConfig
@@ -278,7 +278,7 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
             if (mock.startsWith(Constants.RETURN_PREFIX)) {
                 String value = mock.substring(Constants.RETURN_PREFIX.length());
                 try {
-                    MockReturnInvoker.parseMockValue(value);
+                    MockInvoker.parseMockValue(value);
                 } catch (Exception e) {
                     throw new IllegalStateException("Illegal mock json value in <dubbo:service ... mock=\"" + mock + "\" />");
                 }

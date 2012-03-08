@@ -25,16 +25,12 @@ import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.NetUtils;
-import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
-import com.alibaba.dubbo.rpc.RpcInvocation;
-import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.cluster.Directory;
 import com.alibaba.dubbo.rpc.cluster.LoadBalance;
-import com.alibaba.dubbo.rpc.support.MockInvoker;
 
 /**
  * AbstractClusterInvoker
@@ -227,28 +223,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
             loadbalance = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(Constants.DEFAULT_LOADBALANCE);
         }
         
-        Result result = null;
-        
-        String value = directory.getUrl().getMethodParameter(invocation.getMethodName(), Constants.MOCK_KEY, Boolean.FALSE.toString()).trim(); 
-        if (value.length() == 0 || value.equalsIgnoreCase("false")){
-        	//no mock
-        	result = doInvoke(invocation, invokers, loadbalance);
-        } else if (value.startsWith("force")) {
-        	//force:direct mock
-        	result = doMockInvoke(invocation, null);
-        } else {
-        	//fail-mock
-        	try {
-        		result = doInvoke(invocation, invokers, loadbalance) ;
-        	}catch (RpcException e) {
-				if (e.isBiz()) {
-					throw e;
-				} else {
-					result = doMockInvoke(invocation, e);
-				}
-			}
-        }
-        return result;
+        return doInvoke(invocation, invokers, loadbalance);
     }
 
     protected void checkWheatherDestoried() {
@@ -280,61 +255,4 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
     protected abstract Result doInvoke(Invocation invocation, List<Invoker<T>> invokers,
                                        LoadBalance loadbalance) throws RpcException;
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-	private Result doMockInvoke(Invocation invocation,RpcException e){
-    	Result result = null;
-    	List<Invoker<T>> mockInvokers = selectMockInvoker(invocation);
-    	Invoker<T> minvoker ;
-		if (mockInvokers.size() == 0){
-			minvoker = (Invoker<T>) new MockInvoker(directory.getUrl());
-			
-		} else {
-			minvoker = mockInvokers.get(0);
-		}
-		try {
-//			result = doInvoke(invocation, mockInvokers, loadbalance) ;
-			result = minvoker.invoke(invocation);
-		} catch (RpcException me) {
-			if (e != null) {
-				logger.warn("mock invoker invoke error : " + StringUtils.toString(me), e);
-			} else {
-				logger.warn("mock invoker invoke error", me);
-			}
-		}
-		//如果mock invoke结果为null,则说明发生异常，褪化为返回null业务结果 
-		//void类型也可通过null处理 
-		if (result == null){
-			result = new RpcResult();
-			((RpcResult)result).setValue(null);
-		} else if (result.hasException()){
-			//如果exception是mock exception则抛出
-			if (result.getException() instanceof RpcException && ((RpcException)result.getException()).isMock()){
-				if (e != null) {
-					logger.error(e);
-				}
-				throw (RpcException)result.getException();
-			} 
-		}
-		return result;
-    }
-
-	/**
-     * 返回MockInvoker
-     * 契约：
-     * directory根据invocation中是否有Constants.INVOCATION_NEED_MOCK，来判断获取的是一个normal invoker 还是一个 mock invoker
-     * 如果directorylist 返回多个mock invoker，只使用第一个invoker.
-     * @param invocation
-     * @return 
-     */
-    private List<Invoker<T>> selectMockInvoker(Invocation invocation){
-    	//TODO generic invoker？
-        if (invocation instanceof RpcInvocation){
-            //存在隐含契约(虽然在接口声明中增加描述，但扩展性会存在问题.同时放在attachement中的做法需要改进
-        	((RpcInvocation)invocation).setAttachment(Constants.INVOCATION_NEED_MOCK, Boolean.TRUE.toString());
-            List<Invoker<T>> invokers = directory.list(invocation);
-            return invokers == null ? new ArrayList<Invoker<T>>(1) : invokers;
-        } else {
-            return new ArrayList<Invoker<T>>(1) ;
-        }
-    }
 }

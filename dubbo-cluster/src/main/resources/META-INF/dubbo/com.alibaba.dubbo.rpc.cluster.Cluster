@@ -1,3 +1,4 @@
+mock=com.alibaba.dubbo.rpc.cluster.support.wrapper.MockClusterWrapper
 failover=com.alibaba.dubbo.rpc.cluster.support.FailoverCluster
 failfast=com.alibaba.dubbo.rpc.cluster.support.FailfastCluster
 failsafe=com.alibaba.dubbo.rpc.cluster.support.FailsafeCluster

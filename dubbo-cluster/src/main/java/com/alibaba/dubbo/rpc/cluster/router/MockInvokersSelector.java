@@ -38,7 +38,7 @@ public class MockInvokersSelector implements Router {
 		} else {
 			String value = invocation.getAttachments().get(Constants.INVOCATION_NEED_MOCK);
 			if (value == null) 
-				return invokers;
+				return getNormalInvokers(invokers);
 			else if (Boolean.TRUE.toString().equalsIgnoreCase(value)){
 				return getMockedInvokers(invokers);
 			} 
@@ -49,7 +49,7 @@ public class MockInvokersSelector implements Router {
 	private <T> List<Invoker<T>> getMockedInvokers(final List<Invoker<T>> invokers){
 		List<Invoker<T>> sInvokers = new ArrayList<Invoker<T>>(1);
 		for (Invoker<T> invoker : invokers){
-			if (invoker.getUrl().getProtocol().equals("mock")){
+			if (invoker.getUrl().getProtocol().equals(Constants.MOCK_PROTOCOL)){
 				sInvokers.add(invoker);
 			}
 		}
@@ -57,12 +57,23 @@ public class MockInvokersSelector implements Router {
 	}
 	
 	private <T> List<Invoker<T>> getNormalInvokers(final List<Invoker<T>> invokers){
-		List<Invoker<T>> sInvokers = new ArrayList<Invoker<T>>(invokers.size());
+		boolean hasMockProvider = false;
 		for (Invoker<T> invoker : invokers){
-			if (! invoker.getUrl().getProtocol().equals("mock")){
-				sInvokers.add(invoker);
+			if (invoker.getUrl().getProtocol().equals(Constants.MOCK_PROTOCOL)){
+				hasMockProvider = true;
+				break;
 			}
 		}
-		return sInvokers;
+		if (! hasMockProvider){
+			return invokers;
+		} else {
+			List<Invoker<T>> sInvokers = new ArrayList<Invoker<T>>(invokers.size());
+			for (Invoker<T> invoker : invokers){
+				if (! invoker.getUrl().getProtocol().equals(Constants.MOCK_PROTOCOL)){
+					sInvokers.add(invoker);
+				}
+			}
+			return sInvokers;
+		}
 	}
 }
