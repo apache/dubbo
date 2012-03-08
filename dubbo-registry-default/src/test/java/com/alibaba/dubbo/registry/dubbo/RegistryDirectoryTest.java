@@ -704,16 +704,20 @@ public class RegistryDirectoryTest {
     }
     
     /**
-     * 测试清除override规则，
+     * 测试清除override规则，同时下发清除规则和其他override规则
      * 测试是否能够恢复到推送时的providerUrl
      */
     @Test
-    public void testNofityOverrideUrls_Clean(){
+    public void testNofityOverrideUrls_Clean1(){
         RegistryDirectory registryDirectory = getRegistryDirectory();
         invocation = new RpcInvocation();
         
         List<URL> durls = new ArrayList<URL>();
         durls.add(SERVICEURL.setHost("10.20.30.140").addParameter("timeout", "1"));
+        registryDirectory.notify(durls);
+        
+        durls = new ArrayList<URL>();
+        durls.add(URL.valueOf("override://0.0.0.0?timeout=1000"));
         registryDirectory.notify(durls);
         
         durls = new ArrayList<URL>();
@@ -723,6 +727,37 @@ public class RegistryDirectoryTest {
         
         List<Invoker<?>> invokers = registryDirectory.list(invocation);
         Invoker<?> aInvoker = invokers.get(0);
+        //需要恢复到最初的providerUrl
+        Assert.assertEquals("1",aInvoker.getUrl().getParameter("timeout"));
+    }
+    
+    /**
+     * 测试清除override规则，只下发override清除规则
+     * 测试是否能够恢复到推送时的providerUrl
+     */
+    @Test
+    public void testNofityOverrideUrls_CleanOnly(){
+        RegistryDirectory registryDirectory = getRegistryDirectory();
+        invocation = new RpcInvocation();
+        
+        List<URL> durls = new ArrayList<URL>();
+        durls.add(SERVICEURL.setHost("10.20.30.140").addParameter("timeout", "1"));
+        registryDirectory.notify(durls);
+        
+        //override
+        durls = new ArrayList<URL>();
+        durls.add(URL.valueOf("override://0.0.0.0?timeout=1000"));
+        registryDirectory.notify(durls);
+        List<Invoker<?>> invokers = registryDirectory.list(invocation);
+        Invoker<?> aInvoker = invokers.get(0);
+        Assert.assertEquals("1000",aInvoker.getUrl().getParameter("timeout"));
+        
+        //override clean
+        durls = new ArrayList<URL>();
+        durls.add(URL.valueOf("override://100.16.128.100/dubbo.test.api.HelloService?anyhost=true"));
+        registryDirectory.notify(durls);
+        invokers = registryDirectory.list(invocation);
+        aInvoker = invokers.get(0);
         //需要恢复到最初的providerUrl
         Assert.assertEquals("1",aInvoker.getUrl().getParameter("timeout"));
     }
