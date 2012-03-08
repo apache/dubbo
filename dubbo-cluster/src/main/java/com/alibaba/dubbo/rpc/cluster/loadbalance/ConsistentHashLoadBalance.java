@@ -120,11 +120,12 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
             return buf.toString();
         }
 
-        private long hash(byte[] digest, int nTime) {
-            long rv = ((long) (digest[3 + nTime * 4] & 0xFF) << 24)
-                    | ((long) (digest[2 + nTime * 4] & 0xFF) << 16)
-                    | ((long) (digest[1 + nTime * 4] & 0xFF) << 8) | (digest[0 + nTime * 4] & 0xFF);
-            return rv & 0xffffffffL;
+        private long hash(byte[] digest, int number) {
+            return (((long) (digest[3 + number * 4] & 0xFF) << 24)
+                    | ((long) (digest[2 + number * 4] & 0xFF) << 16)
+                    | ((long) (digest[1 + number * 4] & 0xFF) << 8) 
+                    | (digest[0 + number * 4] & 0xFF)) 
+                    & 0xFFFFFFFFL;
         }
 
         private byte[] md5(String value) {
