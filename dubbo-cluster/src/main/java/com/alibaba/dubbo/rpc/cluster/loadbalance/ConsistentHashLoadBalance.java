@@ -41,8 +41,8 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, Invocation invocation) {
         String key = invokers.get(0).getInterface().getName() + "." + invocation.getMethodName();
-        ConsistentHashSelector<T> selector = (ConsistentHashSelector<T>) selectors.get(key);
         int identityHashCode = System.identityHashCode(invokers);
+        ConsistentHashSelector<T> selector = (ConsistentHashSelector<T>) selectors.get(key);
         if (selector == null || selector.getIdentityHashCode() != identityHashCode) {
             selectors.put(key, new ConsistentHashSelector<T>(invokers, identityHashCode));
             selector = (ConsistentHashSelector<T>) selectors.get(key);

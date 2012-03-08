@@ -33,38 +33,17 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
 
     public static final String NAME = "roundrobin"; 
     
-    private final ConcurrentMap<String, RoundRobinSequence> sequences = new ConcurrentHashMap<String, RoundRobinSequence>();
+    private final ConcurrentMap<String, AtomicPositiveInteger> sequences = new ConcurrentHashMap<String, AtomicPositiveInteger>();
 
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, Invocation invocation) {
-        String key = invokers.get(0).getInterface().getName() + "." + invocation.getMethodName();// + System.identityHashCode(invokers);
-        RoundRobinSequence sequence = sequences.get(key);
-        int identityHashCode = System.identityHashCode(invokers);
-        if (sequence == null || sequence.getIdentityHashCode() != identityHashCode) {
-            sequences.put(key, new RoundRobinSequence(identityHashCode));
+        String key = invokers.get(0).getInterface().getName() + "." + invocation.getMethodName();
+        AtomicPositiveInteger sequence = sequences.get(key);
+        if (sequence == null) {
+            sequences.putIfAbsent(key, new AtomicPositiveInteger());
             sequence = sequences.get(key);
         }
         // 取模轮循
         return invokers.get(sequence.getAndIncrement() % invokers.size());
-    }
-    
-    private static final class RoundRobinSequence {
-        
-        private final AtomicPositiveInteger i = new AtomicPositiveInteger();
-
-        private final int                       identityHashCode;
-
-        public RoundRobinSequence(int identityHashCode) {
-            this.identityHashCode = identityHashCode;
-        }
-
-        public int getAndIncrement() {
-            return i.getAndIncrement();
-        }
-
-        public int getIdentityHashCode() {
-            return identityHashCode;
-        }
-        
     }
 
 }
