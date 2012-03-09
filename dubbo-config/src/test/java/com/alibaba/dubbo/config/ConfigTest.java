@@ -25,7 +25,6 @@ import static org.junit.matchers.JUnitMatchers.containsString;
 
 import java.util.List;
 
-import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.config.spring.ServiceBean;
 import org.junit.Test;
@@ -646,27 +645,16 @@ public class ConfigTest {
 
     @Test
     public void testSystemPropertyOverrideProperties() throws Exception {
-        String appName = System.getProperty( "dubbo.application.name" );
         String portString = System.getProperty( "dubbo.protocol.port");
-        String dubboFile = System.getProperty(Constants.DUBBO_PROPERTIES_KEY);
-        System.clearProperty("dubbo.application.name");
         System.clearProperty("dubbo.protocol.port");
-        System.clearProperty(Constants.DUBBO_PROPERTIES_KEY);
         try {
             int port = 1234;
             System.setProperty("dubbo.protocol.port", String.valueOf(port));
-            System.setProperty(Constants.DUBBO_PROPERTIES_KEY, "system-override-dubbo.properties");
-            assertEquals("system-override-properties", ConfigUtils.getProperty("dubbo.application.name"));
+            assertEquals("hello", ConfigUtils.getProperty("dubbo.application.name"));
             assertEquals(port, Integer.parseInt(ConfigUtils.getProperty("dubbo.protocol.port")));
         } finally {
-            if (appName != null) {
-                System.setProperty("dubbo.application.name", appName);
-            }
             if (portString != null) {
                 System.setProperty("dubbo.application.name", portString);
-            }
-            if (dubboFile != null) {
-                System.setProperty(Constants.DUBBO_PROPERTIES_KEY, dubboFile);
             }
         }
     }
