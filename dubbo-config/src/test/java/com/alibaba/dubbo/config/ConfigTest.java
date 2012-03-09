@@ -27,6 +27,7 @@ import java.util.List;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.utils.ConfigUtils;
+import com.alibaba.dubbo.config.spring.ServiceBean;
 import org.junit.Test;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -650,6 +651,17 @@ public class ConfigTest {
         System.setProperty(Constants.DUBBO_PROPERTIES_KEY, "system-override-dubbo.properties");
         assertEquals("system-override-properties", ConfigUtils.getProperty("dubbo.application.name"));
         assertEquals(port, Integer.parseInt(ConfigUtils.getProperty("dubbo.protocol.port")));
+    }
+
+    @Test
+    public void testCustomizeParameter() throws Exception {
+        ClassPathXmlApplicationContext context =
+                new ClassPathXmlApplicationContext("customize-parameter.xml");
+        context.start();
+        ServiceBean serviceBean = (ServiceBean) context.getBean("demoServiceExport");
+        URL url = (URL) serviceBean.toUrls().get(0);
+        assertEquals("protocol-paramA", url.getParameter("protocol-paramA"));
+        assertEquals("service-paramA", url.getParameter("service-paramA"));
     }
 
     @Test
