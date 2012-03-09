@@ -494,26 +494,24 @@ public class MockClusterInvokerTest {
 			cluster.invoke(invocation);
 			Assert.fail();
 		} catch (RpcException e) {
-			Assert.assertFalse("not custem throw", e.isBiz());
+			Assert.assertFalse("not custem exception", e.isBiz());
 		}
 	}
 	
 	@Test
-	public void testMockInvokerFromOverride_Invoke_force_throwCustemException(){
+	public void testMockInvokerFromOverride_Invoke_force_throwCustemException() throws Throwable{
 		URL url = URL.valueOf("remote://1.2.3.4/"+IHelloService.class.getName())
-				.addParameter("getBoolean2.mock","force:throw java.lang.RuntimeException")
+				.addParameter("getBoolean2.mock","force:throw com.alibaba.dubbo.rpc.cluster.support.wrapper.MyMockException")
 				.addParameter("invoke_return_error", "true" );
 		Invoker<IHelloService> cluster = getClusterInvoker(url);        
 		//方法配置了mock
         RpcInvocation invocation = new RpcInvocation();
 		invocation.setMethodName("getBoolean2");
 		try {
-			cluster.invoke(invocation);
+			cluster.invoke(invocation).recreate();
 			Assert.fail();
-		} catch (RpcException e) {
-//			e.printStackTrace();
-			Assert.assertTrue(e.isBiz());
-			Assert.assertTrue(e.getCause() instanceof RuntimeException);
+		} catch (MyMockException e) {
+			
 		}
 	}
 	

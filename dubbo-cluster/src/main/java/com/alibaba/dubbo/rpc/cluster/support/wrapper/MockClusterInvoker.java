@@ -27,6 +27,7 @@ import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
+import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.cluster.Directory;
 import com.alibaba.dubbo.rpc.support.MockInvoker;
 
@@ -95,7 +96,7 @@ public class MockClusterInvoker<T> implements Invoker<T>{
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private Result doMockInvoke(Invocation invocation,RpcException e){
-    	Result result = null;
+		Result result = null;
     	Invoker<T> minvoker ;
     	
     	List<Invoker<T>> mockInvokers = selectMockInvoker(invocation);
@@ -107,7 +108,12 @@ public class MockClusterInvoker<T> implements Invoker<T>{
 		try {
 			result = minvoker.invoke(invocation);
 		} catch (RpcException me) {
-			throw new RpcException(me.getCode(), getMockExceptionMessage(e, me), me.getCause());
+			if (me.isBiz()) {
+				result = new RpcResult(me.getCause());
+			} else {
+				throw new RpcException(me.getCode(), getMockExceptionMessage(e, me), me.getCause());
+			}
+//			
 		} catch (Throwable me) {
 			throw new RpcException(getMockExceptionMessage(e, me), me.getCause());
 		}
