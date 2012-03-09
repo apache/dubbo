@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.cluster.support.wrapper;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.alibaba.dubbo.common.Constants;
@@ -28,7 +27,6 @@ import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
-import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.cluster.Directory;
 import com.alibaba.dubbo.rpc.support.MockInvoker;
 
@@ -72,6 +70,9 @@ public class MockClusterInvoker<T> implements Invoker<T>{
         	//no mock
         	result = this.invoker.invoke(invocation);
         } else if (value.startsWith("force")) {
+        	if (logger.isWarnEnabled()) {
+        		logger.info("force-mock: " + invocation.getMethodName() + " force-mock enabled , url : " +  directory.getUrl());
+        	}
         	//force:direct mock
         	result = doMockInvoke(invocation, null);
         } else {
@@ -82,6 +83,9 @@ public class MockClusterInvoker<T> implements Invoker<T>{
 				if (e.isBiz()) {
 					throw e;
 				} else {
+					if (logger.isWarnEnabled()) {
+		        		logger.info("fail-mock: " + invocation.getMethodName() + " fail-mock enabled , url : " +  directory.getUrl(), e);
+		        	}
 					result = doMockInvoke(invocation, e);
 				}
 			}
@@ -92,40 +96,31 @@ public class MockClusterInvoker<T> implements Invoker<T>{
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private Result doMockInvoke(Invocation invocation,RpcException e){
     	Result result = null;
-    	List<Invoker<T>> mockInvokers = selectMockInvoker(invocation);
     	Invoker<T> minvoker ;
-		if (mockInvokers.size() == 0){
+    	
+    	List<Invoker<T>> mockInvokers = selectMockInvoker(invocation);
+		if (mockInvokers == null || mockInvokers.size() == 0){
 			minvoker = (Invoker<T>) new MockInvoker(directory.getUrl());
-			
 		} else {
 			minvoker = mockInvokers.get(0);
 		}
 		try {
-//			result = doInvoke(invocation, mockInvokers, loadbalance) ;
 			result = minvoker.invoke(invocation);
 		} catch (RpcException me) {
-			if (e != null) {
-				logger.warn("mock invoker invoke error : " + StringUtils.toString(me), e);
-			} else {
-				logger.warn("mock invoker invoke error", me);
-			}
-		}
-		//如果mock invoke结果为null,则说明发生异常，褪化为返回null业务结果 
-		//void类型也可通过null处理 
-		if (result == null){
-			result = new RpcResult();
-			((RpcResult)result).setValue(null);
-		} else if (result.hasException()){
-			//如果exception是mock exception则抛出
-			if (result.getException() instanceof RpcException && ((RpcException)result.getException()).isMock()){
-				if (e != null) {
-					logger.error(e);
-				}
-				throw (RpcException)result.getException();
-			} 
+			throw new RpcException(me.getCode(), getMockExceptionMessage(e, me), me.getCause());
+		} catch (Throwable me) {
+			throw new RpcException(getMockExceptionMessage(e, me), me.getCause());
 		}
 		return result;
     }
+	
+	private String getMockExceptionMessage(Throwable t, Throwable mt){
+		String msg = "mock error : " + mt.getMessage();
+		if (t != null){
+			msg = msg + ", invoke error is :" + StringUtils.toString(t);
+		}
+		return msg;
+	}
 
 	/**
      * 返回MockInvoker
@@ -140,10 +135,11 @@ public class MockClusterInvoker<T> implements Invoker<T>{
         if (invocation instanceof RpcInvocation){
             //存在隐含契约(虽然在接口声明中增加描述，但扩展性会存在问题.同时放在attachement中的做法需要改进
         	((RpcInvocation)invocation).setAttachment(Constants.INVOCATION_NEED_MOCK, Boolean.TRUE.toString());
-            List<Invoker<T>> invokers = directory.list(invocation);
-            return invokers == null ? new ArrayList<Invoker<T>>(1) : invokers;
+            //directory根据invocation中attachment是否有Constants.INVOCATION_NEED_MOCK，来判断获取的是normal invokers or mock invokers
+        	List<Invoker<T>> invokers = directory.list(invocation);
+            return invokers;
         } else {
-            return new ArrayList<Invoker<T>>(1) ;
+            return null ;
         }
     }
 }

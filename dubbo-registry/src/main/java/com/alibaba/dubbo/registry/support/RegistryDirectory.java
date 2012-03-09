@@ -72,6 +72,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     private final boolean multiGroup;
 
     private volatile URL directoryUrl;
+    
+    private volatile URL overrideDirectoryUrl;
 
     private volatile Map<String, String> queryMap;
     
@@ -101,7 +103,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         this.serviceType = serviceType;
         this.serviceKey = url.getServiceKey();
         this.queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(Constants.REFER_KEY));
-        this.directoryUrl = url.removeParameters(Constants.REFER_KEY, Constants.EXPORT_KEY)
+        this.overrideDirectoryUrl = this.directoryUrl = url.removeParameters(Constants.REFER_KEY, Constants.EXPORT_KEY)
                 .addParameters(queryMap).removeParameter(Constants.MONITOR_KEY);
         String group = directoryUrl.getParameter( Constants.GROUP_KEY, "" );
         this.multiGroup = group != null && ("*".equals(group) || group.contains( "," ));
@@ -167,6 +169,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             if (overrideUrls != null && overrideUrls.size() >0 ){
                 overrideMap = toOverrides(overrideUrls);
             }
+            
+            //合并override参数;
+            this.overrideDirectoryUrl = overrideMap == null ? directoryUrl : directoryUrl.addParameters(overrideMap.get(Constants.ANY_VALUE));
             
             //route 
             if (routerUrls != null && routerUrls.size() >0 ){
@@ -553,8 +558,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     }
 
     public URL getUrl() {
-    	//合并override参数;
-    	return overrideMap == null ? directoryUrl : directoryUrl.addParameters(overrideMap.get(Constants.ANY_VALUE));
+    	return this.overrideDirectoryUrl;
     }
 
     public boolean isAvailable() {

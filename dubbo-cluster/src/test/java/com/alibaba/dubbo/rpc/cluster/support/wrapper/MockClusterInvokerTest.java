@@ -131,6 +131,25 @@ public class MockClusterInvokerTest {
 	    Assert.assertEquals(null, ret.getValue());
 	}
 	
+	@Test
+	public void testMockInvokerInvoke_forcemock_defaultreturn(){
+		URL url = URL.valueOf("remote://1.2.3.4/"+IHelloService.class.getName());
+		url = url.addParameter(Constants.MOCK_KEY, "force" );
+		Invoker<IHelloService> cluster = getClusterInvoker(url);        
+	    URL mockUrl = URL.valueOf("mock://localhost/"+IHelloService.class.getName()
+				+"?getSomething.mock=return aa&getSomething3xx.mock=return xx&sayHello.mock=return ")
+				.addParameters(url.getParameters());
+		
+		Protocol protocol = new MockProtocol();
+		Invoker<IHelloService> mInvoker1 = protocol.refer(IHelloService.class, mockUrl);
+		invokers.add(mInvoker1);
+	    
+	    RpcInvocation invocation = new RpcInvocation();
+		invocation.setMethodName("sayHello");
+	    Result ret = cluster.invoke(invocation);
+	    Assert.assertEquals(null, ret.getValue());
+	}
+	
 	/**
 	 * 测试mock策略是否正常-fail-mock
 	 */
@@ -461,7 +480,43 @@ public class MockClusterInvokerTest {
 			cluster.invoke(invocation);
 			Assert.fail();
 		} catch (RpcException e) {
-			Assert.assertTrue(e.isMock());
+			Assert.assertFalse("not custem throw", e.isBiz());
+		}
+	}
+	
+	@Test
+	public void testMockInvokerFromOverride_Invoke_force_throwCustemException(){
+		URL url = URL.valueOf("remote://1.2.3.4/"+IHelloService.class.getName())
+				.addParameter("getBoolean2.mock","force:throw java.lang.RuntimeException")
+				.addParameter("invoke_return_error", "true" );
+		Invoker<IHelloService> cluster = getClusterInvoker(url);        
+		//方法配置了mock
+        RpcInvocation invocation = new RpcInvocation();
+		invocation.setMethodName("getBoolean2");
+		try {
+			cluster.invoke(invocation);
+			Assert.fail();
+		} catch (RpcException e) {
+//			e.printStackTrace();
+			Assert.assertTrue(e.isBiz());
+			Assert.assertTrue(e.getCause() instanceof RuntimeException);
+		}
+	}
+	
+	@Test
+	public void testMockInvokerFromOverride_Invoke_force_throwCustemExceptionNotFound(){
+		URL url = URL.valueOf("remote://1.2.3.4/"+IHelloService.class.getName())
+				.addParameter("getBoolean2.mock","force:throw java.lang.RuntimeException2")
+				.addParameter("invoke_return_error", "true" );
+		Invoker<IHelloService> cluster = getClusterInvoker(url);        
+		//方法配置了mock
+        RpcInvocation invocation = new RpcInvocation();
+		invocation.setMethodName("getBoolean2");
+		try {
+			cluster.invoke(invocation);
+			Assert.fail();
+		} catch (Exception e) {
+			Assert.assertTrue(e.getCause() instanceof IllegalStateException);
 		}
 	}
 	
@@ -565,6 +620,4 @@ public class MockClusterInvokerTest {
 			System.out.println("hello prety");
 		}
 	}
-	
-
 }
