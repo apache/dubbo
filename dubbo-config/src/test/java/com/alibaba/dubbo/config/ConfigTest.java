@@ -25,6 +25,8 @@ import static org.junit.matchers.JUnitMatchers.containsString;
 
 import java.util.List;
 
+import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.utils.ConfigUtils;
 import org.junit.Test;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -640,7 +642,16 @@ public class ConfigTest {
             System.setProperty("dubbo.protocol.port", "");
         }
     }
-    
+
+    @Test
+    public void testSystemPropertyOverrideProperties() throws Exception {
+        int port = 1234;
+        System.setProperty("dubbo.protocol.port", String.valueOf(port));
+        System.setProperty(Constants.DUBBO_PROPERTIES_KEY, "system-override-dubbo.properties");
+        assertEquals("system-override-properties", ConfigUtils.getProperty("dubbo.application.name"));
+        assertEquals(port, Integer.parseInt(ConfigUtils.getProperty("dubbo.protocol.port")));
+    }
+
     @Test
     public void testPath() throws Exception {
         ServiceConfig<DemoService> service = new ServiceConfig<DemoService>();
