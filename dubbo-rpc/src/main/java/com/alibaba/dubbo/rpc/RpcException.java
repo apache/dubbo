@@ -24,7 +24,7 @@ package com.alibaba.dubbo.rpc;
  * @author shawn.qianx
  * @author william.liangf
  */
-public class RpcException extends RuntimeException {
+public final class RpcException extends RuntimeException {
 
 	private static final long serialVersionUID = 7815426752583648734L;
 
@@ -40,7 +40,7 @@ public class RpcException extends RuntimeException {
     
     public static final int SERIALIZATION_EXCEPTION = 5;
     
-    private int code;
+    private int code; // RpcException不能有子类，异常类型用ErrorCode表示，以便保持兼容。
 
     public RpcException() {
         super();
