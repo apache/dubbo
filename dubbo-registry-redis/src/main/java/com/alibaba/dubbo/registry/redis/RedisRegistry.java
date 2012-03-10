@@ -75,6 +75,8 @@ public class RedisRegistry extends FailbackRegistry {
     private final int reconnectPeriod;
 
     private final int expirePeriod;
+    
+    private volatile boolean admin = false;
 
     public RedisRegistry(URL url) {
         super(url);
@@ -128,8 +130,32 @@ public class RedisRegistry extends FailbackRegistry {
             for (String provider : new HashSet<String>(getRegistered())) {
                 jedis.hset(toProviderPath(URL.valueOf(provider)), provider, String.valueOf(System.currentTimeMillis() + expirePeriod));
             }
+            if (admin) {
+                clean(jedis);
+            }
         } finally {
             jedisPool.returnResource(jedis);
+        }
+    }
+    
+    // 监控中心负责删除过期脏数据
+    private void clean(Jedis jedis) {
+        Set<String> keys = jedis.keys(root + Constants.ANY_VALUE);
+        if (keys != null && keys.size() > 0) {
+            for (String key : keys) {
+                Map<String, String> values = jedis.hgetAll(key);
+                if (values != null && values.size() > 0) {
+                    for (Map.Entry<String, String> entry : values.entrySet()) {
+                        String url = entry.getKey();
+                        jedis.hdel(key, url);
+                    }
+                    if (key.endsWith(Constants.CONSUMERS)) {
+                        jedis.publish(key, Constants.UNSUBSCRIBE);
+                    } else {
+                        jedis.publish(key, Constants.UNREGISTER);
+                    }
+                }
+            }
         }
     }
 
@@ -210,6 +236,7 @@ public class RedisRegistry extends FailbackRegistry {
         Jedis jedis = jedisPool.getResource();
         try {
             if (service.endsWith(Constants.ANY_VALUE)) {
+                admin = true;
                 for (String s : getServices(jedis, service)) {
                     doNotify(jedis, s, url, listener);
                 }
@@ -277,17 +304,6 @@ public class RedisRegistry extends FailbackRegistry {
                 if (Long.parseLong(entry.getValue()) >= now) {
                     if (UrlUtils.isMatch(url, u)) {
                         urls.add(u);
-                    }
-                } else if (url.getParameter(Constants.ADMIN_KEY, false)) {
-                    // 监控中心负责删除过期脏数据
-                    if (Constants.SUBSCRIBE_PROTOCOL.equals(u.getProtocol())) {
-                        String key = toConsumerPath(u);
-                        jedis.hdel(key, u.toFullString());
-                        jedis.publish(key, Constants.UNSUBSCRIBE);
-                    } else {
-                        String key = toProviderPath(u);
-                        jedis.hdel(key, u.toFullString());
-                        jedis.publish(key, Constants.UNREGISTER);
                     }
                 }
             }
