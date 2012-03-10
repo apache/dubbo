@@ -23,11 +23,8 @@ import com.alibaba.dubbo.remoting.Transporters;
 import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
 import com.alibaba.dubbo.remoting.exchange.ExchangeHandler;
 import com.alibaba.dubbo.remoting.exchange.ExchangeServer;
-import com.alibaba.dubbo.remoting.exchange.Exchangers;
-import com.alibaba.dubbo.remoting.exchange.codec.ExchangeCodec;
 import com.alibaba.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
 import com.alibaba.dubbo.remoting.exchange.support.header.HeaderExchangeClient;
-import com.alibaba.dubbo.remoting.exchange.support.header.HeaderExchangeHandler;
 import com.alibaba.dubbo.remoting.exchange.support.header.HeaderExchangeServer;
 
 /**

@@ -16,15 +16,14 @@
 
 package com.alibaba.dubbo.examples.remoting.heartbeat;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.exchange.ExchangeHandler;
 import com.alibaba.dubbo.remoting.exchange.Request;
 import com.alibaba.dubbo.remoting.exchange.Response;
-import com.alibaba.dubbo.remoting.exchange.support.header.HeaderExchangeClient;
 import com.alibaba.dubbo.remoting.exchange.support.header.HeaderExchangeHandler;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
