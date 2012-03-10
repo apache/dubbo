@@ -29,7 +29,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -47,7 +49,9 @@ import org.jfree.data.time.TimeSeriesCollection;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.common.utils.NamedThreadFactory;
+import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.monitor.MonitorService;
 
 /**
@@ -56,20 +60,28 @@ import com.alibaba.dubbo.monitor.MonitorService;
  * @author william.liangf
  */
 public class SimpleMonitorService implements MonitorService {
-    
-    private static final String[] types = {SUCCESS, FAILURE, ELAPSED, CONCURRENT, MAX_ELAPSED, MAX_CONCURRENT};
-    
+
     private static final Logger logger = LoggerFactory.getLogger(SimpleMonitorService.class);
 
+    private static final String[] types = {SUCCESS, FAILURE, ELAPSED, CONCURRENT, MAX_ELAPSED, MAX_CONCURRENT};
+    
+    private static final String POISON_PROTOCOL = "poison";
+    
     // 定时任务执行器
-    private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1, new NamedThreadFactory("DubboRegistryReconnectTimer", true));
+    private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1, new NamedThreadFactory("DubboMonitorTimer", true));
 
     // 图表绘制定时器
-    private ScheduledFuture<?> chartFuture;
+    private final ScheduledFuture<?> chartFuture;
 
+    private final Thread writeThread;
+    
+    private final BlockingQueue<URL> queue;
+    
     private String statisticsDirectory = "statistics";
 
     private String chartsDirectory = "charts";
+    
+    private volatile boolean running = true;
     
     private static SimpleMonitorService INSTANCE = null;
 
@@ -98,12 +110,31 @@ public class SimpleMonitorService implements MonitorService {
     }
     
     public SimpleMonitorService() {
+        queue = new LinkedBlockingQueue<URL>(Integer.parseInt(ConfigUtils.getProperty("dubbo.monitor.queue", "100000")));
+        writeThread = new Thread(new Runnable() {
+            public void run() {
+                while (running) {
+                    try {
+                        write(); // 记录统计日志
+                    } catch (Throwable t) { // 防御性容错
+                        logger.error("Unexpected error occur at write stat log, cause: " + t.getMessage(), t);
+                        try {
+                            Thread.sleep(5000); // 失败延迟
+                        } catch (Throwable t2) {
+                        }
+                    }
+                }
+            }
+        });
+        writeThread.setDaemon(true);
+        writeThread.setName("DubboMonitorAsyncWriteLogThread");
+        writeThread.start();
         chartFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
             public void run() {
                 try {
                     draw(); // 绘制图表
                 } catch (Throwable t) { // 防御性容错
-                    logger.error("Unexpected error occur at reconnect, cause: " + t.getMessage(), t);
+                    logger.error("Unexpected error occur at draw stat chart, cause: " + t.getMessage(), t);
                 }
             }
         }, 1, 300, TimeUnit.SECONDS);
@@ -111,7 +142,72 @@ public class SimpleMonitorService implements MonitorService {
     }
 
     public void close() {
-        chartFuture.cancel(true);
+        try {
+            running = false;
+            queue.offer(new URL(POISON_PROTOCOL, NetUtils.LOCALHOST, 0));
+        } catch (Throwable t) {
+            logger.warn(t.getMessage(), t);
+        }
+        try {
+            chartFuture.cancel(true);
+        } catch (Throwable t) {
+            logger.warn(t.getMessage(), t);
+        }
+    }
+    
+    private void write() throws Exception {
+        URL statistics = queue.take();
+        if (POISON_PROTOCOL.equals(statistics.getProtocol())) {
+            return;
+        }
+        Date now = new Date();
+        String day = new SimpleDateFormat("yyyyMMdd").format(now);
+        SimpleDateFormat format = new SimpleDateFormat("HHmm");
+        for (String key : types) {
+            try {
+                String type;
+                String consumer;
+                String provider;
+                if (statistics.hasParameter(PROVIDER)) {
+                    type = PROVIDER;
+                    consumer = statistics.getHost();
+                    provider = statistics.getParameter(PROVIDER);
+                    int i = provider.indexOf(':');
+                    if (i > 0) {
+                        provider = provider.substring(0, i);
+                    }
+                } else {
+                    type = CONSUMER;
+                    consumer = statistics.getParameter(CONSUMER);
+                    int i = consumer.indexOf(':');
+                    if (i > 0) {
+                        consumer = consumer.substring(0, i);
+                    }
+                    provider = statistics.getHost();
+                }
+                String filename = statisticsDirectory 
+                        + "/" + day 
+                        + "/" + statistics.getServiceInterface() 
+                        + "/" + statistics.getParameter(METHOD) 
+                        + "/" + consumer 
+                        + "/" + provider 
+                        + "/" + type + "." + key;
+                File file = new File(filename);
+                File dir = file.getParentFile();
+                if (dir != null && ! dir.exists()) {
+                    dir.mkdirs();
+                }
+                FileWriter writer = new FileWriter(file, true);
+                try {
+                    writer.write(format.format(now) + " " + statistics.getParameter(key, 0) + "\n");
+                    writer.flush();
+                } finally {
+                    writer.close();
+                }
+            } catch (Throwable t) {
+                logger.error(t.getMessage(), t);
+            }
+        }
     }
 
     private void draw() {
@@ -311,58 +407,7 @@ public class SimpleMonitorService implements MonitorService {
     }
 
     public void count(URL statistics) {
-        try {
-            Date now = new Date();
-            String day = new SimpleDateFormat("yyyyMMdd").format(now);
-            SimpleDateFormat format = new SimpleDateFormat("HHmm");
-            for (String key : types) {
-                try {
-                    String type;
-                    String consumer;
-                    String provider;
-                    if (statistics.hasParameter(PROVIDER)) {
-                        type = PROVIDER;
-                        consumer = statistics.getHost();
-                        provider = statistics.getParameter(PROVIDER);
-                        int i = provider.indexOf(':');
-                        if (i > 0) {
-                            provider = provider.substring(0, i);
-                        }
-                    } else {
-                        type = CONSUMER;
-                        consumer = statistics.getParameter(CONSUMER);
-                        int i = consumer.indexOf(':');
-                        if (i > 0) {
-                            consumer = consumer.substring(0, i);
-                        }
-                        provider = statistics.getHost();
-                    }
-                    String filename = statisticsDirectory 
-                            + "/" + day 
-                            + "/" + statistics.getServiceInterface() 
-                            + "/" + statistics.getParameter(METHOD) 
-                            + "/" + consumer 
-                            + "/" + provider 
-                            + "/" + type + "." + key;
-                    File file = new File(filename);
-                    File dir = file.getParentFile();
-                    if (dir != null && ! dir.exists()) {
-                        dir.mkdirs();
-                    }
-                    FileWriter writer = new FileWriter(file, true);
-                    try {
-                        writer.write(format.format(now) + " " + statistics.getParameter(key, 0) + "\n");
-                        writer.flush();
-                    } finally {
-                        writer.close();
-                    }
-                } catch (Throwable t) {
-                    logger.error(t.getMessage(), t);
-                }
-            }
-        } catch (Throwable t) {
-            logger.error(t.getMessage(), t);
-        }
+        queue.offer(statistics);
     }
 
 }
