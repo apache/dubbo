@@ -26,6 +26,10 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.pool.impl.GenericObjectPool;
@@ -38,6 +42,7 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 import com.alibaba.dubbo.common.utils.UrlUtils;
 import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.support.FailbackRegistry;
@@ -55,6 +60,10 @@ public class RedisRegistry extends FailbackRegistry {
 
     private final static String DEFAULT_ROOT = "dubbo";
 
+    private final ScheduledExecutorService expireExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("DubboRegistryExpireTimer", true));
+
+    private final ScheduledFuture<?> expireFuture;
+    
     private final String root;
 
     private final JedisPool jedisPool;
@@ -64,6 +73,8 @@ public class RedisRegistry extends FailbackRegistry {
     private final ConcurrentMap<String, Notifier> notifiers = new ConcurrentHashMap<String, Notifier>();
     
     private final int reconnectPeriod;
+
+    private final int expirePeriod;
 
     public RedisRegistry(URL url) {
         super(url);
@@ -98,6 +109,28 @@ public class RedisRegistry extends FailbackRegistry {
             group = group + Constants.PATH_SEPARATOR;
         }
         this.root = group;
+        
+        this.expirePeriod = url.getParameter(Constants.EXPIRE_KEY, Constants.DEFAULT_EXPIRE);
+        this.expireFuture = expireExecutor.scheduleWithFixedDelay(new Runnable() {
+            public void run() {
+                try {
+                    deferExpired(); // 延长过期时间
+                } catch (Throwable t) { // 防御性容错
+                    logger.error("Unexpected error occur at defer expire time, cause: " + t.getMessage(), t);
+                }
+            }
+        }, expirePeriod, expirePeriod, TimeUnit.MILLISECONDS);
+    }
+    
+    private void deferExpired() {
+        Jedis jedis = jedisPool.getResource();
+        try {
+            for (String provider : new HashSet<String>(getRegistered())) {
+                jedis.hset(toRegisterPath(URL.valueOf(provider)), provider, String.valueOf(System.currentTimeMillis() + expirePeriod));
+            }
+        } finally {
+            jedisPool.returnResource(jedis);
+        }
     }
 
     public boolean isAvailable() {
@@ -117,7 +150,7 @@ public class RedisRegistry extends FailbackRegistry {
     public void destroy() {
         super.destroy();
         try {
-            jedisPool.destroy();
+            expireFuture.cancel(true);
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
         }
@@ -128,13 +161,18 @@ public class RedisRegistry extends FailbackRegistry {
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
         }
+        try {
+            jedisPool.destroy();
+        } catch (Throwable t) {
+            logger.warn(t.getMessage(), t);
+        }
     }
 
     @Override
     public void doRegister(URL url) {
         Jedis jedis = jedisPool.getResource();
         try {
-            jedis.sadd(toRegisterPath(url), url.toFullString());
+            jedis.hset(toRegisterPath(url), url.toFullString(), String.valueOf(System.currentTimeMillis() + expirePeriod));
             jedis.publish(toServicePath(url), Constants.REGISTER);
         } finally {
             jedisPool.returnResource(jedis);
@@ -145,7 +183,7 @@ public class RedisRegistry extends FailbackRegistry {
     public void doUnregister(URL url) {
         Jedis jedis = jedisPool.getResource();
         try {
-            jedis.srem(toRegisterPath(url), url.toFullString());
+            jedis.hdel(toRegisterPath(url), url.toFullString());
             jedis.publish(toServicePath(url), Constants.UNREGISTER);
         } finally {
             jedisPool.returnResource(jedis);
@@ -260,7 +298,7 @@ public class RedisRegistry extends FailbackRegistry {
                     doNotify(jedis, s, url, listener);
                 }
             } else {
-                jedis.sadd(toSubscribePath(url), url.toFullString());
+                jedis.hset(toSubscribePath(url), url.toFullString(), String.valueOf(System.currentTimeMillis() + expirePeriod));
                 jedis.publish(toServicePath(url), Constants.SUBSCRIBE);
                 doNotify(jedis, service, url, listener);
             }
@@ -274,7 +312,7 @@ public class RedisRegistry extends FailbackRegistry {
         if (! Constants.ANY_VALUE.equals(url.getServiceInterface())) {
             Jedis jedis = jedisPool.getResource();
             try {
-                jedis.srem(toSubscribePath(url), url.toFullString());
+                jedis.hdel(toSubscribePath(url), url.toFullString());
                 jedis.publish(toServicePath(url), Constants.UNSUBSCRIBE);
             } finally {
                 jedisPool.returnResource(jedis);
@@ -309,13 +347,13 @@ public class RedisRegistry extends FailbackRegistry {
     }
 
     private void doNotify(Jedis jedis, String service, URL url, Collection<NotifyListener> listeners) {
-        Set<String> providers;
-        providers = jedis.smembers(service + Constants.PATH_SEPARATOR + Constants.PROVIDERS);
+        Map<String, String> providers;
+        providers = jedis.hgetAll(service + Constants.PATH_SEPARATOR + Constants.PROVIDERS);
         if (url.getParameter(Constants.ADMIN_KEY, false)) {
-            Set<String> consumers = jedis.smembers(service + Constants.PATH_SEPARATOR + Constants.CONSUMERS);
+            Map<String, String> consumers = jedis.hgetAll(service + Constants.PATH_SEPARATOR + Constants.CONSUMERS);
             if (consumers != null && consumers.size() > 0) {
-                providers = providers == null ? new HashSet<String>() : new HashSet<String>(providers);
-                providers.addAll(consumers);
+                providers = providers == null ? new HashMap<String, String>() : new HashMap<String, String>(providers);
+                providers.putAll(consumers);
             }
         }
         if (logger.isInfoEnabled()) {
@@ -324,10 +362,13 @@ public class RedisRegistry extends FailbackRegistry {
         
         List<URL> urls = new ArrayList<URL>();
         if (providers != null && providers.size() > 0) {
-            for (String provider : providers) {
-                URL u = URL.valueOf(provider);
-                if (UrlUtils.isMatch(url, u)) {
-                    urls.add(u);
+            long now = System.currentTimeMillis();
+            for (Map.Entry<String, String> entry : providers.entrySet()) {
+                if (Long.parseLong(entry.getValue()) > now) {
+                    URL u = URL.valueOf(entry.getKey());
+                    if (UrlUtils.isMatch(url, u)) {
+                        urls.add(u);
+                    }
                 }
             }
         }

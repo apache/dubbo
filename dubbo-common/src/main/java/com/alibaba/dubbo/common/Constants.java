@@ -395,6 +395,10 @@ public class Constants {
     public static final String  REGISTRY_RECONNECT_PERIOD_KEY      = "reconnect.period";
 
     public static final int     DEFAULT_REGISTRY_RECONNECT_PERIOD  = 3 * 1000;
+    
+    public static final String  EXPIRE_KEY                         = "expire";
+
+    public static final int     DEFAULT_EXPIRE                     = 30 * 1000;
 
     /**
      * 注册中心导出URL参数的KEY
