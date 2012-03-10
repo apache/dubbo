@@ -114,7 +114,16 @@ public abstract class AbstractRegistryService implements RegistryService {
         }
         List<URL> urls = registered.get(service);
         if (urls != null) {
-            urls.remove(url);
+            URL deleteURL = null;
+            for (URL u : urls) {
+                if (u.toIdentityString().equals(url.toIdentityString())) {
+                    deleteURL = u;
+                    break;
+                }
+            }
+            if (deleteURL != null) {
+                urls.remove(deleteURL);
+            }
         }
         removeListener(service, listener);
     }
