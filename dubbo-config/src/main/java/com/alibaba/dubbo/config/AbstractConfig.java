@@ -185,7 +185,7 @@ public abstract class AbstractConfig implements Serializable {
                         continue;
                     }
                     int i = name.startsWith("get") ? 3 : 2;
-                    String prop = name.substring(i, i + 1).toLowerCase() + name.substring(i + 1);
+                    String prop = StringUtils.camelToSplitName(name.substring(i, i + 1).toLowerCase() + name.substring(i + 1), ".");
                     String key;
                     if (parameter != null && parameter.key() != null && parameter.key().length() > 0) {
                         key = parameter.key();
@@ -221,12 +221,9 @@ public abstract class AbstractConfig implements Serializable {
                         && method.getReturnType() == Map.class) {
                     Map<String, String> map = (Map<String, String>) method.invoke(config, new Object[0]);
                     if (map != null && map.size() > 0) {
-                        if (prefix != null && prefix.length() > 0) {
-                            for (Map.Entry<String, String> entry : map.entrySet()) {
-                                parameters.put(prefix + "." + entry.getKey(), entry.getValue());
-                            }
-                        } else {
-                            parameters.putAll(map);
+                        String pre = (prefix != null && prefix.length() > 0 ? prefix + "." : "");
+                        for (Map.Entry<String, String> entry : map.entrySet()) {
+                            parameters.put(pre + entry.getKey().replace('-', '.'), entry.getValue());
                         }
                     }
                 }
