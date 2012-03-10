@@ -275,7 +275,7 @@ public class URLTest {
         Map<String, String> params = new HashMap<String, String>();
         params.put("version", "1.0.0");
         params.put("application", "morgan");
-        URL url2 = new URL("dubbo", "10.20.130.230", 20880, "context/path", params);
+        URL url2 = new URL("dubbo", "admin", "hello1234", "10.20.130.230", 20880, "context/path", params);
         
         assertEquals(url1, url2);
     }

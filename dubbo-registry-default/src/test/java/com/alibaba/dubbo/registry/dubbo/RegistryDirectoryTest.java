@@ -113,7 +113,7 @@ public class RegistryDirectoryTest {
         field.setAccessible(true);
         Map<String, String> queryMap = (Map<String, String>) field.get(reg);
         Assert.assertEquals("bar", queryMap.get("foo"));
-        Assert.assertEquals(url.removeParameter(Constants.REFER_KEY), reg.getUrl());
+        Assert.assertEquals(url.removeParameter(Constants.REFER_KEY).addParameter("foo", "bar"), reg.getUrl());
     }
 
     @Test
@@ -451,7 +451,7 @@ public class RegistryDirectoryTest {
         List<Invoker> invokers = registryDirectory.list(invocation);
 
         Assert.assertEquals(1, invokers.size());
-        Assert.assertEquals(serviceURL.setPath(service), invokers.get(0).getUrl());
+        Assert.assertEquals(serviceURL.setPath(service).addParameter("check", "false"), invokers.get(0).getUrl());
 
     }
 
