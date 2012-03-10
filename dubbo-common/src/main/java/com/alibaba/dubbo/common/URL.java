@@ -86,7 +86,9 @@ public final class URL implements Serializable {
 
     private final Map<String, String> parameters;
     
-    private final transient Map<String, Number> numbers = new ConcurrentHashMap<String, Number>();
+    // ==== cache ====
+    
+    private volatile transient Map<String, Number> numbers;
 
     private volatile transient String ip;
 
@@ -368,9 +370,16 @@ public final class URL implements Serializable {
         }
         return Constants.COMMA_SPLIT_PATTERN.split(value);
     }
+    
+    private Map<String, Number> getNumbers() {
+        if (numbers == null) { // 允许并发重复创建
+            numbers = new ConcurrentHashMap<String, Number>();
+        }
+        return numbers;
+    }
 
     public double getParameter(String key, double defaultValue) {
-        Number n = numbers.get(key);
+        Number n = getNumbers().get(key);
         if (n != null) {
             return n.doubleValue();
         }
@@ -379,12 +388,12 @@ public final class URL implements Serializable {
             return defaultValue;
         }
         double d = Double.parseDouble(value);
-        numbers.put(key, d);
+        getNumbers().put(key, d);
         return d;
     }
     
     public float getParameter(String key, float defaultValue) {
-        Number n = numbers.get(key);
+        Number n = getNumbers().get(key);
         if (n != null) {
             return n.floatValue();
         }
@@ -393,12 +402,12 @@ public final class URL implements Serializable {
             return defaultValue;
         }
         float f = Float.parseFloat(value);
-        numbers.put(key, f);
+        getNumbers().put(key, f);
         return f;
     }
 
     public long getParameter(String key, long defaultValue) {
-        Number n = numbers.get(key);
+        Number n = getNumbers().get(key);
         if (n != null) {
             return n.longValue();
         }
@@ -407,12 +416,12 @@ public final class URL implements Serializable {
             return defaultValue;
         }
         long l = Long.parseLong(value);
-        numbers.put(key, l);
+        getNumbers().put(key, l);
         return l;
     }
 
     public int getParameter(String key, int defaultValue) {
-        Number n = numbers.get(key);
+        Number n = getNumbers().get(key);
         if (n != null) {
             return n.intValue();
         }
@@ -421,12 +430,12 @@ public final class URL implements Serializable {
             return defaultValue;
         }
         int i = Integer.parseInt(value);
-        numbers.put(key, i);
+        getNumbers().put(key, i);
         return i;
     }
 
     public short getParameter(String key, short defaultValue) {
-        Number n = numbers.get(key);
+        Number n = getNumbers().get(key);
         if (n != null) {
             return n.shortValue();
         }
@@ -435,12 +444,12 @@ public final class URL implements Serializable {
             return defaultValue;
         }
         short s = Short.parseShort(value);
-        numbers.put(key, s);
+        getNumbers().put(key, s);
         return s;
     }
 
     public byte getParameter(String key, byte defaultValue) {
-        Number n = numbers.get(key);
+        Number n = getNumbers().get(key);
         if (n != null) {
             return n.byteValue();
         }
@@ -449,7 +458,7 @@ public final class URL implements Serializable {
             return defaultValue;
         }
         byte b = Byte.parseByte(value);
-        numbers.put(key, b);
+        getNumbers().put(key, b);
         return b;
     }
 
@@ -566,7 +575,7 @@ public final class URL implements Serializable {
 
     public double getMethodParameter(String method, String key, double defaultValue) {
         String methodKey = method + "." + key;
-        Number n = numbers.get(methodKey);
+        Number n = getNumbers().get(methodKey);
         if (n != null) {
             return n.intValue();
         }
@@ -575,13 +584,13 @@ public final class URL implements Serializable {
             return defaultValue;
         }
         double d = Double.parseDouble(value);
-        numbers.put(methodKey, d);
+        getNumbers().put(methodKey, d);
         return d;
     }
 
     public float getMethodParameter(String method, String key, float defaultValue) {
         String methodKey = method + "." + key;
-        Number n = numbers.get(methodKey);
+        Number n = getNumbers().get(methodKey);
         if (n != null) {
             return n.intValue();
         }
@@ -590,13 +599,13 @@ public final class URL implements Serializable {
             return defaultValue;
         }
         float f = Float.parseFloat(value);
-        numbers.put(methodKey, f);
+        getNumbers().put(methodKey, f);
         return f;
     }
 
     public long getMethodParameter(String method, String key, long defaultValue) {
         String methodKey = method + "." + key;
-        Number n = numbers.get(methodKey);
+        Number n = getNumbers().get(methodKey);
         if (n != null) {
             return n.intValue();
         }
@@ -605,13 +614,13 @@ public final class URL implements Serializable {
             return defaultValue;
         }
         long l = Long.parseLong(value);
-        numbers.put(methodKey, l);
+        getNumbers().put(methodKey, l);
         return l;
     }
 
     public int getMethodParameter(String method, String key, int defaultValue) {
         String methodKey = method + "." + key;
-        Number n = numbers.get(methodKey);
+        Number n = getNumbers().get(methodKey);
         if (n != null) {
             return n.intValue();
         }
@@ -620,13 +629,13 @@ public final class URL implements Serializable {
             return defaultValue;
         }
         int i = Integer.parseInt(value);
-        numbers.put(methodKey, i);
+        getNumbers().put(methodKey, i);
         return i;
     }
 
     public short getMethodParameter(String method, String key, short defaultValue) {
         String methodKey = method + "." + key;
-        Number n = numbers.get(methodKey);
+        Number n = getNumbers().get(methodKey);
         if (n != null) {
             return n.shortValue();
         }
@@ -635,13 +644,13 @@ public final class URL implements Serializable {
             return defaultValue;
         }
         short s = Short.parseShort(value);
-        numbers.put(methodKey, s);
+        getNumbers().put(methodKey, s);
         return s;
     }
 
     public byte getMethodParameter(String method, String key, byte defaultValue) {
         String methodKey = method + "." + key;
-        Number n = numbers.get(methodKey);
+        Number n = getNumbers().get(methodKey);
         if (n != null) {
             return n.byteValue();
         }
@@ -650,7 +659,7 @@ public final class URL implements Serializable {
             return defaultValue;
         }
         byte b = Byte.parseByte(value);
-        numbers.put(methodKey, b);
+        getNumbers().put(methodKey, b);
         return b;
     }
 
@@ -1063,45 +1072,6 @@ public final class URL implements Serializable {
         return addParameter(Constants.INTERFACE_KEY, service);
     }
 
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((host == null) ? 0 : host.hashCode());
-        result = prime * result + ((path == null) ? 0 : path.hashCode());
-        result = prime * result + port;
-        result = prime * result
-                + ((protocol == null) ? 0 : protocol.hashCode());
-        return result;
-    }
-
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        URL other = (URL) obj;
-        if (host == null) {
-            if (other.host != null)
-                return false;
-        } else if (!host.equals(other.host))
-            return false;
-        if (path == null) {
-            if (other.path != null)
-                return false;
-        } else if (!path.equals(other.path))
-            return false;
-        if (port != other.port)
-            return false;
-        if (protocol == null) {
-            if (other.protocol != null)
-                return false;
-        } else if (!protocol.equals(other.protocol))
-            return false;
-        return true;
-    }
-
     /**
      * @deprecated Replace to <code>getParameter(String, int)</code>
      * @see #getParameter(String, int)
@@ -1212,6 +1182,64 @@ public final class URL implements Serializable {
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((host == null) ? 0 : host.hashCode());
+        result = prime * result + ((parameters == null) ? 0 : parameters.hashCode());
+        result = prime * result + ((password == null) ? 0 : password.hashCode());
+        result = prime * result + ((path == null) ? 0 : path.hashCode());
+        result = prime * result + port;
+        result = prime * result + ((protocol == null) ? 0 : protocol.hashCode());
+        result = prime * result + ((username == null) ? 0 : username.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        URL other = (URL) obj;
+        if (host == null) {
+            if (other.host != null)
+                return false;
+        } else if (!host.equals(other.host))
+            return false;
+        if (parameters == null) {
+            if (other.parameters != null)
+                return false;
+        } else if (!parameters.equals(other.parameters))
+            return false;
+        if (password == null) {
+            if (other.password != null)
+                return false;
+        } else if (!password.equals(other.password))
+            return false;
+        if (path == null) {
+            if (other.path != null)
+                return false;
+        } else if (!path.equals(other.path))
+            return false;
+        if (port != other.port)
+            return false;
+        if (protocol == null) {
+            if (other.protocol != null)
+                return false;
+        } else if (!protocol.equals(other.protocol))
+            return false;
+        if (username == null) {
+            if (other.username != null)
+                return false;
+        } else if (!username.equals(other.username))
+            return false;
+        return true;
     }
     
 }
