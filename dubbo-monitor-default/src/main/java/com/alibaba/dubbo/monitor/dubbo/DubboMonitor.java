@@ -15,8 +15,6 @@
  */
 package com.alibaba.dubbo.monitor.dubbo;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -80,7 +78,7 @@ public class DubboMonitor implements Monitor {
         if (logger.isInfoEnabled()) {
             logger.info("Send statistics to monitor " + getUrl());
         }
-        String timestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+        String timestamp = String.valueOf(System.currentTimeMillis());
         for (Map.Entry<Statistics, AtomicReference<long[]>> entry : statisticsMap.entrySet()) {
             // 获取已统计数据
             Statistics statistics = entry.getKey();

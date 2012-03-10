@@ -161,8 +161,15 @@ public class SimpleMonitorService implements MonitorService {
         if (POISON_PROTOCOL.equals(statistics.getProtocol())) {
             return;
         }
-        long timestamp = statistics.getParameter(Constants.TIMESTAMP_KEY, System.currentTimeMillis());
-        Date now = new Date(timestamp);
+        String timestamp = statistics.getParameter(Constants.TIMESTAMP_KEY);
+        Date now;
+        if (timestamp == null || timestamp.length() == 0) {
+            now = new Date();
+        } else if (timestamp.length() == "yyyyMMddHHmmss".length()) {
+            now = new SimpleDateFormat("yyyyMMddHHmmss").parse(timestamp);
+        } else {
+            now = new Date(Long.parseLong(timestamp));
+        }
         String day = new SimpleDateFormat("yyyyMMdd").format(now);
         SimpleDateFormat format = new SimpleDateFormat("HHmm");
         for (String key : types) {
