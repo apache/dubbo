@@ -30,7 +30,7 @@ import com.alibaba.dubbo.remoting.exchange.support.header.HeaderExchangeServer;
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-public class ServerHeartBeat {
+public class HeartbeatServer {
 
     private static final URL clientUrl = URL.valueOf(
             new StringBuilder( 32 )

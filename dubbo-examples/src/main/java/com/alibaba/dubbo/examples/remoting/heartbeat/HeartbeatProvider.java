@@ -21,11 +21,11 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-public class HelloServiceProvider {
+public class HeartbeatProvider {
 
     public static void main(String[] args) throws Exception {
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext( 
-                HelloServiceProvider.class.getPackage().getName().replace( '.', '/' ) + "/provider.xml" );
+                HeartbeatProvider.class.getPackage().getName().replace( '.', '/' ) + "/heartbeat-provider.xml" );
         context.start();
         System.in.read();
     }

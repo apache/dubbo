@@ -22,10 +22,10 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * 
  * @author chao.liuc
  */
-public class Provider {
+public class GenericProvider {
     
     public static void main(String[] args) throws Exception {
-        String config = Provider.class.getPackage().getName().replace('.', '/') + "/provider.xml";
+        String config = GenericProvider.class.getPackage().getName().replace('.', '/') + "/generic-provider.xml";
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(config);
         context.start();
         System.in.read();

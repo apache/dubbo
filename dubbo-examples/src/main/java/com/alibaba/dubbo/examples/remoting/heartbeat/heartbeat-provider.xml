@@ -19,7 +19,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
        http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
 
-    <dubbo:application name="hello-provider"/>
+    <dubbo:application name="heartbeat-provider"/>
 
     <!--<dubbo:registry address="127.0.0.1:9090"/>-->
 

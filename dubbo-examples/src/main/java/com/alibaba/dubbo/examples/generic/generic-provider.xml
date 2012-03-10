@@ -20,10 +20,15 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
 	http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
 
-    <dubbo:application name="consumer"  />
+    <dubbo:application name="generic-generic"  />
     
     <dubbo:registry address="multicast://224.5.6.7:1234" />
     
-	<dubbo:reference id="userservice" interface="com.alibaba.dubbo.examples.generic.api.IUserService" />
-
+    <dubbo:protocol name="dubbo" port="20880" />
+    
+    <bean id="userserviceimpl" class="com.alibaba.dubbo.examples.generic.impl.UserServiceImpl" />
+    
+	<dubbo:service interface="com.alibaba.dubbo.examples.generic.api.IUserService" ref="userserviceimpl" >
+	</dubbo:service>
+	
 </beans>

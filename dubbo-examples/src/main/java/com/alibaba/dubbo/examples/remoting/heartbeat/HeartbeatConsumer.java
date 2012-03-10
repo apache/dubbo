@@ -22,11 +22,11 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-public class HelloServiceConsumer {
+public class HeartbeatConsumer {
 
     public static void main(String[] args) throws Exception {
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
-                HelloServiceConsumer.class.getPackage().getName().replace('.', '/') + "/consumer.xml");
+                HeartbeatConsumer.class.getPackage().getName().replace('.', '/') + "/heartbeat-consumer.xml");
         context.start();
         HelloService hello = (HelloService) context.getBean("helloService");
         for (int i = 0; i < Integer.MAX_VALUE; i++) {

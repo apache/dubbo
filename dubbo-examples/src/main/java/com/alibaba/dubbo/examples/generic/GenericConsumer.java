@@ -26,10 +26,10 @@ import com.alibaba.dubbo.examples.generic.api.IUserService.User;
  * 
  * @author chao.liuc
  */
-public class Consumer {
+public class GenericConsumer {
 
     public static void main(String[] args) throws Exception {
-        String config = Consumer.class.getPackage().getName().replace('.', '/') + "/consumer.xml";
+        String config = GenericConsumer.class.getPackage().getName().replace('.', '/') + "/generic-consumer.xml";
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(config);
         context.start();
         IUserService userservice = (IUserService) context.getBean("userservice");
