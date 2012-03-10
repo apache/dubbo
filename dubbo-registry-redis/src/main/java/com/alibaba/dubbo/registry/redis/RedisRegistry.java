@@ -145,14 +145,20 @@ public class RedisRegistry extends FailbackRegistry {
             for (String key : keys) {
                 Map<String, String> values = jedis.hgetAll(key);
                 if (values != null && values.size() > 0) {
+                    boolean delete = false;
+                    long now = System.currentTimeMillis();
                     for (Map.Entry<String, String> entry : values.entrySet()) {
-                        String url = entry.getKey();
-                        jedis.hdel(key, url);
+                        if (Long.parseLong(entry.getValue()) < now) {
+                            jedis.hdel(key, entry.getKey());
+                            delete = true;
+                        }
                     }
-                    if (key.endsWith(Constants.CONSUMERS)) {
-                        jedis.publish(key, Constants.UNSUBSCRIBE);
-                    } else {
-                        jedis.publish(key, Constants.UNREGISTER);
+                    if (delete) {
+                        if (key.endsWith(Constants.CONSUMERS)) {
+                            jedis.publish(key, Constants.UNSUBSCRIBE);
+                        } else {
+                            jedis.publish(key, Constants.UNREGISTER);
+                        }
                     }
                 }
             }
