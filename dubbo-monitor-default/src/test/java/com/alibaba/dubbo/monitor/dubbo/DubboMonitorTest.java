@@ -46,7 +46,7 @@ public class DubboMonitorTest {
             return MonitorService.class;
         }
         public URL getUrl() {
-            return URL.valueOf("dubbo://127.0.0.1:7070?interval=1");
+            return URL.valueOf("dubbo://127.0.0.1:7070?interval=20");
         }
         public boolean isAvailable() {
             return false;
