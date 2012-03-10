@@ -18,6 +18,7 @@ package com.alibaba.dubbo.registry.redis;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -148,9 +149,13 @@ public class RedisRegistry extends FailbackRegistry {
                     boolean delete = false;
                     long now = System.currentTimeMillis();
                     for (Map.Entry<String, String> entry : values.entrySet()) {
-                        if (Long.parseLong(entry.getValue()) < now) {
+                        long expire = Long.parseLong(entry.getValue());
+                        if (expire < now) {
                             jedis.hdel(key, entry.getKey());
                             delete = true;
+                            if (logger.isWarnEnabled()) {
+                                logger.warn("Delete expired key: " + key + " -> value: " + entry.getKey() + ", expire: " + new Date(expire) + ", now: " + new Date(now));
+                            }
                         }
                     }
                     if (delete) {
