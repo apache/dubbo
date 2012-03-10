@@ -110,7 +110,7 @@ public class RedisRegistry extends FailbackRegistry {
         }
         this.root = group;
         
-        this.expirePeriod = url.getParameter(Constants.EXPIRE_KEY, Constants.DEFAULT_EXPIRE);
+        this.expirePeriod = url.getParameter(Constants.SESSION_TIMEOUT_KEY, Constants.DEFAULT_SESSION_TIMEOUT);
         this.expireFuture = expireExecutor.scheduleWithFixedDelay(new Runnable() {
             public void run() {
                 try {
@@ -119,14 +119,14 @@ public class RedisRegistry extends FailbackRegistry {
                     logger.error("Unexpected error occur at defer expire time, cause: " + t.getMessage(), t);
                 }
             }
-        }, expirePeriod, expirePeriod, TimeUnit.MILLISECONDS);
+        }, expirePeriod / 2, expirePeriod / 2, TimeUnit.MILLISECONDS);
     }
     
     private void deferExpired() {
         Jedis jedis = jedisPool.getResource();
         try {
             for (String provider : new HashSet<String>(getRegistered())) {
-                jedis.hset(toRegisterPath(URL.valueOf(provider)), provider, String.valueOf(System.currentTimeMillis() + expirePeriod));
+                jedis.hset(toProviderPath(URL.valueOf(provider)), provider, String.valueOf(System.currentTimeMillis() + expirePeriod));
             }
         } finally {
             jedisPool.returnResource(jedis);
@@ -170,10 +170,13 @@ public class RedisRegistry extends FailbackRegistry {
 
     @Override
     public void doRegister(URL url) {
+        String key = toProviderPath(url);
+        String value = url.toFullString();
+        String expire = String.valueOf(System.currentTimeMillis() + expirePeriod);
         Jedis jedis = jedisPool.getResource();
         try {
-            jedis.hset(toRegisterPath(url), url.toFullString(), String.valueOf(System.currentTimeMillis() + expirePeriod));
-            jedis.publish(toServicePath(url), Constants.REGISTER);
+            jedis.hset(key, value, expire);
+            jedis.publish(key, Constants.REGISTER);
         } finally {
             jedisPool.returnResource(jedis);
         }
@@ -181,21 +184,205 @@ public class RedisRegistry extends FailbackRegistry {
 
     @Override
     public void doUnregister(URL url) {
+        String key = toProviderPath(url);
+        String value = url.toFullString();
         Jedis jedis = jedisPool.getResource();
         try {
-            jedis.hdel(toRegisterPath(url), url.toFullString());
-            jedis.publish(toServicePath(url), Constants.UNREGISTER);
+            jedis.hdel(key, value);
+            jedis.publish(key, Constants.UNREGISTER);
         } finally {
             jedisPool.returnResource(jedis);
         }
     }
     
+    @Override
+    public void doSubscribe(final URL url, final NotifyListener listener) {
+        String service = toServicePath(url);
+        Notifier notifier = notifiers.get(service);
+        if (notifier == null) {
+            Notifier newNotifier = new Notifier(service);
+            notifiers.putIfAbsent(service, newNotifier);
+            notifier = notifiers.get(service);
+            if (notifier == newNotifier) {
+                notifier.start();
+            }
+        }
+        Jedis jedis = jedisPool.getResource();
+        try {
+            if (service.endsWith(Constants.ANY_VALUE)) {
+                for (String s : getServices(jedis, service)) {
+                    doNotify(jedis, s, url, listener);
+                }
+            } else {
+                String key = toConsumerPath(url);
+                String value = url.toFullString();
+                String expire = String.valueOf(System.currentTimeMillis() + expirePeriod);
+                jedis.hset(key, value, expire);
+                jedis.publish(key, Constants.SUBSCRIBE);
+                doNotify(jedis, service, url, listener);
+            }
+        } finally {
+            jedisPool.returnResource(jedis);
+        }
+    }
+
+    @Override
+    public void doUnsubscribe(URL url, NotifyListener listener) {
+        if (! Constants.ANY_VALUE.equals(url.getServiceInterface())) {
+            String key = toConsumerPath(url);
+            String value = url.toFullString();
+            Jedis jedis = jedisPool.getResource();
+            try {
+                jedis.hdel(key, value);
+                jedis.publish(key, Constants.UNSUBSCRIBE);
+            } finally {
+                jedisPool.returnResource(jedis);
+            }
+        }
+    }
+
+    private void doNotify(Jedis jedis, String service, boolean consumer) {
+        for (Map.Entry<String, Set<NotifyListener>> entry : new HashMap<String, Set<NotifyListener>>(getSubscribed()).entrySet()) {
+            URL url = URL.valueOf(entry.getKey());
+            if (Constants.ANY_VALUE.equals(url.getServiceInterface()) 
+                    || (! consumer && toServicePath(url).equals(service))) {
+                doNotify(jedis, service, url, new HashSet<NotifyListener>(entry.getValue()));
+            }
+        }
+    }
+    
+    private void doNotify(Jedis jedis, String service, URL url, NotifyListener listener) {
+        doNotify(jedis, service, url, Arrays.asList(listener));
+    }
+
+    private void doNotify(Jedis jedis, String service, URL url, Collection<NotifyListener> listeners) {
+        Map<String, String> providers;
+        providers = jedis.hgetAll(service + Constants.PATH_SEPARATOR + Constants.PROVIDERS);
+        if (url.getParameter(Constants.ADMIN_KEY, false)) {
+            Map<String, String> consumers = jedis.hgetAll(service + Constants.PATH_SEPARATOR + Constants.CONSUMERS);
+            if (consumers != null && consumers.size() > 0) {
+                providers = providers == null ? new HashMap<String, String>() : new HashMap<String, String>(providers);
+                providers.putAll(consumers);
+            }
+        }
+        if (logger.isInfoEnabled()) {
+            logger.info("redis notify: " + service + " = " + providers);
+        }
+        
+        List<URL> urls = new ArrayList<URL>();
+        if (providers != null && providers.size() > 0) {
+            long now = System.currentTimeMillis();
+            for (Map.Entry<String, String> entry : providers.entrySet()) {
+                URL u = URL.valueOf(entry.getKey());
+                if (Long.parseLong(entry.getValue()) >= now) {
+                    if (UrlUtils.isMatch(url, u)) {
+                        urls.add(u);
+                    }
+                } else if (url.getParameter(Constants.ADMIN_KEY, false)) {
+                    // 监控中心负责删除过期脏数据
+                    if (Constants.SUBSCRIBE_PROTOCOL.equals(u.getProtocol())) {
+                        String key = toConsumerPath(u);
+                        jedis.hdel(key, u.toFullString());
+                        jedis.publish(key, Constants.UNSUBSCRIBE);
+                    } else {
+                        String key = toProviderPath(u);
+                        jedis.hdel(key, u.toFullString());
+                        jedis.publish(key, Constants.UNREGISTER);
+                    }
+                }
+            }
+        }
+        if (urls != null && urls.isEmpty() && url.getParameter(Constants.ADMIN_KEY, false)) {
+            URL empty = url.setProtocol(Constants.EMPTY_PROTOCOL);
+            if (Constants.ANY_VALUE.equals(empty.getServiceInterface())) {
+                empty = empty.setServiceInterface(service.substring(root.length()));
+            }
+            urls.add(empty);
+        }
+        for (NotifyListener listener : listeners) {
+            notify(url, listener, urls);
+        }
+    }
+    
+    private String getService(Jedis jedis, String key) {
+        int i = key.indexOf(Constants.PATH_SEPARATOR, root.length());
+        return i > 0 ? key.substring(0, i) : key;
+    }
+
+    private Set<String> getServices(Jedis jedis, String pattern) {
+        Set<String> keys = jedis.keys(pattern);
+        Set<String> services = new HashSet<String>();
+        if (keys != null && keys.size() > 0) {
+            for (String key : keys) {
+                services.add(getService(jedis, key));
+            }
+        }
+        return services;
+    }
+
+    private String toServicePath(URL url) {
+        return root + url.getServiceInterface();
+    }
+
+    private String toProviderPath(URL url) {
+        return toServicePath(url) + Constants.PATH_SEPARATOR + Constants.PROVIDERS;
+    }
+
+    private String toConsumerPath(URL url) {
+        return toServicePath(url) + Constants.PATH_SEPARATOR + Constants.CONSUMERS;
+    }
+
+    private class NotifySub extends JedisPubSub {
+
+        @Override
+        public void onMessage(String key, String msg) {
+            if (logger.isInfoEnabled()) {
+                logger.info("redis event: " + key + " = " + msg);
+            }
+            if (msg.equals(Constants.REGISTER) 
+                    || msg.equals(Constants.UNREGISTER)
+                    || msg.equals(Constants.SUBSCRIBE) 
+                    || msg.equals(Constants.UNSUBSCRIBE)) {
+                Jedis jedis = jedisPool.getResource();
+                try {
+                    doNotify(jedis, getService(jedis, key), msg.equals(Constants.SUBSCRIBE) || msg.equals(Constants.UNSUBSCRIBE));
+                } finally {
+                    jedisPool.returnResource(jedis);
+                }
+            }
+        }
+
+        @Override
+        public void onPMessage(String pattern, String key, String msg) {
+            onMessage(key, msg);
+        }
+
+        @Override
+        public void onSubscribe(String key, int num) {
+        }
+
+        @Override
+        public void onPSubscribe(String pattern, int num) {
+        }
+
+        @Override
+        public void onUnsubscribe(String key, int num) {
+        }
+
+        @Override
+        public void onPUnsubscribe(String pattern, int num) {
+        }
+
+    }
+
     private class Notifier extends Thread {
 
         private final String service;
 
         private volatile Jedis jedis;
 
+        private volatile boolean first = true;
+        
         private volatile boolean running = true;
         
         private final AtomicInteger connectSkip = new AtomicInteger();
@@ -244,15 +431,21 @@ public class RedisRegistry extends FailbackRegistry {
                             jedis = jedisPool.getResource();
                             try {
                                 if (service.endsWith(Constants.ANY_VALUE)) {
-                                    for (String s : getServices(jedis, service)) {
-                                        doNotify(jedis, s, false);
+                                    if (! first) {
+                                        first = false;
+                                        for (String s : getServices(jedis, service)) {
+                                            doNotify(jedis, s, false);
+                                        }
+                                        resetSkip();
                                     }
-                                    resetSkip();
                                     jedis.psubscribe(sub, service);
                                 } else {
-                                    doNotify(jedis, service, false);
-                                    resetSkip();
-                                    jedis.subscribe(sub, service);
+                                    if (! first) {
+                                        first = false;
+                                        doNotify(jedis, service, false);
+                                        resetSkip();
+                                    }
+                                    jedis.subscribe(sub, service + Constants.PATH_SEPARATOR + Constants.PROVIDERS);
                                 }
                             } finally {
                                 jedisPool.returnBrokenResource(jedis);
@@ -277,170 +470,6 @@ public class RedisRegistry extends FailbackRegistry {
             }
         }
         
-    }
-    
-    @Override
-    public void doSubscribe(final URL url, final NotifyListener listener) {
-        String service = toServicePath(url);
-        Notifier notifier = notifiers.get(service);
-        if (notifier == null) {
-            Notifier newNotifier = new Notifier(service);
-            notifiers.putIfAbsent(service, newNotifier);
-            notifier = notifiers.get(service);
-            if (notifier == newNotifier) {
-                notifier.start();
-            }
-        }
-        Jedis jedis = jedisPool.getResource();
-        try {
-            if (service.endsWith(Constants.ANY_VALUE)) {
-                for (String s : getServices(jedis, service)) {
-                    doNotify(jedis, s, url, listener);
-                }
-            } else {
-                jedis.hset(toSubscribePath(url), url.toFullString(), String.valueOf(System.currentTimeMillis() + expirePeriod));
-                jedis.publish(toServicePath(url), Constants.SUBSCRIBE);
-                doNotify(jedis, service, url, listener);
-            }
-        } finally {
-            jedisPool.returnResource(jedis);
-        }
-    }
-
-    @Override
-    public void doUnsubscribe(URL url, NotifyListener listener) {
-        if (! Constants.ANY_VALUE.equals(url.getServiceInterface())) {
-            Jedis jedis = jedisPool.getResource();
-            try {
-                jedis.hdel(toSubscribePath(url), url.toFullString());
-                jedis.publish(toServicePath(url), Constants.UNSUBSCRIBE);
-            } finally {
-                jedisPool.returnResource(jedis);
-            }
-        }
-    }
-
-    private Set<String> getServices(Jedis jedis, String service) {
-        Set<String> keys = jedis.keys(service);
-        Set<String> services = new HashSet<String>();
-        if (keys != null && keys.size() > 0) {
-            for (String key : keys) {
-                int i = key.indexOf(Constants.PATH_SEPARATOR, root.length());
-                services.add(i > 0 ? key.substring(0, i) : key);
-            }
-        }
-        return services;
-    }
-
-    private void doNotify(Jedis jedis, String service, boolean consumer) {
-        for (Map.Entry<String, Set<NotifyListener>> entry : new HashMap<String, Set<NotifyListener>>(getSubscribed()).entrySet()) {
-            URL url = URL.valueOf(entry.getKey());
-            if (Constants.ANY_VALUE.equals(url.getServiceInterface()) 
-                    || (! consumer && toServicePath(url).equals(service))) {
-                doNotify(jedis, service, url, new HashSet<NotifyListener>(entry.getValue()));
-            }
-        }
-    }
-    
-    private void doNotify(Jedis jedis, String service, URL url, NotifyListener listener) {
-        doNotify(jedis, service, url, Arrays.asList(listener));
-    }
-
-    private void doNotify(Jedis jedis, String service, URL url, Collection<NotifyListener> listeners) {
-        Map<String, String> providers;
-        providers = jedis.hgetAll(service + Constants.PATH_SEPARATOR + Constants.PROVIDERS);
-        if (url.getParameter(Constants.ADMIN_KEY, false)) {
-            Map<String, String> consumers = jedis.hgetAll(service + Constants.PATH_SEPARATOR + Constants.CONSUMERS);
-            if (consumers != null && consumers.size() > 0) {
-                providers = providers == null ? new HashMap<String, String>() : new HashMap<String, String>(providers);
-                providers.putAll(consumers);
-            }
-        }
-        if (logger.isInfoEnabled()) {
-            logger.info("redis notify: " + service + " = " + providers);
-        }
-        
-        List<URL> urls = new ArrayList<URL>();
-        if (providers != null && providers.size() > 0) {
-            long now = System.currentTimeMillis();
-            for (Map.Entry<String, String> entry : providers.entrySet()) {
-                if (Long.parseLong(entry.getValue()) > now) {
-                    URL u = URL.valueOf(entry.getKey());
-                    if (UrlUtils.isMatch(url, u)) {
-                        urls.add(u);
-                    }
-                }
-            }
-        }
-        if (urls != null && urls.isEmpty() && url.getParameter(Constants.ADMIN_KEY, false)) {
-            URL empty = url.setProtocol(Constants.EMPTY_PROTOCOL);
-            if (Constants.ANY_VALUE.equals(empty.getServiceInterface())) {
-                empty = empty.setServiceInterface(service.substring(root.length()));
-            }
-            urls.add(empty);
-        }
-        for (NotifyListener listener : listeners) {
-            notify(url, listener, urls);
-        }
-    }
-
-    private String toServicePath(URL url) {
-        String name = url.getServiceInterface();
-        if (! Constants.ANY_VALUE.equals(name)) {
-            name = URL.encode(name);
-        }
-        return root + name;
-    }
-
-    private String toRegisterPath(URL url) {
-        return toServicePath(url) + Constants.PATH_SEPARATOR + Constants.PROVIDERS;
-    }
-
-    private String toSubscribePath(URL url) {
-        return toServicePath(url) + Constants.PATH_SEPARATOR + Constants.CONSUMERS;
-    }
-
-    private class NotifySub extends JedisPubSub {
-
-        @Override
-        public void onMessage(String key, String msg) {
-            if (logger.isInfoEnabled()) {
-                logger.info("redis event: " + key + " = " + msg);
-            }
-            if (msg.equals(Constants.REGISTER) 
-                    || msg.equals(Constants.UNREGISTER)
-                    || msg.equals(Constants.SUBSCRIBE) 
-                    || msg.equals(Constants.UNSUBSCRIBE)) {
-                Jedis jedis = jedisPool.getResource();
-                try {
-                    doNotify(jedis, key, msg.equals(Constants.SUBSCRIBE) || msg.equals(Constants.UNSUBSCRIBE));
-                } finally {
-                    jedisPool.returnResource(jedis);
-                }
-            }
-        }
-
-        @Override
-        public void onPMessage(String pattern, String key, String msg) {
-            onMessage(key, msg);
-        }
-
-        @Override
-        public void onSubscribe(String key, int num) {
-        }
-
-        @Override
-        public void onPSubscribe(String pattern, int num) {
-        }
-
-        @Override
-        public void onUnsubscribe(String key, int num) {
-        }
-
-        @Override
-        public void onPUnsubscribe(String pattern, int num) {
-        }
-
     }
 
 }

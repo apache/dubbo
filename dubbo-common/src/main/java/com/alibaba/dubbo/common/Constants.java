@@ -396,9 +396,9 @@ public class Constants {
 
     public static final int     DEFAULT_REGISTRY_RECONNECT_PERIOD  = 3 * 1000;
     
-    public static final String  EXPIRE_KEY                         = "expire";
+    public static final String  SESSION_TIMEOUT_KEY                = "session";
 
-    public static final int     DEFAULT_EXPIRE                     = 30 * 1000;
+    public static final int     DEFAULT_SESSION_TIMEOUT            = 60 * 1000;
 
     /**
      * 注册中心导出URL参数的KEY
