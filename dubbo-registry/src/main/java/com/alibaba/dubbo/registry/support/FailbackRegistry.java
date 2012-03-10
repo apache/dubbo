@@ -220,7 +220,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             removeFailedRegistered(url);
         } catch (Exception t) {
             if (getUrl().getParameter(Constants.CHECK_KEY, true)) { // 如果开启了启动时检测，则直接抛出异常
-                throw new IllegalStateException("Failed to register " + url + ", cause: " + t.getMessage(), t);
+                throw new IllegalStateException("Failed to register " + url + " to registry " + getUrl().getAddress() + ", cause: " + t.getMessage(), t);
             }
             // 否则，将失败的注册请求记录到失败列表，定时重试
             failedRegistered.add(url.toFullString());
@@ -236,7 +236,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             removeFailedRegistered(url);
         } catch (Exception t) {
             if (getUrl().getParameter(Constants.CHECK_KEY, true)) { // 如果开启了启动时检测，则直接抛出异常
-                throw new IllegalStateException("Failed to unregister " + url + ", cause: " + t.getMessage(), t);
+                throw new IllegalStateException("Failed to unregister " + url + " to registry " + getUrl().getAddress() + ", cause: " + t.getMessage(), t);
             }
             // 否则，将失败的取消注册请求记录到失败列表，定时重试
             failedUnregistered.add(url.toFullString());
@@ -274,7 +274,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             removeFailedSubscribed(url, listener);
         } catch (Exception t) {
             if (getUrl().getParameter(Constants.CHECK_KEY, true)) { // 如果开启了启动时检测，则直接抛出异常
-                throw new IllegalStateException("Failed to subscribe " + url + ", cause: " + t.getMessage(), t);
+                throw new IllegalStateException("Failed to subscribe " + url + " to registry " + getUrl().getAddress() + ", cause: " + t.getMessage(), t);
             }
             // 否则，将失败的订阅请求记录到失败列表，定时重试
             String key = url.toFullString();
@@ -296,7 +296,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             removeFailedSubscribed(url, listener);
         } catch (Exception t) {
             if (getUrl().getParameter(Constants.CHECK_KEY, true)) { // 如果开启了启动时检测，则直接抛出异常
-                throw new IllegalStateException("Failed to unsubscribe " + url + ", cause: " + t.getMessage(), t);
+                throw new IllegalStateException("Failed to unsubscribe " + url + " to registry " + getUrl().getAddress() + ", cause: " + t.getMessage(), t);
             }
             // 否则，将失败的取消订阅请求记录到失败列表，定时重试
             String key = url.toFullString();
