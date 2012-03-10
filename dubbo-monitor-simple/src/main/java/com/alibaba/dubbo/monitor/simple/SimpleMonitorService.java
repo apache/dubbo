@@ -46,6 +46,7 @@ import org.jfree.data.time.Minute;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
@@ -160,7 +161,8 @@ public class SimpleMonitorService implements MonitorService {
         if (POISON_PROTOCOL.equals(statistics.getProtocol())) {
             return;
         }
-        Date now = new Date();
+        long timestamp = statistics.getParameter(Constants.TIMESTAMP_KEY, System.currentTimeMillis());
+        Date now = new Date(timestamp);
         String day = new SimpleDateFormat("yyyyMMdd").format(now);
         SimpleDateFormat format = new SimpleDateFormat("HHmm");
         for (String key : types) {
