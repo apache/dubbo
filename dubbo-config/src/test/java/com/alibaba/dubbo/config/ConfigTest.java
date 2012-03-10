@@ -666,8 +666,8 @@ public class ConfigTest {
         context.start();
         ServiceBean serviceBean = (ServiceBean) context.getBean("demoServiceExport");
         URL url = (URL) serviceBean.toUrls().get(0);
-        assertEquals("protocol-paramA", url.getParameter("protocol-paramA"));
-        assertEquals("service-paramA", url.getParameter("service-paramA"));
+        assertEquals("protocol-paramA", url.getParameter("protocol.paramA"));
+        assertEquals("service-paramA", url.getParameter("service.paramA"));
     }
 
     @Test
