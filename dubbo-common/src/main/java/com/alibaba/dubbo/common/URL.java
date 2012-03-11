@@ -1184,21 +1184,17 @@ public final class URL implements Serializable {
         }
     }
 
-    @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((host == null) ? 0 : host.hashCode());
-        result = prime * result + ((parameters == null) ? 0 : parameters.hashCode());
-        result = prime * result + ((password == null) ? 0 : password.hashCode());
         result = prime * result + ((path == null) ? 0 : path.hashCode());
         result = prime * result + port;
-        result = prime * result + ((protocol == null) ? 0 : protocol.hashCode());
-        result = prime * result + ((username == null) ? 0 : username.hashCode());
+        result = prime * result
+                + ((protocol == null) ? 0 : protocol.hashCode());
         return result;
     }
 
-    @Override
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
@@ -1212,16 +1208,6 @@ public final class URL implements Serializable {
                 return false;
         } else if (!host.equals(other.host))
             return false;
-        if (parameters == null) {
-            if (other.parameters != null)
-                return false;
-        } else if (!parameters.equals(other.parameters))
-            return false;
-        if (password == null) {
-            if (other.password != null)
-                return false;
-        } else if (!password.equals(other.password))
-            return false;
         if (path == null) {
             if (other.path != null)
                 return false;
@@ -1234,12 +1220,7 @@ public final class URL implements Serializable {
                 return false;
         } else if (!protocol.equals(other.protocol))
             return false;
-        if (username == null) {
-            if (other.username != null)
-                return false;
-        } else if (!username.equals(other.username))
-            return false;
         return true;
     }
-    
+
 }
