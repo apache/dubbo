@@ -61,6 +61,9 @@ public class RegistryConfig extends AbstractConfig {
 
     // 注册中心请求超时时间(毫秒)
     private Integer           timeout;
+
+    // 注册中心会话超时时间(毫秒)
+    private Integer           session;
     
     // 动态注册中心列表存储文件
     private String            file;
@@ -237,6 +240,14 @@ public class RegistryConfig extends AbstractConfig {
 	public void setTimeout(Integer timeout) {
 		this.timeout = timeout;
 	}
+
+    public Integer getSession() {
+        return session;
+    }
+
+    public void setSession(Integer session) {
+        this.session = session;
+    }
 
     public Boolean isDynamic() {
         return dynamic;
