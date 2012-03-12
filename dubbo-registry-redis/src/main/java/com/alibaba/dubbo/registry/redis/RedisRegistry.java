@@ -129,7 +129,19 @@ public class RedisRegistry extends FailbackRegistry {
         Jedis jedis = jedisPool.getResource();
         try {
             for (String provider : new HashSet<String>(getRegistered())) {
-                jedis.hset(toProviderPath(URL.valueOf(provider)), provider, String.valueOf(System.currentTimeMillis() + expirePeriod));
+                String key = toProviderPath(URL.valueOf(provider));
+                if (jedis.hset(key, provider, String.valueOf(System.currentTimeMillis() + expirePeriod)) == 0) {
+                    jedis.publish(key, Constants.REGISTER);
+                }
+            }
+            for (String consumer : new HashSet<String>(getSubscribed().keySet())) {
+                URL url = URL.valueOf(consumer);
+                if (! Constants.ANY_VALUE.equals(url.getServiceInterface())) {
+                    String key = toConsumerPath(url);
+                    if (jedis.hset(key, consumer, String.valueOf(System.currentTimeMillis() + expirePeriod)) == 0) {
+                        jedis.publish(key, Constants.SUBSCRIBE);
+                    }
+                }
             }
             if (admin) {
                 clean(jedis);
