@@ -40,9 +40,17 @@ public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T>{
     public Result doInvoke(final Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
         checkInvokers(invokers, invocation);
         RpcContext.getContext().setInvokers((List)invokers);
+        RpcException exception = null;
         Result result = null;
         for (Invoker<T> invoker: invokers) {
-            result = invoker.invoke(invocation);
+            try {
+                result = invoker.invoke(invocation);
+            } catch (RpcException e) {
+                exception = e;
+            }
+        }
+        if (exception != null) {
+            throw exception;
         }
         return result;
     }
