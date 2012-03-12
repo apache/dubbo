@@ -377,6 +377,15 @@ public class RegistryDirectoryTest {
             URL url = invoker.getUrl();
             Assert.assertEquals(LeastActiveLoadBalance.NAME, url.getMethodParameter("get", Constants.LOADBALANCE_KEY));
         }
+        //test geturl
+        {
+        	Assert.assertEquals(null, registryDirectory2.getUrl().getParameter("mock"));
+            serviceUrls.clear();
+            serviceUrls.add(SERVICEURL.addParameter(Constants.MOCK_KEY, "true"));
+            registryDirectory2.notify(serviceUrls);
+
+            Assert.assertEquals("true", registryDirectory2.getUrl().getParameter("mock"));
+        }
     }
 
     /**

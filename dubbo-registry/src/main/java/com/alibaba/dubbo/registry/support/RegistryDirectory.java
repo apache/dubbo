@@ -170,9 +170,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 overrideMap = toOverrides(overrideUrls);
             }
             
-            //合并override参数;
-            this.overrideDirectoryUrl = overrideMap == null ? directoryUrl : directoryUrl.addParameters(overrideMap.get(Constants.ANY_VALUE));
-            
             //route 
             if (routerUrls != null && routerUrls.size() >0 ){
                 List<Router> routers = toRouters(routerUrls);
@@ -182,6 +179,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             }
             //invokers
             refreshInvoker(invokerUrls);
+            
+            //合并override参数;
+            this.overrideDirectoryUrl = overrideMap == null ? directoryUrl : directoryUrl.addParameters(overrideMap.get(Constants.ANY_VALUE));
         }
     }
     
