@@ -1,6 +1,7 @@
 package com.alibaba.dubbo.rpc.cluster.support.wrapper;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import junit.framework.Assert;
@@ -481,6 +482,82 @@ public class MockClusterInvokerTest {
         Assert.assertEquals(true, Boolean.parseBoolean(ret.getValue().toString()));
 	}
 	
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testMockInvokerFromOverride_Invoke_check_ListString_empty(){
+		URL url = URL.valueOf("remote://1.2.3.4/"+IHelloService.class.getName())
+				.addParameter("getListString.mock","force:return empty")
+				.addParameter("invoke_return_error", "true" );
+		Invoker<IHelloService> cluster = getClusterInvoker(url);        
+		//方法配置了mock
+        RpcInvocation invocation = new RpcInvocation();
+		invocation.setMethodName("getListString");
+        Result ret = cluster.invoke(invocation);
+        Assert.assertEquals(0, ((List<String>)ret.getValue()).size());
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testMockInvokerFromOverride_Invoke_check_ListString(){
+		URL url = URL.valueOf("remote://1.2.3.4/"+IHelloService.class.getName())
+				.addParameter("getListString.mock","force:return [\"hi\",\"hi2\"]")
+				.addParameter("invoke_return_error", "true" );
+		Invoker<IHelloService> cluster = getClusterInvoker(url);        
+		//方法配置了mock
+        RpcInvocation invocation = new RpcInvocation();
+		invocation.setMethodName("getListString");
+        Result ret = cluster.invoke(invocation);
+        List<String> rl = (List<String>)ret.getValue();
+        Assert.assertEquals(2, rl.size());
+        Assert.assertEquals("hi", rl.get(0));
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testMockInvokerFromOverride_Invoke_check_ListPojo_empty(){
+		URL url = URL.valueOf("remote://1.2.3.4/"+IHelloService.class.getName())
+				.addParameter("getUsers.mock","force:return empty")
+				.addParameter("invoke_return_error", "true" );
+		Invoker<IHelloService> cluster = getClusterInvoker(url);        
+		//方法配置了mock
+        RpcInvocation invocation = new RpcInvocation();
+		invocation.setMethodName("getUsers");
+        Result ret = cluster.invoke(invocation);
+        Assert.assertEquals(0, ((List<User>)ret.getValue()).size());
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testMockInvokerFromOverride_Invoke_check_ListPojo(){
+		URL url = URL.valueOf("remote://1.2.3.4/"+IHelloService.class.getName())
+				.addParameter("getUsers.mock","force:return [{id:1, name:\"hi1\"}, {id:2, name:\"hi2\"}]")
+				.addParameter("invoke_return_error", "true" );
+		Invoker<IHelloService> cluster = getClusterInvoker(url);        
+		//方法配置了mock
+        RpcInvocation invocation = new RpcInvocation();
+		invocation.setMethodName("getUsers");
+        Result ret = cluster.invoke(invocation);
+        List<User> rl = (List<User>)ret.getValue();
+        System.out.println(rl);
+        Assert.assertEquals(2, rl.size());
+        Assert.assertEquals("hi1", ((User)rl.get(0)).getName());
+	}
+	
+	@Test
+	public void testMockInvokerFromOverride_Invoke_check_ListPojo_error(){
+		URL url = URL.valueOf("remote://1.2.3.4/"+IHelloService.class.getName())
+				.addParameter("getUsers.mock","force:return [{id:x, name:\"hi1\"}]")
+				.addParameter("invoke_return_error", "true" );
+		Invoker<IHelloService> cluster = getClusterInvoker(url);        
+		//方法配置了mock
+        RpcInvocation invocation = new RpcInvocation();
+		invocation.setMethodName("getUsers");
+		try{
+			cluster.invoke(invocation);
+		}catch (RpcException e) {
+		}
+	}
+	
 	@Test
 	public void testMockInvokerFromOverride_Invoke_force_throw(){
 		URL url = URL.valueOf("remote://1.2.3.4/"+IHelloService.class.getName())
@@ -580,6 +657,8 @@ public class MockClusterInvokerTest {
 		int getInt1();
 		boolean getBoolean1();
 		Boolean getBoolean2();
+		public List<String> getListString();
+		public List<User> getUsers();
 		void sayHello();
 	}
 	public static class HelloService implements IHelloService {
@@ -601,6 +680,12 @@ public class MockClusterInvokerTest {
 		public Boolean getBoolean2() {
 			return Boolean.FALSE;
 		}
+		public List<String> getListString() {
+			return Arrays.asList(new String[]{"Tom","Jerry"});
+		}
+		public List<User> getUsers() {
+			return Arrays.asList(new User[]{new User(1,"Tom"),new User(2,"Jerry")});
+		}
 		public void sayHello() {
 			System.out.println("hello prety");
 		}
@@ -619,6 +704,12 @@ public class MockClusterInvokerTest {
 		public String getSomething3() {
 			return "something3mock";
 		}
+		public List<String> getListString() {
+			return Arrays.asList(new String[]{"Tommock","Jerrymock"});
+		}
+		public List<User> getUsers() {
+			return Arrays.asList(new User[]{new User(1,"Tommock"),new User(2,"Jerrymock")});
+		}
 		public int getInt1() {
 			return 1;
 		}
@@ -628,8 +719,35 @@ public class MockClusterInvokerTest {
 		public Boolean getBoolean2() {
 			return Boolean.FALSE;
 		}
+		
 		public void sayHello() {
 			System.out.println("hello prety");
 		}
+	}
+	
+	public static class User{
+		private int id;
+		private String name;
+		
+		public User() {
+		}
+		public User(int id, String name) {
+			super();
+			this.id = id;
+			this.name = name;
+		}
+		public int getId() {
+			return id;
+		}
+		public String getName() {
+			return name;
+		}
+		public void setId(int id) {
+			this.id = id;
+		}
+		public void setName(String name) {
+			this.name = name;
+		}
+		
 	}
 }
