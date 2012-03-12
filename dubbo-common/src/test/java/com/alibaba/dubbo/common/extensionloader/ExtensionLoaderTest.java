@@ -26,9 +26,17 @@ import static org.junit.matchers.JUnitMatchers.containsString;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.extensionloader.activate.ActivateExt1;
+import com.alibaba.dubbo.common.extensionloader.activate.impl.ActivateExt1Impl1;
+import com.alibaba.dubbo.common.extensionloader.activate.impl.GroupActivateExtImpl;
+import com.alibaba.dubbo.common.extensionloader.activate.impl.OrderActivateExtImpl1;
+import com.alibaba.dubbo.common.extensionloader.activate.impl.OrderActivateExtImpl2;
+import com.alibaba.dubbo.common.extensionloader.activate.impl.ValueActivateExtImpl;
 import junit.framework.Assert;
 
 import org.junit.Test;
@@ -451,4 +459,40 @@ public class ExtensionLoaderTest {
             assertThat(expected.getCause(), instanceOf(ExceptionInInitializerError.class));
         }
     }
+
+    @Test
+    public void testLoadActivateExtension() throws Exception {
+        // test default
+        URL url = URL.valueOf("test://localhost/test");
+        List<ActivateExt1> list = ExtensionLoader.getExtensionLoader(ActivateExt1.class)
+                .getActivateExtension(url, new String[]{}, "default_group");
+        Assert.assertEquals(1, list.size());
+        Assert.assertTrue(list.get(0).getClass() == ActivateExt1Impl1.class);
+
+        // test group
+        url = url.addParameter(Constants.GROUP_KEY, "group1");
+        list = ExtensionLoader.getExtensionLoader(ActivateExt1.class)
+                .getActivateExtension(url, new String[]{}, "group1");
+        Assert.assertEquals(1, list.size());
+        Assert.assertTrue(list.get(0).getClass() == GroupActivateExtImpl.class);
+
+        // test value
+        url = url.removeParameter(Constants.GROUP_KEY);
+        url = url.addParameter(Constants.GROUP_KEY, "value");
+        url = url.addParameter("value", "value");
+        list = ExtensionLoader.getExtensionLoader(ActivateExt1.class)
+                .getActivateExtension(url, new String[]{}, "value");
+        Assert.assertEquals(1, list.size());
+        Assert.assertTrue(list.get(0).getClass() == ValueActivateExtImpl.class);
+
+        // test order
+        url = URL.valueOf("test://localhost/test");
+        url = url.addParameter(Constants.GROUP_KEY, "order");
+        list = ExtensionLoader.getExtensionLoader(ActivateExt1.class)
+                .getActivateExtension(url, new String[]{}, "order");
+        Assert.assertEquals(2, list.size());
+        Assert.assertTrue(list.get(0).getClass() == OrderActivateExtImpl1.class);
+        Assert.assertTrue(list.get(1).getClass() == OrderActivateExtImpl2.class);
+    }
+
 }

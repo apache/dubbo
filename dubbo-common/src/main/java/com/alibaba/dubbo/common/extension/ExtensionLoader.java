@@ -128,19 +128,59 @@ public class ExtensionLoader<T> {
         return cachedNames.get(extensionClass);
     }
 
+    /**
+     * This is equivalent to <pre>
+     *     getActivateExtension(url, key, null);
+     * </pre>
+     *
+     * @see #getActivateExtension(com.alibaba.dubbo.common.URL, String, String)
+     * @param url url
+     * @param key url parameter key which used to get extension point names
+     * @return extension list which are activated.
+     */
     public List<T> getActivateExtension(URL url, String key) {
         return getActivateExtension(url, key, null);
     }
 
+    /**
+     * This is equivalent to <pre>
+     *     getActivateExtension(url, values, null);
+     * </pre>
+     *
+     * @see #getActivateExtension(com.alibaba.dubbo.common.URL, String[], String)
+     * @param url url
+     * @param values extension point names
+     * @return extension list which are activated
+     */
     public List<T> getActivateExtension(URL url, String[] values) {
         return getActivateExtension(url, values, null);
     }
 
+    /**
+     * This is equivalent to <pre>
+     *     getActivateExtension(url, url.getParameter(key).split(","), null);
+     * </pre>
+     *
+     * @see #getActivateExtension(com.alibaba.dubbo.common.URL, String[], String)
+     * @param url url
+     * @param key url parameter key which used to get extension point names
+     * @param group group
+     * @return extension list which are activated.
+     */
     public List<T> getActivateExtension(URL url, String key, String group) {
         String value = url.getParameter(key);
         return getActivateExtension(url, value == null || value.length() == 0 ? null : Constants.COMMA_SPLIT_PATTERN.split(value), group);
     }
 
+    /**
+     * Get activate extensions.
+     *
+     * @see Activate
+     * @param url url
+     * @param values extension point names
+     * @param group group
+     * @return extension list which are activated
+     */
     public List<T> getActivateExtension(URL url, String[] values, String group) {
         List<T> exts = new ArrayList<T>();
         List<String> names = values == null ? new ArrayList<String>(0) : Arrays.asList(values);
