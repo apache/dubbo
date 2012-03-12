@@ -417,6 +417,9 @@ public class SimpleMonitorService implements MonitorService {
 
     public void count(URL statistics) {
         queue.offer(statistics);
+        if (logger.isInfoEnabled()) {
+            logger.info("collect statistics: " + statistics);
+        }
     }
 
 }
