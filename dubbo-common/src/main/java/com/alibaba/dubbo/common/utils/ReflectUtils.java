@@ -17,8 +17,10 @@ package com.alibaba.dubbo.common.utils;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.net.URL;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
@@ -221,6 +223,29 @@ public final class ReflectUtils {
 		}
 		return c.getName();
 	}
+	
+    
+    public static Class<?> getGenericClass(Class<?> cls) {
+        return getGenericClass(cls, 0);
+    }
+
+    public static Class<?> getGenericClass(Class<?> cls, int i) {
+        try {
+            ParameterizedType parameterizedType = ((ParameterizedType) cls.getGenericInterfaces()[0]);
+            Object genericClass = parameterizedType.getActualTypeArguments()[i];
+            if (genericClass instanceof ParameterizedType) { // 处理多级泛型
+                return (Class<?>) ((ParameterizedType) genericClass).getRawType();
+            } else if (genericClass instanceof GenericArrayType) { // 处理数组泛型
+                return (Class<?>) ((GenericArrayType) genericClass).getGenericComponentType();
+            } else {
+                return (Class<?>) genericClass;
+            }
+        } catch (Throwable e) {
+            throw new IllegalArgumentException(cls.getName()
+                    + " generic type undefined!", e);
+        }
+    }
+
 
 	/**
 	 * get method name.
