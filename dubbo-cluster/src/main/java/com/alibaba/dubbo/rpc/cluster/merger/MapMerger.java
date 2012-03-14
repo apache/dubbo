@@ -25,10 +25,6 @@ import com.alibaba.dubbo.rpc.cluster.Merger;
  */
 public class MapMerger implements Merger<Map<?, ?>> {
 
-    public static final String    NAME     = "map";
-
-    public static final MapMerger INSTANCE = new MapMerger();
-
     public Map<?, ?> merge(Map<?, ?>... items) {
         if (items.length == 0) {
             return null;

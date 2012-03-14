@@ -25,18 +25,16 @@ import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.cluster.Directory;
-import com.alibaba.dubbo.rpc.cluster.merger.ArrayMerger;
-import com.alibaba.dubbo.rpc.cluster.merger.ListMerger;
-import com.alibaba.dubbo.rpc.cluster.merger.MapMerger;
-import com.alibaba.dubbo.rpc.cluster.merger.SetMerger;
+import com.alibaba.dubbo.rpc.cluster.Merger;
+import com.alibaba.dubbo.rpc.cluster.merger.MergerFactory;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -46,6 +44,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
+@SuppressWarnings( "unchecked" )
 public class MergeableClusterInvoker<T> implements Invoker<T> {
 
     private ExecutorService executor = Executors.newCachedThreadPool(new NamedThreadFactory("mergeable-cluster-executor", true));
@@ -143,32 +142,18 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
                                     .append( " ]" )
                                     .toString() );
                 }
-            } else if ( List.class.isAssignableFrom( returnType ) ) {
-                List<List<?>> args = new ArrayList<List<?>>();
-                for( Result r : resultList ) {
-                    args.add( ( List<?> ) r.getValue() );
-                }
-                result = ListMerger.INSTANCE.merge( args.toArray( new List[ args.size() ] ) );
-            } else if ( Set.class.isAssignableFrom( returnType ) ) {
-                List<Set<?>> args = new ArrayList<Set<?>>();
-                for( Result r : resultList ) {
-                    args.add( ( Set<?> ) r.getValue() );
-                }
-                result = SetMerger.INSTANCE.merge( args.toArray( new Set[args.size()] ) );
-            } else if ( Map.class.isAssignableFrom( returnType ) ) {
-                List<Map<?,?>> args = new ArrayList<Map<?,?>>();
-                for( Result r : resultList ) {
-                    args.add( ( Map<?,?> ) r.getValue() );
-                }
-                result = MapMerger.INSTANCE.merge( args.toArray( new Map[args.size()] ) );
-            } else if ( returnType.isArray() ) {
-                List<Object> args = new ArrayList<Object>();
-                for( Result r : resultList ) {
-                    args.add( r.getValue() );
-                }
-                result = ArrayMerger.INSTANCE.merge( args.toArray( new Object[args.size()] ) );
             } else {
-                throw new RpcException( "There is no merger to merge result." );
+                Merger resultMerger = MergerFactory.getMerger(returnType);
+                if (resultMerger != null) {
+                    List args = new ArrayList(resultList.size());
+                    for(Result r : resultList) {
+                        args.add(r.getValue());
+                    }
+                    result = resultMerger.merge(
+                            args.toArray((Object[])Array.newInstance(returnType, 0)));
+                } else {
+                    throw new RpcException( "There is no merger to merge result." );
+                }
             }
         }
 

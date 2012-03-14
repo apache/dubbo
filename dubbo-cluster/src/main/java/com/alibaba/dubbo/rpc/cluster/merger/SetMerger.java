@@ -26,10 +26,6 @@ import com.alibaba.dubbo.rpc.cluster.Merger;
  */
 public class SetMerger implements Merger<Set<?>> {
 
-    public static final String    NAME     = "set";
-
-    public static final SetMerger INSTANCE = new SetMerger();
-
     public Set<Object> merge(Set<?>... items) {
 
         Set<Object> result = new HashSet<Object>();

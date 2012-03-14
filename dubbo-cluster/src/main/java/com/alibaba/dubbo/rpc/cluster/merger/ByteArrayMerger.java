@@ -16,21 +16,23 @@
 
 package com.alibaba.dubbo.rpc.cluster.merger;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.alibaba.dubbo.rpc.cluster.Merger;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-public class ListMerger implements Merger<List<?>> {
+public class ByteArrayMerger implements Merger<byte[]>{
 
-    public List<Object> merge(List<?>... items) {
-        List<Object> result = new ArrayList<Object>();
-        for (List<?> item : items) {
-            if (item != null) {
-                result.addAll(item);
+    public byte[] merge(byte[]... items) {
+        int total = 0;
+        for (byte[] array : items) {
+            total += array.length;
+        }
+        byte[] result = new byte[total];
+        int index = 0;
+        for (byte[] array : items) {
+            for (byte item : array) {
+                result[index++] = item;
             }
         }
         return result;

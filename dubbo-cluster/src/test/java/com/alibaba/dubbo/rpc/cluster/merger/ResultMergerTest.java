@@ -38,8 +38,8 @@ public class ResultMergerTest {
         List<Object> list2 = new ArrayList<Object>();
         list2.add( "3" );
         list2.add( "4" );
-        
-        List result = ListMerger.INSTANCE.merge( list1, list2 );
+
+        List result = MergerFactory.getMerger(List.class).merge(list1, list2);
         Assert.assertEquals(5, result.size());
         Assert.assertEquals( new ArrayList<String>(){
             {
@@ -61,8 +61,8 @@ public class ResultMergerTest {
         Set<Object> set2 = new HashSet<Object>();
         set2.add( "2" );
         set2.add( "3" );
-        
-        Set result = SetMerger.INSTANCE.merge( set1, set2 );
+
+        Set result = MergerFactory.getMerger(Set.class).merge(set1, set2);
         
         Assert.assertEquals( 4, result.size() );
         Assert.assertEquals( new HashSet<String>(){
@@ -92,19 +92,12 @@ public class ResultMergerTest {
         int[] intArray1 = {1, 2, 3};
         int[] intArray2 = {4, 5, 6};
         int[] intArray3 = {7};
-        result = ArrayMerger.INSTANCE.merge(intArray1, intArray2, intArray3);
+        result = MergerFactory.getMerger(int[].class).merge(intArray1, intArray2, intArray3);
         Assert.assertTrue(result.getClass().isArray());
         Assert.assertEquals(7, Array.getLength(result));
         Assert.assertTrue(int.class == result.getClass().getComponentType());
         for (int i = 0; i < 7; i++) {
             Assert.assertEquals(i + 1, Array.get(result, i));
-        }
-        
-        try {
-            ArrayMerger.INSTANCE.merge( intArray1, intArray1, "Hello" );
-            Assert.fail();
-        } catch ( Exception e ) {
-            // ignore
         }
         
     }
