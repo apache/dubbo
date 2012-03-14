@@ -650,11 +650,37 @@ public class ConfigTest {
         try {
             int port = 1234;
             System.setProperty("dubbo.protocol.port", String.valueOf(port));
-            assertEquals("hello", ConfigUtils.getProperty("dubbo.application.name"));
-            assertEquals(port, Integer.parseInt(ConfigUtils.getProperty("dubbo.protocol.port")));
+            ApplicationConfig application = new ApplicationConfig();
+            application.setName("aaa");
+
+            RegistryConfig registry = new RegistryConfig();
+            registry.setAddress("N/A");
+
+            ProtocolConfig protocol = new ProtocolConfig();
+            protocol.setName("rmi");
+
+            ServiceConfig<DemoService> service = new ServiceConfig<DemoService>();
+            service.setInterface(DemoService.class);
+            service.setRef(new DemoServiceImpl());
+            service.setApplication(application);
+            service.setRegistry(registry);
+            service.setProtocol(protocol);
+            service.export();
+
+            try {
+                URL url = service.toUrls().get(0);
+                // from api
+                assertEquals("aaa", url.getParameter("application"));
+                // from dubbo.properties
+                assertEquals("world", url.getParameter("owner"));
+                // from system property
+                assertEquals(1234, url.getPort());
+            } finally {
+                service.unexport();
+            }
         } finally {
             if (portString != null) {
-                System.setProperty("dubbo.application.name", portString);
+                System.setProperty("dubbo.protocol.port", portString);
             }
         }
     }
