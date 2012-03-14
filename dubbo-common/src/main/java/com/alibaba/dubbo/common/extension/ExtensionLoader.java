@@ -565,7 +565,14 @@ public class ExtensionLoader<T> {
     @SuppressWarnings("deprecation")
     private String findAnnotationName(Class<?> clazz) {
         com.alibaba.dubbo.common.Extension extension = clazz.getAnnotation(com.alibaba.dubbo.common.Extension.class);
-        return extension == null ? null : extension.value();
+        if (extension == null) {
+            String name = clazz.getSimpleName();
+            if (name.endsWith(type.getSimpleName())) {
+                name = name.substring(0, name.length() - type.getSimpleName().length());
+            }
+            return name.toLowerCase();
+        }
+        return extension.value();
     }
     
     @SuppressWarnings("unchecked")
