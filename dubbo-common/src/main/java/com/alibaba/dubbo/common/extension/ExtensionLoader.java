@@ -562,8 +562,9 @@ public class ExtensionLoader<T> {
         }
     }
     
+    @SuppressWarnings("deprecation")
     private String findAnnotationName(Class<?> clazz) {
-        SPI extension = clazz.getAnnotation(SPI.class);
+        com.alibaba.dubbo.common.Extension extension = clazz.getAnnotation(com.alibaba.dubbo.common.Extension.class);
         return extension == null ? null : extension.value();
     }
     
