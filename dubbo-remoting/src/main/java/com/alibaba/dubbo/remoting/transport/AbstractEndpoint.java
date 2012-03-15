@@ -43,7 +43,7 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
         super(url, handler);
         this.codec = ExtensionLoader.getExtensionLoader(Codec.class).getExtension(url.getParameter(Constants.CODEC_KEY, "telnet"));
         this.timeout = url.getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
-        this.connectTimeout = url.getPositiveParameter(Constants.CONNECT_TIMEOUT_KEY, timeout);
+        this.connectTimeout = url.getPositiveParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT);
     }
 
     public void reset(URL url) {

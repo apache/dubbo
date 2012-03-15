@@ -113,7 +113,9 @@ public class Constants {
 
     public static final int     DEFAULT_HEARTBEAT                  = 0;
 
-    public static final int     DEFAULT_TIMEOUT                    = 5000;
+    public static final int     DEFAULT_TIMEOUT                    = 1000;
+
+    public static final int     DEFAULT_CONNECT_TIMEOUT            = 3000;
 
     public static final int     DEFAULT_RETRIES                    = 2;
 
