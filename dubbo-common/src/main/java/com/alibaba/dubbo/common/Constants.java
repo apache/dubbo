@@ -111,7 +111,7 @@ public class Constants {
 
     public static final int     DEFAULT_IDLE_TIMEOUT               = 600 * 1000;
 
-    public static final int     DEFAULT_HEARTBEAT                  = 0;
+    public static final int     DEFAULT_HEARTBEAT                  = 60 * 1000;
 
     public static final int     DEFAULT_TIMEOUT                    = 1000;
 
