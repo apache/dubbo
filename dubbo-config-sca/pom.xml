@@ -21,18 +21,23 @@
 		<artifactId>dubbo-parent</artifactId>
 		<version>2.1.2-SNAPSHOT</version>
 	</parent>
-	<artifactId>dubbo-registry-multicast</artifactId>
+	<artifactId>dubbo-config-sca</artifactId>
 	<packaging>jar</packaging>
-	<name>Dubbo Multicast Registry Module</name>
-	<description>The multicast registry module of dubbo project</description>
+	<name>Dubbo SCA Config Module</name>
+	<description>The sca config module of dubbo project</description>
 	<properties>
 		<skip_maven_deploy>true</skip_maven_deploy>
 	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo-registry</artifactId>
+			<artifactId>dubbo-config</artifactId>
 			<version>${project.parent.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tuscany.sca</groupId>
+			<artifactId>tuscany-sca-api</artifactId>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 </project>

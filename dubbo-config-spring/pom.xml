@@ -21,18 +21,46 @@
 		<artifactId>dubbo-parent</artifactId>
 		<version>2.1.2-SNAPSHOT</version>
 	</parent>
-	<artifactId>dubbo-registry-multicast</artifactId>
+	<artifactId>dubbo-config-spring</artifactId>
 	<packaging>jar</packaging>
-	<name>Dubbo Multicast Registry Module</name>
-	<description>The multicast registry module of dubbo project</description>
+	<name>Dubbo Spring Config Module</name>
+	<description>The spring config module of dubbo project</description>
 	<properties>
 		<skip_maven_deploy>true</skip_maven_deploy>
 	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo-registry</artifactId>
+			<artifactId>dubbo-config</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring</artifactId>
+			<scope>provided</scope>
+		</dependency>
 	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>wagon-maven-plugin</artifactId>
+				<version>1.0-beta-3</version>
+				<executions>
+					<execution>
+						<id>upload-schema</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>upload-single</goal>
+						</goals>
+						<configuration>
+							<fromFile>${basedir}/src/main/resources/META-INF/dubbo.xsd</fromFile>
+							<url>dav:http://code.alibabatech.com/schema/dubbo/</url>
+							<serverId>opensesame.releases.account</serverId>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 </project>
