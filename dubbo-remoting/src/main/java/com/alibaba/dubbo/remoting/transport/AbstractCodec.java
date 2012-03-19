@@ -19,6 +19,8 @@ import java.io.IOException;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.serialize.Serialization;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.Codec;
@@ -29,6 +31,8 @@ import com.alibaba.dubbo.remoting.Codec;
  * @author william.liangf
  */
 public abstract class AbstractCodec implements Codec {
+	
+	private final Logger logger = LoggerFactory.getLogger(getClass());
 
     protected Serialization getSerialization(Channel channel) {
         Serialization serialization = ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(channel.getUrl().getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
@@ -41,8 +45,9 @@ public abstract class AbstractCodec implements Codec {
             payload = channel.getUrl().getPositiveParameter(Constants.PAYLOAD_KEY, Constants.DEFAULT_PAYLOAD);
         }
         if (size > payload) {
-            throw new IOException("Data length too large: " + size + ", max payload: " + payload + ", channel: " + channel);
+        	IOException e = new IOException("Data length too large: " + size + ", max payload: " + payload + ", channel: " + channel);
+        	logger.error(e);
+            throw e;
         }
     }
-
 }
