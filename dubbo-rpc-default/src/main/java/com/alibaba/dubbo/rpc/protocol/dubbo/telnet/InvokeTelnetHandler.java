@@ -16,7 +16,9 @@
 package com.alibaba.dubbo.rpc.protocol.dubbo.telnet;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.json.JSON;
@@ -40,7 +42,7 @@ import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
 @Activate
 @Help(parameter = "[service.]method(args)", summary = "Invoke the service method.", detail = "Invoke the service method.")
 public class InvokeTelnetHandler implements TelnetHandler {
-
+    
     @SuppressWarnings("unchecked")
     public String telnet(Channel channel, String message) {
         if (message == null || message.length() == 0) {
@@ -62,46 +64,33 @@ public class InvokeTelnetHandler implements TelnetHandler {
             service = method.substring(0, i).trim();
             method = method.substring(i + 1).trim();
         }
+        List<Object> list;
+        try {
+            list = (List<Object>) JSON.parse("[" + args + "]", List.class);
+        } catch (Throwable t) {
+            return "Invalid json argument, cause: " + t.getMessage();
+        }
         Invoker<?> invoker = null;
         Method invokeMethod = null;
         for (Exporter<?> exporter : DubboProtocol.getDubboProtocol().getExporters()) {
             if (service == null || service.length() == 0) {
-                Method[] methods = exporter.getInvoker().getInterface().getMethods();
-                for (Method m : methods) {
-                    if (m.getName().equals(method)
-                            || ReflectUtils.getSignature(m.getName(), m.getParameterTypes()).equals(method)) {
-                        invoker = exporter.getInvoker();
-                        invokeMethod = m;
-                        break;
-                    }
-                }
-                if (invoker != null) {
+                invokeMethod = findMethod(exporter, method, list);
+                if (invokeMethod != null) {
+                    invoker = exporter.getInvoker();
                     break;
                 }
             } else {
                 if (service.equals(exporter.getInvoker().getInterface().getSimpleName())
                         || service.equals(exporter.getInvoker().getInterface().getName())
                         || service.equals(exporter.getInvoker().getUrl().getPath())) {
+                    invokeMethod = findMethod(exporter, method, list);
                     invoker = exporter.getInvoker();
-                    Method[] methods = invoker.getInterface().getMethods();
-                    for (Method m : methods) {
-                        if (m.getName().equals(method)
-                                || ReflectUtils.getSignature(m.getName(), m.getParameterTypes()).equals(method)) {
-                            invokeMethod = m;
-                        }
-                    }
                     break;
                 }
             }
         }
         if (invoker != null) {
             if (invokeMethod != null) {
-                List<Object> list;
-                try {
-                    list = (List<Object>) JSON.parse("[" + args + "]", List.class);
-                } catch (Throwable t) {
-                    return "Invalid json argument, cause: " + t.getMessage();
-                }
                 try {
                     Object[] array = PojoUtils.realize(list.toArray(), invokeMethod.getParameterTypes());
                     RpcContext.getContext().setLocalAddress(channel.getLocalAddress()).setRemoteAddress(channel.getRemoteAddress());
@@ -122,6 +111,59 @@ public class InvokeTelnetHandler implements TelnetHandler {
             buf.append("No such service " + service);
         }
         return buf.toString();
+    }
+
+    private static Method findMethod(Exporter<?> exporter, String method, List<Object> args) {
+        Invoker<?> invoker = exporter.getInvoker();
+        Method[] methods = invoker.getInterface().getMethods();
+        Method invokeMethod = null;
+        for (Method m : methods) {
+            if (m.getName().equals(method) && m.getParameterTypes().length == args.size()) {
+                if (invokeMethod != null) { // 重载
+                    if (isMatch(invokeMethod.getParameterTypes(), args)) {
+                        invokeMethod = m;
+                        break;
+                    }
+                } else {
+                    invokeMethod = m;
+                }
+                invoker = exporter.getInvoker();
+            }
+        }
+        return invokeMethod;
+    }
+    
+    private static boolean isMatch(Class<?>[] types, List<Object> args) {
+        if (types.length != args.size()) {
+            return false;
+        }
+        for (int i = 0; i < types.length; i ++) {
+            Class<?> type = types[i];
+            Object arg = args.get(i);
+            if (ReflectUtils.isPrimitive(arg.getClass())) {
+                if (! ReflectUtils.isPrimitive(type)) {
+                    return false;
+                }
+            } else if (arg instanceof Map) {
+                String name = (String) ((Map<?, ?>)arg).get("class");
+                Class<?> cls = arg.getClass();
+                if (name != null && name.length() > 0) {
+                    cls = ReflectUtils.forName(name);
+                }
+                if (! type.isAssignableFrom(cls)) {
+                    return false;
+                }
+            } else if (arg instanceof Collection) {
+                if (! type.isArray() && ! type.isAssignableFrom(arg.getClass())) {
+                    return false;
+                }
+            } else {
+                if (! type.isAssignableFrom(arg.getClass())) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
 }
