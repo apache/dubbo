@@ -264,6 +264,7 @@ public class DubboProtocol extends AbstractProtocol {
         	if (server == null) {
         		serverMap.put(key, getServer(url));
         	} else {
+        		//server支持reset,配合override功能使用
         		server.reset(url);
         	}
         }
