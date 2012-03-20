@@ -205,7 +205,7 @@ public class JValidator implements Validator {
             Object parameterBean = parameterClass.newInstance();
             for (int i = 0; i < args.length; i ++) {
                 Field field = parameterClass.getField(method.getName() + "Argument" + i);
-                field.set(parameterBean, args[0]);
+                field.set(parameterBean, args[i]);
             }
             return parameterBean;
         } catch (Throwable e) {
