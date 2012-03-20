@@ -104,7 +104,26 @@ public class RpcContext {
      * @return provider side.
      */
     public boolean isProviderSide() {
-        return ! isConsumerSide();
+        Invoker<?> invoker = getInvoker();
+        if (invoker == null) {
+            return false;
+        }
+        URL url = invoker.getUrl();
+        if (url == null) {
+            return false;
+        }
+        InetSocketAddress address = getRemoteAddress();
+        if (address == null) {
+            return false;
+        }
+        String host;
+        if (address.getAddress() == null) {
+            host = address.getHostName();
+        } else {
+            host = address.getAddress().getHostAddress();
+        }
+        return url.getPort() != address.getPort() || 
+                ! NetUtils.filterLocalHost(url.getIp()).equals(NetUtils.filterLocalHost(host));
     }
 
     /**
