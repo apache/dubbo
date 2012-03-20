@@ -304,7 +304,7 @@ public class Constants {
     public static final String  REGISTRY_SEPARATOR                 = "|";
 
     public static final Pattern REGISTRY_SPLIT_PATTERN             = Pattern
-                                                                           .compile("\\s*[|]+\\s*");
+                                                                           .compile("\\s*[|;]+\\s*");
 
     public static final String  SEMICOLON_SEPARATOR                = ";";
 
