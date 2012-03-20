@@ -90,13 +90,15 @@ public final class URL implements Serializable {
     
     private volatile transient Map<String, Number> numbers;
 
+    private volatile transient Map<String, URL> urls;
+
     private volatile transient String ip;
 
-    private volatile transient String fullString;
+    private volatile transient String full;
 
-    private volatile transient String identityString;
+    private volatile transient String identity;
     
-    private volatile transient String parameterString;
+    private volatile transient String parameter;
 
     private volatile transient String string;
     
@@ -114,7 +116,7 @@ public final class URL implements Serializable {
 	    this(protocol, null, null, host, port, null, (Map<String, String>) null);
 	}
 	
-	public URL(String protocol, String host, int port, String... pairs) {
+	public URL(String protocol, String host, int port, String[] pairs) { // 变长参数...与下面的path参数冲突，改为数组
         this(protocol, null, null, host, port, null, CollectionUtils.toStringMap(pairs));
     }
 	
@@ -376,6 +378,27 @@ public final class URL implements Serializable {
             numbers = new ConcurrentHashMap<String, Number>();
         }
         return numbers;
+    }
+
+    private Map<String, URL> getUrls() {
+        if (urls == null) { // 允许并发重复创建
+            urls = new ConcurrentHashMap<String, URL>();
+        }
+        return urls;
+    }
+
+    public URL getUrlParameter(String key) {
+        URL u = getUrls().get(key);
+        if (u != null) {
+            return u;
+        }
+        String value = getParameterAndDecoded(key);
+        if (value == null || value.length() == 0) {
+            return null;
+        }
+        u = URL.valueOf(value);
+        getUrls().put(key, u);
+        return u;
     }
 
     public double getParameter(String key, double defaultValue) {
@@ -943,10 +966,10 @@ public final class URL implements Serializable {
     }
     
     public String toIdentityString() {
-        if (identityString != null) {
-            return identityString;
+        if (identity != null) {
+            return identity;
         }
-        return identityString = buildString(false, false); // only return identity message, see the method "equals" and "hashCode"
+        return identity = buildString(false, false); // only return identity message, see the method "equals" and "hashCode"
 	}
 
     public String toIdentityString(String... parameters) {
@@ -954,10 +977,10 @@ public final class URL implements Serializable {
     }
     
 	public String toFullString() {
-	    if (fullString != null) {
-	        return fullString;
+	    if (full != null) {
+	        return full;
 	    }
-		return fullString = buildString(true, true);
+		return full = buildString(true, true);
 	}
 
     public String toFullString(String... parameters) {
@@ -965,10 +988,10 @@ public final class URL implements Serializable {
     }
     
     public String toParameterString() {
-        if (parameterString != null) {
-            return parameterString;
+        if (parameter != null) {
+            return parameter;
         }
-        return parameterString = toParameterString(new String[0]);
+        return parameter = toParameterString(new String[0]);
     }
     
 	public String toParameterString(String... parameters) {

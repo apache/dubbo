@@ -83,33 +83,33 @@ public class MonitorFilter implements Filter {
             String application = invoker.getUrl().getParameter(Constants.APPLICATION_KEY);
             String service = invoker.getInterface().getName(); // 获取服务名称
             String method = invocation.getMethodName(); // 获取方法名
-            URL url = URL.valueOf(invoker.getUrl().getParameterAndDecoded(Constants.MONITOR_KEY));
+            URL url = invoker.getUrl().getUrlParameter(Constants.MONITOR_KEY);
             Monitor monitor = monitorFactory.getMonitor(url);
-            // ---- 服务提供方监控 ----
-            String server = context.getLocalAddressString(); // 本地提供方地址
-            if (invoker.getUrl().getAddress().equals(server)) {
-                monitor.count(new URL(invoker.getUrl().getProtocol(), context.getRemoteHost(), 0, service + "/" + method)
-                        .addParameters(MonitorService.APPLICATION, application, 
-                                MonitorService.INTERFACE, service, 
-                                MonitorService.METHOD, method,
-                                MonitorService.PROVIDER, NetUtils.getLocalHost() + ":" + context.getLocalPort(),
-                                error ? MonitorService.FAILURE : MonitorService.SUCCESS, String.valueOf(1),
-                                MonitorService.ELAPSED, String.valueOf(elapsed),
-                                MonitorService.CONCURRENT, String.valueOf(concurrent)));
+            int localPort;
+            String remoteKey;
+            String remoteValue;
+            if (context.isProviderSide()) {
+                // ---- 服务提供方监控 ----
+                localPort = context.getLocalPort();
+                remoteKey = MonitorService.CONSUMER;
+                remoteValue = context.getRemoteHost();
+            } else {
+                // ---- 服务消费方监控 ----
+                context = RpcContext.getContext(); // 消费方必须在invoke()之后获取context信息
+                localPort = 0;
+                remoteKey = MonitorService.PROVIDER;
+                remoteValue = context.getRemoteAddressString();
             }
-            // ---- 服务消费方监控 ----
-            context = RpcContext.getContext(); // 消费方必须在invoke()之后获取context信息
-            server = context.getRemoteAddressString(); // 远程提供方地址
-            if (invoker.getUrl().getAddress().equals(server)) {
-                monitor.count(new URL(invoker.getUrl().getProtocol(), context.getRemoteHost(), context.getRemotePort(), service + "/" + method)
-                        .addParameters(MonitorService.APPLICATION, application, 
-                                MonitorService.INTERFACE, service, 
-                                MonitorService.METHOD, method,
-                                MonitorService.CONSUMER, NetUtils.getLocalHost(),
-                                error ? MonitorService.FAILURE : MonitorService.SUCCESS, String.valueOf(1),
-                                MonitorService.ELAPSED, String.valueOf(elapsed),
-                                MonitorService.CONCURRENT, String.valueOf(concurrent)));
-            }
+            monitor.count(new URL(Constants.COUNT_PROTOCOL,
+                    NetUtils.getLocalHost(), localPort,
+                    service + "/" + method,
+                    MonitorService.APPLICATION, application,
+                    MonitorService.INTERFACE, service,
+                    MonitorService.METHOD, method,
+                    remoteKey, remoteValue,
+                    error ? MonitorService.FAILURE : MonitorService.SUCCESS, "1",
+                    MonitorService.ELAPSED, String.valueOf(elapsed),
+                    MonitorService.CONCURRENT, String.valueOf(concurrent)));
         } catch (Throwable t) {
             logger.error("Failed to monitor count service " + invoker.getUrl() + ", cause: " + t.getMessage(), t);
         }

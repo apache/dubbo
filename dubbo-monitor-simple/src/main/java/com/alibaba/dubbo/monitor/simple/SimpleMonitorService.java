@@ -178,7 +178,7 @@ public class SimpleMonitorService implements MonitorService {
                 String consumer;
                 String provider;
                 if (statistics.hasParameter(PROVIDER)) {
-                    type = PROVIDER;
+                    type = CONSUMER;
                     consumer = statistics.getHost();
                     provider = statistics.getParameter(PROVIDER);
                     int i = provider.indexOf(':');
@@ -186,7 +186,7 @@ public class SimpleMonitorService implements MonitorService {
                         provider = provider.substring(0, i);
                     }
                 } else {
-                    type = CONSUMER;
+                    type = PROVIDER;
                     consumer = statistics.getParameter(CONSUMER);
                     int i = consumer.indexOf(':');
                     if (i > 0) {
