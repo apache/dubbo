@@ -44,14 +44,22 @@ public class ExecuteLimitFilter implements Filter {
             }
         }
         long begin = System.currentTimeMillis();
+        boolean isException = false;
         RpcStatus.beginCount(url, methodName);
         try {
             Result result = invoker.invoke(invocation);
-            RpcStatus.endCount(url, methodName, System.currentTimeMillis() - begin, true);
             return result;
-        } catch (RuntimeException t) {
-            RpcStatus.endCount(url, methodName, System.currentTimeMillis() - begin, false);
-            throw t;
+        } catch (Throwable t) {
+            isException = true;
+            if(t instanceof RuntimeException) {
+                throw (RuntimeException) t;
+            }
+            else {
+                throw new RpcException("unexpected exception when ExecuteLimitFilter", t);
+            }
+        }
+        finally {
+            RpcStatus.endCount(url, methodName, System.currentTimeMillis() - begin, isException);
         }
     }
 
