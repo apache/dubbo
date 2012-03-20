@@ -259,14 +259,22 @@ public class DubboProtocol extends AbstractProtocol {
         String key = url.getAddress();
         //client 也可以暴露一个只有server可以调用的服务。
         boolean isServer = url.getParameter(Constants.IS_SERVER_KEY,true);
-        if (isServer && ! serverMap.containsKey(key)) {
-            serverMap.put(key, getServer(url));
+        if (isServer) {
+        	ExchangeServer server = serverMap.get(key);
+        	if (server == null) {
+        		serverMap.put(key, getServer(url));
+        	} else {
+        		//server支持reset,配合override功能使用
+        		server.reset(url);
+        	}
         }
     }
     
     private ExchangeServer getServer(URL url) {
         //默认开启server关闭时发送readonly事件
         url = url.addParameterIfAbsent(Constants.CHANNEL_READONLYEVENT_SENT_KEY, Boolean.TRUE.toString());
+        //默认开启heartbeat
+        url = url.addParameterIfAbsent(Constants.HEARTBEAT_KEY, String.valueOf(Constants.DEFAULT_HEARTBEAT));
         String str = url.getParameter(Constants.SERVER_KEY, Constants.DEFAULT_REMOTING_SERVER);
 
         if (str != null && str.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(str))
