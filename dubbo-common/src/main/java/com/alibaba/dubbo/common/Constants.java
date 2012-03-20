@@ -256,7 +256,7 @@ public class Constants {
 
     public static final String  SHUTDOWN_TIMEOUT_KEY               = "shutdown.timeout";
 
-    public static final int     DEFAULT_SHUTDOWN_TIMEOUT           = 1000 * 60 * 5;
+    public static final int     DEFAULT_SHUTDOWN_TIMEOUT           = 1000 * 60 * 15;
 
     public static final String  TIMESTAMP_KEY                      = "timestamp";
 
