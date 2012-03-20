@@ -55,7 +55,7 @@ public class ValidationTest {
             ValidationService validationService = reference.get();
             try {
                 // Save OK
-                /*ValidationParameter parameter = new ValidationParameter();
+                ValidationParameter parameter = new ValidationParameter();
                 parameter.setName("liangfei");
                 parameter.setEmail("liangfei@liang.fei");
                 parameter.setAge(50);
@@ -76,7 +76,7 @@ public class ValidationTest {
                 }
                 
                 // Delete OK
-                validationService.delete(2, "abc");*/
+                validationService.delete(2, "abc");
                 
                 // Delete Error
                 try {
