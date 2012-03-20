@@ -55,7 +55,7 @@ public class ValidationTest {
             ValidationService validationService = reference.get();
             try {
                 // Save OK
-                ValidationParameter parameter = new ValidationParameter();
+                /*ValidationParameter parameter = new ValidationParameter();
                 parameter.setName("liangfei");
                 parameter.setEmail("liangfei@liang.fei");
                 parameter.setAge(50);
@@ -76,16 +76,35 @@ public class ValidationTest {
                 }
                 
                 // Delete OK
-                validationService.delete(2);
+                validationService.delete(2, "abc");*/
                 
                 // Delete Error
                 try {
-                    validationService.delete(0);
+                    validationService.delete(0, "abc");
                     Assert.fail();
                 } catch (RpcException e) {
                     ConstraintViolationException ve = (ConstraintViolationException)e.getCause();
                     Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
                     Assert.assertNotNull(violations);
+                    Assert.assertEquals(1, violations.size());
+                }
+                try {
+                    validationService.delete(2, null);
+                    Assert.fail();
+                } catch (RpcException e) {
+                    ConstraintViolationException ve = (ConstraintViolationException)e.getCause();
+                    Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
+                    Assert.assertNotNull(violations);
+                    Assert.assertEquals(1, violations.size());
+                }
+                try {
+                    validationService.delete(0, null);
+                    Assert.fail();
+                } catch (RpcException e) {
+                    ConstraintViolationException ve = (ConstraintViolationException)e.getCause();
+                    Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
+                    Assert.assertNotNull(violations);
+                    Assert.assertEquals(2, violations.size());
                 }
             } finally {
                 reference.destroy();

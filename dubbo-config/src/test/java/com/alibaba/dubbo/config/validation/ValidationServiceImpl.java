@@ -28,7 +28,7 @@ public class ValidationServiceImpl implements ValidationService {
     public void update(ValidationParameter parameter) {
     }
 
-    public void delete(long id) {
+    public void delete(long id, String operator) {
     }
 
 }
