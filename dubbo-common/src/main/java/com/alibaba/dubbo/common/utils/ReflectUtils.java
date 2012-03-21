@@ -17,6 +17,7 @@ package com.alibaba.dubbo.common.utils;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -831,6 +832,12 @@ public final class ReflectUtils {
     }
     
     public static Object getEmptyObject(Class<?> returnType) {
+        return getEmptyObject(returnType, new HashMap<Class<?>, Object>(), 0);
+    }
+    
+    private static Object getEmptyObject(Class<?> returnType, Map<Class<?>, Object> emptyInstances, int level) {
+        if (level > 2)
+            return null;
         Object value = null;
         if (returnType == null) {
             value = null;
@@ -848,8 +855,25 @@ public final class ReflectUtils {
             value = "";
         } else if (! returnType.isInterface()) {
             try {
-                value = returnType.newInstance();
-            } catch (Exception e) {
+                value = emptyInstances.get(returnType);
+                if (value == null) {
+                    value = returnType.newInstance();
+                    emptyInstances.put(returnType, value);
+                }
+                Field[] fields = value.getClass().getFields();
+                for (Field field : fields) {
+                    Object property = getEmptyObject(field.getType(), emptyInstances, level + 1);
+                    if (property != null) {
+                        try {
+                            if (! field.isAccessible()) {
+                                field.setAccessible(true);
+                            }
+                            field.set(value, property);
+                        } catch (Throwable e) {
+                        }
+                    }
+                }
+            } catch (Throwable e) {
                 value = null;
             }
         } else {
