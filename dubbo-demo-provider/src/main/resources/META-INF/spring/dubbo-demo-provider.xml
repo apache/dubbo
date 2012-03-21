@@ -22,6 +22,6 @@
 	
 	<bean id="demoService" class="com.alibaba.dubbo.demo.provider.DemoServiceImpl" />
 	
-	<dubbo:service interface="com.alibaba.dubbo.demo.DemoService" ref="demoService" loadbalance="roundrobin" />
+	<dubbo:service interface="com.alibaba.dubbo.demo.DemoService" ref="demoService" />
 	
 </beans>
