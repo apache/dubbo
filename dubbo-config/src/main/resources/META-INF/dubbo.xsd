@@ -773,6 +773,13 @@
 	               		</xsd:documentation>
 	               	</xsd:annotation>
 	            </xsd:attribute>
+	            <xsd:attribute name="export" type="xsd:string" use="optional" default="0">
+	               	<xsd:annotation>
+	               		<xsd:documentation>
+	               			<![CDATA[ The service is export. ]]>
+	               		</xsd:documentation>
+	               	</xsd:annotation>
+	            </xsd:attribute>
 	            <xsd:attribute name="weight" type="xsd:string" use="optional">
 	               	<xsd:annotation>
 	               		<xsd:documentation>

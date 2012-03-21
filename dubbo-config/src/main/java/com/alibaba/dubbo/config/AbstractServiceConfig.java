@@ -39,8 +39,11 @@ public abstract class AbstractServiceConfig extends AbstractReferenceConfig {
     // 服务是否已经deprecated
     protected Boolean             deprecated;
     
-    // 延迟注册
+    // 延迟暴露
     protected Integer             delay;
+
+    // 是否暴露
+    protected Boolean             export;
 
     // 权重
     protected Integer             weight;
@@ -87,6 +90,14 @@ public abstract class AbstractServiceConfig extends AbstractReferenceConfig {
 	public void setDelay(Integer delay) {
 	    this.delay = delay;
 	}
+
+    public Boolean getExport() {
+        return export;
+    }
+
+    public void setExport(Boolean export) {
+        this.export = export;
+    }
     
     public Integer getWeight() {
         return weight;
@@ -194,4 +205,5 @@ public abstract class AbstractServiceConfig extends AbstractReferenceConfig {
         checkMultiExtension(ExporterListener.class, "listener", listener);
         super.setListener(listener);
     }
+
 }

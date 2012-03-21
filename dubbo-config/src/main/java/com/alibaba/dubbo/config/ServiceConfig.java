@@ -90,6 +90,17 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     public synchronized void export() {
+        if (provider != null) {
+            if (export == null) {
+                export = provider.getExport();
+            }
+            if (delay == null) {
+                delay = provider.getDelay();
+            }
+        }
+        if (export != null && ! export.booleanValue()) {
+            return;
+        }
         if (delay != null && delay > 0) {
             Thread thread = new Thread(new Runnable() {
                 public void run() {
