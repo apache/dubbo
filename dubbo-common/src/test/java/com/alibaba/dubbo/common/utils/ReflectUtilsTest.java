@@ -20,7 +20,10 @@ import static org.junit.matchers.JUnitMatchers.containsString;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import junit.framework.TestCase;
 
@@ -150,6 +153,44 @@ public class ReflectUtilsTest extends TestCase
             assertThat(expected.getMessage(), containsString("No such method "));
             assertThat(expected.getMessage(), containsString("in class"));
         }
+    }
+
+    @Test
+    public void test_getEmptyObject() throws Exception {
+        assertTrue(ReflectUtils.getEmptyObject(Collection.class) instanceof Collection);
+        assertTrue(ReflectUtils.getEmptyObject(List.class) instanceof List);
+        assertTrue(ReflectUtils.getEmptyObject(Set.class) instanceof Set);
+        assertTrue(ReflectUtils.getEmptyObject(Map.class) instanceof Map);
+        assertTrue(ReflectUtils.getEmptyObject(Object[].class) instanceof Object[]);
+        assertEquals(ReflectUtils.getEmptyObject(String.class), "");
+        assertEquals(ReflectUtils.getEmptyObject(short.class), Short.valueOf((short)0));
+        assertEquals(ReflectUtils.getEmptyObject(byte.class), Byte.valueOf((byte)0));
+        assertEquals(ReflectUtils.getEmptyObject(int.class), Integer.valueOf(0));
+        assertEquals(ReflectUtils.getEmptyObject(long.class), Long.valueOf(0));
+        assertEquals(ReflectUtils.getEmptyObject(float.class), Float.valueOf(0));
+        assertEquals(ReflectUtils.getEmptyObject(double.class), Double.valueOf(0));
+        assertEquals(ReflectUtils.getEmptyObject(char.class), Character.valueOf('\0'));
+        assertEquals(ReflectUtils.getEmptyObject(boolean.class), Boolean.FALSE);
+        EmptyClass object = (EmptyClass) ReflectUtils.getEmptyObject(EmptyClass.class);
+        assertNotNull(object);
+        assertNotNull(object.getProperty());
+    }
+    
+    public static class EmptyClass {
+        
+        private EmptyProperty property;
+
+        public EmptyProperty getProperty() {
+            return property;
+        }
+
+        public void setProperty(EmptyProperty property) {
+            this.property = property;
+        }
+        
+    }
+
+    public static class EmptyProperty {
     }
 
     static class TestedClass {
