@@ -27,6 +27,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -67,10 +68,8 @@ public class RedisRegistry extends FailbackRegistry {
     
     private final String root;
 
-    private final JedisPool jedisPool;
+    private final List<JedisPool> jedisPools = new CopyOnWriteArrayList<JedisPool>();
 
-    private final NotifySub sub = new NotifySub();
-    
     private final ConcurrentMap<String, Notifier> notifiers = new ConcurrentHashMap<String, Notifier>();
     
     private final int reconnectPeriod;
@@ -100,9 +99,27 @@ public class RedisRegistry extends FailbackRegistry {
         if (url.getParameter("min.evictable.idle.time.millis", 0) > 0)
             config.minEvictableIdleTimeMillis = url.getParameter("min.evictable.idle.time.millis", 0);
         
-        this.jedisPool = new JedisPool(config, url.getHost(), 
-                url.getPort() == 0 ? DEFAULT_REDIS_PORT : url.getPort(), 
-                url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
+        List<String> addresses = new ArrayList<String>();
+        addresses.add(url.getAddress());
+        String[] backups = url.getParameter(Constants.BACKUP_KEY, new String[0]);
+        if (backups != null && backups.length > 0) {
+            addresses.addAll(Arrays.asList(backups));
+        }
+        for (String address : addresses) {
+            int i = address.indexOf(':');
+            String host;
+            int port;
+            if (i > 0) {
+                host = address.substring(0, i);
+                port = Integer.parseInt(address.substring(i + 1));
+            } else {
+                host = address;
+                port = DEFAULT_REDIS_PORT;
+            }
+            this.jedisPools.add(new JedisPool(config, host, port, 
+                    url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT)));
+        }
+        
         this.reconnectPeriod = url.getParameter(Constants.REGISTRY_RECONNECT_PERIOD_KEY, Constants.DEFAULT_REGISTRY_RECONNECT_PERIOD);
         String group = url.getParameter(Constants.GROUP_KEY, DEFAULT_ROOT);
         if (! group.startsWith(Constants.PATH_SEPARATOR)) {
@@ -119,35 +136,39 @@ public class RedisRegistry extends FailbackRegistry {
                 try {
                     deferExpired(); // 延长过期时间
                 } catch (Throwable t) { // 防御性容错
-                    logger.error("Unexpected error occur at defer expire time, cause: " + t.getMessage(), t);
+                    logger.error("Unexpected exception occur at defer expire time, cause: " + t.getMessage(), t);
                 }
             }
         }, expirePeriod / 2, expirePeriod / 2, TimeUnit.MILLISECONDS);
     }
     
     private void deferExpired() {
-        Jedis jedis = jedisPool.getResource();
-        try {
-            for (String provider : new HashSet<String>(getRegistered())) {
-                String key = toProviderPath(URL.valueOf(provider));
-                if (jedis.hset(key, provider, String.valueOf(System.currentTimeMillis() + expirePeriod)) == 0) {
-                    jedis.publish(key, Constants.REGISTER);
-                }
-            }
-            for (String consumer : new HashSet<String>(getSubscribed().keySet())) {
-                URL url = URL.valueOf(consumer);
-                if (! Constants.ANY_VALUE.equals(url.getServiceInterface())) {
-                    String key = toConsumerPath(url);
-                    if (jedis.hset(key, consumer, String.valueOf(System.currentTimeMillis() + expirePeriod)) == 0) {
-                        jedis.publish(key, Constants.SUBSCRIBE);
+        for (JedisPool jedisPool : jedisPools) {
+            Jedis jedis = jedisPool.getResource();
+            try {
+                for (String provider : new HashSet<String>(getRegistered())) {
+                    String key = toProviderPath(URL.valueOf(provider));
+                    if (jedis.hset(key, provider, String.valueOf(System.currentTimeMillis() + expirePeriod)) == 0) {
+                        jedis.publish(key, Constants.REGISTER);
                     }
                 }
+                for (String consumer : new HashSet<String>(getSubscribed().keySet())) {
+                    URL url = URL.valueOf(consumer);
+                    if (! Constants.ANY_VALUE.equals(url.getServiceInterface())) {
+                        String key = toConsumerPath(url);
+                        if (jedis.hset(key, consumer, String.valueOf(System.currentTimeMillis() + expirePeriod)) == 0) {
+                            jedis.publish(key, Constants.SUBSCRIBE);
+                        }
+                    }
+                }
+                if (admin) {
+                    clean(jedis);
+                }
+            } catch (Throwable t) {
+                logger.warn("Failed to defer expire time, cause: " + t.getMessage(), t);
+            } finally {
+                jedisPool.returnResource(jedis);
             }
-            if (admin) {
-                clean(jedis);
-            }
-        } finally {
-            jedisPool.returnResource(jedis);
         }
     }
     
@@ -183,16 +204,21 @@ public class RedisRegistry extends FailbackRegistry {
     }
 
     public boolean isAvailable() {
-        try {
-            Jedis jedis = jedisPool.getResource();
+        for (JedisPool jedisPool : jedisPools) {
             try {
-                return jedis.isConnected();
-            } finally {
-                jedisPool.returnResource(jedis);
+                Jedis jedis = jedisPool.getResource();
+                try {
+                    if (! jedis.isConnected()) {
+                        return false;
+                    }
+                } finally {
+                    jedisPool.returnResource(jedis);
+                }
+            } catch (Throwable t) {
+                return false;
             }
-        } catch (Throwable t) {
-            return false;
         }
+        return true;
     }
 
     @Override
@@ -210,10 +236,12 @@ public class RedisRegistry extends FailbackRegistry {
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
         }
-        try {
-            jedisPool.destroy();
-        } catch (Throwable t) {
-            logger.warn(t.getMessage(), t);
+        for (JedisPool jedisPool : jedisPools) {
+            try {
+                jedisPool.destroy();
+            } catch (Throwable t) {
+                logger.warn(t.getMessage(), t);
+            }
         }
     }
 
@@ -222,12 +250,22 @@ public class RedisRegistry extends FailbackRegistry {
         String key = toProviderPath(url);
         String value = url.toFullString();
         String expire = String.valueOf(System.currentTimeMillis() + expirePeriod);
-        Jedis jedis = jedisPool.getResource();
-        try {
-            jedis.hset(key, value, expire);
-            jedis.publish(key, Constants.REGISTER);
-        } finally {
-            jedisPool.returnResource(jedis);
+        Throwable lastException = null;
+        for (JedisPool jedisPool : jedisPools) {
+            Jedis jedis = jedisPool.getResource();
+            try {
+                jedis.hset(key, value, expire);
+                jedis.publish(key, Constants.REGISTER);
+            } catch (Throwable t) {
+                lastException = t;
+            } finally {
+                jedisPool.returnResource(jedis);
+            }
+        }
+        if (lastException instanceof RuntimeException) {
+            throw (RuntimeException) lastException;
+        } else if (lastException != null) {
+            throw new RuntimeException(lastException.getMessage(), lastException);
         }
     }
 
@@ -235,12 +273,22 @@ public class RedisRegistry extends FailbackRegistry {
     public void doUnregister(URL url) {
         String key = toProviderPath(url);
         String value = url.toFullString();
-        Jedis jedis = jedisPool.getResource();
-        try {
-            jedis.hdel(key, value);
-            jedis.publish(key, Constants.UNREGISTER);
-        } finally {
-            jedisPool.returnResource(jedis);
+        Throwable lastException = null;
+        for (JedisPool jedisPool : jedisPools) {
+            Jedis jedis = jedisPool.getResource();
+            try {
+                jedis.hdel(key, value);
+                jedis.publish(key, Constants.UNREGISTER);
+            } catch (Throwable t) {
+                lastException = t;
+            } finally {
+                jedisPool.returnResource(jedis);
+            }
+        }
+        if (lastException instanceof RuntimeException) {
+            throw (RuntimeException) lastException;
+        } else if (lastException != null) {
+            throw new RuntimeException(lastException.getMessage(), lastException);
         }
     }
     
@@ -256,23 +304,34 @@ public class RedisRegistry extends FailbackRegistry {
                 notifier.start();
             }
         }
-        Jedis jedis = jedisPool.getResource();
-        try {
-            if (service.endsWith(Constants.ANY_VALUE)) {
-                admin = true;
-                for (String s : getServices(jedis, service)) {
-                    doNotify(jedis, s, url, listener);
+        Throwable lastException = null;
+        for (JedisPool jedisPool : jedisPools) {
+            Jedis jedis = jedisPool.getResource();
+            try {
+                if (service.endsWith(Constants.ANY_VALUE)) {
+                    admin = true;
+                    for (String s : getServices(jedis, service)) {
+                        doNotify(jedis, s, url, listener);
+                    }
+                } else {
+                    String key = toConsumerPath(url);
+                    String value = url.toFullString();
+                    String expire = String.valueOf(System.currentTimeMillis() + expirePeriod);
+                    jedis.hset(key, value, expire);
+                    jedis.publish(key, Constants.SUBSCRIBE);
+                    doNotify(jedis, service, url, listener);
                 }
-            } else {
-                String key = toConsumerPath(url);
-                String value = url.toFullString();
-                String expire = String.valueOf(System.currentTimeMillis() + expirePeriod);
-                jedis.hset(key, value, expire);
-                jedis.publish(key, Constants.SUBSCRIBE);
-                doNotify(jedis, service, url, listener);
+                return; // 只需读一个服务器的数据
+            } catch(Throwable t) { // 尝试下一个服务器
+                lastException = t;
+            } finally {
+                jedisPool.returnResource(jedis);
             }
-        } finally {
-            jedisPool.returnResource(jedis);
+        }
+        if (lastException instanceof RuntimeException) {
+            throw (RuntimeException) lastException;
+        } else if (lastException != null) {
+            throw new RuntimeException(lastException.getMessage(), lastException);
         }
     }
 
@@ -281,12 +340,22 @@ public class RedisRegistry extends FailbackRegistry {
         if (! Constants.ANY_VALUE.equals(url.getServiceInterface())) {
             String key = toConsumerPath(url);
             String value = url.toFullString();
-            Jedis jedis = jedisPool.getResource();
-            try {
-                jedis.hdel(key, value);
-                jedis.publish(key, Constants.UNSUBSCRIBE);
-            } finally {
-                jedisPool.returnResource(jedis);
+            Throwable lastException = null;
+            for (JedisPool jedisPool : jedisPools) {
+                Jedis jedis = jedisPool.getResource();
+                try {
+                    jedis.hdel(key, value);
+                    jedis.publish(key, Constants.UNSUBSCRIBE);
+                } catch (Throwable t) {
+                    lastException = t;
+                } finally {
+                    jedisPool.returnResource(jedis);
+                }
+            }
+            if (lastException instanceof RuntimeException) {
+                throw (RuntimeException) lastException;
+            } else if (lastException != null) {
+                throw new RuntimeException(lastException.getMessage(), lastException);
             }
         }
     }
@@ -372,6 +441,12 @@ public class RedisRegistry extends FailbackRegistry {
     }
 
     private class NotifySub extends JedisPubSub {
+        
+        private final JedisPool jedisPool;
+
+        public NotifySub(JedisPool jedisPool) {
+            this.jedisPool = jedisPool;
+        }
 
         @Override
         public void onMessage(String key, String msg) {
@@ -385,6 +460,8 @@ public class RedisRegistry extends FailbackRegistry {
                 Jedis jedis = jedisPool.getResource();
                 try {
                     doNotify(jedis, getService(jedis, key), msg.equals(Constants.SUBSCRIBE) || msg.equals(Constants.UNSUBSCRIBE));
+                } catch (Throwable t) {
+                    logger.error(t.getMessage(), t);
                 } finally {
                     jedisPool.returnResource(jedis);
                 }
@@ -467,27 +544,32 @@ public class RedisRegistry extends FailbackRegistry {
                 try {
                     if (! isSkip()) {
                         try {
-                            jedis = jedisPool.getResource();
-                            try {
-                                if (service.endsWith(Constants.ANY_VALUE)) {
-                                    if (! first) {
-                                        first = false;
-                                        for (String s : getServices(jedis, service)) {
-                                            doNotify(jedis, s, false);
+                            for (JedisPool jedisPool : jedisPools) {
+                                jedis = jedisPool.getResource();
+                                try {
+                                    if (service.endsWith(Constants.ANY_VALUE)) {
+                                        if (! first) {
+                                            first = false;
+                                            for (String s : getServices(jedis, service)) {
+                                                doNotify(jedis, s, false);
+                                            }
+                                            resetSkip();
                                         }
-                                        resetSkip();
+                                        jedis.psubscribe(new NotifySub(jedisPool), service); // 阻塞
+                                    } else {
+                                        if (! first) {
+                                            first = false;
+                                            doNotify(jedis, service, false);
+                                            resetSkip();
+                                        }
+                                        jedis.subscribe(new NotifySub(jedisPool), service + Constants.PATH_SEPARATOR + Constants.PROVIDERS); // 阻塞
                                     }
-                                    jedis.psubscribe(sub, service);
-                                } else {
-                                    if (! first) {
-                                        first = false;
-                                        doNotify(jedis, service, false);
-                                        resetSkip();
-                                    }
-                                    jedis.subscribe(sub, service + Constants.PATH_SEPARATOR + Constants.PROVIDERS);
+                                    break;
+                                } catch (Throwable t) { // 重试另一台
+                                    logger.error(t.getMessage(), t);
+                                } finally {
+                                    jedisPool.returnBrokenResource(jedis);
                                 }
-                            } finally {
-                                jedisPool.returnBrokenResource(jedis);
                             }
                         } catch (Throwable t) {
                             logger.error(t.getMessage(), t);
