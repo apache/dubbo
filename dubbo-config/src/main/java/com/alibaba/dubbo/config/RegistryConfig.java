@@ -86,6 +86,9 @@ public class RegistryConfig extends AbstractConfig {
     // 自定义参数
     private Map<String, String> parameters;
 
+    // 是否为缺省
+    private Boolean             isDefault;
+    
     public RegistryConfig() {
     }
     
@@ -300,6 +303,14 @@ public class RegistryConfig extends AbstractConfig {
     public void setParameters(Map<String, String> parameters) {
         checkParameterName(parameters);
         this.parameters = parameters;
+    }
+
+    public Boolean isDefault() {
+        return isDefault;
+    }
+
+    public void setDefault(Boolean isDefault) {
+        this.isDefault = isDefault;
     }
 
 }

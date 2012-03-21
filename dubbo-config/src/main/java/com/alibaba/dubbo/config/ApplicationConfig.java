@@ -54,6 +54,9 @@ public class ApplicationConfig extends AbstractConfig {
     
     // 服务监控
     private MonitorConfig     monitor;
+
+    // 是否为缺省
+    private Boolean isDefault;
     
     public ApplicationConfig() {
     }
@@ -154,6 +157,14 @@ public class ApplicationConfig extends AbstractConfig {
     public void setCompiler(String compiler) {
         this.compiler = compiler;
         AdaptiveCompiler.setDefaultCompiler(compiler);
+    }
+
+    public Boolean isDefault() {
+        return isDefault;
+    }
+
+    public void setDefault(Boolean isDefault) {
+        this.isDefault = isDefault;
     }
 
 }

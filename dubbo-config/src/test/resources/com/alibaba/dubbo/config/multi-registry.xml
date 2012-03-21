@@ -27,6 +27,8 @@
     <dubbo:registry id="reg1" address="127.0.0.1:4545" />
     
     <dubbo:registry id="reg2" address="127.0.0.1:4546" />
+    
+    <dubbo:registry id="reg3" address="127.0.0.1:4547" default="false" />
      
     <!-- 暴露服务协议配置 -->
     <dubbo:protocol name="dubbo" port="20880" />

@@ -24,6 +24,9 @@ public class ConsumerConfig extends AbstractConsumerConfig {
 
     private static final long serialVersionUID = 2827274711143680600L;
 
+    // 是否为缺省
+    private Boolean             isDefault;
+    
     @Override
     public void setTimeout(Integer timeout) {
         super.setTimeout(timeout);
@@ -32,6 +35,14 @@ public class ConsumerConfig extends AbstractConsumerConfig {
                 && (rmiTimeout == null || rmiTimeout.length() == 0)) {
             System.setProperty("sun.rmi.transport.tcp.responseTimeout", String.valueOf(timeout));
         }
+    }
+
+    public Boolean isDefault() {
+        return isDefault;
+    }
+
+    public void setDefault(Boolean isDefault) {
+        this.isDefault = isDefault;
     }
 
 }

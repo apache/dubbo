@@ -118,6 +118,9 @@ public class ProtocolConfig extends AbstractConfig {
     
     // 参数
     private Map<String, String> parameters;
+
+    // 是否为缺省
+    private Boolean isDefault;
     
     public ProtocolConfig() {
     }
@@ -385,6 +388,14 @@ public class ProtocolConfig extends AbstractConfig {
 
     public void setParameters(Map<String, String> parameters) {
         this.parameters = parameters;
+    }
+
+    public Boolean isDefault() {
+        return isDefault;
+    }
+
+    public void setDefault(Boolean isDefault) {
+        this.isDefault = isDefault;
     }
 
     public void destory() {

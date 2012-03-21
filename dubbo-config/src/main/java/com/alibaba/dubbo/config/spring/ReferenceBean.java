@@ -16,7 +16,7 @@
 package com.alibaba.dubbo.config.spring;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.FactoryBean;
@@ -67,9 +67,8 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
             Map<String, ConsumerConfig> consumerConfigMap = applicationContext == null ? null  : applicationContext.getBeansOfType(ConsumerConfig.class, false, false);
             if (consumerConfigMap != null && consumerConfigMap.size() > 0) {
                 ConsumerConfig consumerConfig = null;
-                Collection<ConsumerConfig> defaultConfigs = consumerConfigMap.values();
-                for (ConsumerConfig config : defaultConfigs) {
-                    if (config.getClass() == ConsumerConfig.class) {
+                for (ConsumerConfig config : consumerConfigMap.values()) {
+                    if (config.isDefault() == null || config.isDefault().booleanValue()) {
                         if (consumerConfig != null) {
                             throw new IllegalStateException("Duplicate consumer configs: " + consumerConfig + " and " + config);
                         }
@@ -85,11 +84,18 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
                 && (getConsumer() == null || getConsumer().getApplication() == null)) {
             Map<String, ApplicationConfig> applicationConfigMap = applicationContext == null ? null : applicationContext.getBeansOfType(ApplicationConfig.class, false, false);
             if (applicationConfigMap != null && applicationConfigMap.size() > 0) {
-                if (applicationConfigMap.size() > 1) {
-                    throw new IllegalStateException("Duplicate application configs: " + applicationConfigMap.values());
+                ApplicationConfig applicationConfig = null;
+                for (ApplicationConfig config : applicationConfigMap.values()) {
+                    if (config.isDefault() == null || config.isDefault().booleanValue()) {
+                        if (applicationConfig != null) {
+                            throw new IllegalStateException("Duplicate application configs: " + applicationConfig + " and " + config);
+                        }
+                        applicationConfig = config;
+                    }
                 }
-                ApplicationConfig applicationConfig = applicationConfigMap.values().iterator().next();
-                setApplication(applicationConfig);
+                if (applicationConfig != null) {
+                    setApplication(applicationConfig);
+                }
             }
         }
         if ((getRegistries() == null || getRegistries().size() == 0)
@@ -97,9 +103,14 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
                 && (getApplication() == null || getApplication().getRegistries() == null || getApplication().getRegistries().size() == 0)) {
             Map<String, RegistryConfig> registryConfigMap = applicationContext == null ? null : applicationContext.getBeansOfType(RegistryConfig.class, false, false);
             if (registryConfigMap != null && registryConfigMap.size() > 0) {
-                Collection<RegistryConfig> registryConfigs = registryConfigMap.values();
+                List<RegistryConfig> registryConfigs = new ArrayList<RegistryConfig>();
+                for (RegistryConfig config : registryConfigMap.values()) {
+                    if (config.isDefault() == null || config.isDefault().booleanValue()) {
+                        registryConfigs.add(config);
+                    }
+                }
                 if (registryConfigs != null && registryConfigs.size() > 0) {
-                    super.setRegistries(new ArrayList<RegistryConfig>(registryConfigs));
+                    super.setRegistries(registryConfigs);
                 }
             }
         }
@@ -108,11 +119,18 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
                 && (getApplication() == null || getApplication().getMonitor() == null)) {
             Map<String, MonitorConfig> monitorConfigMap = applicationContext == null ? null : applicationContext.getBeansOfType(MonitorConfig.class, false, false);
             if (monitorConfigMap != null && monitorConfigMap.size() > 0) {
-                if (monitorConfigMap.size() > 1) {
-                    throw new IllegalStateException("Duplicate monitor configs: " + monitorConfigMap.values());
+                MonitorConfig monitorConfig = null;
+                for (MonitorConfig config : monitorConfigMap.values()) {
+                    if (config.isDefault() == null || config.isDefault().booleanValue()) {
+                        if (monitorConfig != null) {
+                            throw new IllegalStateException("Duplicate monitor configs: " + monitorConfig + " and " + config);
+                        }
+                        monitorConfig = config;
+                    }
                 }
-                MonitorConfig monitorConfig = monitorConfigMap.values().iterator().next();
-                super.setMonitor(monitorConfig);
+                if (monitorConfig != null) {
+                    setMonitor(monitorConfig);
+                }
             }
         }
         Boolean b = isInit();

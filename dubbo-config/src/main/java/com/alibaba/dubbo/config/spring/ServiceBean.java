@@ -17,7 +17,7 @@ package com.alibaba.dubbo.config.spring;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.BeanNameAware;
@@ -100,31 +100,39 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
         if (getProvider() == null) {
             Map<String, ProviderConfig> providerConfigMap = applicationContext == null ? null  : applicationContext.getBeansOfType(ProviderConfig.class, false, false);
             if (providerConfigMap != null && providerConfigMap.size() > 0) {
-                Collection<ProviderConfig> providerConfigs = providerConfigMap.values();
-                ProviderConfig providerConfig = providerConfigs.iterator().next();
-                if (providerConfigs.size() > 1) {
-                    Map<String, ProtocolConfig> protocolConfigMap = applicationContext == null ? null  : applicationContext.getBeansOfType(ProtocolConfig.class, false, false);
-                    if (protocolConfigMap != null && protocolConfigMap.size() > 0) {
-                        throw new IllegalStateException("Duplicate provider configs: " + providerConfigs);
-                    }
-                    for (ProviderConfig config : providerConfigs) {
-                        if (config.isDefault() != null && config.isDefault()) {
-                            providerConfig = config;
+                ProviderConfig providerConfig = null;
+                for (ProviderConfig config : providerConfigMap.values()) {
+                    if (config.isDefault() == null || config.isDefault().booleanValue()) {
+                        if (providerConfig != null) {
+                            Map<String, ProtocolConfig> protocolConfigMap = applicationContext == null ? null  : applicationContext.getBeansOfType(ProtocolConfig.class, false, false);
+                            if (protocolConfigMap != null && protocolConfigMap.size() > 0) { // 兼容旧版本
+                                throw new IllegalStateException("Duplicate provider configs: " + providerConfig + " and " + config);
+                            }
                         }
+                        providerConfig = config;
                     }
                 }
-                setProvider(providerConfig);
+                if (providerConfig != null) {
+                    setProvider(providerConfig);
+                }
             }
         }
         if (getApplication() == null
                 && (getProvider() == null || getProvider().getApplication() == null)) {
             Map<String, ApplicationConfig> applicationConfigMap = applicationContext == null ? null : applicationContext.getBeansOfType(ApplicationConfig.class, false, false);
             if (applicationConfigMap != null && applicationConfigMap.size() > 0) {
-                if (applicationConfigMap.size() > 1) {
-                    throw new IllegalStateException("Duplicate application configs: " + applicationConfigMap.values());
+                ApplicationConfig applicationConfig = null;
+                for (ApplicationConfig config : applicationConfigMap.values()) {
+                    if (config.isDefault() == null || config.isDefault().booleanValue()) {
+                        if (applicationConfig != null) {
+                            throw new IllegalStateException("Duplicate application configs: " + applicationConfig + " and " + config);
+                        }
+                        applicationConfig = config;
+                    }
                 }
-                ApplicationConfig applicationConfig = applicationConfigMap.values().iterator().next();
-                setApplication(applicationConfig);
+                if (applicationConfig != null) {
+                    setApplication(applicationConfig);
+                }
             }
         }
         if ((getRegistries() == null || getRegistries().size() == 0)
@@ -132,9 +140,14 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                 && (getApplication() == null || getApplication().getRegistries() == null || getApplication().getRegistries().size() == 0)) {
             Map<String, RegistryConfig> registryConfigMap = applicationContext == null ? null : applicationContext.getBeansOfType(RegistryConfig.class, false, false);
             if (registryConfigMap != null && registryConfigMap.size() > 0) {
-                Collection<RegistryConfig> registryConfigs = registryConfigMap.values();
+                List<RegistryConfig> registryConfigs = new ArrayList<RegistryConfig>();
+                for (RegistryConfig config : registryConfigMap.values()) {
+                    if (config.isDefault() == null || config.isDefault().booleanValue()) {
+                        registryConfigs.add(config);
+                    }
+                }
                 if (registryConfigs != null && registryConfigs.size() > 0) {
-                    super.setRegistries(new ArrayList<RegistryConfig>(registryConfigs));
+                    super.setRegistries(registryConfigs);
                 }
             }
         }
@@ -143,22 +156,33 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                 && (getApplication() == null || getApplication().getMonitor() == null)) {
             Map<String, MonitorConfig> monitorConfigMap = applicationContext == null ? null : applicationContext.getBeansOfType(MonitorConfig.class, false, false);
             if (monitorConfigMap != null && monitorConfigMap.size() > 0) {
-                if (monitorConfigMap.size() > 1) {
-                    throw new IllegalStateException("Duplicate monitor configs: " + monitorConfigMap.values());
+                MonitorConfig monitorConfig = null;
+                for (MonitorConfig config : monitorConfigMap.values()) {
+                    if (config.isDefault() == null || config.isDefault().booleanValue()) {
+                        if (monitorConfig != null) {
+                            throw new IllegalStateException("Duplicate monitor configs: " + monitorConfig + " and " + config);
+                        }
+                        monitorConfig = config;
+                    }
                 }
-                MonitorConfig monitorConfig = monitorConfigMap.values().iterator().next();
-                super.setMonitor(monitorConfig);
+                if (monitorConfig != null) {
+                    setMonitor(monitorConfig);
+                }
             }
         }
         if ((getProtocols() == null || getProtocols().size() == 0)
                 && (getProvider() == null || getProvider().getProtocols() == null || getProvider().getProtocols().size() == 0)) {
             Map<String, ProtocolConfig> protocolConfigMap = applicationContext == null ? null  : applicationContext.getBeansOfType(ProtocolConfig.class, false, false);
             if (protocolConfigMap != null && protocolConfigMap.size() > 0) {
-                if (protocolConfigMap.size() > 1) {
-                    throw new IllegalStateException("Found multi-protocols: " + protocolConfigMap.values() + ", You must be set default protocol in: <dubbo:provider protocol=\"dubbo\" />, or set service protocol in: <dubbo:service protocol=\"dubbo\" />");
+                List<ProtocolConfig> protocolConfigs = new ArrayList<ProtocolConfig>();
+                for (ProtocolConfig config : protocolConfigMap.values()) {
+                    if (config.isDefault() == null || config.isDefault().booleanValue()) {
+                        protocolConfigs.add(config);
+                    }
                 }
-                ProtocolConfig protocolConfig = protocolConfigMap.values().iterator().next();
-                setProtocol(protocolConfig);
+                if (protocolConfigs != null && protocolConfigs.size() > 0) {
+                    super.setProtocols(protocolConfigs);
+                }
             }
         }
         if (getPath() == null || getPath().length() == 0) {

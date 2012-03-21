@@ -59,6 +59,11 @@
 					<xsd:documentation><![CDATA[ The application monitor. ]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
+			<xsd:attribute name="default" type="xsd:string" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[ Is default. ]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
 		</xsd:complexType>
 	</xsd:element>
 	
@@ -170,6 +175,11 @@
 					<xsd:documentation><![CDATA[ subscribe service to this registry(true) or not(false). ]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
+			<xsd:attribute name="default" type="xsd:string" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[ Is default. ]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
 		</xsd:complexType>
 	</xsd:element>
 	
@@ -209,6 +219,11 @@
 			<xsd:attribute name="version" type="xsd:string" use="optional">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[ The monitor version. ]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="default" type="xsd:string" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[ Is default. ]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
 		</xsd:complexType>
@@ -518,6 +533,11 @@
 					<xsd:sequence minOccurs="0" maxOccurs="unbounded">
 						<xsd:element ref="parameter" minOccurs="0" maxOccurs="unbounded" />
 					</xsd:sequence>
+					<xsd:attribute name="default" type="xsd:string" use="optional">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[ Is default. ]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
 					<xsd:anyAttribute namespace="##other" processContents="lax" />
 				</xsd:extension>
 			</xsd:complexContent>
@@ -717,6 +737,11 @@
 			<xsd:attribute name="register" type="xsd:string" use="optional">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[ The protocol can be register to registry. ]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="default" type="xsd:string" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[ Is default. ]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
 			<xsd:anyAttribute namespace="##other" processContents="lax" />
@@ -924,7 +949,7 @@
 					</xsd:attribute>
 					<xsd:attribute name="default" type="xsd:string" use="optional">
 						<xsd:annotation>
-							<xsd:documentation><![CDATA[ Deprecated. ]]></xsd:documentation>
+							<xsd:documentation><![CDATA[ Is default. ]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:attribute>
 					<xsd:anyAttribute namespace="##other" processContents="lax" />

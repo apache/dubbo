@@ -27,11 +27,9 @@
     <dubbo:registry address="N/A" />
      
     <!-- 暴露服务协议配置 -->
-    <dubbo:protocol name="dubbo" port="20881" />
+    <dubbo:protocol name="dubbo" port="20881" default="false" />
     
     <dubbo:protocol name="rmi" port="10991" />
-    
-    <dubbo:provider protocol="rmi" />
     
     <!-- 暴露服务配置 -->
     <dubbo:service interface="com.alibaba.dubbo.config.api.DemoService" ref="demoService" />
