@@ -45,8 +45,8 @@ import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.cluster.Router;
 import com.alibaba.dubbo.rpc.cluster.loadbalance.LeastActiveLoadBalance;
 import com.alibaba.dubbo.rpc.cluster.loadbalance.RoundRobinLoadBalance;
-import com.alibaba.dubbo.rpc.cluster.router.ScriptRouter;
-import com.alibaba.dubbo.rpc.cluster.router.ScriptRouterFactory;
+import com.alibaba.dubbo.rpc.cluster.router.script.ScriptRouter;
+import com.alibaba.dubbo.rpc.cluster.router.script.ScriptRouterFactory;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class RegistryDirectoryTest {
