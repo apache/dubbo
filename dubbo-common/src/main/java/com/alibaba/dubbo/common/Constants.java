@@ -472,6 +472,8 @@ public class Constants {
 
     public static final String  OVERRIDE_PROTOCOL                  = "override";
 
+    public static final String  PRIORITY_KEY                       = "priority";
+    
     public static final String  RULE_KEY                           = "rule";
 
     public static final String  TYPE_KEY                           = "type";
