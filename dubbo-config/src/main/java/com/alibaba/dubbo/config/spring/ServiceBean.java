@@ -107,25 +107,36 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
         return supportedApplicationListener && (delay == null || delay.intValue() == -1);
     }
 
-    @SuppressWarnings({ "unchecked" })
+    @SuppressWarnings({ "unchecked", "deprecation" })
 	public void afterPropertiesSet() throws Exception {
         if (getProvider() == null) {
             Map<String, ProviderConfig> providerConfigMap = applicationContext == null ? null  : applicationContext.getBeansOfType(ProviderConfig.class, false, false);
             if (providerConfigMap != null && providerConfigMap.size() > 0) {
-                ProviderConfig providerConfig = null;
-                for (ProviderConfig config : providerConfigMap.values()) {
-                    if (config.isDefault() == null || config.isDefault().booleanValue()) {
-                        if (providerConfig != null) {
-                            Map<String, ProtocolConfig> protocolConfigMap = applicationContext == null ? null  : applicationContext.getBeansOfType(ProtocolConfig.class, false, false);
-                            if (protocolConfigMap != null && protocolConfigMap.size() > 0) { // 兼容旧版本
+                Map<String, ProtocolConfig> protocolConfigMap = applicationContext == null ? null  : applicationContext.getBeansOfType(ProtocolConfig.class, false, false);
+                if ((protocolConfigMap == null || protocolConfigMap.size() == 0)
+                        && providerConfigMap.size() > 1) { // 兼容旧版本
+                    List<ProviderConfig> providerConfigs = new ArrayList<ProviderConfig>();
+                    for (ProviderConfig config : providerConfigMap.values()) {
+                        if (config.isDefault() != null && config.isDefault().booleanValue()) {
+                            providerConfigs.add(config);
+                        }
+                    }
+                    if (providerConfigs.size() > 0) {
+                        setProviders(providerConfigs);
+                    }
+                } else {
+                    ProviderConfig providerConfig = null;
+                    for (ProviderConfig config : providerConfigMap.values()) {
+                        if (config.isDefault() == null || config.isDefault().booleanValue()) {
+                            if (providerConfig != null) {
                                 throw new IllegalStateException("Duplicate provider configs: " + providerConfig + " and " + config);
                             }
+                            providerConfig = config;
                         }
-                        providerConfig = config;
                     }
-                }
-                if (providerConfig != null) {
-                    setProvider(providerConfig);
+                    if (providerConfig != null) {
+                        setProvider(providerConfig);
+                    }
                 }
             }
         }
