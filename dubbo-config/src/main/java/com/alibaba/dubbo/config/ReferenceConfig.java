@@ -291,6 +291,9 @@ public class ReferenceConfig<T> extends AbstractConsumerConfig {
             if (logger.isInfoEnabled()) {
                 logger.info("Using injvm service " + interfaceClass.getName());
             }
+        } else if(! Boolean.valueOf(map.get(Constants.REMOTE_KEY))
+                && LocalServiceStore.getInstance().isRegistered(LocalServiceStore.serviceKey(map))) {
+            invoker = referLocal(map);
         } else {
             if (url != null && url.length() > 0) { // 用户指定URL，指定的URL可能是对点对直连地址，也可能是注册中心URL
                 String[] us = Constants.SEMICOLON_SPLIT_PATTERN.split(url);
@@ -357,6 +360,16 @@ public class ReferenceConfig<T> extends AbstractConsumerConfig {
         }
         // 创建服务代理
         return (T) proxyFactory.getProxy(invoker);
+    }
+
+    private Invoker<?> referLocal(Map<String, String> map) {
+        URL local = new URL(
+                Constants.LOCAL_PROTOCOL, NetUtils.LOCALHOST, 0,
+                map.get(Constants.INTERFACE_KEY), map);
+        if (logger.isInfoEnabled()) {
+            logger.info("Using local service " + interfaceClass.getName());
+        }
+        return protocol.refer(interfaceClass, local);
     }
 
     private void checkDefault() {

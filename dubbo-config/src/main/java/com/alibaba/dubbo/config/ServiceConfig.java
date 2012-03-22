@@ -228,6 +228,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     		for (Exporter<?> exporter : exporters) {
     			try {
                     exporter.unexport();
+                    LocalServiceStore.getInstance().unregister(
+                            exporter.getInvoker().getUrl().getServiceKey());
                 } catch (Throwable t) {
                     logger.warn("unexpected err when unexport" + exporter, t);
                 }
@@ -388,6 +390,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             if (logger.isInfoEnabled()) {
                 logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
             }
+            exportLocal(url);
             if (registryURLs != null && registryURLs.size() > 0
                     && url.getParameter("register", true)) {
                 for (URL registryURL : registryURLs) {
@@ -409,6 +412,20 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 exporters.add(exporter);
             }
             this.urls.add(url);
+        }
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private void exportLocal(URL url) {
+        if (!Constants.LOCAL_PROTOCOL.equalsIgnoreCase(url.getProtocol())) {
+            URL local = URL.valueOf(url.toFullString())
+                    .setProtocol(Constants.LOCAL_PROTOCOL)
+                    .setHost(NetUtils.LOCALHOST)
+                    .setPort(0);
+            exporters.add(protocol.export(
+                    proxyFactory.getInvoker(ref, (Class) interfaceClass, local)));
+            urls.add(local);
+            LocalServiceStore.getInstance().register(url.getServiceKey());
         }
     }
 

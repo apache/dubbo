@@ -490,6 +490,9 @@ public class Constants {
     //invocation attachment属性中如果有此值，则选择mock invoker
     public static final String  INVOCATION_NEED_MOCK               = "invocation.need.mock";
 
+    public static final String LOCAL_PROTOCOL                      = "injvm";
+
+    public static final String REMOTE_KEY                          = "remote";
     /*
      * private Constants(){ }
      */

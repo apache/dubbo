@@ -16,6 +16,7 @@
 package com.alibaba.dubbo.common.utils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -182,6 +183,14 @@ public class CollectionUtils {
 	    return ret;
 	}
 	
+    public static boolean isEmpty(Collection<?> collection) {
+        return collection == null || collection.size() == 0;
+    }
+    
+    public static boolean isNotEmpty(Collection<?> collection) {
+        return collection != null && collection.size() > 0;
+	}
+
 	private CollectionUtils() {
 	}
 

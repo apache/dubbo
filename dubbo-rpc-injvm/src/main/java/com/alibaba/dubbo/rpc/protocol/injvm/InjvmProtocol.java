@@ -39,11 +39,11 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
     }
 
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
-        return new InjvmExporter<T>(invoker, serviceKey(invoker.getUrl().setPort(DEFAULT_PORT)), exporterMap);
+        return new InjvmExporter<T>(invoker, invoker.getUrl().getServiceKey(), exporterMap);
     }
 
     public <T> Invoker<T> refer(Class<T> serviceType, URL url) throws RpcException {
-        return new InjvmInvoker<T>(serviceType, url, serviceKey(url), exporterMap);
+        return new InjvmInvoker<T>(serviceType, url, url.getServiceKey(), exporterMap);
     }
     
 }
