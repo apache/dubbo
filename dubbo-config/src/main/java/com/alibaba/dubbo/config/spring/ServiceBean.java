@@ -27,6 +27,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.support.AbstractApplicationContext;
 
 import com.alibaba.dubbo.config.ApplicationConfig;
 import com.alibaba.dubbo.config.MonitorConfig;
@@ -67,6 +68,17 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
 	            method.invoke(applicationContext, new Object[] {this});
 	            supportedApplicationListener = true;
 	        } catch (Throwable t) {
+                if (applicationContext instanceof AbstractApplicationContext) {
+    	            try {
+    	                Method method = AbstractApplicationContext.class.getDeclaredMethod("addListener", new Class<?>[]{ApplicationListener.class}); // 兼容Spring2.0.1
+                        if (! method.isAccessible()) {
+                            method.setAccessible(true);
+                        }
+    	                method.invoke(applicationContext, new Object[] {this});
+                        supportedApplicationListener = true;
+    	            } catch (Throwable t2) {
+    	            }
+	            }
 	        }
 		}
 	}
@@ -92,7 +104,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
         if (delay == null && provider != null) {
             delay = provider.getDelay();
         }
-        return supportedApplicationListener && delay != null && delay.intValue() == -1;
+        return supportedApplicationListener && (delay == null || delay.intValue() == -1);
     }
 
     @SuppressWarnings({ "unchecked" })
