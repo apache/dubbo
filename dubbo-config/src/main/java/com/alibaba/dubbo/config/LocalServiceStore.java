@@ -17,11 +17,13 @@
 package com.alibaba.dubbo.config;
 
 import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.StringUtils;
+import com.alibaba.dubbo.rpc.Exporter;
 
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
@@ -37,21 +39,27 @@ class LocalServiceStore {
     private LocalServiceStore() {
     }
 
-    private Set<String> serviceKeys = new CopyOnWriteArraySet<String>();
+    private ConcurrentMap<String, Exporter<?>> exportMap = 
+            new ConcurrentHashMap<String, Exporter<?>>();
 
-    public void register(String key) {
-        if (StringUtils.isNotEmpty(key)) {
-            serviceKeys.add(key);
+    public void register(URL url, Exporter<?> exporter) {
+        if (url != null && exporter != null) {
+            exportMap.putIfAbsent(url.getServiceKey(), exporter);
         }
     }
 
     public boolean isRegistered(String key) {
-        return StringUtils.isNotEmpty(key) && serviceKeys.contains(key);
+        return StringUtils.isNotEmpty(key) && exportMap.containsKey(key);
     }
 
-    public void unregister(String key) {
-        if (StringUtils.isNotEmpty(key)) {
-            serviceKeys.remove(key);
+    public void unregister(URL url) {
+        if (url != null) {
+            Exporter<?> exporter = exportMap.get(url.getServiceKey());
+            if (exporter != null) {
+                try {
+                    exporter.unexport();
+                } catch (Throwable e) { /* ignore */ }
+            }
         }
     }
 

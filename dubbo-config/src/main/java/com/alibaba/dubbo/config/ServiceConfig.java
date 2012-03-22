@@ -229,7 +229,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     			try {
                     exporter.unexport();
                     LocalServiceStore.getInstance().unregister(
-                            exporter.getInvoker().getUrl().getServiceKey());
+                            exporter.getInvoker().getUrl());
                 } catch (Throwable t) {
                     logger.warn("unexpected err when unexport" + exporter, t);
                 }
@@ -422,10 +422,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                     .setProtocol(Constants.LOCAL_PROTOCOL)
                     .setHost(NetUtils.LOCALHOST)
                     .setPort(0);
-            exporters.add(protocol.export(
-                    proxyFactory.getInvoker(ref, (Class) interfaceClass, local)));
-            urls.add(local);
-            LocalServiceStore.getInstance().register(url.getServiceKey());
+            Exporter<?> exporter = protocol.export(
+                    proxyFactory.getInvoker(ref, (Class) interfaceClass, local));
+            LocalServiceStore.getInstance().register(url, exporter);
         }
     }
 

@@ -291,7 +291,8 @@ public class ReferenceConfig<T> extends AbstractConsumerConfig {
             if (logger.isInfoEnabled()) {
                 logger.info("Using injvm service " + interfaceClass.getName());
             }
-        } else if(! Boolean.valueOf(map.get(Constants.REMOTE_KEY))
+        } else if(StringUtils.isNotEmpty(map.get(Constants.REMOTE_KEY))
+                && "false".equalsIgnoreCase(map.get(Constants.REMOTE_KEY))
                 && LocalServiceStore.getInstance().isRegistered(LocalServiceStore.serviceKey(map))) {
             invoker = referLocal(map);
         } else {
