@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.cluster.router;
+package com.alibaba.dubbo.rpc.cluster.router.script;
 
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.cluster.Router;

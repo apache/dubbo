@@ -128,7 +128,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         if (invokers.size() == 2 && selected != null && selected.size() > 0) {
             return selected.get(0) == invokers.get(0) ? invokers.get(1) : invokers.get(0);
         }
-        Invoker<T> invoker = loadbalance.select(invokers, invocation);
+        Invoker<T> invoker = loadbalance.select(invokers, getUrl(), invocation);
         
         //如果 selected中包含（优先判断） 或者 不可用&&availablecheck=true 则重试.
         if( (selected != null && selected.contains(invoker))
@@ -180,7 +180,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
                 }
             }
             if(reselectInvokers.size()>0){
-                return  loadbalance.select(reselectInvokers, invocation);
+                return  loadbalance.select(reselectInvokers, getUrl(), invocation);
             }
         }else{ //选全部非select
             for(Invoker<T> invoker : invokers){
@@ -189,7 +189,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
                 }
             }
             if(reselectInvokers.size()>0){
-                return  loadbalance.select(reselectInvokers, invocation);
+                return  loadbalance.select(reselectInvokers, getUrl(), invocation);
             }
         }
         //最后从select中选可用的. 
@@ -203,7 +203,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
                 }
             }
             if(reselectInvokers.size()>0){
-                return  loadbalance.select(reselectInvokers, invocation);
+                return  loadbalance.select(reselectInvokers, getUrl(), invocation);
             }
         }
         return null;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.cluster.router;
+package com.alibaba.dubbo.rpc.cluster.router.script;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,11 +50,21 @@ public class ScriptRouter implements Router {
     private static final Map<String, ScriptEngine> engines = new ConcurrentHashMap<String, ScriptEngine>();
     
     private final ScriptEngine engine;
-    
+
+    private final int priority;
+
     private final String rule;
-    
+
+    private final URL url;
+
+    public URL getUrl() {
+        return url;
+    }
+
     public ScriptRouter(URL url) {
+        this.url = url;
         String type = url.getParameter(Constants.TYPE_KEY);
+        this.priority = url.getParameter(Constants.PRIORITY_KEY, 0);
         String rule = url.getParameterAndDecoded(Constants.RULE_KEY);
         if (type == null || type.length() == 0){
             type = Constants.DEFAULT_SCRIPT_TYPE_KEY;
@@ -75,7 +85,7 @@ public class ScriptRouter implements Router {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> List<Invoker<T>> route(List<Invoker<T>> invokers, Invocation invocation) throws RpcException {
+    public <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
         try {
             List<Invoker<T>> invokersCopy = new ArrayList<Invoker<T>>(invokers);
             Compilable compilable = (Compilable) engine;
@@ -101,6 +111,14 @@ public class ScriptRouter implements Router {
             logger.error("route error , rule has been ignored .rule :"+ rule + ",invocation:" + invocation + ",url :"+(RpcContext.getContext().getInvoker() == null ? "" : RpcContext.getContext().getInvoker().getUrl()), e);
             return invokers;
         }
+    }
+
+    public int compareTo(Router o) {
+        if (o == null || o.getClass() != ScriptRouter.class) {
+            return 1;
+        }
+        ScriptRouter c = (ScriptRouter) o;
+        return this.priority == c.priority ? rule.compareTo(c.rule) : (this.priority > c.priority ? 1 : -1);
     }
 
 }

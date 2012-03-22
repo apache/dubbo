@@ -68,7 +68,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         List<Invoker<T>> invokers = doList(invocation);
 
         for (Router router: routers){
-            invokers = router.route(invokers, invocation);
+            invokers = router.route(invokers, getUrl(), invocation);
         }
         return invokers;
     }

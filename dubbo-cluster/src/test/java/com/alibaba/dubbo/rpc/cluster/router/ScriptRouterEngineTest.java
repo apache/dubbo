@@ -30,6 +30,7 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.cluster.Router;
+import com.alibaba.dubbo.rpc.cluster.router.script.ScriptRouterFactory;
 
 public class ScriptRouterEngineTest {
 
@@ -54,7 +55,7 @@ public class ScriptRouterEngineTest {
         invokers.add(new MockInvoker<String>());
         invokers.add(new MockInvoker<String>());
         invokers.add(new MockInvoker<String>());
-        List<Invoker<String>> fileredInvokers = router.route(invokers, new RpcInvocation());
+        List<Invoker<String>> fileredInvokers = router.route(invokers, invokers.get(0).getUrl(), new RpcInvocation());
         Assert.assertEquals(invokers, fileredInvokers);
     }
     
@@ -77,7 +78,7 @@ public class ScriptRouterEngineTest {
         invokers.add(invoker1);
         invokers.add(invoker2);
         invokers.add(invoker3);
-        List<Invoker<String>> fileredInvokers = router.route(invokers, new RpcInvocation());
+        List<Invoker<String>> fileredInvokers = router.route(invokers, invokers.get(0).getUrl(), new RpcInvocation());
         Assert.assertEquals(2, fileredInvokers.size());
         Assert.assertEquals(invoker2, fileredInvokers.get(0));
         Assert.assertEquals(invoker3, fileredInvokers.get(1));
