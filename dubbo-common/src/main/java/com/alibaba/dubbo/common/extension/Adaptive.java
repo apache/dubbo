@@ -55,6 +55,4 @@ public @interface Adaptive {
      */
     String[] value() default {};
     
-    String method() default "";
-    
 }

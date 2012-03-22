@@ -703,7 +703,18 @@ public class ExtensionLoader<T> {
                     value = new String[] {sb.toString()};
                 }
                 
-                String m = adaptiveAnnotation.method();
+                boolean hasInvocation = false;
+                for (int i = 0; i < pts.length; ++i) {
+                    if (pts[i].getName().equals("com.alibaba.dubbo.rpc.Invocation")) {
+                        // Null Point check
+                        String s = String.format("\nif (arg%d == null) throw new IllegalArgumentException(\"invocation == null\");", i);
+                        code.append(s);
+                        s = String.format("\nString methodName = arg%d.getMethodName();", i); 
+                        code.append(s);
+                        hasInvocation = true;
+                        break;
+                    }
+                }
                 
                 String defaultExtName = cachedDefaultName;
                 String getNameCode = null;
@@ -711,8 +722,8 @@ public class ExtensionLoader<T> {
                     if(i == value.length - 1) {
                         if(null != defaultExtName) {
                             if(!"protocol".equals(value[i]))
-                                if (m != null && m.length() > 0) 
-                                    getNameCode = String.format("url.getMethodParameter(arg%s, \"%s\", \"%s\")", m, value[i], defaultExtName);
+                                if (hasInvocation) 
+                                    getNameCode = String.format("url.getMethodParameter(methodName, \"%s\", \"%s\")", value[i], defaultExtName);
                                 else
                                     getNameCode = String.format("url.getParameter(\"%s\", \"%s\")", value[i], defaultExtName);
                             else
@@ -720,8 +731,8 @@ public class ExtensionLoader<T> {
                         }
                         else {
                             if(!"protocol".equals(value[i]))
-                                if (m != null && m.length() > 0) 
-                                    getNameCode = String.format("url.getMethodParameter(arg%s, \"%s\", \"%s\")", m, value[i], defaultExtName);
+                                if (hasInvocation) 
+                                    getNameCode = String.format("url.getMethodParameter(methodName, \"%s\", \"%s\")", value[i], defaultExtName);
                                 else
                                     getNameCode = String.format("url.getParameter(\"%s\")", value[i]);
                             else
@@ -730,8 +741,8 @@ public class ExtensionLoader<T> {
                     }
                     else {
                         if(!"protocol".equals(value[i]))
-                            if (m != null && m.length() > 0) 
-                                getNameCode = String.format("url.getMethodParameter(arg%s, \"%s\", \"%s\")", m, value[i], defaultExtName);
+                            if (hasInvocation) 
+                                getNameCode = String.format("url.getMethodParameter(methodName, \"%s\", \"%s\")", value[i], defaultExtName);
                             else
                                 getNameCode = String.format("url.getParameter(\"%s\", %s)", value[i], getNameCode);
                         else

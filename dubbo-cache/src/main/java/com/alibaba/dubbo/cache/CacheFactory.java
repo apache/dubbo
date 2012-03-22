@@ -18,6 +18,7 @@ package com.alibaba.dubbo.cache;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.Adaptive;
 import com.alibaba.dubbo.common.extension.SPI;
+import com.alibaba.dubbo.rpc.Invocation;
 
 /**
  * CacheFactory
@@ -27,7 +28,7 @@ import com.alibaba.dubbo.common.extension.SPI;
 @SPI("lru")
 public interface CacheFactory {
 
-    @Adaptive(value = "cache", method = "1")
-    Cache getCache(URL url, String name);
+    @Adaptive("cache")
+    Cache getCache(URL url, Invocation invocation);
 
 }

@@ -22,6 +22,7 @@ import com.alibaba.dubbo.cache.Cache;
 import com.alibaba.dubbo.cache.CacheFactory;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.rpc.Invocation;
 
 /**
  * AbstractCacheFactory
@@ -32,16 +33,16 @@ public abstract class AbstractCacheFactory implements CacheFactory {
     
     private final ConcurrentMap<String, Cache> caches = new ConcurrentHashMap<String, Cache>();
 
-    public Cache getCache(URL url, String name) {
-        String key = url.toFullString() + Constants.SEMICOLON_SEPARATOR + name;
+    public Cache getCache(URL url, Invocation invocation) {
+        String key = url.toFullString() + Constants.SEMICOLON_SEPARATOR + invocation.getMethodName();
         Cache cache = caches.get(key);
         if (cache == null) {
-            caches.put(key, createCache(url));
+            caches.put(key, createCache(url, invocation));
             cache = caches.get(key);
         }
         return cache;
     }
 
-    protected abstract Cache createCache(URL url);
+    protected abstract Cache createCache(URL url, Invocation invocation);
 
 }
