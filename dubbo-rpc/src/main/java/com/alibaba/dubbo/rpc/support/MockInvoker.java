@@ -77,7 +77,7 @@ final public class MockInvoker<T> implements Invoker<T> {
                 Object value = parseMockValue(mock, returnTypes);
                 return new RpcResult(value);
             } catch (Exception ew) {
-            	throw new RpcException("mock return invoke error .invocation :" + invocation + ", mock:" + mock + ", url: "+ url , ew);
+            	throw new RpcException("mock return invoke error. method :" + invocation.getMethodName() + ", mock:" + mock + ", url: "+ url , ew);
             }
         } else if (mock.startsWith(Constants.THROW_PREFIX)) {
         	mock = mock.substring(Constants.THROW_PREFIX.length()).trim();

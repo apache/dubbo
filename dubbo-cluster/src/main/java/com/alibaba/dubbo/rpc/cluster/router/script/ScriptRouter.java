@@ -108,7 +108,7 @@ public class ScriptRouter implements Router {
             return invokersCopy;
         } catch (ScriptException e) {
             //fail then ignore rule .invokers.
-            logger.error("route error , rule has been ignored .rule :"+ rule + ",invocation:" + invocation + ",url :"+(RpcContext.getContext().getInvoker() == null ? "" : RpcContext.getContext().getInvoker().getUrl()), e);
+            logger.error("route error , rule has been ignored .rule :"+ rule + ", method:" + invocation.getMethodName() + ",url :"+(RpcContext.getContext().getInvoker() == null ? "" : RpcContext.getContext().getInvoker().getUrl()), e);
             return invokers;
         }
     }
