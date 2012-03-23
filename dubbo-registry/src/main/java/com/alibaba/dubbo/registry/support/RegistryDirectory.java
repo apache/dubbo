@@ -62,14 +62,14 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     
     private static final Cluster cluster = ExtensionLoader.getExtensionLoader(Cluster.class).getAdaptiveExtension();
     
-    private volatile boolean forbidden = false;
-    
     private final String serviceKey;
 
     private final Class<T> serviceType;
     
     private final boolean multiGroup;
 
+    private volatile boolean forbidden = false;
+    
     private volatile URL directoryUrl;
     
     private volatile URL overrideDirectoryUrl;
