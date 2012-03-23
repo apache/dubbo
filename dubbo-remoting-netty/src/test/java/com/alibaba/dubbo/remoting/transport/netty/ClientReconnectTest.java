@@ -65,10 +65,10 @@ public class ClientReconnectTest {
     }
     
     /**
-     * 重连日志的校验
+     * 重连日志的校验，时间不够shutdown time时，不能有error日志，但必须有一条warn日志
      */
     @Test
-    public void testReconnectNoLog() throws RemotingException, InterruptedException{
+    public void testReconnectWarnLog() throws RemotingException, InterruptedException{
         int port = NetUtils.getAvailablePort();
         DubboAppender.doStart();
         String url = "exchange://127.0.0.2:"+port + "/client.reconnect.test?check=false&"
@@ -79,7 +79,9 @@ public class ClientReconnectTest {
             //do nothing
         }
         Thread.sleep(1500);//重连线程的运行
+        //时间不够长，不会产生error日志
         Assert.assertEquals("no error message ", 0 , LogUtil.findMessage(Level.ERROR, "client reconnect to "));
+        //第一次重连失败就会有warn日志
         Assert.assertEquals("must have one warn message ", 1 , LogUtil.findMessage(Level.WARN, "client reconnect to "));
         DubboAppender.doStop();
     }
@@ -93,7 +95,7 @@ public class ClientReconnectTest {
         DubboAppender.doStart();
         String url = "exchange://127.0.0.3:"+port + "/client.reconnect.test?check=false&"
         +Constants.RECONNECT_KEY+"="+1 + //1ms reconnect,保证有足够频率的重连
-        "&"+Constants.SHUTDOWN_TIMEOUT_KEY+ "=100";//shutdown时间足够短，确保error日志输出
+        "&"+Constants.SHUTDOWN_TIMEOUT_KEY+ "=1";//shutdown时间足够短，确保error日志输出
         try{
             Exchangers.connect(url);
         }catch (Exception e) {
@@ -101,9 +103,32 @@ public class ClientReconnectTest {
         }
         Thread.sleep(1500);//重连线程的运行
         Assert.assertEquals("only one error message ", 1 , LogUtil.findMessage(Level.ERROR, "client reconnect to "));
-        Assert.assertEquals("no warn message ", 1 , LogUtil.findMessage(Level.WARN, "client reconnect to "));
         DubboAppender.doStop();
     }
+    
+    /**
+     * 测试client重连方法不会导致重连线程失效.
+     */
+    @Test
+    public void testClientReconnectMethod() throws RemotingException, InterruptedException{
+        int port = NetUtils.getAvailablePort();
+        String url = "exchange://127.0.0.3:"+port + "/client.reconnect.test?check=false&"
+        +Constants.RECONNECT_KEY+"="+10 //1ms reconnect,保证有足够频率的重连
+        +"&reconnect.waring.period=1";
+        DubboAppender.doStart();
+        Client client = Exchangers.connect(url);
+        try {
+			client.reconnect();
+		} catch (Exception e) {
+			//do nothing
+		}
+        Thread.sleep(1500);//重连线程的运行
+        Assert.assertTrue("have more then one warn msgs . bug was :" + LogUtil.findMessage(Level.WARN, "client reconnect to "),LogUtil.findMessage(Level.WARN, "client reconnect to ") >1);
+        DubboAppender.doStop();
+    }
+    public static void main(String[] args) {
+		System.out.println(3%1);
+	}
     
     /**
      * 重连日志的校验
