@@ -182,7 +182,7 @@ public class AbstractClusterInvokerTest {
     @Test
     public void testCloseAvailablecheck(){
         LoadBalance lb = EasyMock.createMock(LoadBalance.class);
-        EasyMock.expect(lb.select(invokers, invokers.get(0).getUrl(), invocation)).andReturn(invoker1);
+        EasyMock.expect(lb.select(invokers, url, invocation)).andReturn(invoker1);
         EasyMock.replay(lb);
         initlistsize5();
         
