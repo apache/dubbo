@@ -23,6 +23,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.Server;
 import com.alibaba.dubbo.remoting.exchange.ExchangeChannel;
 import com.alibaba.dubbo.remoting.exchange.Exchangers;
@@ -70,4 +71,9 @@ public class NettyClientTest {
                 server.close();
         } finally {}
     }
+    
+    public static void main(String[] args) throws RemotingException, InterruptedException {
+    	ExchangeChannel client = Exchangers.connect(URL.valueOf("exchange://10.20.153.10:20880?client=netty&heartbeat=1000"));
+    	Thread.sleep(60*1000*50);
+	}
 }

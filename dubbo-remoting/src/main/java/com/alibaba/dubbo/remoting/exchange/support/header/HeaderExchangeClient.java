@@ -167,7 +167,7 @@ public class HeaderExchangeClient implements ExchangeClient {
             heatbeatTimer = scheduled.scheduleWithFixedDelay(
                     new HeartBeatTask( new HeartBeatTask.ChannelProvider() {
                         public Collection<Channel> getChannels() {
-                            return Collections.<Channel>singletonList( channel );
+                            return Collections.<Channel>singletonList( HeaderExchangeClient.this );
                         }
                     }, heartbeat, heartbeatTimeout ),
                     heartbeat, heartbeat, TimeUnit.MILLISECONDS );
@@ -197,4 +197,9 @@ public class HeaderExchangeClient implements ExchangeClient {
             }
         }
     }
+
+	@Override
+	public String toString() {
+		return "HeaderExchangeClient [channel=" + channel + "]";
+	}
 }

@@ -135,7 +135,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     private synchronized void initConnectStatusCheckCommand(){
         //reconnect=false to close reconnect 
         int reconnect = getReconnectParam(getUrl());
-        if(reconnect > 0 && reconnectExecutorFuture == null){
+        if(reconnect > 0 && (reconnectExecutorFuture == null || reconnectExecutorFuture.isCancelled())){
             Runnable connectStatusCheckCommand =  new Runnable() {
                 public void run() {
                     try {
@@ -146,7 +146,6 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                         }
                     } catch (Throwable t) { 
                         String errorMsg = "client reconnect to "+getUrl().getAddress()+" find error . url: "+ getUrl();
-                        int count = reconnect_count.incrementAndGet();
                         // wait registry sync provider list
                         if (System.currentTimeMillis() - lastConnectedTime > shutdown_timeout){
                             if (!reconnect_error_log_flag.get()){
@@ -155,7 +154,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                                 return ;
                             }
                         }
-                        if ( count % reconnect_warning_period == 0){
+                        if ( reconnect_count.getAndIncrement() % reconnect_warning_period == 0){
                             logger.warn(errorMsg, t);
                         }
                     }
@@ -281,6 +280,12 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                 throw new RemotingException(this, "Failed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
                                             + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
                                             + ", cause: Connect wait timeout: " + getTimeout() + "ms.");
+            } else {
+            	if (logger.isInfoEnabled()){
+            		logger.info("Successed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
+                                            + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
+                                            + ", channel is " + this.getChannel());
+            	}
             }
             reconnect_count.set(0);
             reconnect_error_log_flag.set(false);

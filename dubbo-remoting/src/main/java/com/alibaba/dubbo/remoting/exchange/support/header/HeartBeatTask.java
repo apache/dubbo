@@ -16,12 +16,13 @@
 
 package com.alibaba.dubbo.remoting.exchange.support.header;
 
+import java.util.Collection;
+
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.remoting.Channel;
+import com.alibaba.dubbo.remoting.Client;
 import com.alibaba.dubbo.remoting.exchange.Request;
-
-import java.util.Collection;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
@@ -67,9 +68,17 @@ final class HeartBeatTask implements Runnable {
                         }
                     }
                     if ( lastRead != null && now - lastRead > heartbeatTimeout ) {
-                        logger.warn( "Close remote channel " + channel.getRemoteAddress()
+                        logger.warn( "Close channel " + channel
                                              + ", because heartbeat read idle time out." );
-                        channel.close();
+                        if (channel instanceof Client) {
+                        	try {
+                        		((Client)channel).reconnect();
+                        	}catch (Exception e) {
+								//do nothing
+							}
+                        } else {
+                        	channel.close();
+                        }
                     }
                 } catch ( Throwable t ) {
                     logger.warn( "Exception when heartbeat to remote channel " + channel.getRemoteAddress(), t );
