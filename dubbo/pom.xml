@@ -23,7 +23,7 @@
 	</parent>
 	<artifactId>dubbo</artifactId>
 	<packaging>jar</packaging>
-	<name>Dubbo All In One</name>
+	<name>${project.artifactId}</name>
 	<description>The all in one project of dubbo</description>
 	<properties>
 		<skip_maven_deploy>false</skip_maven_deploy>
@@ -31,7 +31,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo-config</artifactId>
+			<artifactId>dubbo-config-api</artifactId>
 			<version>${project.parent.version}</version>
 			<exclusions>
 				<exclusion>

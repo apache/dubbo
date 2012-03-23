@@ -23,7 +23,7 @@
 	</parent>
 	<artifactId>dubbo-registry-redis</artifactId>
 	<packaging>jar</packaging>
-	<name>Dubbo Redis Registry Module</name>
+	<name>${project.artifactId}</name>
 	<description>The redis registry module of dubbo project</description>
 	<properties>
 		<skip_maven_deploy>true</skip_maven_deploy>
@@ -31,7 +31,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo-registry</artifactId>
+			<artifactId>dubbo-registry-api</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
 		<dependency>

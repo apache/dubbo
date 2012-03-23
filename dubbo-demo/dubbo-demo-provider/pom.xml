@@ -23,7 +23,7 @@
 	</parent>
 	<artifactId>dubbo-demo-provider</artifactId>
 	<packaging>jar</packaging>
-	<name>Dubbo Demo Provider Module</name>
+	<name>${project.artifactId}</name>
 	<description>The demo provider module of dubbo project</description>
 	<properties>
 		<skip_maven_deploy>false</skip_maven_deploy>

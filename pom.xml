@@ -24,7 +24,7 @@
 	<artifactId>dubbo-parent</artifactId>
 	<version>2.2.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
-	<name>Dubbo Parent POM</name>
+	<name>${project.artifactId}</name>
 	<description>The parent project of dubbo</description>
 	<url>http://code.alibabatech.com/wiki/display/dubbo</url>
 	<inceptionYear>2011</inceptionYear>
@@ -78,39 +78,47 @@
 	</properties>
 	<modules>
 		<module>dubbo-common</module>
-		<module>dubbo-remoting</module>
-		<module>dubbo-remoting-netty</module>
-		<module>dubbo-remoting-mina</module>
-		<module>dubbo-remoting-grizzly</module>
-		<module>dubbo-remoting-p2p</module>
-		<module>dubbo-remoting-http</module>
-		<module>dubbo-rpc</module>
-		<module>dubbo-rpc-default</module>
-		<module>dubbo-rpc-injvm</module>
-		<module>dubbo-rpc-rmi</module>
-		<module>dubbo-rpc-hessian</module>
-		<module>dubbo-validation</module>
-		<module>dubbo-cache</module>
-		<module>dubbo-cluster</module>
-		<module>dubbo-registry</module>
-		<module>dubbo-registry-default</module>
-		<module>dubbo-registry-multicast</module>
-		<module>dubbo-registry-zookeeper</module>
-		<module>dubbo-registry-redis</module>
-		<module>dubbo-monitor</module>
-		<module>dubbo-monitor-default</module>
-		<module>dubbo-config</module>
-		<module>dubbo-config-spring</module>
-		<module>dubbo-config-guice</module>
-		<module>dubbo-config-sca</module>
-		<module>dubbo-container</module>
+		<module>dubbo-remoting/dubbo-remoting-api</module>
+		<module>dubbo-remoting/dubbo-remoting-netty</module>
+		<module>dubbo-remoting/dubbo-remoting-mina</module>
+		<module>dubbo-remoting/dubbo-remoting-grizzly</module>
+		<module>dubbo-remoting/dubbo-remoting-p2p</module>
+		<module>dubbo-remoting/dubbo-remoting-http</module>
+		<module>dubbo-rpc/dubbo-rpc-api</module>
+		<module>dubbo-rpc/dubbo-rpc-default</module>
+		<module>dubbo-rpc/dubbo-rpc-injvm</module>
+		<module>dubbo-rpc/dubbo-rpc-rmi</module>
+		<module>dubbo-rpc/dubbo-rpc-hessian</module>
+		<module>dubbo-filter/dubbo-filter-default</module>
+		<module>dubbo-filter/dubbo-filter-validation</module>
+		<module>dubbo-filter/dubbo-filter-cache</module>
+		<module>dubbo-cluster/dubbo-cluster-api</module>
+		<module>dubbo-cluster/dubbo-cluster-faulttolerant</module>
+		<module>dubbo-cluster/dubbo-cluster-loadbalance</module>
+		<module>dubbo-cluster/dubbo-cluster-router</module>
+		<module>dubbo-registry/dubbo-registry-api</module>
+		<module>dubbo-registry/dubbo-registry-default</module>
+		<module>dubbo-registry/dubbo-registry-multicast</module>
+		<module>dubbo-registry/dubbo-registry-zookeeper</module>
+		<module>dubbo-registry/dubbo-registry-redis</module>
+		<module>dubbo-monitor/dubbo-monitor-api</module>
+		<module>dubbo-monitor/dubbo-monitor-default</module>
+		<module>dubbo-config/dubbo-config-api</module>
+		<module>dubbo-config/dubbo-config-spring</module>
+		<module>dubbo-config/dubbo-config-guice</module>
+		<module>dubbo-config/dubbo-config-sca</module>
+		<module>dubbo-container/dubbo-container-api</module>
+		<module>dubbo-container/dubbo-container-spring</module>
+		<module>dubbo-container/dubbo-container-jetty</module>
+		<module>dubbo-container/dubbo-container-log4j</module>
 		<module>dubbo</module>
-		<module>dubbo-registry-simple</module>
-		<module>dubbo-monitor-simple</module>
-		<module>dubbo-demo</module>
-		<module>dubbo-demo-consumer</module>
-		<module>dubbo-demo-provider</module>
-		<module>dubbo-examples</module>
+		<module>dubbo-registry/dubbo-registry-simple</module>
+		<module>dubbo-monitor/dubbo-monitor-simple</module>
+		<module>dubbo-demo/dubbo-demo-api</module>
+		<module>dubbo-demo/dubbo-demo-consumer</module>
+		<module>dubbo-demo/dubbo-demo-provider</module>
+		<module>dubbo-test/dubbo-test-showcase</module>
+		<module>dubbo-test/dubbo-test-benchmark</module>
 	</modules>
 	<dependencyManagement>
 		<dependencies>

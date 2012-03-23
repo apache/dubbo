@@ -23,7 +23,7 @@
 	</parent>
 	<artifactId>dubbo-common</artifactId>
 	<packaging>jar</packaging>
-	<name>Dubbo Common Module</name>
+	<name>${project.artifactId}</name>
 	<description>The common module of dubbo project</description>
 	<properties>
 		<skip_maven_deploy>true</skip_maven_deploy>

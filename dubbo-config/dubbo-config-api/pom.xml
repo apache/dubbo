@@ -21,9 +21,9 @@
 		<artifactId>dubbo-parent</artifactId>
 		<version>2.2.0-SNAPSHOT</version>
 	</parent>
-	<artifactId>dubbo-config</artifactId>
+	<artifactId>dubbo-config-api</artifactId>
 	<packaging>jar</packaging>
-	<name>Dubbo Config Module</name>
+	<name>${project.artifactId}</name>
 	<description>The config module of dubbo project</description>
 	<properties>
 		<skip_maven_deploy>true</skip_maven_deploy>
@@ -31,27 +31,27 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo-registry</artifactId>
+			<artifactId>dubbo-registry-api</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo-monitor</artifactId>
+			<artifactId>dubbo-monitor-api</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo-remoting</artifactId>
+			<artifactId>dubbo-remoting-api</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo-validation</artifactId>
+			<artifactId>dubbo-filter-validation</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo-cache</artifactId>
+			<artifactId>dubbo-filter-cache</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
 		<dependency>

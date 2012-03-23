@@ -23,7 +23,7 @@
 	</parent>
 	<artifactId>dubbo-remoting-grizzly</artifactId>
 	<packaging>jar</packaging>
-	<name>Dubbo Grizzly Remoting Module</name>
+	<name>${project.artifactId}</name>
 	<description>The grizzly remoting module of dubbo project</description>
 	<properties>
 		<skip_maven_deploy>true</skip_maven_deploy>
@@ -31,7 +31,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo-remoting</artifactId>
+			<artifactId>dubbo-remoting-api</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
 		<dependency>

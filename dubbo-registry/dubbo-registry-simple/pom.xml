@@ -23,7 +23,7 @@
 	</parent>
 	<artifactId>dubbo-registry-simple</artifactId>
 	<packaging>jar</packaging>
-	<name>Dubbo Simple Registry Module</name>
+	<name>${project.artifactId}</name>
 	<description>The simple registry module of dubbo project</description>
 	<properties>
 		<skip_maven_deploy>false</skip_maven_deploy>

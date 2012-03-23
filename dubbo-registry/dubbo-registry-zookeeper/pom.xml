@@ -23,7 +23,7 @@
 	</parent>
 	<artifactId>dubbo-registry-zookeeper</artifactId>
 	<packaging>jar</packaging>
-	<name>Dubbo Zookeeper Registry Module</name>
+	<name>${project.artifactId}</name>
 	<description>The zookeeper registry module of dubbo project</description>
 	<properties>
 		<skip_maven_deploy>true</skip_maven_deploy>
@@ -31,7 +31,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo-registry</artifactId>
+			<artifactId>dubbo-registry-api</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
 		<dependency>

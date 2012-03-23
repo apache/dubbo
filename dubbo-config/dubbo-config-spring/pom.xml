@@ -23,7 +23,7 @@
 	</parent>
 	<artifactId>dubbo-config-spring</artifactId>
 	<packaging>jar</packaging>
-	<name>Dubbo Spring Config Module</name>
+	<name>${project.artifactId}</name>
 	<description>The spring config module of dubbo project</description>
 	<properties>
 		<skip_maven_deploy>true</skip_maven_deploy>
@@ -31,7 +31,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo-config</artifactId>
+			<artifactId>dubbo-config-api</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
 		<dependency>
