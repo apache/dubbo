@@ -70,7 +70,7 @@ public class HeaderExchangeClient implements ExchangeClient {
         }
         this.client = client;
         this.channel = new HeaderExchangeChannel(client);
-        this.heartbeat = client.getUrl().getParameter( Constants.HEARTBEAT_KEY, Constants.DEFAULT_HEARTBEAT );
+        this.heartbeat = client.getUrl().getParameter( Constants.HEARTBEAT_KEY, 0 );
         this.heartbeatTimeout = client.getUrl().getParameter( Constants.HEARTBEAT_TIMEOUT_KEY, heartbeat * 3 );
         if ( heartbeatTimeout < heartbeat * 2 ) {
             throw new IllegalStateException( "heartbeatTimeout < heartbeatInterval * 2" );
