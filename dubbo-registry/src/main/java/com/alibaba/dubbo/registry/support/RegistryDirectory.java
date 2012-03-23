@@ -25,7 +25,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
@@ -85,7 +84,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     private volatile Map<String, Map<String, String>> overrideMap;
     
     // Map<url, Invoker> cache service url to invoker mapping.
-    private Map<String, Invoker<T>> urlInvokerMap = new ConcurrentHashMap<String, Invoker<T>>();
+    private volatile Map<String, Invoker<T>> urlInvokerMap;
     
     // Map<methodName, Invoker> cache service method to invokers mapping.
     private volatile Map<String, List<Invoker<T>>> methodInvokerMap;
@@ -194,7 +193,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * @param invokerUrls 传入的参数不能为null
      */
     private void refreshInvoker(List<URL> invokerUrls){
-        if (invokerUrls.size() == 0){
+        if (invokerUrls.size() == 0 && urlInvokerMap != null){
             List<Invoker<T>> invokerList = new ArrayList<Invoker<T>>(urlInvokerMap.values());
             for (Invoker<T> invoker : invokerList) {
                 URL url ;
@@ -272,7 +271,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         if (urls == null || urls.size() == 0){
             return null;
         }
-        Map<String, Map<String, String>> overrides = new ConcurrentHashMap<String, Map<String,String>>(urls.size());
+        Map<String, Map<String, String>> overrides = new HashMap<String, Map<String,String>>(urls.size());
         for(URL url : urls){
             Map<String,String> override = new HashMap<String, String>(url.getParameters());
             //override 上的anyhost可能是自动添加的，不能影响改变url判断
@@ -346,7 +345,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         if(urls == null || urls.size() == 0){
             return null;
         }
-        Map<String, Invoker<T>> newUrlInvokerMap = new ConcurrentHashMap<String, Invoker<T>>();
+        Map<String, Invoker<T>> newUrlInvokerMap = new HashMap<String, Invoker<T>>();
         Set<String> keys = new HashSet<String>();
         for (URL providerUrl : urls) {
             URL url = mergeUrl(providerUrl);
@@ -357,7 +356,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             }
             keys.add(key);
             // 缓存key为没有合并消费端参数的URL，不管消费端如何合并参数，如果服务端URL发生变化，则重新refer
-            Invoker<T> invoker = urlInvokerMap.get(key);
+            Invoker<T> invoker = urlInvokerMap == null ? null : urlInvokerMap.get(key);
             if (invoker == null) { // 缓存中没有，重新refer
                 try {
                     invoker = new InvokerDelegete<T>(protocol.refer(serviceType, url), url, providerUrl);
