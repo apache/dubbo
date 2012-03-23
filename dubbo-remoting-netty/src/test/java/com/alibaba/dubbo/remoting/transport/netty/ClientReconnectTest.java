@@ -78,9 +78,9 @@ public class ClientReconnectTest {
         }catch (Exception e) {
             //do nothing
         }
-        Thread.sleep(1000);//重连线程的运行
+        Thread.sleep(1500);//重连线程的运行
         Assert.assertEquals("no error message ", 0 , LogUtil.findMessage(Level.ERROR, "client reconnect to "));
-        Assert.assertEquals("no warn message ", 0 , LogUtil.findMessage(Level.WARN, "client reconnect to "));
+        Assert.assertEquals("must have one warn message ", 1 , LogUtil.findMessage(Level.WARN, "client reconnect to "));
         DubboAppender.doStop();
     }
   
@@ -93,15 +93,15 @@ public class ClientReconnectTest {
         DubboAppender.doStart();
         String url = "exchange://127.0.0.3:"+port + "/client.reconnect.test?check=false&"
         +Constants.RECONNECT_KEY+"="+1 + //1ms reconnect,保证有足够频率的重连
-        "&"+Constants.SHUTDOWN_TIMEOUT_KEY+ "=0";//shutdown时间足够短，确保error日志输出
+        "&"+Constants.SHUTDOWN_TIMEOUT_KEY+ "=100";//shutdown时间足够短，确保error日志输出
         try{
             Exchangers.connect(url);
         }catch (Exception e) {
             //do nothing
         }
-        Thread.sleep(1000);//重连线程的运行
+        Thread.sleep(1500);//重连线程的运行
         Assert.assertEquals("only one error message ", 1 , LogUtil.findMessage(Level.ERROR, "client reconnect to "));
-        Assert.assertEquals("no warn message ", 0 , LogUtil.findMessage(Level.WARN, "client reconnect to "));
+        Assert.assertEquals("no warn message ", 1 , LogUtil.findMessage(Level.WARN, "client reconnect to "));
         DubboAppender.doStop();
     }
     
