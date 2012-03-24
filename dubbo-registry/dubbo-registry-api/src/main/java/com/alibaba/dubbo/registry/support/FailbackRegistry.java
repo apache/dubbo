@@ -219,7 +219,8 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             doRegister(url);
             removeFailedRegistered(url);
         } catch (Exception t) {
-            if (getUrl().getParameter(Constants.CHECK_KEY, true)) { // 如果开启了启动时检测，则直接抛出异常
+            if (getUrl().getParameter(Constants.CHECK_KEY, true)
+                    && ! Constants.SUBSCRIBE_PROTOCOL.equals(getUrl().getProtocol())) { // 如果开启了启动时检测，则直接抛出异常
                 throw new IllegalStateException("Failed to register " + url + " to registry " + getUrl().getAddress() + ", cause: " + t.getMessage(), t);
             }
             // 否则，将失败的注册请求记录到失败列表，定时重试
@@ -235,7 +236,8 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             doUnregister(url);
             removeFailedRegistered(url);
         } catch (Exception t) {
-            if (getUrl().getParameter(Constants.CHECK_KEY, true)) { // 如果开启了启动时检测，则直接抛出异常
+            if (getUrl().getParameter(Constants.CHECK_KEY, true)
+                    && ! Constants.SUBSCRIBE_PROTOCOL.equals(getUrl().getProtocol())) { // 如果开启了启动时检测，则直接抛出异常
                 throw new IllegalStateException("Failed to unregister " + url + " to registry " + getUrl().getAddress() + ", cause: " + t.getMessage(), t);
             }
             // 否则，将失败的取消注册请求记录到失败列表，定时重试
