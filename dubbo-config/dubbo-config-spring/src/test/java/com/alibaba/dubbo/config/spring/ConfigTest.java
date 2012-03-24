@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.config;
+package com.alibaba.dubbo.config.spring;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -25,8 +25,6 @@ import static org.junit.matchers.JUnitMatchers.containsString;
 
 import java.util.List;
 
-import com.alibaba.dubbo.common.utils.ConfigUtils;
-import com.alibaba.dubbo.config.spring.ServiceBean;
 import org.junit.Test;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -34,6 +32,13 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.utils.NetUtils;
+import com.alibaba.dubbo.config.ApplicationConfig;
+import com.alibaba.dubbo.config.ConsumerConfig;
+import com.alibaba.dubbo.config.ProtocolConfig;
+import com.alibaba.dubbo.config.ProviderConfig;
+import com.alibaba.dubbo.config.ReferenceConfig;
+import com.alibaba.dubbo.config.RegistryConfig;
+import com.alibaba.dubbo.config.ServiceConfig;
 import com.alibaba.dubbo.config.api.DemoService;
 import com.alibaba.dubbo.config.consumer.DemoActionByAnnotation;
 import com.alibaba.dubbo.config.consumer.DemoActionBySetter;
@@ -686,11 +691,12 @@ public class ConfigTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testCustomizeParameter() throws Exception {
         ClassPathXmlApplicationContext context =
-                new ClassPathXmlApplicationContext("customize-parameter.xml");
+                new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/customize-parameter.xml");
         context.start();
-        ServiceBean serviceBean = (ServiceBean) context.getBean("demoServiceExport");
+        ServiceBean<DemoService> serviceBean = (ServiceBean<DemoService>) context.getBean("demoServiceExport");
         URL url = (URL) serviceBean.toUrls().get(0);
         assertEquals("protocol-paramA", url.getParameter("protocol.paramA"));
         assertEquals("service-paramA", url.getParameter("service.paramA"));
