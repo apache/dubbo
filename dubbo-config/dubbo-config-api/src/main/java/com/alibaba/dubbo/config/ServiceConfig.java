@@ -311,7 +311,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 map.put(Constants.ANYHOST_KEY, "true");
             }
             map.put("dubbo", Version.getVersion());
-            // map.put(Constants.TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
+            map.put(Constants.TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
+            if (ConfigUtils.getPid() > 0) {
+                map.put(Constants.PID_KEY, String.valueOf(ConfigUtils.getPid()));
+            }
             appendParameters(map, application);
             appendParameters(map, module);
             appendParameters(map, provider);

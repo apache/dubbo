@@ -258,6 +258,8 @@ public class Constants {
 
     public static final int     DEFAULT_SHUTDOWN_TIMEOUT           = 1000 * 60 * 15;
 
+    public static final String  PID_KEY                            = "pid";
+
     public static final String  TIMESTAMP_KEY                      = "timestamp";
 
     public static final String  CHECK_KEY                          = "check";

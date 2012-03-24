@@ -169,6 +169,11 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
                     appendParameters(map, application);
                     appendParameters(map, config);
                     map.put("path", RegistryService.class.getName());
+                    map.put("dubbo", Version.getVersion());
+                    map.put(Constants.TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
+                    if (ConfigUtils.getPid() > 0) {
+                        map.put(Constants.PID_KEY, String.valueOf(ConfigUtils.getPid()));
+                    }
                     if (! map.containsKey("protocol")) {
                         if (ExtensionLoader.getExtensionLoader(RegistryFactory.class).hasExtension("remote")) {
                             map.put("protocol", "remote");
@@ -202,6 +207,11 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
         appendProperties(monitor);
         Map<String, String> map = new HashMap<String, String>();
         map.put(Constants.INTERFACE_KEY, MonitorService.class.getName());
+        map.put("dubbo", Version.getVersion());
+        map.put(Constants.TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
+        if (ConfigUtils.getPid() > 0) {
+            map.put(Constants.PID_KEY, String.valueOf(ConfigUtils.getPid()));
+        }
         appendParameters(map, monitor);
         String address = monitor.getAddress();
         String sysaddress = System.getProperty("dubbo.monitor.address");
