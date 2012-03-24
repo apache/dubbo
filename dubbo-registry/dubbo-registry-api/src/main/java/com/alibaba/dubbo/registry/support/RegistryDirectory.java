@@ -76,22 +76,22 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     private volatile boolean forbidden = false;
     
-    private volatile URL directoryUrl; // 构造时初始化，断言不为null，总是赋非null值
+    private volatile URL directoryUrl; // 构造时初始化，断言不为null，并且总是赋非null值
     
-    private volatile URL overrideDirectoryUrl; // 构造时初始化，断言不为null，总是赋非null值
+    private volatile URL overrideDirectoryUrl; // 构造时初始化，断言不为null，并且总是赋非null值
 
     /*override规则 
      * 优先级：override>-D>consumer>provider
      * 第一种规则：针对某个provider <ip:port,timeout=100>
      * 第二种规则：针对所有provider <* ,timeout=5000>
      */
-    private volatile Map<String, Map<String, String>> overrideMap; // 可能为null，请拷贝本地引用再使用，不可以有间隙操作：if (overrideMap != null) overrideMap.get(); 
+    private volatile Map<String, Map<String, String>> overrideMap; // 初始为null以及中途可能被赋为null，请使用局部变量引用
     
     // Map<url, Invoker> cache service url to invoker mapping.
-    private volatile Map<String, Invoker<T>> urlInvokerMap; // 可能为null，请拷贝本地引用再使用，不可以有间隙操作：if (urlInvokerMap != null) urlInvokerMap.get(); 
+    private volatile Map<String, Invoker<T>> urlInvokerMap; // 初始为null以及中途可能被赋为null，请使用局部变量引用
     
     // Map<methodName, Invoker> cache service method to invokers mapping.
-    private volatile Map<String, List<Invoker<T>>> methodInvokerMap; // 可能为null，请拷贝本地引用再使用，不可以有间隙操作：if (methodInvokerMap != null) methodInvokerMap.get(); 
+    private volatile Map<String, List<Invoker<T>>> methodInvokerMap; // 初始为null以及中途可能被赋为null，请使用局部变量引用
 
     public RegistryDirectory(Class<T> serviceType, URL url) {
         super(url);
