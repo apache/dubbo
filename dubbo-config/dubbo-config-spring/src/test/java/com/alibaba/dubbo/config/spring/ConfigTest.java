@@ -188,7 +188,8 @@ public class ConfigTest {
         try {
             List<URL> urls = registryService.getRegistered().get("com.alibaba.dubbo.config.api.DemoService");
             assertNull(urls);
-            while (urls == null) {
+            int i = 0;
+            while ((i ++) < 60 && urls == null) {
                 urls = registryService.getRegistered().get("com.alibaba.dubbo.config.api.DemoService");
                 Thread.sleep(10);
             }
