@@ -452,6 +452,11 @@
 						<xsd:documentation><![CDATA[ The service application. ]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
+				<xsd:attribute name="module" type="xsd:string" use="optional">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[ The service module. ]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
 				<xsd:attribute name="registry" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[ The service registry. ]]></xsd:documentation>

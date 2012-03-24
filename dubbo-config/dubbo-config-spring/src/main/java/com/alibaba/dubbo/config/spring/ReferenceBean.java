@@ -26,6 +26,7 @@ import org.springframework.context.ApplicationContextAware;
 
 import com.alibaba.dubbo.config.ApplicationConfig;
 import com.alibaba.dubbo.config.ConsumerConfig;
+import com.alibaba.dubbo.config.ModuleConfig;
 import com.alibaba.dubbo.config.MonitorConfig;
 import com.alibaba.dubbo.config.Parameter;
 import com.alibaba.dubbo.config.ReferenceConfig;
@@ -95,6 +96,24 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
                 }
                 if (applicationConfig != null) {
                     setApplication(applicationConfig);
+                }
+            }
+        }
+        if (getModule() == null
+                && (getConsumer() == null || getConsumer().getModule() == null)) {
+            Map<String, ModuleConfig> moduleConfigMap = applicationContext == null ? null : applicationContext.getBeansOfType(ModuleConfig.class, false, false);
+            if (moduleConfigMap != null && moduleConfigMap.size() > 0) {
+                ModuleConfig moduleConfig = null;
+                for (ModuleConfig config : moduleConfigMap.values()) {
+                    if (config.isDefault() == null || config.isDefault().booleanValue()) {
+                        if (moduleConfig != null) {
+                            throw new IllegalStateException("Duplicate module configs: " + moduleConfig + " and " + config);
+                        }
+                        moduleConfig = config;
+                    }
+                }
+                if (moduleConfig != null) {
+                    setModule(moduleConfig);
                 }
             }
         }

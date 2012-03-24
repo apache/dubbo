@@ -30,6 +30,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.support.AbstractApplicationContext;
 
 import com.alibaba.dubbo.config.ApplicationConfig;
+import com.alibaba.dubbo.config.ModuleConfig;
 import com.alibaba.dubbo.config.MonitorConfig;
 import com.alibaba.dubbo.config.ProtocolConfig;
 import com.alibaba.dubbo.config.ProviderConfig;
@@ -155,6 +156,24 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                 }
                 if (applicationConfig != null) {
                     setApplication(applicationConfig);
+                }
+            }
+        }
+        if (getModule() == null
+                && (getProvider() == null || getProvider().getModule() == null)) {
+            Map<String, ModuleConfig> moduleConfigMap = applicationContext == null ? null : applicationContext.getBeansOfType(ModuleConfig.class, false, false);
+            if (moduleConfigMap != null && moduleConfigMap.size() > 0) {
+                ModuleConfig moduleConfig = null;
+                for (ModuleConfig config : moduleConfigMap.values()) {
+                    if (config.isDefault() == null || config.isDefault().booleanValue()) {
+                        if (moduleConfig != null) {
+                            throw new IllegalStateException("Duplicate module configs: " + moduleConfig + " and " + config);
+                        }
+                        moduleConfig = config;
+                    }
+                }
+                if (moduleConfig != null) {
+                    setModule(moduleConfig);
                 }
             }
         }
