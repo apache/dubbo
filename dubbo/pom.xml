@@ -49,11 +49,23 @@
 			<groupId>com.alibaba</groupId>
 			<artifactId>dubbo-config-guice</artifactId>
 			<version>${project.parent.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.google.inject</groupId>
+					<artifactId>guice</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>dubbo-config-sca</artifactId>
 			<version>${project.parent.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.tuscany.sca</groupId>
+					<artifactId>tuscany-sca-api</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.alibaba</groupId>
@@ -134,6 +146,11 @@
 		</dependency>
 		<dependency>
 			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo-filter-default</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
 			<artifactId>dubbo-registry-default</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
@@ -167,6 +184,27 @@
 		<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>dubbo-monitor-default</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo-container-spring</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo-container-jetty</artifactId>
+			<version>${project.parent.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.mortbay.jetty</groupId>
+					<artifactId>jetty</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo-container-log4j</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
 	</dependencies>
@@ -220,32 +258,39 @@
 								<includes>
 								    <include>com.alibaba:hessian-lite</include>
 									<include>com.alibaba:dubbo-common</include>
-									<include>com.alibaba:dubbo-remoting</include>
+									<include>com.alibaba:dubbo-remoting-api</include>
 									<include>com.alibaba:dubbo-remoting-netty</include>
 									<include>com.alibaba:dubbo-remoting-mina</include>
 									<include>com.alibaba:dubbo-remoting-grizzly</include>
 									<include>com.alibaba:dubbo-remoting-p2p</include>
 									<include>com.alibaba:dubbo-remoting-http</include>
-									<include>com.alibaba:dubbo-rpc</include>
+									<include>com.alibaba:dubbo-rpc-api</include>
 									<include>com.alibaba:dubbo-rpc-default</include>
 									<include>com.alibaba:dubbo-rpc-injvm</include>
 									<include>com.alibaba:dubbo-rpc-rmi</include>
 									<include>com.alibaba:dubbo-rpc-hessian</include>
-									<include>com.alibaba:dubbo-validation</include>
-									<include>com.alibaba:dubbo-cache</include>
-									<include>com.alibaba:dubbo-cluster</include>
-									<include>com.alibaba:dubbo-registry</include>
+									<include>com.alibaba:dubbo-filter-default</include>
+									<include>com.alibaba:dubbo-filter-validation</include>
+									<include>com.alibaba:dubbo-filter-cache</include>
+									<include>com.alibaba:dubbo-cluster-api</include>
+									<include>com.alibaba:dubbo-cluster-faulttolerant</include>
+									<include>com.alibaba:dubbo-cluster-loadbalance</include>
+									<include>com.alibaba:dubbo-cluster-router</include>
+									<include>com.alibaba:dubbo-registry-api</include>
 									<include>com.alibaba:dubbo-registry-default</include>
 									<include>com.alibaba:dubbo-registry-multicast</include>
 									<include>com.alibaba:dubbo-registry-zookeeper</include>
 									<include>com.alibaba:dubbo-registry-redis</include>
-									<include>com.alibaba:dubbo-monitor</include>
+									<include>com.alibaba:dubbo-monitor-api</include>
 									<include>com.alibaba:dubbo-monitor-default</include>
-									<include>com.alibaba:dubbo-config</include>
+									<include>com.alibaba:dubbo-config-api</include>
 									<include>com.alibaba:dubbo-config-spring</include>
 									<include>com.alibaba:dubbo-config-guice</include>
 									<include>com.alibaba:dubbo-config-sca</include>
-									<include>com.alibaba:dubbo-container</include>
+									<include>com.alibaba:dubbo-container-api</include>
+									<include>com.alibaba:dubbo-container-spring</include>
+									<include>com.alibaba:dubbo-container-jetty</include>
+									<include>com.alibaba:dubbo-container-log4j</include>
 								</includes>
 							</artifactSet>
 							<transformers>
