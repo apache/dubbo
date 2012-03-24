@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Random;
 
 import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcStatus;
@@ -34,7 +35,7 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
     
     private final Random random = new Random();
 
-    protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, Invocation invocation) {
+    protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         int length = invokers.size(); // 总个数
         int leastActive = -1; // 最小的活跃数
         int leastCount = 0; // 相同最小活跃数的个数

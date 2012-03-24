@@ -18,6 +18,7 @@ package com.alibaba.dubbo.rpc.cluster.loadbalance;
 import java.util.List;
 import java.util.Random;
 
+import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 
@@ -33,7 +34,7 @@ public class RandomLoadBalance extends AbstractLoadBalance {
 
     private final Random random = new Random();
 
-    protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, Invocation invocation) {
+    protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         int length = invokers.size(); // 总个数
         int totalWeight = 0; // 总权重
         boolean sameWeight = true; // 权重是否都一样

@@ -40,7 +40,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
 
     @SuppressWarnings("unchecked")
     @Override
-    protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, Invocation invocation) {
+    protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         String key = invokers.get(0).getUrl().getServiceKey() + "." + invocation.getMethodName();
         int identityHashCode = System.identityHashCode(invokers);
         ConsistentHashSelector<T> selector = (ConsistentHashSelector<T>) selectors.get(key);
