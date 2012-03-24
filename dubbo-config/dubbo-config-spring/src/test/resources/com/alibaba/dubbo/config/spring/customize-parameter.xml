@@ -28,8 +28,8 @@
 
     <dubbo:protocol p:protocol-paramA="protocol-paramA" />
 
-    <bean id="demoService" class="com.alibaba.dubbo.config.provider.impl.DemoServiceImpl" />
+    <bean id="demoService" class="com.alibaba.dubbo.config.spring.impl.DemoServiceImpl" />
     
-    <dubbo:service id="demoServiceExport" p:service-paramA="service-paramA" registry="naRegistry" ref="demoService" interface="com.alibaba.dubbo.config.api.DemoService" />
+    <dubbo:service id="demoServiceExport" p:service-paramA="service-paramA" registry="naRegistry" ref="demoService" interface="com.alibaba.dubbo.config.spring.api.DemoService" />
 
 </beans>

@@ -29,8 +29,8 @@
     <dubbo:protocol name="dubbo" port="20883" />
     
     <!-- 暴露服务配置 -->
-    <dubbo:service interface="com.alibaba.dubbo.config.api.DemoService" ref="demoService" delay="-1" />
+    <dubbo:service interface="com.alibaba.dubbo.config.spring.api.DemoService" ref="demoService" delay="-1" />
      
-    <bean id="demoService" class="com.alibaba.dubbo.config.provider.impl.DemoServiceImpl" />
+    <bean id="demoService" class="com.alibaba.dubbo.config.spring.impl.DemoServiceImpl" />
  
 </beans>

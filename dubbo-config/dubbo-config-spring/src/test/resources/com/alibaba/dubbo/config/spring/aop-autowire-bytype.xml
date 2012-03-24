@@ -22,7 +22,7 @@
     http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd" default-autowire="byName">
     
     <context:annotation-config />
-    <bean id="demoInterceptor" class="com.alibaba.dubbo.config.consumer.DemoInterceptor" />
+    <bean id="demoInterceptor" class="com.alibaba.dubbo.config.spring.action.DemoInterceptor" />
 	<bean id="demoAdvisor" class="org.springframework.aop.support.RegexpMethodPointcutAdvisor">
         <property name="advice" ref="demoInterceptor" />
         <property name="patterns">
@@ -51,10 +51,10 @@
     <dubbo:registry address="N/A" />
     
     <!-- 引用服务配置 -->
-    <dubbo:reference id="demoService" interface="com.alibaba.dubbo.config.api.DemoService" url="dubbo://127.0.0.1:20813" />
+    <dubbo:reference id="demoService" interface="com.alibaba.dubbo.config.spring.api.DemoService" url="dubbo://127.0.0.1:20813" />
 
-	<bean id="demoActionBySetter" class="com.alibaba.dubbo.config.consumer.DemoActionBySetter" />
+	<bean id="demoActionBySetter" class="com.alibaba.dubbo.config.spring.action.DemoActionBySetter" />
  
-	<bean id="demoActionByAnnotation" class="com.alibaba.dubbo.config.consumer.DemoActionByAnnotation" />
+	<bean id="demoActionByAnnotation" class="com.alibaba.dubbo.config.spring.action.DemoActionByAnnotation" />
  
 </beans>
