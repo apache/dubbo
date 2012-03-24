@@ -39,11 +39,11 @@ import com.alibaba.dubbo.config.ProviderConfig;
 import com.alibaba.dubbo.config.ReferenceConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.config.ServiceConfig;
-import com.alibaba.dubbo.config.api.DemoService;
-import com.alibaba.dubbo.config.consumer.DemoActionByAnnotation;
-import com.alibaba.dubbo.config.consumer.DemoActionBySetter;
-import com.alibaba.dubbo.config.provider.impl.DemoServiceImpl;
-import com.alibaba.dubbo.config.support.MockFilter;
+import com.alibaba.dubbo.config.spring.action.DemoActionByAnnotation;
+import com.alibaba.dubbo.config.spring.action.DemoActionBySetter;
+import com.alibaba.dubbo.config.spring.api.DemoService;
+import com.alibaba.dubbo.config.spring.filter.MockFilter;
+import com.alibaba.dubbo.config.spring.impl.DemoServiceImpl;
 import com.alibaba.dubbo.registry.RegistryService;
 import com.alibaba.dubbo.registry.support.SimpleRegistryExporter;
 import com.alibaba.dubbo.registry.support.SimpleRegistryService;
@@ -51,6 +51,7 @@ import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Filter;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
+
 
 /**
  * ConfigTest
