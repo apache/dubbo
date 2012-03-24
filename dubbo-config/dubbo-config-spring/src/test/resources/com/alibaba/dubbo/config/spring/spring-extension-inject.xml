@@ -26,7 +26,7 @@
     <!-- 连接注册中心配置 -->
     <dubbo:registry address="N/A" />
      
-    <bean id="mockDao" class="com.alibaba.dubbo.config.support.MockDaoImpl" />
+    <bean id="mockDao" class="com.alibaba.dubbo.config.spring.filter.MockDaoImpl" />
     
     <!-- 暴露服务配置 -->
     <dubbo:service id="demoServiceConfig" interface="com.alibaba.dubbo.config.spring.api.DemoService" ref="demoService" filter="mymock" />
