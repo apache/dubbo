@@ -80,6 +80,9 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
     
     // 应用信息
     protected ApplicationConfig    application;
+    
+    // 模块信息
+    protected ModuleConfig         module;
 
     // 注册中心
     protected List<RegistryConfig> registries;
@@ -408,6 +411,14 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
         this.application = application;
     }
 
+    public ModuleConfig getModule() {
+        return module;
+    }
+
+    public void setModule(ModuleConfig module) {
+        this.module = module;
+    }
+
     public RegistryConfig getRegistry() {
         return registries == null || registries.size() == 0 ? null : registries.get(0);
     }
@@ -470,4 +481,5 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
     public void setOndisconnect(String ondisconnect) {
         this.ondisconnect = ondisconnect;
     }
+
 }

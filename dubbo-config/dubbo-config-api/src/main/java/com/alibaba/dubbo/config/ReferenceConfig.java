@@ -194,11 +194,22 @@ public class ReferenceConfig<T> extends AbstractConsumerConfig {
             if (application == null) {
                 application = consumer.getApplication();
             }
+            if (module == null) {
+                module = consumer.getModule();
+            }
             if (registries == null) {
                 registries = consumer.getRegistries();
             }
             if (monitor == null) {
                 monitor = consumer.getMonitor();
+            }
+        }
+        if (module != null) {
+            if (registries == null) {
+                registries = module.getRegistries();
+            }
+            if (monitor == null) {
+                monitor = module.getMonitor();
             }
         }
         if (application != null) {
@@ -224,6 +235,7 @@ public class ReferenceConfig<T> extends AbstractConsumerConfig {
         }
         map.put(Constants.INTERFACE_KEY, interfaceName);
         appendParameters(map, application);
+        appendParameters(map, module);
         appendParameters(map, consumer, Constants.DEFAULT_KEY);
         appendParameters(map, this);
         String prifix = StringUtils.getServiceKey(map);

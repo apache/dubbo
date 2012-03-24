@@ -18,20 +18,16 @@ package com.alibaba.dubbo.config;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.compiler.support.AdaptiveCompiler;
-
-
 /**
- * ApplicationConfig
+ * ModuleConfig
  * 
  * @author william.liangf
  */
-public class ApplicationConfig extends AbstractConfig {
+public class ModuleConfig extends AbstractConfig {
 
     private static final long    serialVersionUID = 5508512956753757169L;
 
-    // 应用名称
+    // 模块名称
     private String               name;
 
     // 模块版本
@@ -43,15 +39,6 @@ public class ApplicationConfig extends AbstractConfig {
     // 组织名(BU或部门)
     private String               organization;
 
-    // 分层
-    private String               architecture;
-
-    // 环境，如：dev/test/run
-    private String               environment;
-
-    // Java代码编译器
-    private String               compiler;
-
     // 注册中心
     private List<RegistryConfig> registries;
 
@@ -61,14 +48,14 @@ public class ApplicationConfig extends AbstractConfig {
     // 是否为缺省
     private Boolean              isDefault;
 
-    public ApplicationConfig() {
+    public ModuleConfig() {
     }
     
-    public ApplicationConfig(String name) {
+    public ModuleConfig(String name) {
         setName(name);
     }
     
-    @Parameter(key = Constants.APPLICATION_KEY, required = true)
+    @Parameter(key = "module", required = true)
     public String getName() {
         return name;
     }
@@ -81,7 +68,7 @@ public class ApplicationConfig extends AbstractConfig {
         }
     }
 
-    @Parameter(key = "application.version")
+    @Parameter(key = "module.version")
     public String getVersion() {
         return version;
     }
@@ -106,29 +93,6 @@ public class ApplicationConfig extends AbstractConfig {
 	public void setOrganization(String organization) {
 	    checkName("organization", organization);
 		this.organization = organization;
-	}
-
-	public String getArchitecture() {
-        return architecture;
-    }
-
-    public void setArchitecture(String architecture) {
-        checkName("architecture", architecture);
-        this.architecture = architecture;
-    }
-
-    public String getEnvironment() {
-		return environment;
-	}
-
-	public void setEnvironment(String environment) {
-	    checkName("environment", environment);
-	    if(environment != null) {
-            if (! ("develop".equals(environment) || "test".equals(environment) || "product".equals(environment))) {
-                throw new IllegalStateException("Unsupported environment: " + environment + ", only support develop/test/product, default is product.");
-            }
-        }
-		this.environment = environment;
 	}
 
     public RegistryConfig getRegistry() {
@@ -160,15 +124,6 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setMonitor(String monitor) {
         this.monitor = new MonitorConfig(monitor);
-    }
-
-    public String getCompiler() {
-        return compiler;
-    }
-
-    public void setCompiler(String compiler) {
-        this.compiler = compiler;
-        AdaptiveCompiler.setDefaultCompiler(compiler);
     }
 
     public Boolean isDefault() {

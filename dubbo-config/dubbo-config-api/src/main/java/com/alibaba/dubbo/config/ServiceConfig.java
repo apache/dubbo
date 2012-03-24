@@ -134,6 +134,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             if (application == null) {
                 application = provider.getApplication();
             }
+            if (module == null) {
+                module = provider.getModule();
+            }
             if (registries == null) {
                 registries = provider.getRegistries();
             }
@@ -142,6 +145,14 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             }
             if (protocols == null) {
                 protocols = provider.getProtocols();
+            }
+        }
+        if (module != null) {
+            if (registries == null) {
+                registries = module.getRegistries();
+            }
+            if (monitor == null) {
+                monitor = module.getMonitor();
             }
         }
         if (application != null) {
@@ -302,6 +313,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             map.put("dubbo", Version.getVersion());
             // map.put(Constants.TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
             appendParameters(map, application);
+            appendParameters(map, module);
             appendParameters(map, provider);
             appendParameters(map, protocolConfig);
             appendParameters(map, this);
