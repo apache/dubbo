@@ -20,19 +20,26 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
+import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.common.utils.UrlUtils;
@@ -56,6 +63,14 @@ public class MulticastRegistry extends FailbackRegistry {
     private final MulticastSocket mutilcastSocket;
 
     private final ConcurrentMap<String, Set<String>> notified = new ConcurrentHashMap<String, Set<String>>();
+
+    private final ScheduledExecutorService cleanExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("DubboMulticastRegistryCleanTimer", true));
+
+    private final ScheduledFuture<?> cleanFuture;
+
+    private final int cleanPeriod;
+    
+    private volatile boolean admin = false;
 
     public MulticastRegistry(URL url) {
         super(url);
@@ -94,6 +109,20 @@ public class MulticastRegistry extends FailbackRegistry {
         } catch (IOException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
+        this.cleanPeriod = url.getParameter(Constants.SESSION_TIMEOUT_KEY, Constants.DEFAULT_SESSION_TIMEOUT);
+        if (url.getParameter("clean", true)) {
+            this.cleanFuture = cleanExecutor.scheduleWithFixedDelay(new Runnable() {
+                public void run() {
+                    try {
+                        clean(); // 清除过期者
+                    } catch (Throwable t) { // 防御性容错
+                        logger.error("Unexpected exception occur at clean expired provider, cause: " + t.getMessage(), t);
+                    }
+                }
+            }, cleanPeriod, cleanPeriod, TimeUnit.MILLISECONDS);
+        } else {
+            this.cleanFuture = null;
+        }
     }
     
     private static boolean isMulticastAddress(String ip) {
@@ -103,6 +132,60 @@ public class MulticastRegistry extends FailbackRegistry {
             if (StringUtils.isInteger(prefix)) {
                 int p = Integer.parseInt(prefix);
                 return p >= 224 && p <= 239;
+            }
+        }
+        return false;
+    }
+    
+    private void clean() {
+        if (admin) {
+            for (Set<String> providers : new HashSet<Set<String>>(notified.values())) {
+                for (String provider : new HashSet<String>(providers)) {
+                    URL url = URL.valueOf(provider);
+                    if (isExpired(url)) {
+                        if (logger.isWarnEnabled()) {
+                            logger.warn("Clean expired provider " + url);
+                        }
+                        doUnregister(url);
+                    }
+                }
+            }
+        }
+    }
+    
+    private boolean isExpired(URL url) {
+        if (Constants.SUBSCRIBE_PROTOCOL.equals(url.getProtocol())
+                || Constants.ROUTE_PROTOCOL.equals(url.getProtocol())
+                || Constants.OVERRIDE_PROTOCOL.equals(url.getProtocol())) {
+            return false;
+        }
+        Socket socket = null;
+        try {
+            socket = new Socket(url.getHost(), url.getPort());
+        } catch (Throwable e) {
+            try {
+                Thread.sleep(100);
+            } catch (Throwable e2) {
+            }
+            Socket socket2 = null;
+            try {
+                socket2 = new Socket(url.getHost(), url.getPort());
+            } catch (Throwable e2) {
+                return true;
+            } finally {
+                if (socket2 != null) {
+                    try {
+                        socket2.close();
+                    } catch (Throwable e2) {
+                    }
+                }
+            }
+        } finally {
+            if (socket != null) {
+                try {
+                    socket.close();
+                } catch (Throwable e) {
+                }
             }
         }
         return false;
@@ -172,6 +255,9 @@ public class MulticastRegistry extends FailbackRegistry {
     }
 
     protected void doSubscribe(URL url, NotifyListener listener) {
+        if (Constants.ANY_VALUE.equals(url.getServiceInterface())) {
+            admin = true;
+        }
         if (! Constants.ANY_VALUE.equals(url.getServiceInterface())
                 && url.getParameter(Constants.REGISTER_KEY, true)) {
             register(url, null);
@@ -203,6 +289,13 @@ public class MulticastRegistry extends FailbackRegistry {
 
     public void destroy() {
         super.destroy();
+        try {
+            if (cleanFuture != null) {
+                cleanFuture.cancel(true);
+            }
+        } catch (Throwable t) {
+            logger.warn(t.getMessage(), t);
+        }
         try {
             mutilcastSocket.leaveGroup(mutilcastAddress);
             mutilcastSocket.close();
