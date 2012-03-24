@@ -36,10 +36,11 @@ import com.alibaba.dubbo.rpc.cluster.router.MockInvokersSelector;
  */
 public abstract class AbstractDirectory<T> implements Directory<T> {
     
-    private final URL url ;
+    protected final URL url ;
+    
     protected volatile boolean destroyed = false;
 
-    private List<Router> routers = new ArrayList<Router>();
+    protected volatile List<Router> routers;
     
     public AbstractDirectory(URL url) {
         this(url, null);
@@ -48,16 +49,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     public AbstractDirectory(URL url, List<Router> routers) {
         if (url == null)
             throw new IllegalArgumentException("url == null");
-        if (routers == null){
-            routers = new ArrayList<Router>();
-        }
-        
         this.url = url;
-        String routerkey = url.getParameter(Constants.ROUTER_KEY);
-        if (routerkey != null && routerkey.length()>0 ){
-            RouterFactory routerFactory = ExtensionLoader.getExtensionLoader(RouterFactory.class).getExtension(routerkey);
-            routers.add(routerFactory.getRouter(url));
-        }
         setRouters(routers);
     }
     
@@ -66,9 +58,11 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             throw new RpcException("Directory already destroyed .url: "+ getUrl());
         }
         List<Invoker<T>> invokers = doList(invocation);
-
-        for (Router router: routers){
-            invokers = router.route(invokers, getUrl(), invocation);
+        List<Router> localRouters = this.routers; // local reference
+        if (localRouters != null && localRouters.size() > 0) {
+            for (Router router: localRouters){
+                invokers = router.route(invokers, getUrl(), invocation);
+            }
         }
         return invokers;
     }
@@ -81,15 +75,24 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         return routers;
     }
     
-    protected abstract List<Invoker<T>> doList(Invocation invocation) throws RpcException ;
-    
-    protected void setRouters(final List<Router> r){
-    	routers = new ArrayList<Router>(r);
-        //mock invoker选择器开启
+    protected void setRouters(List<Router> routers){
+        // copy list
+        routers = routers == null ? new  ArrayList<Router>() : new ArrayList<Router>(routers);
+        // append url router
+    	String routerkey = url.getParameter(Constants.ROUTER_KEY);
+        if (routerkey != null && routerkey.length() > 0) {
+            RouterFactory routerFactory = ExtensionLoader.getExtensionLoader(RouterFactory.class).getExtension(routerkey);
+            routers.add(routerFactory.getRouter(url));
+        }
+        // append mock invoker selector
         routers.add(new MockInvokersSelector());
+    	this.routers = routers;
     }
     
     public void destroy(){
         destroyed = true;
     }
+
+    protected abstract List<Invoker<T>> doList(Invocation invocation) throws RpcException ;
+
 }
