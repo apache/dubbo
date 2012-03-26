@@ -24,7 +24,7 @@
 					<xsd:documentation><![CDATA[ The application name. ]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attribute name="version" type="xsd:string" use="required">
+			<xsd:attribute name="version" type="xsd:string">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[ The application version. ]]></xsd:documentation>
 				</xsd:annotation>
@@ -87,7 +87,7 @@
 					<xsd:documentation><![CDATA[ The module name. ]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attribute name="version" type="xsd:string" use="required">
+			<xsd:attribute name="version" type="xsd:string">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[ The module version. ]]></xsd:documentation>
 				</xsd:annotation>
