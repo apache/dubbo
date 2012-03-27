@@ -25,7 +25,8 @@
     
     <!-- 暴露服务配置 -->
     <dubbo:reference id="demoService" interface="com.alibaba.dubbo.config.spring.api.DemoService" url="dubbo://127.0.0.1:20813;dubbo://127.0.0.1:20814" init="true" timeout="100" >
-    	<dubbo:parameter key="connec.timeout" value="1000"/> 
+    	<dubbo:parameter key="connec.timeout" value="1000"/>
+        <dubbo:parameter key="remote" value="true" />
     </dubbo:reference>
      
 </beans>
