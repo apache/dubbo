@@ -33,7 +33,7 @@ public class UnregisterPageHandler implements PageHandler {
             throw new IllegalArgumentException("Please input provider parameter.");
         }
         URL providerUrl = URL.valueOf(provider);
-        RegistryContainer.getInstance().getRegistry().unregister(providerUrl, null);
+        RegistryContainer.getInstance().getRegistry().unregister(providerUrl);
         String parameter;
         if (url.hasParameter("service")) {
             parameter = "service=" + url.getParameter("service");

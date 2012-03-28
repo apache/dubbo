@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.registry.support;
+package com.alibaba.dubbo.registry.dubbo;
 
 import java.util.List;
 import java.util.Map;
@@ -45,8 +45,8 @@ public class SimpleRegistryService extends AbstractRegistryService {
     private List<String> registries;
     
     @Override
-    public void register(String service, URL url, NotifyListener listener) {
-        super.register(service, url, listener);
+    public void register(String service, URL url) {
+        super.register(service, url);
         String client = RpcContext.getContext().getRemoteAddressString();
         Map<String, URL> urls = remoteRegistered.get(client);
         if (urls == null) {
@@ -58,8 +58,8 @@ public class SimpleRegistryService extends AbstractRegistryService {
     }
 
     @Override
-    public void unregister(String service, URL url, NotifyListener listener) {
-        super.unregister(service, url, listener);
+    public void unregister(String service, URL url) {
+        super.unregister(service, url);
         String client = RpcContext.getContext().getRemoteAddressString();
         Map<String, URL> urls = remoteRegistered.get(client);
         if (urls != null && urls.size() > 0) {
@@ -81,11 +81,11 @@ public class SimpleRegistryService extends AbstractRegistryService {
                     NetUtils.getLocalHost(), 
                     RpcContext.getContext().getLocalPort(), 
                     com.alibaba.dubbo.registry.RegistryService.class.getName(), 
-                    url.getParameters()), null);
+                    url.getParameters()));
             List<String> rs = registries;
             if (rs != null && rs.size() > 0) {
                 for (String registry : rs) {
-                    register(service, UrlUtils.parseURL(registry, url.getParameters()), null);
+                    register(service, UrlUtils.parseURL(registry, url.getParameters()));
                 }
             }
         }
@@ -127,7 +127,7 @@ public class SimpleRegistryService extends AbstractRegistryService {
         ConcurrentMap<String, URL> urls = remoteRegistered.get(client);
         if (urls != null && urls.size() > 0) {
             for (Map.Entry<String, URL> entry : urls.entrySet()) {
-                super.unregister(entry.getKey(), entry.getValue(), null);
+                super.unregister(entry.getKey(), entry.getValue());
             }
         }
         Map<String, NotifyListener> listeners = remoteListeners.get(client);

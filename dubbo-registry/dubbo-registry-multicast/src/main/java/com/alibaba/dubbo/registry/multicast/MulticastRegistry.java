@@ -62,7 +62,7 @@ public class MulticastRegistry extends FailbackRegistry {
     
     private final MulticastSocket mutilcastSocket;
 
-    private final ConcurrentMap<String, Set<String>> notified = new ConcurrentHashMap<String, Set<String>>();
+    private final ConcurrentMap<URL, Set<URL>> received = new ConcurrentHashMap<URL, Set<URL>>();
 
     private final ScheduledExecutorService cleanExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("DubboMulticastRegistryCleanTimer", true));
 
@@ -139,9 +139,8 @@ public class MulticastRegistry extends FailbackRegistry {
     
     private void clean() {
         if (admin) {
-            for (Set<String> providers : new HashSet<Set<String>>(notified.values())) {
-                for (String provider : new HashSet<String>(providers)) {
-                    URL url = URL.valueOf(provider);
+            for (Set<URL> providers : new HashSet<Set<URL>>(received.values())) {
+                for (URL url : new HashSet<URL>(providers)) {
                     if (isExpired(url)) {
                         if (logger.isWarnEnabled()) {
                             logger.warn("Clean expired provider " + url);
@@ -260,7 +259,7 @@ public class MulticastRegistry extends FailbackRegistry {
         }
         if (! Constants.ANY_VALUE.equals(url.getServiceInterface())
                 && url.getParameter(Constants.REGISTER_KEY, true)) {
-            register(url, null);
+            register(url);
         }
         broadcast(Constants.SUBSCRIBE + " " + url.toFullString());
         synchronized (listener) {
@@ -274,7 +273,7 @@ public class MulticastRegistry extends FailbackRegistry {
     protected void doUnsubscribe(URL url, NotifyListener listener) {
         if (! Constants.ANY_VALUE.equals(url.getServiceInterface())
                 && url.getParameter(Constants.REGISTER_KEY, true)) {
-            unregister(url, null);
+            unregister(url);
         }
         broadcast(Constants.UNSUBSCRIBE + " " + url.toFullString());
     }
@@ -305,19 +304,18 @@ public class MulticastRegistry extends FailbackRegistry {
     }
 
     protected void registered(URL url) {
-        for (Map.Entry<String, Set<NotifyListener>> entry : getSubscribed().entrySet()) {
-            String key = entry.getKey();
-            URL subscribe = URL.valueOf(key);
-            if (UrlUtils.isMatch(subscribe, url)) {
-                Set<String> urls = notified.get(key);
+        for (Map.Entry<URL, Set<NotifyListener>> entry : getSubscribed().entrySet()) {
+            URL key = entry.getKey();
+            if (UrlUtils.isMatch(key, url)) {
+                Set<URL> urls = received.get(key);
                 if (urls == null) {
-                    notified.putIfAbsent(key, new ConcurrentHashSet<String>());
-                    urls = notified.get(key);
+                    received.putIfAbsent(key, new ConcurrentHashSet<URL>());
+                    urls = received.get(key);
                 }
-                urls.add(url.toFullString());
+                urls.add(url);
                 List<URL> list = toList(urls);
                 for (NotifyListener listener : entry.getValue()) {
-                    notify(subscribe, listener, list);
+                    notify(key, listener, list);
                     synchronized (listener) {
                         listener.notify();
                     }
@@ -327,17 +325,16 @@ public class MulticastRegistry extends FailbackRegistry {
     }
 
     protected void unregistered(URL url) {
-        for (Map.Entry<String, Set<NotifyListener>> entry : getSubscribed().entrySet()) {
-            String key = entry.getKey();
-            URL subscribe = URL.valueOf(key);
-            if (UrlUtils.isMatch(subscribe, url)) {
-                Set<String> urls = notified.get(key);
+        for (Map.Entry<URL, Set<NotifyListener>> entry : getSubscribed().entrySet()) {
+            URL key = entry.getKey();
+            if (UrlUtils.isMatch(key, url)) {
+                Set<URL> urls = received.get(key);
                 if (urls != null) {
-                    urls.remove(url.toFullString());
+                    urls.remove(url);
                 }
                 List<URL> list = toList(urls);
                 for (NotifyListener listener : entry.getValue()) {
-                    notify(subscribe, listener, list);
+                    notify(key, listener, list);
                 }
             }
         }
@@ -348,23 +345,23 @@ public class MulticastRegistry extends FailbackRegistry {
         notify(url, listener, urls);
     }
 
-    private List<URL> toList(Set<String> urls) {
+    private List<URL> toList(Set<URL> urls) {
         List<URL> list = new ArrayList<URL>();
         if (urls != null && urls.size() > 0) {
-            for (String url : urls) {
-                list.add(URL.valueOf(url));
+            for (URL url : urls) {
+                list.add(url);
             }
         }
         return list;
     }
 
-    public void register(URL url, NotifyListener listener) {
-        super.register(url, listener);
+    public void register(URL url) {
+        super.register(url);
         registered(url);
     }
 
-    public void unregister(URL url, NotifyListener listener) {
-        super.unregister(url, listener);
+    public void unregister(URL url) {
+        super.unregister(url);
         unregistered(url);
     }
 
@@ -375,15 +372,15 @@ public class MulticastRegistry extends FailbackRegistry {
 
     public void unsubscribe(URL url, NotifyListener listener) {
         super.unsubscribe(url, listener);
-        notified.remove(url.toFullString());
-    }
-
-    public Map<String, Set<String>> getNotified() {
-        return notified;
+        received.remove(url.toFullString());
     }
 
     public MulticastSocket getMutilcastSocket() {
         return mutilcastSocket;
+    }
+
+    public Map<URL, Set<URL>> getReceived() {
+        return received;
     }
 
 }

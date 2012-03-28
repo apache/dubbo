@@ -37,7 +37,7 @@ import com.alibaba.dubbo.common.utils.LogUtil;
 import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.Registry;
 import com.alibaba.dubbo.registry.RegistryFactory;
-import com.alibaba.dubbo.registry.support.RegistryDirectory;
+import com.alibaba.dubbo.registry.integration.RegistryDirectory;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.RpcException;
@@ -865,11 +865,11 @@ public class RegistryDirectoryTest {
             this.destroyWithError = destroyWithError;
         }
 
-        public void register(URL url, NotifyListener listener) {
+        public void register(URL url) {
 
         }
 
-        public void unregister(URL url, NotifyListener listener) {
+        public void unregister(URL url) {
 
         }
 

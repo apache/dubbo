@@ -25,9 +25,8 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.status.Status;
 import com.alibaba.dubbo.registry.RegistryFactory;
+import com.alibaba.dubbo.registry.status.RegistryStatusChecker;
 import com.alibaba.dubbo.registry.support.AbstractRegistryFactory;
-import com.alibaba.dubbo.registry.support.RegistryStatusChecker;
-import com.alibaba.dubbo.registry.support.SimpleRegistryExporter;
 
 /**
  * StatusTest

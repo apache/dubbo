@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.registry;
+package com.alibaba.dubbo.registry.support;
 
 import java.util.List;
 
@@ -23,6 +23,9 @@ import org.junit.Test;
 
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
+import com.alibaba.dubbo.registry.NotifyListener;
+import com.alibaba.dubbo.registry.Registry;
+import com.alibaba.dubbo.registry.RegistryFactory;
 import com.alibaba.dubbo.registry.support.AbstractRegistryFactory;
 
 /**
@@ -49,10 +52,10 @@ public class AbstractRegistryFactoryTest {
                 public void destroy() {
                 }
 
-                public void register(URL url, NotifyListener listener) {
+                public void register(URL url) {
                 }
 
-                public void unregister(URL url, NotifyListener listener) {
+                public void unregister(URL url) {
                 }
 
                 public void subscribe(URL url, NotifyListener listener) {

@@ -89,7 +89,8 @@ public class ZookeeperRegistry extends FailbackRegistry {
     }
 
     @Override
-    protected void doRetry() {
+    protected void retry() {
+        super.retry();
         initZookeeper();
         if (failedWatched.size() > 0) {
             Set<String> failed = new HashSet<String>(failedWatched);
@@ -218,11 +219,10 @@ public class ZookeeperRegistry extends FailbackRegistry {
                         }
                         service = URL.decode(service);
                         List<String> adminChildren = null;
-                        for (Map.Entry<String, Set<NotifyListener>> entry : getSubscribed().entrySet()) {
-                            String key = entry.getKey();
-                            URL subscribe = URL.valueOf(key);
+                        for (Map.Entry<URL, Set<NotifyListener>> entry : getSubscribed().entrySet()) {
+                            URL key = entry.getKey();
                             List<String> notifies = children;
-                            if (subscribe.getParameter(Constants.ADMIN_KEY, false)) {
+                            if (key.getParameter(Constants.ADMIN_KEY, false)) {
                                 if (adminChildren == null) {
                                     adminChildren = getChildren(path.substring(0, path.lastIndexOf(Constants.PATH_SEPARATOR) + 1) + (Constants.CONSUMERS.equals(action) ? Constants.PROVIDERS : Constants.CONSUMERS));
                                     adminChildren.addAll(children);
@@ -231,14 +231,14 @@ public class ZookeeperRegistry extends FailbackRegistry {
                             } else if (Constants.CONSUMERS.equals(action)) {
                                 continue;
                             }
-                            String subscribeService = subscribe.getServiceInterface();
+                            String subscribeService = key.getServiceInterface();
                             if (service.equals(subscribeService)) {
-                                List<URL> list = toUrls(subscribe, notifies);
+                                List<URL> list = toUrls(key, notifies);
                                 if (logger.isInfoEnabled()) {
                                     logger.info("Zookeeper service changed, service: " + service + ", urls: " + list + ", zookeeper: " + getUrl());
                                 }
                                 for (NotifyListener listener : entry.getValue()) {
-                                    ZookeeperRegistry.this.notify(subscribe, listener, list);
+                                    ZookeeperRegistry.this.notify(key, listener, list);
                                 }
                             }
                         }
@@ -351,7 +351,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 }
             } else {
                 if (url.getParameter(Constants.REGISTER_KEY, true)) {
-                    register(url, null);
+                    register(url);
                 }
                 String register = toRegisterPath(url);
                 List<String> providers = getChildren(register);
@@ -395,7 +395,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 listeners.remove(listener);
             }
         } else if (url.getParameter(Constants.REGISTER_KEY, true)) {
-            unregister(url, null);
+            unregister(url);
         }
     }
     

@@ -63,11 +63,11 @@ public class RegisteredPageHandler implements PageHandler {
             }
         }
         if (registry instanceof AbstractRegistry) {
-            Set<String> services = ((AbstractRegistry) registry).getRegistered();
+            Set<URL> services = ((AbstractRegistry) registry).getRegistered();
             if (services != null && services.size() > 0) {
-                for (String u : services) {
+                for (URL u : services) {
                     List<String> row = new ArrayList<String>();
-                    row.add(u.replace("<", "&lt;").replace(">", "&gt;"));
+                    row.add(u.toFullString().replace("<", "&lt;").replace(">", "&gt;"));
                     rows.add(row);
                 }
             }

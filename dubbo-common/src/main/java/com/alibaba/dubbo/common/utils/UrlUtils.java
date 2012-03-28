@@ -299,14 +299,14 @@ public class UrlUtils {
     }
 
     //compatible for dubbo-2.0.0
-    public static List<String> revertForbid(List<String> forbid, Set<String> subscribed) {
+    public static List<String> revertForbid(List<String> forbid, Set<URL> subscribed) {
         if (forbid != null && forbid.size() > 0) {
             List<String> newForbid = new ArrayList<String>();
             for (String serviceName : forbid) {
-                if (!serviceName.contains(":") && !serviceName.contains("/")) {
-                    for (String name : subscribed) {
-                        if (name.contains(serviceName)) {
-                            newForbid.add(name);
+                if (! serviceName.contains(":") && ! serviceName.contains("/")) {
+                    for (URL url : subscribed) {
+                        if (serviceName.equals(url.getServiceInterface())) {
+                            newForbid.add(url.getServiceKey());
                             break;
                         }
                     }

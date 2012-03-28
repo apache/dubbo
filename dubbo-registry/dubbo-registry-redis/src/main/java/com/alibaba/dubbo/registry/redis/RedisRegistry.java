@@ -148,17 +148,16 @@ public class RedisRegistry extends FailbackRegistry {
             try {
                 Jedis jedis = jedisPool.getResource();
                 try {
-                    for (String provider : new HashSet<String>(getRegistered())) {
-                        String key = toProviderPath(URL.valueOf(provider));
-                        if (jedis.hset(key, provider, String.valueOf(System.currentTimeMillis() + expirePeriod)) == 0) {
+                    for (URL url : new HashSet<URL>(getRegistered())) {
+                        String key = toProviderPath(url);
+                        if (jedis.hset(key, url.toFullString(), String.valueOf(System.currentTimeMillis() + expirePeriod)) == 0) {
                             jedis.publish(key, Constants.REGISTER);
                         }
                     }
-                    for (String consumer : new HashSet<String>(getSubscribed().keySet())) {
-                        URL url = URL.valueOf(consumer);
+                    for (URL url : new HashSet<URL>(getSubscribed().keySet())) {
                         if (! Constants.ANY_VALUE.equals(url.getServiceInterface())) {
                             String key = toConsumerPath(url);
-                            if (jedis.hset(key, consumer, String.valueOf(System.currentTimeMillis() + expirePeriod)) == 0) {
+                            if (jedis.hset(key, url.toFullString(), String.valueOf(System.currentTimeMillis() + expirePeriod)) == 0) {
                                 jedis.publish(key, Constants.SUBSCRIBE);
                             }
                         }
@@ -381,8 +380,8 @@ public class RedisRegistry extends FailbackRegistry {
     }
 
     private void doNotify(Jedis jedis, String service, boolean consumer) {
-        for (Map.Entry<String, Set<NotifyListener>> entry : new HashMap<String, Set<NotifyListener>>(getSubscribed()).entrySet()) {
-            URL url = URL.valueOf(entry.getKey());
+        for (Map.Entry<URL, Set<NotifyListener>> entry : new HashMap<URL, Set<NotifyListener>>(getSubscribed()).entrySet()) {
+            URL url = entry.getKey();
             if (Constants.ANY_VALUE.equals(url.getServiceInterface()) 
                     || (! consumer && toServicePath(url).equals(service))) {
                 doNotify(jedis, service, url, new HashSet<NotifyListener>(entry.getValue()));

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.registry.support;
+package com.alibaba.dubbo.registry.dubbo;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -55,18 +55,18 @@ public abstract class AbstractRegistryService implements RegistryService {
     // Map<serviceName, List<notificationListener>>
     private final ConcurrentMap<String, List<NotifyListener>> notifyListeners = new ConcurrentHashMap<String, List<NotifyListener>>();
     
-    public void register(URL url, NotifyListener listener) {
+    public void register(URL url) {
         if (logger.isInfoEnabled()) {
             logger.info("Register service: " + url.getServiceKey() + ",url:" + url);
         }
-        register(url.getServiceKey(), url, listener);
+        register(url.getServiceKey(), url);
     }
 
-    public void unregister(URL url, NotifyListener listener) {
+    public void unregister(URL url) {
         if (logger.isInfoEnabled()) {
             logger.info("Unregister service: " + url.getServiceKey() + ",url:" + url);
         }
-        unregister(url.getServiceKey(), url, listener);
+        unregister(url.getServiceKey(), url);
     }
 
     public void subscribe(URL url, NotifyListener listener) {
@@ -87,7 +87,7 @@ public abstract class AbstractRegistryService implements RegistryService {
         return getRegistered(url.getServiceKey());
     }
 
-    public void register(String service, URL url, NotifyListener listener) {
+    public void register(String service, URL url) {
         if (service == null) {
             throw new IllegalArgumentException("service == null");
         }
@@ -102,10 +102,9 @@ public abstract class AbstractRegistryService implements RegistryService {
         if (! urls.contains(url)) {
             urls.add(url);
         }
-        addListener(service, listener);
     }
     
-    public void unregister(String service, URL url, NotifyListener listener) {
+    public void unregister(String service, URL url) {
         if (service == null) {
             throw new IllegalArgumentException("service == null");
         }
@@ -125,7 +124,6 @@ public abstract class AbstractRegistryService implements RegistryService {
                 urls.remove(deleteURL);
             }
         }
-        removeListener(service, listener);
     }
     
     public void subscribe(String service, URL url, NotifyListener listener) {

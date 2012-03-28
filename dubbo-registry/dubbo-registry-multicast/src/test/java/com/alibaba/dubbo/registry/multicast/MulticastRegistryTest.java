@@ -60,7 +60,7 @@ public class MulticastRegistryTest {
      */
     @Before
     public void setUp() throws Exception {
-        registry.register(serviceUrl, null);
+        registry.register(serviceUrl);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -70,16 +70,16 @@ public class MulticastRegistryTest {
     }
 
     /**
-     * Test method for {@link com.alibaba.dubbo.registry.support.injvm.InjvmRegistry#register(java.util.Map, NotifyListener)}.
+     * Test method for {@link com.alibaba.dubbo.registry.support.injvm.InjvmRegistry#register(java.util.Map)}.
      */
     @Test
     public void testRegister() {
-        Set<String> registered = null;
+        Set<URL> registered = null;
         // clear first
         registered = registry.getRegistered();
 
         for (int i = 0; i < 2; i++) {
-            registry.register(serviceUrl, null);
+            registry.register(serviceUrl);
             registered = registry.getRegistered();
             assertTrue(registered.contains(serviceUrl.toFullString()));
         }
@@ -105,8 +105,8 @@ public class MulticastRegistryTest {
             }
         });
         assertEquals(serviceUrl.toFullString(), args.get().toFullString());
-        Map<String, Set<NotifyListener>> arg = registry.getSubscribed();
-        assertEquals(consumerUrl.toFullString(), arg.keySet().iterator().next());
+        Map<URL, Set<NotifyListener>> arg = registry.getSubscribed();
+        assertEquals(consumerUrl, arg.keySet().iterator().next());
 
     }
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.registry.support;
+package com.alibaba.dubbo.registry.integration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -149,7 +149,12 @@ public class RegistryProtocol implements Protocol {
     private Registry doRegister(final Invoker<?> originInvoker){
         final Registry registry = getRegistry(originInvoker);
         final URL registedProviderUrl = getRegistedProviderUrl(originInvoker);
-        registry.register(registedProviderUrl, listener);
+        registry.register(registedProviderUrl);
+        // 订阅override数据
+        registry.subscribe(registedProviderUrl.setProtocol(Constants.SUBSCRIBE_PROTOCOL)
+                .addParameters(Constants.PROTOCOL_KEY, Constants.OVERRIDE_PROTOCOL, 
+                        Constants.REGISTER, String.valueOf(false), 
+                        Constants.CHECK_KEY, String.valueOf(false)), listener);
         return registry;
     }
 
@@ -369,7 +374,7 @@ public class RegistryProtocol implements Protocol {
             bounds.remove(key);
             try {
                 if (registry != null && registry.isAvailable()) {
-                    registry.unregister(getRegistedProviderUrl(originInvoker), listener);
+                    registry.unregister(getRegistedProviderUrl(originInvoker));
                 }
             } finally {
                 exporter.unexport();

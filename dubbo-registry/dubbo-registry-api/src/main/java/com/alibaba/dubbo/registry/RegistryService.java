@@ -43,17 +43,15 @@ public interface RegistryService {
      * 5. 当注册中心重启恢复时，需自动恢复注册数据。<br>
      * 
      * @param url 服务提供者地址，如：dubbo://10.20.153.10/com.alibaba.foo.BarService?version=1.0.0&application=kylin
-     * @param listener 服务变更事件监听器
      */
-    void register(URL url, NotifyListener listener);
+    void register(URL url);
 
     /**
      * 取消注册服务
      * 
      * @param url 服务提供者地址，如：dubbo://10.20.153.10/com.alibaba.foo.BarService?version=1.0.0&application=kylin
-     * @param  listener 服务变更事件监听器
      */
-    void unregister(URL url, NotifyListener listener);
+    void unregister(URL url);
 
     /**
      * 订阅服务
@@ -62,6 +60,7 @@ public interface RegistryService {
      * 1. 当URL设置了check=false时，订阅失败后不报错，在后台定时重试<br>
      * 2. 当URL设置了register=false时，不记录订阅者的URL<br>
      * 3. 当URL设置了admin=true时，结果不只包含服务提供者的URL和路由规则URL，还需包含所有服务订阅者的URL<br>
+     * 4. 当URL设置了protocol=xxx,yyy时，结果中只包含指定协议的URL<br>
      * 4. 允许以interface,group,version,classifier作为条件查询，如：interface=com.alibaba.foo.BarService&group=foo&version=1.0.0&classifier=william<br>
      * 5. 允许星号通配，订阅所有接口的所有分组的所有版本，如：interface=*&group=*&version=*&classifier=* <br>
      * 6. 允许URI相同但参数不同的URL并存，不能覆盖。<br>

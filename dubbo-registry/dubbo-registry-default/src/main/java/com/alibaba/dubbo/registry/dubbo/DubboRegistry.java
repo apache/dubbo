@@ -127,11 +127,11 @@ public class DubboRegistry extends FailbackRegistry {
     }
     
     protected void doRegister(URL url) {
-        registryService.register(url, null);
+        registryService.register(url);
     }
     
     protected void doUnregister(URL url) {
-        registryService.unregister(url, null);
+        registryService.unregister(url);
     }
 
     protected void doSubscribe(URL url, NotifyListener listener) {

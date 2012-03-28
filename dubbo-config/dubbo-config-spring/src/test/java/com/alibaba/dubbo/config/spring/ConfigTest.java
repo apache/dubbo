@@ -45,8 +45,6 @@ import com.alibaba.dubbo.config.spring.api.DemoService;
 import com.alibaba.dubbo.config.spring.filter.MockFilter;
 import com.alibaba.dubbo.config.spring.impl.DemoServiceImpl;
 import com.alibaba.dubbo.registry.RegistryService;
-import com.alibaba.dubbo.registry.support.SimpleRegistryExporter;
-import com.alibaba.dubbo.registry.support.SimpleRegistryService;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Filter;
 import com.alibaba.dubbo.rpc.RpcContext;
