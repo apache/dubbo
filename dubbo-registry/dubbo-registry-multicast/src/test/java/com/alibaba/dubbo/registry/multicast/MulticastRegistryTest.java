@@ -81,7 +81,7 @@ public class MulticastRegistryTest {
         for (int i = 0; i < 2; i++) {
             registry.register(serviceUrl);
             registered = registry.getRegistered();
-            assertTrue(registered.contains(serviceUrl.toFullString()));
+            assertTrue(registered.contains(serviceUrl));
         }
         // confirm only 1 regist success;
         registered = registry.getRegistered();
