@@ -151,10 +151,10 @@ public class RegistryProtocol implements Protocol {
         final URL registedProviderUrl = getRegistedProviderUrl(originInvoker);
         registry.register(registedProviderUrl);
         // 订阅override数据
-        registry.subscribe(registedProviderUrl.setProtocol(Constants.SUBSCRIBE_PROTOCOL)
+        /*registry.subscribe(registedProviderUrl.setProtocol(Constants.SUBSCRIBE_PROTOCOL)
                 .addParameters(Constants.PROTOCOL_KEY, Constants.OVERRIDE_PROTOCOL, 
                         Constants.REGISTER, String.valueOf(false), 
-                        Constants.CHECK_KEY, String.valueOf(false)), listener);
+                        Constants.CHECK_KEY, String.valueOf(false)), listener);*/
         return registry;
     }
 
