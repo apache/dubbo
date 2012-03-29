@@ -46,4 +46,7 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
         return new InjvmInvoker<T>(serviceType, url, url.getServiceKey(), exporterMap);
     }
     
+    public boolean isExported(String key) {
+        return exporterMap != null && exporterMap.containsKey(key);
+    }
 }

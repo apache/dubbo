@@ -17,13 +17,12 @@
 package com.alibaba.dubbo.config;
 
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.utils.StringUtils;
-import com.alibaba.dubbo.rpc.Exporter;
+import com.alibaba.dubbo.rpc.Protocol;
+import com.alibaba.dubbo.rpc.protocol.injvm.InjvmProtocol;
 
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
@@ -36,31 +35,16 @@ class LocalServiceStore {
         return INSTANCE;
     }
 
+    private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class)
+            .getExtension(Constants.LOCAL_PROTOCOL);
+
     private LocalServiceStore() {
     }
 
-    private ConcurrentMap<String, Exporter<?>> exportMap = 
-            new ConcurrentHashMap<String, Exporter<?>>();
-
-    public void register(URL url, Exporter<?> exporter) {
-        if (url != null && exporter != null) {
-            exportMap.putIfAbsent(url.getServiceKey(), exporter);
-        }
-    }
-
     public boolean isRegistered(String key) {
-        return StringUtils.isNotEmpty(key) && exportMap.containsKey(key);
-    }
-
-    public void unregister(URL url) {
-        if (url != null) {
-            Exporter<?> exporter = exportMap.get(url.getServiceKey());
-            if (exporter != null) {
-                try {
-                    exporter.unexport();
-                } catch (Throwable e) { /* ignore */ }
-            }
-        }
+        return StringUtils.isNotEmpty(key)
+                && protocol instanceof InjvmProtocol
+                && ((InjvmProtocol)protocol).isExported(key);
     }
 
     public static String serviceKey(Map<String, String> map) {

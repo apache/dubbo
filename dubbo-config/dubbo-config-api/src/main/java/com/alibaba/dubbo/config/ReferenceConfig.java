@@ -487,4 +487,9 @@ public class ReferenceConfig<T> extends AbstractConsumerConfig {
         this.consumer = consumer;
     }
 
+    // just for test
+    Invoker<?> getInvoker() {
+        return invoker;
+    }
+    
 }
