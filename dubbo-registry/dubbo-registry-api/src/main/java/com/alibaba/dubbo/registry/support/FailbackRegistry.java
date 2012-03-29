@@ -176,12 +176,13 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             if (urls != null && urls.size() > 0) {
                 notify(url, listener, urls);
                 logger.error("Failed to subscribe " + url + ", Using cached list: " + urls + " from cache file: " + getUrl().getParameter(Constants.FILE_KEY, System.getProperty("user.home") + "/dubbo-registry-" + url.getHost() + ".cache") + ", cause: " + t.getMessage(), t);
-            }
-            if (getUrl().getParameter(Constants.CHECK_KEY, true)
-                    && url.getParameter(Constants.CHECK_KEY, true)) { // 如果开启了启动时检测，则直接抛出异常
-                throw new IllegalStateException("Failed to subscribe " + url + ", cause: " + t.getMessage(), t);
             } else {
-                logger.error("Failed to subscribe " + url + ", waiting for retry, cause: " + t.getMessage(), t);
+                if (getUrl().getParameter(Constants.CHECK_KEY, true)
+                        && url.getParameter(Constants.CHECK_KEY, true)) { // 如果开启了启动时检测，则直接抛出异常
+                    throw new IllegalStateException("Failed to subscribe " + url + ", cause: " + t.getMessage(), t);
+                } else {
+                    logger.error("Failed to subscribe " + url + ", waiting for retry, cause: " + t.getMessage(), t);
+                }
             }
         }
     }

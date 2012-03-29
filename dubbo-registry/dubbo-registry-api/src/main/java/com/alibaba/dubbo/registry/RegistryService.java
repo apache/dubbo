@@ -36,11 +36,12 @@ public interface RegistryService {
      * 注册服务.
      * 
      * 注册需处理契约：<br>
-     * 1. 当URL设置了check=false时，注册失败后不报错，在后台定时重试。<br>
-     * 2. 允许写入route://协议的路由规则，且持久存储路由规则。<br>
+     * 1. 允许写入route://和override://协议的路由规则，且持久存储路由规则。<br>
+     * 2. 允许写入subscribe://订阅信息，与提供者信息一样，断线自动删除。<br>
      * 3. 允许URI相同但参数不同的URL并存，不能覆盖。<br>
-     * 4. 当服务提供者出现断电等情况异常退出时，需自动删除当前提供者URL。<br>
-     * 5. 当注册中心重启恢复时，需自动恢复注册数据。<br>
+     * 4. 当URL设置了check=false时，注册失败后不报错，在后台定时重试。<br>
+     * 5. 当服务提供者出现断电等情况异常退出时，需自动删除当前提供者URL。<br>
+     * 6. 当注册中心重启恢复时，需自动恢复注册数据。<br>
      * 
      * @param url 服务提供者地址，如：dubbo://10.20.153.10/com.alibaba.foo.BarService?version=1.0.0&application=kylin
      */
@@ -57,15 +58,12 @@ public interface RegistryService {
      * 订阅服务
      * 
      * 订阅需处理契约：<br>
-     * 1. 当URL设置了check=false时，订阅失败后不报错，在后台定时重试<br>
-     * 2. 当URL设置了register=false时，不记录订阅者的URL<br>
-     * 3. 当URL设置了admin=true时，结果不只包含服务提供者的URL和路由规则URL，还需包含所有服务订阅者的URL<br>
-     * 4. 当URL设置了protocol=xxx,yyy时，结果中只包含指定协议的URL<br>
-     * 4. 允许以interface,group,version,classifier作为条件查询，如：interface=com.alibaba.foo.BarService&group=foo&version=1.0.0&classifier=william<br>
-     * 5. 允许星号通配，订阅所有接口的所有分组的所有版本，如：interface=*&group=*&version=*&classifier=* <br>
-     * 6. 允许URI相同但参数不同的URL并存，不能覆盖。<br>
-     * 7. 当服务消费者出现断电等情况异常退出时，需自动删除当前消费者URL。<br>
-     * 8. 当注册中心重启恢复时，需自动恢复订阅请求。<br>
+     * 1. 缺省不通知subscribe协议的URL，其它协议都通知，当URL设置了accept=override时，只通知指定协议的URL，或设置了accept=-napoli时，不通知指定协议的URL，或accept=*接收所有协议<br>
+     * 2. 允许以interface,group,version,classifier作为条件查询，并允许星号通配，订阅所有接口的所有分组的所有版本，如：interface=com.alibaba.foo.BarService&group=foo&version=1.0.0&classifier=william，或：interface=*&group=*&version=*&classifier=*<br>
+     * 3. 允许URI相同但参数不同的URL并存，不能覆盖。<br>
+     * 4. 当URL设置了check=false时，订阅失败后不报错，在后台定时重试<br>
+     * 5. 当服务消费者出现断电等情况异常退出时，需自动删除当前消费者URL。<br>
+     * 6. 当注册中心重启恢复时，需自动恢复订阅请求。<br>
      * 
      * @param url 服务查询键值对，如：subscribe://10.20.153.10/com.alibaba.foo.BarService?version=1.0.0&application=kylin
      * @param listener 服务变更事件监听器

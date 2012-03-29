@@ -67,12 +67,6 @@ public abstract class AbstractRegistry implements Registry {
 
     private URL registryUrl;
 
-    // 是否把Provider注册上
-    private boolean register = true;
-    
-    // 是否订阅
-    private boolean subscribe = true;
-
     // 本地磁盘缓存文件
     private File file;
 
@@ -95,8 +89,6 @@ public abstract class AbstractRegistry implements Registry {
 
     public AbstractRegistry(URL url) {
         setUrl(url);
-        this.register = url.getParameter("register", true);
-        this.subscribe = url.getParameter("subscribe", true);
         // 启动文件保存定时器
         syncSaveFile = url.getParameter(Constants.REGISTRY_FILESAVE_SYNC_KEY, false);
         String filename = url.getParameter(Constants.FILE_KEY, System.getProperty("user.home") + "/.dubbo/dubbo-registry-" + url.getHost() + ".cache");
@@ -303,11 +295,6 @@ public abstract class AbstractRegistry implements Registry {
         if (url == null) {
             throw new IllegalArgumentException("register url == null");
         }
-        if(! register){
-            logger.warn("Skip register services(" + url + ") because register = false, Registries: " + getUrl().getAddress());
-            return;
-        }
-        url = url.addParameterIfAbsent("dynamic", getUrl().getParameter("dynamic"));
         if (logger.isInfoEnabled()){
             logger.info("Register: " + url);
         }
@@ -317,10 +304,6 @@ public abstract class AbstractRegistry implements Registry {
     public void unregister(URL url) {
         if (url == null) {
             throw new IllegalArgumentException("unregister url == null");
-        }
-        if(! register){
-            logger.warn("Skip unregister services(" + url + ") because register = false, Registries: " + getUrl().getAddress());
-            return;
         }
         if (logger.isInfoEnabled()){
             logger.info("Unregister: " + url);
@@ -334,10 +317,6 @@ public abstract class AbstractRegistry implements Registry {
         }
         if (listener == null) {
             throw new IllegalArgumentException("subscribe listener == null");
-        }
-        if(! subscribe){
-            logger.warn("Skip subscribe services(" + url + ") because subscribe = false, Registries: " + getUrl().getAddress());
-            return;
         }
         if (logger.isInfoEnabled()){
             logger.info("Subscribe: " + url);
@@ -356,10 +335,6 @@ public abstract class AbstractRegistry implements Registry {
         }
         if (listener == null) {
             throw new IllegalArgumentException("unsubscribe listener == null");
-        }
-        if(! subscribe){
-            logger.warn("Skip unsubscribe services(" + url + ") because subscribe = false, Registries: " + getUrl().getAddress());
-            return;
         }
         if (logger.isInfoEnabled()){
             logger.info("Unsubscribe: " + url);
