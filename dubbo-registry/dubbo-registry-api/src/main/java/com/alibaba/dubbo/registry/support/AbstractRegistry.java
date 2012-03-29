@@ -57,7 +57,7 @@ import com.alibaba.dubbo.registry.Registry;
 public abstract class AbstractRegistry implements Registry {
 
     // 日志输出
-    protected Logger logger = LoggerFactory.getLogger(getClass());
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     // URL地址分隔符，用于文件缓存中，服务提供者URL分隔
     private static final char URL_SEPARATOR = ' ';
@@ -111,7 +111,6 @@ public abstract class AbstractRegistry implements Registry {
         }
         this.file = file;
         loadProperties();
-        this.logger = new RegistryLogger(this, logger); // 包装日志输出
     }
 
     protected void setUrl(URL url) {
