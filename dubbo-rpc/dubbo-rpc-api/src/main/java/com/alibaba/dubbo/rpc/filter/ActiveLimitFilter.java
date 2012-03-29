@@ -45,8 +45,7 @@ public class ActiveLimitFilter implements Filter {
             int active = count.getActive();
             if (active >= max) {
                 synchronized (count) {
-                    active = count.getActive();
-                    while (active >= max) {
+                    while ((active = count.getActive()) >= max) {
                         try {
                             count.wait(remain);
                         } catch (InterruptedException e) {
