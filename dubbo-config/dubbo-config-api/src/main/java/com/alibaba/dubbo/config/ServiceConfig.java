@@ -250,7 +250,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private void doExportUrls() {
-        List<URL> registryURLs = loadRegistries();
+        List<URL> registryURLs = loadRegistries(true);
         for (ProtocolConfig protocolConfig : protocols) {
             String name = protocolConfig.getName();
             if (name == null || name.length() == 0) {
@@ -407,15 +407,15 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             if (registryURLs != null && registryURLs.size() > 0
                     && url.getParameter("register", true)) {
                 for (URL registryURL : registryURLs) {
+                    url = url.addParameterIfAbsent("dynamic", registryURL.getParameter("dynamic"));
                     URL monitorUrl = loadMonitor(registryURL);
                     if (monitorUrl != null) {
                         url = url.addParameterAndEncoded(Constants.MONITOR_KEY, monitorUrl.toFullString());
                     }
-                    String providerURL = url.toFullString();
                     if (logger.isInfoEnabled()) {
-                        logger.info("Register dubbo service " + interfaceClass.getName() + " url " + providerURL + " to registry " + registryURL);
+                        logger.info("Register dubbo service " + interfaceClass.getName() + " url " + url + " to registry " + registryURL);
                     }
-                    Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, providerURL));
+                    Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString()));
                     Exporter<?> exporter = protocol.export(invoker);
                     exporters.add(exporter);
                 }
@@ -437,6 +437,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                     .setPort(0);
             Exporter<?> exporter = protocol.export(
                     proxyFactory.getInvoker(ref, (Class) interfaceClass, local));
+            exporters.add(exporter);
         }
     }
 

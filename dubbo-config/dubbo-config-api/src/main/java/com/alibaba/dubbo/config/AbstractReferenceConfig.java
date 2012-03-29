@@ -150,7 +150,7 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
         }
     }
     
-    protected List<URL> loadRegistries() {
+    protected List<URL> loadRegistries(boolean provider) {
         checkRegistry();
         List<URL> registryList = new ArrayList<URL>();
         if (registries != null && registries.size() > 0) {
@@ -185,7 +185,10 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
                     for (URL url : urls) {
                         url = url.addParameter(Constants.REGISTRY_KEY, url.getProtocol());
                         url = url.setProtocol(Constants.REGISTRY_PROTOCOL);
-                        registryList.add(url);
+                        if ((provider && url.getParameter(Constants.REGISTER, true))
+                                || (! provider && url.getParameter(Constants.SUBSCRIBE, true))) {
+                            registryList.add(url);
+                        }
                     }
                 }
             }

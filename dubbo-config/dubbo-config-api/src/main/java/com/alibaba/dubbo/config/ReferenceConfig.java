@@ -324,7 +324,7 @@ public class ReferenceConfig<T> extends AbstractConsumerConfig {
                     }
                 }
             } else { // 通过注册中心配置拼装URL
-            	List<URL> us = loadRegistries();
+            	List<URL> us = loadRegistries(false);
             	if (us != null && us.size() > 0) {
                 	for (URL u : us) {
                 	    URL monitorUrl = loadMonitor(u);
