@@ -372,14 +372,20 @@ public abstract class AbstractRegistry implements Registry {
     }
 
     protected void notify(URL url, NotifyListener listener, List<URL> urls) {
+        List<URL> result = new ArrayList<URL>();
         StringBuilder buf = new StringBuilder();
-        for (URL u: urls) {
-            if (buf.length() > 0) {
-                buf.append(URL_SEPARATOR);
+        if (urls != null && urls.size() > 0) {
+            for (URL u: urls) {
+                if (UrlUtils.isMatch(url, u)) {
+                    result.add(u);
+                    if (buf.length() > 0) {
+                        buf.append(URL_SEPARATOR);
+                    }
+                    buf.append(u.toFullString());
+                }
             }
-            buf.append(u.toFullString());
-            properties.setProperty(url.getServiceKey(), buf.toString());
         }
+        properties.setProperty(url.getServiceKey(), buf.toString());
         long version = lastCacheChanged.incrementAndGet();
         if (syncSaveFile) {
             doSaveProperties(version);

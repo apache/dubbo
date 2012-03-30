@@ -84,10 +84,6 @@ public class SimpleRegistryService extends FailbackRegistry {
                 super.register(registryUrl);
             }
         }
-        if (! Constants.ANY_VALUE.equals(url.getServiceInterface())
-                && url.getParameter(Constants.REGISTER_KEY, true)) {
-            register(url);
-        }
         String client = RpcContext.getContext().getRemoteAddressString();
         ConcurrentMap<String, Set<NotifyListener>> clientListeners = remoteSubscribed.get(client);
         if (clientListeners == null) {

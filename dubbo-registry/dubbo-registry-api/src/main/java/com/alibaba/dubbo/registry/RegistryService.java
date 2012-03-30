@@ -58,7 +58,7 @@ public interface RegistryService {
      * 订阅服务
      * 
      * 订阅需处理契约：<br>
-     * 1. 缺省不通知subscribe协议的URL，其它协议都通知，当URL设置了accept=override时，只通知指定协议的URL，或设置了accept=-napoli时，不通知指定协议的URL，或accept=*接收所有协议<br>
+     * 1. 缺省不通知subscribe协议的URL，其它协议都通知，当URL设置了notify=override时，只通知指定协议的URL，或设置了notify=-napoli时，不通知指定协议的URL，或notify=*接收所有协议<br>
      * 2. 允许以interface,group,version,classifier作为条件查询，并允许星号通配，订阅所有接口的所有分组的所有版本，如：interface=com.alibaba.foo.BarService&group=foo&version=1.0.0&classifier=william，或：interface=*&group=*&version=*&classifier=*<br>
      * 3. 允许URI相同但参数不同的URL并存，不能覆盖。<br>
      * 4. 当URL设置了check=false时，订阅失败后不报错，在后台定时重试<br>

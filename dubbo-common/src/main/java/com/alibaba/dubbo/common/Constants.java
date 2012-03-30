@@ -266,6 +266,10 @@ public class Constants {
 
     public static final String  REGISTER_KEY                       = "register";
 
+    public static final String  SUBSCRIBE_KEY                      = "subscribe";
+
+    public static final String  NOTIFY_KEY                         = "notify";
+
     public static final String  GROUP_KEY                          = "group";
 
     public static final String  PATH_KEY                           = "path";
@@ -279,6 +283,8 @@ public class Constants {
     public static final String  WAIT_KEY                           = "wait";
 
     public static final String  ADMIN_KEY                          = "admin";
+
+    public static final String  CLASSIFIER_KEY                     = "classifier";
 
     public static final String  VERSION_KEY                        = "version";
 

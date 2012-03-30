@@ -149,17 +149,9 @@ public class RedisRegistry extends FailbackRegistry {
                 Jedis jedis = jedisPool.getResource();
                 try {
                     for (URL url : new HashSet<URL>(getRegistered())) {
-                        String key = toProviderPath(url);
+                        String key = toCategoryPath(url);
                         if (jedis.hset(key, url.toFullString(), String.valueOf(System.currentTimeMillis() + expirePeriod)) == 0) {
-                            jedis.publish(key, Constants.REGISTER);
-                        }
-                    }
-                    for (URL url : new HashSet<URL>(getSubscribed().keySet())) {
-                        if (! Constants.ANY_VALUE.equals(url.getServiceInterface())) {
-                            String key = toConsumerPath(url);
-                            if (jedis.hset(key, url.toFullString(), String.valueOf(System.currentTimeMillis() + expirePeriod)) == 0) {
-                                jedis.publish(key, Constants.SUBSCRIBE);
-                            }
+                            jedis.publish(key, Constants.SUBSCRIBE_PROTOCOL.equals(url.getProtocol()) ? Constants.SUBSCRIBE : Constants.REGISTER);
                         }
                     }
                     if (admin) {
@@ -250,7 +242,7 @@ public class RedisRegistry extends FailbackRegistry {
 
     @Override
     public void doRegister(URL url) {
-        String key = toProviderPath(url);
+        String key = toCategoryPath(url);
         String value = url.toFullString();
         String expire = String.valueOf(System.currentTimeMillis() + expirePeriod);
         boolean success = false;
@@ -261,7 +253,7 @@ public class RedisRegistry extends FailbackRegistry {
                 Jedis jedis = jedisPool.getResource();
                 try {
                     jedis.hset(key, value, expire);
-                    jedis.publish(key, Constants.REGISTER);
+                    jedis.publish(key, Constants.SUBSCRIBE_PROTOCOL.equals(url.getProtocol()) ? Constants.SUBSCRIBE : Constants.REGISTER);
                     success = true;
                 } finally {
                     jedisPool.returnResource(jedis);
@@ -281,7 +273,7 @@ public class RedisRegistry extends FailbackRegistry {
 
     @Override
     public void doUnregister(URL url) {
-        String key = toProviderPath(url);
+        String key = toCategoryPath(url);
         String value = url.toFullString();
         RpcException exception = null;
         for (Map.Entry<String, JedisPool> entry : jedisPools.entrySet()) {
@@ -290,7 +282,7 @@ public class RedisRegistry extends FailbackRegistry {
                 Jedis jedis = jedisPool.getResource();
                 try {
                     jedis.hdel(key, value);
-                    jedis.publish(key, Constants.UNREGISTER);
+                    jedis.publish(key, Constants.SUBSCRIBE_PROTOCOL.equals(url.getProtocol()) ? Constants.UNSUBSCRIBE : Constants.UNREGISTER);
                 } finally {
                     jedisPool.returnResource(jedis);
                 }
@@ -328,11 +320,6 @@ public class RedisRegistry extends FailbackRegistry {
                             doNotify(jedis, s, url, listener);
                         }
                     } else {
-                        String key = toConsumerPath(url);
-                        String value = url.toFullString();
-                        String expire = String.valueOf(System.currentTimeMillis() + expirePeriod);
-                        jedis.hset(key, value, expire);
-                        jedis.publish(key, Constants.SUBSCRIBE);
                         doNotify(jedis, service, url, listener);
                     }
                     success = true;
@@ -457,6 +444,10 @@ public class RedisRegistry extends FailbackRegistry {
 
     private String toConsumerPath(URL url) {
         return toServicePath(url) + Constants.PATH_SEPARATOR + Constants.CONSUMERS;
+    }
+
+    private String toCategoryPath(URL url) {
+        return Constants.SUBSCRIBE_PROTOCOL.equals(url.getProtocol()) ? toConsumerPath(url) : toProviderPath(url);
     }
 
     private class NotifySub extends JedisPubSub {

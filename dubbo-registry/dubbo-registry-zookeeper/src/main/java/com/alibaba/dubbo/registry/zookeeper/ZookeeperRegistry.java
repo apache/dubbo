@@ -350,9 +350,6 @@ public class ZookeeperRegistry extends FailbackRegistry {
                     }
                 }
             } else {
-                if (url.getParameter(Constants.REGISTER_KEY, true)) {
-                    register(url);
-                }
                 String register = toRegisterPath(url);
                 List<String> providers = getChildren(register);
                 if (url.getParameter(Constants.ADMIN_KEY, false)) {

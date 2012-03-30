@@ -151,10 +151,9 @@ public class RegistryProtocol implements Protocol {
         final URL registedProviderUrl = getRegistedProviderUrl(originInvoker);
         registry.register(registedProviderUrl);
         // 订阅override数据
-        /*registry.subscribe(registedProviderUrl.setProtocol(Constants.SUBSCRIBE_PROTOCOL)
-                .addParameters(Constants.PROTOCOL_KEY, Constants.OVERRIDE_PROTOCOL, 
-                        Constants.REGISTER, String.valueOf(false), 
-                        Constants.CHECK_KEY, String.valueOf(false)), listener);*/
+        registry.subscribe(registedProviderUrl.setProtocol(Constants.SUBSCRIBE_PROTOCOL)
+                .addParameters(Constants.NOTIFY_KEY, Constants.OVERRIDE_PROTOCOL, 
+                        Constants.CHECK_KEY, String.valueOf(false)), listener);
         return registry;
     }
 
@@ -234,7 +233,12 @@ public class RegistryProtocol implements Protocol {
         RegistryDirectory<T> directory = new RegistryDirectory<T>(type, url);
         directory.setRegistry(registry);
         directory.setProtocol(protocol);
-        registry.subscribe(new URL(Constants.SUBSCRIBE_PROTOCOL, NetUtils.getLocalHost(), 0, type.getName(), directory.getUrl().getParameters()), directory);
+        URL subscribeUrl = new URL(Constants.SUBSCRIBE_PROTOCOL, NetUtils.getLocalHost(), 0, type.getName(), directory.getUrl().getParameters());
+        if (! Constants.ANY_VALUE.equals(url.getServiceInterface())
+                && url.getParameter(Constants.REGISTER_KEY, true)) {
+            registry.register(subscribeUrl);
+        }
+        registry.subscribe(subscribeUrl, directory);
         return cluster.join(directory);
     }
 

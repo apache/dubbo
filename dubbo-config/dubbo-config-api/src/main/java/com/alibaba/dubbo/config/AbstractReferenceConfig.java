@@ -185,8 +185,8 @@ public abstract class AbstractReferenceConfig extends AbstractMethodConfig {
                     for (URL url : urls) {
                         url = url.addParameter(Constants.REGISTRY_KEY, url.getProtocol());
                         url = url.setProtocol(Constants.REGISTRY_PROTOCOL);
-                        if ((provider && url.getParameter(Constants.REGISTER, true))
-                                || (! provider && url.getParameter(Constants.SUBSCRIBE, true))) {
+                        if ((provider && url.getParameter(Constants.REGISTER_KEY, true))
+                                || (! provider && url.getParameter(Constants.SUBSCRIBE_KEY, true))) {
                             registryList.add(url);
                         }
                     }

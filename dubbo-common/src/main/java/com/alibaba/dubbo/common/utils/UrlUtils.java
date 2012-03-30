@@ -319,7 +319,23 @@ public class UrlUtils {
         return forbid;
     }
 
+    public static boolean isMatchNotify(String protocol, String notify) {
+        if (notify == null || notify.length() == 0) {
+            return ! Constants.SUBSCRIBE_PROTOCOL.equals(protocol);
+        } else if (notify.contains(Constants.ANY_VALUE)) {
+            return true;
+        } else if (notify.contains(Constants.REMOVE_VALUE_PREFIX)) {
+            return ! notify.contains(Constants.REMOVE_VALUE_PREFIX + protocol);
+        } else {
+            return notify.contains(protocol);
+        }
+    }
+
     public static boolean isMatch(URL consumerUrl, URL providerUrl) {
+        if (! isMatchNotify(providerUrl.getProtocol(), 
+                consumerUrl.getParameter(Constants.NOTIFY_KEY))) {
+            return false;
+        }
         String consumerInterface = consumerUrl.getServiceInterface();
         String consumerGroup = consumerUrl.getParameter(Constants.GROUP_KEY);
         String consumerVersion = consumerUrl.getParameter(Constants.VERSION_KEY);

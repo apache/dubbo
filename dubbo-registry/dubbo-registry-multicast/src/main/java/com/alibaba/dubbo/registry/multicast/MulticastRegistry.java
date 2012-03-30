@@ -257,10 +257,6 @@ public class MulticastRegistry extends FailbackRegistry {
         if (Constants.ANY_VALUE.equals(url.getServiceInterface())) {
             admin = true;
         }
-        if (! Constants.ANY_VALUE.equals(url.getServiceInterface())
-                && url.getParameter(Constants.REGISTER_KEY, true)) {
-            register(url);
-        }
         broadcast(Constants.SUBSCRIBE + " " + url.toFullString());
         synchronized (listener) {
             try {
