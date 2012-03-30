@@ -148,4 +148,9 @@ public class MockClusterInvoker<T> implements Invoker<T>{
             return null ;
         }
     }
+
+	@Override
+	public String toString() {
+		return "invoker :" + this.invoker + ",directory: " + this.directory;
+	}
 }
