@@ -37,7 +37,7 @@ public interface RegistryService {
      * 注册服务.
      * 
      * 注册需处理契约：<br>
-     * 1. 当URL设置了store=true参数，则需持久存储，否则，当服务提供者出现断电等情况异常退出时，需自动删除。<br>
+     * 1. 当URL设置了dynamic=false参数，则需持久存储，否则，当服务提供者出现断电等情况异常退出时，需自动删除。<br>
      * 2. 当注册中心重启，网络抖动，不能丢失数据，包括断线自动删除数据。<br>
      * 3. 当URL设置了category=overrides时，表示分类存储，缺省类别为providers，可按分类部分通知数据。<br>
      * 4. 当URL设置了check=false时，注册失败后不报错，在后台定时重试，否则抛出异常。<br>
