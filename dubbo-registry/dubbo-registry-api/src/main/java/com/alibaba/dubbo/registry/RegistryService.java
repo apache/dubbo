@@ -50,6 +50,9 @@ public interface RegistryService {
     /**
      * 取消注册服务.
      * 
+     * 取消注册需处理契约：<br>
+     * 1. 如果是dynamic=false的持久存储数据，找不到数据，则抛IllegalStateException，否则忽略。
+     * 
      * @param url 服务提供者地址，如：dubbo://10.20.153.10/com.alibaba.foo.BarService?version=1.0.0&application=kylin
      */
     void unregister(URL url);
