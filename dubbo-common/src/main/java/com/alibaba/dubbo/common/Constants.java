@@ -341,7 +341,7 @@ public class Constants {
 
     public static final String  EMPTY_PROTOCOL                     = "empty";
 
-    public static final String  MONITOR_PROTOCOL                   = "monitor";
+    public static final String  ADMIN_PROTOCOL                     = "admin";
 
     public static final String  PROVIDER_PROTOCOL                  = "provider";
 

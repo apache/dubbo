@@ -228,7 +228,7 @@ public class RegistryContainer implements Container {
         }
         URL registryUrl = URL.valueOf(url);
         registry = registryFactory.getRegistry(registryUrl);
-        URL subscribeUrl = new URL(Constants.MONITOR_PROTOCOL, NetUtils.getLocalHost(), 0, "",
+        URL subscribeUrl = new URL(Constants.ADMIN_PROTOCOL, NetUtils.getLocalHost(), 0, "",
                                     Constants.INTERFACE_KEY, Constants.ANY_VALUE, 
                                     Constants.GROUP_KEY, Constants.ANY_VALUE, 
                                     Constants.VERSION_KEY, Constants.ANY_VALUE,
