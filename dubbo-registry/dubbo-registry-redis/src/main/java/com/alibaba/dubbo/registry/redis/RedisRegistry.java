@@ -149,9 +149,11 @@ public class RedisRegistry extends FailbackRegistry {
                 Jedis jedis = jedisPool.getResource();
                 try {
                     for (URL url : new HashSet<URL>(getRegistered())) {
-                        String key = toCategoryPath(url);
-                        if (jedis.hset(key, url.toFullString(), String.valueOf(System.currentTimeMillis() + expirePeriod)) == 0) {
-                            jedis.publish(key, Constants.CONSUMER_PROTOCOL.equals(url.getProtocol()) ? Constants.SUBSCRIBE : Constants.REGISTER);
+                        if (url.getParameter(Constants.DYNAMIC_KEY, true)) {
+                            String key = toCategoryPath(url);
+                            if (jedis.hset(key, url.toFullString(), String.valueOf(System.currentTimeMillis() + expirePeriod)) == 0) {
+                                jedis.publish(key, Constants.CONSUMER_PROTOCOL.equals(url.getProtocol()) ? Constants.SUBSCRIBE : Constants.REGISTER);
+                            }
                         }
                     }
                     if (admin) {
@@ -176,14 +178,17 @@ public class RedisRegistry extends FailbackRegistry {
                     boolean delete = false;
                     long now = System.currentTimeMillis();
                     for (Map.Entry<String, String> entry : values.entrySet()) {
-                        long expire = Long.parseLong(entry.getValue());
-                        if (expire < now) {
-                            jedis.hdel(key, entry.getKey());
-                            delete = true;
-                            if (logger.isWarnEnabled()) {
-                                logger.warn("Delete expired key: " + key + " -> value: " + entry.getKey() + ", expire: " + new Date(expire) + ", now: " + new Date(now));
+                        URL url = URL.valueOf(entry.getKey());
+                        if (url.getParameter(Constants.DYNAMIC_KEY, true)) {
+                            long expire = Long.parseLong(entry.getValue());
+                            if (expire < now) {
+                                jedis.hdel(key, entry.getKey());
+                                delete = true;
+                                if (logger.isWarnEnabled()) {
+                                    logger.warn("Delete expired key: " + key + " -> value: " + entry.getKey() + ", expire: " + new Date(expire) + ", now: " + new Date(now));
+                                }
                             }
-                        }
+                            }
                     }
                     if (delete) {
                         if (key.endsWith(Constants.CONSUMERS_CATEGORY)) {

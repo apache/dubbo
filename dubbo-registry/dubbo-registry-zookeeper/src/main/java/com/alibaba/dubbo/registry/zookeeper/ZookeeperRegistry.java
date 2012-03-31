@@ -306,7 +306,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 } catch (NoNodeException e) {
                 }
             }
-            CreateMode createMode = Constants.ROUTE_PROTOCOL.equals(url.getProtocol()) ? CreateMode.PERSISTENT : CreateMode.EPHEMERAL;
+            CreateMode createMode = url.getParameter(Constants.DYNAMIC_KEY, true) ? CreateMode.EPHEMERAL : CreateMode.PERSISTENT;
             try {
                 zookeeper.create(provider, new byte[0], acl, createMode);
             } catch (NodeExistsException e) {
