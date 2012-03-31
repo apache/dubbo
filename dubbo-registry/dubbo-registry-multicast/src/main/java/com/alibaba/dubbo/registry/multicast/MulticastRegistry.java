@@ -153,7 +153,7 @@ public class MulticastRegistry extends FailbackRegistry {
     }
     
     private boolean isExpired(URL url) {
-        if (Constants.SUBSCRIBE_PROTOCOL.equals(url.getProtocol())
+        if (Constants.CONSUMER_PROTOCOL.equals(url.getProtocol())
                 || Constants.ROUTE_PROTOCOL.equals(url.getProtocol())
                 || Constants.OVERRIDE_PROTOCOL.equals(url.getProtocol())) {
             return false;

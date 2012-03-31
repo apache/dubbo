@@ -76,8 +76,8 @@ public class FailbackRegistryTest {
         registry.setBad(true);
         registry.register(serviceUrl);
         registry.unregister(serviceUrl);
-        registry.subscribe(serviceUrl.setProtocol(Constants.SUBSCRIBE_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false")), listner);
-        registry.unsubscribe(serviceUrl.setProtocol(Constants.SUBSCRIBE_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false")), listner);
+        registry.subscribe(serviceUrl.setProtocol(Constants.CONSUMER_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false")), listner);
+        registry.unsubscribe(serviceUrl.setProtocol(Constants.CONSUMER_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false")), listner);
 
         //失败的情况不能调用到listener.
         assertEquals(false, notified.get());
@@ -131,7 +131,7 @@ public class FailbackRegistryTest {
         };
         registry = new MockRegistry(registryUrl, latch);
         registry.setBad(true);
-        registry.subscribe(serviceUrl.setProtocol(Constants.SUBSCRIBE_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false")), listner);
+        registry.subscribe(serviceUrl.setProtocol(Constants.CONSUMER_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false")), listner);
 
         //失败的情况不能调用到listener.
         assertEquals(false, notified.get());
@@ -168,7 +168,7 @@ public class FailbackRegistryTest {
             }
         };
         registry = new MockRegistry(registryUrl, new CountDownLatch(0));
-        registry.subscribe(serviceUrl.setProtocol(Constants.SUBSCRIBE_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false")), listner);
+        registry.subscribe(serviceUrl.setProtocol(Constants.CONSUMER_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false")), listner);
 
         assertEquals(1, count.get()); //确保subscribe调用完成后刚调用过一次count.incrementAndGet
         //等定时器.

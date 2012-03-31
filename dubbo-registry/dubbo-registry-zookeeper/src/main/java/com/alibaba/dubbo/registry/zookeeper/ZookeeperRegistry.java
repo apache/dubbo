@@ -207,7 +207,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                         }
                     } else {
                         String dir = toRootDir();
-                        String action = Constants.PROVIDERS;
+                        String action = Constants.PROVIDERS_CATEGORY;
                         String service = path;
                         if (service.startsWith(dir)) {
                             service = service.substring(dir.length());
@@ -222,13 +222,13 @@ public class ZookeeperRegistry extends FailbackRegistry {
                         for (Map.Entry<URL, Set<NotifyListener>> entry : getSubscribed().entrySet()) {
                             URL key = entry.getKey();
                             List<String> notifies = children;
-                            if (key.getParameter(Constants.ADMIN_KEY, false)) {
+                            if (Constants.ANY_VALUE.equals(key.getServiceInterface())) {
                                 if (adminChildren == null) {
-                                    adminChildren = getChildren(path.substring(0, path.lastIndexOf(Constants.PATH_SEPARATOR) + 1) + (Constants.CONSUMERS.equals(action) ? Constants.PROVIDERS : Constants.CONSUMERS));
+                                    adminChildren = getChildren(path.substring(0, path.lastIndexOf(Constants.PATH_SEPARATOR) + 1) + (Constants.CONSUMERS_CATEGORY.equals(action) ? Constants.PROVIDERS_CATEGORY : Constants.CONSUMERS_CATEGORY));
                                     adminChildren.addAll(children);
                                 }
                                 notifies = adminChildren;
-                            } else if (Constants.CONSUMERS.equals(action)) {
+                            } else if (Constants.CONSUMERS_CATEGORY.equals(action)) {
                                 continue;
                             }
                             String subscribeService = key.getServiceInterface();
@@ -299,7 +299,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 } catch (NodeExistsException e) {
                 }
             }
-            String provider = toProviderPath(url);
+            String provider = toUrlPath(url);
             if (exists(provider)) {
                 try {
                     zookeeper.delete(provider, -1);
@@ -323,7 +323,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
 
     protected void doUnregister(URL url) {
         try {
-            String provider = toProviderPath(url);
+            String provider = toUrlPath(url);
             zookeeper.delete(provider, -1);
         } catch (Throwable e) {
             throw new RpcException("Failed to unregister " + url + " to zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
@@ -350,12 +350,12 @@ public class ZookeeperRegistry extends FailbackRegistry {
                     }
                 }
             } else {
-                String register = toRegisterPath(url);
-                List<String> providers = getChildren(register);
-                if (url.getParameter(Constants.ADMIN_KEY, false)) {
-                    String subscribe = toSubscribePath(url);
-                    List<String> consumers = getChildren(subscribe);
-                    providers.addAll(consumers);
+                List<String> providers = new ArrayList<String>();
+                for (String path : toCategoriesPath(url)) {
+                    List<String> children = getChildren(path);
+                    if (children != null) {
+                        providers.addAll(children);
+                    }
                 }
                 List<URL> urls = toUrls(url, providers);
                 notify(url, listener, urls);
@@ -401,12 +401,12 @@ public class ZookeeperRegistry extends FailbackRegistry {
             throw new IllegalArgumentException("lookup url == null");
         }
         try {
-            String register = toRegisterPath(url);
-            List<String> providers = getChildren(register);
-            if (url.getParameter(Constants.ADMIN_KEY, false)) {
-                String subscribe = toSubscribePath(url);
-                List<String> consumers = getChildren(subscribe);
-                providers.addAll(consumers);
+            List<String> providers = new ArrayList<String>();
+            for (String path : toCategoriesPath(url)) {
+                List<String> children = getChildren(path);
+                if (children != null) {
+                    providers.addAll(children);
+                }
             }
             return toUrls(url, providers);
         } catch (Throwable e) {
@@ -432,24 +432,21 @@ public class ZookeeperRegistry extends FailbackRegistry {
         }
         return toRootDir() + URL.encode(name);
     }
-    
-    private String toCategoryPath(URL url) {
-        if (Constants.SUBSCRIBE_PROTOCOL.equals(url.getProtocol())) {
-            return toSubscribePath(url);
-        } else {
-            return toRegisterPath(url);
+
+    private String[] toCategoriesPath(URL url) {
+        String[] categroies = url.getParameter(Constants.CATEGORY_KEY, new String[] {Constants.DEFAULT_CATEGORY});
+        String[] paths = new String[categroies.length];
+        for (int i = 0; i < categroies.length; i ++) {
+            paths[i] = toServicePath(url) + Constants.PATH_SEPARATOR + categroies[i];
         }
+        return paths;
     }
 
-    private String toRegisterPath(URL url) {
-        return toServicePath(url) + Constants.PATH_SEPARATOR + Constants.PROVIDERS;
+    private String toCategoryPath(URL url) {
+        return toServicePath(url) + Constants.PATH_SEPARATOR + url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY);
     }
 
-    private String toSubscribePath(URL url) {
-        return toServicePath(url) + Constants.PATH_SEPARATOR + Constants.CONSUMERS;
-    }
-
-    private String toProviderPath(URL url) {
+    private String toUrlPath(URL url) {
         return toCategoryPath(url) + Constants.PATH_SEPARATOR + URL.encode(url.toFullString());
     }
     
@@ -466,8 +463,8 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 }
             }
         }
-        if (urls != null && urls.isEmpty() && consumer.getParameter(Constants.ADMIN_KEY, false)) {
-            urls.add(consumer.setProtocol(Constants.EMPTY_PROTOCOL));
+        if (urls != null && urls.isEmpty() && Constants.ANY_VALUE.equals(consumer.getServiceInterface())) {
+            urls.add(consumer.setProtocol(Constants.PROVIDER_PROTOCOL));
         }
         return urls;
     }

@@ -151,7 +151,7 @@ public class RedisRegistry extends FailbackRegistry {
                     for (URL url : new HashSet<URL>(getRegistered())) {
                         String key = toCategoryPath(url);
                         if (jedis.hset(key, url.toFullString(), String.valueOf(System.currentTimeMillis() + expirePeriod)) == 0) {
-                            jedis.publish(key, Constants.SUBSCRIBE_PROTOCOL.equals(url.getProtocol()) ? Constants.SUBSCRIBE : Constants.REGISTER);
+                            jedis.publish(key, Constants.CONSUMER_PROTOCOL.equals(url.getProtocol()) ? Constants.SUBSCRIBE : Constants.REGISTER);
                         }
                     }
                     if (admin) {
@@ -186,7 +186,7 @@ public class RedisRegistry extends FailbackRegistry {
                         }
                     }
                     if (delete) {
-                        if (key.endsWith(Constants.CONSUMERS)) {
+                        if (key.endsWith(Constants.CONSUMERS_CATEGORY)) {
                             jedis.publish(key, Constants.UNSUBSCRIBE);
                         } else {
                             jedis.publish(key, Constants.UNREGISTER);
@@ -253,7 +253,7 @@ public class RedisRegistry extends FailbackRegistry {
                 Jedis jedis = jedisPool.getResource();
                 try {
                     jedis.hset(key, value, expire);
-                    jedis.publish(key, Constants.SUBSCRIBE_PROTOCOL.equals(url.getProtocol()) ? Constants.SUBSCRIBE : Constants.REGISTER);
+                    jedis.publish(key, Constants.CONSUMER_PROTOCOL.equals(url.getProtocol()) ? Constants.SUBSCRIBE : Constants.REGISTER);
                     success = true;
                 } finally {
                     jedisPool.returnResource(jedis);
@@ -282,7 +282,7 @@ public class RedisRegistry extends FailbackRegistry {
                 Jedis jedis = jedisPool.getResource();
                 try {
                     jedis.hdel(key, value);
-                    jedis.publish(key, Constants.SUBSCRIBE_PROTOCOL.equals(url.getProtocol()) ? Constants.UNSUBSCRIBE : Constants.UNREGISTER);
+                    jedis.publish(key, Constants.CONSUMER_PROTOCOL.equals(url.getProtocol()) ? Constants.UNSUBSCRIBE : Constants.UNREGISTER);
                 } finally {
                     jedisPool.returnResource(jedis);
                 }
@@ -343,7 +343,7 @@ public class RedisRegistry extends FailbackRegistry {
     @Override
     public void doUnsubscribe(URL url, NotifyListener listener) {
         if (! Constants.ANY_VALUE.equals(url.getServiceInterface())) {
-            String key = toConsumerPath(url);
+            String key = toCategoryPath(url);
             String value = url.toFullString();
             RpcException exception = null;
             for (Map.Entry<String, JedisPool> entry : jedisPools.entrySet()) {
@@ -382,9 +382,9 @@ public class RedisRegistry extends FailbackRegistry {
 
     private void doNotify(Jedis jedis, String service, URL url, Collection<NotifyListener> listeners) {
         Map<String, String> providers;
-        providers = jedis.hgetAll(service + Constants.PATH_SEPARATOR + Constants.PROVIDERS);
-        if (url.getParameter(Constants.ADMIN_KEY, false)) {
-            Map<String, String> consumers = jedis.hgetAll(service + Constants.PATH_SEPARATOR + Constants.CONSUMERS);
+        providers = jedis.hgetAll(service + Constants.PATH_SEPARATOR + Constants.PROVIDERS_CATEGORY);
+        if (Constants.ANY_VALUE.equals(url.getServiceInterface())) {
+            Map<String, String> consumers = jedis.hgetAll(service + Constants.PATH_SEPARATOR + Constants.CONSUMERS_CATEGORY);
             if (consumers != null && consumers.size() > 0) {
                 providers = providers == null ? new HashMap<String, String>() : new HashMap<String, String>(providers);
                 providers.putAll(consumers);
@@ -406,8 +406,8 @@ public class RedisRegistry extends FailbackRegistry {
                 }
             }
         }
-        if (urls != null && urls.isEmpty() && url.getParameter(Constants.ADMIN_KEY, false)) {
-            URL empty = url.setProtocol(Constants.EMPTY_PROTOCOL);
+        if (urls != null && urls.isEmpty() && Constants.ANY_VALUE.equals(url.getServiceInterface())) {
+            URL empty = url.setProtocol(Constants.PROVIDER_PROTOCOL);
             if (Constants.ANY_VALUE.equals(empty.getServiceInterface())) {
                 empty = empty.setServiceInterface(service.substring(root.length()));
             }
@@ -438,16 +438,8 @@ public class RedisRegistry extends FailbackRegistry {
         return root + url.getServiceInterface();
     }
 
-    private String toProviderPath(URL url) {
-        return toServicePath(url) + Constants.PATH_SEPARATOR + Constants.PROVIDERS;
-    }
-
-    private String toConsumerPath(URL url) {
-        return toServicePath(url) + Constants.PATH_SEPARATOR + Constants.CONSUMERS;
-    }
-
     private String toCategoryPath(URL url) {
-        return Constants.SUBSCRIBE_PROTOCOL.equals(url.getProtocol()) ? toConsumerPath(url) : toProviderPath(url);
+        return toServicePath(url) + Constants.PATH_SEPARATOR + url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY);
     }
 
     private class NotifySub extends JedisPubSub {
@@ -576,7 +568,7 @@ public class RedisRegistry extends FailbackRegistry {
                                                 doNotify(jedis, service, false);
                                                 resetSkip();
                                             }
-                                            jedis.subscribe(new NotifySub(jedisPool), service + Constants.PATH_SEPARATOR + Constants.PROVIDERS); // 阻塞
+                                            jedis.subscribe(new NotifySub(jedisPool), service + Constants.PATH_SEPARATOR + Constants.PROVIDERS_CATEGORY); // 阻塞
                                         }
                                         break;
                                     } finally {

@@ -133,7 +133,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             failedRegistered.add(url);
             if (getUrl().getParameter(Constants.CHECK_KEY, true)
                     && url.getParameter(Constants.CHECK_KEY, true)
-                    && ! Constants.SUBSCRIBE_PROTOCOL.equals(url.getProtocol())) { // 如果开启了启动时检测，则直接抛出异常
+                    && ! Constants.CONSUMER_PROTOCOL.equals(url.getProtocol())) { // 如果开启了启动时检测，则直接抛出异常
                 throw new IllegalStateException("Failed to register " + url + " to registry " + getUrl().getAddress() + ", cause: " + t.getMessage(), t);
             } else {
                 logger.error("Failed to register " + url + ", waiting for retry, cause: " + t.getMessage(), t);
@@ -154,7 +154,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             failedUnregistered.add(url);
             if (getUrl().getParameter(Constants.CHECK_KEY, true)
                     && url.getParameter(Constants.CHECK_KEY, true)
-                    && ! Constants.SUBSCRIBE_PROTOCOL.equals(url.getProtocol())) { // 如果开启了启动时检测，则直接抛出异常
+                    && ! Constants.CONSUMER_PROTOCOL.equals(url.getProtocol())) { // 如果开启了启动时检测，则直接抛出异常
                 throw new IllegalStateException("Failed to unregister " + url + " to registry " + getUrl().getAddress() + ", cause: " + t.getMessage(), t);
             } else {
                 logger.error("Failed to uregister " + url + ", waiting for retry, cause: " + t.getMessage(), t);
@@ -220,7 +220,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             throw new IllegalArgumentException("notify listener == null");
         }
         if ((urls == null || urls.size() == 0) 
-                && ! url.getParameter(Constants.ADMIN_KEY, false)) {
+                && ! Constants.ANY_VALUE.equals(url.getServiceInterface())) {
             return;
         }
         try {

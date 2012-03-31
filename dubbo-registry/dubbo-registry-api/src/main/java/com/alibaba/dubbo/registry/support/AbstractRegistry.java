@@ -85,7 +85,7 @@ public abstract class AbstractRegistry implements Registry {
 
     private final ConcurrentMap<URL, Set<NotifyListener>> subscribed = new ConcurrentHashMap<URL, Set<NotifyListener>>();
 
-    private final ConcurrentMap<URL, List<URL>> notified = new ConcurrentHashMap<URL, List<URL>>();
+    private final ConcurrentMap<URL, Map<String, List<URL>>> notified = new ConcurrentHashMap<URL, Map<String, List<URL>>>();
 
     public AbstractRegistry(URL url) {
         setUrl(url);
@@ -124,7 +124,7 @@ public abstract class AbstractRegistry implements Registry {
         return subscribed;
     }
 
-    public Map<URL, List<URL>> getNotified() {
+    public Map<URL, Map<String, List<URL>>> getNotified() {
         return notified;
     }
 
@@ -264,9 +264,11 @@ public abstract class AbstractRegistry implements Registry {
 
     public List<URL> lookup(URL url) {
         List<URL> urls= new ArrayList<URL>();
-        List<URL> notifiedUrls = getNotified().get(url);
+        Map<String, List<URL>> notifiedUrls = getNotified().get(url);
         if (notifiedUrls != null && notifiedUrls.size() > 0) {
-            urls.addAll(notifiedUrls);
+            for (List<URL> values : notifiedUrls.values()) {
+                urls.addAll(values);
+            }
         }
         if (urls == null || urls.size() == 0) {
             List<URL> cacheUrls = getCacheUrls(url);
@@ -281,7 +283,7 @@ public abstract class AbstractRegistry implements Registry {
                 }
             }
         }
-        if (url.getParameter(Constants.ADMIN_KEY, false)) {
+        if (Constants.ANY_VALUE.equals(url.getServiceInterface())) {
             for (URL u: getSubscribed().keySet()) {
                 if (UrlUtils.isMatch(url, u)) {
                     urls.add(u);
@@ -392,7 +394,13 @@ public abstract class AbstractRegistry implements Registry {
         } else {
             registryCacheExecutor.execute(new SaveProperties(version));
         }
-        notified.put(url, urls);
+        Map<String, List<URL>> categoryNotified = notified.get(url);
+        if (categoryNotified == null) {
+            notified.putIfAbsent(url, new ConcurrentHashMap<String, List<URL>>());
+            categoryNotified = notified.get(url);
+        }
+        String category = url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY);
+        categoryNotified.put(category, urls);
         listener.notify(urls);
     }
 

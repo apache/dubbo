@@ -28,10 +28,6 @@ public class Constants {
 
     public static final String  CONSUMER                           = "consumer";
 
-    public static final String  PROVIDERS                          = "providers";
-
-    public static final String  CONSUMERS                          = "consumers";
-
     public static final String  REGISTER                           = "register";
 
     public static final String  UNREGISTER                         = "unregister";
@@ -39,6 +35,18 @@ public class Constants {
     public static final String  SUBSCRIBE                          = "subscribe";
 
     public static final String  UNSUBSCRIBE                        = "unsubscribe";
+    
+    public static final String  CATEGORY_KEY                       = "category";
+
+    public static final String  PROVIDERS_CATEGORY                 = "providers";
+
+    public static final String  CONSUMERS_CATEGORY                 = "consumers";
+
+    public static final String  ROUTES_CATEGORY                    = "routes";
+
+    public static final String  OVERRIDES_CATEGORY                 = "overrides";
+
+    public static final String  DEFAULT_CATEGORY                   = PROVIDERS_CATEGORY;
 
     public static final String  VALIDATION_KEY                     = "validation";
 
@@ -268,8 +276,6 @@ public class Constants {
 
     public static final String  SUBSCRIBE_KEY                      = "subscribe";
 
-    public static final String  NOTIFY_KEY                         = "notify";
-
     public static final String  GROUP_KEY                          = "group";
 
     public static final String  PATH_KEY                           = "path";
@@ -281,8 +287,6 @@ public class Constants {
     public static final String  FILE_KEY                           = "file";
 
     public static final String  WAIT_KEY                           = "wait";
-
-    public static final String  ADMIN_KEY                          = "admin";
 
     public static final String  CLASSIFIER_KEY                     = "classifier";
 
@@ -335,15 +339,20 @@ public class Constants {
 
     public static final String  TRACE_PROTOCOL                     = "trace";
 
-    public static final String  SUBSCRIBE_PROTOCOL                 = "subscribe";
-
     public static final String  EMPTY_PROTOCOL                     = "empty";
+
+    public static final String  MONITOR_PROTOCOL                   = "monitor";
+
+    public static final String  PROVIDER_PROTOCOL                  = "provider";
+
+    public static final String  CONSUMER_PROTOCOL                  = "consumer";
 
     public static final String  ROUTE_PROTOCOL                     = "route";
 
     public static final String  MOCK_PROTOCOL                      = "mock";
 
     public static final String  RETURN_PREFIX                      = "return ";
+
     public static final String  THROW_PREFIX                       = "throw";
 
     public static final String  FAIL_PREFIX                        = "fail:";

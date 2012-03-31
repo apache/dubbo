@@ -319,33 +319,35 @@ public class UrlUtils {
         return forbid;
     }
 
-    public static boolean isMatchNotify(String protocol, String notify) {
-        if (notify == null || notify.length() == 0) {
-            return ! Constants.SUBSCRIBE_PROTOCOL.equals(protocol);
-        } else if (notify.contains(Constants.ANY_VALUE)) {
+    public static boolean isMatchCategory(String category, String categories) {
+        if (categories == null || categories.length() == 0) {
+            return ! Constants.DEFAULT_CATEGORY.equals(category);
+        } else if (categories.contains(Constants.ANY_VALUE)) {
             return true;
-        } else if (notify.contains(Constants.REMOVE_VALUE_PREFIX)) {
-            return ! notify.contains(Constants.REMOVE_VALUE_PREFIX + protocol);
+        } else if (categories.contains(Constants.REMOVE_VALUE_PREFIX)) {
+            return ! categories.contains(Constants.REMOVE_VALUE_PREFIX + category);
         } else {
-            return notify.contains(protocol);
+            return categories.contains(category);
         }
     }
 
     public static boolean isMatch(URL consumerUrl, URL providerUrl) {
-        if (! isMatchNotify(providerUrl.getProtocol(), 
-                consumerUrl.getParameter(Constants.NOTIFY_KEY))) {
+        if (! isMatchCategory(providerUrl.getProtocol(), 
+                consumerUrl.getParameter(Constants.CATEGORY_KEY))) {
             return false;
         }
         String consumerInterface = consumerUrl.getServiceInterface();
         String consumerGroup = consumerUrl.getParameter(Constants.GROUP_KEY);
         String consumerVersion = consumerUrl.getParameter(Constants.VERSION_KEY);
+        String consumerClassifier = consumerUrl.getParameter(Constants.CLASSIFIER_KEY, Constants.ANY_VALUE);
         String providerInterface = providerUrl.getServiceInterface();
         String providerGroup = providerUrl.getParameter(Constants.GROUP_KEY);
         String providerVersion = providerUrl.getParameter(Constants.VERSION_KEY);
+        String providerClassifier = providerUrl.getParameter(Constants.CLASSIFIER_KEY, Constants.ANY_VALUE);
         return (Constants.ANY_VALUE.equals(consumerInterface) || StringUtils.isEquals(consumerInterface, providerInterface))
                && (Constants.ANY_VALUE.equals(consumerGroup) || StringUtils.isEquals(consumerGroup, providerGroup) || StringUtils.isContains(consumerGroup, providerGroup))
                && (Constants.ANY_VALUE.equals(consumerVersion) || StringUtils.isEquals(consumerVersion, providerVersion))
-               && (! Constants.SUBSCRIBE_PROTOCOL.equals(providerUrl.getProtocol()) || consumerUrl.getParameter(Constants.ADMIN_KEY, false));
+               && (Constants.ANY_VALUE.equals(consumerClassifier) || StringUtils.isEquals(consumerClassifier, providerClassifier));
     }
 
 }
