@@ -16,6 +16,7 @@
 package com.alibaba.dubbo.rpc;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -59,56 +60,45 @@ public class RpcContext {
 	    LOCAL.remove();
 	}
 
-    private final Map<String, Object> values = new HashMap<String, Object>();
-    
-    private final Map<String, String> attachments = new HashMap<String, String>();
+    private Future<?> future;
 
-    private List<Invoker<?>> invokers;
-    
-    private Invoker<?> invoker;
+    private List<URL> urls;
 
-    private Invocation invocation;
-    
+    private URL url;
+
+    private String methodName;
+
+    private Class<?>[] parameterTypes;
+
+    private Object[] arguments;
+
 	private InetSocketAddress localAddress;
 
 	private InetSocketAddress remoteAddress;
-	
-	private Future<?> future;
-	
+
+    private final Map<String, String> attachments = new HashMap<String, String>();
+
+    private final Map<String, Object> values = new HashMap<String, Object>();
+    
+	@Deprecated
+    private List<Invoker<?>> invokers;
+    
+	@Deprecated
+    private Invoker<?> invoker;
+
+	@Deprecated
+    private Invocation invocation;
+    
 	protected RpcContext() {
 	}
 
-    /**
-     * is server side.
-     * 
-     * @return server side.
-     */
-	@Deprecated
-    public boolean isServerSide() {
-        return isProviderSide();
-    }
-    
-	/**
-	 * is client side.
-	 * 
-	 * @return client side.
-	 */
-    @Deprecated
-    public boolean isClientSide() {
-        return isConsumerSide();
-    }
-    
     /**
      * is provider side.
      * 
      * @return provider side.
      */
     public boolean isProviderSide() {
-        Invoker<?> invoker = getInvoker();
-        if (invoker == null) {
-            return false;
-        }
-        URL url = invoker.getUrl();
+        URL url = getUrl();
         if (url == null) {
             return false;
         }
@@ -132,11 +122,7 @@ public class RpcContext {
      * @return consumer side.
      */
     public boolean isConsumerSide() {
-        Invoker<?> invoker = getInvoker();
-        if (invoker == null) {
-            return false;
-        }
-        URL url = invoker.getUrl();
+        URL url = getUrl();
         if (url == null) {
             return false;
         }
@@ -154,54 +140,79 @@ public class RpcContext {
                 NetUtils.filterLocalHost(url.getIp()).equals(NetUtils.filterLocalHost(host));
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public List<Invoker<?>> getInvokers() {
-        return invokers == null && invoker != null ? (List)Arrays.asList(invoker) : invokers;
-    }
-
-    public RpcContext setInvokers(List<Invoker<?>> invokers) {
-        this.invokers = invokers;
-        return this;
-    }
-    
     /**
-     * set current invoker.
+     * get future.
      * 
-     * @param invoker
-     * @return context
+     * @param <T>
+     * @return future
      */
-    public RpcContext setInvoker(Invoker<?> invoker) {
-        this.invoker = invoker;
-        return this;
+    @SuppressWarnings("unchecked")
+    public <T> Future<T> getFuture() {
+        return (Future<T>) future;
     }
 
     /**
-     * get current invoker.
+     * set future.
      * 
-     * @return invoker
+     * @param future
      */
-    public Invoker<?> getInvoker() {
-        return invoker;
+    public void setFuture(Future<?> future) {
+        this.future = future;
     }
-    
-    /**
-     * set invocation.
-     * 
-     * @param invocation
-     * @return context
-     */
-    public RpcContext setInvocation(Invocation invocation) {
-        this.invocation = invocation;
-        return this;
+
+    public List<URL> getUrls() {
+        return urls == null && url != null ? (List<URL>) Arrays.asList(url) : urls;
+    }
+
+    public void setUrls(List<URL> urls) {
+        this.urls = urls;
+    }
+
+    public URL getUrl() {
+        return url;
+    }
+
+    public void setUrl(URL url) {
+        this.url = url;
     }
 
     /**
-     * get invocation.
+     * get method name.
      * 
-     * @return invocation
+     * @return method name.
      */
-    public Invocation getInvocation() {
-        return invocation;
+    public String getMethodName() {
+        return methodName;
+    }
+
+    public void setMethodName(String methodName) {
+        this.methodName = methodName;
+    }
+
+    /**
+     * get parameter types.
+     * 
+     * @serial
+     */
+    public Class<?>[] getParameterTypes() {
+        return parameterTypes;
+    }
+
+    public void setParameterTypes(Class<?>[] parameterTypes) {
+        this.parameterTypes = parameterTypes;
+    }
+
+    /**
+     * get arguments.
+     * 
+     * @return arguments.
+     */
+    public Object[] getArguments() {
+        return arguments;
+    }
+
+    public void setArguments(Object[] arguments) {
+        this.arguments = arguments;
     }
 
     /**
@@ -354,88 +365,15 @@ public class RpcContext {
     }
 
     /**
-     * get values.
-     * 
-     * @return values
-     */
-    public Map<String, Object> get() {
-        return values;
-    }
-
-    /**
-     * set values
-     * 
-     * @param values
-     * @return context
-     */
-    public RpcContext set(Map<String, Object> value) {
-        this.values.clear();
-        if (value != null && value.size() > 0) {
-            this.values.putAll(value);
-        }
-        return this;
-    }
-    
-    /**
-     * set value.
+     * get attachment.
      * 
      * @param key
-     * @param value
-     * @return context
+     * @return attachment
      */
-    public RpcContext set(String key, Object value) {
-        if (value == null) {
-            values.remove(key);
-        } else {
-            values.put(key, value);
-        }
-        return this;
-    }
-    
-    /**
-     * remove value.
-     * 
-     * @param key
-     * @return value
-     */
-    public RpcContext remove(String key) {
-        values.remove(key);
-        return this;
+    public String getAttachment(String key) {
+        return attachments.get(key);
     }
 
-    /**
-     * get value.
-     * 
-     * @param key
-     * @return value
-     */
-    public Object get(String key) {
-        return values.get(key);
-    }
-
-    /**
-     * get attachments.
-     * 
-     * @return attachments
-     */
-    public Map<String, String> getAttachments() {
-        return attachments;
-    }
-
-    /**
-     * set attachments
-     * 
-     * @param attachment
-     * @return context
-     */
-    public RpcContext setAttachments(Map<String, String> attachment) {
-        this.attachments.clear();
-        if (attachment != null && attachment.size() > 0) {
-            this.attachments.putAll(attachment);
-        }
-        return this;
-    }
-    
     /**
      * set attachment.
      * 
@@ -464,33 +402,147 @@ public class RpcContext {
     }
 
     /**
-     * get attachment.
+     * get attachments.
+     * 
+     * @return attachments
+     */
+    public Map<String, String> getAttachments() {
+        return attachments;
+    }
+
+    /**
+     * set attachments
+     * 
+     * @param attachment
+     * @return context
+     */
+    public RpcContext setAttachments(Map<String, String> attachment) {
+        this.attachments.clear();
+        if (attachment != null && attachment.size() > 0) {
+            this.attachments.putAll(attachment);
+        }
+        return this;
+    }
+    
+    public void clearAttachments() {
+        this.attachments.clear();
+    }
+
+    /**
+     * get values.
+     * 
+     * @return values
+     */
+    public Map<String, Object> get() {
+        return values;
+    }
+
+    /**
+     * set value.
      * 
      * @param key
-     * @return attachment
+     * @param value
+     * @return context
      */
-    public String getAttachment(String key) {
-        return attachments.get(key);
+    public RpcContext set(String key, Object value) {
+        if (value == null) {
+            values.remove(key);
+        } else {
+            values.put(key, value);
+        }
+        return this;
     }
 
     /**
-     * get future.
+     * remove value.
      * 
-     * @param <T>
-     * @return future
+     * @param key
+     * @return value
      */
-    @SuppressWarnings("unchecked")
-    public <T> Future<T> getFuture() {
-        return (Future<T>) future;
+    public RpcContext remove(String key) {
+        values.remove(key);
+        return this;
     }
 
     /**
-     * set future.
+     * get value.
      * 
-     * @param future
+     * @param key
+     * @return value
      */
-    public void setFuture(Future<?> future) {
-        this.future = future;
+    public Object get(String key) {
+        return values.get(key);
+    }
+
+    public RpcContext setInvokers(List<Invoker<?>> invokers) {
+        this.invokers = invokers;
+        if (invokers != null && invokers.size() > 0) {
+            List<URL> urls = new ArrayList<URL>(invokers.size());
+            for (Invoker<?> invoker : invokers) {
+                urls.add(invoker.getUrl());
+            }
+            setUrls(urls);
+        }
+        return this;
+    }
+
+    public RpcContext setInvoker(Invoker<?> invoker) {
+        this.invoker = invoker;
+        if (invoker != null) {
+            setUrl(invoker.getUrl());
+        }
+        return this;
+    }
+
+    public RpcContext setInvocation(Invocation invocation) {
+        this.invocation = invocation;
+        if (invocation != null) {
+            setMethodName(invocation.getMethodName());
+            setParameterTypes(invocation.getParameterTypes());
+            setArguments(invocation.getArguments());
+        }
+        return this;
+    }
+
+    /**
+     * @deprecated Replace to isProviderSide()
+     */
+    @Deprecated
+    public boolean isServerSide() {
+        return isProviderSide();
+    }
+    
+    /**
+     * @deprecated Replace to isConsumerSide()
+     */
+    @Deprecated
+    public boolean isClientSide() {
+        return isConsumerSide();
+    }
+    
+    /**
+     * @deprecated Replace to getUrls()
+     */
+    @Deprecated
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public List<Invoker<?>> getInvokers() {
+        return invokers == null && invoker != null ? (List)Arrays.asList(invoker) : invokers;
+    }
+
+    /**
+     * @deprecated Replace to getUrl()
+     */
+    @Deprecated
+    public Invoker<?> getInvoker() {
+        return invoker;
+    }
+
+    /**
+     * @deprecated Replace to getMethodName(), getParameterTypes(), getArguments()
+     */
+    @Deprecated
+    public Invocation getInvocation() {
+        return invocation;
     }
 
 }
