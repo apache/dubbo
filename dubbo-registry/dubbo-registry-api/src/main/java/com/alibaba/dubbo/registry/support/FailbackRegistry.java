@@ -308,7 +308,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         }
         if (! failedSubscribed.isEmpty()) {
             Map<URL, Set<NotifyListener>> failed = new HashMap<URL, Set<NotifyListener>>(failedSubscribed);
-            for (Map.Entry<URL, Set<NotifyListener>> entry : failed.entrySet()) {
+            for (Map.Entry<URL, Set<NotifyListener>> entry : new HashMap<URL, Set<NotifyListener>>(failed).entrySet()) {
                 if (entry.getValue() == null || entry.getValue().size() == 0) {
                     failed.remove(entry.getKey());
                 }
@@ -337,7 +337,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         }
         if (! failedUnsubscribed.isEmpty()) {
             Map<URL, Set<NotifyListener>> failed = new HashMap<URL, Set<NotifyListener>>(failedUnsubscribed);
-            for (Map.Entry<URL, Set<NotifyListener>> entry : failed.entrySet()) {
+            for (Map.Entry<URL, Set<NotifyListener>> entry : new HashMap<URL, Set<NotifyListener>>(failed).entrySet()) {
                 if (entry.getValue() == null || entry.getValue().size() == 0) {
                     failed.remove(entry.getKey());
                 }
@@ -366,7 +366,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         }
         if (! failedNotified.isEmpty()) {
             Map<URL, Map<NotifyListener, List<URL>>> failed = new HashMap<URL, Map<NotifyListener, List<URL>>>(failedNotified);
-            for (Map.Entry<URL, Map<NotifyListener, List<URL>>> entry : failed.entrySet()) {
+            for (Map.Entry<URL, Map<NotifyListener, List<URL>>> entry : new HashMap<URL, Map<NotifyListener, List<URL>>>(failed).entrySet()) {
                 if (entry.getValue() == null || entry.getValue().size() == 0) {
                     failed.remove(entry.getKey());
                 }
