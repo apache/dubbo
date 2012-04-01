@@ -67,7 +67,7 @@ public interface RegistryService {
      * 4. 当URL设置了check=false时，订阅失败后不报错，在后台定时重试<br>
      * 5. 允许URI相同但参数不同的URL并存，不能覆盖。<br>
      * 
-     * @param url 服务查询键值对，如：subscribe://10.20.153.10/com.alibaba.foo.BarService?version=1.0.0&application=kylin
+     * @param url 服务查询键值对，如：consumer://10.20.153.10/com.alibaba.foo.BarService?version=1.0.0&application=kylin
      * @param listener 服务变更事件监听器
      */
     void subscribe(URL url, NotifyListener listener);
@@ -75,7 +75,7 @@ public interface RegistryService {
     /**
      * 取消订阅服务.
      * 
-     * @param url 服务查询键值对，如：subscribe://10.20.153.10/com.alibaba.foo.BarService?version=1.0.0&application=kylin
+     * @param url 服务查询键值对，如：consumer://10.20.153.10/com.alibaba.foo.BarService?version=1.0.0&application=kylin
      * @param listener 服务变更事件监听器
      */
     void unsubscribe(URL url, NotifyListener listener);
@@ -83,8 +83,8 @@ public interface RegistryService {
     /**
      * 查询服务列表，与订阅服务相同，拉模式，只返回一次结果。
      * 
-     * @param url 服务查询键值对，如：subscribe://10.20.153.10/com.alibaba.foo.BarService?version=1.0.0&application=kylin
-     * @return 服务列表
+     * @param url 服务查询键值对，如：consumer://10.20.153.10/com.alibaba.foo.BarService?version=1.0.0&application=kylin
+     * @return 服务列表，含义同{@link com.alibaba.dubbo.registry.RegistryService#register(URL)}的url参数。
      */
     List<URL> lookup(URL url);
 
