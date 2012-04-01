@@ -17,12 +17,14 @@ package com.alibaba.dubbo.common.utils;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 
@@ -212,48 +214,97 @@ public class PojoUtilsTest {
         Object[] realize = (Object[]) PojoUtils.realize(generalize, Object[].class);
         assertArrayEquals(persons, realize);
     }
+    
+    // 循环测试
+    
+    public static class Parent {
+        String name;
+        
+        int age;
+        
+        Child child;
 
-    public static <T extends Comparable<T>> T min(T[] arr) {
-        if (arr == null || arr.length == 0)
-            return null;
-
-        T smallest = arr[0];
-        for (int i = 1; i < arr.length; ++i) {
-            if (smallest.compareTo(arr[i]) > 0) {
-                smallest = arr[i];
-            }
+        public String getName() {
+            return name;
         }
-        return smallest;
-    }
 
-    public static <T extends Comparable<? super T>> T min2(T[] arr) {
-        if (arr == null || arr.length == 0)
-            return null;
-
-        T smallest = arr[0];
-        for (int i = 1; i < arr.length; ++i) {
-            if (smallest.compareTo(arr[i]) > 0) {
-                smallest = arr[i];
-            }
+        public void setName(String name) {
+            this.name = name;
         }
-        return smallest;
-    }
 
-    public static <T extends Comparable<T> & Serializable> T max(T[] arr) {
-        if (arr == null || arr.length == 0)
-            return null;
-
-        T biggest = arr[0];
-        for (int i = 1; i < arr.length; ++i) {
-            if (biggest.compareTo(arr[i]) < 0) {
-                biggest = arr[i];
-            }
+        public int getAge() {
+            return age;
         }
-        return biggest;
-    }
 
-    public static <T extends Comparable<T> & Serializable> T max2(Comparable<? extends Serializable>[] arr) {
-        return null;
-    }
+        public void setAge(int age) {
+            this.age = age;
+        }
 
+        public Child getChild() {
+            return child;
+        }
+
+        public void setChild(Child child) {
+            this.child = child;
+        }
+    }
+    
+    public static class Child {
+        String toy;
+        
+        public String getToy() {
+            return toy;
+        }
+
+        public void setToy(String toy) {
+            this.toy = toy;
+        }
+
+        public Parent getParent() {
+            return parent;
+        }
+
+        public void setParent(Parent parent) {
+            this.parent = parent;
+        }
+
+        Parent parent;
+    }
+    
+    @Test
+    public void test_Loop() throws Exception {
+        Parent p = new Parent();
+        p.setAge(10);
+        p.setName("jerry");
+
+        Child c = new Child();
+        c.setToy("haha");
+        
+        p.setChild(c);
+        c.setParent(p);
+        
+        Object generalize = PojoUtils.generalize(p);
+        Parent parent = (Parent) PojoUtils.realize(generalize, Parent.class);
+        
+        assertEquals(10, parent.getAge());
+        assertEquals("jerry", parent.getName());
+        
+        assertEquals("haha", parent.getChild().getToy());
+        assertSame(parent, parent.getChild().getParent());
+    }
+    
+    @Test
+    public void test_Loop_Map() throws Exception {
+        Map<String, Object> map = new HashMap<String, Object>();
+        
+        map.put("k", "v");
+        map.put("m", map);
+     
+        Object generalize = PojoUtils.generalize(map);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> ret = (Map<String, Object>) PojoUtils.realize(generalize, Map.class);
+        
+        assertEquals("v", ret.get("k"));
+        assertSame(ret, ret.get("m"));
+    }
 }
