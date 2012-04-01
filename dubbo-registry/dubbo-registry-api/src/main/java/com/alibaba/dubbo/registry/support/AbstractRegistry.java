@@ -374,26 +374,6 @@ public abstract class AbstractRegistry implements Registry {
     }
 
     protected void notify(URL url, NotifyListener listener, List<URL> urls) {
-        List<URL> result = new ArrayList<URL>();
-        StringBuilder buf = new StringBuilder();
-        if (urls != null && urls.size() > 0) {
-            for (URL u: urls) {
-                if (UrlUtils.isMatch(url, u)) {
-                    result.add(u);
-                    if (buf.length() > 0) {
-                        buf.append(URL_SEPARATOR);
-                    }
-                    buf.append(u.toFullString());
-                }
-            }
-        }
-        properties.setProperty(url.getServiceKey(), buf.toString());
-        long version = lastCacheChanged.incrementAndGet();
-        if (syncSaveFile) {
-            doSaveProperties(version);
-        } else {
-            registryCacheExecutor.execute(new SaveProperties(version));
-        }
         Map<String, List<URL>> categoryNotified = notified.get(url);
         if (categoryNotified == null) {
             notified.putIfAbsent(url, new ConcurrentHashMap<String, List<URL>>());
@@ -401,7 +381,34 @@ public abstract class AbstractRegistry implements Registry {
         }
         String category = url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY);
         categoryNotified.put(category, urls);
+        saveProperties(url);
         listener.notify(urls);
+    }
+
+    private void saveProperties(URL url) {
+        try {
+            StringBuilder buf = new StringBuilder();
+            Map<String, List<URL>> categoryNotified = notified.get(url);
+            if (categoryNotified != null) {
+                for (List<URL> us : categoryNotified.values()) {
+                    for (URL u : us) {
+                        if (buf.length() > 0) {
+                            buf.append(URL_SEPARATOR);
+                        }
+                        buf.append(u.toFullString());
+                    }
+                }
+            }
+            properties.setProperty(url.getServiceKey(), buf.toString());
+            long version = lastCacheChanged.incrementAndGet();
+            if (syncSaveFile) {
+                doSaveProperties(version);
+            } else {
+                registryCacheExecutor.execute(new SaveProperties(version));
+            }
+        } catch (Throwable t) {
+            logger.warn(t.getMessage(), t);
+        }
     }
 
     public void destroy() {
