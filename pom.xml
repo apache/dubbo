@@ -71,7 +71,7 @@
 		<easymock_version>3.0</easymock_version>
 		<jmockit_version>0.999.8</jmockit_version>
 		<!-- Build args -->
-		<argline>-server -Xms128m -Xmx512m -XX:PermSize=64m -XX:MaxPermSize=256m</argline>
+		<!--<argline>-server -Xms64m -Xmx64m -XX:PermSize=64m -XX:MaxPermSize=64m</argline>-->
 		<skip_maven_deploy>false</skip_maven_deploy>
 		<updateReleaseInfo>true</updateReleaseInfo>
         <project.build.sourceEncoding>${file_encoding}</project.build.sourceEncoding>
@@ -117,8 +117,9 @@
 		<module>dubbo-demo/dubbo-demo-api</module>
 		<module>dubbo-demo/dubbo-demo-consumer</module>
 		<module>dubbo-demo/dubbo-demo-provider</module>
-		<module>dubbo-test/dubbo-test-showcase</module>
+		<module>dubbo-test/dubbo-test-examples</module>
 		<module>dubbo-test/dubbo-test-benchmark</module>
+		<module>dubbo-test/dubbo-test-integration</module>
 	</modules>
 	<dependencyManagement>
 		<dependencies>
