@@ -373,7 +373,41 @@ public abstract class AbstractRegistry implements Registry {
         }
     }
 
+    private List<URL> filterEmpty(URL url, List<URL> urls) {
+        if (urls == null || urls.size() == 0) {
+            List<URL> result = new ArrayList<URL>(1);
+            result.add(url.setProtocol(Constants.EMPTY_PROTOCOL));
+            return result;
+        }
+        return urls;
+    }
+
+    protected void notify(List<URL> urls) {
+        for (Map.Entry<URL, Set<NotifyListener>> entry : getSubscribed().entrySet()) {
+            URL url = entry.getKey();
+            Set<NotifyListener> listeners = entry.getValue();
+            if (listeners != null) {
+                for (NotifyListener listener : listeners) {
+                    try {
+                        notify(url, listener, filterEmpty(url, urls));
+                    } catch (Throwable t) {
+                        logger.error("Failed to notify registry event, urls: " +  urls + ", cause: " + t.getMessage(), t);
+                    }
+                }
+            }
+        }
+    }
+
     protected void notify(URL url, NotifyListener listener, List<URL> urls) {
+        List<URL> result = new ArrayList<URL>();
+        for (URL u : urls) {
+            if (UrlUtils.isMatch(url, u)) {
+                result.add(u);
+            }
+        }
+        if (result.size() == 0) {
+            return;
+        }
         Map<String, List<URL>> categoryNotified = notified.get(url);
         if (categoryNotified == null) {
             notified.putIfAbsent(url, new ConcurrentHashMap<String, List<URL>>());

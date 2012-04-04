@@ -332,8 +332,8 @@ public class UrlUtils {
     }
 
     public static boolean isMatch(URL consumerUrl, URL providerUrl) {
-        if (! isMatchCategory(providerUrl.getProtocol(), 
-                consumerUrl.getParameter(Constants.CATEGORY_KEY))) {
+        if (! isMatchCategory(providerUrl.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY), 
+                consumerUrl.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY))) {
             return false;
         }
         String consumerInterface = consumerUrl.getServiceInterface();

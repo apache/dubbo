@@ -464,7 +464,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
             }
         }
         if (urls != null && urls.isEmpty() && Constants.ANY_VALUE.equals(consumer.getServiceInterface())) {
-            urls.add(consumer.setProtocol(Constants.PROVIDER_PROTOCOL));
+            urls.add(consumer.setProtocol(Constants.EMPTY_PROTOCOL));
         }
         return urls;
     }
