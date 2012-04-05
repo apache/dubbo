@@ -321,7 +321,7 @@ public class UrlUtils {
 
     public static boolean isMatchCategory(String category, String categories) {
         if (categories == null || categories.length() == 0) {
-            return ! Constants.DEFAULT_CATEGORY.equals(category);
+            return Constants.DEFAULT_CATEGORY.equals(category);
         } else if (categories.contains(Constants.ANY_VALUE)) {
             return true;
         } else if (categories.contains(Constants.REMOVE_VALUE_PREFIX)) {
