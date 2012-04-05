@@ -219,10 +219,6 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         if (listener == null) {
             throw new IllegalArgumentException("notify listener == null");
         }
-        if ((urls == null || urls.size() == 0) 
-                && ! Constants.ANY_VALUE.equals(url.getServiceInterface())) {
-            return;
-        }
         try {
             super.notify(url, listener, urls);
         } catch (Exception t) {

@@ -399,6 +399,16 @@ public abstract class AbstractRegistry implements Registry {
     }
 
     protected void notify(URL url, NotifyListener listener, List<URL> urls) {
+        if (url == null) {
+            throw new IllegalArgumentException("notify url == null");
+        }
+        if (listener == null) {
+            throw new IllegalArgumentException("notify listener == null");
+        }
+        if ((urls == null || urls.size() == 0) 
+                && ! Constants.ANY_VALUE.equals(url.getServiceInterface())) {
+            return;
+        }
         List<URL> result = new ArrayList<URL>();
         for (URL u : urls) {
             if (UrlUtils.isMatch(url, u)) {
