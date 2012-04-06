@@ -48,6 +48,8 @@ public class Constants {
 
     public static final String  DEFAULT_CATEGORY                   = PROVIDERS_CATEGORY;
 
+    public static final String  ENABLED_KEY                        = "enabled";
+
     public static final String  VALIDATION_KEY                     = "validation";
 
     public static final String  CACHE_KEY                          = "cache";

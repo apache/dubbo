@@ -336,6 +336,10 @@ public class UrlUtils {
                 consumerUrl.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY))) {
             return false;
         }
+        if (! providerUrl.getParameter(Constants.ENABLED_KEY, true) 
+                && ! Constants.ANY_VALUE.equals(consumerUrl.getParameter(Constants.ENABLED_KEY))) {
+            return false;
+        }
         String consumerInterface = consumerUrl.getServiceInterface();
         String consumerGroup = consumerUrl.getParameter(Constants.GROUP_KEY);
         String consumerVersion = consumerUrl.getParameter(Constants.VERSION_KEY);
