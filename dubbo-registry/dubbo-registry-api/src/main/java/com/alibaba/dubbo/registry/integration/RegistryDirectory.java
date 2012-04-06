@@ -147,20 +147,35 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             List<URL> routerUrls = new ArrayList<URL>();
             List<URL> overrideUrls = new ArrayList<URL>();
             for (URL url : urls) {
-                if (Constants.ROUTE_PROTOCOL.equals(url.getProtocol())) {
-                    routerUrls.add(url);
-                } else if (Constants.OVERRIDE_PROTOCOL.equals(url.getProtocol())) {
-                    //url equals bug
-//                    if (! overrideUrls.contains(url)) {
+                String protocol = url.getProtocol();
+                String category = url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY);
+                if (Constants.ROUTES_CATEGORY.equals(category) 
+                        || Constants.ROUTE_PROTOCOL.equals(protocol)) {
+                    if (Constants.EMPTY_PROTOCOL.equals(protocol)) {
+                        routerUrls.clear();
+                    } else {
+                        routerUrls.add(url);
+                    }
+                } else if (Constants.OVERRIDES_CATEGORY.equals(category) 
+                        || Constants.OVERRIDE_PROTOCOL.equals(protocol)) {
+                    if (Constants.EMPTY_PROTOCOL.equals(protocol)) {
+                        overrideUrls.clear();
+                    } else {
                         overrideUrls.add(url);
-//                    }
-                } else if (ExtensionLoader.getExtensionLoader(Protocol.class).hasExtension(url.getProtocol())) {
-//                    if (! invokerUrls.contains(url)) {
-                        invokerUrls.add(url);
-//                    }
-                } else if (! Constants.EMPTY_PROTOCOL.equals(url.getProtocol())) {
-                    logger.error(new IllegalStateException("Unsupported protocol " + url.getProtocol() + " in notified url: " + url + " from registry " + getUrl().getAddress() + " to consumer " + NetUtils.getLocalHost() 
-                            + ", supported protocol: "+ExtensionLoader.getExtensionLoader(Protocol.class).getSupportedExtensions()));
+                    }
+                } else if (Constants.PROVIDERS_CATEGORY.equals(category)) {
+                    if (Constants.EMPTY_PROTOCOL.equals(protocol)) {
+                        invokerUrls.clear();
+                    } else {
+                        if (ExtensionLoader.getExtensionLoader(Protocol.class).hasExtension(url.getProtocol())) {
+                            invokerUrls.add(url);
+                        } else {
+                            logger.error(new IllegalStateException("Unsupported protocol " + url.getProtocol() + " in notified url: " + url + " from registry " + getUrl().getAddress() + " to consumer " + NetUtils.getLocalHost() 
+                                    + ", supported protocol: "+ExtensionLoader.getExtensionLoader(Protocol.class).getSupportedExtensions()));
+                        }
+                    }
+                } else {
+                    logger.warn("Unsupported category " + category + " in notified url: " + url + " from registry " + getUrl().getAddress() + " to consumer " + NetUtils.getLocalHost());
                 }
             }
             
