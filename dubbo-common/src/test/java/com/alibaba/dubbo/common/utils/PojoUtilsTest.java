@@ -17,6 +17,7 @@ package com.alibaba.dubbo.common.utils;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 
 import java.lang.reflect.Method;
@@ -287,7 +288,7 @@ public class PojoUtilsTest {
     }
     
     @Test
-    public void test_Loop() throws Exception {
+    public void test_Loop_pojo() throws Exception {
         Parent p = new Parent();
         p.setAge(10);
         p.setName("jerry");
@@ -321,5 +322,106 @@ public class PojoUtilsTest {
         
         assertEquals("v", ret.get("k"));
         assertSame(ret, ret.get("m"));
+    }
+    
+    @Test
+    public void test_LoopPojoInMap() throws Exception {
+        Parent p = new Parent();
+        p.setAge(10);
+        p.setName("jerry");
+
+        Child c = new Child();
+        c.setToy("haha");
+        
+        p.setChild(c);
+        c.setParent(p);
+        
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("k", p);
+        
+        Object generalize = PojoUtils.generalize(map);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> realize = (Map<String, Object>) PojoUtils.realize(generalize, Map.class);
+        
+        Parent parent = (Parent) realize.get("k");
+        
+        assertEquals(10, parent.getAge());
+        assertEquals("jerry", parent.getName());
+        
+        assertEquals("haha", parent.getChild().getToy());
+        assertSame(parent, parent.getChild().getParent());
+    }
+    
+    @Test
+    public void test_LoopPojoInList() throws Exception {
+        Parent p = new Parent();
+        p.setAge(10);
+        p.setName("jerry");
+        
+        Child c = new Child();
+        c.setToy("haha");
+        
+        p.setChild(c);
+        c.setParent(p);
+        
+        List<Object> list = new ArrayList<Object>();
+        list.add(p);
+        
+        Object generalize = PojoUtils.generalize(list);
+        @SuppressWarnings("unchecked")
+        List<Object> realize = (List<Object>) PojoUtils.realize(generalize, List.class);
+        
+        Parent parent = (Parent) realize.get(0);
+        
+        assertEquals(10, parent.getAge());
+        assertEquals("jerry", parent.getName());
+        
+        assertEquals("haha", parent.getChild().getToy());
+        assertSame(parent, parent.getChild().getParent());
+    }
+    
+    @Test
+    public void test_PojoInList() throws Exception {
+        Parent p = new Parent();
+        p.setAge(10);
+        p.setName("jerry");
+        
+        List<Object> list = new ArrayList<Object>();
+        list.add(p);
+        
+        Object generalize = PojoUtils.generalize(list);
+        @SuppressWarnings("unchecked")
+        List<Object> realize = (List<Object>) PojoUtils.realize(generalize, List.class);
+        
+        Parent parent = (Parent) realize.get(0);
+        
+        assertEquals(10, parent.getAge());
+        assertEquals("jerry", parent.getName());
+    }
+
+    public void setLong(long l){}
+    
+    public void setInt(int l){}
+    
+    // java.lang.IllegalArgumentException: argument type mismatch
+    @Test
+    public void test_realize_LongPararmter_IllegalArgumentException() throws Exception {
+        Method method = PojoUtilsTest.class.getMethod("setLong", long.class);
+        assertNotNull(method);
+        
+        Object value = PojoUtils.realize("563439743927993", method.getParameterTypes()[0], method.getGenericParameterTypes()[0]);
+        
+        method.invoke(new PojoUtilsTest(), value);
+    }
+    
+    // java.lang.IllegalArgumentException: argument type mismatch
+    @Test
+    public void test_realize_IntPararmter_IllegalArgumentException() throws Exception {
+        Method method = PojoUtilsTest.class.getMethod("setInt", long.class);
+        assertNotNull(method);
+        
+        Object value = PojoUtils.realize("123", method.getParameterTypes()[0], method.getGenericParameterTypes()[0]);
+        
+        method.invoke(new PojoUtilsTest(), value);
     }
 }
