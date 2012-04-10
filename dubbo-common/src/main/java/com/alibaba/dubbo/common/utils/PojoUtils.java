@@ -164,11 +164,11 @@ public class PojoUtils {
     }
     
     public static Object realize(Object pojo, Class<?> type) {
-        return realize(pojo, type, new HashMap<Integer, Object>());
+        return realize1(pojo, type, new HashMap<Integer, Object>());
     }
     
     public static Object realize(Object pojo, Class<?> type, Type genericType) {
-        return realize(pojo, type, genericType, new HashMap<Integer, Object>());
+        return realize0(pojo, type, genericType, new HashMap<Integer, Object>());
     }
     
     private static class PojoInvocationHandler implements InvocationHandler {
@@ -194,7 +194,7 @@ public class PojoUtils {
                 value = map.get(methodName.substring(0, 1).toLowerCase() + methodName.substring(1));
             }
             if (value instanceof Map<?,?> && ! Map.class.isAssignableFrom(method.getReturnType())) {
-                value = realize((Map<String, Object>)value, method.getReturnType(), new HashMap<Integer, Object>());
+                value = realize1((Map<String, Object>)value, method.getReturnType(), new HashMap<Integer, Object>());
             }
             return value;
         }
@@ -218,12 +218,12 @@ public class PojoUtils {
     	return new ArrayList<Object>();
     }
 
-    private static Object realize(Object pojo, Class<?> type, final Map<Integer, Object> history) {
-        return realize(pojo, type, null , history);
+    private static Object realize1(Object pojo, Class<?> type, final Map<Integer, Object> history) {
+        return realize0(pojo, type, null , history);
     }
     
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private static Object realize(Object pojo, Class<?> type, Type genericType, final Map<Integer, Object> history) {
+    private static Object realize0(Object pojo, Class<?> type, Type genericType, final Map<Integer, Object> history) {
         if (pojo == null) {
             return null;
         }
@@ -253,7 +253,7 @@ public class PojoUtils {
         		Collection dest = createCollection(type, len);
         		for (int i = 0; i < len; i ++) {
 	                Object obj = Array.get(pojo, i);
-	                Object value = realize(obj, ctype, history);
+	                Object value = realize1(obj, ctype, history);
 	                dest.add(value);
 	            }
 	            return dest;
@@ -263,7 +263,7 @@ public class PojoUtils {
 	            Object dest = Array.newInstance(ctype, len);
 	            for (int i = 0; i < len; i ++) {
 	                Object obj = Array.get(pojo, i);
-	                Object value = realize(obj, ctype, history);
+	                Object value = realize1(obj, ctype, history);
 	                Array.set(dest, i, value);
 	            }
 	            return dest;
@@ -278,7 +278,7 @@ public class PojoUtils {
                 Object dest = Array.newInstance(ctype, len);
                 int i = 0;
                 for (Object obj : src) {
-                    Object value = realize(obj, ctype, history);
+                    Object value = realize1(obj, ctype, history);
                     Array.set(dest, i, value);
                     i ++;
                 }
@@ -293,7 +293,7 @@ public class PojoUtils {
                     if ( keyType instanceof Class){
                       keyClazz = (Class<?>)keyType;
                     } 
-                	Object value = realize(obj, keyClazz, keyType, history);
+                	Object value = realize0(obj, keyClazz, keyType, history);
                     dest.add(value);
                 }
                 return dest;
@@ -342,8 +342,8 @@ public class PojoUtils {
                         valueClazz = entry.getValue() == null ? null : entry.getValue().getClass() ;
                     }
             	    
-            	    Object key = keyClazz == null ? entry.getKey() : realize(entry.getKey(), keyClazz, keyType, history);
-            	    Object value = valueClazz == null ? entry.getValue() : realize(entry.getValue(), valueClazz, valueType, history);
+            	    Object key = keyClazz == null ? entry.getKey() : realize0(entry.getKey(), keyClazz, keyType, history);
+            	    Object value = valueClazz == null ? entry.getValue() : realize0(entry.getValue(), valueClazz, valueType, history);
             		map.put(key, value);
             	}
         		return map;
@@ -365,11 +365,12 @@ public class PojoUtils {
 	                            if (! method.isAccessible())
 	                                method.setAccessible(true);
 	                            Type ptype = method.getGenericParameterTypes()[0];
-	                            value = realize(value, method.getParameterTypes()[0], ptype, history);
+	                            value = realize0(value, method.getParameterTypes()[0], ptype, history);
 	                            try {
 	                                method.invoke(dest, value);
 	                            } catch (Exception e) {
-	                                throw new RuntimeException("Failed to set pojo " + dest.getClass().getSimpleName() + " property " + name + " value " + value + ", cause: " + e.getMessage(), e);
+	                                throw new RuntimeException("Failed to set pojo " + dest.getClass().getSimpleName() + " property " + name
+	                                        + " value " + value + "(" + value.getClass() + "), cause: " + e.getMessage(), e);
 	                            }
 	                        }
 	                    }
