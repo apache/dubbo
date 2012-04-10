@@ -325,7 +325,6 @@ public class PojoUtilsTest {
         assertSame(ret, ret.get("m"));
     }
     
-    @Ignore
     @Test
     public void test_LoopPojoInMap() throws Exception {
         Parent p = new Parent();
@@ -343,7 +342,7 @@ public class PojoUtilsTest {
         
         Object generalize = PojoUtils.generalize(map);
         @SuppressWarnings("unchecked")
-        Map<String, Object> realize = (Map<String, Object>) PojoUtils.realize(generalize, Map.class);
+        Map<String, Object> realize = (Map<String, Object>) PojoUtils.realize(generalize, Map.class, getType("getMapGenericType"));
         
         Parent parent = (Parent) realize.get("k");
         
@@ -354,7 +353,6 @@ public class PojoUtilsTest {
         assertSame(parent, parent.getChild().getParent());
     }
     
-    @Ignore
     @Test
     public void test_LoopPojoInList() throws Exception {
         Parent p = new Parent();
@@ -372,7 +370,7 @@ public class PojoUtilsTest {
         
         Object generalize = PojoUtils.generalize(list);
         @SuppressWarnings("unchecked")
-        List<Object> realize = (List<Object>) PojoUtils.realize(generalize, List.class);
+        List<Object> realize = (List<Object>) PojoUtils.realize(generalize, List.class, getType("getListGenericType"));
         
         Parent parent = (Parent) realize.get(0);
         
@@ -383,7 +381,6 @@ public class PojoUtilsTest {
         assertSame(parent, parent.getChild().getParent());
     }
     
-    @Ignore
     @Test
     public void test_PojoInList() throws Exception {
         Parent p = new Parent();
@@ -395,7 +392,7 @@ public class PojoUtilsTest {
         
         Object generalize = PojoUtils.generalize(list);
         @SuppressWarnings("unchecked")
-        List<Object> realize = (List<Object>) PojoUtils.realize(generalize, List.class);
+        List<Object> realize = (List<Object>) PojoUtils.realize(generalize, List.class, getType("getListGenericType"));
         
         Parent parent = (Parent) realize.get(0);
         
@@ -406,6 +403,9 @@ public class PojoUtilsTest {
     public void setLong(long l){}
     
     public void setInt(int l){}
+    
+    public List<Parent> getListGenericType(){return null;};
+    public Map<String, Parent> getMapGenericType(){return null;};
     
     // java.lang.IllegalArgumentException: argument type mismatch
     @Test
