@@ -24,7 +24,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
 import com.alibaba.dubbo.remoting.exchange.Exchangers;
@@ -73,7 +72,7 @@ public class PortTelnetHandlerTest {
     @Test
     public void testListDetail() throws RemotingException {
         String result = port.telnet(null, "-l");
-        assertEquals("dubbo://" + NetUtils.getLocalHost() + ":20887", result);
+        assertEquals("dubbo://127.0.0.1:20887", result);
     }
 
     @Test
