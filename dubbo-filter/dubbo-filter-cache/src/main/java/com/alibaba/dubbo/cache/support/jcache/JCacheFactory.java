@@ -18,7 +18,6 @@ package com.alibaba.dubbo.cache.support.jcache;
 import com.alibaba.dubbo.cache.Cache;
 import com.alibaba.dubbo.cache.support.AbstractCacheFactory;
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.rpc.Invocation;
 
 /**
  * JCacheFactory
@@ -27,7 +26,7 @@ import com.alibaba.dubbo.rpc.Invocation;
  */
 public class JCacheFactory extends AbstractCacheFactory {
 
-    protected Cache createCache(URL url, Invocation invocation) {
+    protected Cache createCache(URL url) {
         return new JCache(url);
     }
 
