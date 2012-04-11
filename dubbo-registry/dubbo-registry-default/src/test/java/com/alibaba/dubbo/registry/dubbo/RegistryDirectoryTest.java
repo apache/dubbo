@@ -536,10 +536,10 @@ public class RegistryDirectoryTest {
 
         List<URL> serviceUrls = new ArrayList<URL>();
         // without ROUTER_KEY, the first router should not be created.
-        serviceUrls.add(routerurl.addParameter(Constants.TYPE_KEY, "javascript").addParameter(Constants.ROUTER_KEY,
+        serviceUrls.add(routerurl.addParameter(Constants.CATEGORY_KEY, Constants.ROUTES_CATEGORY).addParameter(Constants.TYPE_KEY, "javascript").addParameter(Constants.ROUTER_KEY,
                                                                                                  "notsupported").addParameter(Constants.RULE_KEY,
                                                                                                                               "function test1(){}"));
-        serviceUrls.add(routerurl2.addParameter(Constants.TYPE_KEY, "javascript").addParameter(Constants.ROUTER_KEY,
+        serviceUrls.add(routerurl2.addParameter(Constants.CATEGORY_KEY, Constants.ROUTES_CATEGORY).addParameter(Constants.TYPE_KEY, "javascript").addParameter(Constants.ROUTER_KEY,
                                                                                                   ScriptRouterFactory.NAME).addParameter(Constants.RULE_KEY,
                                                                                                                                          "function test1(){}"));
 

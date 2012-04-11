@@ -334,8 +334,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         if (urls != null && urls.size() > 0) {
             for (URL url : urls) {
                 String routerType = url.getParameter(Constants.ROUTER_KEY);
-                if (routerType == null || routerType.length() == 0){
-                    url.setProtocol(routerType);
+                if (routerType != null && routerType.length() > 0){
+                    url = url.setProtocol(routerType);
                 }
                 try{
                     Router router = routerFactory.getRouter(url);
