@@ -22,8 +22,6 @@ import com.alibaba.dubbo.common.extension.SPI;
 /**
  * RegistryFactory. (SPI, Singleton, ThreadSafe)
  * 
- * NOTE: RegistryFactory should <strong>NOT</strong> have default implement.
- * 
  * @see com.alibaba.dubbo.registry.support.AbstractRegistryFactory
  * @author william.liangf
  */
@@ -31,10 +29,17 @@ import com.alibaba.dubbo.common.extension.SPI;
 public interface RegistryFactory {
 
     /**
-     * get registry.
+     * 连接注册中心.
      * 
-     * @param url registry url
-     * @return registry
+     * 连接注册中心需处理契约：<br>
+     * 1. 支持backup=10.20.153.10备选注册中心集群地址
+     * 2. 支持URL上的protocol://username:password@host:port权限认证
+     * 3. 支持file=registry.cache本地磁盘文件缓存
+     * 4. 支持timeout=1000请求超时设置
+     * 5. 支持session=60000会话超时或过期设置
+     * 
+     * @param url 注册中心地址
+     * @return 注册中心引用
      */
     @Adaptive({"protocol"})
     Registry getRegistry(URL url);
