@@ -19,6 +19,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -26,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.junit.Test;
 
@@ -240,6 +242,10 @@ public class PojoUtilsTest {
         
         Child child;
 
+        public static Parent getNewParent() {
+            return new Parent();
+        }
+        
         public String getName() {
             return name;
         }
@@ -426,5 +432,30 @@ public class PojoUtilsTest {
         Object value = PojoUtils.realize("123", method.getParameterTypes()[0], method.getGenericParameterTypes()[0]);
         
         method.invoke(new PojoUtilsTest(), value);
+    }
+
+    @Test
+    public void testStackOverflow() throws Exception {
+        Parent parent = Parent.getNewParent();
+        parent.setAge(Integer.MAX_VALUE);
+        String name = UUID.randomUUID().toString();
+        parent.setName(name);
+        Object generalize = PojoUtils.generalize(parent);
+        assertTrue(generalize instanceof Map);
+        Map map = (Map) generalize;
+        assertEquals(Integer.MAX_VALUE, map.get("age"));
+        assertEquals(name, map.get("name"));
+        
+        Parent realize = (Parent)PojoUtils.realize(generalize, Parent.class);
+        assertEquals(Integer.MAX_VALUE, realize.getAge());
+        assertEquals(name, realize.getName());
+    }
+
+    @Test
+    public void testGenerializeAndRealizeClass() throws Exception {
+        Object generalize = PojoUtils.generalize(Integer.class);
+        assertEquals(Integer.class.getName(), generalize);
+        Object real = PojoUtils.realize(generalize, Integer.class.getClass());
+        assertEquals(Integer.class, real);
     }
 }

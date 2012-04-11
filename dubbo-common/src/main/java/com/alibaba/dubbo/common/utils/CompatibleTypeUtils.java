@@ -85,6 +85,12 @@ public class CompatibleTypeUtils {
                 } catch (ParseException e) {
                     throw new IllegalStateException("Failed to parse date " + value + " by format " + DATE_FORMAT + ", cause: " + e.getMessage(), e);
                 }
+            } else if (type == Class.class) {
+                try {
+                    return ReflectUtils.name2class((String)value);
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException(e.getMessage(), e);
+                }
             }
         } else if(value instanceof Number) {
             Number number = (Number) value;

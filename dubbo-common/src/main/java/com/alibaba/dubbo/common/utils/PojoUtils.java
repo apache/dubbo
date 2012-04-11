@@ -105,7 +105,11 @@ public class PojoUtils {
         if (ReflectUtils.isPrimitives(pojo.getClass())) {
             return pojo;
         }
-        
+
+        if (pojo instanceof Class) {
+            return ((Class)pojo).getName();
+        }
+
         Integer id = System.identityHashCode(pojo);
         if (history.containsKey(id)) {
             return history.get(id);
@@ -144,6 +148,8 @@ public class PojoUtils {
         map.put("class", pojo.getClass().getName());
         for (Method method : pojo.getClass().getMethods()) {
             if (Modifier.isPublic(method.getModifiers())
+                    && ! Modifier.isStatic(method.getModifiers())
+                    && method.getReturnType() != void.class
                     && method.getDeclaringClass() != Object.class
                     && method.getParameterTypes().length == 0) {
                 String name = method.getName();
@@ -232,14 +238,14 @@ public class PojoUtils {
         		&& pojo.getClass() == String.class) {
     		return Enum.valueOf((Class<Enum>)type, (String)pojo);
     	}
-        
-        if (ReflectUtils.isPrimitives(pojo.getClass()) 
-        		&& ! (type != null && type.isArray() 
+
+        if (ReflectUtils.isPrimitives(pojo.getClass())
+        		&& ! (type != null && type.isArray()
         				&& type.getComponentType().isEnum()
         				&& pojo.getClass() == String[].class)) {
             return CompatibleTypeUtils.compatibleTypeConvert(pojo, type);
         }
-        
+
         Integer id = System.identityHashCode(pojo);
         if (history.containsKey(id)) {
             return history.get(id);
@@ -418,7 +424,7 @@ public class PojoUtils {
         } catch (Throwable t) {
             try {
                 Constructor<?>[] constructors = cls.getConstructors();
-                if (constructors != null && constructors.length > 0) {
+                if (constructors != null && constructors.length == 0) {
                     throw new RuntimeException("Illegal constructor: " + cls.getName());
                 }
                 Constructor<?> constructor = constructors[0];
