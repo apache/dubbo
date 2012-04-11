@@ -46,7 +46,6 @@ import com.alibaba.dubbo.rpc.cluster.Router;
 import com.alibaba.dubbo.rpc.cluster.RouterFactory;
 import com.alibaba.dubbo.rpc.cluster.directory.AbstractDirectory;
 import com.alibaba.dubbo.rpc.cluster.directory.StaticDirectory;
-import com.alibaba.dubbo.rpc.cluster.router.script.ScriptRouterFactory;
 import com.alibaba.dubbo.rpc.cluster.support.ClusterUtils;
 import com.alibaba.dubbo.rpc.protocol.InvokerWrapper;
 
@@ -61,6 +60,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     private static final Logger logger = LoggerFactory.getLogger(RegistryDirectory.class);
     
     private static final Cluster cluster = ExtensionLoader.getExtensionLoader(Cluster.class).getAdaptiveExtension();
+    
+    private static final RouterFactory routerFactory = ExtensionLoader.getExtensionLoader(RouterFactory.class).getAdaptiveExtension();
 
     private Protocol protocol; // 注入时初始化，断言不为null
 
@@ -332,16 +333,15 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         
         if (urls != null && urls.size() > 0) {
             for (URL url : urls) {
-                String router_type = url.getParameter(Constants.ROUTER_KEY, ScriptRouterFactory.NAME);
-                if (router_type == null || router_type.length() == 0){
-                    logger.warn("Router url:\"" + url.toString() + "\" does not contain " + Constants.ROUTER_KEY + ", router creation ignored!");
-                    continue;
+                String routerType = url.getParameter(Constants.ROUTER_KEY);
+                if (routerType == null || routerType.length() == 0){
+                    url.setProtocol(routerType);
                 }
                 try{
-                Router router = ExtensionLoader.getExtensionLoader(RouterFactory.class).getExtension(router_type).getRouter(url);
-                if (!routers.contains(router))
-                    routers.add(router);
-                }catch (Throwable t) {
+                    Router router = routerFactory.getRouter(url);
+                    if (!routers.contains(router))
+                        routers.add(router);
+                } catch (Throwable t) {
                     logger.error("convert router url to router error, url: "+ url, t);
                 }
             }
