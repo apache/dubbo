@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.regex.Pattern;
 
+import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 
@@ -132,9 +133,24 @@ public class NetUtils {
     }
     
     public static String filterLocalHost(String host) {
-    	if (NetUtils.isInvalidLocalHost(host)) {
-    		return NetUtils.getLocalHost();
-    	}
+        if (host == null || host.length() == 0) {
+            return host;
+        }
+        if (host.contains("://")) {
+            URL u = URL.valueOf(host);
+            if (NetUtils.isInvalidLocalHost(u.getHost())) {
+                return u.setHost(NetUtils.getLocalHost()).toFullString();
+            }
+        } else if (host.contains(":")) {
+            int i = host.lastIndexOf(':');
+            if (NetUtils.isInvalidLocalHost(host.substring(0, i))) {
+                return NetUtils.getLocalHost() + host.substring(i);
+            }
+        } else {
+            if (NetUtils.isInvalidLocalHost(host)) {
+        		return NetUtils.getLocalHost();
+        	}
+        }
     	return host;
     }
     

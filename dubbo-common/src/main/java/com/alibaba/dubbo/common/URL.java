@@ -152,7 +152,7 @@ public final class URL implements Serializable {
 		this.protocol = protocol;
 		this.username = username;
 		this.password = password;
-		this.host = host != null && host.length() > 0 ? NetUtils.filterLocalHost(host) : host;
+		this.host = host;
 		this.port = (port < 0 ? 0 : port);
 		this.path = path;
 		// trim the beginning "/"
@@ -164,11 +164,6 @@ public final class URL implements Serializable {
 		} else {
 		    parameters = new HashMap<String, String>(parameters);
 		}
-		if (NetUtils.isAnyHost(host)) {
-		    parameters.put("anyhost", "true");
-		} else if (NetUtils.isLocalHost(host)) {
-            parameters.put("localhost", "true");
-        }
 		this.parameters = Collections.unmodifiableMap(parameters);
 	}
 
@@ -791,12 +786,12 @@ public final class URL implements Serializable {
         return value != null && value.length() > 0;
     }
     
-    public boolean isAnyHost(){
-        if (Constants.ANYHOST.equals(host) || getParameter(Constants.ANYHOST_KEY, false)){
-            return true;
-        } else {
-            return false;
-        }
+    public boolean isLocalHost() {
+        return NetUtils.isLocalHost(host) || getParameter(Constants.LOCALHOST_KEY, false);
+    }
+    
+    public boolean isAnyHost() {
+        return Constants.ANYHOST_VALUE.equals(host) || getParameter(Constants.ANYHOST_KEY, false);
     }
     
     public URL addParameterAndEncoded(String key, String value) {
@@ -969,11 +964,11 @@ public final class URL implements Serializable {
         if (identity != null) {
             return identity;
         }
-        return identity = buildString(false, false); // only return identity message, see the method "equals" and "hashCode"
+        return identity = buildString(true, false); // only return identity message, see the method "equals" and "hashCode"
 	}
 
     public String toIdentityString(String... parameters) {
-        return buildString(false, false, parameters); // only return identity message, see the method "equals" and "hashCode"
+        return buildString(true, false, parameters); // only return identity message, see the method "equals" and "hashCode"
     }
     
 	public String toFullString() {

@@ -87,6 +87,10 @@ public class UrlUtils {
             changed = true;
             password = defaultPassword;
         }
+        if (u.isAnyHost() || u.isLocalHost()) {
+            changed = true;
+            host = NetUtils.getLocalHost();
+        }
         if (port <= 0) {
             if (defaultPort > 0) {
                 changed = true;
