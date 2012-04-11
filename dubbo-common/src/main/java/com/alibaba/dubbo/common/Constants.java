@@ -256,6 +256,8 @@ public class Constants {
 
     public static final String  TOKEN_KEY                          = "token";
 
+    public static final String  METHOD_KEY                         = "method";
+
     public static final String  METHODS_KEY                        = "methods";
 
     public static final String  CHARSET_KEY                        = "charset";
