@@ -1,0 +1,5 @@
+all=com.alibaba.dubbo.remoting.transport.dispather.all.AllDispather
+direct=com.alibaba.dubbo.remoting.transport.dispather.direct.DirectDispather
+message=com.alibaba.dubbo.remoting.transport.dispather.message.MessageOnlyDispather
+execution=com.alibaba.dubbo.remoting.transport.dispather.execution.ExecutionDispather
+connection=com.alibaba.dubbo.remoting.transport.dispather.connection.ConnectionOrderedDispather

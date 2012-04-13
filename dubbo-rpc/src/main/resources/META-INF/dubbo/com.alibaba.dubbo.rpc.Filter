@@ -1,0 +1,14 @@
+echo=com.alibaba.dubbo.rpc.filter.EchoFilter
+generic=com.alibaba.dubbo.rpc.filter.GenericFilter
+genericimpl=com.alibaba.dubbo.rpc.filter.GenericImplFilter
+token=com.alibaba.dubbo.rpc.filter.TokenFilter
+accesslog=com.alibaba.dubbo.rpc.filter.AccessLogFilter
+activelimit=com.alibaba.dubbo.rpc.filter.ActiveLimitFilter
+classloader=com.alibaba.dubbo.rpc.filter.ClassLoaderFilter
+context=com.alibaba.dubbo.rpc.filter.ContextFilter
+consumercontext=com.alibaba.dubbo.rpc.filter.ConsumerContextFilter
+exception=com.alibaba.dubbo.rpc.filter.ExceptionFilter
+executelimit=com.alibaba.dubbo.rpc.filter.ExecuteLimitFilter
+deprecated=com.alibaba.dubbo.rpc.filter.DeprecatedFilter
+compatible=com.alibaba.dubbo.rpc.filter.CompatibleFilter
+timeout=com.alibaba.dubbo.rpc.filter.TimeoutFilter
