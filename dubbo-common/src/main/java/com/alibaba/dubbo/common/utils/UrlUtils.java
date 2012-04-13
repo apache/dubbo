@@ -323,6 +323,25 @@ public class UrlUtils {
         return forbid;
     }
 
+    public static URL getEmptyUrl(String service, String category) {
+        String group = null;
+        String version = null;
+        int i = service.indexOf('/');
+        if (i > 0) {
+            group = service.substring(0, i);
+            service = service.substring(i + 1);
+        }
+        i = service.lastIndexOf(':');
+        if (i > 0) {
+            version = service.substring(i + 1);
+            service = service.substring(0, i);
+        }
+        return URL.valueOf(Constants.EMPTY_PROTOCOL + "://0.0.0.0/" + service + "?" 
+                    + Constants.CATEGORY_KEY + "=" + category
+                    + (group == null ? "" : "&" + Constants.GROUP_KEY + "=" + group)
+                    + (version == null ? "" : "&" + Constants.VERSION_KEY + "=" + version));
+    }
+
     public static boolean isMatchCategory(String category, String categories) {
         if (categories == null || categories.length() == 0) {
             return Constants.DEFAULT_CATEGORY.equals(category);

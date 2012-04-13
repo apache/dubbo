@@ -359,6 +359,10 @@ public class Constants {
 
     public static final String  ROUTE_PROTOCOL                     = "route";
 
+    public static final String  SCRIPT_PROTOCOL                    = "script";
+
+    public static final String  CONDITION_PROTOCOL                 = "condition";
+
     public static final String  MOCK_PROTOCOL                      = "mock";
 
     public static final String  RETURN_PREFIX                      = "return ";

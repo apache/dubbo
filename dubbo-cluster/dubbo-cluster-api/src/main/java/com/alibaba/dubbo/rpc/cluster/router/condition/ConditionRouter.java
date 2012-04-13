@@ -15,6 +15,7 @@
  */
 package com.alibaba.dubbo.rpc.cluster.router.condition;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -57,11 +58,20 @@ public class ConditionRouter implements Router, Comparable<Router> {
             return invokers;
         }
         Map<String, String> urls = new HashMap<String, String>();
+        Map<URL, Invoker<T>> urlInvokers = new HashMap<URL, Invoker<T>>();
         for (Invoker<T> invoker : invokers) {
             urls.put(invoker.getUrl().toIdentityString(), invoker.getUrl().toParameterString());
+            urlInvokers.put(invoker.getUrl(), invoker);
         }
-        RouteUtils.route(null, url.getServiceKey(), url.getAddress(), url.toParameterString(), urls, Arrays.asList(rule), null);
-        return null;
+        Map<String, String> routedUrls = RouteUtils.route(null, url.getServiceKey(), url.getAddress(), url.toParameterString(), urls, Arrays.asList(rule), null);
+        if (routedUrls != null) {
+            List<Invoker<T>> result = new ArrayList<Invoker<T>>();
+            for (Map.Entry<String, String> entry : routedUrls.entrySet()) {
+                result.add(urlInvokers.get(URL.valueOf(entry.getKey() + "?" + entry.getValue())));
+            }
+            return result;
+        }
+        return invokers;
     }
 
     public int compareTo(Router o) {
