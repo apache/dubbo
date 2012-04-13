@@ -152,28 +152,16 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 String category = url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY);
                 if (Constants.ROUTES_CATEGORY.equals(category) 
                         || Constants.ROUTE_PROTOCOL.equals(protocol)) {
-                    if (Constants.EMPTY_PROTOCOL.equals(protocol)) {
-                        routerUrls.clear();
-                    } else {
-                        routerUrls.add(url);
-                    }
+                    routerUrls.add(url);
                 } else if (Constants.OVERRIDES_CATEGORY.equals(category) 
                         || Constants.OVERRIDE_PROTOCOL.equals(protocol)) {
-                    if (Constants.EMPTY_PROTOCOL.equals(protocol)) {
-                        overrideUrls.clear();
-                    } else {
-                        overrideUrls.add(url);
-                    }
+                    overrideUrls.add(url);
                 } else if (Constants.PROVIDERS_CATEGORY.equals(category)) {
-                    if (Constants.EMPTY_PROTOCOL.equals(protocol)) {
-                        invokerUrls.clear();
+                    if (ExtensionLoader.getExtensionLoader(Protocol.class).hasExtension(url.getProtocol())) {
+                        invokerUrls.add(url);
                     } else {
-                        if (ExtensionLoader.getExtensionLoader(Protocol.class).hasExtension(url.getProtocol())) {
-                            invokerUrls.add(url);
-                        } else {
-                            logger.error(new IllegalStateException("Unsupported protocol " + url.getProtocol() + " in notified url: " + url + " from registry " + getUrl().getAddress() + " to consumer " + NetUtils.getLocalHost() 
-                                    + ", supported protocol: "+ExtensionLoader.getExtensionLoader(Protocol.class).getSupportedExtensions()));
-                        }
+                        logger.error(new IllegalStateException("Unsupported protocol " + url.getProtocol() + " in notified url: " + url + " from registry " + getUrl().getAddress() + " to consumer " + NetUtils.getLocalHost() 
+                                + ", supported protocol: "+ExtensionLoader.getExtensionLoader(Protocol.class).getSupportedExtensions()));
                     }
                 } else {
                     logger.warn("Unsupported category " + category + " in notified url: " + url + " from registry " + getUrl().getAddress() + " to consumer " + NetUtils.getLocalHost());
@@ -285,11 +273,14 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * @return
      */
     private Map<String, Map<String, String>> toOverrides(List<URL> urls){
-        if (urls == null || urls.size() == 0){
-            return null;
-        }
         Map<String, Map<String, String>> overrides = new HashMap<String, Map<String,String>>(urls.size());
+        if (urls == null || urls.size() == 0){
+            return overrides;
+        }
         for(URL url : urls){
+            if (Constants.EMPTY_PROTOCOL.equals(url.getProtocol())) {
+                continue;
+            }
             Map<String,String> override = new HashMap<String, String>(url.getParameters());
             //override 上的anyhost可能是自动添加的，不能影响改变url判断
             override.remove(Constants.ANYHOST_KEY);
@@ -314,25 +305,15 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      *         else :routers list
      */
     private List<Router> toRouters(List<URL> urls) {
-        //no router urls , do nothing
-        if(urls == null || urls.size() < 1){
-            return null ;
-        }
         List<Router> routers = new ArrayList<Router>();
-        
-        // on these conditions: clear all current routers
-        // 1. there is only one route url
-        // 2. with type = clear
-        if(urls.size() == 1){
-           URL u = urls.get(0);
-           // clean current routers
-           if(Constants.ROUTER_TYPE_CLEAR.equals(u.getParameter(Constants.ROUTER_KEY))){
-               return routers;
-           }
+        if(urls == null || urls.size() < 1){
+            return routers ;
         }
-        
         if (urls != null && urls.size() > 0) {
             for (URL url : urls) {
+                if (Constants.EMPTY_PROTOCOL.equals(url.getProtocol())) {
+                    continue;
+                }
                 String routerType = url.getParameter(Constants.ROUTER_KEY);
                 if (routerType != null && routerType.length() > 0){
                     url = url.setProtocol(routerType);
