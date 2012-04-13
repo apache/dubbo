@@ -306,7 +306,6 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<useSystemClassLoader>true</useSystemClassLoader>
-					<testFailureIgnore>true</testFailureIgnore>
 					<forkMode>pertest</forkMode>
 					<argLine>${argline}</argLine>
 					<systemProperties>
@@ -381,6 +380,22 @@
             </plugin>
 		</plugins>
 	</build>
+    <profiles>
+        <profile>
+            <id>hudson</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <testFailureIgnore>true</testFailureIgnore>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 	<repositories>
 		<repository>
 			<id>opensesame.releases</id>
@@ -466,9 +481,9 @@
 			<timezone>+8</timezone>
 		</developer>
 		<developer>
-			<name>LuGang(Kimi)</name>
-			<id>gang.lvgm</id>
-			<email>gang.lvgm (AT) alibaba-inc.com</email>
+			<name>LvGang(Kimi)</name>
+			<id>gang.lvg</id>
+			<email>gang.lvg (AT) alibaba-inc.com</email>
 			<roles>
 				<role>Developer</role>
 			</roles>
