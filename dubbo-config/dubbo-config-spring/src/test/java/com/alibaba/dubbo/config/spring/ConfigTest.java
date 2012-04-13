@@ -554,6 +554,7 @@ public class ConfigTest {
         System.setProperty("dubbo.registry.address", "N/A");
         System.setProperty("dubbo.protocol.name", "dubbo");
         System.setProperty("dubbo.protocol.port", "20819");
+        System.setProperty("dubbo.service.register", "false");
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/system-properties-override.xml");
         providerContext.start();
         try {
@@ -563,14 +564,42 @@ public class ConfigTest {
             assertEquals("sysowner", url.getParameter("owner"));
             assertEquals("dubbo", url.getProtocol());
             assertEquals(20819, url.getPort());
+            String register = url.getParameter("register");
+            assertTrue(register != null && !"".equals(register));
+            assertEquals(false, Boolean.valueOf(register));
         } finally {
             System.setProperty("dubbo.application.name", "");
             System.setProperty("dubbo.application.owner", "");
             System.setProperty("dubbo.registry.address", "");
             System.setProperty("dubbo.protocol.name", "");
             System.setProperty("dubbo.protocol.port", "");
+            System.setProperty("dubbo.service.register", "");
             providerContext.stop();
             providerContext.close();
+        }
+    }
+
+    @Test
+    public void testSystemPropertyOverrideReferenceConfig() throws Exception {
+        System.setProperty("dubbo.reference.retries", "5");
+
+        try {
+            ServiceConfig<DemoService> service = new ServiceConfig<DemoService>();
+            service.setInterface(DemoService.class);
+            service.setRef(new DemoServiceImpl());
+            service.setRegistry(new RegistryConfig(RegistryConfig.NO_AVAILABLE));
+            ProtocolConfig protocolConfig = new ProtocolConfig("injvm");
+            service.setProtocol(protocolConfig);
+            service.export();
+
+            ReferenceConfig<DemoService> reference = new ReferenceConfig<DemoService>();
+            reference.setInterface(DemoService.class);
+            reference.setInjvm(true);
+            reference.setRetries(2);
+            reference.get();
+            assertEquals(Integer.valueOf(5), reference.getRetries());
+        } finally {
+            System.setProperty("dubbo.reference.retries", "");
         }
     }
 
@@ -714,4 +743,12 @@ public class ConfigTest {
         }
     }
     
+    @Test
+    public void testServiceConfigRegisterOverride() throws Exception {
+        String oldValue = System.getProperty("dubbo.service.register");
+        String newValue = "false";
+        System.setProperty("dubbo.service.register", newValue);
+        ServiceConfig<DemoService> config = new ServiceConfig<DemoService>();
+        config.setRegister(true);
+    }
 }

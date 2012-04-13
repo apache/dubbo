@@ -809,6 +809,11 @@
 	<xsd:complexType name="serviceShared">
 		<xsd:complexContent>
 			<xsd:extension base="referenceShared">
+                <xsd:attribute name="register" type="xsd:string" use="optional">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ The service can be register to registry. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
 				<xsd:attribute name="version" type="xsd:string" use="optional" default="0.0.0">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[ The service version. ]]></xsd:documentation>
@@ -1047,11 +1052,6 @@
 					<xsd:attribute name="path" type="xsd:string" use="optional">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[ The service path. ]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:attribute>
-					<xsd:attribute name="register" type="xsd:string" use="optional">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[ The service can be register to registry. ]]></xsd:documentation>
 						</xsd:annotation>
 					</xsd:attribute>
 					<xsd:attribute name="provider" type="xsd:string" use="optional">

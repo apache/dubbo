@@ -65,6 +65,9 @@ public abstract class AbstractServiceConfig extends AbstractReferenceConfig {
 
     protected List<ProtocolConfig> protocols;
 
+    // 是否注册
+    private Boolean             register;
+
     public String getVersion() {
         return version;
     }
@@ -206,4 +209,14 @@ public abstract class AbstractServiceConfig extends AbstractReferenceConfig {
         super.setListener(listener);
     }
 
+    public Boolean isRegister() {
+        return register;
+    }
+
+    public void setRegister(Boolean register) {
+        this.register = register;
+        if (Boolean.FALSE.equals(register)) {
+            setRegistry(new RegistryConfig(RegistryConfig.NO_AVAILABLE));
+        }
+    }
 }

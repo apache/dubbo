@@ -30,8 +30,8 @@
     <dubbo:protocol name="rmi" port="20813" />
     
     <!-- 暴露服务配置 -->
-    <dubbo:service id="demoServiceConfig" interface="com.alibaba.dubbo.config.spring.api.DemoService" ref="demoService" />
-     
+    <dubbo:service id="demoServiceConfig" register="true" interface="com.alibaba.dubbo.config.spring.api.DemoService" ref="demoService" />
+
     <bean id="demoService" class="com.alibaba.dubbo.config.spring.impl.DemoServiceImpl" />
  
 </beans>
