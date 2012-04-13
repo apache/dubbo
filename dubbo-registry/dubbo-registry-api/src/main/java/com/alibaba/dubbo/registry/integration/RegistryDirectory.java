@@ -339,12 +339,15 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * @return invokers
      */
     private Map<String, Invoker<T>> toInvokers(List<URL> urls) {
-        if(urls == null || urls.size() == 0){
-            return null;
-        }
         Map<String, Invoker<T>> newUrlInvokerMap = new HashMap<String, Invoker<T>>();
+        if(urls == null || urls.size() == 0){
+            return newUrlInvokerMap;
+        }
         Set<String> keys = new HashSet<String>();
         for (URL providerUrl : urls) {
+            if (Constants.EMPTY_PROTOCOL.equals(providerUrl.getProtocol())) {
+                continue;
+            }
             URL url = mergeUrl(providerUrl);
             
             String key = url.toFullString(); // URL参数是排序的
