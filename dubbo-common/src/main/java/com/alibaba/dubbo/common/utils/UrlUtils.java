@@ -152,8 +152,8 @@ public class UrlUtils {
                     Map<String, String> params = StringUtils.parseQueryString(serviceQuery);
                     String group = params.get("group");
                     String version = params.get("version");
-                    params.remove("group");
-                    params.remove("version");
+                    //params.remove("group");
+                    //params.remove("version");
                     String name = serviceName;
                     if (group != null && group.length() > 0) {
                         name = group + "/" + name;
@@ -184,8 +184,8 @@ public class UrlUtils {
                 Map<String, String> params = StringUtils.parseQueryString(serviceQuery);
                 String group = params.get("group");
                 String version = params.get("version");
-                params.remove("group");
-                params.remove("version");
+                //params.remove("group");
+                //params.remove("version");
                 String name = serviceName;
                 if (group != null && group.length() > 0) {
                     name = group + "/" + name;
