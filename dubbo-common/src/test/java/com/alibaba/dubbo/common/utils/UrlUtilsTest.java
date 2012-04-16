@@ -145,7 +145,7 @@ public class UrlUtilsTest {
         register.put(key, service);
         Map<String, Map<String, String>> newRegister = UrlUtils.convertRegister(register);
         Map<String, String> newService = new HashMap<String, String>();
-        newService.put("dubbo://127.0.0.1:20880/com.xxx.XxxService", "dubbo.version=2.0.0");
+        newService.put("dubbo://127.0.0.1:20880/com.xxx.XxxService", "dubbo.version=2.0.0&group=test&version=1.0.0");
         assertEquals(newService, newRegister.get("test/dubbo.test.api.HelloService:1.0.0"));
     }
 
@@ -164,7 +164,7 @@ public class UrlUtilsTest {
         Map<String, String> subscribe = new HashMap<String, String>();
         subscribe.put(key, "version=1.0.0&group=test&dubbo.version=2.0.0");
         Map<String, String> newSubscribe = UrlUtils.convertSubscribe(subscribe);
-        assertEquals("dubbo.version=2.0.0", newSubscribe.get("test/dubbo.test.api.HelloService:1.0.0"));
+        assertEquals("dubbo.version=2.0.0&group=test&version=1.0.0", newSubscribe.get("test/dubbo.test.api.HelloService:1.0.0"));
     }
 
     @Test
