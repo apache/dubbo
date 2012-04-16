@@ -209,7 +209,7 @@ public class RegistryDirectoryTest {
     // notify one invoker
     private void test_Notified_only_routes(RegistryDirectory registryDirectory) {
         List<URL> serviceUrls = new ArrayList<URL>();
-        serviceUrls.add(URL.valueOf("route://127.0.0.1/?router=clean"));
+        serviceUrls.add(URL.valueOf("empty://127.0.0.1/?category=routes"));
         registryDirectory.notify(serviceUrls);
     }
     // notify one invoker
