@@ -173,6 +173,7 @@ public class RegistryDirectoryTest {
     private void testforbid(RegistryDirectory registryDirectory) {
         invocation = new RpcInvocation();
         List<URL> serviceUrls = new ArrayList<URL>();
+        serviceUrls.add(new URL(Constants.EMPTY_PROTOCOL, Constants.ANYHOST_VALUE, 0, service, Constants.CATEGORY_KEY, Constants.PROVIDERS_CATEGORY));
         registryDirectory.notify(serviceUrls);
         Assert.assertEquals("invokers size=0 ,then the registry directory is not available", false,
                             registryDirectory.isAvailable());
