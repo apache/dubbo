@@ -276,10 +276,6 @@ public class RegistryConfig extends AbstractConfig {
         this.subscribe = subscribe;
     }
 
-    public static void closeAll() {
-        AbstractRegistryFactory.destroyAll();
-    }
-
     public String getGroup() {
         return group;
     }
@@ -311,6 +307,15 @@ public class RegistryConfig extends AbstractConfig {
 
     public void setDefault(Boolean isDefault) {
         this.isDefault = isDefault;
+    }
+
+    public static void destroyAll() {
+        AbstractRegistryFactory.destroyAll();
+    }
+
+    @Deprecated
+    public static void closeAll() {
+        destroyAll();
     }
 
 }

@@ -241,6 +241,18 @@ public class ExtensionLoader<T> {
         return false;
     }
     
+    @SuppressWarnings("unchecked")
+    public T getLoadedExtension(String name) {
+        if (name == null || name.length() == 0)
+            throw new IllegalArgumentException("Extension name == null");
+        Reference<Object> reference = cachedInstances.get(name);
+        if (reference == null) {
+            cachedInstances.putIfAbsent(name, new Reference<Object>());
+            reference = cachedInstances.get(name);
+        }
+        return (T) reference.get();
+    }
+    
 	@SuppressWarnings("unchecked")
 	public T getExtension(String name) {
 		if (name == null || name.length() == 0)
