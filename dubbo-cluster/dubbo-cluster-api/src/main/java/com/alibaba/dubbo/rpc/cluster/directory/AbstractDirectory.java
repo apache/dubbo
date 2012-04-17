@@ -36,11 +36,11 @@ import com.alibaba.dubbo.rpc.cluster.router.MockInvokersSelector;
  */
 public abstract class AbstractDirectory<T> implements Directory<T> {
     
-    protected final URL url ;
+    private final URL url ;
     
-    protected volatile boolean destroyed = false;
+    private volatile boolean destroyed = false;
 
-    protected volatile List<Router> routers;
+    private volatile List<Router> routers;
     
     public AbstractDirectory(URL url) {
         this(url, null);
@@ -88,7 +88,11 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         routers.add(new MockInvokersSelector());
     	this.routers = routers;
     }
-    
+
+    public boolean isDestroyed() {
+        return destroyed;
+    }
+
     public void destroy(){
         destroyed = true;
     }

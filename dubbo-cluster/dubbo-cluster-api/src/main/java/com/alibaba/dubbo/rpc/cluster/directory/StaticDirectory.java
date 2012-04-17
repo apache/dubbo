@@ -56,7 +56,9 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
     }
 
     public boolean isAvailable() {
-        if (destroyed) return false;
+        if (isDestroyed()) {
+            return false;
+        }
         for (Invoker<T> invoker : invokers) {
             if (invoker.isAvailable()) {
                 return true;
@@ -66,7 +68,7 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
     }
 
     public void destroy() {
-        if(destroyed) {
+        if(isDestroyed()) {
             return;
         }
         super.destroy();

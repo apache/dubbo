@@ -118,7 +118,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     }
 
     public void destroy() {
-        if(destroyed) {
+        if(isDestroyed()) {
             return;
         }
         // unsubscribe.
@@ -138,55 +138,41 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     }
 
     public synchronized void notify(List<URL> urls) {
-        if (urls == null || urls.size() == 0) { // 黑白名单限制
-            this.forbidden = true; // 禁止访问
-            this.methodInvokerMap = null; // 置空列表
-            destroyAllInvokers(); // 关闭所有Invoker
-        } else {
-            this.forbidden = false; // 允许访问
-            List<URL> invokerUrls = new ArrayList<URL>();
-            List<URL> routerUrls = new ArrayList<URL>();
-            List<URL> overrideUrls = new ArrayList<URL>();
-            for (URL url : urls) {
-                String protocol = url.getProtocol();
-                String category = url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY);
-                if (Constants.ROUTES_CATEGORY.equals(category) 
-                        || Constants.ROUTE_PROTOCOL.equals(protocol)) {
-                    routerUrls.add(url);
-                } else if (Constants.OVERRIDES_CATEGORY.equals(category) 
-                        || Constants.OVERRIDE_PROTOCOL.equals(protocol)) {
-                    overrideUrls.add(url);
-                } else if (Constants.PROVIDERS_CATEGORY.equals(category)) {
-                    if (ExtensionLoader.getExtensionLoader(Protocol.class).hasExtension(url.getProtocol())) {
-                        invokerUrls.add(url);
-                    } else {
-                        logger.error(new IllegalStateException("Unsupported protocol " + url.getProtocol() + " in notified url: " + url + " from registry " + getUrl().getAddress() + " to consumer " + NetUtils.getLocalHost() 
-                                + ", supported protocol: "+ExtensionLoader.getExtensionLoader(Protocol.class).getSupportedExtensions()));
-                    }
-                } else {
-                    logger.warn("Unsupported category " + category + " in notified url: " + url + " from registry " + getUrl().getAddress() + " to consumer " + NetUtils.getLocalHost());
-                }
+        this.forbidden = false; // 允许访问
+        List<URL> invokerUrls = new ArrayList<URL>();
+        List<URL> routerUrls = new ArrayList<URL>();
+        List<URL> overrideUrls = new ArrayList<URL>();
+        for (URL url : urls) {
+            String protocol = url.getProtocol();
+            String category = url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY);
+            if (Constants.ROUTES_CATEGORY.equals(category) 
+                    || Constants.ROUTE_PROTOCOL.equals(protocol)) {
+                routerUrls.add(url);
+            } else if (Constants.OVERRIDES_CATEGORY.equals(category) 
+                    || Constants.OVERRIDE_PROTOCOL.equals(protocol)) {
+                overrideUrls.add(url);
+            } else if (Constants.PROVIDERS_CATEGORY.equals(category)) {
+                invokerUrls.add(url);
+            } else {
+                logger.warn("Unsupported category " + category + " in notified url: " + url + " from registry " + getUrl().getAddress() + " to consumer " + NetUtils.getLocalHost());
             }
-            
-            //overrides 
-            if (overrideUrls != null && overrideUrls.size() >0 ){
-                this.overrideMap = toOverrides(overrideUrls);
-            }
-            
-            //route 
-            if (routerUrls != null && routerUrls.size() >0 ){
-                List<Router> routers = toRouters(routerUrls);
-                if(routers != null){ // null - do nothing
-                    setRouters(routers);
-                }
-            }
-            //invokers
-            refreshInvoker(invokerUrls);
-            
-            Map<String, Map<String, String>> localOverrideMap = this.overrideMap; // local reference
-            //合并override参数;
-            this.overrideDirectoryUrl = localOverrideMap == null ? directoryUrl : directoryUrl.addParameters(localOverrideMap.get(Constants.ANY_VALUE));
         }
+        // overrides 
+        if (overrideUrls != null && overrideUrls.size() >0 ){
+            this.overrideMap = toOverrides(overrideUrls);
+        }
+        // routes
+        if (routerUrls != null && routerUrls.size() >0 ){
+            List<Router> routers = toRouters(routerUrls);
+            if(routers != null){ // null - do nothing
+                setRouters(routers);
+            }
+        }
+        // providers
+        refreshInvoker(invokerUrls);
+        Map<String, Map<String, String>> localOverrideMap = this.overrideMap; // local reference
+        //合并override参数;
+        this.overrideDirectoryUrl = localOverrideMap == null ? directoryUrl : directoryUrl.addParameters(localOverrideMap.get(Constants.ANY_VALUE));
     }
     
     
@@ -198,36 +184,43 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * @param invokerUrls 传入的参数不能为null
      */
     private void refreshInvoker(List<URL> invokerUrls){
-        Map<String, Invoker<T>> oldUrlInvokerMap = this.urlInvokerMap; // local reference
-        if (invokerUrls.size() == 0 && oldUrlInvokerMap != null){
-            List<Invoker<T>> invokerList = new ArrayList<Invoker<T>>(oldUrlInvokerMap.values());
-            for (Invoker<T> invoker : invokerList) {
-                URL url ;
-                if (invoker instanceof InvokerDelegete){
-                    url =  ((InvokerDelegete<T>)invoker).getProviderUrl();
-                } else {
-                    url = invoker.getUrl();
+        if (invokerUrls != null && invokerUrls.size() == 1 && invokerUrls.get(0) != null
+                && Constants.EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
+            this.forbidden = true; // 禁止访问
+            this.methodInvokerMap = null; // 置空列表
+            destroyAllInvokers(); // 关闭所有Invoker
+        } else {
+            Map<String, Invoker<T>> oldUrlInvokerMap = this.urlInvokerMap; // local reference
+            if (invokerUrls.size() == 0 && oldUrlInvokerMap != null){
+                List<Invoker<T>> invokerList = new ArrayList<Invoker<T>>(oldUrlInvokerMap.values());
+                for (Invoker<T> invoker : invokerList) {
+                    URL url ;
+                    if (invoker instanceof InvokerDelegete){
+                        url =  ((InvokerDelegete<T>)invoker).getProviderUrl();
+                    } else {
+                        url = invoker.getUrl();
+                    }
+                    invokerUrls.add(url);
                 }
-                invokerUrls.add(url);
             }
-        }
-        if (invokerUrls.size() ==0 ){
-        	return;
-        }
-        Map<String, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls) ;// 将URL列表转成Invoker列表
-        Map<String, List<Invoker<T>>> newMethodInvokerMap = toMethodInvokers(newUrlInvokerMap); // 换方法名映射Invoker列表
-        // state change
-        //如果计算错误，则不进行处理.
-        if (newUrlInvokerMap == null || newUrlInvokerMap.size() == 0 ){
-            logger.error(new IllegalStateException("urls to invokers error .invokerUrls.size :"+invokerUrls.size() + ", invoker.size :0. urls :"+invokerUrls.toString()));
-            return ;
-        }
-        this.methodInvokerMap = multiGroup ? toMergeMethodInvokerMap(newMethodInvokerMap) : newMethodInvokerMap;
-        this.urlInvokerMap = newUrlInvokerMap;
-        try{
-            destroyUnusedInvokers(oldUrlInvokerMap,newUrlInvokerMap); // 关闭未使用的Invoker
-        }catch (Exception e) {
-            logger.warn("destroyUnusedInvokers error. ", e);
+            if (invokerUrls.size() ==0 ){
+            	return;
+            }
+            Map<String, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls) ;// 将URL列表转成Invoker列表
+            Map<String, List<Invoker<T>>> newMethodInvokerMap = toMethodInvokers(newUrlInvokerMap); // 换方法名映射Invoker列表
+            // state change
+            //如果计算错误，则不进行处理.
+            if (newUrlInvokerMap == null || newUrlInvokerMap.size() == 0 ){
+                logger.error(new IllegalStateException("urls to invokers error .invokerUrls.size :"+invokerUrls.size() + ", invoker.size :0. urls :"+invokerUrls.toString()));
+                return ;
+            }
+            this.methodInvokerMap = multiGroup ? toMergeMethodInvokerMap(newMethodInvokerMap) : newMethodInvokerMap;
+            this.urlInvokerMap = newUrlInvokerMap;
+            try{
+                destroyUnusedInvokers(oldUrlInvokerMap,newUrlInvokerMap); // 关闭未使用的Invoker
+            }catch (Exception e) {
+                logger.warn("destroyUnusedInvokers error. ", e);
+            }
         }
     }
     
@@ -346,6 +339,11 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         Set<String> keys = new HashSet<String>();
         for (URL providerUrl : urls) {
             if (Constants.EMPTY_PROTOCOL.equals(providerUrl.getProtocol())) {
+                continue;
+            }
+            if (! ExtensionLoader.getExtensionLoader(Protocol.class).hasExtension(providerUrl.getProtocol())) {
+                logger.error(new IllegalStateException("Unsupported protocol " + providerUrl.getProtocol() + " in notified url: " + providerUrl + " from registry " + getUrl().getAddress() + " to consumer " + NetUtils.getLocalHost() 
+                        + ", supported protocol: "+ExtensionLoader.getExtensionLoader(Protocol.class).getSupportedExtensions()));
                 continue;
             }
             URL url = mergeUrl(providerUrl);
@@ -566,7 +564,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     }
 
     public boolean isAvailable() {
-        if (destroyed) {
+        if (isDestroyed()) {
             return false;
         }
         Map<String, Invoker<T>> localUrlInvokerMap = urlInvokerMap;
