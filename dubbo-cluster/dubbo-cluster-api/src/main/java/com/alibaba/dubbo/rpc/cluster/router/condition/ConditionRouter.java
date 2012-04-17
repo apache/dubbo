@@ -23,6 +23,8 @@ import java.util.Map;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcException;
@@ -34,6 +36,8 @@ import com.alibaba.dubbo.rpc.cluster.Router;
  * @author william.liangf
  */
 public class ConditionRouter implements Router, Comparable<Router> {
+    
+    private static final Logger logger = LoggerFactory.getLogger(ConditionRouter.class);
 
     private final int priority;
 
@@ -63,13 +67,17 @@ public class ConditionRouter implements Router, Comparable<Router> {
             urls.put(invoker.getUrl().toIdentityString(), invoker.getUrl().toParameterString());
             urlInvokers.put(invoker.getUrl(), invoker);
         }
-        Map<String, String> routedUrls = RouteUtils.route(null, url.getServiceKey(), url.getAddress(), url.toParameterString(), urls, Arrays.asList(rule), null);
-        if (routedUrls != null) {
-            List<Invoker<T>> result = new ArrayList<Invoker<T>>();
-            for (Map.Entry<String, String> entry : routedUrls.entrySet()) {
-                result.add(urlInvokers.get(URL.valueOf(entry.getKey() + "?" + entry.getValue())));
+        try {
+            Map<String, String> routedUrls = RouteUtils.route(null, url.getServiceKey(), url.getAddress(), url.toParameterString(), urls, Arrays.asList(rule), null);
+            if (routedUrls != null) {
+                List<Invoker<T>> result = new ArrayList<Invoker<T>>();
+                for (Map.Entry<String, String> entry : routedUrls.entrySet()) {
+                    result.add(urlInvokers.get(URL.valueOf(entry.getKey() + "?" + entry.getValue())));
+                }
+                return result;
             }
-            return result;
+        } catch (Throwable t) {
+            logger.error("Failed to execute condition router rule: " + getUrl() + ", urls: " + urlInvokers.keySet() + ", cause: " + t.getMessage(), t);
         }
         return invokers;
     }
