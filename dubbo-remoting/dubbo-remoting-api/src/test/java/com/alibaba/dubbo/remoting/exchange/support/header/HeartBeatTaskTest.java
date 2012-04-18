@@ -16,6 +16,8 @@
 
 package com.alibaba.dubbo.remoting.exchange.support.header;
 
+import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.exchange.Request;
 import org.junit.Assert;
@@ -32,7 +34,9 @@ import java.util.List;
  */
 public class HeartBeatTaskTest {
 
-    private MockChannel channel = new MockChannel();
+    private URL url = URL.valueOf("dubbo://localhost:20880");
+    
+    private MockChannel channel;
     private HeartBeatTask task;
     
     @Before
@@ -42,11 +46,20 @@ public class HeartBeatTaskTest {
             public Collection<Channel> getChannels() {
                 return Collections.<Channel>singletonList(channel);
             }
-        }, 1000, 1000 * 3);
+        }, 1000, 1000 * 3, true);
+
+        channel = new MockChannel() {
+
+            @Override
+            public URL getUrl() {
+                return url;
+            }
+        };
     }
     
     @Test
     public void testHeartBeat() throws Exception {
+        url = url.addParameter(Constants.DUBBO_VERSION_KEY, "2.1.1");
         channel.setAttribute(
                 HeaderExchangeHandler.KEY_READ_TIMESTAMP, System.currentTimeMillis());
         channel.setAttribute(
@@ -61,4 +74,30 @@ public class HeartBeatTaskTest {
         Assert.assertTrue(request.isHeartbeat());
     }
 
+    @Test
+    public void testEndpointUnsupportHeartbeat() throws Exception {
+        channel.setAttribute(
+            HeaderExchangeHandler.KEY_READ_TIMESTAMP, System.currentTimeMillis());
+        channel.setAttribute(
+            HeaderExchangeHandler.KEY_WRITE_TIMESTAMP, System.currentTimeMillis());
+        Thread.sleep(2000L);
+        task.run();
+        List<Object> objects = channel.getSentObjects();
+        Assert.assertTrue(objects.isEmpty());
+    }
+
+    @Test
+    public void testIsSupportHeartbeat() throws Exception {
+        Assert.assertTrue(HeartBeatTask.isSupportHeartbeat("2.1.0"));
+        Assert.assertTrue(HeartBeatTask.isSupportHeartbeat("3"));
+        Assert.assertTrue(HeartBeatTask.isSupportHeartbeat("2.1.1"));
+        Assert.assertTrue(HeartBeatTask.isSupportHeartbeat("2.2"));
+        Assert.assertTrue(HeartBeatTask.isSupportHeartbeat("2.2-SNAPSHOT"));
+        Assert.assertTrue(HeartBeatTask.isSupportHeartbeat("2.1.2-SNAPSHOT"));
+
+        Assert.assertTrue(!HeartBeatTask.isSupportHeartbeat("1"));
+        Assert.assertTrue(!HeartBeatTask.isSupportHeartbeat("2.1.0-1"));
+        Assert.assertTrue(!HeartBeatTask.isSupportHeartbeat("2.1.0-SNAPSHOT"));
+    }
+    
 }

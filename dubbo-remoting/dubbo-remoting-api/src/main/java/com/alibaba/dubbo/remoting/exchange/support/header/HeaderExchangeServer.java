@@ -240,7 +240,7 @@ public class HeaderExchangeServer implements ExchangeServer {
                             return Collections.unmodifiableCollection(
                                     HeaderExchangeServer.this.getChannels() );
                         }
-                    }, heartbeat, heartbeatTimeout), 
+                    }, heartbeat, heartbeatTimeout, false),
                     heartbeat, heartbeat,TimeUnit.MILLISECONDS);
         }
     }

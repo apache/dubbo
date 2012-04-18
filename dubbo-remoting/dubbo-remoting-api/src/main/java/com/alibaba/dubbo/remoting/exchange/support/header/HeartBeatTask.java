@@ -17,7 +17,9 @@
 package com.alibaba.dubbo.remoting.exchange.support.header;
 
 import java.util.Collection;
+import java.util.regex.Pattern;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.remoting.Channel;
@@ -37,10 +39,13 @@ final class HeartBeatTask implements Runnable {
 
     private int             heartbeatTimeout;
 
-    HeartBeatTask( ChannelProvider provider, int heartbeat, int heartbeatTimeout ) {
+    public boolean isClient;
+
+    HeartBeatTask( ChannelProvider provider, int heartbeat, int heartbeatTimeout, boolean isClient ) {
         this.channelProvider = provider;
         this.heartbeat = heartbeat;
         this.heartbeatTimeout = heartbeatTimeout;
+        this.isClient = isClient;
     }
 
     public void run() {
@@ -50,6 +55,19 @@ final class HeartBeatTask implements Runnable {
                 if (channel.isClosed()) {
                     continue;
                 }
+
+                if (!isClient) {
+                    /* 由于 server 端无法判断 client 端是否支持 heartbeat，
+                       为避免误杀不支持 heartbeat 的 client 故 server 端不进行 heartbeat 检测 */
+                    continue;
+                }
+
+                String dubboVersion = channel.getUrl().getParameter(
+                    Constants.DUBBO_VERSION_KEY, "0.0.0");
+                if (isClient && !isSupportHeartbeat(dubboVersion)) {
+                    continue;
+                }
+
                 try {
                     Long lastRead = ( Long ) channel.getAttribute(
                             HeaderExchangeHandler.KEY_READ_TIMESTAMP );
@@ -93,5 +111,58 @@ final class HeartBeatTask implements Runnable {
         Collection<Channel> getChannels();
     }
 
+    static final String SUPPORT_HEARTBEAT_VERSION = "2.1.0";
+    static final Pattern VERSION_SPLIT_PATTERN = Pattern.compile("\\.");
+    static final String SNAPSHOT_SUFFIX = "SNAPSHOT";
+    
+    static boolean isSupportHeartbeat(String version) {
+        String _version = version;
+        boolean isSnapshot = false;
+        if (_version.endsWith(SNAPSHOT_SUFFIX)) {
+            isSnapshot = true;
+            _version = _version.substring(0, _version.length() - SNAPSHOT_SUFFIX.length());
+            if (_version.endsWith("-")) {
+                _version = _version.substring(0, _version.length() - "-".length());
+            }
+        }
+        
+        if (SUPPORT_HEARTBEAT_VERSION.equals(_version)) {
+            return !isSnapshot;
+        }
+
+        String[] parts = VERSION_SPLIT_PATTERN.split(_version);
+        int part;
+        
+        if (parts.length >= 1) {
+            part = parseInt(parts[0]);
+            if (part > 2) {
+                return true;
+            }
+        }
+        
+        if (parts.length >= 2) {
+            part = parseInt(parts[1]);
+            if (part > 1) {
+                return true;
+            }
+        }
+        
+        if (parts.length >= 3) {
+            part = parseInt(parts[2]);
+            if (part > 0) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    private static int parseInt(String part) {
+        try {
+            return Integer.parseInt(part);
+        } catch (Throwable e) {
+            return -1;
+        }
+    }
 }
 
