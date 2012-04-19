@@ -38,8 +38,8 @@ public class LoggerFactory {
 
 	// 查找常用的日志框架
 	static {
-	    setLoggerAdapter(System.getProperty("dubbo.application.logger"));
-	    if (LOGGER_ADAPTER == null) {
+	    //setLoggerAdapter(System.getProperty("dubbo.application.logger"));
+	    //if (LOGGER_ADAPTER == null) {
     		try {
                 setLoggerAdapter(new Slf4jLoggerAdapter());
             } catch (Throwable e1) {
@@ -53,7 +53,7 @@ public class LoggerFactory {
                     }
                 }
             }
-	    }
+	    //}
 	}
 	
 	public static void setLoggerAdapter(String loggerAdapter) {
