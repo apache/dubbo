@@ -22,6 +22,7 @@ import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.spi.LoggingEvent;
 
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.logger.log4j.Log4jLoggerAdapter;
 
 public class DubboAppender extends ConsoleAppender {
 
@@ -30,7 +31,7 @@ public class DubboAppender extends ConsoleAppender {
     public static List<Log> logList   = new ArrayList<Log>();
     
     static {
-        LoggerFactory.setLoggerAdapter("log4j");
+        LoggerFactory.setLoggerAdapter(new Log4jLoggerAdapter());
     }
 
     public static void doStart() {
