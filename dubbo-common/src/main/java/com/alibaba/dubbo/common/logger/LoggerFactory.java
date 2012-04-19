@@ -17,9 +17,11 @@ package com.alibaba.dubbo.common.logger;
 
 import java.io.File;
 
+import com.alibaba.dubbo.common.logger.jcl.JclLoggerAdapter;
+import com.alibaba.dubbo.common.logger.jdk.JdkLoggerAdapter;
+import com.alibaba.dubbo.common.logger.log4j.Log4jLoggerAdapter;
+import com.alibaba.dubbo.common.logger.slf4j.Slf4jLoggerAdapter;
 import com.alibaba.dubbo.common.logger.support.FailsafeLogger;
-import com.alibaba.dubbo.common.logger.support.JdkLoggerFactory;
-import com.alibaba.dubbo.common.logger.support.Log4jLoggerFactory;
 
 /**
  * 日志输出器工厂
@@ -31,28 +33,36 @@ public class LoggerFactory {
 	private LoggerFactory() {
 	}
 
-	private static volatile LoggerFactorySupport LOGGER_FACTORY;
+	private static volatile LoggerAdapter LOGGER_ADAPTER;
 
 	// 查找常用的日志框架
 	static {
 		try {
-            setLoggerFactory(new Log4jLoggerFactory());
+            setLoggerAdapter(new Slf4jLoggerAdapter());
         } catch (Throwable e1) {
-        	setLoggerFactory(new JdkLoggerFactory());
+            try {
+                setLoggerAdapter(new JclLoggerAdapter());
+            } catch (Throwable e2) {
+                try {
+                    setLoggerAdapter(new Log4jLoggerAdapter());
+                } catch (Throwable e3) {
+                    setLoggerAdapter(new JdkLoggerAdapter());
+                }
+            }
         }
 	}
 
 	/**
 	 * 设置日志输出器供给器
 	 * 
-	 * @param loggerFactory
+	 * @param loggerAdapter
 	 *            日志输出器供给器
 	 */
-	public static void setLoggerFactory(LoggerFactorySupport loggerFactory) {
-		if (loggerFactory != null) {
-			Logger logger = loggerFactory.getLogger(LoggerFactory.class.getName());
-			logger.info("using logger: " + loggerFactory.getClass().getName());
-			LoggerFactory.LOGGER_FACTORY = loggerFactory;
+	public static void setLoggerAdapter(LoggerAdapter loggerAdapter) {
+		if (loggerAdapter != null) {
+			Logger logger = loggerAdapter.getLogger(LoggerFactory.class.getName());
+			logger.info("using logger: " + loggerAdapter.getClass().getName());
+			LoggerFactory.LOGGER_ADAPTER = loggerAdapter;
 		}
 	}
 
@@ -64,7 +74,7 @@ public class LoggerFactory {
 	 * @return 日志输出器, 后验条件: 不返回null.
 	 */
 	public static Logger getLogger(Class<?> key) {
-		return new FailsafeLogger(LOGGER_FACTORY.getLogger(key));
+		return new FailsafeLogger(LOGGER_ADAPTER.getLogger(key));
 	}
 
 	/**
@@ -75,7 +85,7 @@ public class LoggerFactory {
 	 * @return 日志输出器, 后验条件: 不返回null.
 	 */
 	public static Logger getLogger(String key) {
-		return new FailsafeLogger(LOGGER_FACTORY.getLogger(key));
+		return new FailsafeLogger(LOGGER_ADAPTER.getLogger(key));
 	}
 	
 	/**
@@ -84,7 +94,7 @@ public class LoggerFactory {
 	 * @param level 日志级别
 	 */
 	public static void setLevel(Level level) {
-		LOGGER_FACTORY.setLevel(level);
+		LOGGER_ADAPTER.setLevel(level);
 	}
 
 	/**
@@ -93,7 +103,7 @@ public class LoggerFactory {
 	 * @return 日志级别
 	 */
 	public static Level getLevel() {
-		return LOGGER_FACTORY.getLevel();
+		return LOGGER_ADAPTER.getLevel();
 	}
 	
 	/**
@@ -102,7 +112,7 @@ public class LoggerFactory {
 	 * @return 日志文件
 	 */
 	public static File getFile() {
-		return LOGGER_FACTORY.getFile();
+		return LOGGER_ADAPTER.getFile();
 	}
 
 }

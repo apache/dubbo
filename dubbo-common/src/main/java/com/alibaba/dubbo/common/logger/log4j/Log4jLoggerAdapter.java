@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.common.logger.support;
+package com.alibaba.dubbo.common.logger.log4j;
 
 import java.io.File;
 import java.util.Enumeration;
@@ -24,14 +24,14 @@ import org.apache.log4j.LogManager;
 
 import com.alibaba.dubbo.common.logger.Level;
 import com.alibaba.dubbo.common.logger.Logger;
-import com.alibaba.dubbo.common.logger.LoggerFactorySupport;
+import com.alibaba.dubbo.common.logger.LoggerAdapter;
 
-public class Log4jLoggerFactory implements LoggerFactorySupport {
+public class Log4jLoggerAdapter implements LoggerAdapter {
 
     private File            file;
 
 	@SuppressWarnings("unchecked")
-	public Log4jLoggerFactory() {
+	public Log4jLoggerAdapter() {
 		try {
 			org.apache.log4j.Logger logger = LogManager.getRootLogger();
             if (logger != null) {

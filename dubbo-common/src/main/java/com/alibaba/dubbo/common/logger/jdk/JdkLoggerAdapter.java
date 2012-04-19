@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.common.logger.support;
+package com.alibaba.dubbo.common.logger.jdk;
 
 import java.io.File;
 import java.io.InputStream;
@@ -24,15 +24,15 @@ import java.util.logging.LogManager;
 
 import com.alibaba.dubbo.common.logger.Level;
 import com.alibaba.dubbo.common.logger.Logger;
-import com.alibaba.dubbo.common.logger.LoggerFactorySupport;
+import com.alibaba.dubbo.common.logger.LoggerAdapter;
 
-public class JdkLoggerFactory implements LoggerFactorySupport {
+public class JdkLoggerAdapter implements LoggerAdapter {
 	
 	private static final String GLOBAL_LOGGER_NAME = "global";
 
     private File file;
 
-	public JdkLoggerFactory() {
+	public JdkLoggerAdapter() {
 		try {
 			InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("logging.properties");
 			if (in != null) {

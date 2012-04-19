@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.common.logger.support;
+package com.alibaba.dubbo.common.logger.jdk;
 
 import java.util.logging.Level;
 

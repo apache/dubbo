@@ -17,12 +17,15 @@ package com.alibaba.dubbo.common.logger;
 
 import java.io.File;
 
+import com.alibaba.dubbo.common.extension.SPI;
+
 /**
  * 日志输出器供给器
  *
  * @author william.liangf
  */
-public interface LoggerFactorySupport {
+@SPI
+public interface LoggerAdapter {
 	
 	/**
 	 * 获取日志输出器
