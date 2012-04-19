@@ -62,19 +62,26 @@ public class ConditionRouter implements Router, Comparable<Router> {
             return invokers;
         }
         Map<String, String> urls = new HashMap<String, String>();
-        Map<URL, Invoker<T>> urlInvokers = new HashMap<URL, Invoker<T>>();
+        Map<String, Invoker<T>> urlInvokers = new HashMap<String, Invoker<T>>();
         for (Invoker<T> invoker : invokers) {
-            urls.put(invoker.getUrl().toIdentityString(), invoker.getUrl().toParameterString());
-            urlInvokers.put(invoker.getUrl(), invoker);
+            String key = invoker.getUrl().toIdentityString();
+            String value = invoker.getUrl().toParameterString();
+            urls.put(key, value);
+            urlInvokers.put(key, invoker);
         }
         try {
             Map<String, String> routedUrls = RouteUtils.route(null, url.getServiceKey(), url.getAddress(), url.toParameterString(), urls, Arrays.asList(rule), null);
             if (routedUrls != null) {
                 List<Invoker<T>> result = new ArrayList<Invoker<T>>();
                 for (Map.Entry<String, String> entry : routedUrls.entrySet()) {
-                    result.add(urlInvokers.get(URL.valueOf(entry.getKey() + "?" + entry.getValue())));
+                    Invoker<T> invoker = urlInvokers.get(entry.getKey());
+                    if (invoker != null) {
+                        result.add(invoker);
+                    }
                 }
-                return result;
+                if (result.size() > 0) {
+                    return result;
+                }
             }
         } catch (Throwable t) {
             logger.error("Failed to execute condition router rule: " + getUrl() + ", urls: " + urlInvokers.keySet() + ", cause: " + t.getMessage(), t);
