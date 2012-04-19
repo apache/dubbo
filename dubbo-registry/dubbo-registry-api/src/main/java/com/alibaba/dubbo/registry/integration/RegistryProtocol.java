@@ -151,9 +151,10 @@ public class RegistryProtocol implements Protocol {
         final URL registedProviderUrl = getRegistedProviderUrl(originInvoker);
         registry.register(registedProviderUrl);
         // 订阅override数据
-        registry.subscribe(registedProviderUrl.setProtocol(Constants.PROVIDER_PROTOCOL)
+        // FIXME 提供者订阅时，会影响同一JVM即暴露服务，又引用同一服务的的场景，因为subscribed以服务名为缓存的key，导致订阅信息覆盖。
+        /*registry.subscribe(registedProviderUrl.setProtocol(Constants.PROVIDER_PROTOCOL)
                 .addParameters(Constants.CATEGORY_KEY, Constants.OVERRIDES_CATEGORY, 
-                        Constants.CHECK_KEY, String.valueOf(false)), listener);
+                        Constants.CHECK_KEY, String.valueOf(false)), listener);*/
         return registry;
     }
 
