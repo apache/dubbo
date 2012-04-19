@@ -21,11 +21,17 @@ import java.util.List;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.spi.LoggingEvent;
 
+import com.alibaba.dubbo.common.logger.LoggerFactory;
+
 public class DubboAppender extends ConsoleAppender {
 
     public static boolean   available = false;
 
     public static List<Log> logList   = new ArrayList<Log>();
+    
+    static {
+        LoggerFactory.setLoggerAdapter("log4j");
+    }
 
     public static void doStart() {
         available = true;
