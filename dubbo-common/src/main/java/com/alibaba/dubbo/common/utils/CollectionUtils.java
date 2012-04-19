@@ -124,6 +124,17 @@ public class CollectionUtils {
 		return list;
 	}
 
+	public static String join(List<String> list, String separator) {
+	    StringBuilder sb = new StringBuilder();
+        for(String ele : list) {
+            if(sb.length() > 0) {
+                sb.append(separator);
+            }
+            sb.append(ele);
+        }
+        return sb.toString();
+	}
+	
 	public static boolean mapEquals(Map<?, ?> map1, Map<?, ?> map2) {
 		if (map1 == null && map2 == null) {
 			return true;
