@@ -110,7 +110,7 @@ public class PojoUtils {
             return ((Class)pojo).getName();
         }
 
-        Integer id = System.identityHashCode(pojo);
+        Integer id = hashCode(pojo);
         if (history.containsKey(id)) {
             return history.get(id);
         }
@@ -227,7 +227,7 @@ public class PojoUtils {
     private static Object realize1(Object pojo, Class<?> type, final Map<Integer, Object> history) {
         return realize0(pojo, type, null , history);
     }
-    
+
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private static Object realize0(Object pojo, Class<?> type, Type genericType, final Map<Integer, Object> history) {
         if (pojo == null) {
@@ -473,4 +473,7 @@ public class PojoUtils {
                 && ! Map.class.isAssignableFrom(cls);
     }
 
+    private static int hashCode(Object object) {
+        return 31 * (object.getClass().getName().hashCode() ^ System.identityHashCode(object));
+    }
 }
