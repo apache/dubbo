@@ -54,6 +54,11 @@
 					<xsd:documentation><![CDATA[ The java code compiler. ]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
+			<xsd:attribute name="logger" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[ The application logger. ]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
 			<xsd:attribute name="registry" type="xsd:string" use="optional">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[ The application registry. ]]></xsd:documentation>

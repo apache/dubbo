@@ -20,6 +20,7 @@ import java.util.List;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.compiler.support.AdaptiveCompiler;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 
 
 /**
@@ -51,6 +52,9 @@ public class ApplicationConfig extends AbstractConfig {
 
     // Java代码编译器
     private String               compiler;
+
+    // 日志输出方式
+    private String               logger;
 
     // 注册中心
     private List<RegistryConfig> registries;
@@ -169,6 +173,15 @@ public class ApplicationConfig extends AbstractConfig {
     public void setCompiler(String compiler) {
         this.compiler = compiler;
         AdaptiveCompiler.setDefaultCompiler(compiler);
+    }
+
+    public String getLogger() {
+        return logger;
+    }
+
+    public void setLogger(String logger) {
+        this.logger = logger;
+        LoggerFactory.setLoggerAdapter(logger);
     }
 
     public Boolean isDefault() {
