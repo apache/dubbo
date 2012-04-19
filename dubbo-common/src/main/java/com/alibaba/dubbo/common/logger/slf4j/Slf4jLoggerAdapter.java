@@ -7,7 +7,7 @@ import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerAdapter;
 
 public class Slf4jLoggerAdapter implements LoggerAdapter {
-
+    
 	public Logger getLogger(String key) {
 		return new Slf4jLogger(org.slf4j.LoggerFactory.getLogger(key));
 	}
@@ -16,24 +16,24 @@ public class Slf4jLoggerAdapter implements LoggerAdapter {
         return new Slf4jLogger(org.slf4j.LoggerFactory.getLogger(key));
     }
 
+    private Level level;
+    
+    private File file;
+
     public void setLevel(Level level) {
-        // TODO Auto-generated method stub
-        
+        this.level = level;
     }
 
     public Level getLevel() {
-        // TODO Auto-generated method stub
-        return null;
+        return level;
     }
 
     public File getFile() {
-        // TODO Auto-generated method stub
-        return null;
+        return file;
     }
 
     public void setFile(File file) {
-        // TODO Auto-generated method stub
-        
+        this.file = file;
     }
 
 }

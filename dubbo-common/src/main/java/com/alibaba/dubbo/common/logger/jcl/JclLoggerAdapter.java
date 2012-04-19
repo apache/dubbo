@@ -18,24 +18,24 @@ public class JclLoggerAdapter implements LoggerAdapter {
         return new JclLogger(LogFactory.getLog(key));
     }
 
+    private Level level;
+    
+    private File file;
+
     public void setLevel(Level level) {
-        // TODO Auto-generated method stub
-        
+        this.level = level;
     }
 
     public Level getLevel() {
-        // TODO Auto-generated method stub
-        return null;
+        return level;
     }
 
     public File getFile() {
-        // TODO Auto-generated method stub
-        return null;
+        return file;
     }
 
     public void setFile(File file) {
-        // TODO Auto-generated method stub
-        
+        this.file = file;
     }
 
 }
