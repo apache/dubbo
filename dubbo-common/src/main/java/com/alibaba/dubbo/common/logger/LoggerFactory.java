@@ -38,23 +38,28 @@ public class LoggerFactory {
 
 	// 查找常用的日志框架
 	static {
-		try {
-            setLoggerAdapter(new Slf4jLoggerAdapter());
-        } catch (Throwable e1) {
-            try {
-                setLoggerAdapter(new JclLoggerAdapter());
-            } catch (Throwable e2) {
+	    setLoggerAdapter(System.getProperty("dubbo.application.logger"));
+	    if (LOGGER_ADAPTER == null) {
+    		try {
+                setLoggerAdapter(new Slf4jLoggerAdapter());
+            } catch (Throwable e1) {
                 try {
-                    setLoggerAdapter(new Log4jLoggerAdapter());
-                } catch (Throwable e3) {
-                    setLoggerAdapter(new JdkLoggerAdapter());
+                    setLoggerAdapter(new JclLoggerAdapter());
+                } catch (Throwable e2) {
+                    try {
+                        setLoggerAdapter(new Log4jLoggerAdapter());
+                    } catch (Throwable e3) {
+                        setLoggerAdapter(new JdkLoggerAdapter());
+                    }
                 }
             }
-        }
+	    }
 	}
 	
 	public static void setLoggerAdapter(String loggerAdapter) {
-	    setLoggerAdapter(ExtensionLoader.getExtensionLoader(LoggerAdapter.class).getExtension(loggerAdapter));
+	    if (loggerAdapter != null && loggerAdapter.length() > 0) {
+	        setLoggerAdapter(ExtensionLoader.getExtensionLoader(LoggerAdapter.class).getExtension(loggerAdapter));
+	    }
 	}
 
 	/**
