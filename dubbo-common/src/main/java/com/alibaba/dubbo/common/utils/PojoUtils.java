@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -79,11 +80,11 @@ public class PojoUtils {
     }
 
     public static Object generalize(Object pojo) {
-        return generalize(pojo, new HashMap<Integer, Object>());
+        return generalize(pojo, new IdentityHashMap<Object, Object>());
     }
 
     @SuppressWarnings("unchecked")
-    private static Object generalize(Object pojo, Map<Integer, Object> history) {
+    private static Object generalize(Object pojo, Map<Object, Object> history) {
         if (pojo == null) {
             return null;
         }
@@ -110,11 +111,10 @@ public class PojoUtils {
             return ((Class)pojo).getName();
         }
 
-        Integer id = hashCode(pojo);
-        if (history.containsKey(id)) {
-            return history.get(id);
+        if (history.containsKey(pojo)) {
+            return history.get(pojo);
         }
-        history.put(id, pojo);
+        history.put(pojo, pojo);
         
         if (pojo.getClass().isArray()) {
             int len = Array.getLength(pojo);
@@ -144,7 +144,7 @@ public class PojoUtils {
             return src;
         }
         Map<String, Object> map = new HashMap<String, Object>();
-        history.put(id, map);
+        history.put(pojo, map);
         map.put("class", pojo.getClass().getName());
         for (Method method : pojo.getClass().getMethods()) {
             if (ReflectUtils.isBeanPropertyReadMethod(method)) {
@@ -160,11 +160,11 @@ public class PojoUtils {
     }
     
     public static Object realize(Object pojo, Class<?> type) {
-        return realize0(pojo, type, null , new HashMap<Integer, Object>());
+        return realize0(pojo, type, null , new IdentityHashMap<Object, Object>());
     }
     
     public static Object realize(Object pojo, Class<?> type, Type genericType) {
-        return realize0(pojo, type, genericType, new HashMap<Integer, Object>());
+        return realize0(pojo, type, genericType, new IdentityHashMap<Object, Object>());
     }
     
     private static class PojoInvocationHandler implements InvocationHandler {
@@ -190,7 +190,7 @@ public class PojoUtils {
                 value = map.get(methodName.substring(0, 1).toLowerCase() + methodName.substring(1));
             }
             if (value instanceof Map<?,?> && ! Map.class.isAssignableFrom(method.getReturnType())) {
-                value = realize0((Map<String, Object>) value, method.getReturnType(), null, new HashMap<Integer, Object>());
+                value = realize0((Map<String, Object>) value, method.getReturnType(), null, new IdentityHashMap<Object, Object>());
             }
             return value;
         }
@@ -215,7 +215,7 @@ public class PojoUtils {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private static Object realize0(Object pojo, Class<?> type, Type genericType, final Map<Integer, Object> history) {
+    private static Object realize0(Object pojo, Class<?> type, Type genericType, final Map<Object, Object> history) {
         if (pojo == null) {
             return null;
         }
@@ -232,11 +232,10 @@ public class PojoUtils {
             return CompatibleTypeUtils.compatibleTypeConvert(pojo, type);
         }
 
-        Integer id = System.identityHashCode(pojo);
-        if (history.containsKey(id)) {
-            return history.get(id);
+        if (history.containsKey(pojo)) {
+            return history.get(pojo);
         }
-        history.put(id, pojo);
+        history.put(pojo, pojo);
         
         if (pojo.getClass().isArray()) {
         	if (Collection.class.isAssignableFrom(type)) {
@@ -341,11 +340,11 @@ public class PojoUtils {
         		return map;
         	} else if (type.isInterface()) {
         	    Object dest = Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), new Class<?>[]{type}, new PojoInvocationHandler(map));
-                history.put(id, dest);
+                history.put(pojo, dest);
                 return dest;
             } else {
                 Object dest = newInstance(type);
-                history.put(id, dest);
+                history.put(pojo, dest);
                 for (Map.Entry<Object, Object> entry : map.entrySet()) {
                 	Object key = entry.getKey();
                 	if (key instanceof String) {
@@ -457,7 +456,4 @@ public class PojoUtils {
                 && ! Map.class.isAssignableFrom(cls);
     }
 
-    private static int hashCode(Object object) {
-        return 31 * (object.getClass().getName().hashCode() ^ System.identityHashCode(object));
-    }
 }
