@@ -147,20 +147,10 @@ public class PojoUtils {
         history.put(id, map);
         map.put("class", pojo.getClass().getName());
         for (Method method : pojo.getClass().getMethods()) {
-            if (Modifier.isPublic(method.getModifiers())
-                    && ! Modifier.isStatic(method.getModifiers())
-                    && method.getReturnType() != void.class
-                    && method.getDeclaringClass() != Object.class
-                    && method.getParameterTypes().length == 0) {
-                String name = method.getName();
+            if (ReflectUtils.isBeanPropertyReadMethod(method)) {
                 try {
-                    if (name.startsWith("get")) {
-                        map.put(name.substring(3, 4).toLowerCase() + name.substring(4), generalize(method
-                                .invoke(pojo, new Object[0]), history));
-                    } else if (name.startsWith("is")) {
-                        map.put(name.substring(2, 3).toLowerCase() + name.substring(3), generalize(method
-                                .invoke(pojo, new Object[0]), history));
-                    }
+                    map.put(ReflectUtils.getPropertyNameFromBeanReadMethod(method),
+                            generalize(method.invoke(pojo), history));
                 } catch (Exception e) {
                     throw new RuntimeException(e.getMessage(), e);
                 }
@@ -170,7 +160,7 @@ public class PojoUtils {
     }
     
     public static Object realize(Object pojo, Class<?> type) {
-        return realize1(pojo, type, new HashMap<Integer, Object>());
+        return realize0(pojo, type, null , new HashMap<Integer, Object>());
     }
     
     public static Object realize(Object pojo, Class<?> type, Type genericType) {
@@ -200,7 +190,7 @@ public class PojoUtils {
                 value = map.get(methodName.substring(0, 1).toLowerCase() + methodName.substring(1));
             }
             if (value instanceof Map<?,?> && ! Map.class.isAssignableFrom(method.getReturnType())) {
-                value = realize1((Map<String, Object>)value, method.getReturnType(), new HashMap<Integer, Object>());
+                value = realize0((Map<String, Object>) value, method.getReturnType(), null, new HashMap<Integer, Object>());
             }
             return value;
         }
@@ -222,10 +212,6 @@ public class PojoUtils {
 			}
     	}
     	return new ArrayList<Object>();
-    }
-
-    private static Object realize1(Object pojo, Class<?> type, final Map<Integer, Object> history) {
-        return realize0(pojo, type, null , history);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -259,7 +245,7 @@ public class PojoUtils {
         		Collection dest = createCollection(type, len);
         		for (int i = 0; i < len; i ++) {
 	                Object obj = Array.get(pojo, i);
-	                Object value = realize1(obj, ctype, history);
+                    Object value = realize0(obj, ctype, null, history);
 	                dest.add(value);
 	            }
 	            return dest;
@@ -269,7 +255,7 @@ public class PojoUtils {
 	            Object dest = Array.newInstance(ctype, len);
 	            for (int i = 0; i < len; i ++) {
 	                Object obj = Array.get(pojo, i);
-	                Object value = realize1(obj, ctype, history);
+                    Object value = realize0(obj, ctype, null, history);
 	                Array.set(dest, i, value);
 	            }
 	            return dest;
@@ -284,7 +270,7 @@ public class PojoUtils {
                 Object dest = Array.newInstance(ctype, len);
                 int i = 0;
                 for (Object obj : src) {
-                    Object value = realize1(obj, ctype, history);
+                    Object value = realize0(obj, ctype, null, history);
                     Array.set(dest, i, value);
                     i ++;
                 }
@@ -456,9 +442,7 @@ public class PojoUtils {
             return cls.getMethod(name, valueCls);
         } catch (NoSuchMethodException e) {
             for (Method method : cls.getMethods()) {
-                if (Modifier.isPublic(method.getModifiers())
-                        && method.getDeclaringClass() != Object.class
-                        && method.getParameterTypes().length == 1 
+                if (ReflectUtils.isBeanPropertyWriteMethod(method)
                         && method.getName().equals(name)) {
                     return method;
                 }

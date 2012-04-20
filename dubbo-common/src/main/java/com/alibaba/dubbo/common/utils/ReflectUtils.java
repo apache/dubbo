@@ -897,6 +897,47 @@ public final class ReflectUtils {
             return null;
         }
     }
+
+    public static boolean isBeanPropertyReadMethod(Method method) {
+        return method != null
+            && Modifier.isPublic(method.getModifiers())
+            && ! Modifier.isStatic(method.getModifiers())
+            && method.getReturnType() != void.class
+            && method.getDeclaringClass() != Object.class
+            && method.getParameterTypes().length == 0
+            && (method.getName().startsWith("get") || method.getName().startsWith("is"));
+    }
+
+    public static String getPropertyNameFromBeanReadMethod(Method method) {
+        if (isBeanPropertyReadMethod(method)) {
+            if (method.getName().startsWith("get")) {
+                return method.getName().substring(3, 4).toLowerCase()
+                    + method.getName().substring(4);
+            }
+            if (method.getName().startsWith("is")) {
+                return method.getName().substring(2, 3).toLowerCase()
+                    + method.getName().substring(3);
+            }
+        }
+        return null;
+    }
+
+    public static boolean isBeanPropertyWriteMethod(Method method) {
+        return method != null
+            && Modifier.isPublic(method.getModifiers())
+            && ! Modifier.isStatic(method.getModifiers())
+            && method.getDeclaringClass() != Object.class
+            && method.getParameterTypes().length == 1
+            && method.getName().startsWith("set");
+    }
+    
+    public static String getPropertyNameFromBeanWriteMethod(Method method) {
+        if (isBeanPropertyWriteMethod(method)) {
+            return method.getName().substring(3, 4).toLowerCase()
+                + method.getName().substring(4);
+        }
+        return null;
+    }
     
 	private ReflectUtils(){}
 }
