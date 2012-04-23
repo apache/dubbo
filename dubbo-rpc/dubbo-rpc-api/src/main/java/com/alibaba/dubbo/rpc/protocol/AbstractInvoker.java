@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.common.logger.Logger;
@@ -32,6 +33,7 @@ import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
+import com.alibaba.dubbo.rpc.support.RpcUtils;
 
 /**
  * AbstractInvoker.
@@ -136,6 +138,11 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         if (invocation.getAttachments() != null) {
             attachments.putAll(invocation.getAttachments());
         }
+        if (getUrl().getMethodParameter(invocation.getMethodName(), Constants.ASYNC_KEY, false)){
+        	attachments.put(Constants.Attachments.IS_ASYNC_KEY, Boolean.TRUE.toString());
+        }
+        RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
+        
         invocation.setAttachments(attachments);
         try {
             return doInvoke(invocation);

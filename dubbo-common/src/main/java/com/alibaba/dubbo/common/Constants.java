@@ -526,8 +526,14 @@ public class Constants {
     public static final String LOCAL_PROTOCOL                      = "injvm";
 
     public static final String REMOTE_KEY                          = "remote";
+    public static final String AUTO_ATTACH_INVOCATIONID_KEY 	   = "invocationid.autoattach";
     /*
      * private Constants(){ }
      */
+    
+    public static class Attachments {
+    	public static final String IS_ASYNC_KEY = 						"attachments.async";
+    	public static final String INVOCATIONID_KEY = 					"attachments.invocation.id";
+    }
 
 }

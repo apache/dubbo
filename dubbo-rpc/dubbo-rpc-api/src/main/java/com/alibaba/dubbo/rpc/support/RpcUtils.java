@@ -17,11 +17,15 @@ package com.alibaba.dubbo.rpc.support;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.concurrent.atomic.AtomicLong;
 
+import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
 import com.alibaba.dubbo.rpc.Invocation;
+import com.alibaba.dubbo.rpc.RpcInvocation;
 
 /**
  * RpcUtils
@@ -73,5 +77,36 @@ public class RpcUtils {
         }
         return null;
     }
-
+    
+    private static final AtomicLong INVOKE_ID = new AtomicLong(0);
+    
+	public static Long getInvocationId(Invocation inv) {
+    	String id = inv.getAttachment(Constants.Attachments.INVOCATIONID_KEY);
+		return id == null ? null : new Long(id);
+	}
+    
+    /**
+     * 幂等操作:异步操作默认添加invocation id
+     * @param url
+     * @param inv
+     */
+    public static void attachInvocationIdIfAsync(URL url, Invocation inv){
+    	if (isAttachInvocationId(url, inv) && getInvocationId(inv) == null && inv instanceof RpcInvocation) {
+    		((RpcInvocation)inv).setAttachment(Constants.Attachments.INVOCATIONID_KEY, String.valueOf(INVOKE_ID.getAndIncrement()));
+        }
+    }
+    
+    private static boolean isAttachInvocationId(URL url , Invocation invocation) {
+    	String value = url.getMethodParameter(invocation.getMethodName(), Constants.AUTO_ATTACH_INVOCATIONID_KEY);
+    	if ( value == null ) {
+    		//异步操作默认添加invocationid
+    		return url.getMethodParameter(invocation.getMethodName(), Constants.ASYNC_KEY, false);
+    	} else if (Boolean.TRUE.toString().equalsIgnoreCase(value)) {
+    		//设置为添加，则一定添加
+    		return true;
+    	} else {
+    		//value为false时，不添加
+    		return false;
+    	}
+    }
 }
