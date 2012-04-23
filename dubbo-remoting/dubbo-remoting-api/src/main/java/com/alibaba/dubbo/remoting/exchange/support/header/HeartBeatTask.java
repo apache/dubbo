@@ -56,12 +56,6 @@ final class HeartBeatTask implements Runnable {
                     continue;
                 }
 
-                if (!isClient) {
-                    /* 由于 server 端无法判断 client 端是否支持 heartbeat，
-                       为避免误杀不支持 heartbeat 的 client 故 server 端不进行 heartbeat 检测 */
-                    continue;
-                }
-
                 String dubboVersion = channel.getUrl().getParameter(
                     Constants.DUBBO_VERSION_KEY, "0.0.0");
                 if (isClient && !isSupportHeartbeat(dubboVersion)) {
