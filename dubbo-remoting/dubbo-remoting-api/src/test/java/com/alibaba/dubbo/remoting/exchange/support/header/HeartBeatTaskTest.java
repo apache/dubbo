@@ -24,7 +24,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.net.Authenticator;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -46,7 +45,7 @@ public class HeartBeatTaskTest {
             public Collection<Channel> getChannels() {
                 return Collections.<Channel>singletonList(channel);
             }
-        }, 1000, 1000 * 3, true);
+        }, 1000, 1000 * 3);
 
         channel = new MockChannel() {
 
@@ -72,32 +71,6 @@ public class HeartBeatTaskTest {
         Assert.assertTrue(obj instanceof Request);
         Request request = (Request)obj;
         Assert.assertTrue(request.isHeartbeat());
-    }
-
-    @Test
-    public void testEndpointUnsupportHeartbeat() throws Exception {
-        channel.setAttribute(
-            HeaderExchangeHandler.KEY_READ_TIMESTAMP, System.currentTimeMillis());
-        channel.setAttribute(
-            HeaderExchangeHandler.KEY_WRITE_TIMESTAMP, System.currentTimeMillis());
-        Thread.sleep(2000L);
-        task.run();
-        List<Object> objects = channel.getSentObjects();
-        Assert.assertTrue(objects.isEmpty());
-    }
-
-    @Test
-    public void testIsSupportHeartbeat() throws Exception {
-        Assert.assertTrue(HeartBeatTask.isSupportHeartbeat("2.1.0"));
-        Assert.assertTrue(HeartBeatTask.isSupportHeartbeat("3"));
-        Assert.assertTrue(HeartBeatTask.isSupportHeartbeat("2.1.1"));
-        Assert.assertTrue(HeartBeatTask.isSupportHeartbeat("2.2"));
-        Assert.assertTrue(HeartBeatTask.isSupportHeartbeat("2.2-SNAPSHOT"));
-        Assert.assertTrue(HeartBeatTask.isSupportHeartbeat("2.1.2-SNAPSHOT"));
-
-        Assert.assertTrue(!HeartBeatTask.isSupportHeartbeat("1"));
-        Assert.assertTrue(!HeartBeatTask.isSupportHeartbeat("2.1.0-1"));
-        Assert.assertTrue(!HeartBeatTask.isSupportHeartbeat("2.1.0-SNAPSHOT"));
     }
     
 }

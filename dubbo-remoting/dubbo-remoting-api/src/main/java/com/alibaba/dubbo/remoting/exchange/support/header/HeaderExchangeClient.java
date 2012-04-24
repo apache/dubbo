@@ -169,7 +169,7 @@ public class HeaderExchangeClient implements ExchangeClient {
                         public Collection<Channel> getChannels() {
                             return Collections.<Channel>singletonList( HeaderExchangeClient.this );
                         }
-                    }, heartbeat, heartbeatTimeout, true ),
+                    }, heartbeat, heartbeatTimeout),
                     heartbeat, heartbeat, TimeUnit.MILLISECONDS );
         }
     }
