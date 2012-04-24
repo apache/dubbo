@@ -41,6 +41,7 @@ import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.cluster.Cluster;
 import com.alibaba.dubbo.rpc.cluster.Router;
 import com.alibaba.dubbo.rpc.cluster.RouterFactory;
@@ -72,6 +73,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     private final Class<T> serviceType; // 构造时初始化，断言不为null
     
     private final Map<String, String> queryMap; // 构造时初始化，断言不为null
+    
+    private final String[] serviceMethods;
 
     private final boolean multiGroup;
 
@@ -107,6 +110,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 .addParameters(queryMap).removeParameter(Constants.MONITOR_KEY);
         String group = directoryUrl.getParameter( Constants.GROUP_KEY, "" );
         this.multiGroup = group != null && ("*".equals(group) || group.contains( "," ));
+        String methods = queryMap.get(Constants.METHODS_KEY);
+        this.serviceMethods = methods == null ? null : Constants.COMMA_SPLIT_PATTERN.split(methods);
     }
 
     public void setProtocol(Protocol protocol) {
@@ -414,6 +419,19 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         return providerUrl;
     }
 
+    private List<Invoker<T>> route(List<Invoker<T>> invokers, String method) {
+        Invocation invocation = new RpcInvocation(method, new Class<?>[0], new Object[0]);
+        List<Router> routers = getRouters(); 
+        if (routers != null) {
+            for (Router router : routers) {
+                if (router.getUrl() != null && ! router.getUrl().getParameter(Constants.RUNTIME_KEY, true)) {
+                    invokers = router.route(invokers, getUrl(), invocation);
+                }
+            }
+        }
+        return invokers;
+    }
+
     /**
      * 将invokers列表转成与方法的映射关系
      * 
@@ -422,8 +440,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      */
     private Map<String, List<Invoker<T>>> toMethodInvokers(Map<String, Invoker<T>> invokersMap) {
         Map<String, List<Invoker<T>>> newMethodInvokerMap = new HashMap<String, List<Invoker<T>>>();
+        // 按提供者URL所声明的methods分类，兼容注册中心执行路由过滤掉的methods
+        List<Invoker<T>> invokersList = new ArrayList<Invoker<T>>();
         if (invokersMap != null && invokersMap.size() > 0) {
-            List<Invoker<T>> invokersList = new ArrayList<Invoker<T>>();
             for (Invoker<T> invoker : invokersMap.values()) {
                 String parameter = invoker.getUrl().getParameter(Constants.METHODS_KEY);
                 if (parameter != null && parameter.length() > 0) {
@@ -444,7 +463,16 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 }
                 invokersList.add(invoker);
             }
-            newMethodInvokerMap.put(Constants.ANY_VALUE, invokersList);
+        }
+        newMethodInvokerMap.put(Constants.ANY_VALUE, invokersList);
+        if (serviceMethods != null && serviceMethods.length > 0) {
+            for (String method : serviceMethods) {
+                List<Invoker<T>> methodInvokers = newMethodInvokerMap.get(method);
+                if (methodInvokers == null || methodInvokers.size() == 0) {
+                    methodInvokers = invokersList;
+                }
+                newMethodInvokerMap.put(method, route(methodInvokers, method));
+            }
         }
         // sort and unmodifiable
         for (String method : new HashSet<String>(newMethodInvokerMap.keySet())) {
