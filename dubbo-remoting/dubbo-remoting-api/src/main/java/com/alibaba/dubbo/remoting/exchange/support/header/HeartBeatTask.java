@@ -105,7 +105,7 @@ final class HeartBeatTask implements Runnable {
         Collection<Channel> getChannels();
     }
 
-    static final String SUPPORT_HEARTBEAT_VERSION = "2.1.0";
+    static final String SUPPORT_HEARTBEAT_VERSION = "2.0.7";
     static final Pattern VERSION_SPLIT_PATTERN = Pattern.compile("\\.");
     static final String SNAPSHOT_SUFFIX = "SNAPSHOT";
     
