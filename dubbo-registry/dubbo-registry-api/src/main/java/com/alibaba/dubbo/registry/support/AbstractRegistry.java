@@ -30,14 +30,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
@@ -273,16 +271,17 @@ public abstract class AbstractRegistry implements Registry {
             }
             return result;
         } else {
-            final BlockingQueue<List<URL>> queue = new LinkedBlockingQueue<List<URL>>(1);
-            subscribe(url, new NotifyListener() {
+            final AtomicReference<List<URL>> reference = new AtomicReference<List<URL>>();
+            NotifyListener listener = new NotifyListener() {
                 public void notify(List<URL> urls) {
-                    queue.offer(urls);
+                    reference.set(urls);
                 }
-            });
+            };
+            subscribe(url, listener); // 订阅逻辑保证第一次notify后再返回
             try {
-                return queue.poll(getUrl().getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT), TimeUnit.MILLISECONDS);
-            } catch (InterruptedException e) {
-                return null;
+                return reference.get();
+            } finally {
+                unsubscribe(url, listener);
             }
         }
     }
