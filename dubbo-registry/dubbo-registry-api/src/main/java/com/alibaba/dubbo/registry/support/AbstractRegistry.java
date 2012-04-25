@@ -30,10 +30,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.alibaba.dubbo.common.Constants;
@@ -260,36 +263,28 @@ public abstract class AbstractRegistry implements Registry {
         }
         return null;
     }
-
+    
     public List<URL> lookup(URL url) {
-        List<URL> urls= new ArrayList<URL>();
         Map<String, List<URL>> notifiedUrls = getNotified().get(url);
         if (notifiedUrls != null && notifiedUrls.size() > 0) {
-            for (List<URL> values : notifiedUrls.values()) {
-                urls.addAll(values);
+            List<URL> result = new ArrayList<URL>();
+            for (List<URL> urls : notifiedUrls.values()) {
+                result.addAll(urls);
             }
-        }
-        if (urls == null || urls.size() == 0) {
-            List<URL> cacheUrls = getCacheUrls(url);
-            if (cacheUrls != null && cacheUrls.size() > 0) {
-                urls.addAll(cacheUrls);
-            }
-        }
-        if (urls == null || urls.size() == 0) {
-            for (URL u: getRegistered()) {
-                if (UrlUtils.isMatch(url, u)) {
-                    urls.add(u);
+            return result;
+        } else {
+            final BlockingQueue<List<URL>> queue = new LinkedBlockingQueue<List<URL>>(1);
+            subscribe(url, new NotifyListener() {
+                public void notify(List<URL> urls) {
+                    queue.offer(urls);
                 }
+            });
+            try {
+                return queue.poll(getUrl().getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT), TimeUnit.MILLISECONDS);
+            } catch (InterruptedException e) {
+                return null;
             }
         }
-        if (Constants.ANY_VALUE.equals(url.getServiceInterface())) {
-            for (URL u: getSubscribed().keySet()) {
-                if (UrlUtils.isMatch(url, u)) {
-                    urls.add(u);
-                }
-            }
-        }
-        return urls;
     }
 
     public void register(URL url) {

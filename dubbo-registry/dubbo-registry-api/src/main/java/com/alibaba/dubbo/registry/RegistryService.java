@@ -63,6 +63,7 @@ public interface RegistryService {
      * 4. 并且查询条件允许星号通配，订阅所有接口的所有分组的所有版本，或：interface=*&group=*&version=*&classifier=*<br>
      * 5. 当注册中心重启，网络抖动，需自动恢复订阅请求。<br>
      * 6. 允许URI相同但参数不同的URL并存，不能覆盖。<br>
+     * 7. 必须阻塞订阅过程，等第一次通知完后再返回。<br>
      * 
      * @param url 订阅条件，不允许为空，如：consumer://10.20.153.10/com.alibaba.foo.BarService?version=1.0.0&application=kylin
      * @param listener 变更事件监听器，不允许为空
