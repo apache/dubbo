@@ -94,7 +94,7 @@ public class RegistryProtocol implements Protocol {
         //registry provider
         Registry registry = doRegister(originInvoker);
         //设置exporter与registry的关系 (for unexport)
-        exporter.setRegistry(registry);
+        exporter.addRegistry(registry);
         //保证每次export都返回一个新的exporter实例
         return new Exporter<T>() {
             public Invoker<T> getInvoker() {
@@ -351,7 +351,7 @@ public class RegistryProtocol implements Protocol {
     private class ExporterChangeableWrapper<T> implements Exporter<T>{
         private Exporter<T> exporter;
         private final Invoker<T> originInvoker;
-        private Registry registry;
+        private final List<Registry> registrys = new ArrayList<Registry>();
 
         public ExporterChangeableWrapper(Exporter<T> exporter, Invoker<T> originInvoker){
             this.exporter = exporter;
@@ -370,20 +370,21 @@ public class RegistryProtocol implements Protocol {
             this.exporter = exporter;
         }
         
-        public void setRegistry(final Registry registry) {
-            if (this.registry != null){
-                logger.warn(new IllegalStateException("registry can not be changed!"));
+        public void addRegistry(final Registry registry) {
+            if (registry != null && ! registrys.contains(registry)){
+            	registrys.add(registry);
             } 
-            this.registry = registry;
         }
 
         public void unexport() {
             String key = getCacheKey(this.originInvoker);
             bounds.remove(key);
             try {
-                if (registry != null && registry.isAvailable()) {
-                    registry.unregister(getRegistedProviderUrl(originInvoker));
-                }
+            	for (Registry registry: registrys) {
+            		if (registry != null && registry.isAvailable()) {
+                        registry.unregister(getRegistedProviderUrl(originInvoker));
+                    }
+            	}
             } finally {
                 exporter.unexport();
             }
