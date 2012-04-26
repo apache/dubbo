@@ -253,6 +253,15 @@ public final class URL implements Serializable {
 	public String getPassword() {
 		return password;
 	}
+	
+	public String getAuthority() {
+	    if ((username == null || username.length() == 0)
+	            && (password == null || password.length() == 0)) {
+	        return null;
+	    }
+	    return (username == null ? "" : username) 
+	            + ":" + (password == null ? "" : password);
+	}
 
 	public String getHost() {
 		return host;

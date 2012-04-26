@@ -249,7 +249,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
             }
         });
         if (auth) {
-            zk.addAuthInfo(url.getUsername(), url.getPassword().getBytes());
+            zk.addAuthInfo("digest", url.getAuthority().getBytes());
         }
         return zk;
     }
