@@ -18,6 +18,7 @@ package com.alibaba.dubbo.config;
 import java.util.Map;
 
 import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.config.support.Parameter;
 import com.alibaba.dubbo.rpc.cluster.LoadBalance;
 
 /**
@@ -25,7 +26,7 @@ import com.alibaba.dubbo.rpc.cluster.LoadBalance;
  * 
  * @author william.liangf
  */
-public abstract class AbstractMethodConfig extends AbstractConfig {
+abstract class AbstractMethodConfig extends AbstractConfig {
 
     private static final long serialVersionUID = 1L;
 

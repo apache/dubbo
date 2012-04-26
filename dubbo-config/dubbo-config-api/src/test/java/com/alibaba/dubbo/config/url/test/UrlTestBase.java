@@ -27,10 +27,10 @@ import com.alibaba.dubbo.config.MethodConfig;
 import com.alibaba.dubbo.config.ProtocolConfig;
 import com.alibaba.dubbo.config.ProviderConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
+import com.alibaba.dubbo.config.RpcConfigGetSetProxy;
 import com.alibaba.dubbo.config.ServiceConfig;
 import com.alibaba.dubbo.config.api.DemoService;
 import com.alibaba.dubbo.config.provider.impl.DemoServiceImpl;
-import com.alibaba.dubbo.config.support.RpcConfigGetSetProxy;
 
 /**
  * @author haomin.liuhm

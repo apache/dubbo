@@ -17,6 +17,8 @@ package com.alibaba.dubbo.config;
 
 import java.util.Map;
 
+import com.alibaba.dubbo.config.support.Parameter;
+
 /**
  * MonitorConfig
  * 

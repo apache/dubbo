@@ -18,6 +18,7 @@ package com.alibaba.dubbo.config;
 import java.util.List;
 
 import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.config.support.Parameter;
 
 /**
  * MethodConfig

@@ -36,6 +36,8 @@ import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
+import com.alibaba.dubbo.config.local.AdaptiveLocalInvoker;
+import com.alibaba.dubbo.config.support.Parameter;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.ProxyFactory;
@@ -51,7 +53,7 @@ import com.alibaba.dubbo.rpc.service.GenericService;
  * 
  * @author william.liangf
  */
-public class ReferenceConfig<T> extends AbstractConsumerConfig {
+public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
     private static final long    serialVersionUID        = -5864351140409987595L;
 

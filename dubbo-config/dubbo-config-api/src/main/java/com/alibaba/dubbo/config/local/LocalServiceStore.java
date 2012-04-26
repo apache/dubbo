@@ -14,7 +14,7 @@
  *   limitations under the License.
  */
 
-package com.alibaba.dubbo.config;
+package com.alibaba.dubbo.config.local;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
@@ -27,7 +27,7 @@ import java.util.Map;
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-class LocalServiceStore {
+public class LocalServiceStore {
 
     private static final LocalServiceStore INSTANCE = new LocalServiceStore();
 

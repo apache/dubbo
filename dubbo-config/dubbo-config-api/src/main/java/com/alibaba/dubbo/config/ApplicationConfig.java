@@ -21,6 +21,7 @@ import java.util.List;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.compiler.support.AdaptiveCompiler;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.config.support.Parameter;
 
 
 /**

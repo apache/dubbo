@@ -30,13 +30,14 @@ import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
+import com.alibaba.dubbo.config.support.Parameter;
 
 /**
  * AbstractConfig
  * 
  * @author william.liangf
  */
-public abstract class AbstractConfig implements Serializable {
+abstract class AbstractConfig implements Serializable {
 
     private static final long serialVersionUID = 4267533505537413570L;
 

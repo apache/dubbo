@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.config;
+package com.alibaba.dubbo.config.local;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
@@ -28,7 +28,7 @@ import com.alibaba.dubbo.rpc.RpcException;
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-class AdaptiveLocalInvoker<T> implements Invoker<T> {
+public class AdaptiveLocalInvoker<T> implements Invoker<T> {
 
     private static final Protocol PROTOCOL = ExtensionLoader.getExtensionLoader(
             Protocol.class).getAdaptiveExtension();

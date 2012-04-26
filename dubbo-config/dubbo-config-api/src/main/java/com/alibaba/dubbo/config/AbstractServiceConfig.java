@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.config.support.Parameter;
 import com.alibaba.dubbo.rpc.ExporterListener;
 
 /**
@@ -26,7 +27,7 @@ import com.alibaba.dubbo.rpc.ExporterListener;
  * 
  * @author william.liangf
  */
-public abstract class AbstractServiceConfig extends AbstractReferenceConfig {
+abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
 
     private static final long serialVersionUID = 1L;
     

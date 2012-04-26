@@ -17,6 +17,8 @@ package com.alibaba.dubbo.config;
 
 import java.io.Serializable;
 
+import com.alibaba.dubbo.config.support.Parameter;
+
 /**
  * @author chao.liuc
  */

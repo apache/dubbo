@@ -20,7 +20,7 @@ package com.alibaba.dubbo.config;
  * 
  * @author william.liangf
  */
-public class ConsumerConfig extends AbstractConsumerConfig {
+public class ConsumerConfig extends AbstractReferenceConfig {
 
     private static final long serialVersionUID = 2827274711143680600L;
 

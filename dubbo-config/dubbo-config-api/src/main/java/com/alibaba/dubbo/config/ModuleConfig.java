@@ -18,6 +18,8 @@ package com.alibaba.dubbo.config;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.alibaba.dubbo.config.support.Parameter;
+
 /**
  * ModuleConfig
  * 
