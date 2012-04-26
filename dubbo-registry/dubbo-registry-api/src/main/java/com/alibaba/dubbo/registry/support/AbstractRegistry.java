@@ -278,11 +278,7 @@ public abstract class AbstractRegistry implements Registry {
                 }
             };
             subscribe(url, listener); // 订阅逻辑保证第一次notify后再返回
-            try {
-                return reference.get();
-            } finally {
-                unsubscribe(url, listener);
-            }
+            return reference.get();
         }
     }
 
