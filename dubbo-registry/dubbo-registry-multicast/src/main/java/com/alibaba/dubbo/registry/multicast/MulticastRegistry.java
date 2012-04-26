@@ -371,6 +371,37 @@ public class MulticastRegistry extends FailbackRegistry {
         received.remove(url.toFullString());
     }
 
+    public List<URL> lookup(URL url) {
+        List<URL> urls= new ArrayList<URL>();
+        Map<String, List<URL>> notifiedUrls = getNotified().get(url);
+        if (notifiedUrls != null && notifiedUrls.size() > 0) {
+            for (List<URL> values : notifiedUrls.values()) {
+                urls.addAll(values);
+            }
+        }
+        if (urls == null || urls.size() == 0) {
+            List<URL> cacheUrls = getCacheUrls(url);
+            if (cacheUrls != null && cacheUrls.size() > 0) {
+                urls.addAll(cacheUrls);
+            }
+        }
+        if (urls == null || urls.size() == 0) {
+            for (URL u: getRegistered()) {
+                if (UrlUtils.isMatch(url, u)) {
+                    urls.add(u);
+                }
+            }
+        }
+        if (Constants.ANY_VALUE.equals(url.getServiceInterface())) {
+            for (URL u: getSubscribed().keySet()) {
+                if (UrlUtils.isMatch(url, u)) {
+                    urls.add(u);
+                }
+            }
+        }
+        return urls;
+    }
+
     public MulticastSocket getMutilcastSocket() {
         return mutilcastSocket;
     }
