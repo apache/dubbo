@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.cluster.router;
+package com.alibaba.dubbo.rpc.cluster.router.script;
 
 
 import java.util.ArrayList;
@@ -30,9 +30,10 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.cluster.Router;
+import com.alibaba.dubbo.rpc.cluster.router.MockInvoker;
 import com.alibaba.dubbo.rpc.cluster.router.script.ScriptRouterFactory;
 
-public class ScriptRouterEngineTest {
+public class ScriptRouterTest {
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
