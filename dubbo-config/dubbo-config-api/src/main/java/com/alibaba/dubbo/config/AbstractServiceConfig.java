@@ -27,7 +27,7 @@ import com.alibaba.dubbo.rpc.ExporterListener;
  * 
  * @author william.liangf
  */
-abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
+public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
 
     private static final long serialVersionUID = 1L;
     

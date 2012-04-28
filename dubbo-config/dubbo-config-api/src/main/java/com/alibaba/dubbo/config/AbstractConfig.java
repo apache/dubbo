@@ -37,7 +37,7 @@ import com.alibaba.dubbo.config.support.Parameter;
  * 
  * @author william.liangf
  */
-abstract class AbstractConfig implements Serializable {
+public abstract class AbstractConfig implements Serializable {
 
     private static final long serialVersionUID = 4267533505537413570L;
 

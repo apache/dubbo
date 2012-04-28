@@ -26,7 +26,7 @@ import com.alibaba.dubbo.rpc.InvokerListener;
  * @see com.alibaba.dubbo.config.ReferenceConfig
  * @author william.liangf
  */
-abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
+public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
     private static final long serialVersionUID = -2786526984373031126L;
 

@@ -45,7 +45,7 @@ import com.alibaba.dubbo.rpc.support.MockInvoker;
  * 
  * @author william.liangf
  */
-abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
+public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     private static final long      serialVersionUID = -1559314110797223229L;
 

@@ -26,7 +26,7 @@ import com.alibaba.dubbo.rpc.cluster.LoadBalance;
  * 
  * @author william.liangf
  */
-abstract class AbstractMethodConfig extends AbstractConfig {
+public abstract class AbstractMethodConfig extends AbstractConfig {
 
     private static final long serialVersionUID = 1L;
 
