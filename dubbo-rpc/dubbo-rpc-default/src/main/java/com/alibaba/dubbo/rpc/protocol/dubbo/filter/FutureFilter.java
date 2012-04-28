@@ -33,6 +33,7 @@ import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.StaticContext;
 import com.alibaba.dubbo.rpc.protocol.dubbo.FutureAdapter;
+import com.alibaba.dubbo.rpc.support.RpcUtils;
 
 /**
  * EventFilter
@@ -45,10 +46,12 @@ public class FutureFilter implements Filter {
     protected static final Logger logger = LoggerFactory.getLogger(FutureFilter.class);
 
     public Result invoke(final Invoker<?> invoker, final Invocation invocation) throws RpcException {
-        fireInvokeCallback(invoker, invocation);
+    	final boolean isAsync = RpcUtils.isAsync(invoker.getUrl(), invocation);
+        
+    	fireInvokeCallback(invoker, invocation);
         //需要在调用前配置好是否有返回值，已供invoker判断是否需要返回future.
         Result result = invoker.invoke(invocation);
-        if (invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.ASYNC_KEY, false)) {
+        if (isAsync) {
             asyncCallback(invoker, invocation);
         } else {
             syncCallback(invoker, invocation, result);

@@ -25,12 +25,14 @@ import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
 import com.alibaba.dubbo.rpc.Invocation;
+import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 
 /**
  * RpcUtils
  * 
  * @author william.liangf
+ * @author chao.liuc
  */
 public class RpcUtils {
 
@@ -109,4 +111,30 @@ public class RpcUtils {
     		return false;
     	}
     }
+    
+    public static String getMethodName(Invocation invocation){
+    	String methodName; 
+    	if(Constants.$INVOKE.equals(invocation.getMethodName()) 
+                && invocation.getArguments() != null 
+                && invocation.getArguments().length >0 
+                && invocation.getArguments()[0] != null){
+            //the frist argument must be real method name;
+            methodName = invocation.getArguments()[0].toString();
+        }else {
+            methodName = invocation.getMethodName();
+        }
+    	return methodName;
+    }
+    
+    public static boolean isAsync(URL url, Invocation inv) {
+    	boolean isAsync ;
+    	//如果Java代码中设置优先.
+    	if (RpcContext.getContext().isAsync() == null ) {
+    		isAsync = url.getMethodParameter(getMethodName(inv), Constants.ASYNC_KEY, false);
+    	} else {
+    		isAsync = RpcContext.getContext().isAsync();
+    	}
+    	return isAsync;
+    }
+    
 }

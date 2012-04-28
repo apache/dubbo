@@ -83,6 +83,8 @@ public class RpcContext {
 
     private final Map<String, Object> values = new HashMap<String, Object>();
     
+    private Boolean isAsync;
+    
 	@Deprecated
     private List<Invoker<?>> invokers;
     
@@ -547,5 +549,13 @@ public class RpcContext {
     public Invocation getInvocation() {
         return invocation;
     }
+
+	public Boolean isAsync() {
+		return isAsync;
+	}
+
+	public void setAsync(Boolean isAsync) {
+		this.isAsync = isAsync;
+	}
 
 }

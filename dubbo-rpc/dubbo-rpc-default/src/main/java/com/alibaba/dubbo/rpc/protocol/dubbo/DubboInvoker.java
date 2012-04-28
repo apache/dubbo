@@ -33,6 +33,7 @@ import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.protocol.AbstractInvoker;
+import com.alibaba.dubbo.rpc.support.RpcUtils;
 
 /**
  * DubboInvoker
@@ -67,7 +68,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
     @Override
     protected Result doInvoke(final Invocation invocation) throws Throwable {
         RpcInvocation inv = null;
-        final String methodName  ;
+        final String methodName ;
         if(Constants.$INVOKE.equals(invocation.getMethodName()) 
                 && invocation.getArguments() != null 
                 && invocation.getArguments().length >0 
@@ -90,7 +91,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         }
         try {
             // 不可靠异步
-            boolean isAsync = getUrl().getMethodParameter(methodName, Constants.ASYNC_KEY, false);
+            boolean isAsync = RpcUtils.isAsync(getUrl(), invocation);
             int timeout = getUrl().getMethodParameter(methodName, Constants.TIMEOUT_KEY,Constants.DEFAULT_TIMEOUT);
             if (isAsync) { 
                 boolean isReturn = getUrl().getMethodParameter(methodName, Constants.RETURN_KEY, true);
