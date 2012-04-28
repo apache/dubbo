@@ -282,9 +282,11 @@ public abstract class AbstractRegistry implements Registry {
             };
             subscribe(url, listener); // 订阅逻辑保证第一次notify后再返回
             List<URL> urls = reference.get();
-            for (URL u : urls) {
-                if (! Constants.EMPTY_PROTOCOL.equals(u.getProtocol())) {
-                    result.add(u);
+            if (urls != null && urls.size() > 0) {
+                for (URL u : urls) {
+                    if (! Constants.EMPTY_PROTOCOL.equals(u.getProtocol())) {
+                        result.add(u);
+                    }
                 }
             }
         }
