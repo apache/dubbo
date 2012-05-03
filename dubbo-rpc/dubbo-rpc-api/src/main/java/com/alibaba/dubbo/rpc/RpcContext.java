@@ -21,8 +21,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
 
@@ -82,8 +84,6 @@ public class RpcContext {
     private final Map<String, String> attachments = new HashMap<String, String>();
 
     private final Map<String, Object> values = new HashMap<String, Object>();
-    
-    private Boolean isAsync;
     
 	@Deprecated
     private List<Invoker<?>> invokers;
@@ -549,13 +549,18 @@ public class RpcContext {
     public Invocation getInvocation() {
         return invocation;
     }
-
-	public Boolean isAsync() {
-		return isAsync;
-	}
-
-	public void setAsync(Boolean isAsync) {
-		this.isAsync = isAsync;
-	}
-
+    
+    @SuppressWarnings("unchecked")
+	public <T> Future<T> asyncCall(Callable<T> callable) {
+    	try {
+    		setAttachment(Constants.Attachments.IS_ASYNC_KEY, Boolean.TRUE.toString());
+			callable.call();
+		} catch (Exception e) {
+			//FIXME 异常是否应该放在future中？
+			throw new RpcException("async call error ." + e.getMessage(), e);
+		} finally {
+			removeAttachment(Constants.Attachments.IS_ASYNC_KEY);
+		}
+    	return ((Future<T>)getContext().getFuture());
+    }
 }

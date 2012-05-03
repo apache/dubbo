@@ -25,7 +25,6 @@ import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
 import com.alibaba.dubbo.rpc.Invocation;
-import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 
 /**
@@ -129,10 +128,10 @@ public class RpcUtils {
     public static boolean isAsync(URL url, Invocation inv) {
     	boolean isAsync ;
     	//如果Java代码中设置优先.
-    	if (RpcContext.getContext().isAsync() == null ) {
-    		isAsync = url.getMethodParameter(getMethodName(inv), Constants.ASYNC_KEY, false);
+    	if (Boolean.TRUE.toString().equals(inv.getAttachment(Constants.Attachments.IS_ASYNC_KEY))) {
+    		isAsync = true;
     	} else {
-    		isAsync = RpcContext.getContext().isAsync();
+	    	isAsync = url.getMethodParameter(getMethodName(inv), Constants.ASYNC_KEY, false);
     	}
     	return isAsync;
     }
