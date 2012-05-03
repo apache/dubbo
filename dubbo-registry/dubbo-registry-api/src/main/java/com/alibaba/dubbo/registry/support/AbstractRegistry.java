@@ -437,6 +437,10 @@ public abstract class AbstractRegistry implements Registry {
     }
 
     private void saveProperties(URL url) {
+        if (file == null) {
+            return;
+        }
+        
         try {
             StringBuilder buf = new StringBuilder();
             Map<String, List<URL>> categoryNotified = notified.get(url);
