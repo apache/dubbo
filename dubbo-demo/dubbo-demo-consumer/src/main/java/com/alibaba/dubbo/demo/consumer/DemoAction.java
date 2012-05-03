@@ -42,9 +42,10 @@ public class DemoAction {
 		
 		System.out.println("async call ret :" + f.get());
 		
-		RpcContext.getContext().onewayCall(new Callable<String>() {
-			public String call() throws Exception {
-				return demoService.sayHello("oneway call request");
+		RpcContext.getContext().asyncCall(new Runnable() {
+			public void run() {
+				demoService.sayHello("oneway call request");
+				demoService.sayHello("oneway call request");
 			}
 		});
 		

@@ -573,11 +573,11 @@ public class RpcContext {
 	 * oneway调用，只发送请求，不接收返回结果.
 	 * @param callable
 	 */
-	public void onewayCall(Callable<?> callable) {
+	public void asyncCall(Runnable runable) {
     	try {
     		setAttachment(Constants.Attachments.IS_ONEWAY_KEY, Boolean.TRUE.toString());
-			callable.call();
-		} catch (Exception e) {
+    		runable.run();
+		} catch (Throwable e) {
 			//FIXME 异常是否应该放在future中？
 			throw new RpcException("oneway call error ." + e.getMessage(), e);
 		} finally {

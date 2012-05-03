@@ -535,6 +535,7 @@ public class Constants {
     
     public static class Attachments {
     	public static final String IS_ASYNC_KEY = 						"attachments.async";
+    	public static final String IS_ONEWAY_KEY = 						"attachments.oneway";
     	public static final String INVOCATIONID_KEY = 					"attachments.invocation.id";
     }
 
