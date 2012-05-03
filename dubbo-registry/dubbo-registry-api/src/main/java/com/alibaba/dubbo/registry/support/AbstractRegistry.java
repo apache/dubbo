@@ -383,8 +383,15 @@ public abstract class AbstractRegistry implements Registry {
     }
 
     protected void notify(List<URL> urls) {
+        if(urls == null || urls.isEmpty()) return;
+        
         for (Map.Entry<URL, Set<NotifyListener>> entry : getSubscribed().entrySet()) {
             URL url = entry.getKey();
+            
+            if(! UrlUtils.isMatch(url, urls.get(0))) {
+                continue;
+            }
+            
             Set<NotifyListener> listeners = entry.getValue();
             if (listeners != null) {
                 for (NotifyListener listener : listeners) {
