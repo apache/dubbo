@@ -24,10 +24,10 @@ import org.junit.Test;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Filter;
-import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.protocol.dubbo.filter.FutureFilter;
 import com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService;
@@ -40,16 +40,14 @@ import com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService;
  */
 public class FutureFilterTest {
     Filter                    eventFilter = new FutureFilter();
-    private static Invocation invocation;
+    private static RpcInvocation invocation;
 
     @BeforeClass
     public static void setUp() {
-        invocation = EasyMock.createMock(Invocation.class);
-        EasyMock.expect(invocation.getMethodName()).andReturn("echo").anyTimes();
-        EasyMock.expect(invocation.getParameterTypes()).andReturn(new Class<?>[] { Enum.class }).anyTimes();
-        EasyMock.expect(invocation.getArguments()).andReturn(new Object[] { "hello" }).anyTimes();
-        EasyMock.expect(invocation.getAttachments()).andReturn(null).anyTimes();
-        EasyMock.replay(invocation);
+        invocation = new RpcInvocation();
+        invocation.setMethodName("echo");
+        invocation.setParameterTypes(new Class<?>[] { Enum.class });
+        invocation.setArguments(new Object[] { "hello" });
     }
 
     @Test
@@ -70,12 +68,6 @@ public class FutureFilterTest {
 
     @Test(expected = RuntimeException.class)
     public void testSyncCallbackHasException() throws RpcException, Throwable {
-        Invocation invocation = EasyMock.createMock(Invocation.class);
-        EasyMock.expect(invocation.getMethodName()).andReturn("echo").anyTimes();
-        EasyMock.expect(invocation.getParameterTypes()).andReturn(new Class<?>[] { Enum.class }).anyTimes();
-        EasyMock.expect(invocation.getArguments()).andReturn(new Object[] { "hello" }).anyTimes();
-        EasyMock.expect(invocation.getAttachments()).andReturn(null).anyTimes();
-        EasyMock.replay(invocation);
         @SuppressWarnings("unchecked")
         Invoker<DemoService> invoker = EasyMock.createMock(Invoker.class);
         EasyMock.expect(invoker.isAvailable()).andReturn(true).anyTimes();
