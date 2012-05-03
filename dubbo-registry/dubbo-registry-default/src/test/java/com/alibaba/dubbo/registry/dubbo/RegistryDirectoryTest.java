@@ -133,7 +133,7 @@ public class RegistryDirectoryTest {
         LogUtil.start();
         RegistryDirectory registryDirectory = getRegistryDirectory();
         test_Notified1invokers(registryDirectory);
-        test_Notified_only_routes(registryDirectory);
+        test_Notified_only_routers(registryDirectory);
         Assert.assertEquals(true, registryDirectory.isAvailable());
         Assert.assertTrue("notify no invoker urls ,should not error", LogUtil.checkNoError());
         LogUtil.stop();
@@ -208,9 +208,9 @@ public class RegistryDirectoryTest {
     }
 
     // notify one invoker
-    private void test_Notified_only_routes(RegistryDirectory registryDirectory) {
+    private void test_Notified_only_routers(RegistryDirectory registryDirectory) {
         List<URL> serviceUrls = new ArrayList<URL>();
-        serviceUrls.add(URL.valueOf("empty://127.0.0.1/?category=routes"));
+        serviceUrls.add(URL.valueOf("empty://127.0.0.1/?category=routers"));
         registryDirectory.notify(serviceUrls);
     }
     // notify one invoker
@@ -537,10 +537,10 @@ public class RegistryDirectoryTest {
 
         List<URL> serviceUrls = new ArrayList<URL>();
         // without ROUTER_KEY, the first router should not be created.
-        serviceUrls.add(routerurl.addParameter(Constants.CATEGORY_KEY, Constants.ROUTES_CATEGORY).addParameter(Constants.TYPE_KEY, "javascript").addParameter(Constants.ROUTER_KEY,
+        serviceUrls.add(routerurl.addParameter(Constants.CATEGORY_KEY, Constants.ROUTERS_CATEGORY).addParameter(Constants.TYPE_KEY, "javascript").addParameter(Constants.ROUTER_KEY,
                                                                                                  "notsupported").addParameter(Constants.RULE_KEY,
                                                                                                                               "function test1(){}"));
-        serviceUrls.add(routerurl2.addParameter(Constants.CATEGORY_KEY, Constants.ROUTES_CATEGORY).addParameter(Constants.TYPE_KEY, "javascript").addParameter(Constants.ROUTER_KEY,
+        serviceUrls.add(routerurl2.addParameter(Constants.CATEGORY_KEY, Constants.ROUTERS_CATEGORY).addParameter(Constants.TYPE_KEY, "javascript").addParameter(Constants.ROUTER_KEY,
                                                                                                   ScriptRouterFactory.NAME).addParameter(Constants.RULE_KEY,
                                                                                                                                          "function test1(){}"));
 
@@ -766,7 +766,7 @@ public class RegistryDirectoryTest {
         
         //override clean
         durls = new ArrayList<URL>();
-        durls.add(URL.valueOf("override://100.16.128.100/dubbo.test.api.HelloService?anyhost=true"));
+        durls.add(URL.valueOf("override://0.0.0.0/dubbo.test.api.HelloService"));
         registryDirectory.notify(durls);
         invokers = registryDirectory.list(invocation);
         aInvoker = invokers.get(0);

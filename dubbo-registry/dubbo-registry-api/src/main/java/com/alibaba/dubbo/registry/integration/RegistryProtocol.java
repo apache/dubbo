@@ -153,7 +153,7 @@ public class RegistryProtocol implements Protocol {
         // 订阅override数据
         // FIXME 提供者订阅时，会影响同一JVM即暴露服务，又引用同一服务的的场景，因为subscribed以服务名为缓存的key，导致订阅信息覆盖。
         /*registry.subscribe(registedProviderUrl.setProtocol(Constants.PROVIDER_PROTOCOL)
-                .addParameters(Constants.CATEGORY_KEY, Constants.OVERRIDES_CATEGORY, 
+                .addParameters(Constants.CATEGORY_KEY, Constants.CONFIGURATORS_CATEGORY, 
                         Constants.CHECK_KEY, String.valueOf(false)), listener);*/
         return registry;
     }
@@ -241,8 +241,8 @@ public class RegistryProtocol implements Protocol {
         }
         registry.subscribe(subscribeUrl.addParameter(Constants.CATEGORY_KEY, 
                 Constants.PROVIDERS_CATEGORY 
-                + "," + Constants.OVERRIDES_CATEGORY 
-                + "," + Constants.ROUTES_CATEGORY), directory);
+                + "," + Constants.CONFIGURATORS_CATEGORY 
+                + "," + Constants.ROUTERS_CATEGORY), directory);
         return cluster.join(directory);
     }
 

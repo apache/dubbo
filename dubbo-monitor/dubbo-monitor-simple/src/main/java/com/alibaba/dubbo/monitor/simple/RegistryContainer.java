@@ -308,7 +308,7 @@ public class RegistryContainer implements Container {
                                 serviceConsumers.putAll(consumerMap);
                             }
                         }
-                    } else if (Constants.ROUTES_CATEGORY.equals(category)) {
+                    } else if (Constants.ROUTERS_CATEGORY.equals(category)) {
                         if (Constants.EMPTY_PROTOCOL.equals(url.getProtocol())) {
                             serviceProviders.remove(service);
                         } else {

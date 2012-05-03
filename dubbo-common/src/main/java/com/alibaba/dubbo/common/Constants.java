@@ -42,9 +42,9 @@ public class Constants {
 
     public static final String  CONSUMERS_CATEGORY                 = "consumers";
 
-    public static final String  ROUTES_CATEGORY                    = "routes";
+    public static final String  ROUTERS_CATEGORY                   = "routers";
 
-    public static final String  OVERRIDES_CATEGORY                 = "overrides";
+    public static final String  CONFIGURATORS_CATEGORY             = "configurators";
 
     public static final String  DEFAULT_CATEGORY                   = PROVIDERS_CATEGORY;
 

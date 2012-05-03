@@ -59,7 +59,7 @@ public class OverrideRemove {
         }
         URL registryUrl = URL.valueOf(url).addParameter(Constants.CHECK_KEY, String.valueOf(false));
         registry = registryFactory.getRegistry(registryUrl);
-        URL overrideUrl = URL.valueOf("override://" + NetUtils.getLocalHost() + "/" + DemoService.class.getName() + "?category=overrides&version=1.0.0&dynamic=false&application=*&address=*&timeout=1000");
+        URL overrideUrl = URL.valueOf("override://" + NetUtils.getLocalHost() + "/" + DemoService.class.getName() + "?category=configurators&version=1.0.0&dynamic=false&application=*&address=*&timeout=1000");
         registry.unregister(overrideUrl);
     }
 
