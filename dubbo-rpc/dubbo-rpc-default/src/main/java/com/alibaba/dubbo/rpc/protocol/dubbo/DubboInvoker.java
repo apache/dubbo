@@ -90,23 +90,22 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
             currentClient = clients[index.getAndIncrement() % clients.length];
         }
         try {
-            // 不可靠异步
             boolean isAsync = RpcUtils.isAsync(getUrl(), invocation);
+            boolean isOneway = RpcUtils.isOneway(getUrl(), invocation);
             int timeout = getUrl().getMethodParameter(methodName, Constants.TIMEOUT_KEY,Constants.DEFAULT_TIMEOUT);
-            if (isAsync) { 
-                boolean isReturn = getUrl().getMethodParameter(methodName, Constants.RETURN_KEY, true);
-                if (isReturn) {
-                    ResponseFuture future = currentClient.request(inv, timeout) ;
-                    RpcContext.getContext().setFuture(new FutureAdapter<Object>(future));
-                } else {
-                    boolean isSent = getUrl().getMethodParameter(methodName, Constants.SENT_KEY, false);
-                    currentClient.send(inv, isSent);
-                    RpcContext.getContext().setFuture(null);
-                }
+            if (isOneway) {
+            	boolean isSent = getUrl().getMethodParameter(methodName, Constants.SENT_KEY, false);
+                currentClient.send(inv, isSent);
+                RpcContext.getContext().setFuture(null);
                 return new RpcResult();
+            } else if (isAsync) {
+            	ResponseFuture future = currentClient.request(inv, timeout) ;
+                RpcContext.getContext().setFuture(new FutureAdapter<Object>(future));
+                return new RpcResult();
+            } else {
+            	RpcContext.getContext().setFuture(null);
+                return (Result) currentClient.request(inv, timeout).get();
             }
-            RpcContext.getContext().setFuture(null);
-            return (Result) currentClient.request(inv, timeout).get();
         } catch (TimeoutException e) {
             throw new RpcException(RpcException.TIMEOUT_EXCEPTION, "Invoke remote method timeout. method: " + invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
         } catch (RemotingException e) {

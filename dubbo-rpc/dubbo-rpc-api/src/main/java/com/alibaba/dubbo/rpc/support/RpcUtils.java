@@ -136,4 +136,15 @@ public class RpcUtils {
     	return isAsync;
     }
     
+    public static boolean isOneway(URL url, Invocation inv) {
+    	boolean isOneway ;
+    	//如果Java代码中设置优先.
+    	if (Boolean.TRUE.toString().equals(inv.getAttachment(Constants.Attachments.IS_ONEWAY_KEY))) {
+    		isOneway = true;
+    	} else {
+    		isOneway = url.getMethodParameter(getMethodName(inv), Constants.RETURN_KEY, false);
+    	}
+    	return isOneway;
+    }
+    
 }

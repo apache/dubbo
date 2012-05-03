@@ -550,6 +550,11 @@ public class RpcContext {
         return invocation;
     }
     
+    /**
+     * 异步调用 ，需要返回值，即使步调用Future.get方法，也会处理调用超时问题.
+     * @param callable
+     * @return 通过future.get()获取返回结果.
+     */
     @SuppressWarnings("unchecked")
 	public <T> Future<T> asyncCall(Callable<T> callable) {
     	try {
@@ -562,5 +567,21 @@ public class RpcContext {
 			removeAttachment(Constants.Attachments.IS_ASYNC_KEY);
 		}
     	return ((Future<T>)getContext().getFuture());
+    }
+    
+	/**
+	 * oneway调用，只发送请求，不接收返回结果.
+	 * @param callable
+	 */
+	public void onewayCall(Callable<?> callable) {
+    	try {
+    		setAttachment(Constants.Attachments.IS_ONEWAY_KEY, Boolean.TRUE.toString());
+			callable.call();
+		} catch (Exception e) {
+			//FIXME 异常是否应该放在future中？
+			throw new RpcException("oneway call error ." + e.getMessage(), e);
+		} finally {
+			removeAttachment(Constants.Attachments.IS_ONEWAY_KEY);
+		}
     }
 }
