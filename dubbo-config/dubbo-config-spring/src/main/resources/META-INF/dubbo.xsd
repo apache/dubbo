@@ -50,6 +50,11 @@
 				<xsd:documentation><![CDATA[ Use service mock implemention. ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
+		<xsd:attribute name="merger" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ The multi-group result merger ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
 		<xsd:attribute name="validation" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[ Use service jsr303 validation, true/false. ]]></xsd:documentation>
@@ -152,6 +157,16 @@
 	<xsd:complexType name="abstractReferenceType">
 		<xsd:complexContent>
 			<xsd:extension base="abstractInterfaceType">
+				<xsd:attribute name="version" type="xsd:string" use="optional" default="0.0.0">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[ The service version. ]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="group" type="xsd:string" use="optional">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[ The service group. ]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
 				<xsd:attribute name="check" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[ Check dependency providers. ]]></xsd:documentation>
@@ -580,11 +595,6 @@
 						<xsd:documentation><![CDATA[ The method deprecated. ]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
-				<xsd:attribute name="merger" type="xsd:string" use="optional">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[ The multi-group result merger ]]></xsd:documentation>
-					</xsd:annotation>
-				</xsd:attribute>
 				<xsd:attribute name="sticky" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[ Enable/Disable cluster sticky policy.Default false ]]></xsd:documentation>
@@ -658,16 +668,6 @@
 				<xsd:attribute name="interface" type="xsd:token" use="required">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[ The service interface class name. ]]></xsd:documentation>
-					</xsd:annotation>
-				</xsd:attribute>
-				<xsd:attribute name="version" type="xsd:string" use="optional" default="0.0.0">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[ The service version. ]]></xsd:documentation>
-					</xsd:annotation>
-				</xsd:attribute>
-				<xsd:attribute name="group" type="xsd:string" use="optional">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[ The service group. ]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
 				<xsd:attribute name="url" type="xsd:string" use="optional">
