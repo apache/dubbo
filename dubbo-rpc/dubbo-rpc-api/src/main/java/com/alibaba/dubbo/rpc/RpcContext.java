@@ -22,7 +22,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
@@ -558,13 +562,46 @@ public class RpcContext {
     @SuppressWarnings("unchecked")
 	public <T> Future<T> asyncCall(Callable<T> callable) {
     	try {
-    		setAttachment(Constants.Attachments.IS_ASYNC_KEY, Boolean.TRUE.toString());
-			callable.call();
-		} catch (Exception e) {
-			//FIXME 异常是否应该放在future中？
-			throw new RpcException("async call error ." + e.getMessage(), e);
-		} finally {
-			removeAttachment(Constants.Attachments.IS_ASYNC_KEY);
+	    	try {
+	    		setAttachment(Constants.Attachments.IS_ASYNC_KEY, Boolean.TRUE.toString());
+				final T o = callable.call();
+				//local调用会直接返回结果.
+				if (o != null) {
+					FutureTask<T> f = new FutureTask<T>(new Callable<T>() {
+						public T call() throws Exception {
+							return o;
+						}
+					});
+					f.run();
+					return f;
+				} else {
+					
+				}
+			} catch (Exception e) {
+				throw new RpcException(e);
+			} finally {
+				removeAttachment(Constants.Attachments.IS_ASYNC_KEY);
+			}
+    	} catch (final RpcException e) {
+			return new Future<T>() {
+				public boolean cancel(boolean mayInterruptIfRunning) {
+					return false;
+				}
+				public boolean isCancelled() {
+					return false;
+				}
+				public boolean isDone() {
+					return true;
+				}
+				public T get() throws InterruptedException, ExecutionException {
+					throw new ExecutionException(e.getCause());
+				}
+				public T get(long timeout, TimeUnit unit)
+						throws InterruptedException, ExecutionException,
+						TimeoutException {
+					return get();
+				}
+			};
 		}
     	return ((Future<T>)getContext().getFuture());
     }

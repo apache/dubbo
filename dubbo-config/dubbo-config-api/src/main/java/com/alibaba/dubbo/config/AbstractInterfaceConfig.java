@@ -97,6 +97,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     // 断开事件
     protected String              ondisconnect;
 
+    // 服务暴露或引用的scope,如果为local，则表示只在当前JVM内查找.
+	private String scope;
+
     protected void checkRegistry() {
         // 兼容旧版本
         if (registries == null || registries.size() == 0) {
@@ -111,7 +114,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 }
             }
         }
-        if (registries == null || registries.size() == 0) {
+        if ((registries == null || registries.size() == 0)) {
             throw new IllegalStateException((getClass().getSimpleName().startsWith("Reference") 
                     ? "No such any registry to refer service in consumer " 
                         : "No such any registry to export service in provider ")
@@ -495,5 +498,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     public void setOndisconnect(String ondisconnect) {
         this.ondisconnect = ondisconnect;
     }
+
+	public String getScope() {
+		return scope;
+	}
+
+	public void setScope(String scope) {
+		this.scope = scope;
+	}
 
 }

@@ -23,6 +23,7 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.config.ApplicationConfig;
@@ -207,6 +208,8 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
         refConf.setConsumer(consumerConf);
         
         refConf.setMethods(Arrays.asList(new MethodConfig[]{methodConfForReference}));
+        
+        refConf.setScope(Constants.SCOPE_REMOTE);
     }
     
     private <T> void verifyInvokerUrlGeneration(T config, Object[][] dataTable){

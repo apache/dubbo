@@ -24,8 +24,6 @@
     <dubbo:application name="demo-consumer" />
     
     <!-- 暴露服务配置 -->
-    <dubbo:reference id="demoService" interface="com.alibaba.dubbo.config.spring.api.DemoService" url="dubbo://127.0.0.1:20813" init="true" >
-        <dubbo:parameter key="remote" value="true" />
-    </dubbo:reference>
+    <dubbo:reference id="demoService" interface="com.alibaba.dubbo.config.spring.api.DemoService" url="dubbo://127.0.0.1:20813" init="true" scope="remote" />
      
 </beans>

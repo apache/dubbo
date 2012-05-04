@@ -527,8 +527,15 @@ public class Constants {
 
     public static final String LOCAL_PROTOCOL                      = "injvm";
 
-    public static final String REMOTE_KEY                          = "remote";
     public static final String AUTO_ATTACH_INVOCATIONID_KEY 	   = "invocationid.autoattach";
+    
+    public static final String SCOPE_KEY						   = "scope";
+    
+    public static final String SCOPE_LOCAL						   = "local";
+    
+    public static final String SCOPE_REMOTE						   = "remote";
+    
+    public static final String SCOPE_NONE						   = "none";
     /*
      * private Constants(){ }
      */

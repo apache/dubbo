@@ -15,7 +15,9 @@
  */
 package com.alibaba.dubbo.rpc.protocol.injvm;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
@@ -30,12 +32,25 @@ import com.alibaba.dubbo.rpc.protocol.AbstractProtocol;
  */
 public class InjvmProtocol extends AbstractProtocol implements Protocol {
     
-    public static final String NAME = "injvm";
+    public static final String NAME = Constants.LOCAL_PROTOCOL;
 
     public static final int DEFAULT_PORT = 0;
 
     public int getDefaultPort() {
         return DEFAULT_PORT;
+    }
+    
+    private static InjvmProtocol INSTANCE;
+
+    public InjvmProtocol() {
+        INSTANCE = this;
+    }
+    
+    public static InjvmProtocol getInjvmProtocol() {
+        if (INSTANCE == null) {
+            ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(InjvmProtocol.NAME); // load
+        }
+        return INSTANCE;
     }
 
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
@@ -46,7 +61,32 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
         return new InjvmInvoker<T>(serviceType, url, url.getServiceKey(), exporterMap);
     }
     
-    public boolean isExported(String key) {
+    private boolean isExported(String key) {
         return exporterMap != null && exporterMap.containsKey(key);
+    }
+    
+    public boolean isInjvmRefer(URL url) {
+    	final boolean isJvmRefer;
+    	String scope = url.getParameter(Constants.SCOPE_KEY);
+    	//本身已经是jvm协议了，走正常流程就是了.
+    	if (Constants.LOCAL_PROTOCOL.toString().equals(url.getProtocol())) {
+    		isJvmRefer = false;
+    	} else if (Constants.SCOPE_LOCAL.equals(scope) || (url.getParameter("injvm", false))) {
+			//如果声明为本地引用
+			//scope=local || injvm=true 等价 injvm标签未来废弃掉.
+			isJvmRefer = true;	
+		} else if (Constants.SCOPE_REMOTE.equals(scope)){
+			//声明了是远程引用，则不做本地引用
+			isJvmRefer = false;
+		} else if (url.getParameter(Constants.GENERIC_KEY, false)){
+			//泛化调用不走本地
+			isJvmRefer = false;
+		} else if (isExported(url.getServiceKey())) {
+			//默认情况下如果本地有服务暴露，则引用本地服务.
+			isJvmRefer = true;
+		} else {
+			isJvmRefer = false;
+		}
+		return isJvmRefer;
     }
 }

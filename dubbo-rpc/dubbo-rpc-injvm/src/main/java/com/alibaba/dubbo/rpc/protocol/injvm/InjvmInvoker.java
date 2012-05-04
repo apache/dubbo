@@ -43,7 +43,17 @@ class InjvmInvoker<T> extends AbstractInvoker<T> {
         this.exporterMap = exporterMap;
     }
 
-    public Result doInvoke(Invocation invocation) throws Throwable {
+    @Override
+	public boolean isAvailable() {
+    	InjvmExporter<?> exporter = (InjvmExporter<?>) exporterMap.get(key);
+    	if (exporter == null)  {
+            return false;
+        } else {
+        	return super.isAvailable();
+        }
+	}
+
+	public Result doInvoke(Invocation invocation) throws Throwable {
         InjvmExporter<?> exporter = (InjvmExporter<?>) exporterMap.get(key);
         if (exporter == null)  {
             throw new RpcException("Service [" + key + "] not found.");

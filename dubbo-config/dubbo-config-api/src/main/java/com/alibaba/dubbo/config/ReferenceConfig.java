@@ -36,7 +36,6 @@ import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
-import com.alibaba.dubbo.config.local.AdaptiveLocalInvoker;
 import com.alibaba.dubbo.config.support.Parameter;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
@@ -46,6 +45,7 @@ import com.alibaba.dubbo.rpc.cluster.Cluster;
 import com.alibaba.dubbo.rpc.cluster.directory.StaticDirectory;
 import com.alibaba.dubbo.rpc.cluster.support.AvailableCluster;
 import com.alibaba.dubbo.rpc.cluster.support.ClusterUtils;
+import com.alibaba.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import com.alibaba.dubbo.rpc.service.GenericService;
 
 /**
@@ -298,17 +298,24 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private T createProxy(Map<String, String> map) {
-	    Boolean j = injvm;
-        if (j == null && consumer != null) {
-            j = consumer.isInjvm();
-        }
-        if (j != null && j) {
-            URL url = new URL("injvm", NetUtils.LOCALHOST, 0, interfaceClass.getName()).addParameters(map);
-            invoker = protocol.refer(interfaceClass, url);
+		URL tmpUrl = new URL("temp", "localhost", 0, map);
+		final boolean isJvmRefer;
+		if (url != null && url.length() > 0) { //指定URL的情况下，不做本地引用
+			isJvmRefer = false;
+		} else if (InjvmProtocol.getInjvmProtocol().isInjvmRefer(tmpUrl)) {
+			//默认情况下如果本地有服务暴露，则引用本地服务.
+			isJvmRefer = true;
+		} else {
+			isJvmRefer = false;
+		}
+		
+		if (isJvmRefer) {
+			URL url = new URL(Constants.LOCAL_PROTOCOL, NetUtils.LOCALHOST, 0, interfaceClass.getName()).addParameters(map);
+			invoker = protocol.refer(interfaceClass, url);
             if (logger.isInfoEnabled()) {
                 logger.info("Using injvm service " + interfaceClass.getName());
             }
-        } else {
+		} else {
             if (url != null && url.length() > 0) { // 用户指定URL，指定的URL可能是对点对直连地址，也可能是注册中心URL
                 String[] us = Constants.SEMICOLON_SPLIT_PATTERN.split(url);
                 if (us != null && us.length > 0) {
@@ -359,8 +366,6 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 }
             }
         }
-
-        invoker = new AdaptiveLocalInvoker(invoker);
 
         Boolean c = check;
         if (c == null && consumer != null) {
