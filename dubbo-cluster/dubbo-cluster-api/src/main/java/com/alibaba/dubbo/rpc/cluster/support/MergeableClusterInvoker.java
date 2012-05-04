@@ -15,19 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.cluster.support;
 
-import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.utils.NamedThreadFactory;
-import com.alibaba.dubbo.rpc.Invocation;
-import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.Result;
-import com.alibaba.dubbo.rpc.RpcException;
-import com.alibaba.dubbo.rpc.RpcInvocation;
-import com.alibaba.dubbo.rpc.RpcResult;
-import com.alibaba.dubbo.rpc.cluster.Directory;
-import com.alibaba.dubbo.rpc.cluster.Merger;
-import com.alibaba.dubbo.rpc.cluster.merger.MergerFactory;
-
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -40,6 +27,21 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+
+import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
+import com.alibaba.dubbo.common.utils.ConfigUtils;
+import com.alibaba.dubbo.common.utils.NamedThreadFactory;
+import com.alibaba.dubbo.rpc.Invocation;
+import com.alibaba.dubbo.rpc.Invoker;
+import com.alibaba.dubbo.rpc.Result;
+import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.RpcInvocation;
+import com.alibaba.dubbo.rpc.RpcResult;
+import com.alibaba.dubbo.rpc.cluster.Directory;
+import com.alibaba.dubbo.rpc.cluster.Merger;
+import com.alibaba.dubbo.rpc.cluster.merger.MergerFactory;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
@@ -56,8 +58,25 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
     }
 
     public Result invoke(final Invocation invocation) throws RpcException {
-        int timeout = getUrl().getMethodParameter( invocation.getMethodName(), Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT );
         List<Invoker<T>> invokers = directory.list(invocation);
+        
+        String merger = getUrl().getMethodParameter( invocation.getMethodName(), Constants.MERGER_KEY );
+        if ( ConfigUtils.isEmpty(merger) ) { // 如果方法不需要Merge，退化为只调一个Group
+            for(final Invoker<T> invoker : invokers ) {
+                if (invoker.isAvailable()) {
+                    return invoker.invoke(invocation);
+                }
+            }
+            return invokers.iterator().next().invoke(invocation);
+        }
+        
+        Class<?> returnType;
+        try {
+            returnType = getInterface().getMethod(
+                    invocation.getMethodName(), invocation.getParameterTypes() ).getReturnType();
+        } catch ( NoSuchMethodException e ) {
+            returnType = null;
+        }
         
         Map<String, Future<Result>> results = new HashMap<String, Future<Result>>();
         for( final Invoker<T> invoker : invokers ) {
@@ -70,16 +89,10 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
         }
 
         Object result = null;
-        Class<?> returnType;
-        try {
-            returnType = getInterface().getMethod(
-                    invocation.getMethodName(), invocation.getParameterTypes() ).getReturnType();
-        } catch ( NoSuchMethodException e ) {
-            throw new RpcException( e.getMessage(), e );
-        }
-
+        
         List<Result> resultList = new ArrayList<Result>( results.size() );
         
+        int timeout = getUrl().getMethodParameter( invocation.getMethodName(), Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT );
         for ( Map.Entry<String, Future<Result>> entry : results.entrySet() ) {
             Future<Result> future = entry.getValue();
             try {
@@ -93,70 +106,82 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
                                         e );
             }
         }
-
-        if ( returnType != void.class && resultList.size() > 0 ) {
-            String merger = getUrl().getMethodParameter( invocation.getMethodName(), Constants.MERGER_KEY );
-            if ( merger != null && !"".equals( merger.trim() ) ) {
-                Method method;
-                try {
-                    method = returnType.getMethod( merger, returnType );
-                } catch ( NoSuchMethodException e ) {
-                    throw new RpcException( new StringBuilder( 32 )
-                                                    .append( "Can not merge result because missing method [ " )
-                                                    .append( merger )
-                                                    .append( " ] in class [ " )
-                                                    .append( returnType.getClass().getName() )
-                                                    .append( " ]" )
-                                                    .toString() );
-                }
-                if ( method != null ) {
-                    if ( !Modifier.isPublic( method.getModifiers() ) ) {
-                        method.setAccessible( true );
-                    }
-                    result = resultList.remove( 0 ).getValue();
-                    try {
-                        if ( method.getReturnType() != void.class
-                                && method.getReturnType().isAssignableFrom( result.getClass() ) ) {
-                            for ( Result r : resultList ) {
-                                result = method.invoke( result, r.getValue() );
-                            }
-                        } else {
-                            for ( Result r : resultList ) {
-                                method.invoke( result, r.getValue() );
-                            }
-                        }
-                    } catch ( Exception e ) {
-                        throw new RpcException( 
-                                new StringBuilder( 32 )
-                                        .append( "Can not merge result: " )
-                                        .append( e.getMessage() ).toString(), 
-                                e );
-                    }
-                } else {
-                    throw new RpcException(
-                            new StringBuilder( 32 )
-                                    .append( "Can not merge result because missing method [ " )
-                                    .append( merger )
-                                    .append( " ] in class [ " )
-                                    .append( returnType.getClass().getName() )
-                                    .append( " ]" )
-                                    .toString() );
-                }
-            } else {
-                Merger resultMerger = MergerFactory.getMerger(returnType);
-                if (resultMerger != null) {
-                    List args = new ArrayList(resultList.size());
-                    for(Result r : resultList) {
-                        args.add(r.getValue());
-                    }
-                    result = resultMerger.merge(
-                            args.toArray((Object[])Array.newInstance(returnType, 0)));
-                } else {
-                    throw new RpcException( "There is no merger to merge result." );
-                }
-            }
+        
+        if (resultList.size() == 0) {
+            return new RpcResult((Object)null);
+        } else if (resultList.size() == 1) {
+            return resultList.iterator().next();
         }
 
+        if (returnType == void.class) {
+            return new RpcResult((Object)null);
+        }
+
+        if ( merger.startsWith(".") ) {
+            merger = merger.substring(1);
+            Method method;
+            try {
+                method = returnType.getMethod( merger, returnType );
+            } catch ( NoSuchMethodException e ) {
+                throw new RpcException( new StringBuilder( 32 )
+                                                .append( "Can not merge result because missing method [ " )
+                                                .append( merger )
+                                                .append( " ] in class [ " )
+                                                .append( returnType.getClass().getName() )
+                                                .append( " ]" )
+                                                .toString() );
+            }
+            if ( method != null ) {
+                if ( !Modifier.isPublic( method.getModifiers() ) ) {
+                    method.setAccessible( true );
+                }
+                result = resultList.remove( 0 ).getValue();
+                try {
+                    if ( method.getReturnType() != void.class
+                            && method.getReturnType().isAssignableFrom( result.getClass() ) ) {
+                        for ( Result r : resultList ) {
+                            result = method.invoke( result, r.getValue() );
+                        }
+                    } else {
+                        for ( Result r : resultList ) {
+                            method.invoke( result, r.getValue() );
+                        }
+                    }
+                } catch ( Exception e ) {
+                    throw new RpcException( 
+                            new StringBuilder( 32 )
+                                    .append( "Can not merge result: " )
+                                    .append( e.getMessage() ).toString(), 
+                            e );
+                }
+            } else {
+                throw new RpcException(
+                        new StringBuilder( 32 )
+                                .append( "Can not merge result because missing method [ " )
+                                .append( merger )
+                                .append( " ] in class [ " )
+                                .append( returnType.getClass().getName() )
+                                .append( " ]" )
+                                .toString() );
+            }
+        } else {
+            Merger resultMerger;
+            if (ConfigUtils.isDefault(merger)) {
+                resultMerger = MergerFactory.getMerger(returnType);
+            } else {
+                resultMerger = ExtensionLoader.getExtensionLoader(Merger.class).getExtension(merger);
+            }
+            if (resultMerger != null) {
+                List<Object> rets = new ArrayList<Object>(resultList.size());
+                for(Result r : resultList) {
+                    rets.add(r.getValue());
+                }
+                result = resultMerger.merge(
+                        rets.toArray((Object[])Array.newInstance(returnType, 0)));
+            } else {
+                throw new RpcException( "There is no merger to merge result." );
+            }
+        }
         return new RpcResult( result );
     }
 
