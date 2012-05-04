@@ -25,7 +25,7 @@
 	<artifactId>dubbo-test-benchmark</artifactId>
 	<packaging>jar</packaging>
 	<name>${project.artifactId}</name>
-	<description>The benchmark test module of dubbo project</description>
+	<description>The performance benchmark kit test module of dubbo project</description>
 	<properties>
 		<skip_maven_deploy>true</skip_maven_deploy>
 	</properties>
