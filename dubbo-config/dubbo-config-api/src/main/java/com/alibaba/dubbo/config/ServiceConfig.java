@@ -82,7 +82,11 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private transient boolean unexported;
     
     private transient boolean generic;
-    
+
+    public URL toUrl() {
+        return urls == null || urls.size() == 0 ? null : urls.iterator().next();
+    }
+
     public List<URL> toUrls() {
         return urls;
     }

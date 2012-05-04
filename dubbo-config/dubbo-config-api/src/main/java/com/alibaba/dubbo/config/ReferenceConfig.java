@@ -90,7 +90,11 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     private transient boolean    destroyed;
 
     private final List<URL> urls = new ArrayList<URL>();
-    
+
+    public URL toUrl() {
+        return urls == null || urls.size() == 0 ? null : urls.iterator().next();
+    }
+
     public List<URL> toUrls() {
         return urls;
     }
