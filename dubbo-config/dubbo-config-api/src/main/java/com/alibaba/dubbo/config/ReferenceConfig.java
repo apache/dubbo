@@ -68,12 +68,6 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
     private Class<?>             interfaceClass;
 
-    // 版本
-    private String               version;
-
-    // 服务分组
-    private String               group;
-
     // 客户端类型
     private String               client;
 
@@ -435,24 +429,6 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         }
         this.interfaceClass = interfaceClass;
         setInterface(interfaceClass == null ? (String) null : interfaceClass.getName());
-    }
-    
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        checkName("version", version);
-        this.version = version;
-    }
-
-    public String getGroup() {
-        return group;
-    }
-
-    public void setGroup(String group) {
-        checkKey("group", group);
-        this.group = group;
     }
 
     public String getClient() {

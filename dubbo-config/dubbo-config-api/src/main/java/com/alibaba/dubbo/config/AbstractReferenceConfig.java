@@ -53,7 +53,13 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     
     //stub是否支持event事件. //TODO slove merge problem 
     protected Boolean             stubevent ;//= Constants.DEFAULT_STUB_EVENT;
-    
+
+    // 版本
+    protected String               version;
+
+    // 服务分组
+    protected String               group;
+
     public Boolean isCheck() {
         return check;
     }
@@ -149,6 +155,24 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
     public void setSticky(Boolean sticky) {
         this.sticky = sticky;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        checkKey("version", version);
+        this.version = version;
+    }
+
+    public String getGroup() {
+        return group;
+    }
+
+    public void setGroup(String group) {
+        checkKey("group", group);
+        this.group = group;
     }
 
 }

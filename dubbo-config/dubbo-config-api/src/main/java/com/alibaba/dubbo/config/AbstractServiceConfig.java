@@ -29,52 +29,52 @@ import com.alibaba.dubbo.rpc.ExporterListener;
  */
 public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
 
-    private static final long serialVersionUID = 1L;
-    
+    private static final long      serialVersionUID = 1L;
+
     // 服务版本
-    protected String              version;
+    protected String               version;
 
     // 服务分组
-    protected String              group;
-    
+    protected String               group;
+
     // 服务是否已经deprecated
-    protected Boolean             deprecated;
-    
+    protected Boolean              deprecated;
+
     // 延迟暴露
-    protected Integer             delay;
+    protected Integer              delay;
 
     // 是否暴露
-    protected Boolean             export;
+    protected Boolean              export;
 
     // 权重
-    protected Integer             weight;
+    protected Integer              weight;
 
     // 应用文档
-    protected String              document;
-    
+    protected String               document;
+
     // 在注册中心上注册成动态的还是静态的服务
-    protected Boolean             dynamic;
+    protected Boolean              dynamic;
 
     // 是否使用令牌
-    protected String              token;
-    
+    protected String               token;
+
     // 访问日志
-    protected String              accesslog;
-    
+    protected String               accesslog;
+
     // 允许执行请求数
-    private Integer               executes;
+    private Integer                executes;
 
     protected List<ProtocolConfig> protocols;
 
     // 是否注册
-    private Boolean             register;
+    private Boolean                register;
 
     public String getVersion() {
         return version;
     }
 
     public void setVersion(String version) {
-        checkName("version", version);
+        checkKey("version", version);
         this.version = version;
     }
 
