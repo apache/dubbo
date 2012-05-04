@@ -47,9 +47,6 @@ public class MethodConfig extends AbstractMethodConfig {
     // 是否过时
     private Boolean           deprecated;
 
-    // 合并器
-    private String            merger;
-    
     // 是否需要开启stiky策略
     private Boolean           sticky;
 
@@ -213,11 +210,4 @@ public class MethodConfig extends AbstractMethodConfig {
         this.isReturn = isReturn;
     }
 
-    public String getMerger() {
-        return merger;
-    }
-
-    public void setMerger(String merger) {
-        this.merger = merger;
-    }    
 }
