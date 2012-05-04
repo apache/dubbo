@@ -120,6 +120,7 @@
 		<module>dubbo-demo/dubbo-demo-provider</module>
 		<module>dubbo-test/dubbo-test-examples</module>
 		<module>dubbo-test/dubbo-test-benchmark</module>
+		<module>dubbo-test/dubbo-test-compatibility</module>
 		<module>dubbo-test/dubbo-test-integration</module>
 	</modules>
 	<dependencyManagement>
