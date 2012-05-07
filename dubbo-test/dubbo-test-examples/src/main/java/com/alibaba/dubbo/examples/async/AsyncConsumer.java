@@ -47,8 +47,8 @@ public class AsyncConsumer {
         
         RpcContext.getContext().asyncCall(new Runnable() {
             public void run() {
-                asyncService.sayHello("oneway call request");
-                asyncService.sayHello("oneway call request");
+                asyncService.sayHello("oneway call request1");
+                asyncService.sayHello("oneway call request2");
             }
         });
         
