@@ -27,7 +27,6 @@
 	<name>${project.artifactId}</name>
 	<description>The test module of dubbo project</description>
 	<modules>
-		<module>dubbo-test-examples</module>
 		<module>dubbo-test-benchmark</module>
 		<module>dubbo-test-compatibility</module>
 		<module>dubbo-test-integration</module>
