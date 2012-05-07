@@ -40,6 +40,22 @@
 		<name>Alibaba</name>
 		<url>http://www.alibaba.com</url>
 	</organization>
+	<modules>
+		<module>dubbo-common</module>
+		<module>dubbo-container</module>
+		<module>dubbo-remoting</module>
+		<module>dubbo-rpc</module>
+		<module>dubbo-filter</module>
+		<module>dubbo-cluster</module>
+		<module>dubbo-registry</module>
+		<module>dubbo-monitor</module>
+		<module>dubbo-config</module>
+		<module>dubbo</module>
+		<module>dubbo-registry/dubbo-registry-simple</module>
+		<module>dubbo-monitor/dubbo-monitor-simple</module>
+		<module>dubbo-demo</module>
+		<module>dubbo-test</module>
+	</modules>
 	<properties>
 		<!-- Common libs -->
 		<spring_version>2.5.6.SEC03</spring_version>
@@ -77,22 +93,6 @@
 		<updateReleaseInfo>true</updateReleaseInfo>
         <project.build.sourceEncoding>${file_encoding}</project.build.sourceEncoding>
 	</properties>
-	<modules>
-		<module>dubbo-common</module>
-		<module>dubbo-remoting</module>
-		<module>dubbo-rpc</module>
-		<module>dubbo-filter</module>
-		<module>dubbo-cluster</module>
-		<module>dubbo-registry</module>
-		<module>dubbo-monitor</module>
-		<module>dubbo-config</module>
-		<module>dubbo-container</module>
-		<module>dubbo</module>
-		<module>dubbo-registry/dubbo-registry-simple</module>
-		<module>dubbo-monitor/dubbo-monitor-simple</module>
-		<module>dubbo-demo</module>
-		<module>dubbo-test</module>
-	</modules>
 	<dependencyManagement>
 		<dependencies>
 			<!-- Common libs -->
