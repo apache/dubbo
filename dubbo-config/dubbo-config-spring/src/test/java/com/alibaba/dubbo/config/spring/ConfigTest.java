@@ -365,7 +365,7 @@ public class ConfigTest {
     
     // DUBBO-147   通过RpcContext可以获得所有尝试过的Invoker
     @Test
-    public void test_RpcContext_getInvokers() throws Exception {
+    public void test_RpcContext_getUrls() throws Exception {
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(
                 ConfigTest.class.getPackage().getName().replace('.', '/') + "/demo-provider-long-waiting.xml");
         providerContext.start();
@@ -373,7 +373,7 @@ public class ConfigTest {
         try {
             ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(
                     ConfigTest.class.getPackage().getName().replace('.', '/')
-                            + "/init-reference-getInvokers.xml");
+                            + "/init-reference-getUrls.xml");
             ctx.start();
             try {
                 DemoService demoService = (DemoService) ctx.getBean("demoService");
@@ -384,7 +384,7 @@ public class ConfigTest {
                     assertThat(expected.getMessage(), containsString("Tried 3 times"));
                 }
 
-                assertEquals(3, RpcContext.getContext().getInvokers().size());
+                assertEquals(3, RpcContext.getContext().getUrls().size());
             } finally {
                 ctx.stop();
                 ctx.close();
@@ -416,7 +416,7 @@ public class ConfigTest {
                     assertThat(expected.getMessage(), containsString("Tried 1 times"));
                 }
 
-                assertEquals(1, RpcContext.getContext().getInvokers().size());
+                assertEquals(1, RpcContext.getContext().getUrls().size());
             } finally {
                 ctx.stop();
                 ctx.close();
@@ -775,13 +775,5 @@ public class ConfigTest {
             assertTrue(e.getMessage().contains(""));
         }
     }
-    
-    @Test
-    public void testServiceConfigRegisterOverride() throws Exception {
-        String oldValue = System.getProperty("dubbo.service.register");
-        String newValue = "false";
-        System.setProperty("dubbo.service.register", newValue);
-        ServiceConfig<DemoService> config = new ServiceConfig<DemoService>();
-        config.setRegister(true);
-    }
+
 }
