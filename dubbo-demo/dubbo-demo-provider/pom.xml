@@ -31,7 +31,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo-demo</artifactId>
+			<artifactId>dubbo-demo-api</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
 		<dependency>
