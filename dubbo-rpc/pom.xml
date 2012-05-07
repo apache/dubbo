@@ -1,4 +1,4 @@
-<!--
+<!-- 
  - Copyright 1999-2011 Alibaba Group.
  -  
  - Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,21 +18,19 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.alibaba</groupId>
-		<artifactId>dubbo-rpc</artifactId>
+		<artifactId>dubbo-parent</artifactId>
 		<version>2.2.0-SNAPSHOT</version>
 	</parent>
-	<artifactId>dubbo-rpc-api</artifactId>
-	<packaging>jar</packaging>
+	<artifactId>dubbo-rpc</artifactId>
+	<version>2.2.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
 	<name>${project.artifactId}</name>
 	<description>The rpc module of dubbo project</description>
-	<properties>
-		<skip_maven_deploy>true</skip_maven_deploy>
-	</properties>
-	<dependencies>
-		<dependency>
-			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo-common</artifactId>
-			<version>${project.parent.version}</version>
-		</dependency>
-	</dependencies>
+	<modules>
+		<module>dubbo-rpc-api</module>
+		<module>dubbo-rpc-default</module>
+		<module>dubbo-rpc-injvm</module>
+		<module>dubbo-rpc-rmi</module>
+		<module>dubbo-rpc-hessian</module>
+	</modules>
 </project>

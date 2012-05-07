@@ -48,28 +48,6 @@
 		</dependency>
 		<dependency>
 			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo-config-guice</artifactId>
-			<version>${project.parent.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>com.google.inject</groupId>
-					<artifactId>guice</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo-config-sca</artifactId>
-			<version>${project.parent.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.apache.tuscany.sca</groupId>
-					<artifactId>tuscany-sca-api</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>com.alibaba</groupId>
 			<artifactId>dubbo-remoting-netty</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
@@ -144,11 +122,6 @@
     				<artifactId>hessian</artifactId>
 				</exclusion>
 			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo-filter-default</artifactId>
-			<version>${project.parent.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.alibaba</groupId>
@@ -270,13 +243,9 @@
 									<include>com.alibaba:dubbo-rpc-injvm</include>
 									<include>com.alibaba:dubbo-rpc-rmi</include>
 									<include>com.alibaba:dubbo-rpc-hessian</include>
-									<include>com.alibaba:dubbo-filter-default</include>
 									<include>com.alibaba:dubbo-filter-validation</include>
 									<include>com.alibaba:dubbo-filter-cache</include>
-									<include>com.alibaba:dubbo-cluster-api</include>
-									<include>com.alibaba:dubbo-cluster-faulttolerant</include>
-									<include>com.alibaba:dubbo-cluster-loadbalance</include>
-									<include>com.alibaba:dubbo-cluster-router</include>
+									<include>com.alibaba:dubbo-cluster</include>
 									<include>com.alibaba:dubbo-registry-api</include>
 									<include>com.alibaba:dubbo-registry-default</include>
 									<include>com.alibaba:dubbo-registry-multicast</include>
@@ -286,8 +255,6 @@
 									<include>com.alibaba:dubbo-monitor-default</include>
 									<include>com.alibaba:dubbo-config-api</include>
 									<include>com.alibaba:dubbo-config-spring</include>
-									<include>com.alibaba:dubbo-config-guice</include>
-									<include>com.alibaba:dubbo-config-sca</include>
 									<include>com.alibaba:dubbo-container-api</include>
 									<include>com.alibaba:dubbo-container-spring</include>
 									<include>com.alibaba:dubbo-container-jetty</include>
