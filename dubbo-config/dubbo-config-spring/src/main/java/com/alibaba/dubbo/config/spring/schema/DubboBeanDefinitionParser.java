@@ -44,10 +44,13 @@ import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.config.ArgumentConfig;
+import com.alibaba.dubbo.config.ConsumerConfig;
 import com.alibaba.dubbo.config.MethodConfig;
 import com.alibaba.dubbo.config.MonitorConfig;
 import com.alibaba.dubbo.config.ProtocolConfig;
+import com.alibaba.dubbo.config.ProviderConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
+import com.alibaba.dubbo.config.spring.ReferenceBean;
 import com.alibaba.dubbo.config.spring.ServiceBean;
 import com.alibaba.dubbo.rpc.Protocol;
 
@@ -115,8 +118,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                     }
                 }
             }
-        }
-        if (ServiceBean.class.equals(beanClass)) {
+        } else if (ServiceBean.class.equals(beanClass)) {
             String className = element.getAttribute("class");
             if(className != null && className.length() > 0) {
                 RootBeanDefinition classDefinition = new RootBeanDefinition();
@@ -125,6 +127,18 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                 parseProperties(element.getChildNodes(), classDefinition);
                 beanDefinition.getPropertyValues().addPropertyValue("ref", new BeanDefinitionHolder(classDefinition, id + "Impl"));
             }
+        } else if (ProviderConfig.class.equals(beanClass)) {
+            String isDefault = element.getAttribute("default");
+            if (isDefault == null || isDefault.length() == 0) {
+                beanDefinition.getPropertyValues().addPropertyValue("default", "false");
+            }
+            parseNested(element.getChildNodes(), parserContext, ServiceBean.class, true, "service", "provider", id);
+        } else if (ConsumerConfig.class.equals(beanClass)) {
+            String isDefault = element.getAttribute("default");
+            if (isDefault == null || isDefault.length() == 0) {
+                beanDefinition.getPropertyValues().addPropertyValue("default", "false");
+            }
+            parseNested(element.getChildNodes(), parserContext, ReferenceBean.class, false, "reference", "consumer", id);
         }
         Set<String> props = new HashSet<String>();
         ManagedMap parameters = null;
@@ -295,6 +309,48 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
         }
         beanDefinition.getPropertyValues().addPropertyValue(property, list);
     }
+    
+    private static void parseNested(NodeList nodeList, ParserContext parserContext, Class<?> beanClass, boolean required, String tag, String property, String ref) {
+        if (nodeList != null && nodeList.getLength() > 0) {
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node node = nodeList.item(i);
+                if (node instanceof Element) {
+                    if (tag.equals(node.getNodeName())
+                            || tag.equals(node.getLocalName())) {
+                        BeanDefinition subDefinition = parse((Element) node, parserContext, beanClass, required);
+                        if (subDefinition != null && ref != null && ref.length() > 0) {
+                            subDefinition.getPropertyValues().addPropertyValue(property, new RuntimeBeanReference(ref));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static void parseProperties(NodeList nodeList, RootBeanDefinition beanDefinition) {
+        if (nodeList != null && nodeList.getLength() > 0) {
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node node = nodeList.item(i);
+                if (node instanceof Element) {
+                    if ("property".equals(node.getNodeName())
+                            || "property".equals(node.getLocalName())) {
+                        String name = ((Element) node).getAttribute("name");
+                        if (name != null && name.length() > 0) {
+                            String value = ((Element) node).getAttribute("value");
+                            String ref = ((Element) node).getAttribute("ref");
+                            if (value != null && value.length() > 0) {
+                                beanDefinition.getPropertyValues().addPropertyValue(name, value);
+                            } else if (ref != null && ref.length() > 0) {
+                                beanDefinition.getPropertyValues().addPropertyValue(name, new RuntimeBeanReference(ref));
+                            } else {
+                                throw new UnsupportedOperationException("Unsupported <property name=\"" + name + "\"> sub tag, Only supported <property name=\"" + name + "\" ref=\"...\" /> or <property name=\"" + name + "\" value=\"...\" />");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     @SuppressWarnings("unchecked")
     private static ManagedMap parseParameters(NodeList nodeList, RootBeanDefinition beanDefinition) {
@@ -321,31 +377,6 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
             return parameters;
         }
         return null;
-    }
-
-    private static void parseProperties(NodeList nodeList, RootBeanDefinition beanDefinition) {
-        if (nodeList != null && nodeList.getLength() > 0) {
-            for (int i = 0; i < nodeList.getLength(); i++) {
-                Node node = nodeList.item(i);
-                if (node instanceof Element) {
-                    if ("property".equals(node.getNodeName())
-                            || "property".equals(node.getLocalName())) {
-                        String name = ((Element) node).getAttribute("name");
-                        if (name != null && name.length() > 0) {
-                            String value = ((Element) node).getAttribute("value");
-                            String ref = ((Element) node).getAttribute("ref");
-                            if (value != null && value.length() > 0) {
-                                beanDefinition.getPropertyValues().addPropertyValue(name, value);
-                            } else if (ref != null && ref.length() > 0) {
-                                beanDefinition.getPropertyValues().addPropertyValue(name, new RuntimeBeanReference(ref));
-                            } else {
-                                throw new UnsupportedOperationException("Unsupported <property name=\"" + name + "\"> sub tag, Only supported <property name=\"" + name + "\" ref=\"...\" /> or <property name=\"" + name + "\" value=\"...\" />");
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 
     @SuppressWarnings("unchecked")

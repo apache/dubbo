@@ -87,6 +87,21 @@ public class ConfigTest {
         }
     }
 
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testProviderNestedService() {
+        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/provider-nested-service.xml");
+        ctx.start();
+        try {
+            ServiceConfig<DemoService> serviceConfig = (ServiceConfig<DemoService>) ctx.getBean("serviceConfig");
+            assertNotNull(serviceConfig.getProvider());
+            assertEquals(1000, serviceConfig.getProvider().getTimeout().intValue());
+        } finally {
+            ctx.stop();
+            ctx.close();
+        }
+    }
+
     private DemoService refer(String url) {
         ReferenceConfig<DemoService> reference = new ReferenceConfig<DemoService>();
         reference.setApplication(new ApplicationConfig("consumer"));

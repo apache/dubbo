@@ -859,9 +859,10 @@
 	<xsd:complexType name="providerType">
 		<xsd:complexContent>
 			<xsd:extension base="abstractServiceType">
-				<xsd:sequence minOccurs="0" maxOccurs="unbounded">
+				<xsd:choice minOccurs="0" maxOccurs="unbounded">
+					<xsd:element ref="service" minOccurs="0" maxOccurs="unbounded" />
 					<xsd:element ref="parameter" minOccurs="0" maxOccurs="unbounded" />
-				</xsd:sequence>
+				</xsd:choice>
 				<xsd:attribute name="host" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[ The service host. ]]></xsd:documentation>
