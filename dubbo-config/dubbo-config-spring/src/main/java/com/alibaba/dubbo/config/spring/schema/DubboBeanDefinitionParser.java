@@ -41,12 +41,14 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.ReflectUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.config.ArgumentConfig;
 import com.alibaba.dubbo.config.MethodConfig;
 import com.alibaba.dubbo.config.MonitorConfig;
 import com.alibaba.dubbo.config.ProtocolConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
+import com.alibaba.dubbo.config.spring.ServiceBean;
 import com.alibaba.dubbo.rpc.Protocol;
 
 /**
@@ -70,7 +72,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
     public BeanDefinition parse(Element element, ParserContext parserContext) {
         return parse(element, parserContext, beanClass, required);
     }
-
+    
     @SuppressWarnings("unchecked")
     private static BeanDefinition parse(Element element, ParserContext parserContext, Class<?> beanClass, boolean required) {
         RootBeanDefinition beanDefinition = new RootBeanDefinition();
@@ -112,6 +114,16 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                         definition.getPropertyValues().addPropertyValue("protocol", new RuntimeBeanReference(id));
                     }
                 }
+            }
+        }
+        if (ServiceBean.class.equals(beanClass)) {
+            String className = element.getAttribute("class");
+            if(className != null && className.length() > 0) {
+                RootBeanDefinition classDefinition = new RootBeanDefinition();
+                classDefinition.setBeanClass(ReflectUtils.forName(className));
+                classDefinition.setLazyInit(false);
+                parseProperties(element.getChildNodes(), classDefinition);
+                beanDefinition.getPropertyValues().addPropertyValue("ref", new BeanDefinitionHolder(classDefinition, id + "Impl"));
             }
         }
         Set<String> props = new HashSet<String>();
@@ -309,6 +321,31 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
             return parameters;
         }
         return null;
+    }
+
+    private static void parseProperties(NodeList nodeList, RootBeanDefinition beanDefinition) {
+        if (nodeList != null && nodeList.getLength() > 0) {
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node node = nodeList.item(i);
+                if (node instanceof Element) {
+                    if ("property".equals(node.getNodeName())
+                            || "property".equals(node.getLocalName())) {
+                        String name = ((Element) node).getAttribute("name");
+                        if (name != null && name.length() > 0) {
+                            String value = ((Element) node).getAttribute("value");
+                            String ref = ((Element) node).getAttribute("ref");
+                            if (value != null && value.length() > 0) {
+                                beanDefinition.getPropertyValues().addPropertyValue(name, value);
+                            } else if (ref != null && ref.length() > 0) {
+                                beanDefinition.getPropertyValues().addPropertyValue(name, new RuntimeBeanReference(ref));
+                            } else {
+                                throw new UnsupportedOperationException("Unsupported <property name=\"" + name + "\"> sub tag, Only supported <property name=\"" + name + "\" ref=\"...\" /> or <property name=\"" + name + "\" value=\"...\" />");
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")

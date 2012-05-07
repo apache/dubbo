@@ -57,7 +57,7 @@ import com.alibaba.dubbo.rpc.RpcException;
  * @author william.liangf
  */
 public class ConfigTest {
-
+    
     @Test
     public void testSpringExtensionInject() {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/spring-extension-inject.xml");
@@ -67,6 +67,20 @@ public class ConfigTest {
             assertNotNull(filter.getMockDao());
             assertNotNull(filter.getProtocol());
             assertNotNull(filter.getLoadBalance());
+        } finally {
+            ctx.stop();
+            ctx.close();
+        }
+    }
+
+    @Test
+    public void testServiceClass() {
+        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/service-class.xml");
+        ctx.start();
+        try {
+            DemoService demoService = refer("dubbo://127.0.0.1:20887");
+            String hello = demoService.sayName("hello");
+            assertEquals("welcome:hello", hello);
         } finally {
             ctx.stop();
             ctx.close();
