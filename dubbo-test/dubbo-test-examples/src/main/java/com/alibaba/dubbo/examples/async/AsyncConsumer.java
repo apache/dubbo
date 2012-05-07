@@ -35,7 +35,7 @@ public class AsyncConsumer {
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(config);
         context.start();
         
-        final AsyncService asyncService = (AsyncService)context.getBean("cacheService");
+        final AsyncService asyncService = (AsyncService)context.getBean("asyncService");
         
         Future<String> f = RpcContext.getContext().asyncCall(new Callable<String>() {
             public String call() throws Exception {

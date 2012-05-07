@@ -18,7 +18,7 @@ package com.alibaba.dubbo.examples.async.impl;
 import com.alibaba.dubbo.examples.async.api.AsyncService;
 
 /**
- * CallbackServiceImpl
+ * AsyncServiceImpl
  * 
  * @author william.liangf
  */

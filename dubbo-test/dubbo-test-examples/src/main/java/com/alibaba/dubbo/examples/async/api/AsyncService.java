@@ -16,7 +16,7 @@
 package com.alibaba.dubbo.examples.async.api;
 
 /**
- * CallbackService
+ * AsyncService
  * 
  * @author william.liangf
  */

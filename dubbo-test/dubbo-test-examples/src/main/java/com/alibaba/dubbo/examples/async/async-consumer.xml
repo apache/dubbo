@@ -20,10 +20,10 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
 	http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
 
-    <dubbo:application name="callback-consumer"  />
+    <dubbo:application name="async-consumer"  />
     
     <dubbo:registry address="multicast://224.5.6.7:1234" />
     
-	<dubbo:reference id="callbackService" interface="com.alibaba.dubbo.examples.callback.api.CallbackService" />
+	<dubbo:reference id="asyncService" interface="com.alibaba.dubbo.examples.async.api.AsyncService" />
 
 </beans>
