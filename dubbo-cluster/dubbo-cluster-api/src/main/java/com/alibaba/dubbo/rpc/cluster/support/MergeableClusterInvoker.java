@@ -31,6 +31,8 @@ import java.util.concurrent.TimeUnit;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 import com.alibaba.dubbo.rpc.Invocation;
@@ -48,6 +50,8 @@ import com.alibaba.dubbo.rpc.cluster.merger.MergerFactory;
  */
 @SuppressWarnings( "unchecked" )
 public class MergeableClusterInvoker<T> implements Invoker<T> {
+
+    private static final Logger log = LoggerFactory.getLogger(MergeableClusterInvoker.class);
 
     private ExecutorService executor = Executors.newCachedThreadPool(new NamedThreadFactory("mergeable-cluster-executor", true));
     
@@ -96,7 +100,16 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
         for ( Map.Entry<String, Future<Result>> entry : results.entrySet() ) {
             Future<Result> future = entry.getValue();
             try {
-                resultList.add( future.get( timeout, TimeUnit.MILLISECONDS ) );
+                Result r = future.get(  );
+                if (r.hasException()) {
+                    log.error(new StringBuilder(32).append("Invoke ")
+                                  .append(getGroupDescFromServiceKey(entry.getKey()))
+                                  .append(" failed: ")
+                                  .append(r.getException().getMessage()).toString(),
+                              r.getException());
+                } else {
+                    resultList.add(r);
+                }
             } catch ( Exception e ) {
                 throw new RpcException( new StringBuilder( 32 )
                                                 .append( "Failed to invoke service " )
@@ -201,4 +214,12 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
         directory.destroy();
     }
 
+    private String getGroupDescFromServiceKey(String key) {
+        int index = key.indexOf("/");
+        if (index > 0) {
+            return new StringBuilder(32).append("group [ ")
+                .append(key.substring(0, index)).append(" ]").toString();
+        }
+        return key;
+    }
 }
