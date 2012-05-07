@@ -25,6 +25,7 @@ import com.alibaba.dubbo.examples.async.api.AsyncService;
 public class AsyncServiceImpl implements AsyncService {
 
     public String sayHello(String name) {
+        System.out.println("async provider received: " + name);
         return "hello, " + name;
     }
 
