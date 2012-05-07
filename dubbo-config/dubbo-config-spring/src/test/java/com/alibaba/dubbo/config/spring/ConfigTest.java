@@ -41,6 +41,7 @@ import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.config.ServiceConfig;
 import com.alibaba.dubbo.config.spring.action.DemoActionByAnnotation;
 import com.alibaba.dubbo.config.spring.action.DemoActionBySetter;
+import com.alibaba.dubbo.config.spring.annotation.consumer.AnnotationAction;
 import com.alibaba.dubbo.config.spring.api.DemoService;
 import com.alibaba.dubbo.config.spring.filter.MockFilter;
 import com.alibaba.dubbo.config.spring.impl.DemoServiceImpl;
@@ -773,6 +774,33 @@ public class ConfigTest {
             fail();
         } catch (IllegalStateException e) {
             assertTrue(e.getMessage().contains(""));
+        }
+    }
+    
+    @Test
+    public void testAnnotation() {
+        SimpleRegistryService registryService = new SimpleRegistryService();
+        Exporter<RegistryService> exporter = SimpleRegistryExporter.export(4548, registryService);
+        try {
+            ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/annotation-provider.xml");
+            providerContext.start();
+            try {
+                ClassPathXmlApplicationContext consumerContext = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/annotation-consumer.xml");
+                consumerContext.start();
+                try {
+                    AnnotationAction annotationAction = (AnnotationAction) consumerContext.getBean("annotationAction");
+                    String hello = annotationAction.doSayName("hello");
+                    assertEquals("annotation:hello", hello);
+                } finally {
+                    consumerContext.stop();
+                    consumerContext.close();
+                }
+            } finally {
+                providerContext.stop();
+                providerContext.close();
+            }
+        } finally {
+            exporter.unexport();
         }
     }
 

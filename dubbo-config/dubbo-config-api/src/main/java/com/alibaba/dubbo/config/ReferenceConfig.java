@@ -36,6 +36,7 @@ import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
+import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.support.Parameter;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
@@ -90,6 +91,12 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     private transient boolean    destroyed;
 
     private final List<URL> urls = new ArrayList<URL>();
+    
+    public ReferenceConfig() {}
+    
+    public ReferenceConfig(Reference reference) {
+        appendAnnotation(Reference.class, reference);
+    }
 
     public URL toUrl() {
         return urls == null || urls.size() == 0 ? null : urls.iterator().next();

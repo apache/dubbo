@@ -28,7 +28,9 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.CollectionUtils;
 import com.alibaba.dubbo.common.utils.ConfigUtils;
+import com.alibaba.dubbo.common.utils.ReflectUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.config.support.Parameter;
 
@@ -91,6 +93,44 @@ public abstract class AbstractConfig implements Serializable {
             }
         }
         return value;
+    }
+
+    protected void appendAnnotation(Class<?> annotationClass, Object annotation) {
+        Method[] methods = annotationClass.getMethods();
+        for (Method method : methods) {
+            if (method.getDeclaringClass() == annotation.getClass()
+                    && method.getReturnType() != void.class
+                    && method.getParameterTypes().length == 0
+                    && Modifier.isPublic(method.getModifiers())
+                    && ! Modifier.isStatic(method.getModifiers())) {
+                try {
+                    String property = method.getName();
+                    if ("interfaceClass".equals(property) || "interfaceName".equals(property)) {
+                        property = "interface";
+                    }
+                    String setter = "set" + property.substring(0, 1).toUpperCase() + property.substring(1);
+                    Object value = method.invoke(annotation, new Object[0]);
+                    if (value != null && ! value.equals(method.getDefaultValue())) {
+                        Class<?> parameterType = ReflectUtils.getBoxedClass(method.getReturnType());
+                        if ("filter".equals(property) || "listener".equals(property)) {
+                            parameterType = String.class;
+                            value = StringUtils.join((String[]) value, ",");
+                        } else if ("parameters".equals(property)) {
+                            parameterType = Map.class;
+                            value = CollectionUtils.toStringMap((String[]) value);
+                        }
+                        try {
+                            Method setterMethod = getClass().getMethod(setter, new Class<?>[] { parameterType });
+                            setterMethod.invoke(this, new Object[] { value });
+                        } catch (NoSuchMethodException e) {
+                            // ignore
+                        }
+                    }
+                } catch (Throwable e) {
+                    logger.error(e.getMessage(), e);
+                }
+            }
+        }
     }
 
     protected static void appendProperties(AbstractConfig config) {

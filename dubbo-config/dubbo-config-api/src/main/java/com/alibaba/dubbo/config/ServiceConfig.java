@@ -37,6 +37,7 @@ import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
+import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.dubbo.config.support.Parameter;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invoker;
@@ -82,6 +83,13 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private transient boolean unexported;
     
     private transient boolean generic;
+
+    public ServiceConfig() {
+    }
+
+    public ServiceConfig(Service service) {
+        appendAnnotation(Service.class, service);
+    }
 
     public URL toUrl() {
         return urls == null || urls.size() == 0 ? null : urls.iterator().next();

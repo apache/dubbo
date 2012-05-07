@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.BeanNameAware;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -36,6 +37,7 @@ import com.alibaba.dubbo.config.ProtocolConfig;
 import com.alibaba.dubbo.config.ProviderConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.config.ServiceConfig;
+import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.dubbo.config.spring.extension.SpringExtensionFactory;
 
 /**
@@ -43,7 +45,7 @@ import com.alibaba.dubbo.config.spring.extension.SpringExtensionFactory;
  * 
  * @author william.liangf
  */
-public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean, ApplicationContextAware, ApplicationListener, BeanNameAware {
+public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean, DisposableBean, ApplicationContextAware, ApplicationListener, BeanNameAware {
 
 	private static final long serialVersionUID = 213195494150089726L;
 
@@ -55,7 +57,15 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
 
     private transient boolean supportedApplicationListener;
     
-	public static ApplicationContext getSpringContext() {
+	public ServiceBean() {
+        super();
+    }
+
+    public ServiceBean(Service service) {
+        super(service);
+    }
+
+    public static ApplicationContext getSpringContext() {
 	    return SPRING_CONTEXT;
 	}
 
@@ -237,6 +247,10 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
         if (! isDelay()) {
             export();
         }
+    }
+
+    public void destroy() throws Exception {
+        unexport();
     }
 
 }
