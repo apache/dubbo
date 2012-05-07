@@ -101,7 +101,7 @@ public class RpcUtils {
     	String value = url.getMethodParameter(invocation.getMethodName(), Constants.AUTO_ATTACH_INVOCATIONID_KEY);
     	if ( value == null ) {
     		//异步操作默认添加invocationid
-    		return url.getMethodParameter(invocation.getMethodName(), Constants.ASYNC_KEY, false);
+    		return isAsync(url,invocation) ;
     	} else if (Boolean.TRUE.toString().equalsIgnoreCase(value)) {
     		//设置为添加，则一定添加
     		return true;
