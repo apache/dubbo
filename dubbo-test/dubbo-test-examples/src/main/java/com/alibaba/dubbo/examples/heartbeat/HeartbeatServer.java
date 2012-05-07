@@ -14,7 +14,7 @@
  *   limitations under the License.
  */
 
-package com.alibaba.dubbo.examples.remoting.heartbeat;
+package com.alibaba.dubbo.examples.heartbeat;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;

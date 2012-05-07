@@ -14,25 +14,20 @@
  *   limitations under the License.
  */
 
-package com.alibaba.dubbo.examples.remoting.heartbeat;
+package com.alibaba.dubbo.examples.heartbeat;
 
-import com.alibaba.dubbo.examples.remoting.heartbeat.api.HelloService;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-public class HeartbeatConsumer {
+public class HeartbeatProvider {
 
     public static void main(String[] args) throws Exception {
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
-                HeartbeatConsumer.class.getPackage().getName().replace('.', '/') + "/heartbeat-consumer.xml");
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext( 
+                HeartbeatProvider.class.getPackage().getName().replace( '.', '/' ) + "/heartbeat-provider.xml" );
         context.start();
-        HelloService hello = (HelloService) context.getBean("helloService");
-        for (int i = 0; i < Integer.MAX_VALUE; i++) {
-            System.out.println(hello.sayHello("kimi-" + i));
-            Thread.sleep(10000);
-        }
+        System.in.read();
     }
 
 }

@@ -14,7 +14,7 @@
  *   limitations under the License.
  */
 
-package com.alibaba.dubbo.examples.remoting.heartbeat;
+package com.alibaba.dubbo.examples.heartbeat;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
