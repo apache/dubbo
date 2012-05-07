@@ -95,7 +95,11 @@ public class ConfigTest {
         try {
             ServiceConfig<DemoService> serviceConfig = (ServiceConfig<DemoService>) ctx.getBean("serviceConfig");
             assertNotNull(serviceConfig.getProvider());
-            assertEquals(1000, serviceConfig.getProvider().getTimeout().intValue());
+            assertEquals(2000, serviceConfig.getProvider().getTimeout().intValue());
+            
+            ServiceConfig<DemoService> serviceConfig2 = (ServiceConfig<DemoService>) ctx.getBean("serviceConfig2");
+            assertNotNull(serviceConfig2.getProvider());
+            assertEquals(1000, serviceConfig2.getProvider().getTimeout().intValue());
         } finally {
             ctx.stop();
             ctx.close();

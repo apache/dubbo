@@ -128,17 +128,9 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                 beanDefinition.getPropertyValues().addPropertyValue("ref", new BeanDefinitionHolder(classDefinition, id + "Impl"));
             }
         } else if (ProviderConfig.class.equals(beanClass)) {
-            String isDefault = element.getAttribute("default");
-            if (isDefault == null || isDefault.length() == 0) {
-                beanDefinition.getPropertyValues().addPropertyValue("default", "false");
-            }
-            parseNested(element.getChildNodes(), parserContext, ServiceBean.class, true, "service", "provider", id);
+            parseNested(element, parserContext, ServiceBean.class, true, "service", "provider", id, beanDefinition);
         } else if (ConsumerConfig.class.equals(beanClass)) {
-            String isDefault = element.getAttribute("default");
-            if (isDefault == null || isDefault.length() == 0) {
-                beanDefinition.getPropertyValues().addPropertyValue("default", "false");
-            }
-            parseNested(element.getChildNodes(), parserContext, ReferenceBean.class, false, "reference", "consumer", id);
+            parseNested(element, parserContext, ReferenceBean.class, false, "reference", "consumer", id, beanDefinition);
         }
         Set<String> props = new HashSet<String>();
         ManagedMap parameters = null;
@@ -310,13 +302,22 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
         beanDefinition.getPropertyValues().addPropertyValue(property, list);
     }
     
-    private static void parseNested(NodeList nodeList, ParserContext parserContext, Class<?> beanClass, boolean required, String tag, String property, String ref) {
+    private static void parseNested(Element element, ParserContext parserContext, Class<?> beanClass, boolean required, String tag, String property, String ref, BeanDefinition beanDefinition) {
+        NodeList nodeList = element.getChildNodes();
         if (nodeList != null && nodeList.getLength() > 0) {
+            boolean first = true;
             for (int i = 0; i < nodeList.getLength(); i++) {
                 Node node = nodeList.item(i);
                 if (node instanceof Element) {
                     if (tag.equals(node.getNodeName())
                             || tag.equals(node.getLocalName())) {
+                        if (first) {
+                            first = false;
+                            String isDefault = element.getAttribute("default");
+                            if (isDefault == null || isDefault.length() == 0) {
+                                beanDefinition.getPropertyValues().addPropertyValue("default", "false");
+                            }
+                        }
                         BeanDefinition subDefinition = parse((Element) node, parserContext, beanClass, required);
                         if (subDefinition != null && ref != null && ref.length() > 0) {
                             subDefinition.getPropertyValues().addPropertyValue(property, new RuntimeBeanReference(ref));
