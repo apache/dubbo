@@ -175,10 +175,10 @@ public abstract class AbstractRegistry implements Registry {
                     logger.warn(e.getMessage(), e);
                 }
             }
-        }
-        newProperties.putAll(properties);
+        }     
      // 保存
         try {
+			newProperties.putAll(properties);
             File lockfile = new File(file.getAbsolutePath() + ".lock");
             if (!lockfile.exists()) {
             	lockfile.createNewFile();
