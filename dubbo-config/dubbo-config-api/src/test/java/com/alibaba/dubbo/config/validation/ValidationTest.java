@@ -16,6 +16,8 @@
 package com.alibaba.dubbo.config.validation;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import javax.validation.ConstraintViolation;
@@ -30,6 +32,7 @@ import com.alibaba.dubbo.config.ReferenceConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.config.ServiceConfig;
 import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.service.GenericService;
 
 /**
  * GenericServiceTest
@@ -46,6 +49,7 @@ public class ValidationTest {
         service.setProtocol(new ProtocolConfig("dubbo", 29582));
         service.setInterface(ValidationService.class.getName());
         service.setRef(new ValidationServiceImpl());
+        service.setValidation("true");
         service.export();
         try {
             ReferenceConfig<ValidationService> reference = new ReferenceConfig<ValidationService>();
@@ -99,6 +103,84 @@ public class ValidationTest {
                 }
                 try {
                     validationService.delete(0, null);
+                    Assert.fail();
+                } catch (RpcException e) {
+                    ConstraintViolationException ve = (ConstraintViolationException)e.getCause();
+                    Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
+                    Assert.assertNotNull(violations);
+                    Assert.assertEquals(2, violations.size());
+                }
+            } finally {
+                reference.destroy();
+            }
+        } finally {
+            service.unexport();
+        }
+    }
+    
+    @Test
+    public void testGenericValidation() {
+        ServiceConfig<ValidationService> service = new ServiceConfig<ValidationService>();
+        service.setApplication(new ApplicationConfig("validation-provider"));
+        service.setRegistry(new RegistryConfig("N/A"));
+        service.setProtocol(new ProtocolConfig("dubbo", 29582));
+        service.setInterface(ValidationService.class.getName());
+        service.setRef(new ValidationServiceImpl());
+        service.setValidation("true");
+        service.export();
+        try {
+            ReferenceConfig<GenericService> reference = new ReferenceConfig<GenericService>();
+            reference.setApplication(new ApplicationConfig("validation-consumer"));
+            reference.setInterface(ValidationService.class.getName());
+            reference.setUrl("dubbo://127.0.0.1:29582?validation=true");
+            reference.setGeneric(true);
+            GenericService validationService = reference.get();
+            try {
+                // Save OK
+                Map<String, Object> parameter = new HashMap<String, Object>();
+                parameter.put("name", "liangfei");
+                parameter.put("Email", "liangfei@liang.fei");
+                parameter.put("Age", 50);
+                parameter.put("LoginDate", new Date(System.currentTimeMillis() - 1000000));
+                parameter.put("ExpiryDate", new Date(System.currentTimeMillis() + 1000000));
+                validationService.$invoke("save", new String[] {ValidationParameter.class.getName()}, new Object[] {parameter});
+                
+                // Save Error
+                try {
+                    parameter = new HashMap<String, Object>();
+                    validationService.$invoke("save", new String[] {ValidationParameter.class.getName()}, new Object[] {parameter});
+                    Assert.fail();
+                } catch (RpcException e) {
+                    e.printStackTrace();
+                    ConstraintViolationException ve = (ConstraintViolationException)e.getCause();
+                    Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
+                    Assert.assertNotNull(violations);
+                }
+                
+                // Delete OK
+                validationService.$invoke("delete", new String[] {long.class.getName(), String.class.getName()}, new Object[] {2, "abc"});
+                
+                // Delete Error
+                try {
+                    validationService.$invoke("delete", new String[] {long.class.getName(), String.class.getName()}, new Object[] {0, "abc"});
+                    Assert.fail();
+                } catch (RpcException e) {
+                    ConstraintViolationException ve = (ConstraintViolationException)e.getCause();
+                    Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
+                    Assert.assertNotNull(violations);
+                    Assert.assertEquals(1, violations.size());
+                }
+                try {
+                    validationService.$invoke("delete", new String[] {long.class.getName(), String.class.getName()}, new Object[] {2, null});
+                    Assert.fail();
+                } catch (RpcException e) {
+                    ConstraintViolationException ve = (ConstraintViolationException)e.getCause();
+                    Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
+                    Assert.assertNotNull(violations);
+                    Assert.assertEquals(1, violations.size());
+                }
+                try {
+                    validationService.$invoke("delete", new String[] {long.class.getName(), String.class.getName()}, new Object[] {0, null});
                     Assert.fail();
                 } catch (RpcException e) {
                     ConstraintViolationException ve = (ConstraintViolationException)e.getCause();
