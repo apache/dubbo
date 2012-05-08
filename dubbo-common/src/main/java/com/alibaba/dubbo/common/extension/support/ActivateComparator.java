@@ -18,6 +18,8 @@ package com.alibaba.dubbo.common.extension.support;
 import java.util.Comparator;
 
 import com.alibaba.dubbo.common.extension.Activate;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
+import com.alibaba.dubbo.common.extension.SPI;
 
 /**
  * OrderComparetor
@@ -43,6 +45,26 @@ public class ActivateComparator implements Comparator<Object> {
         }
         Activate a1 = o1.getClass().getAnnotation(Activate.class);
         Activate a2 = o2.getClass().getAnnotation(Activate.class);
+        if ((a1.after().length > 0 || a2.after().length > 0) 
+                && o1.getClass().getInterfaces().length > 0
+                && o1.getClass().getInterfaces()[0].isAnnotationPresent(SPI.class)) {
+            ExtensionLoader<?> extensionLoader = ExtensionLoader.getExtensionLoader(o1.getClass().getInterfaces()[0]);
+            if (a1.after().length > 0) {
+                String n2 = extensionLoader.getExtensionName(o2.getClass());
+                for (String after : a1.after()) {
+                    if (after.equals(n2)) {
+                        return 1;
+                    }
+                }
+            } else if (a2.after().length > 0) {
+                String n1 = extensionLoader.getExtensionName(o1.getClass());
+                for (String after : a2.after()) {
+                    if (after.equals(n1)) {
+                        return -1;
+                    }
+                }
+            }
+        }
         int n1 = a1 == null ? 0 : a1.order();
         int n2 = a2 == null ? 0 : a2.order();
         return n1 > n2 ? 1 : -1; // 就算n1 == n2也不能返回0，否则在HashSet等集合中，会被认为是同一值而覆盖

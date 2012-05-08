@@ -35,6 +35,8 @@ public @interface Activate {
 
     String[] value() default {};
 
+    String[] after() default {};
+
     int order() default 0;
 
 }
