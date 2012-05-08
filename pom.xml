@@ -68,6 +68,7 @@
 		<fastjson_version>1.1.8</fastjson_version>
 		<bsf_version>3.1</bsf_version>
 		<zookeeper_version>3.3.3</zookeeper_version>
+		<zkclient_version>0.1</zkclient_version>
 		<jedis_version>2.0.0</jedis_version>
 		<jfreechart_version>1.0.13</jfreechart_version>
 		<hessian_version>4.0.7</hessian_version>
@@ -149,6 +150,11 @@
 				<groupId>org.apache.zookeeper</groupId>
 				<artifactId>zookeeper</artifactId>
 				<version>${zookeeper_version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.github.sgroschupf</groupId>
+				<artifactId>zkclient</artifactId>
+				<version>${zkclient_version}</version>
 			</dependency>
 			<dependency>
 				<groupId>redis.clients</groupId>
