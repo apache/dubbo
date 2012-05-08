@@ -17,7 +17,6 @@ package com.alibaba.dubbo.demo.consumer;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.concurrent.ExecutionException;
 
 import com.alibaba.dubbo.demo.DemoService;
 
@@ -29,7 +28,7 @@ public class DemoAction {
         this.demoService = demoService;
     }
 
-	public void start() throws InterruptedException, ExecutionException {
+	public void start() throws Exception {
         for (int i = 0; i < Integer.MAX_VALUE; i ++) {
             try {
             	String hello = demoService.sayHello("world" + i);
