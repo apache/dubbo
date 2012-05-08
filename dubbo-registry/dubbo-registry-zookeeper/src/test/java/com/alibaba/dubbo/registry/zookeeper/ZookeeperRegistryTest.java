@@ -22,7 +22,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.registry.NotifyListener;
 
 /**
  * ZookeeperRegistryTest
@@ -53,11 +52,11 @@ public class ZookeeperRegistryTest {
         //registry.register(service, serviceUrl);
     }
 
-    @Test(expected = IllegalStateException.class)
+    /*@Test(expected = IllegalStateException.class)
     public void testUrlerror() {
         URL errorUrl = URL.valueOf("zookeeper://zookeeper/");
         new ZookeeperRegistry(errorUrl);
-    }
+    }*/
     
     @Test
     public void testDefaultPort() {
