@@ -957,6 +957,22 @@ public final class URL implements Serializable {
 	public URL cleatParameters() {
         return new URL(protocol, username, password, host, port, path, new HashMap<String, String>());
     }
+	
+	public String getRawParameter(String key) {
+	    if ("protocol".equals(key))
+            return protocol;
+	    if ("username".equals(key))
+            return username;
+	    if ("password".equals(key))
+            return password;
+	    if ("host".equals(key))
+            return host;
+	    if ("port".equals(key))
+            return String.valueOf(port);
+	    if ("path".equals(key))
+            return path;
+        return getParameter(key);
+	}
 
     public Map<String, String> toMap() {
         Map<String, String> map = new HashMap<String, String>(parameters);

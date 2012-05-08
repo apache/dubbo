@@ -380,6 +380,13 @@ public class UrlUtils {
                && (Constants.ANY_VALUE.equals(consumerClassifier) || StringUtils.isEquals(consumerClassifier, providerClassifier));
     }
     
+    public static boolean isMatchGlobPattern(String pattern, String value, URL param) {
+        if (param != null && pattern.startsWith("$")) {
+            pattern = param.getRawParameter(pattern.substring(1));
+        }
+        return isMatchGlobPattern(pattern, value);
+    }
+    
     public static boolean isMatchGlobPattern(String pattern, String value) {
         if ("*".equals(pattern))
             return true;

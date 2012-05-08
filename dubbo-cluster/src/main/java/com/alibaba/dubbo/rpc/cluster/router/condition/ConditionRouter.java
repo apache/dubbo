@@ -72,7 +72,7 @@ public class ConditionRouter implements Router, Comparable<Router> {
                 throw new ParseException("Illegal route rule without then express", 0);
             }
             Map<String, MatchPair> when = parseRule(whenRule.trim());
-            Map<String, MatchPair> then = parseRule(thenRule.trim());
+            Map<String, MatchPair> then = "false".equals(thenRule.trim()) ? null : parseRule(thenRule.trim());
             // NOTE: When条件是允许为空的，外部业务来保证类似的约束条件
             this.whenCondition = when;
             this.thenCondition = then;
@@ -91,8 +91,11 @@ public class ConditionRouter implements Router, Comparable<Router> {
                 return invokers;
             }
             List<Invoker<T>> result = new ArrayList<Invoker<T>>();
+            if (thenCondition == null) {
+                return result;
+            }
             for (Invoker<T> invoker : invokers) {
-                if (matchThen(invoker.getUrl())) {
+                if (matchThen(invoker.getUrl(), url)) {
                     result.add(invoker);
                 }
             }
@@ -118,19 +121,19 @@ public class ConditionRouter implements Router, Comparable<Router> {
     }
 
     public boolean matchWhen(URL url) {
-        return matchCondition(url, whenCondition);
+        return matchCondition(whenCondition, url, null);
     }
 
-    public boolean matchThen(URL url) {
-        return matchCondition(url, thenCondition);
+    public boolean matchThen(URL url, URL param) {
+        return thenCondition != null && matchCondition(thenCondition, url, param);
     }
     
-    private boolean matchCondition(URL url, Map<String, MatchPair> condition) {
+    private boolean matchCondition(Map<String, MatchPair> condition, URL url, URL param) {
         Map<String, String> sample = url.toMap();
         for (Map.Entry<String, String> entry : sample.entrySet()) {
             String key = entry.getKey();
             MatchPair pair = condition.get(key);
-            if (pair != null && ! pair.isMatch(entry.getValue())) {
+            if (pair != null && ! pair.isMatch(entry.getValue(), param)) {
                 return false;
             }
         }
@@ -209,14 +212,14 @@ public class ConditionRouter implements Router, Comparable<Router> {
     private static final class MatchPair {
         final Set<String> matches = new HashSet<String>();
         final Set<String> mismatches = new HashSet<String>();
-        public boolean isMatch(String value) {
+        public boolean isMatch(String value, URL param) {
             for (String match : matches) {
-                if (! UrlUtils.isMatchGlobPattern(match, value)) {
+                if (! UrlUtils.isMatchGlobPattern(match, value, param)) {
                     return false;
                 }
             }
             for (String mismatch : mismatches) {
-                if (UrlUtils.isMatchGlobPattern(mismatch, value)) {
+                if (UrlUtils.isMatchGlobPattern(mismatch, value, param)) {
                     return false;
                 }
             }
