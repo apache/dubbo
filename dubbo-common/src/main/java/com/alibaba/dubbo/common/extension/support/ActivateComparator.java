@@ -45,19 +45,31 @@ public class ActivateComparator implements Comparator<Object> {
         }
         Activate a1 = o1.getClass().getAnnotation(Activate.class);
         Activate a2 = o2.getClass().getAnnotation(Activate.class);
-        if ((a1.after().length > 0 || a2.after().length > 0) 
+        if ((a1.before().length > 0 || a1.after().length > 0  
+                || a2.before().length > 0 || a2.after().length > 0) 
                 && o1.getClass().getInterfaces().length > 0
                 && o1.getClass().getInterfaces()[0].isAnnotationPresent(SPI.class)) {
             ExtensionLoader<?> extensionLoader = ExtensionLoader.getExtensionLoader(o1.getClass().getInterfaces()[0]);
-            if (a1.after().length > 0) {
+            if (a1.before().length > 0 || a1.after().length > 0) {
                 String n2 = extensionLoader.getExtensionName(o2.getClass());
+                for (String before : a1.before()) {
+                    if (before.equals(n2)) {
+                        return -1;
+                    }
+                }
                 for (String after : a1.after()) {
                     if (after.equals(n2)) {
                         return 1;
                     }
                 }
-            } else if (a2.after().length > 0) {
+            }
+            if (a2.before().length > 0 || a2.after().length > 0) {
                 String n1 = extensionLoader.getExtensionName(o1.getClass());
+                for (String before : a2.before()) {
+                    if (before.equals(n1)) {
+                        return 1;
+                    }
+                }
                 for (String after : a2.after()) {
                     if (after.equals(n1)) {
                         return -1;
