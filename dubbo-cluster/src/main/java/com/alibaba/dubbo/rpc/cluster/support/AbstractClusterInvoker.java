@@ -216,7 +216,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
         LoadBalance loadbalance;
         
-        List<Invoker<T>> invokers = directory.list(invocation);
+        List<Invoker<T>> invokers = list(invocation);
         if (invokers != null && invokers.size() > 0) {
             loadbalance = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(invokers.get(0).getUrl()
                     .getMethodParameter(invocation.getMethodName(),Constants.LOADBALANCE_KEY, Constants.DEFAULT_LOADBALANCE));
@@ -230,9 +230,9 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
     protected void checkWheatherDestoried() {
 
         if(destroyed){
-            throw new RpcException("Rpc invoker for " + getInterface() + " on consumer " + NetUtils.getLocalHost()
+            throw new RpcException("Rpc cluster invoker for " + getInterface() + " on consumer " + NetUtils.getLocalHost()
                     + " use dubbo version " + Version.getVersion()
-                    + " is not destroyed! Can not invoke any more.");
+                    + " is now destroyed! Can not invoke any more.");
         }
     }
 
@@ -255,5 +255,9 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
     protected abstract Result doInvoke(Invocation invocation, List<Invoker<T>> invokers,
                                        LoadBalance loadbalance) throws RpcException;
-
+    
+    protected  List<Invoker<T>> list(Invocation invocation) throws RpcException {
+    	List<Invoker<T>> invokers = directory.list(invocation);
+    	return invokers;
+    }
 }
