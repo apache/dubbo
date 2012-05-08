@@ -202,16 +202,18 @@ public class MulticastRegistry extends FailbackRegistry {
             unregistered(url);
         } else if (msg.startsWith(Constants.SUBSCRIBE)) {
             URL url = URL.valueOf(msg.substring(Constants.SUBSCRIBE.length()).trim());
-            List<URL> urls = lookup(url);
+            Set<URL> urls = getRegistered();
             if (urls != null && urls.size() > 0) {
                 for (URL u : urls) {
-                    String host = remoteAddress != null && remoteAddress.getAddress() != null 
-                            ? remoteAddress.getAddress().getHostAddress() : url.getIp();
-                    if (url.getParameter("unicast", true) // 消费者的机器是否只有一个进程
-                            && ! NetUtils.getLocalHost().equals(host)) { // 同机器多进程不能用unicast单播信息，否则只会有一个进程收到信息
-                        unicast(Constants.REGISTER + " " + u.toFullString(), host);
-                    } else {
-                        broadcast(Constants.REGISTER + " " + u.toFullString());
+                    if (UrlUtils.isMatch(url, u)) {
+                        String host = remoteAddress != null && remoteAddress.getAddress() != null 
+                                ? remoteAddress.getAddress().getHostAddress() : url.getIp();
+                        if (url.getParameter("unicast", true) // 消费者的机器是否只有一个进程
+                                && ! NetUtils.getLocalHost().equals(host)) { // 同机器多进程不能用unicast单播信息，否则只会有一个进程收到信息
+                            unicast(Constants.REGISTER + " " + u.toFullString(), host);
+                        } else {
+                            broadcast(Constants.REGISTER + " " + u.toFullString());
+                        }
                     }
                 }
             }
@@ -368,7 +370,7 @@ public class MulticastRegistry extends FailbackRegistry {
 
     public void unsubscribe(URL url, NotifyListener listener) {
         super.unsubscribe(url, listener);
-        received.remove(url.toFullString());
+        received.remove(url);
     }
 
     public List<URL> lookup(URL url) {
