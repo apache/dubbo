@@ -31,7 +31,7 @@ import com.alibaba.dubbo.validation.Validator;
  * 
  * @author william.liangf
  */
-@Activate(group = { Constants.CONSUMER, Constants.PROVIDER }, value = Constants.VALIDATION_KEY, order = 1000)
+@Activate(group = { Constants.CONSUMER, Constants.PROVIDER }, value = Constants.VALIDATION_KEY, order = 10000)
 public class ValidationFilter implements Filter {
 
     private Validation validation;
@@ -43,15 +43,15 @@ public class ValidationFilter implements Filter {
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         if (validation != null && ! invocation.getMethodName().startsWith("$") 
                 && ConfigUtils.isNotEmpty(invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.VALIDATION_KEY))) {
-            Validator validator = validation.getValidator(invoker.getUrl());
-            if (validator != null) {
-                try {
-                    validator.validate(invocation);
-                } catch (RpcException e) {
-                    throw e;
-                } catch (Throwable t) {
-                    throw new RpcException(t.getMessage(), t);
+            try {
+                Validator validator = validation.getValidator(invoker.getUrl());
+                if (validator != null) {
+                    validator.validate(invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());
                 }
+            } catch (RpcException e) {
+                throw e;
+            } catch (Throwable t) {
+                throw new RpcException(t.getMessage(), t);
             }
         }
         return invoker.invoke(invocation);

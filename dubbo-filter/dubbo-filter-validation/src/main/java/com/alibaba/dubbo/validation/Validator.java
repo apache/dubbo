@@ -15,8 +15,6 @@
  */
 package com.alibaba.dubbo.validation;
 
-import com.alibaba.dubbo.rpc.Invocation;
-
 /**
  * Validator
  * 
@@ -24,6 +22,6 @@ import com.alibaba.dubbo.rpc.Invocation;
  */
 public interface Validator {
 
-    void validate(Invocation invocation) throws Exception;
+    void validate(String methodName, Class<?>[] parameterTypes, Object[] arguments) throws Exception;
 
 }

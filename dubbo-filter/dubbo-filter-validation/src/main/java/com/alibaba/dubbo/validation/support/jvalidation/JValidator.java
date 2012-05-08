@@ -61,7 +61,6 @@ import com.alibaba.dubbo.common.bytecode.ClassGenerator;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
-import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.validation.Validator;
 
 /**
@@ -90,8 +89,7 @@ public class JValidator implements Validator {
         this.validator = factory.getValidator();
     }
 
-    public void validate(Invocation invocation) throws Exception {
-        String methodName = invocation.getMethodName();
+    public void validate(String methodName, Class<?>[] parameterTypes, Object[] arguments) throws Exception {
         String methodClassName = clazz.getName() + "$" + toUpperMethoName(methodName);
         Class<?> methodClass = null;
         try {
@@ -99,8 +97,8 @@ public class JValidator implements Validator {
         } catch (ClassNotFoundException e) {
         }
         Set<ConstraintViolation<?>> violations = new HashSet<ConstraintViolation<?>>();
-        Method method = clazz.getMethod(methodName, invocation.getParameterTypes());
-        Object parameterBean = getMethodParameterBean(clazz, method, invocation.getArguments());
+        Method method = clazz.getMethod(methodName, parameterTypes);
+        Object parameterBean = getMethodParameterBean(clazz, method, arguments);
         if (parameterBean != null) {
             if (methodClass != null) {
                 violations.addAll(validator.validate(parameterBean, Default.class, clazz, methodClass));
@@ -108,7 +106,7 @@ public class JValidator implements Validator {
                 violations.addAll(validator.validate(parameterBean, Default.class, clazz));
             }
         }
-        for (Object arg : invocation.getArguments()) {
+        for (Object arg : arguments) {
             validate(violations, arg, clazz, methodClass);
         }
         if (violations.size() > 0) {
