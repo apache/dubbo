@@ -324,7 +324,10 @@ public class ZookeeperRegistry extends FailbackRegistry {
     protected void doUnregister(URL url) {
         try {
             String provider = toUrlPath(url);
-            zookeeper.delete(provider, -1);
+            try {
+                zookeeper.delete(provider, -1);
+            } catch (NoNodeException e) {
+            }
         } catch (Throwable e) {
             throw new RpcException("Failed to unregister " + url + " to zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
         }
@@ -391,8 +394,6 @@ public class ZookeeperRegistry extends FailbackRegistry {
             if (listeners != null) {
                 listeners.remove(listener);
             }
-        } else if (url.getParameter(Constants.REGISTER_KEY, true)) {
-            unregister(url);
         }
     }
     
