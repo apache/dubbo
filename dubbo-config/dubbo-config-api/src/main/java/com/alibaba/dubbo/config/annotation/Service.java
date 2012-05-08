@@ -99,11 +99,11 @@ public @interface Service {
 
     String cache() default "";
 
-    String[] filter() default "";
+    String[] filter() default {};
 
-    String[] listener() default "";
+    String[] listener() default {};
 
-    String[] parameters() default "";
+    String[] parameters() default {};
 
     String application() default "";
 
@@ -111,10 +111,10 @@ public @interface Service {
 
     String provider() default "";
 
-    String[] protocol() default "";
+    String[] protocol() default {};
 
     String monitor() default "";
 
-    String[] registry() default "";
+    String[] registry() default {};
 
 }

@@ -95,11 +95,11 @@ public @interface Reference {
 
     String cache() default "";
 
-    String[] filter() default "";
+    String[] filter() default {};
 
-    String[] listener() default "";
+    String[] listener() default {};
 
-    String[] parameters() default "";
+    String[] parameters() default {};
 
     String application() default "";
 
@@ -109,6 +109,6 @@ public @interface Reference {
 
     String monitor() default "";
 
-    String[] registry() default "";
+    String[] registry() default {};
 
 }
