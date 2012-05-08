@@ -17,12 +17,9 @@ package com.alibaba.dubbo.demo.consumer;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 import com.alibaba.dubbo.demo.DemoService;
-import com.alibaba.dubbo.rpc.RpcContext;
 
 public class DemoAction {
     
@@ -33,22 +30,6 @@ public class DemoAction {
     }
 
 	public void start() throws InterruptedException, ExecutionException {
-		Future<String> f = RpcContext.getContext().asyncCall(new Callable<String>() {
-			public String call() throws Exception {
-				return demoService.sayHello("async call request");
-			}
-			
-		});
-		
-		System.out.println("async call ret :" + f.get());
-		
-		RpcContext.getContext().asyncCall(new Runnable() {
-			public void run() {
-				demoService.sayHello("oneway call request");
-				demoService.sayHello("oneway call request");
-			}
-		});
-		
         for (int i = 0; i < Integer.MAX_VALUE; i ++) {
             try {
             	String hello = demoService.sayHello("world" + i);
