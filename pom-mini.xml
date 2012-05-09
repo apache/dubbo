@@ -42,17 +42,17 @@
 	</organization>
 	<modules>
 		<module>dubbo-common</module>
-		<module>dubbo-container-api</module>
-		<module>dubbo-remoting-api</module>
-		<module>dubbo-remoting-netty</module>
+		<module>dubbo-container/dubbo-container-api</module>
+		<module>dubbo-remoting/dubbo-remoting-api</module>
+		<module>dubbo-remoting/dubbo-remoting-netty</module>
 		<module>dubbo-rpc</module>
-		<module>dubbo-filter-cache</module>
+		<module>dubbo-filter/dubbo-filter-cache</module>
 		<module>dubbo-cluster</module>
-		<module>dubbo-registry-api</module>
-		<module>dubbo-registry-default</module>
-		<module>dubbo-monitor-api</module>
-		<module>dubbo-config-api</module>
-		<module>dubbo-config-spring</module>
+		<module>dubbo-registry/dubbo-registry-api</module>
+		<module>dubbo-registry/dubbo-registry-default</module>
+		<module>dubbo-monitor/dubbo-monitor-api</module>
+		<module>dubbo-config/dubbo-config-api</module>
+		<module>dubbo-config/dubbo-config-spring</module>
 		<module>dubbo</module>
 	</modules>
 	<properties>
