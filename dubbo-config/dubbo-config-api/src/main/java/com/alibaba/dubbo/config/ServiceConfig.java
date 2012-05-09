@@ -326,7 +326,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             }
             appendParameters(map, application);
             appendParameters(map, module);
-            appendParameters(map, provider);
+            appendParameters(map, provider, Constants.DEFAULT_KEY);
             appendParameters(map, protocolConfig);
             appendParameters(map, this);
             if (methods != null && methods.size() > 0) {
