@@ -18,9 +18,8 @@ package com.alibaba.dubbo.remoting.exchange.support.header;
 import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import com.alibaba.dubbo.common.Constants;
@@ -46,9 +45,8 @@ public class HeaderExchangeClient implements ExchangeClient {
 
     private static final Logger logger = LoggerFactory.getLogger( HeaderExchangeClient.class );
 
-    private final ScheduledExecutorService scheduled =
-            Executors.newScheduledThreadPool( 1,
-                                              new NamedThreadFactory(
+    private static final ScheduledThreadPoolExecutor scheduled =
+            new ScheduledThreadPoolExecutor( 2,new NamedThreadFactory(
                                                       "dubbo-remoting-client-heartbeat",
                                                       true ) );
 
@@ -178,6 +176,7 @@ public class HeaderExchangeClient implements ExchangeClient {
         if (heatbeatTimer != null && ! heatbeatTimer.isCancelled()) {
             try {
                 heatbeatTimer.cancel(true);
+                scheduled.purge();
             } catch ( Throwable e ) {
                 if (logger.isWarnEnabled()) {
                     logger.warn(e.getMessage(), e);
