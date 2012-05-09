@@ -64,7 +64,7 @@ public interface Protocol {
     <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException;
 
     /**
-     * 释放协议：
+     * 释放协议：<br>
      * 1. 取消该协议所有已经暴露和引用的服务。<br>
      * 2. 释放协议所占用的所有资源，比如连接和端口。<br>
      * 3. 协议在释放后，依然能暴露和引用新的服务。<br>
