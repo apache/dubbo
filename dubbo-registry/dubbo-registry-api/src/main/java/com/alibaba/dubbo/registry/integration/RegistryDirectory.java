@@ -390,6 +390,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * @return
      */
     private URL mergeUrl(URL providerUrl){
+        providerUrl = ClusterUtils.mergeUrl(providerUrl, queryMap); // 合并消费端参数
+        
         List<Configurator> localConfigurators = this.configurators; // local reference
         if (localConfigurators != null && localConfigurators.size() > 0) {
             for (Configurator configurator : localConfigurators) {
@@ -397,7 +399,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             }
         }
         
-        providerUrl = ClusterUtils.mergeUrl(providerUrl, queryMap); // 合并消费端参数
         providerUrl = providerUrl.addParameter(Constants.CHECK_KEY, String.valueOf(false)); // 不检查连接是否成功，总是创建Invoker！
         
         //directoryUrl 与 override 合并是在notify的最后，这里不能够处理
