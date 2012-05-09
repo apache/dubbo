@@ -289,43 +289,36 @@ public class ProviderConfig extends AbstractServiceConfig {
         this.status = status;
     }
 
-    @Parameter(key = "default.cluster")
     @Override
     public String getCluster() {
         return super.getCluster();
     }
 
-    @Parameter(key = "default.connections")
     @Override
     public Integer getConnections() {
         return super.getConnections();
     }
 
-    @Parameter(key = "default.timeout")
     @Override
     public Integer getTimeout() {
         return super.getTimeout();
     }
 
-    @Parameter(key = "default.retries")
     @Override
     public Integer getRetries() {
         return super.getRetries();
     }
 
-    @Parameter(key = "default.loadbalance")
     @Override
     public String getLoadbalance() {
         return super.getLoadbalance();
     }
 
-    @Parameter(key = "default.async")
     @Override
     public Boolean isAsync() {
         return super.isAsync();
     }
 
-    @Parameter(key = "default.actives")
     @Override
     public Integer getActives() {
         return super.getActives();
