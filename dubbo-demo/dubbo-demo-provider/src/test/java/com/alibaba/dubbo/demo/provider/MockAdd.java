@@ -59,7 +59,7 @@ public class MockAdd {
         }
         URL registryUrl = URL.valueOf(url).addParameter(Constants.CHECK_KEY, String.valueOf(false));
         registry = registryFactory.getRegistry(registryUrl);
-        URL mockUrl = URL.valueOf("override://" + NetUtils.getLocalHost() + "/" + DemoService.class.getName() + "?category=configurators&version=1.0.0&dynamic=false&mock=force:return+null");
+        URL mockUrl = URL.valueOf("override://" + NetUtils.getLocalHost() + "/" + DemoService.class.getName() + "?category=configurators&dynamic=false&mock=force:return+null");
         registry.register(mockUrl);
     }
 
