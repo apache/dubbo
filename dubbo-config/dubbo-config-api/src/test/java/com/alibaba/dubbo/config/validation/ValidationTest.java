@@ -49,12 +49,13 @@ public class ValidationTest {
         service.setProtocol(new ProtocolConfig("dubbo", 29582));
         service.setInterface(ValidationService.class.getName());
         service.setRef(new ValidationServiceImpl());
+        service.setValidation(String.valueOf(true));
         service.export();
         try {
             ReferenceConfig<ValidationService> reference = new ReferenceConfig<ValidationService>();
             reference.setApplication(new ApplicationConfig("validation-consumer"));
             reference.setInterface(ValidationService.class);
-            reference.setUrl("dubbo://127.0.0.1:29582?validation=true");
+            reference.setUrl("dubbo://127.0.0.1:29582?scope=remote&validation=true");
             ValidationService validationService = reference.get();
             try {
                 // Save OK
@@ -72,7 +73,6 @@ public class ValidationTest {
                     validationService.save(parameter);
                     Assert.fail();
                 } catch (RpcException e) {
-                    e.printStackTrace();
                     ConstraintViolationException ve = (ConstraintViolationException)e.getCause();
                     Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
                     Assert.assertNotNull(violations);
@@ -125,7 +125,7 @@ public class ValidationTest {
         service.setProtocol(new ProtocolConfig("dubbo", 29582));
         service.setInterface(ValidationService.class.getName());
         service.setRef(new ValidationServiceImpl());
-        service.setValidation("true");
+        service.setValidation(String.valueOf(true));
         service.export();
         try {
             ReferenceConfig<ValidationService> reference = new ReferenceConfig<ValidationService>();
@@ -149,10 +149,7 @@ public class ValidationTest {
                     validationService.save(parameter);
                     Assert.fail();
                 } catch (RpcException e) {
-                    e.printStackTrace();
-                    ConstraintViolationException ve = (ConstraintViolationException)e.getCause();
-                    Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
-                    Assert.assertNotNull(violations);
+                    Assert.assertTrue(e.getMessage().contains("ConstraintViolation"));
                 }
                 
                 // Delete OK
@@ -163,28 +160,19 @@ public class ValidationTest {
                     validationService.delete(0, "abc");
                     Assert.fail();
                 } catch (RpcException e) {
-                    ConstraintViolationException ve = (ConstraintViolationException)e.getCause();
-                    Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
-                    Assert.assertNotNull(violations);
-                    Assert.assertEquals(1, violations.size());
+                    Assert.assertTrue(e.getMessage().contains("ConstraintViolation"));
                 }
                 try {
                     validationService.delete(2, null);
                     Assert.fail();
                 } catch (RpcException e) {
-                    ConstraintViolationException ve = (ConstraintViolationException)e.getCause();
-                    Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
-                    Assert.assertNotNull(violations);
-                    Assert.assertEquals(1, violations.size());
+                    Assert.assertTrue(e.getMessage().contains("ConstraintViolation"));
                 }
                 try {
                     validationService.delete(0, null);
                     Assert.fail();
                 } catch (RpcException e) {
-                    ConstraintViolationException ve = (ConstraintViolationException)e.getCause();
-                    Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
-                    Assert.assertNotNull(violations);
-                    Assert.assertEquals(2, violations.size());
+                    Assert.assertTrue(e.getMessage().contains("ConstraintViolation"));
                 }
             } finally {
                 reference.destroy();
@@ -193,7 +181,7 @@ public class ValidationTest {
             service.unexport();
         }
     }
-    
+
     @Test
     public void testGenericValidation() {
         ServiceConfig<ValidationService> service = new ServiceConfig<ValidationService>();
@@ -202,13 +190,13 @@ public class ValidationTest {
         service.setProtocol(new ProtocolConfig("dubbo", 29582));
         service.setInterface(ValidationService.class.getName());
         service.setRef(new ValidationServiceImpl());
-        service.setValidation("true");
+        service.setValidation(String.valueOf(true));
         service.export();
         try {
             ReferenceConfig<GenericService> reference = new ReferenceConfig<GenericService>();
             reference.setApplication(new ApplicationConfig("validation-consumer"));
             reference.setInterface(ValidationService.class.getName());
-            reference.setUrl("dubbo://127.0.0.1:29582");
+            reference.setUrl("dubbo://127.0.0.1:29582?scope=remote&validation=true");
             reference.setGeneric(true);
             GenericService validationService = reference.get();
             try {
@@ -227,10 +215,7 @@ public class ValidationTest {
                     validationService.$invoke("save", new String[] {ValidationParameter.class.getName()}, new Object[] {parameter});
                     Assert.fail();
                 } catch (RpcException e) {
-                    e.printStackTrace();
-                    ConstraintViolationException ve = (ConstraintViolationException)e.getCause();
-                    Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
-                    Assert.assertNotNull(violations);
+                    Assert.assertTrue(e.getMessage().contains("ConstraintViolation"));
                 }
                 
                 // Delete OK
@@ -241,28 +226,19 @@ public class ValidationTest {
                     validationService.$invoke("delete", new String[] {long.class.getName(), String.class.getName()}, new Object[] {0, "abc"});
                     Assert.fail();
                 } catch (RpcException e) {
-                    ConstraintViolationException ve = (ConstraintViolationException)e.getCause();
-                    Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
-                    Assert.assertNotNull(violations);
-                    Assert.assertEquals(1, violations.size());
+                    Assert.assertTrue(e.getMessage().contains("ConstraintViolation"));
                 }
                 try {
                     validationService.$invoke("delete", new String[] {long.class.getName(), String.class.getName()}, new Object[] {2, null});
                     Assert.fail();
                 } catch (RpcException e) {
-                    ConstraintViolationException ve = (ConstraintViolationException)e.getCause();
-                    Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
-                    Assert.assertNotNull(violations);
-                    Assert.assertEquals(1, violations.size());
+                    Assert.assertTrue(e.getMessage().contains("ConstraintViolation"));
                 }
                 try {
                     validationService.$invoke("delete", new String[] {long.class.getName(), String.class.getName()}, new Object[] {0, null});
                     Assert.fail();
                 } catch (RpcException e) {
-                    ConstraintViolationException ve = (ConstraintViolationException)e.getCause();
-                    Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
-                    Assert.assertNotNull(violations);
-                    Assert.assertEquals(2, violations.size());
+                    Assert.assertTrue(e.getMessage().contains("ConstraintViolation"));
                 }
             } finally {
                 reference.destroy();
