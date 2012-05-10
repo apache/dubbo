@@ -31,9 +31,9 @@ import com.alibaba.dubbo.registry.RegistryFactory;
  * 
  * @author william.liangf
  */
-public class OverrideRemove {
+public class MockRemove {
 
-    private static final Logger logger = LoggerFactory.getLogger(OverrideRemove.class);
+    private static final Logger logger = LoggerFactory.getLogger(MockRemove.class);
 
     public static final String REGISTRY_ADDRESS = "dubbo.registry.address";
 
@@ -46,7 +46,7 @@ public class OverrideRemove {
     }
     
     public static void main(String[] args) throws Exception {
-        OverrideRemove c = new OverrideRemove();
+        MockRemove c = new MockRemove();
         c.start();
         Thread.sleep(500);
         c.stop();
@@ -59,8 +59,8 @@ public class OverrideRemove {
         }
         URL registryUrl = URL.valueOf(url).addParameter(Constants.CHECK_KEY, String.valueOf(false));
         registry = registryFactory.getRegistry(registryUrl);
-        URL overrideUrl = URL.valueOf("override://" + NetUtils.getLocalHost() + "/" + DemoService.class.getName() + "?category=configurators&version=1.0.0&dynamic=false&application=*&address=*&timeout=1000");
-        registry.unregister(overrideUrl);
+        URL mockUrl = URL.valueOf("override://" + NetUtils.getLocalHost() + "/" + DemoService.class.getName() + "?category=configurators&version=1.0.0&dynamic=false&mock=force:return+null");
+        registry.unregister(mockUrl);
     }
 
     public void stop() {
