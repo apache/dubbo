@@ -88,17 +88,17 @@ public class MonitorFilter implements Filter {
             int localPort;
             String remoteKey;
             String remoteValue;
-            if (context.isProviderSide()) {
-                // ---- 服务提供方监控 ----
-                localPort = context.getLocalPort();
-                remoteKey = MonitorService.CONSUMER;
-                remoteValue = context.getRemoteHost();
-            } else {
+            if (Constants.CONSUMER_SIDE.equals(invoker.getUrl().getParameter(Constants.SIDE_KEY))) {
                 // ---- 服务消费方监控 ----
                 context = RpcContext.getContext(); // 消费方必须在invoke()之后获取context信息
                 localPort = 0;
                 remoteKey = MonitorService.PROVIDER;
-                remoteValue = context.getRemoteAddressString();
+                remoteValue = url.getAddress();
+            } else {
+                // ---- 服务提供方监控 ----
+                localPort = url.getPort();
+                remoteKey = MonitorService.CONSUMER;
+                remoteValue = context.getRemoteHost();
             }
             monitor.count(new URL(Constants.COUNT_PROTOCOL,
                     NetUtils.getLocalHost(), localPort,

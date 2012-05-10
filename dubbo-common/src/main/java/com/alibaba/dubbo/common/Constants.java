@@ -157,6 +157,12 @@ public class Constants {
 
     public static final String  MONITOR_KEY                        = "monitor";
 
+    public static final String  SIDE_KEY                           = "side";
+
+    public static final String  PROVIDER_SIDE                      = "provider";
+
+    public static final String  CONSUMER_SIDE                      = "consumer";
+
     public static final String  DEFAULT_REGISTRY                   = "dubbo";
 
     public static final String  BACKUP_KEY                         = "backup";
