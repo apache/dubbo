@@ -151,8 +151,8 @@ public class RedisRegistry extends FailbackRegistry {
                     for (URL url : new HashSet<URL>(getRegistered())) {
                         if (url.getParameter(Constants.DYNAMIC_KEY, true)) {
                             String key = toCategoryPath(url);
-                            if (jedis.hset(key, url.toFullString(), String.valueOf(System.currentTimeMillis() + expirePeriod)) == 0) {
-                                jedis.publish(key, Constants.CONSUMER_PROTOCOL.equals(url.getProtocol()) ? Constants.SUBSCRIBE : Constants.REGISTER);
+                            if (jedis.hset(key, url.toFullString(), String.valueOf(System.currentTimeMillis() + expirePeriod)) == 1) {
+                                jedis.publish(key, Constants.REGISTER);
                             }
                         }
                     }
@@ -191,11 +191,7 @@ public class RedisRegistry extends FailbackRegistry {
                             }
                     }
                     if (delete) {
-                        if (key.endsWith(Constants.CONSUMERS_CATEGORY)) {
-                            jedis.publish(key, Constants.UNSUBSCRIBE);
-                        } else {
-                            jedis.publish(key, Constants.UNREGISTER);
-                        }
+                        jedis.publish(key, Constants.UNREGISTER);
                     }
                 }
             }
@@ -258,7 +254,7 @@ public class RedisRegistry extends FailbackRegistry {
                 Jedis jedis = jedisPool.getResource();
                 try {
                     jedis.hset(key, value, expire);
-                    jedis.publish(key, Constants.CONSUMER_PROTOCOL.equals(url.getProtocol()) ? Constants.SUBSCRIBE : Constants.REGISTER);
+                    jedis.publish(key, Constants.REGISTER);
                     success = true;
                 } finally {
                     jedisPool.returnResource(jedis);
@@ -287,7 +283,7 @@ public class RedisRegistry extends FailbackRegistry {
                 Jedis jedis = jedisPool.getResource();
                 try {
                     jedis.hdel(key, value);
-                    jedis.publish(key, Constants.CONSUMER_PROTOCOL.equals(url.getProtocol()) ? Constants.UNSUBSCRIBE : Constants.UNREGISTER);
+                    jedis.publish(key, Constants.UNREGISTER);
                 } finally {
                     jedisPool.returnResource(jedis);
                 }
@@ -321,11 +317,24 @@ public class RedisRegistry extends FailbackRegistry {
                 try {
                     if (service.endsWith(Constants.ANY_VALUE)) {
                         admin = true;
-                        for (String s : getServices(jedis, service)) {
-                            doNotify(jedis, s, url, listener);
+                        Set<String> keys = jedis.keys(service);
+                        if (keys != null && keys.size() > 0) {
+                            Map<String, Set<String>> serviceKeys = new HashMap<String, Set<String>>();
+                            for (String key : keys) {
+                                String serviceKey = toServicePath(key);
+                                Set<String> sk = serviceKeys.get(serviceKey);
+                                if (sk == null) {
+                                    sk = new HashSet<String>();
+                                    serviceKeys.put(serviceKey, sk);
+                                }
+                                sk.add(key);
+                            }
+                            for (Set<String> sk : serviceKeys.values()) {
+                                doNotify(jedis, sk, url, Arrays.asList(listener));
+                            }
                         }
                     } else {
-                        doNotify(jedis, service, url, listener);
+                        doNotify(jedis, jedis.keys(service + Constants.PATH_SEPARATOR + Constants.ANY_VALUE), url, Arrays.asList(listener));
                     }
                     success = true;
                     break; // 只需读一个服务器的数据
@@ -347,96 +356,84 @@ public class RedisRegistry extends FailbackRegistry {
 
     @Override
     public void doUnsubscribe(URL url, NotifyListener listener) {
-        if (! Constants.ANY_VALUE.equals(url.getServiceInterface())) {
-            String key = toCategoryPath(url);
-            String value = url.toFullString();
-            RpcException exception = null;
-            for (Map.Entry<String, JedisPool> entry : jedisPools.entrySet()) {
-                JedisPool jedisPool = entry.getValue();
-                try {
-                    Jedis jedis = jedisPool.getResource();
-                    try {
-                        jedis.hdel(key, value);
-                        jedis.publish(key, Constants.UNSUBSCRIBE);
-                    } finally {
-                        jedisPool.returnResource(jedis);
-                    }
-                } catch (Throwable t) {
-                    exception = new RpcException("Failed to unsubscribe service to redis registry. registry: " + entry.getKey() + ", service: " + url + ", cause: " + t.getMessage(), t);
-                }
-            }
-            if (exception != null) {
-                throw exception;
-            }
-        }
     }
 
-    private void doNotify(Jedis jedis, String service, boolean consumer) {
+    private void doNotify(Jedis jedis, String key) {
         for (Map.Entry<URL, Set<NotifyListener>> entry : new HashMap<URL, Set<NotifyListener>>(getSubscribed()).entrySet()) {
-            URL url = entry.getKey();
-            if (Constants.ANY_VALUE.equals(url.getServiceInterface()) 
-                    || (! consumer && toServicePath(url).equals(service))) {
-                doNotify(jedis, service, url, new HashSet<NotifyListener>(entry.getValue()));
-            }
+            doNotify(jedis, Arrays.asList(key), entry.getKey(), new HashSet<NotifyListener>(entry.getValue()));
         }
-    }
-    
-    private void doNotify(Jedis jedis, String service, URL url, NotifyListener listener) {
-        doNotify(jedis, service, url, Arrays.asList(listener));
     }
 
-    private void doNotify(Jedis jedis, String service, URL url, Collection<NotifyListener> listeners) {
-        Map<String, String> providers;
-        providers = jedis.hgetAll(service + Constants.PATH_SEPARATOR + Constants.PROVIDERS_CATEGORY);
-        if (Constants.ANY_VALUE.equals(url.getServiceInterface())) {
-            Map<String, String> consumers = jedis.hgetAll(service + Constants.PATH_SEPARATOR + Constants.CONSUMERS_CATEGORY);
-            if (consumers != null && consumers.size() > 0) {
-                providers = providers == null ? new HashMap<String, String>() : new HashMap<String, String>(providers);
-                providers.putAll(consumers);
+    private void doNotify(Jedis jedis, Collection<String> keys, URL url, Collection<NotifyListener> listeners) {
+        if (keys == null || keys.size() == 0
+                || listeners == null || listeners.size() == 0) {
+            return;
+        }
+        long now = System.currentTimeMillis();
+        List<URL> result = new ArrayList<URL>();
+        List<String> categories = Arrays.asList(url.getParameter(Constants.CATEGORY_KEY, new String[0]));
+        String consumerService = url.getServiceInterface();
+        for (String key : keys) {
+            if (! Constants.ANY_VALUE.equals(consumerService)) {
+                String prvoiderService = toServiceName(key);
+                if (! prvoiderService.equals(consumerService)) {
+                    continue;
+                }
             }
-        }
-        if (logger.isInfoEnabled()) {
-            logger.info("redis notify: " + service + " = " + providers);
-        }
-        
-        List<URL> urls = new ArrayList<URL>();
-        if (providers != null && providers.size() > 0) {
-            long now = System.currentTimeMillis();
-            for (Map.Entry<String, String> entry : providers.entrySet()) {
-                URL u = URL.valueOf(entry.getKey());
-                if (Long.parseLong(entry.getValue()) >= now) {
-                    if (UrlUtils.isMatch(url, u)) {
-                        urls.add(u);
+            String category = toCategoryName(key);
+            if (! categories.contains(category)) {
+                continue;
+            }
+            List<URL> urls = new ArrayList<URL>();
+            Map<String, String> values = jedis.hgetAll(key);
+            if (values != null && values.size() > 0) {
+                for (Map.Entry<String, String> entry : values.entrySet()) {
+                    URL u = URL.valueOf(entry.getKey());
+                    if (! u.getParameter(Constants.DYNAMIC_KEY, true)
+                            || Long.parseLong(entry.getValue()) >= now) {
+                        if (UrlUtils.isMatch(url, u)) {
+                            urls.add(u);
+                        }
                     }
                 }
             }
-        }
-        if (urls != null && urls.isEmpty() && Constants.ANY_VALUE.equals(url.getServiceInterface())) {
-            URL empty = url.setProtocol(Constants.PROVIDER_PROTOCOL);
-            if (Constants.ANY_VALUE.equals(empty.getServiceInterface())) {
-                empty = empty.setServiceInterface(service.substring(root.length()));
+            if (urls.isEmpty()) {
+                urls.add(url.setProtocol(Constants.EMPTY_PROTOCOL)
+                        .setAddress(Constants.ANYHOST_VALUE)
+                        .setPath(toServiceName(key))
+                        .addParameter(Constants.CATEGORY_KEY, category));
             }
-            urls.add(empty);
+            result.addAll(urls);
+            if (logger.isInfoEnabled()) {
+                logger.info("redis notify: " + key + " = " + urls);
+            }
+        }
+        if (result == null || result.size() == 0) {
+            return;
         }
         for (NotifyListener listener : listeners) {
-            notify(url, listener, urls);
+            notify(url, listener, result);
         }
-    }
-    
-    private String getService(Jedis jedis, String key) {
-        int i = key.indexOf(Constants.PATH_SEPARATOR, root.length());
-        return i > 0 ? key.substring(0, i) : key;
     }
 
-    private Set<String> getServices(Jedis jedis, String pattern) {
-        Set<String> keys = jedis.keys(pattern);
-        Set<String> services = new HashSet<String>();
-        if (keys != null && keys.size() > 0) {
-            for (String key : keys) {
-                services.add(getService(jedis, key));
-            }
+    private String toServiceName(String categoryPath) {
+        String servicePath = toServicePath(categoryPath);
+        return servicePath.startsWith(root) ? servicePath.substring(root.length()) : servicePath;
+    }
+
+    private String toCategoryName(String categoryPath) {
+        int i = categoryPath.lastIndexOf(Constants.PATH_SEPARATOR);
+        return i > 0 ? categoryPath.substring(i + 1) : categoryPath;
+    }
+
+    private String toServicePath(String categoryPath) {
+        int i;
+        if (categoryPath.startsWith(root)) {
+            i = categoryPath.indexOf(Constants.PATH_SEPARATOR, root.length());
+        } else {
+            i = categoryPath.indexOf(Constants.PATH_SEPARATOR);
         }
-        return services;
+        return i > 0 ? categoryPath.substring(0, i) : categoryPath;
     }
 
     private String toServicePath(URL url) {
@@ -461,13 +458,11 @@ public class RedisRegistry extends FailbackRegistry {
                 logger.info("redis event: " + key + " = " + msg);
             }
             if (msg.equals(Constants.REGISTER) 
-                    || msg.equals(Constants.UNREGISTER)
-                    || msg.equals(Constants.SUBSCRIBE) 
-                    || msg.equals(Constants.UNSUBSCRIBE)) {
+                    || msg.equals(Constants.UNREGISTER)) {
                 try {
                     Jedis jedis = jedisPool.getResource();
                     try {
-                        doNotify(jedis, getService(jedis, key), msg.equals(Constants.SUBSCRIBE) || msg.equals(Constants.UNSUBSCRIBE));
+                        doNotify(jedis, key);
                     } finally {
                         jedisPool.returnResource(jedis);
                     }
@@ -561,8 +556,11 @@ public class RedisRegistry extends FailbackRegistry {
                                         if (service.endsWith(Constants.ANY_VALUE)) {
                                             if (! first) {
                                                 first = false;
-                                                for (String s : getServices(jedis, service)) {
-                                                    doNotify(jedis, s, false);
+                                                Set<String> keys = jedis.keys(service);
+                                                if (keys != null && keys.size() > 0) {
+                                                    for (String s : keys) {
+                                                        doNotify(jedis, s);
+                                                    }
                                                 }
                                                 resetSkip();
                                             }
@@ -570,10 +568,10 @@ public class RedisRegistry extends FailbackRegistry {
                                         } else {
                                             if (! first) {
                                                 first = false;
-                                                doNotify(jedis, service, false);
+                                                doNotify(jedis, service);
                                                 resetSkip();
                                             }
-                                            jedis.subscribe(new NotifySub(jedisPool), service + Constants.PATH_SEPARATOR + Constants.PROVIDERS_CATEGORY); // 阻塞
+                                            jedis.psubscribe(new NotifySub(jedisPool), service + Constants.PATH_SEPARATOR + Constants.ANY_VALUE); // 阻塞
                                         }
                                         break;
                                     } finally {
