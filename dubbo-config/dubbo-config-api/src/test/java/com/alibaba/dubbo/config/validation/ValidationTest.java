@@ -41,7 +41,7 @@ import com.alibaba.dubbo.rpc.service.GenericService;
  */
 public class ValidationTest {
 
-    /*@Test
+    @Test
     public void testValidation() {
         ServiceConfig<ValidationService> service = new ServiceConfig<ValidationService>();
         service.setApplication(new ApplicationConfig("validation-provider"));
@@ -49,7 +49,6 @@ public class ValidationTest {
         service.setProtocol(new ProtocolConfig("dubbo", 29582));
         service.setInterface(ValidationService.class.getName());
         service.setRef(new ValidationServiceImpl());
-        service.setValidation("true");
         service.export();
         try {
             ReferenceConfig<ValidationService> reference = new ReferenceConfig<ValidationService>();
@@ -116,7 +115,84 @@ public class ValidationTest {
         } finally {
             service.unexport();
         }
-    }*/
+    }
+
+    @Test
+    public void testProviderValidation() {
+        ServiceConfig<ValidationService> service = new ServiceConfig<ValidationService>();
+        service.setApplication(new ApplicationConfig("validation-provider"));
+        service.setRegistry(new RegistryConfig("N/A"));
+        service.setProtocol(new ProtocolConfig("dubbo", 29582));
+        service.setInterface(ValidationService.class.getName());
+        service.setRef(new ValidationServiceImpl());
+        service.setValidation("true");
+        service.export();
+        try {
+            ReferenceConfig<ValidationService> reference = new ReferenceConfig<ValidationService>();
+            reference.setApplication(new ApplicationConfig("validation-consumer"));
+            reference.setInterface(ValidationService.class);
+            reference.setUrl("dubbo://127.0.0.1:29582");
+            ValidationService validationService = reference.get();
+            try {
+                // Save OK
+                ValidationParameter parameter = new ValidationParameter();
+                parameter.setName("liangfei");
+                parameter.setEmail("liangfei@liang.fei");
+                parameter.setAge(50);
+                parameter.setLoginDate(new Date(System.currentTimeMillis() - 1000000));
+                parameter.setExpiryDate(new Date(System.currentTimeMillis() + 1000000));
+                validationService.save(parameter);
+                
+                // Save Error
+                try {
+                    parameter = new ValidationParameter();
+                    validationService.save(parameter);
+                    Assert.fail();
+                } catch (RpcException e) {
+                    e.printStackTrace();
+                    ConstraintViolationException ve = (ConstraintViolationException)e.getCause();
+                    Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
+                    Assert.assertNotNull(violations);
+                }
+                
+                // Delete OK
+                validationService.delete(2, "abc");
+                
+                // Delete Error
+                try {
+                    validationService.delete(0, "abc");
+                    Assert.fail();
+                } catch (RpcException e) {
+                    ConstraintViolationException ve = (ConstraintViolationException)e.getCause();
+                    Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
+                    Assert.assertNotNull(violations);
+                    Assert.assertEquals(1, violations.size());
+                }
+                try {
+                    validationService.delete(2, null);
+                    Assert.fail();
+                } catch (RpcException e) {
+                    ConstraintViolationException ve = (ConstraintViolationException)e.getCause();
+                    Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
+                    Assert.assertNotNull(violations);
+                    Assert.assertEquals(1, violations.size());
+                }
+                try {
+                    validationService.delete(0, null);
+                    Assert.fail();
+                } catch (RpcException e) {
+                    ConstraintViolationException ve = (ConstraintViolationException)e.getCause();
+                    Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
+                    Assert.assertNotNull(violations);
+                    Assert.assertEquals(2, violations.size());
+                }
+            } finally {
+                reference.destroy();
+            }
+        } finally {
+            service.unexport();
+        }
+    }
     
     @Test
     public void testGenericValidation() {
@@ -132,22 +208,22 @@ public class ValidationTest {
             ReferenceConfig<GenericService> reference = new ReferenceConfig<GenericService>();
             reference.setApplication(new ApplicationConfig("validation-consumer"));
             reference.setInterface(ValidationService.class.getName());
-            reference.setUrl("dubbo://127.0.0.1:29582?validation=true");
+            reference.setUrl("dubbo://127.0.0.1:29582");
             reference.setGeneric(true);
             GenericService validationService = reference.get();
             try {
                 // Save OK
-                /*Map<String, Object> parameter = new HashMap<String, Object>();
+                Map<String, Object> parameter = new HashMap<String, Object>();
                 parameter.put("name", "liangfei");
                 parameter.put("Email", "liangfei@liang.fei");
                 parameter.put("Age", 50);
                 parameter.put("LoginDate", new Date(System.currentTimeMillis() - 1000000));
                 parameter.put("ExpiryDate", new Date(System.currentTimeMillis() + 1000000));
-                validationService.$invoke("save", new String[] {ValidationParameter.class.getName()}, new Object[] {parameter});*/
+                validationService.$invoke("save", new String[] {ValidationParameter.class.getName()}, new Object[] {parameter});
                 
                 // Save Error
                 try {
-                    Map<String, Object> parameter = new HashMap<String, Object>();
+                    parameter = new HashMap<String, Object>();
                     validationService.$invoke("save", new String[] {ValidationParameter.class.getName()}, new Object[] {parameter});
                     Assert.fail();
                 } catch (RpcException e) {
