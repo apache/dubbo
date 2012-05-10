@@ -472,13 +472,13 @@ public abstract class AbstractRegistry implements Registry {
         }
         Set<URL> destroyRegistered = new HashSet<URL>(getRegistered());
         if (! destroyRegistered.isEmpty()) {
-            if (logger.isInfoEnabled()) {
-                logger.info("Destroy unregister url " + destroyRegistered);
-            }
             for (URL url : new HashSet<URL>(getRegistered())) {
                 if (url.getParameter(Constants.DYNAMIC_KEY, true)) {
                     try {
                         unregister(url);
+                        if (logger.isInfoEnabled()) {
+                            logger.info("Destroy unregister url " + url);
+                        }
                     } catch (Throwable t) {
                         logger.warn("Failed to unregister url " + url + " to registry " + getUrl() + " on destroy, cause: " + t.getMessage(), t);
                     }
@@ -487,14 +487,14 @@ public abstract class AbstractRegistry implements Registry {
         }
         Map<URL, Set<NotifyListener>> destroySubscribed = new HashMap<URL, Set<NotifyListener>>(getSubscribed());
         if (! destroySubscribed.isEmpty()) {
-            if (logger.isInfoEnabled()) {
-                logger.info("Destroy unsubscribe url " + destroySubscribed.keySet());
-            }
             for (Map.Entry<URL, Set<NotifyListener>> entry : destroySubscribed.entrySet()) {
                 URL url = entry.getKey();
                 for (NotifyListener listener : entry.getValue()) {
                     try {
                         unsubscribe(url, listener);
+                        if (logger.isInfoEnabled()) {
+                            logger.info("Destroy unsubscribe url " + url);
+                        }
                     } catch (Throwable t) {
                         logger.warn("Failed to unsubscribe url " + url + " to registry " + getUrl() + " on destroy, cause: " +t.getMessage(), t);
                     }
