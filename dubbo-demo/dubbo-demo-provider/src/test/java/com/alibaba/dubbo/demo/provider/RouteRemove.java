@@ -59,7 +59,7 @@ public class RouteRemove {
         }
         URL registryUrl = URL.valueOf(url).addParameter(Constants.CHECK_KEY, String.valueOf(false));
         registry = registryFactory.getRegistry(registryUrl);
-        URL routeUrl = URL.valueOf("route://" + NetUtils.getLocalHost() + "/" + DemoService.class.getName() + "?category=routers&version=1.0.0&dynamic=false&priority=1&name=aaa&rule=" + URL.encode("consumer.host=" + NetUtils.getLocalHost() + " => provider.host=" + NetUtils.getLocalHost()));
+        URL routeUrl = URL.valueOf("condition://" + NetUtils.getLocalHost() + "/" + DemoService.class.getName() + "?category=routers&dynamic=false&rule=" + URL.encode("host=" + NetUtils.getLocalHost() + " => host=" + NetUtils.getLocalHost()));
         registry.unregister(routeUrl);
     }
 
