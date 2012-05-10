@@ -45,9 +45,11 @@ public class ConditionRouter implements Router, Comparable<Router> {
     
     private static final Logger logger = LoggerFactory.getLogger(ConditionRouter.class);
 
+    private final URL url;
+    
     private final int priority;
 
-    private final URL url;
+    private final boolean force;
 
     private final Map<String, MatchPair> whenCondition;
     
@@ -56,6 +58,7 @@ public class ConditionRouter implements Router, Comparable<Router> {
     public ConditionRouter(URL url) {
         this.url = url;
         this.priority = url.getParameter(Constants.PRIORITY_KEY, 0);
+        this.force = url.getParameter(Constants.FORCE_KEY, false);
         try {
             String rule = url.getParameterAndDecoded(Constants.RULE_KEY);
             if (rule == null || rule.trim().length() == 0) {
@@ -99,7 +102,7 @@ public class ConditionRouter implements Router, Comparable<Router> {
                     result.add(invoker);
                 }
             }
-            if (result.size() > 0) {
+            if (result.size() > 0 || force) {
                 return result;
             }
         } catch (Throwable t) {

@@ -373,6 +373,8 @@ public class Constants {
 
     public static final String  FORCE_PREFIX                       = "force:";
 
+    public static final String  FORCE_KEY                          = "force";
+
     public static final String  MERGER_KEY                         = "merger";
 
     public static final String  TPS_MAX_KEY                        = "tps.max";
