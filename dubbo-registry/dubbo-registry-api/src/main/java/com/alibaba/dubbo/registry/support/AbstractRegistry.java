@@ -476,10 +476,12 @@ public abstract class AbstractRegistry implements Registry {
                 logger.info("Destroy unregister url " + destroyRegistered);
             }
             for (URL url : new HashSet<URL>(getRegistered())) {
-                try {
-                    unregister(url);
-                } catch (Throwable t) {
-                    logger.warn("Failed to unregister url " + url + " to registry " + getUrl() + " on destroy, cause: " + t.getMessage(), t);
+                if (url.getParameter(Constants.DYNAMIC_KEY, true)) {
+                    try {
+                        unregister(url);
+                    } catch (Throwable t) {
+                        logger.warn("Failed to unregister url " + url + " to registry " + getUrl() + " on destroy, cause: " + t.getMessage(), t);
+                    }
                 }
             }
         }
