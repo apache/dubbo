@@ -38,7 +38,7 @@ public class ExceptionFilterTest {
     public void testRpcException() {
         Logger logger = EasyMock.createMock(Logger.class);
         RpcException exception = new RpcException("TestRpcException");
-        logger.error(EasyMock.eq("Got unchecked and undeclare service " + DemoService.class.getName() + " method sayHello invoke exception: TestRpcException"), EasyMock.eq(exception));
+        logger.error(EasyMock.eq("Got unchecked and undeclared exception. service: " + DemoService.class.getName() + ", method: sayHello, exception: " + RpcException.class.getName() + ": TestRpcException"), EasyMock.eq(exception));
         ExceptionFilter exceptionFilter = new ExceptionFilter(logger);
         RpcInvocation invocation = new RpcInvocation("sayHello", new Class<?>[]{String.class}, new Object[]{"world"});
         Invoker<DemoService> invoker = EasyMock.createMock(Invoker.class);
