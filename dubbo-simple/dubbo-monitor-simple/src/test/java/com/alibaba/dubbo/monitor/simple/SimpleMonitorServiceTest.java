@@ -29,7 +29,7 @@ public class SimpleMonitorServiceTest {
     
     @Test
     public void testMonitor() {
-        new SimpleMonitorService().count(new URL("dubbo", NetUtils.getLocalHost(), 0));
+        new SimpleMonitorService().collect(new URL("dubbo", NetUtils.getLocalHost(), 0));
     }
 
 }

@@ -27,7 +27,7 @@ public class MockMonitorService implements MonitorService {
     
     private URL statistics;
 
-    public void count(URL statistics) {
+    public void collect(URL statistics) {
         this.statistics = statistics;
     }
 

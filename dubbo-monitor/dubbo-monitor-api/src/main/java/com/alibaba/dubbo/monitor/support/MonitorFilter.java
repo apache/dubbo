@@ -100,7 +100,7 @@ public class MonitorFilter implements Filter {
                 remoteKey = MonitorService.CONSUMER;
                 remoteValue = context.getRemoteHost();
             }
-            monitor.count(new URL(Constants.COUNT_PROTOCOL,
+            monitor.collect(new URL(Constants.COUNT_PROTOCOL,
                     NetUtils.getLocalHost(), localPort,
                     service + "/" + method,
                     MonitorService.APPLICATION, application,

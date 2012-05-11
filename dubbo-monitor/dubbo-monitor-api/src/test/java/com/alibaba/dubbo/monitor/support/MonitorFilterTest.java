@@ -80,7 +80,7 @@ public class MonitorFilterTest {
                 }
                 public void destroy() {
                 }
-                public void count(URL statistics) {
+                public void collect(URL statistics) {
                     MonitorFilterTest.this.lastStatistics = statistics;
                 }
             };

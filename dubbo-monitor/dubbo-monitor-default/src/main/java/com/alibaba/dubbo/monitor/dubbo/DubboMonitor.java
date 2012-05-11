@@ -109,7 +109,7 @@ public class DubboMonitor implements Monitor {
                             MonitorService.MAX_ELAPSED, String.valueOf(maxElapsed),
                             MonitorService.MAX_CONCURRENT, String.valueOf(maxConcurrent)
                             );
-            monitorService.count(url);
+            monitorService.collect(url);
             
             // 减掉已统计数据
             long[] current;
@@ -135,7 +135,7 @@ public class DubboMonitor implements Monitor {
         }
     }
     
-    public void count(URL url) {
+    public void collect(URL url) {
         // 读写统计变量
         int success = url.getParameter(MonitorService.SUCCESS, 0);
         int failure = url.getParameter(MonitorService.FAILURE, 0);

@@ -61,10 +61,10 @@ public interface MonitorService {
     String MAX_CONCURRENT = "max.concurrent";
 
     /**
-     * count.
+     * collect.
      * 
      * @param statistics
      */
-    void count(URL statistics);
+    void collect(URL statistics);
     
 }

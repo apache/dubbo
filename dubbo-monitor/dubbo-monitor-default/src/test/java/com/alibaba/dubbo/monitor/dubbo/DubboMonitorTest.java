@@ -60,7 +60,7 @@ public class DubboMonitorTest {
     
     private final MonitorService monitorService = new MonitorService() {
 
-        public void count(URL statistics) {
+        public void collect(URL statistics) {
             DubboMonitorTest.this.lastStatistics = statistics;
         }
         
@@ -80,7 +80,7 @@ public class DubboMonitorTest {
             .addParameter(MonitorService.MAX_ELAPSED, 3)
             .addParameter(MonitorService.CONCURRENT, 1)
             .addParameter(MonitorService.MAX_CONCURRENT, 1);
-        monitor.count(statistics);
+        monitor.collect(statistics);
         while (lastStatistics == null) {
             Thread.sleep(10);
         }
@@ -123,7 +123,7 @@ public class DubboMonitorTest {
         try {
             Monitor monitor = monitorFactory.getMonitor(URL.valueOf("dubbo://127.0.0.1:17979?interval=10"));
             try {
-                monitor.count(statistics);
+                monitor.collect(statistics);
                 int i = 0;
                 while(monitorService.getStatistics() == null && i < 200) {
                     i ++;
