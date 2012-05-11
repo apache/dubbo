@@ -58,7 +58,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
     private static final long    serialVersionUID        = -5864351140409987595L;
 
-    private static final Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+    private static final Protocol refprotocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
 
     private static final Cluster cluster = ExtensionLoader.getExtensionLoader(Cluster.class).getAdaptiveExtension();
     
@@ -80,6 +80,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
     // 缺省配置
     private ConsumerConfig       consumer;
+    
+    private String				 protocol;
 
     // 接口代理类引用
     private transient T          ref;
@@ -319,7 +321,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 		
 		if (isJvmRefer) {
 			URL url = new URL(Constants.LOCAL_PROTOCOL, NetUtils.LOCALHOST, 0, interfaceClass.getName()).addParameters(map);
-			invoker = protocol.refer(interfaceClass, url);
+			invoker = refprotocol.refer(interfaceClass, url);
             if (logger.isInfoEnabled()) {
                 logger.info("Using injvm service " + interfaceClass.getName());
             }
@@ -355,12 +357,12 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 }
             }
             if (urls.size() == 1) {
-                invoker = protocol.refer(interfaceClass, urls.get(0));
+                invoker = refprotocol.refer(interfaceClass, urls.get(0));
             } else {
                 List<Invoker<?>> invokers = new ArrayList<Invoker<?>>();
                 URL registryURL = null;
                 for (URL url : urls) {
-                    invokers.add(protocol.refer(interfaceClass, url));
+                    invokers.add(refprotocol.refer(interfaceClass, url));
                     if (Constants.REGISTRY_PROTOCOL.equals(url.getProtocol())) {
                         registryURL = url; // 用了最后一个registry url
                     }
@@ -483,7 +485,15 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         this.consumer = consumer;
     }
 
-    // just for test
+    public String getProtocol() {
+		return protocol;
+	}
+
+	public void setProtocol(String protocol) {
+		this.protocol = protocol;
+	}
+
+	// just for test
     Invoker<?> getInvoker() {
         return invoker;
     }

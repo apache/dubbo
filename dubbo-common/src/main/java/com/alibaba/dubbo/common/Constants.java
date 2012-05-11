@@ -544,6 +544,8 @@ public class Constants {
     public static final String SCOPE_REMOTE						   = "remote";
     
     public static final String SCOPE_NONE						   = "none";
+    
+    public static final String RELIABLE_PROTOCOL				   = "napoli";
     /*
      * private Constants(){ }
      */

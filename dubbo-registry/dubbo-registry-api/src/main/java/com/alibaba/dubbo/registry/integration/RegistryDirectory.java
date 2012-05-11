@@ -347,7 +347,22 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             return newUrlInvokerMap;
         }
         Set<String> keys = new HashSet<String>();
+        String queryProtocols = this.queryMap.get(Constants.PROTOCOL_KEY);
         for (URL providerUrl : urls) {
+        	//如果reference端配置了protocol，则只选择匹配的protocol
+        	if (queryProtocols != null && queryProtocols.length() >0) {
+        		boolean accept = false;
+        		String[] acceptProtocols = queryProtocols.split(",");
+        		for (String acceptProtocol : acceptProtocols) {
+        			if (providerUrl.getProtocol().equals(acceptProtocol)) {
+        				accept = true;
+        				break;
+        			}
+        		}
+        		if (!accept) {
+        			continue;
+        		}
+        	}
             if (Constants.EMPTY_PROTOCOL.equals(providerUrl.getProtocol())) {
                 continue;
             }
