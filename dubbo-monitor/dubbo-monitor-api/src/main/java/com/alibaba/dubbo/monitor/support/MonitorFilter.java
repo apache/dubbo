@@ -93,10 +93,10 @@ public class MonitorFilter implements Filter {
                 context = RpcContext.getContext(); // 消费方必须在invoke()之后获取context信息
                 localPort = 0;
                 remoteKey = MonitorService.PROVIDER;
-                remoteValue = url.getAddress();
+                remoteValue = invoker.getUrl().getAddress();
             } else {
                 // ---- 服务提供方监控 ----
-                localPort = url.getPort();
+                localPort = invoker.getUrl().getPort();
                 remoteKey = MonitorService.CONSUMER;
                 remoteValue = context.getRemoteHost();
             }
