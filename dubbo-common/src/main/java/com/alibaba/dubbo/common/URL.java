@@ -954,7 +954,7 @@ public final class URL implements Serializable {
         return new URL(protocol, username, password, host, port, path, map);
 	}
 	
-	public URL cleatParameters() {
+	public URL clearParameters() {
         return new URL(protocol, username, password, host, port, path, new HashMap<String, String>());
     }
 	
