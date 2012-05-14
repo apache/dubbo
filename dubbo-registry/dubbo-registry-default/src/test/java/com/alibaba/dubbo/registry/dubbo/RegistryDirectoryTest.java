@@ -874,7 +874,7 @@ public class RegistryDirectoryTest {
     @Test
     public void test_Notified_acceptProtocol1() {
     	URL errorPathUrl  = URL.valueOf("notsupport:/xxx");
-    	errorPathUrl = errorPathUrl.addParameterAndEncoded(Constants.REFER_KEY, "interface="+service + "protocol=dubbo");
+    	errorPathUrl = errorPathUrl.addParameterAndEncoded(Constants.REFER_KEY, "interface="+service + "&protocol=dubbo");
         RegistryDirectory registryDirectory = getRegistryDirectory(errorPathUrl);
         List<URL> serviceUrls = new ArrayList<URL>();
         URL dubbo1URL = URL.valueOf("dubbo://127.0.0.1:9098?lazy=true&methods=getXXX");
@@ -893,7 +893,7 @@ public class RegistryDirectoryTest {
     @Test
     public void test_Notified_acceptProtocol2() {
     	URL errorPathUrl  = URL.valueOf("notsupport:/xxx");
-    	errorPathUrl = errorPathUrl.addParameterAndEncoded(Constants.REFER_KEY, "interface="+service + "protocol=dubbo,injvm");
+    	errorPathUrl = errorPathUrl.addParameterAndEncoded(Constants.REFER_KEY, "interface="+service + "&protocol=dubbo,injvm");
         RegistryDirectory registryDirectory = getRegistryDirectory(errorPathUrl);
         List<URL> serviceUrls = new ArrayList<URL>();
         URL dubbo1URL = URL.valueOf("dubbo://127.0.0.1:9098?lazy=true&methods=getXXX");
