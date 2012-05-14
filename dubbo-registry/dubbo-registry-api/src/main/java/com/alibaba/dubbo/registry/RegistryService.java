@@ -29,7 +29,7 @@ import com.alibaba.dubbo.common.URL;
 public interface RegistryService {
 
     /**
-     * 注册服务.
+     * 注册数据，比如：提供者地址，消费者，路由规则，覆盖策略规则，等数据。
      * 
      * 注册需处理契约：<br>
      * 1. 当URL设置了check=false时，注册失败后不报错，在后台定时重试，否则抛出异常。<br>
@@ -43,7 +43,7 @@ public interface RegistryService {
     void register(URL url);
 
     /**
-     * 取消注册服务.
+     * 取消注册.
      * 
      * 取消注册需处理契约：<br>
      * 1. 如果是dynamic=false的持久存储数据，找不到注册数据，则抛IllegalStateException，否则忽略。<br>
@@ -54,7 +54,7 @@ public interface RegistryService {
     void unregister(URL url);
 
     /**
-     * 订阅服务.
+     * 订阅符合条件的已注册数据，当有注册数据变更时自动推送.
      * 
      * 订阅需处理契约：<br>
      * 1. 当URL设置了check=false时，订阅失败后不报错，在后台定时重试。<br>
@@ -71,7 +71,7 @@ public interface RegistryService {
     void subscribe(URL url, NotifyListener listener);
 
     /**
-     * 取消订阅服务.
+     * 取消订阅.
      * 
      * 取消订阅需处理契约：<br>
      * 1. 如果没有订阅，直接忽略。<br>
@@ -83,7 +83,7 @@ public interface RegistryService {
     void unsubscribe(URL url, NotifyListener listener);
 
     /**
-     * 查询注册列表，与订阅的推模式相对应，这里为拉模式，只返回一次结果。
+     * 查询符合条件的已注册数据，与订阅的推模式相对应，这里为拉模式，只返回一次结果。
      * 
      * @see com.alibaba.dubbo.registry.NotifyListener#notify(List)
      * @param url 查询条件，不允许为空，如：consumer://10.20.153.10/com.alibaba.foo.BarService?version=1.0.0&application=kylin
