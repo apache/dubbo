@@ -240,10 +240,10 @@ public class RegistryProtocol implements Protocol {
             registry.register(subscribeUrl.addParameters(Constants.CATEGORY_KEY, Constants.CONSUMERS_CATEGORY,
                     Constants.CHECK_KEY, String.valueOf(false)));
         }
-        registry.subscribe(subscribeUrl.addParameter(Constants.CATEGORY_KEY, 
+        directory.subscribe(subscribeUrl.addParameter(Constants.CATEGORY_KEY, 
                 Constants.PROVIDERS_CATEGORY 
                 + "," + Constants.CONFIGURATORS_CATEGORY 
-                + "," + Constants.ROUTERS_CATEGORY), directory);
+                + "," + Constants.ROUTERS_CATEGORY));
         return cluster.join(directory);
     }
 

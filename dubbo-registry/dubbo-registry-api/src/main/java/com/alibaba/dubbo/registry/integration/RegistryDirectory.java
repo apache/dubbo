@@ -36,7 +36,6 @@ import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.Registry;
-import com.alibaba.dubbo.registry.RegistryService;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
@@ -84,6 +83,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     private final boolean multiGroup;
 
+    private URL subscribeUrl;
+
     private volatile boolean forbidden = false;
     
     private volatile URL overrideDirectoryUrl; // 构造时初始化，断言不为null，并且总是赋非null值
@@ -124,6 +125,11 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     public void setRegistry(Registry registry) {
         this.registry = registry;
     }
+    
+    public void subscribe(URL url) {
+        this.subscribeUrl = url;
+        registry.subscribe(url, this);
+    }
 
     public void destroy() {
         if(isDestroyed()) {
@@ -131,8 +137,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         }
         // unsubscribe.
         try {
-            if(registry != null && registry.isAvailable()) {
-                registry.unsubscribe(new URL(Constants.CONSUMER_PROTOCOL, NetUtils.getLocalHost(), 0, RegistryService.class.getName(), getUrl().getParameters()), this);
+            if(subscribeUrl != null && registry != null && registry.isAvailable()) {
+                registry.unsubscribe(subscribeUrl, this);
             }
         } catch (Throwable t) {
             logger.warn("unexpeced error when unsubscribe service " + serviceKey + "from registry" + registry.getUrl(), t);
