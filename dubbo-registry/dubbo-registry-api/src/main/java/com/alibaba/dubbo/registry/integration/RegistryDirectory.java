@@ -423,15 +423,17 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 && "dubbo".equals(providerUrl.getProtocol())) { // 兼容1.0
             //fix by tony.chenl DUBBO-44
             String path = directoryUrl.getParameter(Constants.INTERFACE_KEY);
-            int i = path.indexOf('/');
-            if (i >= 0) {
-                path = path.substring(i + 1);
+            if (path != null) {
+                int i = path.indexOf('/');
+                if (i >= 0) {
+                    path = path.substring(i + 1);
+                }
+                i = path.lastIndexOf(':');
+                if (i >= 0) {
+                    path = path.substring(0, i);
+                }
+                providerUrl = providerUrl.setPath(path);
             }
-            i = path.lastIndexOf(':');
-            if (i >= 0) {
-                path = path.substring(0, i);
-            }
-            providerUrl = providerUrl.setPath(path);
         }
         return providerUrl;
     }

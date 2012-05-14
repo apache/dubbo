@@ -56,7 +56,7 @@ public class RegistryDirectoryTest {
     String          service                 = DemoService.class.getName();
     RpcInvocation   invocation              = new RpcInvocation();
 
-    URL             noMeaningUrl            = URL.valueOf("notsupport:/" + service+"?interface="+service);
+    URL             noMeaningUrl            = URL.valueOf("notsupport:/" + service+"?refer=" + URL.encode("interface="+service));
     URL             SERVICEURL              = URL.valueOf("dubbo://127.0.0.1:9091/" + service + "?lazy=true");
     URL             SERVICEURL2             = URL.valueOf("dubbo://127.0.0.1:9092/" + service + "?lazy=true");
     URL             SERVICEURL3             = URL.valueOf("dubbo://127.0.0.1:9093/" + service + "?lazy=true");
@@ -113,7 +113,7 @@ public class RegistryDirectoryTest {
         field.setAccessible(true);
         Map<String, String> queryMap = (Map<String, String>) field.get(reg);
         Assert.assertEquals("bar", queryMap.get("foo"));
-        Assert.assertEquals(url.removeParameter(Constants.REFER_KEY).addParameter("foo", "bar"), reg.getUrl());
+        Assert.assertEquals(url.clearParameters().addParameter("foo", "bar"), reg.getUrl());
     }
 
     @Test
@@ -188,7 +188,7 @@ public class RegistryDirectoryTest {
     //测试调用和registry url的path无关
     @Test
     public void test_NotifiedDubbo1() {
-        URL             errorPathUrl            = URL.valueOf("notsupport:/" + "xxx"+"?interface="+service);
+        URL             errorPathUrl            = URL.valueOf("notsupport:/" + "xxx"+"?refer=" + URL.encode("interface="+service));
         RegistryDirectory registryDirectory = getRegistryDirectory(errorPathUrl);
         List<URL> serviceUrls = new ArrayList<URL>();
         URL Dubbo1URL = URL.valueOf("dubbo://127.0.0.1:9098?lazy=true");
@@ -461,7 +461,7 @@ public class RegistryDirectoryTest {
         List<Invoker> invokers = registryDirectory.list(invocation);
 
         Assert.assertEquals(1, invokers.size());
-        Assert.assertEquals(serviceURL.setPath(service).addParameter("check", "false"), invokers.get(0).getUrl());
+        Assert.assertEquals(serviceURL.setPath(service).addParameters("check", "false", "interface", DemoService.class.getName()), invokers.get(0).getUrl());
 
     }
 
@@ -853,11 +853,11 @@ public class RegistryDirectoryTest {
   //测试protocol匹配，只选择匹配的protocol进行refer
     @Test
     public void test_Notified_acceptProtocol0() {
-    	URL errorPathUrl  = URL.valueOf("notsupport:/xxx?interface="+service);
+    	URL errorPathUrl  = URL.valueOf("notsupport:/xxx?refer=" + URL.encode("interface="+service));
         RegistryDirectory registryDirectory = getRegistryDirectory(errorPathUrl);
         List<URL> serviceUrls = new ArrayList<URL>();
         URL dubbo1URL = URL.valueOf("dubbo://127.0.0.1:9098?lazy=true&methods=getXXX");
-        URL dubbo2URL = URL.valueOf("injvm://127.0.0.1:9098?lazy=true&methods=getXXX");
+        URL dubbo2URL = URL.valueOf("dubbo://127.0.0.1:9099?lazy=true&methods=getXXX");
         serviceUrls.add(dubbo1URL);
         serviceUrls.add(dubbo2URL);
         registryDirectory.notify(serviceUrls);
@@ -871,8 +871,8 @@ public class RegistryDirectoryTest {
     //测试protocol匹配，只选择匹配的protocol进行refer
     @Test
     public void test_Notified_acceptProtocol1() {
-    	URL errorPathUrl  = URL.valueOf("notsupport:/xxx?interface="+service);
-    	errorPathUrl = errorPathUrl.addParameterAndEncoded(Constants.REFER_KEY, "protocol=dubbo");
+    	URL errorPathUrl  = URL.valueOf("notsupport:/xxx");
+    	errorPathUrl = errorPathUrl.addParameterAndEncoded(Constants.REFER_KEY, "interface="+service + "protocol=dubbo");
         RegistryDirectory registryDirectory = getRegistryDirectory(errorPathUrl);
         List<URL> serviceUrls = new ArrayList<URL>();
         URL dubbo1URL = URL.valueOf("dubbo://127.0.0.1:9098?lazy=true&methods=getXXX");
@@ -890,12 +890,12 @@ public class RegistryDirectoryTest {
   //测试protocol匹配，只选择匹配的protocol进行refer
     @Test
     public void test_Notified_acceptProtocol2() {
-    	URL errorPathUrl  = URL.valueOf("notsupport:/xxx?interface="+service);
-    	errorPathUrl = errorPathUrl.addParameterAndEncoded(Constants.REFER_KEY, "protocol=dubbo,injvm");
+    	URL errorPathUrl  = URL.valueOf("notsupport:/xxx");
+    	errorPathUrl = errorPathUrl.addParameterAndEncoded(Constants.REFER_KEY, "interface="+service + "protocol=dubbo,injvm");
         RegistryDirectory registryDirectory = getRegistryDirectory(errorPathUrl);
         List<URL> serviceUrls = new ArrayList<URL>();
         URL dubbo1URL = URL.valueOf("dubbo://127.0.0.1:9098?lazy=true&methods=getXXX");
-        URL dubbo2URL = URL.valueOf("injvm://127.0.0.1:9098?lazy=true&methods=getXXX");
+        URL dubbo2URL = URL.valueOf("dubbo://127.0.0.1:9099?lazy=true&methods=getXXX");
         serviceUrls.add(dubbo1URL);
         serviceUrls.add(dubbo2URL);
         registryDirectory.notify(serviceUrls);
