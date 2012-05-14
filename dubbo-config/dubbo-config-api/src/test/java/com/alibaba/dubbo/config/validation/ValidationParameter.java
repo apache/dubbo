@@ -36,7 +36,7 @@ public class ValidationParameter implements Serializable {
     private static final long serialVersionUID = 7158911668568000392L;
 
     @NotNull // 不允许为空
-    @Size(min = 1, max = 20) // 长度或大小范围
+    @Size(min = 2, max = 20) // 长度或大小范围
     private String name;
 
     @NotNull(groups = ValidationService.Save.class) // 保存时不允许为空，更新时允许为空 ，表示不更新该字段

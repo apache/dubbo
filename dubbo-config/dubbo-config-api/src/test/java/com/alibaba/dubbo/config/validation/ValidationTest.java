@@ -67,6 +67,21 @@ public class ValidationTest {
                 parameter.setExpiryDate(new Date(System.currentTimeMillis() + 1000000));
                 validationService.save(parameter);
                 
+                try {
+                    parameter = new ValidationParameter();
+                    parameter.setName("l");
+                    parameter.setEmail("liangfei@liang.fei");
+                    parameter.setAge(50);
+                    parameter.setLoginDate(new Date(System.currentTimeMillis() - 1000000));
+                    parameter.setExpiryDate(new Date(System.currentTimeMillis() + 1000000));
+                    validationService.save(parameter);
+                    Assert.fail();
+                } catch (RpcException e) {
+                    ConstraintViolationException ve = (ConstraintViolationException)e.getCause();
+                    Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
+                    Assert.assertNotNull(violations);
+                }
+                
                 // Save Error
                 try {
                     parameter = new ValidationParameter();
