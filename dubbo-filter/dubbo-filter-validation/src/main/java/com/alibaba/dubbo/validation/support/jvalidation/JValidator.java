@@ -34,20 +34,16 @@ import javassist.NotFoundException;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.ClassFile;
 import javassist.bytecode.ConstPool;
-import javassist.bytecode.annotation.AnnotationMemberValue;
 import javassist.bytecode.annotation.ArrayMemberValue;
 import javassist.bytecode.annotation.BooleanMemberValue;
 import javassist.bytecode.annotation.ByteMemberValue;
 import javassist.bytecode.annotation.CharMemberValue;
-import javassist.bytecode.annotation.ClassMemberValue;
 import javassist.bytecode.annotation.DoubleMemberValue;
-import javassist.bytecode.annotation.EnumMemberValue;
 import javassist.bytecode.annotation.FloatMemberValue;
 import javassist.bytecode.annotation.IntegerMemberValue;
 import javassist.bytecode.annotation.LongMemberValue;
 import javassist.bytecode.annotation.MemberValue;
 import javassist.bytecode.annotation.ShortMemberValue;
-import javassist.bytecode.annotation.StringMemberValue;
 
 import javax.validation.Constraint;
 import javax.validation.ConstraintViolation;
@@ -178,7 +174,7 @@ public class JValidator implements Validator {
                     for (Annotation annotation : annotations) {
                         if (annotation.annotationType().isAnnotationPresent(Constraint.class)) {
                             javassist.bytecode.annotation.Annotation ja = new javassist.bytecode.annotation.Annotation(
-                                    classFile.getConstPool(), pool.get(annotation.annotationType().getName()));
+                                    classFile.getConstPool(), pool.getCtClass(annotation.annotationType().getName()));
                             Method[] members = annotation.annotationType().getMethods();
                             for (Method member : members) {
                                 if (Modifier.isPublic(member.getModifiers())
@@ -232,47 +228,33 @@ public class JValidator implements Validator {
     
     // Copy from javassist.bytecode.annotation.Annotation.createMemberValue(ConstPool, CtClass);
     private static MemberValue createMemberValue(ConstPool cp, CtClass type, Object value) throws NotFoundException {
-        if (type == CtClass.booleanType)
-            return new BooleanMemberValue((Boolean) value, cp);
-        else if (type == CtClass.byteType)
-            return new ByteMemberValue((Byte) value, cp);
-        else if (type == CtClass.charType)
-            return new CharMemberValue((Character) value, cp);
-        else if (type == CtClass.shortType)
-            return new ShortMemberValue((Short) value, cp);
-        else if (type == CtClass.intType)
-            return new IntegerMemberValue((Integer) value, cp);
-        else if (type == CtClass.longType)
-            return new LongMemberValue((Long) value, cp);
-        else if (type == CtClass.floatType)
-            return new FloatMemberValue((Float) value, cp);
-        else if (type == CtClass.doubleType)
-            return new DoubleMemberValue((Double) value, cp);
-        else if (type.getName().equals("java.lang.Class"))
-            return new ClassMemberValue(((Class<?>) value).getName(), cp);
-        else if (type.getName().equals("java.lang.String"))
-            return new StringMemberValue((String) value, cp);
-        else if (type.isArray()) {
+        MemberValue memberValue = javassist.bytecode.annotation.Annotation.createMemberValue(cp, type);
+        if (memberValue instanceof BooleanMemberValue)
+            ((BooleanMemberValue) memberValue).setValue((Boolean) value);
+        else if (memberValue instanceof ByteMemberValue)
+            ((ByteMemberValue) memberValue).setValue((Byte) value);
+        else if (memberValue instanceof CharMemberValue)
+            ((CharMemberValue) memberValue).setValue((Character) value);
+        else if (memberValue instanceof ShortMemberValue)
+            ((ShortMemberValue) memberValue).setValue((Short) value);
+        else if (memberValue instanceof IntegerMemberValue)
+            ((IntegerMemberValue) memberValue).setValue((Integer) value);
+        else if (memberValue instanceof LongMemberValue)
+            ((LongMemberValue) memberValue).setValue((Long) value);
+        else if (memberValue instanceof FloatMemberValue)
+            ((FloatMemberValue) memberValue).setValue((Float) value);
+        else if (memberValue instanceof DoubleMemberValue)
+            ((DoubleMemberValue) memberValue).setValue((Double) value);
+        else if (memberValue instanceof ArrayMemberValue) {
             CtClass arrayType = type.getComponentType();
             int len = Array.getLength(value);
             MemberValue[] members = new MemberValue[len];
             for (int i = 0; i < len; i ++) {
                 members[i] = createMemberValue(cp, arrayType, Array.get(value, i));
             }
-            ArrayMemberValue arrayMemberValue = new ArrayMemberValue(cp);
-            arrayMemberValue.setValue(members);
-            return arrayMemberValue;
-        } else if (type.isInterface()) {
-            javassist.bytecode.annotation.Annotation info = new javassist.bytecode.annotation.Annotation(cp, type);
-            return new AnnotationMemberValue(info, cp);
-        } else {
-            // treat as enum.  I know this is not typed,
-            // but JBoss has an Annotation Compiler for JDK 1.4
-            // and I want it to work with that. - Bill Burke
-            EnumMemberValue emv = new EnumMemberValue(cp);
-            emv.setType(type.getName());
-            return emv;
+            ((ArrayMemberValue) memberValue).setValue(members);
         }
+        return memberValue;
     }
 
 }

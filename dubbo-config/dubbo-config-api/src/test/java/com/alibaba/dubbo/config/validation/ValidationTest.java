@@ -98,6 +98,17 @@ public class ValidationTest {
                 
                 // Delete Error
                 try {
+                    validationService.delete(2, "a");
+                    Assert.fail();
+                } catch (RpcException e) {
+                    ConstraintViolationException ve = (ConstraintViolationException)e.getCause();
+                    Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
+                    Assert.assertNotNull(violations);
+                    Assert.assertEquals(1, violations.size());
+                }
+                
+                // Delete Error
+                try {
                     validationService.delete(0, "abc");
                     Assert.fail();
                 } catch (RpcException e) {
