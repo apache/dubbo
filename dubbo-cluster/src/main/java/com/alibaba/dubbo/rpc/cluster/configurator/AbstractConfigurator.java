@@ -63,8 +63,8 @@ public abstract class AbstractConfigurator implements Configurator {
         }*/
         if (Constants.ANYHOST_VALUE.equals(configuratorUrl.getHost()) 
                 || providerUrl.getHost().equals(configuratorUrl.getHost())) {
-            String configApplication = configuratorUrl.getParameter("application", configuratorUrl.getUsername());
-            String providerApplication = providerUrl.getParameter("application", providerUrl.getUsername());
+            String configApplication = configuratorUrl.getParameter(Constants.APPLICATION_KEY, configuratorUrl.getUsername());
+            String providerApplication = providerUrl.getParameter(Constants.APPLICATION_KEY, providerUrl.getUsername());
             if (configApplication == null || configApplication .equals(providerApplication)) {
                 if (configuratorUrl.getPort() > 0) {
                     return providerUrl.getPort() == configuratorUrl.getPort();
