@@ -193,7 +193,7 @@
 				</xsd:attribute>
 				<xsd:attribute name="injvm" type="xsd:string" use="optional">
 					<xsd:annotation>
-						<xsd:documentation><![CDATA[ Get reference in jvm first. ]]></xsd:documentation>
+						<xsd:documentation><![CDATA[Deprecated. Replace to  set scope=local ]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
 				<xsd:attribute name="sticky" type="xsd:string" use="optional">
