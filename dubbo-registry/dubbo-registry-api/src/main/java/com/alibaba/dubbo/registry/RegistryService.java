@@ -29,7 +29,7 @@ import com.alibaba.dubbo.common.URL;
 public interface RegistryService {
 
     /**
-     * 注册数据，比如：提供者地址，消费者，路由规则，覆盖策略规则，等数据。
+     * 注册数据，比如：提供者地址，消费者地址，路由规则，覆盖规则，等数据。
      * 
      * 注册需处理契约：<br>
      * 1. 当URL设置了check=false时，注册失败后不报错，在后台定时重试，否则抛出异常。<br>
