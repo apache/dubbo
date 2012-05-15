@@ -197,7 +197,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
             }
             return toUrls(url, providers);
         } catch (ZkNoNodeException e) {
-            return new ArrayList<URL>(0);
+            return null;
         } catch (Throwable e) {
             throw new RpcException("Failed to lookup " + url + " from zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
         }
