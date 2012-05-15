@@ -25,6 +25,7 @@ import org.I0Itec.zkclient.IZkChildListener;
 import org.I0Itec.zkclient.IZkStateListener;
 import org.I0Itec.zkclient.ZkClient;
 import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.KeeperException.NoNodeException;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
 
 import com.alibaba.dubbo.common.Constants;
@@ -195,6 +196,8 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 }
             }
             return toUrls(url, providers);
+        } catch (NoNodeException e) {
+            return new ArrayList<URL>(0);
         } catch (Throwable e) {
             throw new RpcException("Failed to lookup " + url + " from zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
         }
