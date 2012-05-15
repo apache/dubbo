@@ -190,14 +190,16 @@ public class ZookeeperRegistry extends FailbackRegistry {
         try {
             List<String> providers = new ArrayList<String>();
             for (String path : toCategoriesPath(url)) {
-                List<String> children = zkClient.getChildren(path);
-                if (children != null) {
-                    providers.addAll(children);
+                try {
+                    List<String> children = zkClient.getChildren(path);
+                    if (children != null) {
+                        providers.addAll(children);
+                    }
+                } catch (ZkNoNodeException e) {
+                    // ignore
                 }
             }
             return toUrls(url, providers);
-        } catch (ZkNoNodeException e) {
-            return null;
         } catch (Throwable e) {
             throw new RpcException("Failed to lookup " + url + " from zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
         }
