@@ -1,0 +1,1 @@
+spring=com.alibaba.dubbo.config.spring.extension.SpringExtensionFactory
