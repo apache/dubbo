@@ -1,0 +1,2 @@
+servers=com.alibaba.dubbo.rpc.protocol.dubbo.page.ServersPageHandler
+clients=com.alibaba.dubbo.rpc.protocol.dubbo.page.ClientsPageHandler

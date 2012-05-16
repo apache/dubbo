@@ -1,0 +1,2 @@
+spring=com.alibaba.dubbo.config.spring.status.SpringStatusChecker
+datasource=com.alibaba.dubbo.config.spring.status.DataSourceStatusChecker

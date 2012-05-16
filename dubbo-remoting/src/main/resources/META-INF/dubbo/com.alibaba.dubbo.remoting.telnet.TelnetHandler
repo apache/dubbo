@@ -1,0 +1,5 @@
+clear=com.alibaba.dubbo.remoting.telnet.support.command.ClearTelnetHandler
+exit=com.alibaba.dubbo.remoting.telnet.support.command.ExitTelnetHandler
+help=com.alibaba.dubbo.remoting.telnet.support.command.HelpTelnetHandler
+status=com.alibaba.dubbo.remoting.telnet.support.command.StatusTelnetHandler
+log=com.alibaba.dubbo.remoting.telnet.support.command.LogTelnetHandler
