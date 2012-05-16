@@ -38,12 +38,15 @@ import javassist.bytecode.annotation.ArrayMemberValue;
 import javassist.bytecode.annotation.BooleanMemberValue;
 import javassist.bytecode.annotation.ByteMemberValue;
 import javassist.bytecode.annotation.CharMemberValue;
+import javassist.bytecode.annotation.ClassMemberValue;
 import javassist.bytecode.annotation.DoubleMemberValue;
+import javassist.bytecode.annotation.EnumMemberValue;
 import javassist.bytecode.annotation.FloatMemberValue;
 import javassist.bytecode.annotation.IntegerMemberValue;
 import javassist.bytecode.annotation.LongMemberValue;
 import javassist.bytecode.annotation.MemberValue;
 import javassist.bytecode.annotation.ShortMemberValue;
+import javassist.bytecode.annotation.StringMemberValue;
 
 import javax.validation.Constraint;
 import javax.validation.ConstraintViolation;
@@ -181,9 +184,11 @@ public class JValidator implements Validator {
                                         && member.getParameterTypes().length == 0
                                         && member.getDeclaringClass() == annotation.annotationType()) {
                                     Object value = member.invoke(annotation, new Object[0]);
-                                    MemberValue memberValue = createMemberValue(
-                                            classFile.getConstPool(), pool.getCtClass(member.getReturnType().getCanonicalName()), value);
-                                    ja.addMemberValue(member.getName(), memberValue);
+                                    if (value != null && ! value.equals(member.getDefaultValue())) {
+                                        MemberValue memberValue = createMemberValue(
+                                                classFile.getConstPool(), pool.get(member.getReturnType().getName()), value);
+                                        ja.addMemberValue(member.getName(), memberValue);
+                                    }
                                 }
                             }
                             attribute.addAnnotation(ja);
@@ -245,6 +250,13 @@ public class JValidator implements Validator {
             ((FloatMemberValue) memberValue).setValue((Float) value);
         else if (memberValue instanceof DoubleMemberValue)
             ((DoubleMemberValue) memberValue).setValue((Double) value);
+        else if (memberValue instanceof ClassMemberValue)
+            ((ClassMemberValue) memberValue).setValue(((Class<?>)value).getName());
+        else if (memberValue instanceof StringMemberValue)
+            ((StringMemberValue) memberValue).setValue((String) value);
+        else if (memberValue instanceof EnumMemberValue) 
+            ((EnumMemberValue) memberValue).setValue(((Enum<?>) value).name());
+        /* else if (memberValue instanceof AnnotationMemberValue) */
         else if (memberValue instanceof ArrayMemberValue) {
             CtClass arrayType = type.getComponentType();
             int len = Array.getLength(value);
