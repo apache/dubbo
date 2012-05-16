@@ -1,0 +1,1 @@
+dubbo=com.alibaba.dubbo.registry.dubbo.DubboRegistryFactory

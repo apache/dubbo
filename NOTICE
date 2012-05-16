@@ -1,0 +1,66 @@
+Resources:
+
+    Wiki Home: http://code.alibabatech.com/wiki/display/dubbo
+    Training Document: http://code.alibabatech.com/docs/dubbo
+    Issue Tracking: http://code.alibabatech.com/jira/browse/DUBBO
+    Code Review: http://code.alibabatech.com/fisheye/graph/dubbo
+    Source Repository: http://code.alibabatech.com/svn/dubbo
+    Binary Repository: http://code.alibabatech.com/mvn/releases/com/alibaba/dubbo
+    Blog: http://code.alibabatech.com/blog
+    Micro Blog: http://weibo.com/dubbo
+    Mailling List: http://groups.google.com/group/dubbo
+
+Dependencies:
+
+  Required:
+    jdk: 1.5+
+  Default Optional:
+    spring: 2.5.6.SEC03
+    javassist: 3.15.0-GA
+    netty: 3.2.5.Final
+    commons-logging: 1.1.1
+    log4j: 1.2.16
+  Support Optional:
+    mina: 1.1.7
+    grizzly: 2.1.4
+    httpclient: 4.1.2
+    hessian_lite: 3.2.1-fixed
+    xstream: 1.4.1
+    fastjson: 1.1.8
+    bsf: 3.1
+    zookeeper: 3.3.3
+    jedis: 2.0.0
+    jfreechart: 1.0.13
+    hessian: 4.0.7
+    servlet: 2.5
+    jetty: 6.1.26
+    validation-api: 1.0.0.GA
+    hibernate-validator: 4.2.0.Final
+    jcache: 0.4
+
+Alternatives:
+
+    TaoBao HSF (Java): http://baike.corp.taobao.com/index.php/HSF
+    Snda Venus (Java): http://wiki.hexnova.com/display/Venus
+    Twitter Finagle (Scala): http://twitter.github.com/finagle
+    LinkedIn Norbert (Scala): http://sna-projects.com/norbert
+    Zeroc ICE (C++): http://www.zeroc.com/ice.html
+
+Developers:
+
+    LiangFei (William)
+    LiuChao (Charles)
+    LiDing (Jerry)
+    ChengLei (Tony)
+    LiuHaoMin (Ludvik)
+    LuGang (Kimi)
+
+Users:
+
+    alibaba.com
+	1688.com
+	aliexpress.com
+	alibado.com
+	aliloan.com
+	lp.taobao.com
+    laiwang.com
