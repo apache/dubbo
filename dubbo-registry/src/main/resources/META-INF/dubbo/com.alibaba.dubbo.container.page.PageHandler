@@ -1,0 +1,3 @@
+registries=com.alibaba.dubbo.registry.pages.RegistriesPageHandler
+registered=com.alibaba.dubbo.registry.pages.RegisteredPageHandler
+subscribed=com.alibaba.dubbo.registry.pages.SubscribedPageHandler
