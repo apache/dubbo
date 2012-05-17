@@ -233,7 +233,10 @@ public class RegistryContainer implements Container {
                                     Constants.GROUP_KEY, Constants.ANY_VALUE, 
                                     Constants.VERSION_KEY, Constants.ANY_VALUE,
                                     Constants.CLASSIFIER_KEY, Constants.ANY_VALUE,
-                                    Constants.CATEGORY_KEY, Constants.ANY_VALUE,
+                                    Constants.CATEGORY_KEY, Constants.PROVIDERS_CATEGORY + "," 
+                                            + Constants.CONSUMERS_CATEGORY + "," 
+                                            + Constants.ROUTERS_CATEGORY + "," 
+                                            + Constants.CONFIGURATORS_CATEGORY,
                                     Constants.CHECK_KEY, String.valueOf(false));
         registry.subscribe(subscribeUrl, new NotifyListener() {
             public void notify(List<URL> urls) {
