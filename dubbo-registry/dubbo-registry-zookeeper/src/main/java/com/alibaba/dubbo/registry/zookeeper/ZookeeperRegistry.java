@@ -63,7 +63,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     
     private final ZkClient zkClient;
     
-    private volatile KeeperState zkState;
+    private volatile KeeperState zkState = KeeperState.SyncConnected;
 
     public ZookeeperRegistry(URL url) {
         super(url);
