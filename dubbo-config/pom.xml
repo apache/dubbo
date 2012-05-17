@@ -26,6 +26,9 @@
 	<packaging>pom</packaging>
 	<name>${project.artifactId}</name>
 	<description>The config module of dubbo project</description>
+	<properties>
+		<skip_maven_deploy>false</skip_maven_deploy>
+	</properties>
 	<modules>
 		<module>dubbo-config-api</module>
 		<module>dubbo-config-spring</module>

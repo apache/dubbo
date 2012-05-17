@@ -26,6 +26,9 @@
 	<packaging>pom</packaging>
 	<name>${project.artifactId}</name>
 	<description>The container module of dubbo project</description>
+	<properties>
+		<skip_maven_deploy>false</skip_maven_deploy>
+	</properties>
 	<modules>
 		<module>dubbo-container-api</module>
 		<module>dubbo-container-spring</module>
