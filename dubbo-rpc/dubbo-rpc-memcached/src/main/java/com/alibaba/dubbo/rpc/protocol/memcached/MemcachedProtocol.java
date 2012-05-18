@@ -68,18 +68,18 @@ public class MemcachedProtocol extends AbstractProtocol {
                     try {
                         if (get.equals(invocation.getMethodName())) {
                             if (invocation.getArguments().length != 1) {
-                                throw new RpcException("Unsupported method " + invocation.getMethodName() + " in memcached service.");
+                                throw new IllegalArgumentException("The memcached get method arguments mismatch, must only one arguments. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url);
                             }
                             return new RpcResult(memcachedClient.get(String.valueOf(invocation.getArguments()[0])));
                         } else if (set.equals(invocation.getMethodName())) {
                             if (invocation.getArguments().length != 2) {
-                                throw new RpcException("Unsupported method " + invocation.getMethodName() + " in memcached service.");
+                                throw new IllegalArgumentException("The memcached set method arguments mismatch, must be two arguments. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url);
                             }
                             memcachedClient.set(String.valueOf(invocation.getArguments()[0]), expiry, invocation.getArguments()[1]);
                             return new RpcResult();
                         } else if (delete.equals(invocation.getMethodName())) {
                             if (invocation.getArguments().length != 1) {
-                                throw new RpcException("Unsupported method " + invocation.getMethodName() + " in memcached service.");
+                                throw new IllegalArgumentException("The memcached delete method arguments mismatch, must only one arguments. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url);
                             }
                             memcachedClient.delete(String.valueOf(invocation.getArguments()[0]));
                             return new RpcResult();
