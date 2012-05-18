@@ -70,9 +70,10 @@
 		<zookeeper_version>3.3.3</zookeeper_version>
 		<zkclient_version>0.1</zkclient_version>
 		<jedis_version>2.0.0</jedis_version>
+		<xmemcached_version>1.3.6</xmemcached_version>
+		<cxf_version>2.6.0</cxf_version>
 		<jfreechart_version>1.0.13</jfreechart_version>
 		<hessian_version>4.0.7</hessian_version>
-		<xmemcached_version>1.3.6</xmemcached_version>
 		<servlet_version>2.5</servlet_version>
 		<jetty_version>6.1.26</jetty_version>
 		<validation_version>1.0.0.GA</validation_version>
@@ -163,6 +164,16 @@
 				<version>${jedis_version}</version>
 			</dependency>
 			<dependency>
+				<groupId>com.googlecode.xmemcached</groupId>
+				<artifactId>xmemcached</artifactId>
+				<version>${xmemcached_version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.cxf</groupId>
+				<artifactId>cxf-rt-frontend-jaxws</artifactId>
+				<version>${cxf_version}</version>
+			</dependency>
+			<dependency>
 				<groupId>jfree</groupId>
 				<artifactId>jfreechart</artifactId>
 				<version>${jfreechart_version}</version>
@@ -171,11 +182,6 @@
 				<groupId>com.caucho</groupId>
 				<artifactId>hessian</artifactId>
 				<version>${hessian_version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.googlecode.xmemcached</groupId>
-				<artifactId>xmemcached</artifactId>
-				<version>${xmemcached_version}</version>
 			</dependency>
 			<dependency>
 				<groupId>javax.servlet</groupId>
