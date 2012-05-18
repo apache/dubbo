@@ -15,11 +15,15 @@
  */
 package com.alibaba.dubbo.rpc.protocol.memcached;
 
+import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 import net.rubyeye.xmemcached.MemcachedClient;
 import net.rubyeye.xmemcached.MemcachedClientBuilder;
 import net.rubyeye.xmemcached.XMemcachedClientBuilder;
+import net.rubyeye.xmemcached.exception.MemcachedException;
 import net.rubyeye.xmemcached.utils.AddrUtil;
 
 import com.alibaba.dubbo.common.Constants;
@@ -87,7 +91,13 @@ public class MemcachedProtocol extends AbstractProtocol {
                             throw new UnsupportedOperationException("Unsupported method " + invocation.getMethodName() + " in memcached service.");
                         }
                     } catch (Throwable t) {
-                        throw new RpcException("Failed to invoke memecached service method. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url + ", cause: " + t.getMessage(), t);
+                        RpcException re = new RpcException("Failed to invoke memecached service method. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url + ", cause: " + t.getMessage(), t);
+                        if (t instanceof TimeoutException || t instanceof SocketTimeoutException) {
+                            re.setCode(RpcException.TIMEOUT_EXCEPTION);
+                        } else if (t instanceof MemcachedException || t instanceof IOException) {
+                            re.setCode(RpcException.NETWORK_EXCEPTION);
+                        }
+                        throw re;
                     }
                 }
                 public void destroy() {
