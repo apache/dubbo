@@ -373,7 +373,7 @@ public abstract class AbstractRegistry implements Registry {
         }
     }
 
-    private List<URL> filterEmpty(URL url, List<URL> urls) {
+    protected static List<URL> filterEmpty(URL url, List<URL> urls) {
         if (urls == null || urls.size() == 0) {
             List<URL> result = new ArrayList<URL>(1);
             result.add(url.setProtocol(Constants.EMPTY_PROTOCOL));
@@ -414,6 +414,7 @@ public abstract class AbstractRegistry implements Registry {
         }
         if ((urls == null || urls.size() == 0) 
                 && ! Constants.ANY_VALUE.equals(url.getServiceInterface())) {
+            logger.warn("Ignore empty notify urls for subscribe url " + url);
             return;
         }
         List<URL> result = new ArrayList<URL>();
