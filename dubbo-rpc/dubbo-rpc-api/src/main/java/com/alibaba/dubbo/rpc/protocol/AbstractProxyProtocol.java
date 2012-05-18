@@ -15,6 +15,9 @@
  */
 package com.alibaba.dubbo.rpc.protocol;
 
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invocation;
@@ -30,19 +33,21 @@ import com.alibaba.dubbo.rpc.RpcException;
  */
 public abstract class AbstractProxyProtocol extends AbstractProtocol {
 
-    private Class<? extends Throwable> rpcException;
+    private final List<Class<?>> rpcExceptions = new CopyOnWriteArrayList<Class<?>>();;
 
     private ProxyFactory proxyFactory;
 
     public AbstractProxyProtocol() {
     }
 
-    public AbstractProxyProtocol(Class<? extends Throwable> rpcException) {
-        this.rpcException = rpcException;
+    public AbstractProxyProtocol(Class<?>... exceptions) {
+        for (Class<?> exception : exceptions) {
+            addRpcException(exception);
+        }
     }
 
-    public void setRpcException(Class<? extends Throwable> rpcException) {
-        this.rpcException = rpcException;
+    public void addRpcException(Class<?> exception) {
+        this.rpcExceptions.add(exception);
     }
 
     public void setProxyFactory(ProxyFactory proxyFactory) {
@@ -57,7 +62,11 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
                 super.unexport();
                 exporterMap.remove(uri);
                 if (runnable != null) {
-                    runnable.run();
+                    try {
+                        runnable.run();
+                    } catch (Throwable t) {
+                        logger.warn(t.getMessage(), t);
+                    }
                 }
             }
         };
@@ -74,8 +83,10 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
                     Result result = tagert.invoke(invocation);
                     Throwable e = result.getException();
                     if (e != null) {
-                        if (rpcException != null && rpcException.isAssignableFrom(e.getClass())) {
-                            throw getRpcException(type, url, invocation, e);
+                        for (Class<?> rpcException : rpcExceptions) {
+                            if (rpcException.isAssignableFrom(e.getClass())) {
+                                throw getRpcException(type, url, invocation, e);
+                            }
                         }
                     }
                     return result;

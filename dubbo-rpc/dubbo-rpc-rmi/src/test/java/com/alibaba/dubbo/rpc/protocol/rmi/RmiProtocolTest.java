@@ -38,13 +38,13 @@ public class RmiProtocolTest
     public static interface NonStdRmiInterface {
         void bark();
     }
-    
+    /*
     @Test
     public void test_getRemoteClass() throws Exception {
         Class<NonStdRmiInterface> clazz = RmiProtocol.getRemoteClass(NonStdRmiInterface.class);
         assertEquals(clazz, RmiProtocol.getRemoteClass(NonStdRmiInterface.class));
     }
-    
+    */
     @Test
     public void testRmiProtocolTimeout() throws Exception
     {

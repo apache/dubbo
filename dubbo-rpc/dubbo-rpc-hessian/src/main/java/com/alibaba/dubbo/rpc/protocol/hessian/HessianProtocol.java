@@ -84,7 +84,7 @@ public class HessianProtocol extends AbstractProxyProtocol {
         
     }
 
-    public <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
+    protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
         String addr = url.getIp() + ":" + url.getPort();
         HttpServer server = serverMap.get(addr);
         if (server == null) {
@@ -102,7 +102,7 @@ public class HessianProtocol extends AbstractProxyProtocol {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T doRefer(Class<T> serviceType, URL url) throws RpcException {
+    protected <T> T doRefer(Class<T> serviceType, URL url) throws RpcException {
         HessianProxyFactory hessianProxyFactory = new HessianProxyFactory();
         String client = url.getParameter(Constants.CLIENT_KEY, Constants.DEFAULT_HTTP_CLIENT);
         if ("httpclient".equals(client)) {
