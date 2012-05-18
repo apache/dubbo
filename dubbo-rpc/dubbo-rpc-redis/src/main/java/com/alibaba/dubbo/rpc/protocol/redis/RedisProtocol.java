@@ -15,6 +15,7 @@
  */
 package com.alibaba.dubbo.rpc.protocol.redis;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
@@ -30,6 +31,8 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
+import com.alibaba.dubbo.common.serialize.ObjectInput;
+import com.alibaba.dubbo.common.serialize.ObjectOutput;
 import com.alibaba.dubbo.common.serialize.Serialization;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invocation;
@@ -39,6 +42,7 @@ import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.protocol.AbstractInvoker;
 import com.alibaba.dubbo.rpc.protocol.AbstractProtocol;
+
 
 /**
  * RedisProtocol
@@ -55,6 +59,10 @@ public class RedisProtocol extends AbstractProtocol {
 
     public <T> Exporter<T> export(final Invoker<T> invoker) throws RpcException {
         throw new UnsupportedOperationException("Unsupported export redis service. url: " + invoker.getUrl());
+    }
+    
+    private Serialization getSerialization(URL url) {
+        return ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(url.getParameter(Constants.SERIALIZATION_KEY, "java"));
     }
 
     public <T> Invoker<T> refer(final Class<T> type, final URL url) throws RpcException {
@@ -90,15 +98,19 @@ public class RedisProtocol extends AbstractProtocol {
                             if (invocation.getArguments().length != 1) {
                                 throw new IllegalArgumentException("The redis get method arguments mismatch, must only one arguments. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url);
                             }
-                            return new RpcResult(jedisPool.getResource().get(String.valueOf(invocation.getArguments()[0]).getBytes()));
+                            byte[] value = jedisPool.getResource().get(String.valueOf(invocation.getArguments()[0]).getBytes());
+                            if (value == null) {
+                                return new RpcResult();
+                            }
+                            ObjectInput oin = getSerialization(url).deserialize(url, new ByteArrayInputStream(value));
+                            return new RpcResult(oin.readObject());
                         } else if (set.equals(invocation.getMethodName())) {
                             if (invocation.getArguments().length != 2) {
                                 throw new IllegalArgumentException("The redis set method arguments mismatch, must be two arguments. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url);
                             }
                             byte[] key = String.valueOf(invocation.getArguments()[0]).getBytes();
                             ByteArrayOutputStream output = new ByteArrayOutputStream();
-                            Serialization serialization = ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(url.getParameter(Constants.SERIALIZATION_KEY, "java"));
-                            com.alibaba.dubbo.common.serialize.ObjectOutput value = serialization.serialize(url, output);
+                            ObjectOutput value = getSerialization(url).serialize(url, output);
                             value.writeObject(invocation.getArguments()[1]);
                             jedisPool.getResource().set(key, output.toByteArray());
                             if (expiry > 1000) {
