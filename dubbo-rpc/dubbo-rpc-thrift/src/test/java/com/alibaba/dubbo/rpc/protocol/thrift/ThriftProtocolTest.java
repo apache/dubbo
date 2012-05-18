@@ -64,11 +64,10 @@ public class ThriftProtocolTest extends AbstractTest {
 
     }
 
-    // FIXME
-    /*@Test
+    @Test
     public void testRefer() throws Exception {
-
-        invoker = protocol.refer( Demo.class, url );
+        // FIXME
+        /*invoker = protocol.refer( Demo.class, url );
 
         Assert.assertNotNull( invoker );
 
@@ -84,8 +83,8 @@ public class ThriftProtocolTest extends AbstractTest {
 
         Result result = invoker.invoke( invocation );
 
-        Assert.assertEquals( arg, result.getResult() );
+        Assert.assertEquals( arg, result.getResult() );*/
 
-    }*/
+    }
 
 }

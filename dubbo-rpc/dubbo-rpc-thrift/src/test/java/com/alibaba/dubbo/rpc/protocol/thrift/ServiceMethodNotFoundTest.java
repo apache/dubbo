@@ -119,11 +119,10 @@ public class ServiceMethodNotFoundTest extends AbstractTest {
 
     }
 
-    // FIXME
-    /*@Test
+    @Test
     public void testServiceMethodNotFound() throws Exception {
-
-        url = url.addParameter( "echoString." + Constants.TIMEOUT_KEY, Integer.MAX_VALUE );
+        // FIXME
+        /*url = url.addParameter( "echoString." + Constants.TIMEOUT_KEY, Integer.MAX_VALUE );
 
         invoker = protocol.refer( Demo.class, url );
 
@@ -145,8 +144,8 @@ public class ServiceMethodNotFoundTest extends AbstractTest {
 
         Assert.assertNull( result.getResult() );
 
-        Assert.assertTrue( result.getException() instanceof RpcException );
-
-    }*/
+        Assert.assertTrue( result.getException() instanceof RpcException );*/
+        
+    }
 
 }
