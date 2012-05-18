@@ -17,8 +17,10 @@ package com.alibaba.dubbo.rpc.protocol;
 
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Exporter;
+import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.ProxyFactory;
+import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
 
 /**
@@ -28,30 +30,82 @@ import com.alibaba.dubbo.rpc.RpcException;
  */
 public abstract class AbstractProxyProtocol extends AbstractProtocol {
 
+    private Class<? extends Throwable> rpcException;
+
     private ProxyFactory proxyFactory;
+
+    public AbstractProxyProtocol() {
+    }
+
+    public AbstractProxyProtocol(Class<? extends Throwable> rpcException) {
+        this.rpcException = rpcException;
+    }
+
+    public void setRpcException(Class<? extends Throwable> rpcException) {
+        this.rpcException = rpcException;
+    }
 
     public void setProxyFactory(ProxyFactory proxyFactory) {
         this.proxyFactory = proxyFactory;
     }
 
     public <T> Exporter<T> export(final Invoker<T> invoker) throws RpcException {
+        final String uri = invoker.getUrl().getAbsolutePath();
         final Runnable runnable = doExport(proxyFactory.getProxy(invoker), invoker.getInterface(), invoker.getUrl());
-        return new Exporter<T>() {
-            public Invoker<T> getInvoker() {
-                return invoker;
-            }
+        Exporter<T> exporter = new AbstractExporter<T>(invoker) {
             public void unexport() {
-                runnable.run();
+                super.unexport();
+                exporterMap.remove(uri);
+                if (runnable != null) {
+                    runnable.run();
+                }
             }
         };
+        exporterMap.put(uri, exporter);
+        return exporter;
     }
 
-    public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
-        return proxyFactory.getInvoker(doRefer(type, url), type, url);
+    public <T> Invoker<T> refer(final Class<T> type, final URL url) throws RpcException {
+        final Invoker<T> tagert = proxyFactory.getInvoker(doRefer(type, url), type, url);
+        Invoker<T> invoker = new AbstractInvoker<T>(type, url) {
+            @Override
+            protected Result doInvoke(Invocation invocation) throws Throwable {
+                try {
+                    Result result = tagert.invoke(invocation);
+                    Throwable e = result.getException();
+                    if (e != null) {
+                        if (rpcException != null && rpcException.isAssignableFrom(e.getClass())) {
+                            throw getRpcException(type, url, invocation, e);
+                        }
+                    }
+                    return result;
+                } catch (RpcException e) {
+                    if (e.getCode() == RpcException.UNKNOWN_EXCEPTION) {
+                        e.setCode(getErrorCode(e.getCause()));
+                    }
+                    throw e;
+                } catch (Throwable e) {
+                    throw getRpcException(type, url, invocation, e);
+                }
+            }
+        };
+        invokers.add(invoker);
+        return invoker;
     }
 
-    public abstract <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException;
+    protected RpcException getRpcException(Class<?> type, URL url, Invocation invocation, Throwable e) {
+        RpcException re = new RpcException("Failed to invoke remote service: " + type + ", method: "
+                + invocation.getMethodName() + ", cause: " + e.getMessage(), e);
+        re.setCode(getErrorCode(e));
+        return re;
+    }
 
-    public abstract <T> T doRefer(Class<T> type, URL url) throws RpcException;
+    protected int getErrorCode(Throwable e) {
+        return RpcException.UNKNOWN_EXCEPTION;
+    }
+
+    protected abstract <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException;
+
+    protected abstract <T> T doRefer(Class<T> type, URL url) throws RpcException;
 
 }
