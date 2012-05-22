@@ -24,7 +24,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
@@ -77,11 +77,16 @@ public class ProviderBean extends ProviderConfig implements DisposableBean, Bean
         if (annotationPackage == null || annotationPackage.length() == 0) {
             return;
         }
-        ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner((DefaultListableBeanFactory) beanFactory);
-        scanner.addIncludeFilter(new AnnotationTypeFilter(Service.class));
-        String[] pkgs = Constants.COMMA_SPLIT_PATTERN.split(annotationPackage);
-        for (String pkg : pkgs) {
-            scanner.scan(pkg);
+        if (beanFactory instanceof BeanDefinitionRegistry) {
+            try {
+                Class.forName("org.springframework.context.annotation.ClassPathBeanDefinitionScanner", true, Thread.currentThread().getContextClassLoader());
+                ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner((BeanDefinitionRegistry) beanFactory);
+                scanner.addIncludeFilter(new AnnotationTypeFilter(Service.class));
+                String[] pkgs = Constants.COMMA_SPLIT_PATTERN.split(annotationPackage);
+                scanner.scan(pkgs);
+            } catch (ClassNotFoundException e) {
+                // spring 2.0
+            }
         }
     }
 
