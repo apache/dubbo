@@ -63,12 +63,12 @@ public class ValidationConsumer {
         }
         
         // Delete OK
-        validationService.delete(2);
+        validationService.delete(2, "abc");
         System.out.println("Validation Delete OK");
         
         // Delete Error
         try {
-            validationService.delete(0);
+            validationService.delete(0, "abc");
             System.err.println("Validation Delete ERROR");
         } catch (RpcException e) {
             ConstraintViolationException ve = (ConstraintViolationException)e.getCause();
