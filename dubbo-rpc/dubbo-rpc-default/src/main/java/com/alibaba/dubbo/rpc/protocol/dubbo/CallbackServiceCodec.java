@@ -95,6 +95,7 @@ class CallbackServiceCodec {
         Map<String, String> tmpmap = new HashMap<String, String>(url.getParameters());
         tmpmap.putAll(params);
         tmpmap.remove(Constants.VERSION_KEY);//callback不需要区分version
+        tmpmap.put(Constants.INTERFACE_KEY, clazz.getName());
         URL exporturl = new URL(DubboProtocol.NAME, channel.getLocalAddress().getAddress().getHostAddress(), channel.getLocalAddress().getPort(), clazz.getName()+"."+instid, tmpmap);
         
         //同一个jvm不需要对不同的channel产生多个exporter cache key不会碰撞 
@@ -137,10 +138,11 @@ class CallbackServiceCodec {
         String countkey = getServerSideCountKey(channel, clazz.getName());
         if (isRefer){
             if( proxy == null ){
-                if (!isInstancesOverLimit(channel, url, clazz.getName(), instid, true)){
-                    url = url.setPath(clazz.getName());
+            	URL referurl = URL.valueOf("callback://" + url.getAddress() + "/" + clazz.getName() + "?" + Constants.INTERFACE_KEY + "=" + clazz.getName());
+            	referurl = referurl.addParametersIfAbsent(url.getParameters()).removeParameter(Constants.METHODS_KEY);
+            	if (!isInstancesOverLimit(channel, referurl, clazz.getName(), instid, true)){
                     @SuppressWarnings("rawtypes")
-                    Invoker<?> invoker = new ChannelWrappedInvoker(clazz, channel, url, String.valueOf(instid));
+                    Invoker<?> invoker = new ChannelWrappedInvoker(clazz, channel, referurl, String.valueOf(instid));
                     proxy = proxyFactory.getProxy(invoker);
                     channel.setAttribute(proxyCacheKey, proxy);
                     channel.setAttribute(invokerCacheKey, invoker);
