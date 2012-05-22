@@ -38,7 +38,7 @@ import com.alibaba.dubbo.rpc.RpcException;
 public class ValidationTest {
 
     @Test
-    public void testAnnotation() {
+    public void testValidation() {
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(ValidationTest.class.getPackage().getName().replace('.', '/') + "/validation-provider.xml");
         providerContext.start();
         try {
