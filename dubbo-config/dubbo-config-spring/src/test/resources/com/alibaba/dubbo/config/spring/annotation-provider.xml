@@ -22,6 +22,6 @@
 
 	<dubbo:application name="annotation-provider" />
 	<dubbo:registry address="127.0.0.1:4548" />
-	<dubbo:provider package="com.alibaba.dubbo.config.spring.annotation.provider" />
+	<dubbo:annotation package="com.alibaba.dubbo.config.spring.annotation.provider" />
 
 </beans>
