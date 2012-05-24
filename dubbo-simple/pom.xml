@@ -26,9 +26,6 @@
 	<packaging>pom</packaging>
 	<name>${project.artifactId}</name>
 	<description>The simple implementation module of dubbo project</description>
-	<properties>
-		<skip_maven_deploy>true</skip_maven_deploy>
-	</properties>
 	<modules>
 		<module>dubbo-registry-simple</module>
 		<module>dubbo-monitor-simple</module>

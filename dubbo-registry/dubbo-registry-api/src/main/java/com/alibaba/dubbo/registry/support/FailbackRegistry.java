@@ -229,7 +229,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
                 listeners = failedNotified.get(url);
             }
             listeners.put(listener, urls);
-            logger.error("Failed to notify for subscribe " + url + ", waiting for retry, cause: " + t.getMessage(), t);
+            logger.error("Failed to unsubscribe " + url + ", waiting for retry, cause: " + t.getMessage(), t);
         }
     }
     

@@ -389,9 +389,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             Invoker<T> invoker = localUrlInvokerMap == null ? null : localUrlInvokerMap.get(key);
             if (invoker == null) { // 缓存中没有，重新refer
                 try {
-                	if (url.getParameter(Constants.ENABLED_KEY, true)) {
-                		invoker = new InvokerDelegete<T>(protocol.refer(serviceType, url), url, providerUrl);
-                	}
+                    invoker = new InvokerDelegete<T>(protocol.refer(serviceType, url), url, providerUrl);
                 } catch (Throwable t) {
                     logger.error("Failed to refer invoker for interface:"+serviceType+",url:("+url+")" + t.getMessage(), t);
                 }

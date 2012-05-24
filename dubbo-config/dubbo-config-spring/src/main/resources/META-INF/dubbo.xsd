@@ -657,6 +657,11 @@
 				<xsd:sequence minOccurs="0" maxOccurs="unbounded">
 					<xsd:element ref="parameter" minOccurs="0" maxOccurs="unbounded" />
 				</xsd:sequence>
+				<xsd:attribute name="package" type="xsd:string" use="optional">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[ Scan the consumer @Reference annotation package. ]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
 				<xsd:attribute name="default" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[ Is default. ]]></xsd:documentation>
@@ -988,6 +993,11 @@
 						<xsd:documentation><![CDATA[ The provider shutdown wait time. ]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
+				<xsd:attribute name="package" type="xsd:string" use="optional">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[ Scan the provider @Service annotation package. ]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
 				<xsd:attribute name="default" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[ Is default. ]]></xsd:documentation>
@@ -1040,25 +1050,6 @@
 			</xsd:extension>
 		</xsd:complexContent>
 	</xsd:complexType>
-	
-	<xsd:complexType name="annotationType">
-		<xsd:attribute name="id" type="xsd:ID">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[ The unique identifier for a bean. ]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="package" type="xsd:string" use="optional">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[ The scan package. ]]></xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-	</xsd:complexType>
-	
-	<xsd:element name="annotation" type="annotationType">
-		<xsd:annotation> 
-			<xsd:documentation><![CDATA[ The annotation config ]]></xsd:documentation> 
-		</xsd:annotation>
-	</xsd:element>
 	
 	<xsd:element name="application" type="applicationType">
 		<xsd:annotation> 

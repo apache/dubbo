@@ -59,11 +59,11 @@ public class ZookeeperRegistry extends FailbackRegistry {
 
     private final Set<String> anyServices = new ConcurrentHashSet<String>();
 
-    private final ConcurrentMap<URL, ConcurrentMap<NotifyListener, IZkChildListener>> zkListeners = new ConcurrentHashMap<URL, ConcurrentMap<NotifyListener, IZkChildListener>>();
+    private final ConcurrentMap<NotifyListener, IZkChildListener> zkListeners = new ConcurrentHashMap<NotifyListener, IZkChildListener>();
     
     private final ZkClient zkClient;
     
-    private volatile KeeperState zkState = KeeperState.SyncConnected;
+    private volatile KeeperState zkState;
 
     public ZookeeperRegistry(URL url) {
         super(url);
@@ -131,50 +131,40 @@ public class ZookeeperRegistry extends FailbackRegistry {
         try {
             if (Constants.ANY_VALUE.equals(url.getServiceInterface())) {
                 String root = toRootPath();
-                ConcurrentMap<NotifyListener, IZkChildListener> listeners = zkListeners.get(url);
-                if (listeners == null) {
-                    zkListeners.putIfAbsent(url, new ConcurrentHashMap<NotifyListener, IZkChildListener>());
-                    listeners = zkListeners.get(url);
-                }
-                IZkChildListener zkListener = listeners.get(listener);
+                IZkChildListener zkListener = zkListeners.get(listener);
                 if (zkListener == null) {
-                    listeners.putIfAbsent(listener, new IZkChildListener() {
+                    zkListeners.putIfAbsent(listener, new IZkChildListener() {
                         public void handleChildChange(String parentPath, List<String> currentChilds) throws Exception {
                             for (String child : currentChilds) {
                                 if (! anyServices.contains(child)) {
                                     anyServices.add(child);
                                     subscribe(url.setPath(child).addParameters(Constants.INTERFACE_KEY, child, 
-                                            Constants.CHECK_KEY, String.valueOf(false)), listener);
+                                            Constants.CHECK_KEY, String.valueOf(false), Constants.REGISTER_KEY, String.valueOf(false)), listener);
                                 }
                             }
                         }
                     });
-                    zkListener = listeners.get(listener);
+                    zkListener = zkListeners.get(listener);
                 }
                 List<String> services = zkClient.subscribeChildChanges(root, zkListener);
                 if (services != null && services.size() > 0) {
                     anyServices.addAll(services);
                     for (String service : services) {
                         subscribe(url.setPath(service).addParameters(Constants.INTERFACE_KEY, service, 
-                                Constants.CHECK_KEY, String.valueOf(false)), listener);
+                                Constants.CHECK_KEY, String.valueOf(false), Constants.REGISTER_KEY, String.valueOf(false)), listener);
                     }
                 }
             } else {
                 List<String> providers = new ArrayList<String>();
                 for (String path : toCategoriesPath(url)) {
-                    ConcurrentMap<NotifyListener, IZkChildListener> listeners = zkListeners.get(url);
-                    if (listeners == null) {
-                        zkListeners.putIfAbsent(url, new ConcurrentHashMap<NotifyListener, IZkChildListener>());
-                        listeners = zkListeners.get(url);
-                    }
-                    IZkChildListener zkListener = listeners.get(listener);
+                    IZkChildListener zkListener = zkListeners.get(listener);
                     if (zkListener == null) {
-                        listeners.putIfAbsent(listener, new IZkChildListener() {
+                        zkListeners.putIfAbsent(listener, new IZkChildListener() {
                             public void handleChildChange(String parentPath, List<String> currentChilds) throws Exception {
                                 ZookeeperRegistry.this.notify(url, listener, toUrls(url, currentChilds));
                             }
                         });
-                        zkListener = listeners.get(listener);
+                        zkListener = zkListeners.get(listener);
                     }
                     List<String> children = zkClient.subscribeChildChanges(path, zkListener);
                     if (children != null) {
@@ -190,13 +180,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     }
 
     protected void doUnsubscribe(URL url, NotifyListener listener) {
-        ConcurrentMap<NotifyListener, IZkChildListener> listeners = zkListeners.get(url);
-        if (listeners != null) {
-            IZkChildListener zkListener = listeners.get(listener);
-            if (zkListener != null) {
-                zkClient.unsubscribeChildChanges(toUrlPath(url), zkListener);
-            }
-        }
+        zkClient.unsubscribeChildChanges(toUrlPath(url), zkListeners.get(listener));
     }
 
     public List<URL> lookup(URL url) {
@@ -241,13 +225,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     }
 
     private String[] toCategoriesPath(URL url) {
-        String[] categroies;
-        if (Constants.ANY_VALUE.equals(url.getParameter(Constants.CATEGORY_KEY))) {
-            categroies = new String[] {Constants.PROVIDERS_CATEGORY, Constants.CONSUMERS_CATEGORY, 
-                    Constants.ROUTERS_CATEGORY, Constants.CONFIGURATORS_CATEGORY};
-        } else {
-            categroies = url.getParameter(Constants.CATEGORY_KEY, new String[] {Constants.DEFAULT_CATEGORY});
-        }
+        String[] categroies = url.getParameter(Constants.CATEGORY_KEY, new String[] {Constants.DEFAULT_CATEGORY});
         String[] paths = new String[categroies.length];
         for (int i = 0; i < categroies.length; i ++) {
             paths[i] = toServicePath(url) + Constants.PATH_SEPARATOR + categroies[i];

@@ -16,7 +16,6 @@
 package com.alibaba.dubbo.rpc.protocol.hessian;
 
 import java.io.IOException;
-import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,110 +24,77 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.http.HttpBinder;
 import com.alibaba.dubbo.remoting.http.HttpHandler;
 import com.alibaba.dubbo.remoting.http.HttpServer;
-import com.alibaba.dubbo.rpc.RpcContext;
+import com.alibaba.dubbo.rpc.Exporter;
+import com.alibaba.dubbo.rpc.Invoker;
+import com.alibaba.dubbo.rpc.ProxyFactory;
 import com.alibaba.dubbo.rpc.RpcException;
-import com.alibaba.dubbo.rpc.protocol.AbstractProxyProtocol;
-import com.caucho.hessian.HessianException;
-import com.caucho.hessian.client.HessianConnectionException;
-import com.caucho.hessian.client.HessianProxyFactory;
-import com.caucho.hessian.io.HessianMethodSerializationException;
-import com.caucho.hessian.server.HessianSkeleton;
+import com.alibaba.dubbo.rpc.protocol.AbstractProtocol;
 
 /**
  * http rpc support.
  * 
  * @author qianlei
  */
-public class HessianProtocol extends AbstractProxyProtocol {
+public class HessianProtocol extends AbstractProtocol {
 
     private final Map<String, HttpServer> serverMap = new ConcurrentHashMap<String, HttpServer>();
 
-    private final Map<String, HessianSkeleton> skeletonMap = new ConcurrentHashMap<String, HessianSkeleton>();
+    private HttpBinder               httpTransporter;
 
-    private HttpBinder httpBinder;
-    
-    public HessianProtocol() {
-        super(HessianException.class);
+    private ProxyFactory             proxyFactory;
+
+    public void setHttpTransporter(HttpBinder httpTransporter) {
+        this.httpTransporter = httpTransporter;
     }
 
-    public void setHttpBinder(HttpBinder httpBinder) {
-        this.httpBinder = httpBinder;
+    public void setProxyFactory(ProxyFactory proxyFactory) {
+        this.proxyFactory = proxyFactory;
     }
 
     public int getDefaultPort() {
         return 80;
     }
-
+    
     private class HessianHandler implements HttpHandler {
         
         public void handle(HttpServletRequest request, HttpServletResponse response)
                 throws IOException, ServletException {
             String uri = request.getRequestURI();
-            HessianSkeleton skeleton = skeletonMap.get(uri);
-            if (! request.getMethod().equalsIgnoreCase("POST")) {
-                response.setStatus(500);
-            } else {
-                RpcContext.getContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
-                try {
-                    skeleton.invoke(request.getInputStream(), response.getOutputStream());
-                } catch (Throwable e) {
-                    throw new ServletException(e);
-                }
-            }
+            HessianRpcExporter<?> exporter = (HessianRpcExporter<?>) exporterMap.get(uri);
+            exporter.handle(request, response);
         }
         
     }
 
-    protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
+    public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
+        final URL url = invoker.getUrl();
+        final String uri = url.getAbsolutePath(); // service uri also exporter cache key.
+
         String addr = url.getIp() + ":" + url.getPort();
         HttpServer server = serverMap.get(addr);
         if (server == null) {
-            server = httpBinder.bind(url, new HessianHandler());
+            server = httpTransporter.bind(url, new HessianHandler());
             serverMap.put(addr, server);
         }
-        final String path = url.getAbsolutePath();
-        HessianSkeleton skeleton = new HessianSkeleton(impl, type);
-        skeletonMap.put(path, skeleton);
-        return new Runnable() {
-            public void run() {
-                skeletonMap.remove(path);
+
+        HessianRpcExporter<T> exporter = new HessianRpcExporter<T>(invoker, proxyFactory) {
+            public void unexport() {
+                super.unexport();
+                exporterMap.remove(uri);
             }
         };
+        exporterMap.put(uri, exporter);
+        return exporter;
     }
 
-    @SuppressWarnings("unchecked")
-    protected <T> T doRefer(Class<T> serviceType, URL url) throws RpcException {
-        HessianProxyFactory hessianProxyFactory = new HessianProxyFactory();
-        String client = url.getParameter(Constants.CLIENT_KEY, Constants.DEFAULT_HTTP_CLIENT);
-        if ("httpclient".equals(client)) {
-            hessianProxyFactory.setConnectionFactory(new HttpClientConnectionFactory());
-        } else if (client != null && client.length() > 0 && ! Constants.DEFAULT_HTTP_CLIENT.equals(client)) {
-            throw new IllegalStateException("Unsupported http protocol client=\"" + client + "\"!");
-        }
-        int timeout = url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
-        hessianProxyFactory.setConnectTimeout(timeout);
-        hessianProxyFactory.setReadTimeout(timeout);
-        return (T) hessianProxyFactory.create(serviceType, url.setProtocol("http").toJavaURL(), Thread.currentThread().getContextClassLoader());
-    }
-
-    protected int getErrorCode(Throwable e) {
-        if (e instanceof HessianConnectionException) {
-            if (e.getCause() != null) {
-                Class<?> cls = e.getCause().getClass();
-                if (SocketTimeoutException.class.equals(cls)) {
-                    return RpcException.TIMEOUT_EXCEPTION;
-                }
-            }
-            return RpcException.NETWORK_EXCEPTION;
-        } else if (e instanceof HessianMethodSerializationException) {
-            return RpcException.SERIALIZATION_EXCEPTION;
-        }
-        return super.getErrorCode(e);
+    public <T> Invoker<T> refer(Class<T> serviceType, URL url) throws RpcException {
+        Invoker<T> invoker = new HessianRpcInvoker<T>(serviceType, url, proxyFactory);
+        invokers.add(invoker);
+        return invoker;
     }
 
     public void destroy() {

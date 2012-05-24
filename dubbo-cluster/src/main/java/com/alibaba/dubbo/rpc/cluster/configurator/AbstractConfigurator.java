@@ -15,10 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.cluster.configurator;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.cluster.Configurator;
@@ -44,33 +40,8 @@ public abstract class AbstractConfigurator implements Configurator {
     }
 
     public URL configure(URL url) {
-        if (configuratorUrl == null || configuratorUrl.getHost() == null
-                || url == null || url.getHost() == null) {
-            return url;
-        }
-        if (Constants.ANYHOST_VALUE.equals(configuratorUrl.getHost()) 
-                || url.getHost().equals(configuratorUrl.getHost())) {
-            String configApplication = configuratorUrl.getParameter(Constants.APPLICATION_KEY, configuratorUrl.getUsername());
-            String currentApplication = url.getParameter(Constants.APPLICATION_KEY, url.getUsername());
-            if (configApplication == null || Constants.ANY_VALUE.equals(configApplication) 
-                    || configApplication.equals(currentApplication)) {
-                if (configuratorUrl.getPort() == 0 || url.getPort() == configuratorUrl.getPort()) {
-                    Set<String> condtionKeys = new HashSet<String>();
-                    for (Map.Entry<String, String> entry : configuratorUrl.getParameters().entrySet()) {
-                        String key = entry.getKey();
-                        String value = entry.getValue();
-                        if (key.startsWith("~") || Constants.APPLICATION_KEY.equals(key) 
-                                || Constants.SIDE_KEY.equals(key)) {
-                            condtionKeys.add(key);
-                            if (value != null && ! Constants.ANY_VALUE.equals(value)
-                                    && ! value.equals(url.getParameter(key.startsWith("~") ? key.substring(1) : key))) {
-                                return url;
-                            }
-                        }
-                    }
-                    return doConfigure(url, configuratorUrl.removeParameters(condtionKeys));
-                }
-            }
+        if (isMatch(getUrl(), url)) {
+            return doConfigure(url);
         }
         return url;
     }
@@ -81,11 +52,30 @@ public abstract class AbstractConfigurator implements Configurator {
         }
         return getUrl().getHost().compareTo(o.getUrl().getHost());
     }
-    
-    protected abstract URL doConfigure(URL currentUrl, URL configUrl);
-    
-    public static void main(String[] args) {
-        System.out.println(URL.encode("timeout=100"));
+
+    private boolean isMatch(URL configuratorUrl, URL providerUrl) {
+        if (configuratorUrl == null || configuratorUrl.getHost() == null
+                || providerUrl == null || providerUrl.getHost() == null) {
+            return false;
+        }
+        /*if (! providerUrl.getServiceKey().equals(configuratorUrl.getServiceKey())) {
+            return false;
+        }*/
+        if (Constants.ANYHOST_VALUE.equals(configuratorUrl.getHost()) 
+                || providerUrl.getHost().equals(configuratorUrl.getHost())) {
+            String configApplication = configuratorUrl.getParameter(Constants.APPLICATION_KEY, configuratorUrl.getUsername());
+            String providerApplication = providerUrl.getParameter(Constants.APPLICATION_KEY, providerUrl.getUsername());
+            if (configApplication == null || configApplication.equals(providerApplication)) {
+                if (configuratorUrl.getPort() > 0) {
+                    return providerUrl.getPort() == configuratorUrl.getPort();
+                } else {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
+    
+    protected abstract URL doConfigure(URL url);
 
 }

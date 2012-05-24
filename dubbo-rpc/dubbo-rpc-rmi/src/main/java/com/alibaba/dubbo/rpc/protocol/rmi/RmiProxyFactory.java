@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2012 Alibaba Group.
+ * Copyright 1999-2011 Alibaba Group.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,24 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.cluster.configurator.absent;
+package com.alibaba.dubbo.rpc.protocol.rmi;
+
+import java.rmi.Remote;
 
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.rpc.cluster.configurator.AbstractConfigurator;
+import com.alibaba.dubbo.common.extension.SPI;
+import com.alibaba.dubbo.rpc.Invoker;
 
 /**
- * AbsentConfigurator
+ * RmiProxyFactory
  * 
  * @author william.liangf
  */
-public class AbsentConfigurator extends AbstractConfigurator {
+@SPI
+public interface RmiProxyFactory {
 
-    public AbsentConfigurator(URL url) {
-        super(url);
-    }
+    <T> Remote getProxy(Invoker<T> invoker);
 
-    public URL doConfigure(URL url) {
-        return url.addParametersIfAbsent(getUrl().getParameters());
-    }
+    <T> Invoker<T> getInvoker(Remote remote, Class<T> serviceType, URL url);
 
+    boolean isSupported(Remote remote, Class<?> serviceType, URL url);
+    
 }
