@@ -288,7 +288,7 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<useSystemClassLoader>true</useSystemClassLoader>
-					<forkMode>pertest</forkMode>
+					<forkMode>once</forkMode>
 					<argLine>${argline}</argLine>
 					<systemProperties>
 						<!-- common shared -->
