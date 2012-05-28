@@ -381,7 +381,7 @@ public class RedisRegistry extends FailbackRegistry {
                 }
             }
             String category = toCategoryName(key);
-            if (! categories.contains(category)) {
+            if (! categories.contains(Constants.ANY_VALUE) && ! categories.contains(category)) {
                 continue;
             }
             List<URL> urls = new ArrayList<URL>();
