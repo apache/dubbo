@@ -546,6 +546,13 @@ public class Constants {
     public static final String SCOPE_NONE						   = "none";
     
     public static final String RELIABLE_PROTOCOL				   = "napoli";
+    
+    public static final String TPS_LIMIT_RATE_KEY                  = "tps";
+
+    public static final String TPS_LIMIT_INTERVAL_KEY              = "tps.interval";
+
+    public static final long DEFAULT_TPS_LIMIT_INTERVAL            = 60 * 1000;
+    
     /*
      * private Constants(){ }
      */
