@@ -29,6 +29,7 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.common.utils.UrlUtils;
 import com.alibaba.dubbo.rpc.Invocation;
@@ -95,6 +96,7 @@ public class ConditionRouter implements Router, Comparable<Router> {
             }
             List<Invoker<T>> result = new ArrayList<Invoker<T>>();
             if (thenCondition == null) {
+            	logger.warn("The current consumer in the service blacklist. consumer: " + NetUtils.getLocalHost() + ", service: " + url.getServiceKey());
                 return result;
             }
             for (Invoker<T> invoker : invokers) {
@@ -102,8 +104,11 @@ public class ConditionRouter implements Router, Comparable<Router> {
                     result.add(invoker);
                 }
             }
-            if (result.size() > 0 || force) {
+            if (result.size() > 0) {
                 return result;
+            } else if (force) {
+            	logger.warn("The route result is empty and force execute. consumer: " + NetUtils.getLocalHost() + ", service: " + url.getServiceKey() + ", router: " + url.getParameterAndDecoded(Constants.RULE_KEY));
+            	return result;
             }
         } catch (Throwable t) {
             logger.error("Failed to execute condition router rule: " + getUrl() + ", invokers: " + invokers + ", cause: " + t.getMessage(), t);
