@@ -24,8 +24,10 @@ import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcStatus;
 import com.alibaba.dubbo.rpc.support.MockInvocation;
 import com.alibaba.dubbo.rpc.support.MyInvoker;
-import org.junit.Assert;
+
 import org.junit.Test;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
@@ -37,7 +39,9 @@ public class TpsLimitFilterTest {
     @Test
     public void testWithoutCount() throws Exception {
         URL url = URL.valueOf("test://test");
-        url = url.addParameter(Constants.TPS_MAX_KEY, 5);
+        url = url.addParameter(Constants.INTERFACE_KEY,
+                               "com.alibaba.dubbo.rpc.file.TpsService");
+        url = url.addParameter(Constants.TPS_LIMIT_RATE_KEY, 5);
         Invoker<TpsLimitFilterTest> invoker = new MyInvoker<TpsLimitFilterTest>(url);
         Invocation invocation = new MockInvocation();
         filter.invoke(invoker, invocation);
@@ -46,15 +50,19 @@ public class TpsLimitFilterTest {
     @Test(expected = RpcException.class)
     public void testFail() throws Exception {
         URL url = URL.valueOf("test://test");
-        url = url.addParameter(Constants.TPS_MAX_KEY, 5);
+        url = url.addParameter(Constants.INTERFACE_KEY,
+                               "com.alibaba.dubbo.rpc.file.TpsService");
+        url = url.addParameter(Constants.TPS_LIMIT_RATE_KEY, 5);
         Invoker<TpsLimitFilterTest> invoker = new MyInvoker<TpsLimitFilterTest>(url);
         Invocation invocation = new MockInvocation();
         for (int i = 0; i < 10; i++) {
-            RpcStatus.beginCount(url, invocation.getMethodName());
-            Thread.sleep(100);
-            RpcStatus.endCount(url, invocation.getMethodName(), 100, true);
+            try {
+                filter.invoke(invoker, invocation);
+            } catch (Exception e) {
+                assertTrue(i >= 5);
+                throw e;
+            }
         }
-        filter.invoke(invoker, invocation);
     }
 
 }
