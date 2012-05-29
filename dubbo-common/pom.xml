@@ -56,5 +56,10 @@
 			<artifactId>fastjson</artifactId>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.jvnet.sorcerer</groupId>
+			<artifactId>sorcerer-javac</artifactId>
+			<scope>provided</scope>
+		</dependency>
 	</dependencies>
 </project>
