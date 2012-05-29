@@ -417,10 +417,16 @@ public abstract class AbstractRegistry implements Registry {
             logger.warn("Ignore empty notify urls for subscribe url " + url);
             return;
         }
-        List<URL> result = new ArrayList<URL>();
+        Map<String, List<URL>> result = new HashMap<String, List<URL>>();
         for (URL u : urls) {
             if (UrlUtils.isMatch(url, u)) {
-                result.add(u);
+            	String category = u.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY);
+            	List<URL> categoryList = result.get(category);
+            	if (categoryList == null) {
+            		categoryList = new ArrayList<URL>();
+            		result.put(category, categoryList);
+            	}
+            	categoryList.add(u);
             }
         }
         if (result.size() == 0) {
@@ -431,10 +437,13 @@ public abstract class AbstractRegistry implements Registry {
             notified.putIfAbsent(url, new ConcurrentHashMap<String, List<URL>>());
             categoryNotified = notified.get(url);
         }
-        String category = url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY);
-        categoryNotified.put(category, urls);
-        saveProperties(url);
-        listener.notify(urls);
+        for (Map.Entry<String, List<URL>> entry : result.entrySet()) {
+            String category = entry.getKey();
+            List<URL> categoryList = entry.getValue();
+            categoryNotified.put(category, categoryList);
+            saveProperties(url);
+            listener.notify(categoryList);
+        }
     }
 
     private void saveProperties(URL url) {

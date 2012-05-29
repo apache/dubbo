@@ -89,6 +89,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 ZookeeperRegistry.this.zkState = state;
             }
             public void handleNewSession() throws Exception {
+            	recover();
             }
         });
     }

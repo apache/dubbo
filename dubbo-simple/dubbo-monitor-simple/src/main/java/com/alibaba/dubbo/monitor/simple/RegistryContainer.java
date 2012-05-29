@@ -66,8 +66,6 @@ public class RegistryContainer implements Container {
 
     private final Map<String, List<URL>> serviceConsumers = new ConcurrentHashMap<String, List<URL>>();
 
-    private final Map<String, List<URL>> serviceRoutes = new ConcurrentHashMap<String, List<URL>>();
-
     private Registry registry;
     
     private static RegistryContainer INSTANCE = null;
@@ -212,15 +210,6 @@ public class RegistryContainer implements Container {
         return urls;
     }
 
-    public Map<String, List<URL>> getServiceRoutes() {
-        return Collections.unmodifiableMap(serviceRoutes);
-    }
-
-    public List<URL> getRoutesByService(String service) {
-        List<URL> urls = serviceRoutes.get(service);
-        return urls == null ? null : Collections.unmodifiableList(urls);
-    }
-
     public void start() {
         String url = ConfigUtils.getProperty(REGISTRY_ADDRESS);
         if (url == null || url.length() == 0) {
@@ -234,15 +223,15 @@ public class RegistryContainer implements Container {
                                     Constants.VERSION_KEY, Constants.ANY_VALUE,
                                     Constants.CLASSIFIER_KEY, Constants.ANY_VALUE,
                                     Constants.CATEGORY_KEY, Constants.PROVIDERS_CATEGORY + "," 
-                                            + Constants.CONSUMERS_CATEGORY + "," 
-                                            + Constants.ROUTERS_CATEGORY + "," 
-                                            + Constants.CONFIGURATORS_CATEGORY,
+                                            + Constants.CONSUMERS_CATEGORY,
                                     Constants.CHECK_KEY, String.valueOf(false));
         registry.subscribe(subscribeUrl, new NotifyListener() {
             public void notify(List<URL> urls) {
                 if (urls == null || urls.size() == 0) {
                     return;
                 }
+                Map<String, List<URL>> proivderMap = new HashMap<String, List<URL>>();
+                Map<String, List<URL>> consumerMap = new HashMap<String, List<URL>>();
                 for (URL url : urls) {
                     String application = url.getParameter(Constants.APPLICATION_KEY);
                     if (application != null && application.length() > 0) {
@@ -255,7 +244,6 @@ public class RegistryContainer implements Container {
                         if (Constants.EMPTY_PROTOCOL.equals(url.getProtocol())) {
                             serviceProviders.remove(service);
                         } else {
-                            Map<String, List<URL>> proivderMap = new HashMap<String, List<URL>>();
                             List<URL> list = proivderMap.get(service);
                             if (list == null) {
                                 list = new ArrayList<URL>();
@@ -277,15 +265,11 @@ public class RegistryContainer implements Container {
                                 }
                                 applicationServices.add(service);
                             }
-                            if (proivderMap != null && proivderMap.size() > 0) {
-                                serviceProviders.putAll(proivderMap);
-                            }
                         }
                     } else if (Constants.CONSUMERS_CATEGORY.equals(category)) {
                         if (Constants.EMPTY_PROTOCOL.equals(url.getProtocol())) {
-                            serviceProviders.remove(service);
+                            serviceConsumers.remove(service);
                         } else {
-                            Map<String, List<URL>> consumerMap = new HashMap<String, List<URL>>();
                             List<URL> list = consumerMap.get(service);
                             if (list == null) {
                                 list = new ArrayList<URL>();
@@ -307,30 +291,16 @@ public class RegistryContainer implements Container {
                                 }
                                 applicationServices.add(service);
                             }
-                            if (consumerMap != null && consumerMap.size() > 0) {
-                                serviceConsumers.putAll(consumerMap);
-                            }
-                        }
-                    } else if (Constants.ROUTERS_CATEGORY.equals(category)) {
-                        if (Constants.EMPTY_PROTOCOL.equals(url.getProtocol())) {
-                            serviceProviders.remove(service);
-                        } else {
-                            Map<String, List<URL>> routeMap = new HashMap<String, List<URL>>();
-                            List<URL> list = routeMap.get(service);
-                            if (list == null) {
-                                list = new ArrayList<URL>();
-                                routeMap.put(service, list);
-                            }
-                            list.add(url);
-                            if (routeMap != null && routeMap.size() > 0) {
-                                serviceRoutes.putAll(routeMap);
-                            }
+                            
                         }
                     }
                 }
-                
-                
-                
+                if (proivderMap != null && proivderMap.size() > 0) {
+                    serviceProviders.putAll(proivderMap);
+                }
+                if (consumerMap != null && consumerMap.size() > 0) {
+                    serviceConsumers.putAll(consumerMap);
+                }
             }
         });
     }
