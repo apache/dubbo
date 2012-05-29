@@ -189,7 +189,7 @@ public abstract class AbstractRegistry implements Registry {
                 try {
                     FileLock lock = channel.tryLock();
                 	if (lock == null) {
-                        throw new IOException("Can not lock the registry cache file " + file.getAbsolutePath() + ", ignore and retry later, maybe multi java process use the file, please config: dubbo.regitry.file=xxx.properties");
+                        throw new IOException("Can not lock the registry cache file " + file.getAbsolutePath() + ", ignore and retry later, maybe multi java process use the file, please config: dubbo.registry.file=xxx.properties");
                     }
                 	// 保存
                     try {
