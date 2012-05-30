@@ -46,7 +46,7 @@ public class CacheTest extends TestCase {
             ReferenceConfig<CacheService> reference = new ReferenceConfig<CacheService>();
             reference.setApplication(new ApplicationConfig("cache-consumer"));
             reference.setInterface(CacheService.class);
-            reference.setUrl("dubbo://127.0.0.1:29582?cache=true");
+            reference.setUrl("dubbo://127.0.0.1:29582?scope=remote&cache=true");
             CacheService cacheService = reference.get();
             try {
                 // 测试缓存生效，多次调用返回同样的结果。(服务器端自增长返回值)

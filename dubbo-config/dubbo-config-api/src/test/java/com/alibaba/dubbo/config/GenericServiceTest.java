@@ -103,7 +103,7 @@ public class GenericServiceTest {
             ReferenceConfig<GenericService> reference = new ReferenceConfig<GenericService>();
             reference.setApplication(new ApplicationConfig("generic-consumer"));
             reference.setInterface(DemoService.class);
-            reference.setUrl("dubbo://127.0.0.1:29581");
+            reference.setUrl("dubbo://127.0.0.1:29581?scope=remote");
             reference.setGeneric(true);
             GenericService genericService = reference.get();
             try {
