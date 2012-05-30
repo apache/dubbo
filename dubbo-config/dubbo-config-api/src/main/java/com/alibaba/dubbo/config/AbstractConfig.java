@@ -366,6 +366,9 @@ public abstract class AbstractConfig implements Serializable {
                 if (v.startsWith(Constants.REMOVE_VALUE_PREFIX)) {
                     v = v.substring(1);
                 }
+                if (Constants.DEFAULT_KEY.equals(v)) {
+                	continue;
+                }
                 if (! ExtensionLoader.getExtensionLoader(type).hasExtension(v)) {
                     throw new IllegalStateException("No such extension " + v + " for " + property + "/" + type.getName());
                 }
