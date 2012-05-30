@@ -29,7 +29,7 @@
     <bean id="mockDao" class="com.alibaba.dubbo.config.spring.filter.MockDaoImpl" />
     
     <!-- 暴露服务配置 -->
-    <dubbo:service id="demoServiceConfig" interface="com.alibaba.dubbo.config.spring.api.DemoService" ref="demoService" filter="mymock" />
+    <dubbo:service id="demoServiceConfig" interface="com.alibaba.dubbo.config.spring.api.DemoService" ref="demoService" filter="mymock,default" />
      
     <bean id="demoService" class="com.alibaba.dubbo.config.spring.impl.DemoServiceImpl" />
  
