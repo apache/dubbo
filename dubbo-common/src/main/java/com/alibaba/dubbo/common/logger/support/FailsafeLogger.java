@@ -21,12 +21,20 @@ import com.alibaba.dubbo.common.utils.NetUtils;
 
 public class FailsafeLogger implements Logger {
 
-	private final Logger logger;
+	private Logger logger;
 
 	public FailsafeLogger(Logger logger) {
 		this.logger = logger;
 	}
-	
+
+	public Logger getLogger() {
+		return logger;
+	}
+
+	public void setLogger(Logger logger) {
+		this.logger = logger;
+	}
+
 	private String appendContextMessage(String msg) {
 	    return " [DUBBO] " + msg + ", dubbo version: " + Version.getVersion() + ", current host: " + NetUtils.getLogHost();
 	}
