@@ -54,13 +54,13 @@ public class LoggerFactory {
     		setLoggerAdapter(new JdkLoggerAdapter());
     	} else {
     		try {
-    			setLoggerAdapter(new Slf4jLoggerAdapter());
+    			setLoggerAdapter(new Log4jLoggerAdapter());
             } catch (Throwable e1) {
                 try {
-                	setLoggerAdapter(new JclLoggerAdapter());
+                	setLoggerAdapter(new Slf4jLoggerAdapter());
                 } catch (Throwable e2) {
                     try {
-                    	setLoggerAdapter(new Log4jLoggerAdapter());
+                    	setLoggerAdapter(new JclLoggerAdapter());
                     } catch (Throwable e3) {
                         setLoggerAdapter(new JdkLoggerAdapter());
                     }
