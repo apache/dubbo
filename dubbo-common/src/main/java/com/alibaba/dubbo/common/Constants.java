@@ -383,8 +383,6 @@ public class Constants {
 
     public static final String  MERGER_KEY                         = "merger";
 
-    public static final String  TPS_MAX_KEY                        = "tps.max";
-
     /**
      * 集群时是否排除非available的invoker
      */
