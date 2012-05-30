@@ -198,13 +198,26 @@ public class ExtensionLoader<T> {
                     }
                 }
             }
+            Collections.sort(exts, ActivateComparator.COMPARATOR);
         }
-        Collections.sort(exts, ActivateComparator.COMPARATOR);
-        for (String name : names) {
-            if (! name.startsWith(Constants.REMOVE_VALUE_PREFIX)) {
-                T ext = getExtension(name);
-                exts.add(ext);
+        List<T> usrs = new ArrayList<T>();
+        for (int i = 0; i < names.size(); i ++) {
+        	String name = names.get(i);
+            if (! name.startsWith(Constants.REMOVE_VALUE_PREFIX)
+            		&& ! names.contains(Constants.REMOVE_VALUE_PREFIX + name)) {
+            	if (Constants.DEFAULT_KEY.equals(name)) {
+            		if (usrs.size() > 0) {
+	            		exts.addAll(0, usrs);
+	            		usrs.clear();
+            		}
+            	} else {
+	            	T ext = getExtension(name);
+	            	usrs.add(ext);
+            	}
             }
+        }
+        if (usrs.size() > 0) {
+        	exts.addAll(usrs);
         }
         return exts;
     }
