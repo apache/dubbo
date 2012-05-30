@@ -15,7 +15,7 @@
  */
 package com.alibaba.dubbo.rpc.cluster.support;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -123,7 +123,7 @@ public class FailSafeClusterInvokerTest {
         FailsafeClusterInvoker<DemoService> invoker = new FailsafeClusterInvoker<DemoService>(dic);
         LogUtil.start();
         invoker.invoke(invocation);
-        assertEquals(1,LogUtil.findMessage("No provider"));
+        assertTrue(LogUtil.findMessage("No provider") > 0);
         LogUtil.stop();
     }
 
