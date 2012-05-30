@@ -211,17 +211,6 @@ public class Hessian2SerializationTest extends AbstractSerializationPersionFailT
     @Test
     public void test_ByteWrap() throws Exception { }
     
-    
-    // FIXME
-    @Ignore("com.alibaba.com.caucho.hessian.io.HessianProtocolException: 'java.math.BigInteger' could not be instantiated")
-    @Test
-    public void test_BigInteger() throws Exception {}
-    
-    // FIXME
-    @Ignore("com.alibaba.com.caucho.hessian.io.HessianProtocolException: 'java.math.BigInteger' could not be instantiated")
-    @Test
-    public void test_BigInteger_withType() throws Exception {}
-    
     // FIXME
     @Ignore("Bad Stream read other type data")
     @Test
