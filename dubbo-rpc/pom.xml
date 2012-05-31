@@ -26,6 +26,9 @@
 	<packaging>pom</packaging>
 	<name>${project.artifactId}</name>
 	<description>The rpc module of dubbo project</description>
+	<properties>
+		<skip_maven_deploy>true</skip_maven_deploy>
+	</properties>
 	<modules>
 		<module>dubbo-rpc-api</module>
 		<module>dubbo-rpc-default</module>
