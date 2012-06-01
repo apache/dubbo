@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://code.alibabatech.com/schema/dubbo
+        http://code.alibabatech.com/schema/dubbo/dubbo.xsd
+        ">
+	<bean id="demo.local" class="com.alibaba.dubbo.rpc.benchmark.DemoServiceImpl" />
+
+	<bean id="persistPropertyPlaceholderConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE" />
+		<property name="ignoreResourceNotFound" value="true" />
+		<property name="ignoreUnresolvablePlaceholders" value="true" />
+		<property name="locations">
+			<list>
+				<value>classpath:dubbo-default.properties</value>
+				<value>classpath:dubbo.properties</value>
+			</list>
+		</property>
+	</bean>
+
+	<dubbo:registry address="N/A"/>
+
+	<!-- 服务应用配置 -->
+	<dubbo:application name="dubbo_provider" />
+
+	<!-- 服务提供者全局配置 -->
+	<dubbo:protocol name="dubbo" port="20885"/>
+
+	<!-- 服务提供者暴露服务配置 -->
+	<dubbo:service id="helloService" interface="com.alibaba.dubbo.rpc.benchmark.DemoService"
+		ref="demo.local"/>
+
+</beans>
