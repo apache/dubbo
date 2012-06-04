@@ -393,6 +393,7 @@
             <plugin>
                 <groupId>com.alibaba.dubbo.plugins</groupId>
                 <artifactId>maven-dubbo-plugin</artifactId>
+                <version>1.0</version>
                 <executions>
                     <execution>
                         <id>export-class</id>
