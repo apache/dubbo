@@ -54,7 +54,7 @@
 		<module>dubbo-simple</module>
 		<module>dubbo-demo</module>
 		<module>dubbo-test</module>
-        <module>maven-dubbo-plugin</module>
+        <!-- <module>maven-dubbo-plugin</module> -->
 	</modules>
 	<properties>
 		<!-- Common libs -->
