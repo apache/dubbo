@@ -108,6 +108,8 @@ public class GenerateExportClassMojo extends AbstractMojo {
             getLog().info(String.format("Using '%s' encoding to read java source file.", encoding));
         }
 
+        builder.setEncoding(encoding);
+
         for (Iterator iterator = project.getCompileSourceRoots().iterator(); iterator.hasNext(); ) {
             builder.addSourceTree(new File(iterator.next().toString()));
         }
