@@ -103,9 +103,9 @@ public class GenerateExportClassMojo extends AbstractMojo {
         if (StringUtils.isEmpty(encoding)) {
             encoding = System.getProperty("file.encoding");
             getLog().warn(String.format("Using platform encoding (%s actually)" +
-                                            " to copy filtered resources, i.e. build is platform dependent!", encoding));
+                                            " to read java source file, i.e. build is platform dependent!", encoding));
         } else {
-            getLog().info(String.format("Using '%s' encoding to copy filtered resources.", encoding));
+            getLog().info(String.format("Using '%s' encoding to read java source file.", encoding));
         }
 
         for (Iterator iterator = project.getCompileSourceRoots().iterator(); iterator.hasNext(); ) {
