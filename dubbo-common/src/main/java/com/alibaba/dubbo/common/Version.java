@@ -22,6 +22,7 @@ import java.util.Set;
 
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.ClassHelper;
 
 /**
  * Version
@@ -112,7 +113,7 @@ public final class Version {
 	public static void checkDuplicate(String path) {
 		try {
 			// 在ClassPath搜文件
-			Enumeration<URL> urls = Thread.currentThread().getContextClassLoader().getResources(path);
+			Enumeration<URL> urls = ClassHelper.getCallerClassLoader(Version.class).getResources(path);
 			Set<String> files = new HashSet<String>();
 			while (urls.hasMoreElements()) {
 				URL url = urls.nextElement();

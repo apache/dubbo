@@ -48,6 +48,8 @@ import javax.tools.StandardJavaFileManager;
 import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
 
+import com.alibaba.dubbo.common.utils.ClassHelper;
+
 /**
  * JdkCompiler. (SPI, Singleton, ThreadSafe)
  * 
@@ -128,7 +130,7 @@ public class JdkCompiler extends AbstractCompiler {
                 return defineClass(qualifiedClassName, bytes, 0, bytes.length);
             }
             try {
-                return Class.forName(qualifiedClassName);
+                return ClassHelper.forNameWithCallerClassLoader(qualifiedClassName, getClass());
             } catch (ClassNotFoundException nf) {
                 return super.findClass(qualifiedClassName);
             }

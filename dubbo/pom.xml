@@ -378,6 +378,18 @@
 					</execution>
 				</executions>
 			</plugin>
+            <plugin>
+                <groupId>com.alibaba.dubbo.plugins</groupId>
+                <artifactId>maven-dubbo-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>merge</id>
+                        <goals>
+                            <goal>merge-export-class</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 		</plugins>
 	</build>
 </project>

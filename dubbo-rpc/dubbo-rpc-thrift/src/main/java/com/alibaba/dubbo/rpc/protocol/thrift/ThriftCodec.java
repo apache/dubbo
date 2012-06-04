@@ -16,6 +16,7 @@ package com.alibaba.dubbo.rpc.protocol.thrift;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
+import com.alibaba.dubbo.common.utils.ClassHelper;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.Codec;
 import com.alibaba.dubbo.remoting.exchange.Request;
@@ -195,7 +196,7 @@ public class ThriftCodec implements Codec {
             if ( clazz == null ) {
                 try {
 
-                    clazz = Class.forName( argsClassName );
+                    clazz = ClassHelper.forNameWithThreadContextClassLoader( argsClassName );
 
                     cachedClass.putIfAbsent( argsClassName, clazz );
 
@@ -311,7 +312,7 @@ public class ThriftCodec implements Codec {
 
                 try {
 
-                    clazz = Class.forName( resultClassName );
+                    clazz = ClassHelper.forNameWithThreadContextClassLoader( resultClassName );
 
                     cachedClass.putIfAbsent( resultClassName, clazz );
 
@@ -426,7 +427,7 @@ public class ThriftCodec implements Codec {
 
             try {
 
-                clazz = Class.forName( methodArgs );
+                clazz = ClassHelper.forNameWithThreadContextClassLoader( methodArgs );
 
                 cachedClass.putIfAbsent( methodArgs, clazz );
 
@@ -549,7 +550,7 @@ public class ThriftCodec implements Codec {
         if ( clazz == null ) {
 
             try {
-                clazz = Class.forName( resultClassName );
+                clazz = ClassHelper.forNameWithThreadContextClassLoader(resultClassName);
                 cachedClass.putIfAbsent( resultClassName, clazz );
             } catch ( ClassNotFoundException e ) {
                 throw new RpcException( RpcException.SERIALIZATION_EXCEPTION, e.getMessage(), e );

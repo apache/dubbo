@@ -38,6 +38,7 @@ import javassist.CtNewMethod;
 import javassist.LoaderClassPath;
 import javassist.NotFoundException;
 
+import com.alibaba.dubbo.common.utils.ClassHelper;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
 
 /**
@@ -58,7 +59,7 @@ public final class ClassGenerator
 
 	public static ClassGenerator newInstance()
 	{
-		return new ClassGenerator(getClassPool(Thread.currentThread().getContextClassLoader()));
+		return new ClassGenerator(getClassPool(ClassHelper.getCallerClassLoader(ClassGenerator.class)));
 	}
 
 	public static ClassGenerator newInstance(ClassLoader loader)
@@ -334,7 +335,7 @@ public final class ClassGenerator
 					}
 				}
 			}
-			return mCtc.toClass();
+			return mCtc.toClass(ClassHelper.getCallerClassLoader(getClass()), null);
 		}
 		catch(RuntimeException e)
 		{

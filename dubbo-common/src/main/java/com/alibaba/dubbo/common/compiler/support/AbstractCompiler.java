@@ -19,6 +19,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.alibaba.dubbo.common.compiler.Compiler;
+import com.alibaba.dubbo.common.utils.ClassHelper;
 
 /**
  * Abstract compiler. (SPI, Prototype, ThreadSafe)
@@ -49,7 +50,7 @@ public abstract class AbstractCompiler implements Compiler {
         }
         String className = pkg != null && pkg.length() > 0 ? pkg + "." + cls : cls;
         try {
-            return Class.forName(className, true, Thread.currentThread().getContextClassLoader());
+            return Class.forName(className, true, ClassHelper.getCallerClassLoader(getClass()));
         } catch (ClassNotFoundException e) {
             if (! code.endsWith("}")) {
                 throw new IllegalStateException("The java code not endsWith \"}\", code: \n" + code + "\n");

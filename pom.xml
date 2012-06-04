@@ -1,4 +1,4 @@
-<!-- 
+<!--
  - Copyright 1999-2011 Alibaba Group.
  -  
  - Licensed under the Apache License, Version 2.0 (the "License");
@@ -54,6 +54,7 @@
 		<module>dubbo-simple</module>
 		<module>dubbo-demo</module>
 		<module>dubbo-test</module>
+        <module>maven-dubbo-plugin</module>
 	</modules>
 	<properties>
 		<!-- Common libs -->
@@ -388,6 +389,18 @@
                 <configuration>
                     <skip>${skip_maven_deploy}</skip>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.alibaba.dubbo.plugins</groupId>
+                <artifactId>maven-dubbo-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>export-class</id>
+                        <goals>
+                            <goal>export-class</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 		</plugins>
 	</build>

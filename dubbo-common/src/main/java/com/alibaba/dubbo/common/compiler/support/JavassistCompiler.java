@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.alibaba.dubbo.common.utils.ClassHelper;
+
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtField;
@@ -51,7 +53,7 @@ public class JavassistCompiler extends AbstractCompiler {
         int i = name.lastIndexOf('.');
         String className = i < 0 ? name : name.substring(i + 1);
         ClassPool pool = new ClassPool(true);
-        pool.appendClassPath(new LoaderClassPath(Thread.currentThread().getContextClassLoader()));
+        pool.appendClassPath(new LoaderClassPath(ClassHelper.getCallerClassLoader(getClass())));
         Matcher matcher = IMPORT_PATTERN.matcher(source);
         List<String> importPackages = new ArrayList<String>();
         Map<String, String> fullNames = new HashMap<String, String>();
@@ -114,7 +116,7 @@ public class JavassistCompiler extends AbstractCompiler {
                 }
             }
         }
-        return cls.toClass();
+        return cls.toClass(ClassHelper.getCallerClassLoader(getClass()), null);
     }
 
 }
