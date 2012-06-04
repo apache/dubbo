@@ -34,6 +34,7 @@ import org.codehaus.plexus.util.StringUtils;
 import com.thoughtworks.qdox.JavaDocBuilder;
 import com.thoughtworks.qdox.model.DocletTag;
 import com.thoughtworks.qdox.model.JavaClass;
+import com.thoughtworks.qdox.parser.ParseException;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
@@ -109,6 +110,12 @@ public class GenerateExportClassMojo extends AbstractMojo {
         }
 
         builder.setEncoding(encoding);
+        builder.setErrorHandler(new JavaDocBuilder.ErrorHandler() {
+
+            public void handle(ParseException parseException) {
+                getLog().error(parseException.getMessage());
+            }
+        });
 
         for (Iterator iterator = project.getCompileSourceRoots().iterator(); iterator.hasNext(); ) {
             builder.addSourceTree(new File(iterator.next().toString()));
