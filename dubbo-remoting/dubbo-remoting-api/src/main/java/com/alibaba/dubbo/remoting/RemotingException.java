@@ -28,6 +28,7 @@ import java.net.InetSocketAddress;
  * @see com.alibaba.dubbo.remoting.Transporter#bind(com.alibaba.dubbo.common.URL, ChannelHandler)
  * @see com.alibaba.dubbo.remoting.Transporter#connect(com.alibaba.dubbo.common.URL, ChannelHandler)
  * @author qian.lei
+ * @export
  */
 public class RemotingException extends Exception {
 

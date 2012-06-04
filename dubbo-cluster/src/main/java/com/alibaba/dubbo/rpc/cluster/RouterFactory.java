@@ -28,6 +28,7 @@ import com.alibaba.dubbo.rpc.Invocation;
  * @see com.alibaba.dubbo.rpc.cluster.Cluster#join(Directory)
  * @see com.alibaba.dubbo.rpc.cluster.Directory#list(Invocation)
  * @author chao.liuc
+ * @export
  */
 @SPI
 public interface RouterFactory {

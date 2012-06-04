@@ -53,6 +53,7 @@ import com.alibaba.dubbo.rpc.service.GenericService;
  * ReferenceConfig
  * 
  * @author william.liangf
+ * @export
  */
 public class ReferenceConfig<T> extends AbstractReferenceConfig {
 

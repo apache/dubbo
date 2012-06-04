@@ -50,6 +50,7 @@ import com.alibaba.dubbo.rpc.service.GenericService;
  * ServiceConfig
  * 
  * @author william.liangf
+ * @export
  */
 public class ServiceConfig<T> extends AbstractServiceConfig {
 

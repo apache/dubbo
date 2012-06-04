@@ -28,6 +28,7 @@ import com.alibaba.dubbo.rpc.cluster.support.FailoverCluster;
  * <a href="http://en.wikipedia.org/wiki/Fault-tolerant_system">Fault-Tolerant</a>
  * 
  * @author william.liangf
+ * @export
  */
 @SPI(FailoverCluster.NAME)
 public interface Cluster {

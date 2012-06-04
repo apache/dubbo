@@ -33,6 +33,7 @@ import com.alibaba.dubbo.config.spring.ServiceBean;
  * DubboNamespaceHandler
  * 
  * @author william.liangf
+ * @export
  */
 public class DubboNamespaceHandler extends NamespaceHandlerSupport {
 

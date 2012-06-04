@@ -833,12 +833,7 @@ public class ExtensionLoader<T> {
     }
 
     private static ClassLoader findClassLoader() {
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        if (classLoader != null) {
-            return classLoader;
-        }
-        classLoader = ExtensionLoader.class.getClassLoader();
-        return classLoader;
+        return  ExtensionLoader.class.getClassLoader();
     }
     
     @Override

@@ -25,6 +25,7 @@ import com.alibaba.dubbo.common.URL;
  * @see com.alibaba.dubbo.registry.Registry
  * @see com.alibaba.dubbo.registry.RegistryFactory#getRegistry(URL)
  * @author william.liangf
+ * @export
  */
 public interface RegistryService {
 

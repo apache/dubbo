@@ -34,6 +34,7 @@ import com.alibaba.dubbo.rpc.Protocol;
  * ProtocolConfig
  * 
  * @author william.liangf
+ * @export
  */
 public class ProtocolConfig extends AbstractConfig {
 

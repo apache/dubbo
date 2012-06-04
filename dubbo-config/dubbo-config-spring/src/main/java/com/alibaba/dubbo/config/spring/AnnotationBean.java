@@ -55,6 +55,7 @@ import com.alibaba.dubbo.config.annotation.Service;
  * AnnotationBean
  * 
  * @author william.liangf
+ * @export
  */
 public class AnnotationBean extends AbstractConfig implements DisposableBean, BeanFactoryPostProcessor, BeanPostProcessor, ApplicationContextAware {
 

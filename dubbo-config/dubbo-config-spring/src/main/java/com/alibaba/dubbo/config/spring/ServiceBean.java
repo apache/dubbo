@@ -45,6 +45,7 @@ import com.alibaba.dubbo.config.spring.extension.SpringExtensionFactory;
  * ServiceFactoryBean
  * 
  * @author william.liangf
+ * @export
  */
 public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean, DisposableBean, ApplicationContextAware, ApplicationListener, BeanNameAware {
 

@@ -26,6 +26,7 @@ import java.lang.annotation.Target;
  * 
  * @author william.liangf
  * @author ding.lid
+ * @export
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

@@ -23,6 +23,7 @@ package com.alibaba.dubbo.rpc;
  * @see com.alibaba.dubbo.rpc.RpcResult
  * @author qianlei
  * @author william.liangf
+ * @export
  */
 public interface Result {
 

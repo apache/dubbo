@@ -57,6 +57,7 @@ import com.alibaba.dubbo.rpc.Protocol;
  * AbstractBeanDefinitionParser
  * 
  * @author william.liangf
+ * @export
  */
 public class DubboBeanDefinitionParser implements BeanDefinitionParser {
     

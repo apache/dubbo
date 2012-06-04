@@ -38,6 +38,7 @@ import com.alibaba.dubbo.config.support.Parameter;
  * AbstractConfig
  * 
  * @author william.liangf
+ * @export
  */
 public abstract class AbstractConfig implements Serializable {
 

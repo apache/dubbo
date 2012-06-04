@@ -40,6 +40,7 @@ import com.alibaba.dubbo.config.support.Parameter;
  * ReferenceFactoryBean
  * 
  * @author william.liangf
+ * @export
  */
 public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean, ApplicationContextAware, InitializingBean, DisposableBean {
 

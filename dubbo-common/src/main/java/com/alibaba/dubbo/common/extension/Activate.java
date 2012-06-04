@@ -25,6 +25,7 @@ import java.lang.annotation.Target;
  * Activate.
  * 
  * @author william.liangf
+ * @export
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

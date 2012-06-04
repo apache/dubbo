@@ -30,6 +30,7 @@ import com.alibaba.dubbo.rpc.RpcException;
  * @see com.alibaba.dubbo.rpc.cluster.Cluster#join(Directory)
  * @see com.alibaba.dubbo.rpc.cluster.Directory#list(Invocation)
  * @author chao.liuc
+ * @export
  */
 public interface Router extends Comparable<Router> {
 

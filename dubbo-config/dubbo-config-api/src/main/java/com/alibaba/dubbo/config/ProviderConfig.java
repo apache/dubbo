@@ -31,6 +31,7 @@ import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
  * @see com.alibaba.dubbo.config.ProtocolConfig
  * @see com.alibaba.dubbo.config.ServiceConfig
  * @author william.liangf
+ * @export
  */
 public class ProviderConfig extends AbstractServiceConfig {
 

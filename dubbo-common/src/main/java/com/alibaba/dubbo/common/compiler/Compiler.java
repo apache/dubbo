@@ -22,6 +22,7 @@ import com.alibaba.dubbo.common.extension.SPI;
  * Compiler. (SPI, Singleton, ThreadSafe)
  * 
  * @author william.liangf
+ * @export
  */
 @SPI("javassist")
 public interface Compiler {

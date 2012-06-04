@@ -26,6 +26,7 @@ import com.alibaba.dubbo.rpc.ExporterListener;
  * AbstractServiceConfig
  * 
  * @author william.liangf
+ * @export
  */
 public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
 

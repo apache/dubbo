@@ -21,6 +21,7 @@ import java.io.IOException;
  * Data output.
  * 
  * @author qian.lei
+ * @export
  */
 public interface DataOutput {
 

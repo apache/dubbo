@@ -25,6 +25,7 @@ import com.alibaba.dubbo.rpc.InvokerListener;
  * 
  * @see com.alibaba.dubbo.config.ReferenceConfig
  * @author william.liangf
+ * @export
  */
 public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 

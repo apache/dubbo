@@ -44,6 +44,7 @@ import com.alibaba.dubbo.rpc.support.MockInvoker;
  * AbstractDefaultConfig
  * 
  * @author william.liangf
+ * @export
  */
 public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 

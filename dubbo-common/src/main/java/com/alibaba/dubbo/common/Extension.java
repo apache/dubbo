@@ -38,6 +38,7 @@ import java.lang.annotation.Target;
  * @deprecated
  * @author william.liangf
  * @author ding.lid
+ * @export
  */
 @Deprecated
 @Documented

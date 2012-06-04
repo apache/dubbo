@@ -27,6 +27,7 @@ import com.alibaba.dubbo.remoting.Transporter;
  * RegistryConfig
  * 
  * @author william.liangf
+ * @export
  */
 public class RegistryConfig extends AbstractConfig {
 

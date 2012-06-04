@@ -25,6 +25,7 @@ import java.util.Map;
  * @see com.alibaba.dubbo.rpc.RpcInvocation
  * @author qian.lei
  * @author william.liangf
+ * @export
  */
 public interface Invocation {
 

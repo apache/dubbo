@@ -28,6 +28,7 @@ import com.alibaba.dubbo.config.support.Parameter;
  * ApplicationConfig
  * 
  * @author william.liangf
+ * @export
  */
 public class ApplicationConfig extends AbstractConfig {
 

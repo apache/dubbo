@@ -19,6 +19,7 @@ package com.alibaba.dubbo.common.extension;
  * ExtensionFactory
  * 
  * @author william.liangf
+ * @export
  */
 @SPI
 public interface ExtensionFactory {

@@ -21,6 +21,7 @@ import com.alibaba.dubbo.common.URL;
  * Configurator. (SPI, Prototype, ThreadSafe)
  * 
  * @author william.liangf
+ * @export
  */
 public interface Configurator extends Comparable<Configurator> {
     

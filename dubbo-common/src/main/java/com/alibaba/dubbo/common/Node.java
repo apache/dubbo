@@ -21,6 +21,7 @@ import com.alibaba.dubbo.common.URL;
  * Node. (API/SPI, Prototype, ThreadSafe)
  * 
  * @author william.liangf
+ * @export
  */
 public interface Node {
 

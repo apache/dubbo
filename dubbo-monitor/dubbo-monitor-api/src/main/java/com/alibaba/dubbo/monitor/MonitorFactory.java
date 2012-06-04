@@ -23,6 +23,7 @@ import com.alibaba.dubbo.common.extension.SPI;
  * MonitorFactory. (SPI, Singleton, ThreadSafe)
  * 
  * @author william.liangf
+ * @export
  */
 @SPI("dubbo")
 public interface MonitorFactory {
