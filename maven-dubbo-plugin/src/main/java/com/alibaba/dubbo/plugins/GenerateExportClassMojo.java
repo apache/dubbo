@@ -68,6 +68,11 @@ public class GenerateExportClassMojo extends AbstractMojo {
     private String sourceEncoding;
 
     /**
+     * @parameter expression="${fail.on.error}" default-value="false"
+     */
+    private boolean failOnError;
+
+    /**
      * @parameter expression="${export.class.skip}" default-value="false"
      */
     private boolean skip;
@@ -110,12 +115,14 @@ public class GenerateExportClassMojo extends AbstractMojo {
         }
 
         builder.setEncoding(encoding);
-        builder.setErrorHandler(new JavaDocBuilder.ErrorHandler() {
+        if (!failOnError) {
+            builder.setErrorHandler(new JavaDocBuilder.ErrorHandler() {
 
-            public void handle(ParseException parseException) {
-                getLog().error(parseException.getMessage());
-            }
-        });
+                public void handle(ParseException parseException) {
+                    getLog().error(parseException.getMessage());
+                }
+            });
+        }
 
         for (Iterator iterator = project.getCompileSourceRoots().iterator(); iterator.hasNext(); ) {
             builder.addSourceTree(new File(iterator.next().toString()));
