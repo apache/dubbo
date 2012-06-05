@@ -64,6 +64,8 @@ public class ExtensionLoader<T> {
 	private static final String SERVICES_DIRECTORY = "META-INF/services/";
 
     private static final String DUBBO_DIRECTORY = "META-INF/dubbo/";
+    
+    private static final String DUBBO_INTERNAL_DIRECTORY = DUBBO_DIRECTORY + "internal/";
 
     private static final Pattern NAME_SEPARATOR = Pattern.compile("\\s*[,]+\\s*");
     
@@ -476,6 +478,7 @@ public class ExtensionLoader<T> {
         }
         
         Map<String, Class<?>> extensionClasses = new HashMap<String, Class<?>>();
+        loadFile(extensionClasses, DUBBO_INTERNAL_DIRECTORY);
         loadFile(extensionClasses, DUBBO_DIRECTORY);
         loadFile(extensionClasses, SERVICES_DIRECTORY);
         return extensionClasses;
