@@ -195,7 +195,7 @@ public abstract class Builder<T> implements GenericDataFlags
 		if( cc.isInterface() )
 			return GenericArrayBuilder;
 
-		ClassLoader cl = ClassHelper.getClassLoader(c);
+		ClassLoader cl = ClassHelper.getCallerClassLoader(Builder.class);
 
 		String cn = ReflectUtils.getName(c), ccn = ReflectUtils.getName(cc); // get class name as int[][], double[].
 		String bcn = BUILDER_CLASS_NAME + "$bc" + BUILDER_CLASS_COUNTER.getAndIncrement();
@@ -312,7 +312,7 @@ public abstract class Builder<T> implements GenericDataFlags
 		if( Throwable.class.isAssignableFrom(c) )
 			return SerializableBuilder;
 
-		ClassLoader cl = ClassHelper.getClassLoader(c);
+		ClassLoader cl = ClassHelper.getCallerClassLoader(Builder.class);
 	
 		// is same package.
 		boolean isp;
@@ -759,7 +759,7 @@ public abstract class Builder<T> implements GenericDataFlags
 
 	private static Builder<?> newEnumBuilder(Class<?> c)
 	{
-		ClassLoader cl = ClassHelper.getClassLoader(c);
+		ClassLoader cl = ClassHelper.getCallerClassLoader(Builder.class);
 		
 		String cn = c.getName();
 		String bcn = BUILDER_CLASS_NAME + "$bc" + BUILDER_CLASS_COUNTER.getAndIncrement();

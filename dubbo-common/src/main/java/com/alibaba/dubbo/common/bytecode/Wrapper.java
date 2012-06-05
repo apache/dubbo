@@ -207,7 +207,7 @@ public abstract class Wrapper
 			throw new IllegalArgumentException("Can not create wrapper for primitive type: " + c);
 
 		String name = c.getName();
-		ClassLoader cl = ClassHelper.getClassLoader(c);
+		ClassLoader cl = ClassHelper.getCallerClassLoader(Wrapper.class);
 
 		StringBuilder c1 = new StringBuilder("public void setPropertyValue(Object o, String n, Object v){ ");
 		StringBuilder c2 = new StringBuilder("public Object getPropertyValue(Object o, String n){ ");

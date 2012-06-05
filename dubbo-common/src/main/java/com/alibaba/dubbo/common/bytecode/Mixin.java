@@ -75,7 +75,7 @@ public abstract class Mixin
 	 */
 	public static Mixin mixin(Class<?>[] ics, Class<?>[] dcs)
 	{
-		return mixin(ics, dcs, ClassHelper.getClassLoader(ics[0]));
+		return mixin(ics, dcs, ClassHelper.getCallerClassLoader(Mixin.class));
 	}
 
 	/**
