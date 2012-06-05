@@ -390,7 +390,6 @@
                     <skip>${skip_maven_deploy}</skip>
                 </configuration>
             </plugin>
-			<!--
             <plugin>
                 <groupId>com.alibaba.dubbo.plugins</groupId>
                 <artifactId>maven-dubbo-plugin</artifactId>
@@ -403,7 +402,6 @@
                     </execution>
                 </executions>
             </plugin>
-			-->
 		</plugins>
 	</build>
     <profiles>
