@@ -1,0 +1,1 @@
+log4j=com.alibaba.dubbo.container.log4j.Log4jContainer

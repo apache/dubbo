@@ -1,0 +1,3 @@
+impl1=com.alibaba.dubbo.common.extensionloader.ext2.impl.Ext2Impl1
+impl2=com.alibaba.dubbo.common.extensionloader.ext2.impl.Ext2Impl2
+impl3=com.alibaba.dubbo.common.extensionloader.ext2.impl.Ext2Impl3

@@ -1,0 +1,61 @@
+[INFO] Scanning for projects...
+[INFO] snapshot com.alibaba:dubbo-parent:2.2.0-SNAPSHOT: checking for updates from b2b-internal-snapshots
+[INFO] snapshot com.alibaba:dubbo-parent:2.2.0-SNAPSHOT: checking for updates from b2b-shared-repository
+[INFO] ------------------------------------------------------------------------
+[INFO] Building dubbo-demo-provider
+[INFO]    task-segment: [dependency:tree]
+[INFO] ------------------------------------------------------------------------
+[INFO] snapshot com.alibaba:dubbo-demo:2.2.0-SNAPSHOT: checking for updates from b2b-internal-snapshots
+[INFO] snapshot com.alibaba:dubbo-demo:2.2.0-SNAPSHOT: checking for updates from b2b-shared-repository
+[INFO] snapshot com.alibaba:dubbo-demo:2.2.0-SNAPSHOT: checking for updates from opensesame.snapshots
+[INFO] snapshot com.alibaba:dubbo:2.2.0-SNAPSHOT: checking for updates from b2b-internal-snapshots
+[INFO] snapshot com.alibaba:dubbo:2.2.0-SNAPSHOT: checking for updates from b2b-shared-repository
+[INFO] snapshot com.alibaba:dubbo:2.2.0-SNAPSHOT: checking for updates from opensesame.snapshots
+[WARNING] *** CHECKSUM FAILED - Checksum failed on download: local = '42e7df2282f92e69fae6722b3a179c8395ef107b'; remote = 'c37760db920c78e5f91fbcf7505e74b5eeebbf14' - RETRYING
+[WARNING] *** CHECKSUM FAILED - Checksum failed on download: local = '42e7df2282f92e69fae6722b3a179c8395ef107b'; remote = 'c37760db920c78e5f91fbcf7505e74b5eeebbf14' - IGNORING
+[INFO] [dependency:tree {execution: default-cli}]
+[INFO] com.alibaba:dubbo-demo-provider:jar:2.2.0-SNAPSHOT
+[INFO] +- com.alibaba:dubbo-demo:jar:2.2.0-SNAPSHOT:compile
+[INFO] +- com.alibaba:dubbo:jar:2.2.0-SNAPSHOT:compile
+[INFO] |  +- log4j:log4j:jar:1.2.16:compile
+[INFO] |  +- org.javassist:javassist:jar:3.15.0-GA:compile
+[INFO] |  +- org.springframework:spring:jar:2.5.6.SEC03:compile
+[INFO] |  +- commons-logging:commons-logging:jar:1.1.1:compile
+[INFO] |  \- org.jboss.netty:netty:jar:3.2.5.Final:compile
+[INFO] +- org.mortbay.jetty:jetty:jar:6.1.26:compile
+[INFO] |  +- org.mortbay.jetty:jetty-util:jar:6.1.26:compile
+[INFO] |  \- org.mortbay.jetty:servlet-api:jar:2.5-20081211:compile
+[INFO] +- org.apache.zookeeper:zookeeper:jar:3.3.3:compile
+[INFO] |  \- jline:jline:jar:0.9.94:compile
+[INFO] +- redis.clients:jedis:jar:2.0.0:compile
+[INFO] |  \- commons-pool:commons-pool:jar:1.5.5:compile
+[INFO] +- org.apache.mina:mina-core:jar:1.1.7:compile
+[INFO] |  \- org.slf4j:slf4j-api:jar:1.6.2:compile (version managed from 1.4.3)
+[INFO] +- org.glassfish.grizzly:grizzly-core:jar:2.1.4:compile
+[INFO] |  +- org.glassfish.grizzly:grizzly-framework:jar:2.1.4:compile
+[INFO] |  |  \- org.glassfish.gmbal:gmbal-api-only:jar:3.0.0-b023:compile
+[INFO] |  |     \- org.glassfish.external:management-api:jar:3.0.0-b012:compile
+[INFO] |  +- org.glassfish.grizzly:grizzly-portunif:jar:2.1.4:compile
+[INFO] |  \- org.glassfish.grizzly:grizzly-rcm:jar:2.1.4:compile
+[INFO] +- org.apache.httpcomponents:httpclient:jar:4.1.2:compile
+[INFO] |  +- org.apache.httpcomponents:httpcore:jar:4.1.2:compile
+[INFO] |  \- commons-codec:commons-codec:jar:1.4:compile
+[INFO] +- com.caucho:hessian:jar:4.0.7:compile
+[INFO] +- com.alibaba:fastjson:jar:1.1.8:compile
+[INFO] +- javax.validation:validation-api:jar:1.0.0.GA:compile
+[INFO] +- org.hibernate:hibernate-validator:jar:4.2.0.Final:compile
+[INFO] +- javax.cache:cache-api:jar:0.4:compile
+[INFO] +- junit:junit:jar:4.10:test
+[INFO] |  \- org.hamcrest:hamcrest-core:jar:1.1:test
+[INFO] +- org.easymock:easymock:jar:3.0:test
+[INFO] |  +- cglib:cglib-nodep:jar:2.2:test
+[INFO] |  \- org.objenesis:objenesis:jar:1.2:test
+[INFO] +- org.easymock:easymockclassextension:jar:3.0:test
+[INFO] \- com.googlecode.jmockit:jmockit:jar:0.999.8:test
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESSFUL
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 23 seconds
+[INFO] Finished at: Thu Mar 29 13:45:40 CST 2012
+[INFO] Final Memory: 17M/41M
+[INFO] ------------------------------------------------------------------------

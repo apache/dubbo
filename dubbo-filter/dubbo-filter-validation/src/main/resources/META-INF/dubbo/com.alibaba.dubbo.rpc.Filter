@@ -1,0 +1,1 @@
+validation=com.alibaba.dubbo.validation.filter.ValidationFilter

@@ -1,0 +1,2 @@
+override=com.alibaba.dubbo.rpc.cluster.configurator.override.OverrideConfiguratorFactory
+absent=com.alibaba.dubbo.rpc.cluster.configurator.absent.AbsentConfiguratorFactory
