@@ -267,111 +267,111 @@
 							<transformers>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/dubbo/com.alibaba.dubbo.cache.CacheFactory</resource>
+									<resource>META-INF/dubbo/internal/com.alibaba.dubbo.cache.CacheFactory</resource>
 								</transformer>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/dubbo/com.alibaba.dubbo.common.compiler.Compiler</resource>
+									<resource>META-INF/dubbo/internal/com.alibaba.dubbo.common.compiler.Compiler</resource>
 								</transformer>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/dubbo/com.alibaba.dubbo.common.extension.ExtensionFactory</resource>
+									<resource>META-INF/dubbo/internal/com.alibaba.dubbo.common.extension.ExtensionFactory</resource>
 								</transformer>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/dubbo/com.alibaba.dubbo.common.serialize.Serialization</resource>
+									<resource>META-INF/dubbo/internal/com.alibaba.dubbo.common.serialize.Serialization</resource>
 								</transformer>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/dubbo/com.alibaba.dubbo.common.status.StatusChecker</resource>
+									<resource>META-INF/dubbo/internal/com.alibaba.dubbo.common.status.StatusChecker</resource>
 								</transformer>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/dubbo/com.alibaba.dubbo.common.threadpool.ThreadPool</resource>
+									<resource>META-INF/dubbo/internal/com.alibaba.dubbo.common.threadpool.ThreadPool</resource>
 								</transformer>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/dubbo/com.alibaba.dubbo.container.Container</resource>
+									<resource>META-INF/dubbo/internal/com.alibaba.dubbo.container.Container</resource>
 								</transformer>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/dubbo/com.alibaba.dubbo.container.page.PageHandler</resource>
+									<resource>META-INF/dubbo/internal/com.alibaba.dubbo.container.page.PageHandler</resource>
 								</transformer>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/dubbo/com.alibaba.dubbo.monitor.MonitorFactory</resource>
+									<resource>META-INF/dubbo/internal/com.alibaba.dubbo.monitor.MonitorFactory</resource>
 								</transformer>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/dubbo/com.alibaba.dubbo.registry.RegistryFactory</resource>
+									<resource>META-INF/dubbo/internal/com.alibaba.dubbo.registry.RegistryFactory</resource>
 								</transformer>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/dubbo/com.alibaba.dubbo.remoting.Dispather</resource>
+									<resource>META-INF/dubbo/internal/com.alibaba.dubbo.remoting.Dispather</resource>
 								</transformer>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/dubbo/com.alibaba.dubbo.remoting.Codec</resource>
+									<resource>META-INF/dubbo/internal/com.alibaba.dubbo.remoting.Codec</resource>
 								</transformer>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/dubbo/com.alibaba.dubbo.remoting.exchange.Exchanger</resource>
+									<resource>META-INF/dubbo/internal/com.alibaba.dubbo.remoting.exchange.Exchanger</resource>
 								</transformer>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/dubbo/com.alibaba.dubbo.remoting.http.HttpBinder</resource>
+									<resource>META-INF/dubbo/internal/com.alibaba.dubbo.remoting.http.HttpBinder</resource>
 								</transformer>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/dubbo/com.alibaba.dubbo.remoting.p2p.Networker</resource>
+									<resource>META-INF/dubbo/internal/com.alibaba.dubbo.remoting.p2p.Networker</resource>
 								</transformer>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/dubbo/com.alibaba.dubbo.remoting.telnet.TelnetHandler</resource>
+									<resource>META-INF/dubbo/internal/com.alibaba.dubbo.remoting.telnet.TelnetHandler</resource>
 								</transformer>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/dubbo/com.alibaba.dubbo.remoting.Transporter</resource>
+									<resource>META-INF/dubbo/internal/com.alibaba.dubbo.remoting.Transporter</resource>
 								</transformer>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/dubbo/com.alibaba.dubbo.rpc.cluster.Cluster</resource>
+									<resource>META-INF/dubbo/internal/com.alibaba.dubbo.rpc.cluster.Cluster</resource>
 								</transformer>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/dubbo/com.alibaba.dubbo.rpc.cluster.LoadBalance</resource>
+									<resource>META-INF/dubbo/internal/com.alibaba.dubbo.rpc.cluster.LoadBalance</resource>
 								</transformer>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/dubbo/com.alibaba.dubbo.rpc.cluster.Merger</resource>
+									<resource>META-INF/dubbo/internal/com.alibaba.dubbo.rpc.cluster.Merger</resource>
 								</transformer>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/dubbo/com.alibaba.dubbo.rpc.cluster.RouterFactory</resource>
+									<resource>META-INF/dubbo/internal/com.alibaba.dubbo.rpc.cluster.RouterFactory</resource>
 								</transformer>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/dubbo/com.alibaba.dubbo.rpc.Filter</resource>
+									<resource>META-INF/dubbo/internal/com.alibaba.dubbo.rpc.Filter</resource>
 								</transformer>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/dubbo/com.alibaba.dubbo.rpc.InvokerListener</resource>
+									<resource>META-INF/dubbo/internal/com.alibaba.dubbo.rpc.InvokerListener</resource>
 								</transformer>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/dubbo/com.alibaba.dubbo.rpc.Protocol</resource>
+									<resource>META-INF/dubbo/internal/com.alibaba.dubbo.rpc.Protocol</resource>
 								</transformer>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/dubbo/com.alibaba.dubbo.rpc.protocol.rmi.RmiProxyFactory</resource>
+									<resource>META-INF/dubbo/internal/com.alibaba.dubbo.rpc.protocol.rmi.RmiProxyFactory</resource>
 								</transformer>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/dubbo/com.alibaba.dubbo.rpc.ProxyFactory</resource>
+									<resource>META-INF/dubbo/internal/com.alibaba.dubbo.rpc.ProxyFactory</resource>
 								</transformer>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/dubbo/com.alibaba.dubbo.validation.Validation</resource>
+									<resource>META-INF/dubbo/internal/com.alibaba.dubbo.validation.Validation</resource>
 								</transformer>
 							</transformers>
 						</configuration>
