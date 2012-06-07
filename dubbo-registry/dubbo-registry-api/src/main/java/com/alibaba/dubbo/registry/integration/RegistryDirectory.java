@@ -101,6 +101,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     
     // Map<methodName, Invoker> cache service method to invokers mapping.
     private volatile Map<String, List<Invoker<T>>> methodInvokerMap; // 初始为null以及中途可能被赋为null，请使用局部变量引用
+    
+    // Set<invokerUrls> cache invokeUrls to invokers mapping.
+    private volatile Set<URL> cachedInvokerUrls; // 初始为null以及中途可能被赋为null，请使用局部变量引用
 
     public RegistryDirectory(Class<T> serviceType, URL url) {
         super(url);
@@ -210,17 +213,11 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         } else {
             this.forbidden = false; // 允许访问
             Map<String, Invoker<T>> oldUrlInvokerMap = this.urlInvokerMap; // local reference
-            if (invokerUrls.size() == 0 && oldUrlInvokerMap != null){
-                List<Invoker<T>> invokerList = new ArrayList<Invoker<T>>(oldUrlInvokerMap.values());
-                for (Invoker<T> invoker : invokerList) {
-                    URL url ;
-                    if (invoker instanceof InvokerDelegete){
-                        url =  ((InvokerDelegete<T>)invoker).getProviderUrl();
-                    } else {
-                        url = invoker.getUrl();
-                    }
-                    invokerUrls.add(url);
-                }
+            if (invokerUrls.size() == 0 && this.cachedInvokerUrls != null){
+                invokerUrls.addAll(this.cachedInvokerUrls);
+            } else {
+                this.cachedInvokerUrls = new HashSet<URL>();
+                this.cachedInvokerUrls.addAll(invokerUrls);//缓存invokerUrls列表，便于交叉对比
             }
             if (invokerUrls.size() ==0 ){
             	return;
@@ -389,7 +386,13 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             Invoker<T> invoker = localUrlInvokerMap == null ? null : localUrlInvokerMap.get(key);
             if (invoker == null) { // 缓存中没有，重新refer
                 try {
-                	if (url.getParameter(Constants.ENABLED_KEY, true)) {
+                	boolean enabled = true;
+                	if (url.hasParameter(Constants.DISABLED_KEY)) {
+                		enabled = ! url.getParameter(Constants.DISABLED_KEY, false);
+                	} else {
+                		enabled = url.getParameter(Constants.ENABLED_KEY, true);
+                	}
+                	if (enabled) {
                 		invoker = new InvokerDelegete<T>(protocol.refer(serviceType, url), url, providerUrl);
                 	}
                 } catch (Throwable t) {
