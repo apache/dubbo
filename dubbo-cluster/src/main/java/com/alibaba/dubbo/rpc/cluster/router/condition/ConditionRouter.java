@@ -68,15 +68,9 @@ public class ConditionRouter implements Router, Comparable<Router> {
             rule = rule.replace("consumer.", "").replace("provider.", "");
             int i = rule.indexOf("=>");
             String whenRule = i < 0 ? null : rule.substring(0, i).trim();
-            String thenRule = i < 0 ? rule : rule.substring(i + 2).trim();
-            /*if (whenRule == null || whenRule.trim().length() == 0) {
-                throw new ParseException("Illegal route rule without when express", 0);
-            }*/
-            if (thenRule == null || thenRule.trim().length() == 0) {
-                throw new ParseException("Illegal route rule without then express", 0);
-            }
-            Map<String, MatchPair> when = parseRule(whenRule.trim());
-            Map<String, MatchPair> then = "false".equals(thenRule.trim()) ? null : parseRule(thenRule.trim());
+            String thenRule = i < 0 ? rule.trim() : rule.substring(i + 2).trim();
+            Map<String, MatchPair> when = StringUtils.isBlank(whenRule) || "true".equals(whenRule) ? new HashMap<String, MatchPair>() : parseRule(whenRule);
+            Map<String, MatchPair> then = StringUtils.isBlank(thenRule) || "false".equals(thenRule) ? null : parseRule(thenRule);
             // NOTE: When条件是允许为空的，外部业务来保证类似的约束条件
             this.whenCondition = when;
             this.thenCondition = then;
