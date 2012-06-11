@@ -25,7 +25,6 @@ import com.alibaba.dubbo.remoting.transport.dispather.all.AllDispather;
  * ChannelHandlerWrapper (SPI, Singleton, ThreadSafe)
  * 
  * @author chao.liuc
- * @export
  */
 @SPI(AllDispather.NAME)
 public interface Dispather {

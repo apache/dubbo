@@ -28,7 +28,6 @@ import com.alibaba.dubbo.common.extension.SPI;
  * 
  * @author ding.lid
  * @author william.liangf
- * @export
  */
 @SPI("hessian2")
 public interface Serialization {

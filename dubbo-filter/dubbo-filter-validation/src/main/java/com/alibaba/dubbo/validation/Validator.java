@@ -19,7 +19,6 @@ package com.alibaba.dubbo.validation;
  * Validator
  * 
  * @author william.liangf
- * @export
  */
 public interface Validator {
 

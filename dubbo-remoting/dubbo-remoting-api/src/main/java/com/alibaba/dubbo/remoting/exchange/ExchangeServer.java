@@ -24,7 +24,6 @@ import com.alibaba.dubbo.remoting.Server;
  * ExchangeServer. (API/SPI, Prototype, ThreadSafe)
  * 
  * @author william.liangf
- * @export
  */
 public interface ExchangeServer extends Server {
 

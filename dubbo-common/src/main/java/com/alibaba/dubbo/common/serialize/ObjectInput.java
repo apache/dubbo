@@ -22,7 +22,6 @@ import java.lang.reflect.Type;
  * Object input.
  * 
  * @author qian.lei
- * @export
  */
 public interface ObjectInput extends DataInput {
 

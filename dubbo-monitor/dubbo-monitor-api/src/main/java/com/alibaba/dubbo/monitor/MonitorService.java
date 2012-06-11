@@ -21,7 +21,6 @@ import com.alibaba.dubbo.common.URL;
  * MonitorService. (SPI, Prototype, ThreadSafe)
  * 
  * @author william.liangf
- * @export
  */
 public interface MonitorService {
     

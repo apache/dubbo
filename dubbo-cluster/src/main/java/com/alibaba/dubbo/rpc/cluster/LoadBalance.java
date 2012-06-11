@@ -33,7 +33,6 @@ import com.alibaba.dubbo.rpc.cluster.loadbalance.RandomLoadBalance;
  * @see com.alibaba.dubbo.rpc.cluster.Cluster#join(Directory)
  * @author qian.lei
  * @author william.liangf
- * @export
  */
 @SPI(RandomLoadBalance.NAME)
 public interface LoadBalance {

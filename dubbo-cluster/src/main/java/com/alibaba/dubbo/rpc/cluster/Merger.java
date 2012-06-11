@@ -19,7 +19,6 @@ import com.alibaba.dubbo.common.extension.SPI;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
- * @export
  */
 @SPI
 public interface Merger<T> {

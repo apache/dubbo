@@ -24,7 +24,6 @@ import com.alibaba.dubbo.remoting.RemotingException;
  * @see com.alibaba.dubbo.remoting.exchange.ExchangeChannel#request(Object, int)
  * @author qian.lei
  * @author william.liangf
- * @export
  */
 public interface ResponseFuture {
 

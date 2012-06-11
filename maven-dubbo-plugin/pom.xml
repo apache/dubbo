@@ -10,7 +10,7 @@
     <groupId>com.alibaba.dubbo.plugins</groupId>
     <artifactId>maven-dubbo-plugin</artifactId>
     <packaging>maven-plugin</packaging>
-    <version>1.0</version>
+    <version>1.1</version>
     <name>maven-dubbo-plugin</name>
     <properties>
         <plexus-utils_version>1.5.6</plexus-utils_version>

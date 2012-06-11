@@ -29,7 +29,6 @@ import com.alibaba.dubbo.rpc.RpcException;
  * 
  * @see com.alibaba.dubbo.rpc.cluster.Cluster#join(Directory)
  * @author william.liangf
- * @export
  */
 public interface Directory<T> extends Node {
     

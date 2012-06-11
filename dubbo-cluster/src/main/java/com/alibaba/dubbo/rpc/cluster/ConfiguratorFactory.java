@@ -23,7 +23,6 @@ import com.alibaba.dubbo.common.extension.SPI;
  * ConfiguratorFactory. (SPI, Singleton, ThreadSafe)
  * 
  * @author william.liangf
- * @export
  */
 @SPI
 public interface ConfiguratorFactory {

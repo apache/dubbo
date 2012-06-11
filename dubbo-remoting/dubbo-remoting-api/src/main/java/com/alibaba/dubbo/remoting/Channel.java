@@ -25,7 +25,6 @@ import java.net.InetSocketAddress;
  * @see com.alibaba.dubbo.remoting.Server#getChannel(InetSocketAddress)
  * @author qian.lei
  * @author william.liangf
- * @export
  */
 public interface Channel extends Endpoint {
 

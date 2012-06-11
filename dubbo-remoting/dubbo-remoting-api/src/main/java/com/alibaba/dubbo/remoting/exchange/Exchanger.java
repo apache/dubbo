@@ -29,7 +29,6 @@ import com.alibaba.dubbo.remoting.exchange.support.header.HeaderExchanger;
  * <a href="http://en.wikipedia.org/wiki/Request-response">Request-Response</a>
  * 
  * @author william.liangf
- * @export
  */
 @SPI(HeaderExchanger.NAME)
 public interface Exchanger {

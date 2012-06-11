@@ -22,7 +22,6 @@ import com.alibaba.dubbo.common.Node;
  * 
  * @see com.alibaba.dubbo.monitor.MonitorFactory#getMonitor(com.alibaba.dubbo.common.URL)
  * @author william.liangf
- * @export
  */
 public interface Monitor extends Node, MonitorService {
 

@@ -22,7 +22,6 @@ package com.alibaba.dubbo.rpc;
  * @see com.alibaba.dubbo.rpc.ExporterListener
  * @see com.alibaba.dubbo.rpc.protocol.AbstractExporter
  * @author william.liangf
- * @export
  */
 public interface Exporter<T> {
     

@@ -29,7 +29,6 @@ import com.alibaba.dubbo.common.extension.SPI;
  * @author qianlei
  * @author ding.lid
  * @author william.liangf
- * @export
  */
 @SPI
 public interface Codec {

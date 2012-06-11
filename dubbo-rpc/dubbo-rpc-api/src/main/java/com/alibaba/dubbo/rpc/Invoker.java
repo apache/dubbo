@@ -24,7 +24,6 @@ import com.alibaba.dubbo.common.Node;
  * @see com.alibaba.dubbo.rpc.InvokerListener
  * @see com.alibaba.dubbo.rpc.protocol.AbstractInvoker
  * @author william.liangf
- * @export
  */
 public interface Invoker<T> extends Node {
 

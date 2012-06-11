@@ -26,7 +26,6 @@ import com.alibaba.dubbo.common.URL;
  * @see com.alibaba.dubbo.remoting.Client
  * @see com.alibaba.dubbo.remoting.Server
  * @author william.liangf
- * @export
  */
 public interface Endpoint {
 

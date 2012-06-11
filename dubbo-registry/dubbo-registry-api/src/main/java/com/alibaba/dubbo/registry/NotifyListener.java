@@ -24,7 +24,6 @@ import com.alibaba.dubbo.common.URL;
  * 
  * @see com.alibaba.dubbo.registry.RegistryService#subscribe(URL, NotifyListener)
  * @author william.liangf
- * @export
  */
 public interface NotifyListener {
 

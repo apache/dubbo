@@ -23,7 +23,6 @@ import com.alibaba.dubbo.common.extension.SPI;
  * Protocol. (API/SPI, Singleton, ThreadSafe)
  * 
  * @author william.liangf
- * @export
  */
 @SPI("dubbo")
 public interface Protocol {
