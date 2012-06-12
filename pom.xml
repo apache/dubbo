@@ -54,7 +54,6 @@
 		<module>dubbo-simple</module>
 		<module>dubbo-demo</module>
 		<module>dubbo-test</module>
-        <!-- <module>maven-dubbo-plugin</module> -->
 	</modules>
 	<properties>
 		<!-- Common libs -->
@@ -405,6 +404,9 @@
                         <goals>
                             <goal>export-class</goal>
                         </goals>
+                        <configuration>
+                            <exportAll>true</exportAll>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
