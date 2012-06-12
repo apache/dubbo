@@ -42,7 +42,7 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>com.alibaba.maven.plugins</groupId>
+                <groupId>com.alibaba.dubbo.plugins</groupId>
                 <artifactId>maven-dubbo-plugin</artifactId>
                 <configuration>
                     <skip>true</skip>
