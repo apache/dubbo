@@ -210,9 +210,15 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
                     && Modifier.isPublic(method.getModifiers())
                     && ! Modifier.isStatic(method.getModifiers())) {
                 try {
-                    method.invoke(bean, new Object[] { refer(method.getAnnotation(Reference.class), method.getParameterTypes()[0]) });
+                	Reference reference = method.getAnnotation(Reference.class);
+                	if (reference != null) {
+	                	Object value = refer(reference, method.getParameterTypes()[0]);
+	                	if (value != null) {
+	                		method.invoke(bean, new Object[] {  });
+	                	}
+                	}
                 } catch (Throwable e) {
-                    throw new IllegalStateException("Failed to init remote service reference at method " + name + " in class " + bean.getClass().getName() + ", cause: " + e.getMessage(), e);
+                    logger.error("Failed to init remote service reference at method " + name + " in class " + bean.getClass().getName() + ", cause: " + e.getMessage(), e);
                 }
             }
         }
@@ -222,75 +228,78 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
                 if (! field.isAccessible()) {
                     field.setAccessible(true);
                 }
-                field.set(bean, refer(field.getAnnotation(Reference.class), field.getType()));
+                Reference reference = field.getAnnotation(Reference.class);
+            	if (reference != null) {
+	                Object value = refer(reference, field.getType());
+	                if (value != null) {
+	                	field.set(bean, value);
+	                }
+            	}
             } catch (Throwable e) {
-                throw new IllegalStateException("Failed to init remote service reference at filed " + field.getName() + " in class " + bean.getClass().getName() + ", cause: " + e.getMessage(), e);
+            	logger.error("Failed to init remote service reference at filed " + field.getName() + " in class " + bean.getClass().getName() + ", cause: " + e.getMessage(), e);
             }
         }
         return bean;
     }
 
     private Object refer(Reference reference, Class<?> referenceClass) { //method.getParameterTypes()[0]
-        if (reference != null) {
-            String interfaceName;
-            if (! "".equals(reference.interfaceName())) {
-                interfaceName = reference.interfaceName();
-            } else if (! void.class.equals(reference.interfaceClass())) {
-                interfaceName = reference.interfaceClass().getName();
-            } else if (referenceClass.isInterface()) {
-                interfaceName = referenceClass.getName();
-            } else {
-                throw new IllegalStateException("The @Reference undefined interfaceClass or interfaceName, and the property type " + referenceClass.getName() + " is not a interface.");
-            }
-            String key = reference.group() + "/" + interfaceName + ":" + reference.version();
-            ReferenceBean<?> referenceConfig = referenceConfigs.get(key);
-            if (referenceConfig == null) {
-                referenceConfig = new ReferenceBean<Object>(reference);
-                if (void.class.equals(reference.interfaceClass())
-                        && "".equals(reference.interfaceName())
-                        && referenceClass.isInterface()) {
-                    referenceConfig.setInterface(referenceClass);
-                }
-                if (applicationContext != null) {
-                    referenceConfig.setApplicationContext(applicationContext);
-                    if (reference.registry() != null && reference.registry().length > 0) {
-                        List<RegistryConfig> registryConfigs = new ArrayList<RegistryConfig>();
-                        for (String registryId : reference.registry()) {
-                            if (registryId != null && registryId.length() > 0) {
-                                registryConfigs.add((RegistryConfig)applicationContext.getBean(registryId, RegistryConfig.class));
-                            }
-                        }
-                        referenceConfig.setRegistries(registryConfigs);
-                    }
-                    if (reference.consumer() != null && reference.consumer().length() > 0) {
-                        referenceConfig.setConsumer((ConsumerConfig)applicationContext.getBean(reference.consumer(), ConsumerConfig.class));
-                    }
-                    if (reference.monitor() != null && reference.monitor().length() > 0) {
-                        referenceConfig.setMonitor((MonitorConfig)applicationContext.getBean(reference.monitor(), MonitorConfig.class));
-                    }
-                    if (reference.application() != null && reference.application().length() > 0) {
-                        referenceConfig.setApplication((ApplicationConfig)applicationContext.getBean(reference.application(), ApplicationConfig.class));
-                    }
-                    if (reference.module() != null && reference.module().length() > 0) {
-                        referenceConfig.setModule((ModuleConfig)applicationContext.getBean(reference.module(), ModuleConfig.class));
-                    }
-                    if (reference.consumer() != null && reference.consumer().length() > 0) {
-                        referenceConfig.setConsumer((ConsumerConfig)applicationContext.getBean(reference.consumer(), ConsumerConfig.class));
-                    }
-                    try {
-                        referenceConfig.afterPropertiesSet();
-                    } catch (RuntimeException e) {
-                        throw (RuntimeException) e;
-                    } catch (Exception e) {
-                        throw new IllegalStateException(e.getMessage(), e);
-                    }
-                }
-                referenceConfigs.putIfAbsent(key, referenceConfig);
-                referenceConfig = referenceConfigs.get(key);
-            }
-            return referenceConfig.get();
+        String interfaceName;
+        if (! "".equals(reference.interfaceName())) {
+            interfaceName = reference.interfaceName();
+        } else if (! void.class.equals(reference.interfaceClass())) {
+            interfaceName = reference.interfaceClass().getName();
+        } else if (referenceClass.isInterface()) {
+            interfaceName = referenceClass.getName();
+        } else {
+            throw new IllegalStateException("The @Reference undefined interfaceClass or interfaceName, and the property type " + referenceClass.getName() + " is not a interface.");
         }
-        return null;
+        String key = reference.group() + "/" + interfaceName + ":" + reference.version();
+        ReferenceBean<?> referenceConfig = referenceConfigs.get(key);
+        if (referenceConfig == null) {
+            referenceConfig = new ReferenceBean<Object>(reference);
+            if (void.class.equals(reference.interfaceClass())
+                    && "".equals(reference.interfaceName())
+                    && referenceClass.isInterface()) {
+                referenceConfig.setInterface(referenceClass);
+            }
+            if (applicationContext != null) {
+                referenceConfig.setApplicationContext(applicationContext);
+                if (reference.registry() != null && reference.registry().length > 0) {
+                    List<RegistryConfig> registryConfigs = new ArrayList<RegistryConfig>();
+                    for (String registryId : reference.registry()) {
+                        if (registryId != null && registryId.length() > 0) {
+                            registryConfigs.add((RegistryConfig)applicationContext.getBean(registryId, RegistryConfig.class));
+                        }
+                    }
+                    referenceConfig.setRegistries(registryConfigs);
+                }
+                if (reference.consumer() != null && reference.consumer().length() > 0) {
+                    referenceConfig.setConsumer((ConsumerConfig)applicationContext.getBean(reference.consumer(), ConsumerConfig.class));
+                }
+                if (reference.monitor() != null && reference.monitor().length() > 0) {
+                    referenceConfig.setMonitor((MonitorConfig)applicationContext.getBean(reference.monitor(), MonitorConfig.class));
+                }
+                if (reference.application() != null && reference.application().length() > 0) {
+                    referenceConfig.setApplication((ApplicationConfig)applicationContext.getBean(reference.application(), ApplicationConfig.class));
+                }
+                if (reference.module() != null && reference.module().length() > 0) {
+                    referenceConfig.setModule((ModuleConfig)applicationContext.getBean(reference.module(), ModuleConfig.class));
+                }
+                if (reference.consumer() != null && reference.consumer().length() > 0) {
+                    referenceConfig.setConsumer((ConsumerConfig)applicationContext.getBean(reference.consumer(), ConsumerConfig.class));
+                }
+                try {
+                    referenceConfig.afterPropertiesSet();
+                } catch (RuntimeException e) {
+                    throw (RuntimeException) e;
+                } catch (Exception e) {
+                    throw new IllegalStateException(e.getMessage(), e);
+                }
+            }
+            referenceConfigs.putIfAbsent(key, referenceConfig);
+            referenceConfig = referenceConfigs.get(key);
+        }
+        return referenceConfig.get();
     }
 
     private boolean isMatchPackage(Object bean) {
