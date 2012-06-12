@@ -71,6 +71,7 @@
 		<sorcerer_version>0.8</sorcerer_version>
 		<zookeeper_version>3.3.3</zookeeper_version>
 		<zkclient_version>0.1</zkclient_version>
+		<curator_version>1.1.10</curator_version>
 		<jedis_version>2.0.0</jedis_version>
 		<xmemcached_version>1.3.6</xmemcached_version>
 		<cxf_version>2.6.0</cxf_version>
@@ -165,6 +166,11 @@
 				<groupId>com.github.sgroschupf</groupId>
 				<artifactId>zkclient</artifactId>
 				<version>${zkclient_version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.netflix.curator</groupId>
+				<artifactId>curator-framework</artifactId>
+				<version>${curator_version}</version>
 			</dependency>
 			<dependency>
 				<groupId>redis.clients</groupId>

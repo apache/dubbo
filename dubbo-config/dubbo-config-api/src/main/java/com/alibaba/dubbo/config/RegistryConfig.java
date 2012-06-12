@@ -18,10 +18,8 @@ package com.alibaba.dubbo.config;
 import java.util.Map;
 
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.config.support.Parameter;
 import com.alibaba.dubbo.registry.support.AbstractRegistryFactory;
-import com.alibaba.dubbo.remoting.Transporter;
 
 /**
  * RegistryConfig
@@ -208,9 +206,9 @@ public class RegistryConfig extends AbstractConfig {
 
     public void setTransporter(String transporter) {
         checkName("transporter", transporter);
-        if(transporter != null && transporter.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(transporter)){
+        /*if(transporter != null && transporter.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(transporter)){
             throw new IllegalStateException("No such transporter type : " + transporter);
-        }
+        }*/
         this.transporter = transporter;
     }
     
@@ -220,9 +218,9 @@ public class RegistryConfig extends AbstractConfig {
     
     public void setServer(String server) {
         checkName("server", server);
-        if(server != null && server.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(server)){
+        /*if(server != null && server.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(server)){
             throw new IllegalStateException("No such server type : " + server);
-        }
+        }*/
         this.server = server;
     }
     
@@ -232,9 +230,9 @@ public class RegistryConfig extends AbstractConfig {
     
     public void setClient(String client) {
         checkName("client", client);
-        if(client != null && client.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(client)){
+        /*if(client != null && client.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(client)){
             throw new IllegalStateException("No such client type : " + client);
-        }
+        }*/
         this.client = client;
     }
 

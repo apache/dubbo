@@ -35,12 +35,9 @@
 			<version>${project.parent.version}</version>
 		</dependency>
 		<dependency>
-		    <groupId>org.apache.zookeeper</groupId>
-		    <artifactId>zookeeper</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.github.sgroschupf</groupId>
-			<artifactId>zkclient</artifactId>
+			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo-remoting-zookeeper</artifactId>
+			<version>${project.parent.version}</version>
 		</dependency>
 	</dependencies>
 </project>

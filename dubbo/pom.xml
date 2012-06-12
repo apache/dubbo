@@ -145,6 +145,10 @@
 					<groupId>com.github.sgroschupf</groupId>
 					<artifactId>zkclient</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>com.netflix.curator</groupId>
+					<artifactId>curator-framework</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -241,11 +245,17 @@
 									<include>com.alibaba:dubbo-remoting-grizzly</include>
 									<include>com.alibaba:dubbo-remoting-p2p</include>
 									<include>com.alibaba:dubbo-remoting-http</include>
+									<include>com.alibaba:dubbo-remoting-zookeeper</include>
 									<include>com.alibaba:dubbo-rpc-api</include>
 									<include>com.alibaba:dubbo-rpc-default</include>
 									<include>com.alibaba:dubbo-rpc-injvm</include>
 									<include>com.alibaba:dubbo-rpc-rmi</include>
 									<include>com.alibaba:dubbo-rpc-hessian</include>
+									<include>com.alibaba:dubbo-rpc-http</include>
+									<include>com.alibaba:dubbo-rpc-webservice</include>
+									<include>com.alibaba:dubbo-rpc-thrift</include>
+									<include>com.alibaba:dubbo-rpc-memcached</include>
+									<include>com.alibaba:dubbo-rpc-redis</include>
 									<include>com.alibaba:dubbo-filter-validation</include>
 									<include>com.alibaba:dubbo-filter-cache</include>
 									<include>com.alibaba:dubbo-cluster</include>

@@ -1,4 +1,4 @@
-<!-- 
+<!--
  - Copyright 1999-2011 Alibaba Group.
  -  
  - Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,24 +18,33 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.alibaba</groupId>
-		<artifactId>dubbo-parent</artifactId>
+		<artifactId>dubbo-remoting</artifactId>
 		<version>2.3.0-SNAPSHOT</version>
 	</parent>
-	<artifactId>dubbo-remoting</artifactId>
-	<version>2.3.0-SNAPSHOT</version>
-	<packaging>pom</packaging>
+	<artifactId>dubbo-remoting-zookeeper</artifactId>
+	<packaging>jar</packaging>
 	<name>${project.artifactId}</name>
-	<description>The remoting module of dubbo project</description>
+	<description>The zookeeper remoting module of dubbo project</description>
 	<properties>
 		<skip_maven_deploy>true</skip_maven_deploy>
 	</properties>
-	<modules>
-		<module>dubbo-remoting-api</module>
-		<module>dubbo-remoting-netty</module>
-		<module>dubbo-remoting-mina</module>
-		<module>dubbo-remoting-grizzly</module>
-		<module>dubbo-remoting-p2p</module>
-		<module>dubbo-remoting-http</module>
-		<module>dubbo-remoting-zookeeper</module>
-	</modules>
+	<dependencies>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo-common</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.apache.zookeeper</groupId>
+		    <artifactId>zookeeper</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.github.sgroschupf</groupId>
+			<artifactId>zkclient</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.netflix.curator</groupId>
+			<artifactId>curator-framework</artifactId>
+		</dependency>
+	</dependencies>
 </project>

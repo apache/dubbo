@@ -296,6 +296,35 @@ public final class URL implements Serializable {
 	public String getAddress() {
 	    return port <= 0 ? host : host + ":" + port;
 	}
+	
+	public String getBackupAddress() {
+		return getBackupAddress(0);
+	}
+	
+	public String getBackupAddress(int defaultPort) {
+		StringBuilder address = new StringBuilder(appendDefaultPort(getAddress(), defaultPort));
+        String[] backups = getParameter(Constants.BACKUP_KEY, new String[0]);
+        if (backups != null && backups.length > 0) {
+            for (String backup : backups) {
+                address.append(",");
+                address.append(appendDefaultPort(backup, defaultPort));
+            }
+        }
+        return address.toString();
+	}
+
+    private String appendDefaultPort(String address, int defaultPort) {
+        if (address != null && address.length() > 0
+        		&& defaultPort > 0) {
+            int i = address.indexOf(':');
+            if (i < 0) {
+                return address + ":" + defaultPort;
+            } else if (Integer.parseInt(address.substring(i + 1)) == 0) {
+                return address.substring(0, i + 1) + defaultPort;
+            }
+        }
+        return address;
+    }
 
 	public String getPath() {
 		return path;
