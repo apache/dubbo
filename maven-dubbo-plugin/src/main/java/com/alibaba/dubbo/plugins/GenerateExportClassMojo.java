@@ -43,8 +43,6 @@ import com.thoughtworks.qdox.parser.ParseException;
  */
 public class GenerateExportClassMojo extends AbstractMojo {
 
-    private static final String LINE_SEPARATOR   = System.getProperty("line.separator");
-
     public static final  String EXPORT_CLASS_TAG = "export";
 
     /**
@@ -73,6 +71,11 @@ public class GenerateExportClassMojo extends AbstractMojo {
     private boolean failOnError;
 
     /**
+     * @parameter expression="${export.all}" default-value="false"
+     */
+    private boolean exportAll;
+
+    /**
      * @parameter expression="${export.class.skip}" default-value="false"
      */
     private boolean skip;
@@ -84,14 +87,23 @@ public class GenerateExportClassMojo extends AbstractMojo {
             return;
         }
 
+        if (exportAll) {
+            getLog().info("Export all class(es)");
+        }
+
         JavaClass[] classes = scanSource();
         Set<String> set = new HashSet<String>();
-        StringBuilder buf = new StringBuilder(" ");
         if (classes != null && classes.length > 0) {
             for (JavaClass cl : classes) {
-                DocletTag tag = cl.getTagByName(EXPORT_CLASS_TAG);
-                if (tag != null) {
-                    set.add(cl.getFullyQualifiedName());
+                if (cl.isPublic()) {
+                    if (exportAll) {
+                        set.add(cl.getFullyQualifiedName());
+                    } else {
+                        DocletTag tag = cl.getTagByName(EXPORT_CLASS_TAG);
+                        if (tag != null) {
+                            set.add(cl.getFullyQualifiedName());
+                        }
+                    }
                 }
             }
         }
