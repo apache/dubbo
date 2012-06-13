@@ -56,7 +56,7 @@ public class HttpProtocol extends AbstractProxyProtocol {
     private HttpBinder httpBinder;
     
     public HttpProtocol() {
-        super(IOException.class);
+        super(RemoteAccessException.class);
     }
 
     public void setHttpBinder(HttpBinder httpBinder) {
@@ -117,11 +117,7 @@ public class HttpProtocol extends AbstractProxyProtocol {
         httpProxyFactoryBean.setServiceUrl(url.toIdentityString());
         httpProxyFactoryBean.setServiceInterface(serviceType);
         String client = url.getParameter(Constants.CLIENT_KEY);
-        if ("commons".equals(client)) {
-        	CommonsHttpInvokerRequestExecutor httpInvokerRequestExecutor = new CommonsHttpInvokerRequestExecutor();
-        	httpInvokerRequestExecutor.setReadTimeout(url.getParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT));
-        	httpProxyFactoryBean.setHttpInvokerRequestExecutor(httpInvokerRequestExecutor);
-        } else if ("simple".equals(client)) {
+        if (client == null || client.length() == 0 || "simple".equals(client)) {
         	SimpleHttpInvokerRequestExecutor httpInvokerRequestExecutor = new SimpleHttpInvokerRequestExecutor() {
 				protected void prepareConnection(HttpURLConnection con,
 						int contentLength) throws IOException {
@@ -130,6 +126,10 @@ public class HttpProtocol extends AbstractProxyProtocol {
 					con.setConnectTimeout(url.getParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT));
 				}
         	};
+        	httpProxyFactoryBean.setHttpInvokerRequestExecutor(httpInvokerRequestExecutor);
+        } else if ("commons".equals(client)) {
+        	CommonsHttpInvokerRequestExecutor httpInvokerRequestExecutor = new CommonsHttpInvokerRequestExecutor();
+        	httpInvokerRequestExecutor.setReadTimeout(url.getParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT));
         	httpProxyFactoryBean.setHttpInvokerRequestExecutor(httpInvokerRequestExecutor);
         } else if (client != null && client.length() > 0) {
         	throw new IllegalStateException("Unsupported http protocol client " + client + ", only supported: simple, commons");
@@ -142,8 +142,8 @@ public class HttpProtocol extends AbstractProxyProtocol {
         if (e instanceof RemoteAccessException) {
             e = e.getCause();
         }
-        if (e != null && e.getCause() != null) {
-            Class<?> cls = e.getCause().getClass();
+        if (e != null) {
+            Class<?> cls = e.getClass();
             // 是根据测试Case发现的问题，对RpcException.setCode进行设置
             if (SocketTimeoutException.class.equals(cls)) {
                 return RpcException.TIMEOUT_EXCEPTION;
