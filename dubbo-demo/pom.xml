@@ -35,15 +35,4 @@
 		<module>dubbo-demo-consumer</module>
 		<module>dubbo-demo-examples</module>
 	</modules>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>com.alibaba.dubbo.plugins</groupId>
-                <artifactId>maven-dubbo-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>

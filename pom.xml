@@ -395,21 +395,6 @@
                     <skip>${skip_maven_deploy}</skip>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>com.alibaba.dubbo.plugins</groupId>
-                <artifactId>maven-dubbo-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>export-class</id>
-                        <goals>
-                            <goal>export-class</goal>
-                        </goals>
-                        <configuration>
-                            <exportAll>true</exportAll>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
 		</plugins>
 	</build>
     <profiles>
