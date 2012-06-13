@@ -10,10 +10,10 @@
 
     <dubbo:registry address="multicast://224.5.6.7:1234"/>
 
-    <dubbo:protocol name="thrift" />
+    <dubbo:protocol id="thrift" name="thrift" />
 
     <bean id="demoService" class="com.alibaba.dubbo.rpc.protocol.thrift.DubboDemoImpl"/>
 
-    <dubbo:service interface="com.alibaba.dubbo.rpc.gen.dubbo.Demo" ref="demoService"/>
+    <dubbo:service protocol="thrift" interface="com.alibaba.dubbo.rpc.gen.dubbo.Demo" ref="demoService"/>
 
 </beans>
