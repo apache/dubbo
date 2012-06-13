@@ -15,15 +15,10 @@
  */
 package com.alibaba.dubbo.remoting.http.jetty;
 
-import java.io.IOException;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.mortbay.jetty.Server;
-import org.mortbay.jetty.handler.AbstractHandler;
 import org.mortbay.jetty.nio.SelectChannelConnector;
+import org.mortbay.jetty.servlet.ServletHandler;
+import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.thread.QueuedThreadPool;
 
 import com.alibaba.dubbo.common.Constants;
@@ -32,6 +27,7 @@ import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.remoting.http.HttpHandler;
+import com.alibaba.dubbo.remoting.http.servlet.DispatcherServlet;
 import com.alibaba.dubbo.remoting.http.support.AbstractHttpServer;
 
 public class JettyHttpServer extends AbstractHttpServer {
@@ -42,7 +38,8 @@ public class JettyHttpServer extends AbstractHttpServer {
 
     public JettyHttpServer(URL url, final HttpHandler handler){
         super(url, handler);
-
+        DispatcherServlet.addHttpHandler(url.getPort(), handler);
+        
         int threads = url.getParameter(Constants.THREADS_KEY, Constants.DEFAULT_THREADS);
         QueuedThreadPool threadPool = new QueuedThreadPool();
         threadPool.setDaemon(true);
@@ -58,13 +55,12 @@ public class JettyHttpServer extends AbstractHttpServer {
         server = new Server();
         server.setThreadPool(threadPool);
         server.addConnector(connector);
-        server.addHandler(new AbstractHandler() {
-            public void handle(String target, HttpServletRequest request,
-                               HttpServletResponse response, int dispatch) throws IOException,
-                    ServletException {
-                handler.handle(request, response);
-            }
-        });
+        
+        ServletHandler servletHandler = new ServletHandler();
+        ServletHolder servletHolder = servletHandler.addServletWithMapping(DispatcherServlet.class, "/*");
+        servletHolder.setInitOrder(2);
+        
+        server.addHandler(servletHandler);
         
         try {
             server.start();

@@ -34,15 +34,25 @@ import com.alibaba.dubbo.remoting.http.HttpHandler;
 public class DispatcherServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 5766349180380479888L;
+	
+	private static DispatcherServlet INSTANCE;
 
     private static final Map<Integer, HttpHandler> handlers = new ConcurrentHashMap<Integer, HttpHandler>();
 
-    static void addHttpInvoker(int port, HttpHandler processor) {
+    public static void addHttpHandler(int port, HttpHandler processor) {
         handlers.put(port, processor);
     }
 
-    static void removeHttpInvoker(int port) {
+    public static void removeHttpHandler(int port) {
         handlers.remove(port);
+    }
+    
+    public static DispatcherServlet getInstance() {
+    	return INSTANCE;
+    }
+    
+    public DispatcherServlet() {
+    	DispatcherServlet.INSTANCE = this;
     }
 
     protected void service(HttpServletRequest request, HttpServletResponse response) 

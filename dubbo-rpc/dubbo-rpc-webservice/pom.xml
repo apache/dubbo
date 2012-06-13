@@ -35,8 +35,13 @@
 			<version>${project.parent.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo-remoting-http</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-frontend-jaxws</artifactId>
+			<artifactId>cxf-rt-frontend-simple</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>

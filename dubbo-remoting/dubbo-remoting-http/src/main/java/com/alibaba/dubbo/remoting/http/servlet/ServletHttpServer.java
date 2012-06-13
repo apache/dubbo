@@ -23,7 +23,7 @@ public class ServletHttpServer extends AbstractHttpServer {
     
     public ServletHttpServer(URL url, HttpHandler handler){
         super(url, handler);
-        DispatcherServlet.addHttpInvoker(url.getPort(), handler);
+        DispatcherServlet.addHttpHandler(url.getPort(), handler);
     }
     
 }

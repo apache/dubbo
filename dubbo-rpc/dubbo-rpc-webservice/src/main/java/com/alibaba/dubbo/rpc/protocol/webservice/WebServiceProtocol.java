@@ -17,13 +17,28 @@ package com.alibaba.dubbo.rpc.protocol.webservice;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.cxf.interceptor.LoggingInInterceptor;
-import org.apache.cxf.interceptor.LoggingOutInterceptor;
-import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
-import org.apache.cxf.jaxws.JaxWsServerFactoryBean;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.cxf.bus.extension.ExtensionManagerBus;
+import org.apache.cxf.frontend.ClientProxyFactoryBean;
+import org.apache.cxf.frontend.ServerFactoryBean;
+import org.apache.cxf.transport.http.HTTPTransportFactory;
+import org.apache.cxf.transport.http.HttpDestinationFactory;
+import org.apache.cxf.transport.servlet.ServletController;
+import org.apache.cxf.transport.servlet.ServletDestinationFactory;
 
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.remoting.http.HttpBinder;
+import com.alibaba.dubbo.remoting.http.HttpHandler;
+import com.alibaba.dubbo.remoting.http.HttpServer;
+import com.alibaba.dubbo.remoting.http.servlet.DispatcherServlet;
+import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.protocol.AbstractProxyProtocol;
 
@@ -36,31 +51,78 @@ public class WebServiceProtocol extends AbstractProxyProtocol {
     
     public static final int DEFAULT_PORT = 80;
 
+    private final Map<String, HttpServer> serverMap = new ConcurrentHashMap<String, HttpServer>();
+    
+    private final ExtensionManagerBus bus = new ExtensionManagerBus();
+
+    private final HTTPTransportFactory transportFactory = new HTTPTransportFactory(bus);
+	
+    private HttpBinder httpBinder;
+    
+    public WebServiceProtocol() {
+        super(IOException.class);
+        bus.setExtension(new ServletDestinationFactory(), HttpDestinationFactory.class);
+    }
+
+    public void setHttpBinder(HttpBinder httpBinder) {
+        this.httpBinder = httpBinder;
+    }
+
     public int getDefaultPort() {
         return DEFAULT_PORT;
     }
 
+    private class WebServiceHandler implements HttpHandler {
+
+    	private volatile ServletController servletController;
+
+        public void handle(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        	if (servletController == null) {
+        		HttpServlet httpServlet = DispatcherServlet.getInstance();
+    			if (httpServlet == null) {
+    				response.sendError(500, "No such DispatcherServlet instance.");
+    				return;
+    			}
+        		synchronized (this) {
+        			if (servletController == null) {
+            			servletController = new ServletController(transportFactory.getRegistry(), httpServlet.getServletConfig(), httpServlet);
+        			}
+				}
+        	}
+            RpcContext.getContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
+            servletController.invoke(request, response);
+        }
+
+    }
+
     protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
-        final JaxWsServerFactoryBean jaxWsServerFactoryBean = new JaxWsServerFactoryBean();
-        jaxWsServerFactoryBean.setServiceClass(type);
-        jaxWsServerFactoryBean.setAddress(url.setProtocol("http").toString());
-        jaxWsServerFactoryBean.setServiceBean(impl);
-        jaxWsServerFactoryBean.create();
+    	String addr = url.getIp() + ":" + url.getPort();
+        HttpServer httpServer = serverMap.get(addr);
+        if (httpServer == null) {
+            httpServer = httpBinder.bind(url, new WebServiceHandler());
+            serverMap.put(addr, httpServer);
+        }
+        final ServerFactoryBean serverFactoryBean = new ServerFactoryBean();
+    	serverFactoryBean.setServiceClass(type);
+    	serverFactoryBean.setAddress(url.getAbsolutePath());
+    	serverFactoryBean.setServiceBean(impl);
+    	serverFactoryBean.setDestinationFactory(transportFactory);
+    	serverFactoryBean.setBus(bus);
+    	serverFactoryBean.create();
         return new Runnable() {
             public void run() {
-                jaxWsServerFactoryBean.destroy();
+            	serverFactoryBean.destroy();
             }
         };
     }
 
     @SuppressWarnings("unchecked")
     protected <T> T doRefer(final Class<T> serviceType, final URL url) throws RpcException {
-    	JaxWsProxyFactoryBean jaxWsProxyFactoryBean = new JaxWsProxyFactoryBean();
-    	jaxWsProxyFactoryBean.getInInterceptors().add(new LoggingInInterceptor());
-    	jaxWsProxyFactoryBean.getOutInterceptors().add(new LoggingOutInterceptor());
-    	jaxWsProxyFactoryBean.setServiceClass(serviceType);
-    	jaxWsProxyFactoryBean.setAddress(url.setProtocol("http").toString());
-    	return (T) jaxWsProxyFactoryBean.create();
+    	ClientProxyFactoryBean proxyFactoryBean = new ClientProxyFactoryBean();
+    	proxyFactoryBean.setServiceClass(serviceType);
+    	proxyFactoryBean.setAddress(url.setProtocol("http").toIdentityString());
+    	proxyFactoryBean.setBus(bus);
+    	return (T) proxyFactoryBean.create();
     }
 
     protected int getErrorCode(Throwable e) {
