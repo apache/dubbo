@@ -22,8 +22,7 @@ import com.alibaba.dubbo.remoting.exchange.support.DefaultFuture;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
-import com.alibaba.dubbo.rpc.gen.dubbo.$__DemoStub;
-import com.alibaba.dubbo.rpc.gen.dubbo.Demo;
+import com.alibaba.dubbo.rpc.gen.thrift.Demo;
 import com.alibaba.dubbo.rpc.protocol.thrift.io.RandomAccessByteArrayOutputStream;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -44,6 +43,7 @@ import java.io.ByteArrayOutputStream;
 public class ThriftCodecTest {
 
     private ThriftCodec codec = new ThriftCodec();
+    private Channel channel = new MockedChannel(URL.valueOf("thrift://127.0.0.1"));
 
     @Test
     public void testEncodeRequest() throws Exception {
@@ -52,7 +52,7 @@ public class ThriftCodecTest {
 
         ByteArrayOutputStream output = new ByteArrayOutputStream( 1024 );
 
-        codec.encode( ( Channel ) null, output, request );
+        codec.encode( channel, output, request );
 
         byte[] bytes = output.toByteArray();
 
@@ -82,7 +82,7 @@ public class ThriftCodecTest {
         // version
         Assert.assertEquals( ThriftCodec.VERSION, protocol.readByte() );
         // service name
-        Assert.assertEquals( Demo.class.getName(), protocol.readString() );
+        Assert.assertEquals( Demo.Iface.class.getName(), protocol.readString() );
         // dubbo request id
         Assert.assertEquals( request.getId(), protocol.readI64() );
 
@@ -94,7 +94,7 @@ public class ThriftCodecTest {
 
         TMessage message = protocol.readMessageBegin();
 
-        $__DemoStub.echoString_args args = new $__DemoStub.echoString_args();
+        Demo.echoString_args args = new Demo.echoString_args();
 
         args.read( protocol );
 
@@ -111,7 +111,7 @@ public class ThriftCodecTest {
     @Test
     public void testDecodeReplyResponse() throws Exception {
 
-        URL url = URL.valueOf( ThriftProtocol.NAME + "://127.0.0.1:40880/" + Demo.class.getName() );
+        URL url = URL.valueOf( ThriftProtocol.NAME + "://127.0.0.1:40880/" + Demo.Iface.class.getName() );
 
         Channel channel = new MockedChannel( url );
 
@@ -123,7 +123,7 @@ public class ThriftCodecTest {
 
         TMessage message = new TMessage( "echoString", TMessageType.REPLY, ThriftCodec.getSeqId() );
 
-        $__DemoStub.echoString_result methodResult = new $__DemoStub.echoString_result();
+        Demo.echoString_result methodResult = new Demo.echoString_result();
 
         methodResult.success = "Hello, World!";
 
@@ -137,7 +137,7 @@ public class ThriftCodecTest {
         protocol.writeI32( Integer.MAX_VALUE );
         protocol.writeI16( Short.MAX_VALUE );
         protocol.writeByte( ThriftCodec.VERSION );
-        protocol.writeString( Demo.class.getName() );
+        protocol.writeString( Demo.Iface.class.getName() );
         protocol.writeI64( request.getId() );
         protocol.getTransport().flush();
         headerLength = bos.size();
@@ -254,7 +254,7 @@ public class ThriftCodecTest {
     @Test
     public void testEncodeReplyResponse() throws Exception {
 
-        URL url = URL.valueOf( ThriftProtocol.NAME + "://127.0.0.1:40880/" + Demo.class.getName() );
+        URL url = URL.valueOf( ThriftProtocol.NAME + "://127.0.0.1:40880/" + Demo.Iface.class.getName() );
 
         Channel channel = new MockedChannel( url );
 
@@ -269,7 +269,7 @@ public class ThriftCodecTest {
         RandomAccessByteArrayOutputStream bos = new RandomAccessByteArrayOutputStream( 1024 );
 
         ThriftCodec.RequestData rd = ThriftCodec.RequestData.create(
-                ThriftCodec.getSeqId(), Demo.class.getName(), "echoString" );
+                ThriftCodec.getSeqId(), Demo.Iface.class.getName(), "echoString" );
         ThriftCodec.cachedRequest.putIfAbsent( request.getId(), rd );
         codec.encode( channel, bos, response );
 
@@ -290,7 +290,7 @@ public class ThriftCodecTest {
         int headerLength = protocol.readI16();
 
         Assert.assertEquals( ThriftCodec.VERSION, protocol.readByte() );
-        Assert.assertEquals( Demo.class.getName(), protocol.readString() );
+        Assert.assertEquals( Demo.Iface.class.getName(), protocol.readString() );
         Assert.assertEquals( request.getId(), protocol.readI64() );
 
         if ( bis.markSupported() ) {
@@ -302,7 +302,7 @@ public class ThriftCodecTest {
         Assert.assertEquals( "echoString", message.name );
         Assert.assertEquals( TMessageType.REPLY, message.type );
         Assert.assertEquals( ThriftCodec.getSeqId(), message.seqid );
-        $__DemoStub.echoString_result result = new $__DemoStub.echoString_result();
+        Demo.echoString_result result = new Demo.echoString_result();
         result.read( protocol );
         protocol.readMessageEnd();
 
@@ -312,7 +312,7 @@ public class ThriftCodecTest {
     @Test
     public void testEncodeExceptionResponse() throws Exception {
 
-        URL url = URL.valueOf( ThriftProtocol.NAME + "://127.0.0.1:40880/" + Demo.class.getName() );
+        URL url = URL.valueOf( ThriftProtocol.NAME + "://127.0.0.1:40880/" + Demo.Iface.class.getName() );
 
         Channel channel = new MockedChannel( url );
 
@@ -328,7 +328,7 @@ public class ThriftCodecTest {
         RandomAccessByteArrayOutputStream bos = new RandomAccessByteArrayOutputStream( 1024 );
 
         ThriftCodec.RequestData rd = ThriftCodec.RequestData.create(
-                ThriftCodec.getSeqId(), Demo.class.getName(), "echoString" );
+                ThriftCodec.getSeqId(), Demo.Iface.class.getName(), "echoString" );
         ThriftCodec.cachedRequest.put( request.getId(), rd );
         codec.encode( channel, bos, response );
 
@@ -348,7 +348,7 @@ public class ThriftCodecTest {
         int headerLength = protocol.readI16();
 
         Assert.assertEquals( ThriftCodec.VERSION, protocol.readByte() );
-        Assert.assertEquals( Demo.class.getName(), protocol.readString() );
+        Assert.assertEquals( Demo.Iface.class.getName(), protocol.readString() );
         Assert.assertEquals( request.getId(), protocol.readI64() );
 
         if ( bis.markSupported() ) {
@@ -390,7 +390,7 @@ public class ThriftCodecTest {
         protocol.getTransport().flush();
         headerLength = bos.size();
 
-        $__DemoStub.echoString_args args = new $__DemoStub.echoString_args(  );
+        Demo.echoString_args args = new Demo.echoString_args(  );
         args.setArg( "Hell, World!" );
 
         TMessage message = new TMessage( "echoString", TMessageType.CALL, ThriftCodec.getSeqId() );
@@ -437,7 +437,7 @@ public class ThriftCodecTest {
 
         invocation.setParameterTypes( new Class<?>[]{ String.class } );
 
-        invocation.setAttachment( Constants.INTERFACE_KEY, Demo.class.getName() );
+        invocation.setAttachment( Constants.INTERFACE_KEY, Demo.Iface.class.getName() );
 
         Request request = new Request( 1L );
 
