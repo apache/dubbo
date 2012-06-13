@@ -26,13 +26,20 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.cxf.bus.extension.ExtensionManagerBus;
+import org.apache.cxf.endpoint.Client;
+import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.frontend.ClientProxyFactoryBean;
 import org.apache.cxf.frontend.ServerFactoryBean;
+import org.apache.cxf.interceptor.Fault;
+import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.cxf.transport.http.HTTPTransportFactory;
 import org.apache.cxf.transport.http.HttpDestinationFactory;
 import org.apache.cxf.transport.servlet.ServletController;
 import org.apache.cxf.transport.servlet.ServletDestinationFactory;
+import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
+import org.springframework.remoting.RemoteAccessException;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.http.HttpBinder;
 import com.alibaba.dubbo.remoting.http.HttpHandler;
@@ -60,7 +67,7 @@ public class WebServiceProtocol extends AbstractProxyProtocol {
     private HttpBinder httpBinder;
     
     public WebServiceProtocol() {
-        super(IOException.class);
+        super(Fault.class);
         bus.setExtension(new ServletDestinationFactory(), HttpDestinationFactory.class);
     }
 
@@ -122,10 +129,20 @@ public class WebServiceProtocol extends AbstractProxyProtocol {
     	proxyFactoryBean.setServiceClass(serviceType);
     	proxyFactoryBean.setAddress(url.setProtocol("http").toIdentityString());
     	proxyFactoryBean.setBus(bus);
-    	return (T) proxyFactoryBean.create();
+    	T ref = (T) proxyFactoryBean.create();
+    	Client proxy = ClientProxy.getClient(ref);  
+		HTTPConduit conduit = (HTTPConduit) proxy.getConduit();
+		HTTPClientPolicy policy = new HTTPClientPolicy();
+		policy.setConnectionTimeout(url.getParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT));
+		policy.setReceiveTimeout(url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
+		conduit.setClient(policy);
+        return ref;
     }
 
     protected int getErrorCode(Throwable e) {
+    	if (e instanceof Fault) {
+            e = e.getCause();
+        }
         if (e instanceof SocketTimeoutException) {
             return RpcException.TIMEOUT_EXCEPTION;
         } else if (e instanceof IOException) {
