@@ -98,10 +98,10 @@ public class ThriftCodec implements Codec {
             throws IOException {
 
         if ( message instanceof Request ) {
-            encodeRequest( output, ( Request ) message );
+            encodeRequest( channel, output, ( Request ) message );
         }
         else if ( message instanceof Response ) {
-            encodeResponse( output, ( Response ) message );
+            encodeResponse( channel, output, ( Response ) message );
         } else {
             throw new UnsupportedOperationException(
                     new StringBuilder( 32 )
@@ -184,7 +184,7 @@ public class ThriftCodec implements Codec {
             result.setMethodName( message.name );
 
             String argsClassName = ExtensionLoader.getExtensionLoader(ClassNameGenerator.class)
-                    .getDefaultExtension().generateArgsClassName( serviceName, message.name );
+                    .getExtension(ThriftClassNameGenerator.NAME).generateArgsClassName( serviceName, message.name );
 
             if ( StringUtils.isEmpty( argsClassName ) ) {
                 throw new RpcException( RpcException.SERIALIZATION_EXCEPTION,
@@ -295,7 +295,7 @@ public class ThriftCodec implements Codec {
         } else if ( message.type == TMessageType.REPLY ) {
 
             String resultClassName = ExtensionLoader.getExtensionLoader( ClassNameGenerator.class )
-                    .getDefaultExtension().generateResultClassName( serviceName, message.name );
+                    .getExtension(ThriftClassNameGenerator.NAME).generateResultClassName( serviceName, message.name );
 
             if ( StringUtils.isEmpty( resultClassName ) ) {
                 throw new IllegalArgumentException(
@@ -390,7 +390,7 @@ public class ThriftCodec implements Codec {
 
     }
 
-    private void encodeRequest( OutputStream output, Request request )
+    private void encodeRequest( Channel channel, OutputStream output, Request request )
             throws IOException {
 
         RpcInvocation inv = ( RpcInvocation ) request.getData();
@@ -413,7 +413,8 @@ public class ThriftCodec implements Codec {
                 seqId );
 
         String methodArgs = ExtensionLoader.getExtensionLoader( ClassNameGenerator.class )
-                .getDefaultExtension().generateArgsClassName( serviceName, inv.getMethodName() );
+            .getExtension(channel.getUrl().getParameter(ThriftConstants.CLASS_NAME_GENERATOR_KEY, ThriftClassNameGenerator.NAME))
+            .generateArgsClassName(serviceName, inv.getMethodName());
 
         if ( StringUtils.isEmpty( methodArgs ) ) {
             throw new RpcException( RpcException.SERIALIZATION_EXCEPTION,
@@ -529,15 +530,16 @@ public class ThriftCodec implements Codec {
 
     }
 
-    private void encodeResponse( OutputStream output, Response response )
+    private void encodeResponse( Channel channel, OutputStream output, Response response )
             throws IOException {
 
         RpcResult result = ( RpcResult ) response.getResult();
 
         RequestData rd = cachedRequest.get( response.getId() );
 
-        String resultClassName = ExtensionLoader.getExtensionLoader( ClassNameGenerator.class )
-                .getDefaultExtension().generateResultClassName( rd.serviceName, rd.methodName );
+        String resultClassName = ExtensionLoader.getExtensionLoader( ClassNameGenerator.class ).getExtension(
+                    channel.getUrl().getParameter(ThriftConstants.CLASS_NAME_GENERATOR_KEY, ThriftClassNameGenerator.NAME))
+                    .generateResultClassName(rd.serviceName, rd.methodName);
 
         if ( StringUtils.isEmpty( resultClassName ) ) {
             throw new RpcException( RpcException.SERIALIZATION_EXCEPTION,
