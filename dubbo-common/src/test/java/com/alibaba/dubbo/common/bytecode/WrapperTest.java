@@ -50,6 +50,11 @@ public class WrapperTest extends TestCase
         }
     }
 	
+	//bug: DUBBO-425
+    public void test_makeEmptyClass() throws Exception {
+        Wrapper.getWrapper(EmptyServiceImpl.class);
+    }
+	
 
 	public static class Impl0
 	{
@@ -110,4 +115,12 @@ public class WrapperTest extends TestCase
 			fv = f;
 		}
 	}
+	
+	public static interface EmptyService
+    {
+    }
+	
+	public static class EmptyServiceImpl implements EmptyService
+    {
+    }
 }

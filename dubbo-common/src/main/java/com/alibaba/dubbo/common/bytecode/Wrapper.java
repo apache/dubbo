@@ -215,7 +215,7 @@ public abstract class Wrapper
 
 		c1.append(name).append(" w; try{ w = ((").append(name).append(")$1); }catch(Throwable e){ throw new IllegalArgumentException(e); }");
 		c2.append(name).append(" w; try{ w = ((").append(name).append(")$1); }catch(Throwable e){ throw new IllegalArgumentException(e); }");
-		c3.append(name).append(" w; try{ w = ((").append(name).append(")$1); }catch(Throwable e){ throw new IllegalArgumentException(e); } try{");
+		c3.append(name).append(" w; try{ w = ((").append(name).append(")$1); }catch(Throwable e){ throw new IllegalArgumentException(e); }");
 
 		Map<String, Class<?>> pts = new HashMap<String, Class<?>>(); // <property name, property types>
 		Map<String, Method> ms = new LinkedHashMap<String, Method>(); // <method desc, Method instance>
@@ -237,6 +237,10 @@ public abstract class Wrapper
 		
 		Method[] methods = c.getMethods();
 		// get all public method.
+		boolean hasMethod = hasMethods(methods);
+		if( hasMethod ){
+		    c3.append(" try{");
+		}
 		for( Method m : methods )
 		{
 			if( m.getDeclaringClass() == Object.class ) //ignore Object's method.
@@ -277,9 +281,12 @@ public abstract class Wrapper
 				dmns.add(mn);
 			ms.put(ReflectUtils.getDesc(m), m);
 		}
-		c3.append(" } catch(Throwable e) { " );
-		c3.append("     throw new java.lang.reflect.InvocationTargetException(e); " );
-		c3.append(" }");
+		if( hasMethod ){
+		    c3.append(" } catch(Throwable e) { " );
+		    c3.append("     throw new java.lang.reflect.InvocationTargetException(e); " );
+	        c3.append(" }");
+        }
+		
 		c3.append(" throw new " + NoSuchMethodException.class.getName() + "(\"Not found method \\\"\"+$2+\"\\\" in class " + c.getName() + ".\"); }");
 		
 		// deal with get/set method.
@@ -406,5 +413,17 @@ public abstract class Wrapper
 	private static String propertyName(String pn)
 	{
 		return pn.length() == 1 || Character.isLowerCase(pn.charAt(1)) ? Character.toLowerCase(pn.charAt(0)) + pn.substring(1) : pn;
+	}
+	
+	private static boolean hasMethods(Method[] methods){
+	    if(methods == null || methods.length == 0){
+	        return false;
+	    }
+	    for(Method m : methods){
+	        if(m.getDeclaringClass() != Object.class){
+	            return true;
+	        }
+	    }
+	    return false;
 	}
 }
