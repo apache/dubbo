@@ -140,6 +140,10 @@
 			<exclusions>
 				<exclusion>
 					<groupId>org.apache.cxf</groupId>
+					<artifactId>cxf-rt-frontend-simple</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.cxf</groupId>
 					<artifactId>cxf-rt-transports-http</artifactId>
 				</exclusion>
 			</exclusions>
