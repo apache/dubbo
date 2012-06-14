@@ -1,0 +1,2 @@
+dubbo=com.alibaba.dubbo.rpc.protocol.thrift.DubboClassNameGenerator
+thrift=com.alibaba.dubbo.rpc.protocol.thrift.ThriftClassNameGenerator

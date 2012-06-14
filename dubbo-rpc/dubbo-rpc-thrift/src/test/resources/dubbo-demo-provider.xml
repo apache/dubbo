@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+    http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+    <dubbo:application name="dubbo-demo-provider"/>
+
+    <dubbo:registry address="multicast://224.5.6.7:1234"/>
+
+    <dubbo:protocol id="thrift" name="thrift" />
+
+    <bean id="demoService" class="com.alibaba.dubbo.rpc.protocol.thrift.ThriftDemoImpl"/>
+
+    <dubbo:service protocol="thrift" interface="com.alibaba.dubbo.rpc.gen.thrift.Demo$Iface" ref="demoService"/>
+
+</beans>
