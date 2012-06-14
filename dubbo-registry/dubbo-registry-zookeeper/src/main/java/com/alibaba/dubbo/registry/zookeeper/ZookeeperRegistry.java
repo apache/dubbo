@@ -141,7 +141,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                     }
                 }
             } else {
-                List<String> providers = new ArrayList<String>();
+                List<URL> urls = new ArrayList<URL>();
                 for (String path : toCategoriesPath(url)) {
                     ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
                     if (listeners == null) {
@@ -152,17 +152,16 @@ public class ZookeeperRegistry extends FailbackRegistry {
                     if (zkListener == null) {
                         listeners.putIfAbsent(listener, new ChildListener() {
                             public void childChanged(String parentPath, List<String> currentChilds) {
-                            	ZookeeperRegistry.this.notify(url, listener, toUrls(url, currentChilds));
+                            	ZookeeperRegistry.this.notify(url, listener, toUrlsWithEmpty(url, parentPath, currentChilds));
                             }
                         });
                         zkListener = listeners.get(listener);
                     }
                     List<String> children = zkClient.addChildListener(path, zkListener);
                     if (children != null) {
-                        providers.addAll(children);
+                    	urls.addAll(toUrlsWithEmpty(url, path, children));
                     }
                 }
-                List<URL> urls = toUrls(url, providers);
                 notify(url, listener, urls);
             }
         } catch (Throwable e) {
@@ -196,7 +195,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                     // ignore
                 }
             }
-            return toUrls(url, providers);
+            return toUrlsWithoutEmpty(url, providers);
         } catch (Throwable e) {
             throw new RpcException("Failed to lookup " + url + " from zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
         }
@@ -244,8 +243,8 @@ public class ZookeeperRegistry extends FailbackRegistry {
         return toCategoryPath(url) + Constants.PATH_SEPARATOR + URL.encode(url.toFullString());
     }
     
-    private List<URL> toUrls(URL consumer, List<String> providers) {
-        List<URL> urls = new ArrayList<URL>();
+    private List<URL> toUrlsWithoutEmpty(URL consumer, List<String> providers) {
+    	List<URL> urls = new ArrayList<URL>();
         if (providers != null && providers.size() > 0) {
             for (String provider : providers) {
                 provider = URL.decode(provider);
@@ -257,8 +256,15 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 }
             }
         }
-        if (urls != null && urls.isEmpty() && Constants.ANY_VALUE.equals(consumer.getServiceInterface())) {
-            urls.add(consumer.setProtocol(Constants.EMPTY_PROTOCOL));
+        return urls;
+    }
+
+    private List<URL> toUrlsWithEmpty(URL consumer, String path, List<String> providers) {
+        List<URL> urls = toUrlsWithoutEmpty(consumer, providers);
+        if (urls != null && urls.isEmpty()) {
+        	int i = path.lastIndexOf('/');
+        	String category = i < 0 ? path : path.substring(i + 1);
+            urls.add(URL.valueOf(Constants.EMPTY_PROTOCOL + "://0.0.0.0/" + consumer.getServiceInterface() + "?" + Constants.CATEGORY_KEY + "=" + category));
         }
         return urls;
     }
