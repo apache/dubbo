@@ -6,6 +6,7 @@ import org.I0Itec.zkclient.IZkChildListener;
 import org.I0Itec.zkclient.IZkStateListener;
 import org.I0Itec.zkclient.ZkClient;
 import org.I0Itec.zkclient.exception.ZkNoNodeException;
+import org.I0Itec.zkclient.exception.ZkNodeExistsException;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
 
 import com.alibaba.dubbo.common.URL;
@@ -42,7 +43,10 @@ public class ZkclientZookeeperClient extends AbstractZookeeperClient<IZkChildLis
 	}
 
 	public void createEphemeral(String path) {
-		client.createEphemeral(path);
+		try {
+			client.createEphemeral(path);
+		} catch (ZkNodeExistsException e) {
+		}
 	}
 
 	public void delete(String path) {
