@@ -122,3 +122,30 @@ For more, please refer to:
        - edit: dubbo.registry.adddress=zookeeper://127.0.0.1:2181
     cd ../bin
     ./restart.sh
+
+9. Install the redis registry:
+
+    cd ~
+    wget http://redis.googlecode.com/files/redis-2.4.8.tar.gz
+    tar xzf redis-2.4.8.tar.gz
+    cd redis-2.4.8
+    make
+    nohup ./src/redis-server redis.conf &
+
+    cd ~/dubbo/dubbo-demo-provider/conf
+    vi dubbo.properties
+       - edit: dubbo.registry.adddress=redis://127.0.0.1:6379
+    cd ../bin
+    ./restart.sh
+
+    cd ~/dubbo/dubbo-demo-consumer/conf
+    vi dubbo.properties
+       - edit: dubbo.registry.adddress=redis://127.0.0.1:6379
+    cd ../bin
+    ./restart.sh
+
+    cd ~/dubbo/dubbo-simple-monitor/conf
+    vi dubbo.properties
+       - edit: dubbo.registry.adddress=redis://127.0.0.1:6379
+    cd ../bin
+    ./restart.sh
