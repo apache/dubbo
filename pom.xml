@@ -51,10 +51,22 @@
 		<module>dubbo-monitor</module>
 		<module>dubbo-config</module>
 		<module>dubbo</module>
-		<module>dubbo-simple</module>
-		<module>dubbo-demo</module>
-		<module>dubbo-test</module>
 	</modules>
+	<profiles>
+		<profile>
+			<id>test</id>
+			<activation>
+				<file>
+					<missing>.project</missing>
+				</file>
+			</activation>
+			<modules>
+				<module>dubbo-simple</module>
+				<module>dubbo-demo</module>
+				<module>dubbo-test</module>
+			</modules>
+		</profile>
+	</profiles>
 	<properties>
 		<!-- Common libs -->
 		<spring_version>2.5.6.SEC03</spring_version>
