@@ -32,6 +32,8 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * PojoUtils. Travel object deeply, and convert complex type to simple type.
@@ -49,6 +51,8 @@ import java.util.Map;
  * @author ding.lid
  */
 public class PojoUtils {
+    
+    private static final ConcurrentMap<String, Method>  NAME_METHODS_CACHE = new ConcurrentHashMap<String, Method>();
 
     public static Object[] generalize(Object[] objs) {
         Object[] dests = new Object[objs.length];
@@ -111,8 +115,9 @@ public class PojoUtils {
             return ((Class)pojo).getName();
         }
 
-        if (history.containsKey(pojo)) {
-            return history.get(pojo);
+        Object o = history.get(pojo);
+        if(o != null){
+            return o;
         }
         history.put(pojo, pojo);
         
@@ -232,9 +237,12 @@ public class PojoUtils {
             return CompatibleTypeUtils.compatibleTypeConvert(pojo, type);
         }
 
-        if (history.containsKey(pojo)) {
-            return history.get(pojo);
+        Object o = history.get(pojo);
+        
+        if(o != null){
+            return o;
         }
+        
         history.put(pojo, pojo);
         
         if (pojo.getClass().isArray()) {
@@ -360,6 +368,7 @@ public class PojoUtils {
 	                            try {
 	                                method.invoke(dest, value);
 	                            } catch (Exception e) {
+	                                e.printStackTrace();
 	                                throw new RuntimeException("Failed to set pojo " + dest.getClass().getSimpleName() + " property " + name
 	                                        + " value " + value + "(" + value.getClass() + "), cause: " + e.getMessage(), e);
 	                            }
@@ -437,17 +446,23 @@ public class PojoUtils {
 
     private static Method getSetterMethod(Class<?> cls, String property, Class<?> valueCls) {
         String name = "set" + property.substring(0, 1).toUpperCase() + property.substring(1);
-        try {
-            return cls.getMethod(name, valueCls);
-        } catch (NoSuchMethodException e) {
-            for (Method method : cls.getMethods()) {
-                if (ReflectUtils.isBeanPropertyWriteMethod(method)
-                        && method.getName().equals(name)) {
-                    return method;
+        Method method = NAME_METHODS_CACHE.get(cls.getName() + "." + name + "(" +valueCls.getName() + ")");
+            if(method == null){
+                try {
+                method = cls.getMethod(name, valueCls);
+                } catch (NoSuchMethodException e) {
+                    for (Method m : cls.getMethods()) {
+                        if (ReflectUtils.isBeanPropertyWriteMethod(m)
+                                && m.getName().equals(name)) {
+                             method = m;
+                        }
+                    }
+                }
+                if(method != null){
+                    NAME_METHODS_CACHE.put(cls.getName() + "." + name + "(" +valueCls.getName() + ")", method);
                 }
             }
-        }
-        return null;
+       return method;
     }
     
     public static boolean isPojo(Class<?> cls) {

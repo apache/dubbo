@@ -119,6 +119,10 @@ public final class ReflectUtils {
 	
 	private static final ConcurrentMap<String, Class<?>>  DESC_CLASS_CACHE = new ConcurrentHashMap<String, Class<?>>();
     
+	private static final ConcurrentMap<String, Class<?>>  NAME_CLASS_CACHE = new ConcurrentHashMap<String, Class<?>>();
+	    
+	private static final ConcurrentMap<String, Method>  Signature_METHODS_CACHE = new ConcurrentHashMap<String, Method>();
+	
 	public static boolean isPrimitives(Class<?> cls) {
         if (cls.isArray()) {
             return isPrimitive(cls.getComponentType());
@@ -670,7 +674,12 @@ public final class ReflectUtils {
 
 		if( cl == null )
 			cl = ClassHelper.getClassLoader();
-		return Class.forName(name, true, cl);
+		Class<?> clazz = NAME_CLASS_CACHE.get(name);
+        if(clazz == null){
+            clazz = Class.forName(name, true, cl);
+            NAME_CLASS_CACHE.put(name, clazz);
+        }
+        return clazz;
 	}
 
 	/**
@@ -775,7 +784,15 @@ public final class ReflectUtils {
 	 */
 	public static Method findMethodByMethodSignature(Class<?> clazz, String methodName, String[] parameterTypes)
 	        throws NoSuchMethodException, ClassNotFoundException {
-        if (parameterTypes == null) {
+	    String signature = methodName;
+        if(parameterTypes != null && parameterTypes.length > 0){
+            signature = methodName + StringUtils.join(parameterTypes);
+        }
+        Method method = Signature_METHODS_CACHE.get(signature);
+        if(method != null){
+            return method;
+        }
+	    if (parameterTypes == null) {
             List<Method> finded = new ArrayList<Method>();
             for (Method m : clazz.getMethods()) {
                 if (m.getName().equals(methodName)) {
@@ -790,14 +807,17 @@ public final class ReflectUtils {
                         methodName, clazz.getName(), finded.size());
                 throw new IllegalStateException(msg);
             }
-            return finded.get(0);
+            method = finded.get(0);
         } else {
             Class<?>[] types = new Class<?>[parameterTypes.length];
             for (int i = 0; i < parameterTypes.length; i ++) {
                 types[i] = ReflectUtils.name2class(parameterTypes[i]);
             }
-            return clazz.getMethod(methodName, types);
+            method = clazz.getMethod(methodName, types);
+            
         }
+	    Signature_METHODS_CACHE.put(signature, method);
+        return method;
 	}
 
     public static Method findMethodByMethodName(Class<?> clazz, String methodName)
