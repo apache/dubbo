@@ -18,8 +18,11 @@ package com.alibaba.dubbo.remoting.codec;
 
 import static org.junit.Assert.fail;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Date;
 import java.util.HashMap;
 
 import junit.framework.Assert;
@@ -382,5 +385,38 @@ public class ExchangeCodecTest extends TelnetCodecTest{
         Assert.assertEquals(null, obj.getResult());
 //        Assert.assertEquals(response.getVersion(), obj.getVersion());
     }
-    
+
+    // http://code.alibabatech.com/jira/browse/DUBBO-392
+    @Test
+    public void testMessageLengthGreaterThanMessageActualLength() throws Exception {
+        Channel channel = getCliendSideChannel(url);
+        Request request = new Request(1L);
+        request.setVersion("2.0.0");
+        Date date = new Date();
+        request.setData(date);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream(1024);
+        codec.encode(channel, outputStream, request);
+        byte[] bytes = outputStream.toByteArray();
+        int len = Bytes.bytes2int(bytes, 12);
+        ByteArrayOutputStream out = new ByteArrayOutputStream(1024);
+        out.write(bytes, 0, 12);
+        /*
+         * 填充长度不能低于256，hessian每次默认会从流中读取256个byte.
+         * 参见 Hessian2Input.readBuffer
+         */
+        int padding = 512;
+        out.write(Bytes.int2bytes(len + padding));
+        out.write(bytes, 16, bytes.length - 16);
+        for(int i = 0; i < padding; i++) {
+            out.write(1);
+        }
+        out.write(bytes);
+        /* request|1111...|request */
+        UnsafeByteArrayInputStream inputStream = new UnsafeByteArrayInputStream(out.toByteArray());
+        Request decodedRequest = (Request)codec.decode(channel, inputStream);
+        Assert.assertTrue(date.equals(decodedRequest.getData()));
+        Assert.assertEquals(bytes.length + padding, inputStream.position());
+        decodedRequest = (Request)codec.decode(channel, inputStream);
+        Assert.assertTrue(date.equals(decodedRequest.getData()));
+    }
 }

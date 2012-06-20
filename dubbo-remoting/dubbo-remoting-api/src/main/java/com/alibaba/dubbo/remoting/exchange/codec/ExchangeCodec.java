@@ -179,6 +179,7 @@ public class ExchangeCodec extends TelnetCodec {
             } else {
                 res.setErrorMessage(in.readUTF());
             }
+            skipUnused(is);
             return res;
         } else {
             // decode request.
@@ -203,6 +204,7 @@ public class ExchangeCodec extends TelnetCodec {
                 req.setBroken(true);
                 req.setData(t);
             }
+            skipUnused(is);
             return req;
         }
     }
@@ -430,4 +432,11 @@ public class ExchangeCodec extends TelnetCodec {
         encodeResponseData(out, data);
     }
 
+    void skipUnused(InputStream is) {
+        try {
+            StreamUtils.skipUnusedStream(is);
+        } catch (IOException e) {
+            /* ignore */
+        }
+    }
 }

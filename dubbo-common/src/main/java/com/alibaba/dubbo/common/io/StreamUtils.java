@@ -212,4 +212,10 @@ public class StreamUtils
 	public static InputStream markSupportedInputStream(final InputStream is) {
 	    return markSupportedInputStream(is, 1024);
 	}
+
+    public static void skipUnusedStream(InputStream is) throws IOException {
+        if (is.available() > 0) {
+            is.skip(is.available());
+        }
+    }
 }
