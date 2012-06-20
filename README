@@ -1,6 +1,36 @@
+Dubbo is a distributed service framework enpowers applications with service import/export capability with high performance RPC.
+
+It's composed of three kernel parts:
+
+Remoting: a network communication framework provides sync-over-async and request-response messaging.
+Clustering: a remote procedure call abstraction with load-balancing/failover/clustering capabilities.
+Registry: a service directory framework for service registration and service event publish/subscription
+
 For more, please refer to:
 
     http://code.alibabatech.com/wiki/display/dubbo
+
+================================================================
+Quick Start
+================================================================
+
+Export remote service:
+
+    <bean id="barService" class="com.foo.BarServiceImpl" />
+	
+    <dubbo:service interface="com.foo.BarService" ref="barService" />
+
+Refer remote service:
+
+    <dubbo:reference id="barService" interface="com.foo.BarService" />
+	
+    <bean id="barAction" class="com.foo.BarAction">
+        <property name="barService" ref="barService" />
+    </bean>
+
+================================================================
+Source Building
+================================================================
 
 0. Install the subversion and maven command line:
 
