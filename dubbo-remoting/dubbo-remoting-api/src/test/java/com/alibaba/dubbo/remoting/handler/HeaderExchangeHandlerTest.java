@@ -146,29 +146,6 @@ public class HeaderExchangeHandlerTest {
     }
     
     @Test
-    public void test_received_request_event_heartbeat() throws RemotingException{
-        final Request request = new Request();
-        request.setTwoWay(true);
-        request.setEvent(Request.HEARTBEAT_EVENT);
-        
-        final AtomicInteger count = new AtomicInteger(0);
-        final Channel mchannel = new MockedChannel(){
-            @Override
-            public void send(Object message) throws RemotingException {
-                Response res = (Response)message;
-                Assert.assertEquals(request.getId(), res.getId());
-                Assert.assertEquals(request.getVersion(), res.getVersion());
-                Assert.assertTrue(res.isHeartbeat());
-                Assert.assertNull(res.getResult());
-                count.incrementAndGet();
-            }
-        };
-        HeaderExchangeHandler hexhandler = new HeaderExchangeHandler(new MockedExchangeHandler());
-        hexhandler.received(mchannel, request);
-        Assert.assertEquals(1, count.get());
-    }
-    
-    @Test
     public void test_received_request_event_readonly() throws RemotingException{
         final Request request = new Request();
         request.setTwoWay(true);

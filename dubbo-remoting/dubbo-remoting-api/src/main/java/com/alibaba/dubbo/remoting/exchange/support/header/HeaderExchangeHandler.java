@@ -57,6 +57,12 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         this.handler = handler;
     }
 
+    void handlerEvent(Channel channel, Request req) throws RemotingException {
+        if (req.getData() != null && req.getData().equals(Request.READONLY_EVENT)) {
+            channel.setAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY, Boolean.TRUE);
+        }
+    }
+
     Response handleRequest(ExchangeChannel channel, Request req) throws RemotingException {
         Response res = new Response(req.getId(), req.getVersion());
         if (req.isBroken()) {
@@ -157,7 +163,9 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
             if (message instanceof Request) {
                 // handle request.
                 Request request = (Request) message;
-                if (!request.isEvent()) {
+                if (request.isEvent()) {
+                    handlerEvent(channel, request);
+                } else {
                     if (request.isTwoWay()) {
                         Response response = handleRequest(exchangeChannel, request);
                         channel.send(response);
