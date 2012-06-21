@@ -74,15 +74,17 @@ public class ConnectionOrderedChannelHandler extends WrappedChannelHandler {
            super.received(channel, message);
            return;
         }
-        
-        ExecutorService cexecutor = executor;
-        if (cexecutor == null || cexecutor.isShutdown()) { 
-            cexecutor = SHARED_EXECUTOR;
-        } 
-        try{
-            cexecutor.execute(new ChannelEventRunnable(channel, handler ,ChannelState.RECEIVED, message));
-        }catch (Throwable t) {
-            throw new ExecutionException(message, channel, getClass()+" error when process received event ." , t);
+
+        if (!isHeartbeatResponse(message)) {
+            ExecutorService cexecutor = executor;
+            if (cexecutor == null || cexecutor.isShutdown()) {
+                cexecutor = SHARED_EXECUTOR;
+            }
+            try {
+                cexecutor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
+            } catch (Throwable t) {
+                throw new ExecutionException(message, channel, getClass() + " error when process received event .", t);
+            }
         }
     }
 

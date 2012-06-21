@@ -57,11 +57,13 @@ public class AllChannelHandler extends WrappedChannelHandler {
            super.received(channel, message);
            return;
         }
-        ExecutorService cexecutor = getExecutorService(); 
-        try{
-            cexecutor.execute(new ChannelEventRunnable(channel, handler ,ChannelState.RECEIVED, message));
-        }catch (Throwable t) {
-            throw new ExecutionException(message, channel, getClass()+" error when process received event ." , t);
+        if (!isHeartbeatResponse(message)) {
+            ExecutorService cexecutor = getExecutorService();
+            try {
+                cexecutor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
+            } catch (Throwable t) {
+                throw new ExecutionException(message, channel, getClass() + " error when process received event .", t);
+            }
         }
     }
 

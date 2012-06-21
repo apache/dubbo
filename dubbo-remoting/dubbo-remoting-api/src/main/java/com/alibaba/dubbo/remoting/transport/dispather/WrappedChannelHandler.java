@@ -103,4 +103,8 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
     public URL getUrl() {
         return url;
     }
+
+    protected final boolean isHeartbeatResponse(Object message) {
+        return (message instanceof Response) && ((Response)message).isHeartbeat();
+    }
 }

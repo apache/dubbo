@@ -44,7 +44,9 @@ public class ExecutionChannelHandler extends WrappedChannelHandler {
            super.received(channel, message);
            return;
         }
-        executor.execute(new ChannelEventRunnable(channel, handler ,ChannelState.RECEIVED, message));
+        if (!isHeartbeatResponse(message)) {
+            executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
+        }
     }
 
     public void caught(Channel channel, Throwable exception) throws RemotingException {
