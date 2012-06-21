@@ -53,6 +53,8 @@ import java.util.concurrent.ConcurrentMap;
 public class PojoUtils {
     
     private static final ConcurrentMap<String, Method>  NAME_METHODS_CACHE = new ConcurrentHashMap<String, Method>();
+    private static final ConcurrentMap<Class<?>, ConcurrentMap<String, Field>> CLASS_FIELD_CACHE = 
+        new ConcurrentHashMap<Class<?>, ConcurrentMap<String, Field>>();
 
     public static Object[] generalize(Object[] objs) {
         Object[] dests = new Object[objs.length];
@@ -156,6 +158,27 @@ public class PojoUtils {
                 try {
                     map.put(ReflectUtils.getPropertyNameFromBeanReadMethod(method),
                             generalize(method.invoke(pojo), history));
+                } catch (Exception e) {
+                    throw new RuntimeException(e.getMessage(), e);
+                }
+            }
+        }
+        // public field
+        for(Field field : pojo.getClass().getFields()) {
+            if (ReflectUtils.isPublicInstanceField(field)) {
+                try {
+                    Object fieldValue = field.get(pojo);
+                    // public filed同时也有get/set方法，如果get/set存取的不是前面那个 public field 该如何处理
+                    if (history.containsKey(pojo)) {
+                        Object pojoGenerilizedValue = history.get(pojo);
+                        if (pojoGenerilizedValue instanceof Map
+                            && ((Map)pojoGenerilizedValue).containsKey(field.getName())) {
+                            continue;
+                        }
+                    }
+                    if (fieldValue != null) {
+                        map.put(field.getName(), generalize(fieldValue, history));
+                    }
                 } catch (Exception e) {
                     throw new RuntimeException(e.getMessage(), e);
                 }
@@ -360,6 +383,7 @@ public class PojoUtils {
 	                    Object value = entry.getValue();
 	                    if (value != null) {
 	                        Method method = getSetterMethod(dest.getClass(), name, value.getClass());
+                            Field field = getField(dest.getClass(), name);
 	                        if (method != null) {
 	                            if (! method.isAccessible())
 	                                method.setAccessible(true);
@@ -372,7 +396,22 @@ public class PojoUtils {
 	                                throw new RuntimeException("Failed to set pojo " + dest.getClass().getSimpleName() + " property " + name
 	                                        + " value " + value + "(" + value.getClass() + "), cause: " + e.getMessage(), e);
 	                            }
-	                        }
+	                        } else if (field != null) {
+                                value = realize0(value, field.getType(), field.getGenericType(), history);
+                                try {
+                                    field.set(dest, value);
+                                } catch (IllegalAccessException e) {
+                                    throw new RuntimeException(
+                                        new StringBuilder(32)
+                                            .append("Failed to set filed ")
+                                            .append(name)
+                                            .append(" of pojo ")
+                                            .append(dest.getClass().getName())
+                                            .append( " : " )
+                                            .append(e.getMessage()).toString(),
+                                        e);
+                                }
+                            }
 	                    }
                 	}
                 }
@@ -463,6 +502,35 @@ public class PojoUtils {
                 }
             }
        return method;
+    }
+    
+    private static Field getField(Class<?> cls, String fieldName) {
+        Field result = null;
+        if (CLASS_FIELD_CACHE.containsKey(cls) 
+            && CLASS_FIELD_CACHE.get(cls).containsKey(fieldName)) {
+            return CLASS_FIELD_CACHE.get(cls).get(fieldName);
+        }
+        try {
+            result = cls.getField(fieldName);
+        } catch (NoSuchFieldException e) {
+            for(Field field : cls.getFields()) {
+                if (fieldName.equals(field.getName()) 
+                    && ReflectUtils.isPublicInstanceField(field)) {
+                    result = field;
+                    break;
+                }
+            }
+        }
+        if (result != null) {
+            ConcurrentMap<String, Field> fields = CLASS_FIELD_CACHE.get(cls);
+            if (fields == null) {
+                fields = new ConcurrentHashMap<String, Field>();
+                CLASS_FIELD_CACHE.putIfAbsent(cls, fields);
+            }
+            fields = CLASS_FIELD_CACHE.get(cls);
+            fields.putIfAbsent(fieldName, result);
+        }
+        return result;
     }
     
     public static boolean isPojo(Class<?> cls) {

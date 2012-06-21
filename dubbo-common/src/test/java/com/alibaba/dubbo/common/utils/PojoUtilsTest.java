@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.alibaba.dubbo.common.model.Person;
@@ -241,6 +242,20 @@ public class PojoUtilsTest {
         int age;
         
         Child child;
+        
+        public String gender;
+        
+        public String email;
+        
+        private String securityEmail;
+        
+        public void setEmail(String email)  {
+            this.securityEmail = email;
+        }
+        
+        public String getEmail() {
+            return this.securityEmail;
+        }
 
         public static Parent getNewParent() {
             return new Parent();
@@ -273,6 +288,18 @@ public class PojoUtilsTest {
     
     public static class Child {
         String toy;
+        
+        public String gender;
+        
+        public int age;
+        
+        public void setAge(int age) {
+            this.age = age;
+        }
+        
+        public int getAge() {
+            return age;
+        }
         
         public String getToy() {
             return toy;
@@ -462,5 +489,25 @@ public class PojoUtilsTest {
         assertEquals(int[].class.getName(), generalize);
         real = PojoUtils.realize(generalize, int[].class.getClass());
         assertEquals(int[].class, real);
+    }
+
+    @Test
+    public void testPublicField() throws Exception {
+        Parent parent = new Parent();
+        parent.gender = "female";
+        parent.email = "email@host.com";
+        parent.setEmail("securityemail@host.com");
+        Child child = new Child();
+        parent.setChild(child);
+        child.gender = "male";
+        child.setAge(20);
+        child.setParent(parent);
+        Object obj = PojoUtils.generalize(parent);
+        Parent realizedParent = (Parent)PojoUtils.realize(obj, Parent.class);
+        Assert.assertEquals(parent.gender, realizedParent.gender);
+        Assert.assertEquals(child.gender, parent.getChild().gender);
+        Assert.assertEquals(child.age, realizedParent.getChild().getAge());
+        Assert.assertEquals(parent.getEmail(), realizedParent.getEmail());
+        Assert.assertNull(realizedParent.email);
     }
 }
