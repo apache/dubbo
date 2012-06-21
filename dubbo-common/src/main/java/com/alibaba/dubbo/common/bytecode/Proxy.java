@@ -200,6 +200,7 @@ public abstract class Proxy
 			ccp.addField("public static java.lang.reflect.Method[] methods;");
 			ccp.addField("private " + InvocationHandler.class.getName() + " handler;");
 			ccp.addConstructor(Modifier.PUBLIC, new Class<?>[]{ InvocationHandler.class }, new Class<?>[0], "handler=$1;");
+            ccp.addDefaultConstructor();
 			Class<?> clazz = ccp.toClass();
 			clazz.getField("methods").set(null, methods.toArray(new Method[0]));
 
