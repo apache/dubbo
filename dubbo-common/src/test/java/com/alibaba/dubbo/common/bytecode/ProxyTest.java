@@ -18,9 +18,14 @@ package com.alibaba.dubbo.common.bytecode;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
-import com.alibaba.dubbo.common.bytecode.Proxy;
+import org.junit.Assert;
+import org.junit.Test;
+
 
 import junit.framework.TestCase;
+import net.sf.cglib.proxy.Enhancer;
+import net.sf.cglib.proxy.MethodInterceptor;
+import net.sf.cglib.proxy.MethodProxy;
 
 public class ProxyTest extends TestCase
 {
@@ -47,6 +52,32 @@ public class ProxyTest extends TestCase
 		assertNull(instance.getName());
 		instance.setName("qianlei", "hello");
 	}
+
+    @Test
+    public void testCglibProxy() throws Exception {
+        ITest test = (ITest)Proxy.getProxy(ITest.class).newInstance(new InvocationHandler() {
+
+            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                System.out.println(method.getName());
+                return null;
+            }
+        });
+
+        Enhancer enhancer = new Enhancer();
+        enhancer.setSuperclass(test.getClass());
+        enhancer.setCallback(new MethodInterceptor() {
+
+            public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
+                return null;
+            }
+        });
+        try {
+            enhancer.create();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
+    }
 
 	public static interface ITest
 	{
