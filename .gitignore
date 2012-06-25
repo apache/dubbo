@@ -7,3 +7,4 @@ target
 *.iml
 *.iws
 .idea/
+dubbo.log
