@@ -408,6 +408,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 protocolConfig.setRegister(false);
                 map.put("notify", "false");
             }
+            // ugly hack
+            if ("napoli".equals(protocolConfig.getName())) {
+                map.put(Constants.ASYNC_KEY, Boolean.TRUE.toString());
+            }
             // 导出服务
             String contextPath = protocolConfig.getContextpath();
             if ((contextPath == null || contextPath.length() == 0) && provider != null) {
