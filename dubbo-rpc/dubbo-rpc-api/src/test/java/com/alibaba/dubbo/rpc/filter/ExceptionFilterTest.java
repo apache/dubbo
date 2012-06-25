@@ -22,6 +22,7 @@ import org.junit.Test;
 
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.rpc.Invoker;
+import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.support.DemoService;
@@ -37,8 +38,9 @@ public class ExceptionFilterTest {
     @Test
     public void testRpcException() {
         Logger logger = EasyMock.createMock(Logger.class);
+        RpcContext.getContext().setRemoteAddress("127.0.0.1", 1234);
         RpcException exception = new RpcException("TestRpcException");
-        logger.error(EasyMock.eq("Got unchecked and undeclared exception. service: " + DemoService.class.getName() + ", method: sayHello, exception: " + RpcException.class.getName() + ": TestRpcException"), EasyMock.eq(exception));
+        logger.error(EasyMock.eq("Got unchecked and undeclared exception which called by 127.0.0.1. service: " + DemoService.class.getName() + ", method: sayHello, exception: " + RpcException.class.getName() + ": TestRpcException"), EasyMock.eq(exception));
         ExceptionFilter exceptionFilter = new ExceptionFilter(logger);
         RpcInvocation invocation = new RpcInvocation("sayHello", new Class<?>[]{String.class}, new Object[]{"world"});
         Invoker<DemoService> invoker = EasyMock.createMock(Invoker.class);
@@ -53,6 +55,7 @@ public class ExceptionFilterTest {
             assertEquals("TestRpcException", e.getMessage());
         }
         EasyMock.verify(logger, invoker);
+        RpcContext.removeContext();
     }
     
 }
