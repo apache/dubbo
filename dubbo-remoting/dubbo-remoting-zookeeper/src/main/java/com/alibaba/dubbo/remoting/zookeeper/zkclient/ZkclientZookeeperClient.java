@@ -39,7 +39,10 @@ public class ZkclientZookeeperClient extends AbstractZookeeperClient<IZkChildLis
 	}
 
 	public void createPersistent(String path) {
-		client.createPersistent(path, true);
+		try {
+			client.createPersistent(path, true);
+		} catch (ZkNodeExistsException e) {
+		}
 	}
 
 	public void createEphemeral(String path) {
@@ -50,7 +53,10 @@ public class ZkclientZookeeperClient extends AbstractZookeeperClient<IZkChildLis
 	}
 
 	public void delete(String path) {
-		client.delete(path);
+		try {
+			client.delete(path);
+		} catch (ZkNoNodeException e) {
+		}
 	}
 
 	public List<String> getChildren(String path) {
@@ -65,7 +71,7 @@ public class ZkclientZookeeperClient extends AbstractZookeeperClient<IZkChildLis
 		return state == KeeperState.SyncConnected;
 	}
 
-	public void close() {
+	public void doClose() {
 		client.close();
 	}
 

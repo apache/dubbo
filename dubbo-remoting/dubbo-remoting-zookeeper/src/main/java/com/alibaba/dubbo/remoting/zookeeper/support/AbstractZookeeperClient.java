@@ -7,17 +7,23 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.remoting.zookeeper.ChildListener;
-import com.alibaba.dubbo.remoting.zookeeper.ZookeeperClient;
 import com.alibaba.dubbo.remoting.zookeeper.StateListener;
+import com.alibaba.dubbo.remoting.zookeeper.ZookeeperClient;
 
 public abstract class AbstractZookeeperClient<TargetChildListener> implements ZookeeperClient {
+
+	protected static final Logger logger = LoggerFactory.getLogger(AbstractZookeeperClient.class);
 
 	private final URL url;
 
 	private final Set<StateListener> stateListeners = new CopyOnWriteArraySet<StateListener>();
 
 	private final ConcurrentMap<String, ConcurrentMap<ChildListener, TargetChildListener>> childListeners = new ConcurrentHashMap<String, ConcurrentMap<ChildListener, TargetChildListener>>();
+
+	private volatile boolean closed = false;
 
 	public AbstractZookeeperClient(URL url) {
 		this.url = url;
@@ -80,6 +86,20 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
 			sessionListener.stateChanged(state);
 		}
 	}
+
+	public void close() {
+		if (closed) {
+			return;
+		}
+		closed = true;
+		try {
+			doClose();
+		} catch (Throwable t) {
+			logger.warn(t.getMessage(), t);
+		}
+	}
+
+	protected abstract void doClose();
 
 	protected abstract void createPersistent(String path);
 
