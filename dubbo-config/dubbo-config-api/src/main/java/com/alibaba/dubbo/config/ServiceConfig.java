@@ -44,6 +44,7 @@ import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.ProxyFactory;
+import com.alibaba.dubbo.rpc.cluster.ConfiguratorFactory;
 import com.alibaba.dubbo.rpc.service.GenericService;
 
 /**
@@ -408,16 +409,18 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 protocolConfig.setRegister(false);
                 map.put("notify", "false");
             }
-            // ugly hack
-            if ("napoli".equals(protocolConfig.getName())) {
-                map.put(Constants.ASYNC_KEY, Boolean.TRUE.toString());
-            }
             // 导出服务
             String contextPath = protocolConfig.getContextpath();
             if ((contextPath == null || contextPath.length() == 0) && provider != null) {
                 contextPath = provider.getContextpath();
             }
             URL url = new URL(name, host, port, (contextPath == null || contextPath.length() == 0 ? "" : contextPath + "/") + path, map);
+            
+            if (ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
+                .hasExtension(url.getProtocol())) {
+                url = ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
+                    .getExtension(url.getProtocol()).getConfigurator(url).configure(url);
+            }
             
             String scope = url.getParameter(Constants.SCOPE_KEY);
             //配置为none不暴露
