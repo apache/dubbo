@@ -32,6 +32,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.utils.NetUtils;
+import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.config.ApplicationConfig;
 import com.alibaba.dubbo.config.ConsumerConfig;
 import com.alibaba.dubbo.config.ProtocolConfig;
@@ -50,6 +51,8 @@ import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Filter;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
+
+import junit.framework.Assert;
 
 
 /**
@@ -801,6 +804,37 @@ public class ConfigTest {
             }
         } finally {
             exporter.unexport();
+        }
+    }
+
+    @Test
+    public void testDubboProtocolPortOverride() throws Exception {
+        String dubboPort = System.getProperty("dubbo.protocol.dubbo.port");
+        int port = 55555;
+        System.setProperty("dubbo.protocol.dubbo.port", String.valueOf(port));
+        try {
+            ApplicationConfig application = new ApplicationConfig();
+            application.setName("dubbo-protocol-port-override");
+
+            RegistryConfig registry = new RegistryConfig();
+            registry.setAddress("N/A");
+
+            ProtocolConfig protocol = new ProtocolConfig();
+            protocol.setName("dubbo");
+
+            ServiceConfig<DemoService> service = new ServiceConfig<DemoService>();
+            service.setInterface(DemoService.class);
+            service.setRef(new DemoServiceImpl());
+            service.setApplication(application);
+            service.setRegistry(registry);
+            service.setProtocol(protocol);
+            service.export();
+
+            Assert.assertEquals(port, service.getExportedUrls().get(0).getPort());
+        } finally {
+            if (StringUtils.isNotEmpty(dubboPort)) {
+                System.setProperty("dubbo.protocol.dubbo.port", dubboPort);
+            }
         }
     }
 
