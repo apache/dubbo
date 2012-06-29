@@ -261,7 +261,7 @@ public abstract class AbstractRegistry implements Registry {
         }
         return null;
     }
-    
+
     public List<URL> lookup(URL url) {
         List<URL> result = new ArrayList<URL>();
         Map<String, List<URL>> notifiedUrls = getNotified().get(url);

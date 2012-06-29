@@ -21,7 +21,6 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.alibaba.dubbo.common.io.ClassDescriptorMapper;
 import com.alibaba.dubbo.common.serialize.ObjectInput;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;

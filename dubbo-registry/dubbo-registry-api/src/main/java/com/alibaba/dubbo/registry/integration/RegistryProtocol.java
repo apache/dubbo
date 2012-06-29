@@ -30,9 +30,11 @@ import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.Registry;
 import com.alibaba.dubbo.registry.RegistryFactory;
+import com.alibaba.dubbo.registry.RegistryService;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
+import com.alibaba.dubbo.rpc.ProxyFactory;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.cluster.Cluster;
 import com.alibaba.dubbo.rpc.protocol.InvokerWrapper;
@@ -61,6 +63,12 @@ public class RegistryProtocol implements Protocol {
     
     public void setRegistryFactory(RegistryFactory registryFactory) {
         this.registryFactory = registryFactory;
+    }
+
+    private ProxyFactory proxyFactory;
+    
+    public void setProxyFactory(ProxyFactory proxyFactory) {
+        this.proxyFactory = proxyFactory;
     }
 
     public int getDefaultPort() {
@@ -210,9 +218,13 @@ public class RegistryProtocol implements Protocol {
         return key;
     }
     
-    public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
+    @SuppressWarnings("unchecked")
+	public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
         url = url.setProtocol(url.getParameter(Constants.REGISTRY_KEY, Constants.DEFAULT_REGISTRY)).removeParameter(Constants.REGISTRY_KEY);
         Registry registry = registryFactory.getRegistry(url);
+        if (RegistryService.class.equals(type)) {
+        	return proxyFactory.getInvoker((T) registry, type, url);
+        }
 
         // group="a,b" or group="*"
         Map<String, String> qs = StringUtils.parseQueryString(url.getParameterAndDecoded(Constants.REFER_KEY));
