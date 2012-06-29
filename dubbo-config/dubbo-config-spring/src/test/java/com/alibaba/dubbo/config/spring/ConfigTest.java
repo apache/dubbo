@@ -32,6 +32,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.utils.NetUtils;
+import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.config.ApplicationConfig;
 import com.alibaba.dubbo.config.ConsumerConfig;
 import com.alibaba.dubbo.config.ProtocolConfig;
@@ -43,13 +44,17 @@ import com.alibaba.dubbo.config.spring.action.DemoActionByAnnotation;
 import com.alibaba.dubbo.config.spring.action.DemoActionBySetter;
 import com.alibaba.dubbo.config.spring.annotation.consumer.AnnotationAction;
 import com.alibaba.dubbo.config.spring.api.DemoService;
+import com.alibaba.dubbo.config.spring.api.HelloService;
 import com.alibaba.dubbo.config.spring.filter.MockFilter;
 import com.alibaba.dubbo.config.spring.impl.DemoServiceImpl;
+import com.alibaba.dubbo.config.spring.impl.HelloServiceImpl;
 import com.alibaba.dubbo.registry.RegistryService;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Filter;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
+
+import junit.framework.Assert;
 
 
 /**
@@ -804,4 +809,84 @@ public class ConfigTest {
         }
     }
 
+    @Test
+    public void testDubboProtocolPortOverride() throws Exception {
+        String dubboPort = System.getProperty("dubbo.protocol.dubbo.port");
+        int port = 55555;
+        System.setProperty("dubbo.protocol.dubbo.port", String.valueOf(port));
+        ServiceConfig<DemoService> service = null;
+        try {
+            ApplicationConfig application = new ApplicationConfig();
+            application.setName("dubbo-protocol-port-override");
+
+            RegistryConfig registry = new RegistryConfig();
+            registry.setAddress("N/A");
+
+            ProtocolConfig protocol = new ProtocolConfig();
+
+            service = new ServiceConfig<DemoService>();
+            service.setInterface(DemoService.class);
+            service.setRef(new DemoServiceImpl());
+            service.setApplication(application);
+            service.setRegistry(registry);
+            service.setProtocol(protocol);
+            service.export();
+
+            Assert.assertEquals(port, service.getExportedUrls().get(0).getPort());
+        } finally {
+            if (StringUtils.isNotEmpty(dubboPort)) {
+                System.setProperty("dubbo.protocol.dubbo.port", dubboPort);
+            }
+            if (service != null) {
+                service.unexport();
+            }
+        }
+    }
+
+    @Test
+    public void testProtocolRandomPort() throws Exception {
+        ServiceConfig<DemoService> demoService = null;
+        ServiceConfig<HelloService> helloService = null;
+
+        ApplicationConfig application = new ApplicationConfig();
+        application.setName("test-protocol-random-port");
+
+        RegistryConfig registry = new RegistryConfig();
+        registry.setAddress("N/A");
+
+        ProtocolConfig protocol = new ProtocolConfig();
+        protocol.setName("dubbo");
+        protocol.setPort(-1);
+
+        demoService = new ServiceConfig<DemoService>();
+        demoService.setInterface(DemoService.class);
+        demoService.setRef(new DemoServiceImpl());
+        demoService.setApplication(application);
+        demoService.setRegistry(registry);
+        demoService.setProtocol(protocol);
+
+        helloService = new ServiceConfig<HelloService>();
+        helloService.setInterface(HelloService.class);
+        helloService.setRef(new HelloServiceImpl());
+        helloService.setApplication(application);
+        helloService.setRegistry(registry);
+        helloService.setProtocol(protocol);
+
+        try {
+            demoService.export();
+            helloService.export();
+
+            Assert.assertEquals(demoService.getExportedUrls().get(0).getPort(),
+                                helloService.getExportedUrls().get(0).getPort());
+        } finally {
+            unexportService(demoService);
+            unexportService(helloService);
+        }
+    }
+
+    private static void unexportService(ServiceConfig<?> config) {
+        if (config != null) {
+            config.unexport();
+        }
+    }
 }

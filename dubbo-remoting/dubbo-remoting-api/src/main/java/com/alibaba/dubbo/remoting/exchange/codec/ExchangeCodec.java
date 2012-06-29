@@ -207,13 +207,15 @@ public class ExchangeCodec extends TelnetCodec {
 	            return req;
 	        }
         } finally {
-        	try {
-            	if (logger.isWarnEnabled()) {
-            		logger.warn("Skip input stream " + is.available());
-            	}
-                StreamUtils.skipUnusedStream(is);
-            } catch (IOException e) {
-                logger.warn(e.getMessage(), e);
+            if (is.available() > 0) {
+                try {
+                    if (logger.isWarnEnabled()) {
+                        logger.warn("Skip input stream " + is.available());
+                    }
+                    StreamUtils.skipUnusedStream(is);
+                } catch (IOException e) {
+                    logger.warn(e.getMessage(), e);
+                }
             }
         }
     }
