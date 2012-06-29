@@ -812,6 +812,7 @@ public class ConfigTest {
         String dubboPort = System.getProperty("dubbo.protocol.dubbo.port");
         int port = 55555;
         System.setProperty("dubbo.protocol.dubbo.port", String.valueOf(port));
+        ServiceConfig<DemoService> service = null;
         try {
             ApplicationConfig application = new ApplicationConfig();
             application.setName("dubbo-protocol-port-override");
@@ -822,7 +823,7 @@ public class ConfigTest {
             ProtocolConfig protocol = new ProtocolConfig();
             protocol.setName("dubbo");
 
-            ServiceConfig<DemoService> service = new ServiceConfig<DemoService>();
+            service = new ServiceConfig<DemoService>();
             service.setInterface(DemoService.class);
             service.setRef(new DemoServiceImpl());
             service.setApplication(application);
@@ -834,6 +835,9 @@ public class ConfigTest {
         } finally {
             if (StringUtils.isNotEmpty(dubboPort)) {
                 System.setProperty("dubbo.protocol.dubbo.port", dubboPort);
+            }
+            if (service != null) {
+                service.unexport();
             }
         }
     }
