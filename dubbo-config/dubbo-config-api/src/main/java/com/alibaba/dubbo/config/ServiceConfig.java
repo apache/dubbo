@@ -497,6 +497,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             setProtocol(new ProtocolConfig());
         }
         for (ProtocolConfig protocolConfig : protocols) {
+            if (StringUtils.isEmpty(protocolConfig.getName())) {
+                protocolConfig.setName("dubbo");
+            }
             appendProperties(protocolConfig);
         }
     }

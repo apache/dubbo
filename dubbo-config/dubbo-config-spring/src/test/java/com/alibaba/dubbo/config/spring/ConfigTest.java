@@ -823,7 +823,6 @@ public class ConfigTest {
             registry.setAddress("N/A");
 
             ProtocolConfig protocol = new ProtocolConfig();
-            protocol.setName("dubbo");
 
             service = new ServiceConfig<DemoService>();
             service.setInterface(DemoService.class);
