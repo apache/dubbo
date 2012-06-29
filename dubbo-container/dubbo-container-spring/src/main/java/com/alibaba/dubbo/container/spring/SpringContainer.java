@@ -17,6 +17,7 @@ package com.alibaba.dubbo.container.spring;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ConfigUtils;
@@ -35,9 +36,13 @@ public class SpringContainer implements Container {
     
     public static final String DEFAULT_SPRING_CONFIG = "classpath*:META-INF/spring/*.xml";
 
-    ClassPathXmlApplicationContext context;
+    static ClassPathXmlApplicationContext context;
     
-    public void start() {
+    public static ClassPathXmlApplicationContext getContext() {
+		return context;
+	}
+
+	public void start() {
         String configPath = ConfigUtils.getProperty(SPRING_CONFIG);
         if (configPath == null || configPath.length() == 0) {
             configPath = DEFAULT_SPRING_CONFIG;

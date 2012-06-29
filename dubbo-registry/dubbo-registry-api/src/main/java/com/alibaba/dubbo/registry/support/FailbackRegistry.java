@@ -220,7 +220,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             throw new IllegalArgumentException("notify listener == null");
         }
         try {
-            super.notify(url, listener, urls);
+        	doNotify(url, listener, urls);
         } catch (Exception t) {
             // 将失败的通知请求记录到失败列表，定时重试
             Map<NotifyListener, List<URL>> listeners = failedNotified.get(url);
@@ -231,6 +231,10 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             listeners.put(listener, urls);
             logger.error("Failed to notify for subscribe " + url + ", waiting for retry, cause: " + t.getMessage(), t);
         }
+    }
+    
+    protected void doNotify(URL url, NotifyListener listener, List<URL> urls) {
+    	super.notify(url, listener, urls);
     }
     
     @Override
