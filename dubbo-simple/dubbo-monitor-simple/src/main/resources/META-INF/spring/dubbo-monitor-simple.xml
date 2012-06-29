@@ -24,6 +24,11 @@
         <property name="location" value="classpath:dubbo.properties" />
     </bean>
 	
+	<bean id="monitorService" class="com.alibaba.dubbo.monitor.simple.SimpleMonitorService">
+		<property name="statisticsDirectory" value="${dubbo.statistics.directory}" />
+		<property name="chartsDirectory" value="${dubbo.charts.directory}" />
+	</bean>
+	
 	<dubbo:application name="${dubbo.application.name}" owner="${dubbo.application.owner}" />
 	
 	<dubbo:registry address="${dubbo.registry.address}" />
@@ -32,9 +37,6 @@
 	
 	<dubbo:service interface="com.alibaba.dubbo.monitor.MonitorService" ref="monitorService" delay="-1" />
 	
-	<bean id="monitorService" class="com.alibaba.dubbo.monitor.simple.SimpleMonitorService">
-		<property name="statisticsDirectory" value="${dubbo.statistics.directory}" />
-		<property name="chartsDirectory" value="${dubbo.charts.directory}" />
-	</bean>
+	<dubbo:reference id="registryService" interface="com.alibaba.dubbo.registry.RegistryService" />
 	
 </beans>
