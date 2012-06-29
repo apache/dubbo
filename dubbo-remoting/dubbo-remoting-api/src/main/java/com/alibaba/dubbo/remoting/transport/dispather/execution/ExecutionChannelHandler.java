@@ -46,6 +46,8 @@ public class ExecutionChannelHandler extends WrappedChannelHandler {
         }
         if (!isHeartbeatResponse(message)) {
             executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
+        } else {
+            setReadTimestamp(channel);
         }
     }
 

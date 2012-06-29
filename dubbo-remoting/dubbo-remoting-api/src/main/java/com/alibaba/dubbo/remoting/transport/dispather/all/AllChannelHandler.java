@@ -64,6 +64,8 @@ public class AllChannelHandler extends WrappedChannelHandler {
             } catch (Throwable t) {
                 throw new ExecutionException(message, channel, getClass() + " error when process received event .", t);
             }
+        } else {
+            setReadTimestamp(channel);
         }
     }
 

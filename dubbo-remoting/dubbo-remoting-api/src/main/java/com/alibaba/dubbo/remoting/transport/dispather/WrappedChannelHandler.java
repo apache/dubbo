@@ -29,6 +29,7 @@ import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.exchange.Request;
 import com.alibaba.dubbo.remoting.exchange.Response;
+import com.alibaba.dubbo.remoting.exchange.support.header.HeaderExchangeHandler;
 import com.alibaba.dubbo.remoting.transport.ChannelHandlerDelegate;
 
 public class WrappedChannelHandler implements ChannelHandlerDelegate {
@@ -106,5 +107,10 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
 
     protected final boolean isHeartbeatResponse(Object message) {
         return (message instanceof Response) && ((Response)message).isHeartbeat();
+    }
+
+    protected void setReadTimestamp(Channel channel) {
+        channel.setAttribute(
+            HeaderExchangeHandler.KEY_READ_TIMESTAMP, System.currentTimeMillis());
     }
 }
