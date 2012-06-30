@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import junit.framework.Assert;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.alibaba.dubbo.remoting.ExecutionException;
@@ -111,6 +112,7 @@ public class ConnectChannelHandlerTest extends WrappedChannelHandlerTest{
      * 事件不通过线程池，直接在IO上执行
      */
     @SuppressWarnings("deprecation")
+    @Ignore("Heartbeat is processed in HeartbeatHandler not WrappedChannelHandler.")
     @Test
     public void test_Received_Event_invoke_direct() throws RemotingException{
         handler = new ConnectionOrderedChannelHandler(new BizChannelHander(false), url);

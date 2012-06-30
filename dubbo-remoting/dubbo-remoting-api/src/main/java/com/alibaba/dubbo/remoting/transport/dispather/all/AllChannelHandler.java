@@ -52,20 +52,11 @@ public class AllChannelHandler extends WrappedChannelHandler {
     }
 
     public void received(Channel channel, Object message) throws RemotingException {
-      //FIXME 包的依赖顺序有问题
-        if (message instanceof Request && ((Request)message).isEvent()){
-           super.received(channel, message);
-           return;
-        }
-        if (!isHeartbeatResponse(message)) {
-            ExecutorService cexecutor = getExecutorService();
-            try {
-                cexecutor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
-            } catch (Throwable t) {
-                throw new ExecutionException(message, channel, getClass() + " error when process received event .", t);
-            }
-        } else {
-            setReadTimestamp(channel);
+        ExecutorService cexecutor = getExecutorService();
+        try {
+            cexecutor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
+        } catch (Throwable t) {
+            throw new ExecutionException(message, channel, getClass() + " error when process received event .", t);
         }
     }
 

@@ -20,6 +20,7 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.Dispather;
+import com.alibaba.dubbo.remoting.exchange.support.header.HeartbeatHandler;
 
 /**
  * @author chao.liuc
@@ -28,8 +29,23 @@ import com.alibaba.dubbo.remoting.Dispather;
 public class ChannelHandlers {
 
     public static ChannelHandler wrap(ChannelHandler handler, URL url){
-        return ExtensionLoader.getExtensionLoader(Dispather.class)
-            .getAdaptiveExtension().dispath(handler, url);
+        return ChannelHandlers.getInstance().wrapInternal(handler, url);
     }
 
+    protected ChannelHandlers() {}
+
+    protected ChannelHandler wrapInternal(ChannelHandler handler, URL url) {
+        return new HeartbeatHandler(ExtensionLoader.getExtensionLoader(Dispather.class)
+                                        .getAdaptiveExtension().dispath(handler, url));
+    }
+
+    private static ChannelHandlers INSTANCE = new ChannelHandlers();
+
+    protected static ChannelHandlers getInstance() {
+        return INSTANCE;
+    }
+
+    static void setTestingChannelHandlers(ChannelHandlers instance) {
+        INSTANCE = instance;
+    }
 }
