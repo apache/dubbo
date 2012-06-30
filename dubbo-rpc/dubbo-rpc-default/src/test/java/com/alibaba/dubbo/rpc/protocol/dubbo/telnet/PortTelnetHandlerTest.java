@@ -19,11 +19,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.easymock.EasyMock;
+import org.easymock.IAnswer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
 import com.alibaba.dubbo.remoting.exchange.Exchangers;
@@ -60,12 +63,18 @@ public class PortTelnetHandlerTest {
     }
 
     @Test
-    public void testListClient() throws RemotingException {
+    public void testListClient() throws Exception {
         ExchangeClient client1 = Exchangers.connect("dubbo://127.0.0.1:20887/demo");
         ExchangeClient client2 = Exchangers.connect("dubbo://127.0.0.1:20887/demo");
+        Thread.sleep(5000);
         String result = port.telnet(null, "-l 20887");
-        assertTrue(result.contains(client1.getLocalAddress().toString()));
-        assertTrue(result.contains(client2.getLocalAddress().toString()));
+        String client1Addr = client1.getLocalAddress().toString();
+        String client2Addr = client2.getLocalAddress().toString();
+        System.out.printf("Result: %s %n", result);
+        System.out.printf("Client 1 Address %s %n", client1Addr);
+        System.out.printf("Client 2 Address %s %n", client2Addr);
+        assertTrue(result.contains(client1Addr));
+        assertTrue(result.contains(client2Addr));
 
     }
 
