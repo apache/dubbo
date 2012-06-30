@@ -82,7 +82,7 @@ public class IOUtils
 	 * 
 	 * @param reader Reader instance.
 	 * @return String.
-	 * @throws IOException.
+	 * @throws IOException
 	 */
 	public static String read(Reader reader) throws IOException
 	{
@@ -100,7 +100,7 @@ public class IOUtils
 	 * 
 	 * @param writer Writer instance.
 	 * @param string String.
-	 * @throws IOException.
+	 * @throws IOException
 	 */
 	public static long write(Writer writer, String string) throws IOException
 	{
@@ -114,7 +114,7 @@ public class IOUtils
 	 * @param reader Reader.
 	 * @param writer Writer.
 	 * @return count.
-	 * @throws IOException.
+	 * @throws IOException
 	 */
 	public static long write(Reader reader, Writer writer) throws IOException
 	{
@@ -128,7 +128,7 @@ public class IOUtils
 	 * @param writer Writer.
 	 * @param bufferSize buffer size.
 	 * @return count.
-	 * @throws IOException.
+	 * @throws IOException
 	 */
 	public static long write(Reader reader, Writer writer, int bufferSize) throws IOException
 	{
@@ -148,7 +148,7 @@ public class IOUtils
 	 * 
 	 * @param file file.
 	 * @return lines.
-	 * @throws IOException.
+	 * @throws IOException
 	 */
 	public static String[] readLines(File file) throws IOException
 	{
@@ -163,7 +163,7 @@ public class IOUtils
 	 * 
 	 * @param is input stream.
 	 * @return lines.
-	 * @throws IOException.
+	 * @throws IOException
 	 */
 	public static String[] readLines(InputStream is) throws IOException
 	{
@@ -187,7 +187,7 @@ public class IOUtils
 	 * 
 	 * @param os output stream.
 	 * @param lines lines.
-	 * @throws IOException.
+	 * @throws IOException
 	 */
 	public static void writeLines(OutputStream os, String[] lines) throws IOException
 	{
@@ -209,7 +209,7 @@ public class IOUtils
 	 * 
 	 * @param file file.
 	 * @param lines lines.
-	 * @throws IOException.
+	 * @throws IOException
 	 */
 	public static void writeLines(File file, String[] lines) throws IOException
 	{
@@ -223,7 +223,7 @@ public class IOUtils
      * 
      * @param file file.
      * @param lines lines.
-     * @throws IOException.
+     * @throws IOException
      */
     public static void appendLines(File file, String[] lines) throws IOException
     {
