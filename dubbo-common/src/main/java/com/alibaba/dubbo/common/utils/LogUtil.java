@@ -24,8 +24,6 @@ import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 
 /**
- * TODO Comment of LogTest
- * 
  * @author tony.chenl
  */
 public class LogUtil {

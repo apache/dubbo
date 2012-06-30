@@ -20,15 +20,9 @@ import java.io.Serializable;
 import org.apache.log4j.Level;
 
 /**
- * Log.java
- * 
  * @author tony.chenl
  */
 public class Log implements Serializable {
-
-    /**
-     * 
-     */
     private static final long serialVersionUID = -534113138054377073L;
     private String logName;
     private Level logLevel;
