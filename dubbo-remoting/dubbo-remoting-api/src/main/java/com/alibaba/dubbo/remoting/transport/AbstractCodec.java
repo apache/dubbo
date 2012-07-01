@@ -18,7 +18,6 @@ package com.alibaba.dubbo.remoting.transport;
 import java.io.IOException;
 
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.serialize.Serialization;
@@ -35,8 +34,7 @@ public abstract class AbstractCodec implements Codec {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
     protected Serialization getSerialization(Channel channel) {
-        Serialization serialization = ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(channel.getUrl().getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
-        return serialization;
+        return CodecSupport.getSerialization(channel.getUrl());
     }
 
     protected void checkPayload(Channel channel, long size) throws IOException {
