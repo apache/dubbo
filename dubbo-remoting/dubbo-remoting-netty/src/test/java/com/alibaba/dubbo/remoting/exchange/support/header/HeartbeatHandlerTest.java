@@ -44,10 +44,12 @@ public class HeartbeatHandlerTest {
     public void after() throws Exception {
         if (client != null) {
             client.close();
+            client = null;
         }
 
         if (server != null) {
             server.close();
+            server = null;
         }
     }
 
@@ -65,6 +67,22 @@ public class HeartbeatHandlerTest {
         Thread.sleep(10000);
         Assert.assertTrue(handler.disconnectCount > 0);
         System.out.println("disconnect count " + handler.disconnectCount);
+    }
+
+    @Test
+    public void testHeartbeat() throws Exception {
+        URL serverURL = URL.valueOf("header://localhost:55555");
+        serverURL = serverURL.addParameter(Constants.HEARTBEAT_KEY, 1000);
+        TestHeartbeatHandler handler = new TestHeartbeatHandler();
+        server = Exchangers.bind(serverURL, handler);
+        System.out.println("Server bind successfully");
+
+        client = Exchangers.connect(serverURL);
+        Thread.sleep(10000);
+        System.err.println("++++++++++++++ disconnect count " + handler.disconnectCount);
+        System.err.println("++++++++++++++ connect count " + handler.connectCount);
+        Assert.assertTrue(handler.disconnectCount == 0);
+        Assert.assertTrue(handler.connectCount == 1);
     }
 
     @Test
