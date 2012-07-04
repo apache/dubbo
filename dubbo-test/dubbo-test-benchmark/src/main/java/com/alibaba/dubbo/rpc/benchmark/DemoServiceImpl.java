@@ -10,6 +10,6 @@ public class DemoServiceImpl implements DemoService{
     ResponseObject responseObject = new ResponseObject(100);
 
     public Object sendRequest(Object request) {
-        return responseObject;
+        return request;
     }
 }
