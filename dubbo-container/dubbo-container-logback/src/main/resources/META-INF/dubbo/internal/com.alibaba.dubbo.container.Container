@@ -1,0 +1,1 @@
+logback=com.alibaba.dubbo.container.logback.LogbackContainer
