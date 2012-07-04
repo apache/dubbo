@@ -21,9 +21,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.monitor.Monitor;
 import com.alibaba.dubbo.monitor.MonitorFactory;
+import com.alibaba.dubbo.monitor.MonitorService;
 
 /**
  * AbstractMonitorFactroy. (SPI, Singleton, ThreadSafe)
@@ -43,10 +45,11 @@ public abstract class AbstractMonitorFactroy implements MonitorFactory {
     }
 
     public Monitor getMonitor(URL url) {
+    	url = url.setPath(MonitorService.class.getName()).addParameter(Constants.INTERFACE_KEY, MonitorService.class.getName());
+    	String key = url.toIdentityString();
         LOCK.lock();
         try {
-            String uri = url.toIdentityString();
-            Monitor monitor = MONITORS.get(uri);
+            Monitor monitor = MONITORS.get(key);
             if (monitor != null) {
                 return monitor;
             }
@@ -54,7 +57,7 @@ public abstract class AbstractMonitorFactroy implements MonitorFactory {
             if (monitor == null) {
                 throw new IllegalStateException("Can not create monitor " + url);
             }
-            MONITORS.put(uri, monitor);
+            MONITORS.put(key, monitor);
             return monitor;
         } finally {
             // 释放锁

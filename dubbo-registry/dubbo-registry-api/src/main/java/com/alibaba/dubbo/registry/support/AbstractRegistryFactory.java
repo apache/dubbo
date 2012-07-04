@@ -21,11 +21,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.registry.Registry;
 import com.alibaba.dubbo.registry.RegistryFactory;
+import com.alibaba.dubbo.registry.RegistryService;
 
 /**
  * AbstractRegistryFactory. (SPI, Singleton, ThreadSafe)
@@ -78,10 +80,11 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
     }
 
     public Registry getRegistry(URL url) {
+    	url = url.setPath(RegistryService.class.getName()).addParameter(Constants.INTERFACE_KEY, RegistryService.class.getName());
+    	String key = url.getProtocol() + "://" + url.getUsername() + ":" + url.getPassword() + "@" + url.getIp() + ":" + url.getPort();
         // 锁定注册中心获取过程，保证注册中心单一实例
         LOCK.lock();
         try {
-            String key = url.getProtocol() + "://" + url.getUsername() + ":" + url.getPassword() + "@" + url.getIp() + ":" + url.getPort();
             Registry registry = REGISTRIES.get(key);
             if (registry != null) {
                 return registry;

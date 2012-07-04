@@ -21,6 +21,7 @@ import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -311,6 +312,18 @@ public final class URL implements Serializable {
             }
         }
         return address.toString();
+	}
+	
+	public List<URL> getBackupUrls() {
+		List<URL> urls = new ArrayList<URL>();
+		urls.add(this);
+        String[] backups = getParameter(Constants.BACKUP_KEY, new String[0]);
+        if (backups != null && backups.length > 0) {
+            for (String backup : backups) {
+                urls.add(this.setAddress(backup));
+            }
+        }
+        return urls;
 	}
 
     private String appendDefaultPort(String address, int defaultPort) {

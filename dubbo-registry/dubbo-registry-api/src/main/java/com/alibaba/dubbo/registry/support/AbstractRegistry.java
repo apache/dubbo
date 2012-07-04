@@ -103,6 +103,7 @@ public abstract class AbstractRegistry implements Registry {
         }
         this.file = file;
         loadProperties();
+        notify(url.getBackupUrls());
     }
 
     protected void setUrl(URL url) {
