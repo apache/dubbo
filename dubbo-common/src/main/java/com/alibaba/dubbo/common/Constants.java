@@ -115,7 +115,7 @@ public class Constants {
 
     public static final int     DEFAULT_THREADS                    = 200;
 
-    public static final int     DEFAULT_MIN_THREADS                = 10;
+    public static final int     DEFAULT_MIN_THREADS                = 1;
 
     public static final int     DEFAULT_MAX_THREADS                = DEFAULT_THREADS;
 
