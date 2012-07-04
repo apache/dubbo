@@ -247,6 +247,17 @@
 			<artifactId>dubbo-container-log4j</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo-container-logback</artifactId>
+			<version>${project.parent.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>ch.qos.logback</groupId>
+					<artifactId>logback-classic</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
@@ -331,6 +342,7 @@
 									<include>com.alibaba:dubbo-container-spring</include>
 									<include>com.alibaba:dubbo-container-jetty</include>
 									<include>com.alibaba:dubbo-container-log4j</include>
+									<include>com.alibaba:dubbo-container-logback</include>
 								</includes>
 							</artifactSet>
 							<transformers>
@@ -429,10 +441,6 @@
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
 									<resource>META-INF/dubbo/internal/com.alibaba.dubbo.rpc.Protocol</resource>
-								</transformer>
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/dubbo/internal/com.alibaba.dubbo.rpc.protocol.rmi.RmiProxyFactory</resource>
 								</transformer>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
