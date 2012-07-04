@@ -29,6 +29,7 @@ import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
+import com.alibaba.dubbo.rpc.support.ProtocolUtils;
 
 /**
  * abstract ProtocolSupport.
@@ -46,24 +47,11 @@ public abstract class AbstractProtocol implements Protocol {
     protected final Set<Invoker<?>> invokers = new ConcurrentHashSet<Invoker<?>>();
     
 	protected static String serviceKey(URL url) {
-	    return serviceKey(url.getPort(), url.getPath(), url.getParameter(Constants.VERSION_KEY),
-                         url.getParameter(Constants.GROUP_KEY));
+	    return ProtocolUtils.serviceKey(url);
 	}
 
 	protected static String serviceKey(int port, String serviceName, String serviceVersion, String serviceGroup) {
-		StringBuilder buf = new StringBuilder();
-		if (serviceGroup != null && serviceGroup.length() > 0) {
-			buf.append(serviceGroup);
-			buf.append("/");
-		}
-		buf.append(serviceName);
-		if (serviceVersion != null && serviceVersion.length() > 0 && ! "0.0.0".equals(serviceVersion)) {
-			buf.append(":");
-			buf.append(serviceVersion);
-		}
-		buf.append(":");
-		buf.append(port);
-		return buf.toString();
+		return ProtocolUtils.serviceKey(port, serviceName, serviceVersion, serviceGroup);
 	}
 	
 	public void destroy() {
