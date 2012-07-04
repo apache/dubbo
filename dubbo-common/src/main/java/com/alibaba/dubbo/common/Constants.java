@@ -552,7 +552,10 @@ public class Constants {
     public static final String TPS_LIMIT_INTERVAL_KEY              = "tps.interval";
 
     public static final long DEFAULT_TPS_LIMIT_INTERVAL            = 60 * 1000;
-    
+
+    public static final String DECODE_IN_IO_THREAD_KEY             = "decode.in.io";
+
+    public static final boolean DEFAULT_DECODE_IN_IO_THREAD        = true;
     /*
      * private Constants(){ }
      */

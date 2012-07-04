@@ -36,7 +36,7 @@ import com.alibaba.dubbo.rpc.support.RpcUtils;
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-public class RpcResultExt extends RpcResult implements Codec, Decodeable {
+public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable {
 
     private Channel     channel;
 
@@ -48,7 +48,9 @@ public class RpcResultExt extends RpcResult implements Codec, Decodeable {
 
     private Invocation  invocation;
 
-    public RpcResultExt(Channel channel, Response response, InputStream is, Invocation invocation, byte id) {
+    private volatile boolean hasDecoded;
+
+    public DecodeableRpcResult(Channel channel, Response response, InputStream is, Invocation invocation, byte id) {
         Assert.notNull(channel, "channel == null");
         Assert.notNull(response, "response == null");
         Assert.notNull(is, "inputStream == null");
@@ -98,12 +100,14 @@ public class RpcResultExt extends RpcResult implements Codec, Decodeable {
     }
 
     public void decode() throws Exception {
-        if (channel != null && inputStream != null) {
+        if (!hasDecoded && channel != null && inputStream != null) {
             try {
                 decode(channel, inputStream);
             } catch (Throwable e) {
                 response.setStatus(Response.CLIENT_ERROR);
                 response.setErrorMessage(StringUtils.toString(e));
+            } finally {
+                hasDecoded = true;
             }
         }
     }

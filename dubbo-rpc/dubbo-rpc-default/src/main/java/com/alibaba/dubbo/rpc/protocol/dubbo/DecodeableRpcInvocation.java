@@ -39,7 +39,7 @@ import static com.alibaba.dubbo.rpc.protocol.dubbo.CallbackServiceCodec.decodeIn
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-public class RpcInvocationExt extends RpcInvocation implements Codec, Decodeable {
+public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Decodeable {
 
     private Channel     channel;
 
@@ -49,7 +49,9 @@ public class RpcInvocationExt extends RpcInvocation implements Codec, Decodeable
 
     private Request     request;
 
-    public RpcInvocationExt(Channel channel, Request request, InputStream is, byte id) {
+    private volatile boolean hasDecoded;
+
+    public DecodeableRpcInvocation(Channel channel, Request request, InputStream is, byte id) {
         Assert.notNull(channel, "channel == null");
         Assert.notNull(request, "request == null");
         Assert.notNull(is, "inputStream == null");
@@ -60,12 +62,14 @@ public class RpcInvocationExt extends RpcInvocation implements Codec, Decodeable
     }
 
     public void decode() throws Exception {
-        if (channel != null && inputStream != null) {
+        if (!hasDecoded && channel != null && inputStream != null) {
             try {
                 decode(channel, inputStream);
             } catch (Throwable e) {
                 request.setBroken(true);
                 request.setData(e);
+            } finally {
+                hasDecoded = true;
             }
         }
     }
