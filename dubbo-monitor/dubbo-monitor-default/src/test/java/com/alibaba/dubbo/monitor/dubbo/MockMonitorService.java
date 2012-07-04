@@ -15,6 +15,9 @@
  */
 package com.alibaba.dubbo.monitor.dubbo;
 
+import java.util.Arrays;
+import java.util.List;
+
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.monitor.MonitorService;
 
@@ -34,5 +37,9 @@ public class MockMonitorService implements MonitorService {
     public URL getStatistics() {
         return statistics;
     }
+
+	public List<URL> lookup(URL query) {
+		return Arrays.asList(statistics);
+	}
 
 }

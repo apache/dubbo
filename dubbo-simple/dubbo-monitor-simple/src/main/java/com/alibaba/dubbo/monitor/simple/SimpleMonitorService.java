@@ -28,6 +28,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
@@ -425,5 +426,10 @@ public class SimpleMonitorService implements MonitorService {
             logger.info("collect statistics: " + statistics);
         }
     }
+
+	public List<URL> lookup(URL query) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 }

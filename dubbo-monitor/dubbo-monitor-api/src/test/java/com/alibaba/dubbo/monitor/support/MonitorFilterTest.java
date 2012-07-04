@@ -17,6 +17,8 @@ package com.alibaba.dubbo.monitor.support;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.Arrays;
+import java.util.List;
 
 import junit.framework.Assert;
 
@@ -83,6 +85,9 @@ public class MonitorFilterTest {
                 public void collect(URL statistics) {
                     MonitorFilterTest.this.lastStatistics = statistics;
                 }
+				public List<URL> lookup(URL query) {
+					return Arrays.asList(MonitorFilterTest.this.lastStatistics);
+				}
             };
         }
     };

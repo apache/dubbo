@@ -15,6 +15,7 @@
  */
 package com.alibaba.dubbo.monitor.dubbo;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -180,6 +181,10 @@ public class DubboMonitor implements Monitor {
             }
         } while (! reference.compareAndSet(current, update));
     }
+
+	public List<URL> lookup(URL query) {
+		return monitorService.lookup(query);
+	}
 
     public URL getUrl() {
         return monitorInvoker.getUrl();

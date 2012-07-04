@@ -15,6 +15,9 @@
  */
 package com.alibaba.dubbo.monitor.dubbo;
 
+import java.util.Arrays;
+import java.util.List;
+
 import junit.framework.Assert;
 
 import org.junit.Test;
@@ -63,6 +66,10 @@ public class DubboMonitorTest {
         public void collect(URL statistics) {
             DubboMonitorTest.this.lastStatistics = statistics;
         }
+
+		public List<URL> lookup(URL query) {
+			return Arrays.asList(DubboMonitorTest.this.lastStatistics);
+		}
         
     };
     
