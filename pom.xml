@@ -115,6 +115,7 @@
 		<slf4j_version>1.6.2</slf4j_version>
 		<jcl_version>1.1</jcl_version>
 		<log4j_version>1.2.16</log4j_version>
+		<logback_version>1.0.6</logback_version>
 		<!-- Test libs -->
 		<junit_version>4.10</junit_version>
 		<easymock_version>3.0</easymock_version>
@@ -288,6 +289,11 @@
 				<groupId>log4j</groupId>
 				<artifactId>log4j</artifactId>
 				<version>${log4j_version}</version>
+			</dependency>
+			<dependency>
+				<groupId>ch.qos.logback</groupId>
+				<artifactId>logback-classic</artifactId>
+				<version>${logback_version}</version>
 			</dependency>
 			<!-- Test libs -->
 			<dependency>
