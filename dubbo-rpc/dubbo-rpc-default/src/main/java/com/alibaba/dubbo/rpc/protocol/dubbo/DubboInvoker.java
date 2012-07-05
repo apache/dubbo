@@ -67,19 +67,8 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
 
     @Override
     protected Result doInvoke(final Invocation invocation) throws Throwable {
-        RpcInvocation inv = null;
-        final String methodName ;
-        if(Constants.$INVOKE.equals(invocation.getMethodName()) 
-                && invocation.getArguments() != null 
-                && invocation.getArguments().length >0 
-                && invocation.getArguments()[0] != null){
-            inv = (RpcInvocation) invocation;
-            //the frist argument must be real method name;
-            methodName = invocation.getArguments()[0].toString();
-        }else {
-            inv = new RpcInvocation(invocation);
-            methodName = invocation.getMethodName();
-        }
+        RpcInvocation inv = (RpcInvocation) invocation;
+        final String methodName = RpcUtils.getMethodName(invocation);
         inv.setAttachment(Constants.PATH_KEY, getUrl().getPath());
         inv.setAttachment(Constants.VERSION_KEY, version);
         

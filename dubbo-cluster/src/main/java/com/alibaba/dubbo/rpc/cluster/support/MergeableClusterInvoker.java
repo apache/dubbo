@@ -61,7 +61,8 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
         this.directory = directory;
     }
 
-    public Result invoke(final Invocation invocation) throws RpcException {
+    @SuppressWarnings("rawtypes")
+	public Result invoke(final Invocation invocation) throws RpcException {
         List<Invoker<T>> invokers = directory.list(invocation);
         
         String merger = getUrl().getMethodParameter( invocation.getMethodName(), Constants.MERGER_KEY );
@@ -100,7 +101,7 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
         for ( Map.Entry<String, Future<Result>> entry : results.entrySet() ) {
             Future<Result> future = entry.getValue();
             try {
-                Result r = future.get(  );
+                Result r = future.get(timeout, TimeUnit.MILLISECONDS);
                 if (r.hasException()) {
                     log.error(new StringBuilder(32).append("Invoke ")
                                   .append(getGroupDescFromServiceKey(entry.getKey()))

@@ -59,12 +59,9 @@ public class ThriftInvoker<T> extends AbstractInvoker<T> {
     @Override
     protected Result doInvoke( Invocation invocation ) throws Throwable {
 
-        RpcInvocation inv;
+        RpcInvocation inv = (RpcInvocation) invocation;
 
         final String methodName;
-
-        inv = new RpcInvocation( invocation.getMethodName(), invocation.getParameterTypes(),
-                                 invocation.getArguments(), invocation.getAttachments() );
 
         methodName = invocation.getMethodName();
 

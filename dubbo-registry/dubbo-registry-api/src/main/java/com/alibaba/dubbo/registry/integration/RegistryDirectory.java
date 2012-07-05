@@ -50,6 +50,7 @@ import com.alibaba.dubbo.rpc.cluster.directory.AbstractDirectory;
 import com.alibaba.dubbo.rpc.cluster.directory.StaticDirectory;
 import com.alibaba.dubbo.rpc.cluster.support.ClusterUtils;
 import com.alibaba.dubbo.rpc.protocol.InvokerWrapper;
+import com.alibaba.dubbo.rpc.support.RpcUtils;
 
 /**
  * RegistryDirectory
@@ -582,17 +583,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         List<Invoker<T>> invokers = null;
         Map<String, List<Invoker<T>>> localMethodInvokerMap = this.methodInvokerMap; // local reference
         if (localMethodInvokerMap != null && localMethodInvokerMap.size() > 0) {
-            String methodName = invocation.getMethodName();
-            Object[] args = invocation.getArguments();
-            
-            // Generic invoke: Object $invoke(String method, String[] parameterTypes, Object[] args) throws GenericException;
-            if (Constants.$INVOKE.equals(methodName) 
-                    && args != null && args.length == 3
-                    && args[0] instanceof String
-                    && args[2] instanceof Object[]) { 
-                methodName = (String) args[0];
-                args = (Object[]) args[2];
-            }
+            String methodName = RpcUtils.getMethodName(invocation);
+            Object[] args = RpcUtils.getArguments(invocation);
             if(args != null && args.length > 0 && args[0] != null
                     && (args[0] instanceof String || args[0].getClass().isEnum())) {
                 invokers = localMethodInvokerMap.get(methodName + "." + args[0]); // 可根据第一个参数枚举路由

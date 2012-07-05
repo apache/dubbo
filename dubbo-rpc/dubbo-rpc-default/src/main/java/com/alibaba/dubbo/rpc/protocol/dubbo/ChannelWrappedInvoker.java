@@ -53,7 +53,7 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
 
     @Override
     protected Result doInvoke(Invocation invocation) throws Throwable {
-        RpcInvocation inv = new RpcInvocation(invocation);
+        RpcInvocation inv = (RpcInvocation) invocation;
         //拿不到client端export 的service path.约定为interface的名称.
         inv.setAttachment(Constants.PATH_KEY, getInterface().getName());
         inv.setAttachment(Constants.CALLBACK_SERVICE_KEY, serviceKey);
