@@ -34,7 +34,6 @@ import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
-import com.alibaba.dubbo.rpc.service.GenericService;
  
 /**
  * MonitorFilter. (SPI, Singleton, ThreadSafe)
