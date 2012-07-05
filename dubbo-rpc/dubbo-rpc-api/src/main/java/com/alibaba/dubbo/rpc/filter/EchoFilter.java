@@ -29,7 +29,7 @@ import com.alibaba.dubbo.rpc.RpcResult;
  * 
  * @author william.liangf
  */
-@Activate(group = Constants.PROVIDER)
+@Activate(group = Constants.PROVIDER, order = -20000)
 public class EchoFilter implements Filter {
 
 	public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {
