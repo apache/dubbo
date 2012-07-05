@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package com.alibaba.dubbo.common.threadpool.support.scaleable;
+package com.alibaba.dubbo.common.threadpool.support.limited;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -31,7 +31,7 @@ import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-public class ScaleableThreadPool implements ThreadPool {
+public class LimitedThreadPool implements ThreadPool {
 
     public Executor getExecutor(URL url) {
         String threadName = url.getParameter(Constants.THREAD_NAME_KEY, Constants.DEFAULT_THREAD_NAME);

@@ -130,7 +130,8 @@ public class ConfigUtilsTest {
         Properties expected = new Properties();
         expected.put("fixed", "com.alibaba.dubbo.common.threadpool.support.fixed.FixedThreadPool");
         expected.put("cached", "com.alibaba.dubbo.common.threadpool.support.cached.CachedThreadPool");
-        
+        expected.put("limited", "com.alibaba.dubbo.common.threadpool.support.limited.LimitedThreadPool");
+
         Assert.assertEquals(expected, p);
     }
     
