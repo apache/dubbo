@@ -110,7 +110,7 @@
 		<jcache_version>0.4</jcache_version>
 		<sca_version>2.0-M5.1</sca_version>
 		<guice_version>3.0</guice_version>
-        <cglib_version>2.2</cglib_version>
+		<cglib_version>2.2</cglib_version>
 		<!-- Log libs -->
 		<slf4j_version>1.6.2</slf4j_version>
 		<jcl_version>1.1</jcl_version>
@@ -320,11 +320,11 @@
 				<version>${easymock_version}</version>
 				<scope>test</scope>
 			</dependency>
-            <dependency>
-                <groupId>cglib</groupId>
-                <artifactId>cglib-nodep</artifactId>
-                <version>${cglib_version}</version>
-            </dependency>
+			<dependency>
+				<groupId>cglib</groupId>
+				<artifactId>cglib-nodep</artifactId>
+				<version>${cglib_version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 	<dependencies>
