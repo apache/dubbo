@@ -19,7 +19,7 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.monitor.Monitor;
 import com.alibaba.dubbo.monitor.MonitorService;
-import com.alibaba.dubbo.monitor.support.AbstractMonitorFactroy;
+import com.alibaba.dubbo.monitor.support.AbstractMonitorFactory;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.ProxyFactory;
@@ -29,7 +29,7 @@ import com.alibaba.dubbo.rpc.ProxyFactory;
  * 
  * @author william.liangf
  */
-public class DubboMonitorFactroy extends AbstractMonitorFactroy {
+public class DubboMonitorFactroy extends AbstractMonitorFactory {
 
     private Protocol protocol;
     

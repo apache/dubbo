@@ -32,7 +32,7 @@ import com.alibaba.dubbo.monitor.MonitorService;
  * 
  * @author william.liangf
  */
-public abstract class AbstractMonitorFactroy implements MonitorFactory {
+public abstract class AbstractMonitorFactory implements MonitorFactory {
 
     // 注册中心获取过程锁
     private static final ReentrantLock LOCK = new ReentrantLock();
