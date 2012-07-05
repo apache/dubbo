@@ -99,7 +99,7 @@ public abstract class AbstractConfig implements Serializable {
     protected void appendAnnotation(Class<?> annotationClass, Object annotation) {
         Method[] methods = annotationClass.getMethods();
         for (Method method : methods) {
-            if (method.getDeclaringClass() == annotation.getClass()
+            if (method.getDeclaringClass() != Object.class
                     && method.getReturnType() != void.class
                     && method.getParameterTypes().length == 0
                     && Modifier.isPublic(method.getModifiers())
