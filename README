@@ -34,10 +34,10 @@ Refer remote service:
 Source Building
 ================================================================
 
-0. Install the subversion and maven command line:
+0. Install the git and maven command line:
 
-    yum install subversion
-    or: apt-get install subversion
+    yum install git
+    or: apt-get install git
 
     cd ~
     wget http://www.apache.org/dist//maven/binaries/apache-maven-2.2.1-bin.tar.gz
@@ -49,7 +49,7 @@ Source Building
 1. Checkout the dubbo source code:
 
     cd ~
-    svn co http://code.alibabatech.com/svn/dubbo/trunk dubbo
+    git clone https://github.com/AlibabaTech/dubbo.git dubbo
 
 2. Import the dubbo source code to eclipse project:
 
