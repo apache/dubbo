@@ -24,7 +24,7 @@ import com.alibaba.dubbo.config.spring.api.DemoService;
  * 
  * @author william.liangf
  */
-@Service
+@Service(version = "1.2")
 public class AnnotationServiceImpl implements DemoService {
     
     public String sayName(String name) {
