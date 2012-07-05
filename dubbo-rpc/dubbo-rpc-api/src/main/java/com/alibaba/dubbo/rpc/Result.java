@@ -15,6 +15,8 @@
  */
 package com.alibaba.dubbo.rpc;
 
+import java.util.Map;
+
 /**
  * RPC invoke result. (API, Prototype, NonThreadSafe)
  * 
@@ -69,5 +71,27 @@ public interface Result {
      */
     @Deprecated
     Object getResult();
+
+
+    /**
+     * get attachments.
+     *
+     * @return attachments.
+     */
+    Map<String, String> getAttachments();
+
+    /**
+     * get attachment by key.
+     *
+     * @return attachment value.
+     */
+    String getAttachment(String key);
+
+    /**
+     * get attachment by key with default value.
+     *
+     * @return attachment value.
+     */
+    String getAttachment(String key, String defaultValue);
 
 }

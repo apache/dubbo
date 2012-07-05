@@ -16,6 +16,8 @@
 package com.alibaba.dubbo.rpc;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * RPC Result.
@@ -30,6 +32,8 @@ public class RpcResult implements Result, Serializable {
     private Object                   result;
 
     private Throwable                exception;
+
+    private Map<String, String>      attachments = new HashMap<String, String>();
 
     public RpcResult(){
     }
@@ -85,6 +89,32 @@ public class RpcResult implements Result, Serializable {
 
     public boolean hasException() {
         return exception != null;
+    }
+
+    public Map<String, String> getAttachments() {
+        return attachments;
+    }
+
+    public String getAttachment(String key) {
+        return attachments.get(key);
+    }
+
+    public String getAttachment(String key, String defaultValue) {
+        String result = attachments.get(key);
+        if (result == null || result.length() == 0) {
+            result = defaultValue;
+        }
+        return result;
+    }
+
+    public void setAttachments(Map<String, String> map) {
+        if (map != null && map.size() > 0) {
+            attachments.putAll(map);
+        }
+    }
+
+    public void setAttachment(String key, String value) {
+        attachments.put(key, value);
     }
 
     @Override

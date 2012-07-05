@@ -63,10 +63,10 @@ public class MonitorFilter implements Filter {
             getConcurrent(invoker, invocation).incrementAndGet(); // 并发计数
             try {
                 Result result = invoker.invoke(invocation); // 让调用链往下执行
-                collect(invoker, invocation, context, start, false);
+                collect(invoker, invocation, result, context, start, false);
                 return result;
             } catch (RpcException e) {
-                collect(invoker, invocation, context, start, true);
+                collect(invoker, invocation, null, context, start, true);
                 throw e;
             } finally {
                 getConcurrent(invoker, invocation).decrementAndGet(); // 并发计数
@@ -77,7 +77,7 @@ public class MonitorFilter implements Filter {
     }
     
     // 信息采集
-    private void collect(Invoker<?> invoker, Invocation invocation, RpcContext context, long start, boolean error) {
+    private void collect(Invoker<?> invoker, Invocation invocation, Result result, RpcContext context, long start, boolean error) {
         try {
             // ---- 服务信息获取 ----
             long elapsed = System.currentTimeMillis() - start; // 计算调用耗时
@@ -102,16 +102,23 @@ public class MonitorFilter implements Filter {
                 remoteKey = MonitorService.CONSUMER;
                 remoteValue = context.getRemoteHost();
             }
-            monitor.collect(new URL(Constants.COUNT_PROTOCOL,
-                    NetUtils.getLocalHost(), localPort,
-                    service + "/" + method,
-                    MonitorService.APPLICATION, application,
-                    MonitorService.INTERFACE, service,
-                    MonitorService.METHOD, method,
-                    remoteKey, remoteValue,
-                    error ? MonitorService.FAILURE : MonitorService.SUCCESS, "1",
-                    MonitorService.ELAPSED, String.valueOf(elapsed),
-                    MonitorService.CONCURRENT, String.valueOf(concurrent)));
+            URL collectURL = new URL(Constants.COUNT_PROTOCOL,
+                                NetUtils.getLocalHost(), localPort,
+                                service + "/" + method,
+                                MonitorService.APPLICATION, application,
+                                MonitorService.INTERFACE, service,
+                                MonitorService.METHOD, method,
+                                remoteKey, remoteValue,
+                                error ? MonitorService.FAILURE : MonitorService.SUCCESS, "1",
+                                MonitorService.ELAPSED, String.valueOf(elapsed),
+                                MonitorService.CONCURRENT, String.valueOf(concurrent));
+            if (invocation.getAttachment(Constants.INPUT_KEY) != null) {
+                collectURL.addParameter(Constants.INPUT_KEY, invocation.getAttachment(Constants.INPUT_KEY));
+            }
+            if (result != null && result.getAttachment(Constants.OUTPUT_KEY) != null) {
+                collectURL.addParameter(Constants.OUTPUT_KEY, result.getAttachment(Constants.OUTPUT_KEY));
+            }
+            monitor.collect(collectURL);
         } catch (Throwable t) {
             logger.error("Failed to monitor count service " + invoker.getUrl() + ", cause: " + t.getMessage(), t);
         }

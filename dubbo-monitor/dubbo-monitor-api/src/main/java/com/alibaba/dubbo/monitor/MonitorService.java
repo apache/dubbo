@@ -17,6 +17,7 @@ package com.alibaba.dubbo.monitor;
 
 import java.util.List;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 
 /**
@@ -46,9 +47,9 @@ public interface MonitorService {
 
     String FAILURE = "failure";
     
-    String INPUT = "input";
+    String INPUT = Constants.INPUT_KEY;
 
-    String OUTPUT = "output";
+    String OUTPUT = Constants.OUTPUT_KEY;
 
     String ELAPSED = "elapsed";
 
