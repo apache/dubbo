@@ -1106,23 +1106,29 @@ public final class URL implements Serializable {
         }
 	}
 
-	private String buildString(boolean u, boolean p, String... parameters) {
-		return buildString(u, p, false, parameters);
+	private String buildString(boolean appendUser, boolean appendParameter, String... parameters) {
+		return buildString(appendUser, appendParameter, false, false, parameters);
 	}
 
-	private String buildString(boolean u, boolean p, boolean s, String... parameters) {
+	private String buildString(boolean appendUser, boolean appendParameter, boolean useIP, boolean useService, String... parameters) {
 		StringBuilder buf = new StringBuilder();
 		if (protocol != null && protocol.length() > 0) {
 			buf.append(protocol);
 			buf.append("://");
 		}
-		if (u && username != null && username.length() > 0) {
+		if (appendUser && username != null && username.length() > 0) {
 			buf.append(username);
 			if (password != null && password.length() > 0) {
 				buf.append(":");
 				buf.append(password);
 			}
 			buf.append("@");
+		}
+		String host;
+		if (useIP) {
+			host = getIp();
+		} else {
+			host = getHost();
 		}
 		if(host != null && host.length() > 0) {
     		buf.append(host);
@@ -1131,17 +1137,17 @@ public final class URL implements Serializable {
     			buf.append(port);
     		}
 		}
-		String _path;
-		if (s) {
-			_path = getServiceKey();
+		String path;
+		if (useService) {
+			path = getServiceKey();
 		} else {
-			_path = path;
+			path = getPath();
 		}
-		if (_path != null && _path.length() > 0) {
+		if (path != null && path.length() > 0) {
 			buf.append("/");
-			buf.append(_path);
+			buf.append(path);
 		}
-		if (p) {
+		if (appendParameter) {
 		    buildParameters(buf, true, parameters);
 		}
 		return buf.toString();
@@ -1176,7 +1182,7 @@ public final class URL implements Serializable {
     }
 
     public String toServiceString() {
-    	return buildString(true, false, true);
+    	return buildString(true, false, true, true);
     }
 
     @Deprecated
