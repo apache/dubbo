@@ -34,6 +34,7 @@ import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.support.RpcUtils;
  
 /**
  * MonitorFilter. (SPI, Singleton, ThreadSafe)
@@ -82,7 +83,7 @@ public class MonitorFilter implements Filter {
             int concurrent = getConcurrent(invoker, invocation).get(); // 当前并发数
             String application = invoker.getUrl().getParameter(Constants.APPLICATION_KEY);
             String service = invoker.getInterface().getName(); // 获取服务名称
-            String method = invocation.getMethodName(); // 获取方法名
+            String method = RpcUtils.getMethodName(invocation); // 获取方法名
             URL url = invoker.getUrl().getUrlParameter(Constants.MONITOR_KEY);
             Monitor monitor = monitorFactory.getMonitor(url);
             int localPort;
