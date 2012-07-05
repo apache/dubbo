@@ -111,7 +111,7 @@ public class RpcInvocation implements Invocation, Serializable {
     public void setInvoker(Invoker<?> invoker) {
         this.invoker = invoker;
     }
-    
+
     public String getMethodName() {
         return methodName;
     }

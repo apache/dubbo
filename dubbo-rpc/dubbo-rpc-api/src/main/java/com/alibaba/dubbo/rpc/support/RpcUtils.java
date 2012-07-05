@@ -112,17 +112,41 @@ public class RpcUtils {
     }
     
     public static String getMethodName(Invocation invocation){
-    	String methodName; 
     	if(Constants.$INVOKE.equals(invocation.getMethodName()) 
                 && invocation.getArguments() != null 
-                && invocation.getArguments().length >0 
-                && invocation.getArguments()[0] != null){
-            //the frist argument must be real method name;
-            methodName = invocation.getArguments()[0].toString();
-        }else {
-            methodName = invocation.getMethodName();
+                && invocation.getArguments().length > 0 
+                && invocation.getArguments()[0] instanceof String){
+            return (String) invocation.getArguments()[0];
         }
-    	return methodName;
+    	return invocation.getMethodName();
+    }
+
+    public static Object[] getArguments(Invocation invocation){
+    	if(Constants.$INVOKE.equals(invocation.getMethodName()) 
+                && invocation.getArguments() != null 
+                && invocation.getArguments().length > 2
+                && invocation.getArguments()[2] instanceof Object[]){
+            return (Object[]) invocation.getArguments()[2];
+        }
+    	return invocation.getArguments();
+    }
+
+    public static Class<?>[] getParameterTypes(Invocation invocation){
+    	if(Constants.$INVOKE.equals(invocation.getMethodName()) 
+                && invocation.getArguments() != null 
+                && invocation.getArguments().length > 1
+                && invocation.getArguments()[1] instanceof String[]){
+            String[] types = (String[]) invocation.getArguments()[1];
+            if (types == null) {
+            	return new Class<?>[0];
+            }
+            Class<?>[] parameterTypes = new Class<?>[types.length];
+            for (int i = 0; i < types.length; i ++) {
+            	parameterTypes[i] = ReflectUtils.forName(types[0]);
+            }
+            return parameterTypes;
+        }
+    	return invocation.getParameterTypes();
     }
     
     public static boolean isAsync(URL url, Invocation inv) {
