@@ -151,6 +151,40 @@ public class RpcInvocation implements Invocation, Serializable {
         attachments.put(key, value);
     }
 
+    public void setAttachmentIfAbsent(String key, String value) {
+        if (attachments == null) {
+            attachments = new HashMap<String, String>();
+        }
+        if (! attachments.containsKey(key)) {
+        	attachments.put(key, value);
+        }
+    }
+
+    public void addAttachments(Map<String, String> attachments) {
+    	if (attachments == null) {
+    		return;
+    	}
+    	if (this.attachments == null) {
+    		this.attachments = new HashMap<String, String>();
+        }
+    	this.attachments.putAll(attachments);
+    }
+
+    public void addAttachmentsIfAbsent(Map<String, String> attachments) {
+    	if (attachments == null) {
+    		return;
+    	}
+    	if (this.attachments == null) {
+    		this.attachments = new HashMap<String, String>();
+        }
+    	for (Map.Entry<String, String> entry : attachments.entrySet()) {
+    		String key = entry.getKey();
+    		if (! attachments.containsKey(key)) {
+            	attachments.put(key, entry.getValue());
+            }
+    	}
+    }
+
     public String getAttachment(String key) {
         if (attachments == null) {
             return null;

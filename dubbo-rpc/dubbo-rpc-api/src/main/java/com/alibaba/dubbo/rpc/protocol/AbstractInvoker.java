@@ -127,23 +127,19 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         }
         RpcInvocation invocation = (RpcInvocation) inv;
         invocation.setInvoker(this);
-        Map<String, String> attachments = new HashMap<String, String>();
         if (attachment != null && attachment.size() > 0) {
-            attachments.putAll(attachment);
+        	invocation.addAttachmentsIfAbsent(attachment);
         }
         Map<String, String> context = RpcContext.getContext().getAttachments();
         if (context != null) {
-            attachments.putAll(context);
-        }
-        if (invocation.getAttachments() != null) {
-            attachments.putAll(invocation.getAttachments());
+        	invocation.addAttachmentsIfAbsent(context);
         }
         if (getUrl().getMethodParameter(invocation.getMethodName(), Constants.ASYNC_KEY, false)){
-        	attachments.put(Constants.Attachments.IS_ASYNC_KEY, Boolean.TRUE.toString());
+        	invocation.setAttachment(Constants.Attachments.IS_ASYNC_KEY, Boolean.TRUE.toString());
         }
         RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
         
-        invocation.setAttachments(attachments);
+        
         try {
             return doInvoke(invocation);
         } catch (InvocationTargetException e) { // biz exception
