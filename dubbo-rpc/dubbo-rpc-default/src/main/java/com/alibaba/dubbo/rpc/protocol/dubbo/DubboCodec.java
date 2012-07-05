@@ -84,13 +84,14 @@ public class DubboCodec extends ExchangeCodec implements Codec {
                     } else if (res.isEvent()) {
                         data = decodeEventData(channel, deserialize(s, channel.getUrl(), is));
                     } else {
-                        data = new DecodeableRpcResult(channel, res,
+                        DecodeableRpcResult result = new DecodeableRpcResult(channel, res,
                             new UnsafeByteArrayInputStream(readMessageData(is)), (Invocation) getRequestData(id), proto);
                         if (channel.getUrl().getParameter(
                             Constants.DECODE_IN_IO_THREAD_KEY,
                             Constants.DEFAULT_DECODE_IN_IO_THREAD)) {
-                            ((DecodeableRpcResult) data).decode();
+                            result.decode();
                         }
+                        data = result;
                     }
                     res.setResult(data);
                 } catch (Throwable t) {
@@ -116,13 +117,14 @@ public class DubboCodec extends ExchangeCodec implements Codec {
                 } else if (req.isEvent()) {
                     data = decodeEventData(channel, deserialize(s, channel.getUrl(), is));
                 } else {
-                    data = new DecodeableRpcInvocation(channel, req,
+                    DecodeableRpcInvocation inv = new DecodeableRpcInvocation(channel, req,
                         new UnsafeByteArrayInputStream(readMessageData(is)), proto);
                     if (channel.getUrl().getParameter(
                         Constants.DECODE_IN_IO_THREAD_KEY,
                         Constants.DEFAULT_DECODE_IN_IO_THREAD)) {
-                        ((DecodeableRpcInvocation) data).decode();
+                        inv.decode();
                     }
+                    data = inv;
                 }
                 req.setData(data);
             } catch (Throwable t) {
