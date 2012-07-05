@@ -1,10 +1,17 @@
-target
-*/target
+# maven ignore
+target/
+
+# eclipse ignore
+.settings/
 .project
-.settings
 .classpath
+
+# idea ignore
+.idea/
 *.ipr
 *.iml
 *.iws
-.idea/
+
+# temp ignore
 *.log
+*.cache
