@@ -1105,8 +1105,12 @@ public final class URL implements Serializable {
             }
         }
 	}
-	
+
 	private String buildString(boolean u, boolean p, String... parameters) {
+		return buildString(u, p, false, parameters);
+	}
+
+	private String buildString(boolean u, boolean p, boolean s, String... parameters) {
 		StringBuilder buf = new StringBuilder();
 		if (protocol != null && protocol.length() > 0) {
 			buf.append(protocol);
@@ -1127,9 +1131,15 @@ public final class URL implements Serializable {
     			buf.append(port);
     		}
 		}
-		if (path != null && path.length() > 0) {
+		String _path;
+		if (s) {
+			_path = getServiceKey();
+		} else {
+			_path = path;
+		}
+		if (_path != null && _path.length() > 0) {
 			buf.append("/");
-			buf.append(path);
+			buf.append(_path);
 		}
 		if (p) {
 		    buildParameters(buf, true, parameters);
@@ -1163,6 +1173,10 @@ public final class URL implements Serializable {
             buf.append(":").append(version);
         }
         return buf.toString();
+    }
+
+    public String toServiceString() {
+    	return buildString(true, false, true);
     }
 
     @Deprecated

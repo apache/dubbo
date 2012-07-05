@@ -46,7 +46,7 @@ public abstract class AbstractMonitorFactroy implements MonitorFactory {
 
     public Monitor getMonitor(URL url) {
     	url = url.setPath(MonitorService.class.getName()).addParameter(Constants.INTERFACE_KEY, MonitorService.class.getName());
-    	String key = url.toIdentityString();
+    	String key = url.toServiceString();
         LOCK.lock();
         try {
             Monitor monitor = MONITORS.get(key);
