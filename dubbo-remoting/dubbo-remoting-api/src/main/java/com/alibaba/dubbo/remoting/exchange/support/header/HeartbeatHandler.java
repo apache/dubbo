@@ -23,12 +23,12 @@ import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.exchange.Request;
 import com.alibaba.dubbo.remoting.exchange.Response;
-import com.alibaba.dubbo.remoting.transport.ChannelHandlerDelegate;
+import com.alibaba.dubbo.remoting.transport.AbstractChannelHandlerDelegate;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-public class HeartbeatHandler implements ChannelHandlerDelegate {
+public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
 
     static final Logger log = LoggerFactory.getLogger(HeartbeatHandler.class);
 
@@ -36,20 +36,8 @@ public class HeartbeatHandler implements ChannelHandlerDelegate {
 
     public static String KEY_WRITE_TIMESTAMP = "WRITE_TIMESTAMP";
 
-    private ChannelHandler handler;
-
     public HeartbeatHandler(ChannelHandler handler) {
-        if (handler == null) {
-            throw new IllegalArgumentException("handler == null");
-        }
-        this.handler = handler;
-    }
-
-    public ChannelHandler getHandler() {
-        if (handler instanceof ChannelHandlerDelegate) {
-            return ((ChannelHandlerDelegate)handler).getHandler();
-        }
-        return handler;
+        super(handler);
     }
 
     public void connected(Channel channel) throws RemotingException {
@@ -98,10 +86,6 @@ public class HeartbeatHandler implements ChannelHandlerDelegate {
             return;
         }
         handler.received(channel, message);
-    }
-
-    public void caught(Channel channel, Throwable exception) throws RemotingException {
-        handler.caught(channel, exception);
     }
 
     private void setReadTimestamp(Channel channel) {

@@ -29,34 +29,12 @@ import com.alibaba.dubbo.remoting.exchange.Response;
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-public class DecodeHandler implements ChannelHandlerDelegate {
+public class DecodeHandler extends AbstractChannelHandlerDelegate {
 
     private static final Logger log = LoggerFactory.getLogger(DecodeHandler.class);
 
-    private ChannelHandler handler;
-
     public DecodeHandler(ChannelHandler handler) {
-        Assert.notNull(handler, "handler == null");
-        this.handler = handler;
-    }
-
-    public ChannelHandler getHandler() {
-        if (handler instanceof ChannelHandlerDelegate) {
-            return ((ChannelHandlerDelegate)handler).getHandler();
-        }
-        return handler;
-    }
-
-    public void connected(Channel channel) throws RemotingException {
-        handler.connected(channel);
-    }
-
-    public void disconnected(Channel channel) throws RemotingException {
-        handler.disconnected(channel);
-    }
-
-    public void sent(Channel channel, Object message) throws RemotingException {
-        handler.sent(channel, message);
+        super(handler);
     }
 
     public void received(Channel channel, Object message) throws RemotingException {
@@ -73,10 +51,6 @@ public class DecodeHandler implements ChannelHandlerDelegate {
         }
 
         handler.received(channel, message);
-    }
-
-    public void caught(Channel channel, Throwable exception) throws RemotingException {
-        handler.caught(channel, exception);
     }
 
     private void decode(Object message) {
