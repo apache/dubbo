@@ -21,6 +21,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Type;
 
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.serialize.ObjectInput;
 import com.alibaba.dubbo.common.utils.Assert;
 import com.alibaba.dubbo.common.utils.StringUtils;
@@ -37,6 +39,8 @@ import com.alibaba.dubbo.rpc.support.RpcUtils;
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
 public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable {
+
+    private static final Logger log = LoggerFactory.getLogger(DecodeableRpcResult.class);
 
     private Channel     channel;
 
@@ -104,6 +108,9 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
             try {
                 decode(channel, inputStream);
             } catch (Throwable e) {
+                if (log.isWarnEnabled()) {
+                    log.warn("Decode rpc result failed: " + e.getMessage(), e);
+                }
                 response.setStatus(Response.CLIENT_ERROR);
                 response.setErrorMessage(StringUtils.toString(e));
             } finally {

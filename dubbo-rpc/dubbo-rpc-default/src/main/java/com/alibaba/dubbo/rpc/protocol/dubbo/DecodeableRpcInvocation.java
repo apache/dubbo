@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.serialize.ObjectInput;
 import com.alibaba.dubbo.common.utils.Assert;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
@@ -40,6 +42,8 @@ import static com.alibaba.dubbo.rpc.protocol.dubbo.CallbackServiceCodec.decodeIn
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
 public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Decodeable {
+
+    private static final Logger log = LoggerFactory.getLogger(DecodeableRpcInvocation.class);
 
     private Channel     channel;
 
@@ -66,6 +70,9 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             try {
                 decode(channel, inputStream);
             } catch (Throwable e) {
+                if (log.isWarnEnabled()) {
+                    log.warn("Decode rpc invocation failed: " + e.getMessage(), e);
+                }
                 request.setBroken(true);
                 request.setData(e);
             } finally {
@@ -101,7 +108,9 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                     try {
                         args[i] = in.readObject(pts[i]);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        if (log.isWarnEnabled()) {
+                            log.warn("Decode argument failed: " + e.getMessage(), e);
+                        }
                     }
                 }
             }

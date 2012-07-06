@@ -19,11 +19,11 @@ package com.alibaba.dubbo.rpc.protocol.dubbo;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.io.CountInputStream;
-import com.alibaba.dubbo.common.logger.Logger;
-import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.Codec;
 import com.alibaba.dubbo.remoting.exchange.Request;
@@ -36,8 +36,6 @@ import com.alibaba.dubbo.rpc.RpcResult;
  */
 public final class DubboCountCodec implements Codec {
 
-    private static final Logger log = LoggerFactory.getLogger(DubboCountCodec.class);
-
     private DubboCodec codec = new DubboCodec();
 
     public void encode(Channel channel, OutputStream output, Object msg) throws IOException {
@@ -46,25 +44,44 @@ public final class DubboCountCodec implements Codec {
 
     public Object decode(Channel channel, InputStream input) throws IOException {
         CountInputStream statInputStream = new CountInputStream(input);
-        Object result = codec.decode(channel, statInputStream);
-        if (result != NEED_MORE_INPUT) {
-            if (result instanceof Request) {
-                try {
-                    ((RpcInvocation) ((Request) result).getData()).setAttachment(
-                        Constants.INPUT_KEY, String.valueOf(statInputStream.getReadBytes()));
-                } catch (Throwable e) {
-                    /* ignore */
-                }
-            } else if (result instanceof Response) {
-                try {
-                    ((RpcResult) ((Response) result).getResult()).setAttachment(
-                        Constants.OUTPUT_KEY, String.valueOf(statInputStream.getReadBytes()));
-                } catch (Throwable e) {
-                    /* ignreo */
-                }
+        long save = 0;
+        List<Object> result = new ArrayList<Object>();
+        do {
+            Object obj = codec.decode(channel, statInputStream);
+            if (NEED_MORE_INPUT == obj) {
+                break;
+            } else {
+                result.add(obj);
+                logMessageLength(obj, statInputStream.getReadBytes() - save);
+                save = statInputStream.getReadBytes();
             }
+        } while (true);
+        if (result.isEmpty()) {
+            return NEED_MORE_INPUT;
+        }
+        if (result.size() == 1) {
+            return result.get(0);
         }
         return result;
+    }
+
+    private void logMessageLength(Object result, long bytes) {
+        if (bytes <= 0) { return; }
+        if (result instanceof Request) {
+            try {
+                ((RpcInvocation) ((Request) result).getData()).setAttachment(
+                    Constants.INPUT_KEY, String.valueOf(bytes));
+            } catch (Throwable e) {
+                /* ignore */
+            }
+        } else if (result instanceof Response) {
+            try {
+                ((RpcResult) ((Response) result).getResult()).setAttachment(
+                    Constants.OUTPUT_KEY, String.valueOf(bytes));
+            } catch (Throwable e) {
+                /* ignreo */
+            }
+        }
     }
 
 }
