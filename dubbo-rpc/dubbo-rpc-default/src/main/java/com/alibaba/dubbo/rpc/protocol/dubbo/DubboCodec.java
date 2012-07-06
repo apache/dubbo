@@ -17,8 +17,6 @@ package com.alibaba.dubbo.rpc.protocol.dubbo;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
@@ -63,27 +61,6 @@ public class DubboCodec extends ExchangeCodec implements Codec {
     public static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
 
     public static final Class<?>[] EMPTY_CLASS_ARRAY = new Class<?>[0];
-
-    @Override
-    public Object decode(Channel channel, InputStream is) throws IOException {
-        List<Object> result = new ArrayList<Object>();
-        do{
-            Object obj = super.decode(channel, is);
-            if (NEED_MORE_INPUT == obj) {
-                break;
-            } else {
-                result.add(obj);
-            }
-        } while (true);
-
-        if (result.isEmpty()) {
-            return NEED_MORE_INPUT;
-        }
-        if (result.size() == 1) {
-            return result.get(0);
-        }
-        return result;
-    }
 
     protected Object decodeBody(Channel channel, InputStream is, byte[] header) throws IOException {
         byte flag = header[2], proto = (byte) (flag & SERIALIZATION_MASK);
