@@ -18,11 +18,7 @@ package com.alibaba.dubbo.remoting.exchange.codec;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
-import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.io.Bytes;
 import com.alibaba.dubbo.common.io.StreamUtils;
 import com.alibaba.dubbo.common.io.UnsafeByteArrayInputStream;
@@ -39,6 +35,7 @@ import com.alibaba.dubbo.remoting.exchange.Request;
 import com.alibaba.dubbo.remoting.exchange.Response;
 import com.alibaba.dubbo.remoting.exchange.support.DefaultFuture;
 import com.alibaba.dubbo.remoting.telnet.codec.TelnetCodec;
+import com.alibaba.dubbo.remoting.transport.CodecSupport;
 
 /**
  * ExchangeCodec.
@@ -68,23 +65,6 @@ public class ExchangeCodec extends TelnetCodec {
     protected static final byte     FLAG_EVENT     = (byte) 0x20;
 
     protected static final int      SERIALIZATION_MASK = 0x1f;
-
-    private static Map<Byte, Serialization> ID_SERIALIZATION_MAP   = new HashMap<Byte, Serialization>();
-    static {
-        Set<String> supportedExtensions = ExtensionLoader.getExtensionLoader(Serialization.class).getSupportedExtensions();
-        for (String name : supportedExtensions) {
-            Serialization serialization = ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(name);
-            byte idByte = serialization.getContentTypeId();
-            if (ID_SERIALIZATION_MAP.containsKey(idByte)) {
-                logger.error("Serialization extension " + serialization.getClass().getName()
-                             + " has duplicate id to Serialization extension "
-                             + ID_SERIALIZATION_MAP.get(idByte).getClass().getName()
-                             + ", ignore this Serialization extension");
-                continue;
-            }
-            ID_SERIALIZATION_MAP.put(idByte, serialization);
-        }
-    }
 
     public Short getMagicCode() {
         return MAGIC;
@@ -144,12 +124,13 @@ public class ExchangeCodec extends TelnetCodec {
         if( readable != tt )
             is = StreamUtils.limitedInputStream(is, len);
 
+        return decodeBody(channel, is, header);
+    }
+
+    protected Object decodeBody(Channel channel, InputStream is, byte[] header) throws IOException {
         try {
 	        byte flag = header[2], proto = (byte)( flag & SERIALIZATION_MASK );
-	        Serialization s = getSerializationById(proto);
-	        if (s == null) {
-	            s = getSerialization(channel);
-	        }
+	        Serialization s = CodecSupport.getSerialization(channel.getUrl(), proto);
 	        ObjectInput in = s.deserialize(channel.getUrl(), is);
 	        // get request id.
 	        long id = Bytes.bytes2long(header, 4);
@@ -332,10 +313,6 @@ public class ExchangeCodec extends TelnetCodec {
         }
     }
     
-    private static final Serialization getSerializationById(Byte id) {
-        return ID_SERIALIZATION_MAP.get(id);
-    }
-    
     @Override
     protected Object decodeData(ObjectInput in) throws IOException {
         return decodeRequestData(in);
@@ -393,7 +370,7 @@ public class ExchangeCodec extends TelnetCodec {
         return decodeRequestData(channel ,in);
     }
     
-    private Object decodeEventData(Channel channel, ObjectInput in) throws IOException {
+    protected Object decodeEventData(Channel channel, ObjectInput in) throws IOException {
         try {
             return in.readObject();
         } catch (ClassNotFoundException e) {
