@@ -23,6 +23,8 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.common.io.Bytes;
 import com.alibaba.dubbo.common.io.UnsafeByteArrayInputStream;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.serialize.ObjectInput;
 import com.alibaba.dubbo.common.serialize.ObjectOutput;
 import com.alibaba.dubbo.common.serialize.Serialization;
@@ -47,6 +49,8 @@ import static com.alibaba.dubbo.rpc.protocol.dubbo.CallbackServiceCodec.encodeIn
  * @author chao.liuc
  */
 public class DubboCodec extends ExchangeCodec implements Codec {
+
+    private static final Logger log = LoggerFactory.getLogger(DubboCodec.class);
 
     public static final String NAME = "dubbo";
 
@@ -95,6 +99,9 @@ public class DubboCodec extends ExchangeCodec implements Codec {
                     }
                     res.setResult(data);
                 } catch (Throwable t) {
+                    if (log.isWarnEnabled()) {
+                        log.warn("Decode response failed: " + t.getMessage(), t);
+                    }
                     res.setStatus(Response.CLIENT_ERROR);
                     res.setErrorMessage(StringUtils.toString(t));
                 }
@@ -128,6 +135,9 @@ public class DubboCodec extends ExchangeCodec implements Codec {
                 }
                 req.setData(data);
             } catch (Throwable t) {
+                if (log.isWarnEnabled()) {
+                    log.warn("Decode request failed: " + t.getMessage(), t);
+                }
                 // bad request
                 req.setBroken(true);
                 req.setData(t);
