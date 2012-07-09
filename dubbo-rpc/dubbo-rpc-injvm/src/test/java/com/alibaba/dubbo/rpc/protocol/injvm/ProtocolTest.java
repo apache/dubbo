@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.protococol.injvm;
+package com.alibaba.dubbo.rpc.protocol.injvm;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -40,7 +40,7 @@ public class ProtocolTest {
     
     ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getExtension("javassist");
     
-    URL url = URL.valueOf("injvm://localhost:0/com.alibaba.dubbo.rpc.support.IEcho");
+    URL url = URL.valueOf("injvm://localhost:0/com.alibaba.dubbo.rpc.support.IEcho?interface=com.alibaba.dubbo.rpc.support.IEcho");
     
     Invoker<IEcho> invoker = proxyFactory.getInvoker(echo, IEcho.class, url);
     

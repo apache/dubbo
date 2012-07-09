@@ -417,5 +417,28 @@ public class UrlUtils {
             return value.startsWith(prefix) && value.endsWith(suffix);
         }
     }
-    
+
+    public static boolean isServiceKeyMatch(URL pattern, URL value) {
+        return  pattern.getParameter(Constants.INTERFACE_KEY).equals(
+            value.getParameter(Constants.INTERFACE_KEY))
+            && isItemMatch(pattern.getParameter(Constants.GROUP_KEY),
+                           value.getParameter(Constants.GROUP_KEY))
+            && isItemMatch(pattern.getParameter(Constants.VERSION_KEY),
+                           value.getParameter(Constants.VERSION_KEY));
+    }
+
+    /**
+     * 判断 value 是否匹配 pattern，pattern 支持 * 通配符.
+     *
+     * @param pattern pattern
+     * @param value   value
+     * @return  true if match otherwise false
+     */
+    static boolean isItemMatch(String pattern, String value) {
+        if (pattern == null) {
+            return value == null;
+        } else {
+            return "*".equals(pattern) || pattern.equals(value);
+        }
+    }
 }
