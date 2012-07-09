@@ -145,10 +145,11 @@ public class PojoUtils {
             Map<Object, Object> src = (Map<Object, Object>)pojo;
             Map<Object, Object> tmp = new HashMap<Object, Object>(src.size());
             tmp.putAll(src);
+            Map<Object, Object> dest= new HashMap<Object, Object>(src.size());
             for (Map.Entry<Object, Object> obj : tmp.entrySet()) {
-            	src.put(generalize(obj.getKey(), history), generalize(obj.getValue(), history));
+            	dest.put(generalize(obj.getKey(), history), generalize(obj.getValue(), history));
             }
-            return src;
+            return dest;
         }
         Map<String, Object> map = new HashMap<String, Object>();
         history.put(pojo, map);
