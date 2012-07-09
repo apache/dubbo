@@ -15,6 +15,7 @@
  */
 package com.alibaba.dubbo.common;
 
+import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
 
 /**
@@ -568,6 +569,10 @@ public class Constants {
     public static final String INPUT_KEY                           = "input";
     
     public static final String OUTPUT_KEY                          = "output";
+
+    public static final String EXECUTOR_SERVICE_COMPONENT_KEY      = ExecutorService.class.getName();
+
+    public static final String DEFAULT_EXECUTOR_SERVICE_KEY        = "threadnotsafe";
 
     /*
      * private Constants(){ }
