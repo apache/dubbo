@@ -126,6 +126,7 @@ public class PojoUtils {
         if (pojo.getClass().isArray()) {
             int len = Array.getLength(pojo);
             Object[] dest = new Object[len];
+            history.put(pojo, dest);
             for (int i = 0; i < len; i ++) {
                 Object obj = Array.get(pojo, i);
                 dest[i] = generalize(obj, history);
@@ -136,6 +137,7 @@ public class PojoUtils {
             Collection<Object> src = (Collection<Object>)pojo;
             int len = src.size();
             Collection<Object> dest = (pojo instanceof List<?>) ? new ArrayList<Object>(len) : new HashSet<Object>(len);
+            history.put(pojo, dest);
             for (Object obj : src) {
                 dest.add(generalize(obj, history));
             }
@@ -143,10 +145,9 @@ public class PojoUtils {
         }
         if (pojo instanceof Map<?, ?>) {
             Map<Object, Object> src = (Map<Object, Object>)pojo;
-            Map<Object, Object> tmp = new HashMap<Object, Object>(src.size());
-            tmp.putAll(src);
             Map<Object, Object> dest= new HashMap<Object, Object>(src.size());
-            for (Map.Entry<Object, Object> obj : tmp.entrySet()) {
+            history.put(pojo, dest);
+            for (Map.Entry<Object, Object> obj : src.entrySet()) {
             	dest.put(generalize(obj.getKey(), history), generalize(obj.getValue(), history));
             }
             return dest;
@@ -274,6 +275,7 @@ public class PojoUtils {
         		Class<?> ctype = pojo.getClass().getComponentType();
 	            int len = Array.getLength(pojo);
         		Collection dest = createCollection(type, len);
+                history.put(pojo, dest);
         		for (int i = 0; i < len; i ++) {
 	                Object obj = Array.get(pojo, i);
                     Object value = realize0(obj, ctype, null, history);
@@ -284,6 +286,7 @@ public class PojoUtils {
 	        	Class<?> ctype = (type != null && type.isArray() ? type.getComponentType() : pojo.getClass().getComponentType());
 	            int len = Array.getLength(pojo);
 	            Object dest = Array.newInstance(ctype, len);
+                history.put(pojo, dest);
 	            for (int i = 0; i < len; i ++) {
 	                Object obj = Array.get(pojo, i);
                     Object value = realize0(obj, ctype, null, history);
@@ -299,6 +302,7 @@ public class PojoUtils {
                 Collection<Object> src = (Collection<Object>)pojo;
                 int len = src.size();
                 Object dest = Array.newInstance(ctype, len);
+                history.put(pojo, dest);
                 int i = 0;
                 for (Object obj : src) {
                     Object value = realize0(obj, ctype, null, history);
@@ -310,6 +314,7 @@ public class PojoUtils {
         		Collection<Object> src = (Collection<Object>)pojo;
                 int len = src.size();
                 Collection<Object> dest = createCollection(type, len);
+                history.put(pojo, dest);
                 for (Object obj : src) {
                     Type keyType = getGenericClassByIndex(genericType, 0);
                     Class<?> keyClazz = obj.getClass() ;
@@ -325,7 +330,7 @@ public class PojoUtils {
         
         if (pojo instanceof Map<?, ?> && type != null) {
         	Object className = ((Map<Object, Object>)pojo).get("class");
-            if (className instanceof String && ! Map.class.isAssignableFrom(type)) {
+            if (className instanceof String) {
                 try {
                     type = ClassHelper.forName((String)className);
                 } catch (ClassNotFoundException e) {
@@ -347,9 +352,9 @@ public class PojoUtils {
             }
             
             if (Map.class.isAssignableFrom(type) || type == Object.class) {
-            	final Map<Object, Object> tmp = new HashMap<Object, Object>(map.size());
-            	tmp.putAll(map);
-            	for (Map.Entry<Object, Object> entry : tmp.entrySet()) {
+            	final Map<Object, Object> result = new HashMap<Object, Object>(map.size());
+                history.put(pojo, result);
+            	for (Map.Entry<Object, Object> entry : map.entrySet()) {
             	    Type keyType = getGenericClassByIndex(genericType, 0);
             	    Type valueType = getGenericClassByIndex(genericType, 1);
             	    Class<?> keyClazz;
@@ -367,9 +372,9 @@ public class PojoUtils {
             	    
             	    Object key = keyClazz == null ? entry.getKey() : realize0(entry.getKey(), keyClazz, keyType, history);
             	    Object value = valueClazz == null ? entry.getValue() : realize0(entry.getValue(), valueClazz, valueType, history);
-            		map.put(key, value);
+            	     result.put(key, value);
             	}
-        		return map;
+        		return result;
         	} else if (type.isInterface()) {
         	    Object dest = Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), new Class<?>[]{type}, new PojoInvocationHandler(map));
                 history.put(pojo, dest);
