@@ -116,7 +116,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
     }
 
     public String toString() {
-        return getInterface() + " -> " + getUrl()==null?" ":getUrl().toString();
+        return getInterface() + " -> " + (getUrl() == null ? "" : getUrl().toString());
     }
 
     public Result invoke(Invocation inv) throws RpcException {
@@ -135,7 +135,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         	invocation.addAttachmentsIfAbsent(context);
         }
         if (getUrl().getMethodParameter(invocation.getMethodName(), Constants.ASYNC_KEY, false)){
-        	invocation.setAttachment(Constants.Attachments.IS_ASYNC_KEY, Boolean.TRUE.toString());
+        	invocation.setAttachment(Constants.ASYNC_KEY, Boolean.TRUE.toString());
         }
         RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
         

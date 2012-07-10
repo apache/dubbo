@@ -272,7 +272,11 @@ public class Constants {
 
     public static final String  CLIENT_KEY                         = "client";
 
+    public static final String  ID_KEY                             = "id";
+
     public static final String  ASYNC_KEY                          = "async";
+
+    public static final String  RETURN_KEY                         = "return";
 
     public static final String  TOKEN_KEY                          = "token";
 
@@ -503,8 +507,6 @@ public class Constants {
 
     public static final String  ON_DISCONNECT_KEY                  = "ondisconnect";
 
-    public static final String  RETURN_KEY                         = "return";
-
     public static final String  ON_INVOKE_METHOD_KEY               = "oninvoke.method";
 
     public static final String  ON_RETURN_METHOD_KEY               = "onreturn.method";
@@ -568,11 +570,5 @@ public class Constants {
     /*
      * private Constants(){ }
      */
-    
-    public static class Attachments {
-    	public static final String IS_ASYNC_KEY = 						"attachments.async";
-    	public static final String IS_ONEWAY_KEY = 						"attachments.oneway";
-    	public static final String INVOCATIONID_KEY = 					"attachments.invocation.id";
-    }
 
 }
