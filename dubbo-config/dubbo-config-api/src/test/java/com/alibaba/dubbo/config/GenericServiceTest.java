@@ -23,6 +23,8 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.utils.SerializationUtils;
 import com.alibaba.dubbo.config.api.DemoException;
 import com.alibaba.dubbo.config.api.DemoService;
 import com.alibaba.dubbo.config.api.User;
@@ -115,6 +117,38 @@ public class GenericServiceTest {
                 users = (List<Map<String, Object>>) genericService.$invoke("getUsers", new String[] {List.class.getName()}, new Object[] {users});
                 Assert.assertEquals(1, users.size());
                 Assert.assertEquals("actual.provider", users.get(0).get("name"));
+            } finally {
+                reference.destroy();
+            }
+        } finally {
+            service.unexport();
+        }
+    }
+
+    @Test
+    public void testGenericSerializationJava() throws Exception {
+        ServiceConfig<DemoService> service = new ServiceConfig<DemoService>();
+        service.setApplication(new ApplicationConfig("generic-provider"));
+        service.setRegistry(new RegistryConfig("N/A"));
+        service.setProtocol(new ProtocolConfig("dubbo", 29581));
+        service.setInterface(DemoService.class.getName());
+        DemoServiceImpl ref = new DemoServiceImpl();
+        service.setRef(ref);
+        service.export();
+        try {
+            ReferenceConfig<GenericService> reference = new ReferenceConfig<GenericService>();
+            reference.setApplication(new ApplicationConfig("generic-consumer"));
+            reference.setInterface(DemoService.class);
+            reference.setUrl("dubbo://127.0.0.1:29581?scope=remote");
+            reference.setGeneric(Constants.GENERIC_SERIALIZATION_JAVA);
+            GenericService genericService = reference.get();
+            try {
+                String name = "kimi";
+                byte[] arg = SerializationUtils.javaSerialize(name);
+                Object obj = genericService.$invoke("sayName", new String[]{String.class.getName()}, new Object[]{arg});
+                Assert.assertTrue(obj instanceof byte[]);
+                byte[] result = (byte[])obj;
+                Assert.assertEquals(ref.sayName(name), SerializationUtils.javaDeserialize(result));
             } finally {
                 reference.destroy();
             }
