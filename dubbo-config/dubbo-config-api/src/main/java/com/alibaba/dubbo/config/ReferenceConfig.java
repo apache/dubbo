@@ -94,7 +94,25 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     private transient boolean    destroyed;
 
     private final List<URL> urls = new ArrayList<URL>();
-    
+
+    @SuppressWarnings("unused")
+    private final Object finalizerGuardian = new Object() {
+        @Override
+        protected void finalize() throws Throwable {
+            super.finalize();
+
+            if(! ReferenceConfig.this.destroyed) {
+                logger.warn("ReferenceConfig(" + url + ") is not destroyed when finalize!");
+
+                try {
+                    ReferenceConfig.this.destroy();
+                } catch (Throwable t) {
+                        logger.warn("Unexpected err when destroy invoker of ReferenceConfig(" + url + ") in finalize method!", t);
+                }
+            }
+        }
+    };
+
     public ReferenceConfig() {}
     
     public ReferenceConfig(Reference reference) {
