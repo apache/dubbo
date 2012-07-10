@@ -15,19 +15,15 @@
  */
 package com.alibaba.dubbo.rpc.protocol.dubbo.status;
 
-import java.util.Collection;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.Activate;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.status.Status;
 import com.alibaba.dubbo.common.status.StatusChecker;
-import com.alibaba.dubbo.remoting.ChannelHandler;
-import com.alibaba.dubbo.remoting.Server;
-import com.alibaba.dubbo.remoting.exchange.ExchangeServer;
-import com.alibaba.dubbo.remoting.exchange.support.header.HeaderExchangeServer;
-import com.alibaba.dubbo.remoting.transport.dispather.WrappedChannelHandler;
-import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
+import com.alibaba.dubbo.common.store.DataStore;
 
 /**
  * ThreadPoolStatusChecker
@@ -38,29 +34,18 @@ import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
 public class ThreadPoolStatusChecker implements StatusChecker {
 
     public Status check() {
-        Collection<ExchangeServer> servers = DubboProtocol.getDubboProtocol().getServers();
-        if (servers == null || servers.size() == 0) {
-            return new Status(Status.Level.UNKNOWN);
-        }
-        for (Server server : servers) {
-            if (server instanceof HeaderExchangeServer) {
-                HeaderExchangeServer exchanger = (HeaderExchangeServer) server;
-                server = exchanger.getServer();
-            }
-            ChannelHandler handler = server.getChannelHandler();
-            if (handler instanceof WrappedChannelHandler) {
-                Executor executor = ((WrappedChannelHandler) handler).getExecutor();
-                if (executor instanceof ThreadPoolExecutor) {
-                    ThreadPoolExecutor tp = (ThreadPoolExecutor)executor;
-                    boolean ok = tp.getActiveCount() < tp.getMaximumPoolSize() - 1;
-                    return new Status(ok ? Status.Level.OK : Status.Level.WARN, 
-                            "max:" + tp.getMaximumPoolSize() 
-                            + ",core:" + tp.getCorePoolSize() 
-                            + ",largest:" + tp.getLargestPoolSize()
-                            + ",active:" + tp.getActiveCount() 
-                            + ",task:" + tp.getTaskCount());
-                }
-            }
+        ExecutorService executor = (ExecutorService) ExtensionLoader
+            .getExtensionLoader(DataStore.class).getDefaultExtension()
+            .get(Constants.EXECUTOR_SERVICE_COMPONENT_KEY, Constants.DEFAULT_EXECUTOR_SERVICE_KEY);
+        if (executor != null && executor instanceof ThreadPoolExecutor) {
+            ThreadPoolExecutor tp = (ThreadPoolExecutor) executor;
+            boolean ok = tp.getActiveCount() < tp.getMaximumPoolSize() - 1;
+            return new Status(ok ? Status.Level.OK : Status.Level.WARN,
+                              "max:" + tp.getMaximumPoolSize()
+                                  + ",core:" + tp.getCorePoolSize()
+                                  + ",largest:" + tp.getLargestPoolSize()
+                                  + ",active:" + tp.getActiveCount()
+                                  + ",task:" + tp.getTaskCount());
         }
         return new Status(Status.Level.UNKNOWN);
     }
