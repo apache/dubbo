@@ -15,9 +15,12 @@
  */
 package com.alibaba.dubbo.rpc.protocol.injvm;
 
+import java.util.Map;
+
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
+import com.alibaba.dubbo.common.utils.UrlUtils;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
@@ -60,9 +63,16 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
     public <T> Invoker<T> refer(Class<T> serviceType, URL url) throws RpcException {
         return new InjvmInvoker<T>(serviceType, url, url.getServiceKey(), exporterMap);
     }
-    
-    private boolean isExported(String key) {
-        return exporterMap != null && exporterMap.containsKey(key);
+
+    static Exporter<?> getExporter(Map<String, Exporter<?>> map, URL key) {
+        if (map != null && !map.isEmpty()) {
+            for(Exporter<?> exporter : map.values()) {
+                if (UrlUtils.isServiceKeyMatch(key, exporter.getInvoker().getUrl())) {
+                    return exporter;
+                }
+            }
+        }
+        return null;
     }
     
     public boolean isInjvmRefer(URL url) {
@@ -74,14 +84,14 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
     	} else if (Constants.SCOPE_LOCAL.equals(scope) || (url.getParameter("injvm", false))) {
 			//如果声明为本地引用
 			//scope=local || injvm=true 等价 injvm标签未来废弃掉.
-			isJvmRefer = true;	
+			isJvmRefer = true;
 		} else if (Constants.SCOPE_REMOTE.equals(scope)){
 			//声明了是远程引用，则不做本地引用
 			isJvmRefer = false;
 		} else if (url.getParameter(Constants.GENERIC_KEY, false)){
 			//泛化调用不走本地
 			isJvmRefer = false;
-		} else if (isExported(url.getServiceKey())) {
+		} else if (getExporter(exporterMap, url) != null) {
 			//默认情况下如果本地有服务暴露，则引用本地服务.
 			isJvmRefer = true;
 		} else {

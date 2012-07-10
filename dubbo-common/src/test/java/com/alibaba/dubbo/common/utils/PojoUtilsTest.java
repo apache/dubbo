@@ -24,6 +24,8 @@ import static org.junit.Assert.assertTrue;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -292,7 +294,17 @@ public class PojoUtilsTest {
         public String gender;
         
         public int age;
-        
+
+        private String name;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
         public void setAge(int age) {
             this.age = age;
         }
@@ -348,10 +360,13 @@ public class PojoUtilsTest {
         
         map.put("k", "v");
         map.put("m", map);
-     
+        assertSame(map, map.get("m"));
+        System.out.println(map);
         Object generalize = PojoUtils.generalize(map);
+        System.out.println(generalize);
         @SuppressWarnings("unchecked")
         Map<String, Object> ret = (Map<String, Object>) PojoUtils.realize(generalize, Map.class);
+        System.out.println(ret);
         
         assertEquals("v", ret.get("k"));
         assertSame(ret, ret.get("m"));
@@ -509,5 +524,74 @@ public class PojoUtilsTest {
         Assert.assertEquals(child.age, realizedParent.getChild().getAge());
         Assert.assertEquals(parent.getEmail(), realizedParent.getEmail());
         Assert.assertNull(realizedParent.email);
+    }
+
+    public static class TestData {
+        private Map<String, Child> children = new HashMap<String, Child>();
+        private List<Child> list = new ArrayList<Child>();
+
+        public List<Child> getList() {
+            return list;
+        }
+
+        public void setList(List<Child> list) {
+            if (list != null && !list.isEmpty()) {
+                this.list.addAll(list);
+            }
+        }
+
+        public Map<String, Child> getChildren() {
+            return children;
+        }
+
+        public void setChildren(Map<String, Child> children) {
+            if (children!= null && !children.isEmpty()) {
+                this.children.putAll(children);
+            }
+        }
+
+        public void addChild(Child child) {
+            this.children.put(child.getName(), child);
+        }
+    }
+
+    @Test
+    public void testMapField() throws Exception {
+        TestData data = new TestData();
+        Child child = newChild("first", 1);
+        data.addChild(child);
+        child = newChild("second", 2);
+        data.addChild(child);
+        child = newChild("third", 3);
+        data.addChild(child);
+
+        data.setList(Arrays.asList(newChild("forth", 4)));
+
+        Object obj = PojoUtils.generalize(data);
+        Assert.assertEquals(3, data.getChildren().size());
+        Assert.assertTrue(data.getChildren().get("first").getClass() == Child.class);
+        Assert.assertEquals(1, data.getList().size());
+        Assert.assertTrue(data.getList().get(0).getClass() == Child.class);
+
+        TestData realizadData = (TestData) PojoUtils.realize(obj, TestData.class);
+        Assert.assertEquals(data.getChildren().size(), realizadData.getChildren().size());
+        Assert.assertEquals(data.getChildren().keySet(), realizadData.getChildren().keySet());
+        for(Map.Entry<String, Child> entry : data.getChildren().entrySet()) {
+            Child c = realizadData.getChildren().get(entry.getKey());
+            Assert.assertNotNull(c);
+            Assert.assertEquals(entry.getValue().getName(), c.getName());
+            Assert.assertEquals(entry.getValue().getAge(), c.getAge());
+        }
+
+        Assert.assertEquals(1, realizadData.getList().size());
+        Assert.assertEquals(data.getList().get(0).getName(), realizadData.getList().get(0).getName());
+        Assert.assertEquals(data.getList().get(0).getAge(), realizadData.getList().get(0).getAge());
+    }
+
+    private static Child newChild(String name, int age) {
+        Child result = new Child();
+        result.setName(name);
+        result.setAge(age);
+        return result;
     }
 }
