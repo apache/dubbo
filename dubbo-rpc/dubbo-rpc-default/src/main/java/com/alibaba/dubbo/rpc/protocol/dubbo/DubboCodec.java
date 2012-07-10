@@ -15,52 +15,151 @@
  */
 package com.alibaba.dubbo.rpc.protocol.dubbo;
 
-import static com.alibaba.dubbo.rpc.protocol.dubbo.CallbackServiceCodec.decodeInvocationArgument;
-import static com.alibaba.dubbo.rpc.protocol.dubbo.CallbackServiceCodec.encodeInvocationArgument;
-
 import java.io.IOException;
-import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.InputStream;
 
 import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.Version;
+import com.alibaba.dubbo.common.io.Bytes;
+import com.alibaba.dubbo.common.io.UnsafeByteArrayInputStream;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.serialize.ObjectInput;
 import com.alibaba.dubbo.common.serialize.ObjectOutput;
+import com.alibaba.dubbo.common.serialize.Serialization;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.Codec;
+import com.alibaba.dubbo.remoting.exchange.Request;
+import com.alibaba.dubbo.remoting.exchange.Response;
 import com.alibaba.dubbo.remoting.exchange.codec.ExchangeCodec;
+import com.alibaba.dubbo.remoting.transport.CodecSupport;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcInvocation;
-import com.alibaba.dubbo.rpc.RpcResult;
-import com.alibaba.dubbo.rpc.support.RpcUtils;
+
+import static com.alibaba.dubbo.rpc.protocol.dubbo.CallbackServiceCodec.encodeInvocationArgument;
 
 /**
  * Dubbo codec.
- * 
+ *
  * @author qianlei
  * @author chao.liuc
  */
 public class DubboCodec extends ExchangeCodec implements Codec {
 
-    public static final String      NAME                    = "dubbo";
+    private static final Logger log = LoggerFactory.getLogger(DubboCodec.class);
 
-    private static final String     DUBBO_VERSION           = Version.getVersion(DubboCodec.class, Version.getVersion());
+    public static final String NAME = "dubbo";
 
-    private static final byte       RESPONSE_WITH_EXCEPTION = 0;
+    public static final String DUBBO_VERSION = Version.getVersion(DubboCodec.class, Version.getVersion());
 
-    private static final byte       RESPONSE_VALUE          = 1;
+    public static final byte RESPONSE_WITH_EXCEPTION = 0;
 
-    private static final byte       RESPONSE_NULL_VALUE     = 2;
+    public static final byte RESPONSE_VALUE = 1;
 
-    private static final Object[]   EMPTY_OBJECT_ARRAY      = new Object[0];
+    public static final byte RESPONSE_NULL_VALUE = 2;
 
-    private static final Class<?>[] EMPTY_CLASS_ARRAY       = new Class<?>[0];
-    
-   
+    public static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
+
+    public static final Class<?>[] EMPTY_CLASS_ARRAY = new Class<?>[0];
+
+    protected Object decodeBody(Channel channel, InputStream is, byte[] header) throws IOException {
+        byte flag = header[2], proto = (byte) (flag & SERIALIZATION_MASK);
+        Serialization s = CodecSupport.getSerialization(channel.getUrl(), proto);
+        // get request id.
+        long id = Bytes.bytes2long(header, 4);
+        if ((flag & FLAG_REQUEST) == 0) {
+            // decode response.
+            Response res = new Response(id);
+            if ((flag & FLAG_EVENT) != 0) {
+                res.setEvent(Response.HEARTBEAT_EVENT);
+            }
+            // get status.
+            byte status = header[3];
+            res.setStatus(status);
+            if (status == Response.OK) {
+                try {
+                    Object data;
+                    if (res.isHeartbeat()) {
+                        data = decodeHeartbeatData(channel, deserialize(s, channel.getUrl(), is));
+                    } else if (res.isEvent()) {
+                        data = decodeEventData(channel, deserialize(s, channel.getUrl(), is));
+                    } else {
+                        DecodeableRpcResult result = new DecodeableRpcResult(channel, res,
+                            new UnsafeByteArrayInputStream(readMessageData(is)), (Invocation) getRequestData(id), proto);
+                        if (channel.getUrl().getParameter(
+                            Constants.DECODE_IN_IO_THREAD_KEY,
+                            Constants.DEFAULT_DECODE_IN_IO_THREAD)) {
+                            result.decode();
+                        }
+                        data = result;
+                    }
+                    res.setResult(data);
+                } catch (Throwable t) {
+                    if (log.isWarnEnabled()) {
+                        log.warn("Decode response failed: " + t.getMessage(), t);
+                    }
+                    res.setStatus(Response.CLIENT_ERROR);
+                    res.setErrorMessage(StringUtils.toString(t));
+                }
+            } else {
+                res.setErrorMessage(deserialize(s, channel.getUrl(), is).readUTF());
+            }
+            return res;
+        } else {
+            // decode request.
+            Request req = new Request(id);
+            req.setVersion("2.0.0");
+            req.setTwoWay((flag & FLAG_TWOWAY) != 0);
+            if ((flag & FLAG_EVENT) != 0) {
+                req.setEvent(Request.HEARTBEAT_EVENT);
+            }
+            try {
+                Object data;
+                if (req.isHeartbeat()) {
+                    data = decodeHeartbeatData(channel, deserialize(s, channel.getUrl(), is));
+                } else if (req.isEvent()) {
+                    data = decodeEventData(channel, deserialize(s, channel.getUrl(), is));
+                } else {
+                    DecodeableRpcInvocation inv = new DecodeableRpcInvocation(channel, req,
+                        new UnsafeByteArrayInputStream(readMessageData(is)), proto);
+                    if (channel.getUrl().getParameter(
+                        Constants.DECODE_IN_IO_THREAD_KEY,
+                        Constants.DEFAULT_DECODE_IN_IO_THREAD)) {
+                        inv.decode();
+                    }
+                    data = inv;
+                }
+                req.setData(data);
+            } catch (Throwable t) {
+                if (log.isWarnEnabled()) {
+                    log.warn("Decode request failed: " + t.getMessage(), t);
+                }
+                // bad request
+                req.setBroken(true);
+                req.setData(t);
+            }
+            return req;
+        }
+    }
+
+    private ObjectInput deserialize(Serialization serialization, URL url, InputStream is)
+        throws IOException {
+        return serialization.deserialize(url, is);
+    }
+
+    private byte[] readMessageData(InputStream is) throws IOException {
+        if (is.available() > 0) {
+            byte[] result = new byte[is.available()];
+            is.read(result);
+            return result;
+        }
+        return new byte[]{};
+    }
+
     @Override
     protected void encodeRequestData(Channel channel, ObjectOutput out, Object data) throws IOException {
         RpcInvocation inv = (RpcInvocation) data;
@@ -80,58 +179,6 @@ public class DubboCodec extends ExchangeCodec implements Codec {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    protected Object decodeRequestData(Channel channel, ObjectInput in) throws IOException {
-        RpcInvocation inv = new RpcInvocation();
-
-        inv.setAttachment(Constants.DUBBO_VERSION_KEY, in.readUTF());
-        inv.setAttachment(Constants.PATH_KEY, in.readUTF());
-        inv.setAttachment(Constants.VERSION_KEY, in.readUTF());
-
-        inv.setMethodName(in.readUTF());
-        try {
-            Object[] args;
-            Class<?>[] pts;
-            String desc = in.readUTF();
-            if (desc.length() == 0) {
-                pts = EMPTY_CLASS_ARRAY;
-                args = EMPTY_OBJECT_ARRAY;
-            } else {
-                pts = ReflectUtils.desc2classArray(desc);
-                args = new Object[pts.length];
-                for (int i = 0; i < args.length; i++){
-                    try{
-                        args[i] = in.readObject(pts[i]);
-                    }catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-            inv.setParameterTypes(pts);
-            
-            Map<String, String> map = (Map<String, String>) in.readObject(Map.class);
-            if (map != null && map.size() > 0) {
-                Map<String, String> attachment = inv.getAttachments();
-                if (attachment == null) {
-                    attachment = new HashMap<String, String>();
-                }
-                attachment.putAll(map);
-                inv.setAttachments(attachment);
-            }
-            //decode argument ,may be callback
-            for (int i = 0; i < args.length; i++){
-                args[i] = decodeInvocationArgument(channel, inv, pts, i, args[i]);
-            }
-            
-            inv.setArguments(args);
-            
-        } catch (ClassNotFoundException e) {
-            throw new IOException(StringUtils.toString("Read invocation data failed.", e));
-        }
-        return inv;
-    }
-
-    @Override
     protected void encodeResponseData(Channel channel, ObjectOutput out, Object data) throws IOException {
         Result result = (Result) data;
 
@@ -148,39 +195,5 @@ public class DubboCodec extends ExchangeCodec implements Codec {
             out.writeByte(RESPONSE_WITH_EXCEPTION);
             out.writeObject(th);
         }
-    }
-    
-    @Override
-    protected Object decodeResponseData(Channel channel, ObjectInput in, Object request) throws IOException {
-        Invocation invocation = (Invocation) request;
-        RpcResult result = new RpcResult();
-
-        byte flag = in.readByte();
-        switch (flag) {
-            case RESPONSE_NULL_VALUE:
-                break;
-            case RESPONSE_VALUE:
-                try {
-                    Type[] returnType = RpcUtils.getReturnTypes(invocation);
-                    result.setValue(returnType == null || returnType.length == 0 ? in.readObject() : 
-                        (returnType.length == 1 ? in.readObject((Class<?>)returnType[0]) 
-                                : in.readObject((Class<?>)returnType[0], returnType[1])));
-                } catch (ClassNotFoundException e) {
-                    throw new IOException(StringUtils.toString("Read response data failed.", e));
-                }
-                break;
-            case RESPONSE_WITH_EXCEPTION:
-                try {
-                    Object obj = in.readObject();
-                    if (obj instanceof Throwable == false) throw new IOException("Response data error, expect Throwable, but get " + obj);
-                    result.setException((Throwable) obj);
-                } catch (ClassNotFoundException e) {
-                    throw new IOException(StringUtils.toString("Read response data failed.", e));
-                }
-                break;
-            default:
-                throw new IOException("Unknown result flag, expect '0' '1' '2', get " + flag);
-        }
-        return result;
     }
 }

@@ -1,0 +1,1 @@
+threadnotsafe=com.alibaba.dubbo.common.store.support.ThreadNotSafeDataStore

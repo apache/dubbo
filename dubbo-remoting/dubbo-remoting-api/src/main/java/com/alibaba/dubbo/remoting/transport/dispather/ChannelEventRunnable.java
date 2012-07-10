@@ -15,6 +15,8 @@
  */
 package com.alibaba.dubbo.remoting.transport.dispather;
 
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 
@@ -23,6 +25,8 @@ import com.alibaba.dubbo.remoting.ChannelHandler;
  *
  */
 public class ChannelEventRunnable implements Runnable {
+    private static final Logger logger             = LoggerFactory.getLogger(ChannelEventRunnable.class);
+
     private final ChannelHandler handler;
     private final Channel channel;
     private final ChannelState state;
@@ -55,42 +59,45 @@ public class ChannelEventRunnable implements Runnable {
                 try{
                     handler.connected(channel);
                 }catch (Exception e) {
-                    throw new RuntimeException("ChannelEventRunnable handle error,channel is "+channel,e);
+                    logger.warn("ChannelEventRunnable handle " + state + " operation error, channel is " + channel, e);
                 }
                 break;
             case DISCONNECTED:
                 try{
                     handler.disconnected(channel);
                 }catch (Exception e) {
-                    throw new RuntimeException("ChannelEventRunnable handle error,channel is "+channel,e);
+                    logger.warn("ChannelEventRunnable handle " + state + " operation error, channel is " + channel, e);
                 }
                 break;
             case SENT:
                 try{
                     handler.sent(channel,message);
                 }catch (Exception e) {
-                    throw new RuntimeException("ChannelEventRunnable handle error,channel is "+channel+",message is "+ message,e);
+                    logger.warn("ChannelEventRunnable handle " + state + " operation error, channel is " + channel
+                            + ", message is "+ message,e);
                 }
-                
                 break;
             case RECEIVED:
                 try{
                     handler.received(channel, message);
                 }catch (Exception e) {
-                    throw new RuntimeException("ChannelEventRunnable handle error,channel is "+channel+",message is "+ message,e);
+                    logger.warn("ChannelEventRunnable handle " + state + " operation error, channel is " + channel
+                            + ", message is "+ message,e);
                 }
                 break;
             case CAUGHT:
                 try{
                     handler.caught(channel, exception);
                 }catch (Exception e) {
-                    throw new RuntimeException("ChannelEventRunnable handle error,channel is "+channel +", message is: "+message+" exception is "+exception,e);
+                    logger.warn("ChannelEventRunnable handle " + state + " operation error, channel is "+ channel
+                            + ", message is: " + message + ", exception is " + exception,e);
                 }
-                
                 break;
-                }
+            default:
+                logger.warn("unknown state: " + state + ", message is " + message);
         }
-    
+    }
+
     /**
      * ChannelState
      * 

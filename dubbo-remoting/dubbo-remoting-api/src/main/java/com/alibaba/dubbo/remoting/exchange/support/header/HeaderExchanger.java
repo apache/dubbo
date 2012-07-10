@@ -22,6 +22,7 @@ import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
 import com.alibaba.dubbo.remoting.exchange.ExchangeHandler;
 import com.alibaba.dubbo.remoting.exchange.ExchangeServer;
 import com.alibaba.dubbo.remoting.exchange.Exchanger;
+import com.alibaba.dubbo.remoting.transport.DecodeHandler;
 
 /**
  * DefaultMessenger
@@ -33,11 +34,11 @@ public class HeaderExchanger implements Exchanger {
     public static final String NAME = "header";
 
     public ExchangeClient connect(URL url, ExchangeHandler handler) throws RemotingException {
-        return new HeaderExchangeClient(Transporters.connect(url, new HeaderExchangeHandler(handler)));
+        return new HeaderExchangeClient(Transporters.connect(url, new DecodeHandler(new HeaderExchangeHandler(handler))));
     }
 
     public ExchangeServer bind(URL url, ExchangeHandler handler) throws RemotingException {
-        return new HeaderExchangeServer(Transporters.bind(url, new HeaderExchangeHandler(handler)));
+        return new HeaderExchangeServer(Transporters.bind(url, new DecodeHandler(new HeaderExchangeHandler(handler))));
     }
 
 }
