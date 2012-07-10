@@ -32,4 +32,20 @@ public class ProtocolUtils {
         return buf.toString();
     }
 
+    public static boolean isGeneric(String generic) {
+        return generic != null
+            && !"".equals(generic)
+            && (Constants.GENERIC_SERIALIZATION_DEFAULT.equalsIgnoreCase(generic)  /* 正常的泛化调用 */
+            || Constants.GENERIC_SERIALIZATION_JAVA.equalsIgnoreCase(generic)); /* 支持java序列化的流式泛化调用 */
+    }
+
+    public static boolean isDefaultGenericSerialization(String generic) {
+        return isGeneric(generic)
+            && Constants.GENERIC_SERIALIZATION_DEFAULT.equalsIgnoreCase(generic);
+    }
+
+    public static boolean isJavaGenericSerialization(String generic) {
+        return isGeneric(generic)
+            && Constants.GENERIC_SERIALIZATION_JAVA.equalsIgnoreCase(generic);
+    }
 }

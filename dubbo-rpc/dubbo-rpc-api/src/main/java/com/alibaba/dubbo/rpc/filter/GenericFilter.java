@@ -15,12 +15,15 @@
  */
 package com.alibaba.dubbo.rpc.filter;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.utils.PojoUtils;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
+import com.alibaba.dubbo.common.utils.SerializationUtils;
+import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.rpc.Filter;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
@@ -29,6 +32,7 @@ import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.service.GenericException;
+import com.alibaba.dubbo.rpc.support.ProtocolUtils;
 
 /**
  * GenericInvokerFilter.
@@ -37,7 +41,7 @@ import com.alibaba.dubbo.rpc.service.GenericException;
  */
 @Activate(group = Constants.PROVIDER, order = -100000)
 public class GenericFilter implements Filter {
-    
+
     public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {
         if (inv.getMethodName().equals(Constants.$INVOKE) 
                 && inv.getArguments() != null
@@ -52,13 +56,43 @@ public class GenericFilter implements Filter {
                 if (args == null) {
                     args = new Object[params.length];
                 }
-                args = PojoUtils.realize(args, params, method.getGenericParameterTypes());
+                String generic = inv.getAttachment(Constants.GENERIC_KEY);
+                if (StringUtils.isEmpty(generic)
+                    || ProtocolUtils.isDefaultGenericSerialization(generic)) {
+                    args = PojoUtils.realize(args, params, method.getGenericParameterTypes());
+                } else if (ProtocolUtils.isJavaGenericSerialization(generic)) {
+                    for(int i = 0; i < args.length; i++) {
+                        if (byte[].class == args[i].getClass()) {
+                            try {
+                                args[i] = SerializationUtils.javaDeserialize((byte[]) args[i]);
+                            } catch (Exception e) {
+                                throw new RpcException("Deserialize argument [" + (i + 1) + "] failed.", e);
+                            }
+                        } else {
+                            throw new RpcException(
+                                new StringBuilder(32).append("Generic serialization [")
+                                    .append(Constants.GENERIC_SERIALIZATION_JAVA)
+                                    .append("] only support message type ")
+                                    .append(byte[].class)
+                                    .append(" and your message type is ")
+                                    .append(args[i].getClass()).toString());
+                        }
+                    }
+                }
                 Result result = invoker.invoke(new RpcInvocation(method, args, inv.getAttachments()));
                 if (result.hasException()
                         && ! (result.getException() instanceof GenericException)) {
                     return new RpcResult(new GenericException(result.getException()));
                 }
-                return new RpcResult(PojoUtils.generalize(result.getValue()));
+                if (ProtocolUtils.isJavaGenericSerialization(generic)) {
+                    try {
+                        return new RpcResult(SerializationUtils.javaSerialize(result.getValue()));
+                    } catch (IOException e) {
+                        throw new RpcException("Serialize result failed.", e);
+                    }
+                } else {
+                    return new RpcResult(PojoUtils.generalize(result.getValue()));
+                }
             } catch (NoSuchMethodException e) {
                 throw new RpcException(e.getMessage(), e);
             } catch (ClassNotFoundException e) {
