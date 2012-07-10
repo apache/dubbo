@@ -36,7 +36,7 @@ import java.util.concurrent.ConcurrentMap;
 public class ReferenceConfigCache {
     public static final String DEFAULT_NAME = "_DEFAULT_";
 
-    private static final ConcurrentMap<String, ReferenceConfigCache> cacheHolder = new ConcurrentHashMap<String, ReferenceConfigCache>();
+    static final ConcurrentMap<String, ReferenceConfigCache> cacheHolder = new ConcurrentHashMap<String, ReferenceConfigCache>();
 
     /**
      * Get the cache use default name and {@link #DEFAULT_KEY_GENERATOR} to generate cache key.
@@ -74,7 +74,7 @@ public class ReferenceConfigCache {
     /**
      * Create the key with the <b>Group</b>, <b>Interface</b> and <b>version</b> attribute of {@link ReferenceConfig}.
      * <p>
-     * eg: <code>group1/com.alibaba.foo.FooService:1.0.0</code>.
+     * key example: <code>group1/com.alibaba.foo.FooService:1.0.0</code>.
      */
     public static final KeyGenerator DEFAULT_KEY_GENERATOR = new KeyGenerator() {
         public String generateKey(ReferenceConfig<?> referenceConfig) {
@@ -102,7 +102,7 @@ public class ReferenceConfigCache {
     private final String name;
     private final KeyGenerator generator;
 
-    private ConcurrentMap<String, ReferenceConfig<?>> cache = new ConcurrentHashMap<String, ReferenceConfig<?>>();
+    ConcurrentMap<String, ReferenceConfig<?>> cache = new ConcurrentHashMap<String, ReferenceConfig<?>>();
 
     private ReferenceConfigCache(String name, KeyGenerator generator) {
         this.name = name;
@@ -114,7 +114,7 @@ public class ReferenceConfigCache {
 
         ReferenceConfig<?> config = cache.get(key);
         if(config != null) {
-            return referenceConfig.get();
+            return (T) config.get();
         }
 
         cache.putIfAbsent(key, referenceConfig);
