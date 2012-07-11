@@ -34,9 +34,8 @@ import com.alibaba.dubbo.common.store.DataStore;
 public class ThreadPoolStatusChecker implements StatusChecker {
 
     public Status check() {
-        ExecutorService executor = (ExecutorService) ExtensionLoader
-            .getExtensionLoader(DataStore.class).getDefaultExtension()
-            .get(Constants.EXECUTOR_SERVICE_COMPONENT_KEY, Constants.DEFAULT_EXECUTOR_SERVICE_KEY);
+        DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
+        ExecutorService executor = (ExecutorService) dataStore.get(Constants.EXECUTOR_SERVICE_COMPONENT_KEY, Constants.DEFAULT_EXECUTOR_SERVICE_KEY);
         if (executor != null && executor instanceof ThreadPoolExecutor) {
             ThreadPoolExecutor tp = (ThreadPoolExecutor) executor;
             boolean ok = tp.getActiveCount() < tp.getMaximumPoolSize() - 1;
