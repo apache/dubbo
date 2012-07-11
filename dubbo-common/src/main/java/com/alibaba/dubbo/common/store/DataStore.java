@@ -21,7 +21,7 @@ import com.alibaba.dubbo.common.extension.SPI;
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-@SPI("threadnotsafe")
+@SPI("simple")
 public interface DataStore {
 
     Object get(String componentName, String key);
