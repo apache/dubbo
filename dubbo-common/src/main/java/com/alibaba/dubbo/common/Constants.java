@@ -572,8 +572,6 @@ public class Constants {
 
     public static final String EXECUTOR_SERVICE_COMPONENT_KEY      = ExecutorService.class.getName();
 
-    public static final String DEFAULT_EXECUTOR_SERVICE_KEY        = "threadnotsafe";
-
     public static final String GENERIC_SERIALIZATION_JAVA          = "java";
 
     public static final String GENERIC_SERIALIZATION_DEFAULT       = "true";
