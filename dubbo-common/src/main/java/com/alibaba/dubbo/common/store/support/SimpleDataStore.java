@@ -16,6 +16,7 @@
 
 package com.alibaba.dubbo.common.store.support;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -31,6 +32,13 @@ public class SimpleDataStore implements DataStore {
     // <组件类名或标识, <数据名, 数据值>>
     private ConcurrentMap<String, ConcurrentMap<String, Object>> data =
         new ConcurrentHashMap<String, ConcurrentMap<String,Object>>();
+
+    public Map<String, Object> get(String componentName) {
+        ConcurrentMap<String, Object> value = data.get(componentName);
+        if(value == null) return new HashMap<String, Object>();
+
+        return new HashMap<String, Object>(value);
+    }
 
     public Object get(String componentName, String key) {
         if (!data.containsKey(componentName)) {
