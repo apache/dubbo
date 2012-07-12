@@ -18,42 +18,49 @@ package com.alibaba.dubbo.common.store.support;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import com.alibaba.dubbo.common.store.DataStore;
 
 /**
+ * @author <a href="mailto:ding.lid@alibaba-inc.com">ding.lid</a>
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-public class ThreadNotSafeDataStore implements DataStore {
+public class SimpleDataStore implements DataStore {
 
     // <组件类名或标识, <数据名, 数据值>>
-    private Map<String, Map<String, Object>> datas =
-        new HashMap<String, Map<String, Object>>();
+    private ConcurrentMap<String, ConcurrentMap<String, Object>> data =
+        new ConcurrentHashMap<String, ConcurrentMap<String,Object>>();
 
-    @SuppressWarnings("unchecked")
+    public Map<String, Object> get(String componentName) {
+        ConcurrentMap<String, Object> value = data.get(componentName);
+        if(value == null) return new HashMap<String, Object>();
+
+        return new HashMap<String, Object>(value);
+    }
+
     public Object get(String componentName, String key) {
-        if (!datas.containsKey(componentName)) {
+        if (!data.containsKey(componentName)) {
             return null;
         }
-        return datas.get(componentName).get(key);
+        return data.get(componentName).get(key);
     }
 
     public void put(String componentName, String key, Object value) {
-        Map<String, Object> componentDatas = null;
-        if (!datas.containsKey(componentName)) {
-            componentDatas = new HashMap<String, Object>();
-        } else {
-            componentDatas = datas.get(componentName);
+        Map<String, Object> componentData = data.get(componentName);
+        if(null == componentData) {
+            data.putIfAbsent(componentName, new ConcurrentHashMap<String, Object>());
+            componentData = data.get(componentName);
         }
-        componentDatas.put(key, value);
-        datas.put(componentName, componentDatas);
+        componentData.put(key, value);
     }
 
     public void remove(String componentName, String key) {
-        if (!datas.containsKey(componentName)) {
+        if (!data.containsKey(componentName)) {
             return;
         }
-        datas.get(componentName).remove(key);
+        data.get(componentName).remove(key);
     }
 
 }

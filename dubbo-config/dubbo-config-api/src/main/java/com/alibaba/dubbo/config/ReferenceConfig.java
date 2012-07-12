@@ -94,7 +94,25 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     private transient boolean    destroyed;
 
     private final List<URL> urls = new ArrayList<URL>();
-    
+
+    @SuppressWarnings("unused")
+    private final Object finalizerGuardian = new Object() {
+        @Override
+        protected void finalize() throws Throwable {
+            super.finalize();
+
+            if(! ReferenceConfig.this.destroyed) {
+                logger.warn("ReferenceConfig(" + url + ") is not destroyed when finalize!");
+
+                try {
+                    ReferenceConfig.this.destroy();
+                } catch (Throwable t) {
+                        logger.warn("Unexpected err when destroy invoker of ReferenceConfig(" + url + ") in finalize method!", t);
+                }
+            }
+        }
+    };
+
     public ReferenceConfig() {}
     
     public ReferenceConfig(Reference reference) {
@@ -147,13 +165,10 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     	// 获取消费者全局配置
     	checkDefault();
         appendProperties(this);
-        if (generic == null && consumer != null) {
-            generic = consumer.isGeneric();
+        if (! isGeneric() && getConsumer() != null) {
+            setGeneric(getConsumer().getGeneric());
         }
-        if (generic == null) {
-        	generic = false;
-        }
-        if (generic) {
+        if (isGeneric()) {
             interfaceClass = GenericService.class;
         } else {
             try {
@@ -242,7 +257,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         if (ConfigUtils.getPid() > 0) {
             map.put(Constants.PID_KEY, String.valueOf(ConfigUtils.getPid()));
         }
-        if (! generic) {
+        if (! isGeneric()) {
             String revision = Version.getVersion(interfaceClass, version);
             if (revision != null && revision.length() > 0) {
                 map.put("revision", revision);
@@ -406,9 +421,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 	    if (interfaceClass != null) {
 	        return interfaceClass;
 	    }
-	    if ((generic != null && generic.booleanValue())
-	            || (consumer != null && consumer.isGeneric() != null 
-	                && consumer.isGeneric().booleanValue())) {
+	    if (isGeneric()
+            || (getConsumer() != null && getConsumer().isGeneric())) {
 	        return GenericService.class;
 	    }
 	    try {

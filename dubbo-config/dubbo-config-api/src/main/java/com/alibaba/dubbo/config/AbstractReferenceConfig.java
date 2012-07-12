@@ -18,6 +18,7 @@ package com.alibaba.dubbo.config;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.config.support.Parameter;
 import com.alibaba.dubbo.rpc.InvokerListener;
+import com.alibaba.dubbo.rpc.support.ProtocolUtils;
 
 
 /**
@@ -40,7 +41,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     protected Boolean             init;
 
     // 是否使用泛接口
-    protected Boolean             generic;
+    protected String             generic;
 
     // 优先从JVM内获取引用实例
     protected Boolean             injvm;
@@ -79,11 +80,21 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
     @Parameter(excluded = true)
     public Boolean isGeneric() {
-        return generic;
+        return ProtocolUtils.isGeneric(generic);
     }
 
     public void setGeneric(Boolean generic) {
+        if (generic != null) {
+            this.generic = generic.toString();
+        }
+    }
+
+    public void setGeneric(String generic) {
         this.generic = generic;
+    }
+
+    public String getGeneric() {
+        return generic;
     }
 
     /**

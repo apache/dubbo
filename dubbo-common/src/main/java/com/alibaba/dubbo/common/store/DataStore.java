@@ -18,11 +18,18 @@ package com.alibaba.dubbo.common.store;
 
 import com.alibaba.dubbo.common.extension.SPI;
 
+import java.util.Map;
+
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-@SPI("threadnotsafe")
+@SPI("simple")
 public interface DataStore {
+
+    /**
+     * return a snapshot value of componentName
+     */
+    Map<String,Object> get(String componentName);
 
     Object get(String componentName, String key);
 
