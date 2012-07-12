@@ -1,0 +1,239 @@
+<div class="ico_btn">
+	<a href="../routes"><img src="$rootContextPath.getURI("images/ico_back.png")" width="12" height="12" /><span class="ico_font">$i18n.get("back")</span></a>
+</div>
+<br/>
+<form id="df" action="../routes" method="POST" onsubmit="return check();">
+<table cellpadding="0" cellspacing="0" class="info">
+	<tr>
+		<th width="100">$i18n.get("route.name"): <font color='red'>*</font></th>
+		<td colspan="2"><input type="text" id="name" name="name" maxlength="200"/> </td>
+	    <td><font color='blue'>$i18n.get("RouteNameTip")</font> </td>
+	</tr>
+	<tr>
+		<th>$i18n.get("Priority"):</th>
+		<td colspan="2">
+			<input type="text" id="priority" name="priority" value="#if($route)$route.priority#{else}0#end" onkeydown="return checkNumber();"/>
+		</td>
+		<td><font color='blue'>$i18n.get("RoutePriorityTip")</font> </td>
+	</tr>
+	<tr>
+		<th>$i18n.get("service"): <font color='red'>*</font></th>
+		<td colspan="2">
+			#if($service)
+				<input type="hidden" id="service" name="service" value="$service" />$service
+				#if($input)
+				<button onclick="window.location.href='../routes/add'; return false;">$i18n.get("Edit")</button>
+				#end
+			#else
+				<input type="text" id="service" name="service" value="$!route.serviceName" style="ime-mode:disabled" maxlength="200"/> 
+				#if ($serviceList && $serviceList.size() > 0)
+					<select onchange="if (this.value != '') { byId('service').value = this.value; this.value = ''; }">
+						<option value="">$i18n.get("Choose")</option>
+						#foreach ($s in $serviceList)
+							<option value="$s">$tool.getSimpleName($s)</option>
+						#end
+					</select>
+				#end
+				<button onclick="if(byId('service').value == '') { showAlert('$i18n.get("PleaseInput")$i18n.get("ServiceName")', 'service'); } else if(!checkService(byId('service').value)) { showAlert('Service name can not contain , only last * is allowed', 'service'); } else { window.location.href='../services/' + byId('service').value+'/routes/add?input=true'; } return false;">$i18n.get("getMethods")</button>
+				<br>
+				<font color='blue'>$i18n.get("RouteServiceTip")</font>
+			#end
+		</td>
+		<td>
+		</td>
+	</tr>
+	<tr>
+		<th>$i18n.get("methodName"):</th>
+		<td colspan="2">
+			<input type="text" id="method" name="method" value="" style="ime-mode:disabled"/>
+			#if ($methods)
+				<select onchange="if (this.value != '') { if (byId('method').value == '') { byId('method').value = this.value; } else { byId('method').value = byId('method').value + ',' + this.value; } this.value = ''; }">
+					<option value="">$i18n.get("Choose")</option>
+					#foreach ($m in $methods)
+						<option value="$m">$m</option>
+					#end
+				</select>
+			#end
+			<br>
+			
+		</td>
+		<td>
+			<font color='blue'>$i18n.get("RouteMethodTip")<font>
+		</td>
+	</tr>
+	<tr>
+		<th>$i18n.get("MatchRule")</th>
+		<th>$i18n.get("Match")</th>
+		<th>$i18n.get("Mismatch")</th>
+		<td><font color='blue'>$i18n.get("RouteMatchTip")</font></td>
+	</tr>
+	<tr>
+		<th>$i18n.get("ConsumerHost"): </th>
+		<td><input type="text" id="consumerHost" name="consumerHost" value="$!tool.getIP($address)" style="ime-mode:disabled"/></td>
+		<td><input type="text" id="unconsumerHost" name="unconsumerHost" value="" style="ime-mode:disabled"/></td>
+		<td><font color="blue">$i18n.get("RouteHostTip")</font></td>
+	</tr>
+	<tr>
+		<th>$i18n.get("ConsumerApplication"): </th>
+		<td><input type="text" id="consumerApplication" name="consumerApplication" value="" style="ime-mode:disabled"/></td>
+		<td><input type="text" id="unconsumerApplication" name="unconsumerApplication" value="" style="ime-mode:disabled"/></td>
+		<td><font color="blue">$i18n.get("RouteApplicationTip")</font></td>
+	</tr>
+	<tr>
+		<th>$i18n.get("ConsumerCluster"): </th>
+		<td>
+		<input type="text" id="consumerCluster" name="consumerCluster" value="" style="ime-mode:disabled" />
+		#if ($clusterNames && $clusterNames.size() > 0)
+			<select onchange="if (this.value != '') { if (byId('consumerCluster').value == '') { byId('consumerCluster').value = this.value; } else { byId('consumerCluster').value = byId('consumerCluster').value + ',' + this.value; } this.value = ''; }">
+				<option value="">$i18n.get("Choose")</option>
+				#foreach ($c in $clusterNames)
+					<option value="$c">$c</option>
+				#end
+			</select>
+		#end
+		</td>
+		<td>
+		<input type="text" id="unconsumerCluster" name="unconsumerCluster" value="" style="ime-mode:disabled" />
+		#if ($clusterNames && $clusterNames.size() > 0)
+			<select onchange="if (this.value != '') { if (byId('unconsumerCluster').value == '') { byId('unconsumerCluster').value = this.value; } else { byId('unconsumerCluster').value = byId('unconsumerCluster').value + ',' + this.value; } this.value = ''; }">
+				<option value="">$i18n.get("Choose")</option>
+				#foreach ($c in $clusterNames)
+					<option value="$c">$c</option>
+				#end
+			</select>
+		#end
+		</td>
+		<td><font color="blue">$i18n.get("RouteClusterTip")</font></td>
+	</tr>
+	<tr>
+		<th>$i18n.get("FilterRule")</th>
+		<th>$i18n.get("Match")</th>
+		<th>$i18n.get("Mismatch")</th>
+		<td><font color='blue'>$i18n.get("RouteFilterTip")</font></td>
+	</tr>
+	<tr id="host">
+		<th>$i18n.get("ProviderHost"): </th>
+		<td><input type="text" id="providerHost" value=""
+			name="providerHost" style="ime-mode:disabled"/></td>
+		<td><input type="text" id="unproviderHost" value=""
+			name="unproviderHost" style="ime-mode:disabled"/></td>
+		<td><font color="blue">$i18n.get("RouteHostTip")</font></td>
+	</tr>
+	<tr id="cluster">
+		<th>$i18n.get("ProviderCluster"): </th>
+		<td>
+		<input type="text" id="providerCluster" value="" name="providerCluster" style="ime-mode:disabled"/>
+		#if ($clusterNames && $clusterNames.size() > 0)
+			<select onchange="if (this.value != '') { if (byId('providerCluster').value == '') { byId('providerCluster').value = this.value; } else { byId('providerCluster').value = byId('providerCluster').value + ',' + this.value; } this.value = ''; }">
+				<option value="">$i18n.get("Choose")</option>
+				#foreach ($c in $clusterNames)
+					<option value="$c">$c</option>
+				#end
+			</select>
+		#end
+		</td>
+		<td>
+		<input type="text" id="unproviderCluster" value="" name="unproviderCluster" style="ime-mode:disabled"/>
+		#if ($clusterNames && $clusterNames.size() > 0)
+			<select onchange="if (this.value != '') { if (byId('unproviderCluster').value == '') { byId('unproviderCluster').value = this.value; } else { byId('unproviderCluster').value = byId('unproviderCluster').value + ',' + this.value; } this.value = ''; }">
+				<option value="">$i18n.get("Choose")</option>
+				#foreach ($c in $clusterNames)
+					<option value="$c">$c</option>
+				#end
+			</select>
+		#end
+		</td>
+		<td><font color="blue">$i18n.get("RouteClusterTip")</font></td>
+	</tr>
+	<tr id="protocol">
+		<th>$i18n.get("ProviderProtocol"): </th>
+		<td><input type="text" id="providerProtocol" value=""
+			name="providerProtocol" style="ime-mode:disabled"/></td>
+		<td><input type="text" id="unproviderProtocol" value=""
+			name="unproviderProtocol" style="ime-mode:disabled"/></td>
+		<td></td>
+	</tr>
+	<tr id="port">
+		<th>$i18n.get("ProviderPort"): </th>
+		<td><input type="text" id="providerPort" name="providerPort" value="" style="ime-mode:disabled"/>
+		</td>
+		<td><input type="text" id="unproviderPort" name="unproviderPort"  value="" style="ime-mode:disabled"/></td>
+	</tr>
+	<tr>
+		<td colspan="4"><div class="btn"><a href="#" onclick="if(check()){document.getElementById('df').submit();}">$i18n.get("save")</a></div></td>
+	</tr>
+</table>
+</form>
+	
+
+<script type="text/javascript">
+
+function checkService(service) {
+	//if(service.indexOf(',') != -1) return false;
+
+	var interfaceName = service;
+	
+	var gi = service.indexOf('/');
+	if(gi != -1) interfaceName = interfaceName.substring(gi + 1);
+	var vi = interfaceName.indexOf(':');
+	if(vi != -1) interfaceName = interfaceName.substring(0, vi);
+	
+	if(interfaceName.indexOf('*') != -1 && interfaceName.indexOf('*') != interfaceName.length - 1){
+		return false;
+	}
+	
+	return true;
+}
+	
+function check() {
+	if(byId('name').value.trim()==''){
+		showAlert("$i18n.get("PleaseInput")$i18n.get("route.name")", 'name');
+		return false;
+	}
+	if(byId('service').value.trim()==''){
+		showAlert("$i18n.get("PleaseInput", $i18n.get("service"))", 'service');
+		return false;
+	}
+	if(byId('service').value.indexOf('*') != -1 || byId('service').value.indexOf(',') != -1 ){
+		showAlert("Service name can not contain '*' or ','.", 'service');
+		return false;
+	}
+	
+	var exp=/^(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.\*$/;
+	var exp2=/^(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5]).(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])$/;
+	
+	var paddress = byId('providerHost').value;
+	if(paddress.trim()!=''){
+	  var padds = paddress.split(",");
+	  for(var i = 0; i < padds.length; i++){
+	   if(!padds[i].match(exp2) && !padds[i].match(exp)){
+	       showAlert("Match provider host : " + padds[i] + " is illegal", 'ProviderHost');
+	       return false;
+		}
+	  }
+	}
+	var punaddress = byId('unproviderHost').value;
+	if(punaddress.trim()!=''){
+	  var punadds = punaddress.split(",");
+	  for(var i = 0; i < punadds.length; i++){
+	   if(!punadds[i].match(exp2) && !punadds[i].match(exp)){
+	       showAlert("Mismatch provider host : " + punadds[i] + " is illegal", 'ProviderHost');
+	       return false;
+		}
+	  }
+	}
+	return true; 
+}
+
+  function ismaxlength(obj){	
+     var mlength=obj.getAttribute? parseInt(obj.getAttribute("maxlength")) : ""	
+     if (obj.getAttribute && obj.value.length>mlength)		
+	    showAlert("content maxlength is " + mlength + "!", 'docContent');
+	    return false;
+      }
+	 
+  function imposeMaxLength(obj){  
+     var mlength=obj.getAttribute? parseInt(obj.getAttribute("maxlength")) : ""  
+     return (obj.value.length <mlength);
+  }
+</script>

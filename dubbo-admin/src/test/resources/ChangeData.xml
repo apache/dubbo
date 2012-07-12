@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+  <changes  id="1" type="S" service_name="test.s1"/>
+  <changes  id="2" type="R" service_name="test.s2"/>
+  <changes  id="6" type="W" service_name="test.s3"/>
+</dataset>

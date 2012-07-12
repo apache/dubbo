@@ -1,0 +1,84 @@
+<div class="ico_btn">
+	<a href="../consumers"><img src="$rootContextPath.getURI("images/ico_back.png")" width="12" height="12" /><span class="ico_font">$i18n.get("back")</span></a>
+	<span class="ico_line">|</span>
+	<a href="$consumer.id/notified"><img src="$rootContextPath.getURI("images/ico_balance.png")" width="12" height="12" /><span class="ico_font">$i18n.get("notified")</span></a>
+	#if($currentUser.role != "G" && $consumer.registry == $currentRegistry)
+	<span class="ico_line">|</span>
+	<a href="#" onclick="showConfirm('$i18n.get("confirm.reconnect")', '$consumer.address', '$consumer.id/reconnect'); return false;"><img src="$rootContextPath.getURI("images/ico_reconnect.png")" width="12" height="12" /><span class="ico_font">$i18n.get("reconnect")</span></a>
+	#end
+	#if($currentUser.role != "G" && $consumer.registry == $currentRegistry)
+	<span class="ico_line">|</span>
+	<a href="#" onclick="showConfirm('$i18n.get("confirm.renotify")', '$consumer.address', '$consumer.id/renotify'); return false;"><img src="$rootContextPath.getURI("images/ico_renotify.png")" width="12" height="12" /><span class="ico_font">$i18n.get("renotify")</span></a>
+	#end
+</div>
+<br/>
+<table cellpadding="0" cellspacing="0" class="info" id="content">
+	#if(!$service)
+		<tr>
+			<th style="width: 100px;">$i18n.get("service"):</th>
+			<td>$!consumer.service</td>
+		</tr>
+	#end
+	<tr>
+		<th style="width: 100px;">$i18n.get("queryUrl"):</th>
+		<td>$!consumer.parameters</td>
+	</tr>
+	#if($service)
+		<tr>
+			<th>$i18n.get("consumerAddress"):</th>
+			<td>
+			#if($!consumer.address)
+			$tool.getHostName($!consumer.address)$!consumer.address
+			#end
+			</td>
+		</tr>
+	#end
+	<tr>
+		<th>$i18n.get("registryAddress"):</th>
+		<td>
+		#if($consumer.registry)
+		$tool.getHostName($consumer.registry)$consumer.registry
+		#if($consumer.registry == $currentRegistry) (当前注册中心) #end
+		#end
+		</td>
+	</tr>
+	<tr>
+		<th>$i18n.get("application"):</th>
+		<td>$!consumer.application</td>
+	</tr>
+	<tr>
+		<th>$i18n.get("username"):</th>
+		<td>$!consumer.username</td>
+	</tr>
+	<tr>
+		<th>$i18n.get("subscribeDate"):</th>
+		<td>$tool.formatDate($!consumer.created)</td>
+	</tr>
+	<tr>
+		<th>$i18n.get("Statistics"):</th>
+		<td>$!consumer.statistics</td>
+	</tr>
+	<tr>
+		<th>$i18n.get("Status"):</th>
+		<td>
+			#set($allow = $tool.isInBlackList($consumer))
+	    	#if($allow)
+				<font color="green">$i18n.get("Allowed")</font>
+			#else
+				<font color="red">$i18n.get("Forbidden")</font>
+			#end
+		</td>
+	</tr>
+	<tr>
+		<th>$i18n.get("Route"):</th>
+		<td>
+			#if($consumer.method2Route)
+	    		<a href="../routes/$consumer.method2Route.id">$i18n.get("routed")</a>
+	    	#else
+	    		#if($consumer.registry== $currentRegistry)
+	    		<font color="gray">$i18n.get("Unuse")</font>
+	    		#end
+	    	#end
+		</td>
+	</tr>
+</table>
