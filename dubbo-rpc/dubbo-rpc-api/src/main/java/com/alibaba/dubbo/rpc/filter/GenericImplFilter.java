@@ -40,7 +40,7 @@ import com.alibaba.dubbo.rpc.support.ProtocolUtils;
  * 
  * @author william.liangf
  */
-@Activate(group = Constants.CONSUMER, value = Constants.GENERIC_KEY, order = 100000)
+@Activate(group = Constants.CONSUMER, value = Constants.GENERIC_KEY, order = 20000)
 public class GenericImplFilter implements Filter {
     
     private static final Logger logger = LoggerFactory.getLogger(GenericImplFilter.class);
