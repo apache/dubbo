@@ -564,7 +564,7 @@ public class RpcContext {
 	public <T> Future<T> asyncCall(Callable<T> callable) {
     	try {
 	    	try {
-	    		setAttachment(Constants.Attachments.IS_ASYNC_KEY, Boolean.TRUE.toString());
+	    		setAttachment(Constants.ASYNC_KEY, Boolean.TRUE.toString());
 				final T o = callable.call();
 				//local调用会直接返回结果.
 				if (o != null) {
@@ -581,7 +581,7 @@ public class RpcContext {
 			} catch (Exception e) {
 				throw new RpcException(e);
 			} finally {
-				removeAttachment(Constants.Attachments.IS_ASYNC_KEY);
+				removeAttachment(Constants.ASYNC_KEY);
 			}
     	} catch (final RpcException e) {
 			return new Future<T>() {
@@ -613,13 +613,13 @@ public class RpcContext {
 	 */
 	public void asyncCall(Runnable runable) {
     	try {
-    		setAttachment(Constants.Attachments.IS_ONEWAY_KEY, Boolean.TRUE.toString());
+    		setAttachment(Constants.RETURN_KEY, Boolean.FALSE.toString());
     		runable.run();
 		} catch (Throwable e) {
 			//FIXME 异常是否应该放在future中？
 			throw new RpcException("oneway call error ." + e.getMessage(), e);
 		} finally {
-			removeAttachment(Constants.Attachments.IS_ONEWAY_KEY);
+			removeAttachment(Constants.RETURN_KEY);
 		}
     }
 }

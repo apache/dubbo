@@ -5,7 +5,7 @@
  - you may not use this file except in compliance with the License.
  - You may obtain a copy of the License at
  -  
- -      http://www.apache.org/licenses/LICENSE-2.0
+ -	  http://www.apache.org/licenses/LICENSE-2.0
  -  
  - Unless required by applicable law or agreed to in writing, software
  - distributed under the License is distributed on an "AS IS" BASIS,
@@ -62,24 +62,25 @@
 			</activation>
 			<modules>
 				<module>dubbo-simple</module>
+				<module>dubbo-admin</module>
 				<module>dubbo-demo</module>
 				<module>dubbo-test</module>
 			</modules>
 		</profile>
 		<profile>
-            <id>hudson</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <testFailureIgnore>true</testFailureIgnore>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
+			<id>hudson</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<configuration>
+							<testFailureIgnore>true</testFailureIgnore>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
 	</profiles>
 	<properties>
 		<!-- Common libs -->
@@ -111,6 +112,7 @@
 		<sca_version>2.0-M5.1</sca_version>
 		<guice_version>3.0</guice_version>
 		<cglib_version>2.2</cglib_version>
+		<webx_version>3.0.8</webx_version>
 		<!-- Log libs -->
 		<slf4j_version>1.6.2</slf4j_version>
 		<jcl_version>1.1</jcl_version>
@@ -124,7 +126,7 @@
 		<!--<argline>-server -Xms64m -Xmx64m -XX:PermSize=64m -XX:MaxPermSize=64m</argline>-->
 		<skip_maven_deploy>false</skip_maven_deploy>
 		<updateReleaseInfo>true</updateReleaseInfo>
-        <project.build.sourceEncoding>${file_encoding}</project.build.sourceEncoding>
+		<project.build.sourceEncoding>${file_encoding}</project.build.sourceEncoding>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
@@ -268,6 +270,11 @@
 				<groupId>com.google.inject</groupId>
 				<artifactId>guice</artifactId>
 				<version>${guice_version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.alibaba.citrus</groupId>
+				<artifactId>citrus-webx-all</artifactId>
+				<version>${webx_version}</version>
 			</dependency>
 			<!-- Log libs -->
 			<dependency>
@@ -432,12 +439,12 @@
 				</configuration>
 			</plugin>
 			<plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <configuration>
-                    <skip>${skip_maven_deploy}</skip>
-                </configuration>
-            </plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<configuration>
+					<skip>${skip_maven_deploy}</skip>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 	<repositories>

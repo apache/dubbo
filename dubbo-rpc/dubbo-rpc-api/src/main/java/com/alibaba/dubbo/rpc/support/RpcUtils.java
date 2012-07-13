@@ -82,7 +82,7 @@ public class RpcUtils {
     private static final AtomicLong INVOKE_ID = new AtomicLong(0);
     
 	public static Long getInvocationId(Invocation inv) {
-    	String id = inv.getAttachment(Constants.Attachments.INVOCATIONID_KEY);
+    	String id = inv.getAttachment(Constants.ID_KEY);
 		return id == null ? null : new Long(id);
 	}
     
@@ -93,7 +93,7 @@ public class RpcUtils {
      */
     public static void attachInvocationIdIfAsync(URL url, Invocation inv){
     	if (isAttachInvocationId(url, inv) && getInvocationId(inv) == null && inv instanceof RpcInvocation) {
-    		((RpcInvocation)inv).setAttachment(Constants.Attachments.INVOCATIONID_KEY, String.valueOf(INVOKE_ID.getAndIncrement()));
+    		((RpcInvocation)inv).setAttachment(Constants.ID_KEY, String.valueOf(INVOKE_ID.getAndIncrement()));
         }
     }
     
@@ -152,10 +152,10 @@ public class RpcUtils {
     public static boolean isAsync(URL url, Invocation inv) {
     	boolean isAsync ;
     	//如果Java代码中设置优先.
-    	if (Boolean.TRUE.toString().equals(inv.getAttachment(Constants.Attachments.IS_ASYNC_KEY))) {
+    	if (Boolean.FALSE.toString().equals(inv.getAttachment(Constants.ASYNC_KEY))) {
     		isAsync = true;
     	} else {
-	    	isAsync = url.getMethodParameter(getMethodName(inv), Constants.ASYNC_KEY, false);
+	    	isAsync = url.getMethodParameter(getMethodName(inv), Constants.ASYNC_KEY, true);
     	}
     	return isAsync;
     }
@@ -163,10 +163,10 @@ public class RpcUtils {
     public static boolean isOneway(URL url, Invocation inv) {
     	boolean isOneway ;
     	//如果Java代码中设置优先.
-    	if (Boolean.TRUE.toString().equals(inv.getAttachment(Constants.Attachments.IS_ONEWAY_KEY))) {
+    	if (Boolean.FALSE.toString().equals(inv.getAttachment(Constants.RETURN_KEY))) {
     		isOneway = true;
     	} else {
-    		isOneway = url.getMethodParameter(getMethodName(inv), Constants.RETURN_KEY, false);
+    		isOneway = ! url.getMethodParameter(getMethodName(inv), Constants.RETURN_KEY, true);
     	}
     	return isOneway;
     }

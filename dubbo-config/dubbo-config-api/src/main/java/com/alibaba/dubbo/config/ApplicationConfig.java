@@ -101,7 +101,7 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public void setOwner(String owner) {
-        checkName("owner", owner);
+        checkMultiName("owner", owner);
         this.owner = owner;
     }
 

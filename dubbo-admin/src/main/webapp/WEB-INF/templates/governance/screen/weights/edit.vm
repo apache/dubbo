@@ -1,0 +1,103 @@
+<div class="ico_btn">
+	<a href="../../weights"><img src="$rootContextPath.getURI("images/ico_back.png")" width="12" height="12" /><span class="ico_font">$i18n.get("back")</span></a>
+</div>
+<br/>
+<form id="weightForm" #if($actionflag=="copy") action="../../weights" #else action="../$weight.id" #end  method="POST">
+<table cellpadding="0" cellspacing="0" class="info">
+	<tr>
+		<th width="100">$i18n.get("service")&nbsp;&nbsp;<font color='red'>*</font></th>
+		<td>
+			$weight.service <input type="hidden" id="serviceName" name="service" value="$weight.service" style="ime-mode:disabled" maxlength="200"/>
+		</td>
+	</tr>
+	<tr>
+		<th>$i18n.get("provider")&nbsp;&nbsp;<font color='red'>*</font></th>
+		<td>
+			#if($actionflag=="copy")
+    			<input type="text" id="address" name="address" value="$!weight.address" style="ime-mode:disabled" maxlength="200"/>
+    			#if($service)
+    				<select id="selectAddeess" name="selectAddeess" onchange="fnSetService(this,'address')">
+    					<option value="">$i18n.get("Choose")</option>
+    					#if ($addressList && $addressList.size() > 0)
+    						#foreach ($s in $addressList)
+    							<option value="$s">$s</option>
+    						#end
+    					#end
+    				</select>
+    			#end
+			#else
+				$weight.address 
+				<input type="hidden" id="address" name="address" value="$!weight.address" style="ime-mode:disabled" maxlength="200"/>
+			#end
+		</td>
+	</tr>
+	<tr>
+		<th style="width: 100px;">$i18n.get("weights")&nbsp;&nbsp;<font color='red'>*</font></th>
+		<td>
+			<input type="text" id="weight" name="weight" value="$!weight.weight" maxlength="3" onkeydown="return checkNumber();"/>
+		</td>
+	</tr>
+	<tr>
+		<th><div class="btn"><a href="#" onclick="if(check()){document.getElementById('weightForm').submit();}">$i18n.get("save")</a></div></th>
+		<td></td>
+	</tr>
+</table>
+</form>
+	
+
+<script language="javascript">
+
+//通过服务名后面的选择框，快速设置service_name的值
+function fnSetService(obj, id){
+	if(obj.value!=''){
+		document.getElementById(id).value = obj.value;
+	}
+}
+
+function checkService(service) {
+	//if(service.indexOf(',') != -1) return false;
+
+	var interfaceName = service;
+	
+	var gi = service.indexOf('/');
+	if(gi != -1) interfaceName = interfaceName.substring(gi + 1);
+	var vi = interfaceName.indexOf(':');
+	if(vi != -1) interfaceName = interfaceName.substring(0, vi);
+	
+	if(interfaceName.indexOf('*') != -1 && interfaceName.indexOf('*') != interfaceName.length - 1){
+		return false;
+	}
+	
+	return true;
+}
+
+ function check(){
+	   var serviceName =  byId('serviceName').value.trim();
+       if(serviceName == ''){
+	       showAlert("$i18n.get("PleaseInput")$i18n.get("service")", 'serviceName');
+		   return false;
+	   }
+	  var address = byId('address').value.trim();
+	  if(address == '') {
+		showAlert("$i18n.get("PleaseInput", $i18n.get("address"))", 'address');
+		return false;
+	  }
+	  var exp=/^(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5]):\d+$/;
+	  var exp2=/^(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.\*:\d+$/;
+	  var exp3=/^(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])$/;
+	  var exp4=/^(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.\*$/;
+	  var addresses = address.split("\n");
+	  for (var i = 0; i < addresses.length; i ++) {
+	  	  var address = addresses[i];
+	  	  if (address != "") {
+			  if(! address.match(exp) && ! address.match(exp2) && ! address.match(exp3) && ! address.match(exp4)){
+				  showAlert("$i18n.get("InvalidIp", $i18n.get("address"))", 'address');
+			      return false; 
+			  }
+		  }
+	  }
+	  return true;
+    }
+	
+	$("#weight").get(0).selectedIndex=(${weight.weight} -1);
+</script>
