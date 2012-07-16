@@ -69,7 +69,7 @@ public class Provider extends Entity {
     public Provider(Long id) {
         super(id);
     }
-    
+
     public String getService() {
         return service;
     }

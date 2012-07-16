@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentMap;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.governance.service.ConsumerService;
-import com.alibaba.dubbo.governance.sync.RegistryServerSync.Pair;
+import com.alibaba.dubbo.governance.sync.util.Pair;
 import com.alibaba.dubbo.governance.sync.util.SyncUtils;
 import com.alibaba.dubbo.registry.common.domain.Consumer;
 

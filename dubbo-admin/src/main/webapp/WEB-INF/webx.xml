@@ -46,7 +46,7 @@
     <beans:import resource="common/rewrite.xml" />
     
     <!-- 应用资源 -->
-    <beans:import resource="classpath:META-INF/spring/governance.xml" />
+    <beans:import resource="classpath:META-INF/spring/dubbo-admin.xml" />
     
     <!-- 综合设置。 -->
     <services:webx-configuration>

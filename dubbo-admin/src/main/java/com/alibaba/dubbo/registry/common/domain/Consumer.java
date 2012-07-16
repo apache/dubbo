@@ -39,8 +39,8 @@ public class Consumer extends Entity {
     private String result;    /*路由结果*/
 
     private String address; /* 消费者地址 */
-
-    private String registry; /* 消费者连接的注册中心地址 */
+    
+	private String registry; /* 消费者连接的注册中心地址 */
     
     private String application; /* 应用名 */
 
@@ -68,7 +68,7 @@ public class Consumer extends Entity {
     public Consumer(Long id) {
         super(id);
     }
-    
+
     public String getService() {
         return service;
     }

@@ -35,13 +35,13 @@ public class AbstractService {
     protected static final Logger logger = LoggerFactory.getLogger(AbstractService.class);
 
     @Autowired
-    RegistryServerSync           sync;
+    private RegistryServerSync           sync;
     
     @Autowired
     protected RegistryService registryService;
     
     public ConcurrentMap<String, ConcurrentMap<String, Map<Long, URL>>> getRegistryCache(){
-        return sync.getcategory2Service2Urls();
+        return sync.getRegistryCache();
     }
     
     

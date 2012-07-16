@@ -23,7 +23,6 @@ import java.util.Map;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.StringUtils;
-import com.alibaba.dubbo.governance.sync.RegistryServerSync.Pair;
 import com.alibaba.dubbo.registry.common.domain.Consumer;
 import com.alibaba.dubbo.registry.common.domain.Provider;
 import com.alibaba.dubbo.registry.common.domain.Route;
@@ -44,15 +43,15 @@ public class SyncUtils {
     		return null;
     	}
     	
-        Long id = pair.key;
-        URL url = pair.value;
+        Long id = pair.getKey();
+        URL url = pair.getValue();
 
         if (url == null)
             return null;
 
         Provider p = new Provider();
         p.setId(id);
-        p.setService(url.getServiceKey());
+        p.setService(url.getServiceInterface());
         p.setAddress(url.getAddress());
         p.setApplication(url.getParameter(Constants.APPLICATION_KEY));
         p.setUrl(url.toIdentityString());
@@ -78,16 +77,16 @@ public class SyncUtils {
     		return null;
     	}
     	
-        Long id = pair.key;
-        URL url = pair.value;
+        Long id = pair.getKey();
+        URL url = pair.getValue();
 
         if (null == url)
             return null;
 
         Consumer c = new Consumer();
         c.setId(id);
-        c.setService(url.getServiceKey());
-        c.setAddress(url.getAddress());
+        c.setService(url.getServiceInterface());
+        c.setAddress(url.getHost());
         c.setApplication(url.getParameter(Constants.APPLICATION_KEY));
         c.setParameters(url.toParameterString());
 
@@ -108,8 +107,8 @@ public class SyncUtils {
     		return null;
     	}
     	
-        Long id = pair.key;
-        URL url = pair.value;
+        Long id = pair.getKey();
+        URL url = pair.getValue();
 
         if (null == url)
             return null;
@@ -117,7 +116,7 @@ public class SyncUtils {
         Route r = new Route();
         r.setId(id);
         r.setName(url.getParameter("name"));
-        r.setService(url.getServiceKey());
+        r.setService(url.getServiceInterface());
         r.setPriority(url.getParameter(Constants.PRIORITY_KEY, 0));
         r.setEnabled(url.getParameter(Constants.ENABLED_KEY, true));
         r.setForce(url.getParameter(Constants.FORCE_KEY, false));
@@ -139,8 +138,8 @@ public class SyncUtils {
     		return null;
     	}
     	
-        Long id = pair.key;
-        URL url = pair.value;
+        Long id = pair.getKey();
+        URL url = pair.getValue();
 
         if (null == url)
             return null;
@@ -150,7 +149,7 @@ public class SyncUtils {
 
         Map<String, String> parameters = new HashMap<String, String>(url.getParameters());
 
-        o.setService(url.getServiceKey());
+        o.setService(url.getServiceInterface());
         parameters.remove(Constants.INTERFACE_KEY);
         parameters.remove(Constants.GROUP_KEY);
         parameters.remove(Constants.VERSION_KEY);

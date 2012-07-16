@@ -149,7 +149,7 @@ public class Providers extends Restful {
 
 	public void show(Long id, Map<String, Object> context) {
         Provider provider = providerService.findProvider(id);
-        if (provider.isDynamic()) {
+        if (provider != null && provider.isDynamic()) {
 			List<Override> overrides = overrideService.findByServiceAndAddress(provider.getService(), provider.getAddress());
 	        OverrideUtils.setProviderOverrides(provider, overrides);
         }

@@ -31,131 +31,94 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.NetUtils;
-import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.registry.NotifyListener;
-import com.alibaba.dubbo.registry.Registry;
+import com.alibaba.dubbo.registry.RegistryService;
 
 /**
  * @author ding.lid
  */
-public class RegistryServerSync implements InitializingBean, DisposableBean {
-    
+public class RegistryServerSync implements InitializingBean, DisposableBean, NotifyListener {
+
     private static final Logger logger = LoggerFactory.getLogger(RegistryServerSync.class);
-    
-    static final URL SUBSCRIBE = new URL(Constants.ADMIN_PROTOCOL, NetUtils.getLocalHost(), 0, "",
+
+    private static final URL SUBSCRIBE = new URL(Constants.ADMIN_PROTOCOL, NetUtils.getLocalHost(), 0, "",
                                             Constants.INTERFACE_KEY, Constants.ANY_VALUE, 
                                             Constants.GROUP_KEY, Constants.ANY_VALUE, 
                                             Constants.VERSION_KEY, Constants.ANY_VALUE,
                                             Constants.CLASSIFIER_KEY, Constants.ANY_VALUE,
-                                            Constants.CATEGORY_KEY, Constants.ANY_VALUE,
+                                            Constants.CATEGORY_KEY, Constants.PROVIDERS_CATEGORY + "," 
+                                                    + Constants.CONSUMERS_CATEGORY + ","
+                                                    + Constants.ROUTERS_CATEGORY + ","
+                                                    + Constants.CONFIGURATORS_CATEGORY,
                                             Constants.ENABLED_KEY, Constants.ANY_VALUE,
                                             Constants.CHECK_KEY, String.valueOf(false));
 
-    static final AtomicLong ID = new AtomicLong(1);
-    
-    private String consoleUrl;
-    
+    private static final AtomicLong ID = new AtomicLong();
+
     @Autowired
-    private Registry registry;
-    
-    public static class Pair<K, V> {
-        public K key;
-        public V value;
-        
-        public Pair(K k, V v) {
-            key = k;
-            value = v;
-        }
-    }
-    
-    public boolean isConnected() {
-        return registry.isAvailable();
-    }
-    
+    private RegistryService registryService;
+
     // ConcurrentMap<category, ConcurrentMap<servicename, Map<Long, URL>>>
-    private final ConcurrentMap<String, ConcurrentMap<String, Map<Long, URL>>> category2Service2Urls = new ConcurrentHashMap<String, ConcurrentMap<String, Map<Long, URL>>>();
+    private final ConcurrentMap<String, ConcurrentMap<String, Map<Long, URL>>> registryCache = new ConcurrentHashMap<String, ConcurrentMap<String, Map<Long, URL>>>();
 
-    static long generateId() {
-        return ID.getAndIncrement();
+    public ConcurrentMap<String, ConcurrentMap<String, Map<Long, URL>>> getRegistryCache(){
+        return registryCache;
     }
     
-    public ConcurrentMap<String, ConcurrentMap<String, Map<Long, URL>>> getcategory2Service2Urls(){
-        return category2Service2Urls;
-    }
-    
-    NotifyListener notifyListener = new NotifyListener() {
-        public void notify(List<URL> urls) {
-            RegistryServerSync.this.notify(urls);
-        }
-    };
-    
-    public void setConsolePort(int consolePort) {
-        this.consoleUrl = NetUtils.getLocalHost() + ":" + consolePort;
-    }
-
-    public String getConsoleUrl() {
-        return consoleUrl;
-    }
-
     public void afterPropertiesSet() throws Exception {
-        logger.info("Init DubboGovernanceCache...");
-        registry.subscribe(SUBSCRIBE, notifyListener);
+        logger.info("Init Dubbo Admin Sync Cache...");
+        registryService.subscribe(SUBSCRIBE, this);
     }
 
     public void destroy() throws Exception {
-        registry.unsubscribe(SUBSCRIBE, notifyListener);
+        registryService.unsubscribe(SUBSCRIBE, this);
     }
     
     // 收到的通知对于 ，同一种类型数据（override、subcribe、route、其它是Provider），同一个服务的数据是全量的
-    void notify(List<URL> notifyedUrls) {
-        if(notifyedUrls == null || notifyedUrls.isEmpty()) return;
-        
+    public void notify(List<URL> urls) {
+        if(urls == null || urls.isEmpty()) {
+        	return;
+        }
         // Map<category, Map<servicename, Map<Long, URL>>>
         final Map<String, Map<String, Map<Long, URL>>> categories = new HashMap<String, Map<String, Map<Long, URL>>>();
-        for(URL url : notifyedUrls) {
-            String c = url.getParameter(Constants.CATEGORY_KEY);
-            if(StringUtils.isBlank(c)) c = Constants.PROVIDERS_CATEGORY;
-            
-            String s = url.getServiceKey();;
-            
-            Map<String, Map<Long, URL>> services = categories.get(c);
+        for(URL url : urls) {
+        	// 分类
+            String category = url.getParameter(Constants.CATEGORY_KEY, Constants.PROVIDERS_CATEGORY);
+            Map<String, Map<Long, URL>> services = categories.get(category);
             if(services == null) {
                 services = new HashMap<String, Map<Long,URL>>();
-                categories.put(c, services);
+                categories.put(category, services);
             }
-
-            Map<Long, URL> map = services.get(s);
-            if(map == null) {
-                map = new HashMap<Long, URL>();
-                services.put(s, map);
+            // 接口
+            String service = url.getServiceInterface();
+            Map<Long, URL> ids = services.get(service);
+            if(ids == null) {
+                ids = new HashMap<Long, URL>();
+                services.put(service, ids);
             }
-            
+            // 标识
             if(Constants.EMPTY_PROTOCOL.equalsIgnoreCase(url.getProtocol())) {
-                map.clear();
-            }
-            else {
-                map.put(generateId(), url);
+                ids.clear();
+            } else {
+                ids.put(ID.incrementAndGet(), url);
             }
         }
-        
-        
-        for(Map.Entry<String, Map<String, Map<Long, URL>>> e : categories.entrySet()) {
-            String c = e.getKey();
-            
-            for(Map.Entry<String, Map<Long, URL>> e2 : e.getValue().entrySet()) {
-                String s = e2.getKey();
-                Map<Long, URL> urls = e2.getValue();
-                
-                ConcurrentMap<String, Map<Long, URL>> services = category2Service2Urls.get(c);
-                if(urls == null || urls.isEmpty()) {
-                    if(services != null) services.remove(s);
-                }
-                else {
+        for(Map.Entry<String, Map<String, Map<Long, URL>>> categoryEntry : categories.entrySet()) {
+            String category = categoryEntry.getKey();
+            for(Map.Entry<String, Map<Long, URL>> serviceEntry : categoryEntry.getValue().entrySet()) {
+                String service = serviceEntry.getKey();
+                Map<Long, URL> ids = serviceEntry.getValue();
+                ConcurrentMap<String, Map<Long, URL>> services = registryCache.get(category);
+                if(ids == null || ids.isEmpty()) {
+                    if(services != null) {
+                    	services.remove(service);
+                    }
+                } else {
                     if(services == null) {
                         services = new ConcurrentHashMap<String, Map<Long,URL>>();
-                        category2Service2Urls.put(c, services);
+                        registryCache.put(category, services);
                     }
-                    services.put(s, urls);
+                    services.put(service, ids);
                 }
             }
         }

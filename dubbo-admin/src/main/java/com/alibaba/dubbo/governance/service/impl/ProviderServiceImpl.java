@@ -29,10 +29,10 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.governance.service.OverrideService;
 import com.alibaba.dubbo.governance.service.ProviderService;
-import com.alibaba.dubbo.governance.sync.RegistryServerSync.Pair;
+import com.alibaba.dubbo.governance.sync.util.Pair;
 import com.alibaba.dubbo.governance.sync.util.SyncUtils;
-import com.alibaba.dubbo.registry.common.domain.Provider;
 import com.alibaba.dubbo.registry.common.domain.Override;
+import com.alibaba.dubbo.registry.common.domain.Provider;
 import com.alibaba.dubbo.registry.common.route.ParseUtils;
 
 /**
@@ -366,7 +366,7 @@ public class ProviderServiceImpl extends AbstractService implements ProviderServ
         return SyncUtils.url2Provider(findProviderUrl(service, address));
     }
     
-    private Pair<Long, URL> findProviderUrl(String service, String address) {
+	private Pair<Long, URL> findProviderUrl(String service, String address) {
         Map<String, String> filter = new HashMap<String, String>();
         filter.put(Constants.CATEGORY_KEY, Constants.PROVIDERS_CATEGORY);
         filter.put(SyncUtils.ADDRESS_FILTER_KEY, address);
