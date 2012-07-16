@@ -102,7 +102,14 @@ public class MonitorFilter implements Filter {
                 remoteKey = MonitorService.CONSUMER;
                 remoteValue = context.getRemoteHost();
             }
-            URL collectURL = new URL(Constants.COUNT_PROTOCOL,
+            String input = "", output = "";
+            if (invocation.getAttachment(Constants.INPUT_KEY) != null) {
+                input = invocation.getAttachment(Constants.INPUT_KEY);
+            }
+            if (result != null && result.getAttachment(Constants.OUTPUT_KEY) != null) {
+                output = result.getAttachment(Constants.OUTPUT_KEY);
+            }
+            monitor.collect(new URL(Constants.COUNT_PROTOCOL,
                                 NetUtils.getLocalHost(), localPort,
                                 service + "/" + method,
                                 MonitorService.APPLICATION, application,
@@ -111,14 +118,9 @@ public class MonitorFilter implements Filter {
                                 remoteKey, remoteValue,
                                 error ? MonitorService.FAILURE : MonitorService.SUCCESS, "1",
                                 MonitorService.ELAPSED, String.valueOf(elapsed),
-                                MonitorService.CONCURRENT, String.valueOf(concurrent));
-            if (invocation.getAttachment(Constants.INPUT_KEY) != null) {
-                collectURL.addParameter(Constants.INPUT_KEY, invocation.getAttachment(Constants.INPUT_KEY));
-            }
-            if (result != null && result.getAttachment(Constants.OUTPUT_KEY) != null) {
-                collectURL.addParameter(Constants.OUTPUT_KEY, result.getAttachment(Constants.OUTPUT_KEY));
-            }
-            monitor.collect(collectURL);
+                                MonitorService.CONCURRENT, String.valueOf(concurrent),
+                                Constants.INPUT_KEY, input,
+                                Constants.OUTPUT_KEY, output));
         } catch (Throwable t) {
             logger.error("Failed to monitor count service " + invoker.getUrl() + ", cause: " + t.getMessage(), t);
         }
