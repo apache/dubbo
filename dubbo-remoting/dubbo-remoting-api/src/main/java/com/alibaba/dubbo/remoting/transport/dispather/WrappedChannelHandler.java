@@ -48,8 +48,14 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
         this.url = url;
         executor = (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);
 
-        DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
-        dataStore.put(Constants.EXECUTOR_SERVICE_COMPONENT_KEY, Integer.toString(url.getPort()), executor);
+        if (Constants.PROVIDER_SIDE.equalsIgnoreCase(url.getParameter(Constants.SIDE_KEY))) {
+            DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
+            dataStore.put(Constants.EXECUTOR_SERVICE_COMPONENT_KEY, Integer.toString(url.getPort()), executor);
+        }
+        if (Constants.CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(Constants.SIDE_KEY))) {
+            DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
+            dataStore.put(Constants.CONSUMER_SIDE, Integer.toString(url.getPort()), executor);
+        }
     }
     
     public void close() {
