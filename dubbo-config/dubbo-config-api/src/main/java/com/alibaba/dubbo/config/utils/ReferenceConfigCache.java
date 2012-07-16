@@ -146,4 +146,10 @@ public class ReferenceConfigCache {
             destroyKey(key);
         }
     }
+
+    @Override
+    public String toString() {
+        return "ReferenceConfigCache(name: " + name
+                + ")";
+    }
 }
