@@ -65,6 +65,9 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
     }
 
     static Exporter<?> getExporter(Map<String, Exporter<?>> map, URL key) {
+        if (!key.getServiceKey().contains("*")) {
+            return map.get(key.getServiceKey());
+        }
         if (map != null && !map.isEmpty()) {
             for(Exporter<?> exporter : map.values()) {
                 if (UrlUtils.isServiceKeyMatch(key, exporter.getInvoker().getUrl())) {

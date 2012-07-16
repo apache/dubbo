@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.io.CountInputStream;
+import com.alibaba.dubbo.common.io.UnsafeByteArrayInputStream;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.Codec;
 import com.alibaba.dubbo.remoting.exchange.Request;
@@ -43,17 +43,18 @@ public final class DubboCountCodec implements Codec {
     }
 
     public Object decode(Channel channel, InputStream input) throws IOException {
-        CountInputStream statInputStream = new CountInputStream(input);
-        long save = 0;
+        UnsafeByteArrayInputStream bis = (UnsafeByteArrayInputStream)input;
+        int save = bis.position();
         List<Object> result = new ArrayList<Object>();
         do {
-            Object obj = codec.decode(channel, statInputStream);
+            Object obj = codec.decode(channel, bis);
             if (NEED_MORE_INPUT == obj) {
+                bis.position(save);
                 break;
             } else {
                 result.add(obj);
-                logMessageLength(obj, statInputStream.getReadBytes() - save);
-                save = statInputStream.getReadBytes();
+                logMessageLength(obj, bis.position() - save);
+                save = bis.position();
             }
         } while (true);
         if (result.isEmpty()) {
@@ -65,7 +66,7 @@ public final class DubboCountCodec implements Codec {
         return result;
     }
 
-    private void logMessageLength(Object result, long bytes) {
+    private void logMessageLength(Object result, int bytes) {
         if (bytes <= 0) { return; }
         if (result instanceof Request) {
             try {
@@ -79,7 +80,7 @@ public final class DubboCountCodec implements Codec {
                 ((RpcResult) ((Response) result).getResult()).setAttachment(
                     Constants.OUTPUT_KEY, String.valueOf(bytes));
             } catch (Throwable e) {
-                /* ignreo */
+                /* ignore */
             }
         }
     }

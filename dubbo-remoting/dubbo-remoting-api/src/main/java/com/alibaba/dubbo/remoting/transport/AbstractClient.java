@@ -29,8 +29,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.Version;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.store.DataStore;
 import com.alibaba.dubbo.common.utils.ExecutorUtil;
 import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 import com.alibaba.dubbo.common.utils.NetUtils;
@@ -118,9 +120,10 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                     + " connect to the server " + getRemoteAddress() + ", cause: " + t.getMessage(), t);
         }
         
-        if (handler instanceof WrappedChannelHandler ){
-            executor = ((WrappedChannelHandler)handler).getExecutor();
-        }
+        executor = (ExecutorService) ExtensionLoader.getExtensionLoader(DataStore.class)
+            .getDefaultExtension().get(Constants.CONSUMER_SIDE, Integer.toString(url.getPort()));
+        ExtensionLoader.getExtensionLoader(DataStore.class)
+            .getDefaultExtension().remove(Constants.CONSUMER_SIDE, Integer.toString(url.getPort()));
     }
     
     protected static ChannelHandler wrapChannelHandler(URL url, ChannelHandler handler){
