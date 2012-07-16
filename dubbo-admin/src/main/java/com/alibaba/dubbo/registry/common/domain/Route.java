@@ -207,7 +207,7 @@ public class Route extends Entity {
 	    return URL.valueOf(Constants.ROUTE_PROTOCOL + "://" + Constants.ANYHOST_VALUE + "/" + path 
 	            + "?" + Constants.CATEGORY_KEY + "=" + Constants.ROUTERS_CATEGORY 
 	            + "&router=condition&runtime=false&enabled=" + isEnabled() + "&priority=" + getPriority() + "&force=" + isForce() + "&dynamic=false"
-	            + "&name=" + getName() + "&" + Constants.RULE_KEY + "=" + getMatchRule() + " => " + getFilterRule()
+	            + "&name=" + getName() + "&" + Constants.RULE_KEY + "=" + URL.encode(getMatchRule() + " => " + getFilterRule())
 	            + (group == null ? "" : "&" + Constants.GROUP_KEY + "=" + group)
 	            + (version == null ? "" : "&" + Constants.VERSION_KEY + "=" + version));
 	}

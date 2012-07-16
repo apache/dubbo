@@ -152,10 +152,10 @@ public class RpcUtils {
     public static boolean isAsync(URL url, Invocation inv) {
     	boolean isAsync ;
     	//如果Java代码中设置优先.
-    	if (Boolean.FALSE.toString().equals(inv.getAttachment(Constants.ASYNC_KEY))) {
+    	if (Boolean.TRUE.toString().equals(inv.getAttachment(Constants.ASYNC_KEY))) {
     		isAsync = true;
     	} else {
-	    	isAsync = url.getMethodParameter(getMethodName(inv), Constants.ASYNC_KEY, true);
+	    	isAsync = url.getMethodParameter(getMethodName(inv), Constants.ASYNC_KEY, false);
     	}
     	return isAsync;
     }

@@ -60,25 +60,30 @@ public class ProviderServiceImpl extends AbstractService implements ProviderServ
         if(oldProvider == null) {
             throw new IllegalStateException("Provider was changed!");
         } 
-        //保证disable的override唯一
-        if(!oldProvider.isEnabled()){
-        	Override override = new Override();
-        	override.setOverrideAddress(oldProvider.getAddress());
-        	override.setService(oldProvider.getService());
-        	override.setEnabled(true);
-        	override.setParams(Constants.DISABLED_KEY+"=false");
-        	overrideService.saveOverride(override);
-        	return;
-        }
-        List<Override> oList = overrideService.findByServiceAndAddress(oldProvider.getService(), oldProvider.getAddress());
-       
-        for(Override o : oList){
-        	Map<String, String> params = StringUtils.parseQueryString(o.getParams());
-        	if(params.containsKey(Constants.DISABLED_KEY)){
-        		if(params.get(Constants.DISABLED_KEY) .equals("true")){
-        			overrideService.deleteOverride(o.getId());
-        		}
-        	}
+        if (oldProvider.isDynamic()) {
+	        //保证disable的override唯一
+	        if(!oldProvider.isEnabled()){
+	        	Override override = new Override();
+	        	override.setAddress(oldProvider.getAddress());
+	        	override.setService(oldProvider.getService());
+	        	override.setEnabled(true);
+	        	override.setParams(Constants.DISABLED_KEY+"=false");
+	        	overrideService.saveOverride(override);
+	        	return;
+	        }
+	        List<Override> oList = overrideService.findByServiceAndAddress(oldProvider.getService(), oldProvider.getAddress());
+	       
+	        for(Override o : oList){
+	        	Map<String, String> params = StringUtils.parseQueryString(o.getParams());
+	        	if(params.containsKey(Constants.DISABLED_KEY)){
+	        		if(params.get(Constants.DISABLED_KEY) .equals("true")){
+	        			overrideService.deleteOverride(o.getId());
+	        		}
+	        	}
+	        }
+        } else {
+        	oldProvider.setEnabled(true);
+        	updateProvider(oldProvider);
         }
     }
 
@@ -91,25 +96,31 @@ public class ProviderServiceImpl extends AbstractService implements ProviderServ
         if(oldProvider == null) {
             throw new IllegalStateException("Provider was changed!");
         }
-      //保证disable的override唯一
-        if(oldProvider.isEnabled()){
-        	Override override = new Override();
-        	override.setOverrideAddress(oldProvider.getAddress());
-        	override.setService(oldProvider.getService());
-        	override.setEnabled(true);
-        	override.setParams(Constants.DISABLED_KEY+"=true");
-        	overrideService.saveOverride(override);
-        	return;
-        }
-        List<Override> oList = overrideService.findByServiceAndAddress(oldProvider.getService(), oldProvider.getAddress());
-       
-        for(Override o : oList){
-        	Map<String, String> params = StringUtils.parseQueryString(o.getParams());
-        	if(params.containsKey(Constants.DISABLED_KEY)){
-        		if(params.get(Constants.DISABLED_KEY) .equals("false")){
-        			overrideService.deleteOverride(o.getId());
-        		}
-        	}
+        
+        if (oldProvider.isDynamic()) {
+	        //保证disable的override唯一
+	        if(oldProvider.isEnabled()){
+	        	Override override = new Override();
+	        	override.setAddress(oldProvider.getAddress());
+	        	override.setService(oldProvider.getService());
+	        	override.setEnabled(true);
+	        	override.setParams(Constants.DISABLED_KEY+"=true");
+	        	overrideService.saveOverride(override);
+	        	return;
+	        }
+	        List<Override> oList = overrideService.findByServiceAndAddress(oldProvider.getService(), oldProvider.getAddress());
+	       
+	        for(Override o : oList){
+	        	Map<String, String> params = StringUtils.parseQueryString(o.getParams());
+	        	if(params.containsKey(Constants.DISABLED_KEY)){
+	        		if(params.get(Constants.DISABLED_KEY) .equals("false")){
+	        			overrideService.deleteOverride(o.getId());
+	        		}
+	        	}
+	        }
+        } else {
+        	oldProvider.setEnabled(false);
+        	updateProvider(oldProvider);
         }
         
     }

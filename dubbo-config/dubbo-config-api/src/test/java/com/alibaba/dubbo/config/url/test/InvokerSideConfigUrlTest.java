@@ -107,7 +107,7 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
             {"proxy", "proxy", "boolean", "javassist", "jdk", "", "", "", "", ""}, 
             {"client", "client", "string", "netty", "mina", "", "", "", "", ""}, 
             {"client", "client", "string", "netty", "mina", "", "", "", "", ""}, 
-            {"owner", "owner", "string", "", "haomin/ludvik", "", "", "", "", ""}, 
+            {"owner", "owner", "string", "", "haomin,ludvik", "", "", "", "", ""},
             {"actives", "actives", "int", 0, 30, "", "", "", "", ""},
             {"cluster", "cluster", "string", "failover", "failfast", "failsafe", "failback", "forking", "", ""}, 
             //excluded = true

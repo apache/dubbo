@@ -33,7 +33,7 @@
 					<select id="selectAddeess" name="selectAddeess" onchange="fnSetService(this,'address')">
 						<option value="">$i18n.get("Choose")</option>
 						#foreach ($s in $addressList)
-							<option value="$s">$tool.getHostName($s)$s</option>
+							<option value="$s">$tool.getHostPrefix($s)$s</option>
 						#end
 					</select>
 				#end

@@ -39,7 +39,7 @@ import com.alibaba.dubbo.rpc.support.ProtocolUtils;
  * 
  * @author william.liangf
  */
-@Activate(group = Constants.PROVIDER, order = -100000)
+@Activate(group = Constants.PROVIDER, order = -20000)
 public class GenericFilter implements Filter {
 
     public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {

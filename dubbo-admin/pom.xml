@@ -135,7 +135,6 @@
 			<artifactId>cache-api</artifactId>
 		</dependency>
 	</dependencies>
-	<!--
 	<build>
 		<plugins>
 			<plugin>
@@ -143,10 +142,16 @@
 				<artifactId>maven-jetty-plugin</artifactId>
 				<version>${jetty_version}</version>
 				<configuration>
+					<contextPath>/</contextPath>
 					<scanIntervalSeconds>10</scanIntervalSeconds>
+					<connectors>
+						<connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
+							<port>8080</port>
+							<maxIdleTime>60000</maxIdleTime>
+						</connector>
+					</connectors>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
-	-->
 </project>

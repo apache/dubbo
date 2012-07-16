@@ -16,6 +16,7 @@
 package com.alibaba.dubbo.registry.common.domain;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import com.alibaba.dubbo.common.Constants;
@@ -48,14 +49,16 @@ public class Consumer extends Entity {
     private String statistics;    /* 服务调用统计信息 */
     
     private Date collected;  /* 服务调用统计时间 */ 
+
+	private Override override;
+
+	private List<Override> overrides;
+
+    private List<Route> routes;
     
-    private Route route;
+    private List<Provider> providers;
     
-    private Map<String, Route> method2Route;
-    
-    private Override override;
-    
-    private Date expired;   /*过期时间*/
+	private Date expired;   /*过期时间*/
     
     private long alived;    /*存活时间，单位秒*/
 
@@ -138,22 +141,6 @@ public class Consumer extends Entity {
         this.application = application;
     }
 
-	public Route getRoute() {
-		return route;
-	}
-
-	public void setRoute(Route route) {
-		this.route = route;
-	}
-
-    public Map<String, Route> getMethod2Route() {
-        return method2Route;
-    }
-    
-    public void setMethod2Route(Map<String, Route> method2Route) {
-        this.method2Route = method2Route;
-    }
-    
     public Date getExpired() {
         return expired;
     }
@@ -173,19 +160,43 @@ public class Consumer extends Entity {
         this.alived = alived;
     }
 
-    public Override getOverride() {
-        return override;
-    }
+	public Override getOverride() {
+		return override;
+	}
 
-    public void setOverride(Override override) {
-        this.override = override;
-    }
+	public void setOverride(Override override) {
+		this.override = override;
+	}
+
+    public List<Override> getOverrides() {
+		return overrides;
+	}
+
+	public void setOverrides(List<Override> overrides) {
+		this.overrides = overrides;
+	}
+
+    public List<Route> getRoutes() {
+		return routes;
+	}
+
+	public void setRoutes(List<Route> routes) {
+		this.routes = routes;
+	}
+
+	public List<Provider> getProviders() {
+		return providers;
+	}
+
+	public void setProviders(List<Provider> providers) {
+		this.providers = providers;
+	}
 
     public String toString() {
         return "Consumer [service=" + service + ", parameters=" + parameters + ", result=" + result
                 + ", address=" + address + ", registry=" + registry + ", application="
                 + application + ", username=" + username + ", statistics=" + statistics
-                + ", collected=" + collected + ", route=" + route + ", override=" + override
+                + ", collected=" + collected + ", routes=" + routes + ", overrides=" + overrides
                 + ", expired=" + expired + ", alived=" + alived + "]";
     }
     

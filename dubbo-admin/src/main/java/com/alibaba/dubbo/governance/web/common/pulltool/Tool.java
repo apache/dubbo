@@ -21,13 +21,13 @@ import java.lang.reflect.Array;
 import java.net.InetAddress;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
+import java.text.ParseException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
@@ -40,7 +40,9 @@ import com.alibaba.dubbo.registry.common.domain.Override;
 import com.alibaba.dubbo.registry.common.domain.Provider;
 import com.alibaba.dubbo.registry.common.domain.Route;
 import com.alibaba.dubbo.registry.common.domain.User;
-import com.alibaba.dubbo.registry.common.route.RouteUtils;
+import com.alibaba.dubbo.registry.common.route.ParseUtils;
+import com.alibaba.dubbo.registry.common.route.RouteRule;
+import com.alibaba.dubbo.registry.common.route.RouteRule.MatchPair;
 import com.alibaba.dubbo.registry.common.util.StringEscapeUtils;
 
 /**
@@ -49,10 +51,11 @@ import com.alibaba.dubbo.registry.common.util.StringEscapeUtils;
  * @author william.liangf
  */
 public class Tool {
-	OverrideService overrideService;
+
+	private OverrideService overrideService;
 	
-	RouteService routeService;
-	
+	private RouteService routeService;
+
 	public void setOverrideService(OverrideService overrideService) {
 		this.overrideService = overrideService;
 	}
@@ -61,7 +64,6 @@ public class Tool {
 		this.routeService = routeService;
 	}
 
-    
     public static String toStackTraceString(Throwable t) {
         StringWriter writer = new StringWriter();
         PrintWriter pw = new PrintWriter(writer);
@@ -76,15 +78,19 @@ public class Tool {
     public static boolean startWith(String value, String prefix) {
         return value.startsWith(prefix);
     }
-
-    public static String getHostName(String address) {
+    
+    public static String getHostPrefix(String address) {
         if (address != null && address.length() > 0) {
-            String hostname = NetUtils.getHostName(address);
+            String hostname = getHostName(address);
             if (! address.equals(hostname)) {
                 return "(" + hostname + ")";
             }
         }
         return "";
+    }
+
+    public static String getHostName(String address) {
+        return NetUtils.getHostName(address);
     }
     
     public static String getHostAddress(String address) {
@@ -247,6 +253,10 @@ public class Tool {
         return value;
     }
 	
+	public static Map<String, String> toParameterMap(String parameters){
+		return StringUtils.parseQueryString(parameters);
+	}
+	
 
 	/**
 	 * 从provider的paramters参数中获取版本值
@@ -266,6 +276,13 @@ public class Tool {
 			}
 		}
 		return version;
+	}
+	
+	public String formatTimestamp(String timestamp){
+		if (timestamp == null || timestamp.length() == 0) {
+			return "";
+		}
+		return formatDate(new Date(Long.valueOf(timestamp)));
 	}
 	
 	 //时间格式化
@@ -298,35 +315,82 @@ public class Tool {
     
     public boolean isProviderEnabled(Provider provider){
     	List<Override> oList = overrideService.findByServiceAndAddress(provider.getService(), provider.getAddress());
+    	return isProviderEnabled(provider, oList);
+    }
+    
+    public static boolean isProviderEnabled(Provider provider, List<Override> oList){
     	for(Override o : oList){
     		Map<String, String> params = StringUtils.parseQueryString(o.getParams());
-        	if(params.containsKey(Constants.DISABLED_KEY)){
-        		if(params.get(Constants.DISABLED_KEY) .equals("true")){
-        			return false;
-        		}else{
-        			return true;
-        		}
+    		String disbaled = params.get(Constants.DISABLED_KEY);
+        	if(disbaled != null && disbaled.length() > 0){
+        		return ! "true".equals(disbaled);
         	}
     	}
-    	if(provider.isEnabled()){
-			return true;
-		}else{
-			return false;
-		}
-    	
-    	
+    	return provider.isEnabled();
     }
     
     public boolean isInBlackList(Consumer consumer){
-    	 Map<String, Route> findUsedRoute = RouteUtils.findUsedRoute(consumer.getService(), consumer.getAddress(), consumer.getParameters(),
-    			 routeService.findByService(consumer.getService()), null);
-    	 for(Entry<String, Route> entry : findUsedRoute.entrySet()){
-    		 Route route = entry.getValue();
-    		 if(route.isForce()){
-    			 return true;
-    		 }
-    	 }
+    	String service = consumer.getService();
+    	List<Route> routes = routeService.findForceRouteByService(service);
+    	if(routes == null || routes.size() == 0){
+    		return false;
+    	}
+    	String ip = getIP(consumer.getAddress());
+    	for(Route route : routes){
+			try {
+				if (! route.isEnabled()) {
+					continue;
+				}
+				String filterRule = route.getFilterRule();
+				if (filterRule == null || filterRule.length() == 0 || "false".equals(filterRule)) {
+					Map<String, MatchPair> rule = RouteRule.parseRule(route.getMatchRule());
+					MatchPair pair = rule.get("consumer.host");
+		            if (pair == null) {
+		            	pair = rule.get("host");
+		            }
+		            if(pair != null){
+		            	if (pair.getMatches() != null && pair.getMatches().size() > 0) {
+			                for(String host : pair.getMatches()){
+			                	if (ParseUtils.isMatchGlobPattern(host, ip)) {
+			                		return true;
+			                	}
+			                }
+		            	}
+		            	if (pair.getUnmatches() != null && pair.getUnmatches().size() > 0) {
+			                boolean forbid = true;
+			                for(String host : pair.getUnmatches()){
+			                	if (ParseUtils.isMatchGlobPattern(host, ip)) {
+			                		forbid = false;
+			                	}
+			                }
+			                if (forbid) {
+			                	return true;
+			                }
+		            	}
+		            }
+				}
+			} catch (ParseException e) {
+				throw new RuntimeException(e.getMessage(), e);
+			}
+        }
     	return false;
+    }
+
+    public String getConsumerMock(Consumer consumer){
+    	return getOverridesMock(consumer.getOverrides());
+    }
+    
+    public String getOverridesMock(List<Override> overrides){
+    	if(overrides != null && overrides.size() > 0) {
+	    	for(Override override : overrides) {
+				Map<String, String> params = StringUtils.parseQueryString(override.getParams());
+				String mock = params.get("mock");
+				if (mock != null && mock.length() > 0) {
+					return mock;
+				}
+	    	}
+    	}
+    	return "";
     }
     
     public boolean checkUrl(User user,String uri){

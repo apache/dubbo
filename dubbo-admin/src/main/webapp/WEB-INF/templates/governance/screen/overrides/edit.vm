@@ -34,10 +34,6 @@
 		<td style="width: 100px;"><b>$i18n.get("overrideConsumerAddress"):</b></td>
 		<td>$!override.address<input type="hidden" id="address" name="address" value="$override.address" style="ime-mode:disabled" maxlength="200"/> <font color="blue">$i18n.get("tipConsumerAddress")</font></td>
 	</tr>
-	<tr>
-		<td ><b>$i18n.get("overrideProviderAddress"):</b></td>
-		<td>$!override.overrideAddress<input type="hidden" id="overrideAddress" name="overrideAddress" value="$!override.overrideAddress" /> <font color="blue">$i18n.get("tipProviderAddress")</font></td>
-	</tr>
 </table>
 <br>
 

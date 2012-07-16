@@ -36,4 +36,12 @@ public class Owners extends Restful {
 		}
 		context.put("owners", owners);
 	}
+	
+	public void add(Map<String, Object> context) {
+	}
+
+	public void create(Owner owner, Map<String, Object> context) {
+		owner.getUsername();
+	}
+
 }

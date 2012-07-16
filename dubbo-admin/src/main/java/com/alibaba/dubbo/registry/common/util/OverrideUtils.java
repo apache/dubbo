@@ -42,7 +42,7 @@ public class OverrideUtils {
                    for(Map.Entry<String, String> entry : params.entrySet()){
                        if(entry.getKey().equals("weight")){
                            Weight weight = new Weight();
-                           weight.setAddress(o.getOverrideAddress());
+                           weight.setAddress(o.getAddress());
                            weight.setId(o.getId());
                            weight.setService(o.getService());
                            weight.setWeight(Integer.valueOf(entry.getValue()));
@@ -61,7 +61,7 @@ public class OverrideUtils {
    public static Override weightToOverride(Weight weight){
        Override override = new Override();
        override.setId(weight.getId());
-       override.setOverrideAddress(weight.getAddress());
+       override.setAddress(weight.getAddress());
        override.setEnabled(true);
        override.setParams("weight=" + weight.getWeight());
        override.setService(weight.getService());

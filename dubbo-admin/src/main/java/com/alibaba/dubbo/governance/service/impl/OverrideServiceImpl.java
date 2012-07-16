@@ -21,12 +21,10 @@ import java.util.Map;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.governance.service.OverrideService;
 import com.alibaba.dubbo.governance.sync.RegistryServerSync.Pair;
 import com.alibaba.dubbo.governance.sync.util.SyncUtils;
 import com.alibaba.dubbo.registry.common.domain.Override;
-import com.alibaba.dubbo.registry.common.registry.ConvertUtil;
 
 /**
  * IbatisOverrideDAO.java
@@ -101,63 +99,43 @@ public class OverrideServiceImpl extends AbstractService implements OverrideServ
         
     }
 
-    public List<Override> findByAddress(String address) {
-        return  SyncUtils.url2OverrideList(findOverrideUrlByAddress(address));
-    }
-    
-    private Map<Long, URL> findOverrideUrlByAddress(String address) {
+    private Map<Long, URL> findOverrideUrl(String service, String address, String application) {
         Map<String, String> filter = new HashMap<String, String>();
         filter.put(Constants.CATEGORY_KEY, Constants.CONFIGURATORS_CATEGORY);
-        filter.put(SyncUtils.ADDRESS_FILTER_KEY, address);
-        
+        if (service != null && service.length() > 0) {
+        	filter.put(SyncUtils.SERVICE_FILTER_KEY, service);
+        }
+        if (address != null && address.length() > 0) {
+        	filter.put(SyncUtils.ADDRESS_FILTER_KEY, address);
+        }
+        if (application != null && application.length() > 0) {
+        	filter.put(Constants.APPLICATION_KEY, application);
+        }
         return SyncUtils.filterFromCategory(getRegistryCache(), filter);
+    }
+
+    public List<Override> findByAddress(String address) {
+        return  SyncUtils.url2OverrideList(findOverrideUrl(null, address, null));
     }
 
     public List<Override> findByServiceAndAddress(String service, String address) {
-        return  SyncUtils.url2OverrideList(findOverrideUrlByServiceAndAddress(service, address));
-    }
-    
-    private Map<Long, URL> findOverrideUrlByServiceAndAddress(String service, String address) {
-        Map<String, String> filter = new HashMap<String, String>();
-        filter.put(Constants.CATEGORY_KEY, Constants.CONFIGURATORS_CATEGORY);
-        filter.put(SyncUtils.SERVICE_FILTER_KEY, service);
-        filter.put(SyncUtils.ADDRESS_FILTER_KEY, address);
-        
-        return SyncUtils.filterFromCategory(getRegistryCache(), filter);
-    }
-
-    private Map<Long, URL> findOverrideUrlByApplication(String application) {
-        Map<String, String> filter = new HashMap<String, String>();
-        filter.put(Constants.CATEGORY_KEY, Constants.CONFIGURATORS_CATEGORY);
-        filter.put(Constants.APPLICATION_KEY, application);
-        
-        return SyncUtils.filterFromCategory(getRegistryCache(), filter);
+        return  SyncUtils.url2OverrideList(findOverrideUrl(service, address, null));
     }
     
     public List<Override> findByApplication(String application) {
-        return SyncUtils.url2OverrideList(findOverrideUrlByApplication(application));
+        return SyncUtils.url2OverrideList(findOverrideUrl(null, null, application));
     }
 
     public List<Override> findByService(String service) {
-        return  SyncUtils.url2OverrideList(findOverrideUrlByService(service));
-    }
-    
-    private Map<Long, URL> findOverrideUrlByService(String service) {
-        Map<String, String> filter = new HashMap<String, String>();
-        filter.put(Constants.CATEGORY_KEY, Constants.CONFIGURATORS_CATEGORY);
-        filter.put(SyncUtils.SERVICE_FILTER_KEY, service);
-        
-        return SyncUtils.filterFromCategory(getRegistryCache(), filter);
+        return  SyncUtils.url2OverrideList(findOverrideUrl(service, null, null));
     }
 
-    private Map<Long, URL> findAllOverrideUrl() {
-        Map<String, String> filter = new HashMap<String, String>();
-        filter.put(Constants.CATEGORY_KEY, Constants.CONFIGURATORS_CATEGORY);
-        return SyncUtils.filterFromCategory(getRegistryCache(), filter);
+    public List<Override> findByServiceAndApplication(String service, String application) {
+        return  SyncUtils.url2OverrideList(findOverrideUrl(service, null, application));
     }
     
     public List<Override> findAll() {
-        return SyncUtils.url2OverrideList(findAllOverrideUrl());
+        return SyncUtils.url2OverrideList(findOverrideUrl(null, null, null));
     }
     
     private Pair<Long, URL> findOverrideUrlPair(Long id) {
@@ -169,7 +147,8 @@ public class OverrideServiceImpl extends AbstractService implements OverrideServ
     }
     
     private URL getUrlFromOverride(Override override) {
-        Map<String, String> params = ConvertUtil.serviceName2Map(override.getService());
+    	return override.toUrl();
+        /*Map<String, String> params = ConvertUtil.serviceName2Map(override.getService());
         if(!params.containsKey(Constants.INTERFACE_KEY)) {
             throw new IllegalArgumentException("No interface info");
         }
@@ -198,7 +177,7 @@ public class OverrideServiceImpl extends AbstractService implements OverrideServ
         
         URL url = new URL("override", overrideAddress, -1, params);
         url = url.addParameterString(override.getParams());
-        return url;
+        return url;*/
     }
     
     URL findOverrideUrl(Long id){

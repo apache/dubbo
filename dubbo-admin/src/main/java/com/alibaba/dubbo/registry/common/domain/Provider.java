@@ -16,6 +16,7 @@
 package com.alibaba.dubbo.registry.common.domain;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import com.alibaba.dubbo.common.Constants;
@@ -57,6 +58,10 @@ public class Provider extends Entity {
     private String cachedProviderAddress;
 
     private String cachedRegistryAddress;
+    
+    private Override override;
+
+	private List<Override> overrides;
     
     public Provider() {
     }
@@ -155,6 +160,22 @@ public class Provider extends Entity {
         this.alived = aliveSeconds;
     }
 
+    public Override getOverride() {
+		return override;
+	}
+
+	public void setOverride(Override override) {
+		this.override = override;
+	}
+
+	public List<Override> getOverrides() {
+		return overrides;
+	}
+
+	public void setOverrides(List<Override> overrides) {
+		this.overrides = overrides;
+	}
+
     public String getCachedProviderAddress() {
         return cachedProviderAddress;
     }
@@ -173,15 +194,15 @@ public class Provider extends Entity {
     
     public URL toUrl() {
         Map<String, String> serviceName2Map = ConvertUtil.serviceName2Map(getService());
-        if(!serviceName2Map.containsKey(Constants.INTERFACE_KEY)) {
+        /*if(!serviceName2Map.containsKey(Constants.INTERFACE_KEY)) {
             throw new IllegalArgumentException("No interface info");
         }
         if(!serviceName2Map.containsKey(Constants.VERSION_KEY)) {
             throw new IllegalArgumentException("No version info");
-        }
+        }*/
     
         String u = getUrl();
-        URL url = URL.valueOf(u);
+        URL url = URL.valueOf(u + "?" + getParameters());
         
         url = url.addParameters(serviceName2Map);
         

@@ -108,30 +108,6 @@ public class RouteServiceImpl extends AbstractService implements RouteService {
         return SyncUtils.filterFromCategory(getRegistryCache(), filter);
     }
 
-    public List<Route> findByService(String serviceName) {
-        return SyncUtils.url2RouteList(findRouteUrlByService(serviceName));
-    }
-    
-    private Map<Long, URL> findRouteUrlByService(String service) {
-        Map<String, String> filter = new HashMap<String, String>();
-        filter.put(Constants.CATEGORY_KEY, Constants.ROUTERS_CATEGORY);
-        filter.put(SyncUtils.SERVICE_FILTER_KEY, service);
-        
-        return SyncUtils.filterFromCategory(getRegistryCache(), filter);
-    }
-
-    public List<Route> findByAddress(String address) {
-        return SyncUtils.url2RouteList(findRouteUrlByAddress(address));
-    }
-    
-    private Map<Long, URL> findRouteUrlByAddress(String address) {
-        Map<String, String> filter = new HashMap<String, String>();
-        filter.put(Constants.CATEGORY_KEY, Constants.ROUTERS_CATEGORY);
-        filter.put(SyncUtils.ADDRESS_FILTER_KEY, address);
-        
-        return SyncUtils.filterFromCategory(getRegistryCache(), filter);
-    }
-
     public Route findRoute(Long id) {
         return SyncUtils.url2Route(findRouteUrlPair(id));
     }
@@ -143,43 +119,48 @@ public class RouteServiceImpl extends AbstractService implements RouteService {
     private URL findRouteUrl(Long id){
         return findRoute(id).toUrl();
     }
-    
-    private Map<Long, URL> findForceRouteUrlByService(String service) {
+
+    private Map<Long, URL> findRouteUrl(String service, String address, boolean force) {
         Map<String, String> filter = new HashMap<String, String>();
         filter.put(Constants.CATEGORY_KEY, Constants.ROUTERS_CATEGORY);
-        filter.put(SyncUtils.SERVICE_FILTER_KEY, service);
-        filter.put("force", "true");
-        
+        if (service != null && service.length() > 0) {
+        	filter.put(SyncUtils.SERVICE_FILTER_KEY, service);
+        }
+        if (address != null && address.length() > 0) {
+        	filter.put(SyncUtils.ADDRESS_FILTER_KEY, address);
+        }
+        if (force) {
+        	filter.put("force", "true");
+        }
         return SyncUtils.filterFromCategory(getRegistryCache(), filter);
+    }
+
+    public List<Route> findByService(String serviceName) {
+        return SyncUtils.url2RouteList(findRouteUrl(serviceName, null, false));
+    }
+
+    public List<Route> findByAddress(String address) {
+        return SyncUtils.url2RouteList(findRouteUrl(null, address, false));
+    }
+
+    public List<Route> findByServiceAndAddress(String service, String address) {
+        return SyncUtils.url2RouteList(findRouteUrl(service, address, false));
     }
 
     public List<Route> findForceRouteByService(String service) {
-        return SyncUtils.url2RouteList(findForceRouteUrlByService(service));
+        return SyncUtils.url2RouteList(findRouteUrl(service, null, true));
     }
     
-    private Map<Long, URL> findForceRouteUrlByAddress(String address) {
-        Map<String, String> filter = new HashMap<String, String>();
-        filter.put(Constants.CATEGORY_KEY, Constants.ROUTERS_CATEGORY);
-        filter.put(SyncUtils.ADDRESS_FILTER_KEY, address);
-        filter.put("force", "true");
-        
-        return SyncUtils.filterFromCategory(getRegistryCache(), filter);
+    public List<Route> findForceRouteByAddress(String address) {
+        return SyncUtils.url2RouteList(findRouteUrl(null, address, true));
     }
 
-    public List<Route> findForceRouteByAddress(String service) {
-        return SyncUtils.url2RouteList(findForceRouteUrlByAddress(service));
+    public List<Route> findForceRouteByServiceAndAddress(String service, String address) {
+        return SyncUtils.url2RouteList(findRouteUrl(service, address, true));
     }
 
-    private Map<Long, URL> findAllForceUrl() {
-        Map<String, String> filter = new HashMap<String, String>();
-        filter.put(Constants.CATEGORY_KEY, Constants.ROUTERS_CATEGORY);
-        filter.put("force", "true");
-        
-        return SyncUtils.filterFromCategory(getRegistryCache(), filter);
-    }
-    
     public List<Route> findAllForceRoute() {
-        return SyncUtils.url2RouteList(findAllForceUrl());
+        return SyncUtils.url2RouteList(findRouteUrl(null, null, true));
     }
 
 }

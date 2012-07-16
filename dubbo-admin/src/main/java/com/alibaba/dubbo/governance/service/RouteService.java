@@ -35,18 +35,22 @@ public interface RouteService {
     void enableRoute(Long id);
 
     void disableRoute(Long id);
+
+    Route findRoute(Long id);
     
     List<Route> findAll();
 
     List<Route> findByService(String serviceName);
     
     List<Route> findByAddress(String address);
-
-    Route findRoute(Long id);
     
+    List<Route> findByServiceAndAddress(String service, String address);
+
     List<Route> findForceRouteByService(String service);
     
-    List<Route> findForceRouteByAddress(String service);
+    List<Route> findForceRouteByAddress(String address);
+
+    List<Route> findForceRouteByServiceAndAddress(String service, String address);
     
     List<Route> findAllForceRoute();
 

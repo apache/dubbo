@@ -23,11 +23,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import com.alibaba.dubbo.common.utils.StringUtils;
+import com.alibaba.dubbo.registry.common.domain.Provider;
 import com.alibaba.dubbo.registry.common.domain.Route;
+import com.alibaba.dubbo.registry.common.domain.Override;
 
 /**
  * RouteParser 路由规则解析。
@@ -55,52 +55,47 @@ public class RouteUtils {
         return RouteRuleUtils.isMatchCondition(when, consumerSample, consumerSample);
     }
     
-    public static Map<String, String> previewRoute(ConcurrentMap<String, Map<String, Route>> routed, String serviceName, String consumerAddress, String queryUrl,
-            Map<String, String> serviceUrls, Route route, Map<String, List<String>> clusters) {
+    public static Map<String, String> previewRoute(String serviceName, String consumerAddress, String queryUrl, Map<String, String> serviceUrls,
+            Route route, Map<String, List<String>> clusters, List<Route> routed) {
         if(null == route) {
             throw new IllegalArgumentException("Route is null.");
         }
         List<Route> routes = new ArrayList<Route>();
         routes.add(route);
-        return route(routed, serviceName, consumerAddress, queryUrl, serviceUrls, routes, clusters);
+        return route(serviceName, consumerAddress, queryUrl, serviceUrls, routes, clusters, routed);
     }
 
     /**
      * @return Map<methodName, Route>
      */
-    public static Map<String, Route> findUsedRoute(String serviceName, String consumerAddress, String consumerQueryUrl,
+    public static List<Route> findUsedRoute(String serviceName, String consumerAddress, String consumerQueryUrl,
             List<Route> routes, Map<String, List<String>> clusters) {
-        Map<String, Route> ret = new HashMap<String, Route>();
-        
-        Map<Long, RouteRule> rules = route2RouteRule(routes, clusters);
-        
-        final Map<String, String> consumerSample = ParseUtils.parseQuery("consumer.", consumerQueryUrl);
-        final int index = consumerAddress.lastIndexOf(":");
-        final String consumerHost;
-        if(consumerAddress != null && index != -1){
-            consumerHost = consumerAddress.substring(0, index);
-        }
-        else {
-            consumerHost = consumerAddress;
-        }
-        consumerSample.put("consumer.host", consumerHost);
-        
-        // consumer可以通过consumer.methods Key指定需要的方法
-        String methodsString = consumerSample.get("consumer.methods");
-        String[] methods = methodsString == null || methodsString.length() == 0 ? new String[]{Route.ALL_METHOD} : methodsString.split(ParseUtils.METHOD_SPLIT);
-        for (String method : methods) {
-            consumerSample.put("method", method);
-            // NOTE: 
-            // <*方法>只配置 <no method key> 
-            // method1方法匹配 <no method key> 和 <method = method1>, 此时要把<no method key>的Route的优先级降低即可
-            Route route = getFirstRouteMatchedWhenConditionOfRule(serviceName, consumerSample, routes, rules);
-            
-            if(route != null) {
-                ret.put(method, route);
-            }
-        }
-        
-        return ret;
+    	List<Route> routed = new ArrayList<Route>();
+    	Map<String, String> urls = new HashMap<String, String>();
+    	urls.put("dubbo://" + consumerAddress + "/" + serviceName, consumerQueryUrl);
+    	RouteUtils.route(serviceName, consumerAddress, consumerQueryUrl, urls, routes, clusters, routed);
+    	return routed;
+    }
+    
+    public static List<Provider> route(String serviceName, String consumerAddress, String consumerQueryUrl, List<Provider> providers,
+    		List<Override> overrides, List<Route> routes, Map<String, List<String>> clusters, List<Route> routed) {
+    	if (providers == null) {
+    		return null;
+    	}
+    	Map<String, String> urls = new HashMap<String, String>();
+    	for (Provider provider : providers) {
+    		if (com.alibaba.dubbo.governance.web.common.pulltool.Tool.isProviderEnabled(provider, overrides)) {
+    			urls.put(provider.getUrl(), provider.getParameters());
+    		}
+    	}
+    	urls = RouteUtils.route(serviceName, consumerAddress, consumerQueryUrl, urls, routes, clusters, routed);
+    	List<Provider> result = new ArrayList<Provider>();
+    	for (Provider provider : providers) {
+    		if (urls.containsKey(provider.getUrl())) {
+    			result.add(provider);
+    		}
+    	}
+    	return result;
     }
     
     /**
@@ -114,13 +109,12 @@ public class RouteUtils {
      */
     // FIXME clusters和routes的合并，可以在clusters或routes变化时预先做
     // FIXME 从Util方法中分离出Cache的操作
-    public static Map<String, String> route(ConcurrentMap<String, Map<String, Route>> routed, String serviceName, String consumerAddress, String consumerQueryUrl,
-            Map<String, String> serviceUrls, List<Route> routes, Map<String, List<String>> clusters) {
+    public static Map<String, String> route(String serviceName, String consumerAddress, String consumerQueryUrl, Map<String, String> serviceUrls,
+            List<Route> routes, Map<String, List<String>> clusters, List<Route> routed) {
         if (serviceUrls == null || serviceUrls.size() == 0) {
             return serviceUrls;
         }
         if (routes == null || routes.isEmpty()) {
-            setRoute(routed, consumerAddress, serviceName, null);
             return serviceUrls;
         }
 
@@ -167,12 +161,14 @@ public class RouteUtils {
             // method1方法匹配 <no method key> 和 <method = method1>, 此时要把<no method key>的Route的优先级降低即可
             if (routes != null && routes.size() > 0) {
                 for (Route route : routes) {
-                    setRoute(routed, consumerAddress, serviceName, route);
                     if (isSerivceNameMatched(route.getService(), serviceName)) {
                         RouteRule rule = rules.get(route.getId());
                         // 当满足when条件时
                         if (rule != null && RouteRuleUtils.isMatchCondition(
                                 rule.getWhenCondition(), consumerSample, consumerSample)) {
+                        	if (routed != null && ! routed.contains(route)) {
+                        		routed.add(route);
+                        	}
                             Map<String, RouteRule.MatchPair> then = rule.getThenCondition();
                             if (then != null) {
                                 Map<String, Map<String, String>> tmp = getUrlsMatchedCondition(then, consumerSample, url2ProviderSample);
@@ -223,21 +219,6 @@ public class RouteUtils {
             rules = rrs;
         }
         return rules;
-    }
-
-    static void setRoute(ConcurrentMap<String, Map<String, Route>> routed, String consumerAddress, String serviceName, Route route) {
-        if (routed != null) {
-            Map<String, Route> routedServices = routed.get(consumerAddress);
-            if (routedServices == null) {
-                routed.putIfAbsent(consumerAddress, new ConcurrentHashMap<String, Route>());
-                routedServices = routed.get(consumerAddress);
-            }
-            if (route != null) {
-                routedServices.put(serviceName, route);
-            } else {
-                routedServices.remove(serviceName);
-            }
-        }
     }
 
     static Map<String, String> appendMethodsToUrls(Map<String, String> serviceUrls,
