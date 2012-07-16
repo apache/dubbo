@@ -202,7 +202,7 @@ public class Constants {
 
     public static final String  FORKS_KEY                          = "forks";
 
-    public static final String  DEFAULT_THREADPOOL                 = "fixed";
+    public static final String  DEFAULT_THREADPOOL                 = "limited";
 
     public static final String  DEFAULT_CLIENT_THREADPOOL          = "cached";
 
