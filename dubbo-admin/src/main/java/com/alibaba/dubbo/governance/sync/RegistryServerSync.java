@@ -31,6 +31,8 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.NetUtils;
+import com.alibaba.dubbo.common.utils.StringUtils;
+import com.alibaba.dubbo.governance.web.common.pulltool.Tool;
 import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.RegistryService;
 
@@ -82,45 +84,49 @@ public class RegistryServerSync implements InitializingBean, DisposableBean, Not
         // Map<category, Map<servicename, Map<Long, URL>>>
         final Map<String, Map<String, Map<Long, URL>>> categories = new HashMap<String, Map<String, Map<Long, URL>>>();
         for(URL url : urls) {
-        	// 分类
-            String category = url.getParameter(Constants.CATEGORY_KEY, Constants.PROVIDERS_CATEGORY);
-            Map<String, Map<Long, URL>> services = categories.get(category);
-            if(services == null) {
-                services = new HashMap<String, Map<Long,URL>>();
-                categories.put(category, services);
-            }
-            // 接口
-            String service = url.getServiceInterface();
-            Map<Long, URL> ids = services.get(service);
-            if(ids == null) {
-                ids = new HashMap<Long, URL>();
-                services.put(service, ids);
-            }
-            // 标识
-            if(Constants.EMPTY_PROTOCOL.equalsIgnoreCase(url.getProtocol())) {
-                ids.clear();
+        	String category = url.getParameter(Constants.CATEGORY_KEY, Constants.PROVIDERS_CATEGORY);
+            if(Constants.EMPTY_PROTOCOL.equalsIgnoreCase(url.getProtocol())) { // 注意：empty协议的group和version为*
+            	ConcurrentMap<String, Map<Long, URL>> services = registryCache.get(category);
+            	if(services != null) {
+            		String group = url.getParameter(Constants.GROUP_KEY);
+            		String version = url.getParameter(Constants.VERSION_KEY);
+            		// 注意：empty协议的group和version为*
+            		if (! Constants.ANY_VALUE.equals(group) && ! Constants.ANY_VALUE.equals(version)) {
+            			services.remove(url.getServiceKey());
+            		} else {
+	                	for (Map.Entry<String, Map<Long, URL>> serviceEntry : services.entrySet()) {
+	                		String service = serviceEntry.getKey();
+	                		if (Tool.getInterface(service).equals(url.getServiceInterface())
+	                				&& (Constants.ANY_VALUE.equals(group) || StringUtils.isEquals(group, Tool.getGroup(service)))
+	                				&& (Constants.ANY_VALUE.equals(version) || StringUtils.isEquals(version, Tool.getVersion(service)))) {
+	                			services.remove(service);
+	                		}
+	                	}
+            		}
+                }
             } else {
+            	Map<String, Map<Long, URL>> services = categories.get(category);
+                if(services == null) {
+                    services = new HashMap<String, Map<Long,URL>>();
+                    categories.put(category, services);
+                }
+                String service = url.getServiceKey();
+                Map<Long, URL> ids = services.get(service);
+                if(ids == null) {
+                    ids = new HashMap<Long, URL>();
+                    services.put(service, ids);
+                }
                 ids.put(ID.incrementAndGet(), url);
             }
         }
         for(Map.Entry<String, Map<String, Map<Long, URL>>> categoryEntry : categories.entrySet()) {
             String category = categoryEntry.getKey();
-            for(Map.Entry<String, Map<Long, URL>> serviceEntry : categoryEntry.getValue().entrySet()) {
-                String service = serviceEntry.getKey();
-                Map<Long, URL> ids = serviceEntry.getValue();
-                ConcurrentMap<String, Map<Long, URL>> services = registryCache.get(category);
-                if(ids == null || ids.isEmpty()) {
-                    if(services != null) {
-                    	services.remove(service);
-                    }
-                } else {
-                    if(services == null) {
-                        services = new ConcurrentHashMap<String, Map<Long,URL>>();
-                        registryCache.put(category, services);
-                    }
-                    services.put(service, ids);
-                }
+            ConcurrentMap<String, Map<Long, URL>> services = registryCache.get(category);
+            if(services == null) {
+                services = new ConcurrentHashMap<String, Map<Long,URL>>();
+                registryCache.put(category, services);
             }
+            services.putAll(categoryEntry.getValue());
         }
     }
 }

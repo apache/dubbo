@@ -34,7 +34,7 @@ public class Provider extends Entity {
     private static final long serialVersionUID = 5981342400350878171L;
 
     private String service;/* 提供者所提供的服务名称 */
-
+    
     private String url; /* 提供者提供服务的地址 */
     
     private String parameters; /* 提供者提供服务的参数 */
@@ -55,10 +55,6 @@ public class Provider extends Entity {
     
     private long alived;    /*存活时间，单位秒*/
 
-    private String cachedProviderAddress;
-
-    private String cachedRegistryAddress;
-    
     private Override override;
 
 	private List<Override> overrides;
@@ -176,22 +172,6 @@ public class Provider extends Entity {
 		this.overrides = overrides;
 	}
 
-    public String getCachedProviderAddress() {
-        return cachedProviderAddress;
-    }
-    
-    public void setCachedProviderAddress(String cachedProviderAddress) {
-        this.cachedProviderAddress = cachedProviderAddress;
-    }
-    
-    public String getCachedRegistryAddress() {
-        return cachedRegistryAddress;
-    }
-    
-    public void setCachedRegistryAddress(String cachedRegistryAddress) {
-        this.cachedRegistryAddress = cachedRegistryAddress;
-    }
-    
     public URL toUrl() {
         Map<String, String> serviceName2Map = ConvertUtil.serviceName2Map(getService());
         /*if(!serviceName2Map.containsKey(Constants.INTERFACE_KEY)) {

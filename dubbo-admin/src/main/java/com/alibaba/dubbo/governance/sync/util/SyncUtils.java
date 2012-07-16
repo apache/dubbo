@@ -51,7 +51,7 @@ public class SyncUtils {
 
         Provider p = new Provider();
         p.setId(id);
-        p.setService(url.getServiceInterface());
+        p.setService(url.getServiceKey());
         p.setAddress(url.getAddress());
         p.setApplication(url.getParameter(Constants.APPLICATION_KEY));
         p.setUrl(url.toIdentityString());
@@ -85,7 +85,7 @@ public class SyncUtils {
 
         Consumer c = new Consumer();
         c.setId(id);
-        c.setService(url.getServiceInterface());
+        c.setService(url.getServiceKey());
         c.setAddress(url.getHost());
         c.setApplication(url.getParameter(Constants.APPLICATION_KEY));
         c.setParameters(url.toParameterString());
@@ -116,7 +116,7 @@ public class SyncUtils {
         Route r = new Route();
         r.setId(id);
         r.setName(url.getParameter("name"));
-        r.setService(url.getServiceInterface());
+        r.setService(url.getServiceKey());
         r.setPriority(url.getParameter(Constants.PRIORITY_KEY, 0));
         r.setEnabled(url.getParameter(Constants.ENABLED_KEY, true));
         r.setForce(url.getParameter(Constants.FORCE_KEY, false));
@@ -149,7 +149,7 @@ public class SyncUtils {
 
         Map<String, String> parameters = new HashMap<String, String>(url.getParameters());
 
-        o.setService(url.getServiceInterface());
+        o.setService(url.getServiceKey());
         parameters.remove(Constants.INTERFACE_KEY);
         parameters.remove(Constants.GROUP_KEY);
         parameters.remove(Constants.VERSION_KEY);
