@@ -354,13 +354,33 @@ public class Tool {
     
     public static boolean isProviderEnabled(Provider provider, List<Override> oList){
     	for(Override o : oList){
-    		Map<String, String> params = StringUtils.parseQueryString(o.getParams());
-    		String disbaled = params.get(Constants.DISABLED_KEY);
-        	if(disbaled != null && disbaled.length() > 0){
-        		return ! "true".equals(disbaled);
-        	}
+    		if (o.isMatch(provider)) {
+	    		Map<String, String> params = StringUtils.parseQueryString(o.getParams());
+	    		String disbaled = params.get(Constants.DISABLED_KEY);
+	        	if(disbaled != null && disbaled.length() > 0){
+	        		return ! "true".equals(disbaled);
+	        	}
+    		}
     	}
     	return provider.isEnabled();
+    }
+
+    public int getProviderWeight(Provider provider){
+    	List<Override> oList = overrideService.findByServiceAndAddress(provider.getService(), provider.getAddress());
+    	return getProviderWeight(provider, oList);
+    }
+    
+    public static int getProviderWeight(Provider provider, List<Override> oList) {
+    	for(Override o : oList){
+    		if (o.isMatch(provider)) {
+	    		Map<String, String> params = StringUtils.parseQueryString(o.getParams());
+	    		String weight = params.get(Constants.WEIGHT_KEY);
+	        	if(weight != null && weight.length() > 0){
+	        		return Integer.parseInt(weight);
+	        	}
+    		}
+    	}
+    	return provider.getWeight();
     }
     
     public boolean isInBlackList(Consumer consumer){

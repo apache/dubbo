@@ -59,6 +59,7 @@ public class SyncUtils {
 
         p.setDynamic(url.getParameter("dynamic", true));
         p.setEnabled(url.getParameter(Constants.ENABLED_KEY, true));
+        p.setWeight(url.getParameter(Constants.WEIGHT_KEY, Constants.DEFAULT_WEIGHT));
         p.setUsername(url.getParameter("owner"));
 
         return p;

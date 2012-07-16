@@ -124,6 +124,82 @@ public class ProviderServiceImpl extends AbstractService implements ProviderServ
         }
         
     }
+    
+    public void doublingProvider(Long id) {
+    	setWeight(id, 2F);
+    }
+    
+    public void halvingProvider(Long id) {
+    	setWeight(id, 0.5F);
+    }
+
+    public void setWeight(Long id, float factor) {
+        if(id == null) {
+            throw new IllegalStateException("no provider id");
+        }
+        Provider oldProvider = findProvider(id);
+        if(oldProvider == null) {
+            throw new IllegalStateException("Provider was changed!");
+        }
+        Map<String, String> map = StringUtils.parseQueryString(oldProvider.getParameters());
+    	String weight = map.get(Constants.WEIGHT_KEY);
+        if (oldProvider.isDynamic()) {
+	        //保证disable的override唯一
+	        List<Override> overrides = overrideService.findByServiceAndAddress(oldProvider.getService(), oldProvider.getAddress());
+	        if (overrides == null || overrides.size() == 0) {
+	        	int value = getWeight(weight, factor);
+	        	if (value != Constants.DEFAULT_WEIGHT) {
+		        	Override override = new Override();
+		        	override.setAddress(oldProvider.getAddress());
+		        	override.setService(oldProvider.getService());
+		        	override.setEnabled(true);
+		        	override.setParams(Constants.WEIGHT_KEY + "=" + String.valueOf(value));
+		        	overrideService.saveOverride(override);
+	        	}
+	        } else {
+		        for(Override override : overrides){
+		        	Map<String, String> params = StringUtils.parseQueryString(override.getParams());
+		        	String overrideWeight = params.get(Constants.WEIGHT_KEY);
+		        	if (overrideWeight == null || overrideWeight.length() == 0) {
+		        		overrideWeight = weight;
+		        	}
+		        	int value = getWeight(overrideWeight, factor);
+		        	if (value == getWeight(weight, 1)) {
+		        		params.remove(Constants.WEIGHT_KEY);
+		        	} else {
+		        		params.put(Constants.WEIGHT_KEY, String.valueOf(value));
+		        	}
+		        	if (params.size() > 0) {
+		        		override.setParams(StringUtils.toQueryString(params));
+		        		overrideService.updateOverride(override);
+		        	} else {
+		        		overrideService.deleteOverride(override.getId());
+		        	}
+		        }
+	        }
+        } else {
+        	int value = getWeight(weight, factor);
+        	if (value == Constants.DEFAULT_WEIGHT) {
+        		map.remove(Constants.WEIGHT_KEY);
+        	} else {
+        		map.put(Constants.WEIGHT_KEY, String.valueOf(value));
+        	}
+        	oldProvider.setParameters(StringUtils.toQueryString(map));
+        	updateProvider(oldProvider);
+        }
+    }
+    
+    private int getWeight(String value, float factor) {
+    	int weight = 100;
+    	if (value != null && value.length() > 0) {
+    		weight = Integer.parseInt(value);
+    	}
+    	weight = (int) (weight * factor);
+    	if (weight < 1) weight = 1;
+    	if (weight == 2) weight = 3;
+    	if (weight == 24) weight = 25;
+    	return weight;
+    }
 
     public void deleteStaticProvider(Long id) {
         URL oldProvider = findProviderUrl(id);

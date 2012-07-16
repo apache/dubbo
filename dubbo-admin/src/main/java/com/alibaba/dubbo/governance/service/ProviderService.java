@@ -31,6 +31,10 @@ public interface ProviderService {
     void enableProvider(Long id);
     
     void disableProvider(Long id);
+
+    void doublingProvider(Long id);
+    
+    void halvingProvider(Long id);
     
     void deleteStaticProvider(Long id);
     

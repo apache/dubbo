@@ -2,15 +2,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-		<title>dubbo</title>
+		<title>Dubbo Admin</title>
 		<link type="text/css" href="$rootContextPath.getURI("css/common.css")" rel="stylesheet"/>
 		<link type="text/css" href="$rootContextPath.getURI("css/skin.css")" rel="stylesheet"/>
 		<link type="text/css" href="$rootContextPath.getURI("css/dubbo.css")" rel="stylesheet"/>
 		<script type="text/javascript" src="$rootContextPath.getURI("js/ajax.js")"></script>
 		<script type="text/javascript" src="$rootContextPath.getURI("js/box.js")"></script>
-		#if($_method == "index")
-			<script type="text/javascript" src="$rootContextPath.getURI("js/trcolor.js")"></script>
-		#end
+		<script type="text/javascript" src="$rootContextPath.getURI("js/trcolor.js")"></script>
 		<script type="text/javascript" src="$rootContextPath.getURI("js/jquery-1.4.2.min.js")"></script>
 		<script type="text/javascript" src="$rootContextPath.getURI("js/jquery.simplemodal-1.4.js")"></script>
 		<script type="text/javascript" src="$rootContextPath.getURI("js/dubbo.js")"></script>
@@ -85,7 +83,7 @@
 		<div class="tab" id="Tab2">
 			#set($tabs = [])
 			#if($service && $service != '*')
-				#set($tabs = ["providers", "consumers", "applications", "accesses", "weights", "loadbalances", "routes", "owners", "overrides"])
+				#set($tabs = ["providers", "consumers", "applications", "routes", "overrides", "accesses", "weights", "loadbalances", "owners"])
 			#elseif($address && $address != '*')
 				#set($tabs = ["providers", "consumers", "routes", "accesses", "weights"])
 			#elseif($application && $application != '*')

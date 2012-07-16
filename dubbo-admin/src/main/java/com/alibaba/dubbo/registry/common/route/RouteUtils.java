@@ -83,6 +83,7 @@ public class RouteUtils {
     		return null;
     	}
     	Map<String, String> urls = new HashMap<String, String>();
+    	urls.put("consumer://" + consumerAddress + "/" + serviceName, consumerQueryUrl); // not empty dummy data
     	for (Provider provider : providers) {
     		if (com.alibaba.dubbo.governance.web.common.pulltool.Tool.isProviderEnabled(provider, overrides)) {
     			urls.put(provider.getUrl(), provider.getParameters());

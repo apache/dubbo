@@ -47,7 +47,9 @@ public class Provider extends Entity {
     
     private boolean enabled;          /* 是否启用 */
 
-    private String application; /* 应用名 */
+    private int weight;          /* 权重 */
+
+	private String application; /* 应用名 */
 
     private String username;      /* 提供者用户名 */
     
@@ -155,6 +157,14 @@ public class Provider extends Entity {
     public void setAlived(long aliveSeconds) {
         this.alived = aliveSeconds;
     }
+
+    public int getWeight() {
+		return weight;
+	}
+
+	public void setWeight(int weight) {
+		this.weight = weight;
+	}
 
     public Override getOverride() {
 		return override;

@@ -4,15 +4,21 @@
 	<a href="../$provider.id"><img src="$rootContextPath.getURI("images/ico_show.png")" width="12" height="12" /><span class="ico_font">$i18n.get("show")</span></a>
 	#if($currentUser.role != "G")
 		<span class="ico_line">|</span>
-		<a href="#" onclick="showConfirm('$i18n.get("confirm.delete")', '$provider.url', '../$provider.id/delete'); return false;"><img src="$rootContextPath.getURI("images/ico_delete.png")" width="12" height="12" /><span class="ico_font">$i18n.get("delete")</span></a>
+		<a href="../$provider.id/add"><img src="$rootContextPath.getURI("images/ico_add.png")" width="12" height="12" /><span class="ico_font">$i18n.get("copy")</span></a>
 		<span class="ico_line">|</span>
-		#if($provider.enabled)
+		<a href="#" onclick="showConfirm('$i18n.get("confirm.weight.doubling")', '$provider.url', '../$provider.id/doubling'); return false;"><img src="$rootContextPath.getURI("images/ico_up.png")" width="12" height="12" /><span class="ico_font">$i18n.get("weight.doubling")</span></a>
+		<span class="ico_line">|</span>
+		<a href="#" onclick="showConfirm('$i18n.get("confirm.weight.halving")', '$provider.url', '../$provider.id/halving'); return false;"><img src="$rootContextPath.getURI("images/ico_down.png")" width="12" height="12" /><span class="ico_font">$i18n.get("weight.halving")</span></a>
+		<span class="ico_line">|</span>
+		#if($tool.isProviderEnabled($provider))
 			<a href="#" onclick="showConfirm('$i18n.get("confirm.disable")', '$provider.url', '../$provider.id/disable'); return false;"><img src="$rootContextPath.getURI("images/ico_disable.png")" width="12" height="12" /><span class="ico_font">$i18n.get("disable")</span></a>
 		#else
 			<a href="#" onclick="showConfirm('$i18n.get("confirm.enable")', '$provider.url', '../$provider.id/enable'); return false;"><img src="$rootContextPath.getURI("images/ico_enable.png")" width="12" height="12" /><span class="ico_font">$i18n.get("enable")</span></a>
 		#end
+		#if(! $provider.dynamic)
 		<span class="ico_line">|</span>
-		<a href="../$provider.id/add"><img src="$rootContextPath.getURI("images/ico_add.png")" width="12" height="12" /><span class="ico_font">$i18n.get("copy")</span></a>
+		<a href="#" onclick="showConfirm('$i18n.get("confirm.delete")', '$provider.url', '../$provider.id/delete'); return false;"><img src="$rootContextPath.getURI("images/ico_delete.png")" width="12" height="12" /><span class="ico_font">$i18n.get("delete")</span></a>
+		#end
 	#end
 </div>
 <br/>

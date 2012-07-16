@@ -263,6 +263,9 @@ public class Providers extends Restful {
 			if (provider == null) {
 				context.put("message", getMessage("NoSuchOperationData", id));
 				return false;
+			} else if (provider.isDynamic()) {
+				context.put("message", getMessage("CanNotDeleteDynamicData", id));
+				return false;
 			} else if (! super.currentUser.hasServicePrivilege(provider.getService())) {
 				context.put( "message", getMessage("HaveNoServicePrivilege", provider.getService()));
 				return false;
@@ -279,7 +282,7 @@ public class Providers extends Restful {
 		for (Long id : ids) {
 			Provider provider = providerService.findProvider(id);
 			if (provider == null) {
-				context.put("message", getMessage("Id is not exist", id));
+				context.put("message", getMessage("NoSuchOperationData", id));
 				return false;
 			} else if (! super.currentUser.hasServicePrivilege(provider.getService())) {
 				context.put("message", getMessage("HaveNoServicePrivilege", provider.getService()));
@@ -297,7 +300,7 @@ public class Providers extends Restful {
 		for (Long id : ids) {
 			Provider provider = providerService.findProvider(id);
 			if (provider == null) {
-				context.put("message", getMessage("Id is not exist", id));
+				context.put("message", getMessage("NoSuchOperationData", id));
 				return false;
 			} else if (! super.currentUser.hasServicePrivilege(provider.getService())) {
 				context.put("message", getMessage("HaveNoServicePrivilege", provider.getService()));
@@ -308,6 +311,40 @@ public class Providers extends Restful {
 			providerService.disableProvider(id);
 		}
 		return true;
+    }
+    
+    public boolean doubling(Long[] ids, Map<String, Object> context) {
+    	for (Long id : ids) {
+			Provider provider = providerService.findProvider(id);
+			if (provider == null) {
+				context.put("message", getMessage("NoSuchOperationData", id));
+				return false;
+			} else if (! super.currentUser.hasServicePrivilege(provider.getService())) {
+				context.put("message", getMessage("HaveNoServicePrivilege", provider.getService()));
+				return false;
+			}
+		}
+		for (Long id : ids) {
+			providerService.doublingProvider(id);
+		}
+    	return true;
+    }
+    
+    public boolean halving(Long[] ids, Map<String, Object> context) {
+    	for (Long id : ids) {
+			Provider provider = providerService.findProvider(id);
+			if (provider == null) {
+				context.put("message", getMessage("NoSuchOperationData", id));
+				return false;
+			} else if (! super.currentUser.hasServicePrivilege(provider.getService())) {
+				context.put("message", getMessage("HaveNoServicePrivilege", provider.getService()));
+				return false;
+			}
+		}
+		for (Long id : ids) {
+			providerService.halvingProvider(id);
+		}
+    	return true;
     }
     
 }
