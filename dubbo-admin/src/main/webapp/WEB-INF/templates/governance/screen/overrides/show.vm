@@ -34,10 +34,6 @@
 		<td style="width: 100px;"><b>$i18n.get("clientAddress")</b></td>
 		<td>$!override.address</td>
 	</tr>
-	<tr>
-		<td ><b>$i18n.get("overrideAddress")</b></td>
-		<td>$!override.overrideAddress</td>
-	</tr>
 </table>
 <br>
 

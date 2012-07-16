@@ -51,7 +51,7 @@ public class RegistryServerSync implements InitializingBean, DisposableBean {
                                             Constants.ENABLED_KEY, Constants.ANY_VALUE,
                                             Constants.CHECK_KEY, String.valueOf(false));
 
-    static final AtomicLong ID = new AtomicLong();
+    static final AtomicLong ID = new AtomicLong(1);
     
     private String consoleUrl;
     

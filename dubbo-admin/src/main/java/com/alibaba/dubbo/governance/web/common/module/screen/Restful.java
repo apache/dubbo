@@ -12,10 +12,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.alibaba.dubbo.common.utils.CompatibleTypeUtils;
 import com.alibaba.dubbo.governance.biz.common.i18n.MessageResourceService;
 import com.alibaba.dubbo.governance.web.common.pulltool.RootContextPath;
 import com.alibaba.dubbo.governance.web.util.WebConstants;
@@ -29,7 +31,9 @@ import com.alibaba.dubbo.registry.common.domain.User;
 public abstract class Restful {
 	
 	protected static final Logger logger = Logger.getLogger(Restful.class);
-	 
+
+	protected static final Pattern SPACE_SPLIT_PATTERN = Pattern.compile("\\s+");
+
 	@Autowired
 	private MessageResourceService messageResourceService;
 	
@@ -143,7 +147,11 @@ public abstract class Restful {
                                 }
                             }
                             if (v != null) {
-                                mtd.invoke(value, new Object[] { v });
+                            	try {
+                            		mtd.invoke(value, new Object[] { CompatibleTypeUtils.compatibleTypeConvert(v, mtd.getParameterTypes()[0]) });
+                            	} catch (Throwable e) {
+                            		logger.warn(e.getMessage(), e);
+                            	}
                             }
                         }
                     }

@@ -336,7 +336,7 @@ public class Overrides  extends Restful {
         for(Long id : ids){
             Override override = overrideService.findById(id);
             if(override == null){
-                context.put("message", getMessage("Id is not exist", id));
+                context.put("message", getMessage("NoSuchOperationData", id));
                 return false;
             }
             else{
@@ -358,7 +358,7 @@ public class Overrides  extends Restful {
         for(Long id : ids){
             Override override = overrideService.findById(id);
             if(override == null){
-                context.put("message", getMessage("Id is not exist", id));
+                context.put("message", getMessage("NoSuchOperationData", id));
                 return false;
             }
             else{
@@ -375,4 +375,5 @@ public class Overrides  extends Restful {
         
         return true;
     }
+
 }

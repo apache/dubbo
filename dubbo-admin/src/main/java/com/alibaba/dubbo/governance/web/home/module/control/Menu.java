@@ -43,7 +43,14 @@ public class Menu {
         User user = (User) session.getAttribute(WebConstants.CURRENT_USER_KEY);
         if (user != null) context.put("operator", user.getUsername());
         
-        context.put("rootContextPath", new RootContextPath(request.getContextPath()));
+        RootContextPath rootContextPath = new RootContextPath(request.getContextPath());
+        context.put("rootContextPath", rootContextPath);
+        if (! context.containsKey("bucLogoutAddress")) {
+        	context.put("bucLogoutAddress", rootContextPath.getURI("logout"));
+        }
+        if (! context.containsKey("helpUrl")) {
+        	context.put("helpUrl", "http://code.alibabatech.com/wiki/display/dubbo");
+        }
         context.put(WebConstants.CURRENT_USER_KEY, user);
         context.put("language", parser.getString("locale"));
         context.put("registryServerSync", registryServerSync);

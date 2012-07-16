@@ -184,7 +184,11 @@ $control.setTemplate("home:menu.vm")
 			searchType = "addresses";
 		}
 		
-		obj.value = msg;
+		if (obj.value == '' || obj.value == '$i18n.get("please.input.service")'
+				|| obj.value == '$i18n.get("please.input.application")'
+				|| obj.value == '$i18n.get("please.input.address")') {
+			obj.value = msg;
+		}
 		obj.setAttribute("onfocus" ,"fnonfocus('" + msg + "')");
 		obj.setAttribute("onblur" ,"fnonblur('" + msg + "')");
 		hideService();

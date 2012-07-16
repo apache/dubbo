@@ -40,6 +40,10 @@ public class SyncUtils {
     public static final String ID_FILTER_KEY = ".id";
 
     public static Provider url2Provider(Pair<Long, URL> pair) {
+    	if (pair == null) {
+    		return null;
+    	}
+    	
         Long id = pair.key;
         URL url = pair.value;
 
@@ -70,6 +74,10 @@ public class SyncUtils {
     }
 
     public static Consumer url2Consumer(Pair<Long, URL> pair) {
+    	if (pair == null) {
+    		return null;
+    	}
+    	
         Long id = pair.key;
         URL url = pair.value;
 
@@ -96,6 +104,10 @@ public class SyncUtils {
     }
 
     public static Route url2Route(Pair<Long, URL> pair) {
+    	if (pair == null) {
+    		return null;
+    	}
+    	
         Long id = pair.key;
         URL url = pair.value;
 
@@ -123,6 +135,10 @@ public class SyncUtils {
     }
 
     public static com.alibaba.dubbo.registry.common.domain.Override url2Override(Pair<Long, URL> pair) {
+    	if (pair == null) {
+    		return null;
+    	}
+    	
         Long id = pair.key;
         URL url = pair.value;
 
@@ -138,23 +154,20 @@ public class SyncUtils {
         parameters.remove(Constants.INTERFACE_KEY);
         parameters.remove(Constants.GROUP_KEY);
         parameters.remove(Constants.VERSION_KEY);
+        parameters.remove(Constants.APPLICATION_KEY);
         parameters.remove(Constants.CATEGORY_KEY);
         parameters.remove(Constants.DYNAMIC_KEY);
         parameters.remove(Constants.ENABLED_KEY);
 
         o.setEnabled(url.getParameter(Constants.ENABLED_KEY, true));
-        /*String consumerAddr = url.getParameter(Override.CONSUMER_ADDRESS);
-        if(!StringUtils.isBlank(consumerAddr)) {
-            o.setAddress(consumerAddr);
-        }*/
-        
+
         String host = url.getHost();
         boolean anyhost = url.getParameter(Constants.ANYHOST_VALUE, false);
         if(!anyhost || !"0.0.0.0".equals(host)) {
-            o.setOverrideAddress(url.getAddress());
+            o.setAddress(url.getAddress());
         }
 
-        o.setApplication(url.getUsername());
+        o.setApplication(url.getParameter(Constants.APPLICATION_KEY, url.getUsername()));
         parameters.remove(Constants.VERSION_KEY);
 
         o.setParams(StringUtils.toQueryString(parameters));

@@ -81,7 +81,10 @@ public class Routes extends Restful {
         String address = (String) context.get("address");
         address = Tool.getIP(address);
         List<Route> routes;
-        if (service != null && service.length() > 0) {
+        if (service != null && service.length() > 0
+        		&& address != null && address.length() > 0) {
+            routes = routeService.findByServiceAndAddress(service, address);
+        } else if (service != null && service.length() > 0) {
             routes = routeService.findByService(service);
         } else if (address != null && address.length() > 0) {
             routes = routeService.findByAddress(address);
@@ -452,8 +455,8 @@ public class Routes extends Restful {
             if(null == consumer) {
                 context.put("message", getMessage("NoSuchRecord"));
             }
-            Map<String, String> result = RouteUtils.previewRoute(null, consumer.getService(), consumer.getAddress(), consumer.getParameters(),
-                    serviceUrls, route, null);
+            Map<String, String> result = RouteUtils.previewRoute(consumer.getService(), consumer.getAddress(), consumer.getParameters(), serviceUrls,
+                    route, null, null);
             context.put("route", route);
             context.put("consumer", consumer);
             context.put("result", result);
@@ -462,8 +465,8 @@ public class Routes extends Restful {
             String address = (String)context.get("address");
             String service = (String)context.get("service");
             
-            Map<String, String> result = RouteUtils.previewRoute(null, service, address, null,
-                    serviceUrls, route, null);
+            Map<String, String> result = RouteUtils.previewRoute(service, address, null, serviceUrls,
+                    route, null, null);
             context.put("route", route);
             
             Consumer consumer = new Consumer();

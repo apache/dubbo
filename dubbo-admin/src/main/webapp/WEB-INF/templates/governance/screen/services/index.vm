@@ -12,11 +12,11 @@
 <div class="ico_btn">
 	#if($currentUser.role != "G")
 		#if($application)
-			<a href="#" onclick="if(! hasCheckbox('ids')) { showAlert('$i18n.get("empty.list")'); } else if(! hasChecked('ids')) { showAlert('$i18n.get("please.select")'); } else { showConfirm('$i18n.get("confirm.batch.force.mock")', 'services/0/mock?mock=force:return+null&service=' + getChecked('ids'));} return false;"><img src="$rootContextPath.getURI("images/ico_disable.png")" width="12" height="12" /><span class="ico_font">$i18n.get("batch.force.mock")</span></a>
+			<a href="#" onclick="if(! hasCheckbox('ids')) { showAlert('$i18n.get("empty.list")'); } else if(! hasChecked('ids')) { showAlert('$i18n.get("please.select")'); } else { showConfirm('$i18n.get("confirm.batch.force.mock")', 'services/0/shield?service=' + getChecked('ids'));} return false;"><img src="$rootContextPath.getURI("images/ico_disable.png")" width="12" height="12" /><span class="ico_font">$i18n.get("batch.force.mock")</span></a>
 			<span class="ico_line">|</span>
-			<a href="#" onclick="if(! hasCheckbox('ids')) { showAlert('$i18n.get("empty.list")'); } else if(! hasChecked('ids')) { showAlert('$i18n.get("please.select")'); } else { showConfirm('$i18n.get("confirm.batch.fail.mock")', 'services/0/mock?mock=fail:return+null&service=' + getChecked('ids'));} return false;"><img src="$rootContextPath.getURI("images/ico_run.png")" width="12" height="12" /><span class="ico_font">$i18n.get("batch.fail.mock")</span></a>
+			<a href="#" onclick="if(! hasCheckbox('ids')) { showAlert('$i18n.get("empty.list")'); } else if(! hasChecked('ids')) { showAlert('$i18n.get("please.select")'); } else { showConfirm('$i18n.get("confirm.batch.fail.mock")', 'services/0/tolerant?service=' + getChecked('ids'));} return false;"><img src="$rootContextPath.getURI("images/ico_run.png")" width="12" height="12" /><span class="ico_font">$i18n.get("batch.fail.mock")</span></a>
 			<span class="ico_line">|</span>
-			<a href="#" onclick="if(! hasCheckbox('ids')) { showAlert('$i18n.get("empty.list")'); } else if(! hasChecked('ids')) { showAlert('$i18n.get("please.select")'); } else { showConfirm('$i18n.get("confirm.batch.fail.mock")', 'services/0/mock?mock=&service=' + getChecked('ids'));} return false;"><img src="$rootContextPath.getURI("images/ico_enable.png")" width="12" height="12" /><span class="ico_font">$i18n.get("batch.cancel.mock")</span></a>
+			<a href="#" onclick="if(! hasCheckbox('ids')) { showAlert('$i18n.get("empty.list")'); } else if(! hasChecked('ids')) { showAlert('$i18n.get("please.select")'); } else { showConfirm('$i18n.get("confirm.batch.fail.mock")', 'services/0/recover?service=' + getChecked('ids'));} return false;"><img src="$rootContextPath.getURI("images/ico_enable.png")" width="12" height="12" /><span class="ico_font">$i18n.get("batch.cancel.mock")</span></a>
 		#end
 	#end
 </div>
@@ -42,8 +42,8 @@
 	</select></th>
 	#if($application)
 	<th width="110">$i18n.get("mock"): <select onchange="searchTable('table_o', 3, this.value);" onclick="searchTable('table_o', 3, this.value);"><option value="">$i18n.get("all")</option><option value="$i18n.get("ok")">$i18n.get("ok")</option><option value="$i18n.get("force.mock")">$i18n.get("force.mock")</option><option value="$i18n.get("fail.mock")">$i18n.get("fail.mock")</option></select></th>
-	#end
 	<th>$i18n.get("operation")</th>
+	#end
 </tr>
 #foreach($service in $services)
 <tr>
@@ -56,47 +56,57 @@
 		#end
 	</td>
 	<td>
-	#if($application)
-		#if($providerServices.contains($service))
-			<font color="green">$i18n.get("provided")</font>
-			#if($consumerServices.contains($service))
-				&<font color="blue">$i18n.get("consumed")</font>
+		#if($application)
+			#if($providerServices.contains($service))
+				<font color="green">$i18n.get("provided")</font>
+				#if($consumerServices.contains($service))
+					&<font color="blue">$i18n.get("consumed")</font>
+				#end
+			#elseif($consumerServices.contains($service))
+				<font color="blue">$i18n.get("consumed")</font>
 			#end
-		#elseif($consumerServices.contains($service))
-			<font color="blue">$i18n.get("consumed")</font>
-		#end
-	#else
-		#if(! $providerServices.contains($service))
-			<font color="red">$i18n.get("no.provider")</font>
-		#elseif(! $consumerServices.contains($service))
-			<font color="blue">$i18n.get("no.consumer")</font>
 		#else
-			<font color="green">$i18n.get("ok")</font>
-		#end
-	#end
-	</td>
-	#if($application)
-	<td>
-		#if($consumerServices.contains($service))
-	    	#if($overrides.containsKey($service) && $overrides.get($service).params.contains("mock=force%3Areturn"))
-				<font color="red">$i18n.get("force.mock")</font>
-			#elseif ($overrides.containsKey($service) && ($overrides.get($service).params.contains("mock=return") || $overrides.get($service).params.contains("mock=fail%3Areturn")))
-				<font color="blue">$i18n.get("fail.mock")</font>
+			#if(! $providerServices.contains($service))
+				<font color="red">$i18n.get("no.provider")</font>
+			#elseif(! $consumerServices.contains($service))
+				<font color="blue">$i18n.get("no.consumer")</font>
 			#else
 				<font color="green">$i18n.get("ok")</font>
 			#end
 		#end
-    </td>
-    #end
-	<td>
-	#if($application && $consumerServices.contains($service))
-		<a href="#" onclick="showConfirm('$i18n.get("confirm.force.mock")', 'services/0/mock?mock=force:return+null&service=$service'); return false;"><img src="$rootContextPath.getURI("images/ico_disable.png")" width="12" height="12" /><span class="ico_font">$i18n.get("force.mock")</span></a>
-		<span class="ico_line">|</span>
-		<a href="#" onclick="showConfirm('$i18n.get("confirm.fail.mock")', 'services/0/mock?mock=fail:return+null&service=$service'); return false;"><img src="$rootContextPath.getURI("images/ico_run.png")" width="12" height="12" /><span class="ico_font">$i18n.get("fail.mock")</span></a>
-		<span class="ico_line">|</span>
-		<a href="#" onclick="showConfirm('$i18n.get("confirm.cancel.mock")', 'services/0/mock?mock=&service=$service'); return false;"><img src="$rootContextPath.getURI("images/ico_enable.png")" width="12" height="12" /><span class="ico_font">$i18n.get("cancel.mock")</span></a>
-	#end
 	</td>
+	#if($application)
+	<td>
+		#if($consumerServices.contains($service))
+	    	#set($mock=$tool.getOverridesMock($overrides.get($application)))
+	    	#if($mock == "force%3Areturn+null")
+				<font color="red">$i18n.get("force.mocked")</font>
+			#elseif ($mock == "fail%3Areturn+null")
+				<font color="blue">$i18n.get("fail.mocked")</font>
+			#else
+				<font color="gray">$i18n.get("no.mocked")</font>
+			#end
+		#end
+    </td>
+	<td>
+		#if($consumerServices.contains($service))
+			#set($mock=$tool.getOverridesMock($overrides.get($application)))
+	    	#if($mock == "force%3Areturn+null")
+				<a href="#" onclick="showConfirm('$i18n.get("confirm.cancel.mock")', 'services/0/recover?service=$service'); return false;"><img src="$rootContextPath.getURI("images/ico_enable.png")" width="12" height="12" /><span class="ico_font">$i18n.get("cancel.mock")</span></a>
+				<span class="ico_line">|</span>
+				<a href="#" onclick="showConfirm('$i18n.get("confirm.fail.mock")', 'services/0/tolerant?service=$service'); return false;"><img src="$rootContextPath.getURI("images/ico_run.png")" width="12" height="12" /><span class="ico_font">$i18n.get("fail.mock")</span></a>
+			#elseif ($mock == "fail%3Areturn+null")
+				<a href="#" onclick="showConfirm('$i18n.get("confirm.force.mock")', 'services/0/shield?service=$service'); return false;"><img src="$rootContextPath.getURI("images/ico_disable.png")" width="12" height="12" /><span class="ico_font">$i18n.get("force.mock")</span></a>
+				<span class="ico_line">|</span>
+				<a href="#" onclick="showConfirm('$i18n.get("confirm.cancel.mock")', 'services/0/recover?service=$service'); return false;"><img src="$rootContextPath.getURI("images/ico_enable.png")" width="12" height="12" /><span class="ico_font">$i18n.get("cancel.mock")</span></a>
+			#else
+				<a href="#" onclick="showConfirm('$i18n.get("confirm.force.mock")', 'services/0/shield?service=$service'); return false;"><img src="$rootContextPath.getURI("images/ico_disable.png")" width="12" height="12" /><span class="ico_font">$i18n.get("force.mock")</span></a>
+				<span class="ico_line">|</span>
+				<a href="#" onclick="showConfirm('$i18n.get("confirm.fail.mock")', 'services/0/tolerant?service=$service'); return false;"><img src="$rootContextPath.getURI("images/ico_run.png")" width="12" height="12" /><span class="ico_font">$i18n.get("fail.mock")</span></a>
+			#end
+		#end
+	</td>
+	#end
 </tr>
 #end
 </table>

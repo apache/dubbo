@@ -3,20 +3,16 @@
 	<span class="ico_line">|</span>
 	<a href="../$provider.id"><img src="$rootContextPath.getURI("images/ico_show.png")" width="12" height="12" /><span class="ico_font">$i18n.get("show")</span></a>
 	#if($currentUser.role != "G")
-	<span class="ico_line">|</span>
-	<a href="#" onclick="showConfirm('$i18n.get("confirm.delete")', '$provider.url', '../$provider.id/delete'); return false;"><img src="$rootContextPath.getURI("images/ico_delete.png")" width="12" height="12" /><span class="ico_font">$i18n.get("delete")</span></a>
-	<span class="ico_line">|</span>
-	#if($provider.dynamic)
-	<a href="#" onclick="showConfirm('$i18n.get("confirm.tostatic")', '$provider.url', '../$provider.id/tostatic'); return false;"><img src="$rootContextPath.getURI("images/ico_user.png")" width="12" height="12" /><span class="ico_font">$i18n.get("tostatic")</span></a>
-	#else
-	<a href="#" onclick="showConfirm('$i18n.get("confirm.todynamic")', '$provider.url', '../$provider.id/todynamic'); return false;"><img src="$rootContextPath.getURI("images/ico_run.png")" width="12" height="12" /><span class="ico_font">$i18n.get("todynamic")</span></a>
-	#end
-	<span class="ico_line">|</span>
-	#if($provider.enabled)
-	<a href="#" onclick="showConfirm('$i18n.get("confirm.disable")', '$provider.url', '../$provider.id/disable'); return false;"><img src="$rootContextPath.getURI("images/ico_disable.png")" width="12" height="12" /><span class="ico_font">$i18n.get("disable")</span></a>
-	#else
-	<a href="#" onclick="showConfirm('$i18n.get("confirm.enable")', '$provider.url', '../$provider.id/enable'); return false;"><img src="$rootContextPath.getURI("images/ico_enable.png")" width="12" height="12" /><span class="ico_font">$i18n.get("enable")</span></a>
-	#end
+		<span class="ico_line">|</span>
+		<a href="#" onclick="showConfirm('$i18n.get("confirm.delete")', '$provider.url', '../$provider.id/delete'); return false;"><img src="$rootContextPath.getURI("images/ico_delete.png")" width="12" height="12" /><span class="ico_font">$i18n.get("delete")</span></a>
+		<span class="ico_line">|</span>
+		#if($provider.enabled)
+			<a href="#" onclick="showConfirm('$i18n.get("confirm.disable")', '$provider.url', '../$provider.id/disable'); return false;"><img src="$rootContextPath.getURI("images/ico_disable.png")" width="12" height="12" /><span class="ico_font">$i18n.get("disable")</span></a>
+		#else
+			<a href="#" onclick="showConfirm('$i18n.get("confirm.enable")', '$provider.url', '../$provider.id/enable'); return false;"><img src="$rootContextPath.getURI("images/ico_enable.png")" width="12" height="12" /><span class="ico_font">$i18n.get("enable")</span></a>
+		#end
+		<span class="ico_line">|</span>
+		<a href="../$provider.id/add"><img src="$rootContextPath.getURI("images/ico_add.png")" width="12" height="12" /><span class="ico_font">$i18n.get("copy")</span></a>
 	#end
 </div>
 <br/>
@@ -30,20 +26,21 @@
 	#end
 	<tr>
 		<th style="width: 100px;">$i18n.get("url"):</th>
-		<td><input type="hidden" name="url" value="$provider.url" />${provider.url}</td>
+		<td>
+			<input type="hidden" name="url" value="$provider.url" />
+			#if($provider.dynamic)
+				${provider.url}?$!provider.parameters
+			#else
+				${provider.url}?<input type="text" name="parameters" value="$!provider.parameters" class="setting_input" style="width: 400px;" />
+			#end
+		</td>
 	</tr>
+	#if($provider.dynamic)
 	<tr>
-		<th style="width: 100px;">$i18n.get("parameters"):</th>
-		<td><input type="text" name="parameters" value="$!provider.parameters" class="setting_input" style="width: 600px;" /></td>
+		<th>$i18n.get("overrides"): </th>
+		<td><input type="text" name="parameters" value="$!provider.override.params" class="setting_input" style="width: 400px;" /> <font color="blue">$i18n.get("dynamic.parameters.tip")</font></td>
 	</tr>
-	<tr>
-		<th>$i18n.get("address"):</th>
-		<td>$provider.address</td>
-	</tr>
-	<tr>
-		<th>$i18n.get("username"):</th>
-		<td>$!provider.username</td>
-	</tr>
+	#end
 	<tr>
 		<th>$i18n.get("type"):</th>
 		<td>#if($provider.dynamic)<font color="green">$i18n.get("dynamic")</font>#else<font color="blue">$i18n.get("static")</font>#end</td>

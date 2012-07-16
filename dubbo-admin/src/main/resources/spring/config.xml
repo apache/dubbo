@@ -16,6 +16,7 @@
 			<list>
 				<value>classpath*:META-INF/config/dubbo-default.properties</value>
 				<value>classpath:dubbo.properties</value>
+				<value>${user.home}/dubbo.properties</value>
 			</list>
 		</property>
 	</bean>

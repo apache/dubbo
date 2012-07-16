@@ -33,10 +33,10 @@
     </tr>
 	#foreach($consumer in $consumers)
     <tr>
-        <td>$tool.getHostName($consumer.address)$consumer.address</td>
+        <td>$tool.getHostPrefix($consumer.address)$consumer.address</td>
         <td>$consumer.username</td>
         <td>$tool.formatDate($consumer.created)</td>
-        <td>$tool.getHostName($consumer.registry)$consumer.registry</td>
+        <td>$tool.getHostPrefix($consumer.registry)$consumer.registry</td>
 		<td>
 			#if($matchRoute.get($consumer.address))
 				<a href="preview?cid=$consumer.id">$i18n.get("Preview")</a>

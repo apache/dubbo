@@ -127,33 +127,33 @@ public class RouteUtilsTest  {
         
         {
             // no methods
-            Map<String, String> preview = RouteUtils.previewRoute(null, "hello.HelloService", "1.1.2.2:20880", "application=morgan", serviceUrls, route, clusters);
+            Map<String, String> preview = RouteUtils.previewRoute("hello.HelloService", "1.1.2.2:20880", "application=morgan", serviceUrls, route, clusters, null);
             Map<String, String> expected = new HashMap<String, String>();
             expected.put("dubbo://3.3.4.4:20880/hello.HelloService", "dubbo=2.0.0&version=1.0.0&revision=1.1.1&methods=*&application=morgan");
             assertEquals(expected, preview);
             
             // 2 methods
-            preview = RouteUtils.previewRoute(null, "hello.HelloService", "1.1.2.2", "application=morgan&methods=getPort,say", serviceUrls, route, clusters);
+            preview = RouteUtils.previewRoute("hello.HelloService", "1.1.2.2", "application=morgan&methods=getPort,say", serviceUrls, route, clusters, null);
             expected = new HashMap<String, String>();
             expected.put("dubbo://3.3.4.4:20880/hello.HelloService", "dubbo=2.0.0&version=1.0.0&revision=1.1.1&methods=getPort,say&application=morgan");
             assertEquals(expected, preview);
             
             // ghost methods
-            preview = RouteUtils.previewRoute(null, "hello.HelloService", "1.1.2.2", "application=morgan&methods=getPort,say,ghostMethod", serviceUrls, route, clusters);
+            preview = RouteUtils.previewRoute("hello.HelloService", "1.1.2.2", "application=morgan&methods=getPort,say,ghostMethod", serviceUrls, route, clusters, null);
             expected = new HashMap<String, String>();
             expected.put("dubbo://3.3.4.4:20880/hello.HelloService", "dubbo=2.0.0&version=1.0.0&revision=1.1.1&methods=getPort,say,ghostMethod&application=morgan");
             assertEquals(expected, preview);
             
             // no route
-            preview = RouteUtils.previewRoute(null, "hello.HelloService", "1.2.3.4", "application=morgan", serviceUrls, route, clusters);
+            preview = RouteUtils.previewRoute("hello.HelloService", "1.2.3.4", "application=morgan", serviceUrls, route, clusters, null);
             assertEquals(serviceUrls_starMethods, preview);
             
             // no route, 2 methods
-            preview = RouteUtils.previewRoute(null, "hello.HelloService", "1.2.3.4", "application=morgan&methods=getPort,say", serviceUrls, route, clusters);
+            preview = RouteUtils.previewRoute("hello.HelloService", "1.2.3.4", "application=morgan&methods=getPort,say", serviceUrls, route, clusters, null);
             assertEquals(serviceUrls, preview);
             
             // no route, ghost methods
-            preview = RouteUtils.previewRoute(null, "hello.HelloService", "1.2.3.4", "application=morgan&methods=getPort,say,ghostMethod", serviceUrls, route, clusters);
+            preview = RouteUtils.previewRoute("hello.HelloService", "1.2.3.4", "application=morgan&methods=getPort,say,ghostMethod", serviceUrls, route, clusters, null);
             assertEquals(serviceUrls_ghostMethods, preview);
         }
         
@@ -162,32 +162,32 @@ public class RouteUtilsTest  {
             route.setMatchRule("consumer.cluster = cluster1");
             
             // no method
-            Map<String, String> preview = RouteUtils.previewRoute(null, "hello.HelloService", "7.7.7.7:20880", "application=morgan", serviceUrls, route, clusters);
+            Map<String, String> preview = RouteUtils.previewRoute("hello.HelloService", "7.7.7.7:20880", "application=morgan", serviceUrls, route, clusters, null);
             Map<String, String> expected = new HashMap<String, String>();
             expected.put("dubbo://3.3.4.4:20880/hello.HelloService", "dubbo=2.0.0&version=1.0.0&revision=1.1.1&methods=*&application=morgan");
             assertEquals(expected, preview);
             
             // 2 methods
-            preview = RouteUtils.previewRoute(null, "hello.HelloService", "7.7.7.7", "application=morgan&methods=getPort,say", serviceUrls, route, clusters);
+            preview = RouteUtils.previewRoute("hello.HelloService", "7.7.7.7", "application=morgan&methods=getPort,say", serviceUrls, route, clusters, null);
             expected = new HashMap<String, String>();
             expected.put("dubbo://3.3.4.4:20880/hello.HelloService", "dubbo=2.0.0&version=1.0.0&revision=1.1.1&methods=getPort,say&application=morgan");
             assertEquals(expected, preview);
             
             // ghost method
-            preview = RouteUtils.previewRoute(null, "hello.HelloService", "7.7.7.7", "application=morgan&methods=getPort,say,ghostMethod", serviceUrls, route, clusters);
+            preview = RouteUtils.previewRoute("hello.HelloService", "7.7.7.7", "application=morgan&methods=getPort,say,ghostMethod", serviceUrls, route, clusters, null);
             expected = new HashMap<String, String>();
             expected.put("dubbo://3.3.4.4:20880/hello.HelloService", "dubbo=2.0.0&version=1.0.0&revision=1.1.1&methods=getPort,say,ghostMethod&application=morgan");
             assertEquals(expected, preview);
             
             // no route, no methods
-            preview = RouteUtils.previewRoute(null, "hello.HelloService", "1.2.3.4", "application=morgan", serviceUrls, route, clusters);
+            preview = RouteUtils.previewRoute("hello.HelloService", "1.2.3.4", "application=morgan", serviceUrls, route, clusters, null);
             assertEquals(serviceUrls_starMethods, preview);
             
             // no route, 2 methods
-            preview = RouteUtils.previewRoute(null, "hello.HelloService", "1.2.3.4", "application=morgan&methods=getPort,say", serviceUrls, route, clusters);
+            preview = RouteUtils.previewRoute("hello.HelloService", "1.2.3.4", "application=morgan&methods=getPort,say", serviceUrls, route, clusters, null);
             assertEquals(serviceUrls, preview);
             
-            preview = RouteUtils.previewRoute(null, "hello.HelloService", "1.2.3.4", "application=morgan&methods=getPort,say,ghostMethod", serviceUrls, route, clusters);
+            preview = RouteUtils.previewRoute("hello.HelloService", "1.2.3.4", "application=morgan&methods=getPort,say,ghostMethod", serviceUrls, route, clusters, null);
             assertEquals(serviceUrls_ghostMethods, preview);
         }
     }
@@ -196,33 +196,33 @@ public class RouteUtilsTest  {
     public void testRoute() throws Exception {
         {
             // no method
-            Map<String, String> result = RouteUtils.route(null, "hello.HelloService:1.0.0", "1.1.2.2:20880", "dubbo=2.0.0&version=3.0.0&revision=3.0.0&application=kylin", serviceUrls, routes, clusters);
+            Map<String, String> result = RouteUtils.route("hello.HelloService:1.0.0", "1.1.2.2:20880", "dubbo=2.0.0&version=3.0.0&revision=3.0.0&application=kylin", serviceUrls, routes, clusters, null);
             Map<String, String> expected = new HashMap<String, String>();
             expected.put("dubbo://3.3.4.6:20883/hello.HelloService", "dubbo=2.0.0&version=3.0.0&revision=3.1.1&methods=*&application=bops");
             assertEquals(expected, result);
             
             // 2 methods
-            result = RouteUtils.route(null, "cn/hello.HelloService", "1.1.2.2", "dubbo=2.0.0&version=3.0.0&revision=3.0.0&methods=getPort,say&application=kylin", serviceUrls, routes, clusters);
+            result = RouteUtils.route("cn/hello.HelloService", "1.1.2.2", "dubbo=2.0.0&version=3.0.0&revision=3.0.0&methods=getPort,say&application=kylin", serviceUrls, routes, clusters, null);
             expected = new HashMap<String, String>();
             expected.put("dubbo://3.3.4.6:20883/hello.HelloService", "dubbo=2.0.0&version=3.0.0&revision=3.1.1&methods=getPort,say&application=bops");
             assertEquals(expected, result);
             
             // ghost method
-            result = RouteUtils.route(null, "cn/hello.HelloService:2.0.0", "1.1.2.2", "dubbo=2.0.0&version=3.0.0&revision=3.0.0&methods=getPort,say,ghostMethod&application=kylin", serviceUrls, routes, clusters);
+            result = RouteUtils.route("cn/hello.HelloService:2.0.0", "1.1.2.2", "dubbo=2.0.0&version=3.0.0&revision=3.0.0&methods=getPort,say,ghostMethod&application=kylin", serviceUrls, routes, clusters, null);
             expected = new HashMap<String, String>();
             expected.put("dubbo://3.3.4.6:20883/hello.HelloService", "dubbo=2.0.0&version=3.0.0&revision=3.1.1&methods=getPort,say,ghostMethod&application=bops");
             assertEquals(expected, result);
             
             // no route, no method
-            result = RouteUtils.route(null, "hello.HelloService", "1.2.3.4", "dubbo=2.0.0&version=3.0.0&revision=3.0.0&application=kylin", serviceUrls, routes, clusters);
+            result = RouteUtils.route("hello.HelloService", "1.2.3.4", "dubbo=2.0.0&version=3.0.0&revision=3.0.0&application=kylin", serviceUrls, routes, clusters, null);
             assertEquals(serviceUrls_starMethods, result);
             
             // no route, 2 methods
-            result = RouteUtils.route(null, "hello.HelloService", "1.2.3.4", "dubbo=2.0.0&version=3.0.0&revision=3.0.0&methods=getPort,say&application=kylin", serviceUrls, routes, clusters);
+            result = RouteUtils.route("hello.HelloService", "1.2.3.4", "dubbo=2.0.0&version=3.0.0&revision=3.0.0&methods=getPort,say&application=kylin", serviceUrls, routes, clusters, null);
             assertEquals(serviceUrls, result);
             
             // no route, ghost method
-            result = RouteUtils.route(null, "hello.HelloService", "1.2.3.4", "dubbo=2.0.0&version=3.0.0&revision=3.0.0&methods=getPort,say,ghostMethod&application=kylin", serviceUrls, routes, clusters);
+            result = RouteUtils.route("hello.HelloService", "1.2.3.4", "dubbo=2.0.0&version=3.0.0&revision=3.0.0&methods=getPort,say,ghostMethod&application=kylin", serviceUrls, routes, clusters, null);
             assertEquals(serviceUrls_ghostMethods, result);
         }
         
@@ -231,33 +231,33 @@ public class RouteUtilsTest  {
             routes.get(0).setMatchRule("consumer.cluster = cluster1");
             
             // no method
-            Map<String, String> result = RouteUtils.route(null, "hello.HelloService", "7.7.7.7:20880", "dubbo=2.0.0&version=3.0.0&revision=3.0.0&application=kylin", serviceUrls, routes, clusters);
+            Map<String, String> result = RouteUtils.route("hello.HelloService", "7.7.7.7:20880", "dubbo=2.0.0&version=3.0.0&revision=3.0.0&application=kylin", serviceUrls, routes, clusters, null);
             Map<String, String> expected = new HashMap<String, String>();
             expected.put("dubbo://3.3.4.6:20883/hello.HelloService", "dubbo=2.0.0&version=3.0.0&revision=3.1.1&methods=*&application=bops");
             assertEquals(expected, result);
             
             // 2 methods
-            result = RouteUtils.route(null, "hello.HelloService", "7.7.7.7", "dubbo=2.0.0&version=3.0.0&revision=3.0.0&methods=getPort,say&application=kylin", serviceUrls, routes, clusters);
+            result = RouteUtils.route("hello.HelloService", "7.7.7.7", "dubbo=2.0.0&version=3.0.0&revision=3.0.0&methods=getPort,say&application=kylin", serviceUrls, routes, clusters, null);
             expected = new HashMap<String, String>();
             expected.put("dubbo://3.3.4.6:20883/hello.HelloService", "dubbo=2.0.0&version=3.0.0&revision=3.1.1&methods=getPort,say&application=bops");
             assertEquals(expected, result);
             
             // ghost method
-            result = RouteUtils.route(null, "hello.HelloService", "7.7.7.7", "dubbo=2.0.0&version=3.0.0&revision=3.0.0&methods=getPort,say,ghostMethod&application=kylin", serviceUrls, routes, clusters);
+            result = RouteUtils.route("hello.HelloService", "7.7.7.7", "dubbo=2.0.0&version=3.0.0&revision=3.0.0&methods=getPort,say,ghostMethod&application=kylin", serviceUrls, routes, clusters, null);
             expected = new HashMap<String, String>();
             expected.put("dubbo://3.3.4.6:20883/hello.HelloService", "dubbo=2.0.0&version=3.0.0&revision=3.1.1&methods=getPort,say,ghostMethod&application=bops");
             assertEquals(expected, result);
             
             // no route, no method
-            result = RouteUtils.route(null, "hello.HelloService", "1.2.3.4", "dubbo=2.0.0&version=3.0.0&revision=3.0.0&application=kylin", serviceUrls, routes, clusters);
+            result = RouteUtils.route("hello.HelloService", "1.2.3.4", "dubbo=2.0.0&version=3.0.0&revision=3.0.0&application=kylin", serviceUrls, routes, clusters, null);
             assertEquals(serviceUrls_starMethods, result);
             
             // no route, 2 methods
-            result = RouteUtils.route(null, "hello.HelloService", "1.2.3.4", "dubbo=2.0.0&version=3.0.0&revision=3.0.0&methods=getPort,say&application=kylin", serviceUrls, routes, clusters);
+            result = RouteUtils.route("hello.HelloService", "1.2.3.4", "dubbo=2.0.0&version=3.0.0&revision=3.0.0&methods=getPort,say&application=kylin", serviceUrls, routes, clusters, null);
             assertEquals(serviceUrls, result);
             
             // no route, ghost method
-            result = RouteUtils.route(null, "hello.HelloService", "1.2.3.4", "dubbo=2.0.0&version=3.0.0&revision=3.0.0&methods=getPort,say,ghostMethod&application=kylin", serviceUrls, routes, clusters);
+            result = RouteUtils.route("hello.HelloService", "1.2.3.4", "dubbo=2.0.0&version=3.0.0&revision=3.0.0&methods=getPort,say,ghostMethod&application=kylin", serviceUrls, routes, clusters, null);
             assertEquals(serviceUrls_ghostMethods, result);
         }
     }
