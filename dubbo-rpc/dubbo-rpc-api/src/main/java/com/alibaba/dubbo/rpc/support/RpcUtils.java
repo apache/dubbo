@@ -153,9 +153,9 @@ public class RpcUtils {
     	boolean isAsync ;
     	//如果Java代码中设置优先.
     	if (Boolean.FALSE.toString().equals(inv.getAttachment(Constants.ASYNC_KEY))) {
-    		isAsync = true;
+    		isAsync = false;
     	} else {
-	    	isAsync = url.getMethodParameter(getMethodName(inv), Constants.ASYNC_KEY, true);
+	    	isAsync = url.getMethodParameter(getMethodName(inv), Constants.ASYNC_KEY, false);
     	}
     	return isAsync;
     }
