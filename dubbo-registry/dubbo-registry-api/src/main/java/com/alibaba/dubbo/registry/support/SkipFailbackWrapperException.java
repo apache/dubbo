@@ -1,9 +1,9 @@
 package com.alibaba.dubbo.registry.support;
 
 /**
- * WrapperÒì³££¬ÓÃÓÚÖ¸Ê¾ {@link FailbackRegistry}Ìø¹ıFailback¡£
+ * Wrapperå¼‚å¸¸ï¼Œç”¨äºæŒ‡ç¤º {@link FailbackRegistry}è·³è¿‡Failbackã€‚
  * <p>
- * NOTE: ÆÚÍûÕÒµ½ÆäËü¸ü³£¹æµÄÖ¸Ê¾·½Ê½¡£
+ * NOTE: æœŸæœ›æ‰¾åˆ°å…¶å®ƒæ›´å¸¸è§„çš„æŒ‡ç¤ºæ–¹å¼ã€‚
  *
  * @author ding.lid
  * @see FailbackRegistry
