@@ -181,3 +181,10 @@ Source Building
        - edit: dubbo.registry.adddress=redis://127.0.0.1:6379
     cd ../bin
     ./restart.sh
+
+10. Install the admin console:
+
+    cd ~/dubbo/dubbo-admin
+    mvn jetty:run -Ddubbo.registry.address=zookeeper://127.0.0.1:2181
+    http://127.0.0.1:8080
+
