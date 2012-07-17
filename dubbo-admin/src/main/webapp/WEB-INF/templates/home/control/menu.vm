@@ -39,17 +39,8 @@
 						</td> 
 						<td style="padding-left: 10px;"><img src="$rootContextPath.getURI("images/ico_user.png")" width="14" height="14" border="0" /></td>
 						<td>
-							#if($currentUser.role != "G")
-								#if($currentUser.name)$currentUser.name#else$currentUser.username#end
-							#else
-								#if($currentUser.name)$currentUser.name#else$currentUser.username#end
-							#end
-							, $i18n.get("welcome")
+							#if($currentUser.name)$currentUser.name#else$currentUser.username#end, $i18n.get("welcome")
 						</td>
-						#if($currentUser.password && $currentUser.creator.toLowerCase() != "buc" ) ## 有密码的用户才显示
-						<td style="padding-left: 10px;"><img src="$rootContextPath.getURI("images/ico_password.png")" width="14" height="14" border="0" /></td>
-						<td><a href="$rootContextPath.getURI("personal/passwds")" style="color: white;">$i18n.get("password")</a></td>
-						#end
 						<td style="padding-left: 10px;"><img src="$rootContextPath.getURI("images/exit.png")" width="14" height="19" border="0" /></td>
 						<td><a href="#" onclick="showConfirm('$i18n.get("confirm.logout")', '$i18n.get("current.user"): $currentUser.Name', '$bucLogoutAddress'); return false;" style="color: white;">$i18n.get("logout")</a></td>
 					</tr>
