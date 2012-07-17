@@ -92,8 +92,8 @@ public class RedisRegistry extends FailbackRegistry {
             config.minIdle = url.getParameter("min.idle", 0);
         if (url.getParameter("max.active", 0) > 0)
             config.maxActive = url.getParameter("max.active", 0);
-        if (url.getParameter("max.wait", 0) > 0)
-            config.maxWait = url.getParameter("max.wait", 0);
+        if (url.getParameter("max.wait", url.getParameter("timeout", 0)) > 0)
+            config.maxWait = url.getParameter("max.wait", url.getParameter("timeout", 0));
         if (url.getParameter("num.tests.per.eviction.run", 0) > 0)
             config.numTestsPerEvictionRun = url.getParameter("num.tests.per.eviction.run", 0);
         if (url.getParameter("time.between.eviction.runs.millis", 0) > 0)
