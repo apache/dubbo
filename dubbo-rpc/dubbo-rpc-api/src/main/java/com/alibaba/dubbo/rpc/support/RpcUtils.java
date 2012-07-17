@@ -142,7 +142,7 @@ public class RpcUtils {
     	if (Boolean.TRUE.toString().equals(inv.getAttachment(Constants.Attachments.IS_ONEWAY_KEY))) {
     		isOneway = true;
     	} else {
-    		isOneway = ! url.getMethodParameter(getMethodName(inv), Constants.RETURN_KEY, false);
+    		isOneway = ! url.getMethodParameter(getMethodName(inv), Constants.RETURN_KEY, true);
     	}
     	return isOneway;
     }
