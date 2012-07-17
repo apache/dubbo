@@ -10,12 +10,12 @@
 			#if($service)
 				<input type="hidden" id="multiservice" name="service" value="$service" />$service
 			#else
-				<textarea id="service" name="multiservice" style="ime-mode:disabled" rows="10" cols="40"></textarea>
+				<textarea id="service" name="multiservice" style="ime-mode:disabled" rows="2" cols="40"></textarea>
 				#if ($serviceList && $serviceList.size() > 0)
 					<select id="selectService" name="selectService" onchange="fnSetService(this)">
 						<option value="">$i18n.get("Choose")</option>
 						#foreach ($s in $serviceList)
-							<option value="$s">$s</option>
+							<option value="$s">$tool.getSimpleName($s)</option>
 						#end
 					</select>
 				#end
@@ -28,15 +28,16 @@
 			#if($address)
 				<input type="hidden" id="address" name="address" value="$tool.getIP($address)" />$tool.getIP($address)
 			#else
-				<textarea id="address" name="address" rows="10" cols="30"></textarea><font color="blue">$i18n.get("BatchAddressTip")</font>
+				<textarea id="address" name="address" rows="2" cols="40"></textarea>
 				#if ($addressList && $addressList.size() > 0)
-					<select id="selectAddeess" name="selectAddeess" onchange="fnSetService(this,'address')">
+					<select id="selectAddeess" name="selectAddeess" onchange="fnSetAddress(this)">
 						<option value="">$i18n.get("Choose")</option>
 						#foreach ($s in $addressList)
 							<option value="$s">$tool.getHostPrefix($s)$s</option>
 						#end
 					</select>
 				#end
+				<font color="blue">$i18n.get("BatchAddressTip")</font>
 			#end
 		</td>
 	</tr>
@@ -61,6 +62,12 @@ function fnObtainProviderAddress(){
 function fnSetService(obj){
 	if(obj.value!=''){
 		byId('service').value = (byId('service').value.length > 0 ? byId('service').value + "\n" : "" ) + obj.value;
+	}
+}
+
+function fnSetAddress(obj){
+	if(obj.value!=''){
+		byId('address').value = (byId('address').value.length > 0 ? byId('address').value + "\n" : "" ) + obj.value;
 	}
 }
 

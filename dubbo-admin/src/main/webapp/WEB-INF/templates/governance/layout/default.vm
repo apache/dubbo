@@ -90,7 +90,7 @@
 				#set($tabs = ["services", "addresses", "overrides"])
 			#else
 				#if($_type != "services" && $_type != "applications" && $_type != "addresses")
-					#set($tabs = ["accesses", "weights", "loadbalances", "routes", "owners", "overrides"])
+					#set($tabs = ["routes", "overrides", "accesses", "weights", "loadbalances", "owners"])
 				#end
 			#end
 			#if($tabs.size() > 0)

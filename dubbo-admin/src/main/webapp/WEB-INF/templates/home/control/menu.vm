@@ -54,12 +54,12 @@
 		<li id="unique_tab1" ><a href="$rootContextPath.getURI("/")">$i18n.get("home")</a></li>
 		<li id="unique_tab2" class="sub_nav"><a href="#" onclick="return false;" style="cursor:default;">$i18n.get("governance")</a>
 			<ul>
+				#if($tool.checkUrl($currentUser,"/governance/routes"))<li><a href="$rootContextPath.getURI("/governance/routes")">$i18n.get("routes")</a></li>#end
+				#if($tool.checkUrl($currentUser,"/governance/overrides"))<li><a href="$rootContextPath.getURI("/governance/overrides")">$i18n.get("overrides")</a></li>#end
 				#if($tool.checkUrl($currentUser,"/governance/accesses"))<li><a href="$rootContextPath.getURI("/governance/accesses")">$i18n.get("accesses")</a></li>#end
 				#if($tool.checkUrl($currentUser,"/governance/weights"))<li><a href="$rootContextPath.getURI("/governance/weights")">$i18n.get("weights")</a></li>#end
 				#if($tool.checkUrl($currentUser,"/governance/loadbalances"))<li><a href="$rootContextPath.getURI("/governance/loadbalances")">$i18n.get("loadbalances")</a></li>#end
-				#if($tool.checkUrl($currentUser,"/governance/routes"))<li><a href="$rootContextPath.getURI("/governance/routes")">$i18n.get("routes")</a></li>#end
 				#if($tool.checkUrl($currentUser,"/governance/owners"))<li><a href="$rootContextPath.getURI("/governance/owners")">$i18n.get("owners")</a></li>#end
-				#if($tool.checkUrl($currentUser,"/governance/overrides"))<li><a href="$rootContextPath.getURI("/governance/overrides")">$i18n.get("overrides")</a></li>#end
 			</ul>
 		</li>
 		<li id="unique_tab3" class="sub_nav"><a href="#" onclick="return false;" style="cursor:default;">$i18n.get("system.management")</a>

@@ -64,8 +64,9 @@
     		<font color="green">$i18n.get("ok")</font>
     	#end
 	</td>
-	#if($currentUser.hasServicePrivilege($provider.service))
+	#if($currentUser.role != "G")
 	<td>
+		#if($currentUser.hasServicePrivilege($provider.service))
 		<a href="providers/$provider.id/edit"><img src="$rootContextPath.getURI("images/ico_edit.png")" width="12" height="12" /><span class="ico_font">$i18n.get("edit")</span></a>
 		<span class="ico_line">|</span>
 		<a href="providers/$provider.id/add"><img src="$rootContextPath.getURI("images/ico_add.png")" width="12" height="12" /><span class="ico_font">$i18n.get("copy")</span></a>
@@ -82,6 +83,7 @@
 		#if(! $provider.dynamic)
 		<span class="ico_line">|</span>
 		<a href="#" onclick="showConfirm('$i18n.get("confirm.delete")', '$provider.url', 'providers/$provider.id/delete'); return false;"><img src="$rootContextPath.getURI("images/ico_delete.png")" width="12" height="12" /><span class="ico_font">$i18n.get("delete")</span></a>
+		#end
 		#end
 	</td>
 	#end

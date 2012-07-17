@@ -71,8 +71,9 @@
     		<font color="red">$i18n.get("NoProvider")</font>
     	#end
     </td>
-	#if($currentUser.hasServicePrivilege($consumer.service))
+    #if($currentUser.role != "G")
 	<td>
+		#if($currentUser.hasServicePrivilege($consumer.service))
 		<a href="consumers/$consumer.id/edit"><img src="$rootContextPath.getURI("images/ico_edit.png")" width="12" height="12" /><span class="ico_font">$i18n.get("edit")</span></a>
 		<span class="ico_line">|</span>
 		#if($tool.isInBlackList($consumer))
@@ -93,6 +94,7 @@
 			<a href="#" onclick="showConfirm('$i18n.get("confirm.force.mock")', '$consumer.address -&gt; $tool.getSimpleName($consumer.service)', 'consumers/$consumer.id/shield'); return false;"><img src="$rootContextPath.getURI("images/ico_cancel.png")" width="12" height="12" /><span class="ico_font">$i18n.get("force.mock")</span></a>
 			<span class="ico_line">|</span>
 			<a href="#" onclick="showConfirm('$i18n.get("confirm.fail.mock")', '$consumer.address -&gt; $tool.getSimpleName($consumer.service)', 'consumers/$consumer.id/tolerant'); return false;"><img src="$rootContextPath.getURI("images/ico_run.png")" width="12" height="12" /><span class="ico_font">$i18n.get("fail.mock")</span></a>
+		#end
 		#end
 	</td>
 	#end

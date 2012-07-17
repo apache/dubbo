@@ -124,11 +124,11 @@ $control.setTemplate("home:menu.vm")
 			<td style="padding-left: 10px;">
 			    <a href="$rootContextPath.getURI("governance/providers/add")">$i18n.get("providers")</a>&nbsp;
 				<a href="$rootContextPath.getURI("governance/routes/add")">$i18n.get("routes")</a>&nbsp;
+				<a href="$rootContextPath.getURI("governance/overrides/add")">$i18n.get("overrides")</a>&nbsp;
 				<a href="$rootContextPath.getURI("governance/accesses/add")">$i18n.get("accesses")</a>&nbsp;
 				<a href="$rootContextPath.getURI("governance/weights/add")">$i18n.get("weights")</a>&nbsp;
 				<a href="$rootContextPath.getURI("governance/loadbalances/add")">$i18n.get("loadbalances")</a>&nbsp;
 				<a href="$rootContextPath.getURI("governance/owners/add")">$i18n.get("owners")</a>&nbsp;
-				<a href="$rootContextPath.getURI("governance/overrides/add")">$i18n.get("overrides")</a>&nbsp;
 		    </td>
 		</tr>
 		<tr>
@@ -164,7 +164,7 @@ $control.setTemplate("home:menu.vm")
 	    		|| keyword == '$i18n.get("please.input.address")') {
 	    	keyword = '*';
 	    }
-	    window.location.href = 'governance/' + searchType + '?keyword=' + keyword;
+	    window.location.href = '$rootContextPath.getURI("governance")/' + searchType + '?keyword=' + keyword;
 	}
 	function setTab2(name, cursel, n) {
 		var obj = document.getElementById('searchContent');

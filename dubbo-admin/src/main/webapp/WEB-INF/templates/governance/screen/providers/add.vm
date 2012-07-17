@@ -14,7 +14,7 @@
 					<select onchange="fnSetService(this)">
 		    		<option value="">$i18n.get("Choose")</option>
 		    		#foreach($s in $serviceList)
-		    			<option value="$s">$s</option>
+		    			<option value="$s">$tool.getSimpleName($s)</option>
 		    		#end
 		    	  </select>
 		      </td>

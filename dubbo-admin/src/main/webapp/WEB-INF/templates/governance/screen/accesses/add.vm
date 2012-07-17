@@ -6,22 +6,21 @@
 <table cellpadding="0" cellspacing="0" class="info">
 	<tr>
 		<th width="100">$i18n.get("service")&nbsp;&nbsp;<font color='red'>*</font></th>
-		<td width="300">
+		<td>
 			#if($service)
 				<input type="hidden" id="serviceName" name="service" value="$service" />$service
 			#else
-				<textarea id="serviceName" name="service" style="ime-mode:disabled" rows="8" cols="40"></textarea>
+				<textarea id="serviceName" name="service" style="ime-mode:disabled" rows="2" cols="40"></textarea>
 				#if ($serviceList && $serviceList.size() > 0)
 					<select id="selectService" name="selectService" onchange="fnSetService(this)">
 						<option value="">$i18n.get("Choose")</option>
 						#foreach ($s in $serviceList)
-							<option value="$s">$s</option>
+							<option value="$s">$tool.getSimpleName($s)</option>
 						#end
 					</select>
 				#end
 			#end
 		</td>
-		<td></td>
 	</tr>
 	<tr>
 		<th style="width: 100px;">$i18n.get("ConsumerAddress"):&nbsp;&nbsp;<font color='red'>*</font></th>
@@ -29,10 +28,10 @@
 			#if($address)
 				<input type="hidden" id="address" name="address" value="$tool.getIP($address)" />$tool.getIP($address)
 			#else
-				<textarea id="consumerAddress" name="consumerAddress" rows="10" cols="40"></textarea>
+				<textarea id="consumerAddress" name="consumerAddress" rows="2" cols="40"></textarea>
 			#end
+			<font color="blue">$i18n.get("BatchAddressTip")</font>
 		</td>
-		<td><font color="blue">$i18n.get("BatchAddressTip")</font></td>
 	</tr>
 	<tr>
 		<th>$i18n.get("status"):</th>
@@ -41,12 +40,11 @@
 				<option value="false" selected="selected">$i18n.get("Forbidden")</option>
 				<option value="true">$i18n.get("Allowed")</option>
 			</select>
+			<font color="blue">$i18n.get("AccessControlTip")</font>
 		</td>
-		<td><font color="blue">$i18n.get("AccessControlTip")</font></td>
 	</tr>
 	<tr>
 		<th><div class="btn"><a href="#" onclick="if(check()){document.getElementById('accessesForm').submit();}">$i18n.get("save")</a></div></th>
-		<td></td>
 		<td></td>
 	</tr>
 </table>

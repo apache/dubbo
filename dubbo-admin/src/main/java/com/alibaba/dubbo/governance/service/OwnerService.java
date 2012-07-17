@@ -18,4 +18,8 @@ public interface OwnerService {
 	
 	Owner findById(Long id);
 	
+	void saveOwner(Owner owner);
+	
+	void deleteOwner(Owner owner);
+	
 }

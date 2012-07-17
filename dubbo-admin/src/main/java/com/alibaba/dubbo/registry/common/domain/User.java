@@ -186,7 +186,7 @@ public class User extends Entity {
 
 	public boolean hasServicePrivilege(String service) {
 		if (service == null || service.length() == 0)
-			throw new IllegalArgumentException("service == null");
+			return false;
 		if (role == null || GUEST.equalsIgnoreCase(role)) {
 			return false;
 		}

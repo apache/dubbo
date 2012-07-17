@@ -82,7 +82,7 @@ public class Tool {
     public static String getHostPrefix(String address) {
         if (address != null && address.length() > 0) {
             String hostname = getHostName(address);
-            if (! address.equals(hostname)) {
+            if (! address.startsWith(hostname)) {
                 return "(" + hostname + ")";
             }
         }
