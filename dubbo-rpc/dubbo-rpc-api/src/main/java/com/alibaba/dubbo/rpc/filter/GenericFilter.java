@@ -20,9 +20,12 @@ import java.lang.reflect.Method;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.Activate;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
+import com.alibaba.dubbo.common.io.UnsafeByteArrayInputStream;
+import com.alibaba.dubbo.common.io.UnsafeByteArrayOutputStream;
+import com.alibaba.dubbo.common.serialize.Serialization;
 import com.alibaba.dubbo.common.utils.PojoUtils;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
-import com.alibaba.dubbo.common.utils.SerializationUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.rpc.Filter;
 import com.alibaba.dubbo.rpc.Invocation;
@@ -64,7 +67,9 @@ public class GenericFilter implements Filter {
                     for(int i = 0; i < args.length; i++) {
                         if (byte[].class == args[i].getClass()) {
                             try {
-                                args[i] = SerializationUtils.javaDeserialize((byte[]) args[i]);
+                                UnsafeByteArrayInputStream is = new UnsafeByteArrayInputStream((byte[])args[i]);
+                                args[i] = ExtensionLoader.getExtensionLoader(Serialization.class)
+                                    .getExtension(Constants.GENERIC_SERIALIZATION_JAVA).deserialize(null, is).readObject();
                             } catch (Exception e) {
                                 throw new RpcException("Deserialize argument [" + (i + 1) + "] failed.", e);
                             }
@@ -86,7 +91,10 @@ public class GenericFilter implements Filter {
                 }
                 if (ProtocolUtils.isJavaGenericSerialization(generic)) {
                     try {
-                        return new RpcResult(SerializationUtils.javaSerialize(result.getValue()));
+                        UnsafeByteArrayOutputStream os = new UnsafeByteArrayOutputStream(512);
+                        ExtensionLoader.getExtensionLoader(Serialization.class)
+                            .getExtension(Constants.GENERIC_SERIALIZATION_JAVA).serialize(null, os).writeObject(result.getValue());
+                        return new RpcResult(os.toByteArray());
                     } catch (IOException e) {
                         throw new RpcException("Serialize result failed.", e);
                     }

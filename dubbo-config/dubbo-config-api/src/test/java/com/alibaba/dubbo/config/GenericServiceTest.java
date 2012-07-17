@@ -15,6 +15,8 @@
  */
 package com.alibaba.dubbo.config;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,7 +26,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.utils.SerializationUtils;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
+import com.alibaba.dubbo.common.serialize.Serialization;
 import com.alibaba.dubbo.config.api.DemoException;
 import com.alibaba.dubbo.config.api.DemoService;
 import com.alibaba.dubbo.config.api.User;
@@ -144,11 +147,15 @@ public class GenericServiceTest {
             GenericService genericService = reference.get();
             try {
                 String name = "kimi";
-                byte[] arg = SerializationUtils.javaSerialize(name);
+                ByteArrayOutputStream bos = new ByteArrayOutputStream(512);
+                ExtensionLoader.getExtensionLoader(Serialization.class)
+                    .getExtension("java").serialize(null, bos).writeObject(name);
+                byte[] arg = bos.toByteArray();
                 Object obj = genericService.$invoke("sayName", new String[]{String.class.getName()}, new Object[]{arg});
                 Assert.assertTrue(obj instanceof byte[]);
-                byte[] result = (byte[])obj;
-                Assert.assertEquals(ref.sayName(name), SerializationUtils.javaDeserialize(result));
+                byte[] result = (byte[]) obj;
+                Assert.assertEquals(ref.sayName(name), ExtensionLoader.getExtensionLoader(Serialization.class)
+                    .getExtension("java").deserialize(null, new ByteArrayInputStream(result)).readObject().toString());
             } finally {
                 reference.destroy();
             }
