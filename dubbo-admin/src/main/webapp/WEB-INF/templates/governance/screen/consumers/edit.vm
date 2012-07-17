@@ -3,7 +3,7 @@
 	<span class="ico_line">|</span>
 	<a href="../$consumer.id"><img src="$rootContextPath.getURI("images/ico_show.png")" width="12" height="12" /><span class="ico_font">$i18n.get("show")</span></a>
 	#set($mock=$tool.getConsumerMock($consumer))
-	#if($currentUser.role != "G")
+	#if($currentUser.hasServicePrivilege($consumer.service))
 		<span class="ico_line">|</span>
 		#if($mock.equals("force%3Areturn+null"))
 			<a href="#" onclick="showConfirm('$i18n.get("confirm.cancel.mock")', '$consumer.address -&gt; $tool.getSimpleName($consumer.service)', '../$consumer.id/recover'); return false;"><img src="$rootContextPath.getURI("images/ico_enable.png")" width="12" height="12" /><span class="ico_font">$i18n.get("cancel.mock")</span></a>

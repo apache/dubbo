@@ -2,7 +2,7 @@
 	<a href="../../providers"><img src="$rootContextPath.getURI("images/ico_back.png")" width="12" height="12" /><span class="ico_font">$i18n.get("back")</span></a>
 	<span class="ico_line">|</span>
 	<a href="../$provider.id"><img src="$rootContextPath.getURI("images/ico_show.png")" width="12" height="12" /><span class="ico_font">$i18n.get("show")</span></a>
-	#if($currentUser.role != "G")
+	#if($currentUser.hasServicePrivilege($provider.service))
 		<span class="ico_line">|</span>
 		<a href="../$provider.id/add"><img src="$rootContextPath.getURI("images/ico_add.png")" width="12" height="12" /><span class="ico_font">$i18n.get("copy")</span></a>
 		<span class="ico_line">|</span>

@@ -23,7 +23,7 @@
 	#end
 	<tr>
 		<th style="width: 100px;">$i18n.get("url"):</th>
-		<td><input type="text" id="url" name="url" value="#if($provider.url)$!provider.url?$!provider.parameters#{else}dubbo://#if($address)$address#{else}0.0.0.0:20880#end/#if($service)$service#{else}com.xxx.XxxService#end?application=#if($application)$application#{else}xxx#end&version=1.0.0#end" class="setting_input" style="width: 700px;" maxlength="2000"/></td>
+		<td><input type="text" id="url" name="url" value="#if($provider.url)$!provider.url?$!provider.parameters#{else}dubbo://#if($address)$address#{else}0.0.0.0:20880#end/#if($service)$tool.getInterface($service)#{else}com.xxx.XxxService#end?application=#if($application)$application#{else}xxx#end#if($tool.getGroup($service))&group=$tool.getGroup($service)#end#if($tool.getVersion($service))&version=$tool.getVersion($service)#end#end" class="setting_input" style="width: 700px;" maxlength="2000"/></td>
 	</tr>
 	<tr>
 		<th>$i18n.get("type"):</th>
