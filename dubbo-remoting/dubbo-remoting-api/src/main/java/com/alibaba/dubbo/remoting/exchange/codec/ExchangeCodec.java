@@ -124,69 +124,8 @@ public class ExchangeCodec extends TelnetCodec {
         if( readable != tt )
             is = StreamUtils.limitedInputStream(is, len);
 
-        return decodeBody(channel, is, header);
-    }
-
-    protected Object decodeBody(Channel channel, InputStream is, byte[] header) throws IOException {
         try {
-	        byte flag = header[2], proto = (byte)( flag & SERIALIZATION_MASK );
-	        Serialization s = CodecSupport.getSerialization(channel.getUrl(), proto);
-	        ObjectInput in = s.deserialize(channel.getUrl(), is);
-	        // get request id.
-	        long id = Bytes.bytes2long(header, 4);
-	        if( ( flag & FLAG_REQUEST ) == 0 ) {
-	            // decode response.
-	            Response res = new Response(id);
-	            if (( flag & FLAG_EVENT ) != 0){
-	                res.setEvent(Response.HEARTBEAT_EVENT);
-	            }
-	            // get status.
-	            byte status = header[3];
-	            res.setStatus(status);
-	            if( status == Response.OK ) {
-	                try {
-	                    Object data;
-	                    if (res.isHeartbeat()) {
-	                        data = decodeHeartbeatData(channel, in);
-	                    } else if (res.isEvent()) {
-	                        data = decodeEventData(channel, in);
-	                    } else {
-	                        data = decodeResponseData(channel, in, getRequestData(id));
-	                    }
-	                    res.setResult(data);
-	                } catch (Throwable t) {
-	                    res.setStatus(Response.CLIENT_ERROR);
-	                    res.setErrorMessage(StringUtils.toString(t));
-	                }
-	            } else {
-	                res.setErrorMessage(in.readUTF());
-	            }
-	            return res;
-	        } else {
-	            // decode request.
-	            Request req = new Request(id);
-	            req.setVersion("2.0.0");
-	            req.setTwoWay( ( flag & FLAG_TWOWAY ) != 0 );
-	            if (( flag & FLAG_EVENT ) != 0 ){
-	                req.setEvent(Request.HEARTBEAT_EVENT);
-	            }
-	            try {
-	                Object data;
-	                if (req.isHeartbeat()) {
-	                    data = decodeHeartbeatData(channel, in);
-	                } else if (req.isEvent()) {
-	                    data = decodeEventData(channel, in);
-	                } else {
-	                    data = decodeRequestData(channel, in);
-	                }
-	                req.setData(data);
-	            } catch (Throwable t) {
-	                // bad request
-	                req.setBroken(true);
-	                req.setData(t);
-	            }
-	            return req;
-	        }
+            return decodeBody(channel, is, header);
         } finally {
             if (is.available() > 0) {
                 try {
@@ -198,6 +137,67 @@ public class ExchangeCodec extends TelnetCodec {
                     logger.warn(e.getMessage(), e);
                 }
             }
+        }
+    }
+
+    protected Object decodeBody(Channel channel, InputStream is, byte[] header) throws IOException {
+        byte flag = header[2], proto = (byte) (flag & SERIALIZATION_MASK);
+        Serialization s = CodecSupport.getSerialization(channel.getUrl(), proto);
+        ObjectInput in = s.deserialize(channel.getUrl(), is);
+        // get request id.
+        long id = Bytes.bytes2long(header, 4);
+        if ((flag & FLAG_REQUEST) == 0) {
+            // decode response.
+            Response res = new Response(id);
+            if ((flag & FLAG_EVENT) != 0) {
+                res.setEvent(Response.HEARTBEAT_EVENT);
+            }
+            // get status.
+            byte status = header[3];
+            res.setStatus(status);
+            if (status == Response.OK) {
+                try {
+                    Object data;
+                    if (res.isHeartbeat()) {
+                        data = decodeHeartbeatData(channel, in);
+                    } else if (res.isEvent()) {
+                        data = decodeEventData(channel, in);
+                    } else {
+                        data = decodeResponseData(channel, in, getRequestData(id));
+                    }
+                    res.setResult(data);
+                } catch (Throwable t) {
+                    res.setStatus(Response.CLIENT_ERROR);
+                    res.setErrorMessage(StringUtils.toString(t));
+                }
+            } else {
+                res.setErrorMessage(in.readUTF());
+            }
+            return res;
+        } else {
+            // decode request.
+            Request req = new Request(id);
+            req.setVersion("2.0.0");
+            req.setTwoWay((flag & FLAG_TWOWAY) != 0);
+            if ((flag & FLAG_EVENT) != 0) {
+                req.setEvent(Request.HEARTBEAT_EVENT);
+            }
+            try {
+                Object data;
+                if (req.isHeartbeat()) {
+                    data = decodeHeartbeatData(channel, in);
+                } else if (req.isEvent()) {
+                    data = decodeEventData(channel, in);
+                } else {
+                    data = decodeRequestData(channel, in);
+                }
+                req.setData(data);
+            } catch (Throwable t) {
+                // bad request
+                req.setBroken(true);
+                req.setData(t);
+            }
+            return req;
         }
     }
 
