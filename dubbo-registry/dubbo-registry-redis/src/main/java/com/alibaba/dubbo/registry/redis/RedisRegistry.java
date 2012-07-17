@@ -77,6 +77,8 @@ public class RedisRegistry extends FailbackRegistry {
     private final int expirePeriod;
     
     private volatile boolean admin = false;
+    
+    private boolean replicate;
 
     public RedisRegistry(URL url) {
         super(url);
@@ -98,6 +100,12 @@ public class RedisRegistry extends FailbackRegistry {
             config.timeBetweenEvictionRunsMillis = url.getParameter("time.between.eviction.runs.millis", 0);
         if (url.getParameter("min.evictable.idle.time.millis", 0) > 0)
             config.minEvictableIdleTimeMillis = url.getParameter("min.evictable.idle.time.millis", 0);
+        
+        String cluster = url.getParameter("cluster", "failover");
+        if (! "failover".equals(cluster) && ! "replicate".equals(cluster)) {
+        	throw new IllegalArgumentException("Unsupported redis cluster: " + cluster + ". The redis cluster only supported failover or replicate.");
+        }
+        replicate = "replicate".equals(cluster);
         
         List<String> addresses = new ArrayList<String>();
         addresses.add(url.getAddress());
@@ -159,6 +167,9 @@ public class RedisRegistry extends FailbackRegistry {
                     if (admin) {
                         clean(jedis);
                     }
+                    if (! replicate) {
+                    	break;//  如果服务器端已同步数据，只需写入单台机器
+                    }
                 } finally {
                     jedisPool.returnResource(jedis);
                 }
@@ -203,17 +214,16 @@ public class RedisRegistry extends FailbackRegistry {
             try {
                 Jedis jedis = jedisPool.getResource();
                 try {
-                    if (! jedis.isConnected()) {
-                        return false;
+                	if (jedis.isConnected()) {
+                        return true; // 至少需单台机器可用
                     }
                 } finally {
                     jedisPool.returnResource(jedis);
                 }
             } catch (Throwable t) {
-                return false;
             }
         }
-        return true;
+        return false;
     }
 
     @Override
@@ -256,6 +266,9 @@ public class RedisRegistry extends FailbackRegistry {
                     jedis.hset(key, value, expire);
                     jedis.publish(key, Constants.REGISTER);
                     success = true;
+                    if (! replicate) {
+                    	break; //  如果服务器端已同步数据，只需写入单台机器
+                    }
                 } finally {
                     jedisPool.returnResource(jedis);
                 }
@@ -277,6 +290,7 @@ public class RedisRegistry extends FailbackRegistry {
         String key = toCategoryPath(url);
         String value = url.toFullString();
         RpcException exception = null;
+        boolean success = false;
         for (Map.Entry<String, JedisPool> entry : jedisPools.entrySet()) {
             JedisPool jedisPool = entry.getValue();
             try {
@@ -284,6 +298,10 @@ public class RedisRegistry extends FailbackRegistry {
                 try {
                     jedis.hdel(key, value);
                     jedis.publish(key, Constants.UNREGISTER);
+                    success = true;
+                    if (! replicate) {
+                    	break; //  如果服务器端已同步数据，只需写入单台机器
+                    }
                 } finally {
                     jedisPool.returnResource(jedis);
                 }
@@ -292,7 +310,11 @@ public class RedisRegistry extends FailbackRegistry {
             }
         }
         if (exception != null) {
-            throw exception;
+            if (success) {
+                logger.warn(exception.getMessage(), exception);
+            } else {
+                throw exception;
+            }
         }
     }
     
