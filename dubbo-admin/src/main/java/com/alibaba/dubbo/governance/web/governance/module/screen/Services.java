@@ -79,10 +79,6 @@ public class Services extends Restful {
             services.addAll(consumerServices);
         }
         
-        context.put("providerServices", providerServices);
-        context.put("consumerServices", consumerServices);
-        context.put("services", services);
-        
         Map<String, List<Override>> service2Overrides = new HashMap<String, List<Override>>();
         if (overrides != null && overrides.size() > 0 
                 && services != null && services.size() > 0) {
@@ -99,15 +95,15 @@ public class Services extends Restful {
                 }
             }
         }
+        
+        context.put("providerServices", providerServices);
+        context.put("consumerServices", consumerServices);
+        context.put("services", services);
         context.put("overrides", service2Overrides);
         
         String keyword = (String) context.get("keyword");
-        if (keyword != null && !keyword.isEmpty()) {
-            if("*".equals(keyword)){
-                return;
-            }
+        if (StringUtils.isNotEmpty(keyword) && ! "*".equals(keyword)) {
             keyword = keyword.toLowerCase();
-            
             Set<String> newList = new HashSet<String>();
             Set<String> newProviders = new HashSet<String>();
             Set<String> newConsumers = new HashSet<String>();

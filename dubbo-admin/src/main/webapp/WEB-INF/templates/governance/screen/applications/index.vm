@@ -27,11 +27,7 @@
 <tr>
 	<th width="20"><input type="checkbox" onclick="checkAll('table_o', 'ids', this.checked)" /></th>
 	<th>$i18n.get("application"): 
-	#if($service || $keyword == "*")
 	<input type="text" onkeyup="searchTable('table_o', 1, this.value);" onclick="searchTable('table_o', 1, this.value);" />&nbsp;<img src="$rootContextPath.getURI("images/ico_search.png")" width="12" height="12" />
-	#else
-	(<a href="applications?keyword=*">$i18n.get("show.all")</a>)
-	#end
 	</th>
 	<th width="110">$i18n.get("role"): <select onchange="searchTable('table_o', 2, this.value);" onclick="searchTable('table_o', 2, this.value);"><option value="">$i18n.get("all")</option><option value="$i18n.get("provider")">$i18n.get("provider")</option><option value="$i18n.get("consumer")">$i18n.get("consumer")</option></select></th>
 	#if($service)
@@ -41,7 +37,7 @@
 </tr>
 #foreach($application in $applications)
 <tr>
-	<td>#if($consumerApplications.contains($application))<input type="checkbox" name="ids" value="$application" />#end</td>
+	<td><input type="checkbox" name="ids" value="$application" /></td>
 	<td>#if($service)$application#else<a href="applications/$application/services">$application</a>#end</td>
 	<td>
 		#if($providerApplications.contains($application))

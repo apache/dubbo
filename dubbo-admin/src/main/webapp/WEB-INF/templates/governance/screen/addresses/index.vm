@@ -12,11 +12,7 @@
 <table cellpadding="0" cellspacing="0" class="list list_dubbo" id="table_o">
 <tr>
 	<th>$i18n.get("address"):
-	#if($application || $keyword == "*")
 	<input type="text" onkeyup="searchTable('table_o', 0, this.value);" onclick="searchTable('table_o', 0, this.value);" />&nbsp;<img src="$rootContextPath.getURI("images/ico_search.png")" width="12" height="12" />
-	#else
-	(<a href="addresses?keyword=*">$i18n.get("show.all") </a>)
-	#end
 	</th>
 	<th width="100">$i18n.get("role"): <select onchange="searchTable('table_o', 1, this.value);" onclick="searchTable('table_o', 1, this.value);"><option value="">$i18n.get("all")</option><option value="$i18n.get("provider")">$i18n.get("provider")</option><option value="$i18n.get("consumer")">$i18n.get("consumer")</option></select></th>
 </tr>

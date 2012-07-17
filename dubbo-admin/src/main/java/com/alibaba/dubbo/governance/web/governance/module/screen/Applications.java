@@ -86,27 +86,26 @@ public class Applications extends Restful {
                 && context.get("address") == null) {
             context.put("application", "*");
         }
+        Set<String> applications = new TreeSet<String>();
+        List<String> providerApplications = providerService.findApplications();
+        if (providerApplications != null && providerApplications.size() > 0) {
+            applications.addAll(providerApplications);
+        }
+        List<String> consumerApplications = consumerService.findApplications();
+        if (consumerApplications != null && consumerApplications.size() > 0) {
+            applications.addAll(consumerApplications);
+        }
+        
+        Set<String> newList = new HashSet<String>();
+        Set<String> newProviders = new HashSet<String>();
+        Set<String> newConsumers = new HashSet<String>();
+        context.put("applications", applications);
+        context.put("providerApplications", providerApplications);
+        context.put("consumerApplications", consumerApplications);
+        
         String keyword = (String) context.get("keyword");
-        if (StringUtils.isNotEmpty(keyword)) {
-            Set<String> applications = new TreeSet<String>();
-            List<String> providerApplications = providerService.findApplications();
-            if (providerApplications != null && providerApplications.size() > 0) {
-                applications.addAll(providerApplications);
-            }
-            List<String> consumerApplications = consumerService.findApplications();
-            if (consumerApplications != null && consumerApplications.size() > 0) {
-                applications.addAll(consumerApplications);
-            }
-            keyword = keyword.toLowerCase();
-            Set<String> newList = new HashSet<String>();
-            Set<String> newProviders = new HashSet<String>();
-            Set<String> newConsumers = new HashSet<String>();
-            if("*".equals(keyword)){
-                context.put("applications", applications);
-                context.put("providerApplications", providerApplications);
-                context.put("consumerApplications", consumerApplications);
-                return;
-            }
+        if (StringUtils.isNotEmpty(keyword) && ! "*".equals(keyword)) {
+        	keyword = keyword.toLowerCase();
             for (String o : applications) {
                 if (o.toLowerCase().indexOf(keyword) != -1) {
                     newList.add(o);

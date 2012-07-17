@@ -89,11 +89,11 @@ public class StatusManager {
         return statuses;
     }
 
-    public Status getStatusSummary(Map<String, Status> statusList) {
+    public static Status getStatusSummary(Map<String, Status> statusList) {
         return getSummaryStatus(statusList);
     }
     
-    public Status getSummaryStatus(Map<String, Status> statuses) {
+    public static Status getSummaryStatus(Map<String, Status> statuses) {
         Level level = Level.OK;
         StringBuilder msg = new StringBuilder();
         for (Map.Entry<String, Status> entry : statuses.entrySet()) {

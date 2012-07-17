@@ -25,11 +25,7 @@
 <tr>
 	<th width="20"><input type="checkbox" onclick="checkAll('table_o', 'ids', this.checked)" /></th>
 	<th>$i18n.get("service"):
-	#if($application || $keyword == "*")
 	<input type="text" onkeyup="searchTable('table_o', 0, this.value);" onclick="searchTable('table_o', 0, this.value);" />&nbsp;<img src="$rootContextPath.getURI("images/ico_search.png")" width="12" height="12" />
-	#else
-	(<a href="services?keyword=*">$i18n.get("show.all") </a>)
-	#end
 	</th>
 	<th width="135">$i18n.get("status"): 
 	<select onchange="searchTable('table_o', 1, this.value);" onclick="searchTable('table_o', 1, this.value);">

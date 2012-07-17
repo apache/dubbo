@@ -138,11 +138,11 @@ $control.setTemplate("home:menu.vm")
 		 #end
 		<tr>
 			<th>$i18n.get("stat"):</th>
-				<td  style="padding-left: 10px;">
-					$i18n.get("serviceNum"):$services &nbsp;
-					$i18n.get("providerNum"):$providers &nbsp;
-					$i18n.get("consumerNum"):$consumers &nbsp;
-					$i18n.get("applicationNum"):$applications &nbsp;
+			<td  style="padding-left: 10px;">
+				$i18n.get("serviceNum"):$services &nbsp;
+				$i18n.get("applicationNum"):$applications &nbsp;
+				$i18n.get("providerNum"):$providers &nbsp;
+				$i18n.get("consumerNum"):$consumers &nbsp;
 			</td>
 		</tr>
 	</table>
