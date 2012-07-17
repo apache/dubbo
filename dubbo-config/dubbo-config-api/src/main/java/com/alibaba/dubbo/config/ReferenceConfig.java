@@ -328,14 +328,18 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 	private T createProxy(Map<String, String> map) {
 		URL tmpUrl = new URL("temp", "localhost", 0, map);
 		final boolean isJvmRefer;
-		if (url != null && url.length() > 0) { //指定URL的情况下，不做本地引用
-			isJvmRefer = false;
-		} else if (InjvmProtocol.getInjvmProtocol().isInjvmRefer(tmpUrl)) {
-			//默认情况下如果本地有服务暴露，则引用本地服务.
-			isJvmRefer = true;
-		} else {
-			isJvmRefer = false;
-		}
+        if (isInjvm() == null) {
+            if (url != null && url.length() > 0) { //指定URL的情况下，不做本地引用
+                isJvmRefer = false;
+            } else if (InjvmProtocol.getInjvmProtocol().isInjvmRefer(tmpUrl)) {
+                //默认情况下如果本地有服务暴露，则引用本地服务.
+                isJvmRefer = true;
+            } else {
+                isJvmRefer = false;
+            }
+        } else {
+            isJvmRefer = isInjvm().booleanValue();
+        }
 		
 		if (isJvmRefer) {
 			URL url = new URL(Constants.LOCAL_PROTOCOL, NetUtils.LOCALHOST, 0, interfaceClass.getName()).addParameters(map);
