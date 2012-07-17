@@ -88,12 +88,17 @@ public class DubboCodec extends ExchangeCodec implements Codec {
                     } else if (res.isEvent()) {
                         data = decodeEventData(channel, deserialize(s, channel.getUrl(), is));
                     } else {
-                        DecodeableRpcResult result = new DecodeableRpcResult(channel, res,
-                            new UnsafeByteArrayInputStream(readMessageData(is)), (Invocation) getRequestData(id), proto);
+                        DecodeableRpcResult result;
                         if (channel.getUrl().getParameter(
                             Constants.DECODE_IN_IO_THREAD_KEY,
                             Constants.DEFAULT_DECODE_IN_IO_THREAD)) {
+                            result = new DecodeableRpcResult(channel, res, is,
+                                                             (Invocation)getRequestData(id), proto);
                             result.decode();
+                        } else {
+                            result = new DecodeableRpcResult(channel, res,
+                                                             new UnsafeByteArrayInputStream(readMessageData(is)),
+                                                             (Invocation) getRequestData(id), proto);
                         }
                         data = result;
                     }
@@ -124,12 +129,15 @@ public class DubboCodec extends ExchangeCodec implements Codec {
                 } else if (req.isEvent()) {
                     data = decodeEventData(channel, deserialize(s, channel.getUrl(), is));
                 } else {
-                    DecodeableRpcInvocation inv = new DecodeableRpcInvocation(channel, req,
-                        new UnsafeByteArrayInputStream(readMessageData(is)), proto);
+                    DecodeableRpcInvocation inv;
                     if (channel.getUrl().getParameter(
                         Constants.DECODE_IN_IO_THREAD_KEY,
                         Constants.DEFAULT_DECODE_IN_IO_THREAD)) {
+                        inv = new DecodeableRpcInvocation(channel, req, is, proto);
                         inv.decode();
+                    } else {
+                        inv = new DecodeableRpcInvocation(channel, req,
+                                                          new UnsafeByteArrayInputStream(readMessageData(is)), proto);
                     }
                     data = inv;
                 }
