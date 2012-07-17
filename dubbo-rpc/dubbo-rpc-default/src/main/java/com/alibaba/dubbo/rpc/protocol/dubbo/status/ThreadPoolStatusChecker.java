@@ -26,6 +26,7 @@ import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.Server;
 import com.alibaba.dubbo.remoting.exchange.ExchangeServer;
 import com.alibaba.dubbo.remoting.exchange.support.header.HeaderExchangeServer;
+import com.alibaba.dubbo.remoting.transport.AbstractPeer;
 import com.alibaba.dubbo.remoting.transport.dispather.WrappedChannelHandler;
 import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
@@ -47,18 +48,20 @@ public class ThreadPoolStatusChecker implements StatusChecker {
                 HeaderExchangeServer exchanger = (HeaderExchangeServer) server;
                 server = exchanger.getServer();
             }
-            ChannelHandler handler = server.getChannelHandler();
-            if (handler instanceof WrappedChannelHandler) {
-                Executor executor = ((WrappedChannelHandler) handler).getExecutor();
-                if (executor instanceof ThreadPoolExecutor) {
-                    ThreadPoolExecutor tp = (ThreadPoolExecutor)executor;
-                    boolean ok = tp.getActiveCount() < tp.getMaximumPoolSize() - 1;
-                    return new Status(ok ? Status.Level.OK : Status.Level.WARN, 
-                            "max:" + tp.getMaximumPoolSize() 
-                            + ",core:" + tp.getCorePoolSize() 
-                            + ",largest:" + tp.getLargestPoolSize()
-                            + ",active:" + tp.getActiveCount() 
-                            + ",task:" + tp.getTaskCount());
+            if (server instanceof AbstractPeer) {
+            	ChannelHandler handler = ((AbstractPeer)server).getDelegateHandler();
+            	if (handler instanceof WrappedChannelHandler) {
+                    Executor executor = ((WrappedChannelHandler) handler).getExecutor();
+                    if (executor instanceof ThreadPoolExecutor) {
+                        ThreadPoolExecutor tp = (ThreadPoolExecutor)executor;
+                        boolean ok = tp.getActiveCount() < tp.getMaximumPoolSize() - 1;
+                        return new Status(ok ? Status.Level.OK : Status.Level.WARN, 
+                                "max:" + tp.getMaximumPoolSize() 
+                                + ",core:" + tp.getCorePoolSize() 
+                                + ",largest:" + tp.getLargestPoolSize()
+                                + ",active:" + tp.getActiveCount() 
+                                + ",task:" + tp.getTaskCount());
+                    }
                 }
             }
         }
