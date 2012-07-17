@@ -30,16 +30,18 @@
             <res-loaders:classpath-loader />
         </resource>
         
-        <resource pattern="/templates">
-            <res-loaders:file-loader basedir="/Users/liangfei/Workspace/dubbo/dubbo-admin/src/main/webapp/WEB-INF/templates" />
-        </resource>
+        <resource-alias pattern="/templates" name="/webroot/WEB-INF/templates" />
+		<!--<resource pattern="/templates">
+            <res-loaders:file-loader basedir="${dubbo.governance.webapp.home}/WEB-INF/templates" />
+        </resource>-->
     </services:resource-loading>
 
 	<beans:bean xmlns="http://www.springframework.org/schema/beans" id="messageSource"
 		class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
 		<beans:property name="basenames">
 			<beans:list>
-				<beans:value>file:///Users/liangfei/Workspace/dubbo/dubbo-admin/src/main/webapp/WEB-INF/i18n/message</beans:value>
+				<beans:value>/WEB-INF/i18n/message</beans:value>
+				<!--<beans:value>file:///${dubbo.governance.webapp.home}/WEB-INF/i18n/message</beans:value>-->
 			</beans:list> 
 		</beans:property>
 		<beans:property name="cacheSeconds" value="3" />
