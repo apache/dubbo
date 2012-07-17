@@ -473,6 +473,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setOwner(String owner) {
+    	checkMultiName("owner", owner);
         this.owner = owner;
     }
 
