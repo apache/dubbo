@@ -60,10 +60,12 @@ public class OwnerServiceImpl extends AbstractService implements OwnerService {
         Map<String, Owner> oList = new HashMap<String, Owner>();
         for(Provider p : pList){
             if(p.getUsername() != null){
-                Owner o = new Owner();
-                o.setService(p.getService());
-                o.setUsername(p.getUsername());
-                oList.put(o.getService() + "/" + o.getUsername(), o);
+            	for (String username : Constants.COMMA_SPLIT_PATTERN.split(p.getUsername())) {
+	                Owner o = new Owner();
+	                o.setService(p.getService());
+	                o.setUsername(username);
+	                oList.put(o.getService() + "/" + o.getUsername(), o);
+            	}
             }
         }
         for(Override c : cList){
