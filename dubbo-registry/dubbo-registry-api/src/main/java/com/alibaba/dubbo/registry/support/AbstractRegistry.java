@@ -418,6 +418,9 @@ public abstract class AbstractRegistry implements Registry {
             logger.warn("Ignore empty notify urls for subscribe url " + url);
             return;
         }
+        if (logger.isInfoEnabled()) {
+            logger.info("Notify urls for subscribe url " + url + ", urls: " + urls);
+        }
         Map<String, List<URL>> result = new HashMap<String, List<URL>>();
         for (URL u : urls) {
             if (UrlUtils.isMatch(url, u)) {
