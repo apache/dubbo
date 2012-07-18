@@ -27,6 +27,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -586,6 +588,30 @@ public class PojoUtilsTest {
         Assert.assertEquals(1, realizadData.getList().size());
         Assert.assertEquals(data.getList().get(0).getName(), realizadData.getList().get(0).getName());
         Assert.assertEquals(data.getList().get(0).getAge(), realizadData.getList().get(0).getAge());
+    }
+
+    @Test
+    public void testRealize() throws Exception {
+        Map<String, String> inputMap = new LinkedHashMap<String, String>();
+        inputMap.put("key", "value");
+        Object obj = PojoUtils.generalize(inputMap);
+        Assert.assertTrue(obj instanceof LinkedHashMap);
+        Object outputObject = PojoUtils.realize(inputMap, LinkedHashMap.class);
+        System.out.println(outputObject.getClass().getName());
+        Assert.assertTrue(outputObject instanceof LinkedHashMap);
+    }
+
+    @Test
+    public void testRealizeLinkedList() throws Exception {
+        LinkedList<Person> input = new LinkedList<Person>();
+        Person person = new Person();
+        person.setAge(37);
+        input.add(person);
+        Object obj = PojoUtils.generalize(input);
+        Assert.assertTrue(obj instanceof List);
+        Assert.assertTrue(input.get(0) instanceof Person);
+        Object output = PojoUtils.realize(obj, LinkedList.class);
+        Assert.assertTrue(output instanceof LinkedList);
     }
 
     private static Child newChild(String name, int age) {
