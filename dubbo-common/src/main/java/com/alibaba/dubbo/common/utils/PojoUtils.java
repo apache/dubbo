@@ -316,14 +316,14 @@ public class PojoUtils {
                 Collection<Object> dest = createCollection(type, len);
                 history.put(pojo, dest);
                 for (Object obj : src) {
-                    Type keyType = getGenericClassByIndex(genericType, 0);
-                    Class<?> keyClazz;
-                    if ( keyType instanceof Class){
-                        keyClazz = (Class<?>)keyType;
+                    Type itemType = getGenericClassByIndex(genericType, 0);
+                    Class<?> itemClazz;
+                    if ( itemType instanceof Class){
+                        itemClazz = (Class<?>)itemType;
                     }  else {
-                    	keyClazz = null;
+                    	itemClazz = null;
                     }
-                	Object value = realize0(obj, keyClazz, keyType, history);
+                	Object value = realize0(obj, itemClazz, itemType, history);
                     dest.add(value);
                 }
                 return dest;
@@ -373,7 +373,7 @@ public class PojoUtils {
                     }
             	    Object key = keyClazz == null ? entry.getKey() : realize0(entry.getKey(), keyClazz, keyType, history);
             	    Object value = valueClazz == null ? entry.getValue() : realize0(entry.getValue(), valueClazz, valueType, history);
-            	     dest.put(key, value);
+            	    dest.put(key, value);
             	}
         		return dest;
         	} else if (type.isInterface()) {
