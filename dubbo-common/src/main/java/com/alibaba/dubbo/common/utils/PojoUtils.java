@@ -316,14 +316,12 @@ public class PojoUtils {
                 Collection<Object> dest = createCollection(type, len);
                 history.put(pojo, dest);
                 for (Object obj : src) {
-                    Type itemType = getGenericClassByIndex(genericType, 0);
-                    Class<?> itemClazz;
-                    if ( itemType instanceof Class){
-                        itemClazz = (Class<?>)itemType;
-                    }  else {
-                    	itemClazz = null;
-                    }
-                	Object value = realize0(obj, itemClazz, itemType, history);
+                    Type keyType = getGenericClassByIndex(genericType, 0);
+                    Class<?> keyClazz = obj.getClass() ;
+                    if ( keyType instanceof Class){
+                      keyClazz = (Class<?>)keyType;
+                    } 
+                	Object value = realize0(obj, keyClazz, keyType, history);
                     dest.add(value);
                 }
                 return dest;
@@ -332,7 +330,7 @@ public class PojoUtils {
         
         if (pojo instanceof Map<?, ?> && type != null) {
         	Object className = ((Map<Object, Object>)pojo).get("class");
-            if (className instanceof String && ! Map.class.isAssignableFrom(type)) {
+            if (className instanceof String) {
                 try {
                     type = ClassHelper.forName((String)className);
                 } catch (ClassNotFoundException e) {
@@ -349,7 +347,7 @@ public class PojoUtils {
                     //ignore error
                     map = (Map<Object, Object>)pojo;
                 }
-            } else {
+            }else {
                 map = (Map<Object, Object>)pojo;
             }
             
@@ -363,17 +361,18 @@ public class PojoUtils {
             	    if ( keyType instanceof Class){
             	        keyClazz = (Class<?>)keyType;
             	    } else {
-            	        keyClazz = null;
+            	        keyClazz = entry.getKey() == null ? null : entry.getKey().getClass();
             	    }
             	    Class<?> valueClazz;
                     if ( valueType instanceof Class){
                         valueClazz = (Class<?>)valueType;
                     } else {
-                        valueClazz = null;
+                        valueClazz = entry.getValue() == null ? null : entry.getValue().getClass() ;
                     }
+            	    
             	    Object key = keyClazz == null ? entry.getKey() : realize0(entry.getKey(), keyClazz, keyType, history);
             	    Object value = valueClazz == null ? entry.getValue() : realize0(entry.getValue(), valueClazz, valueType, history);
-            	    dest.put(key, value);
+            	     dest.put(key, value);
             	}
         		return dest;
         	} else if (type.isInterface()) {
