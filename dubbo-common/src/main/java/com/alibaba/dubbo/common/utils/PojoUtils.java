@@ -114,7 +114,7 @@ public class PojoUtils {
         }
 
         if (pojo instanceof Class) {
-            return ((Class)pojo).getName();
+            return ((Class<?>)pojo).getName();
         }
 
         Object o = history.get(pojo);
@@ -174,7 +174,7 @@ public class PojoUtils {
                     if (history.containsKey(pojo)) {
                         Object pojoGenerilizedValue = history.get(pojo);
                         if (pojoGenerilizedValue instanceof Map
-                            && ((Map)pojoGenerilizedValue).containsKey(field.getName())) {
+                            && ((Map<?, ?>)pojoGenerilizedValue).containsKey(field.getName())) {
                             continue;
                         }
                     }
@@ -317,10 +317,12 @@ public class PojoUtils {
                 history.put(pojo, dest);
                 for (Object obj : src) {
                     Type keyType = getGenericClassByIndex(genericType, 0);
-                    Class<?> keyClazz = obj.getClass() ;
+                    Class<?> keyClazz;
                     if ( keyType instanceof Class){
-                      keyClazz = (Class<?>)keyType;
-                    } 
+                        keyClazz = (Class<?>)keyType;
+                    }  else {
+                    	keyClazz = null;
+                    }
                 	Object value = realize0(obj, keyClazz, keyType, history);
                     dest.add(value);
                 }
@@ -330,7 +332,7 @@ public class PojoUtils {
         
         if (pojo instanceof Map<?, ?> && type != null) {
         	Object className = ((Map<Object, Object>)pojo).get("class");
-            if (className instanceof String) {
+            if (className instanceof String && ! Map.class.isAssignableFrom(type)) {
                 try {
                     type = ClassHelper.forName((String)className);
                 } catch (ClassNotFoundException e) {
@@ -347,13 +349,13 @@ public class PojoUtils {
                     //ignore error
                     map = (Map<Object, Object>)pojo;
                 }
-            }else {
+            } else {
                 map = (Map<Object, Object>)pojo;
             }
             
             if (Map.class.isAssignableFrom(type) || type == Object.class) {
-            	final Map<Object, Object> result = new HashMap<Object, Object>(map.size());
-                history.put(pojo, result);
+            	final Map<Object, Object> dest = new HashMap<Object, Object>(map.size());
+                history.put(pojo, dest);
             	for (Map.Entry<Object, Object> entry : map.entrySet()) {
             	    Type keyType = getGenericClassByIndex(genericType, 0);
             	    Type valueType = getGenericClassByIndex(genericType, 1);
@@ -361,20 +363,19 @@ public class PojoUtils {
             	    if ( keyType instanceof Class){
             	        keyClazz = (Class<?>)keyType;
             	    } else {
-            	        keyClazz = entry.getKey() == null ? null : entry.getKey().getClass();
+            	        keyClazz = null;
             	    }
             	    Class<?> valueClazz;
                     if ( valueType instanceof Class){
                         valueClazz = (Class<?>)valueType;
                     } else {
-                        valueClazz = entry.getValue() == null ? null : entry.getValue().getClass() ;
+                        valueClazz = null;
                     }
-            	    
             	    Object key = keyClazz == null ? entry.getKey() : realize0(entry.getKey(), keyClazz, keyType, history);
             	    Object value = valueClazz == null ? entry.getValue() : realize0(entry.getValue(), valueClazz, valueType, history);
-            	     result.put(key, value);
+            	     dest.put(key, value);
             	}
-        		return result;
+        		return dest;
         	} else if (type.isInterface()) {
         	    Object dest = Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), new Class<?>[]{type}, new PojoInvocationHandler(map));
                 history.put(pojo, dest);
