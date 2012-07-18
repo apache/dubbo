@@ -37,7 +37,6 @@ import org.apache.cxf.transport.http.HttpDestinationFactory;
 import org.apache.cxf.transport.servlet.ServletController;
 import org.apache.cxf.transport.servlet.ServletDestinationFactory;
 import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
-import org.springframework.remoting.RemoteAccessException;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
@@ -110,11 +109,11 @@ public class WebServiceProtocol extends AbstractProxyProtocol {
             serverMap.put(addr, httpServer);
         }
         final ServerFactoryBean serverFactoryBean = new ServerFactoryBean();
+        serverFactoryBean.setAddress(url.getAbsolutePath());
     	serverFactoryBean.setServiceClass(type);
-    	serverFactoryBean.setAddress(url.getAbsolutePath());
     	serverFactoryBean.setServiceBean(impl);
-    	serverFactoryBean.setDestinationFactory(transportFactory);
     	serverFactoryBean.setBus(bus);
+        serverFactoryBean.setDestinationFactory(transportFactory);
     	serverFactoryBean.create();
         return new Runnable() {
             public void run() {
@@ -126,8 +125,8 @@ public class WebServiceProtocol extends AbstractProxyProtocol {
     @SuppressWarnings("unchecked")
     protected <T> T doRefer(final Class<T> serviceType, final URL url) throws RpcException {
     	ClientProxyFactoryBean proxyFactoryBean = new ClientProxyFactoryBean();
-    	proxyFactoryBean.setServiceClass(serviceType);
     	proxyFactoryBean.setAddress(url.setProtocol("http").toIdentityString());
+    	proxyFactoryBean.setServiceClass(serviceType);
     	proxyFactoryBean.setBus(bus);
     	T ref = (T) proxyFactoryBean.create();
     	Client proxy = ClientProxy.getClient(ref);  
