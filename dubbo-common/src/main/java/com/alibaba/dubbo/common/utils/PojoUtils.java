@@ -27,13 +27,20 @@ import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.TreeMap;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
  * PojoUtils. Travel object deeply, and convert complex type to simple type.
@@ -114,7 +121,7 @@ public class PojoUtils {
         }
 
         if (pojo instanceof Class) {
-            return ((Class<?>)pojo).getName();
+            return ((Class)pojo).getName();
         }
 
         Object o = history.get(pojo);
@@ -145,7 +152,7 @@ public class PojoUtils {
         }
         if (pojo instanceof Map<?, ?>) {
             Map<Object, Object> src = (Map<Object, Object>)pojo;
-            Map<Object, Object> dest= new HashMap<Object, Object>(src.size());
+            Map<Object, Object> dest= createMap(src);
             history.put(pojo, dest);
             for (Map.Entry<Object, Object> obj : src.entrySet()) {
             	dest.put(generalize(obj.getKey(), history), generalize(obj.getValue(), history));
@@ -174,7 +181,7 @@ public class PojoUtils {
                     if (history.containsKey(pojo)) {
                         Object pojoGenerilizedValue = history.get(pojo);
                         if (pojoGenerilizedValue instanceof Map
-                            && ((Map<?, ?>)pojoGenerilizedValue).containsKey(field.getName())) {
+                            && ((Map)pojoGenerilizedValue).containsKey(field.getName())) {
                             continue;
                         }
                     }
@@ -242,6 +249,47 @@ public class PojoUtils {
 			}
     	}
     	return new ArrayList<Object>();
+    }
+
+    private static Map createMap(Map src) {
+        Class<? extends Map> cl = src.getClass();
+        Map result = null;
+        if (HashMap.class == cl) {
+            result = new HashMap();
+        } else if (Hashtable.class == cl) {
+            result = new Hashtable();
+        } else if (IdentityHashMap.class == cl) {
+            result = new IdentityHashMap();
+        } else if (LinkedHashMap.class == cl) {
+            result = new LinkedHashMap();
+        } else if (Properties.class == cl) {
+            result = new Properties();
+        } else if (TreeMap.class == cl) {
+            result = new TreeMap();
+        } else if (WeakHashMap.class == cl) {
+            return new WeakHashMap();
+        } else if (ConcurrentHashMap.class == cl) {
+            result = new ConcurrentHashMap();
+        } else if (ConcurrentSkipListMap.class == cl) {
+            result = new ConcurrentSkipListMap();
+        } else {
+            try {
+                result = cl.newInstance();
+            } catch (Exception e) { /* ignore */ }
+
+            if (result == null) {
+                try {
+                    Constructor<?> constructor = cl.getConstructor(Map.class);
+                    result = (Map)constructor.newInstance(Collections.EMPTY_MAP);
+                } catch (Exception e) { /* ignore */ }
+            }
+        }
+
+        if (result == null) {
+            result = new HashMap<Object, Object>();
+        }
+
+        return result;
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -352,8 +400,8 @@ public class PojoUtils {
             }
             
             if (Map.class.isAssignableFrom(type) || type == Object.class) {
-            	final Map<Object, Object> dest = new HashMap<Object, Object>(map.size());
-                history.put(pojo, dest);
+            	final Map<Object, Object> result = createMap(map);
+                history.put(pojo, result);
             	for (Map.Entry<Object, Object> entry : map.entrySet()) {
             	    Type keyType = getGenericClassByIndex(genericType, 0);
             	    Type valueType = getGenericClassByIndex(genericType, 1);
@@ -372,9 +420,9 @@ public class PojoUtils {
             	    
             	    Object key = keyClazz == null ? entry.getKey() : realize0(entry.getKey(), keyClazz, keyType, history);
             	    Object value = valueClazz == null ? entry.getValue() : realize0(entry.getValue(), valueClazz, valueType, history);
-            	     dest.put(key, value);
+            	     result.put(key, value);
             	}
-        		return dest;
+        		return result;
         	} else if (type.isInterface()) {
         	    Object dest = Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), new Class<?>[]{type}, new PojoInvocationHandler(map));
                 history.put(pojo, dest);
