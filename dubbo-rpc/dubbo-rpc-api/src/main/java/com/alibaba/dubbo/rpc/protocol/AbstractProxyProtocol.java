@@ -59,10 +59,15 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
         return proxyFactory;
     }
 
-    public <T> Exporter<T> export(final Invoker<T> invoker) throws RpcException {
-        final String uri = invoker.getUrl().getAbsolutePath();
+    @SuppressWarnings("unchecked")
+	public <T> Exporter<T> export(final Invoker<T> invoker) throws RpcException {
+        final String uri = serviceKey(invoker.getUrl());
+        Exporter<T> exporter = (Exporter<T>) exporterMap.get(uri);
+        if (exporter != null) {
+        	return exporter;
+        }
         final Runnable runnable = doExport(proxyFactory.getProxy(invoker), invoker.getInterface(), invoker.getUrl());
-        Exporter<T> exporter = new AbstractExporter<T>(invoker) {
+        exporter = new AbstractExporter<T>(invoker) {
             public void unexport() {
                 super.unexport();
                 exporterMap.remove(uri);
