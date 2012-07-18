@@ -80,7 +80,7 @@ public class NetUtils {
     		ServerSocket ss = null;
             try {
                 ss = new ServerSocket(i);
-                return ss.getLocalPort();
+                return i;
             } catch (IOException e) {
             	// continue
             } finally {
