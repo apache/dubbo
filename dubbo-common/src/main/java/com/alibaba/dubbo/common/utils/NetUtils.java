@@ -71,6 +71,29 @@ public class NetUtils {
             }
         }
     }
+    
+    public static int getAvailablePort(int port) {
+    	if (port <= 0) {
+    		return getAvailablePort();
+    	}
+    	for(int i = port; i < MAX_PORT; i ++) {
+    		ServerSocket ss = null;
+            try {
+                ss = new ServerSocket(i);
+                return ss.getLocalPort();
+            } catch (IOException e) {
+            	// continue
+            } finally {
+                if (ss != null) {
+                    try {
+                        ss.close();
+                    } catch (IOException e) {
+                    }
+                }
+            }
+    	}
+    	return port;
+    }
 
     private static final int MIN_PORT = 0;
     

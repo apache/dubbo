@@ -313,13 +313,14 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             if (provider != null && (port == null || port == 0)) {
                 port = provider.getPort();
             }
+            int defaultPort = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(name).getDefaultPort();
             if (port == null || port == 0) {
-                port = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(name).getDefaultPort();
+                port = defaultPort;
             }
             if (port == null || port <= 0) {
                 port = getRandomPort(name);
                 if (port == null || port < 0) {
-                    port = NetUtils.getAvailablePort();
+                    port = NetUtils.getAvailablePort(defaultPort);
                     putRandomPort(name, port);
                 }
                 logger.warn("Use random available port(" + port + ") for protocol " + name);
