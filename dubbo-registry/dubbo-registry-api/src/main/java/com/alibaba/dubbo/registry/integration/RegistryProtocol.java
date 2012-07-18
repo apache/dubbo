@@ -37,6 +37,7 @@ import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.ProxyFactory;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.cluster.Cluster;
+import com.alibaba.dubbo.rpc.cluster.Configurator;
 import com.alibaba.dubbo.rpc.protocol.InvokerWrapper;
 
 /**
@@ -98,7 +99,7 @@ public class RegistryProtocol implements Protocol {
     
     public <T> Exporter<T> export(final Invoker<T> originInvoker) throws RpcException {
         //export invoker
-        final ExporterChangeableWrapper<T>  exporter = doLocolExport(originInvoker);
+        final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker);
         //registry provider
         Registry registry = doRegister(originInvoker);
         //设置exporter与registry的关系 (for unexport)
@@ -115,7 +116,7 @@ public class RegistryProtocol implements Protocol {
     }
     
     @SuppressWarnings("unchecked")
-    private <T> ExporterChangeableWrapper<T>  doLocolExport(final Invoker<T> originInvoker){
+    private <T> ExporterChangeableWrapper<T>  doLocalExport(final Invoker<T> originInvoker){
         String key = getCacheKey(originInvoker);
         ExporterChangeableWrapper<T> exporter = (ExporterChangeableWrapper<T>) bounds.get(key);
         if (exporter == null) {
@@ -137,7 +138,7 @@ public class RegistryProtocol implements Protocol {
      * @param newInvokerUrl
      */
     @SuppressWarnings("unchecked")
-    private <T> void doChangeLocolExport(final Invoker<T> originInvoker, URL newInvokerUrl){
+    private <T> void doChangeLocalExport(final Invoker<T> originInvoker, URL newInvokerUrl){
         String key = getCacheKey(originInvoker);
         final ExporterChangeableWrapper<T> exporter = (ExporterChangeableWrapper<T>) bounds.get(key);
         if (exporter == null){
@@ -290,13 +291,20 @@ public class RegistryProtocol implements Protocol {
      *3.export 方法传入的invoker最好能一直作为exporter的invoker.
      */
     private class OverrideListener implements NotifyListener {
+    	
+    	private volatile List<Configurator> configurators;
 
-        /*
+        public List<Configurator> getConfigurators() {
+			return configurators;
+		}
+
+		/*
          *  provider 端可识别的override url只有这两种.
          *  override://0.0.0.0/serviceName?timeout=10
          *  override://0.0.0.0/?timeout=10
          */
         public void notify(List<URL> urls) {
+        	this.configurators = RegistryDirectory.toConfigurators(urls);
             List<ExporterChangeableWrapper<?>> exporters = new ArrayList<ExporterChangeableWrapper<?>>(bounds.values());
             for (ExporterChangeableWrapper<?> exporter : exporters){
                 Invoker<?> invoker = exporter.getOriginInvoker();
@@ -310,28 +318,21 @@ public class RegistryProtocol implements Protocol {
                 URL originUrl = RegistryProtocol.this.getProviderUrl(originInvoker);
                 URL newUrl = getNewInvokerUrl(originUrl, urls);
                 
-                if (! originUrl.toFullString().equals(newUrl.toFullString())){
-                    RegistryProtocol.this.doChangeLocolExport(originInvoker, newUrl);
+                if (! originUrl.equals(newUrl)){
+                    RegistryProtocol.this.doChangeLocalExport(originInvoker, newUrl);
                 }
             }
         }
         
-        private URL getNewInvokerUrl(final URL originUrl, final List<URL> urls){
-            URL newUrl = originUrl;
-            //override://0.0.0.0/?timeout=10 ip:port无意义
-            for (URL overrideUrl : urls){
-                if (overrideUrl.getServiceInterface() == null){
-                    newUrl = newUrl.addParameters(overrideUrl.getParameters());
+        private URL getNewInvokerUrl(URL url, List<URL> urls){
+        	List<Configurator> localConfigurators = this.configurators; // local reference
+            // 合并override参数
+            if (localConfigurators != null && localConfigurators.size() > 0) {
+                for (Configurator configurator : localConfigurators) {
+                    url = configurator.configure(url);
                 }
             }
-            //override://0.0.0.0/serviceName?timeout=10
-            for (URL overrideUrl : urls){
-                if (originUrl.getServiceKey().equals(overrideUrl.getServiceKey())){
-                    newUrl = newUrl.addParameters(overrideUrl.getParameters());
-                }
-            }
-            
-            return newUrl;
+            return url;
         }
     }
     

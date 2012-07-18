@@ -141,6 +141,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (exported) {
             return;
         }
+        exported = true;
         if (interfaceName == null || interfaceName.length() == 0) {
             throw new IllegalStateException("<dubbo:service interface=\"\" /> interface not allow null!");
         }
@@ -229,7 +230,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             path = interfaceName;
         }
         doExportUrls();
-        exported = true;
     }
 
     private void checkRef() {
