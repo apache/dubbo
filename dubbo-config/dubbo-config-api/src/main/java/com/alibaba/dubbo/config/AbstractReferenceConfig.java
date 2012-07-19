@@ -80,7 +80,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
     @Parameter(excluded = true)
     public Boolean isGeneric() {
-        return ProtocolUtils.isGeneric(generic);
+        return getGeneric() == null ? null : ProtocolUtils.isGeneric(getGeneric());
     }
 
     public void setGeneric(Boolean generic) {
