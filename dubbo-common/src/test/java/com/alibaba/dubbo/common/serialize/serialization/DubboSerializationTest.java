@@ -45,4 +45,12 @@ public class DubboSerializationTest extends AbstractSerializationPersionFailTest
     @Test(timeout=3000)
     public void test_LoopReference() throws Exception {}
     
+    @Ignore("Expecting to find object/array on stack")
+    @Test
+    public void test_BigInteger() throws Exception {}
+    
+    @Ignore("Expecting to find object/array on stack")
+    @Test
+    public void test_BigInteger_withType() throws Exception {}
+    
 }
