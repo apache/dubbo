@@ -279,7 +279,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * </br>4.不带参数的override://0.0.0.0/ 表示清除override 
      * @return
      */
-    private List<Configurator> toConfigurators(List<URL> urls){
+    public static List<Configurator> toConfigurators(List<URL> urls){
         List<Configurator> configurators = new ArrayList<Configurator>(urls.size());
         if (urls == null || urls.size() == 0){
             return configurators;
