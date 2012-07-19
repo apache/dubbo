@@ -35,6 +35,8 @@ import com.alibaba.dubbo.common.utils.ConfigUtils;
 public class Main {
 
     public static final String CONTAINER_KEY = "dubbo.container";
+
+    public static final String SHUTDOWN_HOOK_KEY = "dubbo.shutdown.hook";
     
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
@@ -55,22 +57,24 @@ public class Main {
             }
             logger.info("Use container type(" + Arrays.toString(args) + ") to run dubbo serivce.");
             
-            Runtime.getRuntime().addShutdownHook(new Thread() {
-                public void run() {
-                    for (Container container : containers) {
-                        try {
-                            container.stop();
-                            logger.info("Dubbo " + container.getClass().getSimpleName() + " stopped!");
-                        } catch (Throwable t) {
-                            logger.error(t.getMessage(), t);
-                        }
-                        synchronized (Main.class) {
-                            running = false;
-                            Main.class.notify();
-                        }
-                    }
-                }
-            });
+            if ("true".equals(System.getProperty(SHUTDOWN_HOOK_KEY))) {
+	            Runtime.getRuntime().addShutdownHook(new Thread() {
+	                public void run() {
+	                    for (Container container : containers) {
+	                        try {
+	                            container.stop();
+	                            logger.info("Dubbo " + container.getClass().getSimpleName() + " stopped!");
+	                        } catch (Throwable t) {
+	                            logger.error(t.getMessage(), t);
+	                        }
+	                        synchronized (Main.class) {
+	                            running = false;
+	                            Main.class.notify();
+	                        }
+	                    }
+	                }
+	            });
+            }
             
             for (Container container : containers) {
                 container.start();
