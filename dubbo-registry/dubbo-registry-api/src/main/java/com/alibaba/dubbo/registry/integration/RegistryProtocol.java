@@ -27,6 +27,7 @@ import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
+import com.alibaba.dubbo.common.utils.UrlUtils;
 import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.Registry;
 import com.alibaba.dubbo.registry.RegistryFactory;
@@ -89,11 +90,15 @@ public class RegistryProtocol implements Protocol {
         return INSTANCE;
     }
     
-    //用于解决rmi重复暴露端口冲突的问题，已经暴露过的服务不再重新暴露
+    private final Map<URL, NotifyListener> overrideListeners = new ConcurrentHashMap<URL, NotifyListener>();
+    
+    public Map<URL, NotifyListener> getOverrideListeners() {
+		return overrideListeners;
+	}
+
+	//用于解决rmi重复暴露端口冲突的问题，已经暴露过的服务不再重新暴露
     //providerurl <--> exporter
     private final Map<String, ExporterChangeableWrapper<?>> bounds = new ConcurrentHashMap<String, ExporterChangeableWrapper<?>>();
-    
-    private final NotifyListener listener = new OverrideListener();
     
     private final static Logger logger = LoggerFactory.getLogger(RegistryProtocol.class);
     
@@ -101,16 +106,37 @@ public class RegistryProtocol implements Protocol {
         //export invoker
         final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker);
         //registry provider
-        Registry registry = doRegister(originInvoker);
-        //设置exporter与registry的关系 (for unexport)
-        exporter.addRegistry(registry);
+        final Registry registry = getRegistry(originInvoker);
+        final URL registedProviderUrl = getRegistedProviderUrl(originInvoker);
+        registry.register(registedProviderUrl);
+        // 订阅override数据
+        // FIXME 提供者订阅时，会影响同一JVM即暴露服务，又引用同一服务的的场景，因为subscribed以服务名为缓存的key，导致订阅信息覆盖。
+        final URL overrideSubscribeUrl = getSubscribedOverrideUrl(registedProviderUrl);
+        final OverrideListener overrideSubscribeListener = new OverrideListener(overrideSubscribeUrl);
+        overrideListeners.put(overrideSubscribeUrl, overrideSubscribeListener);
+        registry.subscribe(overrideSubscribeUrl, overrideSubscribeListener);
         //保证每次export都返回一个新的exporter实例
         return new Exporter<T>() {
             public Invoker<T> getInvoker() {
                 return exporter.getInvoker();
             }
             public void unexport() {
-                exporter.unexport();
+            	try {
+            		exporter.unexport();
+            	} catch (Throwable t) {
+                	logger.warn(t.getMessage(), t);
+                }
+                try {
+                	registry.unregister(registedProviderUrl);
+                } catch (Throwable t) {
+                	logger.warn(t.getMessage(), t);
+                }
+                try {
+                	overrideListeners.remove(overrideSubscribeUrl);
+                	registry.unsubscribe(overrideSubscribeUrl, overrideSubscribeListener);
+                } catch (Throwable t) {
+                	logger.warn(t.getMessage(), t);
+                }
             }
         };
     }
@@ -151,23 +177,6 @@ public class RegistryProtocol implements Protocol {
     }
 
     /**
-     * 注册 provider
-     * @param originInvoker
-     * @return
-     */
-    private Registry doRegister(final Invoker<?> originInvoker){
-        final Registry registry = getRegistry(originInvoker);
-        final URL registedProviderUrl = getRegistedProviderUrl(originInvoker);
-        registry.register(registedProviderUrl);
-        // 订阅override数据
-        // FIXME 提供者订阅时，会影响同一JVM即暴露服务，又引用同一服务的的场景，因为subscribed以服务名为缓存的key，导致订阅信息覆盖。
-        registry.subscribe(registedProviderUrl.setProtocol(Constants.PROVIDER_PROTOCOL)
-                .addParameters(Constants.CATEGORY_KEY, Constants.CONFIGURATORS_CATEGORY, 
-                        Constants.CHECK_KEY, String.valueOf(false)), listener);
-        return registry;
-    }
-
-    /**
      * 根据invoker的地址获取registry实例
      * @param originInvoker
      * @return
@@ -191,6 +200,12 @@ public class RegistryProtocol implements Protocol {
         //注册中心看到的地址
         final URL registedProviderUrl = providerUrl.removeParameters(getFilteredKeys(providerUrl)).removeParameter(Constants.MONITOR_KEY);
         return registedProviderUrl;
+    }
+    
+    private URL getSubscribedOverrideUrl(URL registedProviderUrl){
+    	return registedProviderUrl.setProtocol(Constants.PROVIDER_PROTOCOL)
+                .addParameters(Constants.CATEGORY_KEY, Constants.CONFIGURATORS_CATEGORY, 
+                        Constants.CHECK_KEY, String.valueOf(false));
     }
 
     /**
@@ -293,9 +308,11 @@ public class RegistryProtocol implements Protocol {
     private class OverrideListener implements NotifyListener {
     	
     	private volatile List<Configurator> configurators;
+    	
+    	private final URL subscribeUrl;
 
-        public List<Configurator> getConfigurators() {
-			return configurators;
+		public OverrideListener(URL subscribeUrl) {
+			this.subscribeUrl = subscribeUrl;
 		}
 
 		/*
@@ -304,6 +321,25 @@ public class RegistryProtocol implements Protocol {
          *  override://0.0.0.0/?timeout=10
          */
         public void notify(List<URL> urls) {
+        	List<URL> result = null;
+        	for (URL url : urls) {
+        		URL overrideUrl = url;
+        		if (url.getParameter(Constants.CATEGORY_KEY) == null
+        				&& Constants.OVERRIDE_PROTOCOL.equals(url.getProtocol())) {
+        			// 兼容旧版本
+        			overrideUrl = url.addParameter(Constants.CATEGORY_KEY, Constants.CONFIGURATORS_CATEGORY);
+        		}
+        		if (! UrlUtils.isMatch(subscribeUrl, overrideUrl)) {
+        			if (result == null) {
+        				result = new ArrayList<URL>(urls);
+        			}
+        			result.remove(url);
+        			logger.warn("Subsribe category=configurator, but notifed non-configurator urls. may be registry bug. unexcepted url: " + url);
+        		}
+        	}
+        	if (result != null) {
+        		urls = result;
+        	}
         	this.configurators = RegistryDirectory.toConfigurators(urls);
             List<ExporterChangeableWrapper<?>> exporters = new ArrayList<ExporterChangeableWrapper<?>>(bounds.values());
             for (ExporterChangeableWrapper<?> exporter : exporters){
@@ -363,9 +399,10 @@ public class RegistryProtocol implements Protocol {
      * @param <T>
      */
     private class ExporterChangeableWrapper<T> implements Exporter<T>{
+    	
         private Exporter<T> exporter;
+        
         private final Invoker<T> originInvoker;
-        private final List<Registry> registrys = new ArrayList<Registry>();
 
         public ExporterChangeableWrapper(Exporter<T> exporter, Invoker<T> originInvoker){
             this.exporter = exporter;
@@ -383,25 +420,11 @@ public class RegistryProtocol implements Protocol {
         public void setExporter(Exporter<T> exporter){
             this.exporter = exporter;
         }
-        
-        public void addRegistry(final Registry registry) {
-            if (registry != null && ! registrys.contains(registry)){
-            	registrys.add(registry);
-            } 
-        }
 
         public void unexport() {
             String key = getCacheKey(this.originInvoker);
             bounds.remove(key);
-            try {
-            	for (Registry registry: registrys) {
-            		if (registry != null && registry.isAvailable()) {
-                        registry.unregister(getRegistedProviderUrl(originInvoker));
-                    }
-            	}
-            } finally {
-                exporter.unexport();
-            }
+            exporter.unexport();
         }
     }
 }

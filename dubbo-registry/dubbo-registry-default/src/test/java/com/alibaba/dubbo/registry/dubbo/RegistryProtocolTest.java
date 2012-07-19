@@ -17,7 +17,6 @@ package com.alibaba.dubbo.registry.dubbo;
 
 import static org.junit.Assert.assertEquals;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -160,10 +159,7 @@ public class RegistryProtocolTest {
     }
 
     private NotifyListener getListener(RegistryProtocol protocol) throws Exception {
-        Field field = RegistryProtocol.class.getDeclaredField("listener");
-        field.setAccessible(true);
-        NotifyListener listener = (NotifyListener) field.get(protocol);
-        return listener;
+        return protocol.getOverrideListeners().values().iterator().next();
     }
     
     static class MockInvoker<T> extends AbstractInvoker<T>{
