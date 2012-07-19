@@ -83,8 +83,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     private final boolean multiGroup;
 
-    private URL subscribeUrl;
-
     private volatile boolean forbidden = false;
     
     private volatile URL overrideDirectoryUrl; // 构造时初始化，断言不为null，并且总是赋非null值
@@ -130,7 +128,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     }
     
     public void subscribe(URL url) {
-        this.subscribeUrl = url;
+    	setConsumerUrl(url);
         registry.subscribe(url, this);
     }
 
@@ -140,8 +138,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         }
         // unsubscribe.
         try {
-            if(subscribeUrl != null && registry != null && registry.isAvailable()) {
-                registry.unsubscribe(subscribeUrl, this);
+            if(getConsumerUrl() != null && registry != null && registry.isAvailable()) {
+                registry.unsubscribe(getConsumerUrl(), this);
             }
         } catch (Throwable t) {
             logger.warn("unexpeced error when unsubscribe service " + serviceKey + "from registry" + registry.getUrl(), t);
@@ -455,7 +453,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         if (routers != null) {
             for (Router router : routers) {
                 if (router.getUrl() != null && ! router.getUrl().getParameter(Constants.RUNTIME_KEY, true)) {
-                    invokers = router.route(invokers, getUrl(), invocation);
+                    invokers = router.route(invokers, getConsumerUrl(), invocation);
                 }
             }
         }

@@ -44,8 +44,10 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     private final URL url ;
     
     private volatile boolean destroyed = false;
+    
+    private volatile URL consumerUrl;
 
-    private volatile List<Router> routers;
+	private volatile List<Router> routers;
     
     public AbstractDirectory(URL url) {
         this(url, null);
@@ -68,7 +70,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             for (Router router: localRouters){
                 try {
                     if (router.getUrl() == null || router.getUrl().getParameter(Constants.RUNTIME_KEY, true)) {
-                        invokers = router.route(invokers, getUrl(), invocation);
+                        invokers = router.route(invokers, getConsumerUrl(), invocation);
                     }
                 } catch (Throwable t) {
                     logger.error("Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(), t);
@@ -85,7 +87,15 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     public List<Router> getRouters(){
         return routers;
     }
-    
+
+    public URL getConsumerUrl() {
+		return consumerUrl;
+	}
+
+	public void setConsumerUrl(URL consumerUrl) {
+		this.consumerUrl = consumerUrl;
+	}
+
     protected void setRouters(List<Router> routers){
         // copy list
         routers = routers == null ? new  ArrayList<Router>() : new ArrayList<Router>(routers);
