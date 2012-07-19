@@ -167,7 +167,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     	// 获取消费者全局配置
     	checkDefault();
         appendProperties(this);
-        if (! isGeneric() && getConsumer() != null) {
+        if (getGeneric() == null && getConsumer() != null) {
             setGeneric(getConsumer().getGeneric());
         }
         if (isGeneric()) {
