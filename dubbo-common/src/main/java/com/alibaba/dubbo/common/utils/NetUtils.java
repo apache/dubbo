@@ -109,12 +109,12 @@ public class NetUtils {
     	return ADDRESS_PATTERN.matcher(address).matches();
     }
 
-    private static final Pattern LOCAL_IP_PATTERN = Pattern.compile("127(\\.\\d{1,3}){3}$");
-    
     public static boolean isLocalHost(String host) {
-        return host != null 
-                && (LOCAL_IP_PATTERN.matcher(host).matches() 
-                        || host.equalsIgnoreCase("localhost"));
+        return host != null
+        		&& host.length() > 0
+                && (host.equalsIgnoreCase("localhost")
+                        || host.equals("0.0.0.0")
+                        || host.startsWith("127."));
     }
 
     public static boolean isAnyHost(String host) {
@@ -126,7 +126,7 @@ public class NetUtils {
         			|| host.length() == 0
                     || host.equalsIgnoreCase("localhost")
                     || host.equals("0.0.0.0")
-                    || (LOCAL_IP_PATTERN.matcher(host).matches());
+                    || host.startsWith("127.");
     }
     
     public static boolean isValidLocalHost(String host) {
