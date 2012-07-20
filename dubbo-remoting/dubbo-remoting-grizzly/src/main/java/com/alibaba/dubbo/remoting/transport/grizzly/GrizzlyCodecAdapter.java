@@ -31,6 +31,7 @@ import com.alibaba.dubbo.common.io.UnsafeByteArrayOutputStream;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.Codec;
+import com.alibaba.dubbo.remoting.exchange.Request;
 import com.alibaba.dubbo.remoting.exchange.Response;
 
 /**
@@ -73,10 +74,13 @@ public class GrizzlyCodecAdapter extends BaseFilter {
         try {
             UnsafeByteArrayOutputStream output = new UnsafeByteArrayOutputStream(1024); // 不需要关闭
             
-            if(!(context.getMessage() instanceof Response)){
-                downstreamCodec.encode(channel, output, context.getMessage());
+            Object msg = context.getMessage();
+            if(! (msg instanceof Response)
+            		&& ! (msg instanceof Request 
+            				&& ((Request)msg).isHeartbeat())) {
+                downstreamCodec.encode(channel, output, msg);
             }else{
-                upstreamCodec.encode(channel, output, context.getMessage());
+                upstreamCodec.encode(channel, output, msg);
             }
             
             GrizzlyChannel.removeChannelIfDisconnectd(connection);

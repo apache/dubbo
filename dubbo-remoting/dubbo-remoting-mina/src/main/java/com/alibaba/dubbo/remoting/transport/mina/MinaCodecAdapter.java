@@ -33,6 +33,7 @@ import com.alibaba.dubbo.common.io.UnsafeByteArrayOutputStream;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.Codec;
+import com.alibaba.dubbo.remoting.exchange.Request;
 import com.alibaba.dubbo.remoting.exchange.Response;
 
 /**
@@ -90,7 +91,9 @@ final class MinaCodecAdapter implements ProtocolCodecFactory {
             UnsafeByteArrayOutputStream os = new UnsafeByteArrayOutputStream(1024); // 不需要关闭
             MinaChannel channel = MinaChannel.getOrAddChannel(session, url, handler);
             try {
-                if(!(msg instanceof Response)){
+            	if(! (msg instanceof Response)
+                		&& ! (msg instanceof Request 
+                				&& ((Request)msg).isHeartbeat())) {
                     downstreamCodec.encode(channel, os, msg);
                 }else{
                     upstreamCodec.encode(channel, os, msg);
