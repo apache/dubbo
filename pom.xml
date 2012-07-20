@@ -51,6 +51,9 @@
 		<module>dubbo-monitor</module>
 		<module>dubbo-config</module>
 		<module>dubbo</module>
+                <module>dubbo-simple</module>
+                <module>dubbo-admin</module>
+                <module>dubbo-demo</module>
 	</modules>
 	<profiles>
 		<profile>
@@ -61,9 +64,6 @@
 				</file>
 			</activation>
 			<modules>
-				<module>dubbo-simple</module>
-				<module>dubbo-admin</module>
-				<module>dubbo-demo</module>
 				<module>dubbo-test</module>
 			</modules>
 		</profile>
