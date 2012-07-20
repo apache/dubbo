@@ -100,7 +100,6 @@ public class Request {
         return mEvent && HEARTBEAT_EVENT == mData;
     }
 
-    @Deprecated
     public void setHeartbeat(boolean isHeartbeat) {
         if (isHeartbeat) {
             setEvent(HEARTBEAT_EVENT);
