@@ -35,6 +35,7 @@ import com.alibaba.dubbo.common.io.Bytes;
 import com.alibaba.dubbo.common.io.UnsafeByteArrayInputStream;
 import com.alibaba.dubbo.common.io.UnsafeByteArrayOutputStream;
 import com.alibaba.dubbo.remoting.Codec;
+import com.alibaba.dubbo.remoting.exchange.Request;
 import com.alibaba.dubbo.remoting.exchange.Response;
 
 /**
@@ -88,12 +89,13 @@ final class NettyCodecAdapter {
             UnsafeByteArrayOutputStream os = new UnsafeByteArrayOutputStream(1024); // 不需要关闭
             NettyChannel channel = NettyChannel.getOrAddChannel(ch, url, handler);
             try {
-                if(!(msg instanceof Response)){
+            	if(! (msg instanceof Response)
+                		&& ! (msg instanceof Request 
+                				&& ((Request)msg).isHeartbeat())) {
                     downstreamCodec.encode(channel, os, msg);
-                }else {
+                } else {
                     upstreamCodec.encode(channel, os, msg);
                 }
-                
             } finally {
                 NettyChannel.removeChannelIfDisconnected(ch);
             }
