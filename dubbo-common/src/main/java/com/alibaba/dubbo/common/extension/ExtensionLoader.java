@@ -136,10 +136,10 @@ public class ExtensionLoader<T> {
      *     getActivateExtension(url, key, null);
      * </pre>
      *
-     * @see #getActivateExtension(com.alibaba.dubbo.common.URL, String, String)
      * @param url url
      * @param key url parameter key which used to get extension point names
      * @return extension list which are activated.
+     * @see #getActivateExtension(com.alibaba.dubbo.common.URL, String, String)
      */
     public List<T> getActivateExtension(URL url, String key) {
         return getActivateExtension(url, key, null);
