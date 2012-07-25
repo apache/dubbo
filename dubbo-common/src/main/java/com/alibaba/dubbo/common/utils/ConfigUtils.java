@@ -197,14 +197,15 @@ public class ConfigUtils {
 	 * Load properties file to {@link Properties} from class path.
 	 * 
 	 * @param fileName properties file name. for example: <code>dubbo.properties</code>, <code>METE-INF/conf/foo.properties</code>
-	 * @param allowMultiFile if <code>false</code>, throw {@link IllegalStateException} when found multi file on the class path. 
+	 * @param allowMultiFile if <code>false</code>, throw {@link IllegalStateException} when found multi file on the class path.
+     * @param optional is optional. if <code>false</code>, log warn when properties config file not found!s
 	 * @return loaded {@link Properties} content. <ul>
 	 * <li>return empty Properties if no file found.
 	 * <li>merge multi properties file if found multi file
 	 * </ul>
 	 * @throws IllegalStateException not allow multi-file, but multi-file exsit on class path.
 	 */
-    public static Properties loadProperties(String fileName, boolean allowMultiFile, boolean allowEmptyFile) {
+    public static Properties loadProperties(String fileName, boolean allowMultiFile, boolean optional) {
         Properties properties = new Properties();
         if (fileName.startsWith("/")) {
             try {
@@ -232,7 +233,7 @@ public class ConfigUtils {
         }
         
         if(list.size() == 0) {
-            if (allowEmptyFile) {
+            if (! optional) {
                 logger.warn("No " + fileName + " found on the class path.");
             }
             return properties;
@@ -245,6 +246,8 @@ public class ConfigUtils {
                 logger.warn(errMsg);
                 // throw new IllegalStateException(errMsg); // see http://code.alibabatech.com/jira/browse/DUBBO-133
             }
+
+            // fall back to use method getResourceAsStream
             try {
                 properties.load(ClassHelper.getClassLoader().getResourceAsStream(fileName));
             } catch (Throwable e) {

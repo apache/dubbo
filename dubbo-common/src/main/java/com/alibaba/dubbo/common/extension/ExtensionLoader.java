@@ -39,7 +39,7 @@ import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
 import com.alibaba.dubbo.common.utils.ConfigUtils;
-import com.alibaba.dubbo.common.utils.Reference;
+import com.alibaba.dubbo.common.utils.Holder;
 import com.alibaba.dubbo.common.utils.StringUtils;
 
 /**
@@ -78,15 +78,15 @@ public class ExtensionLoader<T> {
 
     private final ConcurrentMap<Class<?>, String> cachedNames = new ConcurrentHashMap<Class<?>, String>();
     
-    private final Reference<Map<String, Class<?>>> cachedClasses = new Reference<Map<String,Class<?>>>();
+    private final Holder<Map<String, Class<?>>> cachedClasses = new Holder<Map<String,Class<?>>>();
 
     private final Map<String, Activate> cachedActivates = new ConcurrentHashMap<String, Activate>();
     
-	private final ConcurrentMap<String, Reference<Object>> cachedInstances = new ConcurrentHashMap<String, Reference<Object>>();
+	private final ConcurrentMap<String, Holder<Object>> cachedInstances = new ConcurrentHashMap<String, Holder<Object>>();
 	
     private volatile Class<?> cachedAdaptiveClass = null;
     
-	private final Reference<Object> cachedAdaptiveInstance = new Reference<Object>();
+	private final Holder<Object> cachedAdaptiveInstance = new Holder<Object>();
 	private volatile Throwable createAdaptiveInstanceError;
 	
     private Set<Class<?>> cachedWrapperClasses;
@@ -261,12 +261,12 @@ public class ExtensionLoader<T> {
     public T getLoadedExtension(String name) {
         if (name == null || name.length() == 0)
             throw new IllegalArgumentException("Extension name == null");
-        Reference<Object> reference = cachedInstances.get(name);
-        if (reference == null) {
-            cachedInstances.putIfAbsent(name, new Reference<Object>());
-            reference = cachedInstances.get(name);
+        Holder<Object> holder = cachedInstances.get(name);
+        if (holder == null) {
+            cachedInstances.putIfAbsent(name, new Holder<Object>());
+            holder = cachedInstances.get(name);
         }
-        return (T) reference.get();
+        return (T) holder.get();
     }
     
 	@SuppressWarnings("unchecked")
@@ -276,18 +276,18 @@ public class ExtensionLoader<T> {
 		if ("true".equals(name)) {
 		    return getDefaultExtension();
 		}
-		Reference<Object> reference = cachedInstances.get(name);
-		if (reference == null) {
-		    cachedInstances.putIfAbsent(name, new Reference<Object>());
-		    reference = cachedInstances.get(name);
+		Holder<Object> holder = cachedInstances.get(name);
+		if (holder == null) {
+		    cachedInstances.putIfAbsent(name, new Holder<Object>());
+		    holder = cachedInstances.get(name);
 		}
-		Object instance = reference.get();
+		Object instance = holder.get();
 		if (instance == null) {
-		    synchronized (reference) {
-	            instance = reference.get();
+		    synchronized (holder) {
+	            instance = holder.get();
 	            if (instance == null) {
 	                instance = createExtension(name);
-	                reference.set(instance);
+	                holder.set(instance);
 	            }
 	        }
 		}
