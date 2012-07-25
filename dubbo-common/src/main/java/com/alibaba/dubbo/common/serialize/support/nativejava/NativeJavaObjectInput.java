@@ -22,6 +22,7 @@ import java.io.ObjectInputStream;
 import java.lang.reflect.Type;
 
 import com.alibaba.dubbo.common.serialize.ObjectInput;
+import com.alibaba.dubbo.common.utils.Assert;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
@@ -31,7 +32,16 @@ public class NativeJavaObjectInput implements ObjectInput {
     private final ObjectInputStream inputStream;
 
     public NativeJavaObjectInput(InputStream is) throws IOException {
-        inputStream = new ObjectInputStream(is);
+        this(new ObjectInputStream(is));
+    }
+
+    protected NativeJavaObjectInput(ObjectInputStream is) {
+        Assert.notNull(is, "input == null");
+        inputStream = is;
+    }
+
+    protected ObjectInputStream getObjectInputStream() {
+        return inputStream;
     }
 
     public Object readObject() throws IOException, ClassNotFoundException {

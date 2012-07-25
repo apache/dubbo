@@ -21,6 +21,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 
 import com.alibaba.dubbo.common.serialize.ObjectOutput;
+import com.alibaba.dubbo.common.utils.Assert;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
@@ -30,7 +31,16 @@ public class NativeJavaObjectOutput implements ObjectOutput {
     private final ObjectOutputStream outputStream;
 
     public NativeJavaObjectOutput(OutputStream os) throws IOException {
-        outputStream = new ObjectOutputStream(os);
+        this(new ObjectOutputStream(os));
+    }
+
+    protected NativeJavaObjectOutput(ObjectOutputStream out) {
+        Assert.notNull(out, "output == null");
+        this.outputStream = out;
+    }
+
+    protected ObjectOutputStream getObjectOutputStream() {
+        return outputStream;
     }
 
     public void writeObject(Object obj) throws IOException {
@@ -70,12 +80,20 @@ public class NativeJavaObjectOutput implements ObjectOutput {
     }
 
     public void writeBytes(byte[] v) throws IOException {
-        writeBytes(v, 0, v.length);
+        if (v == null) {
+            outputStream.writeInt(-1);
+        } else {
+            writeBytes(v, 0, v.length);
+        }
     }
 
     public void writeBytes(byte[] v, int off, int len) throws IOException {
-        outputStream.writeInt(len);
-        outputStream.write(v, off, len);
+        if (v == null) {
+            outputStream.writeInt(-1);
+        } else {
+            outputStream.writeInt(len);
+            outputStream.write(v, off, len);
+        }
     }
 
     public void flushBuffer() throws IOException {

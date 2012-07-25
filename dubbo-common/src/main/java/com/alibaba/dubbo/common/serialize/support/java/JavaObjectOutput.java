@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 
-import com.alibaba.dubbo.common.serialize.ObjectOutput;
+import com.alibaba.dubbo.common.serialize.support.nativejava.NativeJavaObjectOutput;
 
 /**
  * Java Object output.
@@ -27,79 +27,28 @@ import com.alibaba.dubbo.common.serialize.ObjectOutput;
  * @author qian.lei
  */
 
-public class JavaObjectOutput implements ObjectOutput
+public class JavaObjectOutput extends NativeJavaObjectOutput
 {
-	private final ObjectOutputStream mOut;
-
 	public JavaObjectOutput(OutputStream os) throws IOException
 	{
-		mOut = new ObjectOutputStream(os);
+		super(new ObjectOutputStream(os));
 	}
 
 	public JavaObjectOutput(OutputStream os, boolean compact) throws IOException
 	{
-		mOut = compact ? new CompactedObjectOutputStream(os) : new ObjectOutputStream(os);
-	}
-
-	public void writeBool(boolean v) throws IOException
-	{
-		mOut.writeBoolean(v);
-	}
-
-	public void writeByte(byte v) throws IOException
-	{
-		mOut.writeByte(v);
-	}
-
-	public void writeShort(short v) throws IOException
-	{
-		mOut.writeShort(v);
-	}
-
-	public void writeInt(int v) throws IOException
-	{
-		mOut.writeInt(v);
-	}
-
-	public void writeLong(long v) throws IOException
-	{
-		mOut.writeLong(v);
-	}
-
-	public void writeFloat(float v) throws IOException
-	{
-		mOut.writeFloat(v);
-	}
-
-	public void writeDouble(double v) throws IOException
-	{
-		mOut.writeDouble(v);
-	}
-
-	public void writeBytes(byte[] b) throws IOException
-	{
-		if( b == null )
-			mOut.writeInt(-1);
-		else
-			this.writeBytes(b, 0, b.length);
-	}
-
-	public void writeBytes(byte[] b, int off, int len) throws IOException
-	{
-		mOut.writeInt(len);
-		mOut.write(b, off, len);
+		super(compact ? new CompactedObjectOutputStream(os) : new ObjectOutputStream(os));
 	}
 
 	public void writeUTF(String v) throws IOException
 	{
 		if( v == null )
 		{
-			mOut.writeInt(-1);
+			getObjectOutputStream().writeInt(-1);
 		}
 		else
 		{
-			mOut.writeInt(v.length());
-			mOut.writeUTF(v);
+			getObjectOutputStream().writeInt(v.length());
+			getObjectOutputStream().writeUTF(v);
 		}
 	}
 
@@ -107,17 +56,17 @@ public class JavaObjectOutput implements ObjectOutput
 	{
 		if( obj == null )
 		{
-			mOut.writeByte(0);
+			getObjectOutputStream().writeByte(0);
 		}
 		else
 		{
-			mOut.writeByte(1);
-			mOut.writeObject(obj);
+			getObjectOutputStream().writeByte(1);
+			getObjectOutputStream().writeObject(obj);
 		}
 	}
 
 	public void flushBuffer() throws IOException
 	{
-		mOut.flush();
+		getObjectOutputStream().flush();
 	}
 }
