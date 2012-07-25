@@ -20,7 +20,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.lang.reflect.Type;
 
-import com.alibaba.dubbo.common.serialize.ObjectInput;
+import com.alibaba.dubbo.common.serialize.support.nativejava.NativeJavaObjectInput;
 
 /**
  * Java Object input.
@@ -28,60 +28,23 @@ import com.alibaba.dubbo.common.serialize.ObjectInput;
  * @author qian.lei
  */
 
-public class JavaObjectInput implements ObjectInput
+public class JavaObjectInput extends NativeJavaObjectInput
 {
 	public final static int MAX_BYTE_ARRAY_LENGTH = 8 * 1024 * 1024;
 
-	private final ObjectInputStream mIn;
-
 	public JavaObjectInput(InputStream is) throws IOException
 	{
-		mIn = new ObjectInputStream(is);
+		super(new ObjectInputStream(is));
 	}
 
 	public JavaObjectInput(InputStream is, boolean compacted) throws IOException
 	{
-		mIn = compacted ? new CompactedObjectInputStream(is) : new ObjectInputStream(is);
-	}
-
-	public boolean readBool() throws IOException
-	{
-		return mIn.readBoolean();
-	}
-
-	public byte readByte() throws IOException
-	{
-		return mIn.readByte();
-	}
-
-	public short readShort() throws IOException
-	{
-		return mIn.readShort();
-	}
-
-	public int readInt() throws IOException
-	{
-		return mIn.readInt();
-	}
-
-	public long readLong() throws IOException
-	{
-		return mIn.readLong();
-	}
-
-	public float readFloat() throws IOException
-	{
-		return mIn.readFloat();
-	}
-
-	public double readDouble() throws IOException
-	{
-		return mIn.readDouble();
+		super(compacted ? new CompactedObjectInputStream(is) : new ObjectInputStream(is));
 	}
 
 	public byte[] readBytes() throws IOException
 	{
-		int len = mIn.readInt();
+		int len = getObjectInputStream().readInt();
 		if( len < 0 )
 			return null;
 		if( len == 0 )
@@ -90,26 +53,26 @@ public class JavaObjectInput implements ObjectInput
 			throw new IOException("Byte array length too large. " + len);
 
 		byte[] b = new byte[len];
-		mIn.readFully(b);
+		getObjectInputStream().readFully(b);
 		return b;
 	}
 
 	public String readUTF() throws IOException
 	{
-		int len = mIn.readInt();
+		int len = getObjectInputStream().readInt();
 		if( len < 0 )
 			return null;
 
-		return mIn.readUTF();
+		return getObjectInputStream().readUTF();
 	}
 
 	public Object readObject() throws IOException, ClassNotFoundException
 	{
-		byte b = mIn.readByte();
+		byte b = getObjectInputStream().readByte();
 		if( b == 0 )
 			return null;
 
-		return mIn.readObject();
+		return getObjectInputStream().readObject();
 	}
 
 	@SuppressWarnings("unchecked")
