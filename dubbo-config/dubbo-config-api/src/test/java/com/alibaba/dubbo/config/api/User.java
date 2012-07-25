@@ -43,4 +43,24 @@ public class User implements Serializable {
         this.name = name;
     }
 
+    @Override
+    public int hashCode() {
+        return name == null ? -1 : name.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof User)) {
+            return false;
+        }
+        User other = (User) obj;
+        if (this == other) {
+            return true;
+        }
+        if (name != null && other.name != null) {
+            return name.equals(other.name);
+        }
+        return false;
+    }
+
 }
