@@ -32,5 +32,7 @@ public interface DemoService {
     void throwDemoException() throws DemoException;
     
     List<User> getUsers(List<User> users);
+
+    int echo(int i);
     
 }

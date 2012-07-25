@@ -69,7 +69,8 @@ public class GenericFilter implements Filter {
                             try {
                                 UnsafeByteArrayInputStream is = new UnsafeByteArrayInputStream((byte[])args[i]);
                                 args[i] = ExtensionLoader.getExtensionLoader(Serialization.class)
-                                    .getExtension(Constants.GENERIC_SERIALIZATION_JAVA).deserialize(null, is).readObject();
+                                    .getExtension(getSerializationExtension(Constants.GENERIC_SERIALIZATION_JAVA))
+                                    .deserialize(null, is).readObject();
                             } catch (Exception e) {
                                 throw new RpcException("Deserialize argument [" + (i + 1) + "] failed.", e);
                             }
@@ -93,7 +94,8 @@ public class GenericFilter implements Filter {
                     try {
                         UnsafeByteArrayOutputStream os = new UnsafeByteArrayOutputStream(512);
                         ExtensionLoader.getExtensionLoader(Serialization.class)
-                            .getExtension(Constants.GENERIC_SERIALIZATION_JAVA).serialize(null, os).writeObject(result.getValue());
+                            .getExtension(getSerializationExtension(Constants.GENERIC_SERIALIZATION_JAVA))
+                            .serialize(null, os).writeObject(result.getValue());
                         return new RpcResult(os.toByteArray());
                     } catch (IOException e) {
                         throw new RpcException("Serialize result failed.", e);
@@ -110,4 +112,7 @@ public class GenericFilter implements Filter {
         return invoker.invoke(inv);
     }
 
+    private String getSerializationExtension(String generic) {
+        return "nativejava";
+    }
 }
