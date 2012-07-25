@@ -48,5 +48,9 @@ public class DemoServiceImpl_LongWaiting implements DemoService {
     public List<User> getUsers(List<User> users) {
         return users;
     }
+
+    public int echo(int i) {
+        return i;
+    }
     
 }
