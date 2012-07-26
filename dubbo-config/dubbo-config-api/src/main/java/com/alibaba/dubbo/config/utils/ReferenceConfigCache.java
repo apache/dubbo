@@ -109,7 +109,8 @@ public class ReferenceConfigCache {
         this.generator = generator;
     }
 
-    public <T> T get(ReferenceConfig<T> referenceConfig) {
+    @SuppressWarnings("unchecked")
+	public <T> T get(ReferenceConfig<T> referenceConfig) {
         String key = generator.generateKey(referenceConfig);
 
         ReferenceConfig<?> config = cache.get(key);
