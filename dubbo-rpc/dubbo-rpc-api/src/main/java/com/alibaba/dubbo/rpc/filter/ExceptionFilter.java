@@ -57,7 +57,7 @@ public class ExceptionFilter implements Filter {
                 try {
                     Throwable exception = result.getException();
                     // 如果是checked异常，直接抛出
-                    if (! (exception instanceof RuntimeException)) {
+                    if (! (exception instanceof RuntimeException) && (exception instanceof Exception)) {
                         return result;
                     }
                     // 在方法签名上有声明，直接抛出
