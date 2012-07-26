@@ -84,8 +84,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private final List<Exporter<?>> exporters = new ArrayList<Exporter<?>>();
 
     private transient boolean exported;
-    
-    private transient boolean unexported;
+
+	private transient boolean unexported;
     
     private transient boolean generic;
 
@@ -103,6 +103,14 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     public List<URL> toUrls() {
         return urls;
     }
+    
+    public boolean isExported() {
+		return exported;
+	}
+
+	public boolean isUnexported() {
+		return unexported;
+	}
 
     public synchronized void export() {
         if (provider != null) {
