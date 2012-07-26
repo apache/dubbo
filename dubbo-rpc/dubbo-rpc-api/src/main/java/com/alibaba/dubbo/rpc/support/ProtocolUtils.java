@@ -36,7 +36,7 @@ public class ProtocolUtils {
         return generic != null
             && !"".equals(generic)
             && (Constants.GENERIC_SERIALIZATION_DEFAULT.equalsIgnoreCase(generic)  /* 正常的泛化调用 */
-            || Constants.GENERIC_SERIALIZATION_JAVA.equalsIgnoreCase(generic)); /* 支持java序列化的流式泛化调用 */
+            || Constants.GENERIC_SERIALIZATION_NATIVE_JAVA.equalsIgnoreCase(generic)); /* 支持java序列化的流式泛化调用 */
     }
 
     public static boolean isDefaultGenericSerialization(String generic) {
@@ -46,6 +46,6 @@ public class ProtocolUtils {
 
     public static boolean isJavaGenericSerialization(String generic) {
         return isGeneric(generic)
-            && Constants.GENERIC_SERIALIZATION_JAVA.equalsIgnoreCase(generic);
+            && Constants.GENERIC_SERIALIZATION_NATIVE_JAVA.equalsIgnoreCase(generic);
     }
 }

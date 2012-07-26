@@ -69,7 +69,7 @@ public class GenericFilter implements Filter {
                             try {
                                 UnsafeByteArrayInputStream is = new UnsafeByteArrayInputStream((byte[])args[i]);
                                 args[i] = ExtensionLoader.getExtensionLoader(Serialization.class)
-                                    .getExtension(getSerializationExtension(Constants.GENERIC_SERIALIZATION_JAVA))
+                                    .getExtension(Constants.GENERIC_SERIALIZATION_NATIVE_JAVA)
                                     .deserialize(null, is).readObject();
                             } catch (Exception e) {
                                 throw new RpcException("Deserialize argument [" + (i + 1) + "] failed.", e);
@@ -77,7 +77,7 @@ public class GenericFilter implements Filter {
                         } else {
                             throw new RpcException(
                                 new StringBuilder(32).append("Generic serialization [")
-                                    .append(Constants.GENERIC_SERIALIZATION_JAVA)
+                                    .append(Constants.GENERIC_SERIALIZATION_NATIVE_JAVA)
                                     .append("] only support message type ")
                                     .append(byte[].class)
                                     .append(" and your message type is ")
@@ -94,7 +94,7 @@ public class GenericFilter implements Filter {
                     try {
                         UnsafeByteArrayOutputStream os = new UnsafeByteArrayOutputStream(512);
                         ExtensionLoader.getExtensionLoader(Serialization.class)
-                            .getExtension(getSerializationExtension(Constants.GENERIC_SERIALIZATION_JAVA))
+                            .getExtension(Constants.GENERIC_SERIALIZATION_NATIVE_JAVA)
                             .serialize(null, os).writeObject(result.getValue());
                         return new RpcResult(os.toByteArray());
                     } catch (IOException e) {
@@ -112,7 +112,4 @@ public class GenericFilter implements Filter {
         return invoker.invoke(inv);
     }
 
-    private String getSerializationExtension(String generic) {
-        return "nativejava";
-    }
 }
