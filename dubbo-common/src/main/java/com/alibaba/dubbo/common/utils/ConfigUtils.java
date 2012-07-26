@@ -232,7 +232,7 @@ public class ConfigUtils {
         }
         
         if(list.size() == 0) {
-            if (allowEmptyFile) {
+            if (! allowEmptyFile) {
                 logger.warn("No " + fileName + " found on the class path.");
             }
             return properties;
