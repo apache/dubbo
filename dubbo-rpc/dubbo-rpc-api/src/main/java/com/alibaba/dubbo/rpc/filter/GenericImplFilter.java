@@ -142,7 +142,7 @@ public class GenericImplFilter implements Filter {
         throw new RpcException(
             new StringBuilder(32)
                 .append("Generic serialization [")
-                .append(Constants.GENERIC_SERIALIZATION_JAVA)
+                .append(Constants.GENERIC_SERIALIZATION_NATIVE_JAVA)
                 .append("] only support message type ")
                 .append(byte[].class)
                 .append(" and your message type is ")

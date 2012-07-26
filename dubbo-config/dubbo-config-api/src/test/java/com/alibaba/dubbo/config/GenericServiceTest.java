@@ -143,7 +143,7 @@ public class GenericServiceTest {
             reference.setApplication(new ApplicationConfig("generic-consumer"));
             reference.setInterface(DemoService.class);
             reference.setUrl("dubbo://127.0.0.1:29581?scope=remote");
-            reference.setGeneric(Constants.GENERIC_SERIALIZATION_JAVA);
+            reference.setGeneric(Constants.GENERIC_SERIALIZATION_NATIVE_JAVA);
             GenericService genericService = reference.get();
             try {
                 String name = "kimi";
