@@ -37,9 +37,9 @@ public final class Version {
 
     private static final String VERSION = getVersion(Version.class, "2.0.0");
 
-    private static final boolean INTERNAL = hasResource("com/alibaba/dubbo/registry/support/remote/RemoteRegistry.class");
+    private static final boolean INTERNAL = hasResource("com/alibaba/dubbo/registry/internal/RemoteRegistry.class");
 
-    private static final boolean COMPATIBLE = hasResource("com/alibaba/dubbo/rpc/dubbo/internal/DubboRequest.class");
+    private static final boolean COMPATIBLE = hasResource("com/taobao/remoting/impl/ConnectionRequest.class");
 
     static {
         // 检查是否存在重复的jar包
