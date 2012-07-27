@@ -45,7 +45,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 /**
  * PojoUtils. Travel object deeply, and convert complex type to simple type.
  * <p>
- * Type below will be remained: 
+ * Simple type below will be remained:
  * <ul>
  * <li> Primitive Type, also include <b>String</b>, <b>Number</b>(Integer, Long), <b>Date</b>
  * <li> Array of Primitive Type
