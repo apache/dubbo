@@ -118,6 +118,7 @@ public class ExtensionLoaderTest {
     public void test_getExtension_ExceptionNoExtension() throws Exception {
         try {
             ExtensionLoader.getExtensionLoader(Ext1.class).getExtension("XXX");
+            fail();
         } catch (IllegalStateException expected) {
             assertThat(expected.getMessage(), containsString("No such extension com.alibaba.dubbo.common.extensionloader.ext1.Ext1 by name XXX"));
         }
@@ -127,6 +128,7 @@ public class ExtensionLoaderTest {
     public void test_getExtension_ExceptionNoExtension_NameOnWrapperNoAffact() throws Exception {
         try {
             ExtensionLoader.getExtensionLoader(Ext5NoAdaptiveMethod.class).getExtension("XXX");
+            fail();
         } catch (IllegalStateException expected) {
             assertThat(expected.getMessage(), containsString("No such extension com.alibaba.dubbo.common.extensionloader.ext5.Ext5NoAdaptiveMethod by name XXX"));
         }
@@ -136,6 +138,7 @@ public class ExtensionLoaderTest {
     public void test_getExtension_ExceptionNullArg() throws Exception {
         try {
             ExtensionLoader.getExtensionLoader(Ext1.class).getExtension(null);
+            fail();
         } catch (IllegalArgumentException expected) {
             assertThat(expected.getMessage(), containsString("Extension name == null"));
         }
