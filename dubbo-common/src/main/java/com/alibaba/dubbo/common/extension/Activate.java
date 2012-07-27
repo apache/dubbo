@@ -22,21 +22,34 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Activate.
- * 用于给{@link com.alibaba.dubbo.common.extension.ExtensionLoader}的{@link ExtensionLoader#getActivateExtension}
- * 方法提供信息，决定此方法是否把扩展返回。
+ * Activate
+ * <p />
+ * 对于可以被框架中自动激活加载扩展，此Annotation用于配置扩展被自动激活加载条件。
+ * 比如，过滤扩展，有多个实现，使用Activate Annotation的扩展可以根据条件被自动加载。
+ * <ol>
+ * <li>{@link Activate#group()}生效的Group。具体的有哪些Group值由框架SPI给出。
+ * <li>{@link Activate#value()}在{@link com.alibaba.dubbo.common.URL}中Key集合中有，则生效。
+ * </ol>
+ *
+ * <p />
+ * 底层框架SPI提供者通过{@link com.alibaba.dubbo.common.extension.ExtensionLoader}的{@link ExtensionLoader#getActivateExtension}方法
+ * 获得条件的扩展。
  *
  * @author william.liangf
  * @author ding.lid
  * @export
+ * @see SPI
+ * @see ExtensionLoader
+ * @see ExtensionLoader#getActivateExtension(com.alibaba.dubbo.common.URL, String[], String)
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface Activate {
-
     /**
-     * Group过滤条件。包含{@link ExtensionLoader#getActivateExtension}的group参数给的值，则返回扩展。
+     * Group过滤条件。
+     * <br />
+     * 包含{@link ExtensionLoader#getActivateExtension}的group参数给的值，则返回扩展。
      * <br />
      * 如没有Group设置，则不过滤。
      */
@@ -53,10 +66,18 @@ public @interface Activate {
      */
     String[] value() default {};
 
+    /**
+     * 排序信息，可以不提供。
+     */
     String[] before() default {};
 
+    /**
+     * 排序信息，可以不提供。
+     */
     String[] after() default {};
 
+    /**
+     * 排序信息，可以不提供。
+     */
     int order() default 0;
-
 }
