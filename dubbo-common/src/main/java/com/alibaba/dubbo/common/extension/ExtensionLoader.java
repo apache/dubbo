@@ -54,15 +54,16 @@ import com.alibaba.dubbo.common.utils.StringUtils;
  * 
  * @author william.liangf
  * @author ding.lid
- * 
- * @see Adaptive
- * @see SPI
+ *
+ * @see com.alibaba.dubbo.common.extension.SPI
+ * @see com.alibaba.dubbo.common.extension.Adaptive
+ * @see com.alibaba.dubbo.common.extension.Activate
  */
 public class ExtensionLoader<T> {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(ExtensionLoader.class);
     
-	private static final String SERVICES_DIRECTORY = "META-INF/services/";
+    private static final String SERVICES_DIRECTORY = "META-INF/services/";
 
     private static final String DUBBO_DIRECTORY = "META-INF/dubbo/";
     
@@ -74,28 +75,30 @@ public class ExtensionLoader<T> {
 
     private static final ConcurrentMap<Class<?>, Object> EXTENSION_INSTANCES = new ConcurrentHashMap<Class<?>, Object>();
 
+    // ==============================
+
     private final Class<?> type;
+
+    private final ExtensionFactory objectFactory;
 
     private final ConcurrentMap<Class<?>, String> cachedNames = new ConcurrentHashMap<Class<?>, String>();
     
     private final Holder<Map<String, Class<?>>> cachedClasses = new Holder<Map<String,Class<?>>>();
 
     private final Map<String, Activate> cachedActivates = new ConcurrentHashMap<String, Activate>();
-    
-	private final ConcurrentMap<String, Holder<Object>> cachedInstances = new ConcurrentHashMap<String, Holder<Object>>();
-	
+
     private volatile Class<?> cachedAdaptiveClass = null;
-    
-	private final Holder<Object> cachedAdaptiveInstance = new Holder<Object>();
-	private volatile Throwable createAdaptiveInstanceError;
-	
+
+    private final ConcurrentMap<String, Holder<Object>> cachedInstances = new ConcurrentHashMap<String, Holder<Object>>();
+
+    private String cachedDefaultName;
+
+    private final Holder<Object> cachedAdaptiveInstance = new Holder<Object>();
+    private volatile Throwable createAdaptiveInstanceError;
+
     private Set<Class<?>> cachedWrapperClasses;
     
-    private String cachedDefaultName;
-    
     private Map<String, IllegalStateException> exceptions = new ConcurrentHashMap<String, IllegalStateException>();
-
-    private final ExtensionFactory objectFactory;
     
     private static <T> boolean withExtensionAnnotation(Class<T> type) {
         return type.isAnnotationPresent(SPI.class);
@@ -107,7 +110,7 @@ public class ExtensionLoader<T> {
             throw new IllegalArgumentException("Extension type == null");
         if(!withExtensionAnnotation(type)) {
             throw new IllegalArgumentException("Extension type(" + type + 
-            		") is not extension, because WITHOUT @" + SPI.class.getSimpleName() + " Annotation!");
+                    ") is not extension, because WITHOUT @" + SPI.class.getSimpleName() + " Annotation!");
         }
         
         ExtensionLoader<T> loader = (ExtensionLoader<T>) EXTENSION_LOADERS.get(type);
@@ -178,7 +181,7 @@ public class ExtensionLoader<T> {
     /**
      * Get activate extensions.
      *
-     * @see Activate
+     * @see com.alibaba.dubbo.common.extension.Activate
      * @param url url
      * @param values extension point names
      * @param group group
@@ -268,7 +271,13 @@ public class ExtensionLoader<T> {
         }
         return (T) holder.get();
     }
-    
+
+    /**
+     * 返回指定名字的扩展。如果指定名字的扩展不存在，则抛异常 {@link IllegalStateException}.
+     *
+     * @param name
+     * @return
+     */
 	@SuppressWarnings("unchecked")
 	public T getExtension(String name) {
 		if (name == null || name.length() == 0)
@@ -347,26 +356,19 @@ public class ExtensionLoader<T> {
                             cachedAdaptiveInstance.set(instance);
                         } catch (Throwable t) {
                             createAdaptiveInstanceError = t;
-                            rethrowAsRuntime(t, "fail to create adaptive instance: ");
+                            throw new IllegalStateException("fail to create adaptive instance: " + t.toString(), t);
                         }
                     }
                 }
             }
             else {
-                rethrowAsRuntime(createAdaptiveInstanceError, "fail to create adaptive instance: ");
+                throw new IllegalStateException("fail to create adaptive instance: " + createAdaptiveInstanceError.toString(), createAdaptiveInstanceError);
             }
         }
         
         return (T) instance;
     }
 
-    private static void rethrowAsRuntime(Throwable t, String message) {
-        if(t instanceof RuntimeException)
-            throw (RuntimeException)t;
-        else
-            throw new IllegalStateException(message + t.toString(), t);
-    }
-    
     private IllegalStateException findException(String name) {
         for (Map.Entry<String, IllegalStateException> entry : exceptions.entrySet()) {
             if (entry.getKey().toLowerCase().contains(name.toLowerCase())) {
@@ -463,7 +465,8 @@ public class ExtensionLoader<T> {
         }
         return classes;
 	}
-	
+
+    // 此方法已经getExtensionClasses方法同步过。
     private Map<String, Class<?>> loadExtensionClasses() {
         final SPI defaultAnnotation = type.getAnnotation(SPI.class);
         if(defaultAnnotation != null) {
