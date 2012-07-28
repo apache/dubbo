@@ -456,6 +456,11 @@
 				<xsd:documentation><![CDATA[ The protocol client type. ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
+		<xsd:attribute name="cluster" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ The registry cluster type. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
 		<xsd:attribute name="group" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[ The registry group. ]]></xsd:documentation>
