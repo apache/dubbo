@@ -69,8 +69,8 @@ final class HeartBeatTask implements Runnable {
                         req.setTwoWay( true );
                         req.setEvent( Request.HEARTBEAT_EVENT );
                         channel.send( req );
-                        if ( logger.isDebugEnabled() ) {
-                            logger.debug( "Send heartbeat to remote channel "
+                        if ( logger.isInfoEnabled() ) {
+                            logger.info( "Send heartbeat to remote channel "
                                                   + channel.getRemoteAddress() + "." );
                         }
                     }
