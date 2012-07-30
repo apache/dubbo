@@ -259,7 +259,14 @@ public class ExtensionLoader<T> {
         }
         return false;
     }
-    
+
+    /**
+     * 返回扩展点实例，如果没有指定的扩展点或是还没加载（即实例化）则返回<code>null</code>。注意：此方法不会触发扩展点的加载。
+     * <p />
+     * 一般应该调用{@link #getExtension(String)}方法获得扩展，这个方法会触发扩展点加载。
+     *
+     * @see #getExtension(String)
+     */
     @SuppressWarnings("unchecked")
     public T getLoadedExtension(String name) {
         if (name == null || name.length() == 0)
@@ -270,6 +277,17 @@ public class ExtensionLoader<T> {
             holder = cachedInstances.get(name);
         }
         return (T) holder.get();
+    }
+
+    /**
+     * 返回已经加载的扩展点的名字。
+     * <p />
+     * 一般应该调用{@link #getSupportedExtensions()}方法获得扩展，这个方法会返回所有的扩展点。
+     *
+     * @see #getSupportedExtensions()
+     */
+    public Set<String> getLoadedExtensions() {
+        return Collections.unmodifiableSet(new TreeSet<String>(cachedInstances.keySet()));
     }
 
     /**
@@ -329,10 +347,6 @@ public class ExtensionLoader<T> {
         Map<String, Class<?>> clazzes = getExtensionClasses();
         return Collections.unmodifiableSet(new TreeSet<String>(clazzes.keySet()));
     }
-
-    public Set<String> getLoadedExtensions() {
-        return Collections.unmodifiableSet(new TreeSet<String>(cachedInstances.keySet()));
-    }
     
 	/**
 	 * 返回缺省的扩展点名，如果没有设置缺省则返回<code>null</code>。 
@@ -341,7 +355,23 @@ public class ExtensionLoader<T> {
 	    getExtensionClasses();
 	    return cachedDefaultName;
 	}
-	
+
+    public void addExtension(String name, Class<?> clazz) {
+        if(cachedNames.containsKey(name)) {
+            throw new IllegalStateException("Extension name " +
+                   name + " already existed(Extension " + type + ")!");
+        }
+        if(!type.isAssignableFrom(clazz)) {
+            throw new IllegalStateException("Input type " +
+                    clazz + "not implement Extension " + type);
+        }
+        if(clazz.isInterface()) {
+            throw new IllegalStateException("Input type " +
+                    clazz + "can not be interface!");
+        }
+        cachedNames.put(clazz, name);
+        cachedClasses.get().put(name, clazz);
+    }
 
     @SuppressWarnings("unchecked")
     public T getAdaptiveExtension() {
@@ -365,7 +395,7 @@ public class ExtensionLoader<T> {
                 throw new IllegalStateException("fail to create adaptive instance: " + createAdaptiveInstanceError.toString(), createAdaptiveInstanceError);
             }
         }
-        
+
         return (T) instance;
     }
 
@@ -375,9 +405,15 @@ public class ExtensionLoader<T> {
                 return entry.getValue();
             }
         }
-        StringBuilder buf = new StringBuilder("No such extension " + type.getName() + " by name " + name + ", possible causes: ");
+        StringBuilder buf = new StringBuilder("No such extension " + type.getName() + " by name " + name);
+
+
         int i = 1;
         for (Map.Entry<String, IllegalStateException> entry : exceptions.entrySet()) {
+            if(i == 1) {
+                buf.append(", possible causes: ");
+            }
+
             buf.append("\r\n(");
             buf.append(i ++);
             buf.append(") ");

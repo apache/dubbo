@@ -37,6 +37,7 @@ import com.alibaba.dubbo.common.extensionloader.activate.impl.GroupActivateExtIm
 import com.alibaba.dubbo.common.extensionloader.activate.impl.OrderActivateExtImpl1;
 import com.alibaba.dubbo.common.extensionloader.activate.impl.OrderActivateExtImpl2;
 import com.alibaba.dubbo.common.extensionloader.activate.impl.ValueActivateExtImpl;
+import com.alibaba.dubbo.common.extensionloader.ext1.impl.Ext1Impl_ManualAdd;
 import junit.framework.Assert;
 
 import org.junit.Test;
@@ -125,7 +126,7 @@ public class ExtensionLoaderTest {
     }
     
     @Test
-    public void test_getExtension_ExceptionNoExtension_NameOnWrapperNoAffact() throws Exception {
+    public void test_getExtension_ExceptionNoExtension_WrapperNotAffactName() throws Exception {
         try {
             ExtensionLoader.getExtensionLoader(Ext5NoAdaptiveMethod.class).getExtension("XXX");
             fail();
@@ -183,7 +184,24 @@ public class ExtensionLoaderTest {
        
         }
     }
-    
+
+    @Test
+    public void test_AddExtension() throws Exception {
+        try {
+            ExtensionLoader.getExtensionLoader(Ext1.class).getExtension("Manual");
+            fail();
+        }
+        catch (IllegalStateException expected) {
+            assertThat(expected.getMessage(), containsString("No such extension com.alibaba.dubbo.common.extensionloader.ext1.Ext1 by name Manual"));
+        }
+
+        ExtensionLoader.getExtensionLoader(Ext1.class).addExtension("Manual", Ext1Impl_ManualAdd.class);
+        Ext1 ext = ExtensionLoader.getExtensionLoader(Ext1.class).getExtension("Manual");
+
+        assertThat(ext, instanceOf(Ext1Impl_ManualAdd.class));
+        assertEquals("Manual", ExtensionLoader.getExtensionLoader(Ext1.class).getExtensionName(Ext1Impl_ManualAdd.class));
+    }
+
     @Test
     public void test_getAdaptiveExtension_defaultExtension() throws Exception {
         Ext1 ext = ExtensionLoader.getExtensionLoader(Ext1.class).getAdaptiveExtension();
