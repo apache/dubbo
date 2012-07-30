@@ -47,7 +47,7 @@ public class JettyHttpServer extends AbstractHttpServer {
         threadPool.setMinThreads(threads);
 
         SelectChannelConnector connector = new SelectChannelConnector();
-        if (NetUtils.isValidLocalHost(url.getHost())) {
+        if (! url.isAnyHost() && NetUtils.isValidLocalHost(url.getHost())) {
             connector.setHost(url.getHost());
         }
         connector.setPort(url.getPort());
