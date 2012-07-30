@@ -92,7 +92,7 @@ final class HeartBeatTask implements Runnable {
                 }
             }
         } catch ( Throwable t ) {
-            logger.info( "Exception when heartbeat to remote channel(s): ", t );
+            logger.warn( "Unhandled exception when heartbeat, cause: " + t.getMessage(), t );
         }
     }
 
