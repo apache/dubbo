@@ -55,11 +55,20 @@ public abstract class AbstractCodec implements Codec {
     }
 
     protected boolean isClientSide(Channel channel) {
-        InetSocketAddress address = channel.getRemoteAddress();
-        URL url = channel.getUrl();
-        return url.getPort() == address.getPort() && 
-                    NetUtils.filterLocalHost(url.getIp())
-                    .equals(NetUtils.filterLocalHost(address.getAddress().getHostAddress()));
+    	String side = (String) channel.getAttribute(Constants.SIDE_KEY);
+    	if ("client".equals(side)) {
+    		return true;
+    	} else if ("server".equals(side)) {
+    		return false;
+    	} else {
+	        InetSocketAddress address = channel.getRemoteAddress();
+	        URL url = channel.getUrl();
+	        boolean client = url.getPort() == address.getPort() && 
+	                    NetUtils.filterLocalHost(url.getIp())
+	                    .equals(NetUtils.filterLocalHost(address.getAddress().getHostAddress()));
+	        channel.setAttribute(Constants.SIDE_KEY, client ? "client" : "server");
+	        return client;
+    	}
     }
     
     protected boolean isServerSide(Channel channel) {
