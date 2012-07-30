@@ -38,10 +38,10 @@ public class MultiThreadTest extends TestCase
     
 	public void testDubboMultiThreadInvoke() throws Exception
 	{
-	    Exporter<?> rpcExporter = protocol.export(proxy.getInvoker(new DemoServiceImpl(), DemoService.class, URL.valueOf("dubbo://127.0.0.1:20880/TestService")));
+	    Exporter<?> rpcExporter = protocol.export(proxy.getInvoker(new DemoServiceImpl(), DemoService.class, URL.valueOf("dubbo://127.0.0.1:20259/TestService")));
 		
 		final AtomicInteger counter = new AtomicInteger();
-		final DemoService service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:20880/TestService")));
+		final DemoService service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:20259/TestService")));
 		assertEquals(service.getSize(new String[]{"123", "456", "789"}), 3);
 
 		final StringBuffer sb = new StringBuffer();
