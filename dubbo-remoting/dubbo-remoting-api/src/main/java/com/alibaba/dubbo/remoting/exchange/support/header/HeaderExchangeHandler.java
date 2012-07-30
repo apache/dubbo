@@ -69,7 +69,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
                 if (logger.isInfoEnabled()) {
                 	int heartbeat = channel.getUrl().getParameter(Constants.HEARTBEAT_KEY, 0);
                 	logger.info("Received heartbeat from remote channel " + channel.getRemoteAddress() 
-                			+ ", because without request sent at long time" 
+                			+ ", cause: The channel has no data-transmission for quite a heartbeat period" 
                 			+ (heartbeat > 0 ? ": " + heartbeat + "ms." : "."));
             	}
             }

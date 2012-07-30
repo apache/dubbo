@@ -18,7 +18,6 @@ package com.alibaba.dubbo.remoting.exchange.support.header;
 
 import java.util.Collection;
 
-import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.remoting.Channel;
@@ -51,12 +50,6 @@ final class HeartBeatTask implements Runnable {
                 if (channel.isClosed()) {
                     continue;
                 }
-                if (! (channel instanceof Client)) {
-                	String dubbo = (String) channel.getAttribute(Constants.DUBBO_VERSION_KEY);
-                	if (dubbo != null && dubbo.startsWith("1.0.")) {
-                		continue;
-                	}
-                }
                 try {
                     Long lastRead = ( Long ) channel.getAttribute(
                             HeaderExchangeHandler.KEY_READ_TIMESTAMP );
@@ -71,7 +64,7 @@ final class HeartBeatTask implements Runnable {
                         channel.send( req );
                         if ( logger.isInfoEnabled() ) {
                             logger.info( "Send heartbeat to remote channel " + channel.getRemoteAddress() 
-                                                  + ", because without request sent at long time: " + heartbeat + "ms." );
+                                                  + ", cause: The channel has no data-transmission for quite a heartbeat period: " + heartbeat + "ms." );
                         }
                     }
                     if ( lastRead != null && now - lastRead > heartbeatTimeout ) {
