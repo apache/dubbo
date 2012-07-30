@@ -15,20 +15,16 @@
  */
 package com.alibaba.dubbo.common;
 
-import static org.hamcrest.CoreMatchers.anyOf;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
+
+import static org.hamcrest.CoreMatchers.*;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.alibaba.dubbo.common.utils.CollectionUtils;
@@ -541,23 +537,16 @@ public class URLTest {
     @Test
     public void test_Anyhost() throws Exception {
         URL url = URL.valueOf("dubbo://0.0.0.0:20880");
-        assertEquals("0.0.0.0", url.getHost());
-        assertTrue(url.isAnyHost());
+        assertEquals("true", url.getParameter("anyhost"));
     }
     
     @Test
     public void test_Localhost() throws Exception {
         URL url = URL.valueOf("dubbo://127.0.0.1:20880");
-        assertEquals("127.0.0.1", url.getHost());
-        assertTrue(url.isLocalHost());
-        
-        url = URL.valueOf("dubbo://127.0.1.1:20880");
-        assertEquals("127.0.1.1", url.getHost());
-        assertTrue(url.isLocalHost());
+        assertEquals("true", url.getParameter("localhost"));
         
         url = URL.valueOf("dubbo://localhost:20880");
-        assertEquals("localhost", url.getHost());
-        assertTrue(url.isLocalHost());
+        assertEquals("true", url.getParameter("localhost"));
     }
     
 }

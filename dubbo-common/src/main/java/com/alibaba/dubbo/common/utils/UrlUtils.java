@@ -87,10 +87,6 @@ public class UrlUtils {
             changed = true;
             password = defaultPassword;
         }
-        if (u.isAnyHost() || u.isLocalHost()) {
-            changed = true;
-            host = NetUtils.getLocalHost();
-        }
         if (port <= 0) {
             if (defaultPort > 0) {
                 changed = true;
@@ -152,8 +148,8 @@ public class UrlUtils {
                     Map<String, String> params = StringUtils.parseQueryString(serviceQuery);
                     String group = params.get("group");
                     String version = params.get("version");
-                    //params.remove("group");
-                    //params.remove("version");
+                    params.remove("group");
+                    params.remove("version");
                     String name = serviceName;
                     if (group != null && group.length() > 0) {
                         name = group + "/" + name;
@@ -184,8 +180,8 @@ public class UrlUtils {
                 Map<String, String> params = StringUtils.parseQueryString(serviceQuery);
                 String group = params.get("group");
                 String version = params.get("version");
-                //params.remove("group");
-                //params.remove("version");
+                params.remove("group");
+                params.remove("version");
                 String name = serviceName;
                 if (group != null && group.length() > 0) {
                     name = group + "/" + name;
@@ -303,14 +299,14 @@ public class UrlUtils {
     }
 
     //compatible for dubbo-2.0.0
-    public static List<String> revertForbid(List<String> forbid, Set<URL> subscribed) {
+    public static List<String> revertForbid(List<String> forbid, Set<String> subscribed) {
         if (forbid != null && forbid.size() > 0) {
             List<String> newForbid = new ArrayList<String>();
             for (String serviceName : forbid) {
-                if (! serviceName.contains(":") && ! serviceName.contains("/")) {
-                    for (URL url : subscribed) {
-                        if (serviceName.equals(url.getServiceInterface())) {
-                            newForbid.add(url.getServiceKey());
+                if (!serviceName.contains(":") && !serviceName.contains("/")) {
+                    for (String name : subscribed) {
+                        if (name.contains(serviceName)) {
+                            newForbid.add(name);
                             break;
                         }
                     }
@@ -323,99 +319,17 @@ public class UrlUtils {
         return forbid;
     }
 
-    public static URL getEmptyUrl(String service, String category) {
-        String group = null;
-        String version = null;
-        int i = service.indexOf('/');
-        if (i > 0) {
-            group = service.substring(0, i);
-            service = service.substring(i + 1);
-        }
-        i = service.lastIndexOf(':');
-        if (i > 0) {
-            version = service.substring(i + 1);
-            service = service.substring(0, i);
-        }
-        return URL.valueOf(Constants.EMPTY_PROTOCOL + "://0.0.0.0/" + service + "?" 
-                    + Constants.CATEGORY_KEY + "=" + category
-                    + (group == null ? "" : "&" + Constants.GROUP_KEY + "=" + group)
-                    + (version == null ? "" : "&" + Constants.VERSION_KEY + "=" + version));
-    }
-
-    public static boolean isMatchCategory(String category, String categories) {
-        if (categories == null || categories.length() == 0) {
-            return Constants.DEFAULT_CATEGORY.equals(category);
-        } else if (categories.contains(Constants.ANY_VALUE)) {
-            return true;
-        } else if (categories.contains(Constants.REMOVE_VALUE_PREFIX)) {
-            return ! categories.contains(Constants.REMOVE_VALUE_PREFIX + category);
-        } else {
-            return categories.contains(category);
-        }
-    }
-
     public static boolean isMatch(URL consumerUrl, URL providerUrl) {
         String consumerInterface = consumerUrl.getServiceInterface();
-        String providerInterface = providerUrl.getServiceInterface();
-        if( ! (Constants.ANY_VALUE.equals(consumerInterface) || StringUtils.isEquals(consumerInterface, providerInterface)) ) return false;
-        
-        if (! isMatchCategory(providerUrl.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY), 
-                consumerUrl.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY))) {
-            return false;
-        }
-        if (! providerUrl.getParameter(Constants.ENABLED_KEY, true) 
-                && ! Constants.ANY_VALUE.equals(consumerUrl.getParameter(Constants.ENABLED_KEY))) {
-            return false;
-        }
-       
         String consumerGroup = consumerUrl.getParameter(Constants.GROUP_KEY);
         String consumerVersion = consumerUrl.getParameter(Constants.VERSION_KEY);
-        String consumerClassifier = consumerUrl.getParameter(Constants.CLASSIFIER_KEY, Constants.ANY_VALUE);
-        
+        String providerInterface = providerUrl.getServiceInterface();
         String providerGroup = providerUrl.getParameter(Constants.GROUP_KEY);
         String providerVersion = providerUrl.getParameter(Constants.VERSION_KEY);
-        String providerClassifier = providerUrl.getParameter(Constants.CLASSIFIER_KEY, Constants.ANY_VALUE);
-        return (Constants.ANY_VALUE.equals(consumerGroup) || StringUtils.isEquals(consumerGroup, providerGroup) || StringUtils.isContains(consumerGroup, providerGroup))
+        return (Constants.ANY_VALUE.equals(consumerInterface) || StringUtils.isEquals(consumerInterface, providerInterface))
+               && (Constants.ANY_VALUE.equals(consumerGroup) || StringUtils.isEquals(consumerGroup, providerGroup) || StringUtils.isContains(consumerGroup, providerGroup))
                && (Constants.ANY_VALUE.equals(consumerVersion) || StringUtils.isEquals(consumerVersion, providerVersion))
-               && (Constants.ANY_VALUE.equals(consumerClassifier) || StringUtils.isEquals(consumerClassifier, providerClassifier));
+               && (! Constants.SUBSCRIBE_PROTOCOL.equals(providerUrl.getProtocol()) || consumerUrl.getParameter(Constants.ADMIN_KEY, false));
     }
-    
-    public static boolean isMatchGlobPattern(String pattern, String value, URL param) {
-        if (param != null && pattern.startsWith("$")) {
-            pattern = param.getRawParameter(pattern.substring(1));
-        }
-        return isMatchGlobPattern(pattern, value);
-    }
-    
-    public static boolean isMatchGlobPattern(String pattern, String value) {
-        if ("*".equals(pattern))
-            return true;
-        if((pattern == null || pattern.length() == 0) 
-                && (value == null || value.length() == 0)) 
-            return true;
-        if((pattern == null || pattern.length() == 0) 
-                || (value == null || value.length() == 0)) 
-            return false;
-        
-        int i = pattern.lastIndexOf('*');
-        // 没有找到星号
-        if(i == -1) {
-            return value.equals(pattern);
-        }
-        // 星号在末尾
-        else if (i == pattern.length() - 1) {
-            return value.startsWith(pattern.substring(0, i));
-        }
-        // 星号的开头
-        else if (i == 0) {
-            return value.endsWith(pattern.substring(i + 1));
-        }
-        // 星号的字符串的中间
-        else {
-            String prefix = pattern.substring(0, i);
-            String suffix = pattern.substring(i + 1);
-            return value.startsWith(prefix) && value.endsWith(suffix);
-        }
-    }
-    
+
 }

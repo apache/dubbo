@@ -126,18 +126,6 @@ public class CollectionUtilsTest {
     }
 
     @Test
-    public void test_joinList() throws Exception {
-        List<String> list = Arrays.asList();
-        assertEquals("", CollectionUtils.join(list, "/"));
-
-        list = Arrays.asList("x");
-        assertEquals("x", CollectionUtils.join(list, "-"));
-
-        list = Arrays.asList("a", "b");
-        assertEquals("a/b", CollectionUtils.join(list, "/"));
-    }
-    
-    @Test
     public void test_mapEquals() throws Exception {
         assertTrue(CollectionUtils.mapEquals(null, null));
         assertFalse(CollectionUtils.mapEquals(null, new HashMap<String, String>()));

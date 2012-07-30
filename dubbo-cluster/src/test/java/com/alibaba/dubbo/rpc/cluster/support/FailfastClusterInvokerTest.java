@@ -34,7 +34,6 @@ import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
-import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.cluster.Directory;
 
@@ -48,7 +47,7 @@ public class FailfastClusterInvokerTest {
     List<Invoker<FailfastClusterInvokerTest>> invokers = new ArrayList<Invoker<FailfastClusterInvokerTest>>();
     URL url = URL.valueOf("test://test:11/test");
     Invoker<FailfastClusterInvokerTest> invoker1 = EasyMock.createMock(Invoker.class);
-    RpcInvocation invocation = new RpcInvocation();
+    Invocation invocation;
     Directory<FailfastClusterInvokerTest> dic ;
     Result result = new RpcResult();
     /**
@@ -59,20 +58,21 @@ public class FailfastClusterInvokerTest {
     public void setUp() throws Exception {
         
         dic = EasyMock.createMock(Directory.class);
+        invocation = EasyMock.createMock(Invocation.class);
         
         EasyMock.expect(dic.getUrl()).andReturn(url).anyTimes();
         EasyMock.expect(dic.list(invocation)).andReturn(invokers).anyTimes();
         EasyMock.expect(dic.getInterface()).andReturn(FailfastClusterInvokerTest.class).anyTimes();
         
-        invocation.setMethodName("method1");
-        EasyMock.replay(dic);
+        EasyMock.expect(invocation.getMethodName()).andReturn("method1").anyTimes();
+        EasyMock.replay(dic,invocation);
         
         invokers.add(invoker1);
     }
 
     @After
     public void tearDown(){
-        EasyMock.verify(invoker1,dic);
+        EasyMock.verify(invoker1,dic,invocation);
         
     }
     private void resetInvoker1ToException(){
@@ -111,13 +111,14 @@ public class FailfastClusterInvokerTest {
     @Test()
     public void testNoInvoke() {
         dic = EasyMock.createMock(Directory.class);
+        invocation = EasyMock.createMock(Invocation.class);
         
         EasyMock.expect(dic.getUrl()).andReturn(url).anyTimes();
         EasyMock.expect(dic.list(invocation)).andReturn(null).anyTimes();
         EasyMock.expect(dic.getInterface()).andReturn(FailfastClusterInvokerTest.class).anyTimes();
         
-        invocation.setMethodName("method1");
-        EasyMock.replay(dic);
+        EasyMock.expect(invocation.getMethodName()).andReturn("method1").anyTimes();
+        EasyMock.replay(dic,invocation);
         
         invokers.add(invoker1);
         

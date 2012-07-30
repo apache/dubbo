@@ -28,6 +28,10 @@ public class Constants {
 
     public static final String  CONSUMER                           = "consumer";
 
+    public static final String  PROVIDERS                          = "providers";
+
+    public static final String  CONSUMERS                          = "consumers";
+
     public static final String  REGISTER                           = "register";
 
     public static final String  UNREGISTER                         = "unregister";
@@ -35,26 +39,10 @@ public class Constants {
     public static final String  SUBSCRIBE                          = "subscribe";
 
     public static final String  UNSUBSCRIBE                        = "unsubscribe";
-    
-    public static final String  CATEGORY_KEY                       = "category";
-
-    public static final String  PROVIDERS_CATEGORY                 = "providers";
-
-    public static final String  CONSUMERS_CATEGORY                 = "consumers";
-
-    public static final String  ROUTERS_CATEGORY                   = "routers";
-
-    public static final String  CONFIGURATORS_CATEGORY             = "configurators";
-
-    public static final String  DEFAULT_CATEGORY                   = PROVIDERS_CATEGORY;
-
-    public static final String  ENABLED_KEY                        = "enabled";
 
     public static final String  VALIDATION_KEY                     = "validation";
 
     public static final String  CACHE_KEY                          = "cache";
-
-    public static final String  DYNAMIC_KEY                        = "dynamic";
 
     public static final String  DUBBO_PROPERTIES_KEY               = "dubbo.properties.file";
 
@@ -157,12 +145,6 @@ public class Constants {
 
     public static final String  MONITOR_KEY                        = "monitor";
 
-    public static final String  SIDE_KEY                           = "side";
-
-    public static final String  PROVIDER_SIDE                      = "provider";
-
-    public static final String  CONSUMER_SIDE                      = "consumer";
-
     public static final String  DEFAULT_REGISTRY                   = "dubbo";
 
     public static final String  BACKUP_KEY                         = "backup";
@@ -173,11 +155,7 @@ public class Constants {
 
     public static final String  ANYHOST_KEY                        = "anyhost";
 
-    public static final String  ANYHOST_VALUE                      = "0.0.0.0";
-
-    public static final String  LOCALHOST_KEY                      = "localhost";
-
-    public static final String  LOCALHOST_VALUE                    = "127.0.0.1";
+    public static final String  ANYHOST                            = "0.0.0.0";
 
     public static final String  APPLICATION_KEY                    = "application";
 
@@ -266,8 +244,6 @@ public class Constants {
 
     public static final String  TOKEN_KEY                          = "token";
 
-    public static final String  METHOD_KEY                         = "method";
-
     public static final String  METHODS_KEY                        = "methods";
 
     public static final String  CHARSET_KEY                        = "charset";
@@ -290,8 +266,6 @@ public class Constants {
 
     public static final String  REGISTER_KEY                       = "register";
 
-    public static final String  SUBSCRIBE_KEY                      = "subscribe";
-
     public static final String  GROUP_KEY                          = "group";
 
     public static final String  PATH_KEY                           = "path";
@@ -304,7 +278,7 @@ public class Constants {
 
     public static final String  WAIT_KEY                           = "wait";
 
-    public static final String  CLASSIFIER_KEY                     = "classifier";
+    public static final String  ADMIN_KEY                          = "admin";
 
     public static final String  VERSION_KEY                        = "version";
 
@@ -355,31 +329,20 @@ public class Constants {
 
     public static final String  TRACE_PROTOCOL                     = "trace";
 
+    public static final String  SUBSCRIBE_PROTOCOL                 = "subscribe";
+
     public static final String  EMPTY_PROTOCOL                     = "empty";
 
-    public static final String  ADMIN_PROTOCOL                     = "admin";
-
-    public static final String  PROVIDER_PROTOCOL                  = "provider";
-
-    public static final String  CONSUMER_PROTOCOL                  = "consumer";
-
     public static final String  ROUTE_PROTOCOL                     = "route";
-
-    public static final String  SCRIPT_PROTOCOL                    = "script";
-
-    public static final String  CONDITION_PROTOCOL                 = "condition";
 
     public static final String  MOCK_PROTOCOL                      = "mock";
 
     public static final String  RETURN_PREFIX                      = "return ";
-
     public static final String  THROW_PREFIX                       = "throw";
 
     public static final String  FAIL_PREFIX                        = "fail:";
 
     public static final String  FORCE_PREFIX                       = "force:";
-
-    public static final String  FORCE_KEY                          = "force";
 
     public static final String  MERGER_KEY                         = "merger";
 
@@ -511,13 +474,9 @@ public class Constants {
 
     public static final String  OVERRIDE_PROTOCOL                  = "override";
 
-    public static final String  PRIORITY_KEY                       = "priority";
-    
     public static final String  RULE_KEY                           = "rule";
 
     public static final String  TYPE_KEY                           = "type";
-
-    public static final String  RUNTIME_KEY                        = "runtime";
 
     // when ROUTER_KEY's value is set to ROUTER_TYPE_CLEAR, RegistryDirectory will clean all current routers
     public static final String  ROUTER_TYPE_CLEAR                  = "clean";
@@ -533,26 +492,13 @@ public class Constants {
     //invocation attachment属性中如果有此值，则选择mock invoker
     public static final String  INVOCATION_NEED_MOCK               = "invocation.need.mock";
 
-    public static final String LOCAL_PROTOCOL                      = "injvm";
-
     public static final String AUTO_ATTACH_INVOCATIONID_KEY 	   = "invocationid.autoattach";
-    
-    public static final String SCOPE_KEY						   = "scope";
-    
-    public static final String SCOPE_LOCAL						   = "local";
-    
-    public static final String SCOPE_REMOTE						   = "remote";
-    
-    public static final String SCOPE_NONE						   = "none";
-    
-    public static final String RELIABLE_PROTOCOL				   = "napoli";
     /*
      * private Constants(){ }
      */
     
     public static class Attachments {
     	public static final String IS_ASYNC_KEY = 						"attachments.async";
-    	public static final String IS_ONEWAY_KEY = 						"attachments.oneway";
     	public static final String INVOCATIONID_KEY = 					"attachments.invocation.id";
     }
 

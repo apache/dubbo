@@ -129,7 +129,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         if (invokers.size() == 2 && selected != null && selected.size() > 0) {
             return selected.get(0) == invokers.get(0) ? invokers.get(1) : invokers.get(0);
         }
-        Invoker<T> invoker = loadbalance.select(invokers, getUrl(), invocation);
+        Invoker<T> invoker = loadbalance.select(invokers, invocation);
         
         //如果 selected中包含（优先判断） 或者 不可用&&availablecheck=true 则重试.
         if( (selected != null && selected.contains(invoker))
@@ -181,7 +181,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
                 }
             }
             if(reselectInvokers.size()>0){
-                return  loadbalance.select(reselectInvokers, getUrl(), invocation);
+                return  loadbalance.select(reselectInvokers, invocation);
             }
         }else{ //选全部非select
             for(Invoker<T> invoker : invokers){
@@ -190,7 +190,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
                 }
             }
             if(reselectInvokers.size()>0){
-                return  loadbalance.select(reselectInvokers, getUrl(), invocation);
+                return  loadbalance.select(reselectInvokers, invocation);
             }
         }
         //最后从select中选可用的. 
@@ -204,7 +204,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
                 }
             }
             if(reselectInvokers.size()>0){
-                return  loadbalance.select(reselectInvokers, getUrl(), invocation);
+                return  loadbalance.select(reselectInvokers, invocation);
             }
         }
         return null;
@@ -216,7 +216,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
         LoadBalance loadbalance;
         
-        List<Invoker<T>> invokers = list(invocation);
+        List<Invoker<T>> invokers = directory.list(invocation);
         if (invokers != null && invokers.size() > 0) {
             loadbalance = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(invokers.get(0).getUrl()
                     .getMethodParameter(invocation.getMethodName(),Constants.LOADBALANCE_KEY, Constants.DEFAULT_LOADBALANCE));
@@ -230,9 +230,9 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
     protected void checkWheatherDestoried() {
 
         if(destroyed){
-            throw new RpcException("Rpc cluster invoker for " + getInterface() + " on consumer " + NetUtils.getLocalHost()
+            throw new RpcException("Rpc invoker for " + getInterface() + " on consumer " + NetUtils.getLocalHost()
                     + " use dubbo version " + Version.getVersion()
-                    + " is now destroyed! Can not invoke any more.");
+                    + " is not destroyed! Can not invoke any more.");
         }
     }
 
@@ -255,9 +255,5 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
     protected abstract Result doInvoke(Invocation invocation, List<Invoker<T>> invokers,
                                        LoadBalance loadbalance) throws RpcException;
-    
-    protected  List<Invoker<T>> list(Invocation invocation) throws RpcException {
-    	List<Invoker<T>> invokers = directory.list(invocation);
-    	return invokers;
-    }
+
 }

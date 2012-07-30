@@ -29,10 +29,10 @@ import org.junit.Test;
 
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.LogUtil;
+import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcContext;
-import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.cluster.Directory;
 import com.alibaba.dubbo.rpc.cluster.filter.DemoService;
@@ -47,7 +47,7 @@ public class FailSafeClusterInvokerTest {
     List<Invoker<DemoService>> invokers = new ArrayList<Invoker<DemoService>>();
     URL url = URL.valueOf("test://test:11/test");
     Invoker<DemoService> invoker = EasyMock.createMock(Invoker.class);
-    RpcInvocation invocation = new RpcInvocation();
+    Invocation invocation;
     Directory<DemoService> dic ;
     Result result = new RpcResult();
     /**
@@ -58,19 +58,21 @@ public class FailSafeClusterInvokerTest {
     public void setUp() throws Exception {
         
         dic = EasyMock.createMock(Directory.class);
+        invocation = EasyMock.createMock(Invocation.class);
         
         EasyMock.expect(dic.getUrl()).andReturn(url).anyTimes();
         EasyMock.expect(dic.list(invocation)).andReturn(invokers).anyTimes();
         EasyMock.expect(dic.getInterface()).andReturn(DemoService.class).anyTimes();
-        invocation.setMethodName("method1");
-        EasyMock.replay(dic);
+        
+        EasyMock.expect(invocation.getMethodName()).andReturn("method1").anyTimes();
+        EasyMock.replay(dic,invocation);
         
         invokers.add(invoker);
     }
 
     @After
     public void tearDown(){
-        EasyMock.verify(invoker,dic);
+        EasyMock.verify(invoker,dic,invocation);
         
     }
     private void resetInvokerToException(){
@@ -110,13 +112,14 @@ public class FailSafeClusterInvokerTest {
     @Test()
     public void testNoInvoke() {
         dic = EasyMock.createMock(Directory.class);
+        invocation = EasyMock.createMock(Invocation.class);
         
         EasyMock.expect(dic.getUrl()).andReturn(url).anyTimes();
         EasyMock.expect(dic.list(invocation)).andReturn(null).anyTimes();
         EasyMock.expect(dic.getInterface()).andReturn(DemoService.class).anyTimes();
         
-        invocation.setMethodName("method1");
-        EasyMock.replay(dic);
+        EasyMock.expect(invocation.getMethodName()).andReturn("method1").anyTimes();
+        EasyMock.replay(dic,invocation);
         
         resetInvokerToNoException();
         

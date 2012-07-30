@@ -241,18 +241,6 @@ public class ExtensionLoader<T> {
         return false;
     }
     
-    @SuppressWarnings("unchecked")
-    public T getLoadedExtension(String name) {
-        if (name == null || name.length() == 0)
-            throw new IllegalArgumentException("Extension name == null");
-        Reference<Object> reference = cachedInstances.get(name);
-        if (reference == null) {
-            cachedInstances.putIfAbsent(name, new Reference<Object>());
-            reference = cachedInstances.get(name);
-        }
-        return (T) reference.get();
-    }
-    
 	@SuppressWarnings("unchecked")
 	public T getExtension(String name) {
 		if (name == null || name.length() == 0)
@@ -497,59 +485,57 @@ public class ExtensionLoader<T> {
                                             name = line.substring(0, i).trim();
                                             line = line.substring(i + 1).trim();
                                         }
-                                        if (line.length() > 0) {
-                                            Class<?> clazz = Class.forName(line, true, classLoader);
-                                            if (! type.isAssignableFrom(clazz)) {
-                                                throw new IllegalStateException("Error when load extension class(interface: " +
-                                                        type + ", class line: " + clazz.getName() + "), class " 
-                                                        + clazz.getName() + "is not subtype of interface.");
+                                        Class<?> clazz = Class.forName(line, true, classLoader);
+                                        if (! type.isAssignableFrom(clazz)) {
+                                            throw new IllegalStateException("Error when load extension class(interface: " +
+                                                    type + ", class line: " + clazz.getName() + "), class " 
+                                                    + clazz.getName() + "is not subtype of interface.");
+                                        }
+                                        if (clazz.isAnnotationPresent(Adaptive.class)) {
+                                            if(cachedAdaptiveClass == null) {
+                                                cachedAdaptiveClass = clazz;
+                                            } else if (! cachedAdaptiveClass.equals(clazz)) {
+                                                throw new IllegalStateException("More than 1 adaptive class found: "
+                                                        + cachedAdaptiveClass.getClass().getName()
+                                                        + ", " + clazz.getClass().getName());
                                             }
-                                            if (clazz.isAnnotationPresent(Adaptive.class)) {
-                                                if(cachedAdaptiveClass == null) {
-                                                    cachedAdaptiveClass = clazz;
-                                                } else if (! cachedAdaptiveClass.equals(clazz)) {
-                                                    throw new IllegalStateException("More than 1 adaptive class found: "
-                                                            + cachedAdaptiveClass.getClass().getName()
-                                                            + ", " + clazz.getClass().getName());
+                                        } else {
+                                            try {
+                                                clazz.getConstructor(type);
+                                                Set<Class<?>> wrappers = cachedWrapperClasses;
+                                                if (wrappers == null) {
+                                                    cachedWrapperClasses = new ConcurrentHashSet<Class<?>>();
+                                                    wrappers = cachedWrapperClasses;
                                                 }
-                                            } else {
-                                                try {
-                                                    clazz.getConstructor(type);
-                                                    Set<Class<?>> wrappers = cachedWrapperClasses;
-                                                    if (wrappers == null) {
-                                                        cachedWrapperClasses = new ConcurrentHashSet<Class<?>>();
-                                                        wrappers = cachedWrapperClasses;
-                                                    }
-                                                    wrappers.add(clazz);
-                                                } catch (NoSuchMethodException e) {
-                                                    clazz.getConstructor();
+                                                wrappers.add(clazz);
+                                            } catch (NoSuchMethodException e) {
+                                                clazz.getConstructor();
+                                                if (name == null || name.length() == 0) {
+                                                    name = findAnnotationName(clazz);
                                                     if (name == null || name.length() == 0) {
-                                                        name = findAnnotationName(clazz);
-                                                        if (name == null || name.length() == 0) {
-                                                            if (clazz.getSimpleName().length() > type.getSimpleName().length()
-                                                                    && clazz.getSimpleName().endsWith(type.getSimpleName())) {
-                                                                name = clazz.getSimpleName().substring(0, clazz.getSimpleName().length() - type.getSimpleName().length()).toLowerCase();
-                                                            } else {
-                                                                throw new IllegalStateException("No such extension name for the class " + clazz.getName() + " in the config " + url);
-                                                            }
+                                                        if (clazz.getSimpleName().length() > type.getSimpleName().length()
+                                                                && clazz.getSimpleName().endsWith(type.getSimpleName())) {
+                                                            name = clazz.getSimpleName().substring(0, clazz.getSimpleName().length() - type.getSimpleName().length()).toLowerCase();
+                                                        } else {
+                                                            throw new IllegalStateException("No such extension name for the class " + clazz.getName() + " in the config " + url);
                                                         }
                                                     }
-                                                    String[] names = NAME_SEPARATOR.split(name);
-                                                    if (names != null && names.length > 0) {
-                                                        Activate activate = clazz.getAnnotation(Activate.class);
-                                                        if (activate != null) {
-                                                            cachedActivates.put(names[0], activate);
+                                                }
+                                                String[] names = NAME_SEPARATOR.split(name);
+                                                if (names != null && names.length > 0) {
+                                                    Activate activate = clazz.getAnnotation(Activate.class);
+                                                    if (activate != null) {
+                                                        cachedActivates.put(names[0], activate);
+                                                    }
+                                                    for (String n : names) {
+                                                        if (! cachedNames.containsKey(clazz)) {
+                                                            cachedNames.put(clazz, n);
                                                         }
-                                                        for (String n : names) {
-                                                            if (! cachedNames.containsKey(clazz)) {
-                                                                cachedNames.put(clazz, n);
-                                                            }
-                                                            Class<?> c = extensionClasses.get(n);
-                                                            if (c == null) {
-                                                                extensionClasses.put(n, clazz);
-                                                            } else if (c != clazz) {
-                                                                throw new IllegalStateException("Duplicate extension " + type.getName() + " name " + n + " on " + c.getName() + " and " + clazz.getName());
-                                                            }
+                                                        Class<?> c = extensionClasses.get(n);
+                                                        if (c == null) {
+                                                            extensionClasses.put(n, clazz);
+                                                        } else if (c != clazz) {
+                                                            throw new IllegalStateException("Duplicate extension " + type.getName() + " name " + n + " on " + c.getName() + " and " + clazz.getName());
                                                         }
                                                     }
                                                 }
@@ -629,7 +615,7 @@ public class ExtensionLoader<T> {
         
         codeBuidler.append("package " + type.getPackage().getName() + ";");
         codeBuidler.append("\nimport " + ExtensionLoader.class.getPackage().getName() + ";");
-        codeBuidler.append("\npublic class " + type.getSimpleName() + "$Adpative" + " implements " + type.getCanonicalName() + " {");
+        codeBuidler.append("\npublic class " + type.getSimpleName() + "_Adpative" + " implements " + type.getCanonicalName() + " {");
         
         for (Method method : methods) {
             Class<?> rt = method.getReturnType();
@@ -717,18 +703,7 @@ public class ExtensionLoader<T> {
                     value = new String[] {sb.toString()};
                 }
                 
-                boolean hasInvocation = false;
-                for (int i = 0; i < pts.length; ++i) {
-                    if (pts[i].getName().equals("com.alibaba.dubbo.rpc.Invocation")) {
-                        // Null Point check
-                        String s = String.format("\nif (arg%d == null) throw new IllegalArgumentException(\"invocation == null\");", i);
-                        code.append(s);
-                        s = String.format("\nString methodName = arg%d.getMethodName();", i); 
-                        code.append(s);
-                        hasInvocation = true;
-                        break;
-                    }
-                }
+                String m = adaptiveAnnotation.method();
                 
                 String defaultExtName = cachedDefaultName;
                 String getNameCode = null;
@@ -736,8 +711,8 @@ public class ExtensionLoader<T> {
                     if(i == value.length - 1) {
                         if(null != defaultExtName) {
                             if(!"protocol".equals(value[i]))
-                                if (hasInvocation) 
-                                    getNameCode = String.format("url.getMethodParameter(methodName, \"%s\", \"%s\")", value[i], defaultExtName);
+                                if (m != null && m.length() > 0) 
+                                    getNameCode = String.format("url.getMethodParameter(arg%s, \"%s\", \"%s\")", m, value[i], defaultExtName);
                                 else
                                     getNameCode = String.format("url.getParameter(\"%s\", \"%s\")", value[i], defaultExtName);
                             else
@@ -745,8 +720,8 @@ public class ExtensionLoader<T> {
                         }
                         else {
                             if(!"protocol".equals(value[i]))
-                                if (hasInvocation) 
-                                    getNameCode = String.format("url.getMethodParameter(methodName, \"%s\", \"%s\")", value[i], defaultExtName);
+                                if (m != null && m.length() > 0) 
+                                    getNameCode = String.format("url.getMethodParameter(arg%s, \"%s\", \"%s\")", m, value[i], defaultExtName);
                                 else
                                     getNameCode = String.format("url.getParameter(\"%s\")", value[i]);
                             else
@@ -755,8 +730,8 @@ public class ExtensionLoader<T> {
                     }
                     else {
                         if(!"protocol".equals(value[i]))
-                            if (hasInvocation) 
-                                getNameCode = String.format("url.getMethodParameter(methodName, \"%s\", \"%s\")", value[i], defaultExtName);
+                            if (m != null && m.length() > 0) 
+                                getNameCode = String.format("url.getMethodParameter(arg%s, \"%s\", \"%s\")", m, value[i], defaultExtName);
                             else
                                 getNameCode = String.format("url.getParameter(\"%s\", %s)", value[i], getNameCode);
                         else

@@ -39,7 +39,6 @@ import com.alibaba.dubbo.rpc.cluster.LoadBalance;
  * <a href="http://en.wikipedia.org/wiki/Failover">Failover</a>
  * 
  * @author william.liangf
- * @author chao.liuc
  */
 public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
@@ -50,27 +49,18 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public Result doInvoke(Invocation invocation, final List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
-    	List<Invoker<T>> copyinvokers = invokers;
-    	checkInvokers(copyinvokers, invocation);
+    public Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
+        checkInvokers(invokers, invocation);
         int len = getUrl().getMethodParameter(invocation.getMethodName(), Constants.RETRIES_KEY, Constants.DEFAULT_RETRIES) + 1;
         if (len <= 0) {
             len = 1;
         }
         // retry loop.
         RpcException le = null; // last exception.
-        List<Invoker<T>> invoked = new ArrayList<Invoker<T>>(copyinvokers.size()); // invoked invokers.
+        List<Invoker<T>> invoked = new ArrayList<Invoker<T>>(invokers.size()); // invoked invokers.
         Set<String> providers = new HashSet<String>(len);
         for (int i = 0; i < len; i++) {
-        	//重试时，进行重新选择，避免重试时invoker列表已发生变化.
-        	//注意：如果列表发生了变化，那么invoked判断会失效，因为invoker示例已经改变
-        	if (i > 0) {
-        		checkWheatherDestoried();
-        		copyinvokers = list(invocation);
-        		//重新检查一下
-        		checkInvokers(copyinvokers, invocation);
-        	}
-            Invoker<T> invoker = select(loadbalance, invocation, copyinvokers, invoked);
+            Invoker<T> invoker = select(loadbalance, invocation, invokers, invoked);
             invoked.add(invoker);
             RpcContext.getContext().setInvokers((List)invoked);
             try {
@@ -80,7 +70,7 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
                             + " in the service " + getInterface().getName()
                             + " was successful by the provider " + invoker.getUrl().getAddress()
                             + ", but there have been failed providers " + providers 
-                            + " (" + providers.size() + "/" + copyinvokers.size()
+                            + " (" + providers.size() + "/" + invokers.size()
                             + ") from the registry " + directory.getUrl().getAddress()
                             + " on the consumer " + NetUtils.getLocalHost()
                             + " using the dubbo version " + Version.getVersion() + ". Last error is: "
@@ -101,7 +91,7 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
         throw new RpcException(le != null ? le.getCode() : 0, "Failed to invoke the method "
                 + invocation.getMethodName() + " in the service " + getInterface().getName() 
                 + ". Tried " + len + " times of the providers " + providers 
-                + " (" + providers.size() + "/" + copyinvokers.size() 
+                + " (" + providers.size() + "/" + invokers.size() 
                 + ") from the registry " + directory.getUrl().getAddress()
                 + " on the consumer " + NetUtils.getLocalHost() + " using the dubbo version "
                 + Version.getVersion() + ". Last error is: "

@@ -32,7 +32,6 @@ import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
-import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.cluster.Directory;
 
@@ -49,7 +48,7 @@ public class ForkingClusterInvokerTest {
     Invoker<ForkingClusterInvokerTest>       invoker1 = EasyMock.createMock(Invoker.class);
     Invoker<ForkingClusterInvokerTest>       invoker2 = EasyMock.createMock(Invoker.class);
     Invoker<ForkingClusterInvokerTest>       invoker3 = EasyMock.createMock(Invoker.class);
-    RpcInvocation                               invocation = new RpcInvocation();
+    Invocation                               invocation;
     Directory<ForkingClusterInvokerTest>     dic;
     Result                                   result   = new RpcResult();
 
@@ -61,13 +60,14 @@ public class ForkingClusterInvokerTest {
     public void setUp() throws Exception {
 
         dic = EasyMock.createMock(Directory.class);
+        invocation = EasyMock.createMock(Invocation.class);
 
         EasyMock.expect(dic.getUrl()).andReturn(url).anyTimes();
         EasyMock.expect(dic.list(invocation)).andReturn(invokers).anyTimes();
         EasyMock.expect(dic.getInterface()).andReturn(ForkingClusterInvokerTest.class).anyTimes();
 
-        invocation.setMethodName("method1");
-        EasyMock.replay(dic);
+        EasyMock.expect(invocation.getMethodName()).andReturn("method1").anyTimes();
+        EasyMock.replay(dic, invocation);
 
         invokers.add(invoker1);
         invokers.add(invoker2);
@@ -77,7 +77,7 @@ public class ForkingClusterInvokerTest {
 
     @After
     public void tearDown() {
-        EasyMock.verify(invoker1, dic);
+        EasyMock.verify(invoker1, dic, invocation);
 
     }
 

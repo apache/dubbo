@@ -23,7 +23,6 @@ import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 import org.easymock.EasyMock;
 import org.junit.Before;
@@ -34,11 +33,8 @@ import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
-import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.cluster.Directory;
-import com.alibaba.dubbo.rpc.cluster.directory.StaticDirectory;
-import com.alibaba.dubbo.rpc.protocol.AbstractInvoker;
 
 /**
  * FailoverClusterInvokerTest
@@ -52,7 +48,7 @@ public class FailoverClusterInvokerTest {
     URL url = URL.valueOf("test://test:11/test?retries="+retries);
     Invoker<FailoverClusterInvokerTest> invoker1 = EasyMock.createMock(Invoker.class);
     Invoker<FailoverClusterInvokerTest> invoker2 = EasyMock.createMock(Invoker.class);
-    RpcInvocation invocation = new RpcInvocation();
+    Invocation invocation;
     Directory<FailoverClusterInvokerTest> dic ;
     Result result = new RpcResult();
     /**
@@ -63,12 +59,14 @@ public class FailoverClusterInvokerTest {
     public void setUp() throws Exception {
         
         dic = EasyMock.createMock(Directory.class);
+        invocation = EasyMock.createMock(Invocation.class);
         
         EasyMock.expect(dic.getUrl()).andReturn(url).anyTimes();
         EasyMock.expect(dic.list(invocation)).andReturn(invokers).anyTimes();
         EasyMock.expect(dic.getInterface()).andReturn(FailoverClusterInvokerTest.class).anyTimes();
-        invocation.setMethodName("method1");
-        EasyMock.replay(dic);
+        
+        EasyMock.expect(invocation.getMethodName()).andReturn("method1").anyTimes();
+        EasyMock.replay(dic,invocation);
         
         invokers.add(invoker1);
         invokers.add(invoker2);
@@ -156,12 +154,14 @@ public class FailoverClusterInvokerTest {
     @Test()
     public void testNoInvoke() {
         dic = EasyMock.createMock(Directory.class);
+        invocation = EasyMock.createMock(Invocation.class);
         
         EasyMock.expect(dic.getUrl()).andReturn(url).anyTimes();
         EasyMock.expect(dic.list(invocation)).andReturn(null).anyTimes();
         EasyMock.expect(dic.getInterface()).andReturn(FailoverClusterInvokerTest.class).anyTimes();
-        invocation.setMethodName("method1");
-        EasyMock.replay(dic);
+        
+        EasyMock.expect(invocation.getMethodName()).andReturn("method1").anyTimes();
+        EasyMock.replay(dic,invocation);
         
         invokers.add(invoker1);
         
@@ -175,95 +175,4 @@ public class FailoverClusterInvokerTest {
         }
     }
     
-    /**
-     * 测试在调用重试过程中，directory列表变更，invoke重试时重新进行list选择 
-     */
-    @Test
-    public void testInvokerDestoryAndReList(){
-    	final URL url = URL.valueOf("test://localhost/"+ Demo.class.getName() + "?loadbalance=roundrobin&retries="+retries);
-    	RpcException exception = new RpcException(RpcException.TIMEOUT_EXCEPTION);
-    	MockInvoker<Demo> invoker1 = new MockInvoker<Demo>(Demo.class, url);
-    	invoker1.setException(exception);
-    	
-    	MockInvoker<Demo> invoker2 = new MockInvoker<Demo>(Demo.class, url);
-    	invoker2.setException(exception);
-    	
-        final List<Invoker<Demo>> invokers = new ArrayList<Invoker<Demo>>();
-        invokers.add(invoker1);
-        invokers.add(invoker2);
-        
-        Callable<Object> callable = new Callable<Object>() {
-			public Object call() throws Exception {
-				//模拟invoker全部被destroy掉
-				for (Invoker<Demo> invoker:invokers){
-					invoker.destroy();
-				}
-				invokers.clear();
-				MockInvoker<Demo> invoker3  = new MockInvoker<Demo>(Demo.class, url);
-				invokers.add(invoker3);
-				return null;
-			}
-		};
-		invoker1.setCallable(callable);
-        invoker2.setCallable(callable);
-        
-        RpcInvocation inv = new RpcInvocation();
-        inv.setMethodName("test");
-        
-        Directory<Demo> dic = new MockDirectory<Demo>(url, invokers);
-        
-        FailoverClusterInvoker<Demo> clusterinvoker = new FailoverClusterInvoker<Demo>(dic);
-        clusterinvoker.invoke(inv);
-    }
-    
-    public static interface Demo{}
-    
-    public static class MockInvoker<T> extends AbstractInvoker<T> {
-    	URL url;
-    	boolean available = true;
-    	boolean destoryed = false;
-    	Result result ;
-    	RpcException exception;
-    	Callable<?> callable;
-    	
-		public MockInvoker(Class<T> type, URL url) {
-			super(type, url);
-		}
-
-		public void setResult(Result result) {
-			this.result = result;
-		}
-		public void setException(RpcException exception) {
-			this.exception = exception;
-		}
-		public void setCallable(Callable<?> callable) {
-			this.callable = callable;
-		}
-
-		@Override
-		protected Result doInvoke(Invocation invocation) throws Throwable {
-			if (callable != null) {
-				try {
-					callable.call();
-				} catch (Exception e) {
-					throw new RpcException(e);
-				}
-			}
-			if (exception != null) {
-				throw exception;
-			} else {
-				return result;
-			}
-		}
-    }
-    
-    public class MockDirectory<T> extends StaticDirectory<T> {
-		public MockDirectory(URL url , List<Invoker<T>> invokers) {
-			super(url, invokers);
-		}
-		@Override
-		protected List<Invoker<T>> doList(Invocation invocation) throws RpcException {
-			return new ArrayList<Invoker<T>>(super.doList(invocation));
-		}
-    }
 }

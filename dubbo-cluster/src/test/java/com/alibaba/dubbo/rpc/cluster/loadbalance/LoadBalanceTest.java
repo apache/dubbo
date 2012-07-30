@@ -140,7 +140,7 @@ public class LoadBalanceTest {
             counter.put(invoker, new AtomicLong(0));
         }
         for(int i=0;i<runs;i++){
-            Invoker sinvoker = lb.select(invokers, invokers.get(0).getUrl(), invocation);
+            Invoker sinvoker = lb.select(invokers, invocation);
             counter.get(sinvoker).incrementAndGet();
         }
         return counter;

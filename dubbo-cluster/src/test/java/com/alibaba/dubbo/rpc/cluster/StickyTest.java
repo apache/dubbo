@@ -31,8 +31,9 @@ import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
-import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
+import com.alibaba.dubbo.rpc.cluster.Directory;
+import com.alibaba.dubbo.rpc.cluster.LoadBalance;
 import com.alibaba.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 @SuppressWarnings("unchecked")
 public class StickyTest {
@@ -42,7 +43,7 @@ public class StickyTest {
     
     Invoker<StickyTest> invoker1 = EasyMock.createMock(Invoker.class);
     Invoker<StickyTest> invoker2 = EasyMock.createMock(Invoker.class);
-    RpcInvocation invocation;
+    Invocation invocation;
     Directory<StickyTest> dic ;
     Result result = new RpcResult();
     StickyClusterInvoker<StickyTest> clusterinvoker = null;
@@ -54,7 +55,7 @@ public class StickyTest {
     @Before
     public void setUp() throws Exception {
         dic = EasyMock.createMock(Directory.class);
-        invocation = new RpcInvocation();
+        invocation = EasyMock.createMock(Invocation.class);
         
         EasyMock.expect(dic.getUrl()).andReturn(url).anyTimes();
         EasyMock.expect(dic.list(invocation)).andReturn(invokers).anyTimes();
@@ -126,7 +127,9 @@ public class StickyTest {
         EasyMock.expect(invoker2.getInterface()).andReturn(StickyTest.class).anyTimes();
         EasyMock.replay(invoker2);
         
-        invocation.setMethodName(methodName);
+        EasyMock.reset(invocation);
+        EasyMock.expect(invocation.getMethodName()).andReturn(methodName).anyTimes();
+        EasyMock.replay(invocation);
         
         int count = 0;
         for (int i = 0; i < runs; i++) {

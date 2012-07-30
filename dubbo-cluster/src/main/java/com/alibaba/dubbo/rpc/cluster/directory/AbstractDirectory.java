@@ -21,8 +21,6 @@ import java.util.List;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
-import com.alibaba.dubbo.common.logger.Logger;
-import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcException;
@@ -37,15 +35,12 @@ import com.alibaba.dubbo.rpc.cluster.router.MockInvokersSelector;
  * @author chao.liuc
  */
 public abstract class AbstractDirectory<T> implements Directory<T> {
-
-    // 日志输出
-    private static final Logger logger = LoggerFactory.getLogger(AbstractDirectory.class);
-
-    private final URL url ;
     
-    private volatile boolean destroyed = false;
+    protected final URL url ;
+    
+    protected volatile boolean destroyed = false;
 
-    private volatile List<Router> routers;
+    protected volatile List<Router> routers;
     
     public AbstractDirectory(URL url) {
         this(url, null);
@@ -66,13 +61,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         List<Router> localRouters = this.routers; // local reference
         if (localRouters != null && localRouters.size() > 0) {
             for (Router router: localRouters){
-                try {
-                    if (router.getUrl() == null || router.getUrl().getParameter(Constants.RUNTIME_KEY, true)) {
-                        invokers = router.route(invokers, getUrl(), invocation);
-                    }
-                } catch (Throwable t) {
-                    logger.error("Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(), t);
-                }
+                invokers = router.route(invokers, invocation);
             }
         }
         return invokers;
@@ -99,11 +88,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         routers.add(new MockInvokersSelector());
     	this.routers = routers;
     }
-
-    public boolean isDestroyed() {
-        return destroyed;
-    }
-
+    
     public void destroy(){
         destroyed = true;
     }

@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcException;
@@ -33,7 +32,7 @@ import com.alibaba.dubbo.rpc.cluster.Router;
 public class MockInvokersSelector implements Router {
 
 	public <T> List<Invoker<T>> route(final List<Invoker<T>> invokers,
-			URL url, final Invocation invocation) throws RpcException {
+			final Invocation invocation) throws RpcException {
 		if (invocation.getAttachments() == null) {
 			return getNormalInvokers(invokers);
 		} else {
@@ -84,13 +83,4 @@ public class MockInvokersSelector implements Router {
 		}
 		return hasMockProvider;
 	}
-
-    public URL getUrl() {
-        return null;
-    }
-
-    public int compareTo(Router o) {
-        return 1;
-    }
-
 }

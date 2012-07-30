@@ -1,3 +1,4 @@
+adptive=com.alibaba.dubbo.rpc.cluster.loadbalance.LoadBalanceAdptive
 random=com.alibaba.dubbo.rpc.cluster.loadbalance.RandomLoadBalance
 roundrobin=com.alibaba.dubbo.rpc.cluster.loadbalance.RoundRobinLoadBalance
 leastactive=com.alibaba.dubbo.rpc.cluster.loadbalance.LeastActiveLoadBalance

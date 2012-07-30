@@ -1,4 +1,4 @@
-<!-- 
+<!--
  - Copyright 1999-2011 Alibaba Group.
  -  
  - Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,17 +19,13 @@
 	<parent>
 		<groupId>com.alibaba</groupId>
 		<artifactId>dubbo-parent</artifactId>
-		<version>2.2.0-SNAPSHOT</version>
+		<version>2.1.8</version>
 	</parent>
 	<artifactId>dubbo-demo</artifactId>
-	<version>2.2.0-SNAPSHOT</version>
-	<packaging>pom</packaging>
-	<name>${project.artifactId}</name>
+	<packaging>jar</packaging>
+	<name>Dubbo Demo Module</name>
 	<description>The demo module of dubbo project</description>
-	<modules>
-		<module>dubbo-demo-api</module>
-		<module>dubbo-demo-provider</module>
-		<module>dubbo-demo-consumer</module>
-		<module>dubbo-demo-examples</module>
-	</modules>
+	<properties>
+		<skip_maven_deploy>true</skip_maven_deploy>
+	</properties>
 </project>
