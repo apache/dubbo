@@ -261,7 +261,6 @@ public class Constants {
     public static final String  DEFAULT_PROMPT                     = "dubbo>";
 
     public static final String  CODEC_KEY                          = "codec";
-    public static final String  DOWNSTREAM_CODEC_KEY               = "codec.downstream";
 
     public static final String  SERIALIZATION_KEY                  = "serialization";
 

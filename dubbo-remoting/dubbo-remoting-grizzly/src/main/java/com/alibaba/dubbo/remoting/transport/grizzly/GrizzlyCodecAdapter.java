@@ -31,8 +31,6 @@ import com.alibaba.dubbo.common.io.UnsafeByteArrayOutputStream;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.Codec;
-import com.alibaba.dubbo.remoting.exchange.Request;
-import com.alibaba.dubbo.remoting.exchange.Response;
 
 /**
  * GrizzlyCodecAdapter
@@ -43,8 +41,7 @@ public class GrizzlyCodecAdapter extends BaseFilter {
 
     private static final String   BUFFER_KEY = GrizzlyCodecAdapter.class.getName() + ".BUFFER";
 
-    private final Codec           upstreamCodec;
-    private final Codec           downstreamCodec;
+    private final Codec           codec;
 
     private final URL             url;
     
@@ -52,15 +49,8 @@ public class GrizzlyCodecAdapter extends BaseFilter {
 
     private final int             bufferSize;
     
-    public GrizzlyCodecAdapter(Codec codec, URL url, ChannelHandler handler){
-        this(codec, codec, url, handler);
-    }
-    /**
-     * server 端如果有消息发送需要分开codec，默认的上行code是dubbo1兼容的
-     */
-    public GrizzlyCodecAdapter(Codec upstreamCodec, Codec downstreamCodec, URL url, ChannelHandler handler){
-        this.upstreamCodec = upstreamCodec;
-        this.downstreamCodec = downstreamCodec;
+    public GrizzlyCodecAdapter(Codec codec, URL url, ChannelHandler handler) {
+        this.codec = codec;
         this.url = url;
         this.handler = handler;
         int b = url.getPositiveParameter(Constants.BUFFER_KEY, Constants.DEFAULT_BUFFER_SIZE);
@@ -75,13 +65,7 @@ public class GrizzlyCodecAdapter extends BaseFilter {
             UnsafeByteArrayOutputStream output = new UnsafeByteArrayOutputStream(1024); // 不需要关闭
             
             Object msg = context.getMessage();
-            if(! (msg instanceof Response)
-            		&& ! (msg instanceof Request 
-            				&& ((Request)msg).isHeartbeat())) {
-                downstreamCodec.encode(channel, output, msg);
-            }else{
-                upstreamCodec.encode(channel, output, msg);
-            }
+            codec.encode(channel, output, msg);
             
             GrizzlyChannel.removeChannelIfDisconnectd(connection);
             byte[] bytes = output.toByteArray();
@@ -159,7 +143,7 @@ public class GrizzlyCodecAdapter extends BaseFilter {
             limit += read; // 有效数据变长
             readable -= read; // 可读数据变少
             UnsafeByteArrayInputStream input = new UnsafeByteArrayInputStream(bytes, offset, limit - offset); // 将bytes缓存转成InputStream，不需要关闭
-            Object msg = upstreamCodec.decode(channel, input); // 调用Codec接口，解码数据
+            Object msg = codec.decode(channel, input); // 调用Codec接口，解码数据
             if (msg == Codec.NEED_MORE_INPUT) { // 如果Codec觉得数据不够，不足以解码成一个对象
                 if (readable == 0) { // 如果没有更多可读数据
                     channel.setAttribute(BUFFER_KEY, new Object[] { bytes, offset, limit }); // 放入通道属性中，等待下一个Buffer的到来

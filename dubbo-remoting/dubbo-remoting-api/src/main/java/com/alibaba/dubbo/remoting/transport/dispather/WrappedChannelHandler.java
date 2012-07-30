@@ -78,7 +78,6 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
         handler.sent(channel, message);
     }
 
-    @SuppressWarnings("deprecation")
     public void received(Channel channel, Object message) throws RemotingException {
         handler.received(channel, message);
     }

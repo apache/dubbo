@@ -62,14 +62,14 @@ final class HeartBeatTask implements Runnable {
                         req.setTwoWay( true );
                         req.setEvent( Request.HEARTBEAT_EVENT );
                         channel.send( req );
-                        if ( logger.isDebugEnabled() ) {
-                            logger.debug( "Send heartbeat to remote channel "
-                                                  + channel.getRemoteAddress() + "." );
+                        if ( logger.isInfoEnabled() ) {
+                            logger.info( "Send heartbeat to remote channel " + channel.getRemoteAddress()
+                                                  + ", cause: The channel has no data-transmission exceeds a heartbeat period: " + heartbeat + "ms" );
                         }
                     }
                     if ( lastRead != null && now - lastRead > heartbeatTimeout ) {
                         logger.warn( "Close channel " + channel
-                                             + ", because heartbeat read idle time out." );
+                                             + ", because heartbeat read idle time out: " + heartbeatTimeout + "ms" );
                         if (channel instanceof Client) {
                         	try {
                         		((Client)channel).reconnect();
@@ -85,7 +85,7 @@ final class HeartBeatTask implements Runnable {
                 }
             }
         } catch ( Throwable t ) {
-            logger.info( "Exception when heartbeat to remote channel(s): ", t );
+            logger.warn( "Unhandled exception when heartbeat, cause: " + t.getMessage(), t );
         }
     }
 

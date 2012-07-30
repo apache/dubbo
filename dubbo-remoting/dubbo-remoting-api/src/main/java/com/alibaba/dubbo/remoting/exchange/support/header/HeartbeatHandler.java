@@ -16,6 +16,7 @@
 
 package com.alibaba.dubbo.remoting.exchange.support.header;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.remoting.Channel;
@@ -30,7 +31,7 @@ import com.alibaba.dubbo.remoting.transport.AbstractChannelHandlerDelegate;
  */
 public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
 
-    static final Logger log = LoggerFactory.getLogger(HeartbeatHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(HeartbeatHandler.class);
 
     public static String KEY_READ_TIMESTAMP = "READ_TIMESTAMP";
 
@@ -65,19 +66,18 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
                 Response res = new Response(req.getId(), req.getVersion());
                 res.setEvent(Response.HEARTBEAT_EVENT);
                 channel.send(res);
-                if (log.isDebugEnabled()) {
-                    log.debug(
-                        new StringBuilder(32)
-                            .append("Receive heartbeat request and send heartbeat in thread ")
-                            .append(Thread.currentThread().getName())
-                            .toString());
-                }
+                if (logger.isInfoEnabled()) {
+                    int heartbeat = channel.getUrl().getParameter(Constants.HEARTBEAT_KEY, 0);
+                    logger.info("Received heartbeat from remote channel " + channel.getRemoteAddress()
+                                    + ", cause: The channel has no data-transmission exceeds a heartbeat period"
+                                    + (heartbeat > 0 ? ": " + heartbeat + "ms" : ""));
+	            }
             }
             return;
         }
         if (isHeartbeatResponse(message)) {
-            if (log.isDebugEnabled()) {
-                log.debug(
+            if (logger.isDebugEnabled()) {
+            	logger.debug(
                     new StringBuilder(32)
                         .append("Receive heartbeat response in thread ")
                         .append(Thread.currentThread().getName())

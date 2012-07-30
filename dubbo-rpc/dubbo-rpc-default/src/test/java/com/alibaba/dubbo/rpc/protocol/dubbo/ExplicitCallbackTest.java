@@ -77,12 +77,7 @@ public class ExplicitCallbackTest {
 //        serviceURL = serviceURL.addParameter("yyy."+Constants.ASYNC_KEY,String.valueOf(true));
 //        consumerUrl = consumerUrl.addParameter("yyy."+Constants.ASYNC_KEY,String.valueOf(true));
     }
-    public void initOrResetBadUrl() throws Exception{
-        initOrResetUrl(1, 1000);
-        consumerUrl = serviceURL = serviceURL
-            .addParameter(Constants.DOWNSTREAM_CODEC_KEY, "dubbo1compatible")
-            ;  
-    }
+
     public void initOrResetService(){
         destroyService();
         exportService();
@@ -268,24 +263,7 @@ public class ExplicitCallbackTest {
         }
         destroyService();
     }
-    
-//    @Ignore
-    @Test(expected=RpcException.class)
-    public void TestCallbackDownStreamCodec() throws Exception {
-        initOrResetBadUrl(); initOrResetService() ;
-        final AtomicInteger count = new AtomicInteger(0);
-        demoProxy.xxx(new IDemoCallback() {
-            public String yyy(String msg) {
-                System.out.println("Recived callback: " + msg);
-                count.incrementAndGet();
-                return "ok";
-            }
-        },"other custom args" , 10 , 100);
-        System.out.println("Async...");
-        assertCallbackCount(10,100,count);
-        destroyService();
-    }
-    
+
     @Test(expected = RpcException.class)
     public void TestCallbackConsumerLimit() throws Exception {
         initOrResetUrl(1, 1000);
