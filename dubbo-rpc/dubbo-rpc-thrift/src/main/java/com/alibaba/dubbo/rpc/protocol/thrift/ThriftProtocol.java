@@ -108,8 +108,7 @@ public class ThriftProtocol extends AbstractProtocol {
     public <T> Exporter<T> export( Invoker<T> invoker ) throws RpcException {
 
         // 只能使用 thrift codec
-        URL url = invoker.getUrl().addParameter(Constants.DOWNSTREAM_CODEC_KEY, ThriftCodec.NAME);
-        url = url.addParameter(Constants.CODEC_KEY, ThriftCodec.NAME);
+        URL url = invoker.getUrl().addParameter(Constants.CODEC_KEY, ThriftCodec.NAME);
         // find server.
         String key = url.getAddress();
         //client 也可以暴露一个只有server可以调用的服务。

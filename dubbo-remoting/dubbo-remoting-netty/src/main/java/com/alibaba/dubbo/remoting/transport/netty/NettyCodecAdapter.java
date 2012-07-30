@@ -35,8 +35,6 @@ import com.alibaba.dubbo.common.io.Bytes;
 import com.alibaba.dubbo.common.io.UnsafeByteArrayInputStream;
 import com.alibaba.dubbo.common.io.UnsafeByteArrayOutputStream;
 import com.alibaba.dubbo.remoting.Codec;
-import com.alibaba.dubbo.remoting.exchange.Request;
-import com.alibaba.dubbo.remoting.exchange.Response;
 
 /**
  * NettyCodecAdapter.
@@ -49,8 +47,7 @@ final class NettyCodecAdapter {
     
     private final ChannelHandler decoder = new InternalDecoder();
 
-    private final Codec          upstreamCodec;
-    private final Codec          downstreamCodec;
+    private final Codec          codec;
     
     private final URL            url;
     
@@ -58,15 +55,8 @@ final class NettyCodecAdapter {
     
     private final com.alibaba.dubbo.remoting.ChannelHandler handler;
 
-    public NettyCodecAdapter(Codec codec, URL url, com.alibaba.dubbo.remoting.ChannelHandler handler){
-        this(codec, codec, url, handler);
-    }
-    /**
-     * server 端如果有消息发送需要分开codec，默认的上行code是dubbo1兼容的
-     */
-    public NettyCodecAdapter(Codec upstreamCodec, Codec downstreamCodec, URL url, com.alibaba.dubbo.remoting.ChannelHandler handler){
-        this.downstreamCodec = downstreamCodec;
-        this.upstreamCodec = upstreamCodec;
+    public NettyCodecAdapter(Codec codec, URL url, com.alibaba.dubbo.remoting.ChannelHandler handler) {
+        this.codec = codec;
         this.url = url;
         this.handler = handler;
         int b = url.getPositiveParameter(Constants.BUFFER_KEY, Constants.DEFAULT_BUFFER_SIZE);
@@ -89,14 +79,7 @@ final class NettyCodecAdapter {
             UnsafeByteArrayOutputStream os = new UnsafeByteArrayOutputStream(1024); // 不需要关闭
             NettyChannel channel = NettyChannel.getOrAddChannel(ch, url, handler);
             try {
-                if(! (msg instanceof Response)
-                		&& ! (msg instanceof Request 
-                				&& ((Request)msg).isHeartbeat())) {
-                    downstreamCodec.encode(channel, os, msg);
-                }else {
-                    upstreamCodec.encode(channel, os, msg);
-                }
-                
+            	codec.encode(channel, os, msg);
             } finally {
                 NettyChannel.removeChannelIfDisconnected(ch);
             }
@@ -149,7 +132,7 @@ final class NettyCodecAdapter {
                     // decode object.
                     do {
                         try {
-                            msg = upstreamCodec.decode(channel, bis);
+                            msg = codec.decode(channel, bis);
                         } catch (IOException e) {
                             remaining = false;
                             throw e;

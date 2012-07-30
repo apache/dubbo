@@ -80,7 +80,7 @@ public class ExplicitCallbackTest {
     public void initOrResetBadUrl() throws Exception{
         initOrResetUrl(1, 1000);
         consumerUrl = serviceURL = serviceURL
-            .addParameter(Constants.DOWNSTREAM_CODEC_KEY, "dubbo1compatible")
+            .addParameter(Constants.CODEC_KEY, "dubbo1compatible")
             ;  
     }
     public void initOrResetService(){

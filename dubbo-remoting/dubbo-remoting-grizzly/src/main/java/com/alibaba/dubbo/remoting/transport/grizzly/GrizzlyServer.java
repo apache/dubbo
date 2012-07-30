@@ -60,7 +60,7 @@ public class GrizzlyServer extends AbstractServer {
         FilterChainBuilder filterChainBuilder = FilterChainBuilder.stateless();
         filterChainBuilder.add(new TransportFilter());
         
-        filterChainBuilder.add(new GrizzlyCodecAdapter(getCodec(), getDownstreamCodec(), getUrl(), this));
+        filterChainBuilder.add(new GrizzlyCodecAdapter(getCodec(), getUrl(), this));
         filterChainBuilder.add(new GrizzlyHandler(getUrl(), this));
         TCPNIOTransportBuilder builder = TCPNIOTransportBuilder.newInstance();
         ThreadPoolConfig config = builder.getWorkerThreadPoolConfig(); 

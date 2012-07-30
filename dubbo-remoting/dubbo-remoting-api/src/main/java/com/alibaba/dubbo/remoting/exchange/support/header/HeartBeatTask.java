@@ -18,6 +18,7 @@ package com.alibaba.dubbo.remoting.exchange.support.header;
 
 import java.util.Collection;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.remoting.Channel;
@@ -49,6 +50,12 @@ final class HeartBeatTask implements Runnable {
             for ( Channel channel : channelProvider.getChannels() ) {
                 if (channel.isClosed()) {
                     continue;
+                }
+                if (! (channel instanceof Client)) {
+                	String dubbo = (String) channel.getAttribute(Constants.DUBBO_VERSION_KEY);
+                	if (dubbo != null && dubbo.startsWith("1.0.")) {
+                		continue;
+                	}
                 }
                 try {
                     Long lastRead = ( Long ) channel.getAttribute(

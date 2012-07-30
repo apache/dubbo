@@ -22,14 +22,12 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ExecutorUtil;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
-import com.alibaba.dubbo.remoting.Codec;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.Server;
 import com.alibaba.dubbo.remoting.transport.dispather.WrappedChannelHandler;
@@ -199,15 +197,6 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
             logger.warn("All clients has discontected from " + ch.getLocalAddress() + ". You can graceful shutdown now.");
         }
         super.disconnected(ch);
-    }
-    
-    protected Codec getDownstreamCodec() {
-        Codec downstreamCodec = getCodec();
-        String downstreamCodecStr = getUrl().getParameter(Constants.DOWNSTREAM_CODEC_KEY);
-        if(downstreamCodecStr != null ){
-            downstreamCodec = ExtensionLoader.getExtensionLoader(Codec.class).getExtension(downstreamCodecStr);
-        }
-        return downstreamCodec;
     }
 
 }
