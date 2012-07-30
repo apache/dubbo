@@ -327,13 +327,23 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         connect();
     }
     public void close() {
-        ExecutorUtil.shutdownNow(executor, 100);
+    	try {
+    		if (executor != null) {
+    			ExecutorUtil.shutdownNow(executor, 100);
+    		}
+    	} catch (Throwable e) {
+            logger.warn(e.getMessage(), e);
+        }
         try {
             super.close();
         } catch (Throwable e) {
             logger.warn(e.getMessage(), e);
         }
-        disconnect();
+        try {
+        	disconnect();
+        } catch (Throwable e) {
+            logger.warn(e.getMessage(), e);
+        }
         try {
             doClose();
         } catch (Throwable e) {
