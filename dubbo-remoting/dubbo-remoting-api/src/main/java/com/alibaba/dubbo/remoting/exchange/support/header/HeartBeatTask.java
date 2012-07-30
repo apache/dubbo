@@ -70,13 +70,13 @@ final class HeartBeatTask implements Runnable {
                         req.setEvent( Request.HEARTBEAT_EVENT );
                         channel.send( req );
                         if ( logger.isInfoEnabled() ) {
-                            logger.info( "Send heartbeat to remote channel "
-                                                  + channel.getRemoteAddress() + "." );
+                            logger.info( "Send heartbeat to remote channel " + channel.getRemoteAddress() 
+                                                  + ", because without request sent at long time: " + heartbeat + "ms." );
                         }
                     }
                     if ( lastRead != null && now - lastRead > heartbeatTimeout ) {
                         logger.warn( "Close channel " + channel
-                                             + ", because heartbeat read idle time out." );
+                                             + ", because heartbeat read idle time out: " + heartbeatTimeout + "ms." );
                         if (channel instanceof Client) {
                         	try {
                         		((Client)channel).reconnect();

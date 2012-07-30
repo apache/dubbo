@@ -63,9 +63,14 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         }
         if (req.isTwoWay()){
             if (req.isHeartbeat()) {
-                Response res = new Response(req.getId(), req.getVersion());
+            	Response res = new Response(req.getId(), req.getVersion());
                 res.setEvent(req.getData() == null ? null : req.getData().toString());
                 channel.send(res);
+                if (logger.isInfoEnabled()) {
+                	logger.info("Received heartbeat from remote channel " + channel.getRemoteAddress() 
+                			+ ", because without request sent at long time: " 
+                			+ channel.getUrl().getParameter(Constants.HEARTBEAT_KEY, 0));
+            	}
             }
         }
     }
