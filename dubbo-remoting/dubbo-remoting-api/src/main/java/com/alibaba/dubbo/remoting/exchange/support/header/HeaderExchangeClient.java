@@ -167,7 +167,7 @@ public class HeaderExchangeClient implements ExchangeClient {
                             return Collections.<Channel>singletonList( HeaderExchangeClient.this );
                         }
                     }, heartbeat, heartbeatTimeout),
-                    heartbeat, heartbeat, TimeUnit.MILLISECONDS );
+                    0, heartbeat, TimeUnit.MILLISECONDS );
         }
     }
 
