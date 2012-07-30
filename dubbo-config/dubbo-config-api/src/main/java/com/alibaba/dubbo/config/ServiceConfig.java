@@ -104,10 +104,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         return urls;
     }
     
+    @Parameter(excluded = true)
     public boolean isExported() {
 		return exported;
 	}
 
+    @Parameter(excluded = true)
 	public boolean isUnexported() {
 		return unexported;
 	}
