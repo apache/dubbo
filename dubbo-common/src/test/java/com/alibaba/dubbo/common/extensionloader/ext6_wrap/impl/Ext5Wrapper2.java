@@ -13,16 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.common.extensionloader.ext5.impl;
+package com.alibaba.dubbo.common.extensionloader.ext6_wrap.impl;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.extensionloader.ext5.NoAdaptiveMethodExt;
+import com.alibaba.dubbo.common.extensionloader.ext6_wrap.WrappedExt;
 
 /**
  * @author ding.lid
  */
-public class Ext5Impl1 implements NoAdaptiveMethodExt {
+public class Ext5Wrapper2 implements WrappedExt {
+    WrappedExt instance;
+    
+    public static AtomicInteger echoCount = new AtomicInteger();
+
+    public Ext5Wrapper2(WrappedExt instance) {
+        this.instance = instance;
+    }
+
     public String echo(URL url, String s) {
-        return "Ext5Impl1-echo";
+        echoCount.incrementAndGet();
+        return instance.echo(url, s);
     }
 }

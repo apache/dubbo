@@ -20,12 +20,13 @@ import com.alibaba.dubbo.common.extension.Adaptive;
 import com.alibaba.dubbo.common.extension.SPI;
 
 /**
- * 无Default
+ * 无Default。
  * 
  * @author ding.lid
  */
 @SPI
 public interface Ext2 {
+    // 方法参数的属性是URL！
     @Adaptive
     String echo(UrlHolder holder, String s);
     

@@ -17,12 +17,12 @@ package com.alibaba.dubbo.common.extensionloader.ext4.impl;
 
 import java.util.List;
 
-import com.alibaba.dubbo.common.extensionloader.ext4.Ext4;
+import com.alibaba.dubbo.common.extensionloader.ext4.NoUrlParamExt;
 
 /**
  * @author ding.lid
  */
-public class Ext4Impl1 implements Ext4 {
+public class Ext4Impl1 implements NoUrlParamExt {
     public String bark(String name, List<Object> list) {
         return null;
     }

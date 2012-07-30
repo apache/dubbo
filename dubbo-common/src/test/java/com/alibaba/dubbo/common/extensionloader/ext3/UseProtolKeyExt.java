@@ -13,16 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.common.extensionloader.ext5.impl;
+package com.alibaba.dubbo.common.extensionloader.ext3;
 
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.extensionloader.ext5.NoAdaptiveMethodExt;
+import com.alibaba.dubbo.common.extension.Adaptive;
+import com.alibaba.dubbo.common.extension.SPI;
 
 /**
  * @author ding.lid
  */
-public class Ext5Impl1 implements NoAdaptiveMethodExt {
-    public String echo(URL url, String s) {
-        return "Ext5Impl1-echo";
-    }
+@SPI("impl3")
+public interface UseProtolKeyExt {
+    // protocol key在第二个
+    @Adaptive({"key1", "protocol"})
+    String echo(URL url, String s);
+    // protocol 吸在第一个
+    @Adaptive({"protocol", "key2"})
+    String yell(URL url, String s);
 }

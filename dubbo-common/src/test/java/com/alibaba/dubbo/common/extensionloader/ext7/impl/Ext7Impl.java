@@ -16,12 +16,12 @@
 package com.alibaba.dubbo.common.extensionloader.ext7.impl;
 
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.extensionloader.ext7.Ext7;
+import com.alibaba.dubbo.common.extensionloader.ext7.InitErrorExt;
 
 /**
  * @author ding.lid
  */
-public class Ext7Impl implements Ext7 {
+public class Ext7Impl implements InitErrorExt {
     public String echo(URL url, String s) {
         return "";
     }
