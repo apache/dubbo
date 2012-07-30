@@ -13,6 +13,11 @@
  */
 package com.alibaba.dubbo.rpc.protocol.thrift;
 
+import java.util.ArrayList;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
@@ -32,11 +37,6 @@ import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.protocol.AbstractProtocol;
 import com.alibaba.dubbo.rpc.protocol.dubbo.DubboExporter;
-
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">gang.lvg</a>
@@ -108,8 +108,7 @@ public class ThriftProtocol extends AbstractProtocol {
     public <T> Exporter<T> export( Invoker<T> invoker ) throws RpcException {
 
         // 只能使用 thrift codec
-        URL url = invoker.getUrl().addParameter(Constants.DOWNSTREAM_CODEC_KEY, ThriftCodec.NAME);
-        url = url.addParameter(Constants.CODEC_KEY, ThriftCodec.NAME);
+        URL url = invoker.getUrl().addParameter(Constants.CODEC_KEY, ThriftCodec.NAME);
         // find server.
         String key = url.getAddress();
         //client 也可以暴露一个只有server可以调用的服务。

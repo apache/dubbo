@@ -33,8 +33,6 @@ import com.alibaba.dubbo.common.io.UnsafeByteArrayOutputStream;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.Codec;
-import com.alibaba.dubbo.remoting.exchange.Request;
-import com.alibaba.dubbo.remoting.exchange.Response;
 
 /**
  * MinaCodecAdapter.
@@ -49,8 +47,7 @@ final class MinaCodecAdapter implements ProtocolCodecFactory {
 
     private final ProtocolDecoder decoder            = new InternalDecoder();
 
-    private final Codec           upstreamCodec;
-    private final Codec           downstreamCodec;
+    private final Codec           codec;
 
     private final URL             url;
     
@@ -58,16 +55,8 @@ final class MinaCodecAdapter implements ProtocolCodecFactory {
 
     private final int            bufferSize;
     
-    public MinaCodecAdapter(Codec codec, URL url, ChannelHandler handler){
-        this(codec,codec,url,handler);
-    }
-    
-    /**
-     * server 端如果有消息发送需要分开codec，默认的上行code是dubbo1兼容的
-     */
-    public MinaCodecAdapter(Codec upstreamCodec, Codec downstreamCodec, URL url, ChannelHandler handler){
-        this.upstreamCodec = upstreamCodec;
-        this.downstreamCodec = downstreamCodec;
+    public MinaCodecAdapter(Codec codec, URL url, ChannelHandler handler) {
+        this.codec = codec;
         this.url = url;
         this.handler = handler;
         int b = url.getPositiveParameter(Constants.BUFFER_KEY, Constants.DEFAULT_BUFFER_SIZE);
@@ -91,13 +80,7 @@ final class MinaCodecAdapter implements ProtocolCodecFactory {
             UnsafeByteArrayOutputStream os = new UnsafeByteArrayOutputStream(1024); // 不需要关闭
             MinaChannel channel = MinaChannel.getOrAddChannel(session, url, handler);
             try {
-            	if(! (msg instanceof Response)
-                		&& ! (msg instanceof Request 
-                				&& ((Request)msg).isHeartbeat())) {
-                    downstreamCodec.encode(channel, os, msg);
-                } else {
-                    upstreamCodec.encode(channel, os, msg);
-                }
+            	codec.encode(channel, os, msg);
             } finally {
                 MinaChannel.removeChannelIfDisconnectd(session);
             }
@@ -140,7 +123,7 @@ final class MinaCodecAdapter implements ProtocolCodecFactory {
                     // decode object.
                     do {
                         try {
-                            msg = upstreamCodec.decode(channel, bis);
+                            msg = codec.decode(channel, bis);
                         } catch (IOException e) {
                             remaining = false;
                             throw e;

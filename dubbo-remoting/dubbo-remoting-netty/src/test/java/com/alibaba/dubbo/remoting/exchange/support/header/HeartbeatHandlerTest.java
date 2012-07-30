@@ -21,6 +21,8 @@ import org.junit.Test;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.exchange.ExchangeChannel;
@@ -36,6 +38,8 @@ import junit.framework.Assert;
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
 public class HeartbeatHandlerTest {
+
+    private static final Logger logger = LoggerFactory.getLogger(HeartbeatHandlerTest.class);
 
     private ExchangeServer server;
     private ExchangeClient client;
@@ -123,7 +127,7 @@ public class HeartbeatHandlerTest {
         }
 
         public void received(Channel channel, Object message) throws RemotingException {
-            HeartbeatHandler.log.error(this.getClass().getSimpleName() + message.toString());
+        	logger.error(this.getClass().getSimpleName() + message.toString());
         }
 
         public void caught(Channel channel, Throwable exception) throws RemotingException {
