@@ -55,9 +55,11 @@ public class RegistryConfig extends AbstractConfig {
     
     private String            client;
 
-    private String            group;
+    private String            cluster;
     
-    private String            version;
+    private String            group;
+
+	private String            version;
 
     // 注册中心请求超时时间(毫秒)
     private Integer           timeout;
@@ -275,6 +277,14 @@ public class RegistryConfig extends AbstractConfig {
     public void setSubscribe(Boolean subscribe) {
         this.subscribe = subscribe;
     }
+
+    public String getCluster() {
+		return cluster;
+	}
+
+	public void setCluster(String cluster) {
+		this.cluster = cluster;
+	}
 
     public String getGroup() {
         return group;
