@@ -303,9 +303,6 @@ public class ExtensionLoader<T> {
 	public T getExtension(String name) {
 		if (name == null || name.length() == 0)
 		    throw new IllegalArgumentException("Extension name == null");
-		if ("true".equals(name)) {
-		    return getDefaultExtension();
-		}
 		Holder<Object> holder = cachedInstances.get(name);
 		if (holder == null) {
 		    cachedInstances.putIfAbsent(name, new Holder<Object>());
@@ -329,8 +326,7 @@ public class ExtensionLoader<T> {
 	 */
 	public T getDefaultExtension() {
 	    getExtensionClasses();
-        if(null == cachedDefaultName || cachedDefaultName.length() == 0
-                || "true".equals(cachedDefaultName)) {
+        if(null == cachedDefaultName || cachedDefaultName.length() == 0) {
             return null;
         }
         return getExtension(cachedDefaultName);
