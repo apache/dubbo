@@ -13,26 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.common.extensionloader.ext1.impl;
+package com.alibaba.dubbo.common.extensionloader;
 
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.extensionloader.ext1.Ext1;
+import com.alibaba.dubbo.common.extension.Adaptive;
+import com.alibaba.dubbo.common.extension.SPI;
 
 /**
- * @author ding.lid
+ * 没有SPI注解。
  *
+ * @author ding.lid
  */
-public class Ext1Impl_ManualAdd implements Ext1 {
-    public String echo(URL url, String s) {
-        return "Ext1Impl3-echo";
-    }
+public interface NoSpiExt {
+    // 没有使用key的@Adaptive ！
+    @Adaptive
+    String echo(URL url, String s);
     
-    public String yell(URL url, String s) {
-        return "Ext1Impl3-yell";
-    }
+    @Adaptive({"key1", "key2"})
+    String yell(URL url, String s);
 
-    public String bang(URL url, int i) {
-        return "bang3";
-    }
-    
+    // 无@Adaptive ！
+    String bang(URL url, int i);
 }

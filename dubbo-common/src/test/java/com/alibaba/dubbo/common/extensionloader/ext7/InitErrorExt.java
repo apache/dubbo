@@ -13,16 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.common.extensionloader.ext5.impl;
+package com.alibaba.dubbo.common.extensionloader.ext7;
 
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.extensionloader.ext5.NoAdaptiveMethodExt;
+import com.alibaba.dubbo.common.extension.Adaptive;
+import com.alibaba.dubbo.common.extension.SPI;
 
 /**
+ * 用于测试：
+ * DUBBO-144 扩展点加载失败（如依赖的三方库运行时没有），如扩展点没有用到，则加载不要报错（在使用到时报错）
+ * 
  * @author ding.lid
  */
-public class Ext5Impl1 implements NoAdaptiveMethodExt {
-    public String echo(URL url, String s) {
-        return "Ext5Impl1-echo";
-    }
+@SPI
+public interface InitErrorExt {
+    @Adaptive
+    String echo(URL url, String s);
 }

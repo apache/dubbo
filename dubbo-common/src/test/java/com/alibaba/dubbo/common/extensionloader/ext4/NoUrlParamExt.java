@@ -13,16 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.common.extensionloader.ext5.impl;
+package com.alibaba.dubbo.common.extensionloader.ext4;
 
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.extensionloader.ext5.NoAdaptiveMethodExt;
+import java.util.List;
+
+import com.alibaba.dubbo.common.extension.Adaptive;
+import com.alibaba.dubbo.common.extension.SPI;
 
 /**
  * @author ding.lid
  */
-public class Ext5Impl1 implements NoAdaptiveMethodExt {
-    public String echo(URL url, String s) {
-        return "Ext5Impl1-echo";
-    }
+@SPI("impl1")
+public interface NoUrlParamExt {
+    // 没有URL参数的方法！
+    @Adaptive
+    String bark(String name, List<Object> list);
 }

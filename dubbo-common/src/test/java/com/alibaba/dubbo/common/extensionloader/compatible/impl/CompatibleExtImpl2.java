@@ -13,16 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.common.extensionloader.ext5.impl;
+package com.alibaba.dubbo.common.extensionloader.compatible.impl;
 
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.extensionloader.ext5.NoAdaptiveMethodExt;
+import com.alibaba.dubbo.common.extensionloader.compatible.CompatibleExt;
 
 /**
  * @author ding.lid
+ *
  */
-public class Ext5Impl1 implements NoAdaptiveMethodExt {
+public class CompatibleExtImpl2 implements CompatibleExt {
     public String echo(URL url, String s) {
-        return "Ext5Impl1-echo";
+        return "Ext1Impl2-echo";
     }
+    
+    public String yell(URL url, String s) {
+        return "Ext1Impl2-yell";
+    }
+
+    public String bang(URL url, int i) {
+        return "bang2";
+    }
+    
 }

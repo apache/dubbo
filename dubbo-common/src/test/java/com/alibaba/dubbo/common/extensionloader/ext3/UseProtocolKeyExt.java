@@ -13,20 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.common.extensionloader.ext7;
+package com.alibaba.dubbo.common.extensionloader.ext3;
 
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.Adaptive;
 import com.alibaba.dubbo.common.extension.SPI;
 
 /**
- * 用于测试：
- * DUBBO-144 扩展点加载失败（如依赖的三方库运行时没有），如扩展点没有用到，则加载不要报错（在使用到时报错）
- * 
  * @author ding.lid
  */
-@SPI
-public interface Ext7 {
-    @Adaptive
+@SPI("impl1")
+public interface UseProtocolKeyExt {
+    // protocol key在第二个
+    @Adaptive({"key1", "protocol"})
     String echo(URL url, String s);
+    // protocol 吸在第一个
+    @Adaptive({"protocol", "key2"})
+    String yell(URL url, String s);
 }

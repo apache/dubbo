@@ -16,22 +16,14 @@
 package com.alibaba.dubbo.common.extensionloader.ext5.impl;
 
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.extensionloader.ext5.Ext5NoAdaptiveMethod;
+import com.alibaba.dubbo.common.extensionloader.ext5.NoAdaptiveMethodExt;
 
 /**
  * @author ding.lid
  *
  */
-public class Ext5Impl2 implements Ext5NoAdaptiveMethod {
+public class Ext5Impl2 implements NoAdaptiveMethodExt {
     public String echo(URL url, String s) {
         return "Ext5Impl2-echo";
-    }
-
-    public String yell(URL url, String s) {
-        return "Ext5Impl2-yell";
-    }
-
-    public String bang(URL url, int i) {
-        return "impl2";
     }
 }
