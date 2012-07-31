@@ -19,10 +19,9 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;
-import com.alibaba.dubbo.remoting.exchange.Request;
 import com.alibaba.dubbo.remoting.transport.dispather.ChannelEventRunnable;
-import com.alibaba.dubbo.remoting.transport.dispather.WrappedChannelHandler;
 import com.alibaba.dubbo.remoting.transport.dispather.ChannelEventRunnable.ChannelState;
+import com.alibaba.dubbo.remoting.transport.dispather.WrappedChannelHandler;
 
 public class ExecutionChannelHandler extends WrappedChannelHandler {
     
