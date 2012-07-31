@@ -29,9 +29,6 @@ public interface Ext2 {
     // 方法参数的属性是URL！
     @Adaptive
     String echo(UrlHolder holder, String s);
-    
-    @Adaptive({"key1", "protocol"})
-    String yell(URL url, String s);
-    
+
     String bang(URL url, int i);
 }

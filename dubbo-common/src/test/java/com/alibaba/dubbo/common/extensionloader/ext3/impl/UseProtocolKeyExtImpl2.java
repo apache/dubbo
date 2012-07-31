@@ -16,17 +16,18 @@
 package com.alibaba.dubbo.common.extensionloader.ext3.impl;
 
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.extensionloader.ext3.UseProtolKeyExt;
+import com.alibaba.dubbo.common.extensionloader.ext3.UseProtocolKeyExt;
 
 /**
  * @author ding.lid
+ *
  */
-public class UseProtolKeyExtImpl1 implements UseProtolKeyExt {
+public class UseProtocolKeyExtImpl2 implements UseProtocolKeyExt {
     public String echo(URL url, String s) {
-        return "Ext3Impl3-echo";
+        return "Ext3Impl2-echo";
     }
     
     public String yell(URL url, String s) {
-        return "Ext3Impl3-yell";
+        return "Ext3Impl2-yell";
     }
 }

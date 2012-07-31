@@ -27,10 +27,6 @@ public class Ext2Impl2 implements Ext2 {
     public String echo(UrlHolder holder, String s) {
         return "Ext2Impl2-echo";
     }
-    
-    public String yell(URL url, String s) {
-        return "Ext2Impl2-yell";
-    }
 
     public String bang(URL url, int i) {
         return "bang2";

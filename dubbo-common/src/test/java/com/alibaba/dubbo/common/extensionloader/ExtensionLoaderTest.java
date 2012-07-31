@@ -55,6 +55,16 @@ import com.alibaba.dubbo.common.extensionloader.ext6_wrap.impl.Ext5Wrapper2;
  * @author ding.lid
  */
 public class ExtensionLoaderTest {
+    @Test
+    public void test_getExtensionLoader_Null() throws Exception {
+        try {
+            ExtensionLoader.getExtensionLoader(null);
+            fail();
+        } catch (IllegalArgumentException expected) {
+            assertThat(expected.getMessage(),
+                    containsString("Extension type == null"));
+        }
+    }
 
     @Test
     public void test_getExtensionLoader_NotInterface() throws Exception {
@@ -64,7 +74,6 @@ public class ExtensionLoaderTest {
         } catch (IllegalArgumentException expected) {
             assertThat(expected.getMessage(),
                     containsString("Extension type(class com.alibaba.dubbo.common.extensionloader.ExtensionLoaderTest) is not interface"));
-
         }
     }
 
@@ -78,7 +87,6 @@ public class ExtensionLoaderTest {
                     allOf(containsString("com.alibaba.dubbo.common.extensionloader.NoSpiExt"),
                             containsString("is not extension"),
                             containsString("WITHOUT @SPI Annotation")));
-
         }
     }
 

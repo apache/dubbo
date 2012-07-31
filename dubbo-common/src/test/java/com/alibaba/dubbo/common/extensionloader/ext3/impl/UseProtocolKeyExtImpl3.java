@@ -13,21 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.common.extensionloader.ext3;
+package com.alibaba.dubbo.common.extensionloader.ext3.impl;
 
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.extension.Adaptive;
-import com.alibaba.dubbo.common.extension.SPI;
+import com.alibaba.dubbo.common.extensionloader.ext3.UseProtocolKeyExt;
 
 /**
  * @author ding.lid
+ *
  */
-@SPI("impl3")
-public interface UseProtolKeyExt {
-    // protocol key在第二个
-    @Adaptive({"key1", "protocol"})
-    String echo(URL url, String s);
-    // protocol 吸在第一个
-    @Adaptive({"protocol", "key2"})
-    String yell(URL url, String s);
+public class UseProtocolKeyExtImpl3 implements UseProtocolKeyExt {
+    public String echo(URL url, String s) {
+        return "Ext3Impl3-echo";
+    }
+    
+    public String yell(URL url, String s) {
+        return "Ext3Impl3-yell";
+    }
 }

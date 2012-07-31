@@ -20,10 +20,9 @@ import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.extensionloader.ext1.SimpleExt;
 import com.alibaba.dubbo.common.extensionloader.ext2.Ext2;
 import com.alibaba.dubbo.common.extensionloader.ext2.UrlHolder;
-import com.alibaba.dubbo.common.extensionloader.ext3.UseProtolKeyExt;
+import com.alibaba.dubbo.common.extensionloader.ext3.UseProtocolKeyExt;
 import com.alibaba.dubbo.common.extensionloader.ext4.NoUrlParamExt;
 import com.alibaba.dubbo.common.extensionloader.ext5.NoAdaptiveMethodExt;
-import com.alibaba.dubbo.common.extensionloader.ext6_wrap.WrappedExt;
 import com.alibaba.dubbo.common.extensionloader.ext6_inject.Ext6;
 import com.alibaba.dubbo.common.extensionloader.ext6_inject.impl.Ext6Impl2;
 import com.alibaba.dubbo.common.utils.LogUtil;
@@ -145,35 +144,38 @@ public class ExtensionLoader_Adaptive_Test {
     
     @Test
     public void test_getAdaptiveExtension_protocolKey() throws Exception {
-        UseProtolKeyExt ext = ExtensionLoader.getExtensionLoader(UseProtolKeyExt.class).getAdaptiveExtension();
-    
-        Map<String, String> map = new HashMap<String, String>();
-        URL url = new URL("impl3", "1.2.3.4", 1010, "path1", map);
-        
-        String echo = ext.echo(url, "s");
-        assertEquals("Ext3Impl3-echo", echo);
-    
-        url = url.addParameter("key1", "impl2");
-        echo = ext.echo(url, "s");
-        assertEquals("Ext3Impl2-echo", echo);
-        
-        String yell = ext.yell(url, "d");
-        assertEquals("Ext3Impl3-yell", yell);
-    }
-    
-    
-    @Test
-    public void test_getAdaptiveExtension_lastProtocolKey() throws Exception {
-        Ext2 ext = ExtensionLoader.getExtensionLoader(Ext2.class).getAdaptiveExtension();
-        
-        Map<String, String> map = new HashMap<String, String>();
-        URL url = new URL("impl1", "1.2.3.4", 1010, "path1", map);
-        String yell = ext.yell(url, "s");
-        assertEquals("Ext2Impl1-yell", yell);
-        
-        url = url.addParameter("key1", "impl2");
-        yell = ext.yell(url, "s");
-        assertEquals("Ext2Impl2-yell", yell);
+        UseProtocolKeyExt ext = ExtensionLoader.getExtensionLoader(UseProtocolKeyExt.class).getAdaptiveExtension();
+
+        {
+            String echo = ext.echo(URL.valueOf("1.2.3.4:20880"), "s");
+            assertEquals("Ext3Impl1-echo", echo); // 缺省值
+
+            Map<String, String> map = new HashMap<String, String>();
+            URL url = new URL("impl3", "1.2.3.4", 1010, "path1", map);
+
+            echo = ext.echo(url, "s");
+            assertEquals("Ext3Impl3-echo", echo); // 使用第2Key， Protocol
+
+            url = url.addParameter("key1", "impl2");
+            echo = ext.echo(url, "s");
+            assertEquals("Ext3Impl2-echo", echo); // 使用第1Key， key1
+        }
+
+        {
+
+            Map<String, String> map = new HashMap<String, String>();
+            URL url = new URL(null, "1.2.3.4", 1010, "path1", map);
+            String yell = ext.yell(url, "s");
+            assertEquals("Ext3Impl1-yell", yell); // 缺省值
+
+            url = url.addParameter("key2", "impl2"); // 使用第2Key， key2
+            yell = ext.yell(url, "s");
+            assertEquals("Ext3Impl2-yell", yell);
+
+            url = url.setProtocol("impl3"); // 使用第1Key， Protocol
+            yell = ext.yell(url, "d");
+            assertEquals("Ext3Impl3-yell", yell);
+        }
     }
 
     @Test
