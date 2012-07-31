@@ -25,13 +25,6 @@ import com.alibaba.dubbo.common.extension.SPI;
  * @author ding.lid
  */
 public interface NoSpiExt {
-    // 没有使用key的@Adaptive ！
     @Adaptive
     String echo(URL url, String s);
-    
-    @Adaptive({"key1", "key2"})
-    String yell(URL url, String s);
-
-    // 无@Adaptive ！
-    String bang(URL url, int i);
 }

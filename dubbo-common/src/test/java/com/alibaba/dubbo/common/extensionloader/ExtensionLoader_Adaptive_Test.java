@@ -63,7 +63,6 @@ public class ExtensionLoader_Adaptive_Test {
         }
     }
 
-
     @Test
     public void test_getAdaptiveExtension_customizeAdaptiveKey() throws Exception {
         SimpleExt ext = ExtensionLoader.getExtensionLoader(SimpleExt.class).getAdaptiveExtension();
@@ -78,6 +77,47 @@ public class ExtensionLoader_Adaptive_Test {
         url = url.addParameter("key1", "impl3"); // 注意： URL是值类型
         echo = ext.yell(url, "haha");
         assertEquals("Ext1Impl3-yell", echo);
+    }
+
+    @Test
+    public void test_getAdaptiveExtension_protocolKey() throws Exception {
+        UseProtocolKeyExt ext = ExtensionLoader.getExtensionLoader(UseProtocolKeyExt.class).getAdaptiveExtension();
+
+        {
+            String echo = ext.echo(URL.valueOf("1.2.3.4:20880"), "s");
+            assertEquals("Ext3Impl1-echo", echo); // 缺省值
+
+            Map<String, String> map = new HashMap<String, String>();
+            URL url = new URL("impl3", "1.2.3.4", 1010, "path1", map);
+
+            echo = ext.echo(url, "s");
+            assertEquals("Ext3Impl3-echo", echo); // 使用第2Key， Protocol
+
+            url = url.addParameter("key1", "impl2");
+            echo = ext.echo(url, "s");
+            assertEquals("Ext3Impl2-echo", echo); // 使用第1Key， key1
+        }
+
+        {
+
+            Map<String, String> map = new HashMap<String, String>();
+            URL url = new URL(null, "1.2.3.4", 1010, "path1", map);
+            String yell = ext.yell(url, "s");
+            assertEquals("Ext3Impl1-yell", yell); // 缺省值
+
+            url = url.addParameter("key2", "impl2"); // 使用第2Key， key2
+            yell = ext.yell(url, "s");
+            assertEquals("Ext3Impl2-yell", yell);
+
+            url = url.setProtocol("impl3"); // 使用第1Key， Protocol
+            yell = ext.yell(url, "d");
+            assertEquals("Ext3Impl3-yell", yell);
+        }
+    }
+
+    @Test
+    public void test_useJdkCompiler() throws Exception {
+
     }
 
     @Test
@@ -132,49 +172,13 @@ public class ExtensionLoader_Adaptive_Test {
     }
     
     @Test
-    public void test_getAdaptiveExtension_ExceptionWhenNoUrlAttrib() throws Exception {
+    public void test_getAdaptiveExtension_ExceptionWhenNoUrlAttribute() throws Exception {
         try {
             ExtensionLoader.getExtensionLoader(NoUrlParamExt.class).getAdaptiveExtension();
             fail();
         } catch (Exception expected) {
             assertThat(expected.getMessage(), containsString("fail to create adative class for interface "));
             assertThat(expected.getMessage(), containsString(": not found url parameter or url attribute in parameters of method "));
-        }
-    }
-    
-    @Test
-    public void test_getAdaptiveExtension_protocolKey() throws Exception {
-        UseProtocolKeyExt ext = ExtensionLoader.getExtensionLoader(UseProtocolKeyExt.class).getAdaptiveExtension();
-
-        {
-            String echo = ext.echo(URL.valueOf("1.2.3.4:20880"), "s");
-            assertEquals("Ext3Impl1-echo", echo); // 缺省值
-
-            Map<String, String> map = new HashMap<String, String>();
-            URL url = new URL("impl3", "1.2.3.4", 1010, "path1", map);
-
-            echo = ext.echo(url, "s");
-            assertEquals("Ext3Impl3-echo", echo); // 使用第2Key， Protocol
-
-            url = url.addParameter("key1", "impl2");
-            echo = ext.echo(url, "s");
-            assertEquals("Ext3Impl2-echo", echo); // 使用第1Key， key1
-        }
-
-        {
-
-            Map<String, String> map = new HashMap<String, String>();
-            URL url = new URL(null, "1.2.3.4", 1010, "path1", map);
-            String yell = ext.yell(url, "s");
-            assertEquals("Ext3Impl1-yell", yell); // 缺省值
-
-            url = url.addParameter("key2", "impl2"); // 使用第2Key， key2
-            yell = ext.yell(url, "s");
-            assertEquals("Ext3Impl2-yell", yell);
-
-            url = url.setProtocol("impl3"); // 使用第1Key， Protocol
-            yell = ext.yell(url, "d");
-            assertEquals("Ext3Impl3-yell", yell);
         }
     }
 
