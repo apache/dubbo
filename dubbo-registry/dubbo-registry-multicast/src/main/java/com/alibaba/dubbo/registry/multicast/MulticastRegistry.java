@@ -62,6 +62,8 @@ public class MulticastRegistry extends FailbackRegistry {
     
     private final MulticastSocket mutilcastSocket;
 
+    private final int mutilcastPort;
+
     private final ConcurrentMap<URL, Set<URL>> received = new ConcurrentHashMap<URL, Set<URL>>();
 
     private final ScheduledExecutorService cleanExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("DubboMulticastRegistryCleanTimer", true));
@@ -79,7 +81,8 @@ public class MulticastRegistry extends FailbackRegistry {
         }
         try {
             mutilcastAddress = InetAddress.getByName(url.getHost());
-            mutilcastSocket = new MulticastSocket(url.getPort() == 0 ? DEFAULT_MULTICAST_PORT : url.getPort());
+            mutilcastPort = url.getPort() <= 0 ? DEFAULT_MULTICAST_PORT : url.getPort();
+            mutilcastSocket = new MulticastSocket(mutilcastPort);
             mutilcastSocket.setLoopbackMode(false);
             mutilcastSocket.joinGroup(mutilcastAddress);
             Thread thread = new Thread(new Runnable() {
@@ -153,7 +156,9 @@ public class MulticastRegistry extends FailbackRegistry {
     }
     
     private boolean isExpired(URL url) {
-        if (Constants.CONSUMER_PROTOCOL.equals(url.getProtocol())
+        if (! url.getParameter(Constants.DYNAMIC_KEY, true)
+        		|| url.getPort() <= 0
+        		|| Constants.CONSUMER_PROTOCOL.equals(url.getProtocol())
                 || Constants.ROUTE_PROTOCOL.equals(url.getProtocol())
                 || Constants.OVERRIDE_PROTOCOL.equals(url.getProtocol())) {
             return false;
@@ -223,11 +228,11 @@ public class MulticastRegistry extends FailbackRegistry {
     
     private void broadcast(String msg) {
         if (logger.isInfoEnabled()) {
-            logger.info("Send broadcast message: " + msg + " to " + mutilcastAddress + ":" + mutilcastSocket.getLocalPort());
+            logger.info("Send broadcast message: " + msg + " to " + mutilcastAddress + ":" + mutilcastPort);
         }
         try {
             byte[] data = (msg + "\n").getBytes();
-            DatagramPacket hi = new DatagramPacket(data, data.length, mutilcastAddress, mutilcastSocket.getLocalPort());
+            DatagramPacket hi = new DatagramPacket(data, data.length, mutilcastAddress, mutilcastPort);
             mutilcastSocket.send(hi);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -236,11 +241,11 @@ public class MulticastRegistry extends FailbackRegistry {
     
     private void unicast(String msg, String host) {
         if (logger.isInfoEnabled()) {
-            logger.info("Send unicast message: " + msg + " to " + host + ":" + mutilcastSocket.getLocalPort());
+            logger.info("Send unicast message: " + msg + " to " + host + ":" + mutilcastPort);
         }
         try {
             byte[] data = (msg + "\n").getBytes();
-            DatagramPacket hi = new DatagramPacket(data, data.length, InetAddress.getByName(host), mutilcastSocket.getLocalPort());
+            DatagramPacket hi = new DatagramPacket(data, data.length, InetAddress.getByName(host), mutilcastPort);
             mutilcastSocket.send(hi);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
