@@ -162,7 +162,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             for (RegistryConfig config : registries) {
                 String address = config.getAddress();
                 if (address == null || address.length() == 0) {
-                    throw new IllegalStateException("registry address == null");
+                	address = Constants.ANYHOST_VALUE;
                 }
                 String sysaddress = System.getProperty("dubbo.registry.address");
                 if (sysaddress != null && sysaddress.length() > 0) {

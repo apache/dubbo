@@ -291,7 +291,7 @@ public final class URL implements Serializable {
 	}
 
     public int getPort(int defaultPort) {
-        return port == 0 ? defaultPort : port;
+        return port <= 0 ? defaultPort : port;
     }
 
 	public String getAddress() {

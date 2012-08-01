@@ -411,7 +411,7 @@
 				<xsd:documentation><![CDATA[ The unique identifier for a bean. ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="address" type="xsd:string" use="required">
+		<xsd:attribute name="address" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[ The registry address. ]]></xsd:documentation>
 			</xsd:annotation>
