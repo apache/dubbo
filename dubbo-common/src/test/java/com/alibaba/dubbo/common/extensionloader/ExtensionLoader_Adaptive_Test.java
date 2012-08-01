@@ -116,11 +116,6 @@ public class ExtensionLoader_Adaptive_Test {
     }
 
     @Test
-    public void test_useJdkCompiler() throws Exception {
-
-    }
-
-    @Test
     public void test_getAdaptiveExtension_UrlNpe() throws Exception {
         SimpleExt ext = ExtensionLoader.getExtensionLoader(SimpleExt.class).getAdaptiveExtension();
 
