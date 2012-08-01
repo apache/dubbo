@@ -18,7 +18,9 @@ package com.alibaba.dubbo.cache.filter;
 import com.alibaba.dubbo.cache.Cache;
 import com.alibaba.dubbo.cache.CacheFactory;
 import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.Activate;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.rpc.Filter;
@@ -28,10 +30,14 @@ import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcResult;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * CacheFilter
  * 
  * @author william.liangf
+ * @author ding.lid
  */
 @Activate(group = {Constants.CONSUMER, Constants.PROVIDER}, value = Constants.CACHE_KEY)
 public class CacheFilter implements Filter {
@@ -43,8 +49,10 @@ public class CacheFilter implements Filter {
     }
 
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        if (cacheFactory != null && ConfigUtils.isNotEmpty(invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.CACHE_KEY))) {
-            Cache cache = cacheFactory.getCache(invoker.getUrl().addParameter(Constants.METHOD_KEY, invocation.getMethodName()));
+        String config = ConfigUtils.getConfig(invoker.getUrl(), invocation.getMethodName(), Constants.CACHE_KEY);
+        if(cacheFactory != null && config != null) {
+            URL url = invoker.getUrl().addParameters(Constants.CACHE_KEY, config, Constants.METHOD_KEY, invocation.getMethodName());
+            Cache cache = cacheFactory.getCache(url);
             if (cache != null) {
                 String key = StringUtils.toArgumentString(invocation.getArguments());
                 if (cache != null && key != null) {

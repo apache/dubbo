@@ -28,6 +28,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
@@ -43,20 +44,51 @@ public class ConfigUtils {
     public static boolean isNotEmpty(String value) {
         return ! isEmpty(value);
     }
-	
+
+    private static boolean isDisable(String value) {
+        return "false".equalsIgnoreCase(value)
+                || "0".equalsIgnoreCase(value)
+                || "null".equalsIgnoreCase(value)
+                || "N/A".equalsIgnoreCase(value);
+    }
+
 	public static boolean isEmpty(String value) {
-		return value == null || value.length() == 0 
-    			|| "false".equalsIgnoreCase(value) 
-    			|| "0".equalsIgnoreCase(value) 
-    			|| "null".equalsIgnoreCase(value) 
-    			|| "N/A".equalsIgnoreCase(value);
+		return value == null || value.length() == 0 || isDisable(value);
 	}
 	
 	public static boolean isDefault(String value) {
 		return "true".equalsIgnoreCase(value) 
 				|| "default".equalsIgnoreCase(value);
 	}
-	
+
+    public static String getConfig(URL url, String methodName, String key) {
+        String parameter = url.getParameter(key);
+        String methodParameter = url.getMethodParameter(methodName, key);
+
+        if(!StringUtils.isEmpty(methodParameter)) {
+            // 显式关闭
+            if(isDisable(methodParameter)) {
+                return null;
+            }
+            // 统一缺省值的字面量
+            if("true".equals(methodParameter)) {
+                return "default";
+            }
+            return methodParameter;
+        }
+
+        // 没有配置，或是 显式关闭
+        if(isEmpty(parameter)) return null;
+
+        // 统一缺省值的字面量
+        if("true".equals(parameter)) {
+            return "default";
+        }
+
+        return parameter;
+    }
+
+
 	/**
 	 * 扩展点列表中插入缺省扩展点。
 	 * <p>
