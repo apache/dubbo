@@ -38,9 +38,10 @@ public class ClusterUtils {
             
             //线程池配置不使用提供者的
             map.remove(Constants.THREAD_NAME_KEY);
+            map.remove(Constants.CORE_THREADS_KEY);
             map.remove(Constants.THREADS_KEY);
             map.remove(Constants.QUEUES_KEY);
-            map.remove(Constants.THREAD_ALIVE_KEY);
+            map.remove(Constants.ALIVE_KEY);
         }
         
         if (localMap != null && localMap.size() > 0) {

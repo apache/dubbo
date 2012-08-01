@@ -114,15 +114,13 @@ public class Constants {
 
     public static final String  DEFAULT_THREAD_NAME                = "Dubbo";
 
+    public static final int     DEFAULT_CORE_THREADS               = 0;
+
     public static final int     DEFAULT_THREADS                    = 200;
-
-    public static final int     DEFAULT_MIN_THREADS                = 1;
-
-    public static final int     DEFAULT_MAX_THREADS                = DEFAULT_THREADS;
 
     public static final int     DEFAULT_QUEUES                     = 0;
 
-    public static final int     DEFAULT_THREAD_ALIVE               = 60 * 1000;
+    public static final int     DEFAULT_ALIVE                      = 60 * 1000;
 
     public static final int     DEFAULT_CONNECTIONS                = 0;
 
@@ -212,15 +210,13 @@ public class Constants {
 
     public static final String  IO_THREADS_KEY                     = "iothreads";
 
+    public static final String  CORE_THREADS_KEY                   = "corethreads";
+
     public static final String  THREADS_KEY                        = "threads";
-
-    public static final String  THREADS_MIN_KEY                   = THREADS_KEY + ".min";
-
-    public static final String  THREADS_MAX_KEY                   = THREADS_KEY + ".max";
 
     public static final String  QUEUES_KEY                         = "queues";
 
-    public static final String  THREAD_ALIVE_KEY                   = "threadalive";
+    public static final String  ALIVE_KEY                          = "alive";
 
     public static final String  EXECUTES_KEY                       = "executes";
 

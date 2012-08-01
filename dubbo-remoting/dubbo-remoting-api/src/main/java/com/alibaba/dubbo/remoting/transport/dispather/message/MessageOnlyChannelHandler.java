@@ -22,10 +22,9 @@ import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.ExecutionException;
 import com.alibaba.dubbo.remoting.RemotingException;
-import com.alibaba.dubbo.remoting.exchange.Request;
 import com.alibaba.dubbo.remoting.transport.dispather.ChannelEventRunnable;
-import com.alibaba.dubbo.remoting.transport.dispather.WrappedChannelHandler;
 import com.alibaba.dubbo.remoting.transport.dispather.ChannelEventRunnable.ChannelState;
+import com.alibaba.dubbo.remoting.transport.dispather.WrappedChannelHandler;
 
 public class MessageOnlyChannelHandler extends WrappedChannelHandler {
     
