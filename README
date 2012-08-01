@@ -51,6 +51,9 @@ Source Building
     cd ~
     git clone https://github.com/AlibabaTech/dubbo.git dubbo
 
+    git checkout -b dubbo-2.4.0
+    git checkout master
+
 2. Import the dubbo source code to eclipse project:
 
     cd ~/dubbo
