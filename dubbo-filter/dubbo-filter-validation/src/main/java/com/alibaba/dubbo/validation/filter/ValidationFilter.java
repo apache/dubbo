@@ -16,7 +16,6 @@
 package com.alibaba.dubbo.validation.filter;
 
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.rpc.Filter;
@@ -42,13 +41,10 @@ public class ValidationFilter implements Filter {
     }
 
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        String config = ConfigUtils.getConfig(invoker.getUrl(), invocation.getMethodName(), Constants.VALIDATION_KEY);
-
         if (validation != null && ! invocation.getMethodName().startsWith("$") 
-                && config != null) {
+                && ConfigUtils.isNotEmpty(invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.VALIDATION_KEY))) {
             try {
-                URL url = invoker.getUrl().addParameter(Constants.VALIDATION_KEY, config);
-                Validator validator = validation.getValidator(url);
+                Validator validator = validation.getValidator(invoker.getUrl());
                 if (validator != null) {
                     validator.validate(invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());
                 }
