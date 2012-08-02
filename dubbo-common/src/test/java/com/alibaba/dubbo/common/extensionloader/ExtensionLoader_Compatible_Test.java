@@ -15,33 +15,13 @@
  */
 package com.alibaba.dubbo.common.extensionloader;
 
-import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
-import com.alibaba.dubbo.common.extensionloader.activate.ActivateExt1;
-import com.alibaba.dubbo.common.extensionloader.activate.impl.*;
 import com.alibaba.dubbo.common.extensionloader.compatible.CompatibleExt;
 import com.alibaba.dubbo.common.extensionloader.compatible.impl.CompatibleExtImpl1;
 import com.alibaba.dubbo.common.extensionloader.compatible.impl.CompatibleExtImpl2;
-import com.alibaba.dubbo.common.extensionloader.ext1.SimpleExt;
-import com.alibaba.dubbo.common.extensionloader.ext1.impl.SimpleExtImpl1;
-import com.alibaba.dubbo.common.extensionloader.ext1.impl.SimpleExtImpl2;
-import com.alibaba.dubbo.common.extensionloader.ext1.impl.SimpleExtImpl_ManualAdd;
-import com.alibaba.dubbo.common.extensionloader.ext2.Ext2;
-import com.alibaba.dubbo.common.extensionloader.ext6_wrap.WrappedExt;
-import com.alibaba.dubbo.common.extensionloader.ext6_wrap.impl.Ext5Wrapper1;
-import com.alibaba.dubbo.common.extensionloader.ext6_wrap.impl.Ext5Wrapper2;
-import com.alibaba.dubbo.common.extensionloader.ext7.InitErrorExt;
-import junit.framework.Assert;
 import org.junit.Test;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
-import static org.junit.matchers.JUnitMatchers.containsString;
 
 /**
  * @author ding.lid
