@@ -359,8 +359,17 @@ public class ExtensionLoader<T> {
 	    return cachedDefaultName;
 	}
 
+    /**
+     * 编程方式添加新扩展点。
+     *
+     * @param name 扩展点名
+     * @param clazz 扩展点类
+     * @throws IllegalStateException 要添加扩展点名已经存在。
+     */
     public void addExtension(String name, Class<?> clazz) {
-        if(cachedNames.containsKey(name)) {
+        getExtensionClasses(); // load classes
+
+        if(cachedClasses.get().containsKey(name)) {
             throw new IllegalStateException("Extension name " +
                    name + " already existed(Extension " + type + ")!");
         }
@@ -374,6 +383,35 @@ public class ExtensionLoader<T> {
         }
         cachedNames.put(clazz, name);
         cachedClasses.get().put(name, clazz);
+    }
+
+    /**
+     * 编程方式添加替换已有扩展点。
+     *
+     * @param name 扩展点名
+     * @param clazz 扩展点类
+     * @throws IllegalStateException 要添加扩展点名已经存在。
+     * @deprecated 不推荐应用使用，一般只在测试时可以使用
+     */
+    public void replaceExtension(String name, Class<?> clazz) {
+        getExtensionClasses(); // load classes
+
+        if(!cachedClasses.get().containsKey(name)) {
+            throw new IllegalStateException("Extension name " +
+                    name + " not existed(Extension " + type + ")!");
+        }
+        if(!type.isAssignableFrom(clazz)) {
+            throw new IllegalStateException("Input type " +
+                    clazz + "not implement Extension " + type);
+        }
+        if(clazz.isInterface()) {
+            throw new IllegalStateException("Input type " +
+                    clazz + "can not be interface!");
+        }
+
+        cachedNames.put(clazz, name);
+        cachedClasses.get().put(name, clazz);
+        cachedInstances.remove(name);
     }
 
     @SuppressWarnings("unchecked")

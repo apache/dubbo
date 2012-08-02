@@ -36,7 +36,8 @@ import com.alibaba.dubbo.common.extensionloader.activate.impl.OrderActivateExtIm
 import com.alibaba.dubbo.common.extensionloader.activate.impl.OrderActivateExtImpl2;
 import com.alibaba.dubbo.common.extensionloader.activate.impl.ValueActivateExtImpl;
 import com.alibaba.dubbo.common.extensionloader.ext1.impl.SimpleExtImpl1;
-import com.alibaba.dubbo.common.extensionloader.ext1.impl.SimpleExtImpl_ManualAdd;
+import com.alibaba.dubbo.common.extensionloader.ext1.impl.SimpleExtImpl_ManualAdd1;
+import com.alibaba.dubbo.common.extensionloader.ext1.impl.SimpleExtImpl_ManualAdd2;
 import com.alibaba.dubbo.common.extensionloader.ext6_wrap.WrappedExt;
 import com.alibaba.dubbo.common.extensionloader.ext7.InitErrorExt;
 import junit.framework.Assert;
@@ -218,18 +219,69 @@ public class ExtensionLoaderTest {
     @Test
     public void test_AddExtension() throws Exception {
         try {
-            ExtensionLoader.getExtensionLoader(SimpleExt.class).getExtension("Manual");
+            ExtensionLoader.getExtensionLoader(SimpleExt.class).getExtension("Manual1");
             fail();
         }
         catch (IllegalStateException expected) {
             assertThat(expected.getMessage(), containsString("No such extension com.alibaba.dubbo.common.extensionloader.ext1.SimpleExt by name Manual"));
         }
 
-        ExtensionLoader.getExtensionLoader(SimpleExt.class).addExtension("Manual", SimpleExtImpl_ManualAdd.class);
-        SimpleExt ext = ExtensionLoader.getExtensionLoader(SimpleExt.class).getExtension("Manual");
+        ExtensionLoader.getExtensionLoader(SimpleExt.class).addExtension("Manual1", SimpleExtImpl_ManualAdd1.class);
+        SimpleExt ext = ExtensionLoader.getExtensionLoader(SimpleExt.class).getExtension("Manual1");
 
-        assertThat(ext, instanceOf(SimpleExtImpl_ManualAdd.class));
-        assertEquals("Manual", ExtensionLoader.getExtensionLoader(SimpleExt.class).getExtensionName(SimpleExtImpl_ManualAdd.class));
+        assertThat(ext, instanceOf(SimpleExtImpl_ManualAdd1.class));
+        assertEquals("Manual1", ExtensionLoader.getExtensionLoader(SimpleExt.class).getExtensionName(SimpleExtImpl_ManualAdd1.class));
+    }
+
+    @Test
+    public void test_AddExtension_ExceptionWhenExistedExtension() throws Exception {
+        SimpleExt ext = ExtensionLoader.getExtensionLoader(SimpleExt.class).getExtension("impl1");
+
+        try {
+            ExtensionLoader.getExtensionLoader(SimpleExt.class).addExtension("impl1", SimpleExtImpl_ManualAdd1.class);
+            fail();
+        }
+        catch (IllegalStateException expected) {
+            assertThat(expected.getMessage(), containsString("Extension name impl1 already existed(Extension interface com.alibaba.dubbo.common.extensionloader.ext1.SimpleExt)!"));
+        }
+    }
+
+    @Test
+    public void test_replaceExtension() throws Exception {
+        try {
+            ExtensionLoader.getExtensionLoader(SimpleExt.class).getExtension("Manual2");
+            fail();
+        }
+        catch (IllegalStateException expected) {
+            assertThat(expected.getMessage(), containsString("No such extension com.alibaba.dubbo.common.extensionloader.ext1.SimpleExt by name Manual"));
+        }
+
+        {
+            SimpleExt ext = ExtensionLoader.getExtensionLoader(SimpleExt.class).getExtension("impl1");
+
+            assertThat(ext, instanceOf(SimpleExtImpl1.class));
+            assertEquals("impl1", ExtensionLoader.getExtensionLoader(SimpleExt.class).getExtensionName(SimpleExtImpl1.class));
+        }
+        {
+            ExtensionLoader.getExtensionLoader(SimpleExt.class).replaceExtension("impl1", SimpleExtImpl_ManualAdd2.class);
+            SimpleExt ext = ExtensionLoader.getExtensionLoader(SimpleExt.class).getExtension("impl1");
+
+            assertThat(ext, instanceOf(SimpleExtImpl_ManualAdd2.class));
+            assertEquals("impl1", ExtensionLoader.getExtensionLoader(SimpleExt.class).getExtensionName(SimpleExtImpl_ManualAdd2.class));
+        }
+    }
+
+    @Test
+    public void test_replaceExtension_ExceptionWhenNotExistedExtension() throws Exception {
+        SimpleExt ext = ExtensionLoader.getExtensionLoader(SimpleExt.class).getExtension("impl1");
+
+        try {
+            ExtensionLoader.getExtensionLoader(SimpleExt.class).replaceExtension("NotExistedExtension", SimpleExtImpl_ManualAdd1.class);
+            fail();
+        }
+        catch (IllegalStateException expected) {
+            assertThat(expected.getMessage(), containsString("Extension name NotExistedExtension not existed(Extension interface com.alibaba.dubbo.common.extensionloader.ext1.SimpleExt)"));
+        }
     }
 
     @Test

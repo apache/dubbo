@@ -21,17 +21,17 @@ import com.alibaba.dubbo.common.extensionloader.ext1.SimpleExt;
 /**
  * @author ding.lid
  */
-public class SimpleExtImpl_ManualAdd implements SimpleExt {
+public class SimpleExtImpl_ManualAdd1 implements SimpleExt {
     public String echo(URL url, String s) {
-        return "Ext1Impl3-echo";
+        return "Ext1Impl4-echo";
     }
     
     public String yell(URL url, String s) {
-        return "Ext1Impl3-yell";
+        return "Ext1Impl4-yell";
     }
 
     public String bang(URL url, int i) {
-        return "bang3";
+        return "bang4";
     }
     
 }
