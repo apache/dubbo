@@ -62,29 +62,16 @@ public class ConfigUtils {
 	}
 
     public static String getConfig(URL url, String methodName, String key) {
-        String parameter = url.getParameter(key);
-        String methodParameter = url.getMethodParameter(methodName, key);
+        String parameter = url.getMethodParameter(methodName, key);
 
-        if(!StringUtils.isEmpty(methodParameter)) {
-            // 显式关闭
-            if(isDisable(methodParameter)) {
-                return null;
-            }
-            // 统一缺省值的字面量
-            if("true".equals(methodParameter)) {
-                return "default";
-            }
-            return methodParameter;
+        // 显式关闭
+        if(isDisable(parameter)) {
+            return null;
         }
-
-        // 没有配置，或是 显式关闭
-        if(isEmpty(parameter)) return null;
-
         // 统一缺省值的字面量
         if("true".equals(parameter)) {
             return "default";
         }
-
         return parameter;
     }
 
