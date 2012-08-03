@@ -23,8 +23,6 @@ import java.util.Set;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.utils.NetUtils;
-import com.alibaba.dubbo.common.utils.StringUtils;
 
 public class UrlUtils {
 
@@ -44,7 +42,7 @@ public class UrlUtils {
                     if (i > 1) {
                         backup.append(",");
                     }
-                    backup.append(NetUtils.filterLocalHost(addresses[i]));
+                    backup.append(addresses[i]);
                 }
                 url += "?" + Constants.BACKUP_KEY + "=" + backup.toString();
             }
@@ -87,10 +85,10 @@ public class UrlUtils {
             changed = true;
             password = defaultPassword;
         }
-        if (u.isAnyHost() || u.isLocalHost()) {
+        /*if (u.isAnyHost() || u.isLocalHost()) {
             changed = true;
             host = NetUtils.getLocalHost();
-        }
+        }*/
         if (port <= 0) {
             if (defaultPort > 0) {
                 changed = true;

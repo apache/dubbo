@@ -37,7 +37,7 @@ import com.alibaba.dubbo.common.URL;
  */
 public class UrlUtilsTest {
 
-    String localAddress = NetUtils.getLocalHost();
+    String localAddress = "127.0.0.1";
 
     @Test
     public void testAddressNull() {
@@ -107,7 +107,7 @@ public class UrlUtilsTest {
         assertEquals("alibaba", url.getPassword());
         assertEquals(10000, url.getPort());
         assertEquals("dubbo", url.getProtocol());
-        assertEquals(localAddress + "," + localAddress, url.getParameter("backup"));
+        assertEquals("127.0.0.2" + "," + "127.0.0.3", url.getParameter("backup"));
     }
 
     @Test
@@ -120,7 +120,7 @@ public class UrlUtilsTest {
         parameters.put("protocol", "dubbo");
         List<URL> urls = UrlUtils.parseURLs(addresses, parameters);
         assertEquals(localAddress + ":10000", urls.get(0).getAddress());
-        assertEquals(localAddress + ":10000", urls.get(1).getAddress());
+        assertEquals("127.0.0.2" + ":10000", urls.get(1).getAddress());
     }
 
     @Test
