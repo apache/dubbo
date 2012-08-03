@@ -12,7 +12,7 @@ if [ -z "$SERVER_NAME" ]; then
 	SERVER_NAME=`hostname`
 fi
 
-PIDS=`ps  --no-heading -C java -f --width 1000 | grep "$CONF_DIR" |awk '{print $2}'`
+PIDS=`ps -f | grep java | grep "$CONF_DIR" |awk '{print $2}'`
 if [ -z "$PIDS" ]; then
     echo "ERROR: The $SERVER_NAME does not started!"
     exit 1
@@ -58,6 +58,7 @@ for PID in $PIDS ; do
 	echo -e ".\c"
 	fi
 done
+
 if [ -r /bin/netstat ]; then
 /bin/netstat -an > $DATE_DIR/netstat.dump 2>&1
 echo -e ".\c"
@@ -86,5 +87,6 @@ if [ -r /usr/bin/uptime ]; then
 /usr/bin/uptime > $DATE_DIR/uptime.dump 2>&1
 echo -e ".\c"
 fi
+
 echo "OK!"
 echo "DUMP: $DATE_DIR"
