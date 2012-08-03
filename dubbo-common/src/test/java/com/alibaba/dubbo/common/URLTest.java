@@ -17,11 +17,7 @@ package com.alibaba.dubbo.common;
 
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.Arrays;
@@ -412,9 +408,10 @@ public class URLTest {
         assertEquals("morgan", url.getParameter("application"));
         assertEquals("v1", url.getParameter("k1"));
         assertEquals("v2", url.getParameter("k2"));
+        assertNull(url.getParameter("version"));
 
         url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan&k1=v1&k2=v2");
-        url = url.removeParameters("version", "application");
+        url = url.removeParameters("version", "application", "NotExistedKey");
         assertEquals("dubbo", url.getProtocol());
         assertEquals("admin", url.getUsername());
         assertEquals("hello1234", url.getPassword());
@@ -424,6 +421,8 @@ public class URLTest {
         assertEquals(2, url.getParameters().size());
         assertEquals("v1", url.getParameter("k1"));
         assertEquals("v2", url.getParameter("k2"));
+        assertNull(url.getParameter("version"));
+        assertNull(url.getParameter("application"));
 
         url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan&k1=v1&k2=v2");
         url = url.removeParameters(Arrays.asList("version", "application"));
@@ -436,7 +435,34 @@ public class URLTest {
         assertEquals(2, url.getParameters().size());
         assertEquals("v1", url.getParameter("k1"));
         assertEquals("v2", url.getParameter("k2"));
+        assertNull(url.getParameter("version"));
+        assertNull(url.getParameter("application"));
     }
+
+    @Test
+    public void test_addParameter() throws Exception {
+        URL url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?application=morgan");
+        url = url.addParameter("k1", "v1");
+
+        assertEquals("dubbo", url.getProtocol());
+        assertEquals("admin", url.getUsername());
+        assertEquals("hello1234", url.getPassword());
+        assertEquals("10.20.130.230", url.getHost());
+        assertEquals(20880, url.getPort());
+        assertEquals("context/path", url.getPath());
+        assertEquals(2, url.getParameters().size());
+        assertEquals("morgan", url.getParameter("application"));
+        assertEquals("v1", url.getParameter("k1"));
+    }
+
+    @Test
+    public void test_addParameter_sameKv() throws Exception {
+        URL url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?application=morgan&k1=v1");
+        URL newUrl = url.addParameter("k1", "v1");
+
+        assertSame(newUrl, url);
+    }
+
 
     @Test
     public void test_addParameters() throws Exception {
@@ -506,8 +532,27 @@ public class URLTest {
         assertEquals("context/path", url.getPath());
         assertEquals(1, url.getParameters().size());
         assertEquals("xxx", url.getParameter("application"));
+    }
 
-        url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?application=morgan");
+    @Test
+    public void test_addParameters_SameKv() throws Exception {
+        {
+            URL url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?application=morgan&k1=v1");
+            URL newUrl = url.addParameters(CollectionUtils.toStringMap("k1", "v1"));
+
+            assertSame(url, newUrl);
+        }
+        {
+            URL url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?application=morgan&k1=v1&k2=v2");
+            URL newUrl = url.addParameters(CollectionUtils.toStringMap("k1", "v1", "k2", "v2"));
+
+            assertSame(newUrl, url);
+        }
+    }
+
+    @Test
+    public void test_addParameterIfAbsent() throws Exception {
+        URL url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?application=morgan");
         url = url.addParameterIfAbsent("application", "xxx");
 
         assertEquals("dubbo", url.getProtocol());
