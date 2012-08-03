@@ -393,6 +393,7 @@ public class ExtensionLoader<T> {
      * @throws IllegalStateException 要添加扩展点名已经存在。
      * @deprecated 不推荐应用使用，一般只在测试时可以使用
      */
+    @Deprecated
     public void replaceExtension(String name, Class<?> clazz) {
         getExtensionClasses(); // load classes
 
