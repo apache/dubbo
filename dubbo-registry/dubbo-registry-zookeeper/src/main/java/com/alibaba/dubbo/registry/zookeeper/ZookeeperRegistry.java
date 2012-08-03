@@ -60,6 +60,9 @@ public class ZookeeperRegistry extends FailbackRegistry {
     
     public ZookeeperRegistry(URL url, ZookeeperTransporter zookeeperTransporter) {
         super(url);
+        if (url.isAnyHost()) {
+    		throw new IllegalStateException("registry address == null");
+    	}
         String group = url.getParameter(Constants.GROUP_KEY, DEFAULT_ROOT);
         if (! group.startsWith(Constants.PATH_SEPARATOR)) {
             group = Constants.PATH_SEPARATOR + group;
