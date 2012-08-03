@@ -1,4 +1,4 @@
-opyright 1999-2011 Alibaba Group.
+Copyright 1999-2011 Alibaba Group.
  -  
  - Licensed under the Apache License, Version 2.0 (the "License");
  - you may not use this file except in compliance with the License.
@@ -192,6 +192,7 @@ opyright 1999-2011 Alibaba Group.
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
 			<version>1.0.6</version>
+                        <scope>provided</scope>
 		</dependency>
 	</dependencies>
 	<build>
