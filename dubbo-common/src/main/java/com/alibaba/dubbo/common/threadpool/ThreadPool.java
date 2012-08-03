@@ -27,7 +27,7 @@ import com.alibaba.dubbo.common.extension.SPI;
  * 
  * @author william.liangf
  */
-@SPI("limited")
+@SPI("fixed")
 public interface ThreadPool {
     
     /**
