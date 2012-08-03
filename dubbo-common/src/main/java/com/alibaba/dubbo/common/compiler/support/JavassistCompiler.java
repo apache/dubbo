@@ -64,9 +64,13 @@ public class JavassistCompiler extends AbstractCompiler {
                 pool.importPackage(pkgName);
                 importPackages.add(pkgName);
             } else {
-                pool.importPackage(pkg);
                 int pi = pkg.lastIndexOf('.');
-                fullNames.put(pi < 0 ? pkg : pkg.substring(pi + 1), pkg);
+                if (pi > 0) {
+	                String pkgName = pkg.substring(0, pi);
+	                pool.importPackage(pkgName);
+	                importPackages.add(pkgName);
+	                fullNames.put(pkg.substring(pi + 1), pkg);
+                }
             }
         }
         String[] packages = importPackages.toArray(new String[0]);
