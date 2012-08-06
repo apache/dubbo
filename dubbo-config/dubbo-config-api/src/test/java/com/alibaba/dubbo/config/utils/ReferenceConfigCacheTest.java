@@ -106,7 +106,7 @@ public class ReferenceConfigCacheTest {
             config.setVersion("1.0.0");
 
             String value = cache.get(config);
-            assertTrue(config.isGetMethodRun()); // 不同的Cache，相同的ReferenceConfig也会Init
+            assertTrue(config.isGetMethodRun()); // 涓嶅悓鐨凜ache锛岀浉鍚岀殑ReferenceConfig涔熶細Init
             assertEquals("1", value);
         }
     }
