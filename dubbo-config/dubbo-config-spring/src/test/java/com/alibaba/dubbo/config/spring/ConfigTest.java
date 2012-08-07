@@ -53,6 +53,8 @@ import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Filter;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.service.GenericException;
+import com.alibaba.dubbo.rpc.service.GenericService;
 
 import junit.framework.Assert;
 
@@ -881,6 +883,41 @@ public class ConfigTest {
         } finally {
             unexportService(demoService);
             unexportService(helloService);
+        }
+    }
+
+    @Test
+    public void testReferGenericExport() throws Exception {
+        ApplicationConfig ac = new ApplicationConfig("test-refer-generic-export");
+        RegistryConfig rc = new RegistryConfig();
+        rc.setAddress(RegistryConfig.NO_AVAILABLE);
+
+        ServiceConfig<GenericService> sc = new ServiceConfig<GenericService>();
+        sc.setApplication(ac);
+        sc.setRegistry(rc);
+        sc.setInterface(DemoService.class.getName());
+        sc.setRef(new GenericService() {
+
+            @Override
+            public Object $invoke(String method, String[] parameterTypes, Object[] args) throws GenericException {
+                return null;
+            }
+        });
+
+        ReferenceConfig<DemoService> ref = new ReferenceConfig<DemoService>();
+        ref.setApplication(ac);
+        ref.setRegistry(rc);
+        ref.setInterface(DemoService.class.getName());
+
+        try {
+            sc.export();
+            ref.get();
+            Assert.fail();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            sc.unexport();
+            ref.destroy();
         }
     }
 
