@@ -26,6 +26,7 @@ import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.protocol.AbstractProtocol;
+import com.alibaba.dubbo.rpc.support.ProtocolUtils;
 
 /**
  * InjvmProtocol
@@ -65,17 +66,29 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
     }
 
     static Exporter<?> getExporter(Map<String, Exporter<?>> map, URL key) {
+        Exporter<?> result = null;
+
         if (!key.getServiceKey().contains("*")) {
-            return map.get(key.getServiceKey());
-        }
-        if (map != null && !map.isEmpty()) {
-            for(Exporter<?> exporter : map.values()) {
-                if (UrlUtils.isServiceKeyMatch(key, exporter.getInvoker().getUrl())) {
-                    return exporter;
+            result = map.get(key.getServiceKey());
+        } else {
+            if (map != null && !map.isEmpty()) {
+                for (Exporter<?> exporter : map.values()) {
+                    if (UrlUtils.isServiceKeyMatch(key, exporter.getInvoker().getUrl())) {
+                        result = exporter;
+                        break;
+                    }
                 }
             }
         }
-        return null;
+
+        if (result == null) {
+            return null;
+        } else if (ProtocolUtils.isGeneric(
+            result.getInvoker().getUrl().getParameter(Constants.GENERIC_KEY))) {
+            return null;
+        } else {
+            return result;
+        }
     }
     
     public boolean isInjvmRefer(URL url) {
