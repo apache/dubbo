@@ -614,6 +614,40 @@ public class PojoUtilsTest {
         Assert.assertTrue(output instanceof LinkedList);
     }
 
+    @Test
+    public void testPojoList() throws Exception {
+        ListResult<Parent> result = new ListResult<Parent>();
+        List<Parent> list = new ArrayList<Parent>();
+        Parent parent = new Parent();
+        parent.setAge(Integer.MAX_VALUE);
+        parent.setName("zhangsan");
+        list.add(parent);
+        result.setResult(list);
+
+        Object generializeObject = PojoUtils.generalize(result);
+        Object realizeObject = PojoUtils.realize(generializeObject, ListResult.class);
+        Assert.assertTrue(realizeObject instanceof ListResult);
+        ListResult listResult = (ListResult)realizeObject;
+        List l = listResult.getResult();
+        Assert.assertTrue(l.size() == 1);
+        Assert.assertTrue(l.get(0) instanceof Parent);
+        Parent realizeParent = (Parent)l.get(0);
+        Assert.assertEquals(parent.getName(), realizeParent.getName());
+        Assert.assertEquals(parent.getAge(), realizeParent.getAge());
+    }
+
+    public static class ListResult<T> {
+        List<T> result;
+
+        public List<T> getResult() {
+            return result;
+        }
+
+        public void setResult(List<T> result) {
+            this.result = result;
+        }
+    }
+
     private static Child newChild(String name, int age) {
         Child result = new Child();
         result.setName(name);
