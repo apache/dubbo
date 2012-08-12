@@ -49,7 +49,7 @@ Source Building
 1. Checkout the dubbo source code:
 
     cd ~
-    git clone https://github.com/AlibabaTech/dubbo.git dubbo
+    git clone https://github.com/alibaba/dubbo.git dubbo
 
     git checkout -b dubbo-2.4.0
     git checkout master
