@@ -106,11 +106,15 @@ public final class Version {
         }
     }
 
+    public static void checkDuplicate(Class<?> cls, boolean failOnError) {
+        checkDuplicate(cls.getName().replace('.', '/') + ".class", failOnError);
+    }
+
 	public static void checkDuplicate(Class<?> cls) {
-		checkDuplicate(cls.getName().replace('.', '/') + ".class");
+		checkDuplicate(cls, false);
 	}
 
-	public static void checkDuplicate(String path) {
+	public static void checkDuplicate(String path, boolean failOnError) {
 		try {
 			// 在ClassPath搜文件
 			Enumeration<URL> urls = ClassHelper.getCallerClassLoader(Version.class).getResources(path);
@@ -126,7 +130,12 @@ public final class Version {
 			}
 			// 如果有多个，就表示重复
 			if (files.size() > 1) {
-				logger.error("Duplicate class " + path + " in " + files.size() + " jar " + files);
+                String error = "Duplicate class " + path + " in " + files.size() + " jar " + files;
+                if (failOnError) {
+                    throw new IllegalStateException(error);
+                } else {
+				    logger.error(error);
+                }
 			}
 		} catch (Throwable e) { // 防御性容错
 			logger.error(e.getMessage(), e);
