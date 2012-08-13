@@ -34,13 +34,13 @@ import com.alibaba.dubbo.remoting.Codec;
  */
 public abstract class AbstractCodec implements Codec {
 	
-	private final Logger logger = LoggerFactory.getLogger(getClass());
+	private static final Logger logger = LoggerFactory.getLogger(AbstractCodec.class);
 
     protected Serialization getSerialization(Channel channel) {
         return CodecSupport.getSerialization(channel.getUrl());
     }
 
-    protected void checkPayload(Channel channel, long size) throws IOException {
+    protected static void checkPayload(Channel channel, long size) throws IOException {
         int payload = Constants.DEFAULT_PAYLOAD;
         if (channel != null && channel.getUrl() != null) {
             payload = channel.getUrl().getPositiveParameter(Constants.PAYLOAD_KEY, Constants.DEFAULT_PAYLOAD);
