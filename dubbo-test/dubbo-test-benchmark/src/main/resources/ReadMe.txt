@@ -1,13 +1,13 @@
-Ò»¡¢ĞÂ½¨Ò»¸öbenchmark¹¤³Ì£¬Èçdemo.benchmark
-¶ş¡¢µ¼Èë×Ô¼º·şÎñµÄ½Ó¿Úapi°üºÍdubbo.benchmark.jar(½âÑ¹dubbo.benchmark.tar.gz£¬ÔÚlibÄ¿Â¼ÏÂ)
-Èı¡¢ĞÂ½¨Ò»¸öÀà£¬ÊµÏÖAbstractClientRunnable
-    a¡¢ÊµÏÖ¸¸ÀàµÄ¹¹Ôìº¯Êı
-	b¡¢ÊµÏÖinvoke·½·¨£¬Í¨¹ıserviceFactory´´½¨±¾µØ½Ó¿Ú´úÀí£¬²¢ÊµÏÖ×Ô¼ºµÄÒµÎñÂß¼­£¬ÈçÏÂ
-	 public Object invoke(ServiceFactory serviceFactory) {
+ä¸€ã€æ–°å»ºä¸€ä¸ªbenchmarkå·¥ç¨‹ï¼Œå¦‚demo.benchmark
+äºŒã€å¯¼å…¥è‡ªå·±æœåŠ¡çš„æ¥å£apiåŒ…å’Œdubbo.benchmark.jar(è§£å‹dubbo.benchmark.tar.gzï¼Œåœ¨libç›®å½•ä¸‹)
+ä¸‰ã€æ–°å»ºä¸€ä¸ªç±»ï¼Œå®ç°AbstractClientRunnable
+    aã€å®ç°çˆ¶ç±»çš„æ„é€ å‡½æ•°
+    bã€å®ç°invokeæ–¹æ³•ï¼Œé€šè¿‡serviceFactoryåˆ›å»ºæœ¬åœ°æ¥å£ä»£ç†ï¼Œå¹¶å®ç°è‡ªå·±çš„ä¸šåŠ¡é€»è¾‘ï¼Œå¦‚ä¸‹
+    public Object invoke(ServiceFactory serviceFactory) {
         DemoService demoService = (DemoService) serviceFactory.get(DemoService.class);
         return demoService.sendRequest("hello");
     }
-ËÄ¡¢½«×Ô¼ºµÄbenchmark¹¤³Ì´ò³Éjar°ü,Èçdemo.benchmark.jar
-Îå¡¢½«demo.benchmark.jar·Åµ½dubbo.benchmark/libÄ¿Â¼ÏÂ
-Áù¡¢ÅäÖÃduubo.properties
-Æß¡¢ÔËĞĞrun.bat(windows)»òrun.sh(linux)
+å››ã€å°†è‡ªå·±çš„benchmarkå·¥ç¨‹æ‰“æˆjaråŒ…,å¦‚demo.benchmark.jar
+äº”ã€å°†demo.benchmark.jaræ”¾åˆ°dubbo.benchmark/libç›®å½•ä¸‹
+å…­ã€é…ç½®dubbo.properties
+ä¸ƒã€è¿è¡Œrun.bat(windows)æˆ–run.sh(linux)
