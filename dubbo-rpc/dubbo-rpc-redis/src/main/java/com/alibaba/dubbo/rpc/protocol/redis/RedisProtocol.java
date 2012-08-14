@@ -24,6 +24,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.pool.impl.GenericObjectPool;
 
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -93,12 +94,15 @@ public class RedisProtocol extends AbstractProtocol {
             final String delete = url.getParameter("delete", Map.class.equals(type) ? "remove" : "delete");
             return new AbstractInvoker<T>(type, url) {
                 protected Result doInvoke(Invocation invocation) throws Throwable {
+                    Jedis resource = null;
                     try {
+                        resource = jedisPool.getResource();
+
                         if (get.equals(invocation.getMethodName())) {
                             if (invocation.getArguments().length != 1) {
                                 throw new IllegalArgumentException("The redis get method arguments mismatch, must only one arguments. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url);
                             }
-                            byte[] value = jedisPool.getResource().get(String.valueOf(invocation.getArguments()[0]).getBytes());
+                            byte[] value = resource.get(String.valueOf(invocation.getArguments()[0]).getBytes());
                             if (value == null) {
                                 return new RpcResult();
                             }
@@ -112,21 +116,22 @@ public class RedisProtocol extends AbstractProtocol {
                             ByteArrayOutputStream output = new ByteArrayOutputStream();
                             ObjectOutput value = getSerialization(url).serialize(url, output);
                             value.writeObject(invocation.getArguments()[1]);
-                            jedisPool.getResource().set(key, output.toByteArray());
+                            resource.set(key, output.toByteArray());
                             if (expiry > 1000) {
-                                jedisPool.getResource().expire(key, expiry / 1000);
+                                resource.expire(key, expiry / 1000);
                             }
                             return new RpcResult();
                         } else if (delete.equals(invocation.getMethodName())) {
                             if (invocation.getArguments().length != 1) {
                                 throw new IllegalArgumentException("The redis delete method arguments mismatch, must only one arguments. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url);
                             }
-                            jedisPool.getResource().del(String.valueOf(invocation.getArguments()[0]).getBytes());
+                            resource.del(String.valueOf(invocation.getArguments()[0]).getBytes());
                             return new RpcResult();
                         } else {
                             throw new UnsupportedOperationException("Unsupported method " + invocation.getMethodName() + " in redis service.");
                         }
-                    } catch (Throwable t) {
+                    }
+                    catch (Throwable t) {
                         RpcException re = new RpcException("Failed to invoke memecached service method. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url + ", cause: " + t.getMessage(), t);
                         if (t instanceof TimeoutException || t instanceof SocketTimeoutException) {
                             re.setCode(RpcException.TIMEOUT_EXCEPTION);
@@ -137,7 +142,18 @@ public class RedisProtocol extends AbstractProtocol {
                         }
                         throw re;
                     }
+                    finally {
+                        if(resource != null) {
+                            try {
+                                jedisPool.returnResource(resource);
+                            }
+                            catch (Throwable t) {
+                                logger.warn("returnResource error: " + t.getMessage(), t);
+                            }
+                        }
+                    }
                 }
+
                 public void destroy() {
                     super.destroy();
                     try {
