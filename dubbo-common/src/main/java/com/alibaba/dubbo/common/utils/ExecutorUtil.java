@@ -21,6 +21,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 
@@ -108,5 +110,12 @@ public class ExecutorUtil {
                 }
             });
         }
+    }
+
+    public static URL setThreadName(URL url, String defaultPrefix) {
+        String name = url.getParameter(Constants.THREAD_NAME_KEY, defaultPrefix);
+        name = new StringBuilder(32).append(name).append("-").append(url.getAddress()).toString();
+        url = url.removeParameter(Constants.THREAD_NAME_KEY).addParameter(Constants.THREAD_NAME_KEY, name);
+        return url;
     }
 }
