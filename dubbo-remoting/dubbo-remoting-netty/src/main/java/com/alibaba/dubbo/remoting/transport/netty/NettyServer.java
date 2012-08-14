@@ -33,6 +33,7 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.ExecutorUtil;
 import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.remoting.Channel;
@@ -59,7 +60,7 @@ public class NettyServer extends AbstractServer implements Server {
     private org.jboss.netty.channel.Channel channel;
 
     public NettyServer(URL url, ChannelHandler handler) throws RemotingException{
-        super(url, ChannelHandlers.wrap(handler, url.addParameterIfAbsent(Constants.THREAD_NAME_KEY, SERVER_THREAD_POOL_NAME)));
+        super(url, ChannelHandlers.wrap(handler, ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME)));
     }
 
     @Override
