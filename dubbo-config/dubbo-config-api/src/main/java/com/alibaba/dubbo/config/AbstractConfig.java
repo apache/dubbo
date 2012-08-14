@@ -146,12 +146,17 @@ public abstract class AbstractConfig implements Serializable {
                 if (name.length() > 3 && name.startsWith("set") && Modifier.isPublic(method.getModifiers()) 
                         && method.getParameterTypes().length == 1 && isPrimitive(method.getParameterTypes()[0])) {
                     String property = StringUtils.camelToSplitName(name.substring(3, 4).toLowerCase() + name.substring(4), "-");
+
                     String value = null;
                     if (config.getId() != null && config.getId().length() > 0) {
-                        value = System.getProperty(prefix + config.getId() + "." + property);
+                        String pn = prefix + config.getId() + "." + property;
+                        value = System.getProperty(pn);
+                        logger.info("Use System Property " + pn + "to config dubbo");
                     }
                     if (value == null || value.length() == 0) {
-                        value = System.getProperty(prefix + property);
+                        String pn = prefix + property;
+                        value = System.getProperty(pn);
+                        logger.info("Use System Property " + pn + "to config dubbo");
                     }
                     if (value == null || value.length() == 0) {
                         Method getter;
