@@ -83,11 +83,11 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     
     private final List<Exporter<?>> exporters = new ArrayList<Exporter<?>>();
 
-    private transient boolean exported;
+    private transient volatile boolean exported;
 
-	private transient boolean unexported;
+	private transient volatile boolean unexported;
     
-    private transient boolean generic;
+    private transient volatile boolean generic;
 
     public ServiceConfig() {
     }
@@ -278,204 +278,216 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private void doExportUrls() {
         List<URL> registryURLs = loadRegistries(true);
         for (ProtocolConfig protocolConfig : protocols) {
-            String name = protocolConfig.getName();
-            if (name == null || name.length() == 0) {
-                name = "dubbo";
+            doExportUrlsFor1Protocol(protocolConfig, registryURLs);
+        }
+    }
+
+    private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
+        String name = protocolConfig.getName();
+        if (name == null || name.length() == 0) {
+            name = "dubbo";
+        }
+
+        String host = protocolConfig.getHost();
+        if (provider != null && (host == null || host.length() == 0)) {
+            host = provider.getHost();
+        }
+        boolean anyhost = false;
+        if (NetUtils.isInvalidLocalHost(host)) {
+            anyhost = true;
+            try {
+                host = InetAddress.getLocalHost().getHostAddress();
+            } catch (UnknownHostException e) {
+                logger.warn(e.getMessage(), e);
             }
-            String host = protocolConfig.getHost();
-            if (provider != null && (host == null || host.length() == 0)) {
-                host = provider.getHost();
-            }
-            boolean anyhost = false;
             if (NetUtils.isInvalidLocalHost(host)) {
-                anyhost = true;
-                try {
-                    host = InetAddress.getLocalHost().getHostAddress();
-                } catch (UnknownHostException e) {
-                    logger.warn(e.getMessage(), e);
+                if (registryURLs != null && registryURLs.size() > 0) {
+                    for (URL registryURL : registryURLs) {
+                        try {
+                            Socket socket = new Socket();
+                            try {
+                                SocketAddress addr = new InetSocketAddress(registryURL.getHost(), registryURL.getPort());
+                                socket.connect(addr, 1000);
+                                host = socket.getLocalAddress().getHostAddress();
+                                break;
+                            } finally {
+                                try {
+                                    socket.close();
+                                } catch (Throwable e) {}
+                            }
+                        } catch (Exception e) {
+                            logger.warn(e.getMessage(), e);
+                        }
+                    }
                 }
                 if (NetUtils.isInvalidLocalHost(host)) {
-                    if (registryURLs != null && registryURLs.size() > 0) {
-                        for (URL registryURL : registryURLs) {
-                            try {
-                                Socket socket = new Socket();
-                                try {
-                                    SocketAddress addr = new InetSocketAddress(registryURL.getHost(), registryURL.getPort());
-                                    socket.connect(addr, 1000);
-                                    host = socket.getLocalAddress().getHostAddress();
-                                    break;
-                                } finally {
-                                    try {
-                                        socket.close();
-                                    } catch (Throwable e) {}
-                                }
-                            } catch (Exception e) {
-                                logger.warn(e.getMessage(), e);
-                            }
-                        }
-                    }
-                    if (NetUtils.isInvalidLocalHost(host)) {
-                        host = NetUtils.getLocalHost();
-                    }
+                    host = NetUtils.getLocalHost();
                 }
             }
-            Integer port = protocolConfig.getPort();
-            if (provider != null && (port == null || port == 0)) {
-                port = provider.getPort();
+        }
+
+        Integer port = protocolConfig.getPort();
+        if (provider != null && (port == null || port == 0)) {
+            port = provider.getPort();
+        }
+        final int defaultPort = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(name).getDefaultPort();
+        if (port == null || port == 0) {
+            port = defaultPort;
+        }
+        if (port == null || port <= 0) {
+            port = getRandomPort(name);
+            if (port == null || port < 0) {
+                port = NetUtils.getAvailablePort(defaultPort);
+                putRandomPort(name, port);
             }
-            int defaultPort = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(name).getDefaultPort();
-            if (port == null || port == 0) {
-                port = defaultPort;
-            }
-            if (port == null || port <= 0) {
-                port = getRandomPort(name);
-                if (port == null || port < 0) {
-                    port = NetUtils.getAvailablePort(defaultPort);
-                    putRandomPort(name, port);
-                }
-                logger.warn("Use random available port(" + port + ") for protocol " + name);
-            }
-            Map<String, String> map = new HashMap<String, String>();
-            if (anyhost) {
-                map.put(Constants.ANYHOST_KEY, "true");
-            }
-            map.put(Constants.SIDE_KEY, Constants.PROVIDER_SIDE);
-            map.put(Constants.DUBBO_VERSION_KEY, Version.getVersion());
-            map.put(Constants.TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
-            if (ConfigUtils.getPid() > 0) {
-                map.put(Constants.PID_KEY, String.valueOf(ConfigUtils.getPid()));
-            }
-            appendParameters(map, application);
-            appendParameters(map, module);
-            appendParameters(map, provider, Constants.DEFAULT_KEY);
-            appendParameters(map, protocolConfig);
-            appendParameters(map, this);
-            if (methods != null && methods.size() > 0) {
-                for (MethodConfig method : methods) {
-                    appendParameters(map, method, method.getName());
-                    String retryKey = method.getName() + ".retry";
-                    if (map.containsKey(retryKey)) {
-                        String retryValue = map.remove(retryKey);
-                        if ("false".equals(retryValue)) {
-                            map.put(method.getName() + ".retries", "0");
-                        }
+            logger.warn("Use random available port(" + port + ") for protocol " + name);
+        }
+
+        Map<String, String> map = new HashMap<String, String>();
+        if (anyhost) {
+            map.put(Constants.ANYHOST_KEY, "true");
+        }
+        map.put(Constants.SIDE_KEY, Constants.PROVIDER_SIDE);
+        map.put(Constants.DUBBO_VERSION_KEY, Version.getVersion());
+        map.put(Constants.TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
+        if (ConfigUtils.getPid() > 0) {
+            map.put(Constants.PID_KEY, String.valueOf(ConfigUtils.getPid()));
+        }
+        appendParameters(map, application);
+        appendParameters(map, module);
+        appendParameters(map, provider, Constants.DEFAULT_KEY);
+        appendParameters(map, protocolConfig);
+        appendParameters(map, this);
+        if (methods != null && methods.size() > 0) {
+            for (MethodConfig method : methods) {
+                appendParameters(map, method, method.getName());
+                String retryKey = method.getName() + ".retry";
+                if (map.containsKey(retryKey)) {
+                    String retryValue = map.remove(retryKey);
+                    if ("false".equals(retryValue)) {
+                        map.put(method.getName() + ".retries", "0");
                     }
-                    List<ArgumentConfig> arguments = method.getArguments();
-                    if (arguments != null && arguments.size() > 0) {
-                        for (ArgumentConfig argument : arguments) {
-                            //类型自动转换.
-                            if(argument.getType() != null && argument.getType().length() >0){
-                                Method[] methods = interfaceClass.getMethods();
-                                //遍历所有方法
-                                if(methods != null && methods.length > 0){
-                                    for (int i = 0; i < methods.length; i++) {
-                                        String methodName = methods[i].getName();
-                                        //匹配方法名称，获取方法签名.
-                                        if(methodName.equals(method.getName())){
-                                            Class<?>[] argtypes = methods[i].getParameterTypes();
-                                            //一个方法中单个callback
-                                            if (argument.getIndex() != -1 ){
-                                                if (argtypes[argument.getIndex()].getName().equals(argument.getType())){
-                                                    appendParameters(map, argument, method.getName() + "." + argument.getIndex());
-                                                }else {
-                                                    throw new IllegalArgumentException("argument config error : the index attribute and type attirbute not match :index :"+argument.getIndex() + ", type:" + argument.getType());
-                                                }
-                                            } else {
-                                                //一个方法中多个callback
-                                                for (int j = 0 ;j<argtypes.length ;j++) {
-                                                    Class<?> argclazz = argtypes[j];
-                                                    if (argclazz.getName().equals(argument.getType())){
-                                                        appendParameters(map, argument, method.getName() + "." + j);
-                                                        if (argument.getIndex() != -1 && argument.getIndex() != j){
-                                                            throw new IllegalArgumentException("argument config error : the index attribute and type attirbute not match :index :"+argument.getIndex() + ", type:" + argument.getType());
-                                                        }
+                }
+                List<ArgumentConfig> arguments = method.getArguments();
+                if (arguments != null && arguments.size() > 0) {
+                    for (ArgumentConfig argument : arguments) {
+                        //类型自动转换.
+                        if(argument.getType() != null && argument.getType().length() >0){
+                            Method[] methods = interfaceClass.getMethods();
+                            //遍历所有方法
+                            if(methods != null && methods.length > 0){
+                                for (int i = 0; i < methods.length; i++) {
+                                    String methodName = methods[i].getName();
+                                    //匹配方法名称，获取方法签名.
+                                    if(methodName.equals(method.getName())){
+                                        Class<?>[] argtypes = methods[i].getParameterTypes();
+                                        //一个方法中单个callback
+                                        if (argument.getIndex() != -1 ){
+                                            if (argtypes[argument.getIndex()].getName().equals(argument.getType())){
+                                                appendParameters(map, argument, method.getName() + "." + argument.getIndex());
+                                            }else {
+                                                throw new IllegalArgumentException("argument config error : the index attribute and type attirbute not match :index :"+argument.getIndex() + ", type:" + argument.getType());
+                                            }
+                                        } else {
+                                            //一个方法中多个callback
+                                            for (int j = 0 ;j<argtypes.length ;j++) {
+                                                Class<?> argclazz = argtypes[j];
+                                                if (argclazz.getName().equals(argument.getType())){
+                                                    appendParameters(map, argument, method.getName() + "." + j);
+                                                    if (argument.getIndex() != -1 && argument.getIndex() != j){
+                                                        throw new IllegalArgumentException("argument config error : the index attribute and type attirbute not match :index :"+argument.getIndex() + ", type:" + argument.getType());
                                                     }
                                                 }
                                             }
                                         }
                                     }
                                 }
-                            }else if(argument.getIndex() != -1){
-                                appendParameters(map, argument, method.getName() + "." + argument.getIndex());
-                            }else {
-                                throw new IllegalArgumentException("argument config must set index or type attribute.eg: <dubbo:argument index='0' .../> or <dubbo:argument type=xxx .../>");
                             }
-                            
+                        }else if(argument.getIndex() != -1){
+                            appendParameters(map, argument, method.getName() + "." + argument.getIndex());
+                        }else {
+                            throw new IllegalArgumentException("argument config must set index or type attribute.eg: <dubbo:argument index='0' .../> or <dubbo:argument type=xxx .../>");
                         }
+
                     }
                 }
-            }
-            if (generic) {
-                map.put("generic", String.valueOf(true));
-                map.put("methods", Constants.ANY_VALUE);
-            } else {
-                String revision = Version.getVersion(interfaceClass, version);
-                if (revision != null && revision.length() > 0) {
-                    map.put("revision", revision);
-                }
-                map.put("methods", StringUtils.join(new HashSet<String>(Arrays.asList(Wrapper.getWrapper(interfaceClass).getDeclaredMethodNames())), ","));
-            }
-            if (! ConfigUtils.isEmpty(token)) {
-                if (ConfigUtils.isDefault(token)) {
-                    map.put("token", UUID.randomUUID().toString());
-                } else {
-                    map.put("token", token);
-                }
-            }
-            if ("injvm".equals(protocolConfig.getName())) {
-                protocolConfig.setRegister(false);
-                map.put("notify", "false");
-            }
-            // 导出服务
-            String contextPath = protocolConfig.getContextpath();
-            if ((contextPath == null || contextPath.length() == 0) && provider != null) {
-                contextPath = provider.getContextpath();
-            }
-            URL url = new URL(name, host, port, (contextPath == null || contextPath.length() == 0 ? "" : contextPath + "/") + path, map);
-            
-            if (ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
-                .hasExtension(url.getProtocol())) {
-                url = ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
-                    .getExtension(url.getProtocol()).getConfigurator(url).configure(url);
-            }
-            
-            String scope = url.getParameter(Constants.SCOPE_KEY);
-            //配置为none不暴露
-            if (! Constants.SCOPE_NONE.toString().equalsIgnoreCase(scope)) {
-            	//配置不是remote的情况下做本地暴露 (配置为remote，则表示只暴露远程服务)
-            	if (!Constants.SCOPE_REMOTE.toString().equalsIgnoreCase(scope)) {
-            		exportLocal(url);
-            	}
-            	//如果配置不是local则暴露为远程服务.(配置为local，则表示只暴露远程服务)
-	            if (! Constants.SCOPE_LOCAL.toString().equalsIgnoreCase(scope) ){
-	            	if (logger.isInfoEnabled()) {
-	                    logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
-	                }
-	            	if (registryURLs != null && registryURLs.size() > 0
-	                        && url.getParameter("register", true)) {
-	                    for (URL registryURL : registryURLs) {
-	                        url = url.addParameterIfAbsent("dynamic", registryURL.getParameter("dynamic"));
-	                        URL monitorUrl = loadMonitor(registryURL);
-	                        if (monitorUrl != null) {
-	                            url = url.addParameterAndEncoded(Constants.MONITOR_KEY, monitorUrl.toFullString());
-	                        }
-	                        if (logger.isInfoEnabled()) {
-	                            logger.info("Register dubbo service " + interfaceClass.getName() + " url " + url + " to registry " + registryURL);
-	                        }
-	                        Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString()));
-	                        Exporter<?> exporter = protocol.export(invoker);
-	                        exporters.add(exporter);
-	                    }
-	                } else {
-	                    Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, url);
-	                    Exporter<?> exporter = protocol.export(invoker);
-	                    exporters.add(exporter);
-	                }
-	            }
-            }
-            this.urls.add(url);
+            } // end of methods for
         }
+
+        if (generic) {
+            map.put("generic", String.valueOf(true));
+            map.put("methods", Constants.ANY_VALUE);
+        } else {
+            String revision = Version.getVersion(interfaceClass, version);
+            if (revision != null && revision.length() > 0) {
+                map.put("revision", revision);
+            }
+            map.put("methods", StringUtils.join(new HashSet<String>(Arrays.asList(Wrapper.getWrapper(interfaceClass).getDeclaredMethodNames())), ","));
+        }
+        if (! ConfigUtils.isEmpty(token)) {
+            if (ConfigUtils.isDefault(token)) {
+                map.put("token", UUID.randomUUID().toString());
+            } else {
+                map.put("token", token);
+            }
+        }
+        if ("injvm".equals(protocolConfig.getName())) {
+            protocolConfig.setRegister(false);
+            map.put("notify", "false");
+        }
+        // 导出服务
+        String contextPath = protocolConfig.getContextpath();
+        if ((contextPath == null || contextPath.length() == 0) && provider != null) {
+            contextPath = provider.getContextpath();
+        }
+        URL url = new URL(name, host, port, (contextPath == null || contextPath.length() == 0 ? "" : contextPath + "/") + path, map);
+
+        if (ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
+                .hasExtension(url.getProtocol())) {
+            url = ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
+                    .getExtension(url.getProtocol()).getConfigurator(url).configure(url);
+        }
+
+        String scope = url.getParameter(Constants.SCOPE_KEY);
+        //配置为none不暴露
+        if (! Constants.SCOPE_NONE.toString().equalsIgnoreCase(scope)) {
+
+            //配置不是remote的情况下做本地暴露 (配置为remote，则表示只暴露远程服务)
+            if (!Constants.SCOPE_REMOTE.toString().equalsIgnoreCase(scope)) {
+                exportLocal(url);
+            }
+            //如果配置不是local则暴露为远程服务.(配置为local，则表示只暴露远程服务)
+            if (! Constants.SCOPE_LOCAL.toString().equalsIgnoreCase(scope) ){
+                if (logger.isInfoEnabled()) {
+                    logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
+                }
+                if (registryURLs != null && registryURLs.size() > 0
+                        && url.getParameter("register", true)) {
+                    for (URL registryURL : registryURLs) {
+                        url = url.addParameterIfAbsent("dynamic", registryURL.getParameter("dynamic"));
+                        URL monitorUrl = loadMonitor(registryURL);
+                        if (monitorUrl != null) {
+                            url = url.addParameterAndEncoded(Constants.MONITOR_KEY, monitorUrl.toFullString());
+                        }
+                        if (logger.isInfoEnabled()) {
+                            logger.info("Register dubbo service " + interfaceClass.getName() + " url " + url + " to registry " + registryURL);
+                        }
+                        Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString()));
+
+                        Exporter<?> exporter = protocol.export(invoker);
+                        exporters.add(exporter);
+                    }
+                } else {
+                    Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, url);
+
+                    Exporter<?> exporter = protocol.export(invoker);
+                    exporters.add(exporter);
+                }
+            }
+        }
+        this.urls.add(url);
     }
+
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private void exportLocal(URL url) {

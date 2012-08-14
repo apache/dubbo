@@ -86,13 +86,13 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     private String				 protocol;
 
     // 接口代理类引用
-    private transient T          ref;
+    private transient volatile T ref;
 
-    private transient Invoker<?> invoker;
+    private transient volatile Invoker<?> invoker;
 
-    private transient boolean    initialized;
+    private transient volatile boolean initialized;
 
-    private transient boolean    destroyed;
+    private transient volatile boolean destroyed;
 
     private final List<URL> urls = new ArrayList<URL>();
 
