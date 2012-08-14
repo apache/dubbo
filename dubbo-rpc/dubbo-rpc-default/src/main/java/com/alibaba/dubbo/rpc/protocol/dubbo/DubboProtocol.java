@@ -242,7 +242,8 @@ public class DubboProtocol extends AbstractProtocol {
             String stubServiceMethods = url.getParameter(Constants.STUB_EVENT_METHODS_KEY);
             if (stubServiceMethods == null || stubServiceMethods.length() == 0 ){
                 if (logger.isWarnEnabled()){
-                    logger.warn( new IllegalStateException("consumer ["+url.getParameter(Constants.INTERFACE_KEY)+"], has set stubproxy support event ,but no stub methods founded."));
+                    logger.warn(new IllegalStateException("consumer [" +url.getParameter(Constants.INTERFACE_KEY) +
+                            "], has set stubproxy support event ,but no stub methods founded."));
                 }
             } else {
                 stubServiceMethodsMap.put(url.getServiceKey(), stubServiceMethods);
@@ -262,7 +263,7 @@ public class DubboProtocol extends AbstractProtocol {
         if (isServer) {
         	ExchangeServer server = serverMap.get(key);
         	if (server == null) {
-        		serverMap.put(key, getServer(url));
+        		serverMap.put(key, createServer(url));
         	} else {
         		//server支持reset,配合override功能使用
         		server.reset(url);
@@ -270,7 +271,7 @@ public class DubboProtocol extends AbstractProtocol {
         }
     }
     
-    private ExchangeServer getServer(URL url) {
+    private ExchangeServer createServer(URL url) {
         //默认开启server关闭时发送readonly事件
         url = url.addParameterIfAbsent(Constants.CHANNEL_READONLYEVENT_SENT_KEY, Boolean.TRUE.toString());
         //默认开启heartbeat
