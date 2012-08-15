@@ -126,8 +126,8 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     }
     
     protected static ChannelHandler wrapChannelHandler(URL url, ChannelHandler handler){
-        url = url.addParameterIfAbsent(Constants.THREAD_NAME_KEY, CLIENT_THREAD_POOL_NAME)
-            .addParameterIfAbsent(Constants.THREADPOOL_KEY, Constants.DEFAULT_CLIENT_THREADPOOL);
+        url = ExecutorUtil.setThreadName(url, CLIENT_THREAD_POOL_NAME);
+        url = url.addParameterIfAbsent(Constants.THREADPOOL_KEY, Constants.DEFAULT_CLIENT_THREADPOOL);
         return ChannelHandlers.wrap(handler, url);
     }
     

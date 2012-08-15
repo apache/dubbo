@@ -31,6 +31,7 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.ExecutorUtil;
 import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
@@ -52,7 +53,7 @@ public class MinaServer extends AbstractServer {
     private SocketAcceptor acceptor;
 
     public MinaServer(URL url, ChannelHandler handler) throws RemotingException{
-        super(url, ChannelHandlers.wrap(handler, url.addParameterIfAbsent(Constants.THREAD_NAME_KEY, SERVER_THREAD_POOL_NAME)));
+        super(url, ChannelHandlers.wrap(handler, ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME)));
     }
 
     @Override
