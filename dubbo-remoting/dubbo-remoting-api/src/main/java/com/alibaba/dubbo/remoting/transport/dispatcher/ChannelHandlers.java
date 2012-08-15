@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.remoting.transport.dispather;
+package com.alibaba.dubbo.remoting.transport.dispatcher;
 
 
 import com.alibaba.dubbo.common.URL;
@@ -37,7 +37,7 @@ public class ChannelHandlers {
 
     protected ChannelHandler wrapInternal(ChannelHandler handler, URL url) {
         return new MultiMessageHandler(new HeartbeatHandler(ExtensionLoader.getExtensionLoader(Dispatcher.class)
-                                        .getAdaptiveExtension().dispath(handler, url)));
+                                        .getAdaptiveExtension().dispatch(handler, url)));
     }
 
     private static ChannelHandlers INSTANCE = new ChannelHandlers();

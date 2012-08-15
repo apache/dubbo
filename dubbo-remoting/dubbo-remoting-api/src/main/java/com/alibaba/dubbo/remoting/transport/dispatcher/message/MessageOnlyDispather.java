@@ -13,23 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.remoting.transport.dispather.connection;
+package com.alibaba.dubbo.remoting.transport.dispatcher.message;
 
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.Dispatcher;
 
 /**
- * connect disconnect 保证顺序.
+ * 只有message receive使用线程池.
  * 
  * @author chao.liuc
  */
-public class ConnectionOrderedDispather implements Dispatcher {
+public class MessageOnlyDispather implements Dispatcher {
 
-    public static final String NAME = "connection";
+    public static final String NAME = "message";
 
-    public ChannelHandler dispath(ChannelHandler handler, URL url) {
-        return new ConnectionOrderedChannelHandler(handler, url);
+    public ChannelHandler dispatch(ChannelHandler handler, URL url) {
+        return new MessageOnlyChannelHandler(handler, url);
     }
 
 }

@@ -13,23 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.remoting.transport.dispather.direct;
+package com.alibaba.dubbo.remoting.transport.dispatcher.execution;
 
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.Dispatcher;
 
 /**
- * 不派发线程池。
+ * 除发送全部使用线程池处理
  * 
  * @author chao.liuc
  */
-public class DirectDispather implements Dispatcher {
+public class ExecutionDispather implements Dispatcher {
     
-    public static final String NAME = "direct";
+    public static final String NAME = "execution";
 
-    public ChannelHandler dispath(ChannelHandler handler, URL url) {
-        return handler;
+    public ChannelHandler dispatch(ChannelHandler handler, URL url) {
+        return new ExecutionChannelHandler(handler, url);
     }
 
 }

@@ -20,6 +20,7 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.Dispatcher;
+import com.alibaba.dubbo.remoting.transport.dispatcher.ChannelHandlers;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
@@ -33,7 +34,7 @@ public class FakeChannelHandlers extends ChannelHandlers {
     @Override
     protected ChannelHandler wrapInternal(ChannelHandler handler, URL url) {
         return ExtensionLoader.getExtensionLoader(Dispatcher.class)
-            .getAdaptiveExtension().dispath(handler, url);
+            .getAdaptiveExtension().dispatch(handler, url);
     }
 
     public static void setTestingChannelHandlers() {

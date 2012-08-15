@@ -13,23 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.remoting.transport.dispather.all;
+package com.alibaba.dubbo.remoting.transport.dispatcher.direct;
 
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.Dispatcher;
 
 /**
- * 默认的线程池配置
+ * 不派发线程池。
  * 
  * @author chao.liuc
  */
-public class AllDispather implements Dispatcher {
+public class DirectDispather implements Dispatcher {
     
-    public static final String NAME = "all";
+    public static final String NAME = "direct";
 
-    public ChannelHandler dispath(ChannelHandler handler, URL url) {
-        return new AllChannelHandler(handler, url);
+    public ChannelHandler dispatch(ChannelHandler handler, URL url) {
+        return handler;
     }
 
 }

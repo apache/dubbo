@@ -19,7 +19,7 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.Adaptive;
 import com.alibaba.dubbo.common.extension.SPI;
-import com.alibaba.dubbo.remoting.transport.dispather.all.AllDispather;
+import com.alibaba.dubbo.remoting.transport.dispatcher.all.AllDispather;
 
 /**
  * ChannelHandlerWrapper (SPI, Singleton, ThreadSafe)
@@ -30,13 +30,13 @@ import com.alibaba.dubbo.remoting.transport.dispather.all.AllDispather;
 public interface Dispatcher {
 
     /**
-     * dispath.
+     * dispatch the message to threadpool.
      * 
      * @param handler
      * @param url
      * @return channel handler
      */
     @Adaptive({Constants.DISPATCHER_KEY, "dispather", "channel.handler"}) // 后两个参数为兼容旧配置
-    ChannelHandler dispath(ChannelHandler handler, URL url);
+    ChannelHandler dispatch(ChannelHandler handler, URL url);
 
 }

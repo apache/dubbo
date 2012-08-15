@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.remoting.transport.dispather.execution;
+package com.alibaba.dubbo.remoting.transport.dispatcher.execution;
 
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;
-import com.alibaba.dubbo.remoting.transport.dispather.ChannelEventRunnable;
-import com.alibaba.dubbo.remoting.transport.dispather.ChannelEventRunnable.ChannelState;
-import com.alibaba.dubbo.remoting.transport.dispather.WrappedChannelHandler;
+import com.alibaba.dubbo.remoting.transport.dispatcher.ChannelEventRunnable;
+import com.alibaba.dubbo.remoting.transport.dispatcher.WrappedChannelHandler;
+import com.alibaba.dubbo.remoting.transport.dispatcher.ChannelEventRunnable.ChannelState;
 
 public class ExecutionChannelHandler extends WrappedChannelHandler {
     

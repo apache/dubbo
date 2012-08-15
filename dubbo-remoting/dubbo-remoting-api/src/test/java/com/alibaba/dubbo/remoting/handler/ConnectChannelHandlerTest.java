@@ -28,7 +28,7 @@ import com.alibaba.dubbo.remoting.ExecutionException;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.exchange.Request;
 import com.alibaba.dubbo.remoting.exchange.Response;
-import com.alibaba.dubbo.remoting.transport.dispather.connection.ConnectionOrderedChannelHandler;
+import com.alibaba.dubbo.remoting.transport.dispatcher.connection.ConnectionOrderedChannelHandler;
 
 
 
