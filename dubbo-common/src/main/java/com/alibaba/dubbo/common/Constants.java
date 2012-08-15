@@ -324,7 +324,7 @@ public class Constants {
 
     public static final String  HESSIAN_VERSION_KEY                = "hessian.version";
 
-    public static final String  DISPATHER_KEY                      = "dispather";
+    public static final String  DISPATCHER_KEY                     = "dispatcher";
 
     public static final String  CHANNEL_HANDLER_KEY                = "channel.handler";
 
