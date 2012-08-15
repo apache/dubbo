@@ -19,7 +19,7 @@ package com.alibaba.dubbo.remoting.transport.dispather;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.remoting.ChannelHandler;
-import com.alibaba.dubbo.remoting.Dispather;
+import com.alibaba.dubbo.remoting.Dispatcher;
 import com.alibaba.dubbo.remoting.exchange.support.header.HeartbeatHandler;
 import com.alibaba.dubbo.remoting.transport.MultiMessageHandler;
 
@@ -36,7 +36,7 @@ public class ChannelHandlers {
     protected ChannelHandlers() {}
 
     protected ChannelHandler wrapInternal(ChannelHandler handler, URL url) {
-        return new MultiMessageHandler(new HeartbeatHandler(ExtensionLoader.getExtensionLoader(Dispather.class)
+        return new MultiMessageHandler(new HeartbeatHandler(ExtensionLoader.getExtensionLoader(Dispatcher.class)
                                         .getAdaptiveExtension().dispath(handler, url)));
     }
 

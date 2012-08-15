@@ -17,14 +17,14 @@ package com.alibaba.dubbo.remoting.transport.dispather.message;
 
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.ChannelHandler;
-import com.alibaba.dubbo.remoting.Dispather;
+import com.alibaba.dubbo.remoting.Dispatcher;
 
 /**
  * 只有message receive使用线程池.
  * 
  * @author chao.liuc
  */
-public class MessageOnlyDispather implements Dispather {
+public class MessageOnlyDispather implements Dispatcher {
 
     public static final String NAME = "message";
 

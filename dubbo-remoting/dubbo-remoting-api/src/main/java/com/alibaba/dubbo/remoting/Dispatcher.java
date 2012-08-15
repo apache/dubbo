@@ -27,7 +27,7 @@ import com.alibaba.dubbo.remoting.transport.dispather.all.AllDispather;
  * @author chao.liuc
  */
 @SPI(AllDispather.NAME)
-public interface Dispather {
+public interface Dispatcher {
 
     /**
      * dispath.

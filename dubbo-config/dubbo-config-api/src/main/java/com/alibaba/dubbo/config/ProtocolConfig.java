@@ -23,7 +23,7 @@ import com.alibaba.dubbo.common.status.StatusChecker;
 import com.alibaba.dubbo.common.threadpool.ThreadPool;
 import com.alibaba.dubbo.config.support.Parameter;
 import com.alibaba.dubbo.registry.support.AbstractRegistryFactory;
-import com.alibaba.dubbo.remoting.Dispather;
+import com.alibaba.dubbo.remoting.Dispatcher;
 import com.alibaba.dubbo.remoting.Codec;
 import com.alibaba.dubbo.remoting.Transporter;
 import com.alibaba.dubbo.remoting.exchange.Exchanger;
@@ -95,7 +95,7 @@ public class ProtocolConfig extends AbstractConfig {
     private String              exchanger;
     
     // 信息线程模型派发方式
-    private String              dispather;
+    private String              dispatcher;
 
     // 对称网络组网方式
     private String              networker;
@@ -367,13 +367,31 @@ public class ProtocolConfig extends AbstractConfig {
         this.exchanger = exchanger;
     }
 
+    /**
+     * 单词拼写错误，请使用getDispatcher()
+     * @deprecated {@link #getDispatcher()}
+     */
+    @Deprecated
     public String getDispather() {
-        return dispather;
+        return getDispatcher();
     }
 
+    /**
+     * 单词拼写错误，请使用setDispatcher()
+     * @deprecated {@link #setDispatcher(String)}
+     */
+    @Deprecated
     public void setDispather(String dispather) {
-        checkExtension(Dispather.class, "dispather", exchanger);
-        this.dispather = dispather;
+        setDispatcher(dispather);
+    }
+
+    public String getDispatcher() {
+        return dispatcher;
+    }
+
+    public void setDispatcher(String dispatcher) {
+        checkExtension(Dispatcher.class, "dispacther", dispatcher);
+        this.dispatcher = dispatcher;
     }
 
     public String getNetworker() {

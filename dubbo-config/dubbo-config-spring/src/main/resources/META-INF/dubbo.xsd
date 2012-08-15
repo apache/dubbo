@@ -825,7 +825,12 @@
 		</xsd:attribute>
 		<xsd:attribute name="dispather" type="xsd:string" use="optional">
 			<xsd:annotation>
-				<xsd:documentation><![CDATA[ The protocol dispather type. ]]></xsd:documentation>
+				<xsd:documentation><![CDATA[ Deprecated. replace to "dispatcher". ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="dispatcher" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ The protocol dispatcher type. ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="networker" type="xsd:string" use="optional">
@@ -945,7 +950,12 @@
 				</xsd:attribute>
 				<xsd:attribute name="dispather" type="xsd:string" use="optional">
 					<xsd:annotation>
-						<xsd:documentation><![CDATA[ The protocol dispather type. ]]></xsd:documentation>
+						<xsd:documentation><![CDATA[ Deprecated. replace to "dispatcher". ]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="dispatcher" type="xsd:string" use="optional">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[ The protocol dispatcher type. ]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
 				<xsd:attribute name="networker" type="xsd:string" use="optional">
