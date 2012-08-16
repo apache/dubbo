@@ -38,10 +38,23 @@ public class ClusterUtils {
             
             //线程池配置不使用提供者的
             map.remove(Constants.THREAD_NAME_KEY);
+            map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.THREAD_NAME_KEY);
+
             map.remove(Constants.CORE_THREADS_KEY);
+            map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.CORE_THREADS_KEY);
+
             map.remove(Constants.THREADS_KEY);
+            map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.THREADS_KEY);
+
             map.remove(Constants.QUEUES_KEY);
+            map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.QUEUES_KEY);
+
             map.remove(Constants.ALIVE_KEY);
+            map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.ALIVE_KEY);
+
+            map.remove(Constants.THREADPOOL_KEY);
+            map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.THREADPOOL_KEY);
+
         }
         
         if (localMap != null && localMap.size() > 0) {
@@ -79,7 +92,7 @@ public class ClusterUtils {
                 localMap.put(Constants.INVOKER_LISTENER_KEY, remoteListener + "," + localListener);
             }
         }
-        return remoteUrl.addParameters(map);
+        return remoteUrl.removeParameters(remoteUrl.getParameters().keySet()).addParameters(map);
     }
 
     private ClusterUtils() {}
