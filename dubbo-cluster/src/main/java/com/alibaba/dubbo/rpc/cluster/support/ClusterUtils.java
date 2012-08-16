@@ -40,6 +40,9 @@ public class ClusterUtils {
             map.remove(Constants.THREAD_NAME_KEY);
             map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.THREAD_NAME_KEY);
 
+            map.remove(Constants.THREADPOOL_KEY);
+            map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.THREADPOOL_KEY);
+
             map.remove(Constants.CORE_THREADS_KEY);
             map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.CORE_THREADS_KEY);
 
@@ -51,10 +54,6 @@ public class ClusterUtils {
 
             map.remove(Constants.ALIVE_KEY);
             map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.ALIVE_KEY);
-
-            map.remove(Constants.THREADPOOL_KEY);
-            map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.THREADPOOL_KEY);
-
         }
         
         if (localMap != null && localMap.size() > 0) {
@@ -92,7 +91,8 @@ public class ClusterUtils {
                 localMap.put(Constants.INVOKER_LISTENER_KEY, remoteListener + "," + localListener);
             }
         }
-        return remoteUrl.removeParameters(remoteUrl.getParameters().keySet()).addParameters(map);
+
+        return remoteUrl.clearParameters().addParameters(map);
     }
 
     private ClusterUtils() {}
