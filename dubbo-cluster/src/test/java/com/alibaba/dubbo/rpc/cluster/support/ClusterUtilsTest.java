@@ -51,13 +51,13 @@ public class ClusterUtilsTest {
 
         URL consumerURL = URL.valueOf("dubbo://localhost:55555");
         consumerURL = consumerURL.addParameter(Constants.PID_KEY, "1234");
+	    consumerURL = consumerURL.addParameter(Constants.THREADPOOL_KEY, "foo");
 
         URL url = ClusterUtils.mergeUrl(providerURL, consumerURL.getParameters());
 
         Assert.assertFalse(url.hasParameter(Constants.THREADS_KEY));
         Assert.assertFalse(url.hasParameter(Constants.DEFAULT_KEY_PREFIX + Constants.THREADS_KEY));
 
-        Assert.assertFalse(url.hasParameter(Constants.THREADPOOL_KEY));
         Assert.assertFalse(url.hasParameter(Constants.DEFAULT_KEY_PREFIX + Constants.THREADPOOL_KEY));
 
         Assert.assertFalse(url.hasParameter(Constants.CORE_THREADS_KEY));
@@ -76,6 +76,7 @@ public class ClusterUtilsTest {
         Assert.assertEquals(url.getUsername(), "username");
         Assert.assertEquals(url.getPassword(), "password");
         Assert.assertEquals(url.getParameter(Constants.PID_KEY), "1234");
+	    Assert.assertEquals(url.getParameter(Constants.THREADPOOL_KEY), "foo");
     }
 
 }
