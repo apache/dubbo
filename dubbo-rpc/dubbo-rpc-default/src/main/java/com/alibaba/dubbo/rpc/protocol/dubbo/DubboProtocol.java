@@ -385,7 +385,6 @@ public class DubboProtocol extends AbstractProtocol {
     }
 
     public void destroy() {
-        super.destroy();
         for (String key : new ArrayList<String>(serverMap.keySet())) {
             ExchangeServer server = serverMap.remove(key);
             if (server != null) {
@@ -428,5 +427,6 @@ public class DubboProtocol extends AbstractProtocol {
             }
         }
         stubServiceMethodsMap.clear();
+        super.destroy();
     }
 }
