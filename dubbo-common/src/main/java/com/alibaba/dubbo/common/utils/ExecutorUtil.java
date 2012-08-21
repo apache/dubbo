@@ -112,10 +112,14 @@ public class ExecutorUtil {
         }
     }
 
-    public static URL setThreadName(URL url, String defaultPrefix) {
-        String name = url.getParameter(Constants.THREAD_NAME_KEY, defaultPrefix);
+    /**
+     * append thread name with url address
+     * @return new url with updated thread name
+     */
+    public static URL setThreadName(URL url, String defaultName) {
+        String name = url.getParameter(Constants.THREAD_NAME_KEY, defaultName);
         name = new StringBuilder(32).append(name).append("-").append(url.getAddress()).toString();
-        url = url.removeParameter(Constants.THREAD_NAME_KEY).addParameter(Constants.THREAD_NAME_KEY, name);
+        url = url.addParameter(Constants.THREAD_NAME_KEY, name);
         return url;
     }
 }
