@@ -17,6 +17,7 @@ package com.alibaba.dubbo.config;
 
 import java.util.Arrays;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.status.StatusChecker;
 import com.alibaba.dubbo.common.threadpool.ThreadPool;
 import com.alibaba.dubbo.config.support.Parameter;
@@ -85,7 +86,7 @@ public class ProviderConfig extends AbstractServiceConfig {
     private String              exchanger;
 
     // 信息线程模型派发方式
-    private String              dispather;
+    private String              dispatcher;
 
     // 对称网络组网方式
     private String              networker;
@@ -343,13 +344,32 @@ public class ProviderConfig extends AbstractServiceConfig {
         this.exchanger = exchanger;
     }
 
+    /**
+     * 单词拼写错误，请使用{@link #getDispatcher()}
+     * @deprecated {@link #getDispatcher()}
+     */
+    @Deprecated
     public String getDispather() {
-        return dispather;
+        return getDispatcher();
     }
 
+    /**
+     * 单词拼写错误，请使用{@link #setDispatcher(String)}
+     * @deprecated {@link #setDispatcher(String)}
+     */
+    @Deprecated
     public void setDispather(String dispather) {
+        setDispatcher(dispather);
+    }
+
+    public String getDispatcher() {
+        return dispatcher;
+    }
+
+    public void setDispatcher(String dispatcher) {
+        checkExtension(Dispatcher.class, Constants.DISPATCHER_KEY, exchanger);
         checkExtension(Dispatcher.class, "dispather", exchanger);
-        this.dispather = dispather;
+        this.dispatcher = dispatcher;
     }
 
     public String getNetworker() {

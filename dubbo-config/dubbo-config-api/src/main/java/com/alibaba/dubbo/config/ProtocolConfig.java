@@ -368,7 +368,7 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     /**
-     * 单词拼写错误，请使用getDispatcher()
+     * 单词拼写错误，请使用{@link #getDispatcher()}
      * @deprecated {@link #getDispatcher()}
      */
     @Deprecated
@@ -377,7 +377,7 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     /**
-     * 单词拼写错误，请使用setDispatcher()
+     * 单词拼写错误，请使用{@link #setDispatcher(String)
      * @deprecated {@link #setDispatcher(String)}
      */
     @Deprecated
