@@ -349,6 +349,7 @@ public class ProviderConfig extends AbstractServiceConfig {
      * @deprecated {@link #getDispatcher()}
      */
     @Deprecated
+    @Parameter(excluded = true)
     public String getDispather() {
         return getDispatcher();
     }

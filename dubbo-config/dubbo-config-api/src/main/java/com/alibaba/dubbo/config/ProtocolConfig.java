@@ -372,6 +372,7 @@ public class ProtocolConfig extends AbstractConfig {
      * @deprecated {@link #getDispatcher()}
      */
     @Deprecated
+    @Parameter(excluded = true)
     public String getDispather() {
         return getDispatcher();
     }
