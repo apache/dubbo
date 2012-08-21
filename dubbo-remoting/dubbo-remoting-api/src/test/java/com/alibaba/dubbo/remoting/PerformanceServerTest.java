@@ -88,7 +88,7 @@ public class PerformanceServerTest extends TestCase {
         final int threads = PerformanceUtils.getIntProperty(Constants.THREADS_KEY, Constants.DEFAULT_THREADS);
         final int iothreads = PerformanceUtils.getIntProperty(Constants.IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS);
         final int buffer = PerformanceUtils.getIntProperty(Constants.BUFFER_KEY, Constants.DEFAULT_BUFFER_SIZE);
-        final String channelHandler = PerformanceUtils.getProperty(Constants.DISPATCHER_KEY, ExecutionDispather.NAME);
+        final String channelHandler = PerformanceUtils.getProperty(Constants.DISPATCHER_KEY, ExecutionDispatcher.NAME);
         
         
         // 启动服务器

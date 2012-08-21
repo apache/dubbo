@@ -13,30 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.remoting;
+package com.alibaba.dubbo.remoting.transport.dispatcher.message;
 
-import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.extension.Adaptive;
-import com.alibaba.dubbo.common.extension.SPI;
-import com.alibaba.dubbo.remoting.transport.dispatcher.all.AllDispatcher;
+import com.alibaba.dubbo.remoting.ChannelHandler;
+import com.alibaba.dubbo.remoting.Dispatcher;
 
 /**
- * ChannelHandlerWrapper (SPI, Singleton, ThreadSafe)
+ * 只有message receive使用线程池.
  * 
  * @author chao.liuc
  */
-@SPI(AllDispatcher.NAME)
-public interface Dispatcher {
+public class MessageOnlyDispatcher implements Dispatcher {
 
-    /**
-     * dispatch the message to threadpool.
-     * 
-     * @param handler
-     * @param url
-     * @return channel handler
-     */
-    @Adaptive({Constants.DISPATCHER_KEY, "dispather", "channel.handler"}) // 后两个参数为兼容旧配置
-    ChannelHandler dispatch(ChannelHandler handler, URL url);
+    public static final String NAME = "message";
+
+    public ChannelHandler dispatch(ChannelHandler handler, URL url) {
+        return new MessageOnlyChannelHandler(handler, url);
+    }
 
 }
