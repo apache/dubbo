@@ -29,7 +29,7 @@ import com.alibaba.dubbo.remoting.exchange.ExchangeChannel;
 import com.alibaba.dubbo.remoting.exchange.ExchangeServer;
 import com.alibaba.dubbo.remoting.exchange.Exchangers;
 import com.alibaba.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
-import com.alibaba.dubbo.remoting.transport.dispatcher.execution.ExecutionDispather;
+import com.alibaba.dubbo.remoting.transport.dispatcher.execution.ExecutionDispatcher;
 
 /**
  * PerformanceServer
