@@ -86,6 +86,10 @@
 	</dependencies>
 	<build>
 		<plugins>
+			<!-- upload xsd file command line
+			mvn org.codehaus.mojo:wagon-maven-plugin:1.0-beta-3:upload-single -Dwagon.fromFile=src/main/resources/META-INF/dubbo.xsd -Dwagon.url=dav:http://code.alibabatech.com/schema/dubbo/ -Dwagon.serverId=opensesame.releases.account
+			-->
+			<!--
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>wagon-maven-plugin</artifactId>
@@ -105,6 +109,7 @@
 					</execution>
 				</executions>
 			</plugin>
+			-->
 		</plugins>
 	</build>
 </project>
