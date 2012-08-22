@@ -26,6 +26,7 @@ import static org.junit.matchers.JUnitMatchers.containsString;
 import java.util.List;
 
 import org.junit.Test;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -368,6 +369,23 @@ public class ConfigTest {
         } finally {
             providerContext.stop();
             providerContext.close();
+        }
+    }
+
+    // DUBBO-571 Provider的URL的methods key值中没有继承接口的方法
+    @Test
+    public void test_noMethodInterface_methodsKeyHasValue() throws Exception {
+        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/demo-provider-no-methods-interface.xml");
+        ctx.start();
+        try {
+            ServiceBean bean = (ServiceBean) ctx.getBean("service");
+            List<URL> urls = bean.getExportedUrls();
+            assertEquals(1, urls.size());
+            URL url = urls.get(0);
+            assertEquals("sayName,getBox", url.getParameter("methods"));
+        } finally {
+            ctx.stop();
+            ctx.close();
         }
     }
     
