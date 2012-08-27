@@ -945,7 +945,8 @@ public final class ReflectUtils {
             && method.getReturnType() != void.class
             && method.getDeclaringClass() != Object.class
             && method.getParameterTypes().length == 0
-            && (method.getName().startsWith("get") || method.getName().startsWith("is"));
+            && ((method.getName().startsWith("get") && method.getName().length() > 3)
+                    || (method.getName().startsWith("is") && method.getName().length() > 2));
     }
 
     public static String getPropertyNameFromBeanReadMethod(Method method) {
@@ -968,7 +969,8 @@ public final class ReflectUtils {
             && ! Modifier.isStatic(method.getModifiers())
             && method.getDeclaringClass() != Object.class
             && method.getParameterTypes().length == 1
-            && method.getName().startsWith("set");
+            && method.getName().startsWith("set")
+            && method.getName().length() > 3;
     }
     
     public static String getPropertyNameFromBeanWriteMethod(Method method) {
