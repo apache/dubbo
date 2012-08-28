@@ -79,14 +79,14 @@ public class AvailableCluster implements Cluster {
         }
 
         int i = 0;
-        LOOP_BEFOR:
+        LOOP_BEFORE:
         for (; i < invokers.size(); i++) {
             Invoker<T> before =  invokers.get(i);
             for (int j = i + 1; j < invokers.size(); j++) {
                 Invoker<T> after =  invokers.get(j);
                 if(getInvokerCount(before) <= getInvokerCount(after)) {
                     // 被后面的打败了！ 重找
-                    continue LOOP_BEFOR;
+                    continue LOOP_BEFORE;
                 }
             }
             break ; // 没有被打败，收工！
@@ -99,7 +99,6 @@ public class AvailableCluster implements Cluster {
         return new AbstractClusterInvoker<T>(directory) {
             public Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
                 List<Invoker<T>> effectiveInvokers = getEffectiveInvokers(invokers);
-
                 return getSuitableInvoker(effectiveInvokers).invoke(invocation);
             }
         };
