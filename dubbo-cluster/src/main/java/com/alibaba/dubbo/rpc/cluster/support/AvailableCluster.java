@@ -30,6 +30,7 @@ import com.alibaba.dubbo.rpc.cluster.LoadBalance;
  * AvailableCluster
  * 
  * @author william.liangf
+ * @author ding.lid
  */
 public class AvailableCluster implements Cluster {
     
@@ -62,6 +63,8 @@ public class AvailableCluster implements Cluster {
         return effectiveInvokers;
     }
 
+    static final int WIN_FACTOR = 2;
+
     /**
      * 优先返回前面的Inovker，除非后面的Invoker的invoker.count值 >= 2倍。
      * TODO Hard Code了因子 2！
@@ -74,18 +77,21 @@ public class AvailableCluster implements Cluster {
             return invokers.get(0);
         }
 
-        Invoker suitable = invokers.get(0);
-        int count = getInvokerCount(suitable);
-        for (int i = 1; i < invokers.size(); i++) {
-            Invoker<T> invoker =  invokers.get(i);
-            int newCount = getInvokerCount(invoker);
-            if(newCount >= 2 * count) {
-                count = newCount;
-                suitable = invoker;
+        int i = 0;
+        LOOP_BEFOR:
+        for (; i < invokers.size(); i++) {
+            Invoker<T> before =  invokers.get(i);
+            for (int j = i + 1; j < invokers.size(); j++) {
+                Invoker<T> after =  invokers.get(j);
+                if(getInvokerCount(before) <= getInvokerCount(after)) {
+                    // 被后面的打败了！ 重找
+                    continue LOOP_BEFOR;
+                }
             }
+            break ; // 没有被打败，收工！
         }
 
-        return suitable;
+        return invokers.get(i);
     }
 
     public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
