@@ -209,8 +209,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 && Constants.EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
             this.forbidden = true; // 禁止访问
             overrideDirectoryUrl = overrideDirectoryUrl.addParameters(
-                    "invokers", "",
-                    "invoker.count", "0");
+                    Constants.INVOKER_INSIDE_INVOKERS_KEY, "",
+                    Constants.INVOKER_INSIDE_INVOKER_COUNT_KEY, "0");
             this.methodInvokerMap = null; // 置空列表
             destroyAllInvokers(); // 关闭所有Invoker
         } else {
@@ -246,8 +246,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 invokerUrlString.add(invoker.toString());
             }
             overrideDirectoryUrl = overrideDirectoryUrl.addParameters(
-                    "invokers", CollectionUtils.join(invokerUrlString, ";"),
-                    "invoker.count", String.valueOf(invokerUrls.size()));
+                    Constants.INVOKER_INSIDE_INVOKERS_KEY, URL.encode(CollectionUtils.join(invokerUrlString, ";")),
+                    Constants.INVOKER_INSIDE_INVOKER_COUNT_KEY, String.valueOf(invokerUrls.size()));
         }
     }
     
@@ -615,7 +615,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     }
 
     public URL getUrl() {
-        overrideDirectoryUrl = overrideDirectoryUrl.addParameter("connected", registry.isAvailable());
+        overrideDirectoryUrl = overrideDirectoryUrl.addParameter(Constants.INVOKER_CONNECTED_KEY, registry.isAvailable());
     	return overrideDirectoryUrl;
     }
 

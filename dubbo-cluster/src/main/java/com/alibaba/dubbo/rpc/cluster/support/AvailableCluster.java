@@ -18,6 +18,7 @@ package com.alibaba.dubbo.rpc.cluster.support;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
@@ -37,11 +38,11 @@ public class AvailableCluster implements Cluster {
     public static final String NAME = "available";
 
     static <T> boolean isConnectedInvoker(Invoker<T> invoker) {
-        return invoker.getUrl().getParameter("connected", true);
+        return invoker.getUrl().getParameter(Constants.INVOKER_CONNECTED_KEY, true);
     }
 
     static <T> int getInvokerCount(Invoker<T> invoker) {
-        return invoker.getUrl().getParameter("invoker.count", 1);
+        return invoker.getUrl().getParameter(Constants.INVOKER_INSIDE_INVOKER_COUNT_KEY, 1);
     }
 
 

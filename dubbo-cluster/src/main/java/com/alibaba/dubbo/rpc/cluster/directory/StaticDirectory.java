@@ -15,9 +15,12 @@
  */
 package com.alibaba.dubbo.rpc.cluster.directory;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.utils.CollectionUtils;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcException;
@@ -77,11 +80,26 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
         }
         invokers.clear();
     }
-    
+
     @Override
     protected List<Invoker<T>> doList(Invocation invocation) throws RpcException {
 
         return invokers;
     }
 
+    volatile URL addKeyUrl = null;
+
+    @Override
+    public URL getUrl() {
+        if(addKeyUrl == null) {
+            List<String> invokerUrlString = new ArrayList<String>();
+            for(Invoker<T> invoker : invokers) {
+                invokerUrlString.add(invoker.getUrl().toString());
+            }
+            addKeyUrl = super.getUrl().addParameters(
+                    Constants.INVOKER_INSIDE_INVOKERS_KEY, URL.encode(CollectionUtils.join(invokerUrlString, ";")),
+                    Constants.INVOKER_INSIDE_INVOKER_COUNT_KEY, String.valueOf(invokerUrlString.size()));
+        }
+        return addKeyUrl;
+    }
 }
