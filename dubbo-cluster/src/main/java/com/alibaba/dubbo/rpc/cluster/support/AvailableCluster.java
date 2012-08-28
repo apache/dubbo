@@ -15,6 +15,7 @@
  */
 package com.alibaba.dubbo.rpc.cluster.support;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.alibaba.dubbo.rpc.Invocation;
@@ -34,19 +35,66 @@ public class AvailableCluster implements Cluster {
     
     public static final String NAME = "available";
 
-    public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
-        
-        return new AbstractClusterInvoker<T>(directory) {
-            public Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
-                for (Invoker<T> invoker : invokers) {
-                    if (invoker.isAvailable()) {
-                        return invoker.invoke(invocation);
-                    }
-                }
-                throw new RpcException("No provider available in " + invokers);
-            }
-        };
-        
+    static <T> boolean isConnectedInvoker(Invoker<T> invoker) {
+        return invoker.getUrl().getParameter("connected", true);
     }
 
+    static <T> int getInvokerCount(Invoker<T> invoker) {
+        return invoker.getUrl().getParameter("invoker.count", 1);
+    }
+
+
+    static <T> List<Invoker<T>> getEffectiveInvokers(List<Invoker<T>> invokers) {
+        List<Invoker<T>> availableInvokers = new ArrayList<Invoker<T>>();
+        List<Invoker<T>> availableAndConnectedInvokers = new ArrayList<Invoker<T>>();
+
+        for (Invoker<T> invoker : invokers) {
+            if(invoker.isAvailable()) {
+                if (isConnectedInvoker(invoker)) {
+                    availableAndConnectedInvokers.add(invoker);
+                }
+                availableInvokers.add(invoker);
+            }
+        }
+
+        List<Invoker<T>> effectiveInvokers = availableAndConnectedInvokers;
+        if(effectiveInvokers.isEmpty()) effectiveInvokers = availableInvokers; // 都不是connected，则使用available
+        return effectiveInvokers;
+    }
+
+    /**
+     * 优先返回前面的Inovker，除非后面的Invoker的invoker.count值 >= 2倍。
+     * TODO Hard Code了因子 2！
+     */
+    static <T> Invoker<T> getSuitableInvoker(List<Invoker<T>> invokers) {
+        if(invokers.isEmpty()) {
+            throw new RpcException("No provider available in " + invokers);
+        }
+        if(invokers.size() == 1) {
+            return invokers.get(0);
+        }
+
+        Invoker suitable = invokers.get(0);
+        int count = getInvokerCount(suitable);
+        for (int i = 1; i < invokers.size(); i++) {
+            Invoker<T> invoker =  invokers.get(i);
+            int newCount = getInvokerCount(invoker);
+            if(newCount >= 2 * count) {
+                count = newCount;
+                suitable = invoker;
+            }
+        }
+
+        return suitable;
+    }
+
+    public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
+        return new AbstractClusterInvoker<T>(directory) {
+            public Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
+                List<Invoker<T>> effectiveInvokers = getEffectiveInvokers(invokers);
+
+                return getSuitableInvoker(effectiveInvokers).invoke(invocation);
+            }
+        };
+    }
 }

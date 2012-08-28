@@ -32,6 +32,7 @@ import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.CollectionUtils;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.registry.NotifyListener;
@@ -207,6 +208,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         if (invokerUrls != null && invokerUrls.size() == 1 && invokerUrls.get(0) != null
                 && Constants.EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
             this.forbidden = true; // 禁止访问
+            overrideDirectoryUrl = overrideDirectoryUrl.addParameters(
+                    "invokers", "",
+                    "invoker.count", "0");
             this.methodInvokerMap = null; // 置空列表
             destroyAllInvokers(); // 关闭所有Invoker
         } else {
@@ -236,6 +240,14 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             }catch (Exception e) {
                 logger.warn("destroyUnusedInvokers error. ", e);
             }
+
+            List<String> invokerUrlString = new ArrayList<String>();
+            for(URL invoker : invokerUrls) {
+                invokerUrlString.add(invoker.toString());
+            }
+            overrideDirectoryUrl = overrideDirectoryUrl.addParameters(
+                    "invokers", CollectionUtils.join(invokerUrlString, ";"),
+                    "invoker.count", String.valueOf(invokerUrls.size()));
         }
     }
     
@@ -339,8 +351,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * 将urls转成invokers,如果url已经被refer过，不再重新引用。
      * 
      * @param urls
-     * @param overrides
-     * @param query
      * @return invokers
      */
     private Map<String, Invoker<T>> toInvokers(List<URL> urls) {
@@ -411,7 +421,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     /**
      * 合并url参数 顺序为override > -D >Consumer > Provider
      * @param providerUrl
-     * @param overrides
      * @return
      */
     private URL mergeUrl(URL providerUrl){
@@ -533,8 +542,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     /**
      * 检查缓存中的invoker是否需要被destroy
      * 如果url中指定refer.autodestroy=false，则只增加不减少，可能会有refer泄漏，
-     * 
-     * @param invokers
      */
     private void destroyUnusedInvokers(Map<String, Invoker<T>> oldUrlInvokerMap, Map<String, Invoker<T>> newUrlInvokerMap) {
         if (newUrlInvokerMap == null || newUrlInvokerMap.size() == 0) {
@@ -608,7 +615,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     }
 
     public URL getUrl() {
-    	return this.overrideDirectoryUrl;
+        overrideDirectoryUrl = overrideDirectoryUrl.addParameter("connected", registry.isAvailable());
+    	return overrideDirectoryUrl;
     }
 
     public boolean isAvailable() {
