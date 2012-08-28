@@ -15,6 +15,7 @@
  */
 package com.alibaba.dubbo.rpc.cluster.support;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
@@ -48,7 +49,8 @@ public class AvailableClusterTest {
                     sb.append("&connected=" + connected);
                 }
                 if(invokerCount != null) {
-                    sb.append("&invoker.count=" + invokerCount);
+                    sb.append("&" + Constants.INVOKER_INSIDE_INVOKER_COUNT_KEY +
+                            "=" + invokerCount);
                 }
                 return URL.valueOf(sb.toString());
             }

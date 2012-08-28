@@ -84,7 +84,7 @@ public class AvailableCluster implements Cluster {
             Invoker<T> before =  invokers.get(i);
             for (int j = i + 1; j < invokers.size(); j++) {
                 Invoker<T> after =  invokers.get(j);
-                if(getInvokerCount(before) <= getInvokerCount(after)) {
+                if(WIN_FACTOR * getInvokerCount(before) <= getInvokerCount(after)) {
                     // 被后面的打败了！ 重找
                     continue LOOP_BEFORE;
                 }
