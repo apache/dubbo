@@ -5,5 +5,6 @@ failsafe=com.alibaba.dubbo.rpc.cluster.support.FailsafeCluster
 failback=com.alibaba.dubbo.rpc.cluster.support.FailbackCluster
 forking=com.alibaba.dubbo.rpc.cluster.support.ForkingCluster
 available=com.alibaba.dubbo.rpc.cluster.support.AvailableCluster
+switch=com.alibaba.dubbo.rpc.cluster.support.SwitchCluster
 mergeable=com.alibaba.dubbo.rpc.cluster.support.MergeableCluster
 broadcast=com.alibaba.dubbo.rpc.cluster.support.BroadcastCluster

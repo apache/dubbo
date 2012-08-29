@@ -45,6 +45,7 @@ import com.alibaba.dubbo.rpc.StaticContext;
 import com.alibaba.dubbo.rpc.cluster.Cluster;
 import com.alibaba.dubbo.rpc.cluster.directory.StaticDirectory;
 import com.alibaba.dubbo.rpc.cluster.support.AvailableCluster;
+import com.alibaba.dubbo.rpc.cluster.support.SwitchCluster;
 import com.alibaba.dubbo.rpc.cluster.support.ClusterUtils;
 import com.alibaba.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import com.alibaba.dubbo.rpc.service.GenericService;
@@ -391,8 +392,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                     }
                 }
                 if (registryURL != null) { // 有 注册中心协议的URL
-                    // 对有注册中心的Cluster 只用 AvailableCluster
-                    URL u = registryURL.addParameter(Constants.CLUSTER_KEY, AvailableCluster.NAME); 
+                    // 对有注册中心的Cluster
+                    URL u = registryURL.addParameter(Constants.CLUSTER_KEY, AvailableCluster.NAME);
                     invoker = cluster.join(new StaticDirectory(u, invokers));
                 }  else { // 不是 注册中心的URL
                     invoker = cluster.join(new StaticDirectory(invokers));

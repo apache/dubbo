@@ -32,7 +32,7 @@ import static org.junit.matchers.JUnitMatchers.containsString;
 /**
  * @author ding.lid
  */
-public class AvailableClusterTest {
+public class SwitchClusterTest {
     static Invoker<String> createInvoker(final Boolean available, final Boolean connected, final Integer invokerCount) {
         return new Invoker<String>() {
             public Class<String> getInterface() {
@@ -85,7 +85,7 @@ public class AvailableClusterTest {
                     {true, true, 1},
             });
 
-            List<Invoker<String>> result = AvailableCluster.getEffectiveInvokers(data);
+            List<Invoker<String>> result = SwitchCluster.getEffectiveInvokers(data);
             assertEquals(data, result);
         }
         {
@@ -97,7 +97,7 @@ public class AvailableClusterTest {
                     {true, true, 1},
             });
 
-            List<Invoker<String>> result = AvailableCluster.getEffectiveInvokers(data);
+            List<Invoker<String>> result = SwitchCluster.getEffectiveInvokers(data);
             assertEquals(2, result.size());
             assertSame(data.get(0), result.get(0));
             assertSame(data.get(3), result.get(1));
@@ -111,7 +111,7 @@ public class AvailableClusterTest {
                     {true, true, 1},
             });
 
-            List<Invoker<String>> result = AvailableCluster.getEffectiveInvokers(data);
+            List<Invoker<String>> result = SwitchCluster.getEffectiveInvokers(data);
             assertEquals(2, result.size());
             assertSame(data.get(0), result.get(0));
             assertSame(data.get(3), result.get(1));
@@ -125,7 +125,7 @@ public class AvailableClusterTest {
                     {true, true, 1},
             });
 
-            List<Invoker<String>> result = AvailableCluster.getEffectiveInvokers(data);
+            List<Invoker<String>> result = SwitchCluster.getEffectiveInvokers(data);
             assertEquals(2, result.size());
             assertSame(data.get(0), result.get(0));
             assertSame(data.get(3), result.get(1));
@@ -139,7 +139,7 @@ public class AvailableClusterTest {
                     {true, false, 1},
             });
 
-            List<Invoker<String>> result = AvailableCluster.getEffectiveInvokers(data);
+            List<Invoker<String>> result = SwitchCluster.getEffectiveInvokers(data);
             assertEquals(2, result.size());
             assertSame(data.get(0), result.get(0));
             assertSame(data.get(3), result.get(1));
@@ -156,7 +156,7 @@ public class AvailableClusterTest {
                     {true, true, 1},
             });
 
-            Invoker<String> result = AvailableCluster.getSuitableInvoker(data);
+            Invoker<String> result = SwitchCluster.getSuitableInvoker(data);
             assertSame(data.get(0), result);
         }
         {
@@ -167,7 +167,7 @@ public class AvailableClusterTest {
                     {true, true, 100},
             });
 
-            Invoker<String> result = AvailableCluster.getSuitableInvoker(data);
+            Invoker<String> result = SwitchCluster.getSuitableInvoker(data);
             assertSame(data.get(3), result);
         }
         {
@@ -178,7 +178,7 @@ public class AvailableClusterTest {
                     {true, true, 4},
             });
 
-            Invoker<String> result = AvailableCluster.getSuitableInvoker(data);
+            Invoker<String> result = SwitchCluster.getSuitableInvoker(data);
             assertSame(data.get(2), result);
         }
     }
@@ -186,7 +186,7 @@ public class AvailableClusterTest {
     @Test
     public void test_getSuitableInvoker_noInput() throws Exception {
         try {
-            AvailableCluster.getSuitableInvoker(new ArrayList<Invoker<String>>());
+            SwitchCluster.getSuitableInvoker(new ArrayList<Invoker<String>>());
             fail();
         }
         catch (RpcException expected) {
