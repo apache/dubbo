@@ -73,13 +73,7 @@ public class SwitchCluster implements Cluster {
         return effectiveInvokers;
     }
 
-    static final int WIN_FACTOR = 2;
-
-    /**
-     * 优先返回前面的Inovker，除非后面的Invoker的invoker.count值 >= 2倍。
-     * TODO Hard Code了因子 2！
-     */
-    static <T> Invoker<T> getSuitableInvoker(List<Invoker<T>> invokers) {
+    static <T> Invoker<T> getSuitableInvoker(List<Invoker<T>> invokers, Directory<T> directory) {
         if(invokers.isEmpty()) {
             throw new RpcException("No provider available in " + invokers);
         }
@@ -87,13 +81,15 @@ public class SwitchCluster implements Cluster {
             return invokers.get(0);
         }
 
+        final double factor = directory.getUrl().getParameter(
+                Constants.CLUSTER_SWITCH_FACTOR, Constants.DEFAULT_CLUSTER_SWITCH_FACTOR);
         int i = 0;
         LOOP_BEFORE:
         for (; i < invokers.size(); i++) {
             Invoker<T> before =  invokers.get(i);
             for (int j = i + 1; j < invokers.size(); j++) {
                 Invoker<T> after =  invokers.get(j);
-                if(WIN_FACTOR * getInvokerCount(before) <= getInvokerCount(after)) {
+                if(factor * getInvokerCount(before) <= getInvokerCount(after)) {
                     // 被后面的打败了！ 重找
                     continue LOOP_BEFORE;
                 }
@@ -108,7 +104,7 @@ public class SwitchCluster implements Cluster {
         return new AbstractClusterInvoker<T>(directory) {
             public Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
                 List<Invoker<T>> effectiveInvokers = getEffectiveInvokers(invokers);
-                return getSuitableInvoker(effectiveInvokers).invoke(invocation);
+                return getSuitableInvoker(effectiveInvokers, directory).invoke(invocation);
             }
         };
     }

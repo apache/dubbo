@@ -409,6 +409,17 @@ public class Constants {
     public static final String INVOKER_INSIDE_INVOKER_COUNT_KEY    = "inside.invoker.count";
 
     /**
+     * Switch cluster
+     * see SwitchCluster
+     */
+    public static final String CLUSTER_SWITCH_FACTOR               = "cluster.switch.factor";
+
+    /**
+     * default Switch cluster factor
+     */
+    public static final double DEFAULT_CLUSTER_SWITCH_FACTOR       = 2;
+
+    /**
      * 集群时是否排除非available的invoker
      */
     public static final String  CLUSTER_AVAILABLE_CHECK_KEY        = "cluster.availablecheck";
