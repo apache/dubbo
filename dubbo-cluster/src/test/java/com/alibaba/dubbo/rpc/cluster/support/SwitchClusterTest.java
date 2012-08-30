@@ -21,6 +21,7 @@ import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.cluster.Directory;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -146,6 +147,28 @@ public class SwitchClusterTest {
         }
     }
 
+    Directory directory = new Directory<String>() {
+
+        public Class<String> getInterface() {
+            return null;
+        }
+
+        public List<Invoker<String>> list(Invocation invocation) throws RpcException {
+            return null;
+        }
+
+        public URL getUrl() {
+            return URL.valueOf("registry://1.2.2.3");
+        }
+
+        public boolean isAvailable() {
+            return true;
+        }
+
+        public void destroy() {
+        }
+    };
+
     @Test
     public void test_getSuitableInvoker() throws Exception {
         {
@@ -156,7 +179,7 @@ public class SwitchClusterTest {
                     {true, true, 1},
             });
 
-            Invoker<String> result = SwitchCluster.getSuitableInvoker(data);
+            Invoker<String> result = SwitchCluster.getSuitableInvoker(data, directory);
             assertSame(data.get(0), result);
         }
         {
@@ -167,7 +190,7 @@ public class SwitchClusterTest {
                     {true, true, 100},
             });
 
-            Invoker<String> result = SwitchCluster.getSuitableInvoker(data);
+            Invoker<String> result = SwitchCluster.getSuitableInvoker(data, directory);
             assertSame(data.get(3), result);
         }
         {
@@ -178,7 +201,7 @@ public class SwitchClusterTest {
                     {true, true, 4},
             });
 
-            Invoker<String> result = SwitchCluster.getSuitableInvoker(data);
+            Invoker<String> result = SwitchCluster.getSuitableInvoker(data, directory);
             assertSame(data.get(2), result);
         }
     }
@@ -186,7 +209,7 @@ public class SwitchClusterTest {
     @Test
     public void test_getSuitableInvoker_noInput() throws Exception {
         try {
-            SwitchCluster.getSuitableInvoker(new ArrayList<Invoker<String>>());
+            SwitchCluster.getSuitableInvoker(new ArrayList<Invoker<String>>(), directory);
             fail();
         }
         catch (RpcException expected) {
