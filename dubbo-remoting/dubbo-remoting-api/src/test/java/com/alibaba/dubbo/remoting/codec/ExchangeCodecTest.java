@@ -458,5 +458,6 @@ public class ExchangeCodecTest extends TelnetCodecTest{
         Assert.assertTrue(channel.getReceivedMessage() instanceof Response);
         Response receiveMessage = (Response)channel.getReceivedMessage();
         Assert.assertEquals(Response.BAD_RESPONSE, receiveMessage.getStatus());
+        Assert.assertTrue(receiveMessage.getErrorMessage().contains("Data length too large: "));
     }
 }
