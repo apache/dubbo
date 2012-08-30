@@ -35,7 +35,7 @@ import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.config.support.Parameter;
 
 /**
- * AbstractConfig
+ * 配置解析的工具方法、公共方法
  * 
  * @author william.liangf
  * @export
@@ -151,12 +151,16 @@ public abstract class AbstractConfig implements Serializable {
                     if (config.getId() != null && config.getId().length() > 0) {
                         String pn = prefix + config.getId() + "." + property;
                         value = System.getProperty(pn);
-                        logger.info("Use System Property " + pn + " to config dubbo");
+                        if(! StringUtils.isBlank(value)) {
+                            logger.info("Use System Property " + pn + " to config dubbo");
+                        }
                     }
                     if (value == null || value.length() == 0) {
                         String pn = prefix + property;
                         value = System.getProperty(pn);
-                        logger.info("Use System Property " + pn + " to config dubbo");
+                        if(! StringUtils.isBlank(value)) {
+                            logger.info("Use System Property " + pn + " to config dubbo");
+                        }
                     }
                     if (value == null || value.length() == 0) {
                         Method getter;
