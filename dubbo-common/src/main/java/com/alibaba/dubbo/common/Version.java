@@ -108,7 +108,7 @@ public final class Version {
             return version == null || version.length() == 0 ? defaultVersion : version;
         } catch (Throwable e) { // 防御性容错
             // 忽略异常，返回缺省版本号
-            logger.error(e.getMessage(), e);
+            logger.error("return default version, ignore exception " + e.getMessage(), e);
             return defaultVersion;
         }
     }
