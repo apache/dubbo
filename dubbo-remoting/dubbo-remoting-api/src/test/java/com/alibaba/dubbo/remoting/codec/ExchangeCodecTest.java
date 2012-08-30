@@ -16,9 +16,6 @@
 package com.alibaba.dubbo.remoting.codec;
 
 
-import static org.junit.Assert.fail;
-
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -148,17 +145,7 @@ public class ExchangeCodecTest extends TelnetCodecTest{
         Response obj = (Response)decode(request);
         Assert.assertEquals(90, obj.getStatus());
     }
-    @Test
-    public void test_Decode_Check_Payload() throws IOException{
-        byte[] header = new byte[] { MAGIC_HIGH , MAGIC_LOW , 1 ,1 ,1 ,1 ,1 , 1 ,1 ,1 ,1 ,1 , 1 ,1 , 1,1 };
-        byte[] request = assemblyDataProtocol(header) ;
-        try{
-            testDecode_assertEquals(request, TelnetCodec.NEED_MORE_INPUT);
-            fail();
-        }catch (IOException expected) {
-            Assert.assertTrue(expected.getMessage().startsWith("Data length too large: "+Bytes.bytes2int(new byte[]{1,1,1,1})));
-        }
-    }
+
     @Test
     public void test_Decode_Header_Need_Readmore() throws IOException{
         byte[] header = new byte[] { MAGIC_HIGH , MAGIC_LOW , 0 ,0 ,0 ,0 ,0 , 0 ,0 ,0 ,0  };
@@ -439,7 +426,7 @@ public class ExchangeCodecTest extends TelnetCodecTest{
             codec.decode(channel, bis);
             Assert.fail();
         } catch (IOException e) {
-            /* ignore */
+            Assert.assertTrue(e.getMessage().startsWith("Data length too large: "+ (requestMessage.length - 16 /* head length */)));
         }
 
         channel = getServerSideChannel(url.addParameter(Constants.PAYLOAD_KEY, Constants.DEFAULT_PAYLOAD));
