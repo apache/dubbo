@@ -16,6 +16,7 @@
 package com.alibaba.dubbo.common;
 
 import java.net.URL;
+import java.security.CodeSource;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
@@ -75,33 +76,39 @@ public final class Version {
             }
             if (version == null || version.length() == 0) {
                 // 如果规范中没有版本号，基于jar包名获取版本号
-                String file = cls.getProtectionDomain().getCodeSource().getLocation().getFile();
-                if (file != null && file.length() > 0 && file.endsWith(".jar")) {
-                    file = file.substring(0, file.length() - 4);
-                    int i = file.lastIndexOf('/');
-                    if (i >= 0) {
-                        file = file.substring(i + 1);
-                    }
-                    i = file.indexOf("-");
-                    if (i >= 0) {
-                        file = file.substring(i + 1);
-                    }
-                    while (file.length() > 0 && ! Character.isDigit(file.charAt(0))) {
+                CodeSource codeSource = cls.getProtectionDomain().getCodeSource();
+                if(codeSource == null) {
+                    logger.info("No codeSource for class " + cls.getName() + " when getVersion, use default version " + defaultVersion);
+                }
+                else {
+                    String file = codeSource.getLocation().getFile();
+                    if (file != null && file.length() > 0 && file.endsWith(".jar")) {
+                        file = file.substring(0, file.length() - 4);
+                        int i = file.lastIndexOf('/');
+                        if (i >= 0) {
+                            file = file.substring(i + 1);
+                        }
                         i = file.indexOf("-");
                         if (i >= 0) {
                             file = file.substring(i + 1);
-                        } else {
-                            break;
                         }
+                        while (file.length() > 0 && ! Character.isDigit(file.charAt(0))) {
+                            i = file.indexOf("-");
+                            if (i >= 0) {
+                                file = file.substring(i + 1);
+                            } else {
+                                break;
+                            }
+                        }
+                        version = file;
                     }
-                    version = file;
                 }
             }
             // 返回版本号，如果为空返回缺省版本号
             return version == null || version.length() == 0 ? defaultVersion : version;
         } catch (Throwable e) { // 防御性容错
             // 忽略异常，返回缺省版本号
-            logger.error(e.getMessage(), e);
+            logger.error("return default version, ignore exception " + e.getMessage(), e);
             return defaultVersion;
         }
     }
