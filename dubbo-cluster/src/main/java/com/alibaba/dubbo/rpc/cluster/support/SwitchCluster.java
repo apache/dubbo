@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
@@ -43,6 +45,8 @@ import com.alibaba.dubbo.rpc.cluster.LoadBalance;
  * @author ding.lid
  */
 public class SwitchCluster implements Cluster {
+
+    private static final Logger logger = LoggerFactory.getLogger(SwitchCluster.class);
     
     public static final String NAME = "switch";
 
@@ -53,7 +57,6 @@ public class SwitchCluster implements Cluster {
     static <T> int getInvokerCount(Invoker<T> invoker) {
         return invoker.getUrl().getParameter(Constants.INVOKER_INSIDE_INVOKER_COUNT_KEY, 1);
     }
-
 
     static <T> List<Invoker<T>> getEffectiveInvokers(List<Invoker<T>> invokers) {
         List<Invoker<T>> availableInvokers = new ArrayList<Invoker<T>>();
@@ -104,7 +107,18 @@ public class SwitchCluster implements Cluster {
         return new AbstractClusterInvoker<T>(directory) {
             public Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
                 List<Invoker<T>> effectiveInvokers = getEffectiveInvokers(invokers);
-                return getSuitableInvoker(effectiveInvokers, directory).invoke(invocation);
+                Invoker<T> invoker = getSuitableInvoker(effectiveInvokers, directory);
+                if(invoker != invokers.get(0)) {
+                    if(directory.getUrl().getParameter(Constants.CLUSTER_SWITCH_LOG_ERROR, true)) {
+                        if(logger.isErrorEnabled())
+                            logger.error("SwitchCluster NOT use FIRST invoker " + invokers.get(0) + " of invoker list " + invokers);
+                    }
+                    else {
+                        if(logger.isWarnEnabled())
+                            logger.error("SwitchCluster NOT use FIRST invoker " + invokers.get(0) + " of invoker list " + invokers);
+                    }
+                }
+                return invoker.invoke(invocation);
             }
         };
     }

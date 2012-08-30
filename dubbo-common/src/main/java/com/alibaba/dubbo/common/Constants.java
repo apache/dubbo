@@ -415,6 +415,12 @@ public class Constants {
     public static final String CLUSTER_SWITCH_FACTOR               = "cluster.switch.factor";
 
     /**
+     * log error when Switch cluster
+     * see SwitchCluster
+     */
+    public static final String CLUSTER_SWITCH_LOG_ERROR            = "cluster.switch.log.error";
+
+    /**
      * default Switch cluster factor
      */
     public static final double DEFAULT_CLUSTER_SWITCH_FACTOR       = 2;
