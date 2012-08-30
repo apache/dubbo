@@ -426,7 +426,7 @@ public class ExchangeCodecTest extends TelnetCodecTest{
             codec.decode(channel, bis);
             Assert.fail();
         } catch (IOException e) {
-            Assert.assertTrue(e.getMessage().startsWith("Data length too large: "+ (requestMessage.length - 16 /* head length */)));
+            Assert.assertTrue(e.getMessage().startsWith("Data length too large: " + (requestMessage.length - 16 /* head length */)));
         }
 
         channel = getServerSideChannel(url.addParameter(Constants.PAYLOAD_KEY, Constants.DEFAULT_PAYLOAD));
@@ -435,5 +435,28 @@ public class ExchangeCodecTest extends TelnetCodecTest{
         Request decodeRequest = (Request)object;
         Assert.assertEquals(request.getId(), decodeRequest.getId());
         Assert.assertEquals(request.getData(), decodeRequest.getData());
+    }
+
+    @Test
+    public void testMessageLengthExceedPayloadLimitWhenEncode() throws Exception {
+        Request request = new Request(1L);
+        request.setData("hello");
+        UnsafeByteArrayOutputStream bos = new UnsafeByteArrayOutputStream(512);
+        AbstractMockChannel channel = getCliendSideChannel(url.addParameter(Constants.PAYLOAD_KEY, 4));
+        try{
+            codec.encode(channel, bos, request);
+            Assert.fail();
+        } catch (IOException e) {
+            Assert.assertTrue(e.getMessage().startsWith("Data length too large: " + 6));
+        }
+
+        Response response = new Response(1L);
+        response.setResult("hello");
+        bos = new UnsafeByteArrayOutputStream(512);
+        channel = getServerSideChannel(url.addParameter(Constants.PAYLOAD_KEY, 4));
+        codec.encode(channel, bos, response);
+        Assert.assertTrue(channel.getReceivedMessage() instanceof Response);
+        Response receiveMessage = (Response)channel.getReceivedMessage();
+        Assert.assertEquals(Response.BAD_RESPONSE, receiveMessage.getStatus());
     }
 }

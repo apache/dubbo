@@ -240,6 +240,7 @@ public class ExchangeCodec extends TelnetCodec {
         bos.close();
         byte[] data = bos.toByteArray();
         Bytes.int2bytes(data.length, header, 12);
+        checkPayload(channel, data.length);
 
         // write
         os.write(header); // write header.
@@ -279,6 +280,7 @@ public class ExchangeCodec extends TelnetCodec {
     
             byte[] data = bos.toByteArray();
             Bytes.int2bytes(data.length, header, 12);
+            checkPayload(channel, data.length);
             // write
             os.write(header); // write header.
             os.write(data); // write data.
