@@ -419,4 +419,34 @@ public class ExchangeCodecTest extends TelnetCodecTest{
         decodedRequest = (Request)codec.decode(channel, inputStream);
         Assert.assertTrue(date.equals(decodedRequest.getData()));
     }
+
+    @Test
+    public void testMessageLengthExceedPayloadLimit() throws Exception {
+        Request request = new Request(1L);
+        request.setData("hello");
+        UnsafeByteArrayOutputStream bos = new UnsafeByteArrayOutputStream(512);
+        Channel channel =  getCliendSideChannel(url);
+        codec.encode(channel, bos, request);
+        byte [] requestMessage = bos.toByteArray();
+        byte[] message = new byte[requestMessage.length * 2];
+        System.arraycopy(requestMessage, 0, message, 0, requestMessage.length);
+        System.arraycopy(requestMessage, 0, message, requestMessage.length, requestMessage.length);
+
+        channel = getServerSideChannel(
+            url.addParameter(Constants.PAYLOAD_KEY, requestMessage.length - 16 /* head length */ - 2));
+        UnsafeByteArrayInputStream bis = new UnsafeByteArrayInputStream(message);
+        try {
+            codec.decode(channel, bis);
+            Assert.fail();
+        } catch (IOException e) {
+            /* ignore */
+        }
+
+        channel = getServerSideChannel(url.addParameter(Constants.PAYLOAD_KEY, Constants.DEFAULT_PAYLOAD));
+        Object object = codec.decode(channel, bis);
+        Assert.assertTrue(object instanceof Request);
+        Request decodeRequest = (Request)object;
+        Assert.assertEquals(request.getId(), decodeRequest.getId());
+        Assert.assertEquals(request.getData(), decodeRequest.getData());
+    }
 }

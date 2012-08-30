@@ -113,7 +113,6 @@ public class ExchangeCodec extends TelnetCodec {
 
         // get data length.
         int len = Bytes.bytes2int(header, 12);
-        checkPayload(channel, len);
 
         int tt = len + HEADER_LENGTH;
         if( readable < tt ) {
@@ -125,6 +124,7 @@ public class ExchangeCodec extends TelnetCodec {
             is = StreamUtils.limitedInputStream(is, len);
 
         try {
+            checkPayload(channel, len);
             return decodeBody(channel, is, header);
         } finally {
             if (is.available() > 0) {
