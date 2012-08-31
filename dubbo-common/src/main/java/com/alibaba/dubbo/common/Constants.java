@@ -295,6 +295,10 @@ public class Constants {
     public static final String  PID_KEY                            = "pid";
 
     public static final String  TIMESTAMP_KEY                      = "timestamp";
+    
+    public static final String  WARMUP_KEY                         = "warmup";
+
+    public static final int     DEFAULT_WARMUP                     = 10 * 60 * 1000;
 
     public static final String  CHECK_KEY                          = "check";
 

@@ -41,7 +41,16 @@ public abstract class AbstractLoadBalance implements LoadBalance {
     protected abstract <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation);
 
     protected int getWeight(Invoker<?> invoker, Invocation invocation) {
-        return invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.WEIGHT_KEY, Constants.DEFAULT_WEIGHT);
+        int weight = invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.WEIGHT_KEY, Constants.DEFAULT_WEIGHT);
+        long timestamp = invoker.getUrl().getParameter(Constants.TIMESTAMP_KEY, 0L);
+    	if (timestamp > 0L) {
+    		int uptime = (int) (System.currentTimeMillis() - timestamp);
+    		int warmup = invoker.getUrl().getParameter(Constants.WARMUP_KEY, Constants.DEFAULT_WARMUP);
+    		if (uptime > 0 && uptime < warmup) {
+    			weight = uptime / (warmup / weight);
+    		}
+    	}
+    	return weight;
     }
 
 }
