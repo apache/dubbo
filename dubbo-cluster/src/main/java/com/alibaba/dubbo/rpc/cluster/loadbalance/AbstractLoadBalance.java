@@ -47,7 +47,7 @@ public abstract class AbstractLoadBalance implements LoadBalance {
     		int uptime = (int) (System.currentTimeMillis() - timestamp);
     		int warmup = invoker.getUrl().getParameter(Constants.WARMUP_KEY, Constants.DEFAULT_WARMUP);
     		if (uptime > 0 && uptime < warmup) {
-    			weight = uptime / (warmup / weight);
+    			weight = (int) ( (float) uptime / ( (float) warmup / (float) weight ) );
     		}
     	}
     	return weight;
