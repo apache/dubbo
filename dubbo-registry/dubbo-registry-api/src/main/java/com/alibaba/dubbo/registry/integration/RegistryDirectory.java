@@ -615,7 +615,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     }
 
     public URL getUrl() {
-        overrideDirectoryUrl = overrideDirectoryUrl.addParameter(Constants.INVOKER_CONNECTED_KEY, registry.isAvailable());
+        if(registry != null) {
+            overrideDirectoryUrl = overrideDirectoryUrl.addParameter(Constants.INVOKER_CONNECTED_KEY, registry.isAvailable());
+        }
     	return overrideDirectoryUrl;
     }
 
