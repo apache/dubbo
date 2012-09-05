@@ -265,7 +265,15 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             if (revision != null && revision.length() > 0) {
                 map.put("revision", revision);
             }
-            map.put("methods", StringUtils.join(new HashSet<String>(Arrays.asList(Wrapper.getWrapper(interfaceClass).getDeclaredMethodNames())), ","));
+
+            String[] methods = Wrapper.getWrapper(interfaceClass).getMethodNames();
+            if(methods.length == 0) {
+                logger.warn("NO method found in service interface " + interfaceClass.getName());
+                map.put("methods", Constants.ANY_VALUE);
+            }
+            else {
+                map.put("methods", StringUtils.join(new HashSet<String>(Arrays.asList(methods)), ","));
+            }
         }
         map.put(Constants.INTERFACE_KEY, interfaceName);
         appendParameters(map, application);
@@ -379,6 +387,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                     throw new IllegalStateException("No such any registry to reference " + interfaceName  + " on the consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() + ", please config <dubbo:registry address=\"...\" /> to your spring config.");
                 }
             }
+
             if (urls.size() == 1) {
                 invoker = refprotocol.refer(interfaceClass, urls.get(0));
             } else {
