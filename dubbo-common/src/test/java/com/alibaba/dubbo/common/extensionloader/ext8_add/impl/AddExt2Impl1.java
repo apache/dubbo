@@ -13,25 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.common.extensionloader.ext1.impl;
+package com.alibaba.dubbo.common.extensionloader.ext8_add.impl;
 
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.extensionloader.ext1.SimpleExt;
+import com.alibaba.dubbo.common.extensionloader.ext8_add.AddExt2;
 
 /**
  * @author ding.lid
  */
-public class SimpleExtImpl_ManualAdd1 implements SimpleExt {
+public class AddExt2Impl1 implements AddExt2 {
     public String echo(URL url, String s) {
-        return "Ext1Impl4-echo";
+        return this.getClass().getSimpleName();
     }
-    
-    public String yell(URL url, String s) {
-        return "Ext1Impl4-yell";
-    }
-
-    public String bang(URL url, int i) {
-        return "bang4";
-    }
-    
 }

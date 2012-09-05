@@ -13,25 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.common.extensionloader.ext1.impl;
+package com.alibaba.dubbo.common.extensionloader.ext8_add;
 
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.extensionloader.ext1.SimpleExt;
+import com.alibaba.dubbo.common.extension.Adaptive;
+import com.alibaba.dubbo.common.extension.SPI;
 
 /**
+ * show add extension pragmatically
+ *
  * @author ding.lid
  */
-public class SimpleExtImpl_ManualAdd2 implements SimpleExt {
-    public String echo(URL url, String s) {
-        return "Ext1Impl4-echo";
-    }
-    
-    public String yell(URL url, String s) {
-        return "Ext1Impl4-yell";
-    }
-
-    public String bang(URL url, int i) {
-        return "bang4";
-    }
-    
+@SPI("impl1")
+public interface AddExt1 {
+    @Adaptive
+    String echo(URL url, String s);
 }
