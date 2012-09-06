@@ -16,6 +16,7 @@
 package com.alibaba.dubbo.rpc.cluster.directory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.alibaba.dubbo.common.Constants;
@@ -112,6 +113,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         }
         // append mock invoker selector
         routers.add(new MockInvokersSelector());
+        Collections.sort(routers);
     	this.routers = routers;
     }
 
