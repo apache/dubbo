@@ -31,7 +31,11 @@ public interface Client extends Endpoint, Channel, Resetable {
      * reconnect.
      */
     void reconnect() throws RemotingException;
-    
+
+    /**
+     * use {@link Resetable#reset} instead.
+     * @param parameters
+     */
     @Deprecated
     void reset(com.alibaba.dubbo.common.Parameters parameters);
     
