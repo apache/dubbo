@@ -1,6 +1,6 @@
 package com.alibaba.dubbo.remoting.transport;
 
-import com.alibaba.dubbo.common.utils.MessageCollection;
+import com.alibaba.dubbo.remoting.exchange.support.MessageCollection;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;

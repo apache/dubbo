@@ -22,7 +22,7 @@ import java.io.OutputStream;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.io.UnsafeByteArrayInputStream;
-import com.alibaba.dubbo.common.utils.MessageCollection;
+import com.alibaba.dubbo.remoting.exchange.support.MessageCollection;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.Codec;
 import com.alibaba.dubbo.remoting.exchange.Request;

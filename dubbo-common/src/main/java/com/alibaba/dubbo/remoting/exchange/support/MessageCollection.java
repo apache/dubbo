@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.alibaba.dubbo.common.utils;
+package com.alibaba.dubbo.remoting.exchange.support;
 
 import java.util.ArrayList;
 import java.util.Arrays;
