@@ -43,18 +43,18 @@ public final class DubboCountCodec implements Codec {
     }
 
     public Object decode(Channel channel, InputStream input) throws IOException {
-        UnsafeByteArrayInputStream bis = (UnsafeByteArrayInputStream)input;
-        int save = bis.position();
+        UnsafeByteArrayInputStream bis = (UnsafeByteArrayInputStream)input; // TODO 依赖非接口上的契约！调整实现！
+        int beginIdx = bis.position();
         List<Object> result = new ArrayList<Object>();
         do {
             Object obj = codec.decode(channel, bis);
             if (NEED_MORE_INPUT == obj) {
-                bis.position(save);
+                bis.position(beginIdx);
                 break;
             } else {
                 result.add(obj);
-                logMessageLength(obj, bis.position() - save);
-                save = bis.position();
+                logMessageLength(obj, bis.position() - beginIdx);
+                beginIdx = bis.position();
             }
         } while (true);
         if (result.isEmpty()) {
