@@ -36,8 +36,10 @@ public class ChannelHandlers {
     protected ChannelHandlers() {}
 
     protected ChannelHandler wrapInternal(ChannelHandler handler, URL url) {
-        return new MultiMessageHandler(new HeartbeatHandler(ExtensionLoader.getExtensionLoader(Dispather.class)
-                                        .getAdaptiveExtension().dispath(handler, url)));
+        return new MultiMessageHandler(
+                new HeartbeatHandler(
+                        ExtensionLoader.getExtensionLoader(Dispather.class).getAdaptiveExtension().dispath(handler, url)
+                ));
     }
 
     private static ChannelHandlers INSTANCE = new ChannelHandlers();
