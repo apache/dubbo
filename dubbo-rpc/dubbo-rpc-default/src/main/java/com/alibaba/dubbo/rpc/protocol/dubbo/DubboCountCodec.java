@@ -19,11 +19,10 @@ package com.alibaba.dubbo.rpc.protocol.dubbo;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.io.UnsafeByteArrayInputStream;
+import com.alibaba.dubbo.common.utils.MessageCollection;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.Codec;
 import com.alibaba.dubbo.remoting.exchange.Request;
@@ -45,14 +44,14 @@ public final class DubboCountCodec implements Codec {
     public Object decode(Channel channel, InputStream input) throws IOException {
         UnsafeByteArrayInputStream bis = (UnsafeByteArrayInputStream)input;
         int save = bis.position();
-        List<Object> result = new ArrayList<Object>();
+        MessageCollection result = MessageCollection.create();
         do {
             Object obj = codec.decode(channel, bis);
             if (NEED_MORE_INPUT == obj) {
                 bis.position(save);
                 break;
             } else {
-                result.add(obj);
+                result.addMessage(obj);
                 logMessageLength(obj, bis.position() - save);
                 save = bis.position();
             }
