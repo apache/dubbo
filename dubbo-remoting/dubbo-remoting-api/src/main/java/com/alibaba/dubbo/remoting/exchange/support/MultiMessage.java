@@ -26,25 +26,25 @@ import java.util.List;
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-public final class MessageCollection implements Iterable {
+public final class MultiMessage implements Iterable {
 
-    public static MessageCollection createFromCollection(Collection collection) {
-        MessageCollection result = new MessageCollection();
+    public static MultiMessage createFromCollection(Collection collection) {
+        MultiMessage result = new MultiMessage();
         result.addMessages(collection);
         return result;
     }
 
-    public static MessageCollection createFromArray(Object... args) {
+    public static MultiMessage createFromArray(Object... args) {
         return createFromCollection(Arrays.asList(args));
     }
 
-    public static MessageCollection create() {
-        return new MessageCollection();
+    public static MultiMessage create() {
+        return new MultiMessage();
     }
 
     private final List messages = new ArrayList();
 
-    private MessageCollection() {}
+    private MultiMessage() {}
 
     public void addMessage(Object msg) {
         messages.add(msg);

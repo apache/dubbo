@@ -26,7 +26,7 @@ import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.Codec;
 import com.alibaba.dubbo.remoting.exchange.Request;
 import com.alibaba.dubbo.remoting.exchange.Response;
-import com.alibaba.dubbo.remoting.exchange.support.MessageCollection;
+import com.alibaba.dubbo.remoting.exchange.support.MultiMessage;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
 
@@ -44,7 +44,7 @@ public final class DubboCountCodec implements Codec {
     public Object decode(Channel channel, InputStream input) throws IOException {
         UnsafeByteArrayInputStream bis = (UnsafeByteArrayInputStream)input; // TODO 依赖非接口上的契约！调整实现！
         int beginIdx = bis.position();
-        MessageCollection result = MessageCollection.create();
+        MultiMessage result = MultiMessage.create();
         do {
             Object obj = codec.decode(channel, bis);
             if (NEED_MORE_INPUT == obj) {
