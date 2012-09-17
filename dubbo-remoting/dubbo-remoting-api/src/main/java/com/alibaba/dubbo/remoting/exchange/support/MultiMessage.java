@@ -25,6 +25,7 @@ import java.util.List;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
+ * @see com.alibaba.dubbo.remoting.transport.MultiMessageHandler
  */
 public final class MultiMessage implements Iterable {
 

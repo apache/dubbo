@@ -8,6 +8,7 @@ import com.alibaba.dubbo.remoting.exchange.support.MultiMessage;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
+ * @see MultiMessage
  */
 public class MultiMessageHandler extends AbstractChannelHandlerDelegate {
 
