@@ -22,9 +22,9 @@ import java.io.OutputStream;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.io.UnsafeByteArrayInputStream;
-import com.alibaba.dubbo.remoting.exchange.support.MultiMessage;
 import com.alibaba.dubbo.remoting.Channel;
-import com.alibaba.dubbo.remoting.Codec;
+import com.alibaba.dubbo.remoting.ChannelCodec;
+import com.alibaba.dubbo.remoting.buffer.ChannelBuffer;
 import com.alibaba.dubbo.remoting.exchange.Request;
 import com.alibaba.dubbo.remoting.exchange.Response;
 import com.alibaba.dubbo.remoting.exchange.support.MultiMessage;
@@ -34,31 +34,30 @@ import com.alibaba.dubbo.rpc.RpcResult;
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-public final class DubboCountCodec implements Codec {
+public final class DubboCountCodec implements ChannelCodec {
 
     private DubboCodec codec = new DubboCodec();
 
-    public void encode(Channel channel, OutputStream output, Object msg) throws IOException {
-        codec.encode(channel, output, msg);
+    public void encode(Channel channel, ChannelBuffer buffer, Object msg) throws IOException {
+        codec.encode(channel, buffer, msg);
     }
 
-    public Object decode(Channel channel, InputStream input) throws IOException {
-        UnsafeByteArrayInputStream bis = (UnsafeByteArrayInputStream)input;
-        int save = bis.position();
+    public Object decode(Channel channel, ChannelBuffer buffer) throws IOException {
+        int save = buffer.readerIndex();
         MultiMessage result = MultiMessage.create();
         do {
-            Object obj = codec.decode(channel, bis);
-            if (NEED_MORE_INPUT == obj) {
-                bis.position(save);
+            Object obj = codec.decode(channel, buffer);
+            if (ChannelCodec.DecodeResult.NEED_MORE_INPUT == obj) {
+                buffer.readerIndex(save);
                 break;
             } else {
                 result.addMessage(obj);
-                logMessageLength(obj, bis.position() - save);
-                save = bis.position();
+                logMessageLength(obj, buffer.readerIndex() - save);
+                save = buffer.readerIndex();
             }
         } while (true);
         if (result.isEmpty()) {
-            return NEED_MORE_INPUT;
+            return ChannelCodec.DecodeResult.NEED_MORE_INPUT;
         }
         if (result.size() == 1) {
             return result.get(0);

@@ -21,8 +21,10 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.remoting.ChannelCodec;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.Codec;
+import com.alibaba.dubbo.remoting.transport.codec.ChannelCodecAdapter;
 
 /**
  * AbstractEndpoint
@@ -33,7 +35,7 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
     
     private static final Logger logger = LoggerFactory.getLogger(AbstractEndpoint.class);
 
-    private Codec                 codec;
+    private ChannelCodec          codec;
 
     private int                   timeout;
 
@@ -41,7 +43,7 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
     
     public AbstractEndpoint(URL url, ChannelHandler handler) {
         super(url, handler);
-        this.codec = ExtensionLoader.getExtensionLoader(Codec.class).getExtension(url.getParameter(Constants.CODEC_KEY, "telnet"));
+        this.codec = getChannelCodec(url);
         this.timeout = url.getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
         this.connectTimeout = url.getPositiveParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT);
     }
@@ -74,7 +76,7 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
         try {
             if (url.hasParameter(Constants.CODEC_KEY)) {
                 String c = url.getParameter(Constants.CODEC_KEY);
-                this.codec = ExtensionLoader.getExtensionLoader(Codec.class).getExtension(c);
+                this.codec = ExtensionLoader.getExtensionLoader(ChannelCodec.class).getExtension(c);
             }
         } catch (Throwable t) {
             logger.error(t.getMessage(), t);
@@ -86,7 +88,7 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
         reset(getUrl().addParameters(parameters.getParameters()));
     }
 
-    protected Codec getCodec() {
+    protected ChannelCodec getCodec() {
         return codec;
     }
 
@@ -96,6 +98,16 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
 
     protected int getConnectTimeout() {
         return connectTimeout;
+    }
+
+    protected static ChannelCodec getChannelCodec(URL url) {
+        String codecName = url.getParameter(Constants.CODEC_KEY, "telnet");
+        if (ExtensionLoader.getExtensionLoader(ChannelCodec.class).hasExtension(codecName)) {
+            return ExtensionLoader.getExtensionLoader(ChannelCodec.class).getExtension(codecName);
+        } else {
+            return new ChannelCodecAdapter(ExtensionLoader.getExtensionLoader(Codec.class)
+                                               .getExtension(codecName));
+        }
     }
 
 }

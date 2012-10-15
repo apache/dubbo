@@ -30,6 +30,7 @@ import com.alibaba.dubbo.common.extension.SPI;
  * @author ding.lid
  * @author william.liangf
  */
+@Deprecated
 @SPI
 public interface Codec {
 
