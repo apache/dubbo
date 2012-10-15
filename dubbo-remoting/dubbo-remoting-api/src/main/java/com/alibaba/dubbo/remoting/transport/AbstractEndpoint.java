@@ -75,8 +75,7 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
         }
         try {
             if (url.hasParameter(Constants.CODEC_KEY)) {
-                String c = url.getParameter(Constants.CODEC_KEY);
-                this.codec = ExtensionLoader.getExtensionLoader(ChannelCodec.class).getExtension(c);
+                this.codec = getChannelCodec(url);
             }
         } catch (Throwable t) {
             logger.error(t.getMessage(), t);

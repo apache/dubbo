@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import com.alibaba.dubbo.common.io.UnsafeByteArrayInputStream;
 import com.alibaba.dubbo.common.io.UnsafeByteArrayOutputStream;
+import com.alibaba.dubbo.common.utils.Assert;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.Codec;
 import com.alibaba.dubbo.remoting.ChannelCodec;
@@ -33,6 +34,7 @@ public class ChannelCodecAdapter implements ChannelCodec {
     private Codec codec;
     
     public ChannelCodecAdapter(Codec codec) {
+        Assert.notNull(codec, "codec == null");
         this.codec = codec;
     }
 

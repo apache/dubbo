@@ -25,6 +25,12 @@ public final class ChannelBuffers {
 
     public static final ChannelBuffer EMPTY_BUFFER = new HeapChannelBuffer(0);
 
+    private ChannelBuffers() {}
+
+    public static ChannelBuffer dynamicBuffer() {
+        return dynamicBuffer(256);
+    }
+
     public static ChannelBuffer dynamicBuffer(int capacity) {
         return new DynamicChannelBuffer(capacity);
     }
