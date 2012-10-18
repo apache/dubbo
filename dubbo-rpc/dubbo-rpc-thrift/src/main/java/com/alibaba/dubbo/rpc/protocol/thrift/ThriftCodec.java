@@ -40,7 +40,7 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.utils.ClassHelper;
 import com.alibaba.dubbo.remoting.Channel;
-import com.alibaba.dubbo.remoting.ChannelCodec;
+import com.alibaba.dubbo.remoting.Codec2;
 import com.alibaba.dubbo.remoting.buffer.ChannelBuffer;
 import com.alibaba.dubbo.remoting.buffer.ChannelBufferInputStream;
 import com.alibaba.dubbo.remoting.exchange.Request;
@@ -71,7 +71,7 @@ import com.alibaba.dubbo.rpc.protocol.thrift.io.RandomAccessByteArrayOutputStrea
  *
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">gang.lvg</a>
  */
-public class ThriftCodec implements ChannelCodec {
+public class ThriftCodec implements Codec2 {
 
     private static final AtomicInteger THRIFT_SEQ_ID = new AtomicInteger( 0 );
 

@@ -26,7 +26,7 @@ import org.glassfish.grizzly.filterchain.NextAction;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.Channel;
-import com.alibaba.dubbo.remoting.ChannelCodec;
+import com.alibaba.dubbo.remoting.Codec2;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.buffer.ChannelBuffer;
 import com.alibaba.dubbo.remoting.buffer.ChannelBuffers;
@@ -39,7 +39,7 @@ import com.alibaba.dubbo.remoting.buffer.DynamicChannelBuffer;
  */
 public class GrizzlyCodecAdapter extends BaseFilter {
 
-    private final ChannelCodec    codec;
+    private final Codec2          codec;
 
     private final URL             url;
     
@@ -49,7 +49,7 @@ public class GrizzlyCodecAdapter extends BaseFilter {
 
     private ChannelBuffer previousData = ChannelBuffers.EMPTY_BUFFER;
     
-    public GrizzlyCodecAdapter(ChannelCodec codec, URL url, ChannelHandler handler) {
+    public GrizzlyCodecAdapter(Codec2 codec, URL url, ChannelHandler handler) {
         this.codec = codec;
         this.url = url;
         this.handler = handler;
@@ -115,7 +115,7 @@ public class GrizzlyCodecAdapter extends BaseFilter {
                         previousData = ChannelBuffers.EMPTY_BUFFER;
                         throw new IOException(e.getMessage(), e);
                     }
-                    if (msg == ChannelCodec.DecodeResult.NEED_MORE_INPUT) {
+                    if (msg == Codec2.DecodeResult.NEED_MORE_INPUT) {
                         frame.readerIndex(savedReadIndex);
                         return context.getStopAction();
                     } else {

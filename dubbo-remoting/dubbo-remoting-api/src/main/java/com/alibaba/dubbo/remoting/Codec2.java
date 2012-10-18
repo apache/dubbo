@@ -26,7 +26,7 @@ import com.alibaba.dubbo.remoting.buffer.ChannelBuffer;
  * @author <a href="mailto:gang.lvg@taobao.com">kimi</a>
  */
 @SPI
-public interface ChannelCodec {
+public interface Codec2 {
 
     @Adaptive({Constants.CODEC_KEY})
     void encode(Channel channel, ChannelBuffer buffer, Object message) throws IOException;

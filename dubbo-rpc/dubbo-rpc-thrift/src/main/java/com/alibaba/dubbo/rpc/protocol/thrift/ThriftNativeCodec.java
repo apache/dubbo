@@ -13,7 +13,7 @@ import org.apache.thrift.transport.TIOStreamTransport;
 
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.Channel;
-import com.alibaba.dubbo.remoting.ChannelCodec;
+import com.alibaba.dubbo.remoting.Codec2;
 import com.alibaba.dubbo.remoting.buffer.ChannelBuffer;
 import com.alibaba.dubbo.remoting.buffer.ChannelBufferOutputStream;
 import com.alibaba.dubbo.remoting.exchange.Request;
@@ -23,7 +23,7 @@ import com.alibaba.dubbo.rpc.Invocation;
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-public class ThriftNativeCodec implements ChannelCodec {
+public class ThriftNativeCodec implements Codec2 {
     
     private final AtomicInteger thriftSeq = new AtomicInteger(0);
     

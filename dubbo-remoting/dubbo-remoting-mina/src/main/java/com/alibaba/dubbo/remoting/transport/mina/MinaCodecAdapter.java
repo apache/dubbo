@@ -26,7 +26,7 @@ import org.apache.mina.filter.codec.ProtocolEncoderOutput;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.Channel;
-import com.alibaba.dubbo.remoting.ChannelCodec;
+import com.alibaba.dubbo.remoting.Codec2;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.buffer.ChannelBuffer;
 import com.alibaba.dubbo.remoting.buffer.ChannelBuffers;
@@ -43,7 +43,7 @@ final class MinaCodecAdapter implements ProtocolCodecFactory {
 
     private final ProtocolDecoder decoder            = new InternalDecoder();
 
-    private final ChannelCodec    codec;
+    private final Codec2          codec;
 
     private final URL             url;
 
@@ -51,7 +51,7 @@ final class MinaCodecAdapter implements ProtocolCodecFactory {
 
     private final int            bufferSize;
 
-    public MinaCodecAdapter(ChannelCodec codec, URL url, ChannelHandler handler) {
+    public MinaCodecAdapter(Codec2 codec, URL url, ChannelHandler handler) {
         this.codec = codec;
         this.url = url;
         this.handler = handler;
@@ -122,7 +122,7 @@ final class MinaCodecAdapter implements ProtocolCodecFactory {
                         buffer = ChannelBuffers.EMPTY_BUFFER;
                         throw e;
                     }
-                    if (msg == ChannelCodec.DecodeResult.NEED_MORE_INPUT) {
+                    if (msg == Codec2.DecodeResult.NEED_MORE_INPUT) {
                         frame.readerIndex(savedReadIndex);
                         break;
                     } else {

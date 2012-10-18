@@ -29,7 +29,7 @@ import org.junit.Test;
 
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.Channel;
-import com.alibaba.dubbo.remoting.ChannelCodec;
+import com.alibaba.dubbo.remoting.Codec2;
 import com.alibaba.dubbo.remoting.buffer.ChannelBuffer;
 import com.alibaba.dubbo.remoting.buffer.ChannelBuffers;
 import com.alibaba.dubbo.remoting.telnet.codec.TelnetCodec;
@@ -41,7 +41,7 @@ import junit.framework.Assert;
  *
  */
 public class TelnetCodecTest {
-    protected ChannelCodec codec ;
+    protected Codec2 codec ;
     byte[] UP = new byte[] {27, 91, 65};
     byte[] DOWN = new byte[] {27, 91, 66};
     /**
@@ -210,7 +210,7 @@ public class TelnetCodecTest {
         //decode
         Object obj = codec.decode(channel, buffer);
         if (isNeedmore){
-            Assert.assertEquals(ChannelCodec.DecodeResult.NEED_MORE_INPUT , obj);
+            Assert.assertEquals(Codec2.DecodeResult.NEED_MORE_INPUT , obj);
         }else {
             Assert.assertTrue("return must string ", obj instanceof String);
         }
@@ -237,12 +237,12 @@ public class TelnetCodecTest {
     
     @Test
     public void testDecode_BlankMessage() throws IOException{
-        testDecode_assertEquals(new byte[]{}, ChannelCodec.DecodeResult.NEED_MORE_INPUT);
+        testDecode_assertEquals(new byte[]{}, Codec2.DecodeResult.NEED_MORE_INPUT);
     }
     
     @Test
     public void testDecode_String_NoEnter() throws IOException{
-        testDecode_assertEquals("aaa", ChannelCodec.DecodeResult.NEED_MORE_INPUT);
+        testDecode_assertEquals("aaa", Codec2.DecodeResult.NEED_MORE_INPUT);
     }
     
     @Test
@@ -251,12 +251,12 @@ public class TelnetCodecTest {
     }
     @Test
     public void testDecode_String_MiddleWithEnter() throws IOException{
-        testDecode_assertEquals("aaa\r\naaa", ChannelCodec.DecodeResult.NEED_MORE_INPUT);
+        testDecode_assertEquals("aaa\r\naaa", Codec2.DecodeResult.NEED_MORE_INPUT);
     }
     
     @Test
     public void testDecode_Person_ObjectOnly() throws IOException{
-        testDecode_assertEquals(new Person(), ChannelCodec.DecodeResult.NEED_MORE_INPUT);
+        testDecode_assertEquals(new Person(), Codec2.DecodeResult.NEED_MORE_INPUT);
     }
     @Test
     public void testDecode_Person_WithEnter() throws IOException{
@@ -282,14 +282,14 @@ public class TelnetCodecTest {
     @Test
     public void testDecode_Backspace() throws IOException{
         //32 8 先加空格在补退格.
-        testDecode_assertEquals(new byte[]{'\b'}, ChannelCodec.DecodeResult.NEED_MORE_INPUT, new String(new byte[] {32, 8}));
+        testDecode_assertEquals(new byte[]{'\b'}, Codec2.DecodeResult.NEED_MORE_INPUT, new String(new byte[] {32, 8}));
         
         //测试中文
         byte[] chineseBytes = "中".getBytes();
         byte[] request = join(chineseBytes, new byte[]{'\b'});
-        testDecode_assertEquals(request, ChannelCodec.DecodeResult.NEED_MORE_INPUT, new String(new byte[] {32, 32, 8, 8}));
+        testDecode_assertEquals(request, Codec2.DecodeResult.NEED_MORE_INPUT, new String(new byte[] {32, 32, 8, 8}));
         //中文会带来此问题 (-数判断) 忽略此问题，退格键只有在真的telnet程序中才输入有意义.
-        testDecode_assertEquals(new byte[]{'a', 'x', -1, 'x', '\b'}, ChannelCodec.DecodeResult.NEED_MORE_INPUT, new String(new byte[] {32, 32, 8, 8}));
+        testDecode_assertEquals(new byte[]{'a', 'x', -1, 'x', '\b'}, Codec2.DecodeResult.NEED_MORE_INPUT, new String(new byte[] {32, 32, 8, 8}));
     }
     
     @Test(expected = IOException.class)
@@ -304,14 +304,14 @@ public class TelnetCodecTest {
         //init channel
         AbstractMockChannel channel = getServerSideChannel(url);
         
-        testDecode_assertEquals(channel, UP, ChannelCodec.DecodeResult.NEED_MORE_INPUT, null);
+        testDecode_assertEquals(channel, UP, Codec2.DecodeResult.NEED_MORE_INPUT, null);
         
         String request1 = "aaa\n"; 
         Object expected1 = "aaa";
         //init history 
         testDecode_assertEquals(channel, request1, expected1, null);
         
-        testDecode_assertEquals(channel, UP, ChannelCodec.DecodeResult.NEED_MORE_INPUT, expected1);
+        testDecode_assertEquals(channel, UP, Codec2.DecodeResult.NEED_MORE_INPUT, expected1);
     }
     
     @Test(expected = IOException.class)
@@ -321,14 +321,14 @@ public class TelnetCodecTest {
         //init channel
         AbstractMockChannel channel = getServerSideChannel(url);
         
-        testDecode_assertEquals(channel, UP, ChannelCodec.DecodeResult.NEED_MORE_INPUT, null);
+        testDecode_assertEquals(channel, UP, Codec2.DecodeResult.NEED_MORE_INPUT, null);
         
         String request1 = "aaa\n"; 
         Object expected1 = "aaa";
         //init history 
         testDecode_assertEquals(channel, request1, expected1, null);
         
-        testDecode_assertEquals(channel, UP, ChannelCodec.DecodeResult.NEED_MORE_INPUT, expected1);
+        testDecode_assertEquals(channel, UP, Codec2.DecodeResult.NEED_MORE_INPUT, expected1);
         
         url = url.removeParameter(AbstractMockChannel.ERROR_WHEN_SEND);
     }

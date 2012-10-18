@@ -23,17 +23,17 @@ import com.alibaba.dubbo.common.io.UnsafeByteArrayOutputStream;
 import com.alibaba.dubbo.common.utils.Assert;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.Codec;
-import com.alibaba.dubbo.remoting.ChannelCodec;
+import com.alibaba.dubbo.remoting.Codec2;
 import com.alibaba.dubbo.remoting.buffer.ChannelBuffer;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-public class ChannelCodecAdapter implements ChannelCodec {
+public class CodecAdapter implements Codec2 {
     
     private Codec codec;
     
-    public ChannelCodecAdapter(Codec codec) {
+    public CodecAdapter(Codec codec) {
         Assert.notNull(codec, "codec == null");
         this.codec = codec;
     }
@@ -51,11 +51,7 @@ public class ChannelCodecAdapter implements ChannelCodec {
         buffer.readBytes(bytes);
         UnsafeByteArrayInputStream is = new UnsafeByteArrayInputStream(bytes);
         Object result = codec.decode(channel, is);
-        if (result == Codec.NEED_MORE_INPUT) {
-            buffer.readerIndex(savedReaderIndex);
-        } else {
-            buffer.readerIndex(savedReaderIndex + is.position());
-        }
+        buffer.readerIndex(savedReaderIndex + is.position());
         return result == Codec.NEED_MORE_INPUT ? DecodeResult.NEED_MORE_INPUT : result;
     }
     

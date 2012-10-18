@@ -25,14 +25,14 @@ import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.serialize.Serialization;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.remoting.Channel;
-import com.alibaba.dubbo.remoting.ChannelCodec;
+import com.alibaba.dubbo.remoting.Codec2;
 
 /**
  * AbstractCodec
  * 
  * @author william.liangf
  */
-public abstract class AbstractCodec implements ChannelCodec {
+public abstract class AbstractCodec implements Codec2 {
 	
 	private static final Logger logger = LoggerFactory.getLogger(AbstractCodec.class);
 

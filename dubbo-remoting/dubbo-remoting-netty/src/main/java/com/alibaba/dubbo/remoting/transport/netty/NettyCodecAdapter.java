@@ -31,7 +31,7 @@ import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.remoting.ChannelCodec;
+import com.alibaba.dubbo.remoting.Codec2;
 import com.alibaba.dubbo.remoting.buffer.DynamicChannelBuffer;
 
 /**
@@ -45,7 +45,7 @@ final class NettyCodecAdapter {
     
     private final ChannelHandler decoder = new InternalDecoder();
 
-    private final ChannelCodec   codec;
+    private final Codec2         codec;
     
     private final URL            url;
     
@@ -53,7 +53,7 @@ final class NettyCodecAdapter {
     
     private final com.alibaba.dubbo.remoting.ChannelHandler handler;
 
-    public NettyCodecAdapter(ChannelCodec codec, URL url, com.alibaba.dubbo.remoting.ChannelHandler handler) {
+    public NettyCodecAdapter(Codec2 codec, URL url, com.alibaba.dubbo.remoting.ChannelHandler handler) {
         this.codec = codec;
         this.url = url;
         this.handler = handler;
@@ -136,7 +136,7 @@ final class NettyCodecAdapter {
                         buffer = com.alibaba.dubbo.remoting.buffer.ChannelBuffers.EMPTY_BUFFER;
                         throw e;
                     }
-                    if (msg == ChannelCodec.DecodeResult.NEED_MORE_INPUT) {
+                    if (msg == Codec2.DecodeResult.NEED_MORE_INPUT) {
                         message.readerIndex(saveReaderIndex);
                         break;
                     } else {
