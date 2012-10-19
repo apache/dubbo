@@ -43,9 +43,9 @@ public abstract class AbstractCodec implements Codec2 {
     protected static void checkPayload(Channel channel, long size) throws IOException {
         int payload = Constants.DEFAULT_PAYLOAD;
         if (channel != null && channel.getUrl() != null) {
-            payload = channel.getUrl().getPositiveParameter(Constants.PAYLOAD_KEY, Constants.DEFAULT_PAYLOAD);
+            payload = channel.getUrl().getParameter(Constants.PAYLOAD_KEY, Constants.DEFAULT_PAYLOAD);
         }
-        if (size > payload) {
+        if (payload > 0 && size > payload) {
         	IOException e = new IOException("Data length too large: " + size + ", max payload: " + payload + ", channel: " + channel);
         	logger.error(e);
             throw e;
