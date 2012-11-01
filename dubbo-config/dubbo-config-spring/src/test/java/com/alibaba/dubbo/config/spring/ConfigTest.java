@@ -54,6 +54,7 @@ import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Filter;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.service.EchoService;
 import com.alibaba.dubbo.rpc.service.GenericException;
 import com.alibaba.dubbo.rpc.service.GenericService;
 
@@ -420,7 +421,30 @@ public class ConfigTest {
             providerContext.close();
         }
     }
-    
+
+
+    @Test
+    public void test_invokerEchoOfGenericService() throws Exception {
+        ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(
+                ConfigTest.class.getPackage().getName().replace('.', '/') + "/demo-provider.xml");
+        providerContext.start();
+
+        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(
+                ConfigTest.class.getPackage().getName().replace('.', '/')
+                        + "/reference-generic-echo.xml");
+
+        DemoService demoService = (DemoService)ctx.getBean("demoService");
+        GenericService genericService = (GenericService)ctx.getBean("genericService");
+        {
+            String hello = demoService.sayName("Hello");
+            assertEquals("say:Hello", hello);
+        }
+        {
+            String hello = (String) ((EchoService)genericService).$echo("Hello");
+            assertEquals("Hello", hello);
+        }
+    }
+
     // BUG: DUBBO-846 2.0.9中，服务方法上的retry="false"设置失效
     @Test
     public void test_retrySettingFail() throws Exception {

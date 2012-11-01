@@ -33,16 +33,17 @@ import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.service.GenericException;
+import com.alibaba.dubbo.rpc.service.GenericService;
 import com.alibaba.dubbo.rpc.support.ProtocolUtils;
 
 /**
  * GenericImplInvokerFilter
- * 
+ *
  * @author william.liangf
  */
 @Activate(group = Constants.CONSUMER, value = Constants.GENERIC_KEY, order = 20000)
 public class GenericImplFilter implements Filter {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(GenericImplFilter.class);
 
     private static final Class<?>[] GENERIC_PARAMETER_TYPES = new Class<?>[] {String.class, String[].class, Object[].class};
@@ -50,24 +51,24 @@ public class GenericImplFilter implements Filter {
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         String generic = invoker.getUrl().getParameter(Constants.GENERIC_KEY);
         if (ProtocolUtils.isGeneric(generic)
-                && ! Constants.$INVOKE.equals(invocation.getMethodName())
+                && !GenericService.class.equals(invocation.getInvoker().getInterface())
                 && invocation instanceof RpcInvocation) {
             RpcInvocation invocation2 = (RpcInvocation) invocation;
             String methodName = invocation2.getMethodName();
             Class<?>[] parameterTypes = invocation2.getParameterTypes();
             Object[] arguments = invocation2.getArguments();
-            
+
             String[] types = new String[parameterTypes.length];
             for (int i = 0; i < parameterTypes.length; i ++) {
                 types[i] = ReflectUtils.getName(parameterTypes[i]);
             }
             Object[] args = PojoUtils.generalize(arguments);
-            
+
             invocation2.setMethodName(Constants.$INVOKE);
             invocation2.setParameterTypes(GENERIC_PARAMETER_TYPES);
             invocation2.setArguments(new Object[] {methodName, types, args});
             Result result = invoker.invoke(invocation2);
-            
+
             if (! result.hasException()) {
                 Object value = result.getValue();
                 try {
@@ -118,9 +119,9 @@ public class GenericImplFilter implements Filter {
         }
 
         if (invocation.getMethodName().equals(Constants.$INVOKE)
-            && invocation.getArguments() != null
-            && invocation.getArguments().length == 3
-            && ProtocolUtils.isGeneric(generic)) {
+                && invocation.getArguments() != null
+                && invocation.getArguments().length == 3
+                && ProtocolUtils.isGeneric(generic)) {
 
             if (ProtocolUtils.isJavaGenericSerialization(generic)) {
                 Object[] args = (Object[]) invocation.getArguments()[2];
@@ -133,20 +134,20 @@ public class GenericImplFilter implements Filter {
             }
 
             ((RpcInvocation)invocation).setAttachment(
-                Constants.GENERIC_KEY, invoker.getUrl().getParameter(Constants.GENERIC_KEY));
+                    Constants.GENERIC_KEY, invoker.getUrl().getParameter(Constants.GENERIC_KEY));
         }
         return invoker.invoke(invocation);
     }
 
     private void error(String type) throws RpcException {
         throw new RpcException(
-            new StringBuilder(32)
-                .append("Generic serialization [")
-                .append(Constants.GENERIC_SERIALIZATION_NATIVE_JAVA)
-                .append("] only support message type ")
-                .append(byte[].class)
-                .append(" and your message type is ")
-                .append(type).toString());
+                new StringBuilder(32)
+                        .append("Generic serialization [")
+                        .append(Constants.GENERIC_SERIALIZATION_NATIVE_JAVA)
+                        .append("] only support message type ")
+                        .append(byte[].class)
+                        .append(" and your message type is ")
+                        .append(type).toString());
     }
 
 }
