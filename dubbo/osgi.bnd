@@ -1,0 +1,38 @@
+
+
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+
+Export-Package: com.alibaba.dubbo.*;version="${project.version}",\
+ com.alibaba.com.caucho.hessian.*;version="${hessian_lite_version}"
+
+Import-Package: org.apache.commons.logging;version="1.1",\
+ javassist.*;version="[3.15,4.0)",\
+ org.springframework.*;version="[2.5.6,4.0)",\
+ org.jboss.netty.*;version="3.2",\
+ ch.qos.logback.*;version="0.9";resolution:=optional,\
+ com.alibaba.com.caucho.hessian.*;version="[3.2,4.0)";resolution:=optional,\
+ com.alibaba.fastjson.*;version="[1.1,2.0)";resolution:=optional,\
+ com.caucho.hessian.*;version="[4.0,5.0)";resolution:=optional,\
+ com.netflix.curator.*;version="[1.1,2.0)";resolution:=optional,\
+ javax.cache.*;version="0";resolution:=optional,\
+ javax.script.*;version="1.1";resolution:=optional,\
+ javax.servlet.*;version="2.5";resolution:=optional,\
+ javax.sql.*,\
+ javax.tools.*,\
+ javax.validation.*;version="1.0";resolution:=optional,\
+ net.rubyeye.xmemcached.*;version="1.3.6";resolution:=optional,\
+ org.I0Itec.zkclient.*;version="0.1";resolution:=optional,\
+ org.apache.commons.lang,\
+ org.apache.commons.pool.impl,\
+ org.apache.cxf.*;version="[2.6,3.0)";resolution:=optional,\
+ org.apache.http.*;version="0";resolution:=optional,\
+ org.apache.log4j.*;version="[1.2,2.0)";resolution:=optional,\
+ org.apache.mina.*;version="[1.1,2.0)";resolution:=optional,\
+ org.apache.thrift.*;version="0.8";resolution:=optional,\
+ org.apache.zookeeper.*;version="[3.3,4.0)";resolution:=optional,\
+ org.glassfish.grizzly.*;version="[2.1,3.0)";resolution:=optional,\
+ org.mortbay.*;version="6.1";resolution:=optional,\
+ org.slf4j.*;version="[1.6,2.0)";resolution:=optional,\
+ org.w3c.dom,\
+ redis.clients.jedis.*;version="[2.1,3.0)";resolution:=optional,\
+ *

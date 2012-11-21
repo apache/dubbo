@@ -64,7 +64,14 @@ public abstract class Proxy
 	 */
 	public static Proxy getProxy(Class<?>... ics)
 	{
-		return getProxy(ClassHelper.getCallerClassLoader(Proxy.class), ics);
+		if(null == ics || ics.length == 0) // 貌似这种情况应该不会出现吧？先加上再说，以防万一。
+			return getProxy(ClassHelper.getCallerClassLoader(Proxy.class), ics);
+		
+		// 按照我的理解，Proxy是用在根据dubbo:reference创建接口代理的。那么按照OSGi blurprint的定义，这里应该使用当前定义dubbo:reference的bundle作为类加载器。
+		// 因为只有这个bundle才能正确的找到所有必须的接口类。
+		// 另外dubbo应该还不支持在一个dubbo:reference中定义多个接口吧？
+		return getProxy(ClassHelper.getCallerClassLoader(ics[0]), ics);
+			
 	}
 
 	/**

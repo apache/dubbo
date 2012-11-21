@@ -207,7 +207,9 @@ public abstract class Wrapper
 			throw new IllegalArgumentException("Can not create wrapper for primitive type: " + c);
 
 		String name = c.getName();
-		ClassLoader cl = ClassHelper.getCallerClassLoader(Wrapper.class);
+		// 在OSGi环境下通过c可以得到当前发布service的bundle的类路径。
+		// 在常规servlet容器里，通过c应该也可以得到正确的类路径。
+		ClassLoader cl = ClassHelper.getCallerClassLoader(c);
 
 		StringBuilder c1 = new StringBuilder("public void setPropertyValue(Object o, String n, Object v){ ");
 		StringBuilder c2 = new StringBuilder("public Object getPropertyValue(Object o, String n){ ");

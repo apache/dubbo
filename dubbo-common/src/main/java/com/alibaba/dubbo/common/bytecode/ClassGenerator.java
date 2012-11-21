@@ -335,7 +335,8 @@ public final class ClassGenerator
 					}
 				}
 			}
-			return mCtc.toClass(ClassHelper.getCallerClassLoader(getClass()), null);
+			// mPool.getClassloader() 能够得到正确的classloader.
+			return mCtc.toClass(null, null);
 		}
 		catch(RuntimeException e)
 		{

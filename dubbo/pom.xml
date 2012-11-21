@@ -22,7 +22,7 @@
 		<version>2.5.3-SNAPSHOT</version>
 	</parent>
 	<artifactId>dubbo</artifactId>
-	<packaging>jar</packaging>
+	<packaging>bundle</packaging>
 	<name>${project.artifactId}</name>
 	<description>The all in one project of dubbo</description>
 	<properties>
@@ -295,7 +295,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>1.4</version>
+				<version>1.6</version>
 				<executions>
 					<execution>
 						<phase>package</phase>
@@ -474,6 +474,17 @@
 						</configuration>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<version>2.3.7</version>
+				<extensions>true</extensions>
+				<configuration>
+					<instructions>
+						<_include>-osgi.bnd</_include>
+					</instructions>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
