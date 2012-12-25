@@ -988,5 +988,40 @@ public final class ReflectUtils {
             && !field.isSynthetic();
     }
 
+    public static Map<String, Field> getBeanPropertyFields(Class cl) {
+        Map<String, Field> properties = new HashMap<String, Field>();
+        for(; cl != null; cl = cl.getSuperclass()) {
+            Field[] fields = cl.getDeclaredFields();
+            for(Field field : fields) {
+                if (Modifier.isTransient(field.getModifiers())
+                    || Modifier.isStatic(field.getModifiers())) {
+                    continue;
+                }
+
+                field.setAccessible(true);
+
+                properties.put(field.getName(), field);
+            }
+        }
+
+        return properties;
+    }
+
+    public static Map<String, Method> getBeanPropertyReadMethods(Class cl) {
+        Map<String, Method> properties = new HashMap<String, Method>();
+        for(; cl != null; cl = cl.getSuperclass()) {
+            Method[] methods = cl.getDeclaredMethods();
+            for(Method method : methods) {
+                if (isBeanPropertyReadMethod(method)) {
+                    method.setAccessible(true);
+                    String property = getPropertyNameFromBeanReadMethod(method);
+                    properties.put(property, method);
+                }
+            }
+        }
+
+        return properties;
+    }
+
 	private ReflectUtils(){}
 }
