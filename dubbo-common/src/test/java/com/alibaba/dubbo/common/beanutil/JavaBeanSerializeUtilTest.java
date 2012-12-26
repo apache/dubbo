@@ -18,7 +18,10 @@ package com.alibaba.dubbo.common.beanutil;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import org.junit.Test;
@@ -173,6 +176,91 @@ public class JavaBeanSerializeUtilTest {
         Assert.assertTrue(descriptor == childDescriptor.getProperty("parent"));
         assertEqualsPrimitive(child.getName(), childDescriptor.getProperty("name"));
         assertEqualsPrimitive(child.getAge(), childDescriptor.getProperty("age"));
+    }
+
+    @Test
+    public void testBeanSerialize() throws Exception {
+        Bean bean = new Bean();
+        bean.setDate(new Date());
+        bean.setStatus(PersonStatus.ENABLED);
+        bean.setType(Bean.class);
+        bean.setArray(new Phone[]{});
+
+        Collection<Phone> collection = new ArrayList<Phone>();
+        bean.setCollection(collection);
+        Phone phone = new Phone();
+        collection.add(phone);
+
+        Map<String, FullAddress> map = new HashMap<String, FullAddress>();
+        FullAddress address = new FullAddress();
+        map.put("first", address);
+        bean.setAddresses(map);
+
+        JavaBeanDescriptor descriptor = JavaBeanSerializeUtil.serialize(bean, JavaBeanAccessor.METHOD);
+        Assert.assertTrue(descriptor.isBeanType());
+        assertEqualsPrimitive(bean.getDate(), descriptor.getProperty("date"));
+        assertEqualsEnum(bean.getStatus(), descriptor.getProperty("status"));
+        Assert.assertTrue(((JavaBeanDescriptor)descriptor.getProperty("type")).isClassType());
+        Assert.assertEquals(Bean.class.getName(), ((JavaBeanDescriptor)descriptor.getProperty("type")).getClassNameProperty());
+        Assert.assertTrue(((JavaBeanDescriptor)descriptor.getProperty("array")).isArrayType());
+        Assert.assertEquals(0, ((JavaBeanDescriptor)descriptor.getProperty("array")).propertySize());
+
+        JavaBeanDescriptor property = (JavaBeanDescriptor)descriptor.getProperty("collection");
+        Assert.assertTrue(property.isCollectionType());
+        Assert.assertEquals(1, property.propertySize());
+        property = (JavaBeanDescriptor)property.getProperty(0);
+        Assert.assertTrue(property.isBeanType());
+        Assert.assertEquals(Phone.class.getName(), property.getClassName());
+        Assert.assertEquals(0, property.propertySize());
+
+        property = (JavaBeanDescriptor)descriptor.getProperty("addresses");
+        Assert.assertTrue(property.isMapType());
+        Assert.assertEquals(bean.getAddresses().getClass().getName(), property.getClassName());
+        Assert.assertEquals(1, property.propertySize());
+
+
+        Map.Entry<Object, Object> entry = property.iterator().next();
+        Assert.assertTrue(((JavaBeanDescriptor)entry.getKey()).isPrimitiveType());
+        Assert.assertEquals("first", ((JavaBeanDescriptor)entry.getKey()).getPrimitiveProperty());
+
+        Assert.assertTrue(((JavaBeanDescriptor)entry.getValue()).isBeanType());
+        Assert.assertEquals(FullAddress.class.getName(), ((JavaBeanDescriptor)entry.getValue()).getClassName());
+        Assert.assertEquals(0, ((JavaBeanDescriptor)entry.getValue()).propertySize());
+    }
+
+    @Test
+    public void testDeserializeBean() throws Exception {
+        Bean bean = new Bean();
+        bean.setDate(new Date());
+        bean.setStatus(PersonStatus.ENABLED);
+        bean.setType(Bean.class);
+        bean.setArray(new Phone[]{});
+
+        Collection<Phone> collection = new ArrayList<Phone>();
+        bean.setCollection(collection);
+        Phone phone = new Phone();
+        collection.add(phone);
+
+        Map<String, FullAddress> map = new HashMap<String, FullAddress>();
+        FullAddress address = new FullAddress();
+        map.put("first", address);
+        bean.setAddresses(map);
+
+        JavaBeanDescriptor beanDescriptor = JavaBeanSerializeUtil.serialize(bean, JavaBeanAccessor.METHOD);
+        Object deser = JavaBeanSerializeUtil.deserialize(beanDescriptor);
+        Assert.assertTrue(deser instanceof Bean);
+        Bean deserBean = (Bean)deser;
+        Assert.assertEquals(bean.getDate(), deserBean.getDate());
+        Assert.assertEquals(bean.getStatus(), deserBean.getStatus());
+        Assert.assertEquals(bean.getType(), deserBean.getType());
+        Assert.assertEquals(bean.getCollection().size(), deserBean.getCollection().size());
+        Assert.assertEquals(bean.getCollection().iterator().next().getClass(),
+                            deserBean.getCollection().iterator().next().getClass());
+        Assert.assertEquals(bean.getAddresses().size(), deserBean.getAddresses().size());
+        Assert.assertEquals(bean.getAddresses().entrySet().iterator().next().getKey(),
+                            deserBean.getAddresses().entrySet().iterator().next().getKey());
+        Assert.assertEquals(bean.getAddresses().entrySet().iterator().next().getValue().getClass(),
+                            deserBean.getAddresses().entrySet().iterator().next().getValue().getClass());
     }
 
     static void assertEqualsEnum(Enum<?> expected, Object obj) {
