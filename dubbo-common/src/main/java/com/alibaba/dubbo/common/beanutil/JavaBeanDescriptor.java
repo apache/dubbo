@@ -61,11 +61,13 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
      */
     private static final int TYPE_MIN = TYPE_CLASS;
 
-    private final String className;
+    private String className;
 
-    private final int type;
+    private int type;
 
     private Map<Object, Object> properties = new LinkedHashMap<Object, Object>();
+
+    public JavaBeanDescriptor() {}
 
     public JavaBeanDescriptor(String className, int type) {
         notEmpty(className, "class name is empty");
@@ -76,6 +78,14 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
         }
 
         this.className = className;
+        this.type = type;
+    }
+
+    public void setClassName(String className) {
+        this.className = className;
+    }
+
+    public void setType(int type) {
         this.type = type;
     }
 

@@ -21,13 +21,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.beanutil.JavaBeanAccessor;
+import com.alibaba.dubbo.common.beanutil.JavaBeanDescriptor;
+import com.alibaba.dubbo.common.beanutil.JavaBeanSerializeUtil;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.serialize.Serialization;
+import com.alibaba.dubbo.common.utils.ReflectUtils;
 import com.alibaba.dubbo.config.api.DemoException;
 import com.alibaba.dubbo.config.api.DemoService;
 import com.alibaba.dubbo.config.api.User;
@@ -37,11 +42,11 @@ import com.alibaba.dubbo.rpc.service.GenericService;
 
 /**
  * GenericServiceTest
- * 
+ *
  * @author william.liangf
  */
 public class GenericServiceTest {
-    
+
     @Test
     public void testGenericServiceException() {
         ServiceConfig<GenericService> service = new ServiceConfig<GenericService>();
@@ -50,8 +55,9 @@ public class GenericServiceTest {
         service.setProtocol(new ProtocolConfig("dubbo", 29581));
         service.setInterface(DemoService.class.getName());
         service.setRef(new GenericService() {
+
             public Object $invoke(String method, String[] parameterTypes, Object[] args)
-                    throws GenericException {
+                throws GenericException {
                 if ("sayName".equals(method)) {
                     return "Generic " + args[0];
                 }
@@ -117,7 +123,7 @@ public class GenericServiceTest {
                 user.put("class", "com.alibaba.dubbo.config.api.User");
                 user.put("name", "actual.provider");
                 users.add(user);
-                users = (List<Map<String, Object>>) genericService.$invoke("getUsers", new String[] {List.class.getName()}, new Object[] {users});
+                users = (List<Map<String, Object>>) genericService.$invoke("getUsers", new String[]{List.class.getName()}, new Object[]{users});
                 Assert.assertEquals(1, users.size());
                 Assert.assertEquals("actual.provider", users.get(0).get("name"));
             } finally {
@@ -192,6 +198,113 @@ public class GenericServiceTest {
                 reference.destroy();
             }
         } finally {
+            service.unexport();
+        }
+    }
+
+    @Test
+    public void testGenericInvokeWithBeanSerialization() throws Exception {
+        ServiceConfig<DemoService> service = new ServiceConfig<DemoService>();
+        service.setApplication(new ApplicationConfig("bean-provider"));
+        service.setInterface(DemoService.class);
+        service.setRegistry(new RegistryConfig("N/A"));
+        DemoServiceImpl impl = new DemoServiceImpl();
+        service.setRef(impl);
+        service.setProtocol(new ProtocolConfig("dubbo", 29581));
+        service.export();
+        ReferenceConfig<GenericService> reference = null;
+        try {
+            reference = new ReferenceConfig<GenericService>();
+            reference.setApplication(new ApplicationConfig("bean-consumer"));
+            reference.setInterface(DemoService.class);
+            reference.setUrl("dubbo://127.0.0.1:29581?scope=remote");
+            reference.setGeneric(Constants.GENERIC_SERIALIZATION_BEAN);
+            GenericService genericService = reference.get();
+            User user = new User();
+            user.setName("zhangsan");
+            List<User> users = new ArrayList<User>();
+            users.add(user);
+            Object result = genericService.$invoke("getUsers", new String[]{ReflectUtils.getName(List.class)}, new Object[]{JavaBeanSerializeUtil.serialize(users, JavaBeanAccessor.METHOD)});
+            Assert.assertTrue(result instanceof JavaBeanDescriptor);
+            JavaBeanDescriptor descriptor = (JavaBeanDescriptor) result;
+            Assert.assertTrue(descriptor.isCollectionType());
+            Assert.assertEquals(1, descriptor.propertySize());
+            descriptor = (JavaBeanDescriptor) descriptor.getProperty(0);
+            Assert.assertTrue(descriptor.isBeanType());
+            Assert.assertEquals(user.getName(), ((JavaBeanDescriptor) descriptor.getProperty("name")).getPrimitiveProperty());
+        } finally {
+            if (reference != null) {
+                reference.destroy();
+            }
+            service.unexport();
+        }
+    }
+
+    protected static class GenericParameter {
+
+        String   method;
+
+        String[] parameterTypes;
+
+        Object[] arguments;
+    }
+
+    @Test
+    public void testGenericImplementationWithBeanSerialization() throws Exception {
+        final AtomicReference reference = new AtomicReference();
+        ServiceConfig<GenericService> service = new ServiceConfig<GenericService>();
+        service.setApplication(new ApplicationConfig("bean-provider"));
+        service.setRegistry(new RegistryConfig("N/A"));
+        service.setProtocol(new ProtocolConfig("dubbo", 29581));
+        service.setInterface(DemoService.class.getName());
+        service.setRef(new GenericService() {
+
+            public Object $invoke(String method, String[] parameterTypes, Object[] args) throws GenericException {
+                if ("getUsers".equals(method)) {
+                    GenericParameter arg = new GenericParameter();
+                    arg.method = method;
+                    arg.parameterTypes = parameterTypes;
+                    arg.arguments = args;
+                    reference.set(arg);
+                    return args[0];
+                }
+                return args;
+            }
+        });
+        service.export();
+        ReferenceConfig<DemoService> ref = null;
+        try {
+            ref = new ReferenceConfig<DemoService>();
+            ref.setApplication(new ApplicationConfig("bean-consumer"));
+            ref.setInterface(DemoService.class);
+            ref.setUrl("dubbo://127.0.0.1:29581?scope=remote&generic=bean");
+            DemoService demoService = ref.get();
+            User user = new User();
+            user.setName("zhangsan");
+            List<User> users = new ArrayList<User>();
+            users.add(user);
+            List<User> result = demoService.getUsers(users);
+            Assert.assertEquals(users.size(), result.size());
+            Assert.assertEquals(user.getName(), result.get(0).getName());
+
+            GenericParameter gp = (GenericParameter)reference.get();
+            Assert.assertEquals("getUsers", gp.method);
+            Assert.assertEquals(1, gp.parameterTypes.length);
+            Assert.assertEquals(ReflectUtils.getName(List.class), gp.parameterTypes[0]);
+            Assert.assertEquals(1, gp.arguments.length);
+            Assert.assertTrue(gp.arguments[0] instanceof JavaBeanDescriptor);
+            JavaBeanDescriptor descriptor = (JavaBeanDescriptor)gp.arguments[0];
+            Assert.assertTrue(descriptor.isCollectionType());
+            Assert.assertEquals(ArrayList.class.getName(), descriptor.getClassName());
+            Assert.assertEquals(1, descriptor.propertySize());
+            descriptor = (JavaBeanDescriptor)descriptor.getProperty(0);
+            Assert.assertTrue(descriptor.isBeanType());
+            Assert.assertEquals(User.class.getName(), descriptor.getClassName());
+            Assert.assertEquals(user.getName(), ((JavaBeanDescriptor)descriptor.getProperty("name")).getPrimitiveProperty());
+        } finally {
+            if (ref != null) {
+                ref.destroy();
+            }
             service.unexport();
         }
     }
