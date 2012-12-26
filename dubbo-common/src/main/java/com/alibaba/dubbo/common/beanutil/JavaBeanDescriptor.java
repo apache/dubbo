@@ -43,11 +43,11 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
 
     public static final int TYPE_BEAN = 7;
 
-    public static final String ENUM_PROPERTY_NAME = "name";
+    private static final String ENUM_PROPERTY_NAME = "name";
 
-    public static final String CLASS_PROPERTY_NAME = "name";
+    private static final String CLASS_PROPERTY_NAME = "name";
 
-    public static final String PRIMITIVE_PROPERTY_VALUE = "value";
+    private static final String PRIMITIVE_PROPERTY_VALUE = "value";
 
     /**
      * Used to define a type is valid.
@@ -122,14 +122,46 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
         return oldValue;
     }
 
-    public Object setPrimitive(Object primitiveValue) {
+    public String setEnumNameProperty(String name) {
+        if (isEnumType()) {
+            Object result = setProperty(ENUM_PROPERTY_NAME, name);
+            return result == null ? null : result.toString();
+        }
+        throw new IllegalStateException("The instance is not a enum wrapper");
+    }
+
+    public String getEnumPropertyName() {
+        if (isEnumType()) {
+            Object result = getProperty(ENUM_PROPERTY_NAME).toString();
+            return result == null ? null : result.toString();
+        }
+        throw new IllegalStateException("The instance is not a enum wrapper");
+    }
+
+    public String setClassNameProperty(String name) {
+        if (isClassType()) {
+            Object result = setProperty(CLASS_PROPERTY_NAME, name);
+            return result == null ? null : result.toString();
+        }
+        throw new IllegalStateException("The instance is not a class wrapper");
+    }
+
+    public String getClassNameProperty() {
+        if (isClassType()) {
+            Object result = getProperty(CLASS_PROPERTY_NAME);
+            return result == null ? null : result.toString();
+        }
+        throw new IllegalStateException("The instance is not a class wrapper");
+    }
+
+    public Object setPrimitiveProperty(Object primitiveValue) {
         if (isPrimitiveType()) {
             return setProperty(PRIMITIVE_PROPERTY_VALUE, primitiveValue);
         }
         throw new IllegalStateException("The instance is not a primitive type wrapper");
     }
 
-    public Object getPrimitive() {
+    public Object getPrimitiveProperty() {
         if (isPrimitiveType()) {
             return getProperty(PRIMITIVE_PROPERTY_VALUE);
         }

@@ -86,11 +86,11 @@ public final class JavaBeanSerializeUtil {
         }
 
         if (obj.getClass().isEnum()) {
-            descriptor.setProperty(JavaBeanDescriptor.ENUM_PROPERTY_NAME, ((Enum<?>) obj).name());
+            descriptor.setEnumNameProperty(((Enum<?>) obj).name());
         } else if (ReflectUtils.isPrimitive(obj.getClass())) {
-            descriptor.setProperty(JavaBeanDescriptor.PRIMITIVE_PROPERTY_VALUE, obj);
+            descriptor.setPrimitiveProperty(obj);
         } else if (Class.class.equals(obj.getClass())) {
-            descriptor.setProperty(JavaBeanDescriptor.CLASS_PROPERTY_NAME, ((Class<?>) obj).getName());
+            descriptor.setClassNameProperty(((Class<?>) obj).getName());
         } else if (obj.getClass().isArray()) {
             int len = Array.getLength(obj);
             for (int i = 0; i < len; i++) {
@@ -344,8 +344,7 @@ public final class JavaBeanSerializeUtil {
         Object result = null;
         if (beanDescriptor.isClassType()) {
             try {
-                result = name2Class(loader,
-                                    beanDescriptor.getProperty(JavaBeanDescriptor.CLASS_PROPERTY_NAME).toString());
+                result = name2Class(loader, beanDescriptor.getClassNameProperty());
                 return result;
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e.getMessage(), e);
@@ -354,22 +353,22 @@ public final class JavaBeanSerializeUtil {
             try {
                 Class<?> enumType = name2Class(loader, beanDescriptor.getClassName());
                 Method method = getEnumValueOfMethod(enumType);
-                result = method.invoke(null, enumType, beanDescriptor.getProperty(JavaBeanDescriptor.ENUM_PROPERTY_NAME));
+                result = method.invoke(null, enumType, beanDescriptor.getEnumPropertyName());
                 return result;
             } catch (Exception e) {
                 throw new RuntimeException(e.getMessage(), e);
             }
         } else if (beanDescriptor.isPrimitiveType()) {
-            result = beanDescriptor.getProperty(JavaBeanDescriptor.PRIMITIVE_PROPERTY_VALUE);
+            result = beanDescriptor.getPrimitiveProperty();
             return result;
         } else if (beanDescriptor.isArrayType()) {
-            Class<?> conponentType = null;
+            Class<?> componentType;
             try {
-                conponentType = name2Class(loader, beanDescriptor.getClassName());
+                componentType = name2Class(loader, beanDescriptor.getClassName());
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e.getMessage(), e);
             }
-            result = Array.newInstance(conponentType, beanDescriptor.propertySize());
+            result = Array.newInstance(componentType, beanDescriptor.propertySize());
             cache.put(beanDescriptor, result);
         } else try {
             Class<?> cl = name2Class(loader, beanDescriptor.getClassName());

@@ -42,26 +42,26 @@ public class JavaBeanSerializeUtilTest {
         JavaBeanDescriptor descriptor;
         descriptor = JavaBeanSerializeUtil.serialize(Integer.MAX_VALUE);
         Assert.assertTrue(descriptor.isPrimitiveType());
-        Assert.assertEquals(Integer.MAX_VALUE, descriptor.getProperty(JavaBeanDescriptor.PRIMITIVE_PROPERTY_VALUE));
+        Assert.assertEquals(Integer.MAX_VALUE, descriptor.getPrimitiveProperty());
 
         Date now = new Date();
         descriptor = JavaBeanSerializeUtil.serialize(now);
         Assert.assertTrue(descriptor.isPrimitiveType());
-        Assert.assertEquals(now, descriptor.getProperty(JavaBeanDescriptor.PRIMITIVE_PROPERTY_VALUE));
+        Assert.assertEquals(now, descriptor.getPrimitiveProperty());
     }
 
     @Test
     public void testDeserialize_Primitive() throws Exception {
         JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_PRIMITIVE);
-        descriptor.setProperty(JavaBeanDescriptor.PRIMITIVE_PROPERTY_VALUE, Long.MAX_VALUE);
+        descriptor.setPrimitiveProperty(Long.MAX_VALUE);
         Assert.assertEquals(Long.MAX_VALUE, JavaBeanSerializeUtil.deserialize(descriptor));
 
         BigDecimal decimal = BigDecimal.TEN;
-        Assert.assertEquals(Long.MAX_VALUE, descriptor.setProperty(JavaBeanDescriptor.PRIMITIVE_PROPERTY_VALUE, decimal));
+        Assert.assertEquals(Long.MAX_VALUE, descriptor.setPrimitiveProperty(decimal));
         Assert.assertEquals(decimal, JavaBeanSerializeUtil.deserialize(descriptor));
 
         String string = UUID.randomUUID().toString();
-        Assert.assertEquals(decimal, descriptor.setProperty(JavaBeanDescriptor.PRIMITIVE_PROPERTY_VALUE, string));
+        Assert.assertEquals(decimal, descriptor.setPrimitiveProperty(string));
         Assert.assertEquals(string, JavaBeanSerializeUtil.deserialize(descriptor));
     }
 
@@ -73,7 +73,7 @@ public class JavaBeanSerializeUtilTest {
         Assert.assertEquals(int.class.getName(), descriptor.getClassName());
         for (int i = 0; i < array.length; i++) {
             Assert.assertEquals(array[i],
-                                ((JavaBeanDescriptor) descriptor.getProperty(i)).getProperty(JavaBeanDescriptor.PRIMITIVE_PROPERTY_VALUE));
+                                ((JavaBeanDescriptor) descriptor.getProperty(i)).getPrimitiveProperty());
         }
 
         int[][] second = {{1, 2}, {3, 4}};
@@ -85,7 +85,7 @@ public class JavaBeanSerializeUtilTest {
                 JavaBeanDescriptor item = (((JavaBeanDescriptor)descriptor.getProperty(i)));
                 Assert.assertTrue(item.isArrayType());
                 Assert.assertEquals(int.class.getName(), item.getClassName());
-                Assert.assertEquals(second[i][j], ((JavaBeanDescriptor)item.getProperty(j)).getPrimitive());
+                Assert.assertEquals(second[i][j], ((JavaBeanDescriptor)item.getProperty(j)).getPrimitiveProperty());
             }
         }
 
@@ -179,14 +179,14 @@ public class JavaBeanSerializeUtilTest {
         JavaBeanDescriptor descriptor = (JavaBeanDescriptor) obj;
         Assert.assertTrue(descriptor.isEnumType());
         Assert.assertEquals(expected.getClass().getName(), descriptor.getClassName());
-        Assert.assertEquals(expected.name(), descriptor.getProperty(JavaBeanDescriptor.ENUM_PROPERTY_NAME));
+        Assert.assertEquals(expected.name(), descriptor.getEnumPropertyName());
     }
 
     static void assertEqualsPrimitive(Object expected, Object obj) {
         if (expected == null) { return; }
         JavaBeanDescriptor descriptor = (JavaBeanDescriptor) obj;
         Assert.assertTrue(descriptor.isPrimitiveType());
-        Assert.assertEquals(expected, descriptor.getPrimitive());
+        Assert.assertEquals(expected, descriptor.getPrimitiveProperty());
     }
 
     static void assertEqualsBigPerson(BigPerson person, Object obj) {
