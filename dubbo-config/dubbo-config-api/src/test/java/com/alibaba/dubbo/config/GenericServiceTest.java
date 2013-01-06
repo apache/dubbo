@@ -268,6 +268,9 @@ public class GenericServiceTest {
                     reference.set(arg);
                     return args[0];
                 }
+                if ("sayName".equals(method)) {
+                    return null;
+                }
                 return args;
             }
         });
@@ -301,6 +304,7 @@ public class GenericServiceTest {
             Assert.assertTrue(descriptor.isBeanType());
             Assert.assertEquals(User.class.getName(), descriptor.getClassName());
             Assert.assertEquals(user.getName(), ((JavaBeanDescriptor)descriptor.getProperty("name")).getPrimitiveProperty());
+            Assert.assertNull(demoService.sayName("zhangsan"));
         } finally {
             if (ref != null) {
                 ref.destroy();

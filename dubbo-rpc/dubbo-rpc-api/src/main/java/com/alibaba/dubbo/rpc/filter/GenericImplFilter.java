@@ -85,7 +85,9 @@ public class GenericImplFilter implements Filter {
                 try {
                     Method method = invoker.getInterface().getMethod(methodName, parameterTypes);
                     if (ProtocolUtils.isBeanGenericSerialization(generic)) {
-                        if (value instanceof JavaBeanDescriptor) {
+                        if (value == null) {
+                            return new RpcResult(value);
+                        } else if (value instanceof JavaBeanDescriptor) {
                             return new RpcResult(JavaBeanSerializeUtil.deserialize((JavaBeanDescriptor)value));
                         } else {
                             throw new RpcException(
