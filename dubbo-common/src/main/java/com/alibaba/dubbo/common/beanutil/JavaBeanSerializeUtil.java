@@ -46,6 +46,9 @@ public final class JavaBeanSerializeUtil {
         if (obj == null) {
             return null;
         }
+        if (obj instanceof JavaBeanDescriptor) {
+            return (JavaBeanDescriptor)obj;
+        }
         IdentityHashMap<Object, JavaBeanDescriptor> cache = new IdentityHashMap<Object, JavaBeanDescriptor>();
         JavaBeanDescriptor result = createDescriptorIfAbsent(obj, accessor, cache);
         return result;
@@ -72,6 +75,8 @@ public final class JavaBeanSerializeUtil {
     private static JavaBeanDescriptor createDescriptorIfAbsent(Object obj, JavaBeanAccessor accessor, IdentityHashMap<Object, JavaBeanDescriptor> cache) {
         if (cache.containsKey(obj)) {
             return cache.get(obj);
+        } else if (obj instanceof JavaBeanDescriptor) {
+            return (JavaBeanDescriptor)obj;
         } else {
             JavaBeanDescriptor result = createDescriptorForSerialize(obj.getClass());
             cache.put(obj, result);
