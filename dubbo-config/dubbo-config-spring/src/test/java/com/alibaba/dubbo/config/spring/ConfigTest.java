@@ -30,6 +30,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.utils.NetUtils;
@@ -936,6 +937,28 @@ public class ConfigTest {
         } finally {
             sc.unexport();
             ref.destroy();
+        }
+    }
+
+    @Test
+    public void testGenericServiceConfig() throws Exception {
+        ServiceConfig<GenericService> service = new ServiceConfig<GenericService>();
+        service.setApplication(new ApplicationConfig("test"));
+        service.setRegistry(new RegistryConfig("N/A"));
+        service.setInterface(DemoService.class.getName());
+        service.setGeneric(Constants.GENERIC_SERIALIZATION_BEAN);
+        service.setRef(new GenericService(){
+
+            public Object $invoke(String method, String[] parameterTypes, Object[] args) throws GenericException {
+                return null;
+            }
+        });
+        try {
+            service.export();
+            URL url = service.getExportedUrls().get(0);
+            Assert.assertEquals(Constants.GENERIC_SERIALIZATION_BEAN, url.getParameter(Constants.GENERIC_KEY));
+        } finally {
+            service.unexport();
         }
     }
 

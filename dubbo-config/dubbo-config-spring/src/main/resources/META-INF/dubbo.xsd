@@ -1051,6 +1051,11 @@
 						<xsd:documentation><![CDATA[ Deprecated. Replace to protocol. ]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
+                <xsd:attribute name="generic" type="xsd:string" use="optional">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ Generic service. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
 				<xsd:anyAttribute namespace="##other" processContents="lax" />
 			</xsd:extension>
 		</xsd:complexContent>
