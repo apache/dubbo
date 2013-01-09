@@ -79,6 +79,19 @@ public class JavaBeanSerializeUtilTest {
                                 ((JavaBeanDescriptor) descriptor.getProperty(i)).getPrimitiveProperty());
         }
 
+        Integer[] integers = new Integer[]{1, 2, 3, 4, null, null, null};
+        descriptor = JavaBeanSerializeUtil.serialize(integers, JavaBeanAccessor.METHOD);
+        Assert.assertTrue(descriptor.isArrayType());
+        Assert.assertEquals(Integer.class.getName(), descriptor.getClassName());
+        Assert.assertEquals(integers.length, descriptor.propertySize());
+        for(int i = 0; i < integers.length; i++) {
+            if (integers[i] == null) {
+                Assert.assertTrue(integers[i] == descriptor.getProperty(i));
+            } else {
+                Assert.assertEquals(integers[i], ((JavaBeanDescriptor)descriptor.getProperty(i)).getPrimitiveProperty());
+            }
+        }
+
         int[][] second = {{1, 2}, {3, 4}};
         descriptor = JavaBeanSerializeUtil.serialize(second, JavaBeanAccessor.METHOD);
         Assert.assertTrue(descriptor.isArrayType());

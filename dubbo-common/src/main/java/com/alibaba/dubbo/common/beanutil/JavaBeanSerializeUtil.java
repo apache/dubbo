@@ -101,7 +101,7 @@ public final class JavaBeanSerializeUtil {
             for (int i = 0; i < len; i++) {
                 Object item = Array.get(obj, i);
                 if (item == null) {
-                    descriptor.setProperty(i++, null);
+                    descriptor.setProperty(i, null);
                 } else {
                     JavaBeanDescriptor itemDescriptor = createDescriptorIfAbsent(item, accessor, cache);
                     descriptor.setProperty(i, itemDescriptor);
