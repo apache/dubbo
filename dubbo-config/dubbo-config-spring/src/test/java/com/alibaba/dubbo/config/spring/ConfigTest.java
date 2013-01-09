@@ -917,7 +917,6 @@ public class ConfigTest {
         sc.setInterface(DemoService.class.getName());
         sc.setRef(new GenericService() {
 
-            @Override
             public Object $invoke(String method, String[] parameterTypes, Object[] args) throws GenericException {
                 return null;
             }
@@ -959,6 +958,19 @@ public class ConfigTest {
             Assert.assertEquals(Constants.GENERIC_SERIALIZATION_BEAN, url.getParameter(Constants.GENERIC_KEY));
         } finally {
             service.unexport();
+        }
+    }
+
+    @Test
+    public void testGenericServiceConfigThroughSpring() throws Exception {
+        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/generic-export.xml");
+        try {
+            ctx.start();
+            ServiceConfig serviceConfig = (ServiceConfig) ctx.getBean("dubboDemoService");
+            URL url = (URL)serviceConfig.getExportedUrls().get(0);
+            Assert.assertEquals(Constants.GENERIC_SERIALIZATION_BEAN, url.getParameter(Constants.GENERIC_KEY));
+        } finally {
+            ctx.destroy();
         }
     }
 
