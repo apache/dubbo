@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.matchers.JUnitMatchers.containsString;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.junit.Test;
@@ -50,6 +51,10 @@ import com.alibaba.dubbo.config.spring.api.HelloService;
 import com.alibaba.dubbo.config.spring.filter.MockFilter;
 import com.alibaba.dubbo.config.spring.impl.DemoServiceImpl;
 import com.alibaba.dubbo.config.spring.impl.HelloServiceImpl;
+import com.alibaba.dubbo.config.spring.registry.MockRegistry;
+import com.alibaba.dubbo.config.spring.registry.MockRegistryFactory;
+import com.alibaba.dubbo.registry.Registry;
+import com.alibaba.dubbo.registry.RegistryFactory;
 import com.alibaba.dubbo.registry.RegistryService;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Filter;
@@ -943,7 +948,7 @@ public class ConfigTest {
     public void testGenericServiceConfig() throws Exception {
         ServiceConfig<GenericService> service = new ServiceConfig<GenericService>();
         service.setApplication(new ApplicationConfig("test"));
-        service.setRegistry(new RegistryConfig("N/A"));
+        service.setRegistry(new RegistryConfig("mock://localhost"));
         service.setInterface(DemoService.class.getName());
         service.setGeneric(Constants.GENERIC_SERIALIZATION_BEAN);
         service.setRef(new GenericService(){
@@ -954,9 +959,12 @@ public class ConfigTest {
         });
         try {
             service.export();
-            URL url = service.getExportedUrls().get(0);
+            Collection<Registry> collection = MockRegistryFactory.getCachedRegistry();
+            MockRegistry registry = (MockRegistry)collection.iterator().next();
+            URL url = registry.getRegistered().get(0);
             Assert.assertEquals(Constants.GENERIC_SERIALIZATION_BEAN, url.getParameter(Constants.GENERIC_KEY));
         } finally {
+            MockRegistryFactory.cleanCachedRegistry();
             service.unexport();
         }
     }
