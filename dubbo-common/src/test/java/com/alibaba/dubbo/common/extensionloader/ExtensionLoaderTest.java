@@ -40,6 +40,9 @@ import com.alibaba.dubbo.common.extensionloader.ext1.impl.SimpleExtImpl_ManualAd
 import com.alibaba.dubbo.common.extensionloader.ext1.impl.SimpleExtImpl_ManualAdd2;
 import com.alibaba.dubbo.common.extensionloader.ext6_wrap.WrappedExt;
 import com.alibaba.dubbo.common.extensionloader.ext7.InitErrorExt;
+import com.alibaba.dubbo.common.extensionloader.ext8.ReplaceExt;
+import com.alibaba.dubbo.common.extensionloader.ext8.impl.ReplaceExtImpl1;
+import com.alibaba.dubbo.common.extensionloader.ext8.impl.ReplaceExtImpl_ManualAdd1;
 import junit.framework.Assert;
 
 import org.junit.Test;
@@ -249,25 +252,25 @@ public class ExtensionLoaderTest {
     @Test
     public void test_replaceExtension() throws Exception {
         try {
-            ExtensionLoader.getExtensionLoader(SimpleExt.class).getExtension("Manual2");
+            ExtensionLoader.getExtensionLoader(ReplaceExt.class).getExtension("Manual2");
             fail();
         }
         catch (IllegalStateException expected) {
-            assertThat(expected.getMessage(), containsString("No such extension com.alibaba.dubbo.common.extensionloader.ext1.SimpleExt by name Manual"));
+            assertThat(expected.getMessage(), containsString("No such extension com.alibaba.dubbo.common.extensionloader.ext8.ReplaceExt by name Manual"));
         }
 
         {
-            SimpleExt ext = ExtensionLoader.getExtensionLoader(SimpleExt.class).getExtension("impl1");
+            ReplaceExt ext = ExtensionLoader.getExtensionLoader(ReplaceExt.class).getExtension("impl1");
 
-            assertThat(ext, instanceOf(SimpleExtImpl1.class));
-            assertEquals("impl1", ExtensionLoader.getExtensionLoader(SimpleExt.class).getExtensionName(SimpleExtImpl1.class));
+            assertThat(ext, instanceOf(ReplaceExtImpl1.class));
+            assertEquals("impl1", ExtensionLoader.getExtensionLoader(ReplaceExt.class).getExtensionName(ReplaceExtImpl1.class));
         }
         {
-            ExtensionLoader.getExtensionLoader(SimpleExt.class).replaceExtension("impl1", SimpleExtImpl_ManualAdd2.class);
-            SimpleExt ext = ExtensionLoader.getExtensionLoader(SimpleExt.class).getExtension("impl1");
+            ExtensionLoader.getExtensionLoader(ReplaceExt.class).replaceExtension("impl1", ReplaceExtImpl_ManualAdd1.class);
+            ReplaceExt ext = ExtensionLoader.getExtensionLoader(ReplaceExt.class).getExtension("impl1");
 
-            assertThat(ext, instanceOf(SimpleExtImpl_ManualAdd2.class));
-            assertEquals("impl1", ExtensionLoader.getExtensionLoader(SimpleExt.class).getExtensionName(SimpleExtImpl_ManualAdd2.class));
+            assertThat(ext, instanceOf(ReplaceExtImpl_ManualAdd1.class));
+            assertEquals("impl1", ExtensionLoader.getExtensionLoader(ReplaceExt.class).getExtensionName(ReplaceExtImpl_ManualAdd1.class));
         }
     }
 

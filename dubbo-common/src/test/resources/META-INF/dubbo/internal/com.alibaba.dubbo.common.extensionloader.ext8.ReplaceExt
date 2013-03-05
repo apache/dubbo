@@ -1,0 +1,2 @@
+impl1=com.alibaba.dubbo.common.extensionloader.ext8.impl.ReplaceExtImpl1
+impl2=com.alibaba.dubbo.common.extensionloader.ext8.impl.ReplaceExtImpl2
