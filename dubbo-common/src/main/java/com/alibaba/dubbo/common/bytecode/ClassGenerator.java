@@ -292,6 +292,7 @@ public final class ClassGenerator
 	public Class<?> toClass(){
 		return toClass(getClass().getClassLoader(), getClass().getProtectionDomain());
 	}
+
 	public Class<?> toClass(ClassLoader loader, ProtectionDomain pd)
 	{
 		if( mCtc != null )
