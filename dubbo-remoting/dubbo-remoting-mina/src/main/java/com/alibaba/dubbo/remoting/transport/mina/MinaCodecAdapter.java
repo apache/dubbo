@@ -15,8 +15,6 @@
  */
 package com.alibaba.dubbo.remoting.transport.mina;
 
-import java.io.IOException;
-
 import org.apache.mina.common.ByteBuffer;
 import org.apache.mina.common.IoSession;
 import org.apache.mina.filter.codec.ProtocolCodecFactory;
@@ -27,35 +25,33 @@ import org.apache.mina.filter.codec.ProtocolEncoderOutput;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.io.Bytes;
-import com.alibaba.dubbo.common.io.UnsafeByteArrayInputStream;
-import com.alibaba.dubbo.common.io.UnsafeByteArrayOutputStream;
 import com.alibaba.dubbo.remoting.Channel;
+import com.alibaba.dubbo.remoting.Codec2;
 import com.alibaba.dubbo.remoting.ChannelHandler;
-import com.alibaba.dubbo.remoting.Codec;
+import com.alibaba.dubbo.remoting.buffer.ChannelBuffer;
+import com.alibaba.dubbo.remoting.buffer.ChannelBuffers;
+import com.alibaba.dubbo.remoting.buffer.DynamicChannelBuffer;
 
 /**
  * MinaCodecAdapter.
- * 
+ *
  * @author qian.lei
  */
 final class MinaCodecAdapter implements ProtocolCodecFactory {
-
-    private static final String   BUFFER_KEY          = MinaCodecAdapter.class.getName() + ".BUFFER";
 
     private final ProtocolEncoder encoder            = new InternalEncoder();
 
     private final ProtocolDecoder decoder            = new InternalDecoder();
 
-    private final Codec           codec;
+    private final Codec2          codec;
 
     private final URL             url;
-    
+
     private final ChannelHandler  handler;
 
     private final int            bufferSize;
-    
-    public MinaCodecAdapter(Codec codec, URL url, ChannelHandler handler) {
+
+    public MinaCodecAdapter(Codec2 codec, URL url, ChannelHandler handler) {
         this.codec = codec;
         this.url = url;
         this.handler = handler;
@@ -77,93 +73,74 @@ final class MinaCodecAdapter implements ProtocolCodecFactory {
         }
 
         public void encode(IoSession session, Object msg, ProtocolEncoderOutput out) throws Exception {
-            UnsafeByteArrayOutputStream os = new UnsafeByteArrayOutputStream(1024); // 不需要关闭
+            ChannelBuffer buffer = ChannelBuffers.dynamicBuffer(1024);
             MinaChannel channel = MinaChannel.getOrAddChannel(session, url, handler);
             try {
-            	codec.encode(channel, os, msg);
+            	codec.encode(channel, buffer, msg);
             } finally {
                 MinaChannel.removeChannelIfDisconnectd(session);
             }
-            out.write(ByteBuffer.wrap(os.toByteArray()));
+            out.write(ByteBuffer.wrap(buffer.toByteBuffer()));
             out.flush();
         }
     }
 
     private class InternalDecoder implements ProtocolDecoder {
 
+        private ChannelBuffer buffer = ChannelBuffers.EMPTY_BUFFER;
+
         public void decode(IoSession session, ByteBuffer in, ProtocolDecoderOutput out) throws Exception {
             int readable = in.limit();
             if (readable <= 0) return;
 
-            int off, limit;
-            byte[] buf;
-            // load buffer from context.
-            Object[] tmp = (Object[]) session.getAttribute(BUFFER_KEY);
-            if (tmp == null) {
-                buf = new byte[bufferSize];
-                off = limit = 0;
+            ChannelBuffer frame;
+
+            if (buffer.readable()) {
+                if (buffer instanceof DynamicChannelBuffer) {
+                    buffer.writeBytes(in.buf());
+                    frame = buffer;
+                } else {
+                    int size = buffer.readableBytes() + in.remaining();
+                    frame = ChannelBuffers.dynamicBuffer(size > bufferSize ? size : bufferSize);
+                    frame.writeBytes(buffer, buffer.readableBytes());
+                    frame.writeBytes(in.buf());
+                }
             } else {
-                buf = (byte[]) tmp[0];
-                off = (Integer) tmp[1];
-                limit = (Integer) tmp[2];
+                frame = ChannelBuffers.wrappedBuffer(in.buf());
             }
 
             Channel channel = MinaChannel.getOrAddChannel(session, url, handler);
-            boolean remaining = true;
             Object msg;
-            UnsafeByteArrayInputStream bis;
+            int savedReadIndex;
+
             try {
                 do {
-                    // read data into buffer.
-                    int read = Math.min(readable, buf.length - limit);
-                    in.get(buf, limit, read);
-                    limit += read;
-                    readable -= read;
-                    bis = new UnsafeByteArrayInputStream(buf, off, limit - off); // 不需要关闭
-                    // decode object.
-                    do {
-                        try {
-                            msg = codec.decode(channel, bis);
-                        } catch (IOException e) {
-                            remaining = false;
-                            throw e;
-                        }
-                        if (msg == Codec.NEED_MORE_INPUT) {
-                            if (off == 0) {
-                                if (readable > 0) {
-                                    buf = Bytes.copyOf(buf, buf.length << 1);
-                                }
-                            } else {
-                                int len = limit - off;
-                                System.arraycopy(buf, off, buf, 0, len);
-                                off = 0;
-                                limit = len;
-                            }
-                            break;
-                        } else {
-                            int pos = bis.position();
-                            if (pos == off) {
-                                remaining = false;
-                                throw new IOException("Decode without read data.");
-                            }
-                            if (msg != null) {
-                                out.write(msg);
-                            }
-                            off = pos;
-                        }
-                    } while (bis.available() > 0);
-                } while (readable > 0);
-            } finally {
-                if (remaining) {
-                    int len = limit - off;
-                    if (len < buf.length / 2) {
-                        System.arraycopy(buf, off, buf, 0, len);
-                        off = 0;
-                        limit = len;
+                    savedReadIndex = frame.readerIndex();
+                    try {
+                        msg = codec.decode(channel, frame);
+                    } catch (Exception e) {
+                        buffer = ChannelBuffers.EMPTY_BUFFER;
+                        throw e;
                     }
-                    session.setAttribute(BUFFER_KEY, new Object[] { buf, off, limit });
+                    if (msg == Codec2.DecodeResult.NEED_MORE_INPUT) {
+                        frame.readerIndex(savedReadIndex);
+                        break;
+                    } else {
+                        if (savedReadIndex == frame.readerIndex()) {
+                            buffer = ChannelBuffers.EMPTY_BUFFER;
+                            throw new Exception("Decode without read data.");
+                        }
+                        if (msg != null) {
+                            out.write(msg);
+                        }
+                    }
+                } while (frame.readable());
+            } finally {
+                if (frame.readable()) {
+                    frame.discardReadBytes();
+                    buffer = frame;
                 } else {
-                    session.removeAttribute(BUFFER_KEY);
+                    buffer = ChannelBuffers.EMPTY_BUFFER;
                 }
                 MinaChannel.removeChannelIfDisconnectd(session);
             }

@@ -46,6 +46,7 @@ import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.ProxyFactory;
 import com.alibaba.dubbo.rpc.cluster.ConfiguratorFactory;
 import com.alibaba.dubbo.rpc.service.GenericService;
+import com.alibaba.dubbo.rpc.support.ProtocolUtils;
 
 /**
  * ServiceConfig
@@ -87,7 +88,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
 	private transient volatile boolean unexported;
     
-    private transient volatile boolean generic;
+    private volatile String generic;
 
     public ServiceConfig() {
     }
@@ -191,7 +192,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
         if (ref instanceof GenericService) {
             interfaceClass = GenericService.class;
-            generic = true;
+            if (StringUtils.isEmpty(generic)) {
+                generic = Boolean.TRUE.toString();
+            }
         } else {
             try {
                 interfaceClass = Class.forName(interfaceName, true, Thread.currentThread()
@@ -201,7 +204,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             }
             checkInterfaceAndMethods(interfaceClass, methods);
             checkRef();
-            generic = false;
+            generic = Boolean.FALSE.toString();
         }
         if(local !=null){
             if(local=="true"){
@@ -414,15 +417,23 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             } // end of methods for
         }
 
-        if (generic) {
-            map.put("generic", String.valueOf(true));
+        if (ProtocolUtils.isGeneric(generic)) {
+            map.put("generic", generic);
             map.put("methods", Constants.ANY_VALUE);
         } else {
             String revision = Version.getVersion(interfaceClass, version);
             if (revision != null && revision.length() > 0) {
                 map.put("revision", revision);
             }
-            map.put("methods", StringUtils.join(new HashSet<String>(Arrays.asList(Wrapper.getWrapper(interfaceClass).getDeclaredMethodNames())), ","));
+
+            String[] methods = Wrapper.getWrapper(interfaceClass).getMethodNames();
+            if(methods.length == 0) {
+                logger.warn("NO method found in service interface " + interfaceClass.getName());
+                map.put("methods", Constants.ANY_VALUE);
+            }
+            else {
+                map.put("methods", StringUtils.join(new HashSet<String>(Arrays.asList(methods)), ","));
+            }
         }
         if (! ConfigUtils.isEmpty(token)) {
             if (ConfigUtils.isDefault(token)) {
@@ -602,6 +613,19 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     public ProviderConfig getProvider() {
         return provider;
+    }
+
+    public void setGeneric(String generic) {
+        if (StringUtils.isEmpty(generic)) { return; }
+        if (ProtocolUtils.isGeneric(generic)) {
+            this.generic = generic;
+        } else {
+            throw new IllegalArgumentException("Unsupported generic type " + generic);
+        }
+    }
+
+    public String getGeneric() {
+        return generic;
     }
 
     public void setProvider(ProviderConfig provider) {

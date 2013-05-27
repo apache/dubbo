@@ -30,7 +30,7 @@ import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
 import com.alibaba.dubbo.remoting.exchange.ExchangeHandler;
 import com.alibaba.dubbo.remoting.exchange.ExchangeServer;
 import com.alibaba.dubbo.remoting.exchange.Exchangers;
-import com.alibaba.dubbo.remoting.transport.dispather.FakeChannelHandlers;
+import com.alibaba.dubbo.remoting.transport.dispatcher.FakeChannelHandlers;
 
 import junit.framework.Assert;
 

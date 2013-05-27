@@ -31,7 +31,7 @@ import com.alibaba.dubbo.common.serialize.Serialization;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.remoting.Channel;
-import com.alibaba.dubbo.remoting.Codec;
+import com.alibaba.dubbo.remoting.Codec2;
 import com.alibaba.dubbo.remoting.exchange.Request;
 import com.alibaba.dubbo.remoting.exchange.Response;
 import com.alibaba.dubbo.remoting.exchange.codec.ExchangeCodec;
@@ -48,7 +48,7 @@ import static com.alibaba.dubbo.rpc.protocol.dubbo.CallbackServiceCodec.encodeIn
  * @author qianlei
  * @author chao.liuc
  */
-public class DubboCodec extends ExchangeCodec implements Codec {
+public class DubboCodec extends ExchangeCodec implements Codec2 {
 
     private static final Logger log = LoggerFactory.getLogger(DubboCodec.class);
 

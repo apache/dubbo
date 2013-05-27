@@ -16,8 +16,6 @@
 package com.alibaba.dubbo.remoting.telnet.codec;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -31,6 +29,7 @@ import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.RemotingException;
+import com.alibaba.dubbo.remoting.buffer.ChannelBuffer;
 import com.alibaba.dubbo.remoting.transport.codec.TransportCodec;
 
 /**
@@ -56,34 +55,33 @@ public class TelnetCodec extends TransportCodec {
 
     private static final List<?> EXIT   = Arrays.asList(new Object[] { new byte[] { 3 } /* Windows Ctrl+C */, new byte[] { -1, -12, -1, -3, 6 } /* Linux Ctrl+C */, new byte[] { -1, -19, -1, -3, 6 } /* Linux Pause */ });
 
-    public void encode(Channel channel, OutputStream output, Object message) throws IOException {
+    public void encode(Channel channel, ChannelBuffer buffer, Object message) throws IOException {
         if (message instanceof String) {
             if (isClientSide(channel)) {
                 message = message + "\r\n";
             }
             byte[] msgData = ((String) message).getBytes(getCharset(channel).name());
-            output.write(msgData);
-            output.flush();
+            buffer.writeBytes(msgData);
         } else {
-            super.encode(channel, output, message);
+            super.encode(channel, buffer, message);
         }
     }
     
-    public Object decode(Channel channel, InputStream is) throws IOException {
-        int readable = is.available();
+    public Object decode(Channel channel, ChannelBuffer buffer) throws IOException {
+        int readable = buffer.readableBytes();
         byte[] message = new byte[readable];
-        is.read(message);
-        return decode(channel, is, readable, message);
+        buffer.readBytes(message);
+        return decode(channel, buffer, readable, message);
     }
 
     @SuppressWarnings("unchecked")
-    protected Object decode(Channel channel, InputStream is, int readable, byte[] message) throws IOException {
+    protected Object decode(Channel channel, ChannelBuffer buffer, int readable, byte[] message) throws IOException {
         if (isClientSide(channel)) {
             return toString(message, getCharset(channel));
         }
         checkPayload(channel, readable);
         if (message == null || message.length == 0) {
-            return NEED_MORE_INPUT;
+            return DecodeResult.NEED_MORE_INPUT;
         }
         
         if (message[message.length - 1] == '\b') { // Windows backspace echo
@@ -93,7 +91,7 @@ public class TelnetCodec extends TransportCodec {
             } catch (RemotingException e) {
                 throw new IOException(StringUtils.toString(e));
             }
-            return NEED_MORE_INPUT;
+            return DecodeResult.NEED_MORE_INPUT;
         }
         
         for (Object command : EXIT) {
@@ -111,7 +109,7 @@ public class TelnetCodec extends TransportCodec {
         if (up || down) {
             LinkedList<String> history = (LinkedList<String>) channel.getAttribute(HISTORY_LIST_KEY);
             if (history == null || history.size() == 0) {
-                return NEED_MORE_INPUT;
+                return DecodeResult.NEED_MORE_INPUT;
             }
             Integer index = (Integer) channel.getAttribute(HISTORY_INDEX_KEY);
             Integer old = index;
@@ -153,7 +151,7 @@ public class TelnetCodec extends TransportCodec {
                     throw new IOException(StringUtils.toString(e));
                 }
             }
-            return NEED_MORE_INPUT;
+            return DecodeResult.NEED_MORE_INPUT;
         }
         for (Object command : EXIT) {
             if (isEquals(message, (byte[]) command)) {
@@ -172,7 +170,7 @@ public class TelnetCodec extends TransportCodec {
             }
         }
         if (enter == null) {
-            return NEED_MORE_INPUT;
+            return DecodeResult.NEED_MORE_INPUT;
         }
         LinkedList<String> history = (LinkedList<String>) channel.getAttribute(HISTORY_LIST_KEY);
         Integer index = (Integer) channel.getAttribute(HISTORY_INDEX_KEY);

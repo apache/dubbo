@@ -1,8 +1,6 @@
 package com.alibaba.dubbo.rpc.protocol.thrift;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.thrift.TException;
@@ -15,7 +13,9 @@ import org.apache.thrift.transport.TIOStreamTransport;
 
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.Channel;
-import com.alibaba.dubbo.remoting.Codec;
+import com.alibaba.dubbo.remoting.Codec2;
+import com.alibaba.dubbo.remoting.buffer.ChannelBuffer;
+import com.alibaba.dubbo.remoting.buffer.ChannelBufferOutputStream;
 import com.alibaba.dubbo.remoting.exchange.Request;
 import com.alibaba.dubbo.remoting.exchange.Response;
 import com.alibaba.dubbo.rpc.Invocation;
@@ -23,26 +23,26 @@ import com.alibaba.dubbo.rpc.Invocation;
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-public class ThriftNativeCodec implements Codec {
+public class ThriftNativeCodec implements Codec2 {
     
     private final AtomicInteger thriftSeq = new AtomicInteger(0);
     
-    public void encode(Channel channel, OutputStream output, Object message)
+    public void encode(Channel channel, ChannelBuffer buffer, Object message)
         throws IOException {
         if (message instanceof Request) {
-            encodeRequest(channel, output, (Request)message);
+            encodeRequest(channel, buffer, (Request)message);
         } else if (message instanceof Response) {
-            encodeResponse(channel, output, (Response)message);
+            encodeResponse(channel, buffer, (Response)message);
         } else {
             throw new IOException("Unsupported message type "
                                       + message.getClass().getName());
         }
     }
 
-    protected void encodeRequest(Channel channel, OutputStream output, Request request)
+    protected void encodeRequest(Channel channel, ChannelBuffer buffer, Request request)
         throws IOException {
         Invocation invocation = (Invocation) request.getData();
-        TProtocol protocol = newProtocol(channel.getUrl(), output);
+        TProtocol protocol = newProtocol(channel.getUrl(), buffer);
         try {
             protocol.writeMessageBegin(new TMessage(
                 invocation.getMethodName(), TMessageType.CALL, 
@@ -58,20 +58,20 @@ public class ThriftNativeCodec implements Codec {
 
     }
 
-    protected void encodeResponse(Channel channel, OutputStream output, Response response)
+    protected void encodeResponse(Channel channel, ChannelBuffer buffer, Response response)
         throws IOException {
 
     }
 
-    public Object decode(Channel channel, InputStream input) throws IOException {
+    public Object decode(Channel channel, ChannelBuffer buffer) throws IOException {
         return null;
     }
 
-    protected static TProtocol newProtocol(URL url, OutputStream output) throws IOException {
+    protected static TProtocol newProtocol(URL url, ChannelBuffer buffer) throws IOException {
         String protocol = url.getParameter(ThriftConstants.THRIFT_PROTOCOL_KEY,
                                            ThriftConstants.DEFAULT_PROTOCOL);
         if (ThriftConstants.BINARY_THRIFT_PROTOCOL.equals(protocol)) {
-            return new TBinaryProtocol(new TIOStreamTransport(output));
+            return new TBinaryProtocol(new TIOStreamTransport(new ChannelBufferOutputStream(buffer)));
         }
         throw new IOException("Unsupported protocol type " + protocol);
     }

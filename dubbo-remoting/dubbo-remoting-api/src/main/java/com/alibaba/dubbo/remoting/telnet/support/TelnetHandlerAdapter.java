@@ -23,8 +23,6 @@ import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
 import com.alibaba.dubbo.remoting.transport.ChannelHandlerAdapter;
 
 /**
- * TelnetHandlerDispather
- * 
  * @author william.liangf
  */
 public class TelnetHandlerAdapter extends ChannelHandlerAdapter implements TelnetHandler {

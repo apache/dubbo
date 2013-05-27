@@ -17,6 +17,8 @@ package com.alibaba.dubbo.remoting.exchange;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.alibaba.dubbo.common.utils.StringUtils;
+
 /**
  * Request.
  * 
@@ -114,7 +116,18 @@ public class Request {
     @Override
     public String toString() {
         return "Request [id=" + mId + ", version=" + mVersion + ", twoway=" + mTwoWay + ", event=" + mEvent
-               + ", broken=" + mBroken + ", data=" + (mData == this ? "this" : mData) + "]";
+               + ", broken=" + mBroken + ", data=" + (mData == this ? "this" : safeToString(mData)) + "]";
     }
 
+    private static String safeToString(Object data) {
+        if (data == null) return null;
+        String dataStr;
+        try {
+            dataStr = data.toString();
+        } catch (Throwable e) {
+            dataStr = "<Fail toString of " + data.getClass() + ", cause: " +
+                    StringUtils.toString(e) + ">";
+        }
+        return dataStr;
+    }
 }

@@ -19,7 +19,7 @@
 	<parent>
 		<groupId>com.alibaba</groupId>
 		<artifactId>dubbo-rpc</artifactId>
-		<version>2.5.1-SNAPSHOT</version>
+		<version>2.5.4-SNAPSHOT</version>
 	</parent>
 	<artifactId>dubbo-rpc-default</artifactId>
 	<packaging>jar</packaging>
@@ -56,6 +56,12 @@
 			<version>${project.parent.version}</version>
 			<scope>test</scope>
 		</dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-remoting-mina</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+        </dependency>
 		<dependency>
 			<groupId>org.apache.mina</groupId>
 			<artifactId>mina-core</artifactId>

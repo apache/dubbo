@@ -15,12 +15,12 @@
  */
 package com.alibaba.dubbo.common.bytecode;
 
-import com.alibaba.dubbo.common.bytecode.Wrapper;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
-import junit.framework.TestCase;
-
-public class WrapperTest extends TestCase
+public class WrapperTest
 {
+    @Test
 	public void testMain() throws Exception
 	{
 		Wrapper w = Wrapper.getWrapper(I1.class);
@@ -39,6 +39,7 @@ public class WrapperTest extends TestCase
 	}
 	
 	// bug: DUBBO-132
+    @Test
 	public void test_unwantedArgument() throws Exception {
 	    Wrapper w = Wrapper.getWrapper(I1.class);
 	    Object obj = new Impl1();
@@ -51,12 +52,30 @@ public class WrapperTest extends TestCase
     }
 	
 	//bug: DUBBO-425
+    @Test
     public void test_makeEmptyClass() throws Exception {
         Wrapper.getWrapper(EmptyServiceImpl.class);
     }
-	
 
-	public static class Impl0
+    /**
+     * see http://code.alibabatech.com/jira/browse/DUBBO-571
+     */
+    @Test
+    public void test_getDeclaredMethodNames_ContainExtendsParentMethods() throws Exception {
+        assertArrayEquals(new String[]{"hello", }, Wrapper.getWrapper(Parent1.class).getMethodNames());
+
+        assertArrayEquals(new String[]{}, Wrapper.getWrapper(Son.class).getDeclaredMethodNames());
+    }
+
+    /**
+     * see http://code.alibabatech.com/jira/browse/DUBBO-571
+     */
+    @Test
+    public void test_getMethodNames_ContainExtendsParentMethods() throws Exception {
+        assertArrayEquals(new String[]{"hello", "world"}, Wrapper.getWrapper(Son.class).getMethodNames());
+    }
+
+    public static class Impl0
 	{
 		public float a,b,c;
 	}
@@ -115,6 +134,8 @@ public class WrapperTest extends TestCase
 			fv = f;
 		}
 	}
+
+
 	
 	public static interface EmptyService
     {
@@ -122,5 +143,17 @@ public class WrapperTest extends TestCase
 	
 	public static class EmptyServiceImpl implements EmptyService
     {
+    }
+
+    public static interface Parent1 {
+        void hello();
+    }
+
+    public static interface Parent2 {
+        void world();
+    }
+
+    public static interface Son extends Parent1, Parent2 {
+
     }
 }

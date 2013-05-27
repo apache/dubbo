@@ -17,6 +17,8 @@ package com.alibaba.dubbo.common.extensionloader;
 
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
+import com.alibaba.dubbo.common.extensionloader.adaptive.HasAdaptiveExt;
+import com.alibaba.dubbo.common.extensionloader.adaptive.impl.HasAdaptiveExt_ManualAdaptive;
 import com.alibaba.dubbo.common.extensionloader.ext1.SimpleExt;
 import com.alibaba.dubbo.common.extensionloader.ext2.Ext2;
 import com.alibaba.dubbo.common.extensionloader.ext2.UrlHolder;
@@ -39,6 +41,14 @@ import static org.junit.matchers.JUnitMatchers.containsString;
  * @author ding.lid
  */
 public class ExtensionLoader_Adaptive_Test {
+
+    @Test
+    public void test_useAdaptiveClass() throws Exception {
+        ExtensionLoader<HasAdaptiveExt> loader = ExtensionLoader.getExtensionLoader(HasAdaptiveExt.class);
+        HasAdaptiveExt ext = loader.getAdaptiveExtension();
+        assertTrue(ext instanceof HasAdaptiveExt_ManualAdaptive);
+    }
+
     @Test
     public void test_getAdaptiveExtension_defaultAdaptiveKey() throws Exception {
         {

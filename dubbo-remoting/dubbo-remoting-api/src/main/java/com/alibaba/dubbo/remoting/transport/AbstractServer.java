@@ -30,7 +30,7 @@ import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.Server;
-import com.alibaba.dubbo.remoting.transport.dispather.WrappedChannelHandler;
+import com.alibaba.dubbo.remoting.transport.dispatcher.WrappedChannelHandler;
 
 /**
  * AbstractServer

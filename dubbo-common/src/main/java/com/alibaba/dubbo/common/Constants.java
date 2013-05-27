@@ -295,6 +295,10 @@ public class Constants {
     public static final String  PID_KEY                            = "pid";
 
     public static final String  TIMESTAMP_KEY                      = "timestamp";
+    
+    public static final String  WARMUP_KEY                         = "warmup";
+
+    public static final int     DEFAULT_WARMUP                     = 10 * 60 * 1000;
 
     public static final String  CHECK_KEY                          = "check";
 
@@ -324,7 +328,7 @@ public class Constants {
 
     public static final String  HESSIAN_VERSION_KEY                = "hessian.version";
 
-    public static final String  DISPATHER_KEY                      = "dispather";
+    public static final String  DISPATCHER_KEY                     = "dispatcher";
 
     public static final String  CHANNEL_HANDLER_KEY                = "channel.handler";
 
@@ -572,6 +576,8 @@ public class Constants {
     public static final String GENERIC_SERIALIZATION_NATIVE_JAVA   = "nativejava";
 
     public static final String GENERIC_SERIALIZATION_DEFAULT       = "true";
+
+    public static final String GENERIC_SERIALIZATION_BEAN          = "bean";
 
     /*
      * private Constants(){ }
