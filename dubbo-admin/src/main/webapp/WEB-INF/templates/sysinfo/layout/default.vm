@@ -29,7 +29,7 @@
                 </h2>
             </div>
             <div class="crumbs">
-                <a href="/">$i18n.get("home")</a> &gt; $i18n.get("system.management")
+                <a href="$rootContextPath.getURI("/")">$i18n.get("home")</a> &gt; $i18n.get("system.management")
                 #if($service)
                     &gt; <a href="../../#if($_method == "show" || $_method == "add")../#elseif($_method == "edit")../../#{end}services">$i18n.get("services")</a>
                     &gt; $service
@@ -55,7 +55,7 @@
 						#set($tabs = ["versions", "dumps", "statuses", "logs", "envs"])
 						#foreach ($tab in $tabs)
 							#if($tool.checkUrl($currentUser,"/sysinfo/$tab"))
-							<li id="$tab"#if($_type == $tab) class="active"#else style="color: white;"#end onclick="window.location.href='/sysinfo/$tab';">$i18n.get($tab)</li>
+							<li id="$tab"#if($_type == $tab) class="active"#else style="color: white;"#end onclick="window.location.href='$rootContextPath.getURI("/sysinfo/$tab")';">$i18n.get($tab)</li>
 							#end
 						#end
 					</ul>
