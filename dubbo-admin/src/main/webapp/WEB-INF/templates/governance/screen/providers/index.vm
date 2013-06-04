@@ -24,8 +24,8 @@
 	<th width="100">$i18n.get("check"): <select onchange="searchTable('table_o', 5, this.value);" onclick="searchTable('table_o', 5, this.value);"><option value="">$i18n.get("all")</option><option value="$i18n.get("ok")">$i18n.get("ok")</option><option value="$i18n.get("warn")">$i18n.get("warn")</option><option value="$i18n.get("error")">$i18n.get("error")</option></select></th>
 	#if($currentUser.role != "G")<th>$i18n.get("operation")</th>#end
 </tr>
-#set($providerApplication = "")
 #foreach($provider in $providers)
+#set($providerApplication = "")
 <tr>
 	<td><input type="checkbox" name="ids" value="$provider.id" /></td>
 	<td><a href="providers/$provider.id">#if($address)$tool.getSimpleName($provider.service)#else$provider.address#end</a></td>
