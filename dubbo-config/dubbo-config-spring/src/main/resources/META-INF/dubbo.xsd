@@ -211,6 +211,11 @@
 						<xsd:documentation><![CDATA[ lazy create connection. ]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
+                                <xsd:attribute name="host" type="xsd:string" use="optional">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[ The consumer host. ]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
 			</xsd:extension>
 		</xsd:complexContent>
 	</xsd:complexType>
@@ -555,6 +560,11 @@
 		<xsd:attribute name="default" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[ Is default. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+                <xsd:attribute name="host" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ The monitor consumer host. ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>

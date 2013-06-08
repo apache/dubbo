@@ -29,7 +29,7 @@
 		<skip_maven_deploy>false</skip_maven_deploy>
 	</properties>
 	<dependencies>
-		<dependency>
+		<!--dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>dubbo-config-api</artifactId>
 			<version>${project.parent.version}</version>
@@ -39,12 +39,12 @@
 					<artifactId>jetty</artifactId>
 				</exclusion>
 			</exclusions>
-		</dependency>
-		<dependency>
+		</dependency-->
+		<!--dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>dubbo-config-spring</artifactId>
 			<version>${project.parent.version}</version>
-		</dependency>
+		</dependency-->
 		<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>dubbo-remoting-netty</artifactId>

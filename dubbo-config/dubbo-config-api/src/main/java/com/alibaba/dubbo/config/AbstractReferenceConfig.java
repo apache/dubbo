@@ -61,6 +61,9 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
     // 服务分组
     protected String               group;
+    
+    //消费者注册host
+    protected String               host;
 
     public Boolean isCheck() {
         return check;
@@ -195,6 +198,16 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     public void setGroup(String group) {
         checkKey("group", group);
         this.group = group;
+    }
+
+    public String getHost()
+    {
+        return host;
+    }
+
+    public void setHost(String host)
+    {
+        this.host = host;
     }
 
 }
