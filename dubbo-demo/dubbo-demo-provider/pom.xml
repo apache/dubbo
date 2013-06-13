@@ -136,16 +136,6 @@
 		</dependency>
 	 <dependency>
 	  <groupId>${project.groupId}</groupId>
-	  <artifactId>dubbo-config-api</artifactId>
-	  <version>${project.version}</version>
-	 </dependency>
-	 <dependency>
-	  <groupId>${project.groupId}</groupId>
-	  <artifactId>dubbo-config-spring</artifactId>
-	  <version>${project.version}</version>
-	 </dependency>
-	 <dependency>
-	  <groupId>${project.groupId}</groupId>
 	  <artifactId>dubbo</artifactId>
 	  <version>${project.version}</version>
 	 </dependency>

@@ -25,7 +25,7 @@ import com.alibaba.dubbo.config.support.Parameter;
  * @author william.liangf
  * @export
  */
-public class MonitorConfig extends AbstractConfig
+public class MonitorConfig extends AbstractInterfaceConfig
 {
 
     private static final long serialVersionUID = -1184681514659198203L;
@@ -36,7 +36,7 @@ public class MonitorConfig extends AbstractConfig
     private String group;
     private String version;
     // 自定义参数
-    private Map<String, String> parameters;
+    //private Map<String, String> parameters;
     // 是否为缺省
     private Boolean isDefault;
     //monitor服务消费者host
@@ -115,16 +115,16 @@ public class MonitorConfig extends AbstractConfig
         this.version = version;
     }
 
-    public Map<String, String> getParameters()
-    {
-        return parameters;
-    }
-
-    public void setParameters(Map<String, String> parameters)
-    {
-        checkParameterName(parameters);
-        this.parameters = parameters;
-    }
+//    public Map<String, String> getParameters()
+//    {
+//        return parameters;
+//    }
+//
+//    public void setParameters(Map<String, String> parameters)
+//    {
+//        checkParameterName(parameters);
+//        this.parameters = parameters;
+//    }
 
     public Boolean isDefault()
     {

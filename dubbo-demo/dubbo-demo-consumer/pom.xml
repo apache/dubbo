@@ -31,11 +31,6 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo-demo-api</artifactId>
-			<version>${project.parent.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.alibaba</groupId>
 			<artifactId>dubbo</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
@@ -141,12 +136,7 @@
 		</dependency>
 	 <dependency>
 	  <groupId>${project.groupId}</groupId>
-	  <artifactId>dubbo-config-api</artifactId>
-	  <version>${project.version}</version>
-	 </dependency>
-	 <dependency>
-	  <groupId>${project.groupId}</groupId>
-	  <artifactId>dubbo-config-spring</artifactId>
+	  <artifactId>dubbo-demo-api</artifactId>
 	  <version>${project.version}</version>
 	 </dependency>
 	</dependencies>

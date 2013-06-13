@@ -175,6 +175,8 @@ public class Constants {
     public static final String  DIRECTORY_KEY                      = "directory";
 
     public static final String  DEPRECATED_KEY                     = "deprecated";
+    
+    public static final String HOST_KEY                            = "host";
 
     public static final String  ANYHOST_KEY                        = "anyhost";
 

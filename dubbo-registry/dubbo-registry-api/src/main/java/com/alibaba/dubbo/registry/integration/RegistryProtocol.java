@@ -40,6 +40,7 @@ import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.cluster.Cluster;
 import com.alibaba.dubbo.rpc.cluster.Configurator;
 import com.alibaba.dubbo.rpc.protocol.InvokerWrapper;
+import java.util.HashMap;
 
 /**
  * RegistryProtocol
@@ -262,7 +263,13 @@ public class RegistryProtocol implements Protocol {
         RegistryDirectory<T> directory = new RegistryDirectory<T>(type, url);
         directory.setRegistry(registry);
         directory.setProtocol(protocol);
-        URL subscribeUrl = new URL(Constants.CONSUMER_PROTOCOL, NetUtils.getLocalHost(), 0, type.getName(), directory.getUrl().getParameters());
+        
+        Map<String,String> ps = new HashMap<String,String>();
+        ps.putAll(directory.getUrl().getParameters());
+        
+        String host = ps.containsKey(Constants.HOST_KEY)?ps.remove(Constants.HOST_KEY):NetUtils.getLocalHost();
+        
+        URL subscribeUrl = new URL(Constants.CONSUMER_PROTOCOL, host, 0, type.getName(), ps);
         if (! Constants.ANY_VALUE.equals(url.getServiceInterface())
                 && url.getParameter(Constants.REGISTER_KEY, true)) {
             registry.register(subscribeUrl.addParameters(Constants.CATEGORY_KEY, Constants.CONSUMERS_CATEGORY,
