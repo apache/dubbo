@@ -604,6 +604,8 @@ public class RedisRegistry extends FailbackRegistry {
                                     }
                                 } catch (Throwable t) { // 重试另一台
                                     logger.warn("Failed to subscribe service from redis registry. registry: " + entry.getKey() + ", cause: " + t.getMessage(), t);
+                                    // 如果在单台redis的情况下，需要休息一会，避免空转占用过多cpu资源
+                                    sleep(reconnectPeriod);
                                 }
                             }
                         } catch (Throwable t) {

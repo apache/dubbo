@@ -125,6 +125,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                     listeners.putIfAbsent(listener, new ChildListener() {
                         public void childChanged(String parentPath, List<String> currentChilds) {
                             for (String child : currentChilds) {
+								child = URL.decode(child);
                                 if (! anyServices.contains(child)) {
                                     anyServices.add(child);
                                     subscribe(url.setPath(child).addParameters(Constants.INTERFACE_KEY, child, 
@@ -138,8 +139,9 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 zkClient.create(root, false);
                 List<String> services = zkClient.addChildListener(root, zkListener);
                 if (services != null && services.size() > 0) {
-                    anyServices.addAll(services);
                     for (String service : services) {
+						service = URL.decode(service);
+						anyServices.add(service);
                         subscribe(url.setPath(service).addParameters(Constants.INTERFACE_KEY, service, 
                                 Constants.CHECK_KEY, String.valueOf(false)), listener);
                     }
