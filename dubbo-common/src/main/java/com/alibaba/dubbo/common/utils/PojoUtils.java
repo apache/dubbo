@@ -575,6 +575,7 @@ public class PojoUtils {
                 }
             }
         }
+        Field returnField = null;
         if (result != null) {
             ConcurrentMap<String, Field> fields = CLASS_FIELD_CACHE.get(cls);
             if (fields == null) {
@@ -583,8 +584,9 @@ public class PojoUtils {
             }
             fields = CLASS_FIELD_CACHE.get(cls);
             fields.putIfAbsent(fieldName, result);
+            returnField = fields.get(fieldName);
         }
-        return result;
+        return returnField;
     }
     
     public static boolean isPojo(Class<?> cls) {
