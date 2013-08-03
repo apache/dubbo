@@ -15,14 +15,6 @@
  */
 package com.alibaba.dubbo.registry.zookeeper;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
-import org.I0Itec.zkclient.exception.ZkNoNodeException;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
@@ -32,14 +24,20 @@ import com.alibaba.dubbo.common.utils.UrlUtils;
 import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.support.FailbackRegistry;
 import com.alibaba.dubbo.remoting.zookeeper.ChildListener;
-import com.alibaba.dubbo.remoting.zookeeper.ZookeeperClient;
 import com.alibaba.dubbo.remoting.zookeeper.StateListener;
+import com.alibaba.dubbo.remoting.zookeeper.ZookeeperClient;
 import com.alibaba.dubbo.remoting.zookeeper.ZookeeperTransporter;
 import com.alibaba.dubbo.rpc.RpcException;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 /**
  * ZookeeperRegistry
- * 
+ *
  * @author william.liangf
  */
 public class ZookeeperRegistry extends FailbackRegistry {
@@ -47,17 +45,17 @@ public class ZookeeperRegistry extends FailbackRegistry {
     private final static Logger logger = LoggerFactory.getLogger(ZookeeperRegistry.class);
 
     private final static int DEFAULT_ZOOKEEPER_PORT = 2181;
-    
+
     private final static String DEFAULT_ROOT = "dubbo";
 
     private final String        root;
-    
+
     private final Set<String> anyServices = new ConcurrentHashSet<String>();
 
     private final ConcurrentMap<URL, ConcurrentMap<NotifyListener, ChildListener>> zkListeners = new ConcurrentHashMap<URL, ConcurrentMap<NotifyListener, ChildListener>>();
-    
+
     private final ZookeeperClient zkClient;
-    
+
     public ZookeeperRegistry(URL url, ZookeeperTransporter zookeeperTransporter) {
         super(url);
         if (url.isAnyHost()) {
@@ -128,7 +126,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
 								child = URL.decode(child);
                                 if (! anyServices.contains(child)) {
                                     anyServices.add(child);
-                                    subscribe(url.setPath(child).addParameters(Constants.INTERFACE_KEY, child, 
+                                    subscribe(url.setPath(child).addParameters(Constants.INTERFACE_KEY, child,
                                             Constants.CHECK_KEY, String.valueOf(false)), listener);
                                 }
                             }
@@ -142,7 +140,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                     for (String service : services) {
 						service = URL.decode(service);
 						anyServices.add(service);
-                        subscribe(url.setPath(service).addParameters(Constants.INTERFACE_KEY, service, 
+                        subscribe(url.setPath(service).addParameters(Constants.INTERFACE_KEY, service,
                                 Constants.CHECK_KEY, String.valueOf(false)), listener);
                     }
                 }
@@ -193,13 +191,9 @@ public class ZookeeperRegistry extends FailbackRegistry {
         try {
             List<String> providers = new ArrayList<String>();
             for (String path : toCategoriesPath(url)) {
-                try {
-                    List<String> children = zkClient.getChildren(path);
-                    if (children != null) {
-                        providers.addAll(children);
-                    }
-                } catch (ZkNoNodeException e) {
-                    // ignore
+                List<String> children = zkClient.getChildren(path);
+                if (children != null) {
+                    providers.addAll(children);
                 }
             }
             return toUrlsWithoutEmpty(url, providers);
@@ -207,18 +201,18 @@ public class ZookeeperRegistry extends FailbackRegistry {
             throw new RpcException("Failed to lookup " + url + " from zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
         }
     }
-    
+
     private String toRootDir() {
         if (root.equals(Constants.PATH_SEPARATOR)) {
             return root;
         }
         return root + Constants.PATH_SEPARATOR;
     }
-    
+
     private String toRootPath() {
         return root;
     }
-    
+
     private String toServicePath(URL url) {
         String name = url.getServiceInterface();
         if (Constants.ANY_VALUE.equals(name)) {
@@ -230,7 +224,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     private String[] toCategoriesPath(URL url) {
         String[] categroies;
         if (Constants.ANY_VALUE.equals(url.getParameter(Constants.CATEGORY_KEY))) {
-            categroies = new String[] {Constants.PROVIDERS_CATEGORY, Constants.CONSUMERS_CATEGORY, 
+            categroies = new String[] {Constants.PROVIDERS_CATEGORY, Constants.CONSUMERS_CATEGORY,
                     Constants.ROUTERS_CATEGORY, Constants.CONFIGURATORS_CATEGORY};
         } else {
             categroies = url.getParameter(Constants.CATEGORY_KEY, new String[] {Constants.DEFAULT_CATEGORY});
@@ -249,7 +243,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     private String toUrlPath(URL url) {
         return toCategoryPath(url) + Constants.PATH_SEPARATOR + URL.encode(url.toFullString());
     }
-    
+
     private List<URL> toUrlsWithoutEmpty(URL consumer, List<String> providers) {
     	List<URL> urls = new ArrayList<URL>();
         if (providers != null && providers.size() > 0) {
