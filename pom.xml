@@ -13,8 +13,7 @@
  - See the License for the specific language governing permissions and
  - limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <!--parent>
         <groupId>com.alibaba</groupId>
@@ -23,7 +22,7 @@
     </parent-->
     <groupId>com.alibaba</groupId>
     <artifactId>dubbo-parent</artifactId>
-    <version>2.5.4-SNAPSHOT</version>
+    <version>2.5.4-SNAPSHOT-FERDI</version>
     <packaging>pom</packaging>
     <name>${project.artifactId}</name>
     <description>The parent project of dubbo</description>
@@ -130,7 +129,19 @@
         <project.build.sourceEncoding>${file_encoding}</project.build.sourceEncoding>
 
         <!-- generate idea copyright -->
-        <copyright>Copyright 1999-2012 Alibaba Group.&#10; &#10;Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);&#10;you may not use this file except in compliance with the License.&#10;You may obtain a copy of the License at&#10; &#10;     http://www.apache.org/licenses/LICENSE-2.0&#10; &#10;Unless required by applicable law or agreed to in writing, software&#10;distributed under the License is distributed on an &quot;AS IS&quot; BASIS,&#10;WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.&#10;See the License for the specific language governing permissions and&#10;limitations under the License.</copyright>
+        <copyright>Copyright 1999-2012 Alibaba Group.
+ 
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+ 
+     http://www.apache.org/licenses/LICENSE-2.0
+ 
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.</copyright>
         <profile.name>oss</profile.name>
     </properties>
     <dependencyManagement>
@@ -460,7 +471,7 @@
                             <enabled>true</enabled>
                     </releases>
                     <snapshots>
-                            <enabled>false</enabled>
+                            <enabled>true</enabled>
                     </snapshots>
             </repository>
     </repositories>

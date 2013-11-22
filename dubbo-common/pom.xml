@@ -13,13 +13,12 @@
  - See the License for the specific language governing permissions and
  - limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.alibaba</groupId>
 		<artifactId>dubbo-parent</artifactId>
-		<version>2.5.4-SNAPSHOT</version>
+		<version>2.5.4-SNAPSHOT-FERDI</version>
 	</parent>
 	<artifactId>dubbo-common</artifactId>
 	<packaging>jar</packaging>
@@ -47,15 +46,10 @@
 			<groupId>org.javassist</groupId>
 			<artifactId>javassist</artifactId>
 		</dependency>
-		<dependency>
+		<!--dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>hessian-lite</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.alibaba</groupId>
-			<artifactId>fastjson</artifactId>
-			<scope>provided</scope>
-		</dependency>
+		</dependency-->
 		<dependency>
 			<groupId>org.jvnet.sorcerer</groupId>
 			<artifactId>sorcerer-javac</artifactId>
@@ -66,5 +60,15 @@
             <artifactId>cglib-nodep</artifactId>
             <scope>test</scope>
         </dependency>
+	 <dependency>
+	  <groupId>${project.groupId}</groupId>
+	  <artifactId>hessian-lite</artifactId>
+	  <version>3.2.1-fixed-2</version>
+	 </dependency>
+	 <dependency>
+	  <groupId>${project.groupId}</groupId>
+	  <artifactId>fastjson</artifactId>
+	  <version>1.1.29</version>
+	 </dependency>
 	</dependencies>
 </project>
