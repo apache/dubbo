@@ -21,8 +21,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.I0Itec.zkclient.exception.ZkNoNodeException;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
@@ -193,14 +191,10 @@ public class ZookeeperRegistry extends FailbackRegistry {
         try {
             List<String> providers = new ArrayList<String>();
             for (String path : toCategoriesPath(url)) {
-                try {
                     List<String> children = zkClient.getChildren(path);
                     if (children != null) {
                         providers.addAll(children);
                     }
-                } catch (ZkNoNodeException e) {
-                    // ignore
-                }
             }
             return toUrlsWithoutEmpty(url, providers);
         } catch (Throwable e) {
