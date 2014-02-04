@@ -43,7 +43,7 @@ public @interface Reference {
     String url() default "";
 
     String client() default "";
-
+    
     boolean generic() default false;
 
     boolean injvm() default false;

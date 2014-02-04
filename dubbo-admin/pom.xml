@@ -13,13 +13,12 @@
  - See the License for the specific language governing permissions and
  - limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.alibaba</groupId>
 		<artifactId>dubbo-parent</artifactId>
-		<version>2.5.4-SNAPSHOT</version>
+		<version>2.5.4-SNAPSHOT-FERDI</version>
 	</parent>
 	<artifactId>dubbo-admin</artifactId>
 	<packaging>war</packaging>
@@ -30,6 +29,7 @@
 		<wtpContextName>/</wtpContextName>
 		<eclipse.useProjectReferences>false</eclipse.useProjectReferences>
 		<skip_maven_deploy>false</skip_maven_deploy>
+	 <netbeans.hint.deploy.server>Tomcat</netbeans.hint.deploy.server>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -152,6 +152,15 @@
 					</connectors>
 				</configuration>
 			</plugin>
+		 <plugin>
+		  <groupId>org.apache.maven.plugins</groupId>
+		  <artifactId>maven-compiler-plugin</artifactId>
+		  <version>2.3.2</version>
+		  <configuration>
+		   <source>1.6</source>
+		   <target>1.6</target>
+		  </configuration>
+		 </plugin>
 		</plugins>
 	</build>
 </project>

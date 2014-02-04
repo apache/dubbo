@@ -29,6 +29,7 @@ import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.common.utils.UrlUtils;
+import static com.alibaba.dubbo.config.AbstractConfig.appendParameters;
 import com.alibaba.dubbo.config.support.Parameter;
 import com.alibaba.dubbo.monitor.MonitorFactory;
 import com.alibaba.dubbo.monitor.MonitorService;
@@ -220,6 +221,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (ConfigUtils.getPid() > 0) {
             map.put(Constants.PID_KEY, String.valueOf(ConfigUtils.getPid()));
         }
+        appendParameters(map, application);
         appendParameters(map, monitor);
         String address = monitor.getAddress();
         String sysaddress = System.getProperty("dubbo.monitor.address");
