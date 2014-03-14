@@ -23,7 +23,7 @@
 	</parent>
 	<groupId>com.alibaba</groupId>
 	<artifactId>dubbo</artifactId>
-	<version>2.4.10</version>
+	<version>2.4.11</version>
 	<packaging>jar</packaging>
 	<name>Dubbo</name>
 	<description>Dubbo is a distributed service framework enpowers applications with service import/export capability with high performance RPC.</description>
@@ -229,39 +229,6 @@
 						</manifest>
 					</archive>
 				</configuration>
-			</plugin>
-			<plugin>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>attach-javadoc</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<show>public</show>
-					<charset>UTF-8</charset>
-					<encoding>UTF-8</encoding>
-					<docencoding>UTF-8</docencoding>
-					<excludePackageNames>com.alibaba.com.*</excludePackageNames>
-					<links>
-						<link>http://docs.oracle.com/javase/6/docs/api</link>
-					</links>
-				</configuration>
-			</plugin>
-			<plugin>
-				<artifactId>maven-gpg-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>sign-artifacts</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>sign</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>
