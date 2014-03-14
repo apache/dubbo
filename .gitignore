@@ -1,3 +1,5 @@
+dubbo-maven/src/
+
 # maven ignore
 target/
 *.jar
