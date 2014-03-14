@@ -423,13 +423,16 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 map.put("revision", revision);
             }
 
-            String[] methods = Wrapper.getWrapper(interfaceClass).getMethodNames();
-            if(methods.length == 0) {
+            List<String> methods = new ArrayList<String>();
+            for (Method method : interfaceClass.getMethods()) {
+                methods.add(method.getName());
+            }
+            if(methods.size() == 0) {
                 logger.warn("NO method found in service interface " + interfaceClass.getName());
                 map.put("methods", Constants.ANY_VALUE);
             }
             else {
-                map.put("methods", StringUtils.join(new HashSet<String>(Arrays.asList(methods)), ","));
+                map.put("methods", StringUtils.join(new HashSet<String>(methods), ","));
             }
         }
         if (! ConfigUtils.isEmpty(token)) {
