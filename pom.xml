@@ -84,6 +84,7 @@
 	</profiles>
 	<properties>
 		<!-- Common libs -->
+		<commons_lang_version>2.6</commons_lang_version>
 		<spring_version>2.5.6.SEC03</spring_version>
 		<javassist_version>3.15.0-GA</javassist_version>
 		<netty_version>3.2.5.Final</netty_version>
@@ -135,6 +136,12 @@
 	<dependencyManagement>
 		<dependencies>
 			<!-- Common libs -->
+			
+			<dependency>
+			  <groupId>commons-lang</groupId>
+			  <artifactId>commons-lang</artifactId>
+			  <version>${commons_lang_version}</version>
+			</dependency>
 			<dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring</artifactId>
