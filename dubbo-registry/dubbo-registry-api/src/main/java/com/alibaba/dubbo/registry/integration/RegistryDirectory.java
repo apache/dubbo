@@ -226,8 +226,14 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             // state change
             //如果计算错误，则不进行处理.
             if (newUrlInvokerMap == null || newUrlInvokerMap.size() == 0 ){
-                logger.error(new IllegalStateException("urls to invokers error .invokerUrls.size :"+invokerUrls.size() + ", invoker.size :0. urls :"+invokerUrls.toString()));
-                return ;
+            	for(URL url : invokerUrls){
+            		url = mergeUrl(url);
+            		boolean disabled = url.getParameter("disabled", false);
+            		if(!disabled){
+            			logger.error(new IllegalStateException("urls to invokers error .invokerUrls.size :"+invokerUrls.size() + ", invoker.size :0. urls :"+invokerUrls.toString()));
+            			return ;
+        			}
+        		}
             }
             this.methodInvokerMap = multiGroup ? toMergeMethodInvokerMap(newMethodInvokerMap) : newMethodInvokerMap;
             this.urlInvokerMap = newUrlInvokerMap;
