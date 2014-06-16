@@ -434,11 +434,19 @@ function setSearchCookie(key, value) {
 }
 
 // ==== image load ====
+var base = document.getElementsByTagName('base')[0];
+if (base && base.href && (base.href.length > 0)) {
+    base = base.href;
+} else {
+    base = document.URL;
+}
+var imgRootUrl=base.substr(0,base.indexOf("/", base.indexOf("/", base.indexOf("//") + 2) + 1));
+imgRootUrl +="/images/";
 
 var alphapngs = ["logo.png", "pop_close.png", "tip_choose.png", "tip_confirm.png", "tip_del.png", "tip_succeed.png"];
 function isAlphaPng(imgName) {
 	for (var i = 0; i < alphapngs.length; i ++) {
-		var ap = "/images/" + alphapngs[i];
+		var ap = imgRootUrl + alphapngs[i];
 		if (imgName.length >= ap.length && imgName.substring(imgName.length - ap.length) == ap) {
 			return true;
 		}
@@ -469,7 +477,7 @@ function scanAlphaPNG() {
 var preloads = ["pop_close.png", "tip_choose.png", "tip_confirm.png", "tip_del.png", "tip_succeed.png"];
 function preloadImage() {
 	for (var i = 0; i < preloads.length; i ++) {
-		new Image().src = "/images/" + preloads[i];
+		new Image().src = imgRootUrl + preloads[i];
 	}
 }
 
@@ -497,14 +505,14 @@ function showMenu(c, m, g) {
 	var t = getAbsoluteTop(c); 
 	m.style.left= (l + 2) + 'px';
 	m.style.top= (t + h - 1) + 'px';
-	c.style.background='url("/images/menu_bg_over.png")'; 
+	c.style.background='url("../images/menu_bg_over.png")'; 
 	m.style.display='';
 	if (isIE6 && g) {
 		replaceAlphaPNG(g);
 	}
 }
 function hideMenu(c, m) {
-	c.style.background='url("/images/menu_bg.png")';
+	c.style.background='url("../images/menu_bg.png")';
 	m.style.display='none';
 }
 function switchToRegistry(r) {
