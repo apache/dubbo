@@ -72,7 +72,7 @@ function searchTable(id, column, keyword) {
 			var row = table.rows[i];
 			var cell = row.cells[column];
 			if (keyword == null || keyword.length == 0 
-					|| cell.innerHTML.toLowerCase().indexOf(keyword.toLowerCase()) >= 0) {
+			|| (cell != undefined && cell.innerHTML.toLowerCase().indexOf(keyword.toLowerCase()) >= 0)) {
 				row.style.display = '';
 			} else {
 				row.style.display = 'none';
@@ -85,7 +85,7 @@ function addChangeRowEvent() {
 	if (content) {
 		for ( var i = 0; i < content.rows.length; i++) {
 			var cell = content.rows[i].cells[0];
-			if (cell.nodeName != "TH" && cell.nodeName != "th") {
+			if (cell != undefined && cell.nodeName != "TH" && cell.nodeName != "th") {
 				var moveFunc = function(ii) {
 					return function() {
 						content.rows[ii].style.background = "#F8F8F8";
