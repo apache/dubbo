@@ -120,7 +120,7 @@ public class JavassistCompiler extends AbstractCompiler {
                 }
             }
         }
-        return cls.toClass(ClassHelper.getCallerClassLoader(getClass()), null);
+        return cls.toClass(ClassHelper.getCallerClassLoader(getClass()), JavassistCompiler.class.getProtectionDomain());
     }
 
 }

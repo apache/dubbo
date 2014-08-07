@@ -1,3 +1,10 @@
+由于开源站点因为安全问题被下掉，如果编译时出现找不到opensesame依赖情况的，请先手动下载https://github.com/alibaba/opensesame
+本地install，这几天我们会把opensesame发到mavan中央仓库。
+
+临时文档地址：http://alibaba.github.io/dubbo-doc-static/Developer+Guide-zh.htm
+
+================================================================
+
 Dubbo is a distributed service framework enpowers applications with service import/export capability with high performance RPC.
 
 It's composed of three kernel parts:

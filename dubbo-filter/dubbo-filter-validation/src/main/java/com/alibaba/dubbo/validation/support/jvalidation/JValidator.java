@@ -89,7 +89,7 @@ public class JValidator implements Validator {
     }
 
     public void validate(String methodName, Class<?>[] parameterTypes, Object[] arguments) throws Exception {
-        String methodClassName = clazz.getName() + "$" + toUpperMethoName(methodName);
+        String methodClassName = clazz.getName() + "_" + toUpperMethoName(methodName);
         Class<?> methodClass = null;
         try {
             methodClass = Class.forName(methodClassName, false, Thread.currentThread().getContextClassLoader());
@@ -157,7 +157,7 @@ public class JValidator implements Validator {
         try {
             String upperName = toUpperMethoName(method.getName());
             String parameterSimpleName = upperName + "Parameter";
-            String parameterClassName = clazz.getName() + "$" + parameterSimpleName;
+            String parameterClassName = clazz.getName() + "_" + parameterSimpleName;
             Class<?> parameterClass;
             try {
                 parameterClass = (Class<?>) Class.forName(parameterClassName, true, clazz.getClassLoader());
