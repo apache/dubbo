@@ -49,7 +49,16 @@ public class InvokerInvocationHandler implements InvocationHandler {
         if ("equals".equals(methodName) && parameterTypes.length == 1) {
             return invoker.equals(args[0]);
         }
-        return invoker.invoke(new RpcInvocation(method, args)).recreate();
+        
+        RpcInvocation rpcInvoker = new RpcInvocation(method, args);
+        
+        //构造时，看看上下文中是否有attachments
+        Map<String, String> attachments = RpcContext.getContext().getAttachments();
+        if (attachments != null && attachments.size() > 0) {
+        	rpcInvoker.setAttachments(new HashMap<String, String>(attachments));
+        }
+        
+        return invoker.invoke(rpcInvoker).recreate();
     }
 
 }
