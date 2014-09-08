@@ -41,11 +41,12 @@ public class RmiRemoteInvocation extends RemoteInvocation {
 	@SuppressWarnings("unchecked")
 	@Override
 	public Object invoke(Object targetObject) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-		RpcContext.getContext().setAttachments((Map<String, String>) getAttribute(dubboAttachmentsAttrName));
+		RpcContext context = RpcContext.getContext();
+		context.setAttachments((Map<String, String>) getAttribute(dubboAttachmentsAttrName));
 		try {
 			return super.invoke(targetObject);
 		} finally {
-			RpcContext.getContext().setAttachments(null);
+			context.setAttachments(null);
 		}
 	}
 }
