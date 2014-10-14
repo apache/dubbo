@@ -74,9 +74,9 @@ public class OverrideServiceImpl extends AbstractService implements OverrideServ
             return;
         }
 
-        URL newOverride = oldOverride.addParameter("enabled", false);
         registryService.unregister(oldOverride);
-        registryService.register(newOverride);
+		URL newOverride = oldOverride.addParameter("enabled", true);
+		registryService.register(newOverride);
         
     }
 
@@ -93,9 +93,9 @@ public class OverrideServiceImpl extends AbstractService implements OverrideServ
             return;
         }
 
-        URL newOverride = oldOverride.addParameter("enabled", false);
         registryService.unregister(oldOverride);
-        registryService.register(newOverride);
+		URL newOverride = oldOverride.addParameter("enabled", false);
+		registryService.register(newOverride);
         
     }
 
