@@ -87,6 +87,12 @@ public class DubboMonitor implements Monitor {
             long[] numbers = reference.get();
             long success = numbers[0];
             long failure = numbers[1];
+
+            // 如果调用次数为 0 ，则暂时不上报该数据
+            if (success == 0 && failure == 0) {
+                continue;
+            }
+
             long input = numbers[2];
             long output = numbers[3];
             long elapsed = numbers[4];
