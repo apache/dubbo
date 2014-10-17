@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+	http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+    <dubbo:application name="demo-provider" owner="shenli" organization="dangdang"/>
+
+    <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
+
+    <!--<dubbo:monitor protocol="registry"/>-->
+
+	<bean id="echoService" class="com.alibaba.dubbo.rpc.benchmark.EchoServiceImpl" />
+
+    <dubbo:protocol name="dubbo" serialization="kryo" optimizer="com.alibaba.dubbo.rpc.benchmark.SerializationOptimizerImpl" threads="20"/>
+    <!--<dubbo:protocol name="dubbo" serialization="fst" optimizer="com.alibaba.dubbo.rpc.dubbo.rpc.benchmark.SerializationOptimizerImpl"/>-->
+
+    <!--<dubbo:protocol name="dubbo" serialization="nativejava"/>-->
+    <!--<dubbo:protocol name="dubbo" serialization="hessian2"/>-->
+    <!--<dubbo:protocol name="dubbo" serialization="fastjson"/>-->
+    <!--<dubbo:protocol name="dubbo" serialization="dubbo"/>-->
+
+    <dubbo:protocol name="http" port="8889"  threads="20"/>
+    <dubbo:protocol name="hessian" port="8890"  threads="20"/>
+    <dubbo:protocol name="webservice" port="8892"  threads="20"/>
+    <dubbo:protocol name="rmi" port="8893"  threads="20"/>
+
+
+    <!--TODO according to the spring convention, we should use something like keep-alive-->
+    <!-- use netty server -->
+    <!--<dubbo:protocol name="rest" port="8888" keepalive="true" server="netty" threads="20"/>-->
+
+    <!-- use the default jetty server -->
+    <dubbo:protocol name="rest" port="8888" threads="20"/>
+
+    <!-- use the external tomcat or other server with the servlet approach; the port and contextpath must be exactly the same as those in external server -->
+    <!--<dubbo:protocol name="rest" port="8888" contextpath="services" server="servlet"/>-->
+
+	<dubbo:service interface="com.alibaba.dubbo.rpc.benchmark.EchoService" ref="echoService"  protocol="dubbo, rest, hessian, http, webservice, rmi"/>
+</beans>
