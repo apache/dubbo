@@ -27,7 +27,9 @@ import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.serialize.ObjectInput;
 import com.alibaba.dubbo.common.serialize.ObjectOutput;
+import com.alibaba.dubbo.common.serialize.OptimizedSerialization;
 import com.alibaba.dubbo.common.serialize.Serialization;
+import com.alibaba.dubbo.common.serialize.support.kryo.KryoSerialization;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.remoting.Channel;
@@ -39,6 +41,7 @@ import com.alibaba.dubbo.remoting.transport.CodecSupport;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcInvocation;
+import com.esotericsoftware.kryo.KryoSerializable;
 
 import static com.alibaba.dubbo.rpc.protocol.dubbo.CallbackServiceCodec.encodeInvocationArgument;
 
@@ -177,7 +180,14 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
         out.writeUTF(inv.getAttachment(Constants.VERSION_KEY));
 
         out.writeUTF(inv.getMethodName());
-        out.writeUTF(ReflectUtils.getDesc(inv.getParameterTypes()));
+
+        // NOTICE modified by lishen
+        // TODO
+        if (getSerialization(channel) instanceof OptimizedSerialization) {
+            out.writeInt(inv.getParameterTypes().length);
+        } else {
+            out.writeUTF(ReflectUtils.getDesc(inv.getParameterTypes()));
+        }
         Object[] args = inv.getArguments();
         if (args != null)
         for (int i = 0; i < args.length; i++){

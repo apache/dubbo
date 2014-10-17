@@ -118,6 +118,8 @@ public class Constants {
 
     public static final int     DEFAULT_THREADS                    = 200;
 
+    public static final boolean DEFAULT_KEEP_ALIVE = true;
+
     public static final int     DEFAULT_QUEUES                     = 0;
 
     public static final int     DEFAULT_ALIVE                      = 60 * 1000;
@@ -259,6 +261,16 @@ public class Constants {
     public static final String  CODEC_KEY                          = "codec";
 
     public static final String  SERIALIZATION_KEY                  = "serialization";
+
+    // modified by lishen
+    public static final String EXTENSION_KEY = "extension";
+
+    // modified by lishen
+    public static final String  KEEP_ALIVE_KEY                  = "keepalive";
+
+    // modified by lishen
+    // TODO change to a better name
+    public static final String  OPTIMIZER_KEY                  = "optimizer";
 
     public static final String  EXCHANGER_KEY                      = "exchanger";
 

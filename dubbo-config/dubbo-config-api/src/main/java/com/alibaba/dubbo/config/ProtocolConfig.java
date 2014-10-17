@@ -117,6 +117,16 @@ public class ProtocolConfig extends AbstractConfig {
     
     // 是否注册
     private Boolean             register;
+
+    // 是否长连接
+    // TODO add this to provider config
+    private Boolean keepAlive;
+
+    // 序列化的优化器的实现类名
+    // TODO add this to provider config
+    private String optimizer;
+
+    private String interceptor;
     
     // 参数
     private Map<String, String> parameters;
@@ -417,6 +427,30 @@ public class ProtocolConfig extends AbstractConfig {
 
     public void setDefault(Boolean isDefault) {
         this.isDefault = isDefault;
+    }
+
+    public Boolean getKeepAlive() {
+        return keepAlive;
+    }
+
+    public void setKeepAlive(Boolean keepAlive) {
+        this.keepAlive = keepAlive;
+    }
+
+    public String getOptimizer() {
+        return optimizer;
+    }
+
+    public void setOptimizer(String optimizer) {
+        this.optimizer = optimizer;
+    }
+
+    public String getInterceptor() {
+        return interceptor;
+    }
+
+    public void setInterceptor(String interceptor) {
+        this.interceptor = interceptor;
     }
 
     public void destory() {

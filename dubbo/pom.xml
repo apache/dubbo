@@ -19,7 +19,7 @@
 	<parent>
 		<groupId>com.alibaba</groupId>
 		<artifactId>dubbo-parent</artifactId>
-		<version>2.5.4-SNAPSHOT</version>
+		<version>2.8.0</version>
 	</parent>
 	<artifactId>dubbo</artifactId>
 	<packaging>jar</packaging>
@@ -181,6 +181,11 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-rpc-rest</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
 		<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>dubbo-registry-default</artifactId>
@@ -303,7 +308,7 @@
 							<goal>shade</goal>
 						</goals>
 						<configuration>
-							<createSourcesJar>true</createSourcesJar>
+							<createSourcesJar>false</createSourcesJar>
 							<promoteTransitiveDependencies>true</promoteTransitiveDependencies>
 							<artifactSet>
 								<includes>
@@ -326,6 +331,7 @@
 									<include>com.alibaba:dubbo-rpc-thrift</include>
 									<include>com.alibaba:dubbo-rpc-memcached</include>
 									<include>com.alibaba:dubbo-rpc-redis</include>
+									<include>com.alibaba:dubbo-rpc-rest</include>
 									<include>com.alibaba:dubbo-filter-validation</include>
 									<include>com.alibaba:dubbo-filter-cache</include>
 									<include>com.alibaba:dubbo-cluster</include>
