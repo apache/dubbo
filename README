@@ -1,200 +1,33 @@
-由于开源站点因为安全问题被下掉，如果编译时出现找不到opensesame依赖情况的，请先手动下载https://github.com/alibaba/opensesame
-本地install，这几天我们会把opensesame发到mavan中央仓库。
+Dubbox now means Dubbo eXtensions. If you know java, javax and dubbo, you know what dubbox is :)
+ 
+Dubbox adds features like RESTful remoting, Kyro/FST serialization, etc to the popular [dubbo service framework](http://github.com/alibaba/dubbo). It’s now internally used by several projects of [dangdang.com](http://www.dangdang.com), which is one of the major e-commerce companies in China.
 
-临时文档地址：http://alibaba.github.io/dubbo-doc-static/Developer+Guide-zh.htm
+Contacts: shenli@dangdang.com, wangyuxuan@dangdang.com
 
-================================================================
+### Dubbox当前的主要功能：
 
-Dubbo is a distributed service framework enpowers applications with service import/export capability with high performance RPC.
+* **REST风格远程调用支持 （HTTP + JSON/XML)**：在dubbo中支持基于HTTP + JSON/XML的远程调用，以显著简化企业内部跨语言调用，同时显著简化对外Open API、无线API甚至浏览器AJAX应用等的开发。
 
-It's composed of three kernel parts:
+* **基于Kryo和FST的Java高效序列化实现**：基于开源的kryo和fst（fast serialization）序列化库，为dubbo协议添加新的序列化实现，并优化调整了其序列化体系，比较显著的提高了远程调用性能。
 
-Remoting: a network communication framework provides sync-over-async and request-response messaging.
+* **基于嵌入式Tomcat的HTTP体系（To be pushed）**：基于嵌入式tomcat实现dubbo http体系（即dubbo-remoting-http），用以逐步取代旧的嵌入式jetty，可以显著的提高REST等调用的性能，并将servlet API的支持从2.5升级到3.1。（注：除了REST，dubbo中的WebServices、Hessian、HTTP Invoker等协议都基于此http体系）。
 
-Clustering: a remote procedure call abstraction with load-balancing/failover/clustering capabilities.
+* **Spring的升级**：将dubbo中spring由2.x升级到目前最常用的3.x版本，减少版本冲突带来的麻烦
 
-Registry: a service directory framework for service registration and service event publish/subscription
+* **ZooKeeper客户端的升级**：将dubbo中的zookeeper客户端升级到最新的版本，以修正老版本中包含的bug。
 
-For more, please refer to:
+* **Demo应用**：暂时将dubbo的demo应用调整并改写以主要演示REST功能和新的Java高效序列化等等。
 
-    http://code.alibabatech.com/wiki/display/dubbo
+* **修正了在JDK1.7上dubbo的部分bug**：修正了比如dubbo协议中json序列化的问题。但是还没有修正所有发现的bug。
 
-================================================================
-Quick Start
-================================================================
+**注：dubbox和dubbo 2.x是兼容的，没有改变dubbo的任何已有的功能和配置方式（除了升级了spring之类的版本）**
 
-Export remote service:
+### Dubbox文档
 
-    <bean id="barService" class="com.foo.BarServiceImpl" />
-	
-    <dubbo:service interface="com.foo.BarService" ref="barService" />
+[在Dubbo中开发REST风格的远程调用（RESTful Remoting）](http://dangdangdotcom.github.io/dubbox/rest.html)
 
-Refer remote service:
+[在Dubbo中使用高效的Java序列化（Kryo和FST）](http://dangdangdotcom.github.io/dubbox/serialization.html)
 
-    <dubbo:reference id="barService" interface="com.foo.BarService" />
-	
-    <bean id="barAction" class="com.foo.BarAction">
-        <property name="barService" ref="barService" />
-    </bean>
+[Demo应用简单运行指南](http://dangdangdotcom.github.io/dubbox/demo.html)
 
-================================================================
-Source Building
-================================================================
-
-0. Install the git and maven command line:
-
-    yum install git
-    or: apt-get install git
-
-    cd ~
-    wget http://www.apache.org/dist//maven/binaries/apache-maven-2.2.1-bin.tar.gz
-    tar zxvf apache-maven-2.2.1-bin.tar.gz
-    vi .bash_profile
-       - edit: export PATH=$PATH:~/apache-maven-2.2.1/bin
-    source .bash_profile
-
-1. Checkout the dubbo source code:
-
-    cd ~
-    git clone https://github.com/alibaba/dubbo.git dubbo
-
-    git checkout -b dubbo-2.4.0
-    git checkout master
-
-2. Import the dubbo source code to eclipse project:
-
-    cd ~/dubbo
-    mvn eclipse:eclipse
-    Eclipse -> Menu -> File -> Import -> Exsiting Projects to Workspace -> Browse -> Finish
-
-    Context Menu -> Run As -> Java Application:
-    dubbo-demo-provider/src/test/java/com.alibaba.dubbo.demo.provider.DemoProvider
-    dubbo-demo-consumer/src/test/java/com.alibaba.dubbo.demo.consumer.DemoConsumer
-    dubbo-monitor-simple/src/test/java/com.alibaba.dubbo.monitor.simple.SimpleMonitor
-    dubbo-registry-simple/src/test/java/com.alibaba.dubbo.registry.simple.SimpleRegistry
-
-    Edit Config:
-    dubbo-demo-provider/src/test/resources/dubbo.properties
-    dubbo-demo-consumer/src/test/resources/dubbo.properties
-    dubbo-monitor-simple/src/test/resources/dubbo.properties
-    dubbo-registry-simple/src/test/resources/dubbo.properties
-
-3. Build the dubbo binary package:
-
-    cd ~/dubbo
-    mvn clean install -Dmaven.test.skip
-    cd dubbo/target
-    ls
-
-4. Install the demo provider:
-
-    cd ~/dubbo/dubbo-demo-provider/target
-    tar zxvf dubbo-demo-provider-2.4.0-assembly.tar.gz
-    cd dubbo-demo-provider-2.4.0/bin
-    ./start.sh
-
-5. Install the demo consumer:
-
-    cd ~/dubbo/dubbo-demo-consumer/target
-    tar zxvf dubbo-demo-consumer-2.4.0-assembly.tar.gz
-    cd dubbo-demo-consumer-2.4.0/bin
-    ./start.sh
-    cd ../logs
-    tail -f stdout.log
-
-6. Install the simple monitor:
-
-    cd ~/dubbo/dubbo-simple-monitor/target
-    tar zxvf dubbo-simple-monitor-2.4.0-assembly.tar.gz
-    cd dubbo-simple-monitor-2.4.0/bin
-    ./start.sh
-    http://127.0.0.1:8080
-
-7. Install the simple registry:
-
-    cd ~/dubbo/dubbo-simple-registry/target
-    tar zxvf dubbo-simple-registry-2.4.0-assembly.tar.gz
-    cd dubbo-simple-registry-2.4.0/bin
-    ./start.sh
-
-    cd ~/dubbo/dubbo-demo-provider/conf
-    vi dubbo.properties
-       - edit: dubbo.registry.adddress=dubbo://127.0.0.1:9090
-    cd ../bin
-    ./restart.sh
-
-    cd ~/dubbo/dubbo-demo-consumer/conf
-    vi dubbo.properties
-       - edit: dubbo.registry.adddress=dubbo://127.0.0.1:9090
-    cd ../bin
-    ./restart.sh
-
-    cd ~/dubbo/dubbo-simple-monitor/conf
-    vi dubbo.properties
-       - edit: dubbo.registry.adddress=dubbo://127.0.0.1:9090
-    cd ../bin
-    ./restart.sh
-
-8. Install the zookeeper registry:
-
-    cd ~
-    wget http://www.apache.org/dist//zookeeper/zookeeper-3.3.3/zookeeper-3.3.3.tar.gz
-    tar zxvf zookeeper-3.3.3.tar.gz
-    cd zookeeper-3.3.3/conf
-    cp zoo_sample.cfg zoo.cfg
-    vi zoo.cfg
-       - edit: dataDir=/home/xxx/data
-    cd ../bin
-    ./zkServer.sh start
-
-    cd ~/dubbo/dubbo-demo-provider/conf
-    vi dubbo.properties
-       - edit: dubbo.registry.adddress=zookeeper://127.0.0.1:2181
-    cd ../bin
-    ./restart.sh
-
-    cd ~/dubbo/dubbo-demo-consumer/conf
-    vi dubbo.properties
-       - edit: dubbo.registry.adddress=zookeeper://127.0.0.1:2181
-    cd ../bin
-    ./restart.sh
-
-    cd ~/dubbo/dubbo-simple-monitor/conf
-    vi dubbo.properties
-       - edit: dubbo.registry.adddress=zookeeper://127.0.0.1:2181
-    cd ../bin
-    ./restart.sh
-
-9. Install the redis registry:
-
-    cd ~
-    wget http://redis.googlecode.com/files/redis-2.4.8.tar.gz
-    tar xzf redis-2.4.8.tar.gz
-    cd redis-2.4.8
-    make
-    nohup ./src/redis-server redis.conf &
-
-    cd ~/dubbo/dubbo-demo-provider/conf
-    vi dubbo.properties
-       - edit: dubbo.registry.adddress=redis://127.0.0.1:6379
-    cd ../bin
-    ./restart.sh
-
-    cd ~/dubbo/dubbo-demo-consumer/conf
-    vi dubbo.properties
-       - edit: dubbo.registry.adddress=redis://127.0.0.1:6379
-    cd ../bin
-    ./restart.sh
-
-    cd ~/dubbo/dubbo-simple-monitor/conf
-    vi dubbo.properties
-       - edit: dubbo.registry.adddress=redis://127.0.0.1:6379
-    cd ../bin
-    ./restart.sh
-
-10. Install the admin console:
-
-    cd ~/dubbo/dubbo-admin
-    mvn jetty:run -Ddubbo.registry.address=zookeeper://127.0.0.1:2181
-    http://root:root@127.0.0.1:8080
 
