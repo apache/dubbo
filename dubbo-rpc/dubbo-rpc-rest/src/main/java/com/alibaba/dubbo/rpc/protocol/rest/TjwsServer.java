@@ -16,7 +16,6 @@
 package com.alibaba.dubbo.rpc.protocol.rest;
 
 import com.alibaba.dubbo.common.URL;
-import org.jboss.resteasy.plugins.server.tjws.TJWSEmbeddedJaxrsServer;
 import org.jboss.resteasy.spi.ResteasyDeployment;
 
 /**
@@ -24,20 +23,23 @@ import org.jboss.resteasy.spi.ResteasyDeployment;
  */
 public class TjwsServer extends BaseRestServer {
 
-    private final TJWSEmbeddedJaxrsServer server = new TJWSEmbeddedJaxrsServer();
+//    private final TJWSEmbeddedJaxrsServer server = new TJWSEmbeddedJaxrsServer();
 
     protected void doStart(URL url) {
-        server.setPort(url.getPort());
-        // below config is useless due to a resteasy bug
-//        server.setKeepAlive(false);
-        server.start();
+        throw new UnsupportedOperationException("TJWS server is now unsupported");
+//        server.setPort(url.getPort());
+//        // below config is useless due to a resteasy bug
+////        server.setKeepAlive(false);
+//        server.start();
     }
 
     protected ResteasyDeployment getDeployment() {
-        return server.getDeployment();
+        throw new UnsupportedOperationException("TJWS server is now unsupported");
+//        return server.getDeployment();
     }
 
     public void stop() {
-        server.stop();
+        throw new UnsupportedOperationException("TJWS server is now unsupported");
+//        server.stop();
     }
 }

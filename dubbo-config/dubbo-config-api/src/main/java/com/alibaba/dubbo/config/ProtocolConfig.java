@@ -126,7 +126,7 @@ public class ProtocolConfig extends AbstractConfig {
     // TODO add this to provider config
     private String optimizer;
 
-    private String interceptor;
+    private String extension;
     
     // 参数
     private Map<String, String> parameters;
@@ -445,12 +445,12 @@ public class ProtocolConfig extends AbstractConfig {
         this.optimizer = optimizer;
     }
 
-    public String getInterceptor() {
-        return interceptor;
+    public String getExtension() {
+        return extension;
     }
 
-    public void setInterceptor(String interceptor) {
-        this.interceptor = interceptor;
+    public void setExtension(String extension) {
+        this.extension = extension;
     }
 
     public void destory() {

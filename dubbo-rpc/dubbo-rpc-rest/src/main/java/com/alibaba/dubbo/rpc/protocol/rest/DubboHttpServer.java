@@ -82,8 +82,7 @@ public class DubboHttpServer extends BaseRestServer {
     private class RestHandler implements HttpHandler {
 
         public void handle(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-            // use the below approach if we want to minimize the dependencies on resteasy's internal stuff
-            // RpcContext.getContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
+            RpcContext.getContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
             dispatcher.service(request, response);
         }
     }

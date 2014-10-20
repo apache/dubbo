@@ -10,7 +10,7 @@ Contacts: shenli@dangdang.com, wangyuxuan@dangdang.com
 
 * **基于Kryo和FST的Java高效序列化实现**：基于开源的kryo和fst（fast serialization）序列化库，为dubbo协议添加新的序列化实现，并优化调整了其序列化体系，比较显著的提高了远程调用性能。
 
-* **基于嵌入式Tomcat的HTTP体系（To be pushed）**：基于嵌入式tomcat实现dubbo http体系（即dubbo-remoting-http），用以逐步取代旧的嵌入式jetty，可以显著的提高REST等调用的性能，并将servlet API的支持从2.5升级到3.1。（注：除了REST，dubbo中的WebServices、Hessian、HTTP Invoker等协议都基于此http体系）。
+* **基于嵌入式Tomcat的HTTP体系**：基于嵌入式tomcat实现dubbo http体系（即dubbo-remoting-http），用以逐步取代旧的嵌入式jetty，可以显著的提高REST等调用的性能，并将servlet API的支持从2.5升级到3.1。（注：除了REST，dubbo中的WebServices、Hessian、HTTP Invoker等协议都基于此http体系）。
 
 * **Spring的升级**：将dubbo中spring由2.x升级到目前最常用的3.x版本，减少版本冲突带来的麻烦
 

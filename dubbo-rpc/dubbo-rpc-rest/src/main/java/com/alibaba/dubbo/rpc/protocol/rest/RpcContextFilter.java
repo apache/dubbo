@@ -29,6 +29,9 @@ import java.io.IOException;
 public class RpcContextFilter implements ContainerRequestFilter {
 
     public void filter(ContainerRequestContext requestContext) throws IOException {
+        if (RpcContext.getContext().getRemoteAddress() != null) {
+            return;
+        }
         HttpServletRequest request = ResteasyProviderFactory.getContextData(HttpServletRequest.class);
         // this only works for servlet containers
         if (request != null) {

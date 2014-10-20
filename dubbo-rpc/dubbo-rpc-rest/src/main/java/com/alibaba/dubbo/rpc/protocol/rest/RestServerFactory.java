@@ -33,10 +33,10 @@ public class RestServerFactory {
 
     public RestServer createServer(String name) {
         // TODO move names to Constants
-        if ("servlet".equalsIgnoreCase(name) || "jetty".equalsIgnoreCase(name)) {
+        if ("servlet".equalsIgnoreCase(name) || "jetty".equalsIgnoreCase(name) || "tomcat".equalsIgnoreCase(name)) {
             return new DubboHttpServer(httpBinder);
-        } else if ("tjws".equalsIgnoreCase(name)) {
-            return new TjwsServer();
+//        } else if ("tjws".equalsIgnoreCase(name)) {
+//            return new TjwsServer();
         } else if ("netty".equalsIgnoreCase(name)) {
             return new NettyServer();
         } else if ("sunhttp".equalsIgnoreCase(name)) {
