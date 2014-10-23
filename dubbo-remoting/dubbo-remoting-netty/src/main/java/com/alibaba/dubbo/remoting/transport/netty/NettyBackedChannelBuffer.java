@@ -9,19 +9,20 @@ import com.alibaba.dubbo.common.utils.Assert;
 import com.alibaba.dubbo.remoting.buffer.ChannelBuffer;
 import com.alibaba.dubbo.remoting.buffer.ChannelBufferFactory;
 import com.alibaba.dubbo.remoting.buffer.ChannelBuffers;
+import io.netty.buffer.ByteBuf;
 
 /**
  * @author <a href="mailto:gang.lvg@taobao.com">kimi</a>
  */
 public class NettyBackedChannelBuffer implements ChannelBuffer {
 
-    private org.jboss.netty.buffer.ChannelBuffer buffer;
+    private ByteBuf buffer;
 
-    public org.jboss.netty.buffer.ChannelBuffer nettyChannelBuffer() {
+    public ByteBuf nettyChannelBuffer() {
         return buffer;
     }
 
-    public NettyBackedChannelBuffer(org.jboss.netty.buffer.ChannelBuffer buffer) {
+    public NettyBackedChannelBuffer(ByteBuf buffer) {
         Assert.notNull(buffer, "buffer == null");
         this.buffer = buffer;
     }
@@ -104,7 +105,7 @@ public class NettyBackedChannelBuffer implements ChannelBuffer {
 
     @Override
     public ByteBuffer toByteBuffer(int index, int length) {
-        return buffer.toByteBuffer(index, length);
+        return buffer.nioBuffer(index, length);
     }
 
     @Override
@@ -143,7 +144,7 @@ public class NettyBackedChannelBuffer implements ChannelBuffer {
 
     @Override
     public void ensureWritableBytes(int writableBytes) {
-        buffer.ensureWritableBytes(writableBytes);
+        buffer.ensureWritable(writableBytes);
     }
 
     @Override
@@ -179,7 +180,7 @@ public class NettyBackedChannelBuffer implements ChannelBuffer {
 
     @Override
     public boolean readable() {
-        return buffer.readable();
+        return buffer.isReadable();
     }
 
     @Override
@@ -297,12 +298,12 @@ public class NettyBackedChannelBuffer implements ChannelBuffer {
 
     @Override
     public ByteBuffer toByteBuffer() {
-        return buffer.toByteBuffer();
+        return buffer.nioBuffer();
     }
 
     @Override
     public boolean writable() {
-        return buffer.writable();
+        return buffer.isWritable();
     }
 
     @Override

@@ -15,18 +15,6 @@
  */
 package com.alibaba.dubbo.remoting.transport.netty;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
-import org.jboss.netty.bootstrap.ClientBootstrap;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFactory;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ChannelPipelineFactory;
-import org.jboss.netty.channel.Channels;
-import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.Version;
@@ -37,6 +25,12 @@ import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.transport.AbstractClient;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.*;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioSocketChannel;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * NettyClient.
@@ -45,17 +39,14 @@ import com.alibaba.dubbo.remoting.transport.AbstractClient;
  * @author william.liangf
  */
 public class NettyClient extends AbstractClient {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(NettyClient.class);
 
-    // 因ChannelFactory的关闭有DirectMemory泄露，采用静态化规避
-    // https://issues.jboss.org/browse/NETTY-424
-    private static final ChannelFactory channelFactory = new NioClientSocketChannelFactory(Executors.newCachedThreadPool(new NamedThreadFactory("NettyClientBoss", true)), 
-                                                                                           Executors.newCachedThreadPool(new NamedThreadFactory("NettyClientWorker", true)), 
-                                                                                           Constants.DEFAULT_IO_THREADS);
-    private ClientBootstrap bootstrap;
+    private Bootstrap bootstrap;
 
     private volatile Channel channel; // volatile, please copy reference to use
+
+    private EventLoopGroup workerGroup;
     
     public NettyClient(final URL url, final ChannelHandler handler) throws RemotingException{
         super(url, wrapChannelHandler(url, handler));
@@ -64,24 +55,33 @@ public class NettyClient extends AbstractClient {
     @Override
     protected void doOpen() throws Throwable {
         NettyHelper.setNettyLoggerFactory();
-        bootstrap = new ClientBootstrap(channelFactory);
+        bootstrap = new Bootstrap();
         // config
-        // @see org.jboss.netty.channel.socket.SocketChannelConfig
-        bootstrap.setOption("keepAlive", true);
-        bootstrap.setOption("tcpNoDelay", true);
-        bootstrap.setOption("connectTimeoutMillis", getTimeout());
+        bootstrap.channel(NioSocketChannel.class);
+        bootstrap.group(getWorkerGroup());
+        bootstrap.option(ChannelOption.SO_KEEPALIVE, true);
+        bootstrap.option(ChannelOption.TCP_NODELAY, true);
+        bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getTimeout());
         final NettyHandler nettyHandler = new NettyHandler(getUrl(), this);
-        bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
-            public ChannelPipeline getPipeline() {
+        bootstrap.handler(new ChannelInitializer() {
+            public void initChannel(Channel ch) {
                 NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyClient.this);
-                ChannelPipeline pipeline = Channels.pipeline();
-                pipeline.addLast("decoder", adapter.getDecoder());
-                pipeline.addLast("encoder", adapter.getEncoder());
-                pipeline.addLast("handler", nettyHandler);
-                return pipeline;
+                ChannelPipeline channelPipeline = ch.pipeline();
+                channelPipeline.addLast("decoder", adapter.getDecoder());
+                channelPipeline.addLast("encoder", adapter.getEncoder());
+                channelPipeline.addLast("handler", nettyHandler);
             }
         });
+
     }
+
+    protected EventLoopGroup getWorkerGroup() {
+
+        workerGroup = new NioEventLoopGroup(Constants.DEFAULT_IO_THREADS, new NamedThreadFactory("NettyClientTCPWorker", true));
+        return workerGroup;
+
+    }
+
 
     protected void doConnect() throws Throwable {
         long start = System.currentTimeMillis();
@@ -90,8 +90,8 @@ public class NettyClient extends AbstractClient {
             boolean ret = future.awaitUninterruptibly(getConnectTimeout(), TimeUnit.MILLISECONDS);
             
             if (ret && future.isSuccess()) {
-                Channel newChannel = future.getChannel();
-                newChannel.setInterestOps(Channel.OP_READ_WRITE);
+                Channel newChannel = future.channel();
+
                 try {
                     // 关闭旧的连接
                     Channel oldChannel = NettyClient.this.channel; // copy reference
@@ -100,7 +100,7 @@ public class NettyClient extends AbstractClient {
                             if (logger.isInfoEnabled()) {
                                 logger.info("Close old netty channel " + oldChannel + " on create new netty channel " + newChannel);
                             }
-                            oldChannel.close();
+                            oldChannel.close().syncUninterruptibly();
                         } finally {
                             NettyChannel.removeChannelIfDisconnected(oldChannel);
                         }
@@ -111,7 +111,7 @@ public class NettyClient extends AbstractClient {
                             if (logger.isInfoEnabled()) {
                                 logger.info("Close new netty channel " + newChannel + ", because the client closed.");
                             }
-                            newChannel.close();
+                            newChannel.close().syncUninterruptibly();
                         } finally {
                             NettyClient.this.channel = null;
                             NettyChannel.removeChannelIfDisconnected(newChannel);
@@ -120,9 +120,9 @@ public class NettyClient extends AbstractClient {
                         NettyClient.this.channel = newChannel;
                     }
                 }
-            } else if (future.getCause() != null) {
+            } else if (future.cause() != null) {
                 throw new RemotingException(this, "client(url: " + getUrl() + ") failed to connect to server "
-                        + getRemoteAddress() + ", error message is:" + future.getCause().getMessage(), future.getCause());
+                        + getRemoteAddress() + ", error message is:" + future.cause().getMessage(), future.cause());
             } else {
                 throw new RemotingException(this, "client(url: " + getUrl() + ") failed to connect to server "
                         + getRemoteAddress() + " client-side timeout "
@@ -131,7 +131,7 @@ public class NettyClient extends AbstractClient {
             }
         }finally{
             if (! isConnected()) {
-                future.cancel();
+                future.cancel(true);
             }
         }
     }
@@ -147,17 +147,13 @@ public class NettyClient extends AbstractClient {
     
     @Override
     protected void doClose() throws Throwable {
-        /*try {
-            bootstrap.releaseExternalResources();
-        } catch (Throwable t) {
-            logger.warn(t.getMessage());
-        }*/
+        workerGroup.shutdownGracefully();
     }
 
     @Override
     protected com.alibaba.dubbo.remoting.Channel getChannel() {
         Channel c = channel;
-        if (c == null || ! c.isConnected())
+        if (c == null || ! c.isActive())
             return null;
         return NettyChannel.getOrAddChannel(c, getUrl(), this);
     }
