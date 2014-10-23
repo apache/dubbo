@@ -15,12 +15,11 @@
  */
 package com.alibaba.dubbo.remoting.transport.netty;
 
-import org.jboss.netty.logging.AbstractInternalLogger;
-import org.jboss.netty.logging.InternalLogger;
-import org.jboss.netty.logging.InternalLoggerFactory;
-
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import io.netty.util.internal.logging.AbstractInternalLogger;
+import io.netty.util.internal.logging.InternalLogger;
+import io.netty.util.internal.logging.InternalLoggerFactory;
 
 /**
  * @author <a href="mailto:gang.lvg@taobao.com">kimi</a>
@@ -47,7 +46,38 @@ final class NettyHelper {
         private Logger logger;
 
         DubboLogger(Logger logger) {
+            super(logger.toString());
             this.logger = logger;
+        }
+
+        @Override
+        public boolean isTraceEnabled() {
+            return logger.isTraceEnabled();
+        }
+
+        @Override
+        public void trace(String msg) {
+            logger.trace(msg);
+        }
+
+        @Override
+        public void trace(String msg, Object o) {
+            //TODO
+        }
+
+        @Override
+        public void trace(String msg, Object o, Object o2) {
+            //TODO
+        }
+
+        @Override
+        public void trace(String msg, Object... objects) {
+            //TODO
+        }
+
+        @Override
+        public void trace(String msg, Throwable throwable) {
+            logger.trace(msg, throwable);
         }
 
         public boolean isDebugEnabled() {
@@ -70,12 +100,42 @@ final class NettyHelper {
             logger.debug(msg);
         }
 
+        @Override
+        public void debug(String msg, Object o) {
+            //TODO
+        }
+
+        @Override
+        public void debug(String msg, Object o, Object o2) {
+            //TODO
+        }
+
+        @Override
+        public void debug(String msg, Object... objects) {
+            //TODO
+        }
+
         public void debug(String msg, Throwable cause) {
             logger.debug(msg, cause);
         }
 
         public void info(String msg) {
             logger.info(msg);
+        }
+
+        @Override
+        public void info(String msg, Object o) {
+            //TODO
+        }
+
+        @Override
+        public void info(String msg, Object o, Object o2) {
+            //TODO
+        }
+
+        @Override
+        public void info(String msg, Object... objects) {
+            //TODO
         }
 
         public void info(String msg, Throwable cause) {
@@ -86,12 +146,42 @@ final class NettyHelper {
             logger.warn(msg);
         }
 
+        @Override
+        public void warn(String s, Object o) {
+            //TODO
+        }
+
+        @Override
+        public void warn(String s, Object... objects) {
+            //TODO
+        }
+
+        @Override
+        public void warn(String s, Object o, Object o2) {
+            //TODO
+        }
+
         public void warn(String msg, Throwable cause) {
             logger.warn(msg, cause);
         }
 
         public void error(String msg) {
             logger.error(msg);
+        }
+
+        @Override
+        public void error(String msg, Object o) {
+            //TODO
+        }
+
+        @Override
+        public void error(String msg, Object o, Object o2) {
+            //TODO
+        }
+
+        @Override
+        public void error(String msg, Object... objects) {
+            // TODO
         }
 
         public void error(String msg, Throwable cause) {
