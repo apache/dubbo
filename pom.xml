@@ -151,6 +151,8 @@
 		<maven_war_plugin_version>2.1.1</maven_war_plugin_version>
 		<maven_install_plugin_version>2.3.1</maven_install_plugin_version>
 		<maven_deploy_plugin_version>2.7</maven_deploy_plugin_version>
+
+        <maven-surefire-plugin_version>2.17</maven-surefire-plugin_version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
@@ -402,6 +404,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven-surefire-plugin_version}</version>
 				<configuration>
 					<useSystemClassLoader>true</useSystemClassLoader>
 					<forkMode>once</forkMode>
