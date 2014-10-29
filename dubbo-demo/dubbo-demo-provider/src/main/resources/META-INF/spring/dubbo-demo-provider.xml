@@ -45,12 +45,13 @@
     <!-- use tjws server -->
     <!--<dubbo:protocol name="rest" port="8888" server="tjws" contextpath="services"/>-->
 
-    <!-- use the default jetty server -->
-    <dubbo:protocol name="rest" port="8888" threads="500" contextpath="services"
+    <!-- use tomcat server -->
+    <dubbo:protocol name="rest" port="8888" threads="500" contextpath="services" server="tomcat"
                     extension="com.alibaba.dubbo.demo.extension.TraceInterceptor,
                     com.alibaba.dubbo.demo.extension.TraceFilter,
                     com.alibaba.dubbo.demo.extension.ClientTraceFilter,
-                    com.alibaba.dubbo.demo.extension.DynamicTraceBinding"/>
+                    com.alibaba.dubbo.demo.extension.DynamicTraceBinding,
+                    com.alibaba.dubbo.demo.extension.CustomExceptionMapper"/>
 
     <!-- use the external tomcat or other server with the servlet approach; the port and contextpath must be exactly the same as those in external server -->
     <!--<dubbo:protocol name="rest" port="8888" contextpath="services" server="servlet"/>-->
