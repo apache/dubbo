@@ -29,6 +29,11 @@
 				<xsd:documentation><![CDATA[ The max active requests. ]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
+		<xsd:attribute name="executes" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ The service allow execute requests. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
 		<xsd:attribute name="connections" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[ The exclusive connections. default share one connection. ]]></xsd:documentation>
@@ -279,11 +284,6 @@
 				<xsd:attribute name="accesslog" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[ The service use accesslog. ]]></xsd:documentation>
-					</xsd:annotation>
-				</xsd:attribute>
-				<xsd:attribute name="executes" type="xsd:string" use="optional">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[ The service allow execute requests. ]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
 				<xsd:attribute name="protocol" type="xsd:string" use="optional">
@@ -587,11 +587,6 @@
 				<xsd:attribute name="name" type="xsd:string" use="required">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[ The method name (method.toString()). ]]></xsd:documentation>
-					</xsd:annotation>
-				</xsd:attribute>
-				<xsd:attribute name="executes" type="xsd:string" use="optional">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[ The max active requests. ]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
 				<xsd:attribute name="stat" type="xsd:string" use="optional" default="-1">
