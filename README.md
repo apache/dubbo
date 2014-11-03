@@ -37,6 +37,7 @@ Dubbox adds features like RESTful remoting, Kyro/FST serialization, etc to the p
 
 
 **联系方式**：沈理（shenli@dangdang.com）, 王宇轩（wangyuxuan@dangdang.com）
+
 **QQ群**：305896472
 
 
