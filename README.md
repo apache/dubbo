@@ -36,4 +36,8 @@ Dubbox adds features like RESTful remoting, Kyro/FST serialization, etc to the p
 * **dubbox-2.8.1**：主要支持基于嵌入式tomcat的http-remoting，优化了REST客户端性能等等（以上关于REST的文档针对2.8.1）
 
 
-Contacts: shenli@dangdang.com, wangyuxuan@dangdang.com
+**联系方式**：沈理（shenli@dangdang.com）, 王宇轩（wangyuxuan@dangdang.com）
+**QQ群**：305896472
+
+
+
