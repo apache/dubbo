@@ -19,6 +19,7 @@ import com.alibaba.dubbo.demo.user.User;
 import com.alibaba.dubbo.demo.user.UserService;
 import com.alibaba.dubbo.demo.user.facade.RegistrationResult;
 import com.alibaba.dubbo.demo.user.facade.UserRestService;
+import com.alibaba.dubbo.rpc.protocol.rest.support.ContentType;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -33,7 +34,7 @@ import javax.ws.rs.core.MediaType;
  */
 @Path("users")
 @Consumes({MediaType.APPLICATION_JSON, MediaType.TEXT_XML})
-@Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_XML})
+@Produces({ContentType.APPLICATION_JSON_UTF_8, ContentType.TEXT_XML_UTF_8})
 public class UserRestServiceImpl implements UserRestService {
 
 //    private static final Logger logger = LoggerFactory.getLogger(UserRestServiceImpl.class);

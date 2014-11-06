@@ -18,6 +18,7 @@ package com.alibaba.dubbo.demo.user.facade;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.dubbo.demo.user.User;
 import com.alibaba.dubbo.demo.user.UserService;
+import com.alibaba.dubbo.rpc.protocol.rest.support.ContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.Consumes;
@@ -34,7 +35,7 @@ import javax.ws.rs.core.MediaType;
 @Service(protocol = "rest", group = "annotationConfig")
 @Path("customers")
 @Consumes({MediaType.APPLICATION_JSON, MediaType.TEXT_XML})
-@Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_XML})
+@Produces({ContentType.APPLICATION_JSON_UTF_8, ContentType.TEXT_XML_UTF_8})
 public class AnnotationDrivenUserRestServiceImpl implements UserRestService {
 
 //    private static final Logger logger = LoggerFactory.getLogger(UserRestServiceImpl.class);
