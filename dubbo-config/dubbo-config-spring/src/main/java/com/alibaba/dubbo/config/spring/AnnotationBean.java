@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -217,8 +218,10 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
 	                		method.invoke(bean, new Object[] {  });
 	                	}
                 	}
-                } catch (Throwable e) {
-                    logger.error("Failed to init remote service reference at method " + name + " in class " + bean.getClass().getName() + ", cause: " + e.getMessage(), e);
+                } catch (Exception e) {
+                    // modified by lishen
+                    throw new BeanInitializationException("Failed to init remote service reference at method " + name + " in class " + bean.getClass().getName(), e);
+//                    logger.error("Failed to init remote service reference at method " + name + " in class " + bean.getClass().getName() + ", cause: " + e.getMessage(), e);
                 }
             }
         }
@@ -235,8 +238,10 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
 	                	field.set(bean, value);
 	                }
             	}
-            } catch (Throwable e) {
-            	logger.error("Failed to init remote service reference at filed " + field.getName() + " in class " + bean.getClass().getName() + ", cause: " + e.getMessage(), e);
+            } catch (Exception e) {
+                // modified by lishen
+                throw new BeanInitializationException("Failed to init remote service reference at filed " + field.getName() + " in class " + bean.getClass().getName(), e);
+//            	logger.error("Failed to init remote service reference at filed " + field.getName() + " in class " + bean.getClass().getName() + ", cause: " + e.getMessage(), e);
             }
         }
         return bean;
