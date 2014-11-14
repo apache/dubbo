@@ -238,6 +238,11 @@
 		</dependency>
 		<dependency>
 			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo-container-javaconfig</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
 			<artifactId>dubbo-container-jetty</artifactId>
 			<version>${project.parent.version}</version>
 			<exclusions>
