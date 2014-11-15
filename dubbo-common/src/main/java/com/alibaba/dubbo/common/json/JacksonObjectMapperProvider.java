@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * Created by dylan on 11/12/14.
  */
-@SPI("default")
+@SPI("jackson")
 public interface JacksonObjectMapperProvider {
     public ObjectMapper getObjectMapper();
 }

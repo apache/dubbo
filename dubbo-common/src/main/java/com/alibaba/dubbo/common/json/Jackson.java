@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.util.TimeZone;
 
 /**
- * Created by dylan on 11/12/14.
+ * @author dylan
  */
 public class Jackson {
     private static Logger logger = LoggerFactory.getLogger(Jackson.class);
@@ -22,31 +22,28 @@ public class Jackson {
 
     /**
      * 获取object mapper
+     *
      * @return
      */
-    public static ObjectMapper getObjectMapper(){
-        ObjectMapper objectMapper = null;
-        if(objectMapper == null){
+    public static ObjectMapper getObjectMapper() {
+        if (objectMapper == null) {
             JacksonObjectMapperProvider jacksonObjectMapperProvider = getJacksonProvider();
-            if(jacksonObjectMapperProvider != null){
+            if (jacksonObjectMapperProvider != null) {
                 objectMapper = jacksonObjectMapperProvider.getObjectMapper();
             }
         }
-        if(objectMapper == null){
+        if (objectMapper == null) {
             logger.warn("load objectMapper failed, use default config.");
-            objectMapper = buildDefaultObjectMapper();
+            buildDefaultObjectMapper();
         }
         return objectMapper;
     }
-    private static synchronized ObjectMapper buildDefaultObjectMapper(){
-        if(objectMapper == null){
-            ObjectMapper objectMapper = new ObjectMapper();
-            objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+
+    private static synchronized void buildDefaultObjectMapper() {
+        objectMapper = new ObjectMapper();
+        objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 //            objectMapper.disable(SerializationFeature.FLUSH_AFTER_WRITE_VALUE);
-            objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-            objectMapper.setTimeZone(TimeZone.getDefault());
-            return objectMapper;
-        }
-        return null;
+        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        objectMapper.setTimeZone(TimeZone.getDefault());
     }
 }
