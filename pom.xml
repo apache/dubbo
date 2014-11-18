@@ -16,7 +16,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<!--<parent> <groupId>com.alibaba</groupId> <artifactId>opensesame</artifactId> 
+	<!--<parent> <groupId>com.alibaba</groupId> <artifactId>opensesame</artifactId>
 		<version>2.0</version> </parent> -->
 	<groupId>com.alibaba</groupId>
 	<artifactId>dubbo-parent</artifactId>
@@ -112,6 +112,7 @@
 		<guice_version>3.0</guice_version>
 		<cglib_version>2.2</cglib_version>
 		<webx_version>3.0.8</webx_version>
+        <jackson_version>2.3.3</jackson_version>
 		<!-- Log libs -->
 		<slf4j_version>1.6.2</slf4j_version>
 		<jcl_version>1.1</jcl_version>
@@ -304,6 +305,16 @@
 				<artifactId>citrus-webx-all</artifactId>
 				<version>${webx_version}</version>
 			</dependency>
+             <dependency>
+                 <groupId>com.fasterxml.jackson.core</groupId>
+                 <artifactId>jackson-core</artifactId>
+                 <version>${jackson_version}</version>
+             </dependency>
+             <dependency>
+                  <groupId>com.fasterxml.jackson.core</groupId>
+                  <artifactId>jackson-databind</artifactId>
+                  <version>${jackson_version}</version>
+              </dependency>
 			<!-- Log libs -->
 			<dependency>
 				<groupId>org.slf4j</groupId>
@@ -513,7 +524,7 @@
 						<encoding>${file_encoding}</encoding>
 					</configuration>
 				</plugin>
-				<!--This plugin's configuration is used to store Eclipse m2e settings 
+				<!--This plugin's configuration is used to store Eclipse m2e settings
 					only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
