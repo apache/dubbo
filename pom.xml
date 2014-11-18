@@ -86,7 +86,7 @@
 	</profiles>
 	<properties>
 		<!-- Common libs -->
-		<spring_version>2.5.6.SEC03</spring_version>
+		<spring.bom.version>3.2.8.RELEASE</spring.bom.version>
 		<javassist_version>3.15.0-GA</javassist_version>
 		<netty_version>3.2.5.Final</netty_version>
 		<mina_version>1.1.7</mina_version>
@@ -136,8 +136,8 @@
 
         <!-- for maven compiler plugin -->
         <maven_compiler_plugin_version>2.3.2</maven_compiler_plugin_version>
-        <java_source_version>1.5</java_source_version>
-        <java_target_version>1.5</java_target_version>
+        <java_source_version>1.6</java_source_version>
+        <java_target_version>1.6</java_target_version>
         <file_encoding>UTF-8</file_encoding>
 
         <maven_source_plugin_version>2.1.1</maven_source_plugin_version>
@@ -150,10 +150,12 @@
 		<dependencies>
 			<!-- Common libs -->
 			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring</artifactId>
-				<version>${spring_version}</version>
-			</dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-framework-bom</artifactId>
+                <version>${spring.bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
 			<dependency>
 				<groupId>org.javassist</groupId>
 				<artifactId>javassist</artifactId>
