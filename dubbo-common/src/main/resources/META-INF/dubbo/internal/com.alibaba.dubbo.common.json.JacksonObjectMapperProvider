@@ -1,0 +1,1 @@
+jackson=com.alibaba.dubbo.common.json.DefaultJacksonObjectMapperProvider
