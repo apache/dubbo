@@ -1,12 +1,17 @@
 Dubbox now means Dubbo eXtensions. If you know java, javax and dubbo, you know what dubbox is :)
 
-Dubbox adds features like RESTful remoting, Kyro/FST serialization, etc to the popular [dubbo service framework](http://github.com/alibaba/dubbo). It’s now internally used by several projects of [dangdang.com](http://www.dangdang.com), which is one of the major e-commerce companies in China.
+Dubbox adds features like RESTful remoting, Kyro/FST serialization, etc to the popular [dubbo service framework](http://github.com/alibaba/dubbo). It's been used by several projects of [dangdang.com](http://www.dangdang.com), which is one of the major e-commerce companies in China.
 
-**联系方式**：沈理（shenli@dangdang.com）, 王宇轩（wangyuxuan@dangdang.com）
+## 主要贡献者
+
+* 沈理 当当网 shenli@dangdang.com
+* 王宇轩 当当网 wangyuxuan@dangdang.com
+* 马金凯 韩都衣舍 majk@vip.qq.com
+* Dylan 独立开发者 dinguangx@163.com
 
 **讨论QQ群**：305896472
 
-## Dubbox当前的主要功能：
+## Dubbox当前的主要功能
 
 * **支持REST风格远程调用（HTTP + JSON/XML)**：基于非常成熟的JBoss [RestEasy](http://resteasy.jboss.org/)框架，在dubbo中实现了REST风格（HTTP + JSON/XML）的远程调用，以显著简化企业内部的跨语言交互，同时显著简化企业对外的Open API、无线API甚至AJAX服务端等等的开发。事实上，这个REST调用也使得Dubbo可以对当今特别流行的“微服务”架构提供基础性支持。 另外，REST调用也达到了比较高的性能，在基准测试下，HTTP + JSON与Dubbo 2.x默认的RPC协议（即TCP + Hessian2二进制序列化）之间只有1.5倍左右的差距，详见文档中的基准测试报告。
 
@@ -41,7 +46,7 @@ Dubbox adds features like RESTful remoting, Kyro/FST serialization, etc to the p
 * **dubbox-2.8.2**：
     * 支持REST中的HTTP logging，包括HTTP header的字段和HTTP body中的消息体，方便调试、日志纪录等等
     * 提供辅助类便于REST的中文处理
-    * 改变使用｀@Reference｀ annotation配置时的异常处理方式，即当用annotion配置时，过去dubbo在启动期间不抛出依赖服务找不到的异常，而是在具体调用时抛出NPE，这与用XML配置时的行为不一致。
+    * 改变使用`@Reference` annotation配置时的异常处理方式，即当用annotation配置时，过去dubbo在启动期间不抛出依赖服务找不到的异常，而是在具体调用时抛出NPE，这与用XML配置时的行为不一致。
     * 较大的充实了Dubbo REST的文档
 
 ## FAQ（暂存）
