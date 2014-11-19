@@ -181,7 +181,8 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
                 }
                 if (service.protocol() != null && service.protocol().length > 0) {
                     List<ProtocolConfig> protocolConfigs = new ArrayList<ProtocolConfig>();
-                    for (String protocolId : service.registry()) {
+                    // modified by lishen; fix dubbo's bug
+                    for (String protocolId : service.protocol()) {
                         if (protocolId != null && protocolId.length() > 0) {
                             protocolConfigs.add((ProtocolConfig)applicationContext.getBean(protocolId, ProtocolConfig.class));
                         }
