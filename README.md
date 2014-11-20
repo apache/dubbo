@@ -4,9 +4,9 @@ Dubbox adds features like RESTful remoting, Kyro/FST serialization, etc to the p
 
 ## 主要贡献者
 
-* 沈理 当当网 shenli@dangdang.com
-* 王宇轩 当当网 wangyuxuan@dangdang.com
-* 马金凯 韩都衣舍 majk@vip.qq.com
+* 沈理 [当当网](http://www.dangdang.com/) shenli@dangdang.com
+* 王宇轩 [当当网](http://www.dangdang.com/) wangyuxuan@dangdang.com
+* 马金凯 [韩都衣舍](http://www.handu.com/) majinkai@handu.com
 * Dylan 独立开发者 dinguangx@163.com
 
 **讨论QQ群**：305896472
