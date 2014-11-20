@@ -25,7 +25,7 @@ public class UserServiceImpl implements UserService {
     private final AtomicLong idGen = new AtomicLong();
 
     public User getUser(Long id) {
-        return new User(id, "dang" + id);
+        return new User(id, "username" + id);
     }
 
 

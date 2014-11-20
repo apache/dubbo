@@ -32,7 +32,7 @@ import javax.ws.rs.core.MediaType;
 /**
  * @author lishen
  */
-@Service(protocol = "rest", group = "annotationConfig")
+@Service(protocol = {"rest", "dubbo"}, group = "annotationConfig", validation = "true")
 @Path("customers")
 @Consumes({MediaType.APPLICATION_JSON, MediaType.TEXT_XML})
 @Produces({ContentType.APPLICATION_JSON_UTF_8, ContentType.TEXT_XML_UTF_8})

@@ -77,7 +77,7 @@ public class DemoAction {
             System.out.println("SUCCESS: caught exception " + e.getClass());
         }
 
-        User user = new User(1L, "dang");
+        User user = new User(1L, "larrypage");
         System.out.println("SUCESS: registered user with id " + anotherUserRestService.registerUser(user).getId());
 
         System.out.println("SUCESS: got user " + anotherUserRestService.getUser(1L));

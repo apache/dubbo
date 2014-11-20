@@ -3,6 +3,7 @@ package com.alibaba.dubbo.demo.user.facade;
 import com.alibaba.dubbo.demo.user.User;
 import com.alibaba.dubbo.rpc.protocol.rest.support.ContentType;
 
+import javax.validation.constraints.Min;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -21,7 +22,7 @@ public interface AnotherUserRestService {
 
     @GET
     @Path("{id : \\d+}")
-    User getUser(@PathParam("id") Long id);
+    User getUser(@PathParam("id") @Min(1L) Long id);
 
     @POST
     @Path("register")

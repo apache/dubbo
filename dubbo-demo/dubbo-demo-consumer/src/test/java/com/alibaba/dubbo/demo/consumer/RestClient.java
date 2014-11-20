@@ -70,7 +70,7 @@ public class RestClient {
 
     private static void registerUser(String url, MediaType mediaType) {
         System.out.println("Registering user via " + url);
-        User user = new User(1L, "dang");
+        User user = new User(1L, "larrypage");
         Client client = ClientBuilder.newClient();
         WebTarget target = client.target(url);
         Response response = target.request().post(Entity.entity(user, mediaType));

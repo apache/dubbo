@@ -17,6 +17,8 @@ package com.alibaba.dubbo.demo.user.facade;
 
 import com.alibaba.dubbo.demo.user.User;
 
+import javax.validation.constraints.Min;
+
 /**
  * This interface acts as some kind of service broker for the original UserService
 
@@ -30,9 +32,9 @@ import com.alibaba.dubbo.demo.user.User;
 public interface UserRestService {
 
     /**
-     * the request object is just used to test jax-rs injection
+     * the request object is just used to test jax-rs injection.
      */
-    User getUser(Long id/*, HttpServletRequest request*/);
+    User getUser(@Min(value=1L, message="User ID must be greater than 1") Long id/*, HttpServletRequest request*/);
 
     RegistrationResult registerUser(User user);
 }

@@ -66,8 +66,8 @@
     <!-- we add the group property since there's another annotation-configured service impl: com.alibaba.dubbo.demo.user.facade.AnnotationDrivenUserRestServiceImpl -->
     <dubbo:service interface="com.alibaba.dubbo.demo.user.UserService" ref="userService"  protocol="dubbo" group="xmlConfig"/>
 
-	<dubbo:service interface="com.alibaba.dubbo.demo.user.facade.UserRestService" ref="userRestService"  protocol="rest"/>
-	<dubbo:service interface="com.alibaba.dubbo.demo.user.facade.AnotherUserRestService" ref="anotherUserRestService"  protocol="rest"  timeout="2000" connections="100"/>
+	<dubbo:service interface="com.alibaba.dubbo.demo.user.facade.UserRestService" ref="userRestService"  protocol="rest" validation="true"/>
+	<dubbo:service interface="com.alibaba.dubbo.demo.user.facade.AnotherUserRestService" ref="anotherUserRestService"  protocol="rest"  timeout="2000" connections="100" validation="true"/>
 
     <bean id="bidService" class="com.alibaba.dubbo.demo.bid.BidServiceImpl" />
 
