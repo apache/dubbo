@@ -19,6 +19,7 @@ import com.alibaba.dubbo.rpc.RpcContext;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import java.io.IOException;
@@ -29,13 +30,14 @@ import java.io.IOException;
 public class RpcContextFilter implements ContainerRequestFilter {
 
     public void filter(ContainerRequestContext requestContext) throws IOException {
-        if (RpcContext.getContext().getRemoteAddress() != null) {
-            return;
-        }
         HttpServletRequest request = ResteasyProviderFactory.getContextData(HttpServletRequest.class);
+        RpcContext.getContext().setRequest(request);
+
         // this only works for servlet containers
-        if (request != null) {
+        if (request != null && RpcContext.getContext().getRemoteAddress() == null) {
             RpcContext.getContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
         }
+
+        RpcContext.getContext().setResponse(ResteasyProviderFactory.getContextData(HttpServletResponse.class));
     }
 }

@@ -19,8 +19,11 @@ import com.alibaba.dubbo.demo.user.User;
 import com.alibaba.dubbo.demo.user.UserService;
 import com.alibaba.dubbo.demo.user.facade.RegistrationResult;
 import com.alibaba.dubbo.demo.user.facade.UserRestService;
+import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.protocol.rest.support.ContentType;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -51,6 +54,12 @@ public class UserRestServiceImpl implements UserRestService {
         // test context injection
 //        System.out.println("Client address from @Context injection: " + (request != null ? request.getRemoteAddr() : ""));
 //        System.out.println("Client address from RpcContext: " + RpcContext.getContext().getRemoteAddressString());
+        if (RpcContext.getContext().getRequest() != null && RpcContext.getContext().getRequest() instanceof HttpServletRequest) {
+            System.out.println("Client IP address from RpcContext: " + ((HttpServletRequest) RpcContext.getContext().getRequest()).getRemoteAddr());
+        }
+        if (RpcContext.getContext().getResponse() != null && RpcContext.getContext().getResponse() instanceof HttpServletResponse) {
+            System.out.println("Response object from RpcContext: " + RpcContext.getContext().getResponse());
+        }
         return userService.getUser(id);
     }
 
