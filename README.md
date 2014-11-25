@@ -17,15 +17,19 @@ Dubbox adds features like RESTful remoting, Kyro/FST serialization, etc to the p
 
 * **支持基于Kryo和FST的Java高效序列化实现**：基于当今比较知名的[Kryo](https://github.com/EsotericSoftware/kryo)和[FST](https://github.com/RuedigerMoeller/fast-serialization)高性能序列化库，为Dubbo 默认的RPC协议添加新的序列化实现，并优化调整了其序列化体系，比较显著的提高了Dubbo RPC的性能，详见文档中的基准测试报告。
 
+* **支持基于Jackson的JSON序列化**：
+
 * **支持基于嵌入式Tomcat的HTTP remoting体系**：基于嵌入式tomcat实现dubbo的HTTP remoting体系（即dubbo-remoting-http），用以逐步取代Dubbo中旧版本的嵌入式Jetty，可以显著的提高REST等的远程调用性能，并将Servlet API的支持从2.5升级到3.1。（注：除了REST，dubbo中的WebServices、Hessian、HTTP Invoker等协议都基于这个HTTP remoting体系）。
 
-* **升级Spring**：将dubbo中Spring由2.x升级到目前最常用的3.x版本，减少版本冲突带来的麻烦
+* **升级Spring**：将dubbo中Spring由2.x升级到目前最常用的3.x版本，减少版本冲突带来的麻烦。
 
 * **升级ZooKeeper客户端**：将dubbo中的zookeeper客户端升级到最新的版本，以修正老版本中包含的bug。
 
-* **调整Demo应用**：暂时将dubbo的demo应用调整并改写以主要演示REST功能和新的Java高效序列化等等。
+* **支持基于Java代码的Spring配置**：
 
-* **修正了在JDK1.7上dubbo的部分bug**：修正了比如dubbo协议中json序列化的问题。但是还没有修正所有发现的bug。
+* **调整Demo应用**：暂时将dubbo的demo应用调整并改写以主要演示REST功能、Dubbo协议的新序列化方式、基于Java代码的Spring配置等等。
+
+* **修正了dubbo的bug** 包括配置、序列化、管理界面等等的bug。
 
 **注：dubbox和dubbo 2.x是兼容的，没有改变dubbo的任何已有的功能和配置方式（除了升级了spring之类的版本）**
 
@@ -48,6 +52,15 @@ Dubbox adds features like RESTful remoting, Kyro/FST serialization, etc to the p
     * 提供辅助类便于REST的中文处理
     * 改变使用`@Reference` annotation配置时的异常处理方式，即当用annotation配置时，过去dubbo在启动期间不抛出依赖服务找不到的异常，而是在具体调用时抛出NPE，这与用XML配置时的行为不一致。
     * 较大的充实了Dubbo REST的文档
+* **dubbox-2.8.3**：
+    * 在REST中支持dubbo统一的方式用bean validation annotation作参数校验（沈理）
+    * 在RpcContext上支持获取底层协议的Request/Response（沈理）
+    * 支持采用Spring的Java Config方式配置dubbo（马金凯）
+    * 在Dubbo协议中支持基于Jackson的json序列化（Dylan）
+    * 在Spring AOP代理过的对象上支持dubbo annotation配置（Dylan）
+    * 修正Dubbo管理界面中没有consumer时出现空指针异常（马金凯）
+    * 修正@Reference annotation中protocol设置不起作用的bug（沈理）
+    * 修正@Reference annotation放在setter方法上即会出错的bug（Dylan）
 
 ## FAQ（暂存）
 

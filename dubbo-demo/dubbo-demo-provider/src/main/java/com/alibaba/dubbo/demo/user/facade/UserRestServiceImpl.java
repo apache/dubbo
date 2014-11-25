@@ -54,11 +54,11 @@ public class UserRestServiceImpl implements UserRestService {
         // test context injection
 //        System.out.println("Client address from @Context injection: " + (request != null ? request.getRemoteAddr() : ""));
 //        System.out.println("Client address from RpcContext: " + RpcContext.getContext().getRemoteAddressString());
-        if (RpcContext.getContext().getRequest() != null && RpcContext.getContext().getRequest() instanceof HttpServletRequest) {
-            System.out.println("Client IP address from RpcContext: " + ((HttpServletRequest) RpcContext.getContext().getRequest()).getRemoteAddr());
+        if (RpcContext.getContext().getRequest(HttpServletRequest.class) != null) {
+            System.out.println("Client IP address from RpcContext: " + RpcContext.getContext().getRequest(HttpServletRequest.class).getRemoteAddr());
         }
-        if (RpcContext.getContext().getResponse() != null && RpcContext.getContext().getResponse() instanceof HttpServletResponse) {
-            System.out.println("Response object from RpcContext: " + RpcContext.getContext().getResponse());
+        if (RpcContext.getContext().getResponse(HttpServletResponse.class) != null) {
+            System.out.println("Response object from RpcContext: " + RpcContext.getContext().getResponse(HttpServletResponse.class));
         }
         return userService.getUser(id);
     }
