@@ -1,9 +1,9 @@
 /**
  * Project: dubbo-examples
- * 
+ *
  * File Created at 2012-2-17
  * $Id$
- * 
+ *
  * Copyright 1999-2100 Alibaba.com Corporation Limited.
  * All rights reserved.
  *
@@ -15,9 +15,7 @@
  */
 package com.alibaba.dubbo.examples.jackson.impl;
 
-import com.alibaba.dubbo.examples.jackson.api.JacksonBean;
-import com.alibaba.dubbo.examples.jackson.api.JacksonInnerBean;
-import com.alibaba.dubbo.examples.jackson.api.JacksonService;
+import com.alibaba.dubbo.examples.jackson.api.*;
 
 /**
  * @author william.liangf
@@ -34,5 +32,33 @@ public class JacksonServiceImpl implements JacksonService {
         System.out.println(jacksonInnerBean);
         jacksonBean.getInnerBeanList().add(jacksonInnerBean);
         return jacksonBean;
+    }
+
+    @Override
+    public Inherit testInheritBean(Inherit inherit, JacksonBean jacksonBean) {
+        System.out.println(inherit);
+        System.out.println(jacksonBean);
+        return new InheritBean2();
+    }
+
+    @Override
+    public int[] testArray(int[] array) {
+        return new int[]{3, 4};
+    }
+
+    @Override
+    public JacksonBean[] testBeanArray(JacksonBean[] jacksonBeans) {
+        System.out.println("testBeanArray");
+        for (JacksonBean in : jacksonBeans) {
+            System.out.println(in);
+        }
+        return new JacksonBean[]{
+                new JacksonBean(), new JacksonBean()
+        };
+    }
+
+    @Override
+    public void testException() {
+        throw new RuntimeException("exception from provider");
     }
 }

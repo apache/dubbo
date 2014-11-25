@@ -17,21 +17,24 @@ package com.alibaba.dubbo.common.serialize.support.json;
 
 import com.alibaba.dubbo.common.json.Jackson;
 import com.alibaba.dubbo.common.serialize.ObjectOutput;
+import com.alibaba.dubbo.common.utils.ReflectUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.*;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * jackson object output
+ *
  * @author dylan
  */
 public class JacksonObjectOutput implements ObjectOutput {
 
     private final ObjectMapper objectMapper;
-    private final Map<String,Object> data;
-    private final static String KEY_PREFIX="$";
+    private final Map<String, Object> data;
+    private final static String KEY_PREFIX = "$";
     private int index = 0;
 
     private final PrintWriter writer;
@@ -47,46 +50,66 @@ public class JacksonObjectOutput implements ObjectOutput {
     }
 
     public void writeBool(boolean v) throws IOException {
-        writeObject(v);
+        writeObject0(v);
     }
 
     public void writeByte(byte v) throws IOException {
-        writeObject(v);
+        writeObject0(v);
     }
 
     public void writeShort(short v) throws IOException {
-        writeObject(v);
+        writeObject0(v);
     }
 
     public void writeInt(int v) throws IOException {
-        writeObject(v);
+        writeObject0(v);
     }
 
     public void writeLong(long v) throws IOException {
-        writeObject(v);
+        writeObject0(v);
     }
 
     public void writeFloat(float v) throws IOException {
-        writeObject(v);
+        writeObject0(v);
     }
 
     public void writeDouble(double v) throws IOException {
-        writeObject(v);
+        writeObject0(v);
     }
 
     public void writeUTF(String v) throws IOException {
-        writeObject(v);
+        writeObject0(v);
     }
 
     public void writeBytes(byte[] b) throws IOException {
-        writeObject(new String(b));
+        writeObject0(new String(b));
     }
 
     public void writeBytes(byte[] b, int off, int len) throws IOException {
-        writeObject(new String(b, off, len));
+        writeObject0(new String(b, off, len));
     }
 
     public void writeObject(Object obj) throws IOException {
+//        int i = ++index;
+        if (obj == null) {
+            writeObject0(obj);
+            return;
+        }
+        //write data value
+        writeObject0(obj);
+        //write data type
+        Class c = obj.getClass();
+        String desc = ReflectUtils.getDesc(c);
+        data.put(KEY_PREFIX + (index) + "t", desc);
+//        if (obj instanceof Collection) {
+//            //集合类型
+//        } else if (obj instanceof Map) {
+//            //
+//        } else {
+//        }
+    }
+
+    private void writeObject0(Object obj) throws IOException {
         data.put(KEY_PREFIX + (++index), objectMapper.writeValueAsString(obj));
     }
 
