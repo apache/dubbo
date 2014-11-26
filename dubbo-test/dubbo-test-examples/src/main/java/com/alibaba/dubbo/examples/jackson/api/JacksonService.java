@@ -23,4 +23,12 @@ public interface JacksonService {
     String sayHello(String name);
 
     public JacksonBean testJacksonBean(JacksonBean jacksonBean, JacksonInnerBean jacksonInnerBean);
+
+    public Inherit testInheritBean(Inherit inherit, JacksonBean jacksonBean);
+
+    public int[] testArray(int[] array);
+
+    public JacksonBean[] testBeanArray(JacksonBean[] jacksonBeans);
+
+    public void testException();
 }

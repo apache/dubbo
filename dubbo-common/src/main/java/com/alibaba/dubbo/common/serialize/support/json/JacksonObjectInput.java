@@ -17,6 +17,7 @@ package com.alibaba.dubbo.common.serialize.support.json;
 
 import com.alibaba.dubbo.common.json.Jackson;
 import com.alibaba.dubbo.common.serialize.ObjectInput;
+import com.alibaba.dubbo.common.utils.ReflectUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -143,7 +144,7 @@ public class JacksonObjectInput implements ObjectInput {
 //            throw new IOException(e.getMessage());
 //        }
         try {
-            return readObject(Map.class);
+            return readObject(Object.class);
         } catch (ClassNotFoundException e) {
             throw new IOException(e.getMessage());
         }
@@ -152,7 +153,18 @@ public class JacksonObjectInput implements ObjectInput {
     @SuppressWarnings("unchecked")
     public <T> T readObject(Class<T> cls) throws IOException, ClassNotFoundException {
 //        Object value = readObject();
+        //read data value
         String json = this.data.get(KEY_PREFIX + (++index));
+        //read data type
+        String dataType = this.data.get(KEY_PREFIX + index + "t");
+        if (dataType != null) {
+            Class clazz = ReflectUtils.desc2class(dataType);
+            if (cls.isAssignableFrom(clazz)) {
+                cls = clazz;
+            } else {
+                throw new IllegalArgumentException("Class \"" + clazz + "\" is not inherited from \"" + cls + "\"");
+            }
+        }
         logger.debug("index:{}, value:{}", index, json);
         return objectMapper.readValue(json, cls);
     }
