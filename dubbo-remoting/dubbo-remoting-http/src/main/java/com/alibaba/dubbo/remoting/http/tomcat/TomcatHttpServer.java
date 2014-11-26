@@ -47,7 +47,9 @@ public class TomcatHttpServer extends AbstractHttpServer {
 
         this.url = url;
         DispatcherServlet.addHttpHandler(url.getPort(), handler);
+        String baseDir = new File(System.getProperty("java.io.tmpdir")).getAbsolutePath();
         tomcat = new Tomcat();
+        tomcat.setBaseDir(baseDir);
         tomcat.setPort(url.getPort());
         tomcat.getConnector().setProperty(
                 "maxThreads", String.valueOf(url.getParameter(Constants.THREADS_KEY, Constants.DEFAULT_THREADS)));
@@ -63,9 +65,7 @@ public class TomcatHttpServer extends AbstractHttpServer {
         tomcat.getConnector().setProperty("maxKeepAliveRequests", "-1");
         tomcat.getConnector().setProtocol("org.apache.coyote.http11.Http11NioProtocol");
 
-
-        File baseDir = new File(System.getProperty("java.io.tmpdir"));
-        Context context = tomcat.addContext("/", baseDir.getAbsolutePath());
+        Context context = tomcat.addContext("/", baseDir);
         Tomcat.addServlet(context, "dispatcher", new DispatcherServlet());
         context.addServletMapping("/*", "dispatcher");
         ServletManager.getInstance().addServletContext(url.getPort(), context.getServletContext());
