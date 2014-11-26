@@ -5,7 +5,7 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
 	http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
 
-    <dubbo:application name="demo-consumer" owner="shenli" organization="dangdang"/>
+    <dubbo:application name="demo-consumer" owner="programmer" organization="dubbox"/>
 
     <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
 
