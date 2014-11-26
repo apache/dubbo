@@ -17,7 +17,7 @@ Dubbox adds features like RESTful remoting, Kyro/FST serialization, etc to the p
 
 * **支持基于Kryo和FST的Java高效序列化实现**：基于当今比较知名的[Kryo](https://github.com/EsotericSoftware/kryo)和[FST](https://github.com/RuedigerMoeller/fast-serialization)高性能序列化库，为Dubbo 默认的RPC协议添加新的序列化实现，并优化调整了其序列化体系，比较显著的提高了Dubbo RPC的性能，详见文档中的基准测试报告。
 
-* **支持基于Jackson的JSON序列化**：
+* **支持基于Jackson的JSON序列化**：TODO
 
 * **支持基于嵌入式Tomcat的HTTP remoting体系**：基于嵌入式tomcat实现dubbo的HTTP remoting体系（即dubbo-remoting-http），用以逐步取代Dubbo中旧版本的嵌入式Jetty，可以显著的提高REST等的远程调用性能，并将Servlet API的支持从2.5升级到3.1。（注：除了REST，dubbo中的WebServices、Hessian、HTTP Invoker等协议都基于这个HTTP remoting体系）。
 
@@ -25,7 +25,7 @@ Dubbox adds features like RESTful remoting, Kyro/FST serialization, etc to the p
 
 * **升级ZooKeeper客户端**：将dubbo中的zookeeper客户端升级到最新的版本，以修正老版本中包含的bug。
 
-* **支持基于Java代码的Spring配置**：
+* **支持基于Java代码的Spring配置**：TODO
 
 * **调整Demo应用**：暂时将dubbo的demo应用调整并改写以主要演示REST功能、Dubbo协议的新序列化方式、基于Java代码的Spring配置等等。
 
@@ -38,6 +38,8 @@ Dubbox adds features like RESTful remoting, Kyro/FST serialization, etc to the p
 [在Dubbo中开发REST风格的远程调用（RESTful Remoting）](http://dangdangdotcom.github.io/dubbox/rest.html)
 
 [在Dubbo中使用高效的Java序列化（Kryo和FST）](http://dangdangdotcom.github.io/dubbox/serialization.html)
+
+[使用JavaConfig方式配置dubbox](http://dangdangdotcom.github.io/dubbox/java-config.html)
 
 [Demo应用简单运行指南](http://dangdangdotcom.github.io/dubbox/demo.html)
 
