@@ -47,10 +47,8 @@ import java.util.Map;
  *
  * @author lishen
  */
-@Priority(Priorities.HEADER_DECORATOR)
-public class LoggingFilter implements
-        ContainerRequestFilter, ClientRequestFilter, ContainerResponseFilter,
-        ClientResponseFilter, WriterInterceptor, ReaderInterceptor {
+@Priority(Integer.MIN_VALUE)
+public class LoggingFilter implements ContainerRequestFilter, ClientRequestFilter, ContainerResponseFilter, ClientResponseFilter, WriterInterceptor, ReaderInterceptor {
 
     private static final Logger logger = LoggerFactory.getLogger(LoggingFilter.class);
 
@@ -59,11 +57,11 @@ public class LoggingFilter implements
     }
 
     public void filter(ClientRequestContext requestContext, ClientResponseContext responseContext) throws IOException {
-       logHttpHeaders(responseContext.getHeaders());
+        logHttpHeaders(responseContext.getHeaders());
     }
 
     public void filter(ContainerRequestContext context) throws IOException {
-       logHttpHeaders(context.getHeaders());
+        logHttpHeaders(context.getHeaders());
     }
 
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
@@ -110,7 +108,7 @@ public class LoggingFilter implements
 
         @Override
         public void write(int i) throws IOException {
-          buffer.write(i);
+            buffer.write(i);
             output.write(i);
         }
 
