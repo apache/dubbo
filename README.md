@@ -41,6 +41,8 @@ Dubbox adds features like RESTful remoting, Kyro/FST serialization, etc to the p
 
 [使用JavaConfig方式配置dubbox](http://dangdangdotcom.github.io/dubbox/java-config.html)
 
+[Dubbo Jackson序列化使用说明](http://dangdangdotcom.github.io/dubbox/jackson.html)
+
 [Demo应用简单运行指南](http://dangdangdotcom.github.io/dubbox/demo.html)
 
 ## 版本
