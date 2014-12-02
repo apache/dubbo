@@ -49,7 +49,7 @@ Dubbox adds features like RESTful remoting, Kyro/FST serialization, etc to the p
 
 详见：https://github.com/dangdangdotcom/dubbox/releases
 
-* **dubbox-2.8.0**：该版本已经在生产环境中使用，主要支持REST风格远程调用、支持Kryo和FST序列化、升级了Spring和Zookeeper客户端、调整了demo应用等等
+* **dubbox-2.8.0**：主要支持REST风格远程调用、支持Kryo和FST序列化、升级了Spring和Zookeeper客户端、调整了demo应用等等
 * **dubbox-2.8.1**：主要支持基于嵌入式tomcat的http-remoting，优化了REST客户端性能，在REST中支持限制服务端接纳的最大HTTP连接数等等
 * **dubbox-2.8.2**：
     * 支持REST中的HTTP logging，包括HTTP header的字段和HTTP body中的消息体，方便调试、日志纪录等等
