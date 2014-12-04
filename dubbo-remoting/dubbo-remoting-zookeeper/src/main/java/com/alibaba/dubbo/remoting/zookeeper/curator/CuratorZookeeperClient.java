@@ -2,6 +2,7 @@ package com.alibaba.dubbo.remoting.zookeeper.curator;
 
 import java.util.List;
 
+import com.alibaba.dubbo.common.Constants;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.CuratorFrameworkFactory.Builder;
@@ -29,7 +30,8 @@ public class CuratorZookeeperClient extends
 		Builder builder = CuratorFrameworkFactory.builder()
 				.connectString(url.getBackupAddress())
 				.retryPolicy(new RetryNTimes(Integer.MAX_VALUE, 1000))
-				.connectionTimeoutMs(5000);
+				.connectionTimeoutMs(url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_REGISTRY_CONNECT_TIMEOUT))
+                .sessionTimeoutMs(url.getParameter(Constants.SESSION_TIMEOUT_KEY, Constants.DEFAULT_SESSION_TIMEOUT));
 		String authority = url.getAuthority();
 		if (authority != null && authority.length() > 0) {
 			builder = builder.authorization("digest", authority.getBytes());
