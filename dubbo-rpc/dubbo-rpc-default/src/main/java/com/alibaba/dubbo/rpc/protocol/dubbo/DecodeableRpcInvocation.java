@@ -103,9 +103,8 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                 Class<?>[] pts;
 
                 // NOTICE modified by lishen
-                // TODO
-                if (CodecSupport.getSerialization(channel.getUrl(), serializationType) instanceof OptimizedSerialization) {
-                    int argNum = in.readInt();
+                int argNum = in.readInt();
+                if (argNum >= 0) {
                     if (argNum == 0) {
                         pts = DubboCodec.EMPTY_CLASS_ARRAY;
                         args = DubboCodec.EMPTY_OBJECT_ARRAY;
