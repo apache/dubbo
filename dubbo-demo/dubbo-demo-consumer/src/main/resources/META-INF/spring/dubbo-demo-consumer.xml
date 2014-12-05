@@ -9,7 +9,8 @@
 
     <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
 
-    <dubbo:monitor protocol="registry"/>
+    <!--uncomment this if you want to test dubbo's monitor-->
+    <!--<dubbo:monitor protocol="registry"/>-->
 
     <dubbo:reference id="bidService" interface="com.alibaba.dubbo.demo.bid.BidService"/>
     <dubbo:reference id="anotherUserRestService" interface="com.alibaba.dubbo.demo.user.facade.AnotherUserRestService"/>
