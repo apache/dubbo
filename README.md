@@ -33,7 +33,7 @@ Dubbox adds features like RESTful remoting, Kyro/FST serialization, etc to the p
 
 **注：dubbox和dubbo 2.x是兼容的，没有改变dubbo的任何已有的功能和配置方式（除了升级了spring之类的版本）**
 
-## Dubbox文档
+## 文档资料
 
 [在Dubbo中开发REST风格的远程调用（RESTful Remoting）](http://dangdangdotcom.github.io/dubbox/rest.html)
 
@@ -44,6 +44,10 @@ Dubbox adds features like RESTful remoting, Kyro/FST serialization, etc to the p
 [Dubbo Jackson序列化使用说明](http://dangdangdotcom.github.io/dubbox/jackson.html)
 
 [Demo应用简单运行指南](http://dangdangdotcom.github.io/dubbox/demo.html)
+
+[Dubbox@InfoQ](http://www.infoq.com/cn/news/2014/10/dubbox-open-source) 
+
+[Dubbox Wiki](https://github.com/dangdangdotcom/dubbox/wiki) （由社区自愿者自由编辑的）
 
 ## 版本
 
