@@ -24,7 +24,8 @@
 
     <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
 
-    <dubbo:monitor protocol="registry"/>
+    <!--uncomment this if you want to test dubbo's monitor-->
+    <!--<dubbo:monitor protocol="registry"/>-->
 
     <!-- here we demonstrate both annotation-based and xml-based configs -->
     <dubbo:annotation package="com.alibaba.dubbo.demo.user.facade" />
