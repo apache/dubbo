@@ -313,7 +313,7 @@
 							<goal>shade</goal>
 						</goals>
 						<configuration>
-							<createSourcesJar>false</createSourcesJar>
+							<createSourcesJar>true</createSourcesJar>
 							<promoteTransitiveDependencies>true</promoteTransitiveDependencies>
 							<artifactSet>
 								<includes>
