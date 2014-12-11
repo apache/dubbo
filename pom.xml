@@ -53,6 +53,8 @@
 		<module>dubbo-admin</module>
 		<module>dubbo-demo</module>
 		<module>hessian-lite</module>
+        <module>support/dubbo-demo-lite</module>
+        <module>support/maven-archetype</module>
 	</modules>
 	<profiles>
 		<profile>
