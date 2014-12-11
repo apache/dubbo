@@ -110,6 +110,8 @@ public @interface Reference {
 
     String monitor() default "";
 
+    String protocol() default "";
+
     String[] registry() default {};
 
 }
