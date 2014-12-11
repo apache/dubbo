@@ -23,6 +23,9 @@ target/
 *.diff
 *.patch
 *.tmp
+*.java~
+*.properties~
+*.xml~
 
 # system ignore
 .DS_Store
