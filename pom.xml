@@ -53,6 +53,7 @@
 		<module>dubbo-admin</module>
 		<module>dubbo-demo</module>
 		<module>hessian-lite</module>
+        <module>dubbo-tool/dubbo-demo-lite-archetype</module>
 	</modules>
 	<profiles>
 		<profile>
@@ -113,6 +114,8 @@
 		<cglib_version>2.2</cglib_version>
 		<webx_version>3.0.8</webx_version>
         <jackson_version>2.3.3</jackson_version>
+        <commons_pool_version>1.6</commons_pool_version>
+        <tomcat_embed_version>8.0.11</tomcat_embed_version>
 		<!-- Log libs -->
 		<slf4j_version>1.6.2</slf4j_version>
 		<jcl_version>1.1</jcl_version>
@@ -374,8 +377,18 @@
 			<dependency>
 				<groupId>commons-pool</groupId>
 				<artifactId>commons-pool</artifactId>
-				<version>1.6</version>
+				<version>${commons_pool_version}</version>
 			</dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-core</artifactId>
+                <version>${tomcat_embed_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-logging-juli</artifactId>
+                <version>${tomcat_embed_version}</version>
+            </dependency>
 		</dependencies>
 	</dependencyManagement>
 	<dependencies>
