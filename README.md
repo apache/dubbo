@@ -8,8 +8,9 @@ Dubbox adds features like RESTful remoting, Kyro/FST serialization, etc to the p
 * 王宇轩 [当当网](http://www.dangdang.com/) wangyuxuan@dangdang.com
 * 马金凯 [韩都衣舍](http://www.handu.com/) majinkai@handu.com
 * Dylan 独立开发者 dinguangx@163.com
+* Kangfoo 独立开发者
 
-**讨论QQ群**：305896472
+**讨论QQ群**：305896472  （不限于dubbox，包括SOA设计等等兴趣交流）
 
 ## Dubbox当前的主要功能
 
@@ -47,7 +48,7 @@ Dubbox adds features like RESTful remoting, Kyro/FST serialization, etc to the p
 
 [Dubbox@InfoQ](http://www.infoq.com/cn/news/2014/10/dubbox-open-source) 
 
-[Dubbox Wiki](https://github.com/dangdangdotcom/dubbox/wiki) （由社区自愿者自由编辑的）
+[Dubbox Wiki](https://github.com/dangdangdotcom/dubbox/wiki) （由社区志愿者自由编辑的）
 
 ## 版本
 
