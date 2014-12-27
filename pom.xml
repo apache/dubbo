@@ -53,7 +53,7 @@
 		<module>dubbo-admin</module>
 		<module>dubbo-demo</module>
 		<module>hessian-lite</module>
-        <module>dubbo-tool/dubbo-demo-lite-archetype</module>
+        <!--<module>dubbo-tool/dubbo-demo-lite-archetype</module>-->
 	</modules>
 	<profiles>
 		<profile>
