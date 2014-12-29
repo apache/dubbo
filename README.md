@@ -73,6 +73,10 @@ Dubbox adds features like RESTful remoting, Kyro/FST serialization, etc to the p
 
 ## FAQ（暂存）
 
+### Dubbox需要什么版本的JDK？
+
+目前最好在JDK 1.7以上运行
+
 ### Dubbo REST的服务能和Dubbo注册中心、监控中心集成吗？
 
 可以的，而且是自动集成的，也就是你在dubbo中开发的所有REST服务都会自动注册到服务册中心和监控中心，可以通过它们做管理。
