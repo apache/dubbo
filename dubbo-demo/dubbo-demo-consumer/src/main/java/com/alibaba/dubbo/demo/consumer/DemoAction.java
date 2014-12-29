@@ -21,6 +21,7 @@ import java.util.List;
 import com.alibaba.dubbo.demo.bid.*;
 import com.alibaba.dubbo.demo.user.User;
 import com.alibaba.dubbo.demo.user.facade.AnotherUserRestService;
+import com.alibaba.dubbo.rpc.RpcContext;
 
 public class DemoAction {
 
@@ -65,7 +66,7 @@ public class DemoAction {
 
 //        for (int i = 0; i < 10000; i ++) {
 //        System.out.println(bidService.bid(request).getId());
-        System.out.println("SUCESS: got bid response id: " + bidService.bid(request).getId());
+        System.out.println("SUCCESS: got bid response id: " + bidService.bid(request).getId());
 //        }
 
 //        System.out.println(">>>>> Total time consumed:" + (System.currentTimeMillis() - start));
@@ -78,9 +79,11 @@ public class DemoAction {
         }
 
         User user = new User(1L, "larrypage");
-        System.out.println("SUCESS: registered user with id " + anotherUserRestService.registerUser(user).getId());
+        System.out.println("SUCCESS: registered user with id " + anotherUserRestService.registerUser(user).getId());
 
-        System.out.println("SUCESS: got user " + anotherUserRestService.getUser(1L));
+        RpcContext.getContext().setAttachment("clientName", "demo");
+        RpcContext.getContext().setAttachment("clientImpl", "dubbox");
+        System.out.println("SUCCESS: got user " + anotherUserRestService.getUser(1L));
     }
 
 }

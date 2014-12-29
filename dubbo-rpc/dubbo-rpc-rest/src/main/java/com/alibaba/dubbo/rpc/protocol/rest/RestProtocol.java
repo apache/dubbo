@@ -171,6 +171,7 @@ public class RestProtocol extends AbstractProxyProtocol {
         ResteasyClient client = new ResteasyClientBuilder().httpEngine(engine).build();
         clients.add(client);
 
+        client.register(RpcContextFilter.class);
         for (String clazz : Constants.COMMA_SPLIT_PATTERN.split(url.getParameter(Constants.EXTENSION_KEY, ""))) {
             if (!StringUtils.isEmpty(clazz)) {
                 try {

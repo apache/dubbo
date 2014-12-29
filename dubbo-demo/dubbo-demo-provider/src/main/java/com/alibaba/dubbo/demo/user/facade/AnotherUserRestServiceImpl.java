@@ -17,6 +17,7 @@ package com.alibaba.dubbo.demo.user.facade;
 
 import com.alibaba.dubbo.demo.user.User;
 import com.alibaba.dubbo.demo.user.UserService;
+import com.alibaba.dubbo.rpc.RpcContext;
 
 /**
  * @author lishen
@@ -30,6 +31,8 @@ public class AnotherUserRestServiceImpl implements AnotherUserRestService {
     }
 
     public User getUser(Long id) {
+        System.out.println("Client name is " + RpcContext.getContext().getAttachment("clientName"));
+        System.out.println("Client impl is " + RpcContext.getContext().getAttachment("clientImpl"));
         return userService.getUser(id);
     }
 
