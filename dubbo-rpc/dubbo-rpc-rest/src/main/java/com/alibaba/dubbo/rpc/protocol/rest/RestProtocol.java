@@ -19,6 +19,8 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.remoting.http.HttpBinder;
+import com.alibaba.dubbo.remoting.http.servlet.BootstrapListener;
+import com.alibaba.dubbo.remoting.http.servlet.ServletManager;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.protocol.AbstractProxyProtocol;
 import com.alibaba.dubbo.rpc.protocol.ServiceImplHolder;
@@ -40,6 +42,7 @@ import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClient4Engine;
 import org.jboss.resteasy.util.GetRestful;
 
+import javax.servlet.ServletContext;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.WebApplicationException;
 import java.util.Collections;
@@ -87,8 +90,30 @@ public class RestProtocol extends AbstractProxyProtocol {
             servers.put(addr, server);
         }
 
+        String contextPath = getContextPath(url);
+        if ("servlet".equalsIgnoreCase(url.getParameter(Constants.SERVER_KEY, "jetty"))) {
+            ServletContext servletContext = ServletManager.getInstance().getServletContext(ServletManager.EXTERNAL_SERVER_PORT);
+            if (servletContext == null) {
+                throw new RpcException("No servlet context found. Since you are using server='servlet', " +
+                        "make sure that you've configured " + BootstrapListener.class.getName() + " in web.xml");
+            }
+            String webappPath = servletContext.getContextPath();
+            if (StringUtils.isNotEmpty(webappPath)) {
+                webappPath = webappPath.substring(1);
+                if (!contextPath.startsWith(webappPath)) {
+                    throw new RpcException("Since you are using server='servlet', " +
+                            "make sure that the 'contextpath' property starts with the path of external webapp");
+                }
+                contextPath = contextPath.substring(webappPath.length());
+                if (contextPath.startsWith("/")) {
+                    contextPath = contextPath.substring(1);
+                }
+            }
+        }
+
         final Class resourceDef = GetRestful.getRootResourceClass(implClass) != null ? implClass : type;
-        server.deploy(resourceDef, impl, getContextPath(url));
+
+        server.deploy(resourceDef, impl, contextPath);
 
         final RestServer s = server;
         return new Runnable() {
@@ -199,8 +224,7 @@ public class RestProtocol extends AbstractProxyProtocol {
     }
 
     protected String getContextPath(URL url) {
-        // TODO better solution?
-        int pos = url.getPath().indexOf("/");
+        int pos = url.getPath().lastIndexOf("/");
         return pos > 0 ? url.getPath().substring(0, pos) : "";
     }
 
