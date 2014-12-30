@@ -86,7 +86,7 @@
 		<!-- Common libs -->
 		<spring.bom.version>3.2.9.RELEASE</spring.bom.version>
 		<javassist_version>3.15.0-GA</javassist_version>
-		<netty_version>3.2.5.Final</netty_version>
+		<netty_version>3.7.0.Final</netty_version>
 		<mina_version>1.1.7</mina_version>
 		<grizzly_version>2.1.4</grizzly_version>
 		<httpclient_version>4.2.1</httpclient_version>
@@ -174,7 +174,7 @@
 				<version>${javassist_version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.jboss.netty</groupId>
+				<groupId>io.netty</groupId>
 				<artifactId>netty</artifactId>
 				<version>${netty_version}</version>
 			</dependency>
