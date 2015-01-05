@@ -335,7 +335,7 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
     }
 
     private boolean isProxyBean(Object bean) {
-        return AopUtils.isAopProxy(bean) || AopUtils.isCglibProxy(bean) || AopUtils.isJdkDynamicProxy(bean);
+        return AopUtils.isAopProxy(bean);
     }
 
 }

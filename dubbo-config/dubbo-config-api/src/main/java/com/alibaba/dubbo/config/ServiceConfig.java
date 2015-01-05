@@ -45,7 +45,7 @@ import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.ProxyFactory;
 import com.alibaba.dubbo.rpc.cluster.ConfiguratorFactory;
-import com.alibaba.dubbo.rpc.protocol.ServiceImplHolder;
+import com.alibaba.dubbo.rpc.protocol.ServiceClassHolder;
 import com.alibaba.dubbo.rpc.service.GenericService;
 import com.alibaba.dubbo.rpc.support.ProtocolUtils;
 import org.springframework.aop.support.AopUtils;
@@ -511,11 +511,11 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                     .setPort(0);
 
             // modified by lishen
-            Object impl = ref;
-            if (AopUtils.isAopProxy(ref.getClass()) || AopUtils.isCglibProxy(ref.getClass()) || AopUtils.isJdkDynamicProxy(ref.getClass())) {
-                impl = AopUtils.getTargetClass(ref);
+            Class clazz = ref.getClass();
+            if (AopUtils.isAopProxy(ref)) {
+                clazz = AopUtils.getTargetClass(ref);
             }
-            ServiceImplHolder.getInstance().pushServiceImpl(impl);
+            ServiceClassHolder.getInstance().pushServiceClass(clazz);
 
             Exporter<?> exporter = protocol.export(
                     proxyFactory.getInvoker(ref, (Class) interfaceClass, local));
