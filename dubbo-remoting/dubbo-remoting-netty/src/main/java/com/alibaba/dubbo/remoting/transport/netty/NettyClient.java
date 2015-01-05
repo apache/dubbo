@@ -147,11 +147,12 @@ public class NettyClient extends AbstractClient {
     
     @Override
     protected void doClose() throws Throwable {
-        /*try {
+        // modified by lishen
+        try {
             bootstrap.releaseExternalResources();
         } catch (Throwable t) {
             logger.warn(t.getMessage());
-        }*/
+        }
     }
 
     @Override
