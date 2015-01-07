@@ -23,7 +23,7 @@ import com.alibaba.dubbo.remoting.http.servlet.BootstrapListener;
 import com.alibaba.dubbo.remoting.http.servlet.ServletManager;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.protocol.AbstractProxyProtocol;
-import com.alibaba.dubbo.rpc.protocol.ServiceImplHolder;
+import com.alibaba.dubbo.rpc.protocol.ServiceClassHolder;
 import org.apache.http.HeaderElement;
 import org.apache.http.HeaderElementIterator;
 import org.apache.http.HttpResponse;
@@ -82,7 +82,7 @@ public class RestProtocol extends AbstractProxyProtocol {
 
     protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
         String addr = url.getIp() + ":" + url.getPort();
-        Class implClass = ServiceImplHolder.getInstance().popServiceImpl().getClass();
+        Class implClass = ServiceClassHolder.getInstance().popServiceClass();
         RestServer server = servers.get(addr);
         if (server == null) {
             server = serverFactory.createServer(url.getParameter(Constants.SERVER_KEY, "jetty"));
@@ -171,6 +171,7 @@ public class RestProtocol extends AbstractProxyProtocol {
         ResteasyClient client = new ResteasyClientBuilder().httpEngine(engine).build();
         clients.add(client);
 
+        client.register(RpcContextFilter.class);
         for (String clazz : Constants.COMMA_SPLIT_PATTERN.split(url.getParameter(Constants.EXTENSION_KEY, ""))) {
             if (!StringUtils.isEmpty(clazz)) {
                 try {
