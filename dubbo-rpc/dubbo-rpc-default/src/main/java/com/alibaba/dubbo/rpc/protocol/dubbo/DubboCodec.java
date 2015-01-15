@@ -217,7 +217,7 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
     // workaround for the target method matching of kryo & fst
     private boolean containComplexArguments(RpcInvocation invocation) {
         for (int i = 0; i < invocation.getParameterTypes().length; i++) {
-            if (invocation.getParameterTypes()[i] != invocation.getArguments()[i].getClass()) {
+            if (invocation.getArguments()[i] == null || invocation.getParameterTypes()[i] != invocation.getArguments()[i].getClass()) {
                 return true;
             }
         }
