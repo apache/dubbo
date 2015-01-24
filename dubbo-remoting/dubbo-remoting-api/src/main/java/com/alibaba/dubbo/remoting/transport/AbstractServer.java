@@ -76,8 +76,6 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
 
         executor = (ExecutorService) ExtensionLoader.getExtensionLoader(DataStore.class)
                 .getDefaultExtension().get(Constants.EXECUTOR_SERVICE_COMPONENT_KEY, Integer.toString(url.getPort()));
-        ExtensionLoader.getExtensionLoader(DataStore.class)
-                .getDefaultExtension().remove(Constants.EXECUTOR_SERVICE_COMPONENT_KEY, Integer.toString(url.getPort()));
     }
     
     protected abstract void doOpen() throws Throwable;

@@ -17,6 +17,7 @@ package com.alibaba.dubbo.remoting.transport.netty;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.Channel;
@@ -51,8 +52,10 @@ public class NettyClient extends AbstractClient {
     // 因ChannelFactory的关闭有DirectMemory泄露，采用静态化规避
     // https://issues.jboss.org/browse/NETTY-424
     private static final ChannelFactory channelFactory = new NioClientSocketChannelFactory(Executors.newCachedThreadPool(new NamedThreadFactory("NettyClientBoss", true)), 
-                                                                                           Executors.newCachedThreadPool(new NamedThreadFactory("NettyClientWorker", true)), 
+                                                                                           Executors.newCachedThreadPool(new NamedThreadFactory("NettyClientWorker", true)),
                                                                                            Constants.DEFAULT_IO_THREADS);
+    protected static final AtomicInteger CLIENT_COUNTER = new AtomicInteger();
+
     private ClientBootstrap bootstrap;
 
     private volatile Channel channel; // volatile, please copy reference to use
@@ -63,6 +66,9 @@ public class NettyClient extends AbstractClient {
     
     @Override
     protected void doOpen() throws Throwable {
+
+        CLIENT_COUNTER.getAndIncrement();
+
         NettyHelper.setNettyLoggerFactory();
         bootstrap = new ClientBootstrap(channelFactory);
         // config
@@ -147,11 +153,14 @@ public class NettyClient extends AbstractClient {
     
     @Override
     protected void doClose() throws Throwable {
-        /*try {
-            bootstrap.releaseExternalResources();
-        } catch (Throwable t) {
-            logger.warn(t.getMessage());
-        }*/
+
+        if (CLIENT_COUNTER.decrementAndGet() <= 0 ) {
+            try {
+                bootstrap.releaseExternalResources();
+            } catch (Throwable t) {
+                logger.warn(t.getMessage());
+            }
+        }
     }
 
     @Override

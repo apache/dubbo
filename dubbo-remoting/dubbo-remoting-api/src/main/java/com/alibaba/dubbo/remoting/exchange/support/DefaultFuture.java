@@ -278,10 +278,12 @@ public class DefaultFuture implements ResponseFuture {
                     + " -> " + channel.getRemoteAddress();
     }
 
+    private static volatile boolean interrupted;
+
     private static class RemotingInvocationTimeoutScan implements Runnable {
 
         public void run() {
-            while (true) {
+            while (!interrupted) {
                 try {
                     for (DefaultFuture future : FUTURES.values()) {
                         if (future == null || future.isDone()) {
@@ -309,6 +311,10 @@ public class DefaultFuture implements ResponseFuture {
         Thread th = new Thread(new RemotingInvocationTimeoutScan(), "DubboResponseTimeoutScanTimer");
         th.setDaemon(true);
         th.start();
+    }
+
+    public static void close() {
+        interrupted = true;
     }
 
 }

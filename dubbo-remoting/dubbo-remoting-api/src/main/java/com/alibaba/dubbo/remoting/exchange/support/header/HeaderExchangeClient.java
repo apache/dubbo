@@ -24,8 +24,10 @@ import java.util.concurrent.TimeUnit;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.store.DataStore;
 import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
@@ -47,6 +49,13 @@ public class HeaderExchangeClient implements ExchangeClient {
     private static final Logger logger = LoggerFactory.getLogger( HeaderExchangeClient.class );
 
     private static final ScheduledThreadPoolExecutor scheduled = new ScheduledThreadPoolExecutor(2, new NamedThreadFactory("dubbo-remoting-client-heartbeat", true));
+
+    static {
+        DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
+
+        dataStore.put(Constants.EXECUTOR_SERVICE_COMPONENT_KEY, "dubbo-remoting-client-heartbeat", scheduled);
+    }
+
 
     // 心跳定时器
     private ScheduledFuture<?> heatbeatTimer;

@@ -16,17 +16,22 @@
 package com.alibaba.dubbo.config;
 
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.serialize.Serialization;
 import com.alibaba.dubbo.common.status.StatusChecker;
+import com.alibaba.dubbo.common.store.DataStore;
 import com.alibaba.dubbo.common.threadpool.ThreadPool;
+import com.alibaba.dubbo.common.utils.ExecutorUtil;
 import com.alibaba.dubbo.config.support.Parameter;
 import com.alibaba.dubbo.registry.support.AbstractRegistryFactory;
 import com.alibaba.dubbo.remoting.Dispatcher;
 import com.alibaba.dubbo.remoting.Codec;
 import com.alibaba.dubbo.remoting.Transporter;
 import com.alibaba.dubbo.remoting.exchange.Exchanger;
+import com.alibaba.dubbo.remoting.exchange.support.DefaultFuture;
 import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
 import com.alibaba.dubbo.rpc.Protocol;
 
@@ -436,6 +441,23 @@ public class ProtocolConfig extends AbstractConfig {
                 }
             } catch (Throwable t) {
                 logger.warn(t.getMessage(), t);
+            }
+        }
+
+        //销毁存在的静态线程池
+        DefaultFuture.close();
+
+        DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
+
+        Map<String, Object> executors = dataStore.get(Constants.EXECUTOR_SERVICE_COMPONENT_KEY);
+        for(Map.Entry<String, Object> entry : executors.entrySet()) {
+            ExecutorService executor = (ExecutorService) entry.getValue();
+
+            if (executor != null) {
+                if (logger.isInfoEnabled()) {
+                    logger.info("Close executor " + entry.getKey());
+                }
+                ExecutorUtil.shutdownNow(executor, 100);
             }
         }
     }
