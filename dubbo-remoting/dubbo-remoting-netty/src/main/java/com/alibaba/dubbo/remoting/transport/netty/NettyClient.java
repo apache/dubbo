@@ -53,6 +53,23 @@ public class NettyClient extends AbstractClient {
     private static final ChannelFactory channelFactory = new NioClientSocketChannelFactory(Executors.newCachedThreadPool(new NamedThreadFactory("NettyClientBoss", true)), 
                                                                                            Executors.newCachedThreadPool(new NamedThreadFactory("NettyClientWorker", true)), 
                                                                                            Constants.DEFAULT_IO_THREADS);
+
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            public void run() {
+                if (logger.isInfoEnabled()) {
+                    logger.info("Run shutdown hook now.");
+                }
+
+                try {
+                    channelFactory.releaseExternalResources();
+                } catch (Throwable t) {
+                    logger.warn(t.getMessage());
+                }
+            }
+        }, "DubboShutdownHook-NettyClient"));
+    }
+
     private ClientBootstrap bootstrap;
 
     private volatile Channel channel; // volatile, please copy reference to use
@@ -147,12 +164,11 @@ public class NettyClient extends AbstractClient {
     
     @Override
     protected void doClose() throws Throwable {
-        // modified by lishen
-        try {
+        /*try {
             bootstrap.releaseExternalResources();
         } catch (Throwable t) {
             logger.warn(t.getMessage());
-        }
+        }*/
     }
 
     @Override
