@@ -8,8 +8,9 @@ Dubbox adds features like RESTful remoting, Kyro/FST serialization, etc to the p
 * 王宇轩 [当当网](http://www.dangdang.com/) wangyuxuan@dangdang.com
 * 马金凯 [韩都衣舍](http://www.handu.com/) majinkai@handu.com
 * Dylan 独立开发者 dinguangx@163.com
+* Kangfoo 独立开发者
 
-**讨论QQ群**：305896472
+**讨论QQ群**：305896472  （不限于dubbox，包括SOA设计等等兴趣交流）
 
 ## Dubbox当前的主要功能
 
@@ -47,7 +48,7 @@ Dubbox adds features like RESTful remoting, Kyro/FST serialization, etc to the p
 
 [Dubbox@InfoQ](http://www.infoq.com/cn/news/2014/10/dubbox-open-source) 
 
-[Dubbox Wiki](https://github.com/dangdangdotcom/dubbox/wiki) （由社区自愿者自由编辑的）
+[Dubbox Wiki](https://github.com/dangdangdotcom/dubbox/wiki) （由社区志愿者自由编辑的）
 
 ## 版本
 
@@ -70,7 +71,115 @@ Dubbox adds features like RESTful remoting, Kyro/FST serialization, etc to the p
     * 修正@Reference annotation中protocol设置不起作用的bug（沈理）
     * 修正@Reference annotation放在setter方法上即会出错的bug（Dylan）
 
+## 依赖
+
+从dubbox-2.8.4开始，所有依赖库的使用方式将和dubbo原来的一样：即如果要使用REST、Kyro、FST、Jackson等功能，需要用户自行手工添加相关的依赖。例如：
+
+### REST风格远程调用
+
+```xml
+<dependency>
+    <groupId>org.jboss.resteasy</groupId>
+    <artifactId>resteasy-jaxrs</artifactId>
+    <version>3.0.7.Final</version>
+</dependency>
+<dependency>
+    <groupId>org.jboss.resteasy</groupId>
+    <artifactId>resteasy-client</artifactId>
+    <version>3.0.7.Final</version>
+</dependency>
+<dependency>
+    <groupId>javax.validation</groupId>
+    <artifactId>validation-api</artifactId>
+    <version>1.0.0.GA</version>
+</dependency>
+
+<!-- 如果要使用json序列化 -->
+<dependency>
+    <groupId>org.jboss.resteasy</groupId>
+    <artifactId>resteasy-jackson-provider</artifactId>
+    <version>3.0.7.Final</version>
+</dependency>
+
+<!-- 如果要使用xml序列化 -->
+<dependency>
+    <groupId>org.jboss.resteasy</groupId>
+    <artifactId>resteasy-jaxb-provider</artifactId>
+    <version>3.0.7.Final</version>
+</dependency>
+
+<!-- 如果要使用netty server -->
+<dependency>
+    <groupId>org.jboss.resteasy</groupId>
+    <artifactId>resteasy-netty</artifactId>
+    <version>3.0.7.Final</version>
+</dependency>
+
+<!-- 如果要使用Sun HTTP server -->
+<dependency>
+    <groupId>org.jboss.resteasy</groupId>
+    <artifactId>resteasy-jdk-http</artifactId>
+    <version>3.0.7.Final</version>
+</dependency>
+
+<!-- 如果要使用tomcat server -->
+<dependency>
+    <groupId>org.apache.tomcat.embed</groupId>
+    <artifactId>tomcat-embed-core</artifactId>
+    <version>8.0.11</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.tomcat.embed</groupId>
+    <artifactId>tomcat-embed-logging-juli</artifactId>
+    <version>8.0.11</version>
+</dependency>
+```
+
+### Kyro序列化
+
+```xml
+<dependency>
+    <groupId>com.esotericsoftware.kryo</groupId>
+    <artifactId>kryo</artifactId>
+    <version>2.24.0</version>
+</dependency>
+<dependency>
+    <groupId>de.javakaffee</groupId>
+    <artifactId>kryo-serializers</artifactId>
+    <version>0.26</version>
+</dependency>
+```
+
+### FST序列化
+
+```xml
+<dependency>
+    <groupId>de.ruedigermoeller</groupId>
+    <artifactId>fst</artifactId>
+    <version>1.55</version>
+</dependency>
+```
+
+### Jackson序列化
+
+```xml
+<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-core</artifactId>
+    <version>2.3.3</version>
+</dependency>
+<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-databind</artifactId>
+    <version>2.3.3</version>
+</dependency>
+```
+   
 ## FAQ（暂存）
+
+### Dubbox需要什么版本的JDK？
+
+目前最好在JDK 1.7以上运行
 
 ### Dubbo REST的服务能和Dubbo注册中心、监控中心集成吗？
 
