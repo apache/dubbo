@@ -2,6 +2,8 @@
 本地install，这几天我们会把opensesame发到mavan中央仓库。
 
 临时文档地址：http://alibaba.github.io/dubbo-doc-static/Developer+Guide-zh.htm
+临时依赖包下载：http://usc.googlecode.com/svn/files/package/alibaba-dubbo-dependency.zip
+下载后覆盖本地maven库下的com/alibaba目录
 
 ================================================================
 
