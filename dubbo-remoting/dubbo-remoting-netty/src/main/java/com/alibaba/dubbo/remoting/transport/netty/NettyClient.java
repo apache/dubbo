@@ -58,7 +58,7 @@ public class NettyClient extends AbstractClient {
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             public void run() {
                 if (logger.isInfoEnabled()) {
-                    logger.info("Run shutdown hook now.");
+                    logger.info("Run shutdown hook of netty client now.");
                 }
 
                 try {

@@ -90,7 +90,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
 
     public Object decode(Channel channel, InputStream input) throws IOException {
         ObjectInput in = CodecSupport.getSerialization(channel.getUrl(), serializationType)
-            .deserialize(channel.getUrl(), input);
+                .deserialize(channel.getUrl(), input);
 
         try {
             setAttachment(Constants.DUBBO_VERSION_KEY, in.readUTF());
@@ -103,7 +103,11 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                 Class<?>[] pts;
 
                 // NOTICE modified by lishen
-                int argNum = in.readInt();
+                int argNum = -1;
+
+                if (CodecSupport.getSerialization(channel.getUrl(), serializationType) instanceof OptimizedSerialization) {
+                    argNum = in.readInt();
+                }
                 if (argNum >= 0) {
                     if (argNum == 0) {
                         pts = DubboCodec.EMPTY_CLASS_ARRAY;

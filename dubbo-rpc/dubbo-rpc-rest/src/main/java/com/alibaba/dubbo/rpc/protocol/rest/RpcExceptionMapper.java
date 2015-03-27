@@ -35,7 +35,7 @@ public class RpcExceptionMapper implements ExceptionMapper<RpcException> {
         }
         // we may want to avoid exposing the dubbo exception details to certain clients
         // TODO for now just do plain text output
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Internal server error: " + e.getMessage()).type("text/plain").build();
+        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Internal server error: " + e.getMessage()).type(ContentType.TEXT_PLAIN_UTF_8).build();
     }
 
     protected Response handleConstraintViolationException(ConstraintViolationException cve) {
