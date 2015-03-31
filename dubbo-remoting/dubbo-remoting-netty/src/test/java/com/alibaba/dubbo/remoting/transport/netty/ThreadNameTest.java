@@ -100,31 +100,26 @@ public class ThreadNameTest {
                                    + " " + (client ? "client " + method : "server " + method));
         }
 
-        @Override
         public void connected(Channel channel) throws RemotingException {
             output("connected");
             checkThreadName();
         }
 
-        @Override
         public void disconnected(Channel channel) throws RemotingException {
             output("disconnected");
             checkThreadName();
         }
 
-        @Override
         public void sent(Channel channel, Object message) throws RemotingException {
             output("sent");
             checkThreadName();
         }
 
-        @Override
         public void received(Channel channel, Object message) throws RemotingException {
             output("received");
             checkThreadName();
         }
 
-        @Override
         public void caught(Channel channel, Throwable exception) throws RemotingException {
             output("caught");
             checkThreadName();
