@@ -462,7 +462,7 @@
 	</issueManagement>
 	<scm>
 		<url>https://github.com/alibaba/dubbo</url>
-		<connection>git@github.com:alibaba/dubbo.git</connection>
+		<connection>https://github.com/alibaba/dubbo.git</connection>
 	</scm>
 	<mailingLists>
 		<mailingList>
