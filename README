@@ -43,7 +43,7 @@ Source Building
     wget http://www.apache.org/dist//maven/binaries/apache-maven-2.2.1-bin.tar.gz
     tar zxvf apache-maven-2.2.1-bin.tar.gz
     vi .bash_profile
-       - edit: export PATH=$PATH:~/apache-maven-2.2.1/bin
+       - append: export PATH=$PATH:~/apache-maven-2.2.1/bin
     source .bash_profile
 
 1. Checkout the dubbo source code:
@@ -51,8 +51,8 @@ Source Building
     cd ~
     git clone https://github.com/alibaba/dubbo.git dubbo
 
-    git checkout -b dubbo-2.4.0
     git checkout master
+    or: git checkout -b dubbo-2.4.0
 
 2. Import the dubbo source code to eclipse project:
 
