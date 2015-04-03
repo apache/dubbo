@@ -804,6 +804,17 @@
                 <xsd:documentation><![CDATA[ The protocol serialization. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <!--TODO change it to keep-alive in the future-->
+        <xsd:attribute name="keepalive" type="xsd:boolean" use="optional">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The protocol keepAlive. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="extension" type="xsd:string" use="optional">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The extension for protocol. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:attribute name="charset" type="xsd:string" use="optional">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The protocol charset. ]]></xsd:documentation>

@@ -31,6 +31,7 @@ import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.ProxyFactory;
 import com.alibaba.dubbo.rpc.cluster.ConfiguratorFactory;
+import com.alibaba.dubbo.rpc.ServiceClassHolder;
 import com.alibaba.dubbo.rpc.service.GenericService;
 import com.alibaba.dubbo.rpc.support.ProtocolUtils;
 
@@ -517,6 +518,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                     .setProtocol(Constants.LOCAL_PROTOCOL)
                     .setHost(LOCALHOST)
                     .setPort(0);
+
+            // modified by lishen
+            ServiceClassHolder.getInstance().pushServiceClass(getServiceClass(ref));
+
             Exporter<?> exporter = protocol.export(
                     proxyFactory.getInvoker(ref, (Class) interfaceClass, local));
             exporters.add(exporter);
@@ -524,6 +529,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
     }
 
+    protected Class getServiceClass(T ref) {
+        return ref.getClass();
+    }
 
     /**
      * provider注册&监听ip地址，注册与监听ip可独立配置

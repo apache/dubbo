@@ -119,13 +119,17 @@ public class ProtocolConfig extends AbstractConfig {
     // 是否注册
     private Boolean register;
 
+    // 是否长连接
+    // TODO add this to provider config
+    private Boolean keepAlive;
+
+    private String extension;
+
     // 参数
     private Map<String, String> parameters;
 
     // 是否为缺省
     private Boolean isDefault;
-
-    private static final AtomicBoolean destroyed = new AtomicBoolean(false);
 
     public ProtocolConfig() {
     }
@@ -137,25 +141,6 @@ public class ProtocolConfig extends AbstractConfig {
     public ProtocolConfig(String name, int port) {
         setName(name);
         setPort(port);
-    }
-
-    // TODO: 2017/8/30 to move this method somewhere else
-    public static void destroyAll() {
-        if (!destroyed.compareAndSet(false, true)) {
-            return;
-        }
-        AbstractRegistryFactory.destroyAll();
-        ExtensionLoader<Protocol> loader = ExtensionLoader.getExtensionLoader(Protocol.class);
-        for (String protocolName : loader.getLoadedExtensions()) {
-            try {
-                Protocol protocol = loader.getLoadedExtension(protocolName);
-                if (protocol != null) {
-                    protocol.destroy();
-                }
-            } catch (Throwable t) {
-                logger.warn(t.getMessage(), t);
-            }
-        }
     }
 
     @Parameter(excluded = true)
@@ -441,6 +426,22 @@ public class ProtocolConfig extends AbstractConfig {
 
     public void setDefault(Boolean isDefault) {
         this.isDefault = isDefault;
+    }
+
+    public Boolean getKeepAlive() {
+        return keepAlive;
+    }
+
+    public void setKeepAlive(Boolean keepAlive) {
+        this.keepAlive = keepAlive;
+    }
+
+    public String getExtension() {
+        return extension;
+    }
+
+    public void setExtension(String extension) {
+        this.extension = extension;
     }
 
     public void destory() {

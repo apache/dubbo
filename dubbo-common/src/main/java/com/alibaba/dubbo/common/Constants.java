@@ -73,7 +73,8 @@ public class Constants {
 
     public static final String $ECHO = "$echo";
 
-    public static final int DEFAULT_IO_THREADS = Math.min(Runtime.getRuntime().availableProcessors() + 1, 32);
+    public static final int DEFAULT_IO_THREADS = Runtime.getRuntime()
+            .availableProcessors() + 1;
 
     public static final String DEFAULT_PROXY = "javassist";
 
@@ -117,6 +118,8 @@ public class Constants {
 
     public static final int DEFAULT_THREADS = 200;
 
+    public static final boolean DEFAULT_KEEP_ALIVE = true;
+
     public static final int DEFAULT_QUEUES = 0;
 
     public static final int DEFAULT_ALIVE = 60 * 1000;
@@ -132,6 +135,8 @@ public class Constants {
     public static final int DEFAULT_TIMEOUT = 1000;
 
     public static final int DEFAULT_CONNECT_TIMEOUT = 3000;
+
+    public static final int DEFAULT_REGISTRY_CONNECT_TIMEOUT = 5000;
 
     public static final int DEFAULT_RETRIES = 2;
 
@@ -259,6 +264,12 @@ public class Constants {
 
     public static final String SERIALIZATION_KEY = "serialization";
 
+    // modified by lishen
+    public static final String EXTENSION_KEY = "extension";
+
+    // modified by lishen
+    public static final String KEEP_ALIVE_KEY = "keepalive";
+
     public static final String EXCHANGER_KEY = "exchanger";
 
     public static final String TRANSPORTER_KEY = "transporter";
@@ -295,8 +306,6 @@ public class Constants {
 
     public static final String TIMESTAMP_KEY = "timestamp";
 
-    public static final String REMOTE_TIMESTAMP_KEY = "remote.timestamp";
-
     public static final String WARMUP_KEY = "warmup";
 
     public static final int DEFAULT_WARMUP = 10 * 60 * 1000;
@@ -316,8 +325,6 @@ public class Constants {
     public static final String GENERIC_KEY = "generic";
 
     public static final String FILE_KEY = "file";
-
-    public static final String DUMP_DIRECTORY = "dump.directory";
 
     public static final String WAIT_KEY = "wait";
 
