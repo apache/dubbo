@@ -102,7 +102,7 @@ dubbo支持多种远程调用方式，例如dubbo RPC（二进制序列化 + tcp
 需要指出的是，我认为1～3是dubbo的REST调用最有价值的三种应用场景，并且我们为dubbo添加REST调用，其最主要到目的也是面向服务的提供端，即开发REST服务来提供给非dubbo的（异构）消费端。
 
 归纳起来，所有应用场景如下图所示：
-![no image found](images/rest.jpg)
+![no image found](docs/rest.jpg)
 
 借用Java过去最流行的宣传语，为dubbo添加REST调用后，可以实现服务的”一次编写，到处访问“，理论上可以面向全世界开放，从而真正实现比较理想化的面向服务架构（SOA）。
 
@@ -1081,9 +1081,9 @@ TODO
 | Dubbo: hessian2 | 1.49 | 6701 |
 | Dubbo: fastjson | 1.572 | 6352 |
 
-![no image found](images/rt.png)
+![no image found](docs/rt.png)
 
-![no image found](images/tps.png)
+![no image found](docs/tps.png)
 
 
 仅就目前的结果，一点简单总结：
