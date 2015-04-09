@@ -135,6 +135,9 @@ public class Constants {
     public static final int     DEFAULT_CONNECT_TIMEOUT            = 3000;
 
     public static final int     DEFAULT_RETRIES                    = 2;
+    
+    //modify by morly
+    public static final boolean DEFAULT_KEEP_ALIVE                 = true;
 
     // default buffer size is 8k.
     public static final int     DEFAULT_BUFFER_SIZE                = 8 * 1024;
@@ -259,6 +262,16 @@ public class Constants {
     public static final String  CODEC_KEY                          = "codec";
 
     public static final String  SERIALIZATION_KEY                  = "serialization";
+
+    // modified by morly
+    public static final String  EXTENSION_KEY                      = "extension";
+
+    // modified by morly
+    public static final String  KEEP_ALIVE_KEY                     = "keepalive";
+
+    // modified by morly
+    // TODO change to a better name
+    public static final String  OPTIMIZER_KEY1                     = "optimizer";
 
     public static final String  EXCHANGER_KEY                      = "exchanger";
 
