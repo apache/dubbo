@@ -120,6 +120,7 @@
 		<jcl_version>1.1</jcl_version>
 		<log4j_version>1.2.16</log4j_version>
 		<logback_version>1.0.6</logback_version>
+		<tomcat_embed_version>8.0.11</tomcat_embed_version>
 		<!-- Test libs -->
 		<junit_version>4.10</junit_version>
 		<easymock_version>3.0</easymock_version>
@@ -299,6 +300,16 @@
 				<artifactId>citrus-webx-all</artifactId>
 				<version>${webx_version}</version>
 			</dependency>
+			<dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-core</artifactId>
+                <version>${tomcat_embed_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-logging-juli</artifactId>
+                <version>${tomcat_embed_version}</version>
+            </dependency>
 			<!-- Log libs -->
 			<dependency>
 				<groupId>org.slf4j</groupId>

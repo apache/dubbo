@@ -21,7 +21,17 @@
 	http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
 	
 	<bean id="demoService" class="com.alibaba.dubbo.demo.provider.DemoServiceImpl" />
+	<bean id="userService" class="com.alibaba.dubbo.demo.provider.user.UserServiceImpl" />
+	<bean id="userRestService" class="com.alibaba.dubbo.demo.provider.user.UserRestServiceImpl" />
 	
 	<dubbo:service interface="com.alibaba.dubbo.demo.DemoService" ref="demoService" />
+	<dubbo:service interface="com.alibaba.dubbo.demo.user.UserService" ref="userService" />
 	
+	<!-- use tomcat server -->
+    <dubbo:protocol name="rest" port="8888" threads="500" contextpath="services" server="tomcat" accepts="500" />
+    
+    <dubbo:service interface="com.alibaba.dubbo.demo.user.UserRestService" ref="userRestService"  protocol="rest" validation="true"/>
+    
+    
+    
 </beans>
