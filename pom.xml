@@ -106,7 +106,7 @@
 		<thrift_version>0.8.0</thrift_version>
 		<jfreechart_version>1.0.13</jfreechart_version>
 		<hessian_version>4.0.7</hessian_version>
-		<servlet_version>2.5</servlet_version>
+		<servlet_version>3.1.0</servlet_version>
 		<jetty_version>6.1.26</jetty_version>
 		<validation_version>1.0.0.GA</validation_version>
 		<hibernate_validator_version>4.2.0.Final</hibernate_validator_version>
@@ -262,7 +262,7 @@
 			</dependency>
 			<dependency>
 				<groupId>javax.servlet</groupId>
-				<artifactId>servlet-api</artifactId>
+				<artifactId>javax.servlet-api</artifactId>
 				<version>${servlet_version}</version>
 			</dependency>
 			<dependency>

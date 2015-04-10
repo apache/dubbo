@@ -23,15 +23,16 @@
 	<bean id="demoService" class="com.alibaba.dubbo.demo.provider.DemoServiceImpl" />
 	<bean id="userService" class="com.alibaba.dubbo.demo.provider.user.UserServiceImpl" />
 	<bean id="userRestService" class="com.alibaba.dubbo.demo.provider.user.UserRestServiceImpl" />
+	<bean id="userRestService2" class="com.alibaba.dubbo.demo.provider.user.UserServiceImpl2" />
 	
-	<dubbo:service interface="com.alibaba.dubbo.demo.DemoService" ref="demoService" />
-	<dubbo:service interface="com.alibaba.dubbo.demo.user.UserService" ref="userService" />
+	<dubbo:service interface="com.alibaba.dubbo.demo.DemoService" ref="demoService" protocol="dubbo"/>
+	<dubbo:service interface="com.alibaba.dubbo.demo.user.UserService" ref="userService" protocol="dubbo"/>
 	
 	<!-- use tomcat server -->
     <dubbo:protocol name="rest" port="8888" threads="500" contextpath="services" server="tomcat" accepts="500" />
     
     <dubbo:service interface="com.alibaba.dubbo.demo.user.UserRestService" ref="userRestService"  protocol="rest" validation="true"/>
-    
+    <dubbo:service interface="com.alibaba.dubbo.demo.user.UserService" ref="userRestService2"  protocol="rest" validation="true"/>
     
     
 </beans>
