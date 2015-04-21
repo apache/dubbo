@@ -61,7 +61,7 @@ public class EnumDeserializer extends AbstractDeserializer {
   public EnumDeserializer(Class cl)
   {
     // hessian/33b[34], hessian/3bb[78]
-    if (cl.isEnum())
+    if (cl.isEnum() || cl == Enum.class)
       _enumType = cl;
     else if (cl.getSuperclass().isEnum())
       _enumType = cl.getSuperclass();
