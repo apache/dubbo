@@ -51,10 +51,29 @@ package com.alibaba.com.caucho.hessian.io;
 import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.management.*;
+
+import javax.management.ObjectName;
+
+import com.alibaba.com.caucho.hessian.io.java8.DurationHandle;
+import com.alibaba.com.caucho.hessian.io.java8.InstantHandle;
+import com.alibaba.com.caucho.hessian.io.java8.Java8TimeSerializer;
+import com.alibaba.com.caucho.hessian.io.java8.LocalDateHandle;
+import com.alibaba.com.caucho.hessian.io.java8.LocalDateTimeHandle;
+import com.alibaba.com.caucho.hessian.io.java8.LocalTimeHandle;
+import com.alibaba.com.caucho.hessian.io.java8.MonthDayHandle;
+import com.alibaba.com.caucho.hessian.io.java8.OffsetDateTimeHandle;
+import com.alibaba.com.caucho.hessian.io.java8.OffsetTimeHandle;
+import com.alibaba.com.caucho.hessian.io.java8.PeriodHandle;
+import com.alibaba.com.caucho.hessian.io.java8.YearHandle;
+import com.alibaba.com.caucho.hessian.io.java8.YearMonthHandle;
+import com.alibaba.com.caucho.hessian.io.java8.ZoneIdHandle;
+import com.alibaba.com.caucho.hessian.io.java8.ZoneIdSerializer;
+import com.alibaba.com.caucho.hessian.io.java8.ZoneOffsetHandle;
+import com.alibaba.com.caucho.hessian.io.java8.ZonedDateTimeHandle;
 
 /**
  * Factory for returning serialization methods.
@@ -182,6 +201,10 @@ public class SerializerFactory extends AbstractSerializerFactory
     if (serializer != null) {
     }
 
+    //must before "else if (JavaSerializer.getWriteReplace(cl) != null)"
+    else if (isJava8() && ZoneId.class.isAssignableFrom(cl)) 
+    	serializer = ZoneIdSerializer.getInstance();
+    
     else if (JavaSerializer.getWriteReplace(cl) != null)
       serializer = new JavaSerializer(cl, _loader);
 
@@ -645,5 +668,42 @@ public class SerializerFactory extends AbstractSerializerFactory
       _staticDeserializerMap.put(stackTrace, new StackTraceElementDeserializer());
     } catch (Throwable e) {
     }
+    
+    //增加对jdk1.8新增时间类型的支持
+    try {
+        if (isJava8()) {
+          _staticSerializerMap.put(java.time.LocalTime.class, Java8TimeSerializer.create(LocalTimeHandle.class));
+          _staticSerializerMap.put(java.time.LocalDate.class, Java8TimeSerializer.create(LocalDateHandle.class));
+          _staticSerializerMap.put(java.time.LocalDateTime.class, Java8TimeSerializer.create(LocalDateTimeHandle.class));
+
+          _staticSerializerMap.put(java.time.Instant.class, Java8TimeSerializer.create(InstantHandle.class));
+          _staticSerializerMap.put(java.time.Duration.class, Java8TimeSerializer.create(DurationHandle.class));
+          _staticSerializerMap.put(java.time.Period.class, Java8TimeSerializer.create(PeriodHandle.class));
+
+          _staticSerializerMap.put(java.time.Year.class, Java8TimeSerializer.create(YearHandle.class));
+          _staticSerializerMap.put(java.time.YearMonth.class, Java8TimeSerializer.create(YearMonthHandle.class));
+          _staticSerializerMap.put(java.time.MonthDay.class, Java8TimeSerializer.create(MonthDayHandle.class));
+
+          _staticSerializerMap.put(java.time.OffsetTime.class, Java8TimeSerializer.create(OffsetTimeHandle.class));
+          _staticSerializerMap.put(java.time.ZoneOffset.class, Java8TimeSerializer.create(ZoneOffsetHandle.class));
+          _staticSerializerMap.put(java.time.OffsetDateTime.class, Java8TimeSerializer.create(OffsetDateTimeHandle.class));
+          _staticSerializerMap.put(java.time.ZonedDateTime.class, Java8TimeSerializer.create(ZonedDateTimeHandle.class));
+        }
+      } catch (Throwable t) {
+        log.warning(String.valueOf(t.getCause()));
+      }
+  }
+  
+  /**
+   * The execution environment is jdk1.8 ?
+   * @return
+   */
+  private static boolean isJava8() {
+	  String javaVersion = System.getProperty("java.specification.version");
+      if (Double.valueOf(javaVersion) >= 1.8) {
+    	  return true;
+      }
+
+	  return false;
   }
 }
