@@ -100,7 +100,7 @@ public class NetUtils {
     private static final int MAX_PORT = 65535;
     
     public static boolean isInvalidPort(int port){
-        return port > MIN_PORT || port <= MAX_PORT;
+        return port <= MIN_PORT || port >= MAX_PORT;
     }
 
     private static final Pattern ADDRESS_PATTERN = Pattern.compile("^\\d{1,3}(\\.\\d{1,3}){3}\\:\\d{1,5}$");
