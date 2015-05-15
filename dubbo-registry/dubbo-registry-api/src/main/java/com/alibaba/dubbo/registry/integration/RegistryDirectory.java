@@ -281,10 +281,11 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * @return
      */
     public static List<Configurator> toConfigurators(List<URL> urls){
-        List<Configurator> configurators = new ArrayList<Configurator>(urls.size());
         if (urls == null || urls.size() == 0){
-            return configurators;
+            return Collections.emptyList();
         }
+
+        List<Configurator> configurators = new ArrayList<Configurator>(urls.size());
         for(URL url : urls){
             if (Constants.EMPTY_PROTOCOL.equals(url.getProtocol())) {
                 configurators.clear();
