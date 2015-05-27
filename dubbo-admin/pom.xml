@@ -36,15 +36,25 @@
 			<groupId>com.alibaba</groupId>
 			<artifactId>dubbo</artifactId>
 			<version>${project.parent.version}</version>
+			<exclusions>
+            <exclusion>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring</artifactId>
+            </exclusion>
+        </exclusions>
 		</dependency>
+					<dependency>
+        <groupId>org.apache.velocity</groupId>
+        <artifactId>velocity</artifactId>
+    </dependency>
 		<dependency>
 			<groupId>com.alibaba.citrus</groupId>
 			<artifactId>citrus-webx-all</artifactId>
 		</dependency>
-		<dependency>
+<!-- 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring</artifactId>
-		</dependency>
+		</dependency> -->
 		<dependency>
 			<groupId>org.javassist</groupId>
 			<artifactId>javassist</artifactId>
