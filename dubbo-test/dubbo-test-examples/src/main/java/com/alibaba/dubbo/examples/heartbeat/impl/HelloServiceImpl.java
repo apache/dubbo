@@ -23,7 +23,7 @@ import com.alibaba.dubbo.examples.heartbeat.api.HelloService;
  */
 public class HelloServiceImpl implements HelloService {
 
-    public String sayHello(String name) {
-        return new StringBuilder(32).append("Hello, ").append(name).append("!").toString();
-    }
+	public String sayHello(String name) {
+		return new StringBuilder(32).append("Hello, ").append(name).append("!").toString();
+	}
 }

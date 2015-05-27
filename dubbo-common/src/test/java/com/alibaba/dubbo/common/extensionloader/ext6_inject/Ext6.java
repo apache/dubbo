@@ -26,6 +26,6 @@ import com.alibaba.dubbo.common.extension.SPI;
  */
 @SPI
 public interface Ext6 {
-    @Adaptive
-    String echo(URL url, String s);
+	@Adaptive
+	String echo(URL url, String s);
 }

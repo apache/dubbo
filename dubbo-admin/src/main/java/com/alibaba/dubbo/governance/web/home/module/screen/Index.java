@@ -39,46 +39,46 @@ import com.alibaba.dubbo.registry.common.domain.Provider;
  * @author william.liangf
  */
 public class Index {
-    // 日志输出
-    private static final Logger logger = LoggerFactory.getLogger(Index.class);
+	// 日志输出
+	private static final Logger logger = LoggerFactory.getLogger(Index.class);
 
-    @Autowired
-    private HttpServletRequest request;
-    
-    @Autowired
-    private ProviderService providerService;
-    
-    @Autowired
-    private ConsumerService consumerService;
-    
-    public void execute(Context context) {
-        Set<String> applications = new HashSet<String>();
-        Set<String> services  = new HashSet<String>(); 
-        List<Provider> pList = new ArrayList<Provider>();
-        try {
-            pList = providerService.findAll();
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-        }
-        for (Provider p : pList) {
-            applications.add(p.getApplication());
-            services.add(p.getService());
-        }
-        List<Consumer> cList  = new ArrayList<Consumer>();
-        try {
-            cList = consumerService.findAll();
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-        }
-        for (Consumer c : cList) {
-            applications.add(c.getApplication());
-            services.add(c.getService());
-        }
-        context.put("rootContextPath", new RootContextPath(request.getContextPath()));
-        context.put("services", services.size());
-        context.put("providers", pList.size());
-        context.put("consumers", cList.size());
-        context.put("applications", applications.size());
-    }
+	@Autowired
+	private HttpServletRequest request;
+
+	@Autowired
+	private ProviderService providerService;
+
+	@Autowired
+	private ConsumerService consumerService;
+
+	public void execute(Context context) {
+		Set<String> applications = new HashSet<String>();
+		Set<String> services = new HashSet<String>();
+		List<Provider> pList = new ArrayList<Provider>();
+		try {
+			pList = providerService.findAll();
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+		}
+		for (Provider p : pList) {
+			applications.add(p.getApplication());
+			services.add(p.getService());
+		}
+		List<Consumer> cList = new ArrayList<Consumer>();
+		try {
+			cList = consumerService.findAll();
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+		}
+		for (Consumer c : cList) {
+			applications.add(c.getApplication());
+			services.add(c.getService());
+		}
+		context.put("rootContextPath", new RootContextPath(request.getContextPath()));
+		context.put("services", services.size());
+		context.put("providers", pList.size());
+		context.put("consumers", cList.size());
+		context.put("applications", applications.size());
+	}
 
 }

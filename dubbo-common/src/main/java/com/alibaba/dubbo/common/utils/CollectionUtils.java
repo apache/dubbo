@@ -28,11 +28,11 @@ public class CollectionUtils {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static <T> List<T> sort(List<T> list) {
 		if (list != null && list.size() > 0) {
-			Collections.sort((List)list);
+			Collections.sort((List) list);
 		}
 		return list;
 	}
-	
+
 	private static final Comparator<String> SIMPLE_NAME_COMPARATOR = new Comparator<String>() {
 		public int compare(String s1, String s2) {
 			if (s1 == null && s2 == null) {
@@ -55,7 +55,7 @@ public class CollectionUtils {
 			return s1.compareToIgnoreCase(s2);
 		}
 	};
-	
+
 	public static List<String> sortSimpleName(List<String> list) {
 		if (list != null && list.size() > 0) {
 			Collections.sort(list, SIMPLE_NAME_COMPARATOR);
@@ -73,7 +73,7 @@ public class CollectionUtils {
 		}
 		return result;
 	}
-	
+
 	public static Map<String, List<String>> joinAll(Map<String, Map<String, String>> map, String separator) {
 		if (map == null) {
 			return null;
@@ -125,16 +125,16 @@ public class CollectionUtils {
 	}
 
 	public static String join(List<String> list, String separator) {
-	    StringBuilder sb = new StringBuilder();
-        for(String ele : list) {
-            if(sb.length() > 0) {
-                sb.append(separator);
-            }
-            sb.append(ele);
-        }
-        return sb.toString();
+		StringBuilder sb = new StringBuilder();
+		for (String ele : list) {
+			if (sb.length() > 0) {
+				sb.append(separator);
+			}
+			sb.append(ele);
+		}
+		return sb.toString();
 	}
-	
+
 	public static boolean mapEquals(Map<?, ?> map1, Map<?, ?> map2) {
 		if (map1 == null && map2 == null) {
 			return true;
@@ -149,13 +149,13 @@ public class CollectionUtils {
 			Object key = entry.getKey();
 			Object value1 = entry.getValue();
 			Object value2 = map2.get(key);
-			if (! objectEquals(value1, value2)) {
+			if (!objectEquals(value1, value2)) {
 				return false;
 			}
 		}
 		return true;
 	}
-	
+
 	private static boolean objectEquals(Object obj1, Object obj2) {
 		if (obj1 == null && obj2 == null) {
 			return true;
@@ -165,41 +165,42 @@ public class CollectionUtils {
 		}
 		return obj1.equals(obj2);
 	}
-	
+
 	public static Map<String, String> toStringMap(String... pairs) {
-        Map<String, String> parameters = new HashMap<String, String>();
-        if (pairs.length > 0) {
-            if (pairs.length % 2 != 0) {
-                throw new IllegalArgumentException("pairs must be even.");
-            }
-            for (int i = 0; i < pairs.length; i = i + 2) {
-                parameters.put(pairs[i], pairs[i + 1]);
-            }
-        }
-        return parameters;
-    }
+		Map<String, String> parameters = new HashMap<String, String>();
+		if (pairs.length > 0) {
+			if (pairs.length % 2 != 0) {
+				throw new IllegalArgumentException("pairs must be even.");
+			}
+			for (int i = 0; i < pairs.length; i = i + 2) {
+				parameters.put(pairs[i], pairs[i + 1]);
+			}
+		}
+		return parameters;
+	}
 
 	@SuppressWarnings("unchecked")
-    public static <K, V> Map<K, V> toMap(Object ... pairs) {
-	    Map<K, V> ret = new HashMap<K, V>();
-	    if (pairs == null || pairs.length == 0) return ret;
-	
-        if (pairs.length % 2 != 0) {
-            throw new IllegalArgumentException("Map pairs can not be odd number.");
-        }        
-        int len = pairs.length / 2;
-        for (int i = 0; i < len; i ++) {
-            ret.put((K) pairs[2 * i], (V) pairs[2 * i + 1]);
-        }
-	    return ret;
+	public static <K, V> Map<K, V> toMap(Object... pairs) {
+		Map<K, V> ret = new HashMap<K, V>();
+		if (pairs == null || pairs.length == 0)
+			return ret;
+
+		if (pairs.length % 2 != 0) {
+			throw new IllegalArgumentException("Map pairs can not be odd number.");
+		}
+		int len = pairs.length / 2;
+		for (int i = 0; i < len; i++) {
+			ret.put((K) pairs[2 * i], (V) pairs[2 * i + 1]);
+		}
+		return ret;
 	}
-	
-    public static boolean isEmpty(Collection<?> collection) {
-        return collection == null || collection.size() == 0;
-    }
-    
-    public static boolean isNotEmpty(Collection<?> collection) {
-        return collection != null && collection.size() > 0;
+
+	public static boolean isEmpty(Collection<?> collection) {
+		return collection == null || collection.size() == 0;
+	}
+
+	public static boolean isNotEmpty(Collection<?> collection) {
+		return collection != null && collection.size() > 0;
 	}
 
 	private CollectionUtils() {

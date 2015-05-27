@@ -34,27 +34,30 @@ import com.alibaba.dubbo.validation.Validator;
 @Activate(group = { Constants.CONSUMER, Constants.PROVIDER }, value = Constants.VALIDATION_KEY, order = 10000)
 public class ValidationFilter implements Filter {
 
-    private Validation validation;
+	private Validation validation;
 
-    public void setValidation(Validation validation) {
-        this.validation = validation;
-    }
+	public void setValidation(Validation validation) {
+		this.validation = validation;
+	}
 
-    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        if (validation != null && ! invocation.getMethodName().startsWith("$") 
-                && ConfigUtils.isNotEmpty(invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.VALIDATION_KEY))) {
-            try {
-                Validator validator = validation.getValidator(invoker.getUrl());
-                if (validator != null) {
-                    validator.validate(invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());
-                }
-            } catch (RpcException e) {
-                throw e;
-            } catch (Throwable t) {
-                throw new RpcException(t.getMessage(), t);
-            }
-        }
-        return invoker.invoke(invocation);
-    }
+	public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+		if (validation != null
+				&& !invocation.getMethodName().startsWith("$")
+				&& ConfigUtils.isNotEmpty(invoker.getUrl().getMethodParameter(invocation.getMethodName(),
+						Constants.VALIDATION_KEY))) {
+			try {
+				Validator validator = validation.getValidator(invoker.getUrl());
+				if (validator != null) {
+					validator.validate(invocation.getMethodName(), invocation.getParameterTypes(),
+							invocation.getArguments());
+				}
+			} catch (RpcException e) {
+				throw e;
+			} catch (Throwable t) {
+				throw new RpcException(t.getMessage(), t);
+			}
+		}
+		return invoker.invoke(invocation);
+	}
 
 }

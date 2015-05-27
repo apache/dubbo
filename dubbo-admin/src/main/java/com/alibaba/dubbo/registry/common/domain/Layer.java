@@ -19,50 +19,50 @@ package com.alibaba.dubbo.registry.common.domain;
  * @author ding.lid
  */
 public class Layer extends Entity {
-    private static final long serialVersionUID = 6114868933223039253L;
+	private static final long serialVersionUID = 6114868933223039253L;
 
-    private String            username;
+	private String username;
 
-    private String            arch;
-    private String            name;
-    private int               value;
+	private String arch;
+	private String name;
+	private int value;
 
-    public String getUsername() {
-        return username;
-    }
+	public String getUsername() {
+		return username;
+	}
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+	public void setUsername(String username) {
+		this.username = username;
+	}
 
-    public String getArch() {
-        return arch;
-    }
+	public String getArch() {
+		return arch;
+	}
 
-    public void setArch(String arch) {
-        this.arch = arch;
-    }
+	public void setArch(String arch) {
+		this.arch = arch;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    public int getValue() {
-        return value;
-    }
+	public int getValue() {
+		return value;
+	}
 
-    public void setValue(int value) {
-        this.value = value;
-    }
-    
-    public Layer(Long id) {
-        super(id);
-    }
-    
-    public Layer() {
-    }
+	public void setValue(int value) {
+		this.value = value;
+	}
+
+	public Layer(Long id) {
+		super(id);
+	}
+
+	public Layer() {
+	}
 }

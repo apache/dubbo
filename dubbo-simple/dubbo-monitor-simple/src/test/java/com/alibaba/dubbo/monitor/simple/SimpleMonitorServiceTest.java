@@ -26,10 +26,10 @@ import com.alibaba.dubbo.common.utils.NetUtils;
  * @author william.liangf
  */
 public class SimpleMonitorServiceTest {
-    
-    @Test
-    public void testMonitor() {
-        new SimpleMonitorService().collect(new URL("dubbo", NetUtils.getLocalHost(), 0));
-    }
+
+	@Test
+	public void testMonitor() {
+		new SimpleMonitorService().collect(new URL("dubbo", NetUtils.getLocalHost(), 0));
+	}
 
 }

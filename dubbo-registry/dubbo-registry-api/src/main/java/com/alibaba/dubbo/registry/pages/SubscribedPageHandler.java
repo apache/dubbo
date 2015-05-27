@@ -34,46 +34,47 @@ import com.alibaba.dubbo.registry.support.AbstractRegistryFactory;
  */
 public class SubscribedPageHandler implements PageHandler {
 
-    public Page handle(URL url) {
-        String registryAddress = url.getParameter("registry", "");
-        List<List<String>> rows = new ArrayList<List<String>>();
-        Collection<Registry> registries = AbstractRegistryFactory.getRegistries();
-        StringBuilder select = new StringBuilder();
-        Registry registry = null;
-        if (registries != null && registries.size() > 0) {
-            if (registries.size() == 1) {
-                registry = registries.iterator().next();
-                select.append(" &gt; " + registry.getUrl().getAddress());
-            } else {
-                select.append(" &gt; <select onchange=\"window.location.href='subscribed.html?registry=' + this.value;\">");
-                for (Registry r : registries) {
-                    String sp = r.getUrl().getAddress();
-                    select.append("<option value=\">");
-                    select.append(sp);
-                    if (((registryAddress == null || registryAddress.length() == 0) && registry == null)
-                            || registryAddress.equals(sp)) {
-                        registry = r;
-                        select.append("\" selected=\"selected");
-                    }
-                    select.append("\">");
-                    select.append(sp);
-                    select.append("</option>");
-                }
-                select.append("</select>");
-            }
-        }
-        if (registry instanceof AbstractRegistry) {
-            Set<URL> services = ((AbstractRegistry) registry).getSubscribed().keySet();
-            if (services != null && services.size() > 0) {
-                for (URL u : services) {
-                    List<String> row = new ArrayList<String>();
-                    row.add(u.toFullString().replace("<", "&lt;").replace(">", "&gt;"));
-                    rows.add(row);
-                }
-            }
-        }
-        return new Page("<a href=\"registries.html\">Registries</a>" + select.toString() + " &gt; <a href=\"registered.html?registry=" + registryAddress + "\">Registered</a> | Subscribed", "Subscribed (" + rows.size() + ")",
-                new String[] { "Consumer URL:" }, rows);
-    }
+	public Page handle(URL url) {
+		String registryAddress = url.getParameter("registry", "");
+		List<List<String>> rows = new ArrayList<List<String>>();
+		Collection<Registry> registries = AbstractRegistryFactory.getRegistries();
+		StringBuilder select = new StringBuilder();
+		Registry registry = null;
+		if (registries != null && registries.size() > 0) {
+			if (registries.size() == 1) {
+				registry = registries.iterator().next();
+				select.append(" &gt; " + registry.getUrl().getAddress());
+			} else {
+				select.append(" &gt; <select onchange=\"window.location.href='subscribed.html?registry=' + this.value;\">");
+				for (Registry r : registries) {
+					String sp = r.getUrl().getAddress();
+					select.append("<option value=\">");
+					select.append(sp);
+					if (((registryAddress == null || registryAddress.length() == 0) && registry == null)
+							|| registryAddress.equals(sp)) {
+						registry = r;
+						select.append("\" selected=\"selected");
+					}
+					select.append("\">");
+					select.append(sp);
+					select.append("</option>");
+				}
+				select.append("</select>");
+			}
+		}
+		if (registry instanceof AbstractRegistry) {
+			Set<URL> services = ((AbstractRegistry) registry).getSubscribed().keySet();
+			if (services != null && services.size() > 0) {
+				for (URL u : services) {
+					List<String> row = new ArrayList<String>();
+					row.add(u.toFullString().replace("<", "&lt;").replace(">", "&gt;"));
+					rows.add(row);
+				}
+			}
+		}
+		return new Page("<a href=\"registries.html\">Registries</a>" + select.toString()
+				+ " &gt; <a href=\"registered.html?registry=" + registryAddress + "\">Registered</a> | Subscribed",
+				"Subscribed (" + rows.size() + ")", new String[] { "Consumer URL:" }, rows);
+	}
 
 }

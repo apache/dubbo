@@ -26,26 +26,26 @@ import com.alibaba.dubbo.registry.common.domain.User;
  */
 public interface UserService {
 
-    List<User> findAllUsers();
-    
-    User findUser(String username);
-    
-    User findById(Long id);
+	List<User> findAllUsers();
 
-    void createUser(User user);
-    
-    void updateUser(User user);
-    
-    void modifyUser(User user);
-    
-    boolean updatePassword(User user, String oldPassword);
-    
-    void resetPassword(User user);
+	User findUser(String username);
 
-    void enableUser(User user);
-    
-    void disableUser(User user);
+	User findById(Long id);
 
-    void deleteUser(User user);
+	void createUser(User user);
+
+	void updateUser(User user);
+
+	void modifyUser(User user);
+
+	boolean updatePassword(User user, String oldPassword);
+
+	void resetPassword(User user);
+
+	void enableUser(User user);
+
+	void disableUser(User user);
+
+	void deleteUser(User user);
 
 }

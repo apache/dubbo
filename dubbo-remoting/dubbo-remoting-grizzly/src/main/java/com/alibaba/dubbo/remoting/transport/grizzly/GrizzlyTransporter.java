@@ -29,14 +29,14 @@ import com.alibaba.dubbo.remoting.Transporter;
  */
 public class GrizzlyTransporter implements Transporter {
 
-    public static final String NAME = "grizzly";
+	public static final String NAME = "grizzly";
 
-    public Server bind(URL url, ChannelHandler listener) throws RemotingException {
-        return new GrizzlyServer(url, listener);
-    }
+	public Server bind(URL url, ChannelHandler listener) throws RemotingException {
+		return new GrizzlyServer(url, listener);
+	}
 
-    public Client connect(URL url, ChannelHandler listener) throws RemotingException {
-        return new GrizzlyClient(url, listener);
-    }
+	public Client connect(URL url, ChannelHandler listener) throws RemotingException {
+		return new GrizzlyClient(url, listener);
+	}
 
 }

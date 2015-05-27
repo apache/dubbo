@@ -20,44 +20,44 @@ package com.alibaba.dubbo.registry.common.domain;
  *
  * @author ding.lid
  */
-public class Feature extends Entity{
-	
-    private static final long serialVersionUID = 3246619851259746169L;
+public class Feature extends Entity {
 
-    private String name;
-    
-    private boolean enabled;
-    
-    private String username;
+	private static final long serialVersionUID = 3246619851259746169L;
 
-    public Feature() {
-    }
+	private String name;
 
-    public Feature(Long id) {
-        super(id);
-    }
-    
-    public String getName() {
-        return name;
-    }
+	private boolean enabled;
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	private String username;
 
-    public boolean getEnabled() {
-        return enabled;
-    }
+	public Feature() {
+	}
 
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
+	public Feature(Long id) {
+		super(id);
+	}
 
-    public String getUsername() {
-        return username;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public boolean getEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
 }

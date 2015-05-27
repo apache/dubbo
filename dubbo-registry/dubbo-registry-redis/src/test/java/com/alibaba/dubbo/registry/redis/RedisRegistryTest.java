@@ -29,68 +29,70 @@ import com.alibaba.dubbo.registry.NotifyListener;
  */
 public class RedisRegistryTest {
 
-    String            service     = "com.alibaba.dubbo.test.injvmServie";
-    URL               registryUrl = URL.valueOf("redis://239.255.255.255/");
-    URL               serviceUrl  = URL.valueOf("redis://redis/" + service
-                                                + "?notify=false&methods=test1,test2");
-    URL               consumerUrl = URL.valueOf("redis://consumer/" + service + "?notify=false&methods=test1,test2");
-    // RedisRegistry registry    = new RedisRegistry(registryUrl);
+	String service = "com.alibaba.dubbo.test.injvmServie";
+	URL registryUrl = URL.valueOf("redis://239.255.255.255/");
+	URL serviceUrl = URL.valueOf("redis://redis/" + service + "?notify=false&methods=test1,test2");
+	URL consumerUrl = URL.valueOf("redis://consumer/" + service + "?notify=false&methods=test1,test2");
 
-    /**
-     * @throws java.lang.Exception
-     */
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
-    }
+	// RedisRegistry registry = new RedisRegistry(registryUrl);
 
-    /**
-     * @throws java.lang.Exception
-     */
-    @Before
-    public void setUp() throws Exception {
-        //registry.register(service, serviceUrl);
-    }
+	/**
+	 * @throws java.lang.Exception
+	 */
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+	}
 
-    /**
-     * Test method for {@link com.alibaba.dubbo.registry.support.injvm.InjvmRegistry#register(java.util.Map)}.
-     */
-    @Test
-    public void testRegister() {
-        /*List<URL> registered = null;
-        // clear first
-        registered = registry.getRegistered(service);
+	/**
+	 * @throws java.lang.Exception
+	 */
+	@Before
+	public void setUp() throws Exception {
+		// registry.register(service, serviceUrl);
+	}
 
-        for (int i = 0; i < 2; i++) {
-            registry.register(service, serviceUrl);
-            registered = registry.getRegistered(service);
-            assertTrue(registered.contains(serviceUrl));
-        }
-        // confirm only 1 regist success;
-        registered = registry.getRegistered(service);
-        assertEquals(1, registered.size());*/
-    }
+	/**
+	 * Test method for
+	 * {@link com.alibaba.dubbo.registry.support.injvm.InjvmRegistry#register(java.util.Map)}
+	 * .
+	 */
+	@Test
+	public void testRegister() {
+		/*
+		 * List<URL> registered = null; // clear first registered =
+		 * registry.getRegistered(service);
+		 * 
+		 * for (int i = 0; i < 2; i++) { registry.register(service, serviceUrl);
+		 * registered = registry.getRegistered(service);
+		 * assertTrue(registered.contains(serviceUrl)); } // confirm only 1
+		 * regist success; registered = registry.getRegistered(service);
+		 * assertEquals(1, registered.size());
+		 */
+	}
 
-    /**
-     * Test method for
-     * {@link com.alibaba.dubbo.registry.support.injvm.InjvmRegistry#subscribe(java.util.Map, com.alibaba.dubbo.registry.support.NotifyListener)}
-     * .
-     */
-    @Test
-    public void testSubscribe() {
-        /*final String subscribearg = "arg1=1&arg2=2";
-        // verify lisener.
-        final AtomicReference<Map<String, String>> args = new AtomicReference<Map<String, String>>();
-        registry.subscribe(service, new URL("dubbo", NetUtils.getLocalHost(), 0, StringUtils.parseQueryString(subscribearg)), new NotifyListener() {
+	/**
+	 * Test method for
+	 * {@link com.alibaba.dubbo.registry.support.injvm.InjvmRegistry#subscribe(java.util.Map, com.alibaba.dubbo.registry.support.NotifyListener)}
+	 * .
+	 */
+	@Test
+	public void testSubscribe() {
+		/*
+		 * final String subscribearg = "arg1=1&arg2=2"; // verify lisener. final
+		 * AtomicReference<Map<String, String>> args = new
+		 * AtomicReference<Map<String, String>>(); registry.subscribe(service,
+		 * new URL("dubbo", NetUtils.getLocalHost(), 0,
+		 * StringUtils.parseQueryString(subscribearg)), new NotifyListener() {
+		 * 
+		 * public void notify(List<URL> urls) { // FIXME
+		 * assertEquals(RedisRegistry.this.service, service);
+		 * args.set(urls.get(0).getParameters()); } });
+		 * assertEquals(serviceUrl.toParameterString(),
+		 * StringUtils.toQueryString(args.get())); Map<String, String> arg =
+		 * registry.getSubscribed(service); assertEquals(subscribearg,
+		 * StringUtils.toQueryString(arg));
+		 */
 
-            public void notify(List<URL> urls) {
-                // FIXME assertEquals(RedisRegistry.this.service, service);
-                args.set(urls.get(0).getParameters());
-            }
-        });
-        assertEquals(serviceUrl.toParameterString(), StringUtils.toQueryString(args.get()));
-        Map<String, String> arg = registry.getSubscribed(service);
-        assertEquals(subscribearg, StringUtils.toQueryString(arg));*/
-
-    }
+	}
 
 }

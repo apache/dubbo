@@ -19,4 +19,5 @@ import com.alibaba.dubbo.rpc.gen.dubbo.Demo;
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-public class DubboDemoImpl extends DemoImpl implements Demo, $__DemoStub.Iface {}
+public class DubboDemoImpl extends DemoImpl implements Demo, $__DemoStub.Iface {
+}

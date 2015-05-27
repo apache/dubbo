@@ -28,29 +28,30 @@ import com.alibaba.dubbo.config.api.User;
  * @author william.liangf
  */
 public class DemoServiceImpl_LongWaiting implements DemoService {
-    
-    public String sayName(String name) {
-        try {
-            Thread.sleep(100 * 1000);
-        } catch (InterruptedException e) {}
-        
-        return "say:" + name;
-    }
-    
-    public Box getBox() {
-        return null;
-    }
 
-    public void throwDemoException() throws DemoException {
-        throw new DemoException("LongWaiting");
-    }
+	public String sayName(String name) {
+		try {
+			Thread.sleep(100 * 1000);
+		} catch (InterruptedException e) {
+		}
 
-    public List<User> getUsers(List<User> users) {
-        return users;
-    }
+		return "say:" + name;
+	}
 
-    public int echo(int i) {
-        return i;
-    }
-    
+	public Box getBox() {
+		return null;
+	}
+
+	public void throwDemoException() throws DemoException {
+		throw new DemoException("LongWaiting");
+	}
+
+	public List<User> getUsers(List<User> users) {
+		return users;
+	}
+
+	public int echo(int i) {
+		return i;
+	}
+
 }

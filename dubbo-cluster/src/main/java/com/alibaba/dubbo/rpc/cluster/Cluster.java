@@ -24,23 +24,23 @@ import com.alibaba.dubbo.rpc.cluster.support.FailoverCluster;
 /**
  * Cluster. (SPI, Singleton, ThreadSafe)
  * 
- * <a href="http://en.wikipedia.org/wiki/Computer_cluster">Cluster</a>
- * <a href="http://en.wikipedia.org/wiki/Fault-tolerant_system">Fault-Tolerant</a>
+ * <a href="http://en.wikipedia.org/wiki/Computer_cluster">Cluster</a> <a
+ * href="http://en.wikipedia.org/wiki/Fault-tolerant_system">Fault-Tolerant</a>
  * 
  * @author william.liangf
  */
 @SPI(FailoverCluster.NAME)
 public interface Cluster {
 
-    /**
-     * Merge the directory invokers to a virtual invoker.
-     * 
-     * @param <T>
-     * @param directory
-     * @return cluster invoker
-     * @throws RpcException
-     */
-    @Adaptive
-    <T> Invoker<T> join(Directory<T> directory) throws RpcException;
+	/**
+	 * Merge the directory invokers to a virtual invoker.
+	 * 
+	 * @param <T>
+	 * @param directory
+	 * @return cluster invoker
+	 * @throws RpcException
+	 */
+	@Adaptive
+	<T> Invoker<T> join(Directory<T> directory) throws RpcException;
 
 }

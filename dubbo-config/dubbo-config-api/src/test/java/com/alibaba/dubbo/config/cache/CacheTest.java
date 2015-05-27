@@ -33,50 +33,50 @@ import com.alibaba.dubbo.config.ServiceConfig;
  */
 public class CacheTest extends TestCase {
 
-    @Test
-    public void testCache() throws Exception {
-        ServiceConfig<CacheService> service = new ServiceConfig<CacheService>();
-        service.setApplication(new ApplicationConfig("cache-provider"));
-        service.setRegistry(new RegistryConfig("N/A"));
-        service.setProtocol(new ProtocolConfig("dubbo", 29582));
-        service.setInterface(CacheService.class.getName());
-        service.setRef(new CacheServiceImpl());
-        service.export();
-        try {
-            ReferenceConfig<CacheService> reference = new ReferenceConfig<CacheService>();
-            reference.setApplication(new ApplicationConfig("cache-consumer"));
-            reference.setInterface(CacheService.class);
-            reference.setUrl("dubbo://127.0.0.1:29582?scope=remote&cache=true");
-            CacheService cacheService = reference.get();
-            try {
-                // 测试缓存生效，多次调用返回同样的结果。(服务器端自增长返回值)
-                String fix = null;
-                for (int i = 0; i < 3; i ++) {
-                    String result = cacheService.findCache("0");
-                    Assert.assertTrue(fix == null || fix.equals(result));
-                    fix = result;
-                    Thread.sleep(100);
-                }
-                
-                // LRU的缺省cache.size为1000，执行1001次，应有溢出
-                for (int n = 0; n < 1001; n ++) {
-                    String pre = null;
-                    for (int i = 0; i < 10; i ++) {
-                        String result = cacheService.findCache(String.valueOf(n));
-                        Assert.assertTrue(pre == null || pre.equals(result));
-                        pre = result;
-                    }
-                }
-                
-                // 测试LRU有移除最开始的一个缓存项
-                String result = cacheService.findCache("0");
-                Assert.assertFalse(fix == null || fix.equals(result));
-            } finally {
-                reference.destroy();
-            }
-        } finally {
-            service.unexport();
-        }
-    }
+	@Test
+	public void testCache() throws Exception {
+		ServiceConfig<CacheService> service = new ServiceConfig<CacheService>();
+		service.setApplication(new ApplicationConfig("cache-provider"));
+		service.setRegistry(new RegistryConfig("N/A"));
+		service.setProtocol(new ProtocolConfig("dubbo", 29582));
+		service.setInterface(CacheService.class.getName());
+		service.setRef(new CacheServiceImpl());
+		service.export();
+		try {
+			ReferenceConfig<CacheService> reference = new ReferenceConfig<CacheService>();
+			reference.setApplication(new ApplicationConfig("cache-consumer"));
+			reference.setInterface(CacheService.class);
+			reference.setUrl("dubbo://127.0.0.1:29582?scope=remote&cache=true");
+			CacheService cacheService = reference.get();
+			try {
+				// 测试缓存生效，多次调用返回同样的结果。(服务器端自增长返回值)
+				String fix = null;
+				for (int i = 0; i < 3; i++) {
+					String result = cacheService.findCache("0");
+					Assert.assertTrue(fix == null || fix.equals(result));
+					fix = result;
+					Thread.sleep(100);
+				}
+
+				// LRU的缺省cache.size为1000，执行1001次，应有溢出
+				for (int n = 0; n < 1001; n++) {
+					String pre = null;
+					for (int i = 0; i < 10; i++) {
+						String result = cacheService.findCache(String.valueOf(n));
+						Assert.assertTrue(pre == null || pre.equals(result));
+						pre = result;
+					}
+				}
+
+				// 测试LRU有移除最开始的一个缓存项
+				String result = cacheService.findCache("0");
+				Assert.assertFalse(fix == null || fix.equals(result));
+			} finally {
+				reference.destroy();
+			}
+		} finally {
+			service.unexport();
+		}
+	}
 
 }

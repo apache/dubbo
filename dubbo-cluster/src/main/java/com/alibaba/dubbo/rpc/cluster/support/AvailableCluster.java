@@ -31,22 +31,23 @@ import com.alibaba.dubbo.rpc.cluster.LoadBalance;
  * @author william.liangf
  */
 public class AvailableCluster implements Cluster {
-    
-    public static final String NAME = "available";
 
-    public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
-        
-        return new AbstractClusterInvoker<T>(directory) {
-            public Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
-                for (Invoker<T> invoker : invokers) {
-                    if (invoker.isAvailable()) {
-                        return invoker.invoke(invocation);
-                    }
-                }
-                throw new RpcException("No provider available in " + invokers);
-            }
-        };
-        
-    }
+	public static final String NAME = "available";
+
+	public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
+
+		return new AbstractClusterInvoker<T>(directory) {
+			public Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance)
+					throws RpcException {
+				for (Invoker<T> invoker : invokers) {
+					if (invoker.isAvailable()) {
+						return invoker.invoke(invocation);
+					}
+				}
+				throw new RpcException("No provider available in " + invokers);
+			}
+		};
+
+	}
 
 }

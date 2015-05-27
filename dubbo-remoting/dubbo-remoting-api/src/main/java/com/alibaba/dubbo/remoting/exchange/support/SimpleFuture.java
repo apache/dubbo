@@ -25,27 +25,27 @@ import com.alibaba.dubbo.remoting.exchange.ResponseFuture;
  * @author william.liangf
  */
 public class SimpleFuture implements ResponseFuture {
-    
-    private final Object value;
 
-    public SimpleFuture(Object value){
-        this.value = value;
-    }
+	private final Object value;
 
-    public Object get() throws RemotingException {
-        return value;
-    }
+	public SimpleFuture(Object value) {
+		this.value = value;
+	}
 
-    public Object get(int timeoutInMillis) throws RemotingException {
-        return value;
-    }
+	public Object get() throws RemotingException {
+		return value;
+	}
 
-    public void setCallback(ResponseCallback callback) {
-        callback.done(value);
-    }
+	public Object get(int timeoutInMillis) throws RemotingException {
+		return value;
+	}
 
-    public boolean isDone() {
-        return true;
-    }
+	public void setCallback(ResponseCallback callback) {
+		callback.done(value);
+	}
+
+	public boolean isDone() {
+		return true;
+	}
 
 }

@@ -30,16 +30,16 @@ public class GenericException extends RuntimeException {
 
 	private String exceptionClass;
 
-    private String exceptionMessage;
-	
+	private String exceptionMessage;
+
 	public GenericException() {
 	}
 
-    public GenericException(String exceptionClass, String exceptionMessage) {
-        super(exceptionMessage);
-        this.exceptionClass = exceptionClass;
-        this.exceptionMessage = exceptionMessage;
-    }
+	public GenericException(String exceptionClass, String exceptionMessage) {
+		super(exceptionMessage);
+		this.exceptionClass = exceptionClass;
+		this.exceptionMessage = exceptionMessage;
+	}
 
 	public GenericException(Throwable cause) {
 		super(StringUtils.toString(cause));

@@ -105,9 +105,9 @@ public class Log4jLogger implements Logger {
 	public boolean isWarnEnabled() {
 		return logger.isEnabledFor(Level.WARN);
 	}
-	
+
 	public boolean isErrorEnabled() {
-	    return logger.isEnabledFor(Level.ERROR);
+		return logger.isEnabledFor(Level.ERROR);
 	}
 
 }

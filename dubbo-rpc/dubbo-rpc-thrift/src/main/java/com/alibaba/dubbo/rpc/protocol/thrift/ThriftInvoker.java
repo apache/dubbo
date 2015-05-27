@@ -30,124 +30,121 @@ import com.alibaba.dubbo.rpc.protocol.AbstractInvoker;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
-
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">gang.lvg</a>
  */
 public class ThriftInvoker<T> extends AbstractInvoker<T> {
 
-    private final ExchangeClient[] clients;
+	private final ExchangeClient[] clients;
 
-    private final AtomicPositiveInteger index = new AtomicPositiveInteger();
+	private final AtomicPositiveInteger index = new AtomicPositiveInteger();
 
-    private final ReentrantLock destroyLock = new ReentrantLock();
-    
-    private final Set<Invoker<?>> invokers;
+	private final ReentrantLock destroyLock = new ReentrantLock();
 
-    public ThriftInvoker( Class<T> service, URL url, ExchangeClient[] clients ) {
-        this(service, url, clients, null);
-    }
+	private final Set<Invoker<?>> invokers;
 
-    public ThriftInvoker(Class<T> type, URL url, ExchangeClient[] clients, Set<Invoker<?>> invokers) {
-        super(type, url,
-              new String[]{Constants.INTERFACE_KEY, Constants.GROUP_KEY,
-                      Constants.TOKEN_KEY, Constants.TIMEOUT_KEY});
-        this.clients = clients;
-        this.invokers = invokers;
-    }
-    
-    @Override
-    protected Result doInvoke( Invocation invocation ) throws Throwable {
+	public ThriftInvoker(Class<T> service, URL url, ExchangeClient[] clients) {
+		this(service, url, clients, null);
+	}
 
-        RpcInvocation inv = (RpcInvocation) invocation;
+	public ThriftInvoker(Class<T> type, URL url, ExchangeClient[] clients, Set<Invoker<?>> invokers) {
+		super(type, url, new String[] { Constants.INTERFACE_KEY, Constants.GROUP_KEY, Constants.TOKEN_KEY,
+				Constants.TIMEOUT_KEY });
+		this.clients = clients;
+		this.invokers = invokers;
+	}
 
-        final String methodName;
+	@Override
+	protected Result doInvoke(Invocation invocation) throws Throwable {
 
-        methodName = invocation.getMethodName();
+		RpcInvocation inv = (RpcInvocation) invocation;
 
-        inv.setAttachment( Constants.PATH_KEY, getUrl().getPath() );
+		final String methodName;
 
-        // for thrift codec
-        inv.setAttachment( ThriftCodec.PARAMETER_CLASS_NAME_GENERATOR, getUrl().getParameter(
-                ThriftCodec.PARAMETER_CLASS_NAME_GENERATOR, DubboClassNameGenerator.NAME ) );
+		methodName = invocation.getMethodName();
 
-        ExchangeClient currentClient;
+		inv.setAttachment(Constants.PATH_KEY, getUrl().getPath());
 
-        if (clients.length == 1) {
-            currentClient = clients[0];
-        } else {
-            currentClient = clients[index.getAndIncrement() % clients.length];
-        }
+		// for thrift codec
+		inv.setAttachment(ThriftCodec.PARAMETER_CLASS_NAME_GENERATOR,
+				getUrl().getParameter(ThriftCodec.PARAMETER_CLASS_NAME_GENERATOR, DubboClassNameGenerator.NAME));
 
-        try {
-            int timeout = getUrl().getMethodParameter(
-                    methodName, Constants.TIMEOUT_KEY,Constants.DEFAULT_TIMEOUT);
+		ExchangeClient currentClient;
 
-            RpcContext.getContext().setFuture(null);
+		if (clients.length == 1) {
+			currentClient = clients[0];
+		} else {
+			currentClient = clients[index.getAndIncrement() % clients.length];
+		}
 
-            return (Result) currentClient.request(inv, timeout).get();
+		try {
+			int timeout = getUrl().getMethodParameter(methodName, Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
 
-        } catch (TimeoutException e) {
-            throw new RpcException(RpcException.TIMEOUT_EXCEPTION, e.getMessage(), e);
-        } catch (RemotingException e) {
-            throw new RpcException(RpcException.NETWORK_EXCEPTION, e.getMessage(), e);
-        }
+			RpcContext.getContext().setFuture(null);
 
-    }
+			return (Result) currentClient.request(inv, timeout).get();
 
-    @Override
-    public boolean isAvailable() {
+		} catch (TimeoutException e) {
+			throw new RpcException(RpcException.TIMEOUT_EXCEPTION, e.getMessage(), e);
+		} catch (RemotingException e) {
+			throw new RpcException(RpcException.NETWORK_EXCEPTION, e.getMessage(), e);
+		}
 
-        if (!super.isAvailable()) {
-            return false;
-        }
+	}
 
-        for (ExchangeClient client : clients){
-            if (client.isConnected()
-                    && !client.hasAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY)){
-                //cannot write == not Available ?
-                return true ;
-            }
-        }
-        return false;
-    }
+	@Override
+	public boolean isAvailable() {
 
-    public void destroy() {
-        //防止client被关闭多次.在connect per jvm的情况下，client.close方法会调用计数器-1，当计数器小于等于0的情况下，才真正关闭
-        if (super.isDestroyed()){
-            return ;
-        } else {
-            //dubbo check ,避免多次关闭
-            destroyLock.lock();
+		if (!super.isAvailable()) {
+			return false;
+		}
 
-            try{
+		for (ExchangeClient client : clients) {
+			if (client.isConnected() && !client.hasAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY)) {
+				// cannot write == not Available ?
+				return true;
+			}
+		}
+		return false;
+	}
 
-                if (super.isDestroyed()){
-                    return ;
-                }
+	public void destroy() {
+		// 防止client被关闭多次.在connect per
+		// jvm的情况下，client.close方法会调用计数器-1，当计数器小于等于0的情况下，才真正关闭
+		if (super.isDestroyed()) {
+			return;
+		} else {
+			// dubbo check ,避免多次关闭
+			destroyLock.lock();
 
-                super.destroy();
+			try {
 
-                if(invokers != null) {
-                    invokers.remove(this);
-                }
+				if (super.isDestroyed()) {
+					return;
+				}
 
-                for (ExchangeClient client : clients) {
+				super.destroy();
 
-                    try {
-                        client.close();
-                    } catch (Throwable t) {
-                        logger.warn(t.getMessage(), t);
-                    }
+				if (invokers != null) {
+					invokers.remove(this);
+				}
 
-                }
+				for (ExchangeClient client : clients) {
 
-            }finally {
-                destroyLock.unlock();
-            }
+					try {
+						client.close();
+					} catch (Throwable t) {
+						logger.warn(t.getMessage(), t);
+					}
 
-        }
+				}
 
-    }
+			} finally {
+				destroyLock.unlock();
+			}
+
+		}
+
+	}
 
 }

@@ -35,103 +35,95 @@ import org.junit.Before;
  */
 public abstract class AbstractTest {
 
-    static final int PORT = 30660;
+	static final int PORT = 30660;
 
-    protected TServer server;
+	protected TServer server;
 
-    protected Protocol protocol;
+	protected Protocol protocol;
 
-    protected Invoker<?> invoker;
+	protected Invoker<?> invoker;
 
-    protected void init() throws Exception {
-        TServerTransport serverTransport = new TServerSocket( PORT );
+	protected void init() throws Exception {
+		TServerTransport serverTransport = new TServerSocket(PORT);
 
-        TBinaryProtocol.Factory bFactory = new TBinaryProtocol.Factory();
+		TBinaryProtocol.Factory bFactory = new TBinaryProtocol.Factory();
 
-        server = new TThreadPoolServer(
-                new TThreadPoolServer.Args( serverTransport )
-                        .inputProtocolFactory( bFactory )
-                        .outputProtocolFactory( bFactory )
-                        .inputTransportFactory( getTransportFactory() )
-                        .outputTransportFactory( getTransportFactory() )
-                        .processor( getProcessor() ) );
+		server = new TThreadPoolServer(new TThreadPoolServer.Args(serverTransport).inputProtocolFactory(bFactory)
+				.outputProtocolFactory(bFactory).inputTransportFactory(getTransportFactory())
+				.outputTransportFactory(getTransportFactory()).processor(getProcessor()));
 
-        Thread startTread = new Thread() {
+		Thread startTread = new Thread() {
 
-            @Override
-            public void run() {
-                server.serve();
-            }
+			@Override
+			public void run() {
+				server.serve();
+			}
 
-        };
+		};
 
-        startTread.setName( "thrift-server" );
+		startTread.setName("thrift-server");
 
-        startTread.start();
+		startTread.start();
 
-        while( !server.isServing() ) {
-            Thread.sleep( 100 );
-        }
+		while (!server.isServing()) {
+			Thread.sleep(100);
+		}
 
-        protocol = ExtensionLoader.getExtensionLoader(Protocol.class)
-                .getExtension( ThriftProtocol.NAME );
+		protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(ThriftProtocol.NAME);
 
-        invoker = protocol.refer( getInterface(), getUrl() );
+		invoker = protocol.refer(getInterface(), getUrl());
 
-    }
+	}
 
-    protected void destroy() throws Exception {
+	protected void destroy() throws Exception {
 
-        if ( server != null ) {
-            server.stop();
-            server = null;
-        }
+		if (server != null) {
+			server.stop();
+			server = null;
+		}
 
-        if ( protocol != null ) {
-            protocol.destroy();
-            protocol = null;
-        }
+		if (protocol != null) {
+			protocol.destroy();
+			protocol = null;
+		}
 
-        if ( invoker != null ) {
-            invoker.destroy();
-            invoker = null;
-        }
+		if (invoker != null) {
+			invoker.destroy();
+			invoker = null;
+		}
 
-    }
+	}
 
-    protected TTransportFactory getTransportFactory() {
-        return new FramedTransportFactory();
-    }
+	protected TTransportFactory getTransportFactory() {
+		return new FramedTransportFactory();
+	}
 
-    protected $__DemoStub.Iface getServiceImpl() {
-        return new DubboDemoImpl();
-    }
+	protected $__DemoStub.Iface getServiceImpl() {
+		return new DubboDemoImpl();
+	}
 
-    protected TProcessor getProcessor() {
-        MultiServiceProcessor result = new MultiServiceProcessor();
-        result.addProcessor(
-                com.alibaba.dubbo.rpc.gen.dubbo.Demo.class,
-                new $__DemoStub.Processor( getServiceImpl() ) );
-        return result;
-    }
+	protected TProcessor getProcessor() {
+		MultiServiceProcessor result = new MultiServiceProcessor();
+		result.addProcessor(com.alibaba.dubbo.rpc.gen.dubbo.Demo.class, new $__DemoStub.Processor(getServiceImpl()));
+		return result;
+	}
 
-    protected Class<?> getInterface() {
-        return Demo.class;
-    }
+	protected Class<?> getInterface() {
+		return Demo.class;
+	}
 
-    protected URL getUrl() {
-        return URL.valueOf(
-                "thrift://127.0.0.1:" + PORT + "/" + getInterface().getName() );
-    }
+	protected URL getUrl() {
+		return URL.valueOf("thrift://127.0.0.1:" + PORT + "/" + getInterface().getName());
+	}
 
-    @After
-    public void tearDown() throws Exception{
-        destroy();
-    }
+	@After
+	public void tearDown() throws Exception {
+		destroy();
+	}
 
-    @Before
-    public void setUp() throws Exception {
-        init();
-    }
+	@Before
+	public void setUp() throws Exception {
+		init();
+	}
 
 }

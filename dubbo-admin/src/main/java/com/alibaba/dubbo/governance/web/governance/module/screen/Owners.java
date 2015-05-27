@@ -31,7 +31,7 @@ public class Owners extends Restful {
 
 	@Autowired
 	private ProviderService providerService;
-	
+
 	public void index(Map<String, Object> context) {
 		String service = (String) context.get("service");
 		List<Owner> owners;
@@ -42,27 +42,26 @@ public class Owners extends Restful {
 		}
 		context.put("owners", owners);
 	}
-	
+
 	public void add(Map<String, Object> context) {
 		String service = (String) context.get("service");
 		if (service == null || service.length() == 0) {
-            List<String> serviceList = Tool.sortSimpleName(new ArrayList<String>(providerService.findServices()));
-            context.put("serviceList", serviceList);
-        }
+			List<String> serviceList = Tool.sortSimpleName(new ArrayList<String>(providerService.findServices()));
+			context.put("serviceList", serviceList);
+		}
 	}
 
 	public boolean create(Owner owner, Map<String, Object> context) {
 		String service = owner.getService();
 		String username = owner.getUsername();
-		if (service == null || service.length() == 0
-        		|| username == null || username.length() == 0){
-            context.put("message", getMessage("NoSuchOperationData"));
-            return false;
-        }
-        if (! super.currentUser.hasServicePrivilege(service)) {
-            context.put("message", getMessage("HaveNoServicePrivilege", service));
-            return false;
-        }
+		if (service == null || service.length() == 0 || username == null || username.length() == 0) {
+			context.put("message", getMessage("NoSuchOperationData"));
+			return false;
+		}
+		if (!super.currentUser.hasServicePrivilege(service)) {
+			context.put("message", getMessage("HaveNoServicePrivilege", service));
+			return false;
+		}
 		ownerService.saveOwner(owner);
 		return true;
 	}
@@ -73,15 +72,14 @@ public class Owners extends Restful {
 		Owner owner = new Owner();
 		owner.setService(service);
 		owner.setUsername(username);
-		if (service == null || service.length() == 0
-        		|| username == null || username.length() == 0){
-            context.put("message", getMessage("NoSuchOperationData"));
-            return false;
-        }
-        if (! super.currentUser.hasServicePrivilege(service)) {
-            context.put("message", getMessage("HaveNoServicePrivilege", service));
-            return false;
-        }
+		if (service == null || service.length() == 0 || username == null || username.length() == 0) {
+			context.put("message", getMessage("NoSuchOperationData"));
+			return false;
+		}
+		if (!super.currentUser.hasServicePrivilege(service)) {
+			context.put("message", getMessage("HaveNoServicePrivilege", service));
+			return false;
+		}
 		ownerService.deleteOwner(owner);
 		return true;
 	}

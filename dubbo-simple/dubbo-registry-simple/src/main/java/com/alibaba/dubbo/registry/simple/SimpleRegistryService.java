@@ -42,171 +42,170 @@ import com.alibaba.dubbo.rpc.RpcContext;
  */
 public class SimpleRegistryService extends AbstractRegistry {
 
-    private final ConcurrentMap<String, Set<URL>> remoteRegistered = new ConcurrentHashMap<String, Set<URL>>();
+	private final ConcurrentMap<String, Set<URL>> remoteRegistered = new ConcurrentHashMap<String, Set<URL>>();
 
-    private final ConcurrentMap<String, ConcurrentMap<URL, Set<NotifyListener>>> remoteSubscribed = new ConcurrentHashMap<String, ConcurrentMap<URL, Set<NotifyListener>>>();
-    
-    private final static Logger logger = LoggerFactory.getLogger(SimpleRegistryService.class);
+	private final ConcurrentMap<String, ConcurrentMap<URL, Set<NotifyListener>>> remoteSubscribed = new ConcurrentHashMap<String, ConcurrentMap<URL, Set<NotifyListener>>>();
 
-    public SimpleRegistryService() {
-        super(new URL("dubbo", NetUtils.getLocalHost(), 0, RegistryService.class.getName(), "file", "N/A"));
-    }
+	private final static Logger logger = LoggerFactory.getLogger(SimpleRegistryService.class);
 
-    public boolean isAvailable() {
-        return true;
-    }
+	public SimpleRegistryService() {
+		super(new URL("dubbo", NetUtils.getLocalHost(), 0, RegistryService.class.getName(), "file", "N/A"));
+	}
 
-    public List<URL> lookup(URL url) {
-    	List<URL> urls = new ArrayList<URL>();
-    	for (URL u: getRegistered()) {
-            if (UrlUtils.isMatch(url, u)) {
-                urls.add(u);
-            }
-        }
-    	return urls;
-    }
+	public boolean isAvailable() {
+		return true;
+	}
 
-    public void register(URL url) {
-        String client = RpcContext.getContext().getRemoteAddressString();
-        Set<URL> urls = remoteRegistered.get(client);
-        if (urls == null) {
-            remoteRegistered.putIfAbsent(client, new ConcurrentHashSet<URL>());
-            urls = remoteRegistered.get(client);
-        }
-        urls.add(url);
-        super.register(url);
-        registered(url);
-    }
+	public List<URL> lookup(URL url) {
+		List<URL> urls = new ArrayList<URL>();
+		for (URL u : getRegistered()) {
+			if (UrlUtils.isMatch(url, u)) {
+				urls.add(u);
+			}
+		}
+		return urls;
+	}
 
-    public void unregister(URL url) {
-        String client = RpcContext.getContext().getRemoteAddressString();
-        Set<URL> urls = remoteRegistered.get(client);
-        if (urls != null && urls.size() > 0) {
-            urls.remove(url);
-        }
-        super.unregister(url);
-        unregistered(url);
-    }
+	public void register(URL url) {
+		String client = RpcContext.getContext().getRemoteAddressString();
+		Set<URL> urls = remoteRegistered.get(client);
+		if (urls == null) {
+			remoteRegistered.putIfAbsent(client, new ConcurrentHashSet<URL>());
+			urls = remoteRegistered.get(client);
+		}
+		urls.add(url);
+		super.register(url);
+		registered(url);
+	}
 
-    public void subscribe(URL url, NotifyListener listener) {
-        if (getUrl().getPort() == 0) {
-            URL registryUrl = RpcContext.getContext().getUrl();
-            if (registryUrl != null && registryUrl.getPort() > 0
-            		&& RegistryService.class.getName().equals(registryUrl.getPath())) {
-                super.setUrl(registryUrl);
-                super.register(registryUrl);
-            }
-        }
-        String client = RpcContext.getContext().getRemoteAddressString();
-        ConcurrentMap<URL, Set<NotifyListener>> clientListeners = remoteSubscribed.get(client);
-        if (clientListeners == null) {
-            remoteSubscribed.putIfAbsent(client, new ConcurrentHashMap<URL, Set<NotifyListener>>());
-            clientListeners = remoteSubscribed.get(client);
-        }
-        Set<NotifyListener> listeners = clientListeners.get(url);
-        if (listeners == null) {
-            clientListeners.putIfAbsent(url, new ConcurrentHashSet<NotifyListener>());
-            listeners = clientListeners.get(url);
-        }
-        listeners.add(listener);
-        super.subscribe(url, listener);
-        subscribed(url, listener);
-    }
+	public void unregister(URL url) {
+		String client = RpcContext.getContext().getRemoteAddressString();
+		Set<URL> urls = remoteRegistered.get(client);
+		if (urls != null && urls.size() > 0) {
+			urls.remove(url);
+		}
+		super.unregister(url);
+		unregistered(url);
+	}
 
-    public void unsubscribe(URL url, NotifyListener listener) {
-        if (! Constants.ANY_VALUE.equals(url.getServiceInterface())
-                && url.getParameter(Constants.REGISTER_KEY, true)) {
-            unregister(url);
-        }
-        String client = RpcContext.getContext().getRemoteAddressString();
-        Map<URL, Set<NotifyListener>> clientListeners = remoteSubscribed.get(client);
-        if (clientListeners != null && clientListeners.size() > 0) {
-            Set<NotifyListener> listeners = clientListeners.get(url);
-            if (listeners != null && listeners.size() > 0) {
-                listeners.remove(listener);
-            }
-        }
-    }
+	public void subscribe(URL url, NotifyListener listener) {
+		if (getUrl().getPort() == 0) {
+			URL registryUrl = RpcContext.getContext().getUrl();
+			if (registryUrl != null && registryUrl.getPort() > 0
+					&& RegistryService.class.getName().equals(registryUrl.getPath())) {
+				super.setUrl(registryUrl);
+				super.register(registryUrl);
+			}
+		}
+		String client = RpcContext.getContext().getRemoteAddressString();
+		ConcurrentMap<URL, Set<NotifyListener>> clientListeners = remoteSubscribed.get(client);
+		if (clientListeners == null) {
+			remoteSubscribed.putIfAbsent(client, new ConcurrentHashMap<URL, Set<NotifyListener>>());
+			clientListeners = remoteSubscribed.get(client);
+		}
+		Set<NotifyListener> listeners = clientListeners.get(url);
+		if (listeners == null) {
+			clientListeners.putIfAbsent(url, new ConcurrentHashSet<NotifyListener>());
+			listeners = clientListeners.get(url);
+		}
+		listeners.add(listener);
+		super.subscribe(url, listener);
+		subscribed(url, listener);
+	}
 
-    protected void registered(URL url) {
-        for (Map.Entry<URL, Set<NotifyListener>> entry : getSubscribed().entrySet()) {
-            URL key = entry.getKey();
-            if (UrlUtils.isMatch(key, url)) {
-                List<URL> list = lookup(key);
-                for (NotifyListener listener : entry.getValue()) {
-                	listener.notify(list);
-                }
-            }
-        }
-    }
+	public void unsubscribe(URL url, NotifyListener listener) {
+		if (!Constants.ANY_VALUE.equals(url.getServiceInterface()) && url.getParameter(Constants.REGISTER_KEY, true)) {
+			unregister(url);
+		}
+		String client = RpcContext.getContext().getRemoteAddressString();
+		Map<URL, Set<NotifyListener>> clientListeners = remoteSubscribed.get(client);
+		if (clientListeners != null && clientListeners.size() > 0) {
+			Set<NotifyListener> listeners = clientListeners.get(url);
+			if (listeners != null && listeners.size() > 0) {
+				listeners.remove(listener);
+			}
+		}
+	}
 
-    protected void unregistered(URL url) {
-        for (Map.Entry<URL, Set<NotifyListener>> entry : getSubscribed().entrySet()) {
-            URL key = entry.getKey();
-            if (UrlUtils.isMatch(key, url)) {
-                List<URL> list = lookup(key);
-                for (NotifyListener listener : entry.getValue()) {
-                	listener.notify(list);
-                }
-            }
-        }
-    }
+	protected void registered(URL url) {
+		for (Map.Entry<URL, Set<NotifyListener>> entry : getSubscribed().entrySet()) {
+			URL key = entry.getKey();
+			if (UrlUtils.isMatch(key, url)) {
+				List<URL> list = lookup(key);
+				for (NotifyListener listener : entry.getValue()) {
+					listener.notify(list);
+				}
+			}
+		}
+	}
 
-    protected void subscribed(final URL url, final NotifyListener listener) {
-        if (Constants.ANY_VALUE.equals(url.getServiceInterface())) {
-        	new Thread(new Runnable() {
+	protected void unregistered(URL url) {
+		for (Map.Entry<URL, Set<NotifyListener>> entry : getSubscribed().entrySet()) {
+			URL key = entry.getKey();
+			if (UrlUtils.isMatch(key, url)) {
+				List<URL> list = lookup(key);
+				for (NotifyListener listener : entry.getValue()) {
+					listener.notify(list);
+				}
+			}
+		}
+	}
+
+	protected void subscribed(final URL url, final NotifyListener listener) {
+		if (Constants.ANY_VALUE.equals(url.getServiceInterface())) {
+			new Thread(new Runnable() {
 				public void run() {
 					Map<String, List<URL>> map = new HashMap<String, List<URL>>();
-		        	for (URL u: getRegistered()) {
-		                if (UrlUtils.isMatch(url, u)) {
-		                	String service = u.getServiceInterface();
-		                	List<URL> list = map.get(service);
-		                	if (list == null) {
-		                		list = new ArrayList<URL>();
-		                		map.put(service, list);
-		                	}
-		                	list.add(u);
-		                }
-		            }
-		        	for (List<URL> list : map.values()) {
-		        		try {
-		            		listener.notify(list);
-		            	} catch (Throwable e) {
-		            		logger.warn("Discard to notify " + url.getServiceKey() + " to listener " + listener);
-		            	}
-		        	}
+					for (URL u : getRegistered()) {
+						if (UrlUtils.isMatch(url, u)) {
+							String service = u.getServiceInterface();
+							List<URL> list = map.get(service);
+							if (list == null) {
+								list = new ArrayList<URL>();
+								map.put(service, list);
+							}
+							list.add(u);
+						}
+					}
+					for (List<URL> list : map.values()) {
+						try {
+							listener.notify(list);
+						} catch (Throwable e) {
+							logger.warn("Discard to notify " + url.getServiceKey() + " to listener " + listener);
+						}
+					}
 				}
 			}, "DubboMonitorNotifier").start();
-        } else {
-        	List<URL> list = lookup(url);
-        	try {
-        		listener.notify(list);
-        	} catch (Throwable e) {
-        		logger.warn("Discard to notify " + url.getServiceKey() + " to listener " + listener);
-        	}
-        }
-    }
+		} else {
+			List<URL> list = lookup(url);
+			try {
+				listener.notify(list);
+			} catch (Throwable e) {
+				logger.warn("Discard to notify " + url.getServiceKey() + " to listener " + listener);
+			}
+		}
+	}
 
-    public void disconnect() {
-        String client = RpcContext.getContext().getRemoteAddressString();
-        if (logger.isInfoEnabled()) {
-            logger.info("Disconnected " + client);
-        }
-        Set<URL> urls = remoteRegistered.get(client);
-        if (urls != null && urls.size() > 0) {
-            for (URL url : urls) {
-                unregister(url);
-            }
-        }
-        Map<URL, Set<NotifyListener>> listeners = remoteSubscribed.get(client);
-        if (listeners != null && listeners.size() > 0) {
-            for (Map.Entry<URL, Set<NotifyListener>> entry : listeners.entrySet()) {
-            	URL url = entry.getKey();
-                for (NotifyListener listener : entry.getValue()) {
-                    unsubscribe(url, listener);
-                }
-            }
-        }
-    }
+	public void disconnect() {
+		String client = RpcContext.getContext().getRemoteAddressString();
+		if (logger.isInfoEnabled()) {
+			logger.info("Disconnected " + client);
+		}
+		Set<URL> urls = remoteRegistered.get(client);
+		if (urls != null && urls.size() > 0) {
+			for (URL url : urls) {
+				unregister(url);
+			}
+		}
+		Map<URL, Set<NotifyListener>> listeners = remoteSubscribed.get(client);
+		if (listeners != null && listeners.size() > 0) {
+			for (Map.Entry<URL, Set<NotifyListener>> entry : listeners.entrySet()) {
+				URL url = entry.getKey();
+				for (NotifyListener listener : entry.getValue()) {
+					unsubscribe(url, listener);
+				}
+			}
+		}
+	}
 
 }

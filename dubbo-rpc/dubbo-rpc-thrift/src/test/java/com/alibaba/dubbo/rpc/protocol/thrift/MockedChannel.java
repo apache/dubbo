@@ -25,73 +25,73 @@ import java.net.InetSocketAddress;
  */
 public class MockedChannel implements Channel {
 
-    private URL url;
+	private URL url;
 
-    public MockedChannel( URL url ) {
-        this.url = url;
-    }
+	public MockedChannel(URL url) {
+		this.url = url;
+	}
 
-    public InetSocketAddress getRemoteAddress() {
+	public InetSocketAddress getRemoteAddress() {
 
-        return null;
-    }
+		return null;
+	}
 
-    public boolean isConnected() {
+	public boolean isConnected() {
 
-        return false;
-    }
+		return false;
+	}
 
-    public boolean hasAttribute( String key ) {
+	public boolean hasAttribute(String key) {
 
-        return false;
-    }
+		return false;
+	}
 
-    public Object getAttribute( String key ) {
+	public Object getAttribute(String key) {
 
-        return null;
-    }
+		return null;
+	}
 
-    public void setAttribute( String key, Object value ) {
+	public void setAttribute(String key, Object value) {
 
-    }
+	}
 
-    public void removeAttribute( String key ) {
+	public void removeAttribute(String key) {
 
-    }
+	}
 
-    public URL getUrl() {
-        return url;
-    }
+	public URL getUrl() {
+		return url;
+	}
 
-    public ChannelHandler getChannelHandler() {
+	public ChannelHandler getChannelHandler() {
 
-        return null;
-    }
+		return null;
+	}
 
-    public InetSocketAddress getLocalAddress() {
+	public InetSocketAddress getLocalAddress() {
 
-        return null;
-    }
+		return null;
+	}
 
-    public void send( Object message ) throws RemotingException {
+	public void send(Object message) throws RemotingException {
 
-    }
+	}
 
-    public void send( Object message, boolean sent ) throws RemotingException {
+	public void send(Object message, boolean sent) throws RemotingException {
 
-    }
+	}
 
-    public void close() {
+	public void close() {
 
-    }
+	}
 
-    public void close( int timeout ) {
+	public void close(int timeout) {
 
-    }
+	}
 
-    public boolean isClosed() {
+	public boolean isClosed() {
 
-        return false;
-    }
+		return false;
+	}
 
 }

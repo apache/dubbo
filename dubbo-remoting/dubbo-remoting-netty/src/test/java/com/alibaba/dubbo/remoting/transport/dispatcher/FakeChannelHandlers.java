@@ -26,21 +26,20 @@ import com.alibaba.dubbo.remoting.Dispatcher;
  */
 public class FakeChannelHandlers extends ChannelHandlers {
 
-    public FakeChannelHandlers() {
-        super();
-    }
+	public FakeChannelHandlers() {
+		super();
+	}
 
-    @Override
-    protected ChannelHandler wrapInternal(ChannelHandler handler, URL url) {
-        return ExtensionLoader.getExtensionLoader(Dispatcher.class)
-            .getAdaptiveExtension().dispatch(handler, url);
-    }
+	@Override
+	protected ChannelHandler wrapInternal(ChannelHandler handler, URL url) {
+		return ExtensionLoader.getExtensionLoader(Dispatcher.class).getAdaptiveExtension().dispatch(handler, url);
+	}
 
-    public static void setTestingChannelHandlers() {
-        ChannelHandlers.setTestingChannelHandlers(new FakeChannelHandlers());
-    }
+	public static void setTestingChannelHandlers() {
+		ChannelHandlers.setTestingChannelHandlers(new FakeChannelHandlers());
+	}
 
-    public static void resetChannelHandlers() {
-        ChannelHandlers.setTestingChannelHandlers(new ChannelHandlers());
-    }
+	public static void resetChannelHandlers() {
+		ChannelHandlers.setTestingChannelHandlers(new ChannelHandlers());
+	}
 }

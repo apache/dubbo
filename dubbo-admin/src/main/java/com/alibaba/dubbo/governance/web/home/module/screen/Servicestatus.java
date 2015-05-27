@@ -34,41 +34,41 @@ import com.alibaba.dubbo.governance.service.ProviderService;
 /**
  * @author tony.chenl
  */
-public class Servicestatus{
-//    @Autowired
-//    private RegistryCache registryCache;
-    
-    @Autowired
-    private HttpServletRequest request;
-    
-    @Autowired
-    private ProviderService providerDAO;
-    
-    @Autowired
-    private HttpServletResponse response;
+public class Servicestatus {
+	// @Autowired
+	// private RegistryCache registryCache;
 
-    public void execute(Map<String,Object> context) throws Exception {
-        String uri = request.getRequestURI();
-        String contextPath = request.getContextPath();
-        if (contextPath != null && ! "/".equals(contextPath)) {
-            uri = uri.substring(contextPath.length());
-        }
-        if (uri.startsWith("/status/")) {
-            uri = uri.substring("/status/".length());
-        }
-//        Map<String, String> providers = registryCache.getServices().get(uri);
-//        if (providers == null || providers.size() == 0) {
-//            providers = providerDAO.lookup(uri);
-//        }
-//        if (providers == null || providers.size() == 0) {
-//            context.put("message", "ERROR"
-//                        + new SimpleDateFormat(" [yyyy-MM-dd HH:mm:ss] ").format(new Date())
-//                        + Status.filterOK("No such any provider for service " + uri));
-//        } else {
-//            context.put("message", "OK");
-//        }
-        PrintWriter writer = response.getWriter();
-        writer.print(context.get("message").toString());
-        writer.flush();
-    }
+	@Autowired
+	private HttpServletRequest request;
+
+	@Autowired
+	private ProviderService providerDAO;
+
+	@Autowired
+	private HttpServletResponse response;
+
+	public void execute(Map<String, Object> context) throws Exception {
+		String uri = request.getRequestURI();
+		String contextPath = request.getContextPath();
+		if (contextPath != null && !"/".equals(contextPath)) {
+			uri = uri.substring(contextPath.length());
+		}
+		if (uri.startsWith("/status/")) {
+			uri = uri.substring("/status/".length());
+		}
+		// Map<String, String> providers = registryCache.getServices().get(uri);
+		// if (providers == null || providers.size() == 0) {
+		// providers = providerDAO.lookup(uri);
+		// }
+		// if (providers == null || providers.size() == 0) {
+		// context.put("message", "ERROR"
+		// + new SimpleDateFormat(" [yyyy-MM-dd HH:mm:ss] ").format(new Date())
+		// + Status.filterOK("No such any provider for service " + uri));
+		// } else {
+		// context.put("message", "OK");
+		// }
+		PrintWriter writer = response.getWriter();
+		writer.print(context.get("message").toString());
+		writer.flush();
+	}
 }

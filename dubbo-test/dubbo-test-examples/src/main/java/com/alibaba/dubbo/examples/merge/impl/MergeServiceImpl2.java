@@ -26,12 +26,12 @@ import com.alibaba.dubbo.examples.merge.api.MergeService;
  * @author william.liangf
  */
 public class MergeServiceImpl2 implements MergeService {
-    
-    public List<String> mergeResult() {
-        List<String> menus = new ArrayList<String>();
-        menus.add("group-2.1");
-        menus.add("group-2.2");
-        return menus;
-    }
+
+	public List<String> mergeResult() {
+		List<String> menus = new ArrayList<String>();
+		menus.add("group-2.1");
+		menus.add("group-2.2");
+		return menus;
+	}
 
 }

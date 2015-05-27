@@ -38,114 +38,114 @@ import java.util.Map;
  */
 public class ServiceMethodNotFoundTest extends AbstractTest {
 
-    private URL url;
+	private URL url;
 
-    protected void init() throws Exception {
+	protected void init() throws Exception {
 
-        TServerTransport serverTransport = new TServerSocket( PORT );
+		TServerTransport serverTransport = new TServerSocket(PORT);
 
-        DubboDemoImpl impl = new DubboDemoImpl();
+		DubboDemoImpl impl = new DubboDemoImpl();
 
-        $__DemoStub.Processor processor = new $__DemoStub.Processor( impl );
+		$__DemoStub.Processor processor = new $__DemoStub.Processor(impl);
 
-        // for test
-        Field field = processor.getClass().getSuperclass().getDeclaredField( "processMap" );
+		// for test
+		Field field = processor.getClass().getSuperclass().getDeclaredField("processMap");
 
-        field.setAccessible( true );
+		field.setAccessible(true);
 
-        Object obj = field.get( processor );
+		Object obj = field.get(processor);
 
-        if ( obj instanceof Map ) {
-            ( ( Map ) obj ).remove( "echoString" );
-        }
-        // ~
+		if (obj instanceof Map) {
+			((Map) obj).remove("echoString");
+		}
+		// ~
 
-        TBinaryProtocol.Factory bFactory = new TBinaryProtocol.Factory();
+		TBinaryProtocol.Factory bFactory = new TBinaryProtocol.Factory();
 
-        MultiServiceProcessor wrapper = new MultiServiceProcessor();
-        wrapper.addProcessor( Demo.class, processor );
+		MultiServiceProcessor wrapper = new MultiServiceProcessor();
+		wrapper.addProcessor(Demo.class, processor);
 
-        server = new TThreadPoolServer(
-                new TThreadPoolServer.Args( serverTransport )
-                        .inputProtocolFactory( bFactory )
-                        .outputProtocolFactory( bFactory )
-                        .inputTransportFactory( getTransportFactory() )
-                        .outputTransportFactory( getTransportFactory() )
-                        .processor( wrapper ) );
+		server = new TThreadPoolServer(new TThreadPoolServer.Args(serverTransport).inputProtocolFactory(bFactory)
+				.outputProtocolFactory(bFactory).inputTransportFactory(getTransportFactory())
+				.outputTransportFactory(getTransportFactory()).processor(wrapper));
 
-        Thread startTread = new Thread() {
+		Thread startTread = new Thread() {
 
-            @Override
-            public void run() {
+			@Override
+			public void run() {
 
-                server.serve();
-            }
+				server.serve();
+			}
 
-        };
+		};
 
-        startTread.start();
+		startTread.start();
 
-        while ( !server.isServing() ) {
-            Thread.sleep( 100 );
-        }
+		while (!server.isServing()) {
+			Thread.sleep(100);
+		}
 
-    }
+	}
 
-    @Before
-    public void setUp() throws Exception {
+	@Before
+	public void setUp() throws Exception {
 
-        init();
+		init();
 
-        protocol = new ThriftProtocol();
+		protocol = new ThriftProtocol();
 
-        url = URL.valueOf( ThriftProtocol.NAME + "://127.0.0.1:" + PORT + "/" + Demo.class.getName() );
+		url = URL.valueOf(ThriftProtocol.NAME + "://127.0.0.1:" + PORT + "/" + Demo.class.getName());
 
-    }
+	}
 
-    @After
-    public void tearDown() throws Exception {
+	@After
+	public void tearDown() throws Exception {
 
-        destroy();
+		destroy();
 
-        if ( protocol != null ) {
-            protocol.destroy();
-            protocol = null;
-        }
+		if (protocol != null) {
+			protocol.destroy();
+			protocol = null;
+		}
 
-        if ( invoker != null ) {
-            invoker.destroy();
-            invoker = null;
-        }
+		if (invoker != null) {
+			invoker.destroy();
+			invoker = null;
+		}
 
-    }
+	}
 
-    @Test
-    public void testServiceMethodNotFound() throws Exception {
-        // FIXME
-        /*url = url.addParameter( "echoString." + Constants.TIMEOUT_KEY, Integer.MAX_VALUE );
+	@Test
+	public void testServiceMethodNotFound() throws Exception {
+		// FIXME
+		/*
+		 * url = url.addParameter( "echoString." + Constants.TIMEOUT_KEY,
+		 * Integer.MAX_VALUE );
+		 * 
+		 * invoker = protocol.refer( Demo.class, url );
+		 * 
+		 * org.junit.Assert.assertNotNull( invoker );
+		 * 
+		 * RpcInvocation invocation = new RpcInvocation();
+		 * 
+		 * invocation.setMethodName( "echoString" );
+		 * 
+		 * invocation.setParameterTypes( new Class<?>[]{ String.class } );
+		 * 
+		 * String arg = "Hello, World!";
+		 * 
+		 * invocation.setArguments( new Object[] { arg } );
+		 * 
+		 * invocation.setAttachment(Constants.INTERFACE_KEY,
+		 * DemoImpl.class.getName());
+		 * 
+		 * Result result = invoker.invoke( invocation );
+		 * 
+		 * Assert.assertNull( result.getResult() );
+		 * 
+		 * Assert.assertTrue( result.getException() instanceof RpcException );
+		 */
 
-        invoker = protocol.refer( Demo.class, url );
-
-        org.junit.Assert.assertNotNull( invoker );
-
-        RpcInvocation invocation = new RpcInvocation();
-
-        invocation.setMethodName( "echoString" );
-
-        invocation.setParameterTypes( new Class<?>[]{ String.class } );
-
-        String arg = "Hello, World!";
-
-        invocation.setArguments( new Object[] { arg } );
-        
-        invocation.setAttachment(Constants.INTERFACE_KEY, DemoImpl.class.getName());
-
-        Result result = invoker.invoke( invocation );
-
-        Assert.assertNull( result.getResult() );
-
-        Assert.assertTrue( result.getException() instanceof RpcException );*/
-        
-    }
+	}
 
 }

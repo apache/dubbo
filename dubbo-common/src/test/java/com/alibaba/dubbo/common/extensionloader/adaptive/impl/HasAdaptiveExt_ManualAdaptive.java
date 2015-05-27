@@ -25,8 +25,9 @@ import com.alibaba.dubbo.common.extensionloader.adaptive.HasAdaptiveExt;
  */
 @Adaptive
 public class HasAdaptiveExt_ManualAdaptive implements HasAdaptiveExt {
-    public String echo(URL url, String s) {
-        HasAdaptiveExt addExt1 = ExtensionLoader.getExtensionLoader(HasAdaptiveExt.class).getExtension(url.getParameter("key"));
-        return addExt1.echo(url, s);
-    }
+	public String echo(URL url, String s) {
+		HasAdaptiveExt addExt1 = ExtensionLoader.getExtensionLoader(HasAdaptiveExt.class).getExtension(
+				url.getParameter("key"));
+		return addExt1.echo(url, s);
+	}
 }

@@ -28,21 +28,18 @@ import com.alibaba.dubbo.remoting.exchange.support.Replier;
  * @author qian.lei
  */
 
-public class RpcMessageHandler implements Replier<RpcMessage>
-{
-	public static interface ServiceProvider{ Object getImplementation(String service); }
+public class RpcMessageHandler implements Replier<RpcMessage> {
+	public static interface ServiceProvider {
+		Object getImplementation(String service);
+	}
 
-	private final static ServiceProvider DEFAULT_PROVIDER = new ServiceProvider(){
-		public Object getImplementation(String service)
-		{
+	private final static ServiceProvider DEFAULT_PROVIDER = new ServiceProvider() {
+		public Object getImplementation(String service) {
 			String impl = service + "Impl";
-			try
-			{
+			try {
 				Class<?> cl = Thread.currentThread().getContextClassLoader().loadClass(impl);
 				return cl.newInstance();
-			}
-			catch(Exception e)
-			{
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 			return null;
@@ -51,40 +48,31 @@ public class RpcMessageHandler implements Replier<RpcMessage>
 
 	private ServiceProvider mProvider;
 
-	public RpcMessageHandler()
-	{
+	public RpcMessageHandler() {
 		this(DEFAULT_PROVIDER);
 	}
 
-	public RpcMessageHandler(ServiceProvider prov)
-	{
+	public RpcMessageHandler(ServiceProvider prov) {
 		mProvider = prov;
 	}
 
-	public Class<RpcMessage> interest()
-	{
+	public Class<RpcMessage> interest() {
 		return RpcMessage.class;
 	}
 
-	public Object reply(ExchangeChannel channel, RpcMessage msg) throws RemotingException
-	{
+	public Object reply(ExchangeChannel channel, RpcMessage msg) throws RemotingException {
 		String desc = msg.getMethodDesc();
 		Object[] args = msg.getArguments();
 		Object impl = mProvider.getImplementation(msg.getClassName());
 		Wrapper wrap = Wrapper.getWrapper(impl.getClass());
-		try
-		{
+		try {
 			return new MockResult(wrap.invokeMethod(impl, desc, msg.getParameterTypes(), args));
-		}
-		catch(NoSuchMethodException e)
-		{
+		} catch (NoSuchMethodException e) {
 			throw new RemotingException(channel, "Service method not found.");
-		}
-		catch(InvocationTargetException e)
-		{
+		} catch (InvocationTargetException e) {
 			return new MockResult(e.getTargetException());
 		}
-		
+
 	}
 
 }

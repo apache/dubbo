@@ -28,25 +28,25 @@ import com.alibaba.dubbo.config.api.User;
  * @author william.liangf
  */
 public class DemoServiceImpl implements DemoService {
-    
-    public String sayName(String name) {
-        return "say:" + name;
-    }
-    
-    public Box getBox() {
-        return null;
-    }
 
-    public void throwDemoException() throws DemoException {
-        throw new DemoException("DemoServiceImpl");
-    }
+	public String sayName(String name) {
+		return "say:" + name;
+	}
 
-    public List<User> getUsers(List<User> users) {
-        return users;
-    }
+	public Box getBox() {
+		return null;
+	}
 
-    public int echo(int i) {
-        return i;
-    }
-    
+	public void throwDemoException() throws DemoException {
+		throw new DemoException("DemoServiceImpl");
+	}
+
+	public List<User> getUsers(List<User> users) {
+		return users;
+	}
+
+	public int echo(int i) {
+		return i;
+	}
+
 }

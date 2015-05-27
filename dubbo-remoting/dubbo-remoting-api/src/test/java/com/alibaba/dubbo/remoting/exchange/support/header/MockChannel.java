@@ -33,68 +33,68 @@ import java.util.Map;
  */
 public class MockChannel implements Channel {
 
-    private Map<String, Object> attributes = new HashMap<String, Object>();
-    
-    private volatile boolean closed = false;
-    private List<Object> sentObjects = new ArrayList<Object>();
-    
-    public InetSocketAddress getRemoteAddress() {
-        return null;
-    }
+	private Map<String, Object> attributes = new HashMap<String, Object>();
 
-    public boolean isConnected() {
-        return false;
-    }
+	private volatile boolean closed = false;
+	private List<Object> sentObjects = new ArrayList<Object>();
 
-    public boolean hasAttribute(String key) {
-        return attributes.containsKey(key);
-    }
+	public InetSocketAddress getRemoteAddress() {
+		return null;
+	}
 
-    public Object getAttribute(String key) {
-        return attributes.get(key);
-    }
+	public boolean isConnected() {
+		return false;
+	}
 
-    public void setAttribute(String key, Object value) {
-        attributes.put(key, value);
-    }
+	public boolean hasAttribute(String key) {
+		return attributes.containsKey(key);
+	}
 
-    public void removeAttribute(String key) {
-        attributes.remove(key);
-    }
+	public Object getAttribute(String key) {
+		return attributes.get(key);
+	}
 
-    public URL getUrl() {
-        return null;
-    }
+	public void setAttribute(String key, Object value) {
+		attributes.put(key, value);
+	}
 
-    public ChannelHandler getChannelHandler() {
-        return null;
-    }
+	public void removeAttribute(String key) {
+		attributes.remove(key);
+	}
 
-    public InetSocketAddress getLocalAddress() {
-        return null;
-    }
+	public URL getUrl() {
+		return null;
+	}
 
-    public void send(Object message) throws RemotingException {
-        sentObjects.add(message);
-    }
+	public ChannelHandler getChannelHandler() {
+		return null;
+	}
 
-    public void send(Object message, boolean sent) throws RemotingException {
-        sentObjects.add(message);
-    }
+	public InetSocketAddress getLocalAddress() {
+		return null;
+	}
 
-    public void close() {
-        closed = true;
-    }
+	public void send(Object message) throws RemotingException {
+		sentObjects.add(message);
+	}
 
-    public void close(int timeout) {
-        closed = true;
-    }
+	public void send(Object message, boolean sent) throws RemotingException {
+		sentObjects.add(message);
+	}
 
-    public boolean isClosed() {
-        return closed;
-    }
-    
-    public List<Object> getSentObjects() {
-        return Collections.unmodifiableList(sentObjects);
-    }
+	public void close() {
+		closed = true;
+	}
+
+	public void close(int timeout) {
+		closed = true;
+	}
+
+	public boolean isClosed() {
+		return closed;
+	}
+
+	public List<Object> getSentObjects() {
+		return Collections.unmodifiableList(sentObjects);
+	}
 }

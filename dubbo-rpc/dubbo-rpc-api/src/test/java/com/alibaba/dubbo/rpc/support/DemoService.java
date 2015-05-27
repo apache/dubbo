@@ -17,13 +17,11 @@ package com.alibaba.dubbo.rpc.support;
 
 import com.alibaba.dubbo.rpc.CustomArgument;
 
-
 /**
  * <code>TestService</code>
  */
 
-public interface DemoService
-{
+public interface DemoService {
 	void sayHello(String name);
 
 	String echo(String text);
@@ -41,11 +39,11 @@ public interface DemoService
 	int stringLength(String str);
 
 	Type enumlength(Type... types);
-	
-//	Type enumlength(Type type);
-	
+
+	// Type enumlength(Type type);
+
 	String get(CustomArgument arg1);
-	
+
 	byte getbyte(byte arg);
-	
+
 }

@@ -33,57 +33,57 @@ import com.alibaba.dubbo.registry.common.domain.User;
  */
 public class Logs extends Restful {
 
-    private static final int SHOW_LOG_LENGTH = 30000;
+	private static final int SHOW_LOG_LENGTH = 30000;
 
-    public void index(Map<String, Object> context) throws Exception {
-        long size;
-        String content;
-        String modified;
-        File file = LoggerFactory.getFile();
-        if (file != null && file.exists()) {
-            FileInputStream fis = new FileInputStream(file);
-            FileChannel channel = fis.getChannel();
-            size = channel.size();
-            ByteBuffer bb;
-            if (size <= SHOW_LOG_LENGTH) {
-                bb = ByteBuffer.allocate((int) size);
-                channel.read(bb, 0);
-            } else {
-                int pos = (int) (size - SHOW_LOG_LENGTH);
-                bb = ByteBuffer.allocate(SHOW_LOG_LENGTH);
-                channel.read(bb, pos);
-            }
-            bb.flip();
-            content = new String(bb.array()).replace("<", "&lt;").replace(">", "&gt;");
-            modified = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(file.lastModified()));
-        } else {
-            size = 0;
-            content = "";
-            modified = "Not exist";
-        }
-        Level level = LoggerFactory.getLevel();
-        context.put("name", file == null ? "" : file.getAbsoluteFile());
-        context.put("size", String.valueOf(size));
-        context.put("level", level == null ? "" : level);
-        context.put("modified", modified);
-        context.put("content", content);
-    }
-    
-    public boolean change(Map<String, Object> context) throws Exception {
-        String contextLevel = (String)context.get("level");
-        if (contextLevel == null || contextLevel.length() == 0) {
-            context.put("message", getMessage("MissRequestParameters", "level"));
-            return false;
-        }
-        if (! User.ROOT.equals(role)) {
-           context.put("message", getMessage("HaveNoRootPrivilege"));
-            return false;
-        }
-        Level level = Level.valueOf(contextLevel);
-        if (level != LoggerFactory.getLevel()) {
-            LoggerFactory.setLevel(level);
-        }
-        context.put("redirect", "/sysinfo/logs");
-        return true;
-    }
+	public void index(Map<String, Object> context) throws Exception {
+		long size;
+		String content;
+		String modified;
+		File file = LoggerFactory.getFile();
+		if (file != null && file.exists()) {
+			FileInputStream fis = new FileInputStream(file);
+			FileChannel channel = fis.getChannel();
+			size = channel.size();
+			ByteBuffer bb;
+			if (size <= SHOW_LOG_LENGTH) {
+				bb = ByteBuffer.allocate((int) size);
+				channel.read(bb, 0);
+			} else {
+				int pos = (int) (size - SHOW_LOG_LENGTH);
+				bb = ByteBuffer.allocate(SHOW_LOG_LENGTH);
+				channel.read(bb, pos);
+			}
+			bb.flip();
+			content = new String(bb.array()).replace("<", "&lt;").replace(">", "&gt;");
+			modified = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(file.lastModified()));
+		} else {
+			size = 0;
+			content = "";
+			modified = "Not exist";
+		}
+		Level level = LoggerFactory.getLevel();
+		context.put("name", file == null ? "" : file.getAbsoluteFile());
+		context.put("size", String.valueOf(size));
+		context.put("level", level == null ? "" : level);
+		context.put("modified", modified);
+		context.put("content", content);
+	}
+
+	public boolean change(Map<String, Object> context) throws Exception {
+		String contextLevel = (String) context.get("level");
+		if (contextLevel == null || contextLevel.length() == 0) {
+			context.put("message", getMessage("MissRequestParameters", "level"));
+			return false;
+		}
+		if (!User.ROOT.equals(role)) {
+			context.put("message", getMessage("HaveNoRootPrivilege"));
+			return false;
+		}
+		Level level = Level.valueOf(contextLevel);
+		if (level != LoggerFactory.getLevel()) {
+			LoggerFactory.setLevel(level);
+		}
+		context.put("redirect", "/sysinfo/logs");
+		return true;
+	}
 }

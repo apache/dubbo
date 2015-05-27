@@ -47,148 +47,149 @@ import com.alibaba.dubbo.rpc.cluster.support.AbstractClusterInvoker;
  */
 @SuppressWarnings("unchecked")
 public class FileRouterEngineTest {
-    List<Invoker<FileRouterEngineTest>> invokers = new ArrayList<Invoker<FileRouterEngineTest>>();
+	List<Invoker<FileRouterEngineTest>> invokers = new ArrayList<Invoker<FileRouterEngineTest>>();
 
-    Invoker<FileRouterEngineTest>       invoker1 = EasyMock.createMock(Invoker.class);
-    Invoker<FileRouterEngineTest>       invoker2 = EasyMock.createMock(Invoker.class);
-    Invocation                          invocation;
-    Directory<FileRouterEngineTest>     dic;
-    Result                              result   = new RpcResult();
-    private RouterFactory routerFactory = ExtensionLoader.getExtensionLoader(RouterFactory.class).getAdaptiveExtension();
+	Invoker<FileRouterEngineTest> invoker1 = EasyMock.createMock(Invoker.class);
+	Invoker<FileRouterEngineTest> invoker2 = EasyMock.createMock(Invoker.class);
+	Invocation invocation;
+	Directory<FileRouterEngineTest> dic;
+	Result result = new RpcResult();
+	private RouterFactory routerFactory = ExtensionLoader.getExtensionLoader(RouterFactory.class)
+			.getAdaptiveExtension();
 
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
-    }
-    
-    private static boolean isScriptUnsupported = new ScriptEngineManager().getEngineByName("javascript") == null;
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+	}
 
-    @Before
-    public void setUp() throws Exception {
-        invokers.add(invoker1);
-        invokers.add(invoker2);
-    }
+	private static boolean isScriptUnsupported = new ScriptEngineManager().getEngineByName("javascript") == null;
 
-    @Test
-    public void testRouteNotAvailable() {
-        if (isScriptUnsupported) return;
-        URL url = initUrl("notAvailablerule.javascript");
-        initInvocation("method1");
-        initDic(url);
-        initInvokers(url, true, false);
+	@Before
+	public void setUp() throws Exception {
+		invokers.add(invoker1);
+		invokers.add(invoker2);
+	}
 
-        MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<FileRouterEngineTest>(
-                dic, url);
-        for (int i = 0; i < 100; i++) {
-            sinvoker.invoke(invocation);
-            Invoker<FileRouterEngineTest> invoker = sinvoker.getSelectedInvoker();
-            Assert.assertEquals(invoker2, invoker);
-        }
-    }
+	@Test
+	public void testRouteNotAvailable() {
+		if (isScriptUnsupported)
+			return;
+		URL url = initUrl("notAvailablerule.javascript");
+		initInvocation("method1");
+		initDic(url);
+		initInvokers(url, true, false);
 
-    @Test
-    public void testRouteAvailable() {
-        if (isScriptUnsupported) return;
-        URL url = initUrl("availablerule.javascript");
-        initInvocation("method1");
-        initDic(url);
-        initInvokers(url);
+		MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<FileRouterEngineTest>(dic, url);
+		for (int i = 0; i < 100; i++) {
+			sinvoker.invoke(invocation);
+			Invoker<FileRouterEngineTest> invoker = sinvoker.getSelectedInvoker();
+			Assert.assertEquals(invoker2, invoker);
+		}
+	}
 
-        MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<FileRouterEngineTest>(
-                dic, url);
-        for (int i = 0; i < 100; i++) {
-            sinvoker.invoke(invocation);
-            Invoker<FileRouterEngineTest> invoker = sinvoker.getSelectedInvoker();
-            Assert.assertEquals(invoker1, invoker);
-        }
-    }
+	@Test
+	public void testRouteAvailable() {
+		if (isScriptUnsupported)
+			return;
+		URL url = initUrl("availablerule.javascript");
+		initInvocation("method1");
+		initDic(url);
+		initInvokers(url);
 
-    @Test
-    public void testRouteByMethodName() {
-        if (isScriptUnsupported) return;
-        URL url = initUrl("methodrule.javascript");
-        {
-            initInvocation("method1");
-            initDic(url);
-            initInvokers(url, true, true);
+		MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<FileRouterEngineTest>(dic, url);
+		for (int i = 0; i < 100; i++) {
+			sinvoker.invoke(invocation);
+			Invoker<FileRouterEngineTest> invoker = sinvoker.getSelectedInvoker();
+			Assert.assertEquals(invoker1, invoker);
+		}
+	}
 
-            MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<FileRouterEngineTest>(
-                    dic, url);
-            for (int i = 0; i < 100; i++) {
-                sinvoker.invoke(invocation);
-                Invoker<FileRouterEngineTest> invoker = sinvoker.getSelectedInvoker();
-                Assert.assertEquals(invoker1, invoker);
-            }
-        }
-        {
-            initInvocation("method2");
-            initDic(url);
-            initInvokers(url, true, true);
-            MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<FileRouterEngineTest>(
-                    dic, url);
-            for (int i = 0; i < 100; i++) {
-                sinvoker.invoke(invocation);
-                Invoker<FileRouterEngineTest> invoker = sinvoker.getSelectedInvoker();
-                Assert.assertEquals(invoker2, invoker);
-            }
-        }
-    }
+	@Test
+	public void testRouteByMethodName() {
+		if (isScriptUnsupported)
+			return;
+		URL url = initUrl("methodrule.javascript");
+		{
+			initInvocation("method1");
+			initDic(url);
+			initInvokers(url, true, true);
 
-    private URL initUrl(String filename) {
-        filename = getClass().getClassLoader().getResource(getClass().getPackage().getName().replace('.', '/') + "/" + filename).toString();
-        URL url = URL.valueOf(filename);
-        return url;
-    }
+			MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<FileRouterEngineTest>(dic, url);
+			for (int i = 0; i < 100; i++) {
+				sinvoker.invoke(invocation);
+				Invoker<FileRouterEngineTest> invoker = sinvoker.getSelectedInvoker();
+				Assert.assertEquals(invoker1, invoker);
+			}
+		}
+		{
+			initInvocation("method2");
+			initDic(url);
+			initInvokers(url, true, true);
+			MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<FileRouterEngineTest>(dic, url);
+			for (int i = 0; i < 100; i++) {
+				sinvoker.invoke(invocation);
+				Invoker<FileRouterEngineTest> invoker = sinvoker.getSelectedInvoker();
+				Assert.assertEquals(invoker2, invoker);
+			}
+		}
+	}
 
-    private void initInvocation(String methodName) {
-        invocation = new RpcInvocation();
-        ((RpcInvocation)invocation).setMethodName(methodName);
-    }
+	private URL initUrl(String filename) {
+		filename = getClass().getClassLoader()
+				.getResource(getClass().getPackage().getName().replace('.', '/') + "/" + filename).toString();
+		URL url = URL.valueOf(filename);
+		return url;
+	}
 
-    private void initInvokers(URL url) {
-        initInvokers(url, true, false);
-    }
+	private void initInvocation(String methodName) {
+		invocation = new RpcInvocation();
+		((RpcInvocation) invocation).setMethodName(methodName);
+	}
 
-    private void initInvokers(URL url, boolean invoker1Status, boolean invoker2Status) {
-        EasyMock.reset(invoker1);
-        EasyMock.expect(invoker1.invoke(invocation)).andReturn(result).anyTimes();
-        EasyMock.expect(invoker1.isAvailable()).andReturn(invoker1Status).anyTimes();
-        EasyMock.expect(invoker1.getUrl()).andReturn(url).anyTimes();
-        EasyMock.expect(invoker1.getInterface()).andReturn(FileRouterEngineTest.class).anyTimes();
-        EasyMock.replay(invoker1);
+	private void initInvokers(URL url) {
+		initInvokers(url, true, false);
+	}
 
-        EasyMock.reset(invoker2);
-        EasyMock.expect(invoker2.invoke(invocation)).andReturn(result).anyTimes();
-        EasyMock.expect(invoker2.isAvailable()).andReturn(invoker2Status).anyTimes();
-        EasyMock.expect(invoker2.getUrl()).andReturn(url).anyTimes();
-        EasyMock.expect(invoker2.getInterface()).andReturn(FileRouterEngineTest.class).anyTimes();
-        EasyMock.replay(invoker2);
-    }
+	private void initInvokers(URL url, boolean invoker1Status, boolean invoker2Status) {
+		EasyMock.reset(invoker1);
+		EasyMock.expect(invoker1.invoke(invocation)).andReturn(result).anyTimes();
+		EasyMock.expect(invoker1.isAvailable()).andReturn(invoker1Status).anyTimes();
+		EasyMock.expect(invoker1.getUrl()).andReturn(url).anyTimes();
+		EasyMock.expect(invoker1.getInterface()).andReturn(FileRouterEngineTest.class).anyTimes();
+		EasyMock.replay(invoker1);
 
-    private void initDic(URL url) {
-        dic = new StaticDirectory<FileRouterEngineTest>(url, invokers, Arrays.asList(routerFactory.getRouter(url)));
-    }
+		EasyMock.reset(invoker2);
+		EasyMock.expect(invoker2.invoke(invocation)).andReturn(result).anyTimes();
+		EasyMock.expect(invoker2.isAvailable()).andReturn(invoker2Status).anyTimes();
+		EasyMock.expect(invoker2.getUrl()).andReturn(url).anyTimes();
+		EasyMock.expect(invoker2.getInterface()).andReturn(FileRouterEngineTest.class).anyTimes();
+		EasyMock.replay(invoker2);
+	}
 
-    static class MockClusterInvoker<T> extends AbstractClusterInvoker<T> {
-        private Invoker<T> selectedInvoker;
+	private void initDic(URL url) {
+		dic = new StaticDirectory<FileRouterEngineTest>(url, invokers, Arrays.asList(routerFactory.getRouter(url)));
+	}
 
-        public MockClusterInvoker(Directory<T> directory) {
-            super(directory);
-        }
+	static class MockClusterInvoker<T> extends AbstractClusterInvoker<T> {
+		private Invoker<T> selectedInvoker;
 
-        public MockClusterInvoker(Directory<T> directory, URL url) {
-            super(directory, url);
-        }
+		public MockClusterInvoker(Directory<T> directory) {
+			super(directory);
+		}
 
-        @Override
-        protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers,
-                                  LoadBalance loadbalance) throws RpcException {
-            Invoker<T> invoker = select(loadbalance, invocation, invokers, null);
-            selectedInvoker = invoker;
-            return null;
-        }
+		public MockClusterInvoker(Directory<T> directory, URL url) {
+			super(directory, url);
+		}
 
-        public Invoker<T> getSelectedInvoker() {
-            return selectedInvoker;
-        }
-    }
+		@Override
+		protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance)
+				throws RpcException {
+			Invoker<T> invoker = select(loadbalance, invocation, invokers, null);
+			selectedInvoker = invoker;
+			return null;
+		}
+
+		public Invoker<T> getSelectedInvoker() {
+			return selectedInvoker;
+		}
+	}
 }

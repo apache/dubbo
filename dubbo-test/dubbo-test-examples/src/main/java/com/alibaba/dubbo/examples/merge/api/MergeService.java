@@ -23,7 +23,7 @@ import java.util.List;
  * @author william.liangf
  */
 public interface MergeService {
-    
-    List<String> mergeResult();
+
+	List<String> mergeResult();
 
 }

@@ -24,21 +24,21 @@ import com.alibaba.dubbo.rpc.benchmark.ServiceFactory;
 
 /**
  * DemoBenchmarkClient.java
+ * 
  * @author tony.chenl
  */
-public class DemoBenchmarkClientRunnable extends AbstractClientRunnable{
+public class DemoBenchmarkClientRunnable extends AbstractClientRunnable {
 
-    public DemoBenchmarkClientRunnable(String targetIP, int targetPort, int clientNums, int rpcTimeout,
-                                       CyclicBarrier barrier, CountDownLatch latch, long startTime,
-                                       long endTime){
-        super(targetIP, targetPort, clientNums, rpcTimeout, barrier, latch, startTime, endTime);
-    }
+	public DemoBenchmarkClientRunnable(String targetIP, int targetPort, int clientNums, int rpcTimeout,
+			CyclicBarrier barrier, CountDownLatch latch, long startTime, long endTime) {
+		super(targetIP, targetPort, clientNums, rpcTimeout, barrier, latch, startTime, endTime);
+	}
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    @Override
-    public Object invoke(ServiceFactory serviceFactory) {
-        DemoService demoService = (DemoService) serviceFactory.get(DemoService.class);
-        return demoService.sendRequest("hello");
-    }
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public Object invoke(ServiceFactory serviceFactory) {
+		DemoService demoService = (DemoService) serviceFactory.get(DemoService.class);
+		return demoService.sendRequest("hello");
+	}
 
 }

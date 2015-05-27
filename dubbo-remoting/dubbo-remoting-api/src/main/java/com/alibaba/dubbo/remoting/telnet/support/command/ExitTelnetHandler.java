@@ -29,9 +29,9 @@ import com.alibaba.dubbo.remoting.telnet.support.Help;
 @Help(parameter = "", summary = "Exit the telnet.", detail = "Exit the telnet.")
 public class ExitTelnetHandler implements TelnetHandler {
 
-    public String telnet(Channel channel, String message) {
-        channel.close();
-        return null;
-    }
+	public String telnet(Channel channel, String message) {
+		channel.close();
+		return null;
+	}
 
 }

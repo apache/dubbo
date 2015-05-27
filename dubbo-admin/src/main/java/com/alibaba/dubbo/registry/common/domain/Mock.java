@@ -18,72 +18,72 @@ package com.alibaba.dubbo.registry.common.domain;
  */
 public class Mock extends Entity {
 
-    private static final long serialVersionUID = 872527738197173003L;
-    
-    private String            name;
-    
-    private String            service;
+	private static final long serialVersionUID = 872527738197173003L;
 
-    private String            method;
+	private String name;
 
-    private String            parameters;
+	private String service;
 
-    private boolean           exception;
+	private String method;
 
-    private String            result;
+	private String parameters;
 
-    private String            username;
+	private boolean exception;
 
-    private boolean           autoRun;
-    
-    private String            consumerAddr;
-    
-    public Mock() {
-    }
+	private String result;
 
-    public Mock(Long id) {
-        super(id);
-    }
-    
-    public String getService() {
-        return service;
-    }
+	private String username;
 
-    public void setService(String service) {
-        this.service = service;
-    }
+	private boolean autoRun;
 
-    public String getMethod() {
-        return method;
-    }
+	private String consumerAddr;
 
-    public void setMethod(String method) {
-        this.method = method;
-    }
+	public Mock() {
+	}
 
-    public String getParameters() {
-        return parameters;
-    }
+	public Mock(Long id) {
+		super(id);
+	}
 
-    public void setParameters(String parameters) {
-        this.parameters = parameters;
-    }
+	public String getService() {
+		return service;
+	}
+
+	public void setService(String service) {
+		this.service = service;
+	}
+
+	public String getMethod() {
+		return method;
+	}
+
+	public void setMethod(String method) {
+		this.method = method;
+	}
+
+	public String getParameters() {
+		return parameters;
+	}
+
+	public void setParameters(String parameters) {
+		this.parameters = parameters;
+	}
 
 	public String getResult() {
-        return result;
-    }
+		return result;
+	}
 
-    public void setResult(String result) {
-        this.result = result;
-    }
+	public void setResult(String result) {
+		this.result = result;
+	}
 
-    public String getUsername() {
-        return username;
-    }
+	public String getUsername() {
+		return username;
+	}
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+	public void setUsername(String username) {
+		this.username = username;
+	}
 
 	public boolean isException() {
 		return exception;

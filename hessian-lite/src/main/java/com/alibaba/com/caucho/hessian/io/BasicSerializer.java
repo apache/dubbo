@@ -55,231 +55,218 @@ import java.util.Date;
  * Serializing an object for known object types.
  */
 public class BasicSerializer extends AbstractSerializer {
-  public static final int NULL = 0;
-  public static final int BOOLEAN = NULL + 1;
-  public static final int BYTE = BOOLEAN + 1;
-  public static final int SHORT = BYTE + 1;
-  public static final int INTEGER = SHORT + 1;
-  public static final int LONG = INTEGER + 1;
-  public static final int FLOAT = LONG + 1;
-  public static final int DOUBLE = FLOAT + 1;
-  public static final int CHARACTER = DOUBLE + 1;
-  public static final int CHARACTER_OBJECT = CHARACTER + 1;
-  public static final int STRING = CHARACTER_OBJECT + 1;
-  public static final int DATE = STRING + 1;
-  public static final int NUMBER = DATE + 1;
-  public static final int OBJECT = NUMBER + 1;
-  
-  public static final int BOOLEAN_ARRAY = OBJECT + 1;
-  public static final int BYTE_ARRAY = BOOLEAN_ARRAY + 1;
-  public static final int SHORT_ARRAY = BYTE_ARRAY + 1;
-  public static final int INTEGER_ARRAY = SHORT_ARRAY + 1;
-  public static final int LONG_ARRAY = INTEGER_ARRAY + 1;
-  public static final int FLOAT_ARRAY = LONG_ARRAY + 1;
-  public static final int DOUBLE_ARRAY = FLOAT_ARRAY + 1;
-  public static final int CHARACTER_ARRAY = DOUBLE_ARRAY + 1;
-  public static final int STRING_ARRAY = CHARACTER_ARRAY + 1;
-  public static final int OBJECT_ARRAY = STRING_ARRAY + 1;
+	public static final int NULL = 0;
+	public static final int BOOLEAN = NULL + 1;
+	public static final int BYTE = BOOLEAN + 1;
+	public static final int SHORT = BYTE + 1;
+	public static final int INTEGER = SHORT + 1;
+	public static final int LONG = INTEGER + 1;
+	public static final int FLOAT = LONG + 1;
+	public static final int DOUBLE = FLOAT + 1;
+	public static final int CHARACTER = DOUBLE + 1;
+	public static final int CHARACTER_OBJECT = CHARACTER + 1;
+	public static final int STRING = CHARACTER_OBJECT + 1;
+	public static final int DATE = STRING + 1;
+	public static final int NUMBER = DATE + 1;
+	public static final int OBJECT = NUMBER + 1;
 
-  private int code;
+	public static final int BOOLEAN_ARRAY = OBJECT + 1;
+	public static final int BYTE_ARRAY = BOOLEAN_ARRAY + 1;
+	public static final int SHORT_ARRAY = BYTE_ARRAY + 1;
+	public static final int INTEGER_ARRAY = SHORT_ARRAY + 1;
+	public static final int LONG_ARRAY = INTEGER_ARRAY + 1;
+	public static final int FLOAT_ARRAY = LONG_ARRAY + 1;
+	public static final int DOUBLE_ARRAY = FLOAT_ARRAY + 1;
+	public static final int CHARACTER_ARRAY = DOUBLE_ARRAY + 1;
+	public static final int STRING_ARRAY = CHARACTER_ARRAY + 1;
+	public static final int OBJECT_ARRAY = STRING_ARRAY + 1;
 
-  public BasicSerializer(int code)
-  {
-    this.code = code;
-  }
-  
-  public void writeObject(Object obj, AbstractHessianOutput out)
-    throws IOException
-  {
-    switch (code) {
-    case BOOLEAN:
-      out.writeBoolean(((Boolean) obj).booleanValue());
-      break;
-      
-    case BYTE:
-    case SHORT:
-    case INTEGER:
-      out.writeInt(((Number) obj).intValue());
-      break;
+	private int code;
 
-    case LONG:
-      out.writeLong(((Number) obj).longValue());
-      break;
+	public BasicSerializer(int code) {
+		this.code = code;
+	}
 
-    case FLOAT:
-    case DOUBLE:
-      out.writeDouble(((Number) obj).doubleValue());
-      break;
-      
-    case CHARACTER:
-    case CHARACTER_OBJECT:
-      out.writeString(String.valueOf(obj));
-      break;
-      
-    case STRING:
-      out.writeString((String) obj);
-      break;
-      
-    case DATE:
-      out.writeUTCDate(((Date) obj).getTime());
-      break;
-      
-    case BOOLEAN_ARRAY:
-    {
-      if (out.addRef(obj))
-        return;
-      
-      boolean []data = (boolean []) obj;
-      boolean hasEnd = out.writeListBegin(data.length, "[boolean");
-      for (int i = 0; i < data.length; i++)
-        out.writeBoolean(data[i]);
+	public void writeObject(Object obj, AbstractHessianOutput out) throws IOException {
+		switch (code) {
+		case BOOLEAN:
+			out.writeBoolean(((Boolean) obj).booleanValue());
+			break;
 
-      if (hasEnd)
-	out.writeListEnd();
-      
-      break;
-    }
+		case BYTE:
+		case SHORT:
+		case INTEGER:
+			out.writeInt(((Number) obj).intValue());
+			break;
 
-    case BYTE_ARRAY:
-    {
-      byte []data = (byte []) obj;
-      out.writeBytes(data, 0, data.length);
-      break;
-    }
+		case LONG:
+			out.writeLong(((Number) obj).longValue());
+			break;
 
-    case SHORT_ARRAY:
-    {
-      if (out.addRef(obj))
-        return;
-      
-      short []data = (short []) obj;
-      boolean hasEnd = out.writeListBegin(data.length, "[short");
-      
-      for (int i = 0; i < data.length; i++)
-        out.writeInt(data[i]);
+		case FLOAT:
+		case DOUBLE:
+			out.writeDouble(((Number) obj).doubleValue());
+			break;
 
-      if (hasEnd)
-	out.writeListEnd();
-      break;
-    }
+		case CHARACTER:
+		case CHARACTER_OBJECT:
+			out.writeString(String.valueOf(obj));
+			break;
 
-    case INTEGER_ARRAY:
-    {
-      if (out.addRef(obj))
-        return;
-      
-      int []data = (int []) obj;
-      
-      boolean hasEnd = out.writeListBegin(data.length, "[int");
-      
-      for (int i = 0; i < data.length; i++)
-        out.writeInt(data[i]);
+		case STRING:
+			out.writeString((String) obj);
+			break;
 
-      if (hasEnd)
-	out.writeListEnd();
-      
-      break;
-    }
+		case DATE:
+			out.writeUTCDate(((Date) obj).getTime());
+			break;
 
-    case LONG_ARRAY:
-    {
-      if (out.addRef(obj))
-        return;
-      
-      long []data = (long []) obj;
-      
-      boolean hasEnd = out.writeListBegin(data.length, "[long");
-      
-      for (int i = 0; i < data.length; i++)
-        out.writeLong(data[i]);
+		case BOOLEAN_ARRAY: {
+			if (out.addRef(obj))
+				return;
 
-      if (hasEnd)
-	out.writeListEnd();
-      break;
-    }
+			boolean[] data = (boolean[]) obj;
+			boolean hasEnd = out.writeListBegin(data.length, "[boolean");
+			for (int i = 0; i < data.length; i++)
+				out.writeBoolean(data[i]);
 
-    case FLOAT_ARRAY:
-    {
-      if (out.addRef(obj))
-        return;
-      
-      float []data = (float []) obj;
-      
-      boolean hasEnd = out.writeListBegin(data.length, "[float");
-      
-      for (int i = 0; i < data.length; i++)
-        out.writeDouble(data[i]);
+			if (hasEnd)
+				out.writeListEnd();
 
-      if (hasEnd)
-	out.writeListEnd();
-      break;
-    }
+			break;
+		}
 
-    case DOUBLE_ARRAY:
-    {
-      if (out.addRef(obj))
-        return;
-      
-      double []data = (double []) obj;
-      boolean hasEnd = out.writeListBegin(data.length, "[double");
-      
-      for (int i = 0; i < data.length; i++)
-        out.writeDouble(data[i]);
+		case BYTE_ARRAY: {
+			byte[] data = (byte[]) obj;
+			out.writeBytes(data, 0, data.length);
+			break;
+		}
 
-      if (hasEnd)
-	out.writeListEnd();
-      break;
-    }
+		case SHORT_ARRAY: {
+			if (out.addRef(obj))
+				return;
 
-    case STRING_ARRAY:
-    {
-      if (out.addRef(obj))
-        return;
-      
-      String []data = (String []) obj;
-      
-      boolean hasEnd = out.writeListBegin(data.length, "[string");
-      
-      for (int i = 0; i < data.length; i++) {
-        out.writeString(data[i]);
-      }
+			short[] data = (short[]) obj;
+			boolean hasEnd = out.writeListBegin(data.length, "[short");
 
-      if (hasEnd)
-	out.writeListEnd();
-      break;
-    }
+			for (int i = 0; i < data.length; i++)
+				out.writeInt(data[i]);
 
-    case CHARACTER_ARRAY:
-    {
-      char []data = (char []) obj;
-      out.writeString(data, 0, data.length);
-      break;
-    }
+			if (hasEnd)
+				out.writeListEnd();
+			break;
+		}
 
-    case OBJECT_ARRAY:
-    {
-      if (out.addRef(obj))
-        return;
-      
-      Object []data = (Object []) obj;
-      
-      boolean hasEnd = out.writeListBegin(data.length, "[object");
-      
-      for (int i = 0; i < data.length; i++) {
-        out.writeObject(data[i]);
-      }
+		case INTEGER_ARRAY: {
+			if (out.addRef(obj))
+				return;
 
-      if (hasEnd)
-	out.writeListEnd();
-      break;
-    }
-    
-    case NULL:
-      out.writeNull();
-      break;
+			int[] data = (int[]) obj;
 
-    default:
-      throw new RuntimeException(code + " " + String.valueOf(obj.getClass()));
-    }
-  }
+			boolean hasEnd = out.writeListBegin(data.length, "[int");
+
+			for (int i = 0; i < data.length; i++)
+				out.writeInt(data[i]);
+
+			if (hasEnd)
+				out.writeListEnd();
+
+			break;
+		}
+
+		case LONG_ARRAY: {
+			if (out.addRef(obj))
+				return;
+
+			long[] data = (long[]) obj;
+
+			boolean hasEnd = out.writeListBegin(data.length, "[long");
+
+			for (int i = 0; i < data.length; i++)
+				out.writeLong(data[i]);
+
+			if (hasEnd)
+				out.writeListEnd();
+			break;
+		}
+
+		case FLOAT_ARRAY: {
+			if (out.addRef(obj))
+				return;
+
+			float[] data = (float[]) obj;
+
+			boolean hasEnd = out.writeListBegin(data.length, "[float");
+
+			for (int i = 0; i < data.length; i++)
+				out.writeDouble(data[i]);
+
+			if (hasEnd)
+				out.writeListEnd();
+			break;
+		}
+
+		case DOUBLE_ARRAY: {
+			if (out.addRef(obj))
+				return;
+
+			double[] data = (double[]) obj;
+			boolean hasEnd = out.writeListBegin(data.length, "[double");
+
+			for (int i = 0; i < data.length; i++)
+				out.writeDouble(data[i]);
+
+			if (hasEnd)
+				out.writeListEnd();
+			break;
+		}
+
+		case STRING_ARRAY: {
+			if (out.addRef(obj))
+				return;
+
+			String[] data = (String[]) obj;
+
+			boolean hasEnd = out.writeListBegin(data.length, "[string");
+
+			for (int i = 0; i < data.length; i++) {
+				out.writeString(data[i]);
+			}
+
+			if (hasEnd)
+				out.writeListEnd();
+			break;
+		}
+
+		case CHARACTER_ARRAY: {
+			char[] data = (char[]) obj;
+			out.writeString(data, 0, data.length);
+			break;
+		}
+
+		case OBJECT_ARRAY: {
+			if (out.addRef(obj))
+				return;
+
+			Object[] data = (Object[]) obj;
+
+			boolean hasEnd = out.writeListBegin(data.length, "[object");
+
+			for (int i = 0; i < data.length; i++) {
+				out.writeObject(data[i]);
+			}
+
+			if (hasEnd)
+				out.writeListEnd();
+			break;
+		}
+
+		case NULL:
+			out.writeNull();
+			break;
+
+		default:
+			throw new RuntimeException(code + " " + String.valueOf(obj.getClass()));
+		}
+	}
 }

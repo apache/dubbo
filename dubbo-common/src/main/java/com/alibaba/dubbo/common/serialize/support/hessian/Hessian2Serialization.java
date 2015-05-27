@@ -28,23 +28,23 @@ import com.alibaba.dubbo.common.serialize.Serialization;
  * @author ding.lid
  */
 public class Hessian2Serialization implements Serialization {
-    
-    public static final byte ID = 2;
 
-    public byte getContentTypeId() {
-        return ID;
-    }
+	public static final byte ID = 2;
 
-    public String getContentType() {
-        return "x-application/hessian2";
-    }
+	public byte getContentTypeId() {
+		return ID;
+	}
 
-    public ObjectOutput serialize(URL url, OutputStream out) throws IOException {
-        return new Hessian2ObjectOutput(out);
-    }
+	public String getContentType() {
+		return "x-application/hessian2";
+	}
 
-    public ObjectInput deserialize(URL url, InputStream is) throws IOException {
-        return new Hessian2ObjectInput(is);
-    }
+	public ObjectOutput serialize(URL url, OutputStream out) throws IOException {
+		return new Hessian2ObjectOutput(out);
+	}
+
+	public ObjectInput deserialize(URL url, InputStream is) throws IOException {
+		return new Hessian2ObjectInput(is);
+	}
 
 }

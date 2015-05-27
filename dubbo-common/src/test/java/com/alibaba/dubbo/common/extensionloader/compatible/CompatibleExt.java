@@ -24,6 +24,6 @@ import com.alibaba.dubbo.common.extension.SPI;
  */
 @SPI("impl1")
 public interface CompatibleExt {
-    @Adaptive
-    String echo(URL url, String s);
+	@Adaptive
+	String echo(URL url, String s);
 }

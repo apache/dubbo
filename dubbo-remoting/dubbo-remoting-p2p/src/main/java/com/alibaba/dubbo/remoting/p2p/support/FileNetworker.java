@@ -27,8 +27,8 @@ import com.alibaba.dubbo.remoting.p2p.Networker;
  */
 public class FileNetworker implements Networker {
 
-    public Group lookup(URL url) throws RemotingException {
-        return new FileGroup(url);
-    }
+	public Group lookup(URL url) throws RemotingException {
+		return new FileGroup(url);
+	}
 
 }

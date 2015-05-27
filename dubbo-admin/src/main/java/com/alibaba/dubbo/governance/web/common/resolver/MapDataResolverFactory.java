@@ -26,29 +26,29 @@ import com.alibaba.citrus.turbine.util.TurbineUtil;
  */
 public class MapDataResolverFactory implements DataResolverFactory {
 
-    @Autowired
-    private HttpServletRequest request;
+	@Autowired
+	private HttpServletRequest request;
 
-    public DataResolver getDataResolver(DataResolverContext context) {
-        if (Map.class == context.getTypeInfo().getRawType()) {
-            return new MapDataResolver(context);
-        }
-        return null;
-    }
-    
-    public class MapDataResolver implements DataResolver {
-        
-        public final DataResolverContext context;
+	public DataResolver getDataResolver(DataResolverContext context) {
+		if (Map.class == context.getTypeInfo().getRawType()) {
+			return new MapDataResolver(context);
+		}
+		return null;
+	}
 
-        public MapDataResolver(DataResolverContext context){
-            this.context = context;
-        }
+	public class MapDataResolver implements DataResolver {
 
-        public Object resolve() {
-            TurbineRunDataInternal rundata = (TurbineRunDataInternal) TurbineUtil.getTurbineRunData(request);
-            return new ParameterMap(request, rundata.getContext(), rundata);
-        }
+		public final DataResolverContext context;
 
-    }
-    
+		public MapDataResolver(DataResolverContext context) {
+			this.context = context;
+		}
+
+		public Object resolve() {
+			TurbineRunDataInternal rundata = (TurbineRunDataInternal) TurbineUtil.getTurbineRunData(request);
+			return new ParameterMap(request, rundata.getContext(), rundata);
+		}
+
+	}
+
 }

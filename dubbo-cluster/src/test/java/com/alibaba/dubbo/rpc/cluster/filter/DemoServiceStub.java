@@ -21,14 +21,14 @@ package com.alibaba.dubbo.rpc.cluster.filter;
 
 public class DemoServiceStub implements DemoService {
 
-    public DemoServiceStub(DemoService demoService){
-    }
+	public DemoServiceStub(DemoService demoService) {
+	}
 
-    public String sayHello(String name) {
-        return name;
-    }
+	public String sayHello(String name) {
+		return name;
+	}
 
-    public int plus(int a, int b) {
-        return a + b;
-    }
+	public int plus(int a, int b) {
+		return a + b;
+	}
 }

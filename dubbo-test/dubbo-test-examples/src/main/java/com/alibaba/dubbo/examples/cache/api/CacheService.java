@@ -22,6 +22,6 @@ package com.alibaba.dubbo.examples.cache.api;
  */
 public interface CacheService {
 
-    String findCache(String id);
+	String findCache(String id);
 
 }

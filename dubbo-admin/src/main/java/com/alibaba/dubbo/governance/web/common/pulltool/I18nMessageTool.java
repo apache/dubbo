@@ -27,21 +27,21 @@ import com.alibaba.dubbo.governance.biz.common.i18n.MessageResourceService;
  */
 public class I18nMessageTool implements ToolFactory {
 
-    @Autowired
-    private MessageResourceService messageResourceService;
+	@Autowired
+	private MessageResourceService messageResourceService;
 
-    public Object createTool() throws Exception {
-        return messageResourceService;
-    }
+	public Object createTool() throws Exception {
+		return messageResourceService;
+	}
 
-    private boolean singleton = true; //应该是global范围的对象！！
+	private boolean singleton = true; // 应该是global范围的对象！！
 
-    public void setSingleton(boolean singleton) {
-        this.singleton = singleton;
-    }
-    
-    public boolean isSingleton() {
-        return this.singleton;
-    }
+	public void setSingleton(boolean singleton) {
+		this.singleton = singleton;
+	}
+
+	public boolean isSingleton() {
+		return this.singleton;
+	}
 
 }

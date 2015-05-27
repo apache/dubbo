@@ -25,13 +25,13 @@ import com.alibaba.dubbo.common.extension.SPI;
  */
 @SPI
 public interface PageHandler {
-    
-    /**
-     * Handle the page.
-     * 
-     * @param url
-     * @return the page.
-     */
-    Page handle(URL url);
+
+	/**
+	 * Handle the page.
+	 * 
+	 * @param url
+	 * @return the page.
+	 */
+	Page handle(URL url);
 
 }

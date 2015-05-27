@@ -21,62 +21,62 @@ package com.alibaba.dubbo.registry.common.domain;
  */
 public class Document extends Entity {
 
-    private static final long serialVersionUID = 5059135057592486874L;
-    
-    public static final String EXTERNAL_TYPE = "E";
-    
-    public static final String INTERNAL_TYPE = "I";
-    
-    public static final String API_TYPE = "A";
-    
-    private String service;
+	private static final long serialVersionUID = 5059135057592486874L;
 
-    private String title;
+	public static final String EXTERNAL_TYPE = "E";
 
-    private String type;
+	public static final String INTERNAL_TYPE = "I";
 
-    private String content;
-    
-    private String username;
+	public static final String API_TYPE = "A";
 
-    public Document() {
-    }
+	private String service;
 
-    public Document(Long id) {
-        super(id);
-    }
-    
-    public String getTitle() {
-        return title;
-    }
+	private String title;
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+	private String type;
 
-    public String getType() {
-        return type;
-    }
+	private String content;
 
-    public void setType(String type) {
-        this.type = type;
-    }
+	private String username;
 
-    public String getContent() {
-        return content;
-    }
+	public Document() {
+	}
 
-    public void setContent(String content) {
-        this.content = content;
-    }
+	public Document(Long id) {
+		super(id);
+	}
 
-    public String getUsername() {
-        return username;
-    }
+	public String getTitle() {
+		return title;
+	}
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public String getContent() {
+		return content;
+	}
+
+	public void setContent(String content) {
+		this.content = content;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
 
 	public String getService() {
 		return service;

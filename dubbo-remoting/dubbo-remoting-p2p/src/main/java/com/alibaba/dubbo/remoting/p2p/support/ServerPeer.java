@@ -38,87 +38,88 @@ import com.alibaba.dubbo.remoting.transport.ServerDelegate;
  * @author william.liangf
  */
 public class ServerPeer extends ServerDelegate implements Peer {
-    
-    private static final Logger logger = LoggerFactory.getLogger(ServerPeer.class);
 
-    private final Map<URL, Client> clients;
+	private static final Logger logger = LoggerFactory.getLogger(ServerPeer.class);
 
-    private final Group group;
-    
-    public ServerPeer(Server server, Map<URL, Client> clients, Group group){
-        super(server);
-        this.clients = clients;
-        this.group = group;
-    }
+	private final Map<URL, Client> clients;
 
-    public void leave() throws RemotingException {
-        group.leave(getUrl());
-    }
+	private final Group group;
 
-    @Override
-    public void close() {
-        try {
-            leave();
-        } catch (RemotingException e) {
-            logger.error(e.getMessage(), e);
-        }
-    }
-    
-    @Override
-    public Collection<Channel> getChannels() {
-        Collection<Channel> channels = super.getChannels();
-        if (clients.size() > 0) {
-            channels = channels == null ? new ArrayList<Channel>() : new ArrayList<Channel>(channels);
-            channels.addAll(clients.values());
-        }
-        return channels;
-    }
+	public ServerPeer(Server server, Map<URL, Client> clients, Group group) {
+		super(server);
+		this.clients = clients;
+		this.group = group;
+	}
 
-    @Override
-    public Channel getChannel(InetSocketAddress remoteAddress) {
-        String host = remoteAddress.getAddress() != null ? remoteAddress.getAddress().getHostAddress() : remoteAddress.getHostName();
-        int port = remoteAddress.getPort();
-        Channel channel = super.getChannel(remoteAddress);
-        if (channel == null) {
-            for (Map.Entry<URL, Client> entry : clients.entrySet()) {
-                URL url = entry.getKey();
-                if (url.getIp().equals(host) && url.getPort() == port) {
-                    return entry.getValue();
-                }
-            }
-        }
-        return channel;
-    }
+	public void leave() throws RemotingException {
+		group.leave(getUrl());
+	}
 
-    @Override
-    public void send(Object message) throws RemotingException {
-        send(message, getUrl().getParameter(Constants.SENT_KEY, false));
-    }
+	@Override
+	public void close() {
+		try {
+			leave();
+		} catch (RemotingException e) {
+			logger.error(e.getMessage(), e);
+		}
+	}
 
-    @Override
-    public void send(Object message, boolean sent) throws RemotingException {
-        Throwable last = null;
-        try {
-            super.send(message, sent);
-        } catch (Throwable t) {
-            last = t;
-        }
-        for (Client client : clients.values()) {
-            try {
-                client.send(message, sent);
-            } catch (Throwable t) {
-                last = t;
-            }
-        }
-        if (last != null) {
-            if (last instanceof RemotingException) {
-                throw (RemotingException) last;
-            } else if (last instanceof RuntimeException) {
-                throw (RuntimeException) last;
-            } else {
-                throw new RuntimeException(last.getMessage(), last);
-            }
-        }
-    }
+	@Override
+	public Collection<Channel> getChannels() {
+		Collection<Channel> channels = super.getChannels();
+		if (clients.size() > 0) {
+			channels = channels == null ? new ArrayList<Channel>() : new ArrayList<Channel>(channels);
+			channels.addAll(clients.values());
+		}
+		return channels;
+	}
+
+	@Override
+	public Channel getChannel(InetSocketAddress remoteAddress) {
+		String host = remoteAddress.getAddress() != null ? remoteAddress.getAddress().getHostAddress() : remoteAddress
+				.getHostName();
+		int port = remoteAddress.getPort();
+		Channel channel = super.getChannel(remoteAddress);
+		if (channel == null) {
+			for (Map.Entry<URL, Client> entry : clients.entrySet()) {
+				URL url = entry.getKey();
+				if (url.getIp().equals(host) && url.getPort() == port) {
+					return entry.getValue();
+				}
+			}
+		}
+		return channel;
+	}
+
+	@Override
+	public void send(Object message) throws RemotingException {
+		send(message, getUrl().getParameter(Constants.SENT_KEY, false));
+	}
+
+	@Override
+	public void send(Object message, boolean sent) throws RemotingException {
+		Throwable last = null;
+		try {
+			super.send(message, sent);
+		} catch (Throwable t) {
+			last = t;
+		}
+		for (Client client : clients.values()) {
+			try {
+				client.send(message, sent);
+			} catch (Throwable t) {
+				last = t;
+			}
+		}
+		if (last != null) {
+			if (last instanceof RemotingException) {
+				throw (RemotingException) last;
+			} else if (last instanceof RuntimeException) {
+				throw (RuntimeException) last;
+			} else {
+				throw new RuntimeException(last.getMessage(), last);
+			}
+		}
+	}
 
 }

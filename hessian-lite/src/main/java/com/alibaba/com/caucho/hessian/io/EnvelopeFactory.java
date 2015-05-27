@@ -50,8 +50,6 @@ package com.alibaba.com.caucho.hessian.io;
 
 import java.util.logging.*;
 
-public class EnvelopeFactory
-{
-  private static final Logger log
-    = Logger.getLogger(EnvelopeFactory.class.getName());
+public class EnvelopeFactory {
+	private static final Logger log = Logger.getLogger(EnvelopeFactory.class.getName());
 }

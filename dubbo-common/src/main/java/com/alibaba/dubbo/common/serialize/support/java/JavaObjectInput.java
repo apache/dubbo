@@ -28,28 +28,24 @@ import com.alibaba.dubbo.common.serialize.support.nativejava.NativeJavaObjectInp
  * @author qian.lei
  */
 
-public class JavaObjectInput extends NativeJavaObjectInput
-{
+public class JavaObjectInput extends NativeJavaObjectInput {
 	public final static int MAX_BYTE_ARRAY_LENGTH = 8 * 1024 * 1024;
 
-	public JavaObjectInput(InputStream is) throws IOException
-	{
+	public JavaObjectInput(InputStream is) throws IOException {
 		super(new ObjectInputStream(is));
 	}
 
-	public JavaObjectInput(InputStream is, boolean compacted) throws IOException
-	{
+	public JavaObjectInput(InputStream is, boolean compacted) throws IOException {
 		super(compacted ? new CompactedObjectInputStream(is) : new ObjectInputStream(is));
 	}
 
-	public byte[] readBytes() throws IOException
-	{
+	public byte[] readBytes() throws IOException {
 		int len = getObjectInputStream().readInt();
-		if( len < 0 )
+		if (len < 0)
 			return null;
-		if( len == 0 )
+		if (len == 0)
 			return new byte[0];
-		if( len > MAX_BYTE_ARRAY_LENGTH )
+		if (len > MAX_BYTE_ARRAY_LENGTH)
 			throw new IOException("Byte array length too large. " + len);
 
 		byte[] b = new byte[len];
@@ -57,34 +53,30 @@ public class JavaObjectInput extends NativeJavaObjectInput
 		return b;
 	}
 
-	public String readUTF() throws IOException
-	{
+	public String readUTF() throws IOException {
 		int len = getObjectInputStream().readInt();
-		if( len < 0 )
+		if (len < 0)
 			return null;
 
 		return getObjectInputStream().readUTF();
 	}
 
-	public Object readObject() throws IOException, ClassNotFoundException
-	{
+	public Object readObject() throws IOException, ClassNotFoundException {
 		byte b = getObjectInputStream().readByte();
-		if( b == 0 )
+		if (b == 0)
 			return null;
 
 		return getObjectInputStream().readObject();
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> T readObject(Class<T> cls) throws IOException,
-			ClassNotFoundException {
+	public <T> T readObject(Class<T> cls) throws IOException, ClassNotFoundException {
 		return (T) readObject();
 	}
 
 	@SuppressWarnings("unchecked")
-    public <T> T readObject(Class<T> cls, Type type) throws IOException,ClassNotFoundException
-    {
-        return (T) readObject();
-    }
+	public <T> T readObject(Class<T> cls, Type type) throws IOException, ClassNotFoundException {
+		return (T) readObject();
+	}
 
 }

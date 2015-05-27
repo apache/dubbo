@@ -21,36 +21,36 @@ package com.alibaba.dubbo.rpc.protocol.hessian;
  * @author william.liangf
  */
 public class HessianServiceImpl implements HessianService {
-    
-    private boolean called;
 
-    public String sayHello(String name) {
-        called = true;
-        return "Hello, " + name;
-    }
+	private boolean called;
 
-    public boolean isCalled() {
-        return called;
-    }
-    
-    public void timeOut(int millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-    
-    public String customException() {
-        throw new MyException("custom exception");
-    }
+	public String sayHello(String name) {
+		called = true;
+		return "Hello, " + name;
+	}
 
-   static class MyException extends RuntimeException{
-        
-        private static final long serialVersionUID = -3051041116483629056L;
+	public boolean isCalled() {
+		return called;
+	}
 
-        public MyException(String message) {
-            super(message);
-        }
-    }
+	public void timeOut(int millis) {
+		try {
+			Thread.sleep(millis);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public String customException() {
+		throw new MyException("custom exception");
+	}
+
+	static class MyException extends RuntimeException {
+
+		private static final long serialVersionUID = -3051041116483629056L;
+
+		public MyException(String message) {
+			super(message);
+		}
+	}
 }

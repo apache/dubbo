@@ -26,24 +26,18 @@ import java.io.OutputStream;
  * @author qianlei
  */
 
-public class CompactedObjectOutputStream extends ObjectOutputStream
-{
-	public CompactedObjectOutputStream(OutputStream out) throws IOException
-	{
+public class CompactedObjectOutputStream extends ObjectOutputStream {
+	public CompactedObjectOutputStream(OutputStream out) throws IOException {
 		super(out);
 	}
 
 	@Override
-	protected void writeClassDescriptor(ObjectStreamClass desc) throws IOException
-	{
+	protected void writeClassDescriptor(ObjectStreamClass desc) throws IOException {
 		Class<?> clazz = desc.forClass();
-		if( clazz.isPrimitive() || clazz.isArray() )
-		{
+		if (clazz.isPrimitive() || clazz.isArray()) {
 			write(0);
 			super.writeClassDescriptor(desc);
-		}
-		else
-		{
+		} else {
 			write(1);
 			writeUTF(desc.getName());
 		}

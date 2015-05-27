@@ -23,37 +23,37 @@ import org.apache.log4j.spi.LoggingEvent;
 
 public class DubboAppender extends ConsoleAppender {
 
-    public static boolean   available = false;
+	public static boolean available = false;
 
-    public static List<Log> logList   = new ArrayList<Log>();
+	public static List<Log> logList = new ArrayList<Log>();
 
-    public static void doStart() {
-        available = true;
-    }
-    
-    public static void doStop() {
-        available = false;
-    }
-    
-    public static void clear() {
-        logList.clear();
-    }
+	public static void doStart() {
+		available = true;
+	}
 
-    public void append(LoggingEvent event) {
-        super.append(event);
-        if (available == true) {
-            Log temp = parseLog(event);
-            logList.add(temp);
-        }
-    }
+	public static void doStop() {
+		available = false;
+	}
 
-    private Log parseLog(LoggingEvent event) {
-        Log log = new Log();
-        log.setLogName(event.getLogger().getName());
-        log.setLogLevel(event.getLevel());
-        log.setLogThread(event.getThreadName());
-        log.setLogMessage(event.getMessage().toString());
-        return log;
-    }
-    
+	public static void clear() {
+		logList.clear();
+	}
+
+	public void append(LoggingEvent event) {
+		super.append(event);
+		if (available == true) {
+			Log temp = parseLog(event);
+			logList.add(temp);
+		}
+	}
+
+	private Log parseLog(LoggingEvent event) {
+		Log log = new Log();
+		log.setLogName(event.getLogger().getName());
+		log.setLogLevel(event.getLevel());
+		log.setLogThread(event.getThreadName());
+		log.setLogMessage(event.getMessage().toString());
+		return log;
+	}
+
 }

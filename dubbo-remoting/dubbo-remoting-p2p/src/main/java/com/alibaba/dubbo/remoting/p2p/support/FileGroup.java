@@ -39,97 +39,101 @@ import com.alibaba.dubbo.remoting.p2p.Peer;
  * @author william.liangf
  */
 public class FileGroup extends AbstractGroup {
-    
-    private final File file;
-    
-    private volatile long last;
 
-    // 定时任务执行器
-    private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(3, new NamedThreadFactory("FileGroupModifiedChecker", true));
+	private final File file;
 
-    // 重连定时器，定时检查连接是否可用，不可用时，无限次重连
-    private final ScheduledFuture<?> checkModifiedFuture;
+	private volatile long last;
 
-    public FileGroup(URL url){
-        super(url);
-        String path = url.getAbsolutePath();
-        file = new File(path);
-        checkModifiedFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
-            public void run() {
-                // 检测文件变更
-                try {
-                    check();
-                } catch (Throwable t) { // 防御性容错
-                    logger.error("Unexpected error occur at reconnect, cause: " + t.getMessage(), t);
-                }
-            }
-        }, 2000, 2000, TimeUnit.MILLISECONDS);
-    }
+	// 定时任务执行器
+	private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(3,
+			new NamedThreadFactory("FileGroupModifiedChecker", true));
 
-    public void close() {
-        super.close();
-        try {
-            if (! checkModifiedFuture.isCancelled()) {
-                checkModifiedFuture.cancel(true);
-            }
-        } catch (Throwable t) {
-            logger.error(t.getMessage(), t);
-        }
-    }
+	// 重连定时器，定时检查连接是否可用，不可用时，无限次重连
+	private final ScheduledFuture<?> checkModifiedFuture;
 
-    private void check() throws RemotingException {
-        long modified = file.lastModified();
-        if (modified > last) {
-            last = modified;
-            changed();
-        }
-    }
-    
-    private void changed() throws RemotingException {
-        try {
-            String[] lines = IOUtils.readLines(file);
-            for (String line : lines) {
-                connect(URL.valueOf(line));
-            }
-        } catch (IOException e) {
-            throw new RemotingException(new InetSocketAddress(NetUtils.getLocalHost(), 0), getUrl().toInetSocketAddress(), e.getMessage(), e);
-        }
-    }
+	public FileGroup(URL url) {
+		super(url);
+		String path = url.getAbsolutePath();
+		file = new File(path);
+		checkModifiedFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
+			public void run() {
+				// 检测文件变更
+				try {
+					check();
+				} catch (Throwable t) { // 防御性容错
+					logger.error("Unexpected error occur at reconnect, cause: " + t.getMessage(), t);
+				}
+			}
+		}, 2000, 2000, TimeUnit.MILLISECONDS);
+	}
 
-    public Peer join(URL url, ChannelHandler handler) throws RemotingException {
-        Peer peer = super.join(url, handler);
-        try {
-            String full = url.toFullString();
-            String[] lines = IOUtils.readLines(file);
-            for (String line : lines) {
-                if (full.equals(line)) {
-                    return peer;
-                }
-            }
-            IOUtils.appendLines(file, new String[] {full});
-        } catch (IOException e) {
-            throw new RemotingException(new InetSocketAddress(NetUtils.getLocalHost(), 0), getUrl().toInetSocketAddress(), e.getMessage(), e);
-        }
-        return peer;
-    }
-    
-    @Override
-    public void leave(URL url) throws RemotingException {
-        super.leave(url);
-        try {
-            String full = url.toFullString();
-            String[] lines = IOUtils.readLines(file);
-            List<String> saves = new ArrayList<String>();
-            for (String line : lines) {
-                if (full.equals(line)) {
-                    return;
-                }
-                saves.add(line);
-            }
-            IOUtils.appendLines(file, saves.toArray(new String[0]));
-        } catch (IOException e) {
-            throw new RemotingException(new InetSocketAddress(NetUtils.getLocalHost(), 0), getUrl().toInetSocketAddress(), e.getMessage(), e);
-        }
-    }
+	public void close() {
+		super.close();
+		try {
+			if (!checkModifiedFuture.isCancelled()) {
+				checkModifiedFuture.cancel(true);
+			}
+		} catch (Throwable t) {
+			logger.error(t.getMessage(), t);
+		}
+	}
+
+	private void check() throws RemotingException {
+		long modified = file.lastModified();
+		if (modified > last) {
+			last = modified;
+			changed();
+		}
+	}
+
+	private void changed() throws RemotingException {
+		try {
+			String[] lines = IOUtils.readLines(file);
+			for (String line : lines) {
+				connect(URL.valueOf(line));
+			}
+		} catch (IOException e) {
+			throw new RemotingException(new InetSocketAddress(NetUtils.getLocalHost(), 0), getUrl()
+					.toInetSocketAddress(), e.getMessage(), e);
+		}
+	}
+
+	public Peer join(URL url, ChannelHandler handler) throws RemotingException {
+		Peer peer = super.join(url, handler);
+		try {
+			String full = url.toFullString();
+			String[] lines = IOUtils.readLines(file);
+			for (String line : lines) {
+				if (full.equals(line)) {
+					return peer;
+				}
+			}
+			IOUtils.appendLines(file, new String[] { full });
+		} catch (IOException e) {
+			throw new RemotingException(new InetSocketAddress(NetUtils.getLocalHost(), 0), getUrl()
+					.toInetSocketAddress(), e.getMessage(), e);
+		}
+		return peer;
+	}
+
+	@Override
+	public void leave(URL url) throws RemotingException {
+		super.leave(url);
+		try {
+			String full = url.toFullString();
+			String[] lines = IOUtils.readLines(file);
+			List<String> saves = new ArrayList<String>();
+			for (String line : lines) {
+				if (full.equals(line)) {
+					return;
+				}
+				saves.add(line);
+			}
+			IOUtils.appendLines(file, saves.toArray(new String[0]));
+		} catch (IOException e) {
+			throw new RemotingException(new InetSocketAddress(NetUtils.getLocalHost(), 0), getUrl()
+					.toInetSocketAddress(), e.getMessage(), e);
+		}
+	}
 
 }

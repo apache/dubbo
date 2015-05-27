@@ -29,51 +29,51 @@ import com.alibaba.dubbo.remoting.exchange.ExchangeChannel;
 import com.alibaba.dubbo.remoting.exchange.Exchangers;
 
 /**
- * User: heyman
- * Date: 5/3/11
- * Time: 5:47 PM
+ * User: heyman Date: 5/3/11 Time: 5:47 PM
  */
 public class NettyClientTest {
-    static Server server;
+	static Server server;
 
+	@BeforeClass
+	public static void setUp() throws Exception {
+		server = Exchangers.bind(URL.valueOf("exchange://localhost:10001?server=netty"), new TelnetServerHandler());
+	}
 
-    @BeforeClass
-    public static void setUp() throws Exception {
-        server = Exchangers.bind(URL.valueOf("exchange://localhost:10001?server=netty"), new TelnetServerHandler());
-    }
+	@Test
+	public void testClientClose() throws Exception {
+		List<ExchangeChannel> clients = new ArrayList<ExchangeChannel>(100);
+		for (int i = 0; i < 100; i++) {
+			ExchangeChannel client = Exchangers.connect(URL.valueOf("exchange://localhost:10001?client=netty"));
+			Thread.sleep(5);
+			clients.add(client);
+		}
+		for (ExchangeChannel client : clients) {
+			client.close();
+		}
+		Thread.sleep(1000);
+	}
 
-    @Test
-    public void testClientClose() throws Exception {
-        List<ExchangeChannel> clients = new ArrayList<ExchangeChannel>(100);
-        for (int i = 0; i < 100; i++) {
-            ExchangeChannel client = Exchangers.connect(URL.valueOf("exchange://localhost:10001?client=netty"));
-            Thread.sleep(5);
-            clients.add(client);
-        }
-        for (ExchangeChannel client : clients){
-            client.close();
-        }
-        Thread.sleep(1000);
-    }
+	@Test
+	public void testServerClose() throws Exception {
+		for (int i = 0; i < 100; i++) {
+			Server aServer = Exchangers.bind(URL.valueOf("exchange://localhost:" + (5000 + i) + "?client=netty"),
+					new TelnetServerHandler());
+			aServer.close();
+		}
+	}
 
-    @Test
-    public void testServerClose() throws Exception {
-        for (int i = 0; i < 100; i++) {
-            Server aServer = Exchangers.bind(URL.valueOf("exchange://localhost:" + (5000 + i) + "?client=netty"), new TelnetServerHandler());
-            aServer.close();
-        }
-    }
+	@AfterClass
+	public static void tearDown() throws Exception {
+		try {
+			if (server != null)
+				server.close();
+		} finally {
+		}
+	}
 
-    @AfterClass
-    public static void tearDown() throws Exception {
-        try {
-            if (server != null)
-                server.close();
-        } finally {}
-    }
-    
-    public static void main(String[] args) throws RemotingException, InterruptedException {
-    	ExchangeChannel client = Exchangers.connect(URL.valueOf("exchange://10.20.153.10:20880?client=netty&heartbeat=1000"));
-    	Thread.sleep(60*1000*50);
+	public static void main(String[] args) throws RemotingException, InterruptedException {
+		ExchangeChannel client = Exchangers.connect(URL
+				.valueOf("exchange://10.20.153.10:20880?client=netty&heartbeat=1000"));
+		Thread.sleep(60 * 1000 * 50);
 	}
 }

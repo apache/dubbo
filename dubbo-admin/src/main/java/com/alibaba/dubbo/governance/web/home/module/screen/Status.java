@@ -25,38 +25,38 @@ import com.alibaba.dubbo.registry.common.StatusManager;
 /**
  * @author tony.chenl
  */
-public class Status{
-    @Autowired
-    private HttpServletResponse response;
+public class Status {
+	@Autowired
+	private HttpServletResponse response;
 
-    public void execute(Map<String,Object> context) throws Exception {
-        //FIXME cache监控存在性能问题 汇总页面去掉
-        Map<String, com.alibaba.dubbo.common.status.Status> statuses = StatusManager.getInstance().getStatusList(new String[]{"cache"});
-        com.alibaba.dubbo.common.status.Status status = StatusManager.getInstance().getStatusSummary(statuses);
-        Level level = status.getLevel();
-        if (!com.alibaba.dubbo.common.status.Status.Level.OK.equals(level)) {
-            context.put("message", level
-                    + new SimpleDateFormat(" [yyyy-MM-dd HH:mm:ss] ").format(new Date())
-                    + filterOK(status.getMessage()));
-        } else {
-            context.put("message", level.toString());
-        }
-        PrintWriter writer = response.getWriter();
-        writer.print(context.get("message").toString());
-        writer.flush();
-    }
-    
-    private static final Pattern OK_PATTERN = Pattern.compile("o(k)", Pattern.CASE_INSENSITIVE);
+	public void execute(Map<String, Object> context) throws Exception {
+		// FIXME cache监控存在性能问题 汇总页面去掉
+		Map<String, com.alibaba.dubbo.common.status.Status> statuses = StatusManager.getInstance().getStatusList(
+				new String[] { "cache" });
+		com.alibaba.dubbo.common.status.Status status = StatusManager.getInstance().getStatusSummary(statuses);
+		Level level = status.getLevel();
+		if (!com.alibaba.dubbo.common.status.Status.Level.OK.equals(level)) {
+			context.put("message", level + new SimpleDateFormat(" [yyyy-MM-dd HH:mm:ss] ").format(new Date())
+					+ filterOK(status.getMessage()));
+		} else {
+			context.put("message", level.toString());
+		}
+		PrintWriter writer = response.getWriter();
+		writer.print(context.get("message").toString());
+		writer.flush();
+	}
 
-    public static String filterOK(String message) {
-        if (message == null)
-            return "";
-        // 避免ok关键字，用数字0代替字母o
-        return OK_PATTERN.matcher(message).replaceAll("0$1");
-    }
+	private static final Pattern OK_PATTERN = Pattern.compile("o(k)", Pattern.CASE_INSENSITIVE);
 
-    public void setStatusHandlers(Collection<StatusChecker> statusHandlers) {
-        StatusManager.getInstance().addStatusHandlers(statusHandlers);
-    }
+	public static String filterOK(String message) {
+		if (message == null)
+			return "";
+		// 避免ok关键字，用数字0代替字母o
+		return OK_PATTERN.matcher(message).replaceAll("0$1");
+	}
+
+	public void setStatusHandlers(Collection<StatusChecker> statusHandlers) {
+		StatusManager.getInstance().addStatusHandlers(statusHandlers);
+	}
 
 }

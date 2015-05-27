@@ -16,5 +16,5 @@
 package com.alibaba.dubbo.rpc.protocol.injvm;
 
 public interface IEcho {
-    String echo(String e);
+	String echo(String e);
 }

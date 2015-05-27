@@ -29,14 +29,14 @@ import com.alibaba.dubbo.remoting.exchange.support.Replier;
  */
 public class MinaClientToServerTest extends ClientToServerTest {
 
-    @Override
-    protected ExchangeServer newServer(int port, Replier<?> receiver) throws RemotingException {
-        return Exchangers.bind(URL.valueOf("exchange://localhost:" + port + "?server=mina"), receiver);
-    }
+	@Override
+	protected ExchangeServer newServer(int port, Replier<?> receiver) throws RemotingException {
+		return Exchangers.bind(URL.valueOf("exchange://localhost:" + port + "?server=mina"), receiver);
+	}
 
-    @Override
-    protected ExchangeChannel newClient(int port) throws RemotingException {
-        return Exchangers.connect(URL.valueOf("exchange://localhost:" + port + "?client=mina"));
-    }
+	@Override
+	protected ExchangeChannel newClient(int port) throws RemotingException {
+		return Exchangers.connect(URL.valueOf("exchange://localhost:" + port + "?client=mina"));
+	}
 
 }

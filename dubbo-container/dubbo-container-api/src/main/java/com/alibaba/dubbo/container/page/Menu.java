@@ -28,13 +28,13 @@ import java.lang.annotation.Target;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
+@Target({ ElementType.TYPE })
 public @interface Menu {
-    
-    String name();
-    
-    String desc() default "";
-    
-    int order() default 0;
+
+	String name();
+
+	String desc() default "";
+
+	int order() default 0;
 
 }

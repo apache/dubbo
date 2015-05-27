@@ -29,20 +29,20 @@ import com.alibaba.dubbo.common.serialize.Serialization;
  */
 public class DubboSerialization implements Serialization {
 
-    public byte getContentTypeId() {
-        return 1;
-    }
+	public byte getContentTypeId() {
+		return 1;
+	}
 
-    public String getContentType() {
-        return "x-application/dubbo";
-    }
+	public String getContentType() {
+		return "x-application/dubbo";
+	}
 
-    public ObjectOutput serialize(URL url, OutputStream out) throws IOException {
-        return new GenericObjectOutput(out);
-    }
+	public ObjectOutput serialize(URL url, OutputStream out) throws IOException {
+		return new GenericObjectOutput(out);
+	}
 
-    public ObjectInput deserialize(URL url, InputStream is) throws IOException {
-        return new GenericObjectInput(is);
-    }
+	public ObjectInput deserialize(URL url, InputStream is) throws IOException {
+		return new GenericObjectInput(is);
+	}
 
 }

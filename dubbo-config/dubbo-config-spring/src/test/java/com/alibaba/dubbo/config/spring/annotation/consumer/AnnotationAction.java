@@ -27,12 +27,12 @@ import com.alibaba.dubbo.config.spring.api.DemoService;
  */
 @Controller("annotationAction")
 public class AnnotationAction {
-    
-    @Reference(version = "1.2")
-    private DemoService demoService;
-    
-    public String doSayName(String name) {
-        return demoService.sayName(name);
-    }
-    
+
+	@Reference(version = "1.2")
+	private DemoService demoService;
+
+	public String doSayName(String name) {
+		return demoService.sayName(name);
+	}
+
 }

@@ -35,35 +35,35 @@ import com.alibaba.dubbo.remoting.transport.AbstractCodec;
  */
 public class TransportCodec extends AbstractCodec {
 
-    public void encode(Channel channel, ChannelBuffer buffer, Object message) throws IOException {
-        OutputStream output = new ChannelBufferOutputStream(buffer);
-        ObjectOutput objectOutput = getSerialization(channel).serialize(channel.getUrl(), output);
-        encodeData(channel, objectOutput, message);
-        objectOutput.flushBuffer();
-    }
+	public void encode(Channel channel, ChannelBuffer buffer, Object message) throws IOException {
+		OutputStream output = new ChannelBufferOutputStream(buffer);
+		ObjectOutput objectOutput = getSerialization(channel).serialize(channel.getUrl(), output);
+		encodeData(channel, objectOutput, message);
+		objectOutput.flushBuffer();
+	}
 
-    public Object decode(Channel channel, ChannelBuffer buffer) throws IOException {
-        InputStream input = new ChannelBufferInputStream(buffer);
-        return decodeData(channel, getSerialization(channel).deserialize(channel.getUrl(), input));
-    }
+	public Object decode(Channel channel, ChannelBuffer buffer) throws IOException {
+		InputStream input = new ChannelBufferInputStream(buffer);
+		return decodeData(channel, getSerialization(channel).deserialize(channel.getUrl(), input));
+	}
 
-    protected void encodeData(Channel channel, ObjectOutput output, Object message) throws IOException {
-        encodeData(output, message);
-    }
+	protected void encodeData(Channel channel, ObjectOutput output, Object message) throws IOException {
+		encodeData(output, message);
+	}
 
-    protected Object decodeData(Channel channel, ObjectInput input) throws IOException {
-        return decodeData(input);
-    }
+	protected Object decodeData(Channel channel, ObjectInput input) throws IOException {
+		return decodeData(input);
+	}
 
-    protected void encodeData(ObjectOutput output, Object message) throws IOException {
-        output.writeObject(message);
-    }
+	protected void encodeData(ObjectOutput output, Object message) throws IOException {
+		output.writeObject(message);
+	}
 
-    protected Object decodeData(ObjectInput input) throws IOException {
-        try {
-            return input.readObject();
-        } catch (ClassNotFoundException e) {
-            throw new IOException("ClassNotFoundException: " + StringUtils.toString(e));
-        }
-    }
+	protected Object decodeData(ObjectInput input) throws IOException {
+		try {
+			return input.readObject();
+		} catch (ClassNotFoundException e) {
+			throw new IOException("ClassNotFoundException: " + StringUtils.toString(e));
+		}
+	}
 }

@@ -56,103 +56,94 @@ import java.lang.reflect.*;
  * Deserializing a JDK 1.2 Map.
  */
 public class MapDeserializer extends AbstractMapDeserializer {
-  private Class _type;
-  private Constructor _ctor;
-  
-  public MapDeserializer(Class type)
-  {
-    if (type == null)
-      type = HashMap.class;
-    
-    _type = type;
+	private Class _type;
+	private Constructor _ctor;
 
-    Constructor []ctors = type.getConstructors();
-    for (int i = 0; i < ctors.length; i++) {
-      if (ctors[i].getParameterTypes().length == 0)
-	_ctor = ctors[i];
-    }
+	public MapDeserializer(Class type) {
+		if (type == null)
+			type = HashMap.class;
 
-    if (_ctor == null) {
-      try {
-	_ctor = HashMap.class.getConstructor(new Class[0]);
-      } catch (Exception e) {
-	throw new IllegalStateException(e);
-      }
-    }
-  }
-  
-  public Class getType()
-  {
-    if (_type != null)
-      return _type;
-    else
-      return HashMap.class;
-  }
+		_type = type;
 
-  public Object readMap(AbstractHessianInput in)
-    throws IOException
-  {
-    Map map;
-    
-    if (_type == null)
-      map = new HashMap();
-    else if (_type.equals(Map.class))
-      map = new HashMap();
-    else if (_type.equals(SortedMap.class))
-      map = new TreeMap();
-    else {
-      try {
-        map = (Map) _ctor.newInstance();
-      } catch (Exception e) {
-        throw new IOExceptionWrapper(e);
-      }
-    }
+		Constructor[] ctors = type.getConstructors();
+		for (int i = 0; i < ctors.length; i++) {
+			if (ctors[i].getParameterTypes().length == 0)
+				_ctor = ctors[i];
+		}
 
-    in.addRef(map);
+		if (_ctor == null) {
+			try {
+				_ctor = HashMap.class.getConstructor(new Class[0]);
+			} catch (Exception e) {
+				throw new IllegalStateException(e);
+			}
+		}
+	}
 
-    while (! in.isEnd()) {
-      map.put(in.readObject(), in.readObject());
-    }
+	public Class getType() {
+		if (_type != null)
+			return _type;
+		else
+			return HashMap.class;
+	}
 
-    in.readEnd();
+	public Object readMap(AbstractHessianInput in) throws IOException {
+		Map map;
 
-    return map;
-  }
+		if (_type == null)
+			map = new HashMap();
+		else if (_type.equals(Map.class))
+			map = new HashMap();
+		else if (_type.equals(SortedMap.class))
+			map = new TreeMap();
+		else {
+			try {
+				map = (Map) _ctor.newInstance();
+			} catch (Exception e) {
+				throw new IOExceptionWrapper(e);
+			}
+		}
 
-  @Override
-  public Object readObject(AbstractHessianInput in,
-			   String []fieldNames)
-    throws IOException
-  {
-    Map map = createMap();
-      
-    int ref = in.addRef(map);
+		in.addRef(map);
 
-    for (int i = 0; i < fieldNames.length; i++) {
-      String name = fieldNames[i];
+		while (!in.isEnd()) {
+			map.put(in.readObject(), in.readObject());
+		}
 
-      map.put(name, in.readObject());
-    }
+		in.readEnd();
 
-    return map;
-  }
+		return map;
+	}
 
-  private Map createMap()
-    throws IOException
-  {
-    
-    if (_type == null)
-      return new HashMap();
-    else if (_type.equals(Map.class))
-      return new HashMap();
-    else if (_type.equals(SortedMap.class))
-      return new TreeMap();
-    else {
-      try {
-        return (Map) _ctor.newInstance();
-      } catch (Exception e) {
-        throw new IOExceptionWrapper(e);
-      }
-    }
-  }
+	@Override
+	public Object readObject(AbstractHessianInput in, String[] fieldNames) throws IOException {
+		Map map = createMap();
+
+		int ref = in.addRef(map);
+
+		for (int i = 0; i < fieldNames.length; i++) {
+			String name = fieldNames[i];
+
+			map.put(name, in.readObject());
+		}
+
+		return map;
+	}
+
+	private Map createMap() throws IOException {
+
+		if (_type == null)
+			return new HashMap();
+		else if (_type.equals(Map.class))
+			return new HashMap();
+		else if (_type.equals(SortedMap.class))
+			return new TreeMap();
+		else {
+			try {
+				return (Map) _ctor.newInstance();
+			} catch (Exception e) {
+				throw new IOExceptionWrapper(e);
+			}
+		}
+	}
 }

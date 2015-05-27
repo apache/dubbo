@@ -25,37 +25,37 @@ import java.util.Map.Entry;
  */
 public class UrlUtils {
 
-    public static String paramsMapToString(Map<String, String[]> params) {
-        StringBuilder paramsString = new StringBuilder();
-        for (Entry<String, String[]> param : params.entrySet()) {
-            if (paramsString != null) {
-                paramsString.append("&");
-            }
-            paramsString.append(param.getKey());
-            paramsString.append("=");
-            for (int i = 0; i < param.getValue().length; i++) {
-                if (i == 0) {
-                    paramsString.append(param.getValue()[i]);
-                } else {
-                    paramsString.append(",");
-                    paramsString.append(param.getValue()[i]);
-                }
-            }
-        }
-        return paramsString.toString();
-    }
+	public static String paramsMapToString(Map<String, String[]> params) {
+		StringBuilder paramsString = new StringBuilder();
+		for (Entry<String, String[]> param : params.entrySet()) {
+			if (paramsString != null) {
+				paramsString.append("&");
+			}
+			paramsString.append(param.getKey());
+			paramsString.append("=");
+			for (int i = 0; i < param.getValue().length; i++) {
+				if (i == 0) {
+					paramsString.append(param.getValue()[i]);
+				} else {
+					paramsString.append(",");
+					paramsString.append(param.getValue()[i]);
+				}
+			}
+		}
+		return paramsString.toString();
+	}
 
-    public static String arrayToString(String[] values) {
-        StringBuilder paramsString = new StringBuilder();
-        for (int i = 0; i < values.length; i++) {
-            if (i == 0) {
-                paramsString.append(values[i]);
-            } else {
-                paramsString.append(",");
-                paramsString.append(values[i]);
-            }
-        }
-        return paramsString.toString();
-    }
-    
+	public static String arrayToString(String[] values) {
+		StringBuilder paramsString = new StringBuilder();
+		for (int i = 0; i < values.length; i++) {
+			if (i == 0) {
+				paramsString.append(values[i]);
+			} else {
+				paramsString.append(",");
+				paramsString.append(values[i]);
+			}
+		}
+		return paramsString.toString();
+	}
+
 }

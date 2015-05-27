@@ -33,34 +33,34 @@ import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
  */
 public class ProtocolUtils {
 
-    private static Protocol     protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-    public static ProxyFactory proxy    = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+	private static Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+	public static ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
-    public static <T> T refer(Class<T> type, String url) {
-        return refer(type, URL.valueOf(url));
-    }
+	public static <T> T refer(Class<T> type, String url) {
+		return refer(type, URL.valueOf(url));
+	}
 
-    public static <T> T refer(Class<T> type, URL url) {
-        return proxy.getProxy(protocol.refer(type, url));
-    }
-    
-    public static Invoker<?> referInvoker(Class<?> type, URL url) {
-        return (Invoker<?>)protocol.refer(type, url);
-    }
+	public static <T> T refer(Class<T> type, URL url) {
+		return proxy.getProxy(protocol.refer(type, url));
+	}
 
-    public static <T> Exporter<T> export(T instance, Class<T> type, String url) {
-        return export(instance, type, URL.valueOf(url));
-    }
+	public static Invoker<?> referInvoker(Class<?> type, URL url) {
+		return (Invoker<?>) protocol.refer(type, url);
+	}
 
-    public static <T> Exporter<T> export(T instance, Class<T> type, URL url) {
-        return protocol.export(proxy.getInvoker(instance, type, url));
-    }
+	public static <T> Exporter<T> export(T instance, Class<T> type, String url) {
+		return export(instance, type, URL.valueOf(url));
+	}
 
-    public static void closeAll() {
-        DubboProtocol.getDubboProtocol().destroy();
-        Collection<ExchangeServer> servers = DubboProtocol.getDubboProtocol().getServers();
-        for (ExchangeServer server : servers) {
-            server.close();
-        }
-    }
+	public static <T> Exporter<T> export(T instance, Class<T> type, URL url) {
+		return protocol.export(proxy.getInvoker(instance, type, url));
+	}
+
+	public static void closeAll() {
+		DubboProtocol.getDubboProtocol().destroy();
+		Collection<ExchangeServer> servers = DubboProtocol.getDubboProtocol().getServers();
+		for (ExchangeServer server : servers) {
+			server.close();
+		}
+	}
 }

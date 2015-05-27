@@ -21,7 +21,7 @@ package com.alibaba.dubbo.examples.annotation.api;
  * @author william.liangf
  */
 public interface AnnotationService {
-    
-    String sayHello(String name);
+
+	String sayHello(String name);
 
 }

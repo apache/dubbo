@@ -19,7 +19,7 @@ package com.alibaba.dubbo.examples.version.api;
  * @author william.liangf
  */
 public interface VersionService {
-    
-    String sayHello(String name);
+
+	String sayHello(String name);
 
 }

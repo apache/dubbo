@@ -1,8 +1,7 @@
 package com.alibaba.dubbo.rpc.cluster.support.wrapper;
 
+public class MyMockException extends RuntimeException {
 
-public class MyMockException extends RuntimeException{
-	
 	public MyMockException(String message) {
 		super(message);
 	}

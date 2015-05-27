@@ -26,86 +26,86 @@ import com.alibaba.dubbo.remoting.exchange.ResponseFuture;
 
 public class MockChannel implements ExchangeChannel {
 
-    final InetSocketAddress localAddress;
+	final InetSocketAddress localAddress;
 
-    final InetSocketAddress remoteAddress;
+	final InetSocketAddress remoteAddress;
 
-    public static boolean   closed = false;
+	public static boolean closed = false;
 
-    public MockChannel(String localHostname, int localPort, String remoteHostName, int remotePort){
-        localAddress = new InetSocketAddress(localHostname, localPort);
-        remoteAddress = new InetSocketAddress(remoteHostName, remotePort);
-        closed = false;
-    }
+	public MockChannel(String localHostname, int localPort, String remoteHostName, int remotePort) {
+		localAddress = new InetSocketAddress(localHostname, localPort);
+		remoteAddress = new InetSocketAddress(remoteHostName, remotePort);
+		closed = false;
+	}
 
-    public InetSocketAddress getLocalAddress() {
-        return localAddress;
-    }
+	public InetSocketAddress getLocalAddress() {
+		return localAddress;
+	}
 
-    public InetSocketAddress getRemoteAddress() {
-        return remoteAddress;
-    }
+	public InetSocketAddress getRemoteAddress() {
+		return remoteAddress;
+	}
 
-    public boolean isConnected() {
-        return true;
-    }
+	public boolean isConnected() {
+		return true;
+	}
 
-    public void close() {
-        closed = true;
-    }
+	public void close() {
+		closed = true;
+	}
 
-    public void send(Object message) throws RemotingException {
-    }
+	public void send(Object message) throws RemotingException {
+	}
 
-    public void close(int timeout) {
-    }
+	public void close(int timeout) {
+	}
 
-    public URL getUrl() {
-        return null;
-    }
+	public URL getUrl() {
+		return null;
+	}
 
-    public ResponseFuture send(Object request, int timeout) throws RemotingException {
-        return null;
-    }
+	public ResponseFuture send(Object request, int timeout) throws RemotingException {
+		return null;
+	}
 
-    public ChannelHandler getChannelHandler() {
-        return null;
-    }
+	public ChannelHandler getChannelHandler() {
+		return null;
+	}
 
-    public ResponseFuture request(Object request) throws RemotingException {
-        return null;
-    }
+	public ResponseFuture request(Object request) throws RemotingException {
+		return null;
+	}
 
-    public ResponseFuture request(Object request, int timeout) throws RemotingException {
-        return null;
-    }
+	public ResponseFuture request(Object request, int timeout) throws RemotingException {
+		return null;
+	}
 
-    public ExchangeHandler getExchangeHandler() {
-        return null;
-    }
+	public ExchangeHandler getExchangeHandler() {
+		return null;
+	}
 
-    public Object getAttribute(String key) {
-        return null;
-    }
+	public Object getAttribute(String key) {
+		return null;
+	}
 
-    public void setAttribute(String key, Object value) {
+	public void setAttribute(String key, Object value) {
 
-    }
+	}
 
-    public boolean hasAttribute(String key) {
-        return false;
-    }
+	public boolean hasAttribute(String key) {
+		return false;
+	}
 
-    public boolean isClosed() {
-        return false;
-    }
+	public boolean isClosed() {
+		return false;
+	}
 
-    public void removeAttribute(String key) {
+	public void removeAttribute(String key) {
 
-    }
+	}
 
-    public void send(Object message, boolean sent) throws RemotingException {
+	public void send(Object message, boolean sent) throws RemotingException {
 
-    }
+	}
 
 }

@@ -27,16 +27,16 @@ import com.alibaba.dubbo.monitor.MonitorService;
  * @author william.liangf
  */
 public class MockMonitorService implements MonitorService {
-    
-    private URL statistics;
 
-    public void collect(URL statistics) {
-        this.statistics = statistics;
-    }
+	private URL statistics;
 
-    public URL getStatistics() {
-        return statistics;
-    }
+	public void collect(URL statistics) {
+		this.statistics = statistics;
+	}
+
+	public URL getStatistics() {
+		return statistics;
+	}
 
 	public List<URL> lookup(URL query) {
 		return Arrays.asList(statistics);

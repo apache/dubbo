@@ -25,15 +25,16 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  */
 public class HeartbeatConsumer {
 
-    public static void main(String[] args) throws Exception {
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
-                HeartbeatConsumer.class.getPackage().getName().replace('.', '/') + "/heartbeat-consumer.xml");
-        context.start();
-        HelloService hello = (HelloService) context.getBean("helloService");
-        for (int i = 0; i < Integer.MAX_VALUE; i++) {
-            System.out.println(hello.sayHello("kimi-" + i));
-            Thread.sleep(10000);
-        }
-    }
+	public static void main(String[] args) throws Exception {
+		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(HeartbeatConsumer.class
+				.getPackage().getName().replace('.', '/')
+				+ "/heartbeat-consumer.xml");
+		context.start();
+		HelloService hello = (HelloService) context.getBean("helloService");
+		for (int i = 0; i < Integer.MAX_VALUE; i++) {
+			System.out.println(hello.sayHello("kimi-" + i));
+			Thread.sleep(10000);
+		}
+	}
 
 }

@@ -26,9 +26,9 @@ import com.alibaba.dubbo.registry.simple.SimpleRegistryService;
  */
 public class SimpleRegistryServiceTest {
 
-    @Test
-    public void testRegistry() {
-        new SimpleRegistryService();
-    }
+	@Test
+	public void testRegistry() {
+		new SimpleRegistryService();
+	}
 
 }

@@ -13,19 +13,19 @@ import com.alibaba.dubbo.registry.RegistryFactory;
  */
 public class MockRegistryFactory implements RegistryFactory {
 
-    private static final Map<URL, Registry> registries = new HashMap<URL, Registry>();
+	private static final Map<URL, Registry> registries = new HashMap<URL, Registry>();
 
-    public Registry getRegistry(URL url) {
-        MockRegistry registry = new MockRegistry(url);
-        registries.put(url, registry);
-        return registry;
-    }
+	public Registry getRegistry(URL url) {
+		MockRegistry registry = new MockRegistry(url);
+		registries.put(url, registry);
+		return registry;
+	}
 
-    public static Collection<Registry> getCachedRegistry() {
-        return registries.values();
-    }
+	public static Collection<Registry> getCachedRegistry() {
+		return registries.values();
+	}
 
-    public static void cleanCachedRegistry() {
-        registries.clear();
-    }
+	public static void cleanCachedRegistry() {
+		registries.clear();
+	}
 }

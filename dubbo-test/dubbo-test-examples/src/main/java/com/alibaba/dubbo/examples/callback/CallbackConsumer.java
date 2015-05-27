@@ -27,17 +27,17 @@ import com.alibaba.dubbo.examples.callback.api.CallbackService;
  */
 public class CallbackConsumer {
 
-    public static void main(String[] args) throws Exception {
-        String config = CallbackConsumer.class.getPackage().getName().replace('.', '/') + "/callback-consumer.xml";
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(config);
-        context.start();
-        CallbackService callbackService = (CallbackService) context.getBean("callbackService");
-        callbackService.addListener("foo.bar", new CallbackListener() {
-            public void changed(String msg) {
-                System.out.println("callback1:" + msg);
-            }
-        });
-        System.in.read();
-    }
+	public static void main(String[] args) throws Exception {
+		String config = CallbackConsumer.class.getPackage().getName().replace('.', '/') + "/callback-consumer.xml";
+		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(config);
+		context.start();
+		CallbackService callbackService = (CallbackService) context.getBean("callbackService");
+		callbackService.addListener("foo.bar", new CallbackListener() {
+			public void changed(String msg) {
+				System.out.println("callback1:" + msg);
+			}
+		});
+		System.in.read();
+	}
 
 }

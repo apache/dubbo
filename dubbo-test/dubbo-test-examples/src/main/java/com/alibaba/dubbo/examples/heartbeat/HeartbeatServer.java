@@ -32,68 +32,61 @@ import com.alibaba.dubbo.remoting.exchange.support.header.HeaderExchangeServer;
  */
 public class HeartbeatServer {
 
-    private static final URL clientUrl = URL.valueOf(
-            new StringBuilder( 32 )
-                    .append( "netty://" )
-                    .append( NetUtils.getLocalHost() )
-                    .append( ":9999" ).toString() )
-            .addParameter( Constants.CODEC_KEY, "exchange" );
+	private static final URL clientUrl = URL.valueOf(
+			new StringBuilder(32).append("netty://").append(NetUtils.getLocalHost()).append(":9999").toString())
+			.addParameter(Constants.CODEC_KEY, "exchange");
 
-    private static final ExchangeHandler handler = new ExchangeHandlerAdapter() {
+	private static final ExchangeHandler handler = new ExchangeHandlerAdapter() {
 
-    };
+	};
 
-    private static ExchangeServer exchangeServer;
+	private static ExchangeServer exchangeServer;
 
-    private static volatile boolean serverStarted = false;
+	private static volatile boolean serverStarted = false;
 
-    public static void main( String[] args ) throws Exception {
+	public static void main(String[] args) throws Exception {
 
-        final HeartBeatExchangeHandler serverHandler = new HeartBeatExchangeHandler( handler );
+		final HeartBeatExchangeHandler serverHandler = new HeartBeatExchangeHandler(handler);
 
-        Thread serverThread = new Thread( new Runnable() {
+		Thread serverThread = new Thread(new Runnable() {
 
-            public void run() {
-                try {
-                    exchangeServer = new HeaderExchangeServer(
-                            Transporters.bind(
-                                    clientUrl.addParameter( Constants.HEARTBEAT_KEY, 1000 ),
-                                    serverHandler ) );
-                    serverStarted = true;
-                } catch ( Exception e ) {
-                    e.printStackTrace();
-                }
-            }
-        } );
+			public void run() {
+				try {
+					exchangeServer = new HeaderExchangeServer(Transporters.bind(
+							clientUrl.addParameter(Constants.HEARTBEAT_KEY, 1000), serverHandler));
+					serverStarted = true;
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
 
-        serverThread.setDaemon( true );
-        serverThread.start();
+		serverThread.setDaemon(true);
+		serverThread.start();
 
-        while ( !serverStarted ) {
-            Thread.sleep( 1000 );
-        }
+		while (!serverStarted) {
+			Thread.sleep(1000);
+		}
 
-        HeartBeatExchangeHandler clientHandler = new HeartBeatExchangeHandler( handler );
-        ExchangeClient exchangeClient = new HeaderExchangeClient(
-                Transporters.connect( clientUrl, clientHandler ) );
+		HeartBeatExchangeHandler clientHandler = new HeartBeatExchangeHandler(handler);
+		ExchangeClient exchangeClient = new HeaderExchangeClient(Transporters.connect(clientUrl, clientHandler));
 
-        for ( int i = 0; i < 10; i++ ) {
-            Thread.sleep( 1000 );
-            System.out.print( "." );
-        }
+		for (int i = 0; i < 10; i++) {
+			Thread.sleep(1000);
+			System.out.print(".");
+		}
 
-        System.out.println();
+		System.out.println();
 
-        if ( clientHandler.getHeartBeatCount() > 0 ) {
-            System.out.printf( "Client receives %d heartbeats",
-                               clientHandler.getHeartBeatCount() );
-        } else {
-            throw new Exception( "Server heartbeat does not work." );
-        }
+		if (clientHandler.getHeartBeatCount() > 0) {
+			System.out.printf("Client receives %d heartbeats", clientHandler.getHeartBeatCount());
+		} else {
+			throw new Exception("Server heartbeat does not work.");
+		}
 
-        exchangeClient.close();
-        exchangeServer.close();
+		exchangeClient.close();
+		exchangeServer.close();
 
-    }
+	}
 
 }

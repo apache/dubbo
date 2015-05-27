@@ -23,8 +23,7 @@ import java.io.Serializable;
  * @author qian.lei
  */
 
-public class RpcMessage implements Serializable
-{
+public class RpcMessage implements Serializable {
 	private static final long serialVersionUID = -5148079121106659095L;
 
 	private String mClassName;
@@ -35,21 +34,18 @@ public class RpcMessage implements Serializable
 
 	private Object[] mArguments;
 
-	public RpcMessage(String cn, String desc, Class<?>[] parameterTypes,Object[] args)
-	{
+	public RpcMessage(String cn, String desc, Class<?>[] parameterTypes, Object[] args) {
 		mClassName = cn;
 		mMethodDesc = desc;
 		mParameterTypes = parameterTypes;
 		mArguments = args;
 	}
 
-	public String getClassName()
-	{
+	public String getClassName() {
 		return mClassName;
 	}
 
-	public String getMethodDesc()
-	{
+	public String getMethodDesc() {
 		return mMethodDesc;
 	}
 
@@ -57,8 +53,7 @@ public class RpcMessage implements Serializable
 		return mParameterTypes;
 	}
 
-	public Object[] getArguments()
-	{
+	public Object[] getArguments() {
 		return mArguments;
 	}
 

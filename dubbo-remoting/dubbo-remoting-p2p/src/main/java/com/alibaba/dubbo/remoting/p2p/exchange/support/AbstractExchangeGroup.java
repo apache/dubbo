@@ -42,83 +42,83 @@ import com.alibaba.dubbo.remoting.p2p.exchange.ExchangePeer;
  */
 public abstract class AbstractExchangeGroup implements ExchangeGroup {
 
-    // 日志输出
-    protected static final Logger logger = LoggerFactory.getLogger(AbstractExchangeGroup.class);
-    
-    protected final URL url;
-    
-    protected final Map<URL, ExchangeServer> servers = new ConcurrentHashMap<URL, ExchangeServer>();
+	// 日志输出
+	protected static final Logger logger = LoggerFactory.getLogger(AbstractExchangeGroup.class);
 
-    protected final Map<URL, ExchangeClient> clients = new ConcurrentHashMap<URL, ExchangeClient>();
-    
-    protected final ExchangeHandlerDispatcher dispatcher = new ExchangeHandlerDispatcher();
+	protected final URL url;
 
-    public AbstractExchangeGroup(URL url){
-        if (url == null) {
-            throw new IllegalArgumentException("url == null");
-        }
-        this.url = url;
-    }
-    
-    public URL getUrl() {
-        return url;
-    }
+	protected final Map<URL, ExchangeServer> servers = new ConcurrentHashMap<URL, ExchangeServer>();
 
-    public void close() {
-        for (URL url : new ArrayList<URL>(servers.keySet())) {
-            try {
-                leave(url);
-            } catch (Throwable t) {
-                logger.error(t.getMessage(), t);
-            }
-        }
-        for (URL url : new ArrayList<URL>(clients.keySet())) {
-            try {
-                disconnect(url);
-            } catch (Throwable t) {
-                logger.error(t.getMessage(), t);
-            }
-        }
-    }
-    
-    public Peer join(URL url, ChannelHandler handler) throws RemotingException {
-        return join(url, (ExchangeHandler) handler);
-    }
-    
-    public ExchangePeer join(URL url, ExchangeHandler handler) throws RemotingException {
-        ExchangeServer server = servers.get(url);
-        if (server == null) { // TODO 有并发间隙
-            server = Exchangers.bind(url, handler);
-            servers.put(url, server);
-            dispatcher.addChannelHandler(handler);
-        }
-        return new ExchangeServerPeer(server, clients, this);
-    }
+	protected final Map<URL, ExchangeClient> clients = new ConcurrentHashMap<URL, ExchangeClient>();
 
-    public void leave(URL url) throws RemotingException {
-        Server server = servers.remove(url);
-        if (server != null) {
-            server.close();
-        }
-    }
+	protected final ExchangeHandlerDispatcher dispatcher = new ExchangeHandlerDispatcher();
 
-    protected Client connect(URL url) throws RemotingException {
-        if (servers.containsKey(url)) {
-            return null;
-        }
-        ExchangeClient client = clients.get(url);
-        if (client == null) { // TODO 有并发间隙
-            client = Exchangers.connect(url, dispatcher);
-            clients.put(url, client);
-        }
-        return client;
-    }
+	public AbstractExchangeGroup(URL url) {
+		if (url == null) {
+			throw new IllegalArgumentException("url == null");
+		}
+		this.url = url;
+	}
 
-    protected void disconnect(URL url) throws RemotingException {
-        Client client = clients.remove(url);
-        if (client != null) {
-            client.close();
-        }
-    }
+	public URL getUrl() {
+		return url;
+	}
+
+	public void close() {
+		for (URL url : new ArrayList<URL>(servers.keySet())) {
+			try {
+				leave(url);
+			} catch (Throwable t) {
+				logger.error(t.getMessage(), t);
+			}
+		}
+		for (URL url : new ArrayList<URL>(clients.keySet())) {
+			try {
+				disconnect(url);
+			} catch (Throwable t) {
+				logger.error(t.getMessage(), t);
+			}
+		}
+	}
+
+	public Peer join(URL url, ChannelHandler handler) throws RemotingException {
+		return join(url, (ExchangeHandler) handler);
+	}
+
+	public ExchangePeer join(URL url, ExchangeHandler handler) throws RemotingException {
+		ExchangeServer server = servers.get(url);
+		if (server == null) { // TODO 有并发间隙
+			server = Exchangers.bind(url, handler);
+			servers.put(url, server);
+			dispatcher.addChannelHandler(handler);
+		}
+		return new ExchangeServerPeer(server, clients, this);
+	}
+
+	public void leave(URL url) throws RemotingException {
+		Server server = servers.remove(url);
+		if (server != null) {
+			server.close();
+		}
+	}
+
+	protected Client connect(URL url) throws RemotingException {
+		if (servers.containsKey(url)) {
+			return null;
+		}
+		ExchangeClient client = clients.get(url);
+		if (client == null) { // TODO 有并发间隙
+			client = Exchangers.connect(url, dispatcher);
+			clients.put(url, client);
+		}
+		return client;
+	}
+
+	protected void disconnect(URL url) throws RemotingException {
+		Client client = clients.remove(url);
+		if (client != null) {
+			client.close();
+		}
+	}
 
 }

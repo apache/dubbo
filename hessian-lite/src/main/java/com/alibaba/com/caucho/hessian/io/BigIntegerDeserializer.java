@@ -7,12 +7,12 @@ import java.math.BigInteger;
  */
 public class BigIntegerDeserializer extends JavaDeserializer {
 
-    public BigIntegerDeserializer() {
-        super(BigInteger.class);
-    }
+	public BigIntegerDeserializer() {
+		super(BigInteger.class);
+	}
 
-    @Override
-    protected Object instantiate() throws Exception {
-        return new BigInteger("0");
-    }
+	@Override
+	protected Object instantiate() throws Exception {
+		return new BigInteger("0");
+	}
 }

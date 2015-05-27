@@ -35,54 +35,54 @@ import com.caucho.hessian.client.HessianConnection;
  * @author william.liangf
  */
 public class HttpClientConnection implements HessianConnection {
-    
-    private final HttpClient httpClient;
 
-    private final ByteArrayOutputStream output;
-    
-    private final HttpPost request;
-    
-    private volatile HttpResponse response;
+	private final HttpClient httpClient;
 
-    public HttpClientConnection(HttpClient httpClient, URL url) {
-        this.httpClient = httpClient;
-        this.output = new ByteArrayOutputStream();
-        this.request = new HttpPost(url.toString());
-    }
+	private final ByteArrayOutputStream output;
 
-    public void addHeader(String key, String value) {
-        request.addHeader(new BasicHeader(key, value));
-    }
+	private final HttpPost request;
 
-    public OutputStream getOutputStream() throws IOException {
-        return output;
-    }
+	private volatile HttpResponse response;
 
-    public void sendRequest() throws IOException {
-        request.setEntity(new ByteArrayEntity(output.toByteArray()));
-        this.response = httpClient.execute(request);
-    }
+	public HttpClientConnection(HttpClient httpClient, URL url) {
+		this.httpClient = httpClient;
+		this.output = new ByteArrayOutputStream();
+		this.request = new HttpPost(url.toString());
+	}
 
-    public int getStatusCode() {
-        return response == null || response.getStatusLine() == null ? 0 : response.getStatusLine().getStatusCode();
-    }
+	public void addHeader(String key, String value) {
+		request.addHeader(new BasicHeader(key, value));
+	}
 
-    public String getStatusMessage() {
-        return response == null || response.getStatusLine() == null ? null :  response.getStatusLine().getReasonPhrase();
-    }
+	public OutputStream getOutputStream() throws IOException {
+		return output;
+	}
 
-    public InputStream getInputStream() throws IOException {
-        return response == null || response.getEntity() == null ? null : response.getEntity().getContent();
-    }
+	public void sendRequest() throws IOException {
+		request.setEntity(new ByteArrayEntity(output.toByteArray()));
+		this.response = httpClient.execute(request);
+	}
 
-    public void close() throws IOException {
-        HttpPost request = this.request;
-        if (request != null) {
-            request.abort();
-        }
-    }
+	public int getStatusCode() {
+		return response == null || response.getStatusLine() == null ? 0 : response.getStatusLine().getStatusCode();
+	}
 
-    public void destroy() throws IOException {
-    }
+	public String getStatusMessage() {
+		return response == null || response.getStatusLine() == null ? null : response.getStatusLine().getReasonPhrase();
+	}
+
+	public InputStream getInputStream() throws IOException {
+		return response == null || response.getEntity() == null ? null : response.getEntity().getContent();
+	}
+
+	public void close() throws IOException {
+		HttpPost request = this.request;
+		if (request != null) {
+			request.abort();
+		}
+	}
+
+	public void destroy() throws IOException {
+	}
 
 }

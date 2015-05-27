@@ -30,146 +30,138 @@ import com.alibaba.dubbo.common.utils.ReflectUtils;
  * @author qian.lei
  */
 
-public abstract class Mixin
-{
+public abstract class Mixin {
 	private static AtomicLong MIXIN_CLASS_COUNTER = new AtomicLong(0);
 
 	private static final String PACKAGE_NAME = Mixin.class.getPackage().getName();
 
-	public static interface MixinAware{ void setMixinInstance(Object instance); }
-
-	/**
-	 * mixin interface and delegates.
-	 * all class must be public.
-	 * 
-	 * @param ics interface class array.
-	 * @param dc delegate class.
-	 * @return Mixin instance.
-	 */
-	public static Mixin mixin(Class<?>[] ics, Class<?> dc)
-	{
-		return mixin(ics, new Class[]{dc});
+	public static interface MixinAware {
+		void setMixinInstance(Object instance);
 	}
 
 	/**
-	 * mixin interface and delegates.
-	 * all class must be public.
+	 * mixin interface and delegates. all class must be public.
 	 * 
-	 * @param ics interface class array.
-	 * @param dc delegate class.
-	 * @param cl class loader.
+	 * @param ics
+	 *            interface class array.
+	 * @param dc
+	 *            delegate class.
 	 * @return Mixin instance.
 	 */
-	public static Mixin mixin(Class<?>[] ics, Class<?> dc, ClassLoader cl)
-	{
-		return mixin(ics, new Class[]{dc}, cl);
+	public static Mixin mixin(Class<?>[] ics, Class<?> dc) {
+		return mixin(ics, new Class[] { dc });
 	}
 
 	/**
-	 * mixin interface and delegates.
-	 * all class must be public.
+	 * mixin interface and delegates. all class must be public.
 	 * 
-	 * @param ics interface class array.
-	 * @param dcs delegate class array.
+	 * @param ics
+	 *            interface class array.
+	 * @param dc
+	 *            delegate class.
+	 * @param cl
+	 *            class loader.
 	 * @return Mixin instance.
 	 */
-	public static Mixin mixin(Class<?>[] ics, Class<?>[] dcs)
-	{
+	public static Mixin mixin(Class<?>[] ics, Class<?> dc, ClassLoader cl) {
+		return mixin(ics, new Class[] { dc }, cl);
+	}
+
+	/**
+	 * mixin interface and delegates. all class must be public.
+	 * 
+	 * @param ics
+	 *            interface class array.
+	 * @param dcs
+	 *            delegate class array.
+	 * @return Mixin instance.
+	 */
+	public static Mixin mixin(Class<?>[] ics, Class<?>[] dcs) {
 		return mixin(ics, dcs, ClassHelper.getCallerClassLoader(Mixin.class));
 	}
 
 	/**
-	 * mixin interface and delegates.
-	 * all class must be public.
+	 * mixin interface and delegates. all class must be public.
 	 * 
-	 * @param ics interface class array.
-	 * @param dcs delegate class array.
-	 * @param cl class loader.
+	 * @param ics
+	 *            interface class array.
+	 * @param dcs
+	 *            delegate class array.
+	 * @param cl
+	 *            class loader.
 	 * @return Mixin instance.
 	 */
-	public static Mixin mixin(Class<?>[] ics, Class<?>[] dcs, ClassLoader cl)
-	{
+	public static Mixin mixin(Class<?>[] ics, Class<?>[] dcs, ClassLoader cl) {
 		assertInterfaceArray(ics);
 
 		long id = MIXIN_CLASS_COUNTER.getAndIncrement();
 		String pkg = null;
 		ClassGenerator ccp = null, ccm = null;
-		try
-		{
+		try {
 			ccp = ClassGenerator.newInstance(cl);
 
 			// impl constructor
 			StringBuilder code = new StringBuilder();
-			for(int i=0;i<dcs.length;i++)
-			{
-				if( !Modifier.isPublic(dcs[i].getModifiers()) )
-				{
+			for (int i = 0; i < dcs.length; i++) {
+				if (!Modifier.isPublic(dcs[i].getModifiers())) {
 					String npkg = dcs[i].getPackage().getName();
-					if( pkg == null )
-					{
+					if (pkg == null) {
 						pkg = npkg;
-					}
-					else
-					{
-						if( !pkg.equals(npkg)  )
+					} else {
+						if (!pkg.equals(npkg))
 							throw new IllegalArgumentException("non-public interfaces class from different packages");
 					}
 				}
 
 				ccp.addField("private " + dcs[i].getName() + " d" + i + ";");
 
-				code.append("d").append(i).append(" = (").append(dcs[i].getName()).append(")$1[").append(i).append("];\n");
-				if( MixinAware.class.isAssignableFrom(dcs[i]) )
+				code.append("d").append(i).append(" = (").append(dcs[i].getName()).append(")$1[").append(i)
+						.append("];\n");
+				if (MixinAware.class.isAssignableFrom(dcs[i]))
 					code.append("d").append(i).append(".setMixinInstance(this);\n");
 			}
-			ccp.addConstructor(Modifier.PUBLIC, new Class<?>[]{ Object[].class }, code.toString());
+			ccp.addConstructor(Modifier.PUBLIC, new Class<?>[] { Object[].class }, code.toString());
 
 			// impl methods.
 			Set<String> worked = new HashSet<String>();
-			for(int i=0;i<ics.length;i++)
-			{
-				if( !Modifier.isPublic(ics[i].getModifiers()) )
-				{
+			for (int i = 0; i < ics.length; i++) {
+				if (!Modifier.isPublic(ics[i].getModifiers())) {
 					String npkg = ics[i].getPackage().getName();
-					if( pkg == null )
-					{
+					if (pkg == null) {
 						pkg = npkg;
-					}
-					else
-					{
-						if( !pkg.equals(npkg)  )
+					} else {
+						if (!pkg.equals(npkg))
 							throw new IllegalArgumentException("non-public delegate class from different packages");
 					}
 				}
 
 				ccp.addInterface(ics[i]);
 
-				for( Method method : ics[i].getMethods() )
-				{
-					if( "java.lang.Object".equals(method.getDeclaringClass().getName()) )
+				for (Method method : ics[i].getMethods()) {
+					if ("java.lang.Object".equals(method.getDeclaringClass().getName()))
 						continue;
 
 					String desc = ReflectUtils.getDesc(method);
-					if( worked.contains(desc) )
+					if (worked.contains(desc))
 						continue;
 					worked.add(desc);
 
 					int ix = findMethod(dcs, desc);
-					if( ix < 0 )
+					if (ix < 0)
 						throw new RuntimeException("Missing method [" + desc + "] implement.");
 
 					Class<?> rt = method.getReturnType();
 					String mn = method.getName();
-					if( Void.TYPE.equals(rt) )
-						ccp.addMethod(mn, method.getModifiers(), rt, method.getParameterTypes(), method.getExceptionTypes(),
-								"d" + ix + "." + mn + "($$);");
+					if (Void.TYPE.equals(rt))
+						ccp.addMethod(mn, method.getModifiers(), rt, method.getParameterTypes(),
+								method.getExceptionTypes(), "d" + ix + "." + mn + "($$);");
 					else
-						ccp.addMethod(mn, method.getModifiers(), rt, method.getParameterTypes(), method.getExceptionTypes(),
-								"return ($r)d" + ix + "." + mn + "($$);");
+						ccp.addMethod(mn, method.getModifiers(), rt, method.getParameterTypes(),
+								method.getExceptionTypes(), "return ($r)d" + ix + "." + mn + "($$);");
 				}
 			}
 
-			if( pkg == null )
+			if (pkg == null)
 				pkg = PACKAGE_NAME;
 
 			// create MixinInstance class.
@@ -185,22 +177,16 @@ public abstract class Mixin
 			ccm.setSuperClass(Mixin.class.getName());
 			ccm.addMethod("public Object newInstance(Object[] delegates){ return new " + micn + "($1); }");
 			Class<?> mixin = ccm.toClass();
-			return (Mixin)mixin.newInstance();
-		}
-		catch(RuntimeException e)
-		{
+			return (Mixin) mixin.newInstance();
+		} catch (RuntimeException e) {
 			throw e;
-		}
-		catch(Exception e)
-		{
+		} catch (Exception e) {
 			throw new RuntimeException(e.getMessage(), e);
-		}
-		finally
-		{
+		} finally {
 			// release ClassGenerator
-			if( ccp != null )
+			if (ccp != null)
 				ccp.release();
-			if( ccm != null )
+			if (ccm != null)
 				ccm.release();
 		}
 	}
@@ -208,34 +194,32 @@ public abstract class Mixin
 	/**
 	 * new Mixin instance.
 	 * 
-	 * @param ds delegates instance.
+	 * @param ds
+	 *            delegates instance.
 	 * @return instance.
 	 */
 	abstract public Object newInstance(Object[] ds);
 
-	protected Mixin(){}
+	protected Mixin() {
+	}
 
-	private static int findMethod(Class<?>[] dcs, String desc)
-	{
+	private static int findMethod(Class<?>[] dcs, String desc) {
 		Class<?> cl;
 		Method[] methods;
-		for(int i=0;i<dcs.length;i++)
-		{
+		for (int i = 0; i < dcs.length; i++) {
 			cl = dcs[i];
 			methods = cl.getMethods();
-			for( Method method : methods )
-			{
-				if( desc.equals(ReflectUtils.getDesc(method)) )
+			for (Method method : methods) {
+				if (desc.equals(ReflectUtils.getDesc(method)))
 					return i;
 			}
 		}
 		return -1;
 	}
 
-	private static void assertInterfaceArray(Class<?>[] ics)
-	{
-		for(int i=0;i<ics.length;i++)
-			if( !ics[i].isInterface() )
+	private static void assertInterfaceArray(Class<?>[] ics) {
+		for (int i = 0; i < ics.length; i++)
+			if (!ics[i].isInterface())
 				throw new RuntimeException("Class " + ics[i].getName() + " is not a interface.");
 	}
 }

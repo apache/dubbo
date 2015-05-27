@@ -13,63 +13,63 @@ import com.alibaba.dubbo.common.model.person.Phone;
  */
 public class Bean {
 
-    private Class<?>                 type;
+	private Class<?> type;
 
-    private PersonStatus             status;
+	private PersonStatus status;
 
-    private Date                     date;
+	private Date date;
 
-    private Phone[]                  array;
+	private Phone[] array;
 
-    private Collection<Phone>        collection;
+	private Collection<Phone> collection;
 
-    private Map<String, FullAddress> addresses;
+	private Map<String, FullAddress> addresses;
 
-    public Class<?> getType() {
-        return type;
-    }
+	public Class<?> getType() {
+		return type;
+	}
 
-    public void setType(Class<?> type) {
-        this.type = type;
-    }
+	public void setType(Class<?> type) {
+		this.type = type;
+	}
 
-    public PersonStatus getStatus() {
-        return status;
-    }
+	public PersonStatus getStatus() {
+		return status;
+	}
 
-    public void setStatus(PersonStatus status) {
-        this.status = status;
-    }
+	public void setStatus(PersonStatus status) {
+		this.status = status;
+	}
 
-    public Date getDate() {
-        return date;
-    }
+	public Date getDate() {
+		return date;
+	}
 
-    public void setDate(Date date) {
-        this.date = date;
-    }
+	public void setDate(Date date) {
+		this.date = date;
+	}
 
-    public Phone[] getArray() {
-        return array;
-    }
+	public Phone[] getArray() {
+		return array;
+	}
 
-    public void setArray(Phone[] array) {
-        this.array = array;
-    }
+	public void setArray(Phone[] array) {
+		this.array = array;
+	}
 
-    public Collection<Phone> getCollection() {
-        return collection;
-    }
+	public Collection<Phone> getCollection() {
+		return collection;
+	}
 
-    public void setCollection(Collection<Phone> collection) {
-        this.collection = collection;
-    }
+	public void setCollection(Collection<Phone> collection) {
+		this.collection = collection;
+	}
 
-    public Map<String, FullAddress> getAddresses() {
-        return addresses;
-    }
+	public Map<String, FullAddress> getAddresses() {
+		return addresses;
+	}
 
-    public void setAddresses(Map<String, FullAddress> addresses) {
-        this.addresses = addresses;
-    }
+	public void setAddresses(Map<String, FullAddress> addresses) {
+		this.addresses = addresses;
+	}
 }

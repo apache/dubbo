@@ -26,6 +26,7 @@ import com.alibaba.dubbo.common.Constants;
 @Deprecated
 public final class RpcConstants extends Constants {
 
-    private RpcConstants() {}
+	private RpcConstants() {
+	}
 
 }

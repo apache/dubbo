@@ -23,21 +23,21 @@ public class Access extends Entity {
 
 	private static final long serialVersionUID = -962351722638094446L;
 
-	private String service;      /*服务名*/
-    
-    private String address;  /*消费者地址*/ 
-    
-    private boolean allow;           /*状态*/
-    
-    private String username;         /*用户名*/
-    
-    public Access() {
-    }
-    
-    public Access(Long id) {
-        super(id);
-    }
-    
+	private String service; /* 服务名 */
+
+	private String address; /* 消费者地址 */
+
+	private boolean allow; /* 状态 */
+
+	private String username; /* 用户名 */
+
+	public Access() {
+	}
+
+	public Access(Long id) {
+		super(id);
+	}
+
 	public String getService() {
 		return service;
 	}

@@ -19,10 +19,8 @@ import com.alibaba.dubbo.common.io.UnsafeStringReader;
 
 import junit.framework.TestCase;
 
-public class JSONReaderTest extends TestCase
-{
-	public void testMain() throws Exception
-	{
+public class JSONReaderTest extends TestCase {
+	public void testMain() throws Exception {
 		String json = "{ name: 'name', friends: [ 1, null, 3.2, ] }";
 		JSONReader reader = new JSONReader(new UnsafeStringReader(json));
 		assertEquals(reader.nextToken().type, JSONToken.LBRACE);

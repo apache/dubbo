@@ -24,10 +24,11 @@ import com.alibaba.dubbo.common.extension.SPI;
  */
 @SPI("impl1")
 public interface UseProtocolKeyExt {
-    // protocol key在第二个
-    @Adaptive({"key1", "protocol"})
-    String echo(URL url, String s);
-    // protocol 吸在第一个
-    @Adaptive({"protocol", "key2"})
-    String yell(URL url, String s);
+	// protocol key在第二个
+	@Adaptive({ "key1", "protocol" })
+	String echo(URL url, String s);
+
+	// protocol 吸在第一个
+	@Adaptive({ "protocol", "key2" })
+	String yell(URL url, String s);
 }

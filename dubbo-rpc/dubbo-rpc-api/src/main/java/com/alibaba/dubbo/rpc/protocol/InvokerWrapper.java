@@ -27,34 +27,34 @@ import com.alibaba.dubbo.rpc.RpcException;
  * @author william.liangf
  */
 public class InvokerWrapper<T> implements Invoker<T> {
-    
-    private final Invoker<T> invoker;
 
-    private final URL url;
+	private final Invoker<T> invoker;
 
-    public InvokerWrapper(Invoker<T> invoker, URL url){
-        this.invoker = invoker;
-        this.url = url;
-    }
+	private final URL url;
 
-    public Class<T> getInterface() {
-        return invoker.getInterface();
-    }
+	public InvokerWrapper(Invoker<T> invoker, URL url) {
+		this.invoker = invoker;
+		this.url = url;
+	}
 
-    public URL getUrl() {
-        return url;
-    }
+	public Class<T> getInterface() {
+		return invoker.getInterface();
+	}
 
-    public boolean isAvailable() {
-        return invoker.isAvailable();
-    }
+	public URL getUrl() {
+		return url;
+	}
 
-    public Result invoke(Invocation invocation) throws RpcException {
-        return invoker.invoke(invocation);
-    }
+	public boolean isAvailable() {
+		return invoker.isAvailable();
+	}
 
-    public void destroy() {
-        invoker.destroy();
-    }
+	public Result invoke(Invocation invocation) throws RpcException {
+		return invoker.invoke(invocation);
+	}
+
+	public void destroy() {
+		invoker.destroy();
+	}
 
 }

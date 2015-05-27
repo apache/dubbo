@@ -25,49 +25,49 @@ import com.alibaba.dubbo.registry.common.domain.Provider;
  * @author william.liangf
  */
 public interface ProviderService {
-    
-    void create(Provider provider);
 
-    void enableProvider(Long id);
-    
-    void disableProvider(Long id);
+	void create(Provider provider);
 
-    void doublingProvider(Long id);
-    
-    void halvingProvider(Long id);
-    
-    void deleteStaticProvider(Long id);
-    
-    void updateProvider(Provider provider);
+	void enableProvider(Long id);
 
-    Provider findProvider(Long id);
-    
-    List<String> findServices();
-    
-    List<String> findAddresses();
-    
-    List<String> findAddressesByApplication(String application);
-    
-    List<String> findAddressesByService(String serviceName);
-    
-    List<String> findApplicationsByServiceName(String serviceName);
+	void disableProvider(Long id);
 
-    List<Provider> findByService(String serviceName);
+	void doublingProvider(Long id);
 
-    List<Provider> findAll();
+	void halvingProvider(Long id);
 
-    List<Provider> findByAddress(String providerAddress);
+	void deleteStaticProvider(Long id);
 
-    List<String> findServicesByAddress(String providerAddress);
+	void updateProvider(Provider provider);
 
-    List<String> findApplications();
-    
-    List<Provider> findByApplication(String application);
-    
-    List<String> findServicesByApplication(String application);
-    
-    List<String> findMethodsByService(String serviceName);
-    
+	Provider findProvider(Long id);
+
+	List<String> findServices();
+
+	List<String> findAddresses();
+
+	List<String> findAddressesByApplication(String application);
+
+	List<String> findAddressesByService(String serviceName);
+
+	List<String> findApplicationsByServiceName(String serviceName);
+
+	List<Provider> findByService(String serviceName);
+
+	List<Provider> findAll();
+
+	List<Provider> findByAddress(String providerAddress);
+
+	List<String> findServicesByAddress(String providerAddress);
+
+	List<String> findApplications();
+
+	List<Provider> findByApplication(String application);
+
+	List<String> findServicesByApplication(String application);
+
+	List<String> findMethodsByService(String serviceName);
+
 	Provider findByServiceAndAddress(String service, String address);
-	
+
 }

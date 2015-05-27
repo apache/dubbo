@@ -21,5 +21,5 @@ package com.alibaba.dubbo.config.spring.api;
  * @author ding.lid
  */
 public interface DemoServiceSon extends DemoService {
-    // no methods
+	// no methods
 }

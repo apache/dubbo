@@ -28,11 +28,11 @@ import com.alibaba.dubbo.rpc.cluster.Directory;
  * @author william.liangf
  */
 public class ForkingCluster implements Cluster {
-    
-    public final static String NAME = "forking"; 
-    
-    public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
-        return new ForkingClusterInvoker<T>(directory);
-    }
+
+	public final static String NAME = "forking";
+
+	public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
+		return new ForkingClusterInvoker<T>(directory);
+	}
 
 }

@@ -31,29 +31,29 @@ import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
 @Activate
 public class ServerStatusChecker implements StatusChecker {
 
-    public Status check() {
-        Collection<ExchangeServer> servers = DubboProtocol.getDubboProtocol().getServers();
-        if (servers == null || servers.size() == 0) {
-            return new Status(Status.Level.UNKNOWN);
-        }
-        Status.Level level = Status.Level.OK;
-        StringBuilder buf = new StringBuilder();
-        for (ExchangeServer server : servers) {
-            if (! server.isBound()) {
-                level = Status.Level.ERROR;
-                buf.setLength(0);
-                buf.append(server.getLocalAddress());
-                break;
-            }
-            if (buf.length() > 0) {
-                buf.append(",");
-            }
-            buf.append(server.getLocalAddress());
-            buf.append("(clients:");
-            buf.append(server.getChannels().size());
-            buf.append(")");
-        }
-        return new Status(level, buf.toString());
-    }
+	public Status check() {
+		Collection<ExchangeServer> servers = DubboProtocol.getDubboProtocol().getServers();
+		if (servers == null || servers.size() == 0) {
+			return new Status(Status.Level.UNKNOWN);
+		}
+		Status.Level level = Status.Level.OK;
+		StringBuilder buf = new StringBuilder();
+		for (ExchangeServer server : servers) {
+			if (!server.isBound()) {
+				level = Status.Level.ERROR;
+				buf.setLength(0);
+				buf.append(server.getLocalAddress());
+				break;
+			}
+			if (buf.length() > 0) {
+				buf.append(",");
+			}
+			buf.append(server.getLocalAddress());
+			buf.append("(clients:");
+			buf.append(server.getChannels().size());
+			buf.append(")");
+		}
+		return new Status(level, buf.toString());
+	}
 
 }

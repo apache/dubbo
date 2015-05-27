@@ -28,31 +28,31 @@ import com.alibaba.dubbo.remoting.RemotingException;
  */
 public interface Group {
 
-    /**
-     * get group url.
-     * 
-     * @return group url.
-     */
-    URL getUrl();
+	/**
+	 * get group url.
+	 * 
+	 * @return group url.
+	 */
+	URL getUrl();
 
-    /**
-     * join.
-     * 
-     * @param url
-     */
-    Peer join(URL url, ChannelHandler handler) throws RemotingException;
-    
-    /**
-     * leave.
-     * 
-     * @param url
-     * @throws RemotingException
-     */
-    void leave(URL url) throws RemotingException;
-    
-    /**
-     * close the group.
-     */
-    void close();
+	/**
+	 * join.
+	 * 
+	 * @param url
+	 */
+	Peer join(URL url, ChannelHandler handler) throws RemotingException;
+
+	/**
+	 * leave.
+	 * 
+	 * @param url
+	 * @throws RemotingException
+	 */
+	void leave(URL url) throws RemotingException;
+
+	/**
+	 * close the group.
+	 */
+	void close();
 
 }

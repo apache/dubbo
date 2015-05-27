@@ -30,100 +30,100 @@ import com.alibaba.dubbo.remoting.RemotingException;
  */
 public class ThreadNameTest {
 
-    private NettyServer server;
-    private NettyClient client;
+	private NettyServer server;
+	private NettyClient client;
 
-    private URL serverURL;
-    private URL clientURL;
+	private URL serverURL;
+	private URL clientURL;
 
-    private ThreadNameVerifyHandler serverHandler;
-    private ThreadNameVerifyHandler clientHandler;
+	private ThreadNameVerifyHandler serverHandler;
+	private ThreadNameVerifyHandler clientHandler;
 
-    @Before
-    public void before() throws Exception {
-        int port = 55555;
-        serverURL = URL.valueOf("netty://localhost").setPort(port);
-        clientURL = URL.valueOf("netty://localhost").setPort(port);
+	@Before
+	public void before() throws Exception {
+		int port = 55555;
+		serverURL = URL.valueOf("netty://localhost").setPort(port);
+		clientURL = URL.valueOf("netty://localhost").setPort(port);
 
-        serverHandler = new ThreadNameVerifyHandler(String.valueOf(port), false);
-        clientHandler = new ThreadNameVerifyHandler(String.valueOf(port), true);
+		serverHandler = new ThreadNameVerifyHandler(String.valueOf(port), false);
+		clientHandler = new ThreadNameVerifyHandler(String.valueOf(port), true);
 
-        server = new NettyServer(serverURL, serverHandler);
-        client = new NettyClient(clientURL, clientHandler);
-    }
+		server = new NettyServer(serverURL, serverHandler);
+		client = new NettyClient(clientURL, clientHandler);
+	}
 
-    @After
-    public void after() throws Exception {
-        if (client != null) {
-            client.close();
-            client = null;
-        }
+	@After
+	public void after() throws Exception {
+		if (client != null) {
+			client.close();
+			client = null;
+		}
 
-        if (server != null) {
-            server.close();
-            server = null;
-        }
-    }
+		if (server != null) {
+			server.close();
+			server = null;
+		}
+	}
 
-    @Test
-    public void testThreadName() throws Exception {
-        client.send("hello");
-        Thread.sleep(1000L * 5L);
-        if (!serverHandler.isSuccess() || !clientHandler.isSuccess()) {
-            Assert.fail();
-        }
-    }
+	@Test
+	public void testThreadName() throws Exception {
+		client.send("hello");
+		Thread.sleep(1000L * 5L);
+		if (!serverHandler.isSuccess() || !clientHandler.isSuccess()) {
+			Assert.fail();
+		}
+	}
 
-    class ThreadNameVerifyHandler implements ChannelHandler {
+	class ThreadNameVerifyHandler implements ChannelHandler {
 
-        private String message;
-        private boolean success;
-        private boolean client;
+		private String message;
+		private boolean success;
+		private boolean client;
 
-        public boolean isSuccess() {
-            return success;
-        }
+		public boolean isSuccess() {
+			return success;
+		}
 
-        ThreadNameVerifyHandler(String msg, boolean client) {
-            message = msg;
-            this.client = client;
-        }
+		ThreadNameVerifyHandler(String msg, boolean client) {
+			message = msg;
+			this.client = client;
+		}
 
-        private void checkThreadName() {
-            if (!success) {
-                success = Thread.currentThread().getName().contains(message);
-            }
-        }
+		private void checkThreadName() {
+			if (!success) {
+				success = Thread.currentThread().getName().contains(message);
+			}
+		}
 
-        private void output(String method) {
-            System.out.println(Thread.currentThread().getName()
-                                   + " " + (client ? "client " + method : "server " + method));
-        }
+		private void output(String method) {
+			System.out.println(Thread.currentThread().getName() + " "
+					+ (client ? "client " + method : "server " + method));
+		}
 
-        public void connected(Channel channel) throws RemotingException {
-            output("connected");
-            checkThreadName();
-        }
+		public void connected(Channel channel) throws RemotingException {
+			output("connected");
+			checkThreadName();
+		}
 
-        public void disconnected(Channel channel) throws RemotingException {
-            output("disconnected");
-            checkThreadName();
-        }
+		public void disconnected(Channel channel) throws RemotingException {
+			output("disconnected");
+			checkThreadName();
+		}
 
-        public void sent(Channel channel, Object message) throws RemotingException {
-            output("sent");
-            checkThreadName();
-        }
+		public void sent(Channel channel, Object message) throws RemotingException {
+			output("sent");
+			checkThreadName();
+		}
 
-        public void received(Channel channel, Object message) throws RemotingException {
-            output("received");
-            checkThreadName();
-        }
+		public void received(Channel channel, Object message) throws RemotingException {
+			output("received");
+			checkThreadName();
+		}
 
-        public void caught(Channel channel, Throwable exception) throws RemotingException {
-            output("caught");
-            checkThreadName();
-        }
-    }
+		public void caught(Channel channel, Throwable exception) throws RemotingException {
+			output("caught");
+			checkThreadName();
+		}
+	}
 
 }

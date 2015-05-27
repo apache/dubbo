@@ -22,143 +22,143 @@ package com.alibaba.dubbo.remoting.exchange;
  * @author william.liangf
  */
 public class Response {
-    
-    public static final String HEARTBEAT_EVENT = null;
-    
-    public static final String READONLY_EVENT = "R";
 
-    /**
-     * ok.
-     */
-    public static final byte OK                = 20;
+	public static final String HEARTBEAT_EVENT = null;
 
-    /**
-     * clien side timeout.
-     */
-    public static final byte CLIENT_TIMEOUT    = 30;
+	public static final String READONLY_EVENT = "R";
 
-    /**
-     * server side timeout.
-     */
-    public static final byte SERVER_TIMEOUT    = 31;
+	/**
+	 * ok.
+	 */
+	public static final byte OK = 20;
 
-    /**
-     * request format error.
-     */
-    public static final byte BAD_REQUEST       = 40;
+	/**
+	 * clien side timeout.
+	 */
+	public static final byte CLIENT_TIMEOUT = 30;
 
-    /**
-     * response format error.
-     */
-    public static final byte BAD_RESPONSE      = 50;
+	/**
+	 * server side timeout.
+	 */
+	public static final byte SERVER_TIMEOUT = 31;
 
-    /**
-     * service not found.
-     */
-    public static final byte SERVICE_NOT_FOUND = 60;
+	/**
+	 * request format error.
+	 */
+	public static final byte BAD_REQUEST = 40;
 
-    /**
-     * service error.
-     */
-    public static final byte SERVICE_ERROR     = 70;
+	/**
+	 * response format error.
+	 */
+	public static final byte BAD_RESPONSE = 50;
 
-    /**
-     * internal server error.
-     */
-    public static final byte SERVER_ERROR      = 80;
+	/**
+	 * service not found.
+	 */
+	public static final byte SERVICE_NOT_FOUND = 60;
 
-    /**
-     * internal server error.
-     */
-    public static final byte CLIENT_ERROR      = 90;
+	/**
+	 * service error.
+	 */
+	public static final byte SERVICE_ERROR = 70;
 
-    private long             mId               = 0;
+	/**
+	 * internal server error.
+	 */
+	public static final byte SERVER_ERROR = 80;
 
-    private String           mVersion;
+	/**
+	 * internal server error.
+	 */
+	public static final byte CLIENT_ERROR = 90;
 
-    private byte             mStatus           = OK;
+	private long mId = 0;
 
-    private boolean          mEvent         = false;
+	private String mVersion;
 
-    private String           mErrorMsg;
+	private byte mStatus = OK;
 
-    private Object           mResult;
+	private boolean mEvent = false;
 
-    public Response(){
-    }
+	private String mErrorMsg;
 
-    public Response(long id){
-        mId = id;
-    }
+	private Object mResult;
 
-    public Response(long id, String version){
-        mId = id;
-        mVersion = version;
-    }
+	public Response() {
+	}
 
-    public long getId() {
-        return mId;
-    }
+	public Response(long id) {
+		mId = id;
+	}
 
-    public void setId(long id) {
-        mId = id;
-    }
+	public Response(long id, String version) {
+		mId = id;
+		mVersion = version;
+	}
 
-    public String getVersion() {
-        return mVersion;
-    }
+	public long getId() {
+		return mId;
+	}
 
-    public void setVersion(String version) {
-        mVersion = version;
-    }
+	public void setId(long id) {
+		mId = id;
+	}
 
-    public byte getStatus() {
-        return mStatus;
-    }
+	public String getVersion() {
+		return mVersion;
+	}
 
-    public void setStatus(byte status) {
-        mStatus = status;
-    }
-    
-    public boolean isEvent() {
-        return mEvent;
-    }
+	public void setVersion(String version) {
+		mVersion = version;
+	}
 
-    public void setEvent(String event) {
-        mEvent = true;
-        mResult = event;
-    }
+	public byte getStatus() {
+		return mStatus;
+	}
 
-    public boolean isHeartbeat() {
-        return mEvent && HEARTBEAT_EVENT == mResult;
-    }
+	public void setStatus(byte status) {
+		mStatus = status;
+	}
 
-    @Deprecated
-    public void setHeartbeat(boolean isHeartbeat) {
-        if (isHeartbeat) {
-            setEvent(HEARTBEAT_EVENT);
-        }
-    }
+	public boolean isEvent() {
+		return mEvent;
+	}
 
-    public Object getResult() {
-        return mResult;
-    }
+	public void setEvent(String event) {
+		mEvent = true;
+		mResult = event;
+	}
 
-    public void setResult(Object msg) {
-        mResult = msg;
-    }
+	public boolean isHeartbeat() {
+		return mEvent && HEARTBEAT_EVENT == mResult;
+	}
 
-    public String getErrorMessage() {
-        return mErrorMsg;
-    }
+	@Deprecated
+	public void setHeartbeat(boolean isHeartbeat) {
+		if (isHeartbeat) {
+			setEvent(HEARTBEAT_EVENT);
+		}
+	}
 
-    public void setErrorMessage(String msg) {
-        mErrorMsg = msg;
-    }
+	public Object getResult() {
+		return mResult;
+	}
 
-    @Override
-    public String toString() {
-        return "Response [id=" + mId + ", version=" + mVersion + ", status=" + mStatus + ", event=" + mEvent
-               + ", error=" + mErrorMsg + ", result=" + (mResult == this ? "this" : mResult) + "]";
-    }
+	public void setResult(Object msg) {
+		mResult = msg;
+	}
+
+	public String getErrorMessage() {
+		return mErrorMsg;
+	}
+
+	public void setErrorMessage(String msg) {
+		mErrorMsg = msg;
+	}
+
+	@Override
+	public String toString() {
+		return "Response [id=" + mId + ", version=" + mVersion + ", status=" + mStatus + ", event=" + mEvent
+				+ ", error=" + mErrorMsg + ", result=" + (mResult == this ? "this" : mResult) + "]";
+	}
 }

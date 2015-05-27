@@ -28,160 +28,154 @@ import com.alibaba.dubbo.registry.common.domain.Override;
 
 /**
  * IbatisOverrideDAO.java
+ * 
  * @author tony.chenl
  */
-public class OverrideServiceImpl extends AbstractService implements OverrideService{
+public class OverrideServiceImpl extends AbstractService implements OverrideService {
 
-    public void saveOverride(Override override) {
-        URL url = getUrlFromOverride(override);
-        registryService.register(url);
-    }
+	public void saveOverride(Override override) {
+		URL url = getUrlFromOverride(override);
+		registryService.register(url);
+	}
 
-    public void updateOverride(Override override) {
-        Long id = override.getId();
-        if(id == null) {
-            throw new IllegalStateException("no override id");
-        }
-        URL oldOverride = findOverrideUrl(id);
-        if(oldOverride == null) {
-            throw new IllegalStateException("Route was changed!");
-        }
-        URL newOverride = getUrlFromOverride(override);
-        
-        registryService.unregister(oldOverride);
-        registryService.register(newOverride);
-        
-    }
+	public void updateOverride(Override override) {
+		Long id = override.getId();
+		if (id == null) {
+			throw new IllegalStateException("no override id");
+		}
+		URL oldOverride = findOverrideUrl(id);
+		if (oldOverride == null) {
+			throw new IllegalStateException("Route was changed!");
+		}
+		URL newOverride = getUrlFromOverride(override);
 
-    public void deleteOverride(Long id) {
-        URL oldOverride = findOverrideUrl(id);
-        if(oldOverride == null) {
-            throw new IllegalStateException("Route was changed!");
-        }
-        registryService.unregister(oldOverride);
-    }
+		registryService.unregister(oldOverride);
+		registryService.register(newOverride);
 
-    public void enableOverride(Long id) {
-        if(id == null) {
-            throw new IllegalStateException("no override id");
-        }
-        
-        URL oldOverride = findOverrideUrl(id);
-        if(oldOverride == null) {
-            throw new IllegalStateException("Override was changed!");
-        }
-        if(oldOverride.getParameter("enabled", true)) {
-            return;
-        }
+	}
 
-        URL newOverride = oldOverride.removeParameter("enabled");
-        registryService.unregister(oldOverride);
-        registryService.register(newOverride);
-        
-    }
+	public void deleteOverride(Long id) {
+		URL oldOverride = findOverrideUrl(id);
+		if (oldOverride == null) {
+			throw new IllegalStateException("Route was changed!");
+		}
+		registryService.unregister(oldOverride);
+	}
 
-    public void disableOverride(Long id) {
-        if(id == null) {
-            throw new IllegalStateException("no override id");
-        }
-        
-        URL oldProvider = findOverrideUrl(id);
-        if(oldProvider == null) {
-            throw new IllegalStateException("Override was changed!");
-        }
-        if(!oldProvider.getParameter("enabled", true)) {
-            return;
-        }
+	public void enableOverride(Long id) {
+		if (id == null) {
+			throw new IllegalStateException("no override id");
+		}
 
-        URL newProvider = oldProvider.addParameter("enabled", false);
-        registryService.unregister(oldProvider);
-        registryService.register(newProvider);
-        
-    }
+		URL oldOverride = findOverrideUrl(id);
+		if (oldOverride == null) {
+			throw new IllegalStateException("Override was changed!");
+		}
+		if (oldOverride.getParameter("enabled", true)) {
+			return;
+		}
 
-    private Map<Long, URL> findOverrideUrl(String service, String address, String application) {
-        Map<String, String> filter = new HashMap<String, String>();
-        filter.put(Constants.CATEGORY_KEY, Constants.CONFIGURATORS_CATEGORY);
-        if (service != null && service.length() > 0) {
-        	filter.put(SyncUtils.SERVICE_FILTER_KEY, service);
-        }
-        if (address != null && address.length() > 0) {
-        	filter.put(SyncUtils.ADDRESS_FILTER_KEY, address);
-        }
-        if (application != null && application.length() > 0) {
-        	filter.put(Constants.APPLICATION_KEY, application);
-        }
-        return SyncUtils.filterFromCategory(getRegistryCache(), filter);
-    }
+		URL newOverride = oldOverride.removeParameter("enabled");
+		registryService.unregister(oldOverride);
+		registryService.register(newOverride);
 
-    public List<Override> findByAddress(String address) {
-        return  SyncUtils.url2OverrideList(findOverrideUrl(null, address, null));
-    }
+	}
 
-    public List<Override> findByServiceAndAddress(String service, String address) {
-        return  SyncUtils.url2OverrideList(findOverrideUrl(service, address, null));
-    }
-    
-    public List<Override> findByApplication(String application) {
-        return SyncUtils.url2OverrideList(findOverrideUrl(null, null, application));
-    }
+	public void disableOverride(Long id) {
+		if (id == null) {
+			throw new IllegalStateException("no override id");
+		}
 
-    public List<Override> findByService(String service) {
-        return  SyncUtils.url2OverrideList(findOverrideUrl(service, null, null));
-    }
+		URL oldProvider = findOverrideUrl(id);
+		if (oldProvider == null) {
+			throw new IllegalStateException("Override was changed!");
+		}
+		if (!oldProvider.getParameter("enabled", true)) {
+			return;
+		}
 
-    public List<Override> findByServiceAndApplication(String service, String application) {
-        return  SyncUtils.url2OverrideList(findOverrideUrl(service, null, application));
-    }
-    
-    public List<Override> findAll() {
-        return SyncUtils.url2OverrideList(findOverrideUrl(null, null, null));
-    }
-    
-    private Pair<Long, URL> findOverrideUrlPair(Long id) {
-        return SyncUtils.filterFromCategory(getRegistryCache(), Constants.CONFIGURATORS_CATEGORY, id);
-    }
+		URL newProvider = oldProvider.addParameter("enabled", false);
+		registryService.unregister(oldProvider);
+		registryService.register(newProvider);
 
-    public Override findById(Long id) {
-        return SyncUtils.url2Override(findOverrideUrlPair(id));
-    }
-    
-    private URL getUrlFromOverride(Override override) {
-    	return override.toUrl();
-        /*Map<String, String> params = ConvertUtil.serviceName2Map(override.getService());
-        if(!params.containsKey(Constants.INTERFACE_KEY)) {
-            throw new IllegalArgumentException("No interface info");
-        }
-        if(!params.containsKey(Constants.VERSION_KEY)) {
-            throw new IllegalArgumentException("No version info");
-        }
-        
-        boolean enabled = override.isEnabled();
-        if(!enabled) {
-            params.put("enabled", "false");
-        }
-        String application = override.getApplication();
-        if(!StringUtils.isEmpty(application)) {
-            params.put("application", application);
-        }
-        String address = override.getAddress();
-        if(!StringUtils.isEmpty(address)) {
-            params.put("address", address);
-        }
-        
-        String overrideAddress = override.getOverrideAddress();
-        if(StringUtils.isEmpty(overrideAddress)) {
-            overrideAddress = "0.0.0.0";
-        }
-        params.put(Constants.CATEGORY_KEY, Constants.CONFIGURATORS_CATEGORY);
-        
-        URL url = new URL("override", overrideAddress, -1, params);
-        url = url.addParameterString(override.getParams());
-        return url;*/
-    }
-    
-    URL findOverrideUrl(Long id){
-        return getUrlFromOverride(findById(id));
-    }
+	}
+
+	private Map<Long, URL> findOverrideUrl(String service, String address, String application) {
+		Map<String, String> filter = new HashMap<String, String>();
+		filter.put(Constants.CATEGORY_KEY, Constants.CONFIGURATORS_CATEGORY);
+		if (service != null && service.length() > 0) {
+			filter.put(SyncUtils.SERVICE_FILTER_KEY, service);
+		}
+		if (address != null && address.length() > 0) {
+			filter.put(SyncUtils.ADDRESS_FILTER_KEY, address);
+		}
+		if (application != null && application.length() > 0) {
+			filter.put(Constants.APPLICATION_KEY, application);
+		}
+		return SyncUtils.filterFromCategory(getRegistryCache(), filter);
+	}
+
+	public List<Override> findByAddress(String address) {
+		return SyncUtils.url2OverrideList(findOverrideUrl(null, address, null));
+	}
+
+	public List<Override> findByServiceAndAddress(String service, String address) {
+		return SyncUtils.url2OverrideList(findOverrideUrl(service, address, null));
+	}
+
+	public List<Override> findByApplication(String application) {
+		return SyncUtils.url2OverrideList(findOverrideUrl(null, null, application));
+	}
+
+	public List<Override> findByService(String service) {
+		return SyncUtils.url2OverrideList(findOverrideUrl(service, null, null));
+	}
+
+	public List<Override> findByServiceAndApplication(String service, String application) {
+		return SyncUtils.url2OverrideList(findOverrideUrl(service, null, application));
+	}
+
+	public List<Override> findAll() {
+		return SyncUtils.url2OverrideList(findOverrideUrl(null, null, null));
+	}
+
+	private Pair<Long, URL> findOverrideUrlPair(Long id) {
+		return SyncUtils.filterFromCategory(getRegistryCache(), Constants.CONFIGURATORS_CATEGORY, id);
+	}
+
+	public Override findById(Long id) {
+		return SyncUtils.url2Override(findOverrideUrlPair(id));
+	}
+
+	private URL getUrlFromOverride(Override override) {
+		return override.toUrl();
+		/*
+		 * Map<String, String> params =
+		 * ConvertUtil.serviceName2Map(override.getService());
+		 * if(!params.containsKey(Constants.INTERFACE_KEY)) { throw new
+		 * IllegalArgumentException("No interface info"); }
+		 * if(!params.containsKey(Constants.VERSION_KEY)) { throw new
+		 * IllegalArgumentException("No version info"); }
+		 * 
+		 * boolean enabled = override.isEnabled(); if(!enabled) {
+		 * params.put("enabled", "false"); } String application =
+		 * override.getApplication(); if(!StringUtils.isEmpty(application)) {
+		 * params.put("application", application); } String address =
+		 * override.getAddress(); if(!StringUtils.isEmpty(address)) {
+		 * params.put("address", address); }
+		 * 
+		 * String overrideAddress = override.getOverrideAddress();
+		 * if(StringUtils.isEmpty(overrideAddress)) { overrideAddress =
+		 * "0.0.0.0"; } params.put(Constants.CATEGORY_KEY,
+		 * Constants.CONFIGURATORS_CATEGORY);
+		 * 
+		 * URL url = new URL("override", overrideAddress, -1, params); url =
+		 * url.addParameterString(override.getParams()); return url;
+		 */
+	}
+
+	URL findOverrideUrl(Long id) {
+		return getUrlFromOverride(findById(id));
+	}
 
 }

@@ -29,70 +29,69 @@ import com.alibaba.dubbo.remoting.RemotingException;
  *
  */
 public class MockedChannel implements Channel {
-    private boolean isClosed ; 
-    private URL url; 
-    private ChannelHandler handler ;
-    private Map <String,Object> map = new HashMap<String, Object>(); 
-    
-    public MockedChannel() {
-        super();
-    }
+	private boolean isClosed;
+	private URL url;
+	private ChannelHandler handler;
+	private Map<String, Object> map = new HashMap<String, Object>();
 
+	public MockedChannel() {
+		super();
+	}
 
-    public URL getUrl() {
-        return url;
-    }
+	public URL getUrl() {
+		return url;
+	}
 
-    public ChannelHandler getChannelHandler() {
-        
-        return this.handler;
-    }
+	public ChannelHandler getChannelHandler() {
 
-    public InetSocketAddress getLocalAddress() {
-        
-        return null;
-    }
+		return this.handler;
+	}
 
-    public void send(Object message) throws RemotingException {
-    }
+	public InetSocketAddress getLocalAddress() {
 
-    public void send(Object message, boolean sent) throws RemotingException {
-        this.send(message);
-    }
+		return null;
+	}
 
-    public void close() {
-        isClosed = true;
-    }
+	public void send(Object message) throws RemotingException {
+	}
 
-    public void close(int timeout) {
-        this.close();
-    }
+	public void send(Object message, boolean sent) throws RemotingException {
+		this.send(message);
+	}
 
-    public boolean isClosed() {
-        return isClosed;
-    }
+	public void close() {
+		isClosed = true;
+	}
 
-    public InetSocketAddress getRemoteAddress() {
-        return null;
-    }
+	public void close(int timeout) {
+		this.close();
+	}
 
-    public boolean isConnected() {
-        return false;
-    }
+	public boolean isClosed() {
+		return isClosed;
+	}
 
-    public boolean hasAttribute(String key) {
-        return map.containsKey(key);
-    }
+	public InetSocketAddress getRemoteAddress() {
+		return null;
+	}
 
-    public Object getAttribute(String key) {
-        return map.get(key);
-    }
+	public boolean isConnected() {
+		return false;
+	}
 
-    public void setAttribute(String key, Object value) {
-        map.put(key, value);
-    }
+	public boolean hasAttribute(String key) {
+		return map.containsKey(key);
+	}
 
-    public void removeAttribute(String key) {
-        map.remove(key);
-    }
+	public Object getAttribute(String key) {
+		return map.get(key);
+	}
+
+	public void setAttribute(String key, Object value) {
+		map.put(key, value);
+	}
+
+	public void removeAttribute(String key) {
+		map.remove(key);
+	}
 }

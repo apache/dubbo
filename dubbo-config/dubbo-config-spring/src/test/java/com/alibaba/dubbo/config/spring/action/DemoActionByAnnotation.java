@@ -25,12 +25,12 @@ import com.alibaba.dubbo.config.spring.api.DemoService;
  * @author william.liangf
  */
 public class DemoActionByAnnotation {
-    
-    @Autowired
-    private DemoService demoService;
-    
-    public DemoService getDemoService() {
-        return demoService;
-    }
+
+	@Autowired
+	private DemoService demoService;
+
+	public DemoService getDemoService() {
+		return demoService;
+	}
 
 }

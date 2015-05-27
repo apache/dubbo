@@ -17,7 +17,7 @@ public interface ZookeeperClient {
 	void removeChildListener(String path, ChildListener listener);
 
 	void addStateListener(StateListener listener);
-	
+
 	void removeStateListener(StateListener listener);
 
 	boolean isConnected();

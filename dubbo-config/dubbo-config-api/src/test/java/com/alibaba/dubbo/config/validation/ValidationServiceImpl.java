@@ -22,13 +22,13 @@ package com.alibaba.dubbo.config.validation;
  */
 public class ValidationServiceImpl implements ValidationService {
 
-    public void save(ValidationParameter parameter) {
-    }
+	public void save(ValidationParameter parameter) {
+	}
 
-    public void update(ValidationParameter parameter) {
-    }
+	public void update(ValidationParameter parameter) {
+	}
 
-    public void delete(long id, String operator) {
-    }
+	public void delete(long id, String operator) {
+	}
 
 }

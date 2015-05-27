@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.protocol.injvm;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,45 +35,47 @@ import com.alibaba.dubbo.rpc.ProxyFactory;
  * <code>ProxiesTest</code>
  */
 
-public class InjvmProtocolTest
-{
-    private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-    private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-    private List<Exporter<?>> exporters = new ArrayList<Exporter<?>>();
+public class InjvmProtocolTest {
+	private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+	private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+	private List<Exporter<?>> exporters = new ArrayList<Exporter<?>>();
 
-    @After
-    public void after() throws Exception {
-        for(Exporter<?> exporter : exporters) {
-            exporter.unexport();
-        }
-        exporters.clear();
-    }
+	@After
+	public void after() throws Exception {
+		for (Exporter<?> exporter : exporters) {
+			exporter.unexport();
+		}
+		exporters.clear();
+	}
 
 	@Test
-	public void testLocalProtocol() throws Exception
-	{
+	public void testLocalProtocol() throws Exception {
 		DemoService service = new DemoServiceImpl();
-		Exporter<?> exporter = protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("injvm://127.0.0.1/TestService").addParameter(Constants.INTERFACE_KEY, DemoService.class.getName())));
-        exporters.add(exporter);
-		service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("injvm://127.0.0.1/TestService").addParameter(Constants.INTERFACE_KEY, DemoService.class.getName())));
-		assertEquals(service.getSize(new String[]{"", "", ""}), 3);
+		Exporter<?> exporter = protocol.export(proxy.getInvoker(
+				service,
+				DemoService.class,
+				URL.valueOf("injvm://127.0.0.1/TestService").addParameter(Constants.INTERFACE_KEY,
+						DemoService.class.getName())));
+		exporters.add(exporter);
+		service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("injvm://127.0.0.1/TestService")
+				.addParameter(Constants.INTERFACE_KEY, DemoService.class.getName())));
+		assertEquals(service.getSize(new String[] { "", "", "" }), 3);
 		service.invoke("injvm://127.0.0.1/TestService", "invoke");
 	}
 
-    @Test
-    public void testIsInjvmRefer() throws Exception {
-        DemoService service = new DemoServiceImpl();
-        URL url = URL.valueOf("injvm://127.0.0.1/TestService")
-            .addParameter(Constants.INTERFACE_KEY, DemoService.class.getName());
-        Exporter<?> exporter = protocol.export(proxy.getInvoker(service, DemoService.class, url));
-        exporters.add(exporter);
+	@Test
+	public void testIsInjvmRefer() throws Exception {
+		DemoService service = new DemoServiceImpl();
+		URL url = URL.valueOf("injvm://127.0.0.1/TestService").addParameter(Constants.INTERFACE_KEY,
+				DemoService.class.getName());
+		Exporter<?> exporter = protocol.export(proxy.getInvoker(service, DemoService.class, url));
+		exporters.add(exporter);
 
-        url = url.setProtocol("dubbo");
-        assertTrue(InjvmProtocol.getInjvmProtocol().isInjvmRefer(url));
+		url = url.setProtocol("dubbo");
+		assertTrue(InjvmProtocol.getInjvmProtocol().isInjvmRefer(url));
 
-        url = url.addParameter(Constants.GROUP_KEY, "*")
-            .addParameter(Constants.VERSION_KEY, "*");
-        assertTrue(InjvmProtocol.getInjvmProtocol().isInjvmRefer(url));
-    }
+		url = url.addParameter(Constants.GROUP_KEY, "*").addParameter(Constants.VERSION_KEY, "*");
+		assertTrue(InjvmProtocol.getInjvmProtocol().isInjvmRefer(url));
+	}
 
 }

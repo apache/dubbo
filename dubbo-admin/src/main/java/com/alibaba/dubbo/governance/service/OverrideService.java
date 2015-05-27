@@ -23,29 +23,29 @@ import com.alibaba.dubbo.registry.common.domain.Override;
  * @author tony.chenl
  */
 public interface OverrideService {
-    
-    void saveOverride(Override override);
-    
-    void updateOverride(Override override);
 
-    void deleteOverride(Long id);
-    
-    void enableOverride(Long id);
-    
-    void disableOverride(Long id);
+	void saveOverride(Override override);
 
-    List<Override> findByService(String service);
-    
-    List<Override> findByAddress(String address);
-    
-    List<Override> findByServiceAndAddress(String service, String address);
-    
-    List<Override> findByApplication(String application);
+	void updateOverride(Override override);
 
-    List<Override> findByServiceAndApplication(String service, String application);
-    
-    List<Override> findAll();
+	void deleteOverride(Long id);
 
-    Override findById(Long id);
-    
+	void enableOverride(Long id);
+
+	void disableOverride(Long id);
+
+	List<Override> findByService(String service);
+
+	List<Override> findByAddress(String address);
+
+	List<Override> findByServiceAndAddress(String service, String address);
+
+	List<Override> findByApplication(String application);
+
+	List<Override> findByServiceAndApplication(String service, String application);
+
+	List<Override> findAll();
+
+	Override findById(Long id);
+
 }

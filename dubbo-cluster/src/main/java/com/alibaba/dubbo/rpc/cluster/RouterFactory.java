@@ -31,14 +31,14 @@ import com.alibaba.dubbo.rpc.Invocation;
  */
 @SPI
 public interface RouterFactory {
-    
-    /**
-     * Create router.
-     * 
-     * @param url
-     * @return router
-     */
-    @Adaptive("protocol")
-    Router getRouter(URL url);
-    
+
+	/**
+	 * Create router.
+	 * 
+	 * @param url
+	 * @return router
+	 */
+	@Adaptive("protocol")
+	Router getRouter(URL url);
+
 }

@@ -36,137 +36,138 @@ import com.alibaba.dubbo.remoting.exchange.ResponseFuture;
 @SuppressWarnings("deprecation")
 final class ReferenceCountExchangeClient implements ExchangeClient {
 
-    private ExchangeClient client;
-    
-    private final URL url;
-    
-//    private final ExchangeHandler handler;
-    
-    private final AtomicInteger refenceCount = new AtomicInteger(0);
-    
-    private final ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap;
-    
-    
-    public ReferenceCountExchangeClient(ExchangeClient client, ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap) {
-        this.client = client;
-        refenceCount.incrementAndGet();
-        this.url = client.getUrl();
-        if (ghostClientMap == null){
-            throw new IllegalStateException("ghostClientMap can not be null, url: " + url);
-        }
-        this.ghostClientMap = ghostClientMap;
-    }
+	private ExchangeClient client;
 
-    public void reset(URL url) {
-        client.reset(url);
-    }
+	private final URL url;
 
-    public ResponseFuture request(Object request) throws RemotingException {
-        return client.request(request);
-    }
+	// private final ExchangeHandler handler;
 
-    public URL getUrl() {
-        return client.getUrl();
-    }
+	private final AtomicInteger refenceCount = new AtomicInteger(0);
 
-    public InetSocketAddress getRemoteAddress() {
-        return client.getRemoteAddress();
-    }
+	private final ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap;
 
-    public ChannelHandler getChannelHandler() {
-        return client.getChannelHandler();
-    }
+	public ReferenceCountExchangeClient(ExchangeClient client,
+			ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap) {
+		this.client = client;
+		refenceCount.incrementAndGet();
+		this.url = client.getUrl();
+		if (ghostClientMap == null) {
+			throw new IllegalStateException("ghostClientMap can not be null, url: " + url);
+		}
+		this.ghostClientMap = ghostClientMap;
+	}
 
-    public ResponseFuture request(Object request, int timeout) throws RemotingException {
-        return client.request(request, timeout);
-    }
+	public void reset(URL url) {
+		client.reset(url);
+	}
 
-    public boolean isConnected() {
-        return client.isConnected();
-    }
+	public ResponseFuture request(Object request) throws RemotingException {
+		return client.request(request);
+	}
 
-    public void reconnect() throws RemotingException {
-        client.reconnect();
-    }
+	public URL getUrl() {
+		return client.getUrl();
+	}
 
-    public InetSocketAddress getLocalAddress() {
-        return client.getLocalAddress();
-    }
+	public InetSocketAddress getRemoteAddress() {
+		return client.getRemoteAddress();
+	}
 
-    public boolean hasAttribute(String key) {
-        return client.hasAttribute(key);
-    }
+	public ChannelHandler getChannelHandler() {
+		return client.getChannelHandler();
+	}
 
-    public void reset(Parameters parameters) {
-        client.reset(parameters);
-    }
+	public ResponseFuture request(Object request, int timeout) throws RemotingException {
+		return client.request(request, timeout);
+	}
 
-    public void send(Object message) throws RemotingException {
-        client.send(message);
-    }
+	public boolean isConnected() {
+		return client.isConnected();
+	}
 
-    public ExchangeHandler getExchangeHandler() {
-        return client.getExchangeHandler();
-    }
+	public void reconnect() throws RemotingException {
+		client.reconnect();
+	}
 
-    public Object getAttribute(String key) {
-        return client.getAttribute(key);
-    }
+	public InetSocketAddress getLocalAddress() {
+		return client.getLocalAddress();
+	}
 
-    public void send(Object message, boolean sent) throws RemotingException {
-        client.send(message, sent);
-    }
+	public boolean hasAttribute(String key) {
+		return client.hasAttribute(key);
+	}
 
-    public void setAttribute(String key, Object value) {
-        client.setAttribute(key, value);
-    }
+	public void reset(Parameters parameters) {
+		client.reset(parameters);
+	}
 
-    public void removeAttribute(String key) {
-        client.removeAttribute(key);
-    }
-    /* 
-     * close方法将不再幂等,调用需要注意.
-     */
-    public void close() {
-        close(0);
-    }
+	public void send(Object message) throws RemotingException {
+		client.send(message);
+	}
 
-    public void close(int timeout) {
-        if (refenceCount.decrementAndGet() <= 0){
-            if (timeout == 0){
-                client.close();
-            } else {
-                client.close(timeout);
-            }
-            client = replaceWithLazyClient();
-        }
-    }
-    
-    //幽灵client,
-    private LazyConnectExchangeClient replaceWithLazyClient(){
-        //这个操作只为了防止程序bug错误关闭client做的防御措施，初始client必须为false状态
-        URL lazyUrl = url.addParameter(Constants.LAZY_CONNECT_INITIAL_STATE_KEY, Boolean.FALSE)
-                .addParameter(Constants.RECONNECT_KEY, Boolean.FALSE)
-                .addParameter(Constants.SEND_RECONNECT_KEY, Boolean.TRUE.toString())
-                .addParameter("warning", Boolean.TRUE.toString())
-                .addParameter(LazyConnectExchangeClient.REQUEST_WITH_WARNING_KEY, true)
-                .addParameter("_client_memo", "referencecounthandler.replacewithlazyclient");
-        
-        String key = url.getAddress();
-        //最差情况下只有一个幽灵连接
-        LazyConnectExchangeClient gclient = ghostClientMap.get(key);
-        if (gclient == null || gclient.isClosed()){
-            gclient = new LazyConnectExchangeClient(lazyUrl, client.getExchangeHandler());
-            ghostClientMap.put(key, gclient);
-        }
-        return gclient;
-    }
+	public ExchangeHandler getExchangeHandler() {
+		return client.getExchangeHandler();
+	}
 
-    public boolean isClosed() {
-        return client.isClosed();
-    }
-    
-    public void incrementAndGetCount(){
-        refenceCount.incrementAndGet();
-    }
+	public Object getAttribute(String key) {
+		return client.getAttribute(key);
+	}
+
+	public void send(Object message, boolean sent) throws RemotingException {
+		client.send(message, sent);
+	}
+
+	public void setAttribute(String key, Object value) {
+		client.setAttribute(key, value);
+	}
+
+	public void removeAttribute(String key) {
+		client.removeAttribute(key);
+	}
+
+	/*
+	 * close方法将不再幂等,调用需要注意.
+	 */
+	public void close() {
+		close(0);
+	}
+
+	public void close(int timeout) {
+		if (refenceCount.decrementAndGet() <= 0) {
+			if (timeout == 0) {
+				client.close();
+			} else {
+				client.close(timeout);
+			}
+			client = replaceWithLazyClient();
+		}
+	}
+
+	// 幽灵client,
+	private LazyConnectExchangeClient replaceWithLazyClient() {
+		// 这个操作只为了防止程序bug错误关闭client做的防御措施，初始client必须为false状态
+		URL lazyUrl = url.addParameter(Constants.LAZY_CONNECT_INITIAL_STATE_KEY, Boolean.FALSE)
+				.addParameter(Constants.RECONNECT_KEY, Boolean.FALSE)
+				.addParameter(Constants.SEND_RECONNECT_KEY, Boolean.TRUE.toString())
+				.addParameter("warning", Boolean.TRUE.toString())
+				.addParameter(LazyConnectExchangeClient.REQUEST_WITH_WARNING_KEY, true)
+				.addParameter("_client_memo", "referencecounthandler.replacewithlazyclient");
+
+		String key = url.getAddress();
+		// 最差情况下只有一个幽灵连接
+		LazyConnectExchangeClient gclient = ghostClientMap.get(key);
+		if (gclient == null || gclient.isClosed()) {
+			gclient = new LazyConnectExchangeClient(lazyUrl, client.getExchangeHandler());
+			ghostClientMap.put(key, gclient);
+		}
+		return gclient;
+	}
+
+	public boolean isClosed() {
+		return client.isClosed();
+	}
+
+	public void incrementAndGetCount() {
+		refenceCount.incrementAndGet();
+	}
 }

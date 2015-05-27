@@ -26,33 +26,33 @@ import com.alibaba.dubbo.registry.common.domain.Consumer;
  */
 public interface ConsumerService {
 
-    List<Consumer> findByService(String serviceName);
+	List<Consumer> findByService(String serviceName);
 
-    Consumer findConsumer(Long id);
-    
-    List<Consumer> findAll();
+	Consumer findConsumer(Long id);
 
-    /**
-     * 查询所有的消费者地址
-     */
-    List<String> findAddresses();
-    
-    List<String> findAddressesByApplication(String application);
-    
-    List<String> findAddressesByService(String serviceName);
+	List<Consumer> findAll();
 
-    List<Consumer> findByAddress(String consumerAddress);
-    
-    List<String> findServicesByAddress(String consumerAddress);
+	/**
+	 * 查询所有的消费者地址
+	 */
+	List<String> findAddresses();
 
-    List<String> findApplications();
-    
-    List<String> findApplicationsByServiceName(String serviceName);
-    
-    List<Consumer> findByApplication(String application);
-    
-    List<String> findServicesByApplication(String application);
+	List<String> findAddressesByApplication(String application);
 
-    List<String> findServices();
-    
+	List<String> findAddressesByService(String serviceName);
+
+	List<Consumer> findByAddress(String consumerAddress);
+
+	List<String> findServicesByAddress(String consumerAddress);
+
+	List<String> findApplications();
+
+	List<String> findApplicationsByServiceName(String serviceName);
+
+	List<Consumer> findByApplication(String application);
+
+	List<String> findServicesByApplication(String application);
+
+	List<String> findServices();
+
 }

@@ -25,77 +25,76 @@ import java.util.List;
  */
 public class DependItem {
 
-    private String application;
+	private String application;
 
-    private int index;
+	private int index;
 
-    private int level;
-    
-    private DependItem parent;
+	private int level;
 
-    private final List<Integer> recursives = new ArrayList<Integer>();
+	private DependItem parent;
 
-    public DependItem() {
-    }
-    
-    public DependItem(String application, int level) {
-        this.application = application;
-        this.level = level;
-    }
+	private final List<Integer> recursives = new ArrayList<Integer>();
 
-    public DependItem(DependItem parent, String application, int level, int index) {
-        this.parent = parent;
-        this.application = application;
-        this.level = level;
-        this.index = index;
-    }
+	public DependItem() {
+	}
 
-    public int getLevel() {
-        return level;
-    }
+	public DependItem(String application, int level) {
+		this.application = application;
+		this.level = level;
+	}
 
-    public void setLevel(int level) {
-        this.level = level;
-    }
+	public DependItem(DependItem parent, String application, int level, int index) {
+		this.parent = parent;
+		this.application = application;
+		this.level = level;
+		this.index = index;
+	}
 
-    public String getApplication() {
-        return application;
-    }
+	public int getLevel() {
+		return level;
+	}
 
-    public void setApplication(String application) {
-        this.application = application;
-    }
+	public void setLevel(int level) {
+		this.level = level;
+	}
 
-    public int getIndex() {
-        return index;
-    }
+	public String getApplication() {
+		return application;
+	}
 
-    public void setIndex(int index) {
-        this.index = index;
-    }
+	public void setApplication(String application) {
+		this.application = application;
+	}
 
-    public DependItem getParent() {
-        return parent;
-    }
+	public int getIndex() {
+		return index;
+	}
 
-    public void setParent(DependItem parent) {
-        this.parent = parent;
-    }
+	public void setIndex(int index) {
+		this.index = index;
+	}
 
-    public List<Integer> getRecursives() {
-        return recursives;
-    }
-    
-    public void addRecursive(int padding, int value) {
-        while (recursives.size() < padding) {
-            recursives.add(0);
-        }
-        recursives.add(value);
-    }
+	public DependItem getParent() {
+		return parent;
+	}
 
-    public String toString() {
-        return "DependItem [application=" + application + ", index=" + index + ", level=" + level
-                + "]";
-    }
+	public void setParent(DependItem parent) {
+		this.parent = parent;
+	}
+
+	public List<Integer> getRecursives() {
+		return recursives;
+	}
+
+	public void addRecursive(int padding, int value) {
+		while (recursives.size() < padding) {
+			recursives.add(0);
+		}
+		recursives.add(value);
+	}
+
+	public String toString() {
+		return "DependItem [application=" + application + ", index=" + index + ", level=" + level + "]";
+	}
 
 }

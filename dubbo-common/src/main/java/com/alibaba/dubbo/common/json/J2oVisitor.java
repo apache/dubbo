@@ -37,8 +37,7 @@ import com.alibaba.dubbo.common.utils.StringUtils;
  * @author qian.lei.
  */
 
-class J2oVisitor implements JSONVisitor
-{
+class J2oVisitor implements JSONVisitor {
 	public static final boolean[] EMPTY_BOOL_ARRAY = new boolean[0];
 
 	public static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
@@ -69,23 +68,20 @@ class J2oVisitor implements JSONVisitor
 
 	private Stack<Object> mStack = new Stack<Object>();
 
-	J2oVisitor(Class<?> type, JSONConverter jc)
-	{
+	J2oVisitor(Class<?> type, JSONConverter jc) {
 		mType = type;
 		mConverter = jc;
 	}
 
-	J2oVisitor(Class<?>[] types, JSONConverter jc)
-	{
+	J2oVisitor(Class<?>[] types, JSONConverter jc) {
 		mTypes = types;
 		mConverter = jc;
 	}
 
-	public void begin()
-	{}
+	public void begin() {
+	}
 
-	public Object end(Object obj, boolean isValue) throws ParseException
-	{
+	public Object end(Object obj, boolean isValue) throws ParseException {
 		mStack.clear();
 		try {
 			return mConverter.readValue(mType, obj);
@@ -94,15 +90,13 @@ class J2oVisitor implements JSONVisitor
 		}
 	}
 
-	public void objectBegin() throws ParseException
-	{
+	public void objectBegin() throws ParseException {
 		mStack.push(mValue);
 		mStack.push(mType);
 		mStack.push(mWrapper);
 
-		if( mType == Object.class || Map.class.isAssignableFrom(mType) )
-		{
-			if (! mType.isInterface() && mType != Object.class) {
+		if (mType == Object.class || Map.class.isAssignableFrom(mType)) {
+			if (!mType.isInterface() && mType != Object.class) {
 				try {
 					mValue = mType.newInstance();
 				} catch (Exception e) {
@@ -118,56 +112,45 @@ class J2oVisitor implements JSONVisitor
 			try {
 				mValue = mType.newInstance();
 				mWrapper = Wrapper.getWrapper(mType);
-			} catch(IllegalAccessException e){ 
-				throw new ParseException(StringUtils.toString(e)); 
-			} catch(InstantiationException e){ 
-				throw new ParseException(StringUtils.toString(e)); 
+			} catch (IllegalAccessException e) {
+				throw new ParseException(StringUtils.toString(e));
+			} catch (InstantiationException e) {
+				throw new ParseException(StringUtils.toString(e));
 			}
 		}
 	}
 
-	public Object objectEnd(int count)
-	{
+	public Object objectEnd(int count) {
 		Object ret = mValue;
-		mWrapper = (Wrapper)mStack.pop();
-		mType = (Class<?>)mStack.pop();
+		mWrapper = (Wrapper) mStack.pop();
+		mType = (Class<?>) mStack.pop();
 		mValue = mStack.pop();
 		return ret;
 	}
 
-	public void objectItem(String name)
-	{
+	public void objectItem(String name) {
 		mStack.push(name); // push name.
-		mType = ( mWrapper == null ? Object.class : mWrapper.getPropertyType(name) );
+		mType = (mWrapper == null ? Object.class : mWrapper.getPropertyType(name));
 	}
 
 	@SuppressWarnings("unchecked")
-	public void objectItemValue(Object obj, boolean isValue) throws ParseException
-	{
-		String name = (String)mStack.pop();  // pop name.
-		if( mWrapper == null )
-		{
-			((Map<String, Object>)mValue).put(name, obj);
-		}
-		else
-		{
-			if( mType != null )
-			{
-				if( isValue && obj != null )
-				{
-					try
-					{
+	public void objectItemValue(Object obj, boolean isValue) throws ParseException {
+		String name = (String) mStack.pop(); // pop name.
+		if (mWrapper == null) {
+			((Map<String, Object>) mValue).put(name, obj);
+		} else {
+			if (mType != null) {
+				if (isValue && obj != null) {
+					try {
 						obj = mConverter.readValue(mType, obj);
-					}
-					catch(IOException e)
-					{
+					} catch (IOException e) {
 						throw new ParseException(StringUtils.toString(e));
 					}
 				}
 				if (mValue instanceof Throwable && "message".equals(name)) {
 					try {
 						Field field = Throwable.class.getDeclaredField("detailMessage");
-						if (! field.isAccessible()) {
+						if (!field.isAccessible()) {
 							field.setAccessible(true);
 						}
 						field.set(mValue, obj);
@@ -176,40 +159,36 @@ class J2oVisitor implements JSONVisitor
 					} catch (IllegalAccessException e) {
 						throw new ParseException(StringUtils.toString(e));
 					}
-				} else if (! CLASS_PROPERTY.equals(name)) {
+				} else if (!CLASS_PROPERTY.equals(name)) {
 					mWrapper.setPropertyValue(mValue, name, obj);
 				}
 			}
 		}
 	}
 
-	public void arrayBegin() throws ParseException
-	{
+	public void arrayBegin() throws ParseException {
 		mStack.push(mType);
 
-		if( mType.isArray() )
+		if (mType.isArray())
 			mType = mType.getComponentType();
-		else if( mType == Object.class || Collection.class.isAssignableFrom(mType) )
+		else if (mType == Object.class || Collection.class.isAssignableFrom(mType))
 			mType = Object.class;
 		else
-			throw new ParseException("Convert error, can not load json array data into class [" + mType.getName() + "].");
+			throw new ParseException("Convert error, can not load json array data into class [" + mType.getName()
+					+ "].");
 	}
 
 	@SuppressWarnings("unchecked")
-	public Object arrayEnd(int count) throws ParseException
-	{
+	public Object arrayEnd(int count) throws ParseException {
 		Object ret;
-		mType = (Class<?>)mStack.get(-1-count);
+		mType = (Class<?>) mStack.get(-1 - count);
 
-		if( mType.isArray() )
-		{
+		if (mType.isArray()) {
 			ret = toArray(mType.getComponentType(), mStack, count);
-		}
-		else
-		{
+		} else {
 			Collection<Object> items;
-			if( mType == Object.class || Collection.class.isAssignableFrom(mType)) {
-				if (! mType.isInterface() && mType != Object.class) {
+			if (mType == Object.class || Collection.class.isAssignableFrom(mType)) {
+				if (!mType.isInterface() && mType != Object.class) {
 					try {
 						items = (Collection<Object>) mType.newInstance();
 					} catch (Exception e) {
@@ -225,37 +204,31 @@ class J2oVisitor implements JSONVisitor
 					items = new ArrayList<Object>(count);
 				}
 			} else {
-				throw new ParseException("Convert error, can not load json array data into class [" + mType.getName() + "].");
+				throw new ParseException("Convert error, can not load json array data into class [" + mType.getName()
+						+ "].");
 			}
-			for(int i=0;i<count;i++)
-				items.add(mStack.remove(i-count));
+			for (int i = 0; i < count; i++)
+				items.add(mStack.remove(i - count));
 			ret = items;
 		}
 		mStack.pop();
 		return ret;
 	}
 
-	public void arrayItem(int index) throws ParseException
-	{
-		if( mTypes != null && mStack.size() == index+1 )
-		{
-			if( index < mTypes.length )
+	public void arrayItem(int index) throws ParseException {
+		if (mTypes != null && mStack.size() == index + 1) {
+			if (index < mTypes.length)
 				mType = mTypes[index];
 			else
 				throw new ParseException("Can not load json array data into [" + name(mTypes) + "].");
 		}
 	}
 
-	public void arrayItemValue(int index, Object obj, boolean isValue) throws ParseException
-	{
-		if( isValue && obj != null )
-		{
-			try
-			{
+	public void arrayItemValue(int index, Object obj, boolean isValue) throws ParseException {
+		if (isValue && obj != null) {
+			try {
 				obj = mConverter.readValue(mType, obj);
-			}
-			catch(IOException e)
-			{
+			} catch (IOException e) {
 				throw new ParseException(e.getMessage());
 			}
 		}
@@ -263,143 +236,127 @@ class J2oVisitor implements JSONVisitor
 		mStack.push(obj);
 	}
 
-	private static Object toArray(Class<?> c, Stack<Object> list, int len) throws ParseException
-	{
-		if( c == String.class )
-		{
-			if( len == 0 )
-			{
+	private static Object toArray(Class<?> c, Stack<Object> list, int len) throws ParseException {
+		if (c == String.class) {
+			if (len == 0) {
 				return EMPTY_STRING_ARRAY;
-			}
-			else
-			{
+			} else {
 				Object o;
 				String ss[] = new String[len];
-				for(int i=len-1;i>=0;i--)
-				{
+				for (int i = len - 1; i >= 0; i--) {
 					o = list.pop();
-					ss[i] = ( o == null ? null : o.toString() );
+					ss[i] = (o == null ? null : o.toString());
 				}
 				return ss;
 			}
 		}
-		if( c == boolean.class )
-		{
-			if( len == 0 ) return EMPTY_BOOL_ARRAY;
+		if (c == boolean.class) {
+			if (len == 0)
+				return EMPTY_BOOL_ARRAY;
 			Object o;
 			boolean[] ret = new boolean[len];
-			for(int i=len-1;i>=0;i--)
-			{
+			for (int i = len - 1; i >= 0; i--) {
 				o = list.pop();
-				if( o instanceof Boolean )
-					ret[i] = ((Boolean)o).booleanValue();
+				if (o instanceof Boolean)
+					ret[i] = ((Boolean) o).booleanValue();
 			}
 			return ret;
 		}
-		if( c == int.class )
-		{
-			if( len == 0 ) return EMPTY_INT_ARRAY;
+		if (c == int.class) {
+			if (len == 0)
+				return EMPTY_INT_ARRAY;
 			Object o;
 			int[] ret = new int[len];
-			for(int i=len-1;i>=0;i--)
-			{
+			for (int i = len - 1; i >= 0; i--) {
 				o = list.pop();
-				if( o instanceof Number )
-					ret[i] = ((Number)o).intValue();
+				if (o instanceof Number)
+					ret[i] = ((Number) o).intValue();
 			}
 			return ret;
 		}
-		if( c == long.class )
-		{
-			if( len == 0 ) return EMPTY_LONG_ARRAY;
+		if (c == long.class) {
+			if (len == 0)
+				return EMPTY_LONG_ARRAY;
 			Object o;
 			long[] ret = new long[len];
-			for(int i=len-1;i>=0;i--)
-			{
+			for (int i = len - 1; i >= 0; i--) {
 				o = list.pop();
-				if( o instanceof Number )
-					ret[i] = ((Number)o).longValue();
+				if (o instanceof Number)
+					ret[i] = ((Number) o).longValue();
 			}
 			return ret;
 		}
-		if( c == float.class )
-		{
-			if( len == 0 ) return EMPTY_FLOAT_ARRAY;
+		if (c == float.class) {
+			if (len == 0)
+				return EMPTY_FLOAT_ARRAY;
 			Object o;
 			float[] ret = new float[len];
-			for(int i=len-1;i>=0;i--)
-			{
+			for (int i = len - 1; i >= 0; i--) {
 				o = list.pop();
-				if( o instanceof Number )
-					ret[i] = ((Number)o).floatValue();
+				if (o instanceof Number)
+					ret[i] = ((Number) o).floatValue();
 			}
 			return ret;
 		}
-		if( c == double.class )
-		{
-			if( len == 0 ) return EMPTY_DOUBLE_ARRAY;
+		if (c == double.class) {
+			if (len == 0)
+				return EMPTY_DOUBLE_ARRAY;
 			Object o;
 			double[] ret = new double[len];
-			for(int i=len-1;i>=0;i--)
-			{
+			for (int i = len - 1; i >= 0; i--) {
 				o = list.pop();
-				if( o instanceof Number )
-					ret[i] = ((Number)o).doubleValue();
+				if (o instanceof Number)
+					ret[i] = ((Number) o).doubleValue();
 			}
 			return ret;
 		}
-		if( c == byte.class )
-		{
-			if( len == 0 ) return EMPTY_BYTE_ARRAY;
+		if (c == byte.class) {
+			if (len == 0)
+				return EMPTY_BYTE_ARRAY;
 			Object o;
 			byte[] ret = new byte[len];
-			for(int i=len-1;i>=0;i--)
-			{
+			for (int i = len - 1; i >= 0; i--) {
 				o = list.pop();
-				if( o instanceof Number )
-					ret[i] = ((Number)o).byteValue();
+				if (o instanceof Number)
+					ret[i] = ((Number) o).byteValue();
 			}
 			return ret;
 		}
-		if( c == char.class )
-		{
-			if( len == 0 ) return EMPTY_CHAR_ARRAY;
+		if (c == char.class) {
+			if (len == 0)
+				return EMPTY_CHAR_ARRAY;
 			Object o;
 			char[] ret = new char[len];
-			for(int i=len-1;i>=0;i--)
-			{
+			for (int i = len - 1; i >= 0; i--) {
 				o = list.pop();
-				if( o instanceof Character )
-					ret[i] = ((Character)o).charValue();
+				if (o instanceof Character)
+					ret[i] = ((Character) o).charValue();
 			}
 			return ret;
 		}
-		if( c == short.class )
-		{
-			if( len == 0 ) return EMPTY_SHORT_ARRAY;
+		if (c == short.class) {
+			if (len == 0)
+				return EMPTY_SHORT_ARRAY;
 			Object o;
 			short[] ret = new short[len];
-			for(int i=len-1;i>=0;i--)
-			{
+			for (int i = len - 1; i >= 0; i--) {
 				o = list.pop();
-				if( o instanceof Number )
-					ret[i] = ((Number)o).shortValue();
+				if (o instanceof Number)
+					ret[i] = ((Number) o).shortValue();
 			}
 			return ret;
 		}
 
 		Object ret = Array.newInstance(c, len);
-		for(int i=len-1;i>=0;i--)
+		for (int i = len - 1; i >= 0; i--)
 			Array.set(ret, i, list.pop());
 		return ret;
 	}
 
-	private static String name(Class<?>[] types)
-	{
+	private static String name(Class<?>[] types) {
 		StringBuilder sb = new StringBuilder();
-		for(int i=0;i<types.length;i++)
-		{
-			if( i > 0 )
+		for (int i = 0; i < types.length; i++) {
+			if (i > 0)
 				sb.append(", ");
 			sb.append(types[i].getName());
 		}

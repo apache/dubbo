@@ -23,24 +23,31 @@ import com.alibaba.dubbo.registry.common.domain.Config;
 
 /**
  * TODO Comment of IbatisConfigDAO
+ * 
  * @author rain.chenjr
  *
  */
-public class ConfigServiceImpl extends AbstractService implements ConfigService{
+public class ConfigServiceImpl extends AbstractService implements ConfigService {
 
-    /* (non-Javadoc)
-     * @see com.alibaba.dubbo.governance.service.ConfigService#update(java.util.List)
-     */
-    public void update(List<Config> configs) {
-        // TODO Auto-generated method stub
-        
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.alibaba.dubbo.governance.service.ConfigService#update(java.util.List)
+	 */
+	public void update(List<Config> configs) {
+		// TODO Auto-generated method stub
 
-    /* (non-Javadoc)
-     * @see com.alibaba.dubbo.governance.service.ConfigService#findAllConfigsMap()
-     */
-    public Map<String, String> findAllConfigsMap() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.alibaba.dubbo.governance.service.ConfigService#findAllConfigsMap()
+	 */
+	public Map<String, String> findAllConfigsMap() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

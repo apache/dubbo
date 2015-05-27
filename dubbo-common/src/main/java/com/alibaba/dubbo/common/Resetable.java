@@ -24,11 +24,11 @@ import com.alibaba.dubbo.common.URL;
  */
 public interface Resetable {
 
-    /**
-     * reset.
-     * 
-     * @param url
-     */
-    void reset(URL url);
-    
+	/**
+	 * reset.
+	 * 
+	 * @param url
+	 */
+	void reset(URL url);
+
 }

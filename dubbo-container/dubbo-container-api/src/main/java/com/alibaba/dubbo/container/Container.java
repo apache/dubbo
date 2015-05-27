@@ -24,15 +24,15 @@ import com.alibaba.dubbo.common.extension.SPI;
  */
 @SPI("spring")
 public interface Container {
-    
-    /**
-     * start.
-     */
-    void start();
-    
-    /**
-     * stop.
-     */
-    void stop();
+
+	/**
+	 * start.
+	 */
+	void start();
+
+	/**
+	 * stop.
+	 */
+	void stop();
 
 }

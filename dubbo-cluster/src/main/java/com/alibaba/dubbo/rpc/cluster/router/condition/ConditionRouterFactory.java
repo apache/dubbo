@@ -26,10 +26,10 @@ import com.alibaba.dubbo.rpc.cluster.RouterFactory;
  */
 public class ConditionRouterFactory implements RouterFactory {
 
-    public static final String NAME = "condition";
+	public static final String NAME = "condition";
 
-    public Router getRouter(URL url) {
-        return new ConditionRouter(url);
-    }
+	public Router getRouter(URL url) {
+		return new ConditionRouter(url);
+	}
 
 }

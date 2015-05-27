@@ -22,7 +22,7 @@ import com.alibaba.dubbo.common.serialize.support.java.JavaSerialization;
  *
  */
 public class JavaSerializationTest extends AbstractSerializationPersionFailTest {
-    {
-        serialization = new JavaSerialization();
-    }
+	{
+		serialization = new JavaSerialization();
+	}
 }

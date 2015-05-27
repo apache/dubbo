@@ -9,13 +9,13 @@ package com.alibaba.dubbo.registry.support;
  * @see FailbackRegistry
  */
 public class SkipFailbackWrapperException extends RuntimeException {
-    public SkipFailbackWrapperException(Throwable cause) {
-        super(cause);
-    }
+	public SkipFailbackWrapperException(Throwable cause) {
+		super(cause);
+	}
 
-    @Override
-    public synchronized Throwable fillInStackTrace() {
-        // do nothing
-        return null;
-    }
+	@Override
+	public synchronized Throwable fillInStackTrace() {
+		// do nothing
+		return null;
+	}
 }

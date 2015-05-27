@@ -18,11 +18,11 @@ import com.alibaba.dubbo.common.extension.SPI;
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-@SPI( DubboClassNameGenerator.NAME )
+@SPI(DubboClassNameGenerator.NAME)
 public interface ClassNameGenerator {
 
-    public String generateArgsClassName( String serviceName, String methodName );
+	public String generateArgsClassName(String serviceName, String methodName);
 
-    public String generateResultClassName( String serviceName, String methodName );
+	public String generateResultClassName(String serviceName, String methodName);
 
 }

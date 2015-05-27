@@ -21,22 +21,22 @@ package com.alibaba.dubbo.rpc.cluster.filter;
 
 public class DemoServiceLocal implements DemoService {
 
-    public DemoServiceLocal(DemoService demoService){
-    }
+	public DemoServiceLocal(DemoService demoService) {
+	}
 
-    public String sayHello(String name) {
-        return name;
-    }
+	public String sayHello(String name) {
+		return name;
+	}
 
-    public int plus(int a, int b) {
-        return a + b;
-    }
-    
-    public void ondisconnect(){
-        
-    }
-    
-    public void onconnect(){
-        
-    }
+	public int plus(int a, int b) {
+		return a + b;
+	}
+
+	public void ondisconnect() {
+
+	}
+
+	public void onconnect() {
+
+	}
 }

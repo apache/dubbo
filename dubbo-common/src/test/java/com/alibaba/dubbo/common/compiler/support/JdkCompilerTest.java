@@ -21,8 +21,8 @@ import org.junit.Test;
  * @author ding.lid
  */
 public class JdkCompilerTest {
-    @Test
-    public void test_compileProtocol() throws Exception {
+	@Test
+	public void test_compileProtocol() throws Exception {
 
-    }
+	}
 }

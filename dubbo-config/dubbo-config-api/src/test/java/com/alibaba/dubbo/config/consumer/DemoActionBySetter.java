@@ -23,15 +23,15 @@ import com.alibaba.dubbo.config.api.DemoService;
  * @author william.liangf
  */
 public class DemoActionBySetter {
-    
-    private DemoService demoService;
 
-    public DemoService getDemoService() {
-        return demoService;
-    }
+	private DemoService demoService;
 
-    public void setDemoService(DemoService demoService) {
-        this.demoService = demoService;
-    }
+	public DemoService getDemoService() {
+		return demoService;
+	}
+
+	public void setDemoService(DemoService demoService) {
+		this.demoService = demoService;
+	}
 
 }

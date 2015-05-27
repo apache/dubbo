@@ -22,43 +22,43 @@ import com.alibaba.dubbo.common.URL;
  *
  */
 public class UrlHolder {
-    private Double Num;
-    
-    private URL url;
-    
-    private String name;
-    
-    private int age;
-    
-    public Double getNum() {
-        return Num;
-    }
+	private Double Num;
 
-    public void setNum(Double num) {
-        Num = num;
-    }
+	private URL url;
 
-    public URL getUrl() {
-        return url;
-    }
+	private String name;
 
-    public void setUrl(URL url) {
-        this.url = url;
-    }
+	private int age;
 
-    public String getName() {
-        return name;
-    }
+	public Double getNum() {
+		return Num;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public void setNum(Double num) {
+		Num = num;
+	}
 
-    public int getAge() {
-        return age;
-    }
+	public URL getUrl() {
+		return url;
+	}
 
-    public void setAge(int age) {
-        this.age = age;
-    }
+	public void setUrl(URL url) {
+		this.url = url;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public int getAge() {
+		return age;
+	}
+
+	public void setAge(int age) {
+		this.age = age;
+	}
 }

@@ -26,12 +26,12 @@ import com.alibaba.dubbo.remoting.exchange.support.Replier;
  */
 public class WorldHandler implements Replier<World> {
 
-    public Class<World> interest() {
-        return World.class;
-    }
+	public Class<World> interest() {
+		return World.class;
+	}
 
-    public Object reply(ExchangeChannel channel, World msg) throws RemotingException {
-        return new Hello("hello," + msg.getName());
-    }
+	public Object reply(ExchangeChannel channel, World msg) throws RemotingException {
+		return new Hello("hello," + msg.getName());
+	}
 
 }

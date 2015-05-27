@@ -25,7 +25,7 @@ import com.alibaba.dubbo.common.extension.SPI;
  */
 @SPI("impl1")
 public interface NoUrlParamExt {
-    // 没有URL参数的方法！
-    @Adaptive
-    String bark(String name, List<Object> list);
+	// 没有URL参数的方法！
+	@Adaptive
+	String bark(String name, List<Object> list);
 }

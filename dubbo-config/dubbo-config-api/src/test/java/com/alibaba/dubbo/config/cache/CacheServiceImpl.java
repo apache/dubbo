@@ -23,11 +23,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author william.liangf
  */
 public class CacheServiceImpl implements CacheService {
-    
-    private final AtomicInteger i = new AtomicInteger();
 
-    public String findCache(String id) {
-        return "request: " + id + ", response: " + i.getAndIncrement();
-    }
+	private final AtomicInteger i = new AtomicInteger();
+
+	public String findCache(String id) {
+		return "request: " + id + ", response: " + i.getAndIncrement();
+	}
 
 }

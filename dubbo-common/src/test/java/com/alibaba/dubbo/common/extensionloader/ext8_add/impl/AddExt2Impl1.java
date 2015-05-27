@@ -22,7 +22,7 @@ import com.alibaba.dubbo.common.extensionloader.ext8_add.AddExt2;
  * @author ding.lid
  */
 public class AddExt2Impl1 implements AddExt2 {
-    public String echo(URL url, String s) {
-        return this.getClass().getSimpleName();
-    }
+	public String echo(URL url, String s) {
+		return this.getClass().getSimpleName();
+	}
 }

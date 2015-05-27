@@ -27,10 +27,8 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
 	public CuratorZookeeperClient(URL url) {
 		super(url);
 		try {
-			Builder builder = CuratorFrameworkFactory.builder()
-					.connectString(url.getBackupAddress())
-			        .retryPolicy(new RetryNTimes(Integer.MAX_VALUE, 1000))  
-			        .connectionTimeoutMs(5000);
+			Builder builder = CuratorFrameworkFactory.builder().connectString(url.getBackupAddress())
+					.retryPolicy(new RetryNTimes(Integer.MAX_VALUE, 1000)).connectionTimeoutMs(5000);
 			String authority = url.getAuthority();
 			if (authority != null && authority.length() > 0) {
 				builder = builder.authorization("digest", authority.getBytes());
@@ -97,30 +95,30 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
 	public void doClose() {
 		client.close();
 	}
-	
+
 	private class CuratorWatcherImpl implements CuratorWatcher {
-		
+
 		private volatile ChildListener listener;
-		
+
 		public CuratorWatcherImpl(ChildListener listener) {
 			this.listener = listener;
 		}
-		
+
 		public void unwatch() {
 			this.listener = null;
 		}
-		
+
 		public void process(WatchedEvent event) throws Exception {
 			if (listener != null) {
 				listener.childChanged(event.getPath(), client.getChildren().usingWatcher(this).forPath(event.getPath()));
 			}
 		}
 	}
-	
+
 	public CuratorWatcher createTargetChildListener(String path, ChildListener listener) {
 		return new CuratorWatcherImpl(listener);
 	}
-	
+
 	public List<String> addTargetChildListener(String path, CuratorWatcher listener) {
 		try {
 			return client.getChildren().usingWatcher(listener).forPath(path);
@@ -130,7 +128,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
 			throw new IllegalStateException(e.getMessage(), e);
 		}
 	}
-	
+
 	public void removeTargetChildListener(String path, CuratorWatcher listener) {
 		((CuratorWatcherImpl) listener).unwatch();
 	}

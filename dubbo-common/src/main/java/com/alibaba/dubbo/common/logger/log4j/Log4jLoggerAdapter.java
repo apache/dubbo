@@ -28,28 +28,28 @@ import com.alibaba.dubbo.common.logger.LoggerAdapter;
 
 public class Log4jLoggerAdapter implements LoggerAdapter {
 
-    private File            file;
+	private File file;
 
 	@SuppressWarnings("unchecked")
 	public Log4jLoggerAdapter() {
 		try {
 			org.apache.log4j.Logger logger = LogManager.getRootLogger();
-            if (logger != null) {
-                Enumeration<Appender> appenders = logger.getAllAppenders();
-                if (appenders != null) {
-                    while (appenders.hasMoreElements()) {
-                        Appender appender = appenders.nextElement();
-                        if (appender instanceof FileAppender) {
-                            FileAppender fileAppender = (FileAppender)appender;
-                            String filename = fileAppender.getFile();
-                            file = new File(filename);
-                            break;
-                        }
-                    }
-                }
-            }
-        } catch (Throwable t) {
-        }
+			if (logger != null) {
+				Enumeration<Appender> appenders = logger.getAllAppenders();
+				if (appenders != null) {
+					while (appenders.hasMoreElements()) {
+						Appender appender = appenders.nextElement();
+						if (appender instanceof FileAppender) {
+							FileAppender fileAppender = (FileAppender) appender;
+							String filename = fileAppender.getFile();
+							file = new File(filename);
+							break;
+						}
+					}
+				}
+			}
+		} catch (Throwable t) {
+		}
 	}
 
 	public Logger getLogger(Class<?> key) {
@@ -86,7 +86,7 @@ public class Log4jLoggerAdapter implements LoggerAdapter {
 		if (level == Level.ERROR)
 			return org.apache.log4j.Level.ERROR;
 		// if (level == Level.OFF)
-			return org.apache.log4j.Level.OFF;
+		return org.apache.log4j.Level.OFF;
 	}
 
 	private static Level fromLog4jLevel(org.apache.log4j.Level level) {
@@ -103,11 +103,11 @@ public class Log4jLoggerAdapter implements LoggerAdapter {
 		if (level == org.apache.log4j.Level.ERROR)
 			return Level.ERROR;
 		// if (level == org.apache.log4j.Level.OFF)
-			return Level.OFF;
+		return Level.OFF;
 	}
 
-    public void setFile(File file) {
-        
-    }
+	public void setFile(File file) {
+
+	}
 
 }

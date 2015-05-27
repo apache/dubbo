@@ -27,30 +27,30 @@ import java.util.List;
 public abstract class Entity implements Serializable {
 
 	private static final long serialVersionUID = -3031128781434583143L;
-	
+
 	private List<Long> ids;
 
 	private Long id;
 
 	private Date created;
 
-    private Date modified;
-    
-    private Date now;
-    
-    private String operator;
-    
-    private String operatorAddress;
-    
-    private boolean miss;
-    
-    public Entity() {
-    }
-    
-    public Entity(Long id) {
-        this.id = id;
-    }
-    
+	private Date modified;
+
+	private Date now;
+
+	private String operator;
+
+	private String operatorAddress;
+
+	private boolean miss;
+
+	public Entity() {
+	}
+
+	public Entity(Long id) {
+		this.id = id;
+	}
+
 	public List<Long> getIds() {
 		return ids;
 	}
@@ -59,7 +59,7 @@ public abstract class Entity implements Serializable {
 		this.ids = ids;
 	}
 
-    public Long getId() {
+	public Long getId() {
 		return id;
 	}
 
@@ -67,21 +67,21 @@ public abstract class Entity implements Serializable {
 		this.id = id;
 	}
 
-    public Date getCreated() {
-        return created;
-    }
+	public Date getCreated() {
+		return created;
+	}
 
-    public void setCreated(Date created) {
-        this.created = created;
-    }
+	public void setCreated(Date created) {
+		this.created = created;
+	}
 
-    public Date getModified() {
-        return modified;
-    }
+	public Date getModified() {
+		return modified;
+	}
 
-    public void setModified(Date modified) {
-        this.modified = modified;
-    }
+	public void setModified(Date modified) {
+		this.modified = modified;
+	}
 
 	public Date getNow() {
 		return now;
@@ -97,25 +97,25 @@ public abstract class Entity implements Serializable {
 
 	public void setOperator(String operator) {
 		if (operator != null && operator.length() > 200) {
-		    operator = operator.substring(0, 200);
-    	}
+			operator = operator.substring(0, 200);
+		}
 		this.operator = operator;
 	}
-    
-    public String getOperatorAddress() {
-        return operatorAddress;
-    }
-    
-    public void setOperatorAddress(String operatorAddress) {
-        this.operatorAddress = operatorAddress;
-    }
 
-    public boolean isMiss() {
-        return miss;
-    }
-    
-    public void setMiss(boolean miss) {
-        this.miss = miss;
-    }
+	public String getOperatorAddress() {
+		return operatorAddress;
+	}
+
+	public void setOperatorAddress(String operatorAddress) {
+		this.operatorAddress = operatorAddress;
+	}
+
+	public boolean isMiss() {
+		return miss;
+	}
+
+	public void setMiss(boolean miss) {
+		this.miss = miss;
+	}
 
 }

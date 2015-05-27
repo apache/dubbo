@@ -22,5 +22,5 @@ import com.alibaba.dubbo.governance.web.common.module.screen.Restful;
  *
  */
 public class Privileges extends Restful {
-    
+
 }

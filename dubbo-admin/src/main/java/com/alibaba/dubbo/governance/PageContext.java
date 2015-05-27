@@ -25,28 +25,28 @@ import com.alibaba.dubbo.registry.common.domain.User;
  */
 public interface PageContext {
 
-    public String get(String key);
-    
-    public String[] gets(String key);
+	public String get(String key);
 
-    public Map<String, String[]> getAll();
+	public String[] gets(String key);
 
-    public void put(String key, Object value);
-    
-    public String getMessage(String key, Object... args);
+	public Map<String, String[]> getAll();
 
-    public String getClientAddress();
+	public void put(String key, Object value);
 
-    public String getOperateAddress();
+	public String getMessage(String key, Object... args);
 
-    public String getRegistryAddress();
-    
-    public String getURI();
-    
-    public String getURL();
-    
-    public String getReferer();
+	public String getClientAddress();
 
-    public User getLoginUser();
+	public String getOperateAddress();
+
+	public String getRegistryAddress();
+
+	public String getURI();
+
+	public String getURL();
+
+	public String getReferer();
+
+	public User getLoginUser();
 
 }

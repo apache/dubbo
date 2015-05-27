@@ -32,17 +32,16 @@ import com.alibaba.dubbo.registry.RegistryService;
  */
 public class AbstractService {
 
-    protected static final Logger logger = LoggerFactory.getLogger(AbstractService.class);
+	protected static final Logger logger = LoggerFactory.getLogger(AbstractService.class);
 
-    @Autowired
-    private RegistryServerSync           sync;
-    
-    @Autowired
-    protected RegistryService registryService;
-    
-    public ConcurrentMap<String, ConcurrentMap<String, Map<Long, URL>>> getRegistryCache(){
-        return sync.getRegistryCache();
-    }
-    
-    
+	@Autowired
+	private RegistryServerSync sync;
+
+	@Autowired
+	protected RegistryService registryService;
+
+	public ConcurrentMap<String, ConcurrentMap<String, Map<Long, URL>>> getRegistryCache() {
+		return sync.getRegistryCache();
+	}
+
 }

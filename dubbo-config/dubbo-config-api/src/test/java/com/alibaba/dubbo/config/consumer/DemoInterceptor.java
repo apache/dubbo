@@ -24,9 +24,9 @@ import org.aopalliance.intercept.MethodInvocation;
  * @author william.liangf
  */
 public class DemoInterceptor implements MethodInterceptor {
-    
-    public Object invoke(MethodInvocation invocation) throws Throwable {
-        return "aop:" + invocation.proceed();
-    }
-    
+
+	public Object invoke(MethodInvocation invocation) throws Throwable {
+		return "aop:" + invocation.proceed();
+	}
+
 }

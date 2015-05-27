@@ -32,44 +32,44 @@ import com.alibaba.dubbo.rpc.support.MockInvocation;
 import com.alibaba.dubbo.rpc.support.MyInvoker;
 
 /**
- * ContextFilterTest.java
- * TODO 增强断言
+ * ContextFilterTest.java TODO 增强断言
+ * 
  * @author tony.chenl
  */
 public class ContextFilterTest {
 
-    Filter               contextFilter = new ContextFilter();
-    Invoker<DemoService> invoker;
-    Invocation           invocation;
+	Filter contextFilter = new ContextFilter();
+	Invoker<DemoService> invoker;
+	Invocation invocation;
 
-    @SuppressWarnings("unchecked")
-    @Test
-    public void testSetContext() {
-        invocation = EasyMock.createMock(Invocation.class);
-        EasyMock.expect(invocation.getMethodName()).andReturn("$enumlength").anyTimes();
-        EasyMock.expect(invocation.getParameterTypes()).andReturn(new Class<?>[] { Enum.class }).anyTimes();
-        EasyMock.expect(invocation.getArguments()).andReturn(new Object[] { "hello" }).anyTimes();
-        EasyMock.expect(invocation.getAttachments()).andReturn(null).anyTimes();
-        EasyMock.replay(invocation);
-        invoker = EasyMock.createMock(Invoker.class);
-        EasyMock.expect(invoker.isAvailable()).andReturn(true).anyTimes();
-        EasyMock.expect(invoker.getInterface()).andReturn(DemoService.class).anyTimes();
-        RpcResult result = new RpcResult();
-        result.setValue("High");
-        EasyMock.expect(invoker.invoke(invocation)).andReturn(result).anyTimes();
-        URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1");
-        EasyMock.expect(invoker.getUrl()).andReturn(url).anyTimes();
-        EasyMock.replay(invoker);
-        contextFilter.invoke(invoker, invocation);
-        assertNull(RpcContext.getContext().getInvoker());
-    }
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testSetContext() {
+		invocation = EasyMock.createMock(Invocation.class);
+		EasyMock.expect(invocation.getMethodName()).andReturn("$enumlength").anyTimes();
+		EasyMock.expect(invocation.getParameterTypes()).andReturn(new Class<?>[] { Enum.class }).anyTimes();
+		EasyMock.expect(invocation.getArguments()).andReturn(new Object[] { "hello" }).anyTimes();
+		EasyMock.expect(invocation.getAttachments()).andReturn(null).anyTimes();
+		EasyMock.replay(invocation);
+		invoker = EasyMock.createMock(Invoker.class);
+		EasyMock.expect(invoker.isAvailable()).andReturn(true).anyTimes();
+		EasyMock.expect(invoker.getInterface()).andReturn(DemoService.class).anyTimes();
+		RpcResult result = new RpcResult();
+		result.setValue("High");
+		EasyMock.expect(invoker.invoke(invocation)).andReturn(result).anyTimes();
+		URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1");
+		EasyMock.expect(invoker.getUrl()).andReturn(url).anyTimes();
+		EasyMock.replay(invoker);
+		contextFilter.invoke(invoker, invocation);
+		assertNull(RpcContext.getContext().getInvoker());
+	}
 
-    @Test
-    public void testWithAttachments() {
-        URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1");
-        Invoker<DemoService> invoker = new MyInvoker<DemoService>(url);
-        Invocation invocation = new MockInvocation();
-        Result result = contextFilter.invoke(invoker, invocation);
-        assertNull(RpcContext.getContext().getInvoker());
-    }
+	@Test
+	public void testWithAttachments() {
+		URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1");
+		Invoker<DemoService> invoker = new MyInvoker<DemoService>(url);
+		Invocation invocation = new MockInvocation();
+		Result result = contextFilter.invoke(invoker, invocation);
+		assertNull(RpcContext.getContext().getInvoker());
+	}
 }

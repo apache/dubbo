@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.proxy;
 
-public enum Type
-{
+public enum Type {
 	High, Normal, Lower
 }

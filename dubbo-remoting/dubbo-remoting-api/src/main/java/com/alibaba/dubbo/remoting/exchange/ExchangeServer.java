@@ -27,19 +27,19 @@ import com.alibaba.dubbo.remoting.Server;
  */
 public interface ExchangeServer extends Server {
 
-    /**
-     * get channels.
-     * 
-     * @return channels
-     */
-    Collection<ExchangeChannel> getExchangeChannels();
+	/**
+	 * get channels.
+	 * 
+	 * @return channels
+	 */
+	Collection<ExchangeChannel> getExchangeChannels();
 
-    /**
-     * get channel.
-     * 
-     * @param remoteAddress
-     * @return channel
-     */
-    ExchangeChannel getExchangeChannel(InetSocketAddress remoteAddress);
+	/**
+	 * get channel.
+	 * 
+	 * @param remoteAddress
+	 * @return channel
+	 */
+	ExchangeChannel getExchangeChannel(InetSocketAddress remoteAddress);
 
 }

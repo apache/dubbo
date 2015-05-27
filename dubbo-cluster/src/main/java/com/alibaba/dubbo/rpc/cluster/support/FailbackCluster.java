@@ -29,10 +29,10 @@ import com.alibaba.dubbo.rpc.cluster.Directory;
  */
 public class FailbackCluster implements Cluster {
 
-    public final static String NAME = "failback";    
+	public final static String NAME = "failback";
 
-    public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
-        return new FailbackClusterInvoker<T>(directory);
-    }
+	public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
+		return new FailbackClusterInvoker<T>(directory);
+	}
 
 }

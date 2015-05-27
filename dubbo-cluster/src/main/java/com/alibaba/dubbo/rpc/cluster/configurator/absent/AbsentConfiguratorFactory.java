@@ -26,8 +26,8 @@ import com.alibaba.dubbo.rpc.cluster.ConfiguratorFactory;
  */
 public class AbsentConfiguratorFactory implements ConfiguratorFactory {
 
-    public Configurator getConfigurator(URL url) {
-        return new AbsentConfigurator(url);
-    }
+	public Configurator getConfigurator(URL url) {
+		return new AbsentConfigurator(url);
+	}
 
 }

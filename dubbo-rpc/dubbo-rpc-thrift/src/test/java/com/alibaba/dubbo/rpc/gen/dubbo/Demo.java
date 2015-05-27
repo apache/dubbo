@@ -24,18 +24,18 @@ import org.slf4j.LoggerFactory;
 
 public interface Demo {
 
-  public boolean echoBool(boolean arg);
+	public boolean echoBool(boolean arg);
 
-  public byte echoByte(byte arg);
+	public byte echoByte(byte arg);
 
-  public short echoI16(short arg);
+	public short echoI16(short arg);
 
-  public int echoI32(int arg);
+	public int echoI32(int arg);
 
-  public long echoI64(long arg);
+	public long echoI64(long arg);
 
-  public double echoDouble(double arg);
+	public double echoDouble(double arg);
 
-  public String echoString(String arg);
+	public String echoString(String arg);
 
 }

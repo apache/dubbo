@@ -50,109 +50,112 @@ import com.alibaba.dubbo.remoting.transport.dispatcher.ChannelHandlers;
  * @author chao.liuc
  */
 public class NettyServer extends AbstractServer implements Server {
-    
-    private static final Logger logger = LoggerFactory.getLogger(NettyServer.class);
 
-    private Map<String, Channel>  channels; // <ip:port, channel>
+	private static final Logger logger = LoggerFactory.getLogger(NettyServer.class);
 
-    private ServerBootstrap                 bootstrap;
+	private Map<String, Channel> channels; // <ip:port, channel>
 
-    private org.jboss.netty.channel.Channel channel;
+	private ServerBootstrap bootstrap;
 
-    public NettyServer(URL url, ChannelHandler handler) throws RemotingException{
-        super(url, ChannelHandlers.wrap(handler, ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME)));
-    }
+	private org.jboss.netty.channel.Channel channel;
 
-    @Override
-    protected void doOpen() throws Throwable {
-        NettyHelper.setNettyLoggerFactory();
-        ExecutorService boss = Executors.newCachedThreadPool(new NamedThreadFactory("NettyServerBoss", true));
-        ExecutorService worker = Executors.newCachedThreadPool(new NamedThreadFactory("NettyServerWorker", true));
-        ChannelFactory channelFactory = new NioServerSocketChannelFactory(boss, worker, getUrl().getPositiveParameter(Constants.IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS));
-        bootstrap = new ServerBootstrap(channelFactory);
-        
-        final NettyHandler nettyHandler = new NettyHandler(getUrl(), this);
-        channels = nettyHandler.getChannels();
-        // https://issues.jboss.org/browse/NETTY-365
-        // https://issues.jboss.org/browse/NETTY-379
-        // final Timer timer = new HashedWheelTimer(new NamedThreadFactory("NettyIdleTimer", true));
-        bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
-            public ChannelPipeline getPipeline() {
-                NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec() ,getUrl(), NettyServer.this);
-                ChannelPipeline pipeline = Channels.pipeline();
-                /*int idleTimeout = getIdleTimeout();
-                if (idleTimeout > 10000) {
-                    pipeline.addLast("timer", new IdleStateHandler(timer, idleTimeout / 1000, 0, 0));
-                }*/
-                pipeline.addLast("decoder", adapter.getDecoder());
-                pipeline.addLast("encoder", adapter.getEncoder());
-                pipeline.addLast("handler", nettyHandler);
-                return pipeline;
-            }
-        });
-        // bind
-        channel = bootstrap.bind(getBindAddress());
-    }
+	public NettyServer(URL url, ChannelHandler handler) throws RemotingException {
+		super(url, ChannelHandlers.wrap(handler, ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME)));
+	}
 
-    @Override
-    protected void doClose() throws Throwable {
-        try {
-            if (channel != null) {
-                // unbind.
-                channel.close();
-            }
-        } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
-        }
-        try {
-            Collection<com.alibaba.dubbo.remoting.Channel> channels = getChannels();
-            if (channels != null && channels.size() > 0) {
-                for (com.alibaba.dubbo.remoting.Channel channel : channels) {
-                    try {
-                        channel.close();
-                    } catch (Throwable e) {
-                        logger.warn(e.getMessage(), e);
-                    }
-                }
-            }
-        } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
-        }
-        try {
-            if (bootstrap != null) { 
-                // release external resource.
-                bootstrap.releaseExternalResources();
-            }
-        } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
-        }
-        try {
-            if (channels != null) {
-                channels.clear();
-            }
-        } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
-        }
-    }
-    
-    public Collection<Channel> getChannels() {
-        Collection<Channel> chs = new HashSet<Channel>();
-        for (Channel channel : this.channels.values()) {
-            if (channel.isConnected()) {
-                chs.add(channel);
-            } else {
-                channels.remove(NetUtils.toAddressString(channel.getRemoteAddress()));
-            }
-        }
-        return chs;
-    }
+	@Override
+	protected void doOpen() throws Throwable {
+		NettyHelper.setNettyLoggerFactory();
+		ExecutorService boss = Executors.newCachedThreadPool(new NamedThreadFactory("NettyServerBoss", true));
+		ExecutorService worker = Executors.newCachedThreadPool(new NamedThreadFactory("NettyServerWorker", true));
+		ChannelFactory channelFactory = new NioServerSocketChannelFactory(boss, worker, getUrl().getPositiveParameter(
+				Constants.IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS));
+		bootstrap = new ServerBootstrap(channelFactory);
 
-    public Channel getChannel(InetSocketAddress remoteAddress) {
-        return channels.get(NetUtils.toAddressString(remoteAddress));
-    }
+		final NettyHandler nettyHandler = new NettyHandler(getUrl(), this);
+		channels = nettyHandler.getChannels();
+		// https://issues.jboss.org/browse/NETTY-365
+		// https://issues.jboss.org/browse/NETTY-379
+		// final Timer timer = new HashedWheelTimer(new
+		// NamedThreadFactory("NettyIdleTimer", true));
+		bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
+			public ChannelPipeline getPipeline() {
+				NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyServer.this);
+				ChannelPipeline pipeline = Channels.pipeline();
+				/*
+				 * int idleTimeout = getIdleTimeout(); if (idleTimeout > 10000)
+				 * { pipeline.addLast("timer", new IdleStateHandler(timer,
+				 * idleTimeout / 1000, 0, 0)); }
+				 */
+				pipeline.addLast("decoder", adapter.getDecoder());
+				pipeline.addLast("encoder", adapter.getEncoder());
+				pipeline.addLast("handler", nettyHandler);
+				return pipeline;
+			}
+		});
+		// bind
+		channel = bootstrap.bind(getBindAddress());
+	}
 
-    public boolean isBound() {
-        return channel.isBound();
-    }
+	@Override
+	protected void doClose() throws Throwable {
+		try {
+			if (channel != null) {
+				// unbind.
+				channel.close();
+			}
+		} catch (Throwable e) {
+			logger.warn(e.getMessage(), e);
+		}
+		try {
+			Collection<com.alibaba.dubbo.remoting.Channel> channels = getChannels();
+			if (channels != null && channels.size() > 0) {
+				for (com.alibaba.dubbo.remoting.Channel channel : channels) {
+					try {
+						channel.close();
+					} catch (Throwable e) {
+						logger.warn(e.getMessage(), e);
+					}
+				}
+			}
+		} catch (Throwable e) {
+			logger.warn(e.getMessage(), e);
+		}
+		try {
+			if (bootstrap != null) {
+				// release external resource.
+				bootstrap.releaseExternalResources();
+			}
+		} catch (Throwable e) {
+			logger.warn(e.getMessage(), e);
+		}
+		try {
+			if (channels != null) {
+				channels.clear();
+			}
+		} catch (Throwable e) {
+			logger.warn(e.getMessage(), e);
+		}
+	}
+
+	public Collection<Channel> getChannels() {
+		Collection<Channel> chs = new HashSet<Channel>();
+		for (Channel channel : this.channels.values()) {
+			if (channel.isConnected()) {
+				chs.add(channel);
+			} else {
+				channels.remove(NetUtils.toAddressString(channel.getRemoteAddress()));
+			}
+		}
+		return chs;
+	}
+
+	public Channel getChannel(InetSocketAddress remoteAddress) {
+		return channels.get(NetUtils.toAddressString(remoteAddress));
+	}
+
+	public boolean isBound() {
+		return channel.isBound();
+	}
 
 }

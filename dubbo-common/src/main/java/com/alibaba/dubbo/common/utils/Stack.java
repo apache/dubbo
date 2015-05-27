@@ -25,22 +25,21 @@ import java.util.List;
  * @author qian.lei
  */
 
-public class Stack<E>
-{
+public class Stack<E> {
 	private int mSize = 0;
 
 	private List<E> mElements = new ArrayList<E>();
 
-	public Stack(){}
+	public Stack() {
+	}
 
 	/**
 	 * push.
 	 * 
 	 * @param ele
 	 */
-	public void push(E ele)
-	{
-		if( mElements.size() > mSize )
+	public void push(E ele) {
+		if (mElements.size() > mSize)
 			mElements.set(mSize, ele);
 		else
 			mElements.add(ele);
@@ -52,9 +51,8 @@ public class Stack<E>
 	 * 
 	 * @return the last element.
 	 */
-	public E pop()
-	{
-		if( mSize == 0 )
+	public E pop() {
+		if (mSize == 0)
 			throw new EmptyStackException();
 		return mElements.set(--mSize, null);
 	}
@@ -64,37 +62,37 @@ public class Stack<E>
 	 * 
 	 * @return the last element.
 	 */
-	public E peek()
-	{
-		if( mSize == 0 )
+	public E peek() {
+		if (mSize == 0)
 			throw new EmptyStackException();
-		return mElements.get(mSize-1);
+		return mElements.get(mSize - 1);
 	}
 
 	/**
 	 * get.
 	 * 
-	 * @param index index.
+	 * @param index
+	 *            index.
 	 * @return element.
 	 */
-	public E get(int index)
-	{
-		if( index >= mSize )
+	public E get(int index) {
+		if (index >= mSize)
 			throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + mSize);
 
-		return index < 0 ? mElements.get(index+mSize) : mElements.get(index);
+		return index < 0 ? mElements.get(index + mSize) : mElements.get(index);
 	}
 
 	/**
 	 * set.
 	 * 
-	 * @param index index.
-	 * @param value element.
+	 * @param index
+	 *            index.
+	 * @param value
+	 *            element.
 	 * @return old element.
 	 */
-	public E set(int index, E value)
-	{
-		if( index >= mSize )
+	public E set(int index, E value) {
+		if (index >= mSize)
 			throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + mSize);
 
 		return mElements.set(index < 0 ? index + mSize : index, value);
@@ -106,9 +104,8 @@ public class Stack<E>
 	 * @param index
 	 * @return element
 	 */
-	public E remove(int index)
-	{
-		if( index >= mSize )
+	public E remove(int index) {
+		if (index >= mSize)
 			throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + mSize);
 
 		E ret = mElements.remove(index < 0 ? index + mSize : index);
@@ -121,8 +118,7 @@ public class Stack<E>
 	 * 
 	 * @return size.
 	 */
-	public int size()
-	{
+	public int size() {
 		return mSize;
 	}
 
@@ -131,16 +127,14 @@ public class Stack<E>
 	 * 
 	 * @return empty or not.
 	 */
-	public boolean isEmpty()
-	{
+	public boolean isEmpty() {
 		return mSize == 0;
 	}
 
 	/**
 	 * clear stack.
 	 */
-	public void clear()
-	{
+	public void clear() {
 		mSize = 0;
 		mElements.clear();
 	}
