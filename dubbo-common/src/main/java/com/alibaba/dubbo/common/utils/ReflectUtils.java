@@ -115,7 +115,7 @@ public final class ReflectUtils {
 
 	public static final Pattern SETTER_METHOD_DESC_PATTERN = Pattern.compile("set([A-Z][_a-zA-Z0-9]*)\\((" + DESC_REGEX + ")\\)V");
 
-	public static final Pattern IS_HAS_CAN_METHOD_DESC_PATTERN = Pattern.compile("(?:is|has|can)([A-Z][_a-zA-Z0-9]*)\\(\\)Z");
+	public static final Pattern IS_HAS_CAN_METHOD_DESC_PATTERN = Pattern.compile("(?:is|has|can)([A-Z][_a-zA-Z0-9]*)\\(\\)(" + DESC_REGEX + ")");
 	
 	private static final ConcurrentMap<String, Class<?>>  DESC_CLASS_CACHE = new ConcurrentHashMap<String, Class<?>>();
     

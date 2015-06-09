@@ -190,6 +190,10 @@ public class JSONTest extends TestCase
 	{
 		private String name, displayName = "钱磊";
 
+		private boolean ok;
+
+		private Boolean ok2;
+
 		public int[] array;
 
 		public boolean $b;
@@ -212,6 +216,22 @@ public class JSONTest extends TestCase
 
 		public void setName(String name) {
 			this.name = name;
+		}
+
+		public boolean isOk() {
+			return ok;
+		}
+
+		public void setOk(boolean ok) {
+			this.ok = ok;
+		}
+
+		public Boolean isOk2() {
+			return ok2;
+		}
+
+		public void setOk2(Boolean ok2) {
+			this.ok2 = ok2;
 		}
 	}
 }
