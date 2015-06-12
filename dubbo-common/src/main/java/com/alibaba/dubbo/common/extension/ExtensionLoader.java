@@ -931,7 +931,7 @@ public class ExtensionLoader<T> {
                     if (i > 0) {
                         codeBuidler.append(", ");
                     }
-                    codeBuidler.append(pts[i].getCanonicalName());
+                    codeBuidler.append(ets[i].getCanonicalName());
                 }
             }
             codeBuidler.append(" {");
