@@ -23,7 +23,7 @@
 	</parent>
 	<artifactId>dubbo-admin</artifactId>
 	<packaging>war</packaging>
-	<name>${project.artifactId}</name>
+	<name>${project}</name>
 	<description>The admin module of dubbo project</description>
 	<properties>
 		<wtpversion>1.5</wtpversion>
