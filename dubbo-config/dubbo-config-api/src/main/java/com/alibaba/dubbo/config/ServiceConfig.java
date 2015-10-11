@@ -221,7 +221,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             }
         }
         if(stub !=null){
-            if(/*"true".equals(stub)*/stub=="true"){
+            if("true".equals(stub)/*stub=="true"*/){
                 stub=interfaceName+"Stub";
             }
             Class<?> stubClass;
