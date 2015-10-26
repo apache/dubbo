@@ -14,7 +14,8 @@ public class NoSpringConsumer {
 		 
 		// 连接注册中心配置
 		RegistryConfig registry = new RegistryConfig();
-		registry.setAddress("multicast://224.5.6.7:1234");
+//		registry.setAddress("multicast://224.5.6.7:1234");
+		registry.setAddress("zookeeper://127.0.0.1:2181");
 		registry.setUsername("aaa");
 		registry.setPassword("bbb");
 		 
