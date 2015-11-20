@@ -579,6 +579,9 @@ public class Constants {
 
     public static final String GENERIC_SERIALIZATION_BEAN          = "bean";
 
+    public static final String  AUTH_KEY                           = "auth";
+
+    public static final String  DEFAULT_EMPTY                      = "";
     /*
      * private Constants(){ }
      */

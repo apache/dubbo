@@ -128,7 +128,8 @@ public class RedisRegistry extends FailbackRegistry {
                 port = DEFAULT_REDIS_PORT;
             }
             this.jedisPools.put(address, new JedisPool(config, host, port, 
-                    url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT)));
+                    url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT),
+                    url.getParameter(Constants.AUTH_KEY, Constants.DEFAULT_EMPTY)));
         }
         
         this.reconnectPeriod = url.getParameter(Constants.REGISTRY_RECONNECT_PERIOD_KEY, Constants.DEFAULT_REGISTRY_RECONNECT_PERIOD);
