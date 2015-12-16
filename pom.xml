@@ -16,11 +16,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<!--<parent>
-		<groupId>com.alibaba</groupId>
-		<artifactId>opensesame</artifactId>
-		<version>2.0</version>
-	</parent>-->
     <groupId>com.alibaba</groupId>
 	<artifactId>dubbo-parent</artifactId>
 	<version>2.5.4-SNAPSHOT</version>
@@ -42,6 +37,7 @@
 		<url>http://www.alibaba.com</url>
 	</organization>
 	<modules>
+		<module>hessian-lite</module>
 		<module>dubbo-common</module>
 		<module>dubbo-container</module>
 		<module>dubbo-remoting</module>
@@ -52,10 +48,9 @@
 		<module>dubbo-monitor</module>
 		<module>dubbo-config</module>
 		<module>dubbo</module>
-                <module>dubbo-simple</module>
-                <module>dubbo-admin</module>
-                <module>dubbo-demo</module>
-        <module>hessian-lite</module>
+		<module>dubbo-simple</module>
+		<module>dubbo-admin</module>
+		<module>dubbo-demo</module>
 	</modules>
 	<profiles>
 		<profile>
@@ -139,12 +134,7 @@
         <java_source_version>1.5</java_source_version>
         <java_target_version>1.5</java_target_version>
         <file_encoding>UTF-8</file_encoding>
-
-        <maven_source_plugin_version>2.1.1</maven_source_plugin_version>
-        <maven_jar_plugin_version>2.3.2</maven_jar_plugin_version>
-        <maven_war_plugin_version>2.1.1</maven_war_plugin_version>
-        <maven_install_plugin_version>2.3.1</maven_install_plugin_version>
-        <maven_deploy_plugin_version>2.7</maven_deploy_plugin_version>
+        
 	</properties>
 	<dependencyManagement>
 		<dependencies>
@@ -464,51 +454,15 @@
 				</configuration>
 			</plugin>
 		</plugins>
-
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <version>${maven_jar_plugin_version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-war-plugin</artifactId>
-                    <version>${maven_war_plugin_version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-install-plugin</artifactId>
-                    <version>${maven_install_plugin_version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-deploy-plugin</artifactId>
-                    <version>${maven_deploy_plugin_version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>${maven_compiler_plugin_version}</version>
-                    <configuration>
-                        <source>${java_source_version}</source>
-                        <target>${java_target_version}</target>
-                        <encoding>${file_encoding}</encoding>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-
 	</build>
 
 	<issueManagement>
-		<system>jira</system>
-		<url>http://code.alibabatech.com/jira/browse/DUBBO</url>
+		<system>github</system>
+		<url>https://github.com/alibaba/dubbo/issues</url>
 	</issueManagement>
 	<scm>
-		<url>http://code.alibabatech.com/svn/dubbo/trunk</url>
-		<connection>scm:svn:http://code.alibabatech.com/svn/dubbo/trunk</connection>
+		<url>https://github.com/alibaba/dubbo</url>
+		<connection>https://github.com/alibaba/dubbo.git</connection>
 	</scm>
 	<mailingLists>
 		<mailingList>

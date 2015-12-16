@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
@@ -41,7 +40,7 @@ public class ByteBufferBackedChannelBuffer extends AbstractChannelBuffer {
         writerIndex(capacity);
     }
 
-    private ByteBufferBackedChannelBuffer(ByteBufferBackedChannelBuffer buffer) {
+    public ByteBufferBackedChannelBuffer(ByteBufferBackedChannelBuffer buffer) {
         this.buffer = buffer.buffer;
         capacity = buffer.capacity;
         setIndex(buffer.readerIndex(), buffer.writerIndex());
@@ -55,12 +54,12 @@ public class ByteBufferBackedChannelBuffer extends AbstractChannelBuffer {
         }
     }
 
-    @Override
+    
     public int capacity() {
         return capacity;
     }
 
-    @Override
+    
     public ChannelBuffer copy(int index, int length) {
         ByteBuffer src;
         try {
@@ -77,12 +76,12 @@ public class ByteBufferBackedChannelBuffer extends AbstractChannelBuffer {
         return new ByteBufferBackedChannelBuffer(dst);
     }
 
-    @Override
+    
     public byte getByte(int index) {
         return buffer.get(index);
     }
 
-    @Override
+    
     public void getBytes(int index, byte[] dst, int dstIndex, int length) {
         ByteBuffer data = buffer.duplicate();
         try {
@@ -93,7 +92,7 @@ public class ByteBufferBackedChannelBuffer extends AbstractChannelBuffer {
         data.get(dst, dstIndex, length);
     }
 
-    @Override
+    
     public void getBytes(int index, ByteBuffer dst) {
         ByteBuffer data = buffer.duplicate();
         int bytesToCopy = Math.min(capacity() - index, dst.remaining());
@@ -105,7 +104,7 @@ public class ByteBufferBackedChannelBuffer extends AbstractChannelBuffer {
         dst.put(data);
     }
 
-    @Override
+    
     public void getBytes(int index, ChannelBuffer dst, int dstIndex, int length) {
         if (dst instanceof ByteBufferBackedChannelBuffer) {
             ByteBufferBackedChannelBuffer bbdst = (ByteBufferBackedChannelBuffer) dst;
@@ -120,7 +119,7 @@ public class ByteBufferBackedChannelBuffer extends AbstractChannelBuffer {
         }
     }
 
-    @Override
+    
     public void getBytes(int index, OutputStream out, int length) throws IOException {
         if (length == 0) {
             return;
@@ -138,31 +137,31 @@ public class ByteBufferBackedChannelBuffer extends AbstractChannelBuffer {
         }
     }
 
-    @Override
+    
     public boolean isDirect() {
         return buffer.isDirect();
     }
 
-    @Override
+    
     public void setByte(int index, int value) {
         buffer.put(index, (byte) value);
     }
 
-    @Override
+    
     public void setBytes(int index, byte[] src, int srcIndex, int length) {
         ByteBuffer data = buffer.duplicate();
         data.limit(index + length).position(index);
         data.put(src, srcIndex, length);
     }
 
-    @Override
+    
     public void setBytes(int index, ByteBuffer src) {
         ByteBuffer data = buffer.duplicate();
         data.limit(index + src.remaining()).position(index);
         data.put(src);
     }
 
-    @Override
+    
     public void setBytes(int index, ChannelBuffer src, int srcIndex, int length) {
         if (src instanceof ByteBufferBackedChannelBuffer) {
             ByteBufferBackedChannelBuffer bbsrc = (ByteBufferBackedChannelBuffer) src;
@@ -177,7 +176,7 @@ public class ByteBufferBackedChannelBuffer extends AbstractChannelBuffer {
         }
     }
 
-    @Override
+    
     public ByteBuffer toByteBuffer(int index, int length) {
         if (index == 0 && length == capacity()) {
             return buffer.duplicate();
@@ -187,7 +186,7 @@ public class ByteBufferBackedChannelBuffer extends AbstractChannelBuffer {
         }
     }
 
-    @Override
+    
     public int setBytes(int index, InputStream in, int length) throws IOException {
         int readBytes = 0;
 
@@ -227,17 +226,17 @@ public class ByteBufferBackedChannelBuffer extends AbstractChannelBuffer {
         return readBytes;
     }
 
-    @Override
+    
     public byte[] array() {
         return buffer.array();
     }
 
-    @Override
+    
     public boolean hasArray() {
         return buffer.hasArray();
     }
 
-    @Override
+    
     public int arrayOffset() {
         return buffer.arrayOffset();
     }
