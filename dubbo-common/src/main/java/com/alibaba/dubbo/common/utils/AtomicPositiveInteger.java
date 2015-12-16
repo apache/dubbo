@@ -24,15 +24,15 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author ding.lid
  */
 public class AtomicPositiveInteger extends Number {
-    
+
     private static final long serialVersionUID = -3038533876489105940L;
-    
+
     private final AtomicInteger i;
-    
+
     public AtomicPositiveInteger() {
         i = new AtomicInteger();
     }
-    
+
     public AtomicPositiveInteger(int initialValue) {
         i = new AtomicInteger(initialValue);
     }
@@ -167,20 +167,24 @@ public class AtomicPositiveInteger extends Number {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((i == null) ? 0 : i.hashCode());
+        result = prime * result + ((i == null) ? 0 : Integer.hashCode(i.intValue()));
         return result;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
         AtomicPositiveInteger other = (AtomicPositiveInteger) obj;
         if (i == null) {
-            if (other.i != null) return false;
-        } else if (!i.equals(other.i)) return false;
-        return true;
+            if (other.i != null)
+                return false;
+        }
+        return Integer.compare(i.intValue(), other.i.intValue()) == 0;
     }
 
 }
