@@ -15,8 +15,15 @@
  */
 package com.alibaba.dubbo.common.serialize.support.proto;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -27,153 +34,187 @@ import com.dyuproject.protostuff.Schema;
 import com.dyuproject.protostuff.runtime.RuntimeSchema;
 
 /**
- * TODO  
- * 1. 写入的class可以和dubbo默认写入的class整合下
- * 2. 将现在写入的三个记录长度的数据改为两个。一共需要1+3=4个字节。
- * 3. 进行小于0的判断。byte在传递时会变成-128-127。
+ * TODO 1. 写入的class可以和dubbo默认写入的class整合下 2. 将现在写入的三个记录长度的数据改为两个。一共需要1+3=4个字节。 3.
+ * 对最外层为list、map、set的情况还无法兼容。list和set需要进行专门判断，将set转list。
+ * map需要自己存在key和value的class并传递过去即可处理。
+ * 
  * @author lishen
  */
 public class ProtoObjectOutput implements ObjectOutput, Cleanable {
 
-    public final OutputStream stream;
-    
-    private static final Logger logger = Logger.getLogger(ProtoObjectOutput.class);
+	public static ThreadLocal<String> cache = new ThreadLocal<String>();
 
-    private ThreadLocal<LinkedBuffer> linkedBuffer = new ThreadLocal<LinkedBuffer>() {
-        @Override
-        protected LinkedBuffer initialValue() {
-            return LinkedBuffer.allocate(500);
-        }
-    };
+	public static void main(String[] args) throws Exception {
 
-    public ProtoObjectOutput(OutputStream stream) {
-        this.stream = stream;
-    }
+		System.setProperty(
+				"protostuff.runtime.collection_schema_on_repeated_fields",
+				"true");
+		System.setProperty("protostuff.runtime.morph_collection_interfaces",
+				"true");
+		System.setProperty("protostuff.runtime.morph_map_interfaces", "true");
 
-    public void writeObject(Object obj) throws IOException {
-        try {
-        	
-        	// 获取class字节数组
-            byte[] classBytes = obj.getClass().getName().getBytes();
-            
-            // 获取body字节数组
-//            System.out.println("begin proto core.." + System.currentTimeMillis());
-            Schema schema = RuntimeSchema.getSchema(obj.getClass());
-            byte[] bodyBytes = ProtostuffUtils.toByteArray(obj, schema, linkedBuffer.get());
-//            System.out.println("finish proto core.." + System.currentTimeMillis());
-            
-            // 获取class字节长度
-            int classSize = classBytes.length;
-            
-            // 获取body字节长度
-            int bodySize = bodyBytes.length;
+		Map<String, String> maps = new HashMap<String, String>();
 
-            // 总长度。包含1个总长度、1个class长度、1个body长度、以及class全限定名和body内容字节数组
-            int totalLength = 1 + 2 + classSize + bodySize;
+		maps.put("path", "com.dingding.person.api.AccountAPI");
+		maps.put("interface", "com.dingding.person.api.AccountAPI");
+		maps.put("timeout", "30000");
+		maps.put("version", "0.0.0");
 
-            byte[] result = new byte[totalLength];
-            result[0] = (byte) (totalLength - 1);
-            result[1] = (byte)classSize;
-            for (int i = 2, j = 0; i <= classSize + 1; i++,j++) {
-                result[i] = classBytes[j];
-            }
-            result[2 + classSize] = (byte)bodySize;
-            for (int i = 3 + classSize, j = 0; i < result.length - 1; i++,j++) {
-                result[i] = bodyBytes[j];
-            }
+		int a = 12321;
 
-            if(logger.isDebugEnabled()){
-            	logger.debug("===========write begin===================");
-        		logger.debug("obj class is: " + obj.getClass().getName());
-        		
-        		logger.debug("size of class: " + classSize);
-            	logger.debug("real class name: " + new String(classBytes));
-            	logger.debug("size of body: " + bodyBytes.length);
-        		
-            	logger.debug("size of result: " + result.length);
-            	StringBuilder builder = new StringBuilder();
-            	builder.append("result bytes array: ");
-            	for (byte b : result) {
-            		builder.append(b + " ");
-                 }
-            	logger.debug(builder.toString());
-            	logger.debug("===========write end===================");
-            }
-            stream.write(result);
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		ProtoObjectOutput out = new ProtoObjectOutput(outputStream);
+		out.writeObject(a);
 
-        } finally {
-            linkedBuffer.get().clear();
-        }
-    }
+		ByteArrayInputStream input = new ByteArrayInputStream(
+				outputStream.toByteArray());
 
-    public void writeByte(byte v) throws IOException {
-    	if(logger.isDebugEnabled()){
-    		logger.debug("now in writeBytes method... ");
-    	}
-        stream.write(v);
-    }
+		ProtoObjectInput in = new ProtoObjectInput(input);
+		System.out.println(in.readObject(Integer.class));
 
-    public void writeUTF(String v) throws IOException {
-    	if(logger.isDebugEnabled()){
-    		logger.debug("now in writeUTF method... ");
-    	}
-        // 按照先存大小，后存内容的方式存储。
-        stream.write(v.length());
-        stream.write(v.getBytes());
-    }
+	}
 
-    public void flushBuffer() throws IOException {
-        stream.flush();
-    }
+	public final OutputStream stream;
 
-    @Deprecated
-    public void writeBool(boolean v) throws IOException {
-        writeObject(v);
+	private static final Logger logger = Logger
+			.getLogger(ProtoObjectOutput.class);
 
-    }
+	private static ThreadLocal<LinkedBuffer> linkedBuffer = new ThreadLocal<LinkedBuffer>() {
+		@Override
+		protected LinkedBuffer initialValue() {
+			return LinkedBuffer.allocate(500);
+		}
+	};
 
-    @Deprecated
-    public void writeShort(short v) throws IOException {
-        writeObject(v);
-    }
+	public ProtoObjectOutput(OutputStream stream) {
+		this.stream = stream;
+	}
 
-    @Deprecated
-    public void writeInt(int v) throws IOException {
-        writeObject(v);
-    }
+	// 默认不超过三位即可
+	private byte[] int2Byte(int data) {
+		byte[] result = new byte[3];
+		result[0] = (byte) (data & 0xFF);
+		result[1] = 0;
+		result[2] = 0;
+		int higer = data >> 8;
+		if (higer > 0) {
+			result[1] = (byte) (higer & 0xFF);
+			int top = data >> 16;
+			if (top > 0) {
+				result[2] = (byte) (top & 0xFF);
+			}
+		}
+		return result;
+	}
 
-    @Deprecated
-    public void writeLong(long v) throws IOException {
-        writeObject(v);
-    }
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public void writeObject(Object obj) throws IOException {
+		try {
 
-    @Deprecated
-    public void writeFloat(float v) throws IOException {
-        writeObject(v);
-    }
+			Schema schema = null;
+			byte[] bodyBytes = null;
 
-    @Deprecated
-    public void writeDouble(double v) throws IOException {
-        writeObject(v);
+			if (obj instanceof Map) {
+				MapEntity entity = new MapEntity((Map) obj);
+				schema = RuntimeSchema.getSchema(MapEntity.class);
+				bodyBytes = ProtostuffUtils.toByteArray(entity, schema,
+						linkedBuffer.get());
+			} else if (obj instanceof Collection) {
+				if (obj instanceof List) {// 可以少一次判断
+					ListEntity entity = new ListEntity((List) obj);
+					schema = RuntimeSchema.getSchema(ListEntity.class);
+					bodyBytes = ProtostuffUtils.toByteArray(entity, schema,
+							linkedBuffer.get());
+				} else if (obj instanceof Set) {
+					SetEntity entity = new SetEntity((Set) obj);
+					schema = RuntimeSchema.getSchema(SetEntity.class);
+					bodyBytes = ProtostuffUtils.toByteArray(entity, schema,
+							linkedBuffer.get());
+				}
+			} else {
+				schema = RuntimeSchema.getSchema(obj.getClass());
+				bodyBytes = ProtostuffUtils.toByteArray(obj, schema,
+						linkedBuffer.get());
+			}
 
-    }
+			// 记录长度。
+			byte[] lengthBytes = int2Byte(bodyBytes.length);
+			stream.write(lengthBytes);
+			stream.write(bodyBytes);
 
-    @Deprecated
-    public void writeBytes(byte[] v) throws IOException {
-        // TODO Auto-generated method stub
+		} finally {
+			linkedBuffer.get().clear();
+		}
+	}
 
-    }
+	public void writeByte(byte v) throws IOException {
+		if (logger.isDebugEnabled()) {
+			logger.debug("now in writeBytes method... ");
+		}
+		stream.write(v);
+	}
 
-    @Deprecated
-    public void writeBytes(byte[] v, int off, int len) throws IOException {
-        // TODO Auto-generated method stub
+	public void writeUTF(String v) throws IOException {
+		if (logger.isDebugEnabled()) {
+			logger.debug("now in writeUTF method... ");
+		}
+		// 按照先存大小，后存内容的方式存储。
+		stream.write(v.length());
+		stream.write(v.getBytes());
+	}
 
-    }
+	public void flushBuffer() throws IOException {
+		stream.flush();
+	}
 
-    @Deprecated
-    public void cleanup() {
-        // TODO Auto-generated method stub
+	@Deprecated
+	public void writeBool(boolean v) throws IOException {
+		writeObject(v);
 
-    }
+	}
+
+	@Deprecated
+	public void writeShort(short v) throws IOException {
+		writeObject(v);
+	}
+
+	@Deprecated
+	public void writeInt(int v) throws IOException {
+		writeObject(v);
+	}
+
+	@Deprecated
+	public void writeLong(long v) throws IOException {
+		writeObject(v);
+	}
+
+	@Deprecated
+	public void writeFloat(float v) throws IOException {
+		writeObject(v);
+	}
+
+	@Deprecated
+	public void writeDouble(double v) throws IOException {
+		writeObject(v);
+
+	}
+
+	@Deprecated
+	public void writeBytes(byte[] v) throws IOException {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Deprecated
+	public void writeBytes(byte[] v, int off, int len) throws IOException {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Deprecated
+	public void cleanup() {
+		// TODO Auto-generated method stub
+
+	}
 
 }

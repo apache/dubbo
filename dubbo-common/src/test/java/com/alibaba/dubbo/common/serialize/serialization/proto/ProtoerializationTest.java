@@ -25,12 +25,18 @@ public class ProtoerializationTest {
 		protoOutput.writeObject(lists);
 		protoOutput.flushBuffer();
 		
-		for(A tmp : lists){
+		ByteArrayInputStream input = new ByteArrayInputStream(outputStream2.toByteArray());
+		ProtoObjectInput pIn = new ProtoObjectInput(input);
+		List<A> listA = (List<A>)pIn.readObject();
+		System.out.println(listA);
+		
+		for(A tmp : listA){
 			System.out.println(tmp);
 		}
+		
 	}
 	
-	@Test
+//	@Test
 	public void test_genericity() throws Exception{
 		final B b = new B();
 		b.setName("hello");

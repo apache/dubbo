@@ -18,6 +18,12 @@ package com.alibaba.dubbo.common.serialize.support.proto;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -35,9 +41,14 @@ public class ProtoObjectInput implements ObjectInput, Cleanable {
 
 	private InputStream inputStream;
 
+	private static final int TYPE_DFT = -1;
+	private static final int TYPE_MAP = 0;
+	private static final int TYPE_LIST = 1;
+	private static final int TYPE_SET = 2;
+
 	private static final Logger logger = Logger
 			.getLogger(ProtoObjectOutput.class);
-	
+
 	public ProtoObjectInput(InputStream inputStream) {
 		this.inputStream = inputStream;
 	}
@@ -74,62 +85,18 @@ public class ProtoObjectInput implements ObjectInput, Cleanable {
 		return new String(bodyBytes);
 	}
 
+	public static int bytesToInt(byte[] src, int offset) {
+		int value;
+		value = (int) ((src[offset] & 0xFF) | ((src[offset + 1] & 0xFF) << 8) | ((src[offset + 2] & 0xFF) << 16));
+		return value;
+	}
+
 	public Object readObject() throws IOException, ClassNotFoundException {
-		byte[] cntByte = new byte[1];
-		inputStream.read(cntByte);
-		int globalSize = cntByte[0];
-		if(globalSize < 0){
-			globalSize &= 0x00ff;
-		}
-		byte[] bs = new byte[globalSize];
-		int len = inputStream.read(bs);
-
-		// 获取class名 & class对象
-		int classSize = bs[0];
-		byte[] className = new byte[classSize];
-		for (int i = 1; i < classSize + 1; i++) {
-			className[i - 1] = bs[i];
-		}
-		String classRealName = new String(className);
-		Class realClass = Class.forName(classRealName);
-
-		// 获取body字节流
-		int bodySize = bs[classSize + 1];
-		if(bodySize < 0){
-			bodySize &= 0x00ff;
-		}
-		byte[] bodys = new byte[bodySize];
-		for (int j = 0, i = 2 + classSize; j < bodySize; i++, j++) {
-			bodys[j] = bs[i];
-		}
-
-		Schema schema = RuntimeSchema.getSchema(realClass);
-		Object content = null;
-		try {
-			content = realClass.newInstance();
-		} catch (Exception e) {
-			logger.error(e);
-		}
-
 		if (logger.isDebugEnabled()) {
-			logger.debug("============read begin===========");
-			logger.debug("total length is: " + len);
-			logger.debug("className is: " + classRealName);
-			logger.debug("classSize: " + classSize);
-			logger.debug("body length is: " + bodySize);
-			StringBuilder builder = new StringBuilder();
-			builder.append("body bytes array: ");
-			for (byte b : bodys) {
-				builder.append(b + " ");
-			}
-			logger.debug(builder.toString());
-			logger.debug("Instance: " + content.toString());
-			logger.debug("the object after decode is: " + content);
-			logger.debug("============read end===========");
+			logger.debug("iam now in readObject without args");
 		}
-
-		ProtostuffUtils.mergeFrom(bodys, content, schema);
-		return content;
+		// returntype == null 或者抛异常的时候返回
+		return readObject(Object.class);
 
 	}
 
@@ -138,7 +105,83 @@ public class ProtoObjectInput implements ObjectInput, Cleanable {
 		if (logger.isDebugEnabled()) {
 			logger.debug("now in read Object Class method..." + cls.getName());
 		}
-		return (T) readObject();
+		Schema schema = null;
+		Object content = null;
+		byte[] length = new byte[3];
+		inputStream.read(length);
+
+		byte[] bodys = new byte[bytesToInt(length, 0)];
+
+		int type = -1;
+		if (Map.class.isAssignableFrom(cls)) {
+			schema = RuntimeSchema.getSchema(MapEntity.class);
+			content = new MapEntity();
+			type = TYPE_MAP;
+		} else if (Collection.class.isAssignableFrom(cls)) {
+			if (cls.isAssignableFrom(List.class)) {
+				schema = RuntimeSchema.getSchema(ListEntity.class);
+				content = new ListEntity();
+				type = TYPE_LIST;
+			} else if (Set.class.isAssignableFrom(cls)) {
+				schema = RuntimeSchema.getSchema(SetEntity.class);
+				content = new SetEntity();
+				type = TYPE_SET;
+			}
+		} else if (Integer.class.isAssignableFrom(cls)
+				|| Integer.TYPE.isAssignableFrom(cls)) {
+			schema = RuntimeSchema.getSchema(Integer.class);
+			content = new Integer(0);
+		} else if (Boolean.class.isAssignableFrom(cls)
+				|| Boolean.TYPE.isAssignableFrom(cls)) {
+			schema = RuntimeSchema.getSchema(Boolean.class);
+			content = new Boolean(false);
+		} else if (Short.class.isAssignableFrom(cls)
+				|| Short.TYPE.isAssignableFrom(cls)) {
+			schema = RuntimeSchema.getSchema(Short.class);
+			content = new Short("0");
+		} else if (Long.class.isAssignableFrom(cls)
+				|| Long.TYPE.isAssignableFrom(cls)) {
+			schema = RuntimeSchema.getSchema(Long.class);
+			content = new Long(0L);
+		} else if (Double.class.isAssignableFrom(cls)
+				|| Double.TYPE.isAssignableFrom(cls)) {
+			schema = RuntimeSchema.getSchema(Double.class);
+			content = new Double(0);
+		} else if (Float.class.isAssignableFrom(cls)
+				|| Float.TYPE.isAssignableFrom(cls)) {
+			schema = RuntimeSchema.getSchema(Float.class);
+			content = new Float(0);
+		} else if (Character.class.isAssignableFrom(cls)
+				|| Character.TYPE.isAssignableFrom(cls)) {
+			schema = RuntimeSchema.getSchema(Character.class);
+			content = new Character('0');
+		} else {
+			schema = RuntimeSchema.getSchema(cls);
+			try {
+				content = (T) cls.newInstance();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+		}
+
+		inputStream.read(bodys);
+
+		ProtostuffUtils.mergeFrom(bodys, content, schema);
+
+		switch (type) {
+		case TYPE_DFT:
+			return (T) content;
+		case TYPE_MAP:
+			return (T) ((MapEntity) content).getData();
+		case TYPE_LIST:
+			return (T) ((ListEntity) content).getData();
+		case TYPE_SET:
+			return (T) ((SetEntity) content).getData();
+		default:
+			throw new RuntimeException();
+		}
+
 	}
 
 	public <T> T readObject(Class<T> cls, Type type) throws IOException,
@@ -146,7 +189,7 @@ public class ProtoObjectInput implements ObjectInput, Cleanable {
 		if (logger.isDebugEnabled()) {
 			logger.debug("now in read Object Class And Type method...");
 		}
-		return (T) readObject();
+		return (T) readObject(cls);
 	}
 
 	@Deprecated
