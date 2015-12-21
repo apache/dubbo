@@ -191,7 +191,7 @@ public class Hessian2SerializationTest extends AbstractSerializationPersionFailT
         ObjectOutput objectOutput = serialization.serialize(url, byteArrayOutputStream);
         objectOutput.writeObject(data);
         objectOutput.flushBuffer();
-
+  
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
                 byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);

@@ -98,6 +98,10 @@ public class Hessian2Output
 
   private boolean _isStreaming;
   
+  public void setOutputStream(OutputStream out){
+	  _os = out;  
+  }
+  
   /**
    * Creates a new Hessian output stream, initialized with an
    * underlying output stream.

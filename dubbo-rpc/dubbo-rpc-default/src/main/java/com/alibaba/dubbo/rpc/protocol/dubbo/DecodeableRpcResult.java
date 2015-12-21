@@ -40,83 +40,88 @@ import com.alibaba.dubbo.rpc.support.RpcUtils;
  */
 public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable {
 
-    private static final Logger log = LoggerFactory.getLogger(DecodeableRpcResult.class);
+	private static final Logger log = LoggerFactory
+			.getLogger(DecodeableRpcResult.class);
 
-    private Channel     channel;
+	private Channel channel;
 
-    private byte        serializationType;
+	private byte serializationType;
 
-    private InputStream inputStream;
+	private InputStream inputStream;
 
-    private Response    response;
+	private Response response;
 
-    private Invocation  invocation;
+	private Invocation invocation;
 
-    private volatile boolean hasDecoded;
+	private volatile boolean hasDecoded;
 
-    public DecodeableRpcResult(Channel channel, Response response, InputStream is, Invocation invocation, byte id) {
-        Assert.notNull(channel, "channel == null");
-        Assert.notNull(response, "response == null");
-        Assert.notNull(is, "inputStream == null");
-        this.channel = channel;
-        this.response = response;
-        this.inputStream = is;
-        this.invocation = invocation;
-        this.serializationType = id;
-    }
+	public DecodeableRpcResult(Channel channel, Response response,
+			InputStream is, Invocation invocation, byte id) {
+		Assert.notNull(channel, "channel == null");
+		Assert.notNull(response, "response == null");
+		Assert.notNull(is, "inputStream == null");
+		this.channel = channel;
+		this.response = response;
+		this.inputStream = is;
+		this.invocation = invocation;
+		this.serializationType = id;
+	}
 
-    public void encode(Channel channel, OutputStream output, Object message) throws IOException {
-        throw new UnsupportedOperationException();
-    }
+	public void encode(Channel channel, OutputStream output, Object message)
+			throws IOException {
+		throw new UnsupportedOperationException();
+	}
 
-    public Object decode(Channel channel, InputStream input) throws IOException {
-        ObjectInput in = CodecSupport.getSerialization(channel.getUrl(), serializationType)
-            .deserialize(channel.getUrl(), input);
+	public Object decode(Channel channel, InputStream input) throws IOException {
+		ObjectInput in = CodecSupport.getSerialization(channel.getUrl(),
+				serializationType).deserialize(channel.getUrl(), input);
 
-        byte flag = in.readByte();
-        switch (flag) {
-            case DubboCodec.RESPONSE_NULL_VALUE:
-                break;
-            case DubboCodec.RESPONSE_VALUE:
-                try {
-                    Type[] returnType = RpcUtils.getReturnTypes(invocation);
-                    setValue(returnType == null || returnType.length == 0 ? in.readObject() :
-                                 (returnType.length == 1 ? in.readObject((Class<?>) returnType[0])
-                                     : in.readObject((Class<?>) returnType[0], returnType[1])));
-                } catch (ClassNotFoundException e) {
-                    throw new IOException(StringUtils.toString("Read response data failed.", e));
-                }
-                break;
-            case DubboCodec.RESPONSE_WITH_EXCEPTION:
-                try {
-                    Object obj = in.readObject();
-                    if (obj instanceof Throwable == false)
-                        throw new IOException("Response data error, expect Throwable, but get " + obj);
-                    setException((Throwable) obj);
-                } catch (ClassNotFoundException e) {
-                    throw new IOException(StringUtils.toString("Read response data failed.", e));
-                }
-                break;
-            default:
-                throw new IOException("Unknown result flag, expect '0' '1' '2', get " + flag);
-        }
-        return this;
-    }
+		byte flag = in.readByte();
+		switch (flag) {
+		case DubboCodec.RESPONSE_NULL_VALUE:
+			break;
+		case DubboCodec.RESPONSE_VALUE:
+			try {
+				Type[] returnType = RpcUtils.getReturnTypes(invocation);
+				setValue(returnType == null || returnType.length == 0 ? in
+						.readObject() : (returnType.length == 1 ? in
+						.readObject((Class<?>) returnType[0]) : in.readObject(
+						(Class<?>) returnType[0], returnType[1])));
+			} catch (ClassNotFoundException e) {
+				throw new IOException(StringUtils.toString(
+						"Read response data failed.", e));
+			}
+			break;
+		case DubboCodec.RESPONSE_WITH_EXCEPTION:
+			try {
+				Throwable obj = in.readObject(Throwable.class);
+				setException(obj);
+			} catch (ClassNotFoundException e) {
+				throw new IOException(StringUtils.toString(
+						"Read response data failed.", e));
+			}
+			break;
+		default:
+			throw new IOException(
+					"Unknown result flag, expect '0' '1' '2', get " + flag);
+		}
+		return this;
+	}
 
-    public void decode() throws Exception {
-        if (!hasDecoded && channel != null && inputStream != null) {
-            try {
-                decode(channel, inputStream);
-            } catch (Throwable e) {
-                if (log.isWarnEnabled()) {
-                    log.warn("Decode rpc result failed: " + e.getMessage(), e);
-                }
-                response.setStatus(Response.CLIENT_ERROR);
-                response.setErrorMessage(StringUtils.toString(e));
-            } finally {
-                hasDecoded = true;
-            }
-        }
-    }
+	public void decode() throws Exception {
+		if (!hasDecoded && channel != null && inputStream != null) {
+			try {
+				decode(channel, inputStream);
+			} catch (Throwable e) {
+				if (log.isWarnEnabled()) {
+					log.warn("Decode rpc result failed: " + e.getMessage(), e);
+				}
+				response.setStatus(Response.CLIENT_ERROR);
+				response.setErrorMessage(StringUtils.toString(e));
+			} finally {
+				hasDecoded = true;
+			}
+		}
+	}
 
 }

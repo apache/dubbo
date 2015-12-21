@@ -34,16 +34,11 @@ import com.dyuproject.protostuff.Schema;
 import com.dyuproject.protostuff.runtime.RuntimeSchema;
 
 /**
- * TODO 1. 写入的class可以和dubbo默认写入的class整合下 2. 将现在写入的三个记录长度的数据改为两个。一共需要1+3=4个字节。 3.
- * 对最外层为list、map、set的情况还无法兼容。list和set需要进行专门判断，将set转list。
- * map需要自己存在key和value的class并传递过去即可处理。
  * 
- * @author lishen
+ * @author surlymo
  */
 public class ProtoObjectOutput implements ObjectOutput, Cleanable {
-
-	public static ThreadLocal<String> cache = new ThreadLocal<String>();
-
+	
 	public static void main(String[] args) throws Exception {
 
 		System.setProperty(
@@ -70,11 +65,11 @@ public class ProtoObjectOutput implements ObjectOutput, Cleanable {
 				outputStream.toByteArray());
 
 		ProtoObjectInput in = new ProtoObjectInput(input);
-		System.out.println(in.readObject(Integer.class));
+		System.out.println(in.readObject(null));
 
 	}
 
-	public final OutputStream stream;
+	private final OutputStream stream;
 
 	private static final Logger logger = Logger
 			.getLogger(ProtoObjectOutput.class);

@@ -95,8 +95,8 @@ public class ProtoObjectInput implements ObjectInput, Cleanable {
 		if (logger.isDebugEnabled()) {
 			logger.debug("iam now in readObject without args");
 		}
-		// returntype == null 或者抛异常的时候返回
-		return readObject(Object.class);
+		// returntype == null 或者抛异常的时候返回。已经被我修改源码，理论上不会走到这。
+		throw new UnsupportedOperationException();
 
 	}
 
@@ -162,11 +162,8 @@ public class ProtoObjectInput implements ObjectInput, Cleanable {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-
 		}
-
 		inputStream.read(bodys);
-
 		ProtostuffUtils.mergeFrom(bodys, content, schema);
 
 		switch (type) {

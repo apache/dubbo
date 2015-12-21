@@ -11,6 +11,7 @@ import com.alibaba.dubbo.common.serialize.support.proto.ProtoObjectInput;
 import com.alibaba.dubbo.common.serialize.support.proto.ProtoObjectOutput;
 
 public class ProtoerializationTest {
+	
 	@Test
 	public void test_list() throws Exception{
 		A a = new A();
@@ -27,7 +28,7 @@ public class ProtoerializationTest {
 		
 		ByteArrayInputStream input = new ByteArrayInputStream(outputStream2.toByteArray());
 		ProtoObjectInput pIn = new ProtoObjectInput(input);
-		List<A> listA = (List<A>)pIn.readObject();
+		List<A> listA = (List<A>)pIn.readObject(List.class);
 		System.out.println(listA);
 		
 		for(A tmp : listA){
@@ -36,7 +37,7 @@ public class ProtoerializationTest {
 		
 	}
 	
-//	@Test
+	@Test 
 	public void test_genericity() throws Exception{
 		final B b = new B();
 		b.setName("hello");
@@ -61,7 +62,7 @@ public class ProtoerializationTest {
 		
 		ByteArrayInputStream input = new ByteArrayInputStream(outputStream2.toByteArray());
 		ProtoObjectInput pIn = new ProtoObjectInput(input);
-		C<B> readC = (C)pIn.readObject();
+		C<B> readC = (C)pIn.readObject(C.class);
 		System.out.println(readC);
 	}
 	
