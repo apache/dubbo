@@ -2,6 +2,7 @@
 1. 新增kryo以及protostuff两个高性能的二进制序列化协议。kryo的代码为dubbox中的代码，protostuff的代码为自己实现。
 2. 完成dubbo内部实现后的java、fastjson、kryo、pb、hessian2几个协议的性能benchmark test。在该测试下，pb的性能表现非常突出。压缩后的大小仅为h2的1/4，整体时间也仅为h2的一半。
 3. kryo的benchmark表现和其宣传的速度差距非常大。落后于h2和pb几十倍。
+4. 想使用kryo或者pb协议进行二进制传输的同学，直接按照dubbo序列化协议的用法去声明即可。如都不声明，暂时还走h2的默认协议。
 
 # 原dubbo项目的README
 Dubbo is a distributed service framework enpowers applications with service import/export capability with high performance RPC.
