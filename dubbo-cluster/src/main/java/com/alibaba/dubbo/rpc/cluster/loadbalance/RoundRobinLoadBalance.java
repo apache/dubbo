@@ -30,6 +30,7 @@ import com.alibaba.dubbo.rpc.Invoker;
  *
  * @author qian.lei
  * @author william.liangf
+ * @author zhou.yiming
  */
 public class RoundRobinLoadBalance extends AbstractLoadBalance {
 
@@ -55,7 +56,16 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
                 weightSequences.putIfAbsent(key, new AtomicPositiveInteger());
                 weightSequence = weightSequences.get(key);
             }
-            int currentWeight = weightSequence.getAndIncrement() % maxWeight;
+            int currentWeight;
+            if(sequences.get(key).get() % length == 0)
+            {
+            	currentWeight = weightSequence.getAndIncrement() % maxWeight;
+            }
+            else
+            {
+            	currentWeight = weightSequence.get() % maxWeight;
+            }
+
             List<Invoker<T>> weightInvokers = new ArrayList<Invoker<T>>();
             for (Invoker<T> invoker : invokers) { // 筛选权重大于当前权重基数的Invoker
                 if (getWeight(invoker, invocation) > currentWeight) {
