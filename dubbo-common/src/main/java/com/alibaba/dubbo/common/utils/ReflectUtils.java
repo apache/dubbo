@@ -784,9 +784,9 @@ public final class ReflectUtils {
 	 */
 	public static Method findMethodByMethodSignature(Class<?> clazz, String methodName, String[] parameterTypes)
 	        throws NoSuchMethodException, ClassNotFoundException {
-	    String signature = methodName;
+	    String signature = clazz.getName() + "." + methodName;
         if(parameterTypes != null && parameterTypes.length > 0){
-            signature = methodName + StringUtils.join(parameterTypes);
+            signature += StringUtils.join(parameterTypes);
         }
         Method method = Signature_METHODS_CACHE.get(signature);
         if(method != null){
