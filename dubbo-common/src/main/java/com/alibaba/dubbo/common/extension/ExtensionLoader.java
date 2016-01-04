@@ -624,6 +624,7 @@ public class ExtensionLoader<T> {
                                             line = line.substring(i + 1).trim();
                                         }
                                         if (line.length() > 0) {
+                                        	logger.info("extendsion is:" +line);
                                             Class<?> clazz = Class.forName(line, true, classLoader);
                                             if (! type.isAssignableFrom(clazz)) {
                                                 throw new IllegalStateException("Error when load extension class(interface: " +

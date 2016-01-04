@@ -23,7 +23,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * @author william.liangf
  */
 public class CallbackProvider {
-    
+   
     public static void main(String[] args) throws Exception {
         String config = CallbackProvider.class.getPackage().getName().replace('.', '/') + "/callback-provider.xml";
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(config);
