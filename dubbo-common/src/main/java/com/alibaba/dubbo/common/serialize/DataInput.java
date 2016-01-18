@@ -23,7 +23,7 @@ import java.io.IOException;
  * @author qian.lei
  */
 public interface DataInput {
-    
+
 	/**
 	 * Read boolean.
 	 * 

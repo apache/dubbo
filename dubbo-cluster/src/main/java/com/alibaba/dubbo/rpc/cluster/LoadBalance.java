@@ -28,7 +28,8 @@ import com.alibaba.dubbo.rpc.cluster.loadbalance.RandomLoadBalance;
 /**
  * LoadBalance. (SPI, Singleton, ThreadSafe)
  * 
- * <a href="http://en.wikipedia.org/wiki/Load_balancing_(computing)">Load-Balancing</a>
+ * <a href="http://en.wikipedia.org/wiki/Load_balancing_(computing)">Load-
+ * Balancing</a>
  * 
  * @see com.alibaba.dubbo.rpc.cluster.Cluster#join(Directory)
  * @author qian.lei
@@ -40,12 +41,15 @@ public interface LoadBalance {
 	/**
 	 * select one invoker in list.
 	 * 
-	 * @param invokers invokers.
-	 * @param url refer url
-	 * @param invocation invocation.
+	 * @param invokers
+	 *            invokers.
+	 * @param url
+	 *            refer url
+	 * @param invocation
+	 *            invocation.
 	 * @return selected invoker.
 	 */
-    @Adaptive("loadbalance")
+	@Adaptive("loadbalance")
 	<T> Invoker<T> select(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException;
 
 }

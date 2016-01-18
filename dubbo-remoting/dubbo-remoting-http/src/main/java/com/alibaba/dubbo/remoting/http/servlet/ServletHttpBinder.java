@@ -27,10 +27,10 @@ import com.alibaba.dubbo.remoting.http.HttpServer;
  * @author william.liangf
  */
 public class ServletHttpBinder implements HttpBinder {
-    
-    @Adaptive()
-    public HttpServer bind(URL url, HttpHandler handler) {
-        return new ServletHttpServer(url, handler);
-    }
+
+	@Adaptive()
+	public HttpServer bind(URL url, HttpHandler handler) {
+		return new ServletHttpServer(url, handler);
+	}
 
 }

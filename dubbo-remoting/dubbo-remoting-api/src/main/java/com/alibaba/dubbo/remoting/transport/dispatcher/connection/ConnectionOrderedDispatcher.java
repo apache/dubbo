@@ -26,10 +26,10 @@ import com.alibaba.dubbo.remoting.Dispatcher;
  */
 public class ConnectionOrderedDispatcher implements Dispatcher {
 
-    public static final String NAME = "connection";
+	public static final String NAME = "connection";
 
-    public ChannelHandler dispatch(ChannelHandler handler, URL url) {
-        return new ConnectionOrderedChannelHandler(handler, url);
-    }
+	public ChannelHandler dispatch(ChannelHandler handler, URL url) {
+		return new ConnectionOrderedChannelHandler(handler, url);
+	}
 
 }

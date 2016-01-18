@@ -27,10 +27,10 @@ import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerAdapter;
 
 public class JdkLoggerAdapter implements LoggerAdapter {
-	
+
 	private static final String GLOBAL_LOGGER_NAME = "global";
 
-    private File file;
+	private File file;
 
 	public JdkLoggerAdapter() {
 		try {
@@ -41,15 +41,16 @@ public class JdkLoggerAdapter implements LoggerAdapter {
 				System.err.println("No such logging.properties in classpath for jdk logging config!");
 			}
 		} catch (Throwable t) {
-			System.err.println("Failed to load logging.properties in classpath for jdk logging config, cause: " + t.getMessage());
+			System.err.println("Failed to load logging.properties in classpath for jdk logging config, cause: "
+					+ t.getMessage());
 		}
 		try {
 			Handler[] handlers = java.util.logging.Logger.getLogger(GLOBAL_LOGGER_NAME).getHandlers();
 			for (Handler handler : handlers) {
 				if (handler instanceof FileHandler) {
-					FileHandler fileHandler = (FileHandler)handler;
+					FileHandler fileHandler = (FileHandler) handler;
 					Field field = fileHandler.getClass().getField("files");
-					File[] files =  (File[])field.get(fileHandler);
+					File[] files = (File[]) field.get(fileHandler);
 					if (files != null && files.length > 0) {
 						file = files[0];
 					}
@@ -93,7 +94,7 @@ public class JdkLoggerAdapter implements LoggerAdapter {
 		if (level == Level.ERROR)
 			return java.util.logging.Level.SEVERE;
 		// if (level == Level.OFF)
-			return java.util.logging.Level.OFF;
+		return java.util.logging.Level.OFF;
 	}
 
 	private static Level fromJdkLevel(java.util.logging.Level level) {
@@ -110,11 +111,11 @@ public class JdkLoggerAdapter implements LoggerAdapter {
 		if (level == java.util.logging.Level.SEVERE)
 			return Level.ERROR;
 		// if (level == java.util.logging.Level.OFF)
-			return Level.OFF;
+		return Level.OFF;
 	}
 
-    public void setFile(File file) {
-        
-    }
+	public void setFile(File file) {
+
+	}
 
 }

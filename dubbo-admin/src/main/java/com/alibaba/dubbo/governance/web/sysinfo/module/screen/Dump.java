@@ -41,115 +41,115 @@ import com.alibaba.dubbo.registry.common.domain.Provider;
  * @author tony.chenl
  */
 public class Dump extends Restful {
-    
-    @Autowired
-    ProviderService         providerDAO;
 
-    @Autowired
-    ConsumerService         consumerDAO;
+	@Autowired
+	ProviderService providerDAO;
 
-    @Autowired
-    HttpServletResponse response;
+	@Autowired
+	ConsumerService consumerDAO;
 
-    public void noProviders(Map<String, Object> context) throws IOException {
-        PrintWriter writer = response.getWriter();
-        List<String> sortedService = getNoProviders();
-        Collections.sort(sortedService);
-        writer.println(sortedService.size() + " services don't have provider");
-        for (String noProvider : sortedService) {
-            writer.println(noProvider);
-        }
-        writer.flush();
-        response.setContentType("text/plain");
-    }
+	@Autowired
+	HttpServletResponse response;
 
-    public void services(Map<String, Object> context) throws IOException {
-        PrintWriter writer = response.getWriter();
-        List<String> sortedService = providerDAO.findServices();
-        Collections.sort(sortedService);
-        writer.println(sortedService.size() + " services");
-        for (String service : sortedService) {
-            writer.println(service + (providerDAO.findByService(service).size()));
-        }
-        writer.flush();
-        response.setContentType("text/plain");
-    }
+	public void noProviders(Map<String, Object> context) throws IOException {
+		PrintWriter writer = response.getWriter();
+		List<String> sortedService = getNoProviders();
+		Collections.sort(sortedService);
+		writer.println(sortedService.size() + " services don't have provider");
+		for (String noProvider : sortedService) {
+			writer.println(noProvider);
+		}
+		writer.flush();
+		response.setContentType("text/plain");
+	}
 
-    public void providers(Map<String, Object> context) throws IOException {
-        PrintWriter writer = response.getWriter();
-        List<Provider> providers = providerDAO.findAll();
-        List<String> sortedProviders = new ArrayList<String>();
-        for (Provider provider : providers) {
-            sortedProviders.add(provider.getUrl() + " " + provider.getService());
-        }
-        Collections.sort(sortedProviders);
-        writer.println(sortedProviders.size() + " provider instance");
-        for (String provider : sortedProviders) {
-            writer.println(provider);
-        }
-        writer.flush();
-        response.setContentType("text/plain");
-    }
+	public void services(Map<String, Object> context) throws IOException {
+		PrintWriter writer = response.getWriter();
+		List<String> sortedService = providerDAO.findServices();
+		Collections.sort(sortedService);
+		writer.println(sortedService.size() + " services");
+		for (String service : sortedService) {
+			writer.println(service + (providerDAO.findByService(service).size()));
+		}
+		writer.flush();
+		response.setContentType("text/plain");
+	}
 
-    public void consumers(Map<String, Object> context) throws IOException {
-        PrintWriter writer = response.getWriter();
-        List<Consumer> consumers = consumerDAO.findAll();
-        List<String> sortedConsumerss = new ArrayList<String>();
-        for (Consumer consumer : consumers) {
-            sortedConsumerss.add(consumer.getAddress() + " " + consumer.getService());
-        }
-        Collections.sort(sortedConsumerss);
-        writer.println(sortedConsumerss.size() + " consumer instance");
-        for (String consumer : sortedConsumerss) {
-            writer.println(consumer);
-        }
-        writer.flush();
-        response.setContentType("text/plain");
-    }
-    
-    public void versions(Map<String, Object> context) throws IOException {
-        PrintWriter writer = response.getWriter();
-        List<Provider> providers = providerDAO.findAll();
-        List<Consumer> consumers = consumerDAO.findAll();
-        Set<String> parametersSet = new HashSet<String>();
-        Map<String, Set<String>> versions = new HashMap<String, Set<String>>();
-        for (Provider provider : providers) {
-            parametersSet.add(provider.getParameters());
-        }
-        for (Consumer consumer : consumers) {
-            parametersSet.add(consumer.getParameters());
-        }
-        Iterator<String> temp = parametersSet.iterator();
-        while (temp.hasNext()) {
-            Map<String, String> parameter = StringUtils.parseQueryString(temp.next());
-            if (parameter != null) {
-                String dubboversion = parameter.get("dubbo");
-                String app = parameter.get("application");
-                if (versions.get(dubboversion) == null) {
-                    Set<String> apps = new HashSet<String>();
-                    versions.put(dubboversion, apps);
-                }
-                versions.get(dubboversion).add(app);
-            }
-        }
-        for (String version : versions.keySet()) {
-            writer.println("dubbo version: " + version);
-            writer.println(StringUtils.join(versions.get(version), "\n"));
-            writer.println("\n");
-        }
-        context.put("versions", versions);
-        writer.flush();
-        response.setContentType("text/plain");
-    }
-    
-    private List<String> getNoProviders() {
-        List<String> providerServices = providerDAO.findServices();
-        List<String> consumerServices = consumerDAO.findServices();
-        List<String> noProviderServices = new ArrayList<String>();
-        if (consumerServices != null) {
-            noProviderServices.addAll(consumerServices);
-            noProviderServices.removeAll(providerServices);
-        }
-        return noProviderServices;
-    }
+	public void providers(Map<String, Object> context) throws IOException {
+		PrintWriter writer = response.getWriter();
+		List<Provider> providers = providerDAO.findAll();
+		List<String> sortedProviders = new ArrayList<String>();
+		for (Provider provider : providers) {
+			sortedProviders.add(provider.getUrl() + " " + provider.getService());
+		}
+		Collections.sort(sortedProviders);
+		writer.println(sortedProviders.size() + " provider instance");
+		for (String provider : sortedProviders) {
+			writer.println(provider);
+		}
+		writer.flush();
+		response.setContentType("text/plain");
+	}
+
+	public void consumers(Map<String, Object> context) throws IOException {
+		PrintWriter writer = response.getWriter();
+		List<Consumer> consumers = consumerDAO.findAll();
+		List<String> sortedConsumerss = new ArrayList<String>();
+		for (Consumer consumer : consumers) {
+			sortedConsumerss.add(consumer.getAddress() + " " + consumer.getService());
+		}
+		Collections.sort(sortedConsumerss);
+		writer.println(sortedConsumerss.size() + " consumer instance");
+		for (String consumer : sortedConsumerss) {
+			writer.println(consumer);
+		}
+		writer.flush();
+		response.setContentType("text/plain");
+	}
+
+	public void versions(Map<String, Object> context) throws IOException {
+		PrintWriter writer = response.getWriter();
+		List<Provider> providers = providerDAO.findAll();
+		List<Consumer> consumers = consumerDAO.findAll();
+		Set<String> parametersSet = new HashSet<String>();
+		Map<String, Set<String>> versions = new HashMap<String, Set<String>>();
+		for (Provider provider : providers) {
+			parametersSet.add(provider.getParameters());
+		}
+		for (Consumer consumer : consumers) {
+			parametersSet.add(consumer.getParameters());
+		}
+		Iterator<String> temp = parametersSet.iterator();
+		while (temp.hasNext()) {
+			Map<String, String> parameter = StringUtils.parseQueryString(temp.next());
+			if (parameter != null) {
+				String dubboversion = parameter.get("dubbo");
+				String app = parameter.get("application");
+				if (versions.get(dubboversion) == null) {
+					Set<String> apps = new HashSet<String>();
+					versions.put(dubboversion, apps);
+				}
+				versions.get(dubboversion).add(app);
+			}
+		}
+		for (String version : versions.keySet()) {
+			writer.println("dubbo version: " + version);
+			writer.println(StringUtils.join(versions.get(version), "\n"));
+			writer.println("\n");
+		}
+		context.put("versions", versions);
+		writer.flush();
+		response.setContentType("text/plain");
+	}
+
+	private List<String> getNoProviders() {
+		List<String> providerServices = providerDAO.findServices();
+		List<String> consumerServices = consumerDAO.findServices();
+		List<String> noProviderServices = new ArrayList<String>();
+		if (consumerServices != null) {
+			noProviderServices.addAll(consumerServices);
+			noProviderServices.removeAll(providerServices);
+		}
+		return noProviderServices;
+	}
 }

@@ -29,39 +29,39 @@ import com.alibaba.dubbo.rpc.cluster.LoadBalance;
  * @author william.liangf
  */
 public class MockFilter implements Filter {
-    
-    private LoadBalance loadBalance;
 
-    private Protocol protocol;
-    
-    private MockDao mockDao;
+	private LoadBalance loadBalance;
 
-    public MockDao getMockDao() {
-        return mockDao;
-    }
+	private Protocol protocol;
 
-    public void setMockDao(MockDao mockDao) {
-        this.mockDao = mockDao;
-    }
+	private MockDao mockDao;
 
-    public LoadBalance getLoadBalance() {
-        return loadBalance;
-    }
+	public MockDao getMockDao() {
+		return mockDao;
+	}
 
-    public void setLoadBalance(LoadBalance loadBalance) {
-        this.loadBalance = loadBalance;
-    }
+	public void setMockDao(MockDao mockDao) {
+		this.mockDao = mockDao;
+	}
 
-    public Protocol getProtocol() {
-        return protocol;
-    }
+	public LoadBalance getLoadBalance() {
+		return loadBalance;
+	}
 
-    public void setProtocol(Protocol protocol) {
-        this.protocol = protocol;
-    }
+	public void setLoadBalance(LoadBalance loadBalance) {
+		this.loadBalance = loadBalance;
+	}
 
-    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        return invoker.invoke(invocation);
-    }
+	public Protocol getProtocol() {
+		return protocol;
+	}
+
+	public void setProtocol(Protocol protocol) {
+		this.protocol = protocol;
+	}
+
+	public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+		return invoker.invoke(invocation);
+	}
 
 }

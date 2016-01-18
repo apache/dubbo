@@ -24,15 +24,15 @@ import com.alibaba.dubbo.common.extensionloader.compatible.CompatibleExt;
  */
 @Extension("impl1")
 public class CompatibleExtImpl1 implements CompatibleExt {
-    public String echo(URL url, String s) {
-        return "Ext1Impl1-echo";
-    }
-    
-    public String yell(URL url, String s) {
-        return "Ext1Impl1-yell";
-    }
-    
-    public String bang(URL url, int i) {
-        return "bang1";
-    }
+	public String echo(URL url, String s) {
+		return "Ext1Impl1-echo";
+	}
+
+	public String yell(URL url, String s) {
+		return "Ext1Impl1-yell";
+	}
+
+	public String bang(URL url, int i) {
+		return "bang1";
+	}
 }

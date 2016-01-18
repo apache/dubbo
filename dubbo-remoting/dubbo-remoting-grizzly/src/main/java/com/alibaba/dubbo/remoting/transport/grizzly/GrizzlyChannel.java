@@ -39,140 +39,145 @@ import com.alibaba.dubbo.remoting.transport.AbstractChannel;
  */
 final class GrizzlyChannel extends AbstractChannel {
 
-    private static final Logger logger = LoggerFactory.getLogger(GrizzlyChannel.class);
+	private static final Logger logger = LoggerFactory.getLogger(GrizzlyChannel.class);
 
-    private static final String CHANNEL_KEY = GrizzlyChannel.class.getName() + ".CHANNEL";
-    
-    private static final Attribute<GrizzlyChannel> ATTRIBUTE = Grizzly.DEFAULT_ATTRIBUTE_BUILDER.createAttribute(CHANNEL_KEY);
+	private static final String CHANNEL_KEY = GrizzlyChannel.class.getName() + ".CHANNEL";
 
-    private final Connection<?> connection;
+	private static final Attribute<GrizzlyChannel> ATTRIBUTE = Grizzly.DEFAULT_ATTRIBUTE_BUILDER
+			.createAttribute(CHANNEL_KEY);
 
-    /**
-     * @param connection
-     * @param url
-     * @param handler
-     */
-    private GrizzlyChannel(Connection<?> connection, URL url, ChannelHandler handler){
-        super(url, handler);
-        if (connection == null) {
-            throw new IllegalArgumentException("grizzly connection == null");
-        }
-        this.connection = connection;
-    }
+	private final Connection<?> connection;
 
-    static GrizzlyChannel getOrAddChannel(Connection<?> connection, URL url, ChannelHandler handler) {
-        if (connection == null) {
-            return null;
-        }
-        GrizzlyChannel ret = ATTRIBUTE.get(connection);
-        if (ret == null) {
-            ret = new GrizzlyChannel(connection, url, handler);
-            if (connection.isOpen()) {
-                ATTRIBUTE.set(connection, ret);
-            }
-        }
-        return ret;
-    }
+	/**
+	 * @param connection
+	 * @param url
+	 * @param handler
+	 */
+	private GrizzlyChannel(Connection<?> connection, URL url, ChannelHandler handler) {
+		super(url, handler);
+		if (connection == null) {
+			throw new IllegalArgumentException("grizzly connection == null");
+		}
+		this.connection = connection;
+	}
 
-    static void removeChannelIfDisconnectd(Connection<?> connection) {
-        if (connection != null && ! connection.isOpen()) {
-            ATTRIBUTE.remove(connection);
-        }
-    }
+	static GrizzlyChannel getOrAddChannel(Connection<?> connection, URL url, ChannelHandler handler) {
+		if (connection == null) {
+			return null;
+		}
+		GrizzlyChannel ret = ATTRIBUTE.get(connection);
+		if (ret == null) {
+			ret = new GrizzlyChannel(connection, url, handler);
+			if (connection.isOpen()) {
+				ATTRIBUTE.set(connection, ret);
+			}
+		}
+		return ret;
+	}
 
-    public InetSocketAddress getRemoteAddress() {
-        return (InetSocketAddress) connection.getPeerAddress();
-    }
+	static void removeChannelIfDisconnectd(Connection<?> connection) {
+		if (connection != null && !connection.isOpen()) {
+			ATTRIBUTE.remove(connection);
+		}
+	}
 
-    public boolean isConnected() {
-        return connection.isOpen();
-    }
+	public InetSocketAddress getRemoteAddress() {
+		return (InetSocketAddress) connection.getPeerAddress();
+	}
 
-    public InetSocketAddress getLocalAddress() {
-        return (InetSocketAddress) connection.getLocalAddress();
-    }
+	public boolean isConnected() {
+		return connection.isOpen();
+	}
 
-    @SuppressWarnings("rawtypes")
-    public void send(Object message, boolean sent) throws RemotingException {
-        super.send(message, sent);
-        
-        int timeout = 0;
-        try {
-            GrizzlyFuture future = connection.write(message);
-            if (sent) {
-                timeout = getUrl().getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
-                future.get(timeout, TimeUnit.MILLISECONDS);
-            }
-        }
-        catch (TimeoutException e) {
-            throw new RemotingException(this, "Failed to send message " + message + " to " + getRemoteAddress()
-                    + "in timeout(" + timeout + "ms) limit", e);
-        }
-        catch (Throwable e) {
-            throw new RemotingException(this, "Failed to send message " + message + " to " + getRemoteAddress() + ", cause: " + e.getMessage(), e);
-        }
-    }
+	public InetSocketAddress getLocalAddress() {
+		return (InetSocketAddress) connection.getLocalAddress();
+	}
 
-    public void close() {
-        try {
-            super.close();
-        } catch (Exception e) {
-            logger.warn(e.getMessage(), e);
-        }
-        try {
-            removeChannelIfDisconnectd(connection);
-        } catch (Exception e) {
-            logger.warn(e.getMessage(), e);
-        }
-        try {
-            if (logger.isInfoEnabled()) {
-                logger.info("Close grizzly channel " + connection);
-            }
-            connection.close();
-        } catch (Exception e) {
-            logger.warn(e.getMessage(), e);
-        }
-    }
+	@SuppressWarnings("rawtypes")
+	public void send(Object message, boolean sent) throws RemotingException {
+		super.send(message, sent);
 
-    public boolean hasAttribute(String key) {
-        return getAttribute(key) == null;
-    }
+		int timeout = 0;
+		try {
+			GrizzlyFuture future = connection.write(message);
+			if (sent) {
+				timeout = getUrl().getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+				future.get(timeout, TimeUnit.MILLISECONDS);
+			}
+		} catch (TimeoutException e) {
+			throw new RemotingException(this, "Failed to send message " + message + " to " + getRemoteAddress()
+					+ "in timeout(" + timeout + "ms) limit", e);
+		} catch (Throwable e) {
+			throw new RemotingException(this, "Failed to send message " + message + " to " + getRemoteAddress()
+					+ ", cause: " + e.getMessage(), e);
+		}
+	}
 
-    public Object getAttribute(String key) {
-        return Grizzly.DEFAULT_ATTRIBUTE_BUILDER.createAttribute(key).get(connection);
-    }
+	public void close() {
+		try {
+			super.close();
+		} catch (Exception e) {
+			logger.warn(e.getMessage(), e);
+		}
+		try {
+			removeChannelIfDisconnectd(connection);
+		} catch (Exception e) {
+			logger.warn(e.getMessage(), e);
+		}
+		try {
+			if (logger.isInfoEnabled()) {
+				logger.info("Close grizzly channel " + connection);
+			}
+			connection.close();
+		} catch (Exception e) {
+			logger.warn(e.getMessage(), e);
+		}
+	}
 
-    public void setAttribute(String key, Object value) {
-        Grizzly.DEFAULT_ATTRIBUTE_BUILDER.createAttribute(key).set(connection, value);
-    }
+	public boolean hasAttribute(String key) {
+		return getAttribute(key) == null;
+	}
 
-    public void removeAttribute(String key) {
-        Grizzly.DEFAULT_ATTRIBUTE_BUILDER.createAttribute(key).remove(connection);
-    }
+	public Object getAttribute(String key) {
+		return Grizzly.DEFAULT_ATTRIBUTE_BUILDER.createAttribute(key).get(connection);
+	}
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((connection == null) ? 0 : connection.hashCode());
-        return result;
-    }
+	public void setAttribute(String key, Object value) {
+		Grizzly.DEFAULT_ATTRIBUTE_BUILDER.createAttribute(key).set(connection, value);
+	}
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
-        GrizzlyChannel other = (GrizzlyChannel) obj;
-        if (connection == null) {
-            if (other.connection != null) return false;
-        } else if (!connection.equals(other.connection)) return false;
-        return true;
-    }
+	public void removeAttribute(String key) {
+		Grizzly.DEFAULT_ATTRIBUTE_BUILDER.createAttribute(key).remove(connection);
+	}
 
-    @Override
-    public String toString() {
-        return "GrizzlyChannel [connection=" + connection + "]";
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((connection == null) ? 0 : connection.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		GrizzlyChannel other = (GrizzlyChannel) obj;
+		if (connection == null) {
+			if (other.connection != null)
+				return false;
+		} else if (!connection.equals(other.connection))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "GrizzlyChannel [connection=" + connection + "]";
+	}
 
 }

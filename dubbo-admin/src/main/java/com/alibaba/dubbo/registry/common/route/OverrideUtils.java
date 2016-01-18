@@ -26,7 +26,7 @@ import com.alibaba.dubbo.registry.common.domain.Override;
 import com.alibaba.dubbo.registry.common.domain.Provider;
 
 public class OverrideUtils {
-	
+
 	public static final Comparator<Override> OVERRIDE_COMPARATOR = new Comparator<Override>() {
 		public int compare(Override o1, Override o2) {
 			if (o1 == null && o2 == null) {
@@ -48,7 +48,7 @@ public class OverrideUtils {
 			}
 			return cmp(o1.getService(), o2.getService());
 		}
-		
+
 		private int cmp(String s1, String s2) {
 			if (s1 == null && s2 == null) {
 				return 0;
@@ -70,47 +70,48 @@ public class OverrideUtils {
 			}
 			return s1.compareTo(s2);
 		}
+
 		private boolean isAny(String s) {
 			return s == null || s.length() == 0 || Constants.ANY_VALUE.equals(s) || Constants.ANYHOST_VALUE.equals(s);
 		}
 	};
-	
+
 	public static void setConsumerOverrides(Consumer consumer, List<Override> overrides) {
 		if (consumer == null || overrides == null) {
 			return;
 		}
 		List<Override> result = new ArrayList<Override>(overrides.size());
-		for(Override override : overrides){
-    		if (! override.isEnabled()) {
+		for (Override override : overrides) {
+			if (!override.isEnabled()) {
 				continue;
 			}
-    		if (override.isMatch(consumer)) {
-    			result.add(override);
-    		}
-    		if (override.isUniqueMatch(consumer)) {
-    			consumer.setOverride(override);
-    		}
-    	}
+			if (override.isMatch(consumer)) {
+				result.add(override);
+			}
+			if (override.isUniqueMatch(consumer)) {
+				consumer.setOverride(override);
+			}
+		}
 		Collections.sort(result, OverrideUtils.OVERRIDE_COMPARATOR);
 		consumer.setOverrides(result);
 	}
-	
+
 	public static void setProviderOverrides(Provider provider, List<Override> overrides) {
 		if (provider == null || overrides == null) {
 			return;
 		}
 		List<Override> result = new ArrayList<Override>(overrides.size());
-		for(Override override : overrides){
-    		if (! override.isEnabled()) {
+		for (Override override : overrides) {
+			if (!override.isEnabled()) {
 				continue;
 			}
-    		if (override.isMatch(provider)) {
-    			result.add(override);
-    		}
-    		if (override.isUniqueMatch(provider)) {
-    			provider.setOverride(override);
-    		}
-    	}
+			if (override.isMatch(provider)) {
+				result.add(override);
+			}
+			if (override.isUniqueMatch(provider)) {
+				provider.setOverride(override);
+			}
+		}
 		provider.setOverrides(overrides);
 	}
 

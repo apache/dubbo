@@ -54,100 +54,102 @@ import com.alibaba.dubbo.rpc.protocol.AbstractProxyProtocol;
  * @author netcomm
  */
 public class WebServiceProtocol extends AbstractProxyProtocol {
-    
-    public static final int DEFAULT_PORT = 80;
 
-    private final Map<String, HttpServer> serverMap = new ConcurrentHashMap<String, HttpServer>();
-    
-    private final ExtensionManagerBus bus = new ExtensionManagerBus();
+	public static final int DEFAULT_PORT = 80;
 
-    private final HTTPTransportFactory transportFactory = new HTTPTransportFactory(bus);
-	
-    private HttpBinder httpBinder;
-    
-    public WebServiceProtocol() {
-        super(Fault.class);
-        bus.setExtension(new ServletDestinationFactory(), HttpDestinationFactory.class);
-    }
+	private final Map<String, HttpServer> serverMap = new ConcurrentHashMap<String, HttpServer>();
 
-    public void setHttpBinder(HttpBinder httpBinder) {
-        this.httpBinder = httpBinder;
-    }
+	private final ExtensionManagerBus bus = new ExtensionManagerBus();
 
-    public int getDefaultPort() {
-        return DEFAULT_PORT;
-    }
+	private final HTTPTransportFactory transportFactory = new HTTPTransportFactory(bus);
 
-    private class WebServiceHandler implements HttpHandler {
+	private HttpBinder httpBinder;
 
-    	private volatile ServletController servletController;
+	public WebServiceProtocol() {
+		super(Fault.class);
+		bus.setExtension(new ServletDestinationFactory(), HttpDestinationFactory.class);
+	}
 
-        public void handle(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        	if (servletController == null) {
-        		HttpServlet httpServlet = DispatcherServlet.getInstance();
-    			if (httpServlet == null) {
-    				response.sendError(500, "No such DispatcherServlet instance.");
-    				return;
-    			}
-        		synchronized (this) {
-        			if (servletController == null) {
-            			servletController = new ServletController(transportFactory.getRegistry(), httpServlet.getServletConfig(), httpServlet);
-        			}
+	public void setHttpBinder(HttpBinder httpBinder) {
+		this.httpBinder = httpBinder;
+	}
+
+	public int getDefaultPort() {
+		return DEFAULT_PORT;
+	}
+
+	private class WebServiceHandler implements HttpHandler {
+
+		private volatile ServletController servletController;
+
+		public void handle(HttpServletRequest request, HttpServletResponse response) throws IOException,
+				ServletException {
+			if (servletController == null) {
+				HttpServlet httpServlet = DispatcherServlet.getInstance();
+				if (httpServlet == null) {
+					response.sendError(500, "No such DispatcherServlet instance.");
+					return;
 				}
-        	}
-            RpcContext.getContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
-            servletController.invoke(request, response);
-        }
+				synchronized (this) {
+					if (servletController == null) {
+						servletController = new ServletController(transportFactory.getRegistry(),
+								httpServlet.getServletConfig(), httpServlet);
+					}
+				}
+			}
+			RpcContext.getContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
+			servletController.invoke(request, response);
+		}
 
-    }
+	}
 
-    protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
-    	String addr = url.getIp() + ":" + url.getPort();
-        HttpServer httpServer = serverMap.get(addr);
-        if (httpServer == null) {
-            httpServer = httpBinder.bind(url, new WebServiceHandler());
-            serverMap.put(addr, httpServer);
-        }
-        final ServerFactoryBean serverFactoryBean = new ServerFactoryBean();
-        serverFactoryBean.setAddress(url.getAbsolutePath());
-    	serverFactoryBean.setServiceClass(type);
-    	serverFactoryBean.setServiceBean(impl);
-    	serverFactoryBean.setBus(bus);
-        serverFactoryBean.setDestinationFactory(transportFactory);
-    	serverFactoryBean.create();
-        return new Runnable() {
-            public void run() {
-            	serverFactoryBean.destroy();
-            }
-        };
-    }
+	protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
+		String addr = url.getIp() + ":" + url.getPort();
+		HttpServer httpServer = serverMap.get(addr);
+		if (httpServer == null) {
+			httpServer = httpBinder.bind(url, new WebServiceHandler());
+			serverMap.put(addr, httpServer);
+		}
+		final ServerFactoryBean serverFactoryBean = new ServerFactoryBean();
+		serverFactoryBean.setAddress(url.getAbsolutePath());
+		serverFactoryBean.setServiceClass(type);
+		serverFactoryBean.setServiceBean(impl);
+		serverFactoryBean.setBus(bus);
+		serverFactoryBean.setDestinationFactory(transportFactory);
+		serverFactoryBean.create();
+		return new Runnable() {
+			public void run() {
+				serverFactoryBean.destroy();
+			}
+		};
+	}
 
-    @SuppressWarnings("unchecked")
-    protected <T> T doRefer(final Class<T> serviceType, final URL url) throws RpcException {
-    	ClientProxyFactoryBean proxyFactoryBean = new ClientProxyFactoryBean();
-    	proxyFactoryBean.setAddress(url.setProtocol("http").toIdentityString());
-    	proxyFactoryBean.setServiceClass(serviceType);
-    	proxyFactoryBean.setBus(bus);
-    	T ref = (T) proxyFactoryBean.create();
-    	Client proxy = ClientProxy.getClient(ref);  
+	@SuppressWarnings("unchecked")
+	protected <T> T doRefer(final Class<T> serviceType, final URL url) throws RpcException {
+		ClientProxyFactoryBean proxyFactoryBean = new ClientProxyFactoryBean();
+		proxyFactoryBean.setAddress(url.setProtocol("http").toIdentityString());
+		proxyFactoryBean.setServiceClass(serviceType);
+		proxyFactoryBean.setBus(bus);
+		T ref = (T) proxyFactoryBean.create();
+		Client proxy = ClientProxy.getClient(ref);
 		HTTPConduit conduit = (HTTPConduit) proxy.getConduit();
 		HTTPClientPolicy policy = new HTTPClientPolicy();
 		policy.setConnectionTimeout(url.getParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT));
 		policy.setReceiveTimeout(url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
 		conduit.setClient(policy);
-        return ref;
-    }
+		return ref;
+	}
 
-    protected int getErrorCode(Throwable e) {
-    	if (e instanceof Fault) {
-            e = e.getCause();
-        }
-        if (e instanceof SocketTimeoutException) {
-            return RpcException.TIMEOUT_EXCEPTION;
-        } else if (e instanceof IOException) {
-            return RpcException.NETWORK_EXCEPTION;
-        }
-        return super.getErrorCode(e);
-    }
+	protected int getErrorCode(Throwable e) {
+		if (e instanceof Fault) {
+			e = e.getCause();
+		}
+		if (e instanceof SocketTimeoutException) {
+			return RpcException.TIMEOUT_EXCEPTION;
+		} else if (e instanceof IOException) {
+			return RpcException.NETWORK_EXCEPTION;
+		}
+		return super.getErrorCode(e);
+	}
 
 }

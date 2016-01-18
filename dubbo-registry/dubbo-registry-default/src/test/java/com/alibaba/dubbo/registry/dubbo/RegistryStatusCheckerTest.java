@@ -35,30 +35,30 @@ import com.alibaba.dubbo.registry.support.AbstractRegistryFactory;
  */
 public class RegistryStatusCheckerTest {
 
-    static {
-        SimpleRegistryExporter.exportIfAbsent(9090);
-        SimpleRegistryExporter.exportIfAbsent(9091);
-    }
-    URL registryUrl = URL.valueOf("dubbo://cat:cat@127.0.0.1:9090/");
-    URL registryUrl2 = URL.valueOf("dubbo://cat:cat@127.0.0.1:9091");
+	static {
+		SimpleRegistryExporter.exportIfAbsent(9090);
+		SimpleRegistryExporter.exportIfAbsent(9091);
+	}
+	URL registryUrl = URL.valueOf("dubbo://cat:cat@127.0.0.1:9090/");
+	URL registryUrl2 = URL.valueOf("dubbo://cat:cat@127.0.0.1:9091");
 
-    @Before
-    public void setUp() {
-        AbstractRegistryFactory.destroyAll();
-    }
+	@Before
+	public void setUp() {
+		AbstractRegistryFactory.destroyAll();
+	}
 
-    @Test
-    public void testCheckUnknown() {
-        assertEquals(Status.Level.UNKNOWN, new RegistryStatusChecker().check().getLevel());
-    }
+	@Test
+	public void testCheckUnknown() {
+		assertEquals(Status.Level.UNKNOWN, new RegistryStatusChecker().check().getLevel());
+	}
 
-    @Test
-    public void testCheckOK() {
-        ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension().getRegistry(registryUrl);
-        ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension().getRegistry(registryUrl2);
-        assertEquals(Status.Level.OK, new RegistryStatusChecker().check().getLevel());
-        String message = new RegistryStatusChecker().check().getMessage();
-        Assert.assertTrue(message.contains(registryUrl.getAddress() + "(connected)"));
-        Assert.assertTrue(message.contains(registryUrl2.getAddress() + "(connected)"));
-    }
+	@Test
+	public void testCheckOK() {
+		ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension().getRegistry(registryUrl);
+		ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension().getRegistry(registryUrl2);
+		assertEquals(Status.Level.OK, new RegistryStatusChecker().check().getLevel());
+		String message = new RegistryStatusChecker().check().getMessage();
+		Assert.assertTrue(message.contains(registryUrl.getAddress() + "(connected)"));
+		Assert.assertTrue(message.contains(registryUrl2.getAddress() + "(connected)"));
+	}
 }

@@ -24,13 +24,13 @@ import com.alibaba.dubbo.config.spring.api.DemoService;
  * @author william.liangf
  */
 public class UnserializableBoxDemoServiceImpl implements DemoService {
-    
-    public String sayName(String name) {
-        return "say:" + name;
-    }
-    
-    public Box getBox() {
-        return new UnserializableBox();
-    }
-    
+
+	public String sayName(String name) {
+		return "say:" + name;
+	}
+
+	public Box getBox() {
+		return new UnserializableBox();
+	}
+
 }

@@ -20,5 +20,5 @@ package com.alibaba.dubbo.config.spring.api;
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
 public interface HelloService {
-    String sayHello(String name);
+	String sayHello(String name);
 }

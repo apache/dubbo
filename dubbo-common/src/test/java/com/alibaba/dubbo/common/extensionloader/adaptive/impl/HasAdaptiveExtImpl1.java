@@ -22,7 +22,7 @@ import com.alibaba.dubbo.common.extensionloader.adaptive.HasAdaptiveExt;
  * @author ding.lid
  */
 public class HasAdaptiveExtImpl1 implements HasAdaptiveExt {
-    public String echo(URL url, String s) {
-        return this.getClass().getSimpleName();
-    }
+	public String echo(URL url, String s) {
+		return this.getClass().getSimpleName();
+	}
 }

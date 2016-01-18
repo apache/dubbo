@@ -22,35 +22,37 @@ import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
 
 public class MockInvoker<T> implements Invoker<T> {
-    private boolean available = false;
-    private URL url ;
+	private boolean available = false;
+	private URL url;
 
-    public MockInvoker() {
-    }
-    public MockInvoker(URL url) {
-        super();
-        this.url = url;
-    }
-    public MockInvoker(boolean available) {
-        this.available = available;
-    }
+	public MockInvoker() {
+	}
 
-    public Class<T> getInterface() {
-        return null;
-    }
+	public MockInvoker(URL url) {
+		super();
+		this.url = url;
+	}
 
-    public URL getUrl() {
-        return url;
-    }
+	public MockInvoker(boolean available) {
+		this.available = available;
+	}
 
-    public boolean isAvailable() {
-        return available;
-    }
+	public Class<T> getInterface() {
+		return null;
+	}
 
-    public Result invoke(Invocation invocation) throws RpcException {
-        return null;
-    }
+	public URL getUrl() {
+		return url;
+	}
 
-    public void destroy() {
-    }
+	public boolean isAvailable() {
+		return available;
+	}
+
+	public Result invoke(Invocation invocation) throws RpcException {
+		return null;
+	}
+
+	public void destroy() {
+	}
 }

@@ -21,26 +21,19 @@ import java.lang.reflect.Method;
 import org.junit.Assert;
 import org.junit.Test;
 
-
 import junit.framework.TestCase;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 
-public class ProxyTest extends TestCase
-{
-	public void testMain() throws Exception
-	{
+public class ProxyTest extends TestCase {
+	public void testMain() throws Exception {
 		Proxy proxy = Proxy.getProxy(ITest.class, ITest.class);
-		ITest instance = (ITest)proxy.newInstance(new InvocationHandler(){
-			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
-			{
-				if( "getName".equals(method.getName()) )
-				{
+		ITest instance = (ITest) proxy.newInstance(new InvocationHandler() {
+			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+				if ("getName".equals(method.getName())) {
 					assertEquals(args.length, 0);
-				}
-				else if( "setName".equals(method.getName()) )
-				{
+				} else if ("setName".equals(method.getName())) {
 					assertEquals(args.length, 2);
 					assertEquals(args[0], "qianlei");
 					assertEquals(args[1], "hello");
@@ -48,39 +41,38 @@ public class ProxyTest extends TestCase
 				return null;
 			}
 		});
-		
+
 		assertNull(instance.getName());
 		instance.setName("qianlei", "hello");
 	}
 
-    @Test
-    public void testCglibProxy() throws Exception {
-        ITest test = (ITest)Proxy.getProxy(ITest.class).newInstance(new InvocationHandler() {
+	@Test
+	public void testCglibProxy() throws Exception {
+		ITest test = (ITest) Proxy.getProxy(ITest.class).newInstance(new InvocationHandler() {
 
-            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                System.out.println(method.getName());
-                return null;
-            }
-        });
+			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+				System.out.println(method.getName());
+				return null;
+			}
+		});
 
-        Enhancer enhancer = new Enhancer();
-        enhancer.setSuperclass(test.getClass());
-        enhancer.setCallback(new MethodInterceptor() {
+		Enhancer enhancer = new Enhancer();
+		enhancer.setSuperclass(test.getClass());
+		enhancer.setCallback(new MethodInterceptor() {
 
-            public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
-                return null;
-            }
-        });
-        try {
-            enhancer.create();
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-            Assert.fail();
-        }
-    }
+			public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
+				return null;
+			}
+		});
+		try {
+			enhancer.create();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+	}
 
-	public static interface ITest
-	{
+	public static interface ITest {
 		String getName();
 
 		void setName(String name, String name2);

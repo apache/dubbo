@@ -27,8 +27,8 @@ import com.alibaba.dubbo.remoting.p2p.exchange.ExchangeNetworker;
  */
 public class MulticastExchangeNetworker implements ExchangeNetworker {
 
-    public ExchangeGroup lookup(URL url) throws RemotingException {
-        return new MulticastExchangeGroup(url);
-    }
+	public ExchangeGroup lookup(URL url) throws RemotingException {
+		return new MulticastExchangeGroup(url);
+	}
 
 }

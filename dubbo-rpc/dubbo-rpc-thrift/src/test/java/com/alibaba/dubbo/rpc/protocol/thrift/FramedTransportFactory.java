@@ -22,9 +22,9 @@ import org.apache.thrift.transport.TTransportFactory;
  */
 public class FramedTransportFactory extends TTransportFactory {
 
-    @Override
-    public TTransport getTransport( TTransport trans ) {
+	@Override
+	public TTransport getTransport(TTransport trans) {
 
-        return new TFramedTransport( trans );
-    }
+		return new TFramedTransport(trans);
+	}
 }

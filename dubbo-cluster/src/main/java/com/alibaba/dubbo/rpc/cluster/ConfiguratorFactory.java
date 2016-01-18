@@ -27,13 +27,14 @@ import com.alibaba.dubbo.common.extension.SPI;
 @SPI
 public interface ConfiguratorFactory {
 
-    /**
-     * get the configurator instance.
-     * 
-     * @param url - configurator url.
-     * @return configurator instance.
-     */
-    @Adaptive("protocol")
-    Configurator getConfigurator(URL url);
+	/**
+	 * get the configurator instance.
+	 * 
+	 * @param url
+	 *            - configurator url.
+	 * @return configurator instance.
+	 */
+	@Adaptive("protocol")
+	Configurator getConfigurator(URL url);
 
 }

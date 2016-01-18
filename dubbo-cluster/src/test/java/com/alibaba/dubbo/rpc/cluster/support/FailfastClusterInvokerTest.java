@@ -40,96 +40,103 @@ import com.alibaba.dubbo.rpc.cluster.Directory;
 
 /**
  * FailfastClusterInvokerTest
+ * 
  * @author liuchao
  *
  */
 @SuppressWarnings("unchecked")
 public class FailfastClusterInvokerTest {
-    List<Invoker<FailfastClusterInvokerTest>> invokers = new ArrayList<Invoker<FailfastClusterInvokerTest>>();
-    URL url = URL.valueOf("test://test:11/test");
-    Invoker<FailfastClusterInvokerTest> invoker1 = EasyMock.createMock(Invoker.class);
-    RpcInvocation invocation = new RpcInvocation();
-    Directory<FailfastClusterInvokerTest> dic ;
-    Result result = new RpcResult();
-    /**
-     * @throws java.lang.Exception
-     */
-    
-    @Before
-    public void setUp() throws Exception {
-        
-        dic = EasyMock.createMock(Directory.class);
-        
-        EasyMock.expect(dic.getUrl()).andReturn(url).anyTimes();
-        EasyMock.expect(dic.list(invocation)).andReturn(invokers).anyTimes();
-        EasyMock.expect(dic.getInterface()).andReturn(FailfastClusterInvokerTest.class).anyTimes();
-        
-        invocation.setMethodName("method1");
-        EasyMock.replay(dic);
-        
-        invokers.add(invoker1);
-    }
+	List<Invoker<FailfastClusterInvokerTest>> invokers = new ArrayList<Invoker<FailfastClusterInvokerTest>>();
+	URL url = URL.valueOf("test://test:11/test");
+	Invoker<FailfastClusterInvokerTest> invoker1 = EasyMock.createMock(Invoker.class);
+	RpcInvocation invocation = new RpcInvocation();
+	Directory<FailfastClusterInvokerTest> dic;
+	Result result = new RpcResult();
 
-    @After
-    public void tearDown(){
-        EasyMock.verify(invoker1,dic);
-        
-    }
-    private void resetInvoker1ToException(){
-        EasyMock.reset(invoker1);
-        EasyMock.expect(invoker1.invoke(invocation)).andThrow(new RuntimeException()).anyTimes();
-        EasyMock.expect(invoker1.getUrl()).andReturn(url).anyTimes();
-        EasyMock.expect(invoker1.getInterface()).andReturn(FailfastClusterInvokerTest.class).anyTimes();
-        EasyMock.replay(invoker1);
-    }
-    private void resetInvoker1ToNoException(){
-        EasyMock.reset(invoker1);
-        EasyMock.expect(invoker1.invoke(invocation)).andReturn(result).anyTimes();
-        EasyMock.expect(invoker1.getUrl()).andReturn(url).anyTimes();
-        EasyMock.expect(invoker1.getInterface()).andReturn(FailfastClusterInvokerTest.class).anyTimes();
-        EasyMock.replay(invoker1);
-    }
-    
-    @Test(expected = RpcException.class)
-    public void testInvokeExceptoin() {
-        resetInvoker1ToException();
-        FailfastClusterInvoker<FailfastClusterInvokerTest> invoker = new FailfastClusterInvoker<FailfastClusterInvokerTest>(dic);
-        invoker.invoke(invocation);
-        Assert.assertSame(invoker1, RpcContext.getContext().getInvoker());
-    }
-    
-    @Test()
-    public void testInvokeNoExceptoin() {
-        
-        resetInvoker1ToNoException();
-        
-        FailfastClusterInvoker<FailfastClusterInvokerTest> invoker = new FailfastClusterInvoker<FailfastClusterInvokerTest>(dic);
-        Result ret = invoker.invoke(invocation);
-        Assert.assertSame(result, ret);
-    }
-    
-    @Test()
-    public void testNoInvoke() {
-        dic = EasyMock.createMock(Directory.class);
-        
-        EasyMock.expect(dic.getUrl()).andReturn(url).anyTimes();
-        EasyMock.expect(dic.list(invocation)).andReturn(null).anyTimes();
-        EasyMock.expect(dic.getInterface()).andReturn(FailfastClusterInvokerTest.class).anyTimes();
-        
-        invocation.setMethodName("method1");
-        EasyMock.replay(dic);
-        
-        invokers.add(invoker1);
-        
-        resetInvoker1ToNoException();
-        
-        FailfastClusterInvoker<FailfastClusterInvokerTest> invoker = new FailfastClusterInvoker<FailfastClusterInvokerTest>(dic);
-        try {
-            invoker.invoke(invocation);
-            fail();
-        } catch (RpcException expected) {
-            assertFalse(expected.getCause() instanceof RpcException);
-        }
-    }
+	/**
+	 * @throws java.lang.Exception
+	 */
+
+	@Before
+	public void setUp() throws Exception {
+
+		dic = EasyMock.createMock(Directory.class);
+
+		EasyMock.expect(dic.getUrl()).andReturn(url).anyTimes();
+		EasyMock.expect(dic.list(invocation)).andReturn(invokers).anyTimes();
+		EasyMock.expect(dic.getInterface()).andReturn(FailfastClusterInvokerTest.class).anyTimes();
+
+		invocation.setMethodName("method1");
+		EasyMock.replay(dic);
+
+		invokers.add(invoker1);
+	}
+
+	@After
+	public void tearDown() {
+		EasyMock.verify(invoker1, dic);
+
+	}
+
+	private void resetInvoker1ToException() {
+		EasyMock.reset(invoker1);
+		EasyMock.expect(invoker1.invoke(invocation)).andThrow(new RuntimeException()).anyTimes();
+		EasyMock.expect(invoker1.getUrl()).andReturn(url).anyTimes();
+		EasyMock.expect(invoker1.getInterface()).andReturn(FailfastClusterInvokerTest.class).anyTimes();
+		EasyMock.replay(invoker1);
+	}
+
+	private void resetInvoker1ToNoException() {
+		EasyMock.reset(invoker1);
+		EasyMock.expect(invoker1.invoke(invocation)).andReturn(result).anyTimes();
+		EasyMock.expect(invoker1.getUrl()).andReturn(url).anyTimes();
+		EasyMock.expect(invoker1.getInterface()).andReturn(FailfastClusterInvokerTest.class).anyTimes();
+		EasyMock.replay(invoker1);
+	}
+
+	@Test(expected = RpcException.class)
+	public void testInvokeExceptoin() {
+		resetInvoker1ToException();
+		FailfastClusterInvoker<FailfastClusterInvokerTest> invoker = new FailfastClusterInvoker<FailfastClusterInvokerTest>(
+				dic);
+		invoker.invoke(invocation);
+		Assert.assertSame(invoker1, RpcContext.getContext().getInvoker());
+	}
+
+	@Test()
+	public void testInvokeNoExceptoin() {
+
+		resetInvoker1ToNoException();
+
+		FailfastClusterInvoker<FailfastClusterInvokerTest> invoker = new FailfastClusterInvoker<FailfastClusterInvokerTest>(
+				dic);
+		Result ret = invoker.invoke(invocation);
+		Assert.assertSame(result, ret);
+	}
+
+	@Test()
+	public void testNoInvoke() {
+		dic = EasyMock.createMock(Directory.class);
+
+		EasyMock.expect(dic.getUrl()).andReturn(url).anyTimes();
+		EasyMock.expect(dic.list(invocation)).andReturn(null).anyTimes();
+		EasyMock.expect(dic.getInterface()).andReturn(FailfastClusterInvokerTest.class).anyTimes();
+
+		invocation.setMethodName("method1");
+		EasyMock.replay(dic);
+
+		invokers.add(invoker1);
+
+		resetInvoker1ToNoException();
+
+		FailfastClusterInvoker<FailfastClusterInvokerTest> invoker = new FailfastClusterInvoker<FailfastClusterInvokerTest>(
+				dic);
+		try {
+			invoker.invoke(invocation);
+			fail();
+		} catch (RpcException expected) {
+			assertFalse(expected.getCause() instanceof RpcException);
+		}
+	}
 
 }

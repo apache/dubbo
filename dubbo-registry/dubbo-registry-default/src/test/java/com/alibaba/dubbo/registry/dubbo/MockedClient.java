@@ -35,100 +35,103 @@ import com.alibaba.dubbo.remoting.exchange.support.Replier;
  * @author william.liangf
  */
 public class MockedClient implements ExchangeClient {
-    
-    //private String host;
 
-    //private int port;
-    
-    private boolean connected;
-    
-    private Object received;
+	// private String host;
 
-    private Object sent;
-    
-    private Object invoked;
-    
-    private Replier<?> handler;
- 
-    private InetSocketAddress address;
-    
-    private boolean closed = false;
+	// private int port;
 
-    //private ChannelListener listener;
-    
-    public MockedClient(String host, int port, boolean connected) {
-    	this(host, port, connected, null);
-    }
+	private boolean connected;
 
-    public MockedClient(String host, int port, boolean connected, Object received) {
-    	this.address = new InetSocketAddress(host, port);
-        this.connected = connected;
-        this.received = received;
-    }
+	private Object received;
 
-    public void open() {
-    }
+	private Object sent;
 
-    public void close() {
-        this.closed = true;
-    }
+	private Object invoked;
 
-    public void send(Object msg) throws RemotingException {
-        this.sent = msg;
-    }
+	private Replier<?> handler;
 
-    public ResponseFuture request(Object msg) throws RemotingException {
-        return request(msg, 0);
-    }
+	private InetSocketAddress address;
 
-    public ResponseFuture request(Object msg, int timeout) throws RemotingException {
-        this.invoked = msg;
-        return new ResponseFuture() {
-            public Object get() throws RemotingException {
-                return received;
-            }
-            public Object get(int timeoutInMillis) throws RemotingException {
-                return received;
-            }
-            public boolean isDone() {
-                return true;
-            }
-            public void setCallback(ResponseCallback callback) {
-            }
-        };
-    }
+	private boolean closed = false;
 
-    public void registerHandler(Replier<?> handler) {
-        this.handler = handler;
-    }
+	// private ChannelListener listener;
 
-    public void unregisterHandler(Replier<?> handler) {
-        //this.handler = null;
-    }
+	public MockedClient(String host, int port, boolean connected) {
+		this(host, port, connected, null);
+	}
 
-    public void addChannelListener(ChannelHandler listener) {
-        //this.listener = listener;
-    }
+	public MockedClient(String host, int port, boolean connected, Object received) {
+		this.address = new InetSocketAddress(host, port);
+		this.connected = connected;
+		this.received = received;
+	}
 
-    public void removeChannelListener(ChannelHandler listener) {
-        //this.listener = null;
-    }
+	public void open() {
+	}
 
-    public boolean isConnected() {
-        return connected;
-    }
+	public void close() {
+		this.closed = true;
+	}
 
-    public Object getSent() {
-        return sent;
-    }
+	public void send(Object msg) throws RemotingException {
+		this.sent = msg;
+	}
 
-    public Replier<?> getHandler() {
-        return handler;
-    }
+	public ResponseFuture request(Object msg) throws RemotingException {
+		return request(msg, 0);
+	}
 
-    public Object getInvoked() {
-        return invoked;
-    }
+	public ResponseFuture request(Object msg, int timeout) throws RemotingException {
+		this.invoked = msg;
+		return new ResponseFuture() {
+			public Object get() throws RemotingException {
+				return received;
+			}
+
+			public Object get(int timeoutInMillis) throws RemotingException {
+				return received;
+			}
+
+			public boolean isDone() {
+				return true;
+			}
+
+			public void setCallback(ResponseCallback callback) {
+			}
+		};
+	}
+
+	public void registerHandler(Replier<?> handler) {
+		this.handler = handler;
+	}
+
+	public void unregisterHandler(Replier<?> handler) {
+		// this.handler = null;
+	}
+
+	public void addChannelListener(ChannelHandler listener) {
+		// this.listener = listener;
+	}
+
+	public void removeChannelListener(ChannelHandler listener) {
+		// this.listener = null;
+	}
+
+	public boolean isConnected() {
+		return connected;
+	}
+
+	public Object getSent() {
+		return sent;
+	}
+
+	public Replier<?> getHandler() {
+		return handler;
+	}
+
+	public Object getInvoked() {
+		return invoked;
+	}
 
 	public InetSocketAddress getRemoteAddress() {
 		return address;
@@ -150,7 +153,7 @@ public class MockedClient implements ExchangeClient {
 	}
 
 	public void close(int timeout) {
-	    close();
+		close();
 	}
 
 	public boolean isOpen() {
@@ -164,101 +167,104 @@ public class MockedClient implements ExchangeClient {
 	public void setCodec(Codec codec) {
 	}
 
-    public void setHost(String host) {
-    }
+	public void setHost(String host) {
+	}
 
-    public String getHost() {
-        return null;
-    }
+	public String getHost() {
+		return null;
+	}
 
-    public void setPort(int port) {
-    }
+	public void setPort(int port) {
+	}
 
-    public int getPort() {
-        return 0;
-    }
+	public int getPort() {
+		return 0;
+	}
 
-    public void setThreadCount(int threadCount) {
-    }
+	public void setThreadCount(int threadCount) {
+	}
 
-    public int getThreadCount() {
-        return 0;
-    }
+	public int getThreadCount() {
+		return 0;
+	}
 
-    public URL getUrl() {
-        return null;
-    }
+	public URL getUrl() {
+		return null;
+	}
 
-    public Replier<?> getReceiver() {
-        return null;
-    }
+	public Replier<?> getReceiver() {
+		return null;
+	}
 
-    public ChannelHandler getChannelHandler() {
-        return null;
-    }
+	public ChannelHandler getChannelHandler() {
+		return null;
+	}
 
-    public void reset(Map<String, String> parameters) {
-    }
+	public void reset(Map<String, String> parameters) {
+	}
 
-    public Channel getChannel() {
-        return this;
-    }
+	public Channel getChannel() {
+		return this;
+	}
 
-    public ExchangeHandler getExchangeHandler() {
-        return null;
-    }
+	public ExchangeHandler getExchangeHandler() {
+		return null;
+	}
 
-    public void reconnect() throws RemotingException {
-    }
+	public void reconnect() throws RemotingException {
+	}
 
-    public Object getAttribute(String key) {
-        return null;
-    }
+	public Object getAttribute(String key) {
+		return null;
+	}
 
-    public void setAttribute(String key, Object value) {
-        
-    }
+	public void setAttribute(String key, Object value) {
 
-    public boolean hasAttribute(String key) {
-        return false;
-    }
+	}
 
-    public boolean isClosed() {
-        return closed;
-    }
+	public boolean hasAttribute(String key) {
+		return false;
+	}
 
-    public void removeAttribute(String key) {
-        
-    }
-    /**
-     * @return the received
-     */
-    public Object getReceived() {
-        return received;
-    }
+	public boolean isClosed() {
+		return closed;
+	}
 
-    /**
-     * @param received the received to set
-     */
-    public void setReceived(Object received) {
-        this.received = received;
-    }
+	public void removeAttribute(String key) {
 
-    /**
-     * @param connected the connected to set
-     */
-    public void setConnected(boolean connected) {
-        this.connected = connected;
-    }
+	}
 
-    public void send(Object message, boolean sent) throws RemotingException {
-    }
+	/**
+	 * @return the received
+	 */
+	public Object getReceived() {
+		return received;
+	}
 
-    public void reset(URL url) {
-    }
+	/**
+	 * @param received
+	 *            the received to set
+	 */
+	public void setReceived(Object received) {
+		this.received = received;
+	}
 
-    @Deprecated
-    public void reset(com.alibaba.dubbo.common.Parameters parameters) {
-    }
-    
+	/**
+	 * @param connected
+	 *            the connected to set
+	 */
+	public void setConnected(boolean connected) {
+		this.connected = connected;
+	}
+
+	public void send(Object message, boolean sent) throws RemotingException {
+	}
+
+	public void reset(URL url) {
+	}
+
+	@Deprecated
+	public void reset(com.alibaba.dubbo.common.Parameters parameters) {
+	}
+
 }

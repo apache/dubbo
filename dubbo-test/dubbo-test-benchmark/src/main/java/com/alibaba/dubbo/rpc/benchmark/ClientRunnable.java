@@ -14,7 +14,7 @@ import java.util.List;
  * @author <a href="mailto:bluedavy@gmail.com">bluedavy</a>
  */
 public interface ClientRunnable extends Runnable {
-	
+
 	public List<long[]> getResults();
 
 }

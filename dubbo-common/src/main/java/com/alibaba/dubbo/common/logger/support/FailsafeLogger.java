@@ -36,29 +36,30 @@ public class FailsafeLogger implements Logger {
 	}
 
 	private String appendContextMessage(String msg) {
-	    return " [DUBBO] " + msg + ", dubbo version: " + Version.getVersion() + ", current host: " + NetUtils.getLogHost();
+		return " [DUBBO] " + msg + ", dubbo version: " + Version.getVersion() + ", current host: "
+				+ NetUtils.getLogHost();
 	}
 
-    public void trace(String msg, Throwable e) {
-        try {
-            logger.trace(appendContextMessage(msg), e);
-        } catch (Throwable t) {
-        }
-    }
+	public void trace(String msg, Throwable e) {
+		try {
+			logger.trace(appendContextMessage(msg), e);
+		} catch (Throwable t) {
+		}
+	}
 
-    public void trace(Throwable e) {
-        try {
-            logger.trace(e);
-        } catch (Throwable t) {
-        }
-    }
+	public void trace(Throwable e) {
+		try {
+			logger.trace(e);
+		} catch (Throwable t) {
+		}
+	}
 
-    public void trace(String msg) {
-        try {
-            logger.trace(appendContextMessage(msg));
-        } catch (Throwable t) {
-        }
-    }
+	public void trace(String msg) {
+		try {
+			logger.trace(appendContextMessage(msg));
+		} catch (Throwable t) {
+		}
+	}
 
 	public void debug(String msg, Throwable e) {
 		try {
@@ -67,12 +68,12 @@ public class FailsafeLogger implements Logger {
 		}
 	}
 
-    public void debug(Throwable e) {
-        try {
-            logger.debug(e);
-        } catch (Throwable t) {
-        }
-    }
+	public void debug(Throwable e) {
+		try {
+			logger.debug(e);
+		} catch (Throwable t) {
+		}
+	}
 
 	public void debug(String msg) {
 		try {
@@ -123,34 +124,34 @@ public class FailsafeLogger implements Logger {
 		}
 	}
 
-    public void error(Throwable e) {
-        try {
-            logger.error(e);
-        } catch (Throwable t) {
-        }
-    }
+	public void error(Throwable e) {
+		try {
+			logger.error(e);
+		} catch (Throwable t) {
+		}
+	}
 
-    public void info(Throwable e) {
-        try {
-            logger.info(e);
-        } catch (Throwable t) {
-        }
-    }
+	public void info(Throwable e) {
+		try {
+			logger.info(e);
+		} catch (Throwable t) {
+		}
+	}
 
-    public void warn(Throwable e) {
-        try {
-            logger.warn(e);
-        } catch (Throwable t) {
-        }
-    }
+	public void warn(Throwable e) {
+		try {
+			logger.warn(e);
+		} catch (Throwable t) {
+		}
+	}
 
-    public boolean isTraceEnabled() {
-        try {
-            return logger.isTraceEnabled();
-        } catch (Throwable t) {
-            return false;
-        }
-    }
+	public boolean isTraceEnabled() {
+		try {
+			return logger.isTraceEnabled();
+		} catch (Throwable t) {
+			return false;
+		}
+	}
 
 	public boolean isDebugEnabled() {
 		try {
@@ -175,13 +176,13 @@ public class FailsafeLogger implements Logger {
 			return false;
 		}
 	}
-	
+
 	public boolean isErrorEnabled() {
-	    try {
-	        return logger.isErrorEnabled();
-	    } catch (Throwable t) {
-	        return false;
-	    }
+		try {
+			return logger.isErrorEnabled();
+		} catch (Throwable t) {
+			return false;
+		}
 	}
 
 }

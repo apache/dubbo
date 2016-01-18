@@ -32,30 +32,30 @@ import com.alibaba.dubbo.governance.web.common.module.screen.Restful;
  */
 public class Dumps extends Restful {
 
-    @Autowired
-    ProviderService         providerDAO;
+	@Autowired
+	ProviderService providerDAO;
 
-    @Autowired
-    ConsumerService         consumerDAO;
+	@Autowired
+	ConsumerService consumerDAO;
 
-    @Autowired
-    HttpServletResponse response;
+	@Autowired
+	HttpServletResponse response;
 
-    public void index(Map<String, Object> context) {
-        context.put("noProviderServices", getNoProviders());
-        context.put("services", providerDAO.findServices());
-        context.put("providers", providerDAO.findAll());
-        context.put("consumers", consumerDAO.findAll());
-    }
+	public void index(Map<String, Object> context) {
+		context.put("noProviderServices", getNoProviders());
+		context.put("services", providerDAO.findServices());
+		context.put("providers", providerDAO.findAll());
+		context.put("consumers", consumerDAO.findAll());
+	}
 
-    private List<String> getNoProviders() {
-        List<String> providerServices = providerDAO.findServices();
-        List<String> consumerServices = consumerDAO.findServices();
-        List<String> noProviderServices = new ArrayList<String>();
-        if (consumerServices != null) {
-            noProviderServices.addAll(consumerServices);
-            noProviderServices.removeAll(providerServices);
-        }
-        return noProviderServices;
-    }
+	private List<String> getNoProviders() {
+		List<String> providerServices = providerDAO.findServices();
+		List<String> consumerServices = consumerDAO.findServices();
+		List<String> noProviderServices = new ArrayList<String>();
+		if (consumerServices != null) {
+			noProviderServices.addAll(consumerServices);
+			noProviderServices.removeAll(providerServices);
+		}
+		return noProviderServices;
+	}
 }

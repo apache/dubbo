@@ -31,98 +31,98 @@ import com.alibaba.dubbo.registry.common.registry.ConvertUtil;
  */
 public class Provider extends Entity {
 
-    private static final long serialVersionUID = 5981342400350878171L;
+	private static final long serialVersionUID = 5981342400350878171L;
 
-    private String service;/* 提供者所提供的服务名称 */
-    
-    private String url; /* 提供者提供服务的地址 */
-    
-    private String parameters; /* 提供者提供服务的参数 */
-    
-    private String address; /* 提供者地址 */
+	private String service;/* 提供者所提供的服务名称 */
 
-    private String registry;/* 提供者连接的注册中心地址 */
-    
-    private boolean dynamic;          /* 是否为动态注册服务 */
-    
-    private boolean enabled;          /* 是否启用 */
+	private String url; /* 提供者提供服务的地址 */
 
-    private int weight;          /* 权重 */
+	private String parameters; /* 提供者提供服务的参数 */
+
+	private String address; /* 提供者地址 */
+
+	private String registry;/* 提供者连接的注册中心地址 */
+
+	private boolean dynamic; /* 是否为动态注册服务 */
+
+	private boolean enabled; /* 是否启用 */
+
+	private int weight; /* 权重 */
 
 	private String application; /* 应用名 */
 
-    private String username;      /* 提供者用户名 */
-    
-    private Date expired;   /*过期时间*/
-    
-    private long alived;    /*存活时间，单位秒*/
+	private String username; /* 提供者用户名 */
 
-    private Override override;
+	private Date expired; /* 过期时间 */
+
+	private long alived; /* 存活时间，单位秒 */
+
+	private Override override;
 
 	private List<Override> overrides;
-    
-    public Provider() {
-    }
-    
-    public Provider(Long id) {
-        super(id);
-    }
 
-    public String getService() {
-        return service;
-    }
+	public Provider() {
+	}
 
-    public void setService(String service) {
-        this.service = service;
-    }
-    
-    public String getUrl() {
-        return url;
-    }
+	public Provider(Long id) {
+		super(id);
+	}
 
-    public void setUrl(String url) {
-        this.url = url;
-    }
+	public String getService() {
+		return service;
+	}
 
-    public String getParameters() {
-        return parameters;
-    }
+	public void setService(String service) {
+		this.service = service;
+	}
 
-    public void setParameters(String parameters) {
-        this.parameters = parameters;
-    }
+	public String getUrl() {
+		return url;
+	}
 
-    public String getAddress() {
-        return address;
-    }
+	public void setUrl(String url) {
+		this.url = url;
+	}
 
-    public void setAddress(String address) {
-        this.address = address;
-    }
+	public String getParameters() {
+		return parameters;
+	}
 
-    public String getRegistry() {
-        return registry;
-    }
+	public void setParameters(String parameters) {
+		this.parameters = parameters;
+	}
 
-    public void setRegistry(String registry) {
-        this.registry = registry;
-    }
+	public String getAddress() {
+		return address;
+	}
 
-    public String getUsername() {
-        return username;
-    }
+	public void setAddress(String address) {
+		this.address = address;
+	}
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+	public String getRegistry() {
+		return registry;
+	}
 
-    public String getApplication() {
-        return application;
-    }
+	public void setRegistry(String registry) {
+		this.registry = registry;
+	}
 
-    public void setApplication(String application) {
-        this.application = application;
-    }
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public String getApplication() {
+		return application;
+	}
+
+	public void setApplication(String application) {
+		this.application = application;
+	}
 
 	public boolean isDynamic() {
 		return dynamic;
@@ -140,25 +140,23 @@ public class Provider extends Entity {
 		this.enabled = enabled;
 	}
 
-    
-    public Date getExpired() {
-        return expired;
-    }
+	public Date getExpired() {
+		return expired;
+	}
 
-    
-    public void setExpired(Date expired) {
-        this.expired = expired;
-    }
-    
-    public long getAlived() {
-        return alived;
-    }
+	public void setExpired(Date expired) {
+		this.expired = expired;
+	}
 
-    public void setAlived(long aliveSeconds) {
-        this.alived = aliveSeconds;
-    }
+	public long getAlived() {
+		return alived;
+	}
 
-    public int getWeight() {
+	public void setAlived(long aliveSeconds) {
+		this.alived = aliveSeconds;
+	}
+
+	public int getWeight() {
 		return weight;
 	}
 
@@ -166,7 +164,7 @@ public class Provider extends Entity {
 		this.weight = weight;
 	}
 
-    public Override getOverride() {
+	public Override getOverride() {
 		return override;
 	}
 
@@ -182,35 +180,34 @@ public class Provider extends Entity {
 		this.overrides = overrides;
 	}
 
-    public URL toUrl() {
-        Map<String, String> serviceName2Map = ConvertUtil.serviceName2Map(getService());
-        /*if(!serviceName2Map.containsKey(Constants.INTERFACE_KEY)) {
-            throw new IllegalArgumentException("No interface info");
-        }
-        if(!serviceName2Map.containsKey(Constants.VERSION_KEY)) {
-            throw new IllegalArgumentException("No version info");
-        }*/
-    
-        String u = getUrl();
-        URL url = URL.valueOf(u + "?" + getParameters());
-        
-        url = url.addParameters(serviceName2Map);
-        
-        boolean dynamic = isDynamic();
-        if(!dynamic) {
-            url = url.addParameter(Constants.DYNAMIC_KEY, false);
-        }
-        boolean enabled = isEnabled();
-        if(enabled != url.getParameter("enabled", true)) {
-            if(enabled) {
-                url = url.removeParameter("enabled");
-            }
-            else {
-                url = url.addParameter("enabled", false);
-            }
-        }
-        
-        return url;
-    }
-	
+	public URL toUrl() {
+		Map<String, String> serviceName2Map = ConvertUtil.serviceName2Map(getService());
+		/*
+		 * if(!serviceName2Map.containsKey(Constants.INTERFACE_KEY)) { throw new
+		 * IllegalArgumentException("No interface info"); }
+		 * if(!serviceName2Map.containsKey(Constants.VERSION_KEY)) { throw new
+		 * IllegalArgumentException("No version info"); }
+		 */
+
+		String u = getUrl();
+		URL url = URL.valueOf(u + "?" + getParameters());
+
+		url = url.addParameters(serviceName2Map);
+
+		boolean dynamic = isDynamic();
+		if (!dynamic) {
+			url = url.addParameter(Constants.DYNAMIC_KEY, false);
+		}
+		boolean enabled = isEnabled();
+		if (enabled != url.getParameter("enabled", true)) {
+			if (enabled) {
+				url = url.removeParameter("enabled");
+			} else {
+				url = url.addParameter("enabled", false);
+			}
+		}
+
+		return url;
+	}
+
 }

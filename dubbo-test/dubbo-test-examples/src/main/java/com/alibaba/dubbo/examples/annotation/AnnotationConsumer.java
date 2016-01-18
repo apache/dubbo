@@ -26,14 +26,14 @@ import com.alibaba.dubbo.examples.annotation.action.AnnotationAction;
  */
 public class AnnotationConsumer {
 
-    public static void main(String[] args) throws Exception {
-        String config = AnnotationConsumer.class.getPackage().getName().replace('.', '/') + "/annotation-consumer.xml";
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(config);
-        context.start();
-        final AnnotationAction annotationAction = (AnnotationAction)context.getBean("annotationAction");
-        String hello = annotationAction.doSayHello("world");
-        System.out.println("result :" + hello);
-        System.in.read();
-    }
+	public static void main(String[] args) throws Exception {
+		String config = AnnotationConsumer.class.getPackage().getName().replace('.', '/') + "/annotation-consumer.xml";
+		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(config);
+		context.start();
+		final AnnotationAction annotationAction = (AnnotationAction) context.getBean("annotationAction");
+		String hello = annotationAction.doSayHello("world");
+		System.out.println("result :" + hello);
+		System.in.read();
+	}
 
 }

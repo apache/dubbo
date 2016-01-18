@@ -35,67 +35,69 @@ import com.alibaba.dubbo.registry.common.domain.Provider;
  * @author tony.chenl
  */
 public class Versions extends Restful {
-    @Autowired
-    private ProviderService providerService;
-    
-    @Autowired
-    private ConsumerService consumerService;
-    
-    public void index(Map<String, Object> context) {
-        List<Provider> providers = providerService.findAll();
-        List<Consumer> consumers = consumerService.findAll();
-        Set<String> parametersSet = new HashSet<String>();
-        for (Provider provider : providers) {
-            parametersSet.add(provider.getParameters());
-        }
-        for (Consumer consumer : consumers) {
-            parametersSet.add(consumer.getParameters());
-        }
-        Map<String, Set<String>> versions = new HashMap<String, Set<String>>();
-        Iterator<String> temp = parametersSet.iterator();
-        while (temp.hasNext()) {
-            Map<String, String> parameter = StringUtils.parseQueryString(temp.next());
-            if (parameter != null) {
-                String dubbo = parameter.get("dubbo");
-                if(dubbo == null) dubbo = "0.0.0";
-                String application = parameter.get("application");
-                if (versions.get(dubbo) == null) {
-                    Set<String> apps = new HashSet<String>();
-                    versions.put(dubbo, apps);
-                }
-                versions.get(dubbo).add(application);
-            }
-        }
-        context.put("versions", versions);
-    }
+	@Autowired
+	private ProviderService providerService;
 
-    public void show(Long[] ids, Map<String, Object> context) {
-        String version =(String)context.get("version");
-        if (version != null && version.length() > 0) {
-            List<Provider> providers = providerService.findAll();
-            List<Consumer> consumers = consumerService.findAll();
-            Set<String> parametersSet = new HashSet<String>();
-            Set<String> applications = new HashSet<String>();
-            for (Provider provider : providers) {
-                parametersSet.add(provider.getParameters());
-            }
-            for (Consumer consumer : consumers) {
-                parametersSet.add(consumer.getParameters());
-            }
-            Iterator<String> temp = parametersSet.iterator();
-            while (temp.hasNext()) {
-                Map<String, String> parameter = StringUtils.parseQueryString(temp.next());
-                if (parameter != null) {
-                    String dubbo = parameter.get("dubbo");
-                    if(dubbo == null) dubbo = "0.0.0";
-                    String application = parameter.get("application");
-                    if (version.equals(dubbo)) {
-                        applications.add(application);
-                    }
-                }
-            }
-            context.put("applications", applications);
-        }
-    }
+	@Autowired
+	private ConsumerService consumerService;
+
+	public void index(Map<String, Object> context) {
+		List<Provider> providers = providerService.findAll();
+		List<Consumer> consumers = consumerService.findAll();
+		Set<String> parametersSet = new HashSet<String>();
+		for (Provider provider : providers) {
+			parametersSet.add(provider.getParameters());
+		}
+		for (Consumer consumer : consumers) {
+			parametersSet.add(consumer.getParameters());
+		}
+		Map<String, Set<String>> versions = new HashMap<String, Set<String>>();
+		Iterator<String> temp = parametersSet.iterator();
+		while (temp.hasNext()) {
+			Map<String, String> parameter = StringUtils.parseQueryString(temp.next());
+			if (parameter != null) {
+				String dubbo = parameter.get("dubbo");
+				if (dubbo == null)
+					dubbo = "0.0.0";
+				String application = parameter.get("application");
+				if (versions.get(dubbo) == null) {
+					Set<String> apps = new HashSet<String>();
+					versions.put(dubbo, apps);
+				}
+				versions.get(dubbo).add(application);
+			}
+		}
+		context.put("versions", versions);
+	}
+
+	public void show(Long[] ids, Map<String, Object> context) {
+		String version = (String) context.get("version");
+		if (version != null && version.length() > 0) {
+			List<Provider> providers = providerService.findAll();
+			List<Consumer> consumers = consumerService.findAll();
+			Set<String> parametersSet = new HashSet<String>();
+			Set<String> applications = new HashSet<String>();
+			for (Provider provider : providers) {
+				parametersSet.add(provider.getParameters());
+			}
+			for (Consumer consumer : consumers) {
+				parametersSet.add(consumer.getParameters());
+			}
+			Iterator<String> temp = parametersSet.iterator();
+			while (temp.hasNext()) {
+				Map<String, String> parameter = StringUtils.parseQueryString(temp.next());
+				if (parameter != null) {
+					String dubbo = parameter.get("dubbo");
+					if (dubbo == null)
+						dubbo = "0.0.0";
+					String application = parameter.get("application");
+					if (version.equals(dubbo)) {
+						applications.add(application);
+					}
+				}
+			}
+			context.put("applications", applications);
+		}
+	}
 
 }

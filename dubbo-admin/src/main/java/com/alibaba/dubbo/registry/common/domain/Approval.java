@@ -21,69 +21,69 @@ package com.alibaba.dubbo.registry.common.domain;
  * @author ding.lid
  */
 public class Approval extends Entity {
-    private static final long serialVersionUID = -8778092807313048367L;
-    
-    private String service; // 服务名称
-    
-    private String version; 
-    // 可以使用通配符， *，1.1.*
-    // 可以包含多个 1.1.3,1.1.5,2.*
-    
-    private boolean forProvider; // is Provider or consumer
-    
-    private String machineList; // 服务所在机器
-    // 可以使用通配符 172.3.8.*
-    // 可以有多个 172.1.9.8,172.1.9.123,172.3.3.*
-    
-    private String username;
-    
-    private String approveUser; // 审批者
+	private static final long serialVersionUID = -8778092807313048367L;
 
-    public String getService() {
-        return service;
-    }
+	private String service; // 服务名称
 
-    public void setService(String service) {
-        this.service = service;
-    }
+	private String version;
+	// 可以使用通配符， *，1.1.*
+	// 可以包含多个 1.1.3,1.1.5,2.*
 
-    public String getVersion() {
-        return version;
-    }
+	private boolean forProvider; // is Provider or consumer
 
-    public void setVersion(String version) {
-        this.version = version;
-    }
+	private String machineList; // 服务所在机器
+	// 可以使用通配符 172.3.8.*
+	// 可以有多个 172.1.9.8,172.1.9.123,172.3.3.*
 
-    public boolean isForProvider() {
-        return forProvider;
-    }
+	private String username;
 
-    public void setForProvider(boolean forProvider) {
-        this.forProvider = forProvider;
-    }
+	private String approveUser; // 审批者
 
-    public String getMachineList() {
-        return machineList;
-    }
+	public String getService() {
+		return service;
+	}
 
-    public void setMachineList(String machineList) {
-        this.machineList = machineList;
-    }
+	public void setService(String service) {
+		this.service = service;
+	}
 
-    public String getUsername() {
-        return username;
-    }
+	public String getVersion() {
+		return version;
+	}
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+	public void setVersion(String version) {
+		this.version = version;
+	}
 
-    public String getApproveUser() {
-        return approveUser;
-    }
+	public boolean isForProvider() {
+		return forProvider;
+	}
 
-    public void setApproveUser(String approveUser) {
-        this.approveUser = approveUser;
-    }
+	public void setForProvider(boolean forProvider) {
+		this.forProvider = forProvider;
+	}
+
+	public String getMachineList() {
+		return machineList;
+	}
+
+	public void setMachineList(String machineList) {
+		this.machineList = machineList;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public String getApproveUser() {
+		return approveUser;
+	}
+
+	public void setApproveUser(String approveUser) {
+		this.approveUser = approveUser;
+	}
 }

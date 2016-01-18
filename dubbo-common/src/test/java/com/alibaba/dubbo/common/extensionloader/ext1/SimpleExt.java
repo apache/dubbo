@@ -20,20 +20,19 @@ import com.alibaba.dubbo.common.extension.Adaptive;
 import com.alibaba.dubbo.common.extension.SPI;
 
 /**
- * 简单扩展点。
- * 没有Wrapper。
+ * 简单扩展点。 没有Wrapper。
  *
  * @author ding.lid
  */
 @SPI("impl1")
 public interface SimpleExt {
-    // 没有使用key的@Adaptive ！
-    @Adaptive
-    String echo(URL url, String s);
-    
-    @Adaptive({"key1", "key2"})
-    String yell(URL url, String s);
+	// 没有使用key的@Adaptive ！
+	@Adaptive
+	String echo(URL url, String s);
 
-    // 无@Adaptive ！
-    String bang(URL url, int i);
+	@Adaptive({ "key1", "key2" })
+	String yell(URL url, String s);
+
+	// 无@Adaptive ！
+	String bang(URL url, int i);
 }

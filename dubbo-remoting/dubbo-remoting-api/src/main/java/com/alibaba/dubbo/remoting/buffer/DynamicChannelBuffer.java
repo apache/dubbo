@@ -26,167 +26,149 @@ import java.nio.ByteBuffer;
  */
 public class DynamicChannelBuffer extends AbstractChannelBuffer {
 
-    private final ChannelBufferFactory factory;
+	private final ChannelBufferFactory factory;
 
-    private ChannelBuffer buffer;
+	private ChannelBuffer buffer;
 
-    public DynamicChannelBuffer(int estimatedLength) {
-        this(estimatedLength, HeapChannelBufferFactory.getInstance());
-    }
+	public DynamicChannelBuffer(int estimatedLength) {
+		this(estimatedLength, HeapChannelBufferFactory.getInstance());
+	}
 
-    public DynamicChannelBuffer(int estimatedLength, ChannelBufferFactory factory) {
-        if (estimatedLength < 0) {
-            throw new IllegalArgumentException("estimatedLength: " + estimatedLength);
-        }
-        if (factory == null) {
-            throw new NullPointerException("factory");
-        }
-        this.factory = factory;
-        buffer = factory.getBuffer(estimatedLength);
-    }
+	public DynamicChannelBuffer(int estimatedLength, ChannelBufferFactory factory) {
+		if (estimatedLength < 0) {
+			throw new IllegalArgumentException("estimatedLength: " + estimatedLength);
+		}
+		if (factory == null) {
+			throw new NullPointerException("factory");
+		}
+		this.factory = factory;
+		buffer = factory.getBuffer(estimatedLength);
+	}
 
-    @Override
-    public void ensureWritableBytes(int minWritableBytes) {
-        if (minWritableBytes <= writableBytes()) {
-            return;
-        }
+	@Override
+	public void ensureWritableBytes(int minWritableBytes) {
+		if (minWritableBytes <= writableBytes()) {
+			return;
+		}
 
-        int newCapacity;
-        if (capacity() == 0) {
-            newCapacity = 1;
-        } else {
-            newCapacity = capacity();
-        }
-        int minNewCapacity = writerIndex() + minWritableBytes;
-        while (newCapacity < minNewCapacity) {
-            newCapacity <<= 1;
-        }
+		int newCapacity;
+		if (capacity() == 0) {
+			newCapacity = 1;
+		} else {
+			newCapacity = capacity();
+		}
+		int minNewCapacity = writerIndex() + minWritableBytes;
+		while (newCapacity < minNewCapacity) {
+			newCapacity <<= 1;
+		}
 
-        ChannelBuffer newBuffer = factory().getBuffer(newCapacity);
-        newBuffer.writeBytes(buffer, 0, writerIndex());
-        buffer = newBuffer;
-    }
+		ChannelBuffer newBuffer = factory().getBuffer(newCapacity);
+		newBuffer.writeBytes(buffer, 0, writerIndex());
+		buffer = newBuffer;
+	}
 
-    
-    public int capacity() {
-        return buffer.capacity();
-    }
+	public int capacity() {
+		return buffer.capacity();
+	}
 
-    
-    public ChannelBuffer copy(int index, int length) {
-        DynamicChannelBuffer copiedBuffer = new DynamicChannelBuffer(Math.max(length, 64), factory());
-        copiedBuffer.buffer = buffer.copy(index, length);
-        copiedBuffer.setIndex(0, length);
-        return copiedBuffer;
-    }
+	public ChannelBuffer copy(int index, int length) {
+		DynamicChannelBuffer copiedBuffer = new DynamicChannelBuffer(Math.max(length, 64), factory());
+		copiedBuffer.buffer = buffer.copy(index, length);
+		copiedBuffer.setIndex(0, length);
+		return copiedBuffer;
+	}
 
-    
-    public ChannelBufferFactory factory() {
-        return factory;
-    }
+	public ChannelBufferFactory factory() {
+		return factory;
+	}
 
-    
-    public byte getByte(int index) {
-        return buffer.getByte(index);
-    }
+	public byte getByte(int index) {
+		return buffer.getByte(index);
+	}
 
-    
-    public void getBytes(int index, byte[] dst, int dstIndex, int length) {
-        buffer.getBytes(index, dst, dstIndex, length);
-    }
+	public void getBytes(int index, byte[] dst, int dstIndex, int length) {
+		buffer.getBytes(index, dst, dstIndex, length);
+	}
 
-    
-    public void getBytes(int index, ByteBuffer dst) {
-        buffer.getBytes(index, dst);
-    }
+	public void getBytes(int index, ByteBuffer dst) {
+		buffer.getBytes(index, dst);
+	}
 
-    
-    public void getBytes(int index, ChannelBuffer dst, int dstIndex, int length) {
-        buffer.getBytes(index, dst, dstIndex, length);
-    }
+	public void getBytes(int index, ChannelBuffer dst, int dstIndex, int length) {
+		buffer.getBytes(index, dst, dstIndex, length);
+	}
 
-    
-    public void getBytes(int index, OutputStream dst, int length) throws IOException {
-        buffer.getBytes(index, dst, length);
-    }
+	public void getBytes(int index, OutputStream dst, int length) throws IOException {
+		buffer.getBytes(index, dst, length);
+	}
 
-    
-    public boolean isDirect() {
-        return buffer.isDirect();
-    }
+	public boolean isDirect() {
+		return buffer.isDirect();
+	}
 
-    
-    public void setByte(int index, int value) {
-        buffer.setByte(index, value);
-    }
+	public void setByte(int index, int value) {
+		buffer.setByte(index, value);
+	}
 
-    
-    public void setBytes(int index, byte[] src, int srcIndex, int length) {
-        buffer.setBytes(index, src, srcIndex, length);
-    }
+	public void setBytes(int index, byte[] src, int srcIndex, int length) {
+		buffer.setBytes(index, src, srcIndex, length);
+	}
 
-    
-    public void setBytes(int index, ByteBuffer src) {
-        buffer.setBytes(index, src);
-    }
+	public void setBytes(int index, ByteBuffer src) {
+		buffer.setBytes(index, src);
+	}
 
-    
-    public void setBytes(int index, ChannelBuffer src, int srcIndex, int length) {
-        buffer.setBytes(index, src, srcIndex, length);
-    }
+	public void setBytes(int index, ChannelBuffer src, int srcIndex, int length) {
+		buffer.setBytes(index, src, srcIndex, length);
+	}
 
-    
-    public int setBytes(int index, InputStream src, int length) throws IOException {
-        return buffer.setBytes(index, src, length);
-    }
+	public int setBytes(int index, InputStream src, int length) throws IOException {
+		return buffer.setBytes(index, src, length);
+	}
 
-    
-    public ByteBuffer toByteBuffer(int index, int length) {
-        return buffer.toByteBuffer(index, length);
-    }
+	public ByteBuffer toByteBuffer(int index, int length) {
+		return buffer.toByteBuffer(index, length);
+	}
 
-    @Override
-    public void writeByte(int value) {
-        ensureWritableBytes(1);
-        super.writeByte(value);
-    }
+	@Override
+	public void writeByte(int value) {
+		ensureWritableBytes(1);
+		super.writeByte(value);
+	}
 
-    @Override
-    public void writeBytes(byte[] src, int srcIndex, int length) {
-        ensureWritableBytes(length);
-        super.writeBytes(src, srcIndex, length);
-    }
+	@Override
+	public void writeBytes(byte[] src, int srcIndex, int length) {
+		ensureWritableBytes(length);
+		super.writeBytes(src, srcIndex, length);
+	}
 
-    @Override
-    public void writeBytes(ChannelBuffer src, int srcIndex, int length) {
-        ensureWritableBytes(length);
-        super.writeBytes(src, srcIndex, length);
-    }
+	@Override
+	public void writeBytes(ChannelBuffer src, int srcIndex, int length) {
+		ensureWritableBytes(length);
+		super.writeBytes(src, srcIndex, length);
+	}
 
-    @Override
-    public void writeBytes(ByteBuffer src) {
-        ensureWritableBytes(src.remaining());
-        super.writeBytes(src);
-    }
+	@Override
+	public void writeBytes(ByteBuffer src) {
+		ensureWritableBytes(src.remaining());
+		super.writeBytes(src);
+	}
 
-    @Override
-    public int writeBytes(InputStream in, int length) throws IOException {
-        ensureWritableBytes(length);
-        return super.writeBytes(in, length);
-    }
+	@Override
+	public int writeBytes(InputStream in, int length) throws IOException {
+		ensureWritableBytes(length);
+		return super.writeBytes(in, length);
+	}
 
-    
-    public byte[] array() {
-        return buffer.array();
-    }
+	public byte[] array() {
+		return buffer.array();
+	}
 
-    
-    public boolean hasArray() {
-        return buffer.hasArray();
-    }
+	public boolean hasArray() {
+		return buffer.hasArray();
+	}
 
-    
-    public int arrayOffset() {
-        return buffer.arrayOffset();
-    }
+	public int arrayOffset() {
+		return buffer.arrayOffset();
+	}
 }

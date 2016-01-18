@@ -21,8 +21,7 @@ package com.alibaba.dubbo.common.json;
  * @author qian.lei
  */
 
-public interface JSONVisitor
-{
+public interface JSONVisitor {
 	public static final String CLASS_PROPERTY = "class";
 
 	/**
@@ -33,8 +32,10 @@ public interface JSONVisitor
 	/**
 	 * parse end.
 	 * 
-	 * @param obj root obj.
-	 * @param isValue is json value.
+	 * @param obj
+	 *            root obj.
+	 * @param isValue
+	 *            is json value.
 	 * @return parse result.
 	 * @throws ParseException
 	 */
@@ -50,7 +51,8 @@ public interface JSONVisitor
 	/**
 	 * object end, return object value.
 	 * 
-	 * @param count property count.
+	 * @param count
+	 *            property count.
 	 * @return object value.
 	 * @throws ParseException
 	 */
@@ -59,7 +61,8 @@ public interface JSONVisitor
 	/**
 	 * object property name.
 	 * 
-	 * @param name name.
+	 * @param name
+	 *            name.
 	 * @throws ParseException
 	 */
 	void objectItem(String name) throws ParseException;
@@ -67,8 +70,10 @@ public interface JSONVisitor
 	/**
 	 * object property value.
 	 * 
-	 * @param obj obj.
-	 * @param isValue is json value.
+	 * @param obj
+	 *            obj.
+	 * @param isValue
+	 *            is json value.
 	 * @throws ParseException
 	 */
 	void objectItemValue(Object obj, boolean isValue) throws ParseException;
@@ -83,7 +88,8 @@ public interface JSONVisitor
 	/**
 	 * array end, return array value.
 	 * 
-	 * @param count count.
+	 * @param count
+	 *            count.
 	 * @return array value.
 	 * @throws ParseException
 	 */
@@ -92,7 +98,8 @@ public interface JSONVisitor
 	/**
 	 * array item.
 	 * 
-	 * @param index index.
+	 * @param index
+	 *            index.
 	 * @throws ParseException
 	 */
 	void arrayItem(int index) throws ParseException;
@@ -100,9 +107,12 @@ public interface JSONVisitor
 	/**
 	 * array item.
 	 * 
-	 * @param index index.
-	 * @param obj item.
-	 * @param isValue is json value.
+	 * @param index
+	 *            index.
+	 * @param obj
+	 *            item.
+	 * @param isValue
+	 *            is json value.
 	 * @throws ParseException
 	 */
 	void arrayItemValue(int index, Object obj, boolean isValue) throws ParseException;

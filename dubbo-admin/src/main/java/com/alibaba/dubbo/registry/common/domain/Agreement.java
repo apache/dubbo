@@ -21,85 +21,85 @@ package com.alibaba.dubbo.registry.common.domain;
  * @author rain.chenjr
  * @author ding.lid
  */
-public class Agreement extends Entity{
+public class Agreement extends Entity {
 
-    private static final long serialVersionUID = -4888604682731513790L;
-    
-    private String service;   //服务名
-    
-    private String consumerApplication; // 服务消费者应用名
-    
-    private long invocationQuantity; // 一天调用量
+	private static final long serialVersionUID = -4888604682731513790L;
 
-    private int tps; // TPS上限
-    
-    private int responseTime; // 响应时间，毫秒
-    
-    private double availability; // 可用率
-    
-    private String username; 
+	private String service; // 服务名
 
-    public Agreement() {
-    }
-    
-    public Agreement(Long id) {
-        super(id);
-    }
-    
-    public String getService() {
-        return service;
-    }
+	private String consumerApplication; // 服务消费者应用名
 
-    public void setService(String service) {
-        this.service = service;
-    }
+	private long invocationQuantity; // 一天调用量
 
-    public String getConsumerApplication() {
-        return consumerApplication;
-    }
+	private int tps; // TPS上限
 
-    public void setConsumerApplication(String consumerApplication) {
-        this.consumerApplication = consumerApplication;
-    }
+	private int responseTime; // 响应时间，毫秒
 
-    public long getInvocationQuantity() {
-        return invocationQuantity;
-    }
+	private double availability; // 可用率
 
-    public void setInvocationQuantity(long invocationQuantity) {
-        this.invocationQuantity = invocationQuantity;
-    }
+	private String username;
 
-    public int getTps() {
-        return tps;
-    }
+	public Agreement() {
+	}
 
-    public void setTps(int tps) {
-        this.tps = tps;
-    }
+	public Agreement(Long id) {
+		super(id);
+	}
 
-    public int getResponseTime() {
-        return responseTime;
-    }
+	public String getService() {
+		return service;
+	}
 
-    public void setResponseTime(int responseTime) {
-        this.responseTime = responseTime;
-    }
+	public void setService(String service) {
+		this.service = service;
+	}
 
-    public double getAvailability() {
-        return availability;
-    }
+	public String getConsumerApplication() {
+		return consumerApplication;
+	}
 
-    public void setAvailability(double availability) {
-        this.availability = availability;
-    }
+	public void setConsumerApplication(String consumerApplication) {
+		this.consumerApplication = consumerApplication;
+	}
 
-    public String getUsername() {
-        return username;
-    }
+	public long getInvocationQuantity() {
+		return invocationQuantity;
+	}
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-	
+	public void setInvocationQuantity(long invocationQuantity) {
+		this.invocationQuantity = invocationQuantity;
+	}
+
+	public int getTps() {
+		return tps;
+	}
+
+	public void setTps(int tps) {
+		this.tps = tps;
+	}
+
+	public int getResponseTime() {
+		return responseTime;
+	}
+
+	public void setResponseTime(int responseTime) {
+		this.responseTime = responseTime;
+	}
+
+	public double getAvailability() {
+		return availability;
+	}
+
+	public void setAvailability(double availability) {
+		this.availability = availability;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
 }

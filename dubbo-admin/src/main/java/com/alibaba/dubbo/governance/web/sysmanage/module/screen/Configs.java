@@ -35,56 +35,56 @@ import com.alibaba.dubbo.registry.common.domain.User;
  * @author ding.lid
  */
 public class Configs extends Restful {
-    
-    @Autowired
-    private ConfigService configDAO;
-    
-    @Autowired
-    private HttpServletRequest request;
 
-    public void index(Map<String, Object> context) {
-        context.put("configs", configDAO.findAllConfigsMap());
-    }
-    
-    public boolean update(Map<String, Object> context) {
-        @SuppressWarnings("unchecked")
-        Map<String, String[]> all = request.getParameterMap();;
-        if (all != null && all.size() > 0) {
-            if (! User.ROOT.equals(currentUser.getRole())) {
-                context.put("message", getMessage("HaveNoRootPrivilege"));
-                return false;
-            }
-            List<Config> configs = new ArrayList<Config>();
-            for (Map.Entry<String, String[]> entry : all.entrySet()) {
-                String key = entry.getKey();
-                String[] values = entry.getValue();
-                if (key != null && key.length() > 0 && ! key.startsWith("_")) {
-                    String value = "";
-                    if (values != null && values.length > 0
-                            && values[0] != null && values[0].length() > 0) {
-                        value = values[0];
-                    }
-                    Config config = new Config();
-                    config.setKey(key);
-                    config.setUsername(currentUser.getUsername());
-                    config.setOperatorAddress((String) context.get("operatorAddress"));
-                    config.setValue(value);
-                    configs.add(config);
-                }
-            }
-            if (configs.size() > 0) {
-                configDAO.update(configs);
-                
-                Set<String> usernames = new HashSet<String>();
-                usernames.add(currentUser.getName());
-                
-                Map<String, Object> params = new HashMap<String, Object>();
-                params.put("configs", configs);
-            }
-            return true;
-        } else {
-            context.put("message", getMessage("MissRequestParameters", "configKey,configValue"));
-            return false;
-        }
-    }
+	@Autowired
+	private ConfigService configDAO;
+
+	@Autowired
+	private HttpServletRequest request;
+
+	public void index(Map<String, Object> context) {
+		context.put("configs", configDAO.findAllConfigsMap());
+	}
+
+	public boolean update(Map<String, Object> context) {
+		@SuppressWarnings("unchecked")
+		Map<String, String[]> all = request.getParameterMap();
+		;
+		if (all != null && all.size() > 0) {
+			if (!User.ROOT.equals(currentUser.getRole())) {
+				context.put("message", getMessage("HaveNoRootPrivilege"));
+				return false;
+			}
+			List<Config> configs = new ArrayList<Config>();
+			for (Map.Entry<String, String[]> entry : all.entrySet()) {
+				String key = entry.getKey();
+				String[] values = entry.getValue();
+				if (key != null && key.length() > 0 && !key.startsWith("_")) {
+					String value = "";
+					if (values != null && values.length > 0 && values[0] != null && values[0].length() > 0) {
+						value = values[0];
+					}
+					Config config = new Config();
+					config.setKey(key);
+					config.setUsername(currentUser.getUsername());
+					config.setOperatorAddress((String) context.get("operatorAddress"));
+					config.setValue(value);
+					configs.add(config);
+				}
+			}
+			if (configs.size() > 0) {
+				configDAO.update(configs);
+
+				Set<String> usernames = new HashSet<String>();
+				usernames.add(currentUser.getName());
+
+				Map<String, Object> params = new HashMap<String, Object>();
+				params.put("configs", configs);
+			}
+			return true;
+		} else {
+			context.put("message", getMessage("MissRequestParameters", "configKey,configValue"));
+			return false;
+		}
+	}
 }

@@ -27,84 +27,77 @@ import com.alibaba.dubbo.registry.common.StatusManager;
  */
 public class GovernanceWarmup implements InitializingBean {
 
-    private static final Logger logger = LoggerFactory.getLogger(GovernanceWarmup.class);
+	private static final Logger logger = LoggerFactory.getLogger(GovernanceWarmup.class);
 
-    private StatusChecker memoryStatusChecker;
+	private StatusChecker memoryStatusChecker;
 
-    private StatusChecker threadPoolStatusChecker;
+	private StatusChecker threadPoolStatusChecker;
 
-    private StatusChecker cacheStatusChecker;
+	private StatusChecker cacheStatusChecker;
 
-    private StatusChecker databaseStatusChecker;
+	private StatusChecker databaseStatusChecker;
 
-    private StatusChecker failureStatusChecker;
+	private StatusChecker failureStatusChecker;
 
-    private StatusChecker loadStatusChecker;
+	private StatusChecker loadStatusChecker;
 
-    private StatusChecker SocketStatusChecker;
+	private StatusChecker SocketStatusChecker;
 
-    private StatusChecker timerStatusChecker;
+	private StatusChecker timerStatusChecker;
 
-    private StatusChecker warmupStatusChecker;
+	private StatusChecker warmupStatusChecker;
 
-    public void afterPropertiesSet() throws Exception {
-        logger.info("Registry Console warn up.");
+	public void afterPropertiesSet() throws Exception {
+		logger.info("Registry Console warn up.");
 
-        StatusManager statusManager = StatusManager.getInstance();
+		StatusManager statusManager = StatusManager.getInstance();
 
-        statusManager.addStatusHandler("memory",memoryStatusChecker);
-        statusManager.addStatusHandler("load",loadStatusChecker);
-//        statusManager.addStatusHandler("database",databaseStatusChecker);
-//        statusManager.addStatusHandler("cache",cacheStatusChecker);
-//        statusManager.addStatusHandler("threadpool",threadPoolStatusChecker);
-//        statusManager.addStatusHandler("failure",failureStatusChecker);
-//        statusManager.addStatusHandler("socket",SocketStatusChecker);
-//        statusManager.addStatusHandler("threadpool",threadPoolStatusChecker);
-//        statusManager.addStatusHandler("timer",timerStatusChecker);
-//        statusManager.addStatusHandler("warmup",warmupStatusChecker);
-    }
-    
-    public void setMemoryStatusChecker(StatusChecker memoryStatusChecker) {
-        this.memoryStatusChecker = memoryStatusChecker;
-    }
+		statusManager.addStatusHandler("memory", memoryStatusChecker);
+		statusManager.addStatusHandler("load", loadStatusChecker);
+		// statusManager.addStatusHandler("database",databaseStatusChecker);
+		// statusManager.addStatusHandler("cache",cacheStatusChecker);
+		// statusManager.addStatusHandler("threadpool",threadPoolStatusChecker);
+		// statusManager.addStatusHandler("failure",failureStatusChecker);
+		// statusManager.addStatusHandler("socket",SocketStatusChecker);
+		// statusManager.addStatusHandler("threadpool",threadPoolStatusChecker);
+		// statusManager.addStatusHandler("timer",timerStatusChecker);
+		// statusManager.addStatusHandler("warmup",warmupStatusChecker);
+	}
 
-    
-    public void setThreadPoolStatusChecker(StatusChecker threadPoolStatusChecker) {
-        this.threadPoolStatusChecker = threadPoolStatusChecker;
-    }
+	public void setMemoryStatusChecker(StatusChecker memoryStatusChecker) {
+		this.memoryStatusChecker = memoryStatusChecker;
+	}
 
-    
-    public void setCacheStatusChecker(StatusChecker cacheStatusChecker) {
-        this.cacheStatusChecker = cacheStatusChecker;
-    }
+	public void setThreadPoolStatusChecker(StatusChecker threadPoolStatusChecker) {
+		this.threadPoolStatusChecker = threadPoolStatusChecker;
+	}
 
-    
-    public void setDatabaseStatusChecker(StatusChecker databaseStatusChecker) {
-        this.databaseStatusChecker = databaseStatusChecker;
-    }
+	public void setCacheStatusChecker(StatusChecker cacheStatusChecker) {
+		this.cacheStatusChecker = cacheStatusChecker;
+	}
 
-    
-    public void setFailureStatusChecker(StatusChecker failureStatusChecker) {
-        this.failureStatusChecker = failureStatusChecker;
-    }
+	public void setDatabaseStatusChecker(StatusChecker databaseStatusChecker) {
+		this.databaseStatusChecker = databaseStatusChecker;
+	}
 
-    
-    public void setLoadStatusChecker(StatusChecker loadStatusChecker) {
-        this.loadStatusChecker = loadStatusChecker;
-    }
+	public void setFailureStatusChecker(StatusChecker failureStatusChecker) {
+		this.failureStatusChecker = failureStatusChecker;
+	}
 
-    
-    public void setSocketStatusChecker(StatusChecker socketStatusChecker) {
-        SocketStatusChecker = socketStatusChecker;
-    }
+	public void setLoadStatusChecker(StatusChecker loadStatusChecker) {
+		this.loadStatusChecker = loadStatusChecker;
+	}
 
-    
-    public void setTimerStatusChecker(StatusChecker timerStatusChecker) {
-        this.timerStatusChecker = timerStatusChecker;
-    }
+	public void setSocketStatusChecker(StatusChecker socketStatusChecker) {
+		SocketStatusChecker = socketStatusChecker;
+	}
 
-    public void setWarmupStatusChecker(StatusChecker warmupStatusChecker) {
-        this.warmupStatusChecker = warmupStatusChecker;
-    }
+	public void setTimerStatusChecker(StatusChecker timerStatusChecker) {
+		this.timerStatusChecker = timerStatusChecker;
+	}
+
+	public void setWarmupStatusChecker(StatusChecker warmupStatusChecker) {
+		this.warmupStatusChecker = warmupStatusChecker;
+	}
 
 }

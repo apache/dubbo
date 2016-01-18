@@ -29,21 +29,22 @@ import com.alibaba.dubbo.common.URL;
  */
 public class JCache implements com.alibaba.dubbo.cache.Cache {
 
-    private final Cache<Object, Object> store;
+	private final Cache<Object, Object> store;
 
-    public JCache(URL url) {
-        String type = url.getParameter("jcache");
-        CacheManager cacheManager = type == null || type.length() == 0 ? Caching.getCacheManager() : Caching.getCacheManager(type);
-        CacheBuilder<Object, Object> cacheBuilder = cacheManager.createCacheBuilder(url.getServiceKey());
-        this.store = cacheBuilder.build();
-    }
+	public JCache(URL url) {
+		String type = url.getParameter("jcache");
+		CacheManager cacheManager = type == null || type.length() == 0 ? Caching.getCacheManager() : Caching
+				.getCacheManager(type);
+		CacheBuilder<Object, Object> cacheBuilder = cacheManager.createCacheBuilder(url.getServiceKey());
+		this.store = cacheBuilder.build();
+	}
 
-    public void put(Object key, Object value) {
-        store.put(key, value);
-    }
+	public void put(Object key, Object value) {
+		store.put(key, value);
+	}
 
-    public Object get(Object key) {
-        return store.get(key);
-    }
+	public Object get(Object key) {
+		return store.get(key);
+	}
 
 }

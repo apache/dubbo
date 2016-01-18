@@ -25,12 +25,12 @@ import com.alibaba.dubbo.rpc.cluster.configurator.AbstractConfigurator;
  */
 public class AbsentConfigurator extends AbstractConfigurator {
 
-    public AbsentConfigurator(URL url) {
-        super(url);
-    }
+	public AbsentConfigurator(URL url) {
+		super(url);
+	}
 
-    public URL doConfigure(URL currentUrl, URL configUrl) {
-        return currentUrl.addParametersIfAbsent(configUrl.getParameters());
-    }
+	public URL doConfigure(URL currentUrl, URL configUrl) {
+		return currentUrl.addParametersIfAbsent(configUrl.getParameters());
+	}
 
 }

@@ -22,10 +22,10 @@ import com.alibaba.citrus.turbine.Context;
  */
 public class NoServicePrivilege {
 
-    @Autowired
-    private HttpServletRequest request;
-    
-    public void execute(Context context) {
-    	context.put("returnUrl", request.getParameter("returnUrl"));
-    }
+	@Autowired
+	private HttpServletRequest request;
+
+	public void execute(Context context) {
+		context.put("returnUrl", request.getParameter("returnUrl"));
+	}
 }

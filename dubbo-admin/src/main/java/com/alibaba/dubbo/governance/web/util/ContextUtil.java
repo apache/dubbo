@@ -19,20 +19,20 @@ import java.util.Map;
 
 /**
  * TODO Comment of ContextUtil
+ * 
  * @author haomin.liuhm
  *
  */
 public class ContextUtil {
-    
-    private ContextUtil(Map<String, Object> c){
-    }
-    
-    public static Object get(Map<String, Object> context, Object key, Object defaultv){
-        Object res = context.get(key);
-        if(res == null){
-            res = defaultv;
-        }
-        return res;
-    }
-}
 
+	private ContextUtil(Map<String, Object> c) {
+	}
+
+	public static Object get(Map<String, Object> context, Object key, Object defaultv) {
+		Object res = context.get(key);
+		if (res == null) {
+			res = defaultv;
+		}
+		return res;
+	}
+}

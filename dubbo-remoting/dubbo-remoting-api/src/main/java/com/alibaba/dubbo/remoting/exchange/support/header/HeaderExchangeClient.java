@@ -44,150 +44,150 @@ import com.alibaba.dubbo.remoting.exchange.ResponseFuture;
  */
 public class HeaderExchangeClient implements ExchangeClient {
 
-    private static final Logger logger = LoggerFactory.getLogger( HeaderExchangeClient.class );
+	private static final Logger logger = LoggerFactory.getLogger(HeaderExchangeClient.class);
 
-    private static final ScheduledThreadPoolExecutor scheduled = new ScheduledThreadPoolExecutor(2, new NamedThreadFactory("dubbo-remoting-client-heartbeat", true));
+	private static final ScheduledThreadPoolExecutor scheduled = new ScheduledThreadPoolExecutor(2,
+			new NamedThreadFactory("dubbo-remoting-client-heartbeat", true));
 
-    // 心跳定时器
-    private ScheduledFuture<?> heatbeatTimer;
+	// 心跳定时器
+	private ScheduledFuture<?> heatbeatTimer;
 
-    // 心跳超时，毫秒。缺省0，不会执行心跳。
-    private int heartbeat;
+	// 心跳超时，毫秒。缺省0，不会执行心跳。
+	private int heartbeat;
 
-    private int heartbeatTimeout;
-    
-    private final Client client;
+	private int heartbeatTimeout;
 
-    private final ExchangeChannel channel;
+	private final Client client;
 
-    public HeaderExchangeClient(Client client){
-        if (client == null) {
-            throw new IllegalArgumentException("client == null");
-        }
-        this.client = client;
-        this.channel = new HeaderExchangeChannel(client);
-        String dubbo = client.getUrl().getParameter(Constants.DUBBO_VERSION_KEY);
-        this.heartbeat = client.getUrl().getParameter( Constants.HEARTBEAT_KEY, dubbo != null && dubbo.startsWith("1.0.") ? Constants.DEFAULT_HEARTBEAT : 0 );
-        this.heartbeatTimeout = client.getUrl().getParameter( Constants.HEARTBEAT_TIMEOUT_KEY, heartbeat * 3 );
-        if ( heartbeatTimeout < heartbeat * 2 ) {
-            throw new IllegalStateException( "heartbeatTimeout < heartbeatInterval * 2" );
-        }
-        startHeatbeatTimer();
-    }
+	private final ExchangeChannel channel;
 
-    public ResponseFuture request(Object request) throws RemotingException {
-        return channel.request(request);
-    }
+	public HeaderExchangeClient(Client client) {
+		if (client == null) {
+			throw new IllegalArgumentException("client == null");
+		}
+		this.client = client;
+		this.channel = new HeaderExchangeChannel(client);
+		String dubbo = client.getUrl().getParameter(Constants.DUBBO_VERSION_KEY);
+		this.heartbeat = client.getUrl().getParameter(Constants.HEARTBEAT_KEY,
+				dubbo != null && dubbo.startsWith("1.0.") ? Constants.DEFAULT_HEARTBEAT : 0);
+		this.heartbeatTimeout = client.getUrl().getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartbeat * 3);
+		if (heartbeatTimeout < heartbeat * 2) {
+			throw new IllegalStateException("heartbeatTimeout < heartbeatInterval * 2");
+		}
+		startHeatbeatTimer();
+	}
 
-    public URL getUrl() {
-        return channel.getUrl();
-    }
+	public ResponseFuture request(Object request) throws RemotingException {
+		return channel.request(request);
+	}
 
-    public InetSocketAddress getRemoteAddress() {
-        return channel.getRemoteAddress();
-    }
+	public URL getUrl() {
+		return channel.getUrl();
+	}
 
-    public ResponseFuture request(Object request, int timeout) throws RemotingException {
-        return channel.request(request, timeout);
-    }
+	public InetSocketAddress getRemoteAddress() {
+		return channel.getRemoteAddress();
+	}
 
-    public ChannelHandler getChannelHandler() {
-        return channel.getChannelHandler();
-    }
+	public ResponseFuture request(Object request, int timeout) throws RemotingException {
+		return channel.request(request, timeout);
+	}
 
-    public boolean isConnected() {
-        return channel.isConnected();
-    }
+	public ChannelHandler getChannelHandler() {
+		return channel.getChannelHandler();
+	}
 
-    public InetSocketAddress getLocalAddress() {
-        return channel.getLocalAddress();
-    }
+	public boolean isConnected() {
+		return channel.isConnected();
+	}
 
-    public ExchangeHandler getExchangeHandler() {
-        return channel.getExchangeHandler();
-    }
-    
-    public void send(Object message) throws RemotingException {
-        channel.send(message);
-    }
-    
-    public void send(Object message, boolean sent) throws RemotingException {
-        channel.send(message, sent);
-    }
+	public InetSocketAddress getLocalAddress() {
+		return channel.getLocalAddress();
+	}
 
-    public boolean isClosed() {
-        return channel.isClosed();
-    }
+	public ExchangeHandler getExchangeHandler() {
+		return channel.getExchangeHandler();
+	}
 
-    public void close() {
-        doClose();
-        channel.close();
-    }
+	public void send(Object message) throws RemotingException {
+		channel.send(message);
+	}
 
-    public void close(int timeout) {
-        doClose();
-        channel.close(timeout);
-    }
+	public void send(Object message, boolean sent) throws RemotingException {
+		channel.send(message, sent);
+	}
 
-    public void reset(URL url) {
-        client.reset(url);
-    }
-    
-    @Deprecated
-    public void reset(com.alibaba.dubbo.common.Parameters parameters){
-        reset(getUrl().addParameters(parameters.getParameters()));
-    }
+	public boolean isClosed() {
+		return channel.isClosed();
+	}
 
-    public void reconnect() throws RemotingException {
-        client.reconnect();
-    }
+	public void close() {
+		doClose();
+		channel.close();
+	}
 
-    public Object getAttribute(String key) {
-        return channel.getAttribute(key);
-    }
+	public void close(int timeout) {
+		doClose();
+		channel.close(timeout);
+	}
 
-    public void setAttribute(String key, Object value) {
-        channel.setAttribute(key, value);
-    }
+	public void reset(URL url) {
+		client.reset(url);
+	}
 
-    public void removeAttribute(String key) {
-        channel.removeAttribute(key);
-    }
+	@Deprecated
+	public void reset(com.alibaba.dubbo.common.Parameters parameters) {
+		reset(getUrl().addParameters(parameters.getParameters()));
+	}
 
-    public boolean hasAttribute(String key) {
-        return channel.hasAttribute(key);
-    }
+	public void reconnect() throws RemotingException {
+		client.reconnect();
+	}
 
-    private void startHeatbeatTimer() {
-        stopHeartbeatTimer();
-        if ( heartbeat > 0 ) {
-            heatbeatTimer = scheduled.scheduleWithFixedDelay(
-                    new HeartBeatTask( new HeartBeatTask.ChannelProvider() {
-                        public Collection<Channel> getChannels() {
-                            return Collections.<Channel>singletonList( HeaderExchangeClient.this );
-                        }
-                    }, heartbeat, heartbeatTimeout),
-                    heartbeat, heartbeat, TimeUnit.MILLISECONDS );
-        }
-    }
+	public Object getAttribute(String key) {
+		return channel.getAttribute(key);
+	}
 
-    private void stopHeartbeatTimer() {
-        if (heatbeatTimer != null && ! heatbeatTimer.isCancelled()) {
-            try {
-                heatbeatTimer.cancel(true);
-                scheduled.purge();
-            } catch ( Throwable e ) {
-                if (logger.isWarnEnabled()) {
-                    logger.warn(e.getMessage(), e);
-                }
-            }
-        }
-        heatbeatTimer =null;
-    }
+	public void setAttribute(String key, Object value) {
+		channel.setAttribute(key, value);
+	}
 
-    private void doClose() {
-        stopHeartbeatTimer();
-    }
+	public void removeAttribute(String key) {
+		channel.removeAttribute(key);
+	}
+
+	public boolean hasAttribute(String key) {
+		return channel.hasAttribute(key);
+	}
+
+	private void startHeatbeatTimer() {
+		stopHeartbeatTimer();
+		if (heartbeat > 0) {
+			heatbeatTimer = scheduled.scheduleWithFixedDelay(new HeartBeatTask(new HeartBeatTask.ChannelProvider() {
+				public Collection<Channel> getChannels() {
+					return Collections.<Channel> singletonList(HeaderExchangeClient.this);
+				}
+			}, heartbeat, heartbeatTimeout), heartbeat, heartbeat, TimeUnit.MILLISECONDS);
+		}
+	}
+
+	private void stopHeartbeatTimer() {
+		if (heatbeatTimer != null && !heatbeatTimer.isCancelled()) {
+			try {
+				heatbeatTimer.cancel(true);
+				scheduled.purge();
+			} catch (Throwable e) {
+				if (logger.isWarnEnabled()) {
+					logger.warn(e.getMessage(), e);
+				}
+			}
+		}
+		heatbeatTimer = null;
+	}
+
+	private void doClose() {
+		stopHeartbeatTimer();
+	}
 
 	@Override
 	public String toString() {

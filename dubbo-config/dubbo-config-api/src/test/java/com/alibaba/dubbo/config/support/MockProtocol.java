@@ -30,53 +30,65 @@ import com.alibaba.dubbo.rpc.RpcException;
  */
 public class MockProtocol implements Protocol {
 
-    /* (non-Javadoc)
-     * @see com.alibaba.dubbo.rpc.Protocol#getDefaultPort()
-     */
-    public int getDefaultPort() {
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.alibaba.dubbo.rpc.Protocol#getDefaultPort()
+	 */
+	public int getDefaultPort() {
 
-        return 0;
-    }
+		return 0;
+	}
 
-    /* (non-Javadoc)
-     * @see com.alibaba.dubbo.rpc.Protocol#export(com.alibaba.dubbo.rpc.Invoker)
-     */
-    public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
-        return null;
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.alibaba.dubbo.rpc.Protocol#export(com.alibaba.dubbo.rpc.Invoker)
+	 */
+	public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
+		return null;
+	}
 
-    /* (non-Javadoc)
-     * @see com.alibaba.dubbo.rpc.Protocol#refer(java.lang.Class, com.alibaba.dubbo.common.URL)
-     */
-    public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
-        
-        final URL u = url;
-        
-        return new Invoker<T>(){
-            public Class<T> getInterface(){
-                return null;
-            }
-            public URL getUrl(){
-                return u;
-            }
-            public boolean isAvailable(){
-                return true;
-            }
-            public Result invoke(Invocation invocation) throws RpcException{
-                return null;
-            }
-            
-            public void destroy(){
-                
-            }            
-        };
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.alibaba.dubbo.rpc.Protocol#refer(java.lang.Class,
+	 * com.alibaba.dubbo.common.URL)
+	 */
+	public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
 
-    /* (non-Javadoc)
-     * @see com.alibaba.dubbo.rpc.Protocol#destroy()
-     */
-    public void destroy() {
-        
-    }
+		final URL u = url;
+
+		return new Invoker<T>() {
+			public Class<T> getInterface() {
+				return null;
+			}
+
+			public URL getUrl() {
+				return u;
+			}
+
+			public boolean isAvailable() {
+				return true;
+			}
+
+			public Result invoke(Invocation invocation) throws RpcException {
+				return null;
+			}
+
+			public void destroy() {
+
+			}
+		};
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.alibaba.dubbo.rpc.Protocol#destroy()
+	 */
+	public void destroy() {
+
+	}
 
 }

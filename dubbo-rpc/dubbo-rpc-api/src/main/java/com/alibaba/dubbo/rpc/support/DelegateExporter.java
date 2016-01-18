@@ -20,26 +20,28 @@ import com.alibaba.dubbo.rpc.Invoker;
 
 /**
  * DelegateExporter
+ * 
  * @author chao.liuc
  *
  */
 public class DelegateExporter<T> implements Exporter<T> {
-    
-    private final Exporter<T> exporter;
-    
-    public DelegateExporter(Exporter<T> exporter) {
-        if (exporter == null) {
-            throw new IllegalArgumentException("exporter can not be null");
-        } else {
-            this.exporter = exporter;
-        }
-        
-    }
-    
-    public Invoker<T> getInvoker() {
-        return exporter.getInvoker();
-    }
-    public void unexport() {
-        exporter.unexport();
-    }
+
+	private final Exporter<T> exporter;
+
+	public DelegateExporter(Exporter<T> exporter) {
+		if (exporter == null) {
+			throw new IllegalArgumentException("exporter can not be null");
+		} else {
+			this.exporter = exporter;
+		}
+
+	}
+
+	public Invoker<T> getInvoker() {
+		return exporter.getInvoker();
+	}
+
+	public void unexport() {
+		exporter.unexport();
+	}
 }

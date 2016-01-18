@@ -31,31 +31,32 @@ import com.alibaba.dubbo.remoting.Transporter;
  */
 public class ClientsTest {
 
-    @Test
-    public void testGetTransportEmpty() {
-        try {
-            ExtensionLoader.getExtensionLoader(Transporter.class).getExtension("");
-            fail();
-        } catch (IllegalArgumentException expected) {
-            assertThat(expected.getMessage(), containsString("Extension name == null"));
-        }
-    }
+	@Test
+	public void testGetTransportEmpty() {
+		try {
+			ExtensionLoader.getExtensionLoader(Transporter.class).getExtension("");
+			fail();
+		} catch (IllegalArgumentException expected) {
+			assertThat(expected.getMessage(), containsString("Extension name == null"));
+		}
+	}
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testGetTransportNull() {
-        String name = null;
-        ExtensionLoader.getExtensionLoader(Transporter.class).getExtension(name);
-    }
+	@Test(expected = IllegalArgumentException.class)
+	public void testGetTransportNull() {
+		String name = null;
+		ExtensionLoader.getExtensionLoader(Transporter.class).getExtension(name);
+	}
 
-    @Test
-    public void testGetTransport3() {
-        String name = "netty";
-        assertEquals(NettyTransporter.class, ExtensionLoader.getExtensionLoader(Transporter.class).getExtension(name).getClass());
-    }
+	@Test
+	public void testGetTransport3() {
+		String name = "netty";
+		assertEquals(NettyTransporter.class, ExtensionLoader.getExtensionLoader(Transporter.class).getExtension(name)
+				.getClass());
+	}
 
-    @Test(expected = IllegalStateException.class)
-    public void testGetTransportWrong() {
-        String name = "nety";
-        assertNull(ExtensionLoader.getExtensionLoader(Transporter.class).getExtension(name).getClass());
-    }
+	@Test(expected = IllegalStateException.class)
+	public void testGetTransportWrong() {
+		String name = "nety";
+		assertNull(ExtensionLoader.getExtensionLoader(Transporter.class).getExtension(name).getClass());
+	}
 }

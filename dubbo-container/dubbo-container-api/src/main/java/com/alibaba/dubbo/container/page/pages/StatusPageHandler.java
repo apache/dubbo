@@ -38,48 +38,49 @@ import com.alibaba.dubbo.container.page.PageHandler;
 @Menu(name = "Status", desc = "Show system status.", order = Integer.MAX_VALUE - 12000)
 public class StatusPageHandler implements PageHandler {
 
-    public Page handle(URL url) {
-        List<List<String>> rows = new ArrayList<List<String>>();
-        Set<String> names = ExtensionLoader.getExtensionLoader(StatusChecker.class).getSupportedExtensions();
-        Map<String, Status> statuses = new HashMap<String, Status>();
-        for (String name : names) {
-            StatusChecker checker = ExtensionLoader.getExtensionLoader(StatusChecker.class).getExtension(name);
-            List<String> row = new ArrayList<String>();
-            row.add(name);
-            Status status = checker.check();
-            if (status != null && ! Status.Level.UNKNOWN.equals(status.getLevel())) {
-                statuses.put(name, status);
-                row.add(getLevelHtml(status.getLevel()));
-                row.add(status.getMessage());
-                rows.add(row);
-            }
-        }
-        Status status = StatusUtils.getSummaryStatus(statuses);
-        if ("status".equals(url.getPath())) {
-            return new Page("", "", "", status.getLevel().toString());
-        } else {
-            List<String> row = new ArrayList<String>();
-            row.add("summary");
-            row.add(getLevelHtml(status.getLevel()));
-            row.add("<a href=\"/status\" target=\"_blank\">summary</a>");
-            rows.add(row);
-            return new Page("Status (<a href=\"/status\" target=\"_blank\">summary</a>)", "Status", new String[] {"Name", "Status", "Description"}, rows);
-        }
-    }
+	public Page handle(URL url) {
+		List<List<String>> rows = new ArrayList<List<String>>();
+		Set<String> names = ExtensionLoader.getExtensionLoader(StatusChecker.class).getSupportedExtensions();
+		Map<String, Status> statuses = new HashMap<String, Status>();
+		for (String name : names) {
+			StatusChecker checker = ExtensionLoader.getExtensionLoader(StatusChecker.class).getExtension(name);
+			List<String> row = new ArrayList<String>();
+			row.add(name);
+			Status status = checker.check();
+			if (status != null && !Status.Level.UNKNOWN.equals(status.getLevel())) {
+				statuses.put(name, status);
+				row.add(getLevelHtml(status.getLevel()));
+				row.add(status.getMessage());
+				rows.add(row);
+			}
+		}
+		Status status = StatusUtils.getSummaryStatus(statuses);
+		if ("status".equals(url.getPath())) {
+			return new Page("", "", "", status.getLevel().toString());
+		} else {
+			List<String> row = new ArrayList<String>();
+			row.add("summary");
+			row.add(getLevelHtml(status.getLevel()));
+			row.add("<a href=\"/status\" target=\"_blank\">summary</a>");
+			rows.add(row);
+			return new Page("Status (<a href=\"/status\" target=\"_blank\">summary</a>)", "Status", new String[] {
+					"Name", "Status", "Description" }, rows);
+		}
+	}
 
-    private String getLevelHtml(Status.Level level) {
-        return "<font color=\"" + getLevelColor(level) + "\">" + level.name() + "</font>";
-    }
+	private String getLevelHtml(Status.Level level) {
+		return "<font color=\"" + getLevelColor(level) + "\">" + level.name() + "</font>";
+	}
 
-    private String getLevelColor(Status.Level level) {
-        if (level == Status.Level.OK) {
-            return "green";
-        } else if (level == Status.Level.ERROR) {
-            return "red";
-        } else if (level == Status.Level.WARN) {
-            return "yellow";
-        }
-        return "gray";
-    }
+	private String getLevelColor(Status.Level level) {
+		if (level == Status.Level.OK) {
+			return "green";
+		} else if (level == Status.Level.ERROR) {
+			return "red";
+		} else if (level == Status.Level.WARN) {
+			return "yellow";
+		}
+		return "gray";
+	}
 
 }

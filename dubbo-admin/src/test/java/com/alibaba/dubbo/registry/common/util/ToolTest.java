@@ -23,11 +23,11 @@ import org.junit.Test;
  * @author ding.lid
  */
 public class ToolTest {
-    @Test
-    public void test_getSimpleName() throws Exception {
-        assertEquals("cn/MemberService:1.0.0", Tool.getSimpleName("cn/com.alibaba.morgan.MemberService:1.0.0"));
-        assertEquals("cn/MemberService", Tool.getSimpleName("cn/com.alibaba.morgan.MemberService"));
-        assertEquals("MemberService:1.0.0", Tool.getSimpleName("com.alibaba.morgan.MemberService:1.0.0"));
-        assertEquals("MemberService", Tool.getSimpleName("com.alibaba.morgan.MemberService"));
-    }
+	@Test
+	public void test_getSimpleName() throws Exception {
+		assertEquals("cn/MemberService:1.0.0", Tool.getSimpleName("cn/com.alibaba.morgan.MemberService:1.0.0"));
+		assertEquals("cn/MemberService", Tool.getSimpleName("cn/com.alibaba.morgan.MemberService"));
+		assertEquals("MemberService:1.0.0", Tool.getSimpleName("com.alibaba.morgan.MemberService:1.0.0"));
+		assertEquals("MemberService", Tool.getSimpleName("com.alibaba.morgan.MemberService"));
+	}
 }

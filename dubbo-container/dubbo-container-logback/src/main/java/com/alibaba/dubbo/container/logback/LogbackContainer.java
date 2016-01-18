@@ -96,7 +96,7 @@ public class LogbackContainer implements Container {
 		encoder.setPattern("%date [%thread] %-5level %logger (%file:%line\\) - %msg%n");
 		encoder.start();
 		fileAppender.setEncoder(encoder);
-		
+
 		fileAppender.start();
 
 		rootLogger.addAppender(fileAppender);

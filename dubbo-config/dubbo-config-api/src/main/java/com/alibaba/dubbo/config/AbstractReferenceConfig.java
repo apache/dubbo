@@ -20,7 +20,6 @@ import com.alibaba.dubbo.config.support.Parameter;
 import com.alibaba.dubbo.rpc.InvokerListener;
 import com.alibaba.dubbo.rpc.support.ProtocolUtils;
 
-
 /**
  * AbstractConsumerConfig
  * 
@@ -30,171 +29,171 @@ import com.alibaba.dubbo.rpc.support.ProtocolUtils;
  */
 public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
-    private static final long serialVersionUID = -2786526984373031126L;
+	private static final long serialVersionUID = -2786526984373031126L;
 
-    // ======== 引用缺省值，当引用属性未设置时使用该缺省值替代  ========
-    
-    // 检查服务提供者是否存在
-    protected Boolean             check;
+	// ======== 引用缺省值，当引用属性未设置时使用该缺省值替代 ========
 
-    // 是否加载时即刻初始化
-    protected Boolean             init;
+	// 检查服务提供者是否存在
+	protected Boolean check;
 
-    // 是否使用泛接口
-    protected String             generic;
+	// 是否加载时即刻初始化
+	protected Boolean init;
 
-    // 优先从JVM内获取引用实例
-    protected Boolean             injvm;
-    
-    // lazy create connection
-    protected Boolean             lazy;
+	// 是否使用泛接口
+	protected String generic;
 
-    protected String              reconnect;
-    
-    protected Boolean             sticky;
-    
-    //stub是否支持event事件. //TODO slove merge problem 
-    protected Boolean             stubevent ;//= Constants.DEFAULT_STUB_EVENT;
+	// 优先从JVM内获取引用实例
+	protected Boolean injvm;
 
-    // 版本
-    protected String               version;
+	// lazy create connection
+	protected Boolean lazy;
 
-    // 服务分组
-    protected String               group;
+	protected String reconnect;
 
-    public Boolean isCheck() {
-        return check;
-    }
+	protected Boolean sticky;
 
-    public void setCheck(Boolean check) {
-        this.check = check;
-    }
+	// stub是否支持event事件. //TODO slove merge problem
+	protected Boolean stubevent;// = Constants.DEFAULT_STUB_EVENT;
 
-    public Boolean isInit() {
-        return init;
-    }
+	// 版本
+	protected String version;
 
-    public void setInit(Boolean init) {
-        this.init = init;
-    }
+	// 服务分组
+	protected String group;
 
-    @Parameter(excluded = true)
-    public Boolean isGeneric() {
-        return ProtocolUtils.isGeneric(generic);
-    }
+	public Boolean isCheck() {
+		return check;
+	}
 
-    public void setGeneric(Boolean generic) {
-        if (generic != null) {
-            this.generic = generic.toString();
-        }
-    }
+	public void setCheck(Boolean check) {
+		this.check = check;
+	}
 
-    public void setGeneric(String generic) {
-        this.generic = generic;
-    }
+	public Boolean isInit() {
+		return init;
+	}
 
-    public String getGeneric() {
-        return generic;
-    }
+	public void setInit(Boolean init) {
+		this.init = init;
+	}
 
-    /**
-     * @return
-     * @deprecated 通过scope进行判断，scope=local
-     */
-    @Deprecated
-    public Boolean isInjvm() {
-        return injvm;
-    }
-    
-    /**
-     * @param injvm
-     * @deprecated 通过scope设置，scope=local表示使用injvm协议.
-     */
-    @Deprecated 
-    public void setInjvm(Boolean injvm) {
-        this.injvm = injvm;
-    }
+	@Parameter(excluded = true)
+	public Boolean isGeneric() {
+		return ProtocolUtils.isGeneric(generic);
+	}
 
-    @Parameter(key = Constants.REFERENCE_FILTER_KEY, append = true)
-    public String getFilter() {
-        return super.getFilter();
-    }
+	public void setGeneric(Boolean generic) {
+		if (generic != null) {
+			this.generic = generic.toString();
+		}
+	}
 
-    @Parameter(key = Constants.INVOKER_LISTENER_KEY, append = true)
-    public String getListener() {
-        return super.getListener();
-    }
+	public void setGeneric(String generic) {
+		this.generic = generic;
+	}
 
-    @Override
-    public void setListener(String listener) {
-        checkMultiExtension(InvokerListener.class, "listener", listener);
-        super.setListener(listener);
-    }
+	public String getGeneric() {
+		return generic;
+	}
 
-    @Parameter(key = Constants.LAZY_CONNECT_KEY)
-    public Boolean getLazy() {
-        return lazy;
-    }
+	/**
+	 * @return
+	 * @deprecated 通过scope进行判断，scope=local
+	 */
+	@Deprecated
+	public Boolean isInjvm() {
+		return injvm;
+	}
 
-    public void setLazy(Boolean lazy) {
-        this.lazy = lazy;
-    }
+	/**
+	 * @param injvm
+	 * @deprecated 通过scope设置，scope=local表示使用injvm协议.
+	 */
+	@Deprecated
+	public void setInjvm(Boolean injvm) {
+		this.injvm = injvm;
+	}
 
-    @Override
-    public void setOnconnect(String onconnect) {
-        if (onconnect != null && onconnect.length() >0){
-            this.stubevent = true;
-        }
-        super.setOnconnect(onconnect);
-    }
+	@Parameter(key = Constants.REFERENCE_FILTER_KEY, append = true)
+	public String getFilter() {
+		return super.getFilter();
+	}
 
-    @Override
-    public void setOndisconnect(String ondisconnect) {
-        if (ondisconnect != null && ondisconnect.length() >0){
-            this.stubevent = true;
-        }
-        super.setOndisconnect(ondisconnect);
-    }
+	@Parameter(key = Constants.INVOKER_LISTENER_KEY, append = true)
+	public String getListener() {
+		return super.getListener();
+	}
 
-    @Parameter(key = Constants.STUB_EVENT_KEY)
-    public Boolean getStubevent() {
-        return stubevent;
-    }
-    
-    @Parameter(key = Constants.RECONNECT_KEY)
-    public String getReconnect() {
-        return reconnect;
-    }
+	@Override
+	public void setListener(String listener) {
+		checkMultiExtension(InvokerListener.class, "listener", listener);
+		super.setListener(listener);
+	}
 
-    public void setReconnect(String reconnect) {
-        this.reconnect = reconnect;
-    }
+	@Parameter(key = Constants.LAZY_CONNECT_KEY)
+	public Boolean getLazy() {
+		return lazy;
+	}
 
-    @Parameter(key = Constants.CLUSTER_STICKY_KEY)
-    public Boolean getSticky() {
-        return sticky;
-    }
+	public void setLazy(Boolean lazy) {
+		this.lazy = lazy;
+	}
 
-    public void setSticky(Boolean sticky) {
-        this.sticky = sticky;
-    }
+	@Override
+	public void setOnconnect(String onconnect) {
+		if (onconnect != null && onconnect.length() > 0) {
+			this.stubevent = true;
+		}
+		super.setOnconnect(onconnect);
+	}
 
-    public String getVersion() {
-        return version;
-    }
+	@Override
+	public void setOndisconnect(String ondisconnect) {
+		if (ondisconnect != null && ondisconnect.length() > 0) {
+			this.stubevent = true;
+		}
+		super.setOndisconnect(ondisconnect);
+	}
 
-    public void setVersion(String version) {
-        checkKey("version", version);
-        this.version = version;
-    }
+	@Parameter(key = Constants.STUB_EVENT_KEY)
+	public Boolean getStubevent() {
+		return stubevent;
+	}
 
-    public String getGroup() {
-        return group;
-    }
+	@Parameter(key = Constants.RECONNECT_KEY)
+	public String getReconnect() {
+		return reconnect;
+	}
 
-    public void setGroup(String group) {
-        checkKey("group", group);
-        this.group = group;
-    }
+	public void setReconnect(String reconnect) {
+		this.reconnect = reconnect;
+	}
+
+	@Parameter(key = Constants.CLUSTER_STICKY_KEY)
+	public Boolean getSticky() {
+		return sticky;
+	}
+
+	public void setSticky(Boolean sticky) {
+		this.sticky = sticky;
+	}
+
+	public String getVersion() {
+		return version;
+	}
+
+	public void setVersion(String version) {
+		checkKey("version", version);
+		this.version = version;
+	}
+
+	public String getGroup() {
+		return group;
+	}
+
+	public void setGroup(String group) {
+		checkKey("group", group);
+		this.group = group;
+	}
 
 }

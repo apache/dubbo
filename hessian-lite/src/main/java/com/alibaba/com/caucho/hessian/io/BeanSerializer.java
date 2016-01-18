@@ -60,256 +60,242 @@ import java.util.logging.*;
  * Serializing an object for known object types.
  */
 public class BeanSerializer extends AbstractSerializer {
-  private static final Logger log
-    = Logger.getLogger(BeanSerializer.class.getName());
-  
-  private static final Object []NULL_ARGS = new Object[0];
-  private Method []_methods;
-  private String []_names;
+	private static final Logger log = Logger.getLogger(BeanSerializer.class.getName());
 
-  private Object _writeReplaceFactory;
-  private Method _writeReplace;
-  
-  public BeanSerializer(Class cl, ClassLoader loader)
-  {
-    introspectWriteReplace(cl, loader);
+	private static final Object[] NULL_ARGS = new Object[0];
+	private Method[] _methods;
+	private String[] _names;
 
-    ArrayList primitiveMethods = new ArrayList();
-    ArrayList compoundMethods = new ArrayList();
-    
-    for (; cl != null; cl = cl.getSuperclass()) {
-      Method []methods = cl.getDeclaredMethods();
-      
-      for (int i = 0; i < methods.length; i++) {
-	Method method = methods[i];
+	private Object _writeReplaceFactory;
+	private Method _writeReplace;
 
-	if (Modifier.isStatic(method.getModifiers()))
-	  continue;
+	public BeanSerializer(Class cl, ClassLoader loader) {
+		introspectWriteReplace(cl, loader);
 
-	if (method.getParameterTypes().length != 0)
-	  continue;
+		ArrayList primitiveMethods = new ArrayList();
+		ArrayList compoundMethods = new ArrayList();
 
-	String name = method.getName();
+		for (; cl != null; cl = cl.getSuperclass()) {
+			Method[] methods = cl.getDeclaredMethods();
 
-	if (! name.startsWith("get"))
-	  continue;
+			for (int i = 0; i < methods.length; i++) {
+				Method method = methods[i];
 
-	Class type = method.getReturnType();
+				if (Modifier.isStatic(method.getModifiers()))
+					continue;
 
-	if (type.equals(void.class))
-	  continue;
+				if (method.getParameterTypes().length != 0)
+					continue;
 
-	if (findSetter(methods, name, type) == null)
-	  continue;
+				String name = method.getName();
 
-	// XXX: could parameterize the handler to only deal with public
-	method.setAccessible(true);
+				if (!name.startsWith("get"))
+					continue;
 
-	if (type.isPrimitive()
-	    || type.getName().startsWith("java.lang.")
-	    && ! type.equals(Object.class))
-	  primitiveMethods.add(method);
-	else
-	  compoundMethods.add(method);
-      }
-    }
+				Class type = method.getReturnType();
 
-    ArrayList methodList = new ArrayList();
-    methodList.addAll(primitiveMethods);
-    methodList.addAll(compoundMethods);
+				if (type.equals(void.class))
+					continue;
 
-    Collections.sort(methodList, new MethodNameCmp());
+				if (findSetter(methods, name, type) == null)
+					continue;
 
-    _methods = new Method[methodList.size()];
-    methodList.toArray(_methods);
+				// XXX: could parameterize the handler to only deal with public
+				method.setAccessible(true);
 
-    _names = new String[_methods.length];
-    
-    for (int i = 0; i < _methods.length; i++) {
-      String name = _methods[i].getName();
+				if (type.isPrimitive() || type.getName().startsWith("java.lang.") && !type.equals(Object.class))
+					primitiveMethods.add(method);
+				else
+					compoundMethods.add(method);
+			}
+		}
 
-      name = name.substring(3);
+		ArrayList methodList = new ArrayList();
+		methodList.addAll(primitiveMethods);
+		methodList.addAll(compoundMethods);
 
-      int j = 0;
-      for (; j < name.length() && Character.isUpperCase(name.charAt(j)); j++) {
-      }
+		Collections.sort(methodList, new MethodNameCmp());
 
-      if (j == 1)
-	name = name.substring(0, j).toLowerCase() + name.substring(j);
-      else if (j > 1)
-	name = name.substring(0, j - 1).toLowerCase() + name.substring(j - 1);
+		_methods = new Method[methodList.size()];
+		methodList.toArray(_methods);
 
-      _names[i] = name;
-    }
-  }
+		_names = new String[_methods.length];
 
-  private void introspectWriteReplace(Class cl, ClassLoader loader)
-  {
-    try {
-      String className = cl.getName() + "HessianSerializer";
+		for (int i = 0; i < _methods.length; i++) {
+			String name = _methods[i].getName();
 
-      Class serializerClass = Class.forName(className, false, loader);
+			name = name.substring(3);
 
-      Object serializerObject = serializerClass.newInstance();
+			int j = 0;
+			for (; j < name.length() && Character.isUpperCase(name.charAt(j)); j++) {
+			}
 
-      Method writeReplace = getWriteReplace(serializerClass, cl);
+			if (j == 1)
+				name = name.substring(0, j).toLowerCase() + name.substring(j);
+			else if (j > 1)
+				name = name.substring(0, j - 1).toLowerCase() + name.substring(j - 1);
 
-      if (writeReplace != null) {
-	_writeReplaceFactory = serializerObject;
-	_writeReplace = writeReplace;
-
-	return;
-      }
-    } catch (ClassNotFoundException e) {
-    } catch (Exception e) {
-      log.log(Level.FINER, e.toString(), e);
-    }
-      
-    _writeReplace = getWriteReplace(cl);
-  }
-
-  /**
-   * Returns the writeReplace method
-   */
-  protected Method getWriteReplace(Class cl)
-  {
-    for (; cl != null; cl = cl.getSuperclass()) {
-      Method []methods = cl.getDeclaredMethods();
-      
-      for (int i = 0; i < methods.length; i++) {
-	Method method = methods[i];
-
-	if (method.getName().equals("writeReplace") &&
-	    method.getParameterTypes().length == 0)
-	  return method;
-      }
-    }
-
-    return null;
-  }
-
-  /**
-   * Returns the writeReplace method
-   */
-  protected Method getWriteReplace(Class cl, Class param)
-  {
-    for (; cl != null; cl = cl.getSuperclass()) {
-      for (Method method : cl.getDeclaredMethods()) {
-	if (method.getName().equals("writeReplace")
-	    && method.getParameterTypes().length == 1
-	    && param.equals(method.getParameterTypes()[0]))
-	  return method;
-      }
-    }
-
-    return null;
-  }
-  
-  public void writeObject(Object obj, AbstractHessianOutput out)
-    throws IOException
-  {
-    if (out.addRef(obj))
-      return;
-    
-    Class cl = obj.getClass();
-    
-    try {
-      if (_writeReplace != null) {
-	Object repl;
-
-	if (_writeReplaceFactory != null)
-	  repl = _writeReplace.invoke(_writeReplaceFactory, obj);
-	else
-	  repl = _writeReplace.invoke(obj);
-
-	out.removeRef(obj);
-
-	out.writeObject(repl);
-
-	out.replaceRef(repl, obj);
-
-	return;
-      }
-    } catch (Exception e) {
-      log.log(Level.FINER, e.toString(), e);
-    }
-
-    int ref = out.writeObjectBegin(cl.getName());
-
-    if (ref < -1) {
-      // Hessian 1.1 uses a map
-      
-      for (int i = 0; i < _methods.length; i++) {
-	Method method = _methods[i];
-	Object value = null;
-
-	try {
-	  value = _methods[i].invoke(obj, (Object []) null);
-	} catch (Exception e) {
-	  log.log(Level.FINE, e.toString(), e);
+			_names[i] = name;
+		}
 	}
 
-	out.writeString(_names[i]);
-	
-	out.writeObject(value);
-      }
-      
-      out.writeMapEnd();
-    }
-    else {
-      if (ref == -1) {
-	out.writeInt(_names.length);
-	
-	for (int i = 0; i < _names.length; i++)
-	  out.writeString(_names[i]);
-	
-	out.writeObjectBegin(cl.getName());
-      }
+	private void introspectWriteReplace(Class cl, ClassLoader loader) {
+		try {
+			String className = cl.getName() + "HessianSerializer";
 
-      for (int i = 0; i < _methods.length; i++) {
-	Method method = _methods[i];
-	Object value = null;
+			Class serializerClass = Class.forName(className, false, loader);
 
-	try {
-	  value = _methods[i].invoke(obj, (Object []) null);
-	} catch (Exception e) {
-	  log.log(Level.FINER, e.toString(), e);
+			Object serializerObject = serializerClass.newInstance();
+
+			Method writeReplace = getWriteReplace(serializerClass, cl);
+
+			if (writeReplace != null) {
+				_writeReplaceFactory = serializerObject;
+				_writeReplace = writeReplace;
+
+				return;
+			}
+		} catch (ClassNotFoundException e) {
+		} catch (Exception e) {
+			log.log(Level.FINER, e.toString(), e);
+		}
+
+		_writeReplace = getWriteReplace(cl);
 	}
-	
-	out.writeObject(value);
-      }
-    }
-  }
 
-  /**
-   * Finds any matching setter.
-   */
-  private Method findSetter(Method []methods, String getterName, Class arg)
-  {
-    String setterName = "set" + getterName.substring(3);
-    
-    for (int i = 0; i < methods.length; i++) {
-      Method method = methods[i];
+	/**
+	 * Returns the writeReplace method
+	 */
+	protected Method getWriteReplace(Class cl) {
+		for (; cl != null; cl = cl.getSuperclass()) {
+			Method[] methods = cl.getDeclaredMethods();
 
-      if (! method.getName().equals(setterName))
-	continue;
-      
-      if (! method.getReturnType().equals(void.class))
-	continue;
+			for (int i = 0; i < methods.length; i++) {
+				Method method = methods[i];
 
-      Class []params = method.getParameterTypes();
+				if (method.getName().equals("writeReplace") && method.getParameterTypes().length == 0)
+					return method;
+			}
+		}
 
-      if (params.length == 1 && params[0].equals(arg))
-	return method;
-    }
+		return null;
+	}
 
-    return null;
-  }
+	/**
+	 * Returns the writeReplace method
+	 */
+	protected Method getWriteReplace(Class cl, Class param) {
+		for (; cl != null; cl = cl.getSuperclass()) {
+			for (Method method : cl.getDeclaredMethods()) {
+				if (method.getName().equals("writeReplace") && method.getParameterTypes().length == 1
+						&& param.equals(method.getParameterTypes()[0]))
+					return method;
+			}
+		}
 
-  static class MethodNameCmp implements Comparator<Method> {
-    public int compare(Method a, Method b)
-    {
-      return a.getName().compareTo(b.getName());
-    }
-  }
+		return null;
+	}
+
+	public void writeObject(Object obj, AbstractHessianOutput out) throws IOException {
+		if (out.addRef(obj))
+			return;
+
+		Class cl = obj.getClass();
+
+		try {
+			if (_writeReplace != null) {
+				Object repl;
+
+				if (_writeReplaceFactory != null)
+					repl = _writeReplace.invoke(_writeReplaceFactory, obj);
+				else
+					repl = _writeReplace.invoke(obj);
+
+				out.removeRef(obj);
+
+				out.writeObject(repl);
+
+				out.replaceRef(repl, obj);
+
+				return;
+			}
+		} catch (Exception e) {
+			log.log(Level.FINER, e.toString(), e);
+		}
+
+		int ref = out.writeObjectBegin(cl.getName());
+
+		if (ref < -1) {
+			// Hessian 1.1 uses a map
+
+			for (int i = 0; i < _methods.length; i++) {
+				Method method = _methods[i];
+				Object value = null;
+
+				try {
+					value = _methods[i].invoke(obj, (Object[]) null);
+				} catch (Exception e) {
+					log.log(Level.FINE, e.toString(), e);
+				}
+
+				out.writeString(_names[i]);
+
+				out.writeObject(value);
+			}
+
+			out.writeMapEnd();
+		} else {
+			if (ref == -1) {
+				out.writeInt(_names.length);
+
+				for (int i = 0; i < _names.length; i++)
+					out.writeString(_names[i]);
+
+				out.writeObjectBegin(cl.getName());
+			}
+
+			for (int i = 0; i < _methods.length; i++) {
+				Method method = _methods[i];
+				Object value = null;
+
+				try {
+					value = _methods[i].invoke(obj, (Object[]) null);
+				} catch (Exception e) {
+					log.log(Level.FINER, e.toString(), e);
+				}
+
+				out.writeObject(value);
+			}
+		}
+	}
+
+	/**
+	 * Finds any matching setter.
+	 */
+	private Method findSetter(Method[] methods, String getterName, Class arg) {
+		String setterName = "set" + getterName.substring(3);
+
+		for (int i = 0; i < methods.length; i++) {
+			Method method = methods[i];
+
+			if (!method.getName().equals(setterName))
+				continue;
+
+			if (!method.getReturnType().equals(void.class))
+				continue;
+
+			Class[] params = method.getParameterTypes();
+
+			if (params.length == 1 && params[0].equals(arg))
+				return method;
+		}
+
+		return null;
+	}
+
+	static class MethodNameCmp implements Comparator<Method> {
+		public int compare(Method a, Method b) {
+			return a.getName().compareTo(b.getName());
+		}
+	}
 }

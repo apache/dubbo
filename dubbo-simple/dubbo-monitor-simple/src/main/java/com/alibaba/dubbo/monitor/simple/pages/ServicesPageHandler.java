@@ -33,41 +33,46 @@ import com.alibaba.dubbo.monitor.simple.RegistryContainer;
  */
 @Menu(name = "Services", desc = "Show registered services.", order = 2000)
 public class ServicesPageHandler implements PageHandler {
-    
-    public Page handle(URL url) {
-        Set<String> services = RegistryContainer.getInstance().getServices();
-        List<List<String>> rows = new ArrayList<List<String>>();
-        int providerCount = 0;
-        int consumerCount = 0;
-        if (services != null && services.size() > 0) {
-            for (String service : services) {
-                List<URL> providers = RegistryContainer.getInstance().getProvidersByService(service);
-                int providerSize = providers == null ? 0 : providers.size();
-                providerCount += providerSize;
-                List<URL> consumers = RegistryContainer.getInstance().getConsumersByService(service);
-                int consumerSize = consumers == null ? 0 : consumers.size();
-                consumerCount += consumerSize;
-                List<String> row = new ArrayList<String>();
-                row.add(service);
-                if (providerSize > 0 || consumerSize > 0) {
-                    if (providerSize > 0) {
-                        URL provider = providers.iterator().next();
-                        row.add(provider.getParameter(Constants.APPLICATION_KEY, ""));
-                        row.add(provider.getParameter("owner", "") + (provider.hasParameter("organization") ?  " (" + provider.getParameter("organization") + ")" : ""));
-                    } else {
-                        row.add("");
-                        row.add("");
-                    }
-                    row.add(providerSize == 0 ? "<font color=\"red\">No provider</a>" : "<a href=\"providers.html?service=" + service + "\">Providers(" + providerSize + ")</a>");
-                    row.add(consumerSize == 0 ? "<font color=\"blue\">No consumer</a>" : "<a href=\"consumers.html?service=" + service + "\">Consumers(" + consumerSize + ")</a>");
-                    row.add("<a href=\"statistics.html?service=" + service + "\">Statistics</a>");
-                    row.add("<a href=\"charts.html?service=" + service + "\">Charts</a>");
-                    rows.add(row);
-                }
-            }
-        }
-        return new Page("Services", "Services (" + rows.size() + ")",
-                new String[] { "Service Name:", "Application", "Owner", "Providers(" + providerCount + ")", "Consumers(" + consumerCount + ")", "Statistics", "Charts" }, rows);
-    }
+
+	public Page handle(URL url) {
+		Set<String> services = RegistryContainer.getInstance().getServices();
+		List<List<String>> rows = new ArrayList<List<String>>();
+		int providerCount = 0;
+		int consumerCount = 0;
+		if (services != null && services.size() > 0) {
+			for (String service : services) {
+				List<URL> providers = RegistryContainer.getInstance().getProvidersByService(service);
+				int providerSize = providers == null ? 0 : providers.size();
+				providerCount += providerSize;
+				List<URL> consumers = RegistryContainer.getInstance().getConsumersByService(service);
+				int consumerSize = consumers == null ? 0 : consumers.size();
+				consumerCount += consumerSize;
+				List<String> row = new ArrayList<String>();
+				row.add(service);
+				if (providerSize > 0 || consumerSize > 0) {
+					if (providerSize > 0) {
+						URL provider = providers.iterator().next();
+						row.add(provider.getParameter(Constants.APPLICATION_KEY, ""));
+						row.add(provider.getParameter("owner", "")
+								+ (provider.hasParameter("organization") ? " (" + provider.getParameter("organization")
+										+ ")" : ""));
+					} else {
+						row.add("");
+						row.add("");
+					}
+					row.add(providerSize == 0 ? "<font color=\"red\">No provider</a>"
+							: "<a href=\"providers.html?service=" + service + "\">Providers(" + providerSize + ")</a>");
+					row.add(consumerSize == 0 ? "<font color=\"blue\">No consumer</a>"
+							: "<a href=\"consumers.html?service=" + service + "\">Consumers(" + consumerSize + ")</a>");
+					row.add("<a href=\"statistics.html?service=" + service + "\">Statistics</a>");
+					row.add("<a href=\"charts.html?service=" + service + "\">Charts</a>");
+					rows.add(row);
+				}
+			}
+		}
+		return new Page("Services", "Services (" + rows.size() + ")",
+				new String[] { "Service Name:", "Application", "Owner", "Providers(" + providerCount + ")",
+						"Consumers(" + consumerCount + ")", "Statistics", "Charts" }, rows);
+	}
 
 }

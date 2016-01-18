@@ -27,38 +27,38 @@ import com.alibaba.dubbo.common.logger.LoggerFactory;
  */
 public class MessageSource {
 
-    // 日志输出
-    private static final Logger logger = LoggerFactory.getLogger(MessageSource.class);
+	// 日志输出
+	private static final Logger logger = LoggerFactory.getLogger(MessageSource.class);
 
-    private final ResourceBundle resourceBundle;
-    
-    private final String errorPrefix;
+	private final ResourceBundle resourceBundle;
 
-    public MessageSource(ResourceBundle resourceBundle) {
-        this(resourceBundle, null);
-    }
-    
-    public MessageSource(ResourceBundle resourceBundle, String errorPrefix) {
-        this.resourceBundle = resourceBundle;
-        this.errorPrefix = errorPrefix == null ? "" : errorPrefix + " ";
-    }
-    
-    public String getString(String key) {
-    	try {
-    		return resourceBundle.getString(key);
-    	} catch (Throwable t) {
-    		logger.warn(errorPrefix + t.getMessage(), t);
-    		return key;
-    	}
-    }
-    
-    public String getString(String key, Object... args) {
-    	try {
-    		return new MessageFormat(resourceBundle.getString(key)).format(args);
-    	} catch (Throwable t) {
-    		logger.warn(errorPrefix + t.getMessage(), t);
-    		return key;
-    	}
-    }
+	private final String errorPrefix;
+
+	public MessageSource(ResourceBundle resourceBundle) {
+		this(resourceBundle, null);
+	}
+
+	public MessageSource(ResourceBundle resourceBundle, String errorPrefix) {
+		this.resourceBundle = resourceBundle;
+		this.errorPrefix = errorPrefix == null ? "" : errorPrefix + " ";
+	}
+
+	public String getString(String key) {
+		try {
+			return resourceBundle.getString(key);
+		} catch (Throwable t) {
+			logger.warn(errorPrefix + t.getMessage(), t);
+			return key;
+		}
+	}
+
+	public String getString(String key, Object... args) {
+		try {
+			return new MessageFormat(resourceBundle.getString(key)).format(args);
+		} catch (Throwable t) {
+			logger.warn(errorPrefix + t.getMessage(), t);
+			return key;
+		}
+	}
 
 }

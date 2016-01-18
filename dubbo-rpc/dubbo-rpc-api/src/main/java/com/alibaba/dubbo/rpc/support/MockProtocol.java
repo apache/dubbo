@@ -23,6 +23,7 @@ import com.alibaba.dubbo.rpc.protocol.AbstractProtocol;
 
 /**
  * MockProtocol 用于在consumer side 通过url及类型生成一个mockInvoker
+ * 
  * @author chao.liuc
  *
  */

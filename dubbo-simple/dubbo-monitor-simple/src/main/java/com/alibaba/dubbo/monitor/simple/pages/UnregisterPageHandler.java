@@ -27,24 +27,25 @@ import com.alibaba.dubbo.monitor.simple.RegistryContainer;
  */
 public class UnregisterPageHandler implements PageHandler {
 
-    public Page handle(URL url) {
-        String provider = url.getParameterAndDecoded("provider");
-        if (provider == null || provider.length() == 0) {
-            throw new IllegalArgumentException("Please input provider parameter.");
-        }
-        URL providerUrl = URL.valueOf(provider);
-        RegistryContainer.getInstance().getRegistry().unregister(providerUrl);
-        String parameter;
-        if (url.hasParameter("service")) {
-            parameter = "service=" + url.getParameter("service");
-        } else if (url.hasParameter("host")) {
-            parameter = "host=" + url.getParameter("host");
-        } else if (url.hasParameter("application")) {
-            parameter = "application=" + url.getParameter("application");
-        } else {
-            parameter = "service=" + providerUrl.getServiceInterface();
-        }
-        return new Page("<script type=\"text/javascript\">window.location.href=\"providers.html?" + parameter + "\";</script>");
-    }
+	public Page handle(URL url) {
+		String provider = url.getParameterAndDecoded("provider");
+		if (provider == null || provider.length() == 0) {
+			throw new IllegalArgumentException("Please input provider parameter.");
+		}
+		URL providerUrl = URL.valueOf(provider);
+		RegistryContainer.getInstance().getRegistry().unregister(providerUrl);
+		String parameter;
+		if (url.hasParameter("service")) {
+			parameter = "service=" + url.getParameter("service");
+		} else if (url.hasParameter("host")) {
+			parameter = "host=" + url.getParameter("host");
+		} else if (url.hasParameter("application")) {
+			parameter = "application=" + url.getParameter("application");
+		} else {
+			parameter = "service=" + providerUrl.getServiceInterface();
+		}
+		return new Page("<script type=\"text/javascript\">window.location.href=\"providers.html?" + parameter
+				+ "\";</script>");
+	}
 
 }

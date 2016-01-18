@@ -18,14 +18,14 @@ package com.alibaba.dubbo.rpc.protocol.thrift;
  */
 public class ThriftClassNameGenerator implements ClassNameGenerator {
 
-    public static final String NAME = "thrift";
+	public static final String NAME = "thrift";
 
-    public String generateArgsClassName( String serviceName, String methodName ) {
-        return ThriftUtils.generateMethodArgsClassNameThrift( serviceName, methodName );
-    }
+	public String generateArgsClassName(String serviceName, String methodName) {
+		return ThriftUtils.generateMethodArgsClassNameThrift(serviceName, methodName);
+	}
 
-    public String generateResultClassName( String serviceName, String methodName ) {
-        return ThriftUtils.generateMethodResultClassNameThrift( serviceName, methodName );
-    }
+	public String generateResultClassName(String serviceName, String methodName) {
+		return ThriftUtils.generateMethodResultClassNameThrift(serviceName, methodName);
+	}
 
 }

@@ -3,19 +3,19 @@ package com.alibaba.dubbo.registry.common.domain;
 public class SearchHistory extends Entity {
 
 	private static final long serialVersionUID = -1281982267153430266L;
-	
-    private String name;
-    
-    private String type;
-    
-    private String url;
-    
-    public SearchHistory() {
-    }
 
-    public SearchHistory(Long id) {
-        super(id);
-    }
+	private String name;
+
+	private String type;
+
+	private String url;
+
+	public SearchHistory() {
+	}
+
+	public SearchHistory(Long id) {
+		super(id);
+	}
 
 	public String getName() {
 		return name;
@@ -40,5 +40,5 @@ public class SearchHistory extends Entity {
 	public void setUrl(String url) {
 		this.url = url;
 	}
-    
+
 }

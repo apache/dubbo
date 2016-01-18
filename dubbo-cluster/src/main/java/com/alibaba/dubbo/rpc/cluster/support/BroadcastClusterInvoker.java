@@ -33,34 +33,35 @@ import com.alibaba.dubbo.rpc.cluster.LoadBalance;
  * @author william.liangf
  */
 public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
-    
-    private static final Logger logger = LoggerFactory.getLogger(BroadcastClusterInvoker.class);
 
-    public BroadcastClusterInvoker(Directory<T> directory) {
-        super(directory);
-    }
+	private static final Logger logger = LoggerFactory.getLogger(BroadcastClusterInvoker.class);
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public Result doInvoke(final Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
-        checkInvokers(invokers, invocation);
-        RpcContext.getContext().setInvokers((List)invokers);
-        RpcException exception = null;
-        Result result = null;
-        for (Invoker<T> invoker: invokers) {
-            try {
-                result = invoker.invoke(invocation);
-            } catch (RpcException e) {
-                exception = e;
-                logger.warn(e.getMessage(), e);
-            } catch (Throwable e) {
-                exception = new RpcException(e.getMessage(), e);
-                logger.warn(e.getMessage(), e);
-            }
-        }
-        if (exception != null) {
-            throw exception;
-        }
-        return result;
-    }
+	public BroadcastClusterInvoker(Directory<T> directory) {
+		super(directory);
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public Result doInvoke(final Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance)
+			throws RpcException {
+		checkInvokers(invokers, invocation);
+		RpcContext.getContext().setInvokers((List) invokers);
+		RpcException exception = null;
+		Result result = null;
+		for (Invoker<T> invoker : invokers) {
+			try {
+				result = invoker.invoke(invocation);
+			} catch (RpcException e) {
+				exception = e;
+				logger.warn(e.getMessage(), e);
+			} catch (Throwable e) {
+				exception = new RpcException(e.getMessage(), e);
+				logger.warn(e.getMessage(), e);
+			}
+		}
+		if (exception != null) {
+			throw exception;
+		}
+		return result;
+	}
 
 }

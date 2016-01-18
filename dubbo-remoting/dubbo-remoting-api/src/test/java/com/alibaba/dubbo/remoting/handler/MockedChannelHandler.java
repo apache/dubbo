@@ -28,31 +28,33 @@ import com.alibaba.dubbo.remoting.RemotingException;
  *
  */
 public class MockedChannelHandler implements ChannelHandler {
-//    ConcurrentMap<String, Channel> channels = new ConcurrentHashMap<String, Channel>();
-    ConcurrentHashSet<Channel> channels = new ConcurrentHashSet<Channel>();
+	// ConcurrentMap<String, Channel> channels = new ConcurrentHashMap<String,
+	// Channel>();
+	ConcurrentHashSet<Channel> channels = new ConcurrentHashSet<Channel>();
 
-    public void connected(Channel channel) throws RemotingException {
-        channels.add(channel);
-    }
+	public void connected(Channel channel) throws RemotingException {
+		channels.add(channel);
+	}
 
-    public void disconnected(Channel channel) throws RemotingException {
-        channels.remove(channel);
-    }
+	public void disconnected(Channel channel) throws RemotingException {
+		channels.remove(channel);
+	}
 
-    public void sent(Channel channel, Object message) throws RemotingException {
-        channel.send(message);
-    }
+	public void sent(Channel channel, Object message) throws RemotingException {
+		channel.send(message);
+	}
 
-    public void received(Channel channel, Object message) throws RemotingException {
-        //echo 
-        channel.send(message);
-    }
+	public void received(Channel channel, Object message) throws RemotingException {
+		// echo
+		channel.send(message);
+	}
 
-    public void caught(Channel channel, Throwable exception) throws RemotingException {
-        throw new RemotingException(channel, exception);
-        
-    }
-    public Set<Channel> getChannels(){
-        return Collections.unmodifiableSet(channels);
-    }
+	public void caught(Channel channel, Throwable exception) throws RemotingException {
+		throw new RemotingException(channel, exception);
+
+	}
+
+	public Set<Channel> getChannels() {
+		return Collections.unmodifiableSet(channels);
+	}
 }

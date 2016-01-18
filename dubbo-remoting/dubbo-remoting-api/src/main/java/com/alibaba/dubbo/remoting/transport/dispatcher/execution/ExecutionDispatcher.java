@@ -25,11 +25,11 @@ import com.alibaba.dubbo.remoting.Dispatcher;
  * @author chao.liuc
  */
 public class ExecutionDispatcher implements Dispatcher {
-    
-    public static final String NAME = "execution";
 
-    public ChannelHandler dispatch(ChannelHandler handler, URL url) {
-        return new ExecutionChannelHandler(handler, url);
-    }
+	public static final String NAME = "execution";
+
+	public ChannelHandler dispatch(ChannelHandler handler, URL url) {
+		return new ExecutionChannelHandler(handler, url);
+	}
 
 }

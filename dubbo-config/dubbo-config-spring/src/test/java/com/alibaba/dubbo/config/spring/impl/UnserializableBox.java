@@ -21,29 +21,29 @@ import com.alibaba.dubbo.config.spring.api.Box;
  * @author ding.lid
  */
 public class UnserializableBox implements Box {
-    private static final long serialVersionUID = -4141012025649711421L;
-    
-    private int    count = 3;
-    private String name  = "Jerry";
+	private static final long serialVersionUID = -4141012025649711421L;
 
-    public int getCount() {
-        return count;
-    }
+	private int count = 3;
+	private String name = "Jerry";
 
-    public void setCount(int count) {
-        this.count = count;
-    }
+	public int getCount() {
+		return count;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public void setCount(int count) {
+		this.count = count;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public String getName() {
+		return name;
+	}
 
-    @Override
-    public String toString() {
-        return "Box [count=" + count + ", name=" + name + "]";
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	@Override
+	public String toString() {
+		return "Box [count=" + count + ", name=" + name + "]";
+	}
 }

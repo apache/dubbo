@@ -25,14 +25,14 @@ import com.alibaba.dubbo.remoting.exchange.ExchangeChannel;
  */
 public interface Replier<T> {
 
-    /**
-     * reply.
-     * 
-     * @param channel
-     * @param request
-     * @return response
-     * @throws RemotingException
-     */
-    Object reply(ExchangeChannel channel, T request) throws RemotingException;
+	/**
+	 * reply.
+	 * 
+	 * @param channel
+	 * @param request
+	 * @return response
+	 * @throws RemotingException
+	 */
+	Object reply(ExchangeChannel channel, T request) throws RemotingException;
 
 }

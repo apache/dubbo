@@ -21,9 +21,9 @@ package com.alibaba.dubbo.config.spring.api;
  * @author william.liangf
  */
 public interface DemoService {
-    
-    String sayName(String name);
-    
-    Box getBox();
-    
+
+	String sayName(String name);
+
+	Box getBox();
+
 }

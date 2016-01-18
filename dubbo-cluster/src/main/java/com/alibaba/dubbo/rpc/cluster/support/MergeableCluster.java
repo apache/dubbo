@@ -25,10 +25,10 @@ import com.alibaba.dubbo.rpc.cluster.Directory;
  */
 public class MergeableCluster implements Cluster {
 
-    public static final String NAME = "mergeable";
+	public static final String NAME = "mergeable";
 
-    public <T> Invoker<T> join( Directory<T> directory ) throws RpcException {
-        return new MergeableClusterInvoker<T>( directory );
-    }
+	public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
+		return new MergeableClusterInvoker<T>(directory);
+	}
 
 }

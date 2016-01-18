@@ -30,34 +30,37 @@ import com.alibaba.dubbo.registry.NotifyListener;
  */
 public class UnsubscribePageHandler implements PageHandler {
 
-    public Page handle(URL url) {
-        String consumer = url.getParameterAndDecoded("consumer");
-        if (consumer == null || consumer.length() == 0) {
-            throw new IllegalArgumentException("Please input consumer parameter.");
-        }
-        URL consumerUrl = URL.valueOf(consumer);
-        RegistryContainer.getInstance().getRegistry().unsubscribe(consumerUrl, NotifyListenerAdapter.NOTIFY_LISTENER);
-        String parameter;
-        if (url.hasParameter("service")) {
-            parameter = "service=" + url.getParameter("service");
-        } else if (url.hasParameter("host")) {
-            parameter = "host=" + url.getParameter("host");
-        } else if (url.hasParameter("application")) {
-            parameter = "application=" + url.getParameter("application");
-        } else {
-            parameter = "service=" + consumerUrl.getServiceInterface();
-        }
-        return new Page("<script type=\"text/javascript\">window.location.href=\"consumers.html?" + parameter + "\";</script>");
-    }
-    
-    private static class NotifyListenerAdapter implements NotifyListener {
-        
-        public static final NotifyListener NOTIFY_LISTENER = new NotifyListenerAdapter();
-        
-        private NotifyListenerAdapter() {}
+	public Page handle(URL url) {
+		String consumer = url.getParameterAndDecoded("consumer");
+		if (consumer == null || consumer.length() == 0) {
+			throw new IllegalArgumentException("Please input consumer parameter.");
+		}
+		URL consumerUrl = URL.valueOf(consumer);
+		RegistryContainer.getInstance().getRegistry().unsubscribe(consumerUrl, NotifyListenerAdapter.NOTIFY_LISTENER);
+		String parameter;
+		if (url.hasParameter("service")) {
+			parameter = "service=" + url.getParameter("service");
+		} else if (url.hasParameter("host")) {
+			parameter = "host=" + url.getParameter("host");
+		} else if (url.hasParameter("application")) {
+			parameter = "application=" + url.getParameter("application");
+		} else {
+			parameter = "service=" + consumerUrl.getServiceInterface();
+		}
+		return new Page("<script type=\"text/javascript\">window.location.href=\"consumers.html?" + parameter
+				+ "\";</script>");
+	}
 
-        public void notify(List<URL> urls) {}
-        
-    }
+	private static class NotifyListenerAdapter implements NotifyListener {
+
+		public static final NotifyListener NOTIFY_LISTENER = new NotifyListenerAdapter();
+
+		private NotifyListenerAdapter() {
+		}
+
+		public void notify(List<URL> urls) {
+		}
+
+	}
 
 }

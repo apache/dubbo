@@ -24,13 +24,13 @@ import com.alibaba.dubbo.rpc.cluster.configurator.AbstractConfigurator;
  * @author william.liangf
  */
 public class OverrideConfigurator extends AbstractConfigurator {
-    
-    public OverrideConfigurator(URL url) {
-        super(url);
-    }
 
-    public URL doConfigure(URL currentUrl, URL configUrl) {
-        return currentUrl.addParameters(configUrl.getParameters());
-    }
+	public OverrideConfigurator(URL url) {
+		super(url);
+	}
+
+	public URL doConfigure(URL currentUrl, URL configUrl) {
+		return currentUrl.addParameters(configUrl.getParameters());
+	}
 
 }

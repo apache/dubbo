@@ -18,11 +18,9 @@ package com.alibaba.dubbo.common.bytecode;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-public class WrapperTest
-{
-    @Test
-	public void testMain() throws Exception
-	{
+public class WrapperTest {
+	@Test
+	public void testMain() throws Exception {
 		Wrapper w = Wrapper.getWrapper(I1.class);
 		String[] ns = w.getDeclaredMethodNames();
 		assertEquals(ns.length, 5);
@@ -35,58 +33,55 @@ public class WrapperTest
 		w.setPropertyValue(obj, "name", "changed");
 		assertEquals(w.getPropertyValue(obj, "name"), "changed");
 
-		w.invokeMethod(obj, "hello", new Class<?>[] {String.class}, new Object[]{ "qianlei" });
+		w.invokeMethod(obj, "hello", new Class<?>[] { String.class }, new Object[] { "qianlei" });
 	}
-	
+
 	// bug: DUBBO-132
-    @Test
+	@Test
 	public void test_unwantedArgument() throws Exception {
-	    Wrapper w = Wrapper.getWrapper(I1.class);
-	    Object obj = new Impl1();
-        try {
-            w.invokeMethod(obj, "hello", new Class<?>[] { String.class, String.class },
-                    new Object[] { "qianlei", "badboy" });
-            fail();
-        } catch (NoSuchMethodException expected) {
-        }
-    }
-	
-	//bug: DUBBO-425
-    @Test
-    public void test_makeEmptyClass() throws Exception {
-        Wrapper.getWrapper(EmptyServiceImpl.class);
-    }
-
-    /**
-     * see http://code.alibabatech.com/jira/browse/DUBBO-571
-     */
-    @Test
-    public void test_getDeclaredMethodNames_ContainExtendsParentMethods() throws Exception {
-        assertArrayEquals(new String[]{"hello", }, Wrapper.getWrapper(Parent1.class).getMethodNames());
-
-        assertArrayEquals(new String[]{}, Wrapper.getWrapper(Son.class).getDeclaredMethodNames());
-    }
-
-    /**
-     * see http://code.alibabatech.com/jira/browse/DUBBO-571
-     */
-    @Test
-    public void test_getMethodNames_ContainExtendsParentMethods() throws Exception {
-        assertArrayEquals(new String[]{"hello", "world"}, Wrapper.getWrapper(Son.class).getMethodNames());
-    }
-
-    public static class Impl0
-	{
-		public float a,b,c;
+		Wrapper w = Wrapper.getWrapper(I1.class);
+		Object obj = new Impl1();
+		try {
+			w.invokeMethod(obj, "hello", new Class<?>[] { String.class, String.class }, new Object[] { "qianlei",
+					"badboy" });
+			fail();
+		} catch (NoSuchMethodException expected) {
+		}
 	}
 
-	public static interface I0
-	{
+	// bug: DUBBO-425
+	@Test
+	public void test_makeEmptyClass() throws Exception {
+		Wrapper.getWrapper(EmptyServiceImpl.class);
+	}
+
+	/**
+	 * see http://code.alibabatech.com/jira/browse/DUBBO-571
+	 */
+	@Test
+	public void test_getDeclaredMethodNames_ContainExtendsParentMethods() throws Exception {
+		assertArrayEquals(new String[] { "hello", }, Wrapper.getWrapper(Parent1.class).getMethodNames());
+
+		assertArrayEquals(new String[] {}, Wrapper.getWrapper(Son.class).getDeclaredMethodNames());
+	}
+
+	/**
+	 * see http://code.alibabatech.com/jira/browse/DUBBO-571
+	 */
+	@Test
+	public void test_getMethodNames_ContainExtendsParentMethods() throws Exception {
+		assertArrayEquals(new String[] { "hello", "world" }, Wrapper.getWrapper(Son.class).getMethodNames());
+	}
+
+	public static class Impl0 {
+		public float a, b, c;
+	}
+
+	public static interface I0 {
 		String getName();
 	}
 
-	public static interface I1 extends I0
-	{
+	public static interface I1 extends I0 {
 		void setName(String name);
 
 		void hello(String name);
@@ -98,62 +93,51 @@ public class WrapperTest
 		float getFloat();
 	}
 
-	public static class Impl1 implements I1
-	{
+	public static class Impl1 implements I1 {
 		private String name = "you name";
 
 		private float fv = 0;
 
-		public String getName()
-		{
+		public String getName() {
 			return name;
 		}
 
-		public void setName(String name)
-		{
+		public void setName(String name) {
 			this.name = name;
 		}
 
-		public void hello(String name)
-		{
+		public void hello(String name) {
 			System.out.println("hello " + name);
 		}
 
-		public int showInt(int v)
-		{
+		public int showInt(int v) {
 			return v;
 		}
 
-		public float getFloat()
-		{
+		public float getFloat() {
 			return fv;
 		}
 
-		public void setFloat(float f)
-		{
+		public void setFloat(float f) {
 			fv = f;
 		}
 	}
 
+	public static interface EmptyService {
+	}
 
-	
-	public static interface EmptyService
-    {
-    }
-	
-	public static class EmptyServiceImpl implements EmptyService
-    {
-    }
+	public static class EmptyServiceImpl implements EmptyService {
+	}
 
-    public static interface Parent1 {
-        void hello();
-    }
+	public static interface Parent1 {
+		void hello();
+	}
 
-    public static interface Parent2 {
-        void world();
-    }
+	public static interface Parent2 {
+		void world();
+	}
 
-    public static interface Son extends Parent1, Parent2 {
+	public static interface Son extends Parent1, Parent2 {
 
-    }
+	}
 }

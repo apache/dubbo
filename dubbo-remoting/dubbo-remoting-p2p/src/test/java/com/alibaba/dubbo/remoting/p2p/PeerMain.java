@@ -27,32 +27,33 @@ import com.alibaba.dubbo.remoting.transport.ChannelHandlerAdapter;
  * @author william.liangf
  */
 public class PeerMain {
-    
-    public static void main(String[] args) throws Throwable {
-        String groupURL = "multicast://224.5.6.7:9911"; // 组地址，支持multicast和file两种组 ，可扩展
-        final String peerURL = "dubbo://0.0.0.0:" + (((int) (Math.random() * 10000)) + 20000); // 用于交叉组网的本机服务器地址
-        
-        // 加入组，并获取对等引用
-        Peer peer = Networkers.join(groupURL, peerURL, new ChannelHandlerAdapter(){
-            @Override
-            public void received(Channel channel, Object message) throws RemotingException {
-                System.out.println("Received: " + message + " in " + peerURL);
-            }
-        });
-        
-        // 向网络中存在的其它对等体发送消息
-        for (int i = 0; i < Integer.MAX_VALUE; i ++) {
-            Collection<Channel> channels = peer.getChannels(); // 获取与其它所有对等体的通道，此列表动态变化
-            if (channels != null && channels.size() > 0) {
-                for (Channel channel : channels) {
-                    channel.send("(" + i + ") " + peerURL); // 向指定对等体发送消息
-                }
-            }
-            Thread.sleep(1000);
-        }
-        
-        // 离开网络
-        peer.leave();
-    }
+
+	public static void main(String[] args) throws Throwable {
+		String groupURL = "multicast://224.5.6.7:9911"; // 组地址，支持multicast和file两种组
+														// ，可扩展
+		final String peerURL = "dubbo://0.0.0.0:" + (((int) (Math.random() * 10000)) + 20000); // 用于交叉组网的本机服务器地址
+
+		// 加入组，并获取对等引用
+		Peer peer = Networkers.join(groupURL, peerURL, new ChannelHandlerAdapter() {
+			@Override
+			public void received(Channel channel, Object message) throws RemotingException {
+				System.out.println("Received: " + message + " in " + peerURL);
+			}
+		});
+
+		// 向网络中存在的其它对等体发送消息
+		for (int i = 0; i < Integer.MAX_VALUE; i++) {
+			Collection<Channel> channels = peer.getChannels(); // 获取与其它所有对等体的通道，此列表动态变化
+			if (channels != null && channels.size() > 0) {
+				for (Channel channel : channels) {
+					channel.send("(" + i + ") " + peerURL); // 向指定对等体发送消息
+				}
+			}
+			Thread.sleep(1000);
+		}
+
+		// 离开网络
+		peer.leave();
+	}
 
 }

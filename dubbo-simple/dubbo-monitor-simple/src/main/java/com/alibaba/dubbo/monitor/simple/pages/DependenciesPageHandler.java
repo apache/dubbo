@@ -31,59 +31,67 @@ import com.alibaba.dubbo.monitor.simple.RegistryContainer;
  * @author william.liangf
  */
 public class DependenciesPageHandler implements PageHandler {
-    
-    public Page handle(URL url) {
-        String application = url.getParameter("application");
-        if (application == null || application.length() == 0) {
-            throw new IllegalArgumentException("Please input application parameter.");
-        }
-        boolean reverse = url.getParameter("reverse", false);
-        List<List<String>> rows = new ArrayList<List<String>>();
-        Set<String> directly = RegistryContainer.getInstance().getDependencies(application, reverse);
-        Set<String> indirectly = new HashSet<String>();
-        appendDependency(rows, reverse, application, 0, new HashSet<String>(), indirectly);
-        indirectly.remove(application);
-        return new Page("<a href=\"applications.html\">Applications</a> &gt; " + application + 
-                " &gt; <a href=\"providers.html?application=" + application + "\">Providers</a> | <a href=\"consumers.html?application=" + application + "\">Consumers</a> | " +
-                (reverse ? "<a href=\"dependencies.html?application=" + application + "\">Depends On</a> | Used By" 
-                        : "Depends On | <a href=\"dependencies.html?application=" + application + "&reverse=true\">Used By</a>"), (reverse ? "Used By" : "Depends On") + " (" + directly.size() + "/" + indirectly.size() + ")", new String[] { "Application Name:"}, rows);
-    }
-    
-    private void appendDependency(List<List<String>> rows, boolean reverse, String application, int level, Set<String> appended, Set<String> indirectly) {
-        List<String> row = new ArrayList<String>();
-        StringBuilder buf = new StringBuilder();
-        if (level > 0) {
-            for (int i = 0; i < level; i ++) {
-                buf.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|");
-            }
-            buf.append(reverse ? "&lt;-- " : "--&gt; ");
-        }
-        boolean end = false;
-        if (level > 5) {
-            buf.append(" <font color=\"blue\">More...</font>");
-            end = true;
-        } else {
-            buf.append(application);
-            if (appended.contains(application)) {
-                buf.append(" <font color=\"red\">(Cycle)</font>");
-                end = true;
-            }
-        }
-        row.add(buf.toString());
-        rows.add(row);
-        if (end) {
-            return;
-        }
-        
-        appended.add(application);
-        indirectly.add(application);
-        Set<String> dependencies = RegistryContainer.getInstance().getDependencies(application, reverse);
-        if (dependencies != null && dependencies.size() > 0) {
-            for (String dependency : dependencies) {
-                appendDependency(rows, reverse, dependency, level + 1, appended, indirectly);
-            }
-        }
-        appended.remove(application);
-    }
+
+	public Page handle(URL url) {
+		String application = url.getParameter("application");
+		if (application == null || application.length() == 0) {
+			throw new IllegalArgumentException("Please input application parameter.");
+		}
+		boolean reverse = url.getParameter("reverse", false);
+		List<List<String>> rows = new ArrayList<List<String>>();
+		Set<String> directly = RegistryContainer.getInstance().getDependencies(application, reverse);
+		Set<String> indirectly = new HashSet<String>();
+		appendDependency(rows, reverse, application, 0, new HashSet<String>(), indirectly);
+		indirectly.remove(application);
+		return new Page("<a href=\"applications.html\">Applications</a> &gt; "
+				+ application
+				+ " &gt; <a href=\"providers.html?application="
+				+ application
+				+ "\">Providers</a> | <a href=\"consumers.html?application="
+				+ application
+				+ "\">Consumers</a> | "
+				+ (reverse ? "<a href=\"dependencies.html?application=" + application + "\">Depends On</a> | Used By"
+						: "Depends On | <a href=\"dependencies.html?application=" + application
+								+ "&reverse=true\">Used By</a>"), (reverse ? "Used By" : "Depends On") + " ("
+				+ directly.size() + "/" + indirectly.size() + ")", new String[] { "Application Name:" }, rows);
+	}
+
+	private void appendDependency(List<List<String>> rows, boolean reverse, String application, int level,
+			Set<String> appended, Set<String> indirectly) {
+		List<String> row = new ArrayList<String>();
+		StringBuilder buf = new StringBuilder();
+		if (level > 0) {
+			for (int i = 0; i < level; i++) {
+				buf.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|");
+			}
+			buf.append(reverse ? "&lt;-- " : "--&gt; ");
+		}
+		boolean end = false;
+		if (level > 5) {
+			buf.append(" <font color=\"blue\">More...</font>");
+			end = true;
+		} else {
+			buf.append(application);
+			if (appended.contains(application)) {
+				buf.append(" <font color=\"red\">(Cycle)</font>");
+				end = true;
+			}
+		}
+		row.add(buf.toString());
+		rows.add(row);
+		if (end) {
+			return;
+		}
+
+		appended.add(application);
+		indirectly.add(application);
+		Set<String> dependencies = RegistryContainer.getInstance().getDependencies(application, reverse);
+		if (dependencies != null && dependencies.size() > 0) {
+			for (String dependency : dependencies) {
+				appendDependency(rows, reverse, dependency, level + 1, appended, indirectly);
+			}
+		}
+		appended.remove(application);
+	}
 
 }

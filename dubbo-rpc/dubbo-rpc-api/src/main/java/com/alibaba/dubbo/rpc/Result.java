@@ -42,56 +42,56 @@ public interface Result {
 	 */
 	Throwable getException();
 
-    /**
-     * Has exception.
-     * 
-     * @return has exception.
-     */
-    boolean hasException();
+	/**
+	 * Has exception.
+	 * 
+	 * @return has exception.
+	 */
+	boolean hasException();
 
-    /**
-     * Recreate.
-     * 
-     * <code>
-     * if (hasException()) {
-     *     throw getException();
-     * } else {
-     *     return getValue();
-     * }
-     * </code>
-     * 
-     * @return result.
-     * @throws if has exception throw it.
-     */
-    Object recreate() throws Throwable;
+	/**
+	 * Recreate.
+	 * 
+	 * <code>
+	 * if (hasException()) {
+	 *     throw getException();
+	 * } else {
+	 *     return getValue();
+	 * }
+	 * </code>
+	 * 
+	 * @return result.
+	 * @throws if
+	 *             has exception throw it.
+	 */
+	Object recreate() throws Throwable;
 
-    /**
-     * @deprecated Replace to getValue()
-     * @see com.alibaba.dubbo.rpc.Result#getValue()
-     */
-    @Deprecated
-    Object getResult();
+	/**
+	 * @deprecated Replace to getValue()
+	 * @see com.alibaba.dubbo.rpc.Result#getValue()
+	 */
+	@Deprecated
+	Object getResult();
 
+	/**
+	 * get attachments.
+	 *
+	 * @return attachments.
+	 */
+	Map<String, String> getAttachments();
 
-    /**
-     * get attachments.
-     *
-     * @return attachments.
-     */
-    Map<String, String> getAttachments();
+	/**
+	 * get attachment by key.
+	 *
+	 * @return attachment value.
+	 */
+	String getAttachment(String key);
 
-    /**
-     * get attachment by key.
-     *
-     * @return attachment value.
-     */
-    String getAttachment(String key);
-
-    /**
-     * get attachment by key with default value.
-     *
-     * @return attachment value.
-     */
-    String getAttachment(String key, String defaultValue);
+	/**
+	 * get attachment by key with default value.
+	 *
+	 * @return attachment value.
+	 */
+	String getAttachment(String key, String defaultValue);
 
 }

@@ -22,10 +22,10 @@ import com.alibaba.dubbo.common.extensionloader.activate.ActivateExt1;
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-@Activate(group = {"group1", "group2"})
+@Activate(group = { "group1", "group2" })
 public class GroupActivateExtImpl implements ActivateExt1 {
 
-    public String echo(String msg) {
-        return msg;
-    }
+	public String echo(String msg) {
+		return msg;
+	}
 }

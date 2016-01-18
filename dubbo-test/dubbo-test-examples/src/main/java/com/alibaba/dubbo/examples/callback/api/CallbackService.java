@@ -21,7 +21,7 @@ package com.alibaba.dubbo.examples.callback.api;
  * @author william.liangf
  */
 public interface CallbackService {
-    
-    void addListener(String key, CallbackListener listener);
+
+	void addListener(String key, CallbackListener listener);
 
 }

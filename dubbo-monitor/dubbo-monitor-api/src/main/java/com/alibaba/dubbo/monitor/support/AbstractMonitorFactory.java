@@ -34,37 +34,38 @@ import com.alibaba.dubbo.monitor.MonitorService;
  */
 public abstract class AbstractMonitorFactory implements MonitorFactory {
 
-    // 注册中心获取过程锁
-    private static final ReentrantLock LOCK = new ReentrantLock();
-    
-    // 注册中心集合 Map<RegistryAddress, Registry>
-    private static final Map<String, Monitor> MONITORS = new ConcurrentHashMap<String, Monitor>();
+	// 注册中心获取过程锁
+	private static final ReentrantLock LOCK = new ReentrantLock();
 
-    public static Collection<Monitor> getMonitors() {
-        return Collections.unmodifiableCollection(MONITORS.values());
-    }
+	// 注册中心集合 Map<RegistryAddress, Registry>
+	private static final Map<String, Monitor> MONITORS = new ConcurrentHashMap<String, Monitor>();
 
-    public Monitor getMonitor(URL url) {
-    	url = url.setPath(MonitorService.class.getName()).addParameter(Constants.INTERFACE_KEY, MonitorService.class.getName());
-    	String key = url.toServiceString();
-        LOCK.lock();
-        try {
-            Monitor monitor = MONITORS.get(key);
-            if (monitor != null) {
-                return monitor;
-            }
-            monitor = createMonitor(url);
-            if (monitor == null) {
-                throw new IllegalStateException("Can not create monitor " + url);
-            }
-            MONITORS.put(key, monitor);
-            return monitor;
-        } finally {
-            // 释放锁
-            LOCK.unlock();
-        }
-    }
+	public static Collection<Monitor> getMonitors() {
+		return Collections.unmodifiableCollection(MONITORS.values());
+	}
 
-    protected abstract Monitor createMonitor(URL url);
+	public Monitor getMonitor(URL url) {
+		url = url.setPath(MonitorService.class.getName()).addParameter(Constants.INTERFACE_KEY,
+				MonitorService.class.getName());
+		String key = url.toServiceString();
+		LOCK.lock();
+		try {
+			Monitor monitor = MONITORS.get(key);
+			if (monitor != null) {
+				return monitor;
+			}
+			monitor = createMonitor(url);
+			if (monitor == null) {
+				throw new IllegalStateException("Can not create monitor " + url);
+			}
+			MONITORS.put(key, monitor);
+			return monitor;
+		} finally {
+			// 释放锁
+			LOCK.unlock();
+		}
+	}
+
+	protected abstract Monitor createMonitor(URL url);
 
 }

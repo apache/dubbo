@@ -9,39 +9,38 @@ import static org.junit.Assert.assertEquals;
  */
 public class DynamicChannelBufferTest extends AbstractChannelBufferTest {
 
-    private ChannelBuffer buffer;
+	private ChannelBuffer buffer;
 
-    @Override
-    protected ChannelBuffer newBuffer(int length) {
-        buffer = ChannelBuffers.dynamicBuffer(length);
+	@Override
+	protected ChannelBuffer newBuffer(int length) {
+		buffer = ChannelBuffers.dynamicBuffer(length);
 
-        assertEquals(0, buffer.readerIndex());
-        assertEquals(0, buffer.writerIndex());
-        assertEquals(length, buffer.capacity());
+		assertEquals(0, buffer.readerIndex());
+		assertEquals(0, buffer.writerIndex());
+		assertEquals(length, buffer.capacity());
 
-        return buffer;
-    }
+		return buffer;
+	}
 
-    @Override
-    protected ChannelBuffer[] components() {
-        return new ChannelBuffer[]{buffer};
-    }
+	@Override
+	protected ChannelBuffer[] components() {
+		return new ChannelBuffer[] { buffer };
+	}
 
-    @Test
-    public void shouldNotFailOnInitialIndexUpdate() {
-        new DynamicChannelBuffer(10).setIndex(0, 10);
-    }
+	@Test
+	public void shouldNotFailOnInitialIndexUpdate() {
+		new DynamicChannelBuffer(10).setIndex(0, 10);
+	}
 
-    @Test
-    public void shouldNotFailOnInitialIndexUpdate2() {
-        new DynamicChannelBuffer(10).writerIndex(10);
-    }
+	@Test
+	public void shouldNotFailOnInitialIndexUpdate2() {
+		new DynamicChannelBuffer(10).writerIndex(10);
+	}
 
-    @Test
-    public void shouldNotFailOnInitialIndexUpdate3() {
-        ChannelBuffer buf = new DynamicChannelBuffer(10);
-        buf.writerIndex(10);
-        buf.readerIndex(10);
-    }
+	@Test
+	public void shouldNotFailOnInitialIndexUpdate3() {
+		ChannelBuffer buf = new DynamicChannelBuffer(10);
+		buf.writerIndex(10);
+		buf.readerIndex(10);
+	}
 }
-

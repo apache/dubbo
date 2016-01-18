@@ -44,127 +44,136 @@ import com.alibaba.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
  */
 public class ListTelnetHandlerTest {
 
-    private static TelnetHandler list = new ListTelnetHandler();
-    private Channel              mockChannel;
-    private Invoker<DemoService> mockInvoker;
-    private static String        detailMethods;
-    private static String        methodsName;
+	private static TelnetHandler list = new ListTelnetHandler();
+	private Channel mockChannel;
+	private Invoker<DemoService> mockInvoker;
+	private static String detailMethods;
+	private static String methodsName;
 
-    @BeforeClass
-    public static void setUp() {
-        StringBuilder buf = new StringBuilder();
-        StringBuilder buf2 = new StringBuilder();
-        Method[] methods = DemoService.class.getMethods();
-        for (Method method : methods) {
-            if (buf.length() > 0) {
-                buf.append("\r\n");
-            }
-            if (buf2.length() > 0) {
-                buf2.append("\r\n");
-            }
-            buf2.append(method.getName());
-            buf.append(ReflectUtils.getName(method));
-        }
-        detailMethods = buf.toString();
-        methodsName = buf2.toString();
-        
-        ProtocolUtils.closeAll();
-    }
-    
-    @After
-    public void after() {
-        ProtocolUtils.closeAll();
-    }
+	@BeforeClass
+	public static void setUp() {
+		StringBuilder buf = new StringBuilder();
+		StringBuilder buf2 = new StringBuilder();
+		Method[] methods = DemoService.class.getMethods();
+		for (Method method : methods) {
+			if (buf.length() > 0) {
+				buf.append("\r\n");
+			}
+			if (buf2.length() > 0) {
+				buf2.append("\r\n");
+			}
+			buf2.append(method.getName());
+			buf.append(ReflectUtils.getName(method));
+		}
+		detailMethods = buf.toString();
+		methodsName = buf2.toString();
 
-    @SuppressWarnings("unchecked")
-    @Test
-    public void testListDetailService() throws RemotingException {
-        mockInvoker = EasyMock.createMock(Invoker.class);
-        EasyMock.expect(mockInvoker.getInterface()).andReturn(DemoService.class).anyTimes();
-        EasyMock.expect(mockInvoker.getUrl()).andReturn(URL.valueOf("dubbo://127.0.0.1:20885/demo")).anyTimes();
-        EasyMock.expect(mockInvoker.invoke((Invocation) EasyMock.anyObject())).andReturn(new RpcResult("ok")).anyTimes();
-        mockChannel = EasyMock.createMock(Channel.class);
-        EasyMock.expect(mockChannel.getAttribute("telnet.service")).andReturn("com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService").anyTimes();
-        EasyMock.replay(mockChannel, mockInvoker);
-        DubboProtocol.getDubboProtocol().export(mockInvoker);
-        String result = list.telnet(mockChannel, "-l DemoService");
-        assertEquals(detailMethods, result);
-        EasyMock.reset(mockChannel, mockInvoker);
-    }
+		ProtocolUtils.closeAll();
+	}
 
-    @SuppressWarnings("unchecked")
-    @Test
-    public void testListService() throws RemotingException {
-        mockInvoker = EasyMock.createMock(Invoker.class);
-        EasyMock.expect(mockInvoker.getInterface()).andReturn(DemoService.class).anyTimes();
-        EasyMock.expect(mockInvoker.getUrl()).andReturn(URL.valueOf("dubbo://127.0.0.1:20885/demo")).anyTimes();
-        EasyMock.expect(mockInvoker.invoke((Invocation) EasyMock.anyObject())).andReturn(new RpcResult("ok")).anyTimes();
-        mockChannel = EasyMock.createMock(Channel.class);
-        EasyMock.expect(mockChannel.getAttribute("telnet.service")).andReturn("com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService").anyTimes();
-        EasyMock.replay(mockChannel, mockInvoker);
-        DubboProtocol.getDubboProtocol().export(mockInvoker);
-        String result = list.telnet(mockChannel, "DemoService");
-        assertEquals(methodsName, result);
-        EasyMock.reset(mockChannel, mockInvoker);
-    }
+	@After
+	public void after() {
+		ProtocolUtils.closeAll();
+	}
 
-    @SuppressWarnings("unchecked")
-    @Test
-    public void testList() throws RemotingException {
-        mockInvoker = EasyMock.createMock(Invoker.class);
-        EasyMock.expect(mockInvoker.getInterface()).andReturn(DemoService.class).anyTimes();
-        EasyMock.expect(mockInvoker.getUrl()).andReturn(URL.valueOf("dubbo://127.0.0.1:20885/demo")).anyTimes();
-        EasyMock.expect(mockInvoker.invoke((Invocation) EasyMock.anyObject())).andReturn(new RpcResult("ok")).anyTimes();
-        mockChannel = EasyMock.createMock(Channel.class);
-        EasyMock.expect(mockChannel.getAttribute("telnet.service")).andReturn(null).anyTimes();
-        EasyMock.replay(mockChannel, mockInvoker);
-        DubboProtocol.getDubboProtocol().export(mockInvoker);
-        String result = list.telnet(mockChannel, "");
-        assertEquals("com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService", result);
-        EasyMock.reset(mockChannel);
-    }
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testListDetailService() throws RemotingException {
+		mockInvoker = EasyMock.createMock(Invoker.class);
+		EasyMock.expect(mockInvoker.getInterface()).andReturn(DemoService.class).anyTimes();
+		EasyMock.expect(mockInvoker.getUrl()).andReturn(URL.valueOf("dubbo://127.0.0.1:20885/demo")).anyTimes();
+		EasyMock.expect(mockInvoker.invoke((Invocation) EasyMock.anyObject())).andReturn(new RpcResult("ok"))
+				.anyTimes();
+		mockChannel = EasyMock.createMock(Channel.class);
+		EasyMock.expect(mockChannel.getAttribute("telnet.service"))
+				.andReturn("com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService").anyTimes();
+		EasyMock.replay(mockChannel, mockInvoker);
+		DubboProtocol.getDubboProtocol().export(mockInvoker);
+		String result = list.telnet(mockChannel, "-l DemoService");
+		assertEquals(detailMethods, result);
+		EasyMock.reset(mockChannel, mockInvoker);
+	}
 
-    @SuppressWarnings("unchecked")
-    @Test
-    public void testListDetail() throws RemotingException {
-        int port = NetUtils.getAvailablePort();
-        mockInvoker = EasyMock.createMock(Invoker.class);
-        EasyMock.expect(mockInvoker.getInterface()).andReturn(DemoService.class).anyTimes();
-        EasyMock.expect(mockInvoker.getUrl()).andReturn(URL.valueOf("dubbo://127.0.0.1:"+port+"/demo")).anyTimes();
-        EasyMock.expect(mockInvoker.invoke((Invocation) EasyMock.anyObject())).andReturn(new RpcResult("ok")).anyTimes();
-        mockChannel = EasyMock.createMock(Channel.class);
-        EasyMock.expect(mockChannel.getAttribute("telnet.service")).andReturn(null).anyTimes();
-        EasyMock.replay(mockChannel, mockInvoker);
-        DubboProtocol.getDubboProtocol().export(mockInvoker);
-        String result = list.telnet(mockChannel, "-l");
-        assertEquals("com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService -> dubbo://127.0.0.1:"+port+"/demo", result);
-        EasyMock.reset(mockChannel);
-    }
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testListService() throws RemotingException {
+		mockInvoker = EasyMock.createMock(Invoker.class);
+		EasyMock.expect(mockInvoker.getInterface()).andReturn(DemoService.class).anyTimes();
+		EasyMock.expect(mockInvoker.getUrl()).andReturn(URL.valueOf("dubbo://127.0.0.1:20885/demo")).anyTimes();
+		EasyMock.expect(mockInvoker.invoke((Invocation) EasyMock.anyObject())).andReturn(new RpcResult("ok"))
+				.anyTimes();
+		mockChannel = EasyMock.createMock(Channel.class);
+		EasyMock.expect(mockChannel.getAttribute("telnet.service"))
+				.andReturn("com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService").anyTimes();
+		EasyMock.replay(mockChannel, mockInvoker);
+		DubboProtocol.getDubboProtocol().export(mockInvoker);
+		String result = list.telnet(mockChannel, "DemoService");
+		assertEquals(methodsName, result);
+		EasyMock.reset(mockChannel, mockInvoker);
+	}
 
-    @SuppressWarnings("unchecked")
-    @Test
-    public void testListDefault() throws RemotingException {
-        mockInvoker = EasyMock.createMock(Invoker.class);
-        EasyMock.expect(mockInvoker.getInterface()).andReturn(DemoService.class).anyTimes();
-        EasyMock.expect(mockInvoker.getUrl()).andReturn(URL.valueOf("dubbo://127.0.0.1:20885/demo")).anyTimes();
-        EasyMock.expect(mockInvoker.invoke((Invocation) EasyMock.anyObject())).andReturn(new RpcResult("ok")).anyTimes();
-        mockChannel = EasyMock.createMock(Channel.class);
-        EasyMock.expect(mockChannel.getAttribute("telnet.service")).andReturn("com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService").anyTimes();
-        EasyMock.replay(mockChannel, mockInvoker);
-        DubboProtocol.getDubboProtocol().export(mockInvoker);
-        String result = list.telnet(mockChannel, "");
-        assertEquals("Use default service com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService.\r\n\r\n"
-                     + methodsName, result);
-        EasyMock.reset(mockChannel);
-    }
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testList() throws RemotingException {
+		mockInvoker = EasyMock.createMock(Invoker.class);
+		EasyMock.expect(mockInvoker.getInterface()).andReturn(DemoService.class).anyTimes();
+		EasyMock.expect(mockInvoker.getUrl()).andReturn(URL.valueOf("dubbo://127.0.0.1:20885/demo")).anyTimes();
+		EasyMock.expect(mockInvoker.invoke((Invocation) EasyMock.anyObject())).andReturn(new RpcResult("ok"))
+				.anyTimes();
+		mockChannel = EasyMock.createMock(Channel.class);
+		EasyMock.expect(mockChannel.getAttribute("telnet.service")).andReturn(null).anyTimes();
+		EasyMock.replay(mockChannel, mockInvoker);
+		DubboProtocol.getDubboProtocol().export(mockInvoker);
+		String result = list.telnet(mockChannel, "");
+		assertEquals("com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService", result);
+		EasyMock.reset(mockChannel);
+	}
 
-    @Test
-    public void testInvaildMessage() throws RemotingException {
-        mockChannel = EasyMock.createMock(Channel.class);
-        EasyMock.expect(mockChannel.getAttribute("telnet.service")).andReturn(null).anyTimes();
-        EasyMock.replay(mockChannel);
-        String result = list.telnet(mockChannel, "xx");
-        assertEquals("No such service xx", result);
-        EasyMock.reset(mockChannel);
-    }
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testListDetail() throws RemotingException {
+		int port = NetUtils.getAvailablePort();
+		mockInvoker = EasyMock.createMock(Invoker.class);
+		EasyMock.expect(mockInvoker.getInterface()).andReturn(DemoService.class).anyTimes();
+		EasyMock.expect(mockInvoker.getUrl()).andReturn(URL.valueOf("dubbo://127.0.0.1:" + port + "/demo")).anyTimes();
+		EasyMock.expect(mockInvoker.invoke((Invocation) EasyMock.anyObject())).andReturn(new RpcResult("ok"))
+				.anyTimes();
+		mockChannel = EasyMock.createMock(Channel.class);
+		EasyMock.expect(mockChannel.getAttribute("telnet.service")).andReturn(null).anyTimes();
+		EasyMock.replay(mockChannel, mockInvoker);
+		DubboProtocol.getDubboProtocol().export(mockInvoker);
+		String result = list.telnet(mockChannel, "-l");
+		assertEquals("com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService -> dubbo://127.0.0.1:" + port + "/demo",
+				result);
+		EasyMock.reset(mockChannel);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testListDefault() throws RemotingException {
+		mockInvoker = EasyMock.createMock(Invoker.class);
+		EasyMock.expect(mockInvoker.getInterface()).andReturn(DemoService.class).anyTimes();
+		EasyMock.expect(mockInvoker.getUrl()).andReturn(URL.valueOf("dubbo://127.0.0.1:20885/demo")).anyTimes();
+		EasyMock.expect(mockInvoker.invoke((Invocation) EasyMock.anyObject())).andReturn(new RpcResult("ok"))
+				.anyTimes();
+		mockChannel = EasyMock.createMock(Channel.class);
+		EasyMock.expect(mockChannel.getAttribute("telnet.service"))
+				.andReturn("com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService").anyTimes();
+		EasyMock.replay(mockChannel, mockInvoker);
+		DubboProtocol.getDubboProtocol().export(mockInvoker);
+		String result = list.telnet(mockChannel, "");
+		assertEquals("Use default service com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService.\r\n\r\n"
+				+ methodsName, result);
+		EasyMock.reset(mockChannel);
+	}
+
+	@Test
+	public void testInvaildMessage() throws RemotingException {
+		mockChannel = EasyMock.createMock(Channel.class);
+		EasyMock.expect(mockChannel.getAttribute("telnet.service")).andReturn(null).anyTimes();
+		EasyMock.replay(mockChannel);
+		String result = list.telnet(mockChannel, "xx");
+		assertEquals("No such service xx", result);
+		EasyMock.reset(mockChannel);
+	}
 }

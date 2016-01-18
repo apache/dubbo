@@ -29,18 +29,18 @@ import com.alibaba.dubbo.validation.Validator;
  */
 public abstract class AbstractValidation implements Validation {
 
-    private final ConcurrentMap<String, Validator> validators = new ConcurrentHashMap<String, Validator>();
+	private final ConcurrentMap<String, Validator> validators = new ConcurrentHashMap<String, Validator>();
 
-    public Validator getValidator(URL url) {
-        String key = url.toFullString();
-        Validator validator = validators.get(key);
-        if (validator == null) {
-            validators.put(key, createValidator(url));
-            validator = validators.get(key);
-        }
-        return validator;
-    }
+	public Validator getValidator(URL url) {
+		String key = url.toFullString();
+		Validator validator = validators.get(key);
+		if (validator == null) {
+			validators.put(key, createValidator(url));
+			validator = validators.get(key);
+		}
+		return validator;
+	}
 
-    protected abstract Validator createValidator(URL url);
+	protected abstract Validator createValidator(URL url);
 
 }

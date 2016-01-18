@@ -30,135 +30,132 @@ import com.alibaba.dubbo.common.utils.StringUtils;
  */
 public class Consumer extends Entity {
 
-    private static final long serialVersionUID = -1140894843784583237L;
+	private static final long serialVersionUID = -1140894843784583237L;
 
-    private String service; /* 消费者所引用的服务名称 */
+	private String service; /* 消费者所引用的服务名称 */
 
-    private String parameters;
-    
-    private String result;    /*路由结果*/
+	private String parameters;
 
-    private String address; /* 消费者地址 */
-    
+	private String result; /* 路由结果 */
+
+	private String address; /* 消费者地址 */
+
 	private String registry; /* 消费者连接的注册中心地址 */
-    
-    private String application; /* 应用名 */
 
-    private String username;      /* 消费者用户名 */
-    
-    private String statistics;    /* 服务调用统计信息 */
-    
-    private Date collected;  /* 服务调用统计时间 */ 
+	private String application; /* 应用名 */
+
+	private String username; /* 消费者用户名 */
+
+	private String statistics; /* 服务调用统计信息 */
+
+	private Date collected; /* 服务调用统计时间 */
 
 	private Override override;
 
 	private List<Override> overrides;
 
-    private List<Route> routes;
-    
-    private List<Provider> providers;
-    
-	private Date expired;   /*过期时间*/
-    
-    private long alived;    /*存活时间，单位秒*/
+	private List<Route> routes;
 
-    public Consumer() {
-    }
+	private List<Provider> providers;
 
-    public Consumer(Long id) {
-        super(id);
-    }
+	private Date expired; /* 过期时间 */
 
-    public String getService() {
-        return service;
-    }
+	private long alived; /* 存活时间，单位秒 */
 
-    public void setService(String service) {
-        this.service = service;
-    }
+	public Consumer() {
+	}
 
-    public String getParameters() {
-        return parameters;
-    }
+	public Consumer(Long id) {
+		super(id);
+	}
 
-    public void setParameters(String parameters) {
-        this.parameters = parameters;
-    }
+	public String getService() {
+		return service;
+	}
 
-    public String getAddress() {
-        return address;
-    }
+	public void setService(String service) {
+		this.service = service;
+	}
 
-    public void setAddress(String address) {
-        this.address = address;
-    }
+	public String getParameters() {
+		return parameters;
+	}
 
-    public String getRegistry() {
-        return registry;
-    }
+	public void setParameters(String parameters) {
+		this.parameters = parameters;
+	}
 
-    public void setRegistry(String registry) {
-        this.registry = registry;
-    }
+	public String getAddress() {
+		return address;
+	}
 
-    public String getUsername() {
-        return username;
-    }
+	public void setAddress(String address) {
+		this.address = address;
+	}
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+	public String getRegistry() {
+		return registry;
+	}
 
-    public String getStatistics() {
-        return statistics;
-    }
+	public void setRegistry(String registry) {
+		this.registry = registry;
+	}
 
-    public void setStatistics(String statistics) {
-        this.statistics = statistics;
-    }
+	public String getUsername() {
+		return username;
+	}
 
-    public Date getCollected() {
-        return collected;
-    }
+	public void setUsername(String username) {
+		this.username = username;
+	}
 
-    public void setCollected(Date collected) {
-        this.collected = collected;
-    }
+	public String getStatistics() {
+		return statistics;
+	}
 
-    public String getResult() {
-        return result;
-    }
+	public void setStatistics(String statistics) {
+		this.statistics = statistics;
+	}
 
-    public void setResult(String result) {
-        this.result = result;
-    }
+	public Date getCollected() {
+		return collected;
+	}
 
-    public String getApplication() {
-        return application;
-    }
+	public void setCollected(Date collected) {
+		this.collected = collected;
+	}
 
-    public void setApplication(String application) {
-        this.application = application;
-    }
+	public String getResult() {
+		return result;
+	}
 
-    public Date getExpired() {
-        return expired;
-    }
+	public void setResult(String result) {
+		this.result = result;
+	}
 
-    
-    public void setExpired(Date expired) {
-        this.expired = expired;
-    }
+	public String getApplication() {
+		return application;
+	}
 
-    
-    public long getAlived() {
-        return alived;
-    }
+	public void setApplication(String application) {
+		this.application = application;
+	}
 
-    
-    public void setAlived(long alived) {
-        this.alived = alived;
-    }
+	public Date getExpired() {
+		return expired;
+	}
+
+	public void setExpired(Date expired) {
+		this.expired = expired;
+	}
+
+	public long getAlived() {
+		return alived;
+	}
+
+	public void setAlived(long alived) {
+		this.alived = alived;
+	}
 
 	public Override getOverride() {
 		return override;
@@ -168,7 +165,7 @@ public class Consumer extends Entity {
 		this.override = override;
 	}
 
-    public List<Override> getOverrides() {
+	public List<Override> getOverrides() {
 		return overrides;
 	}
 
@@ -176,7 +173,7 @@ public class Consumer extends Entity {
 		this.overrides = overrides;
 	}
 
-    public List<Route> getRoutes() {
+	public List<Route> getRoutes() {
 		return routes;
 	}
 
@@ -192,38 +189,37 @@ public class Consumer extends Entity {
 		this.providers = providers;
 	}
 
-    public String toString() {
-        return "Consumer [service=" + service + ", parameters=" + parameters + ", result=" + result
-                + ", address=" + address + ", registry=" + registry + ", application="
-                + application + ", username=" + username + ", statistics=" + statistics
-                + ", collected=" + collected + ", routes=" + routes + ", overrides=" + overrides
-                + ", expired=" + expired + ", alived=" + alived + "]";
-    }
-    
-    public URL toUrl() {
-        String group = null;
-        String version = null;
-        String path = service;
-        int i = path.indexOf("/");
-        if (i > 0) {
-            group = path.substring(0, i);
-            path = path.substring(i + 1);
-        }
-        i = path.lastIndexOf(":");
-        if (i > 0) {
-            version = path.substring(i + 1);
-            path = path.substring(0, i);
-        }
-        Map<String, String> param = StringUtils.parseQueryString(parameters);
-        param.put(Constants.CATEGORY_KEY, Constants.CONSUMERS_CATEGORY);
-        if (group != null) {
-            param.put(Constants.GROUP_KEY, group);
-        }
-        if (version != null) {
-            param.put(Constants.VERSION_KEY, version);
-        }
-        return URL.valueOf(Constants.CONSUMER_PROTOCOL + "://" + address + "/" + path 
-                + "?" + StringUtils.toQueryString(param));
-    }
+	public String toString() {
+		return "Consumer [service=" + service + ", parameters=" + parameters + ", result=" + result + ", address="
+				+ address + ", registry=" + registry + ", application=" + application + ", username=" + username
+				+ ", statistics=" + statistics + ", collected=" + collected + ", routes=" + routes + ", overrides="
+				+ overrides + ", expired=" + expired + ", alived=" + alived + "]";
+	}
+
+	public URL toUrl() {
+		String group = null;
+		String version = null;
+		String path = service;
+		int i = path.indexOf("/");
+		if (i > 0) {
+			group = path.substring(0, i);
+			path = path.substring(i + 1);
+		}
+		i = path.lastIndexOf(":");
+		if (i > 0) {
+			version = path.substring(i + 1);
+			path = path.substring(0, i);
+		}
+		Map<String, String> param = StringUtils.parseQueryString(parameters);
+		param.put(Constants.CATEGORY_KEY, Constants.CONSUMERS_CATEGORY);
+		if (group != null) {
+			param.put(Constants.GROUP_KEY, group);
+		}
+		if (version != null) {
+			param.put(Constants.VERSION_KEY, version);
+		}
+		return URL.valueOf(Constants.CONSUMER_PROTOCOL + "://" + address + "/" + path + "?"
+				+ StringUtils.toQueryString(param));
+	}
 
 }

@@ -28,25 +28,25 @@ import com.alibaba.dubbo.config.api.User;
  * @author william.liangf
  */
 public class UnserializableBoxDemoServiceImpl implements DemoService {
-    
-    public String sayName(String name) {
-        return "say:" + name;
-    }
-    
-    public Box getBox() {
-        return new UnserializableBox();
-    }
 
-    public void throwDemoException() throws DemoException {
-        throw new DemoException("Unserializable");
-    }
+	public String sayName(String name) {
+		return "say:" + name;
+	}
 
-    public List<User> getUsers(List<User> users) {
-        return users;
-    }
+	public Box getBox() {
+		return new UnserializableBox();
+	}
 
-    public int echo(int i) {
-        return i;
-    }
-    
+	public void throwDemoException() throws DemoException {
+		throw new DemoException("Unserializable");
+	}
+
+	public List<User> getUsers(List<User> users) {
+		return users;
+	}
+
+	public int echo(int i) {
+		return i;
+	}
+
 }

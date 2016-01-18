@@ -26,21 +26,20 @@ import com.alibaba.dubbo.common.extensionloader.ext6_inject.Ext6;
  * @author ding.lid
  */
 public class Ext6Impl1 implements Ext6 {
-    SimpleExt ext1;
-    public Dao obj;
-    
-    public void setDao(Dao obj){
-        Assert.assertNotNull("inject extension instance can not be null", obj);
-        Assert.fail();
-    }
-    
-    public void setExt1(SimpleExt ext1) {
-        this.ext1 = ext1;
-    }
+	SimpleExt ext1;
+	public Dao obj;
 
-    public String echo(URL url, String s) {
-        return "Ext6Impl1-echo-" + ext1.echo(url, s);
-    }
-    
+	public void setDao(Dao obj) {
+		Assert.assertNotNull("inject extension instance can not be null", obj);
+		Assert.fail();
+	}
+
+	public void setExt1(SimpleExt ext1) {
+		this.ext1 = ext1;
+	}
+
+	public String echo(URL url, String s) {
+		return "Ext6Impl1-echo-" + ext1.echo(url, s);
+	}
 
 }

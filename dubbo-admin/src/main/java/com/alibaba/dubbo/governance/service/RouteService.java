@@ -26,32 +26,32 @@ import com.alibaba.dubbo.registry.common.domain.Route;
  */
 public interface RouteService {
 
-    void createRoute(Route route);
-    
-    void updateRoute(Route route);
+	void createRoute(Route route);
 
-    void deleteRoute(Long id);
-    
-    void enableRoute(Long id);
+	void updateRoute(Route route);
 
-    void disableRoute(Long id);
+	void deleteRoute(Long id);
 
-    Route findRoute(Long id);
-    
-    List<Route> findAll();
+	void enableRoute(Long id);
 
-    List<Route> findByService(String serviceName);
-    
-    List<Route> findByAddress(String address);
-    
-    List<Route> findByServiceAndAddress(String service, String address);
+	void disableRoute(Long id);
 
-    List<Route> findForceRouteByService(String service);
-    
-    List<Route> findForceRouteByAddress(String address);
+	Route findRoute(Long id);
 
-    List<Route> findForceRouteByServiceAndAddress(String service, String address);
-    
-    List<Route> findAllForceRoute();
+	List<Route> findAll();
+
+	List<Route> findByService(String serviceName);
+
+	List<Route> findByAddress(String address);
+
+	List<Route> findByServiceAndAddress(String service, String address);
+
+	List<Route> findForceRouteByService(String service);
+
+	List<Route> findForceRouteByAddress(String address);
+
+	List<Route> findForceRouteByServiceAndAddress(String service, String address);
+
+	List<Route> findAllForceRoute();
 
 }

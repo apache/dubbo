@@ -28,19 +28,19 @@ import com.alibaba.dubbo.common.URL;
  * @author william.liangf
  */
 public abstract class AbstractCacheFactory implements CacheFactory {
-    
-    private final ConcurrentMap<String, Cache> caches = new ConcurrentHashMap<String, Cache>();
 
-    public Cache getCache(URL url) {
-        String key = url.toFullString();
-        Cache cache = caches.get(key);
-        if (cache == null) {
-            caches.put(key, createCache(url));
-            cache = caches.get(key);
-        }
-        return cache;
-    }
+	private final ConcurrentMap<String, Cache> caches = new ConcurrentHashMap<String, Cache>();
 
-    protected abstract Cache createCache(URL url);
+	public Cache getCache(URL url) {
+		String key = url.toFullString();
+		Cache cache = caches.get(key);
+		if (cache == null) {
+			caches.put(key, createCache(url));
+			cache = caches.get(key);
+		}
+		return cache;
+	}
+
+	protected abstract Cache createCache(URL url);
 
 }

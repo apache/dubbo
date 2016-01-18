@@ -27,14 +27,15 @@ import com.alibaba.dubbo.common.extension.SPI;
  */
 @SPI("jetty")
 public interface HttpBinder {
-    
-    /**
-     * bind the server.
-     * 
-     * @param url server url.
-     * @return server.
-     */
-    @Adaptive({Constants.SERVER_KEY})
-    HttpServer bind(URL url, HttpHandler handler);
-    
+
+	/**
+	 * bind the server.
+	 * 
+	 * @param url
+	 *            server url.
+	 * @return server.
+	 */
+	@Adaptive({ Constants.SERVER_KEY })
+	HttpServer bind(URL url, HttpHandler handler);
+
 }

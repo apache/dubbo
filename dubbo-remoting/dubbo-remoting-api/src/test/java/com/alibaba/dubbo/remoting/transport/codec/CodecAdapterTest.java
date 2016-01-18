@@ -21,9 +21,9 @@ import junit.framework.Assert;
  */
 public class CodecAdapterTest extends ExchangeCodecTest {
 
-    @Before
-    public void setUp() throws Exception {
-        codec = new CodecAdapter(new DeprecatedExchangeCodec());
-    }
+	@Before
+	public void setUp() throws Exception {
+		codec = new CodecAdapter(new DeprecatedExchangeCodec());
+	}
 
 }

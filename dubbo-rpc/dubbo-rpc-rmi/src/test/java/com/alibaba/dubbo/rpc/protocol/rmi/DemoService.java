@@ -19,14 +19,13 @@ package com.alibaba.dubbo.rpc.protocol.rmi;
  * <code>TestService</code>
  */
 
-public interface DemoService
-{
+public interface DemoService {
 	void sayHello(String name);
 
 	String echo(String text);
 
 	long timestamp();
-	
+
 	void throwTimeout();
 
 	String getThreadName();

@@ -25,16 +25,16 @@ import com.alibaba.dubbo.common.status.StatusChecker;
  */
 public class MemoryStatusChecker implements StatusChecker {
 
-    public Status check() {
-        Runtime runtime = Runtime.getRuntime();
-        long freeMemory = runtime.freeMemory();
-        long totalMemory = runtime.totalMemory();
-        long maxMemory = runtime.maxMemory();
-        boolean ok = (maxMemory - (totalMemory - freeMemory) > 2048); // 剩余空间小于2M报警
-        String msg = "Max:" + (maxMemory / 1024 / 1024) + "M, Total:" 
-        + (totalMemory / 1024 / 1024) + "M, Free:" + (freeMemory / 1024 / 1024) 
-        + "M, Use:" + ((totalMemory / 1024 / 1024) - (freeMemory / 1024 / 1024)) + "M";
-        return new Status(ok ? Status.Level.OK : Status.Level.WARN, msg);
-    }
+	public Status check() {
+		Runtime runtime = Runtime.getRuntime();
+		long freeMemory = runtime.freeMemory();
+		long totalMemory = runtime.totalMemory();
+		long maxMemory = runtime.maxMemory();
+		boolean ok = (maxMemory - (totalMemory - freeMemory) > 2048); // 剩余空间小于2M报警
+		String msg = "Max:" + (maxMemory / 1024 / 1024) + "M, Total:" + (totalMemory / 1024 / 1024) + "M, Free:"
+				+ (freeMemory / 1024 / 1024) + "M, Use:" + ((totalMemory / 1024 / 1024) - (freeMemory / 1024 / 1024))
+				+ "M";
+		return new Status(ok ? Status.Level.OK : Status.Level.WARN, msg);
+	}
 
 }

@@ -15,23 +15,23 @@ import java.io.Serializable;
  */
 public class RequestObject implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    public RequestObject(){
-    }
+	public RequestObject() {
+	}
 
-    private byte[] bytes = null;
+	private byte[] bytes = null;
 
-    public void setBytes(byte[] bytes) {
-        this.bytes = bytes;
-    }
+	public void setBytes(byte[] bytes) {
+		this.bytes = bytes;
+	}
 
-    public RequestObject(int size){
-        bytes = new byte[size];
-    }
+	public RequestObject(int size) {
+		bytes = new byte[size];
+	}
 
-    public byte[] getBytes() {
-        return bytes;
-    }
+	public byte[] getBytes() {
+		return bytes;
+	}
 
 }

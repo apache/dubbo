@@ -31,8 +31,7 @@ import com.alibaba.dubbo.common.utils.Stack;
  * @author qian.lei
  */
 
-public class JSON
-{
+public class JSON {
 	public static final char LBRACE = '{', RBRACE = '}';
 
 	public static final char LSQUARE = '[', RSQUARE = ']';
@@ -46,49 +45,54 @@ public class JSON
 	// state.
 	public static final byte END = 0, START = 1, OBJECT_ITEM = 2, OBJECT_VALUE = 3, ARRAY_ITEM = 4;
 
-	private static class Entry
-	{
+	private static class Entry {
 		byte state;
 		Object value;
-		Entry(byte s, Object v){ state = s; value = v; }
+
+		Entry(byte s, Object v) {
+			state = s;
+			value = v;
+		}
 	}
 
-	private JSON(){}
+	private JSON() {
+	}
 
 	/**
 	 * json string.
 	 * 
-	 * @param obj object.
+	 * @param obj
+	 *            object.
 	 * @return json string.
 	 * @throws IOException.
 	 */
-	public static String json(Object obj) throws IOException
-	{
-		if( obj == null ) return NULL;
+	public static String json(Object obj) throws IOException {
+		if (obj == null)
+			return NULL;
 		StringWriter sw = new StringWriter();
-		try
-		{
+		try {
 			json(obj, sw);
 			return sw.getBuffer().toString();
+		} finally {
+			sw.close();
 		}
-		finally{ sw.close(); }
 	}
 
 	/**
 	 * write json.
 	 * 
-	 * @param obj object.
-	 * @param writer writer.
+	 * @param obj
+	 *            object.
+	 * @param writer
+	 *            writer.
 	 * @throws IOException.
 	 */
-	public static void json(Object obj, Writer writer) throws IOException
-    {
-	    json(obj, writer, false);
-    }
-	
-	public static void json(Object obj, Writer writer, boolean writeClass) throws IOException
-	{
-		if( obj == null )
+	public static void json(Object obj, Writer writer) throws IOException {
+		json(obj, writer, false);
+	}
+
+	public static void json(Object obj, Writer writer, boolean writeClass) throws IOException {
+		if (obj == null)
 			writer.write(NULL);
 		else
 			json(obj, new JSONWriter(writer), writeClass);
@@ -97,69 +101,67 @@ public class JSON
 	/**
 	 * json string.
 	 * 
-	 * @param obj object.
-	 * @param properties property name array.
+	 * @param obj
+	 *            object.
+	 * @param properties
+	 *            property name array.
 	 * @return json string.
 	 * @throws IOException.
 	 */
-	public static String json(Object obj, String[] properties) throws IOException
-	{
-		if( obj == null ) return NULL;
+	public static String json(Object obj, String[] properties) throws IOException {
+		if (obj == null)
+			return NULL;
 		StringWriter sw = new StringWriter();
-		try
-		{
+		try {
 			json(obj, properties, sw);
 			return sw.getBuffer().toString();
+		} finally {
+			sw.close();
 		}
-		finally{ sw.close(); }
 	}
-	
-	public static void json(Object obj, final String[] properties, Writer writer) throws IOException
-    {
-	    json(obj, properties, writer, false);
-    }
+
+	public static void json(Object obj, final String[] properties, Writer writer) throws IOException {
+		json(obj, properties, writer, false);
+	}
 
 	/**
 	 * write json.
 	 * 
-	 * @param obj object.
-	 * @param properties property name array.
-	 * @param writer writer.
+	 * @param obj
+	 *            object.
+	 * @param properties
+	 *            property name array.
+	 * @param writer
+	 *            writer.
 	 * @throws IOException.
 	 */
-	public static void json(Object obj, final String[] properties, Writer writer, boolean writeClass) throws IOException
-	{
-		if( obj == null )
+	public static void json(Object obj, final String[] properties, Writer writer, boolean writeClass)
+			throws IOException {
+		if (obj == null)
 			writer.write(NULL);
 		else
 			json(obj, properties, new JSONWriter(writer), writeClass);
 	}
 
-	private static void json(Object obj, JSONWriter jb, boolean writeClass) throws IOException
-	{
-		if( obj == null )
+	private static void json(Object obj, JSONWriter jb, boolean writeClass) throws IOException {
+		if (obj == null)
 			jb.valueNull();
 		else
 			DEFAULT_CONVERTER.writeValue(obj, jb, writeClass);
 	}
 
-	private static void json(Object obj, String[] properties, JSONWriter jb, boolean writeClass) throws IOException
-	{
-		if( obj == null )
-		{
+	private static void json(Object obj, String[] properties, JSONWriter jb, boolean writeClass) throws IOException {
+		if (obj == null) {
 			jb.valueNull();
-		}
-		else
-		{
+		} else {
 			Wrapper wrapper = Wrapper.getWrapper(obj.getClass());
 
 			Object value;
 			jb.objectBegin();
-			for( String prop : properties )
-			{
+			for (String prop : properties) {
 				jb.objectItem(prop);
 				value = wrapper.getPropertyValue(obj, prop);
-				if( value == null )
+				if (value == null)
 					jb.valueNull();
 				else
 					DEFAULT_CONVERTER.writeValue(value, jb, writeClass);
@@ -171,124 +173,147 @@ public class JSON
 	/**
 	 * parse json.
 	 * 
-	 * @param json json source.
-	 * @return JSONObject or JSONArray or Boolean or Long or Double or String or null
+	 * @param json
+	 *            json source.
+	 * @return JSONObject or JSONArray or Boolean or Long or Double or String or
+	 *         null
 	 * @throws ParseException
 	 */
-	public static Object parse(String json) throws ParseException
-	{
+	public static Object parse(String json) throws ParseException {
 		StringReader reader = new StringReader(json);
-		try{ return parse(reader); }
-		catch(IOException e){ throw new ParseException(e.getMessage()); }
-		finally{ reader.close(); }
+		try {
+			return parse(reader);
+		} catch (IOException e) {
+			throw new ParseException(e.getMessage());
+		} finally {
+			reader.close();
+		}
 	}
 
 	/**
 	 * parse json.
 	 * 
-	 * @param reader reader.
-	 * @return JSONObject or JSONArray or Boolean or Long or Double or String or null
+	 * @param reader
+	 *            reader.
+	 * @return JSONObject or JSONArray or Boolean or Long or Double or String or
+	 *         null
 	 * @throws IOException
 	 * @throws ParseException
 	 */
-	public static Object parse(Reader reader) throws IOException, ParseException
-	{
+	public static Object parse(Reader reader) throws IOException, ParseException {
 		return parse(reader, JSONToken.ANY);
 	}
 
 	/**
 	 * parse json.
 	 * 
-	 * @param json json string.
-	 * @param type target type.
+	 * @param json
+	 *            json string.
+	 * @param type
+	 *            target type.
 	 * @return result.
 	 * @throws ParseException
 	 */
-	public static <T> T parse(String json, Class<T> type) throws ParseException
-	{
+	public static <T> T parse(String json, Class<T> type) throws ParseException {
 		StringReader reader = new StringReader(json);
-		try{ return parse(reader, type); }
-		catch(IOException e){ throw new ParseException(e.getMessage()); }
-		finally{ reader.close(); }
+		try {
+			return parse(reader, type);
+		} catch (IOException e) {
+			throw new ParseException(e.getMessage());
+		} finally {
+			reader.close();
+		}
 	}
 
 	/**
 	 * parse json
 	 * 
-	 * @param reader json source.
-	 * @param type target type.
+	 * @param reader
+	 *            json source.
+	 * @param type
+	 *            target type.
 	 * @return result.
 	 * @throws IOException
 	 * @throws ParseException
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T> T parse(Reader reader, Class<T> type) throws IOException, ParseException
-	{
-		return (T)parse(reader, new J2oVisitor(type, DEFAULT_CONVERTER), JSONToken.ANY);
+	public static <T> T parse(Reader reader, Class<T> type) throws IOException, ParseException {
+		return (T) parse(reader, new J2oVisitor(type, DEFAULT_CONVERTER), JSONToken.ANY);
 	}
 
 	/**
 	 * parse json.
 	 * 
-	 * @param json json string.
-	 * @param types target type array.
+	 * @param json
+	 *            json string.
+	 * @param types
+	 *            target type array.
 	 * @return result.
 	 * @throws ParseException
 	 */
-	public static Object[] parse(String json, Class<?>[] types) throws ParseException
-	{
+	public static Object[] parse(String json, Class<?>[] types) throws ParseException {
 		StringReader reader = new StringReader(json);
-		try{ return (Object[])parse(reader, types); }
-		catch(IOException e){ throw new ParseException(e.getMessage()); }
-		finally{ reader.close(); }
+		try {
+			return (Object[]) parse(reader, types);
+		} catch (IOException e) {
+			throw new ParseException(e.getMessage());
+		} finally {
+			reader.close();
+		}
 	}
 
 	/**
 	 * parse json.
 	 * 
-	 * @param reader json source.
-	 * @param types target type array.
+	 * @param reader
+	 *            json source.
+	 * @param types
+	 *            target type array.
 	 * @return result.
 	 * @throws IOException
 	 * @throws ParseException
 	 */
-	public static Object[] parse(Reader reader, Class<?>[] types) throws IOException, ParseException
-	{
-		return (Object[])parse(reader, new J2oVisitor(types, DEFAULT_CONVERTER), JSONToken.LSQUARE);
+	public static Object[] parse(Reader reader, Class<?>[] types) throws IOException, ParseException {
+		return (Object[]) parse(reader, new J2oVisitor(types, DEFAULT_CONVERTER), JSONToken.LSQUARE);
 	}
 
 	/**
 	 * parse json.
 	 * 
-	 * @param json json string.
-	 * @param handler handler.
+	 * @param json
+	 *            json string.
+	 * @param handler
+	 *            handler.
 	 * @return result.
 	 * @throws ParseException
 	 */
-	public static Object parse(String json, JSONVisitor handler) throws ParseException
-	{
+	public static Object parse(String json, JSONVisitor handler) throws ParseException {
 		StringReader reader = new StringReader(json);
-		try{ return parse(reader, handler); }
-		catch(IOException e){ throw new ParseException(e.getMessage()); }
-		finally{ reader.close(); }
+		try {
+			return parse(reader, handler);
+		} catch (IOException e) {
+			throw new ParseException(e.getMessage());
+		} finally {
+			reader.close();
+		}
 	}
 
 	/**
 	 * parse json.
 	 * 
-	 * @param reader json source.
-	 * @param handler handler.
+	 * @param reader
+	 *            json source.
+	 * @param handler
+	 *            handler.
 	 * @return resule.
 	 * @throws IOException
 	 * @throws ParseException
 	 */
-	public static Object parse(Reader reader, JSONVisitor handler) throws IOException, ParseException
-	{
+	public static Object parse(Reader reader, JSONVisitor handler) throws IOException, ParseException {
 		return parse(reader, handler, JSONToken.ANY);
 	}
 
-	private static Object parse(Reader reader, int expect) throws IOException, ParseException
-	{
+	private static Object parse(Reader reader, int expect) throws IOException, ParseException {
 		JSONReader jr = new JSONReader(reader);
 		JSONToken token = jr.nextToken(expect);
 
@@ -296,180 +321,174 @@ public class JSON
 		Object value = null, tmp;
 		Stack<Entry> stack = new Stack<Entry>();
 
-		do
-		{
-			switch( state )
-			{
-				case END:
-					throw new ParseException("JSON source format error.");
-				case START:
+		do {
+			switch (state) {
+			case END:
+				throw new ParseException("JSON source format error.");
+			case START: {
+				switch (token.type) {
+				case JSONToken.NULL:
+				case JSONToken.BOOL:
+				case JSONToken.INT:
+				case JSONToken.FLOAT:
+				case JSONToken.STRING: {
+					state = END;
+					value = token.value;
+					break;
+				}
+				case JSONToken.LSQUARE: {
+					state = ARRAY_ITEM;
+					value = new JSONArray();
+					break;
+				}
+				case JSONToken.LBRACE: {
+					state = OBJECT_ITEM;
+					value = new JSONObject();
+					break;
+				}
+				default:
+					throw new ParseException("Unexcepted token expect [ VALUE or '[' or '{' ] get '"
+							+ JSONToken.token2string(token.type) + "'");
+				}
+				break;
+			}
+			case ARRAY_ITEM: {
+				switch (token.type) {
+				case JSONToken.COMMA:
+					break;
+				case JSONToken.NULL:
+				case JSONToken.BOOL:
+				case JSONToken.INT:
+				case JSONToken.FLOAT:
+				case JSONToken.STRING: {
+					((JSONArray) value).add(token.value);
+					break;
+				}
+				case JSONToken.RSQUARE: // end of array.
 				{
-					switch( token.type )
-					{
-						case JSONToken.NULL: case JSONToken.BOOL: case JSONToken.INT: case JSONToken.FLOAT: case JSONToken.STRING:
-						{
-							state = END;
-							value = token.value;
-							break;
-						}
-						case JSONToken.LSQUARE:
-						{
-							state = ARRAY_ITEM;
-							value = new JSONArray();
-							break;
-						}
-						case JSONToken.LBRACE:
-						{
-							state = OBJECT_ITEM;
-							value = new JSONObject();
-							break;
-						}
-						default:
-							throw new ParseException("Unexcepted token expect [ VALUE or '[' or '{' ] get '" + JSONToken.token2string(token.type) + "'");
+					if (stack.isEmpty()) {
+						state = END;
+					} else {
+						Entry entry = stack.pop();
+						state = entry.state;
+						value = entry.value;
 					}
 					break;
 				}
-				case ARRAY_ITEM:
+				case JSONToken.LSQUARE: // array begin.
 				{
-					switch( token.type )
-					{
-						case JSONToken.COMMA:
-							break;
-						case JSONToken.NULL: case JSONToken.BOOL: case JSONToken.INT: case JSONToken.FLOAT: case JSONToken.STRING:
-						{
-							((JSONArray)value).add(token.value);
-							break;
-						}
-						case JSONToken.RSQUARE: // end of array.
-						{
-							if( stack.isEmpty() )
-							{
-								state = END;
-							}
-							else
-							{
-								Entry entry = stack.pop();
-								state = entry.state;
-								value = entry.value;
-							}
-							break;
-						}
-						case JSONToken.LSQUARE: // array begin.
-						{
-							tmp = new JSONArray();
-							((JSONArray)value).add(tmp);
-							stack.push(new Entry(state, value));
+					tmp = new JSONArray();
+					((JSONArray) value).add(tmp);
+					stack.push(new Entry(state, value));
 
-							state = ARRAY_ITEM;
-							value = tmp;
-							break;
-						}
-						case JSONToken.LBRACE: // object begin.
-						{
-							tmp = new JSONObject();
-							((JSONArray)value).add(tmp);
-							stack.push(new Entry(state, value));
-
-							state = OBJECT_ITEM;
-							value = tmp;
-							break;
-						}
-						default:
-							throw new ParseException("Unexcepted token expect [ VALUE or ',' or ']' or '[' or '{' ] get '" + JSONToken.token2string(token.type) + "'");
-					}
+					state = ARRAY_ITEM;
+					value = tmp;
 					break;
 				}
-				case OBJECT_ITEM:
+				case JSONToken.LBRACE: // object begin.
 				{
-					switch( token.type )
-					{
-						case JSONToken.COMMA:
-							break;
-						case JSONToken.IDENT: // item name.
-						{
-							stack.push(new Entry(OBJECT_ITEM, (String)token.value));
-							state = OBJECT_VALUE;
-							break;
-						}
-						case JSONToken.NULL:
-						{
-							stack.push(new Entry(OBJECT_ITEM, "null"));
-							state = OBJECT_VALUE;
-							break;
-						}
-						case JSONToken.BOOL: case JSONToken.INT: case JSONToken.FLOAT: case JSONToken.STRING:
-						{
-							stack.push(new Entry(OBJECT_ITEM, token.value.toString()));
-							state = OBJECT_VALUE;
-							break;
-						}
-						case JSONToken.RBRACE: // end of object.
-						{
-							if( stack.isEmpty() )
-							{
-								state = END;
-							}
-							else
-							{
-								Entry entry = stack.pop();
-								state = entry.state;
-								value = entry.value;
-							}
-							break;
-						}
-						default:
-							throw new ParseException("Unexcepted token expect [ IDENT or VALUE or ',' or '}' ] get '" + JSONToken.token2string(token.type) + "'");
-					}
+					tmp = new JSONObject();
+					((JSONArray) value).add(tmp);
+					stack.push(new Entry(state, value));
+
+					state = OBJECT_ITEM;
+					value = tmp;
 					break;
 				}
-				case OBJECT_VALUE:
+				default:
+					throw new ParseException("Unexcepted token expect [ VALUE or ',' or ']' or '[' or '{' ] get '"
+							+ JSONToken.token2string(token.type) + "'");
+				}
+				break;
+			}
+			case OBJECT_ITEM: {
+				switch (token.type) {
+				case JSONToken.COMMA:
+					break;
+				case JSONToken.IDENT: // item name.
 				{
-					switch( token.type )
-					{
-						case JSONToken.COLON:
-							break;
-						case JSONToken.NULL: case JSONToken.BOOL: case JSONToken.INT: case JSONToken.FLOAT: case JSONToken.STRING:
-						{
-							((JSONObject)value).put((String)stack.pop().value, token.value);
-							state = OBJECT_ITEM;
-							break;
-						}
-						case JSONToken.LSQUARE: // array begin.
-						{
-							tmp = new JSONArray();
-							((JSONObject)value).put((String)stack.pop().value, tmp);
-							stack.push(new Entry(OBJECT_ITEM, value));
-
-							state = ARRAY_ITEM;
-							value = tmp;
-							break;
-						}
-						case JSONToken.LBRACE: // object begin.
-						{
-							tmp = new JSONObject();
-							((JSONObject)value).put((String)stack.pop().value, tmp);
-							stack.push(new Entry(OBJECT_ITEM, value));
-
-							state = OBJECT_ITEM;
-							value = tmp;
-							break;
-						}
-						default:
-							throw new ParseException("Unexcepted token expect [ VALUE or '[' or '{' ] get '" + JSONToken.token2string(token.type) + "'");
+					stack.push(new Entry(OBJECT_ITEM, (String) token.value));
+					state = OBJECT_VALUE;
+					break;
+				}
+				case JSONToken.NULL: {
+					stack.push(new Entry(OBJECT_ITEM, "null"));
+					state = OBJECT_VALUE;
+					break;
+				}
+				case JSONToken.BOOL:
+				case JSONToken.INT:
+				case JSONToken.FLOAT:
+				case JSONToken.STRING: {
+					stack.push(new Entry(OBJECT_ITEM, token.value.toString()));
+					state = OBJECT_VALUE;
+					break;
+				}
+				case JSONToken.RBRACE: // end of object.
+				{
+					if (stack.isEmpty()) {
+						state = END;
+					} else {
+						Entry entry = stack.pop();
+						state = entry.state;
+						value = entry.value;
 					}
 					break;
 				}
 				default:
-					throw new ParseException("Unexcepted state.");
+					throw new ParseException("Unexcepted token expect [ IDENT or VALUE or ',' or '}' ] get '"
+							+ JSONToken.token2string(token.type) + "'");
+				}
+				break;
 			}
-		}
-		while( ( token = jr.nextToken() ) != null );
+			case OBJECT_VALUE: {
+				switch (token.type) {
+				case JSONToken.COLON:
+					break;
+				case JSONToken.NULL:
+				case JSONToken.BOOL:
+				case JSONToken.INT:
+				case JSONToken.FLOAT:
+				case JSONToken.STRING: {
+					((JSONObject) value).put((String) stack.pop().value, token.value);
+					state = OBJECT_ITEM;
+					break;
+				}
+				case JSONToken.LSQUARE: // array begin.
+				{
+					tmp = new JSONArray();
+					((JSONObject) value).put((String) stack.pop().value, tmp);
+					stack.push(new Entry(OBJECT_ITEM, value));
+
+					state = ARRAY_ITEM;
+					value = tmp;
+					break;
+				}
+				case JSONToken.LBRACE: // object begin.
+				{
+					tmp = new JSONObject();
+					((JSONObject) value).put((String) stack.pop().value, tmp);
+					stack.push(new Entry(OBJECT_ITEM, value));
+
+					state = OBJECT_ITEM;
+					value = tmp;
+					break;
+				}
+				default:
+					throw new ParseException("Unexcepted token expect [ VALUE or '[' or '{' ] get '"
+							+ JSONToken.token2string(token.type) + "'");
+				}
+				break;
+			}
+			default:
+				throw new ParseException("Unexcepted state.");
+			}
+		} while ((token = jr.nextToken()) != null);
 		stack.clear();
 		return value;
 	}
 
-	private static Object parse(Reader reader, JSONVisitor handler, int expect) throws IOException, ParseException
-	{
+	private static Object parse(Reader reader, JSONVisitor handler, int expect) throws IOException, ParseException {
 		JSONReader jr = new JSONReader(reader);
 		JSONToken token = jr.nextToken(expect);
 
@@ -479,282 +498,240 @@ public class JSON
 		boolean pv = false;
 
 		handler.begin();
-		do
-		{
-			switch( state )
-			{
-				case END:
-					throw new ParseException("JSON source format error.");
-				case START:
-				{
-					switch( token.type )
-					{
-						case JSONToken.NULL:
-						{
-							value = token.value;
-							state = END;
-							pv = true;
-							break;
-						}
-						case JSONToken.BOOL:
-						{
-							value = token.value;
-							state = END;
-							pv = true;
-							break;
-						}
-						case JSONToken.INT:
-						{
-							value = token.value;
-							state = END;
-							pv = true;
-							break;
-						}
-						case JSONToken.FLOAT:
-						{
-							value = token.value;
-							state = END;
-							pv = true;
-							break;
-						}
-						case JSONToken.STRING:
-						{
-							value = token.value;
-							state = END;
-							pv = true;
-							break;
-						}
-						case JSONToken.LSQUARE:
-						{
-							handler.arrayBegin();
-							state = ARRAY_ITEM;
-							break;
-						}
-						case JSONToken.LBRACE:
-						{
-							handler.objectBegin();
-							state = OBJECT_ITEM;
-							break;
-						}
-						default:
-							throw new ParseException("Unexcepted token expect [ VALUE or '[' or '{' ] get '" + JSONToken.token2string(token.type) + "'");
-					}
+		do {
+			switch (state) {
+			case END:
+				throw new ParseException("JSON source format error.");
+			case START: {
+				switch (token.type) {
+				case JSONToken.NULL: {
+					value = token.value;
+					state = END;
+					pv = true;
 					break;
 				}
-				case ARRAY_ITEM:
-				{
-					switch( token.type )
-					{
-						case JSONToken.COMMA:
-							break;
-						case JSONToken.NULL:
-						{
-							handler.arrayItem(index++);
-							handler.arrayItemValue(index, token.value, true);
-							break;
-						}
-						case JSONToken.BOOL:
-						{
-							handler.arrayItem(index++);
-							handler.arrayItemValue(index, token.value, true);
-							break;
-						}
-						case JSONToken.INT:
-						{
-							handler.arrayItem(index++);
-							handler.arrayItemValue(index, token.value, true);
-							break;
-						}
-						case JSONToken.FLOAT:
-						{
-							handler.arrayItem(index++);
-							handler.arrayItemValue(index, token.value, true);
-							break;
-						}
-						case JSONToken.STRING:
-						{
-							handler.arrayItem(index++);
-							handler.arrayItemValue(index, token.value, true);
-							break;
-						}
-						case JSONToken.LSQUARE:
-						{
-							handler.arrayItem(index++);
-							states.push(new int[]{state, index});
-
-							index = 0;
-							state = ARRAY_ITEM;
-							handler.arrayBegin();
-							break;
-						}
-						case JSONToken.LBRACE:
-						{
-							handler.arrayItem(index++);
-							states.push(new int[]{state, index});
-
-							index = 0;
-							state = OBJECT_ITEM;
-							handler.objectBegin();
-							break;
-						}
-						case JSONToken.RSQUARE:
-						{
-							if( states.isEmpty() )
-							{
-								value = handler.arrayEnd(index);
-								state = END;
-							}
-							else
-							{
-								value = handler.arrayEnd(index);
-								int[] tmp = states.pop();
-								state = tmp[0];
-								index = tmp[1];
-
-								switch( state )
-								{
-									case ARRAY_ITEM:
-									{
-										handler.arrayItemValue(index, value, false);
-										break;
-									}
-									case OBJECT_ITEM:
-									{
-										handler.objectItemValue(value, false);
-										break;
-									}
-								}
-							}
-							break;
-						}
-						default:
-							throw new ParseException("Unexcepted token expect [ VALUE or ',' or ']' or '[' or '{' ] get '" + JSONToken.token2string(token.type) + "'");
-					}
+				case JSONToken.BOOL: {
+					value = token.value;
+					state = END;
+					pv = true;
 					break;
 				}
-				case OBJECT_ITEM:
-				{
-					switch( token.type )
-					{
-						case JSONToken.COMMA:
-							break;
-						case JSONToken.IDENT:
-						{
-							handler.objectItem((String)token.value);
-							state = OBJECT_VALUE;
-							break;
-						}
-						case JSONToken.NULL:
-						{
-							handler.objectItem("null");
-							state = OBJECT_VALUE;
-							break;
-						}
-						case JSONToken.BOOL: case JSONToken.INT: case JSONToken.FLOAT: case JSONToken.STRING:
-						{
-							handler.objectItem(token.value.toString());
-							state = OBJECT_VALUE;
-							break;
-						}
-						case JSONToken.RBRACE:
-						{
-							if( states.isEmpty() )
-							{
-								value = handler.objectEnd(index);
-								state = END;
-							}
-							else
-							{
-								value = handler.objectEnd(index);
-								int[] tmp = states.pop();
-								state = tmp[0];
-								index = tmp[1];
-
-								switch( state )
-								{
-									case ARRAY_ITEM:
-									{
-										handler.arrayItemValue(index, value, false);
-										break;
-									}
-									case OBJECT_ITEM:
-									{
-										handler.objectItemValue(value, false);
-										break;
-									}
-								}
-							}
-							break;
-						}
-						default:
-							throw new ParseException("Unexcepted token expect [ IDENT or VALUE or ',' or '}' ] get '" + JSONToken.token2string(token.type) + "'");
-					}
+				case JSONToken.INT: {
+					value = token.value;
+					state = END;
+					pv = true;
 					break;
 				}
-				case OBJECT_VALUE:
-				{
-					switch( token.type )
-					{
-						case JSONToken.COLON:
-							break;
-						case JSONToken.NULL:
-						{
-							handler.objectItemValue(token.value, true);
-							state = OBJECT_ITEM;
-							break;
-						}
-						case JSONToken.BOOL:
-						{
-							handler.objectItemValue(token.value, true);
-							state = OBJECT_ITEM;
-							break;
-						}
-						case JSONToken.INT:
-						{
-							handler.objectItemValue(token.value, true);
-							state = OBJECT_ITEM;
-							break;
-						}
-						case JSONToken.FLOAT:
-						{
-							handler.objectItemValue(token.value, true);
-							state = OBJECT_ITEM;
-							break;
-						}
-						case JSONToken.STRING:
-						{
-							handler.objectItemValue(token.value, true);
-							state = OBJECT_ITEM;
-							break;
-						}
-						case JSONToken.LSQUARE:
-						{
-							states.push(new int[]{OBJECT_ITEM, index});
+				case JSONToken.FLOAT: {
+					value = token.value;
+					state = END;
+					pv = true;
+					break;
+				}
+				case JSONToken.STRING: {
+					value = token.value;
+					state = END;
+					pv = true;
+					break;
+				}
+				case JSONToken.LSQUARE: {
+					handler.arrayBegin();
+					state = ARRAY_ITEM;
+					break;
+				}
+				case JSONToken.LBRACE: {
+					handler.objectBegin();
+					state = OBJECT_ITEM;
+					break;
+				}
+				default:
+					throw new ParseException("Unexcepted token expect [ VALUE or '[' or '{' ] get '"
+							+ JSONToken.token2string(token.type) + "'");
+				}
+				break;
+			}
+			case ARRAY_ITEM: {
+				switch (token.type) {
+				case JSONToken.COMMA:
+					break;
+				case JSONToken.NULL: {
+					handler.arrayItem(index++);
+					handler.arrayItemValue(index, token.value, true);
+					break;
+				}
+				case JSONToken.BOOL: {
+					handler.arrayItem(index++);
+					handler.arrayItemValue(index, token.value, true);
+					break;
+				}
+				case JSONToken.INT: {
+					handler.arrayItem(index++);
+					handler.arrayItemValue(index, token.value, true);
+					break;
+				}
+				case JSONToken.FLOAT: {
+					handler.arrayItem(index++);
+					handler.arrayItemValue(index, token.value, true);
+					break;
+				}
+				case JSONToken.STRING: {
+					handler.arrayItem(index++);
+					handler.arrayItemValue(index, token.value, true);
+					break;
+				}
+				case JSONToken.LSQUARE: {
+					handler.arrayItem(index++);
+					states.push(new int[] { state, index });
 
-							index = 0;
-							state = ARRAY_ITEM;
-							handler.arrayBegin();
-							break;
-						}
-						case JSONToken.LBRACE:
-						{
-							states.push(new int[]{OBJECT_ITEM, index});
+					index = 0;
+					state = ARRAY_ITEM;
+					handler.arrayBegin();
+					break;
+				}
+				case JSONToken.LBRACE: {
+					handler.arrayItem(index++);
+					states.push(new int[] { state, index });
 
-							index = 0;
-							state = OBJECT_ITEM;
-							handler.objectBegin();
+					index = 0;
+					state = OBJECT_ITEM;
+					handler.objectBegin();
+					break;
+				}
+				case JSONToken.RSQUARE: {
+					if (states.isEmpty()) {
+						value = handler.arrayEnd(index);
+						state = END;
+					} else {
+						value = handler.arrayEnd(index);
+						int[] tmp = states.pop();
+						state = tmp[0];
+						index = tmp[1];
+
+						switch (state) {
+						case ARRAY_ITEM: {
+							handler.arrayItemValue(index, value, false);
 							break;
 						}
-						default:
-							throw new ParseException("Unexcepted token expect [ VALUE or '[' or '{' ] get '" + JSONToken.token2string(token.type) + "'");
+						case OBJECT_ITEM: {
+							handler.objectItemValue(value, false);
+							break;
+						}
+						}
 					}
 					break;
 				}
 				default:
-					throw new ParseException("Unexcepted state.");
+					throw new ParseException("Unexcepted token expect [ VALUE or ',' or ']' or '[' or '{' ] get '"
+							+ JSONToken.token2string(token.type) + "'");
+				}
+				break;
 			}
-		}
-		while( ( token = jr.nextToken() ) != null );
+			case OBJECT_ITEM: {
+				switch (token.type) {
+				case JSONToken.COMMA:
+					break;
+				case JSONToken.IDENT: {
+					handler.objectItem((String) token.value);
+					state = OBJECT_VALUE;
+					break;
+				}
+				case JSONToken.NULL: {
+					handler.objectItem("null");
+					state = OBJECT_VALUE;
+					break;
+				}
+				case JSONToken.BOOL:
+				case JSONToken.INT:
+				case JSONToken.FLOAT:
+				case JSONToken.STRING: {
+					handler.objectItem(token.value.toString());
+					state = OBJECT_VALUE;
+					break;
+				}
+				case JSONToken.RBRACE: {
+					if (states.isEmpty()) {
+						value = handler.objectEnd(index);
+						state = END;
+					} else {
+						value = handler.objectEnd(index);
+						int[] tmp = states.pop();
+						state = tmp[0];
+						index = tmp[1];
+
+						switch (state) {
+						case ARRAY_ITEM: {
+							handler.arrayItemValue(index, value, false);
+							break;
+						}
+						case OBJECT_ITEM: {
+							handler.objectItemValue(value, false);
+							break;
+						}
+						}
+					}
+					break;
+				}
+				default:
+					throw new ParseException("Unexcepted token expect [ IDENT or VALUE or ',' or '}' ] get '"
+							+ JSONToken.token2string(token.type) + "'");
+				}
+				break;
+			}
+			case OBJECT_VALUE: {
+				switch (token.type) {
+				case JSONToken.COLON:
+					break;
+				case JSONToken.NULL: {
+					handler.objectItemValue(token.value, true);
+					state = OBJECT_ITEM;
+					break;
+				}
+				case JSONToken.BOOL: {
+					handler.objectItemValue(token.value, true);
+					state = OBJECT_ITEM;
+					break;
+				}
+				case JSONToken.INT: {
+					handler.objectItemValue(token.value, true);
+					state = OBJECT_ITEM;
+					break;
+				}
+				case JSONToken.FLOAT: {
+					handler.objectItemValue(token.value, true);
+					state = OBJECT_ITEM;
+					break;
+				}
+				case JSONToken.STRING: {
+					handler.objectItemValue(token.value, true);
+					state = OBJECT_ITEM;
+					break;
+				}
+				case JSONToken.LSQUARE: {
+					states.push(new int[] { OBJECT_ITEM, index });
+
+					index = 0;
+					state = ARRAY_ITEM;
+					handler.arrayBegin();
+					break;
+				}
+				case JSONToken.LBRACE: {
+					states.push(new int[] { OBJECT_ITEM, index });
+
+					index = 0;
+					state = OBJECT_ITEM;
+					handler.objectBegin();
+					break;
+				}
+				default:
+					throw new ParseException("Unexcepted token expect [ VALUE or '[' or '{' ] get '"
+							+ JSONToken.token2string(token.type) + "'");
+				}
+				break;
+			}
+			default:
+				throw new ParseException("Unexcepted state.");
+			}
+		} while ((token = jr.nextToken()) != null);
 		states.clear();
 		return handler.end(value, pv);
 	}

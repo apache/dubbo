@@ -22,15 +22,15 @@ import com.alibaba.dubbo.common.extensionloader.ext7.InitErrorExt;
  * @author ding.lid
  */
 public class Ext7InitErrorImpl implements InitErrorExt {
-    
-    static {
-        if(true) {
-            throw new RuntimeException("intended!");
-        }
-    }
 
-    public String echo(URL url, String s) {
-        return "";
-    }
+	static {
+		if (true) {
+			throw new RuntimeException("intended!");
+		}
+	}
+
+	public String echo(URL url, String s) {
+		return "";
+	}
 
 }

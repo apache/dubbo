@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.common.compiler;
 
-
 import com.alibaba.dubbo.common.extension.SPI;
 
 /**
@@ -29,8 +28,10 @@ public interface Compiler {
 	/**
 	 * Compile java source code.
 	 * 
-	 * @param code Java source code
-	 * @param classLoader TODO
+	 * @param code
+	 *            Java source code
+	 * @param classLoader
+	 *            TODO
 	 * @return Compiled class
 	 */
 	Class<?> compile(String code, ClassLoader classLoader);

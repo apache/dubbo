@@ -20,17 +20,15 @@ import com.alibaba.dubbo.remoting.exchange.ExchangeChannel;
 import com.alibaba.dubbo.remoting.exchange.support.Replier;
 
 /**
- * User: heyman
- * Date: 4/28/11
- * Time: 11:15 AM
+ * User: heyman Date: 4/28/11 Time: 11:15 AM
  */
 public class TelnetClientHandler implements Replier<String> {
 
-    public Class<String> interest() {
-        return String.class;
-    }
+	public Class<String> interest() {
+		return String.class;
+	}
 
-    public Object reply(ExchangeChannel channel, String msg) throws RemotingException {
-        return msg;
-    }
+	public Object reply(ExchangeChannel channel, String msg) throws RemotingException {
+		return msg;
+	}
 }

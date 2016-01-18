@@ -27,13 +27,14 @@ import com.alibaba.dubbo.container.Container;
  * @author william.liangf
  */
 public class JettyContainerTest {
-    
-    @Test
-    public void testContainer() {
-        JettyContainer container = (JettyContainer) ExtensionLoader.getExtensionLoader(Container.class).getExtension("jetty");
-        container.start();
-        Assert.assertTrue(container.connector.isStarted());
-        container.stop();
-    }
+
+	@Test
+	public void testContainer() {
+		JettyContainer container = (JettyContainer) ExtensionLoader.getExtensionLoader(Container.class).getExtension(
+				"jetty");
+		container.start();
+		Assert.assertTrue(container.connector.isStarted());
+		container.stop();
+	}
 
 }

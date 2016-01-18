@@ -40,204 +40,198 @@ import java.util.Map;
  */
 public class MergeableClusterInvokerTest {
 
-    private Directory directory = EasyMock.createMock( Directory.class );
-    private Invoker firstInvoker = EasyMock.createMock( Invoker.class );
-    private Invoker secondInvoker = EasyMock.createMock( Invoker.class );
-    private Invocation invocation = EasyMock.createMock( Invocation.class );
+	private Directory directory = EasyMock.createMock(Directory.class);
+	private Invoker firstInvoker = EasyMock.createMock(Invoker.class);
+	private Invoker secondInvoker = EasyMock.createMock(Invoker.class);
+	private Invocation invocation = EasyMock.createMock(Invocation.class);
 
-    private MergeableClusterInvoker<MenuService> mergeableClusterInvoker;
-    
-    private Map<String, List<String>> firstMenuMap = new HashMap<String, List<String>>() {
-        {
-            put( "1", new ArrayList<String>() {
-                {
-                    add( "10" );
-                    add( "11" );
-                    add( "12" );
-                }
-            } );
-            put( "2", new ArrayList<String>() {
+	private MergeableClusterInvoker<MenuService> mergeableClusterInvoker;
 
-                {
-                    add( "20" );
-                    add( "21" );
-                    add( "22" );
-                }
-            } );
-        }
-    };
-    private Map<String, List<String>> secondMenuMap = new HashMap<String, List<String>>() {
-        {
-            put( "2", new ArrayList<String>() {
+	private Map<String, List<String>> firstMenuMap = new HashMap<String, List<String>>() {
+		{
+			put("1", new ArrayList<String>() {
+				{
+					add("10");
+					add("11");
+					add("12");
+				}
+			});
+			put("2", new ArrayList<String>() {
 
-                {
-                    add( "23" );
-                    add( "24" );
-                    add( "25" );
-                }
-            } );
-            put( "3", new ArrayList<String>() {
+				{
+					add("20");
+					add("21");
+					add("22");
+				}
+			});
+		}
+	};
+	private Map<String, List<String>> secondMenuMap = new HashMap<String, List<String>>() {
+		{
+			put("2", new ArrayList<String>() {
 
-                {
-                    add( "30" );
-                    add( "31" );
-                    add( "32" );
-                }
-            } );
-        }
-    };
-    
-    private Menu firstMenu = new Menu( firstMenuMap );
-    private Menu secondMenu = new Menu( secondMenuMap );
-    
-    private URL url = URL.valueOf( new StringBuilder( 32 )
-                                           .append( "test://test/" )
-                                           .append( MenuService.class.getName() ).toString() );
-    
-    @Before
-    public void setUp() throws Exception {
+				{
+					add("23");
+					add("24");
+					add("25");
+				}
+			});
+			put("3", new ArrayList<String>() {
 
-        directory = EasyMock.createMock( Directory.class );
-        firstInvoker = EasyMock.createMock( Invoker.class );
-        secondInvoker = EasyMock.createMock( Invoker.class );
-        invocation = EasyMock.createMock( Invocation.class );
+				{
+					add("30");
+					add("31");
+					add("32");
+				}
+			});
+		}
+	};
 
-    }
+	private Menu firstMenu = new Menu(firstMenuMap);
+	private Menu secondMenu = new Menu(secondMenuMap);
 
-    @Test
-    public void testGetMenuSuccessfully() throws Exception {
+	private URL url = URL.valueOf(new StringBuilder(32).append("test://test/").append(MenuService.class.getName())
+			.toString());
 
-        // setup
-        url = url.addParameter( Constants.MERGER_KEY, ".merge" );
+	@Before
+	public void setUp() throws Exception {
 
-        EasyMock.expect( invocation.getMethodName() ).andReturn( "getMenu" ).anyTimes();
-        EasyMock.expect( invocation.getParameterTypes() ).andReturn( new Class<?>[]{ } ).anyTimes();
-        EasyMock.expect( invocation.getArguments() ).andReturn( new Object[]{ } ).anyTimes();
-        EasyMock.expect( invocation.getAttachments() ).andReturn( new HashMap<String, String>() )
-                .anyTimes();
-        EasyMock.expect( invocation.getInvoker() ).andReturn( firstInvoker ).anyTimes();
-        EasyMock.replay( invocation );
-        
-        firstInvoker = (Invoker)Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{Invoker.class}, new InvocationHandler() {
+		directory = EasyMock.createMock(Directory.class);
+		firstInvoker = EasyMock.createMock(Invoker.class);
+		secondInvoker = EasyMock.createMock(Invoker.class);
+		invocation = EasyMock.createMock(Invocation.class);
 
-            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                if ("getUrl".equals(method.getName())) {
-                    return url.addParameter(Constants.GROUP_KEY, "first");
-                }
-                if ("getInterface".equals(method.getName())) {
-                    return MenuService.class;
-                }
-                if ("invoke".equals(method.getName())) {
-                    return new RpcResult(firstMenu);
-                }
-                return null;
-            }
-        });
+	}
 
-        secondInvoker = (Invoker) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{Invoker.class}, new InvocationHandler() {
+	@Test
+	public void testGetMenuSuccessfully() throws Exception {
 
-            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                if ("getUrl".equals(method.getName())) {
-                    return url.addParameter(Constants.GROUP_KEY, "second");
-                }
-                if ("getInterface".equals(method.getName())) {
-                    return MenuService.class;
-                }
-                if ("invoke".equals(method.getName())) {
-                    return new RpcResult(secondMenu);
-                }
-                return null;
-            }
-        });
+		// setup
+		url = url.addParameter(Constants.MERGER_KEY, ".merge");
 
-        EasyMock.expect( directory.list( invocation ) ).andReturn( new ArrayList() {
+		EasyMock.expect(invocation.getMethodName()).andReturn("getMenu").anyTimes();
+		EasyMock.expect(invocation.getParameterTypes()).andReturn(new Class<?>[] {}).anyTimes();
+		EasyMock.expect(invocation.getArguments()).andReturn(new Object[] {}).anyTimes();
+		EasyMock.expect(invocation.getAttachments()).andReturn(new HashMap<String, String>()).anyTimes();
+		EasyMock.expect(invocation.getInvoker()).andReturn(firstInvoker).anyTimes();
+		EasyMock.replay(invocation);
 
-            {
-                add( firstInvoker );
-                add( secondInvoker );
-            }
-        } ).anyTimes();
-        EasyMock.expect( directory.getUrl() ).andReturn( url ).anyTimes();
-        EasyMock.expect( directory.getInterface() ).andReturn( MenuService.class ).anyTimes();
-        EasyMock.replay( directory );
+		firstInvoker = (Invoker) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[] { Invoker.class },
+				new InvocationHandler() {
 
-        mergeableClusterInvoker = new MergeableClusterInvoker<MenuService>( directory );
+					public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+						if ("getUrl".equals(method.getName())) {
+							return url.addParameter(Constants.GROUP_KEY, "first");
+						}
+						if ("getInterface".equals(method.getName())) {
+							return MenuService.class;
+						}
+						if ("invoke".equals(method.getName())) {
+							return new RpcResult(firstMenu);
+						}
+						return null;
+					}
+				});
 
-        // invoke
-        Result result = mergeableClusterInvoker.invoke( invocation );
-        Assert.assertTrue( result.getValue() instanceof Menu );
-        Menu menu = ( Menu ) result.getValue();
-        Map<String, List<String>> expected = new HashMap<String, List<String>>();
-        merge( expected, firstMenuMap );
-        merge( expected, secondMenuMap );
-        Assert.assertEquals( expected, menu.getMenus() );
+		secondInvoker = (Invoker) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[] { Invoker.class },
+				new InvocationHandler() {
 
-    }
+					public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+						if ("getUrl".equals(method.getName())) {
+							return url.addParameter(Constants.GROUP_KEY, "second");
+						}
+						if ("getInterface".equals(method.getName())) {
+							return MenuService.class;
+						}
+						if ("invoke".equals(method.getName())) {
+							return new RpcResult(secondMenu);
+						}
+						return null;
+					}
+				});
 
-    @Test
-    public void testAddMenu() throws Exception {
+		EasyMock.expect(directory.list(invocation)).andReturn(new ArrayList() {
 
-        String menu = "first";
-        List<String> menuItems = new ArrayList<String>(){
-            {
-                add( "1" );
-                add( "2" );
-            }
-        };
-        
-        EasyMock.expect( invocation.getMethodName() ).andReturn( "addMenu" ).anyTimes();
-        EasyMock.expect( invocation.getParameterTypes() ).andReturn(
-                new Class<?>[]{ String.class, List.class } ).anyTimes();
-        EasyMock.expect( invocation.getArguments() ).andReturn( new Object[]{ menu, menuItems } )
-                .anyTimes();
-        EasyMock.expect( invocation.getAttachments() ).andReturn( new HashMap<String, String>() )
-                .anyTimes();
-        EasyMock.expect( invocation.getInvoker() ).andReturn( firstInvoker ).anyTimes();
-        EasyMock.replay( invocation );
+			{
+				add(firstInvoker);
+				add(secondInvoker);
+			}
+		}).anyTimes();
+		EasyMock.expect(directory.getUrl()).andReturn(url).anyTimes();
+		EasyMock.expect(directory.getInterface()).andReturn(MenuService.class).anyTimes();
+		EasyMock.replay(directory);
 
-        EasyMock.expect( firstInvoker.getUrl() ).andReturn(
-                url.addParameter( Constants.GROUP_KEY, "first" ) ).anyTimes();
-        EasyMock.expect( firstInvoker.getInterface() ).andReturn( MenuService.class ).anyTimes();
-        EasyMock.expect( firstInvoker.invoke(invocation) ).andReturn( new RpcResult() )
-                .anyTimes();
-        EasyMock.expect(firstInvoker.isAvailable()).andReturn(true).anyTimes();
-        EasyMock.replay( firstInvoker );
+		mergeableClusterInvoker = new MergeableClusterInvoker<MenuService>(directory);
 
-        EasyMock.expect( secondInvoker.getUrl() ).andReturn(
-                url.addParameter( Constants.GROUP_KEY, "second" ) ).anyTimes();
-        EasyMock.expect( secondInvoker.getInterface() ).andReturn( MenuService.class ).anyTimes();
-        EasyMock.expect( secondInvoker.invoke(invocation) ).andReturn(new RpcResult() )
-                .anyTimes();
-        EasyMock.expect(secondInvoker.isAvailable()).andReturn(true).anyTimes();
-        EasyMock.replay( secondInvoker );
+		// invoke
+		Result result = mergeableClusterInvoker.invoke(invocation);
+		Assert.assertTrue(result.getValue() instanceof Menu);
+		Menu menu = (Menu) result.getValue();
+		Map<String, List<String>> expected = new HashMap<String, List<String>>();
+		merge(expected, firstMenuMap);
+		merge(expected, secondMenuMap);
+		Assert.assertEquals(expected, menu.getMenus());
 
-        EasyMock.expect( directory.list( invocation ) ).andReturn( new ArrayList() {
+	}
 
-            {
-                add( firstInvoker );
-                add( secondInvoker );
-            }
-        } ).anyTimes();
-        EasyMock.expect( directory.getUrl() ).andReturn( url ).anyTimes();
-        EasyMock.expect( directory.getInterface() ).andReturn( MenuService.class ).anyTimes();
-        EasyMock.replay( directory );
+	@Test
+	public void testAddMenu() throws Exception {
 
-        mergeableClusterInvoker = new MergeableClusterInvoker<MenuService>( directory );
-        
-        Result result = mergeableClusterInvoker.invoke( invocation );
-        Assert.assertNull( result.getValue() );
+		String menu = "first";
+		List<String> menuItems = new ArrayList<String>() {
+			{
+				add("1");
+				add("2");
+			}
+		};
 
-    }
+		EasyMock.expect(invocation.getMethodName()).andReturn("addMenu").anyTimes();
+		EasyMock.expect(invocation.getParameterTypes()).andReturn(new Class<?>[] { String.class, List.class })
+				.anyTimes();
+		EasyMock.expect(invocation.getArguments()).andReturn(new Object[] { menu, menuItems }).anyTimes();
+		EasyMock.expect(invocation.getAttachments()).andReturn(new HashMap<String, String>()).anyTimes();
+		EasyMock.expect(invocation.getInvoker()).andReturn(firstInvoker).anyTimes();
+		EasyMock.replay(invocation);
 
-    static void merge( Map<String, List<String>> first, Map<String, List<String>> second ) {
-        for( Map.Entry<String, List<String>> entry : second.entrySet() ) {
-            List<String> value = first.get( entry.getKey() );
-            if ( value != null ) {
-                value.addAll( entry.getValue() );
-            } else {
-                first.put( entry.getKey(), entry.getValue() );
-            }
-        }
-    }
+		EasyMock.expect(firstInvoker.getUrl()).andReturn(url.addParameter(Constants.GROUP_KEY, "first")).anyTimes();
+		EasyMock.expect(firstInvoker.getInterface()).andReturn(MenuService.class).anyTimes();
+		EasyMock.expect(firstInvoker.invoke(invocation)).andReturn(new RpcResult()).anyTimes();
+		EasyMock.expect(firstInvoker.isAvailable()).andReturn(true).anyTimes();
+		EasyMock.replay(firstInvoker);
+
+		EasyMock.expect(secondInvoker.getUrl()).andReturn(url.addParameter(Constants.GROUP_KEY, "second")).anyTimes();
+		EasyMock.expect(secondInvoker.getInterface()).andReturn(MenuService.class).anyTimes();
+		EasyMock.expect(secondInvoker.invoke(invocation)).andReturn(new RpcResult()).anyTimes();
+		EasyMock.expect(secondInvoker.isAvailable()).andReturn(true).anyTimes();
+		EasyMock.replay(secondInvoker);
+
+		EasyMock.expect(directory.list(invocation)).andReturn(new ArrayList() {
+
+			{
+				add(firstInvoker);
+				add(secondInvoker);
+			}
+		}).anyTimes();
+		EasyMock.expect(directory.getUrl()).andReturn(url).anyTimes();
+		EasyMock.expect(directory.getInterface()).andReturn(MenuService.class).anyTimes();
+		EasyMock.replay(directory);
+
+		mergeableClusterInvoker = new MergeableClusterInvoker<MenuService>(directory);
+
+		Result result = mergeableClusterInvoker.invoke(invocation);
+		Assert.assertNull(result.getValue());
+
+	}
+
+	static void merge(Map<String, List<String>> first, Map<String, List<String>> second) {
+		for (Map.Entry<String, List<String>> entry : second.entrySet()) {
+			List<String> value = first.get(entry.getKey());
+			if (value != null) {
+				value.addAll(entry.getValue());
+			} else {
+				first.put(entry.getKey(), entry.getValue());
+			}
+		}
+	}
 
 }

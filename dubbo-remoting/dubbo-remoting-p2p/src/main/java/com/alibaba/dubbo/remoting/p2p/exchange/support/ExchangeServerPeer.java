@@ -40,98 +40,99 @@ import com.alibaba.dubbo.remoting.p2p.exchange.ExchangePeer;
  * @author william.liangf
  */
 public class ExchangeServerPeer extends ExchangeServerDelegate implements ExchangePeer {
-    
-    private static final Logger logger = LoggerFactory.getLogger(ExchangeServerPeer.class);
 
-    private final Map<URL, ExchangeClient> clients;
+	private static final Logger logger = LoggerFactory.getLogger(ExchangeServerPeer.class);
 
-    private final ExchangeGroup group;
-    
-    public ExchangeServerPeer(ExchangeServer server, Map<URL, ExchangeClient> clients, ExchangeGroup group){
-        super(server);
-        this.clients = clients;
-        this.group = group;
-    }
+	private final Map<URL, ExchangeClient> clients;
 
-    public void leave() throws RemotingException {
-        group.leave(getUrl());
-    }
+	private final ExchangeGroup group;
 
-    @Override
-    public void close() {
-        try {
-            leave();
-        } catch (RemotingException e) {
-            logger.error(e.getMessage(), e);
-        }
-    }
-    
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    @Override
-    public Collection<Channel> getChannels() {
-        return (Collection) getExchangeChannels();
-    }
+	public ExchangeServerPeer(ExchangeServer server, Map<URL, ExchangeClient> clients, ExchangeGroup group) {
+		super(server);
+		this.clients = clients;
+		this.group = group;
+	}
 
-    @Override
-    public Channel getChannel(InetSocketAddress remoteAddress) {
-        return getExchangeChannel(remoteAddress);
-    }
+	public void leave() throws RemotingException {
+		group.leave(getUrl());
+	}
 
-    @Override
-    public Collection<ExchangeChannel> getExchangeChannels() {
-        Collection<ExchangeChannel> channels = super.getExchangeChannels();
-        if (clients.size() > 0) {
-            channels = channels == null ? new ArrayList<ExchangeChannel>() : new ArrayList<ExchangeChannel>(channels);
-            channels.addAll(clients.values());
-        }
-        return channels;
-    }
+	@Override
+	public void close() {
+		try {
+			leave();
+		} catch (RemotingException e) {
+			logger.error(e.getMessage(), e);
+		}
+	}
 
-    @Override
-    public ExchangeChannel getExchangeChannel(InetSocketAddress remoteAddress) {
-        String host = remoteAddress.getAddress() != null ? remoteAddress.getAddress().getHostAddress() : remoteAddress.getHostName();
-        int port = remoteAddress.getPort();
-        ExchangeChannel channel = super.getExchangeChannel(remoteAddress);
-        if (channel == null) {
-            for (Map.Entry<URL, ExchangeClient> entry : clients.entrySet()) {
-                URL url = entry.getKey();
-                if (url.getIp().equals(host) && url.getPort() == port) {
-                    return entry.getValue();
-                }
-            }
-        }
-        return channel;
-    }
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public Collection<Channel> getChannels() {
+		return (Collection) getExchangeChannels();
+	}
 
-    @Override
-    public void send(Object message) throws RemotingException {
-        send(message, getUrl().getParameter(Constants.SENT_KEY, false));
-    }
+	@Override
+	public Channel getChannel(InetSocketAddress remoteAddress) {
+		return getExchangeChannel(remoteAddress);
+	}
 
-    @Override
-    public void send(Object message, boolean sent) throws RemotingException {
-        Throwable last = null;
-        try {
-            super.send(message, sent);
-        } catch (Throwable t) {
-            last = t;
-        }
-        for (Client client : clients.values()) {
-            try {
-                client.send(message, sent);
-            } catch (Throwable t) {
-                last = t;
-            }
-        }
-        if (last != null) {
-            if (last instanceof RemotingException) {
-                throw (RemotingException) last;
-            } else if (last instanceof RuntimeException) {
-                throw (RuntimeException) last;
-            } else {
-                throw new RuntimeException(last.getMessage(), last);
-            }
-        }
-    }
+	@Override
+	public Collection<ExchangeChannel> getExchangeChannels() {
+		Collection<ExchangeChannel> channels = super.getExchangeChannels();
+		if (clients.size() > 0) {
+			channels = channels == null ? new ArrayList<ExchangeChannel>() : new ArrayList<ExchangeChannel>(channels);
+			channels.addAll(clients.values());
+		}
+		return channels;
+	}
+
+	@Override
+	public ExchangeChannel getExchangeChannel(InetSocketAddress remoteAddress) {
+		String host = remoteAddress.getAddress() != null ? remoteAddress.getAddress().getHostAddress() : remoteAddress
+				.getHostName();
+		int port = remoteAddress.getPort();
+		ExchangeChannel channel = super.getExchangeChannel(remoteAddress);
+		if (channel == null) {
+			for (Map.Entry<URL, ExchangeClient> entry : clients.entrySet()) {
+				URL url = entry.getKey();
+				if (url.getIp().equals(host) && url.getPort() == port) {
+					return entry.getValue();
+				}
+			}
+		}
+		return channel;
+	}
+
+	@Override
+	public void send(Object message) throws RemotingException {
+		send(message, getUrl().getParameter(Constants.SENT_KEY, false));
+	}
+
+	@Override
+	public void send(Object message, boolean sent) throws RemotingException {
+		Throwable last = null;
+		try {
+			super.send(message, sent);
+		} catch (Throwable t) {
+			last = t;
+		}
+		for (Client client : clients.values()) {
+			try {
+				client.send(message, sent);
+			} catch (Throwable t) {
+				last = t;
+			}
+		}
+		if (last != null) {
+			if (last instanceof RemotingException) {
+				throw (RemotingException) last;
+			} else if (last instanceof RuntimeException) {
+				throw (RuntimeException) last;
+			} else {
+				throw new RuntimeException(last.getMessage(), last);
+			}
+		}
+	}
 
 }

@@ -21,79 +21,79 @@ package com.alibaba.dubbo.registry.common.domain;
  * @author ding.lid
  */
 public class ApprovalRequisition extends Entity {
-    private static final long serialVersionUID = -8778092807313048367L;
-    
-    private char operation; // 申请操作：新增（C），修改（U），删除（D） 
-    
-    private Long  approvalId;
-    
-    private String service; // 服务名称
-    
-    private String version; 
-    // 可以使用通配符， *，1.1.*
-    // 可以包含多个 1.1.3,1.1.5,2.*
-    
-    private boolean forProvider;
-    
-    private String machineList; // 服务所在机器
-    // 可以使用通配符 172.3.8.*
-    // 可以有多个 172.1.9.8,172.1.9.123,172.3.3.*
-    
-    private String username;
+	private static final long serialVersionUID = -8778092807313048367L;
 
-    public char getOperation() {
-        return operation;
-    }
+	private char operation; // 申请操作：新增（C），修改（U），删除（D）
 
-    public void setOperation(char operation) {
-        this.operation = operation;
-    }
+	private Long approvalId;
 
-    public Long getApprovalId() {
-        return approvalId;
-    }
+	private String service; // 服务名称
 
-    public void setApprovalId(Long approvalId) {
-        this.approvalId = approvalId;
-    }
+	private String version;
+	// 可以使用通配符， *，1.1.*
+	// 可以包含多个 1.1.3,1.1.5,2.*
 
-    public String getService() {
-        return service;
-    }
+	private boolean forProvider;
 
-    public void setService(String service) {
-        this.service = service;
-    }
+	private String machineList; // 服务所在机器
+	// 可以使用通配符 172.3.8.*
+	// 可以有多个 172.1.9.8,172.1.9.123,172.3.3.*
 
-    public String getVersion() {
-        return version;
-    }
+	private String username;
 
-    public void setVersion(String version) {
-        this.version = version;
-    }
+	public char getOperation() {
+		return operation;
+	}
 
-    public boolean isForProvider() {
-        return forProvider;
-    }
+	public void setOperation(char operation) {
+		this.operation = operation;
+	}
 
-    public void setForProvider(boolean forProvider) {
-        this.forProvider = forProvider;
-    }
+	public Long getApprovalId() {
+		return approvalId;
+	}
 
-    public String getMachineList() {
-        return machineList;
-    }
+	public void setApprovalId(Long approvalId) {
+		this.approvalId = approvalId;
+	}
 
-    public void setMachineList(String machineList) {
-        this.machineList = machineList;
-    }
+	public String getService() {
+		return service;
+	}
 
-    public String getUsername() {
-        return username;
-    }
+	public void setService(String service) {
+		this.service = service;
+	}
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+	public String getVersion() {
+		return version;
+	}
+
+	public void setVersion(String version) {
+		this.version = version;
+	}
+
+	public boolean isForProvider() {
+		return forProvider;
+	}
+
+	public void setForProvider(boolean forProvider) {
+		this.forProvider = forProvider;
+	}
+
+	public String getMachineList() {
+		return machineList;
+	}
+
+	public void setMachineList(String machineList) {
+		this.machineList = machineList;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
 }

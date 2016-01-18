@@ -24,71 +24,69 @@ import java.util.Date;
  */
 public class Registry extends Entity {
 
-    private static final long serialVersionUID = -8866645978415551309L;
+	private static final long serialVersionUID = -8866645978415551309L;
 
-    private String registry;/* 注册中心地址 */
-    
-    private String url;
-    
-    private int connections = 0;/*注册中心连接数*/
+	private String registry;/* 注册中心地址 */
 
-    private Date expired;   /*过期时间*/
-    
-    private long alived;
-    
-    public Registry() {
-    }
+	private String url;
 
-    public Registry(Long id) {
-        super(id);
-    }
-    
-    public Registry(String registryAddress, String consoleUrl, int aliveSeconds) {
-        this.registry = registryAddress;
-        this.url = consoleUrl;
-        this.alived = aliveSeconds;
-    }
+	private int connections = 0;/* 注册中心连接数 */
 
-    public String getAddress() {
-        return registry;
-    }
+	private Date expired; /* 过期时间 */
 
-    public void setAddress(String registry) {
-        this.registry = registry;
-    }
+	private long alived;
 
-    public String getUrl() {
-        return url;
-    }
+	public Registry() {
+	}
 
-    public void setUrl(String url) {
-        this.url = url;
-    }
+	public Registry(Long id) {
+		super(id);
+	}
 
-    public Date getExpired() {
-        return expired;
-    }
+	public Registry(String registryAddress, String consoleUrl, int aliveSeconds) {
+		this.registry = registryAddress;
+		this.url = consoleUrl;
+		this.alived = aliveSeconds;
+	}
 
-    public void setExpired(Date expiredDate) {
-        this.expired = expiredDate;
-    }
+	public String getAddress() {
+		return registry;
+	}
 
-    public long getAlived() {
-        return alived;
-    }
+	public void setAddress(String registry) {
+		this.registry = registry;
+	}
 
-    public void setAlived(long aliveSeconds) {
-        this.alived = aliveSeconds;
-    }
+	public String getUrl() {
+		return url;
+	}
 
-    
-    public int getConnections() {
-        return connections;
-    }
+	public void setUrl(String url) {
+		this.url = url;
+	}
 
-    
-    public void setConnections(int connections) {
-        this.connections = connections;
-    }
+	public Date getExpired() {
+		return expired;
+	}
+
+	public void setExpired(Date expiredDate) {
+		this.expired = expiredDate;
+	}
+
+	public long getAlived() {
+		return alived;
+	}
+
+	public void setAlived(long aliveSeconds) {
+		this.alived = aliveSeconds;
+	}
+
+	public int getConnections() {
+		return connections;
+	}
+
+	public void setConnections(int connections) {
+		this.connections = connections;
+	}
 
 }

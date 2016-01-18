@@ -23,13 +23,13 @@ import org.junit.BeforeClass;
  * @author ding.lid
  */
 public class ExtensionLoader_Adaptive_UseJdkCompiler_Test extends ExtensionLoader_Adaptive_Test {
-    @BeforeClass
-    public static void setUp() throws Exception {
-        AdaptiveCompiler.setDefaultCompiler("jdk");
-    }
+	@BeforeClass
+	public static void setUp() throws Exception {
+		AdaptiveCompiler.setDefaultCompiler("jdk");
+	}
 
-    @AfterClass
-    public static void tearDown() throws Exception {
-        AdaptiveCompiler.setDefaultCompiler("javassist");
-    }
+	@AfterClass
+	public static void tearDown() throws Exception {
+		AdaptiveCompiler.setDefaultCompiler("javassist");
+	}
 }

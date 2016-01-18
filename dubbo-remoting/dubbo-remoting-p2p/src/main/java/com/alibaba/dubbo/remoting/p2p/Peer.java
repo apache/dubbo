@@ -26,12 +26,12 @@ import com.alibaba.dubbo.remoting.Server;
  * @author william.liangf
  */
 public interface Peer extends Server {
-    
-    /**
-     * leave.
-     * 
-     * @throws RemotingException
-     */
-    void leave() throws RemotingException;
+
+	/**
+	 * leave.
+	 * 
+	 * @throws RemotingException
+	 */
+	void leave() throws RemotingException;
 
 }

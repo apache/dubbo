@@ -25,8 +25,8 @@ import com.alibaba.dubbo.common.extensionloader.ext4.NoUrlParamExt;
  *
  */
 public class Ext4Impl2 implements NoUrlParamExt {
-    public String bark(String name, List<Object> list) {
-        return null;
-    }
-    
+	public String bark(String name, List<Object> list) {
+		return null;
+	}
+
 }

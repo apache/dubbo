@@ -7,7 +7,7 @@ public class Dependency implements Serializable {
 	private static final long serialVersionUID = 8526869025719540547L;
 
 	private String providerApplication;
-	
+
 	private String consumerApplication;
 
 	public String getProviderApplication() {

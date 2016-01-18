@@ -55,76 +55,68 @@ import java.lang.reflect.Constructor;
  * Deserializing a string valued object
  */
 public class StringValueDeserializer extends AbstractDeserializer {
-  private Class _cl;
-  private Constructor _constructor;
-  
-  public StringValueDeserializer(Class cl)
-  {
-    try {
-      _cl = cl;
-      _constructor = cl.getConstructor(new Class[] { String.class });
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-  
-  public Class getType()
-  {
-    return _cl;
-  }
-  
-  public Object readMap(AbstractHessianInput in)
-    throws IOException
-  {
-    String value = null;
-    
-    while (! in.isEnd()) {
-      String key = in.readString();
+	private Class _cl;
+	private Constructor _constructor;
 
-      if (key.equals("value"))
-        value = in.readString();
-      else
-	in.readObject();
-    }
+	public StringValueDeserializer(Class cl) {
+		try {
+			_cl = cl;
+			_constructor = cl.getConstructor(new Class[] { String.class });
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
 
-    in.readMapEnd();
+	public Class getType() {
+		return _cl;
+	}
 
-    Object object = create(value);
+	public Object readMap(AbstractHessianInput in) throws IOException {
+		String value = null;
 
-    in.addRef(object);
+		while (!in.isEnd()) {
+			String key = in.readString();
 
-    return object;
-  }
-  
-  public Object readObject(AbstractHessianInput in, String []fieldNames)
-    throws IOException
-  {
-    String value = null;
+			if (key.equals("value"))
+				value = in.readString();
+			else
+				in.readObject();
+		}
 
-    for (int i = 0; i < fieldNames.length; i++) {
-      if ("value".equals(fieldNames[i]))
-        value = in.readString();
-      else
-	in.readObject();
-    }
+		in.readMapEnd();
 
-    Object object = create(value);
-    
-    in.addRef(object);
+		Object object = create(value);
 
-    return object;
-  }
+		in.addRef(object);
 
-  private Object create(String value)
-    throws IOException
-  {
-    if (value == null)
-      throw new IOException(_cl.getName() + " expects name.");
+		return object;
+	}
 
-    try {
-      return _constructor.newInstance(new Object[] { value });
-    } catch (Exception e) {
-      throw new IOExceptionWrapper(e);
-    }
-  }
+	public Object readObject(AbstractHessianInput in, String[] fieldNames) throws IOException {
+		String value = null;
+
+		for (int i = 0; i < fieldNames.length; i++) {
+			if ("value".equals(fieldNames[i]))
+				value = in.readString();
+			else
+				in.readObject();
+		}
+
+		Object object = create(value);
+
+		in.addRef(object);
+
+		return object;
+	}
+
+	private Object create(String value) throws IOException {
+		if (value == null)
+			throw new IOException(_cl.getName() + " expects name.");
+
+		try {
+			return _constructor.newInstance(new Object[] { value });
+		} catch (Exception e) {
+			throw new IOExceptionWrapper(e);
+		}
+	}
 }

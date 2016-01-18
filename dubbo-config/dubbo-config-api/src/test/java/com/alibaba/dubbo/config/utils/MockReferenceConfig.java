@@ -23,34 +23,35 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author ding.lid
  */
 public class MockReferenceConfig extends ReferenceConfig<String> {
-    static AtomicLong counter = new AtomicLong();
+	static AtomicLong counter = new AtomicLong();
 
-    String value;
+	String value;
 
-    public boolean isGetMethodRun() {
-        return value != null;
-    }
+	public boolean isGetMethodRun() {
+		return value != null;
+	}
 
-    boolean destroyMethodRun = false;
+	boolean destroyMethodRun = false;
 
-    public boolean isDestroyMethodRun() {
-        return destroyMethodRun;
-    }
+	public boolean isDestroyMethodRun() {
+		return destroyMethodRun;
+	}
 
-    public static void setCounter(long c) {
-        counter.set(c);
-    }
+	public static void setCounter(long c) {
+		counter.set(c);
+	}
 
-    @Override
-    public synchronized String get() {
-        if(value != null) return value;
+	@Override
+	public synchronized String get() {
+		if (value != null)
+			return value;
 
-        value = "" + counter.getAndIncrement();
-        return value;
-    }
+		value = "" + counter.getAndIncrement();
+		return value;
+	}
 
-    @Override
-    public synchronized void destroy() {
-        destroyMethodRun = true;
-    }
+	@Override
+	public synchronized void destroy() {
+		destroyMethodRun = true;
+	}
 }

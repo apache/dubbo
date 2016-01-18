@@ -33,24 +33,25 @@ import com.alibaba.dubbo.remoting.Codec2;
  * @author william.liangf
  */
 public abstract class AbstractCodec implements Codec2 {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(AbstractCodec.class);
 
-    protected Serialization getSerialization(Channel channel) {
-        return CodecSupport.getSerialization(channel.getUrl());
-    }
+	protected Serialization getSerialization(Channel channel) {
+		return CodecSupport.getSerialization(channel.getUrl());
+	}
 
-    protected static void checkPayload(Channel channel, long size) throws IOException {
-        int payload = Constants.DEFAULT_PAYLOAD;
-        if (channel != null && channel.getUrl() != null) {
-            payload = channel.getUrl().getParameter(Constants.PAYLOAD_KEY, Constants.DEFAULT_PAYLOAD);
-        }
-        if (payload > 0 && size > payload) {
-        	IOException e = new IOException("Data length too large: " + size + ", max payload: " + payload + ", channel: " + channel);
-        	logger.error(e);
-            throw e;
-        }
-    }
+	protected static void checkPayload(Channel channel, long size) throws IOException {
+		int payload = Constants.DEFAULT_PAYLOAD;
+		if (channel != null && channel.getUrl() != null) {
+			payload = channel.getUrl().getParameter(Constants.PAYLOAD_KEY, Constants.DEFAULT_PAYLOAD);
+		}
+		if (payload > 0 && size > payload) {
+			IOException e = new IOException("Data length too large: " + size + ", max payload: " + payload
+					+ ", channel: " + channel);
+			logger.error(e);
+			throw e;
+		}
+	}
 
 	protected boolean isClientSide(Channel channel) {
 		String side = (String) channel.getAttribute(Constants.SIDE_KEY);
@@ -63,10 +64,8 @@ public abstract class AbstractCodec implements Codec2 {
 			URL url = channel.getUrl();
 			boolean client = url.getPort() == address.getPort()
 					&& NetUtils.filterLocalHost(url.getIp()).equals(
-							NetUtils.filterLocalHost(address.getAddress()
-									.getHostAddress()));
-			channel.setAttribute(Constants.SIDE_KEY, client ? "client"
-					: "server");
+							NetUtils.filterLocalHost(address.getAddress().getHostAddress()));
+			channel.setAttribute(Constants.SIDE_KEY, client ? "client" : "server");
 			return client;
 		}
 	}

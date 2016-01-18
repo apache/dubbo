@@ -27,6 +27,6 @@ import com.alibaba.dubbo.common.extension.SPI;
 @SPI
 public interface RuleConverter {
 
-    List<URL> convert(URL subscribeUrl, Object source);
+	List<URL> convert(URL subscribeUrl, Object source);
 
 }

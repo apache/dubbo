@@ -19,8 +19,7 @@ package com.alibaba.dubbo.rpc.proxy;
  * <code>TestService</code>
  */
 
-public interface DemoService
-{
+public interface DemoService {
 	void sayHello(String name);
 
 	String echo(String text);

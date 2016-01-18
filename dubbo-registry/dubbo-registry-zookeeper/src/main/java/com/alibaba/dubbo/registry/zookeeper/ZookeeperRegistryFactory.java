@@ -26,15 +26,15 @@ import com.alibaba.dubbo.remoting.zookeeper.ZookeeperTransporter;
  * @author william.liangf
  */
 public class ZookeeperRegistryFactory extends AbstractRegistryFactory {
-	
+
 	private ZookeeperTransporter zookeeperTransporter;
 
-    public void setZookeeperTransporter(ZookeeperTransporter zookeeperTransporter) {
+	public void setZookeeperTransporter(ZookeeperTransporter zookeeperTransporter) {
 		this.zookeeperTransporter = zookeeperTransporter;
 	}
 
 	public Registry createRegistry(URL url) {
-        return new ZookeeperRegistry(url, zookeeperTransporter);
-    }
+		return new ZookeeperRegistry(url, zookeeperTransporter);
+	}
 
 }

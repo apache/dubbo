@@ -33,44 +33,42 @@ import java.util.List;
  */
 public class HeartBeatTaskTest {
 
-    private URL url = URL.valueOf("dubbo://localhost:20880");
-    
-    private MockChannel channel;
-    private HeartBeatTask task;
-    
-    @Before
-    public void setup() throws Exception {
-        task = new HeartBeatTask( new HeartBeatTask.ChannelProvider() {
+	private URL url = URL.valueOf("dubbo://localhost:20880");
 
-            public Collection<Channel> getChannels() {
-                return Collections.<Channel>singletonList(channel);
-            }
-        }, 1000, 1000 * 3);
+	private MockChannel channel;
+	private HeartBeatTask task;
 
-        channel = new MockChannel() {
+	@Before
+	public void setup() throws Exception {
+		task = new HeartBeatTask(new HeartBeatTask.ChannelProvider() {
 
-            @Override
-            public URL getUrl() {
-                return url;
-            }
-        };
-    }
-    
-    @Test
-    public void testHeartBeat() throws Exception {
-        url = url.addParameter(Constants.DUBBO_VERSION_KEY, "2.1.1");
-        channel.setAttribute(
-                HeaderExchangeHandler.KEY_READ_TIMESTAMP, System.currentTimeMillis());
-        channel.setAttribute(
-                HeaderExchangeHandler.KEY_WRITE_TIMESTAMP, System.currentTimeMillis());
-        Thread.sleep( 2000L );
-        task.run();
-        List<Object> objects = channel.getSentObjects();
-        Assert.assertTrue(objects.size() > 0);
-        Object obj = objects.get(0);
-        Assert.assertTrue(obj instanceof Request);
-        Request request = (Request)obj;
-        Assert.assertTrue(request.isHeartbeat());
-    }
-    
+			public Collection<Channel> getChannels() {
+				return Collections.<Channel> singletonList(channel);
+			}
+		}, 1000, 1000 * 3);
+
+		channel = new MockChannel() {
+
+			@Override
+			public URL getUrl() {
+				return url;
+			}
+		};
+	}
+
+	@Test
+	public void testHeartBeat() throws Exception {
+		url = url.addParameter(Constants.DUBBO_VERSION_KEY, "2.1.1");
+		channel.setAttribute(HeaderExchangeHandler.KEY_READ_TIMESTAMP, System.currentTimeMillis());
+		channel.setAttribute(HeaderExchangeHandler.KEY_WRITE_TIMESTAMP, System.currentTimeMillis());
+		Thread.sleep(2000L);
+		task.run();
+		List<Object> objects = channel.getSentObjects();
+		Assert.assertTrue(objects.size() > 0);
+		Object obj = objects.get(0);
+		Assert.assertTrue(obj instanceof Request);
+		Request request = (Request) obj;
+		Assert.assertTrue(request.isHeartbeat());
+	}
+
 }

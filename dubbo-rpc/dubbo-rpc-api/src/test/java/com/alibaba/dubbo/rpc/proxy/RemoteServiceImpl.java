@@ -19,16 +19,13 @@ import java.rmi.RemoteException;
 
 import com.alibaba.dubbo.rpc.RpcContext;
 
-public class RemoteServiceImpl implements RemoteService
-{
-	public String getThreadName() throws RemoteException
-	{
-		System.out.println("RpcContext.getContext().getRemoteHost()="+RpcContext.getContext().getRemoteHost());
+public class RemoteServiceImpl implements RemoteService {
+	public String getThreadName() throws RemoteException {
+		System.out.println("RpcContext.getContext().getRemoteHost()=" + RpcContext.getContext().getRemoteHost());
 		return Thread.currentThread().getName();
 	}
 
-	public String sayHello(String name) throws RemoteException
-	{
+	public String sayHello(String name) throws RemoteException {
 		return "hello " + name + "@" + RemoteServiceImpl.class.getName();
 	}
 }

@@ -54,66 +54,54 @@ import java.util.Locale;
  * Handle for a locale object.
  */
 public class LocaleHandle implements java.io.Serializable, HessianHandle {
-  private String value;
+	private String value;
 
-  public LocaleHandle(String locale)
-  {
-    this.value = locale;
-  }
+	public LocaleHandle(String locale) {
+		this.value = locale;
+	}
 
-  private Object readResolve()
-  {
-    String s = this.value;
-    
-    if (s == null)
-      return null;
-    
-    int len = s.length();
-    char ch = ' ';
+	private Object readResolve() {
+		String s = this.value;
 
-    int i = 0;
-    for (;
-	 i < len && ('a' <= (ch = s.charAt(i)) && ch <= 'z'
-		     || 'A' <= ch && ch <= 'Z'
-		     || '0' <= ch && ch <= '9');
-	 i++) {
-    }
+		if (s == null)
+			return null;
 
-    String language = s.substring(0, i);
-    String country = null;
-    String var = null;
+		int len = s.length();
+		char ch = ' ';
 
-    if (ch == '-' || ch == '_') {
-      int head = ++i;
-      
-      for (;
-	   i < len && ('a' <= (ch = s.charAt(i)) && ch <= 'z'
-		       || 'A' <= ch && ch <= 'Z'
-		       || '0' <= ch && ch <= '9');
-	   i++) {
-      }
-      
-      country = s.substring(head, i);
-    }
+		int i = 0;
+		for (; i < len && ('a' <= (ch = s.charAt(i)) && ch <= 'z' || 'A' <= ch && ch <= 'Z' || '0' <= ch && ch <= '9'); i++) {
+		}
 
-    if (ch == '-' || ch == '_') {
-      int head = ++i;
-      
-      for (;
-	   i < len && ('a' <= (ch = s.charAt(i)) && ch <= 'z'
-		       || 'A' <= ch && ch <= 'Z'
-		       || '0' <= ch && ch <= '9');
-	   i++) {
-      }
-      
-      var = s.substring(head, i);
-    }
+		String language = s.substring(0, i);
+		String country = null;
+		String var = null;
 
-    if (var != null)
-      return new Locale(language, country, var);
-    else if (country != null)
-      return new Locale(language, country);
-    else
-      return new Locale(language);
-  }
+		if (ch == '-' || ch == '_') {
+			int head = ++i;
+
+			for (; i < len
+					&& ('a' <= (ch = s.charAt(i)) && ch <= 'z' || 'A' <= ch && ch <= 'Z' || '0' <= ch && ch <= '9'); i++) {
+			}
+
+			country = s.substring(head, i);
+		}
+
+		if (ch == '-' || ch == '_') {
+			int head = ++i;
+
+			for (; i < len
+					&& ('a' <= (ch = s.charAt(i)) && ch <= 'z' || 'A' <= ch && ch <= 'Z' || '0' <= ch && ch <= '9'); i++) {
+			}
+
+			var = s.substring(head, i);
+		}
+
+		if (var != null)
+			return new Locale(language, country, var);
+		else if (country != null)
+			return new Locale(language, country);
+		else
+			return new Locale(language);
+	}
 }

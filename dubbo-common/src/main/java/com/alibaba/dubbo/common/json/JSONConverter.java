@@ -23,13 +23,14 @@ import java.io.IOException;
  * @author qianlei
  */
 
-public interface JSONConverter
-{
+public interface JSONConverter {
 	/**
 	 * write object.
 	 * 
-	 * @param obj obj.
-	 * @param builder builder.
+	 * @param obj
+	 *            obj.
+	 * @param builder
+	 *            builder.
 	 * @throws IOException
 	 */
 	void writeValue(Object obj, JSONWriter builder, boolean writeClass) throws IOException;
@@ -37,8 +38,10 @@ public interface JSONConverter
 	/**
 	 * convert json value to target class.
 	 * 
-	 * @param type target type.
-	 * @param jv json value.
+	 * @param type
+	 *            target type.
+	 * @param jv
+	 *            json value.
 	 * @return target object.
 	 * @throws IOException.
 	 */

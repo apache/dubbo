@@ -29,30 +29,31 @@ import com.alibaba.dubbo.registry.common.domain.User;
  */
 public class Menu {
 
-    @Autowired
-    private HttpServletRequest request;
-    
-    @Autowired
-    ServletContext servletcontext;
-    
-    @Autowired
-    RegistryServerSync registryServerSync;
+	@Autowired
+	private HttpServletRequest request;
 
-    public void execute(HttpSession session, Context context, CookieParser parser) {
-        
-        User user = (User) session.getAttribute(WebConstants.CURRENT_USER_KEY);
-        if (user != null) context.put("operator", user.getUsername());
-        
-        RootContextPath rootContextPath = new RootContextPath(request.getContextPath());
-        context.put("rootContextPath", rootContextPath);
-        if (! context.containsKey("bucLogoutAddress")) {
-        	context.put("bucLogoutAddress", rootContextPath.getURI("logout"));
-        }
-        if (! context.containsKey("helpUrl")) {
-        	context.put("helpUrl", "http://code.alibabatech.com/wiki/display/dubbo");
-        }
-        context.put(WebConstants.CURRENT_USER_KEY, user);
-        context.put("language", parser.getString("locale"));
-        context.put("registryServerSync", registryServerSync);
-    }
+	@Autowired
+	ServletContext servletcontext;
+
+	@Autowired
+	RegistryServerSync registryServerSync;
+
+	public void execute(HttpSession session, Context context, CookieParser parser) {
+
+		User user = (User) session.getAttribute(WebConstants.CURRENT_USER_KEY);
+		if (user != null)
+			context.put("operator", user.getUsername());
+
+		RootContextPath rootContextPath = new RootContextPath(request.getContextPath());
+		context.put("rootContextPath", rootContextPath);
+		if (!context.containsKey("bucLogoutAddress")) {
+			context.put("bucLogoutAddress", rootContextPath.getURI("logout"));
+		}
+		if (!context.containsKey("helpUrl")) {
+			context.put("helpUrl", "http://code.alibabatech.com/wiki/display/dubbo");
+		}
+		context.put(WebConstants.CURRENT_USER_KEY, user);
+		context.put("language", parser.getString("locale"));
+		context.put("registryServerSync", registryServerSync);
+	}
 }

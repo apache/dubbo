@@ -29,56 +29,57 @@ import java.util.List;
  */
 public final class MultiMessage implements Iterable {
 
-    public static MultiMessage createFromCollection(Collection collection) {
-        MultiMessage result = new MultiMessage();
-        result.addMessages(collection);
-        return result;
-    }
+	public static MultiMessage createFromCollection(Collection collection) {
+		MultiMessage result = new MultiMessage();
+		result.addMessages(collection);
+		return result;
+	}
 
-    public static MultiMessage createFromArray(Object... args) {
-        return createFromCollection(Arrays.asList(args));
-    }
+	public static MultiMessage createFromArray(Object... args) {
+		return createFromCollection(Arrays.asList(args));
+	}
 
-    public static MultiMessage create() {
-        return new MultiMessage();
-    }
+	public static MultiMessage create() {
+		return new MultiMessage();
+	}
 
-    private final List messages = new ArrayList();
+	private final List messages = new ArrayList();
 
-    private MultiMessage() {}
+	private MultiMessage() {
+	}
 
-    public void addMessage(Object msg) {
-        messages.add(msg);
-    }
+	public void addMessage(Object msg) {
+		messages.add(msg);
+	}
 
-    public void addMessages(Collection collection) {
-        messages.addAll(collection);
-    }
+	public void addMessages(Collection collection) {
+		messages.addAll(collection);
+	}
 
-    public Collection getMessages() {
-        return Collections.unmodifiableCollection(messages);
-    }
+	public Collection getMessages() {
+		return Collections.unmodifiableCollection(messages);
+	}
 
-    public int size() {
-        return messages.size();
-    }
+	public int size() {
+		return messages.size();
+	}
 
-    public Object get(int index) {
-        return messages.get(index);
-    }
+	public Object get(int index) {
+		return messages.get(index);
+	}
 
-    public boolean isEmpty() {
-        return messages.isEmpty();
-    }
+	public boolean isEmpty() {
+		return messages.isEmpty();
+	}
 
-    public Collection removeMessages() {
-        Collection result = Collections.unmodifiableCollection(messages);
-        messages.clear();
-        return result;
-    }
+	public Collection removeMessages() {
+		Collection result = Collections.unmodifiableCollection(messages);
+		messages.clear();
+		return result;
+	}
 
-    public Iterator iterator() {
-        return messages.iterator();
-    }
+	public Iterator iterator() {
+		return messages.iterator();
+	}
 
 }

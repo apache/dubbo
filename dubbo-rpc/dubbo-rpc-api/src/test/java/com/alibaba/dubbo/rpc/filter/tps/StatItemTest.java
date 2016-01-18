@@ -32,26 +32,26 @@ import static junit.framework.Assert.assertTrue;
  */
 public class StatItemTest {
 
-    private StatItem statItem;
+	private StatItem statItem;
 
-    private URL        url        = URL.valueOf("test://localhost");
+	private URL url = URL.valueOf("test://localhost");
 
-    private Invocation invocation = new RpcInvocation();
+	private Invocation invocation = new RpcInvocation();
 
-    @After
-    public void tearDown() throws Exception {
-        statItem = null;
-    }
+	@After
+	public void tearDown() throws Exception {
+		statItem = null;
+	}
 
-    @Test
-    public void testIsAllowable() throws Exception {
-        statItem = new StatItem("test", 5, 1000L);
-        long lastResetTime = statItem.getLastResetTime();
-        assertEquals(true, statItem.isAllowable(url, invocation));
-        Thread.sleep(1100L);
-        assertEquals(true, statItem.isAllowable(url, invocation));
-        assertTrue(lastResetTime != statItem.getLastResetTime());
-        assertEquals(4, statItem.getToken());
-    }
+	@Test
+	public void testIsAllowable() throws Exception {
+		statItem = new StatItem("test", 5, 1000L);
+		long lastResetTime = statItem.getLastResetTime();
+		assertEquals(true, statItem.isAllowable(url, invocation));
+		Thread.sleep(1100L);
+		assertEquals(true, statItem.isAllowable(url, invocation));
+		assertTrue(lastResetTime != statItem.getLastResetTime());
+		assertEquals(4, statItem.getToken());
+	}
 
 }

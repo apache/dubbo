@@ -22,22 +22,22 @@ package com.alibaba.dubbo.config.api;
  */
 public class DemoException extends Exception {
 
-    private static final long serialVersionUID = -8213943026163641747L;
+	private static final long serialVersionUID = -8213943026163641747L;
 
-    public DemoException() {
-        super();
-    }
+	public DemoException() {
+		super();
+	}
 
-    public DemoException(String message, Throwable cause) {
-        super(message, cause);
-    }
+	public DemoException(String message, Throwable cause) {
+		super(message, cause);
+	}
 
-    public DemoException(String message) {
-        super(message);
-    }
+	public DemoException(String message) {
+		super(message);
+	}
 
-    public DemoException(Throwable cause) {
-        super(cause);
-    }
+	public DemoException(Throwable cause) {
+		super(cause);
+	}
 
 }

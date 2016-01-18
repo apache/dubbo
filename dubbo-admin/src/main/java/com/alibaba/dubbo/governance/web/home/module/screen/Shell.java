@@ -19,38 +19,38 @@ import com.alibaba.dubbo.governance.web.util.WebConstants;
 import com.alibaba.dubbo.registry.common.domain.User;
 
 public abstract class Shell {
-    @Autowired
-    private HttpServletResponse response;
-    
-    protected String role = null;
-    protected String operator = null;
-    protected User currentUser = null;
-    protected String operatorAddress = null;
+	@Autowired
+	private HttpServletResponse response;
 
-	public void execute(Map<String,Object> context) throws Exception {
-	    if(context.get(WebConstants.CURRENT_USER_KEY)!=null){
-            User user = (User) context.get(WebConstants.CURRENT_USER_KEY);
-            currentUser = user;
-            operator = user.getUsername();
-            role = user.getRole();
-            context.put(WebConstants.CURRENT_USER_KEY, user);
-        }
-        operatorAddress = (String)context.get("request.remoteHost");
-        context.put("operator", operator);
-        context.put("operatorAddress", operatorAddress);
+	protected String role = null;
+	protected String operator = null;
+	protected User currentUser = null;
+	protected String operatorAddress = null;
+
+	public void execute(Map<String, Object> context) throws Exception {
+		if (context.get(WebConstants.CURRENT_USER_KEY) != null) {
+			User user = (User) context.get(WebConstants.CURRENT_USER_KEY);
+			currentUser = user;
+			operator = user.getUsername();
+			role = user.getRole();
+			context.put(WebConstants.CURRENT_USER_KEY, user);
+		}
+		operatorAddress = (String) context.get("request.remoteHost");
+		context.put("operator", operator);
+		context.put("operatorAddress", operatorAddress);
 		try {
 			String message = doExecute(context);
 			context.put("message", "OK: " + filterERROR(message));
 		} catch (Throwable t) {
-        	context.put("message", "ERROR: " + filterOK(t.getMessage()));
-        }
+			context.put("message", "ERROR: " + filterOK(t.getMessage()));
+		}
 		PrintWriter writer = response.getWriter();
 		writer.print(context.get("message"));
 		writer.flush();
 	}
 
-	protected abstract String doExecute(Map<String,Object> context) throws Exception;
-	
+	protected abstract String doExecute(Map<String, Object> context) throws Exception;
+
 	private static final Pattern OK_PATTERN = Pattern.compile("ok", Pattern.CASE_INSENSITIVE);
 
 	private static final Pattern ERROR_PATTERN = Pattern.compile("error", Pattern.CASE_INSENSITIVE);

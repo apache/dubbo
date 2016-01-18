@@ -41,25 +41,30 @@ public interface Codec {
 	 */
 	Object NEED_MORE_INPUT = new Object();
 
-    /**
-     * Encode message.
-     * 
-     * @param channel channel.
-     * @param output output stream.
-     * @param message message.
-     */
-	@Adaptive({Constants.CODEC_KEY})
-    void encode(Channel channel, OutputStream output, Object message) throws IOException;
+	/**
+	 * Encode message.
+	 * 
+	 * @param channel
+	 *            channel.
+	 * @param output
+	 *            output stream.
+	 * @param message
+	 *            message.
+	 */
+	@Adaptive({ Constants.CODEC_KEY })
+	void encode(Channel channel, OutputStream output, Object message) throws IOException;
 
 	/**
 	 * Decode message.
 	 * 
 	 * @see #NEED_MORE_INPUT
-	 * @param channel channel.
-	 * @param input input stream.
+	 * @param channel
+	 *            channel.
+	 * @param input
+	 *            input stream.
 	 * @return message or <code>NEED_MORE_INPUT</code> poison.
 	 */
-    @Adaptive({Constants.CODEC_KEY})
+	@Adaptive({ Constants.CODEC_KEY })
 	Object decode(Channel channel, InputStream input) throws IOException;
 
 }

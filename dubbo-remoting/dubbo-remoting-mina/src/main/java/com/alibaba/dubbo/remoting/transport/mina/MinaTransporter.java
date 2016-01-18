@@ -26,15 +26,15 @@ import com.alibaba.dubbo.remoting.Transporter;
  * @author ding.lid
  */
 public class MinaTransporter implements Transporter {
-    
-    public static final String NAME = "mina";
 
-    public Server bind(URL url, ChannelHandler handler) throws RemotingException {
-        return new MinaServer(url, handler);
-    }
+	public static final String NAME = "mina";
 
-    public Client connect(URL url, ChannelHandler handler) throws RemotingException {
-        return new MinaClient(url, handler);
-    }
+	public Server bind(URL url, ChannelHandler handler) throws RemotingException {
+		return new MinaServer(url, handler);
+	}
+
+	public Client connect(URL url, ChannelHandler handler) throws RemotingException {
+		return new MinaClient(url, handler);
+	}
 
 }

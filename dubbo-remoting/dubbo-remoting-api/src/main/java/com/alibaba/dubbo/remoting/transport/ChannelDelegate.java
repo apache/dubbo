@@ -28,80 +28,81 @@ import com.alibaba.dubbo.remoting.RemotingException;
  * @author william.liangf
  */
 public class ChannelDelegate implements Channel {
-    
-    private transient Channel channel;
-    
-    public ChannelDelegate() {
-    }
 
-    public ChannelDelegate(Channel channel) {
-        setChannel(channel);
-    }
-    
-    public Channel getChannel() {
-        return channel;
-    }
+	private transient Channel channel;
 
-    public void setChannel(Channel channel) {
-        if (channel == null) {
-            throw new IllegalArgumentException("channel == null");
-        }
-        this.channel = channel;
-    }
+	public ChannelDelegate() {
+	}
 
-    public URL getUrl() {
-        return channel.getUrl();
-    }
+	public ChannelDelegate(Channel channel) {
+		setChannel(channel);
+	}
 
-    public InetSocketAddress getRemoteAddress() {
-        return channel.getRemoteAddress();
-    }
+	public Channel getChannel() {
+		return channel;
+	}
 
-    public ChannelHandler getChannelHandler() {
-        return channel.getChannelHandler();
-    }
+	public void setChannel(Channel channel) {
+		if (channel == null) {
+			throw new IllegalArgumentException("channel == null");
+		}
+		this.channel = channel;
+	}
 
-    public boolean isConnected() {
-        return channel.isConnected();
-    }
+	public URL getUrl() {
+		return channel.getUrl();
+	}
 
-    public InetSocketAddress getLocalAddress() {
-        return channel.getLocalAddress();
-    }
+	public InetSocketAddress getRemoteAddress() {
+		return channel.getRemoteAddress();
+	}
 
-    public boolean hasAttribute(String key) {
-        return channel.hasAttribute(key);
-    }
+	public ChannelHandler getChannelHandler() {
+		return channel.getChannelHandler();
+	}
 
-    public void send(Object message) throws RemotingException {
-        channel.send(message);
-    }
+	public boolean isConnected() {
+		return channel.isConnected();
+	}
 
-    public Object getAttribute(String key) {
-        return channel.getAttribute(key);
-    }
+	public InetSocketAddress getLocalAddress() {
+		return channel.getLocalAddress();
+	}
 
-    public void setAttribute(String key, Object value) {
-        channel.setAttribute(key, value);
-    }
+	public boolean hasAttribute(String key) {
+		return channel.hasAttribute(key);
+	}
 
-    public void send(Object message, boolean sent) throws RemotingException {
-        channel.send(message, sent);
-    }
+	public void send(Object message) throws RemotingException {
+		channel.send(message);
+	}
 
-    public void removeAttribute(String key) {
-        channel.removeAttribute(key);
-    }
+	public Object getAttribute(String key) {
+		return channel.getAttribute(key);
+	}
 
-    public void close() {
-        channel.close();
-    }
-    public void close(int timeout) {
-        channel.close(timeout);
-    }
+	public void setAttribute(String key, Object value) {
+		channel.setAttribute(key, value);
+	}
 
-    public boolean isClosed() {
-        return channel.isClosed();
-    }
+	public void send(Object message, boolean sent) throws RemotingException {
+		channel.send(message, sent);
+	}
+
+	public void removeAttribute(String key) {
+		channel.removeAttribute(key);
+	}
+
+	public void close() {
+		channel.close();
+	}
+
+	public void close(int timeout) {
+		channel.close(timeout);
+	}
+
+	public boolean isClosed() {
+		return channel.isClosed();
+	}
 
 }

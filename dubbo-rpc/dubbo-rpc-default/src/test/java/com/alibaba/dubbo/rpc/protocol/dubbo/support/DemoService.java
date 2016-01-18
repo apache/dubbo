@@ -18,16 +18,13 @@ package com.alibaba.dubbo.rpc.protocol.dubbo.support;
 import java.util.Map;
 import java.util.Set;
 
-
-
 /**
  * <code>TestService</code>
  */
 
-public interface DemoService
-{
+public interface DemoService {
 	void sayHello(String name);
-	
+
 	Set<String> keys(Map<String, String> map);
 
 	String echo(String text);
@@ -45,15 +42,15 @@ public interface DemoService
 	int stringLength(String str);
 
 	Type enumlength(Type... types);
-	
-//	Type enumlength(Type type);
-	
+
+	// Type enumlength(Type type);
+
 	String get(CustomArgument arg1);
-	
+
 	byte getbyte(byte arg);
-	
+
 	void nonSerializedParameter(NonSerialized ns);
-	
+
 	NonSerialized returnNonSerialized();
-	
+
 }

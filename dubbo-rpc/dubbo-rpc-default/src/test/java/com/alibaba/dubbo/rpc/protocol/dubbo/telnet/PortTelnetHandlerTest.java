@@ -43,63 +43,63 @@ import com.alibaba.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
  */
 public class PortTelnetHandlerTest {
 
-    private static TelnetHandler port = new PortTelnetHandler();
-    private Invoker<DemoService> mockInvoker;
+	private static TelnetHandler port = new PortTelnetHandler();
+	private Invoker<DemoService> mockInvoker;
 
-    @SuppressWarnings("unchecked")
-    @Before
-    public void before() {
-        mockInvoker = EasyMock.createMock(Invoker.class);
-        EasyMock.expect(mockInvoker.getInterface()).andReturn(DemoService.class).anyTimes();
-        EasyMock.expect(mockInvoker.getUrl()).andReturn(URL.valueOf("dubbo://127.0.0.1:20887/demo")).anyTimes();
-        EasyMock.replay(mockInvoker);
-        DubboProtocol.getDubboProtocol().export(mockInvoker);
-    }
+	@SuppressWarnings("unchecked")
+	@Before
+	public void before() {
+		mockInvoker = EasyMock.createMock(Invoker.class);
+		EasyMock.expect(mockInvoker.getInterface()).andReturn(DemoService.class).anyTimes();
+		EasyMock.expect(mockInvoker.getUrl()).andReturn(URL.valueOf("dubbo://127.0.0.1:20887/demo")).anyTimes();
+		EasyMock.replay(mockInvoker);
+		DubboProtocol.getDubboProtocol().export(mockInvoker);
+	}
 
-    @After
-    public void after() {
-        EasyMock.reset(mockInvoker);
-        ProtocolUtils.closeAll();
-    }
+	@After
+	public void after() {
+		EasyMock.reset(mockInvoker);
+		ProtocolUtils.closeAll();
+	}
 
-    @Test
-    public void testListClient() throws Exception {
-        ExchangeClient client1 = Exchangers.connect("dubbo://127.0.0.1:20887/demo");
-        ExchangeClient client2 = Exchangers.connect("dubbo://127.0.0.1:20887/demo");
-        Thread.sleep(5000);
-        String result = port.telnet(null, "-l 20887");
-        String client1Addr = client1.getLocalAddress().toString();
-        String client2Addr = client2.getLocalAddress().toString();
-        System.out.printf("Result: %s %n", result);
-        System.out.printf("Client 1 Address %s %n", client1Addr);
-        System.out.printf("Client 2 Address %s %n", client2Addr);
-        assertTrue(result.contains(client1Addr));
-        assertTrue(result.contains(client2Addr));
+	@Test
+	public void testListClient() throws Exception {
+		ExchangeClient client1 = Exchangers.connect("dubbo://127.0.0.1:20887/demo");
+		ExchangeClient client2 = Exchangers.connect("dubbo://127.0.0.1:20887/demo");
+		Thread.sleep(5000);
+		String result = port.telnet(null, "-l 20887");
+		String client1Addr = client1.getLocalAddress().toString();
+		String client2Addr = client2.getLocalAddress().toString();
+		System.out.printf("Result: %s %n", result);
+		System.out.printf("Client 1 Address %s %n", client1Addr);
+		System.out.printf("Client 2 Address %s %n", client2Addr);
+		assertTrue(result.contains(client1Addr));
+		assertTrue(result.contains(client2Addr));
 
-    }
+	}
 
-    @Test
-    public void testListDetail() throws RemotingException {
-        String result = port.telnet(null, "-l");
-        assertEquals("dubbo://127.0.0.1:20887", result);
-    }
+	@Test
+	public void testListDetail() throws RemotingException {
+		String result = port.telnet(null, "-l");
+		assertEquals("dubbo://127.0.0.1:20887", result);
+	}
 
-    @Test
-    public void testListAllPort() throws RemotingException {
-        String result = port.telnet(null, "");
-        assertEquals("20887", result);
-    }
+	@Test
+	public void testListAllPort() throws RemotingException {
+		String result = port.telnet(null, "");
+		assertEquals("20887", result);
+	}
 
-    @Test
-    public void testErrorMessage() throws RemotingException {
-        String result = port.telnet(null, "a");
-        assertEquals("Illegal port a, must be integer.", result);
-    }
+	@Test
+	public void testErrorMessage() throws RemotingException {
+		String result = port.telnet(null, "a");
+		assertEquals("Illegal port a, must be integer.", result);
+	}
 
-    @Test
-    public void testNoPort() throws RemotingException {
-        String result = port.telnet(null, "-l 20880");
-        assertEquals("No such port 20880", result);
-    }
+	@Test
+	public void testNoPort() throws RemotingException {
+		String result = port.telnet(null, "-l 20880");
+		assertEquals("No such port 20880", result);
+	}
 
 }

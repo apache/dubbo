@@ -23,24 +23,24 @@ import static org.junit.Assert.*;
  * @author <a href="mailto:ding.lid@alibaba-inc.com">ding.lid</a>
  */
 public class SimpleDataStoreTest {
-    SimpleDataStore dataStore = new SimpleDataStore();
+	SimpleDataStore dataStore = new SimpleDataStore();
 
-    @Test
-    public void testPut_Get() throws Exception {
-        assertNull(dataStore.get("xxx", "yyy"));
+	@Test
+	public void testPut_Get() throws Exception {
+		assertNull(dataStore.get("xxx", "yyy"));
 
-        dataStore.put("name", "key", "1");
-        assertEquals("1", dataStore.get("name", "key"));
+		dataStore.put("name", "key", "1");
+		assertEquals("1", dataStore.get("name", "key"));
 
-        assertNull(dataStore.get("xxx", "yyy"));
-    }
+		assertNull(dataStore.get("xxx", "yyy"));
+	}
 
-    @Test
-    public void testRemove() throws Exception {
-        dataStore.remove("xxx", "yyy");
+	@Test
+	public void testRemove() throws Exception {
+		dataStore.remove("xxx", "yyy");
 
-        dataStore.put("name", "key", "1");
-        dataStore.remove("name", "key");
-        assertNull(dataStore.get("name", "key"));
-    }
+		dataStore.put("name", "key", "1");
+		dataStore.remove("name", "key");
+		assertNull(dataStore.get("name", "key"));
+	}
 }

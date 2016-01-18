@@ -34,32 +34,32 @@ import com.alibaba.dubbo.rpc.protocol.AbstractInvoker;
  */
 class InjvmInvoker<T> extends AbstractInvoker<T> {
 
-    private final String key;
+	private final String key;
 
-    private final Map<String, Exporter<?>> exporterMap;
+	private final Map<String, Exporter<?>> exporterMap;
 
-    InjvmInvoker(Class<T> type, URL url, String key, Map<String, Exporter<?>> exporterMap){
-        super(type, url);
-        this.key = key;
-        this.exporterMap = exporterMap;
-    }
+	InjvmInvoker(Class<T> type, URL url, String key, Map<String, Exporter<?>> exporterMap) {
+		super(type, url);
+		this.key = key;
+		this.exporterMap = exporterMap;
+	}
 
-    @Override
+	@Override
 	public boolean isAvailable() {
-    	InjvmExporter<?> exporter = (InjvmExporter<?>) exporterMap.get(key);
-    	if (exporter == null)  {
-            return false;
-        } else {
-        	return super.isAvailable();
-        }
+		InjvmExporter<?> exporter = (InjvmExporter<?>) exporterMap.get(key);
+		if (exporter == null) {
+			return false;
+		} else {
+			return super.isAvailable();
+		}
 	}
 
 	public Result doInvoke(Invocation invocation) throws Throwable {
-        Exporter<?> exporter = InjvmProtocol.getExporter(exporterMap, getUrl());
-        if (exporter == null)  {
-            throw new RpcException("Service [" + key + "] not found.");
-        }
-        RpcContext.getContext().setRemoteAddress(NetUtils.LOCALHOST, 0);
-        return exporter.getInvoker().invoke(invocation);
-    }
+		Exporter<?> exporter = InjvmProtocol.getExporter(exporterMap, getUrl());
+		if (exporter == null) {
+			throw new RpcException("Service [" + key + "] not found.");
+		}
+		RpcContext.getContext().setRemoteAddress(NetUtils.LOCALHOST, 0);
+		return exporter.getInvoker().invoke(invocation);
+	}
 }

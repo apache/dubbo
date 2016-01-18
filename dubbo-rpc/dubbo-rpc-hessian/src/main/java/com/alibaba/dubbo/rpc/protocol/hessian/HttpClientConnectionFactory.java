@@ -32,16 +32,16 @@ import com.caucho.hessian.client.HessianProxyFactory;
  * @author william.liangf
  */
 public class HttpClientConnectionFactory implements HessianConnectionFactory {
-    
-    private final HttpClient httpClient = new DefaultHttpClient();
-    
-    public void setHessianProxyFactory(HessianProxyFactory factory) {
-        HttpConnectionParams.setConnectionTimeout(httpClient.getParams(), (int) factory.getConnectTimeout());
-        HttpConnectionParams.setSoTimeout(httpClient.getParams(), (int) factory.getReadTimeout());
-    }
 
-    public HessianConnection open(URL url) throws IOException {
-        return new HttpClientConnection(httpClient, url);
-    }
+	private final HttpClient httpClient = new DefaultHttpClient();
+
+	public void setHessianProxyFactory(HessianProxyFactory factory) {
+		HttpConnectionParams.setConnectionTimeout(httpClient.getParams(), (int) factory.getConnectTimeout());
+		HttpConnectionParams.setSoTimeout(httpClient.getParams(), (int) factory.getReadTimeout());
+	}
+
+	public HessianConnection open(URL url) throws IOException {
+		return new HttpClientConnection(httpClient, url);
+	}
 
 }

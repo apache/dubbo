@@ -22,6 +22,6 @@ import org.slf4j.LoggerFactory;
 
 public interface ClassNameTestDubbo {
 
-  public String echo(String arg);
+	public String echo(String arg);
 
 }

@@ -54,40 +54,35 @@ import java.io.IOException;
  * Deserializing a string valued object
  */
 abstract public class ValueDeserializer extends AbstractDeserializer {
-  public Object readMap(AbstractHessianInput in)
-    throws IOException
-  {
-    String initValue = null;
-    
-    while (! in.isEnd()) {
-      String key = in.readString();
+	public Object readMap(AbstractHessianInput in) throws IOException {
+		String initValue = null;
 
-      if (key.equals("value"))
-        initValue = in.readString();
-      else
-	in.readObject();
-    }
+		while (!in.isEnd()) {
+			String key = in.readString();
 
-    in.readMapEnd();
+			if (key.equals("value"))
+				initValue = in.readString();
+			else
+				in.readObject();
+		}
 
-    return create(initValue);
-  }
-  
-  public Object readObject(AbstractHessianInput in, String []fieldNames)
-    throws IOException
-  {
-    String initValue = null;
+		in.readMapEnd();
 
-    for (int i = 0; i < fieldNames.length; i++) {
-      if ("value".equals(fieldNames[i]))
-        initValue = in.readString();
-      else
-	in.readObject();
-    }
+		return create(initValue);
+	}
 
-    return create(initValue);
-  }
+	public Object readObject(AbstractHessianInput in, String[] fieldNames) throws IOException {
+		String initValue = null;
 
-  abstract Object create(String value)
-    throws IOException;
+		for (int i = 0; i < fieldNames.length; i++) {
+			if ("value".equals(fieldNames[i]))
+				initValue = in.readString();
+			else
+				in.readObject();
+		}
+
+		return create(initValue);
+	}
+
+	abstract Object create(String value) throws IOException;
 }

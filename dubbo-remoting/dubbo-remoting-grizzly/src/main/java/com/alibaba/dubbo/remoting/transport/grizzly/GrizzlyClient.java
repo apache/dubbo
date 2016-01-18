@@ -40,70 +40,65 @@ import com.alibaba.dubbo.remoting.transport.AbstractClient;
  * @author william.liangf
  */
 public class GrizzlyClient extends AbstractClient {
-    
-    private static final Logger logger = LoggerFactory.getLogger(GrizzlyClient.class);
 
-    private TCPNIOTransport transport;
+	private static final Logger logger = LoggerFactory.getLogger(GrizzlyClient.class);
 
-    private volatile Connection<?> connection; // volatile, please copy reference to use
+	private TCPNIOTransport transport;
 
-    public GrizzlyClient(URL url, ChannelHandler handler) throws RemotingException {
-        super(url, handler);
-    }
+	private volatile Connection<?> connection; // volatile, please copy
+												// reference to use
 
-    @Override
-    protected void doOpen() throws Throwable {
-        FilterChainBuilder filterChainBuilder = FilterChainBuilder.stateless();
-        filterChainBuilder.add(new TransportFilter());
-        filterChainBuilder.add(new GrizzlyCodecAdapter(getCodec(), getUrl(), this));
-        filterChainBuilder.add(new GrizzlyHandler(getUrl(), this));
-        TCPNIOTransportBuilder builder = TCPNIOTransportBuilder.newInstance();
-        ThreadPoolConfig config = builder.getWorkerThreadPoolConfig(); 
-        config.setPoolName(CLIENT_THREAD_POOL_NAME)
-                .setQueueLimit(-1)
-                .setCorePoolSize(0)
-                .setMaxPoolSize(Integer.MAX_VALUE)
-                .setKeepAliveTime(60L, TimeUnit.SECONDS);
-        builder.setTcpNoDelay(true).setKeepAlive(true)
-                .setConnectionTimeout(getTimeout())
-                .setIOStrategy(SameThreadIOStrategy.getInstance());
-        transport = builder.build();
-        transport.setProcessor(filterChainBuilder.build());
-        transport.start();
-    }
+	public GrizzlyClient(URL url, ChannelHandler handler) throws RemotingException {
+		super(url, handler);
+	}
 
-    
+	@Override
+	protected void doOpen() throws Throwable {
+		FilterChainBuilder filterChainBuilder = FilterChainBuilder.stateless();
+		filterChainBuilder.add(new TransportFilter());
+		filterChainBuilder.add(new GrizzlyCodecAdapter(getCodec(), getUrl(), this));
+		filterChainBuilder.add(new GrizzlyHandler(getUrl(), this));
+		TCPNIOTransportBuilder builder = TCPNIOTransportBuilder.newInstance();
+		ThreadPoolConfig config = builder.getWorkerThreadPoolConfig();
+		config.setPoolName(CLIENT_THREAD_POOL_NAME).setQueueLimit(-1).setCorePoolSize(0)
+				.setMaxPoolSize(Integer.MAX_VALUE).setKeepAliveTime(60L, TimeUnit.SECONDS);
+		builder.setTcpNoDelay(true).setKeepAlive(true).setConnectionTimeout(getTimeout())
+				.setIOStrategy(SameThreadIOStrategy.getInstance());
+		transport = builder.build();
+		transport.setProcessor(filterChainBuilder.build());
+		transport.start();
+	}
 
-    @Override
-    protected void doConnect() throws Throwable {
-        connection = transport.connect(getConnectAddress())
-                        .get(getUrl().getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT), TimeUnit.MILLISECONDS);
-    }
+	@Override
+	protected void doConnect() throws Throwable {
+		connection = transport.connect(getConnectAddress()).get(
+				getUrl().getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT), TimeUnit.MILLISECONDS);
+	}
 
-    @Override
-    protected void doDisConnect() throws Throwable {
-        try {
-            GrizzlyChannel.removeChannelIfDisconnectd(connection);
-        } catch (Throwable t) {
-            logger.warn(t.getMessage());
-        }
-    }
+	@Override
+	protected void doDisConnect() throws Throwable {
+		try {
+			GrizzlyChannel.removeChannelIfDisconnectd(connection);
+		} catch (Throwable t) {
+			logger.warn(t.getMessage());
+		}
+	}
 
-    @Override
-    protected void doClose() throws Throwable {
-        try {
-            transport.stop();
-        } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
-        }
-    }
-    
-    @Override
-    protected Channel getChannel() {
-        Connection<?> c = connection;
-        if (c == null || ! c.isOpen())
-            return null;
-        return GrizzlyChannel.getOrAddChannel(c, getUrl(), this);
-    }
+	@Override
+	protected void doClose() throws Throwable {
+		try {
+			transport.stop();
+		} catch (Throwable e) {
+			logger.warn(e.getMessage(), e);
+		}
+	}
+
+	@Override
+	protected Channel getChannel() {
+		Connection<?> c = connection;
+		if (c == null || !c.isOpen())
+			return null;
+		return GrizzlyChannel.getOrAddChannel(c, getUrl(), this);
+	}
 
 }

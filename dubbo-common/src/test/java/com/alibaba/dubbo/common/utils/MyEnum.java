@@ -21,7 +21,7 @@ package com.alibaba.dubbo.common.utils;
  * @author william.liangf
  */
 public enum MyEnum {
-    
-    A, B
+
+	A, B
 
 }

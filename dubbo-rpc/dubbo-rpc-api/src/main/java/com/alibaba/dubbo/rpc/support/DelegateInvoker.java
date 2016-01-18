@@ -28,30 +28,30 @@ import com.alibaba.dubbo.rpc.RpcException;
  */
 public abstract class DelegateInvoker<T> implements Invoker<T> {
 
-    protected final Invoker<T> invoker;
+	protected final Invoker<T> invoker;
 
-    public DelegateInvoker(Invoker<T> invoker) {
-        this.invoker = invoker;
-    }
+	public DelegateInvoker(Invoker<T> invoker) {
+		this.invoker = invoker;
+	}
 
-    public Class<T> getInterface() {
-        return invoker.getInterface();
-    }
+	public Class<T> getInterface() {
+		return invoker.getInterface();
+	}
 
-    public URL getUrl() {
-        return invoker.getUrl();
-    }
+	public URL getUrl() {
+		return invoker.getUrl();
+	}
 
-    public boolean isAvailable() {
-        return invoker.isAvailable();
-    }
+	public boolean isAvailable() {
+		return invoker.isAvailable();
+	}
 
-    public Result invoke(Invocation invocation) throws RpcException {
-        return invoker.invoke(invocation);
-    }
+	public Result invoke(Invocation invocation) throws RpcException {
+		return invoker.invoke(invocation);
+	}
 
-    public void destroy() {
-        invoker.destroy();
-    }
+	public void destroy() {
+		invoker.destroy();
+	}
 
 }

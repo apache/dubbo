@@ -27,86 +27,86 @@ import com.alibaba.dubbo.registry.common.route.ParseUtils;
  */
 public class User extends Entity {
 
-    private static final long serialVersionUID = 7330539198581235339L;
-    
-    public static final String REALM = "dubbo";
+	private static final long serialVersionUID = 7330539198581235339L;
 
-    public static final String ROOT = "R";
+	public static final String REALM = "dubbo";
 
-    public static final String ADMINISTRATOR = "A";
+	public static final String ROOT = "R";
 
-    public static final String MANAGER = "M";
+	public static final String ADMINISTRATOR = "A";
 
-    public static final String GUEST = "G";
-    
-    public static final String ANONYMOUS = "anonymous";
+	public static final String MANAGER = "M";
 
-    public static final String LEGACY = "legacy";
+	public static final String GUEST = "G";
 
-    private String username;
+	public static final String ANONYMOUS = "anonymous";
 
-    private String password;
-    
-    private String role;
-    
-    private String creator;
-    
-    private boolean enabled;
-    
-    private String name;
-    
-    private String department;
-    
-    private String email;
-    
-    private String phone;
-    
-    private String alitalk;
-    
-    private String locale;
-    
-    private String servicePrivilege;
+	public static final String LEGACY = "legacy";
 
-    private List<String> servicePrivileges;
-    
-    public User() {
-    }
+	private String username;
 
-    public User(Long id) {
-        super(id);
-    }
-    
-    public String getUsername() {
-        return username;
-    }
+	private String password;
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+	private String role;
 
-    public String getPassword() {
-        return password;
-    }
+	private String creator;
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+	private boolean enabled;
 
-    public String getRole() {
-        return role;
-    }
+	private String name;
 
-    public void setRole(String role) {
-        this.role = role;
-    }
+	private String department;
 
-    public String getCreator() {
-        return creator;
-    }
+	private String email;
 
-    public void setCreator(String creator) {
-        this.creator = creator;
-    }
+	private String phone;
+
+	private String alitalk;
+
+	private String locale;
+
+	private String servicePrivilege;
+
+	private List<String> servicePrivileges;
+
+	public User() {
+	}
+
+	public User(Long id) {
+		super(id);
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public String getRole() {
+		return role;
+	}
+
+	public void setRole(String role) {
+		this.role = role;
+	}
+
+	public String getCreator() {
+		return creator;
+	}
+
+	public void setCreator(String creator) {
+		this.creator = creator;
+	}
 
 	public String getEmail() {
 		return email;
@@ -116,73 +116,73 @@ public class User extends Entity {
 		this.email = email;
 	}
 
-    public boolean hasServicePrivilege(String[] services) {
-        if (services == null || services.length == 0)
-            throw new IllegalArgumentException("services == null");
-        for (String service : services) {
-            boolean r = hasServicePrivilege(service);
-            if (! r)
-                return false;
-        }
-        return true;
-    }
-    
-    public static boolean isValidPrivilege(String servicePrivilege) {
-    	if (servicePrivilege == null || servicePrivilege.length() == 0) {
-    		return true;
-    	}
-    	String[] privileges = servicePrivilege.trim().split("\\s*,\\s*");
-    	for (String privilege : privileges) {
-            if(privilege.endsWith("*")){
-            	privilege = privilege.substring(0, privilege.length() - 1);
-            }
-            if (privilege.indexOf('*') > -1) {
-        		return false;
-        	}
-    	}
-        return true;
-    }
-    
-    public boolean canGrantPrivilege(String servicePrivilege) {
-    	if (servicePrivilege == null || servicePrivilege.length() == 0) {
-    		return true;
-    	}
-    	if (servicePrivileges == null || servicePrivileges.size() == 0) {
-    		return false;
-    	}
-    	String[] privileges = servicePrivilege.trim().split("\\s*,\\s*");
+	public boolean hasServicePrivilege(String[] services) {
+		if (services == null || services.length == 0)
+			throw new IllegalArgumentException("services == null");
+		for (String service : services) {
+			boolean r = hasServicePrivilege(service);
+			if (!r)
+				return false;
+		}
+		return true;
+	}
+
+	public static boolean isValidPrivilege(String servicePrivilege) {
+		if (servicePrivilege == null || servicePrivilege.length() == 0) {
+			return true;
+		}
+		String[] privileges = servicePrivilege.trim().split("\\s*,\\s*");
+		for (String privilege : privileges) {
+			if (privilege.endsWith("*")) {
+				privilege = privilege.substring(0, privilege.length() - 1);
+			}
+			if (privilege.indexOf('*') > -1) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public boolean canGrantPrivilege(String servicePrivilege) {
+		if (servicePrivilege == null || servicePrivilege.length() == 0) {
+			return true;
+		}
+		if (servicePrivileges == null || servicePrivileges.size() == 0) {
+			return false;
+		}
+		String[] privileges = servicePrivilege.trim().split("\\s*,\\s*");
 		for (String privilege : privileges) {
 			boolean hasPrivilege = false;
 			for (String ownPrivilege : servicePrivileges) {
-	            if (matchPrivilege(ownPrivilege, privilege)) {
-	            	hasPrivilege = true;
-	        	}
-	    	}
-			if (! hasPrivilege) {
+				if (matchPrivilege(ownPrivilege, privilege)) {
+					hasPrivilege = true;
+				}
+			}
+			if (!hasPrivilege) {
 				return false;
 			}
-    	}
-    	return true;
-    }
+		}
+		return true;
+	}
 
-    private boolean matchPrivilege(String ownPrivilege, String privilege) {
-    	if ("*".equals(ownPrivilege) || ownPrivilege.equals(privilege)) {
-    		return true;
-    	}
-    	if(privilege.endsWith("*")){
-        	if(! ownPrivilege.endsWith("*")){
-        		return false;
-            }
-        	privilege = privilege.substring(0, privilege.length() - 1);
-        	ownPrivilege = ownPrivilege.substring(0, ownPrivilege.length() - 1);
-        	return privilege.startsWith(ownPrivilege);
-        } else {
-        	if(ownPrivilege.endsWith("*")){
-        		ownPrivilege = ownPrivilege.substring(0, ownPrivilege.length() - 1);
-            }
-        	return privilege.startsWith(ownPrivilege);
-        }
-    }
+	private boolean matchPrivilege(String ownPrivilege, String privilege) {
+		if ("*".equals(ownPrivilege) || ownPrivilege.equals(privilege)) {
+			return true;
+		}
+		if (privilege.endsWith("*")) {
+			if (!ownPrivilege.endsWith("*")) {
+				return false;
+			}
+			privilege = privilege.substring(0, privilege.length() - 1);
+			ownPrivilege = ownPrivilege.substring(0, ownPrivilege.length() - 1);
+			return privilege.startsWith(ownPrivilege);
+		} else {
+			if (ownPrivilege.endsWith("*")) {
+				ownPrivilege = ownPrivilege.substring(0, ownPrivilege.length() - 1);
+			}
+			return privilege.startsWith(ownPrivilege);
+		}
+	}
 
 	public boolean hasServicePrivilege(String service) {
 		if (service == null || service.length() == 0)
@@ -190,21 +190,21 @@ public class User extends Entity {
 		if (role == null || GUEST.equalsIgnoreCase(role)) {
 			return false;
 		}
-		if(ROOT.equalsIgnoreCase(role)) {
-		    return true;
+		if (ROOT.equalsIgnoreCase(role)) {
+			return true;
 		}
-		
+
 		if (servicePrivileges != null && servicePrivileges.size() > 0) {
-    		for (String privilege : servicePrivileges) {
-                boolean ok = ParseUtils.isMatchGlobPattern(privilege,service);
-                if (ok) {
-                	return true;
-                }
-    		}
+			for (String privilege : servicePrivileges) {
+				boolean ok = ParseUtils.isMatchGlobPattern(privilege, service);
+				if (ok) {
+					return true;
+				}
+			}
 		}
 		return false;
 	}
-	
+
 	public String getServicePrivilege() {
 		return servicePrivilege;
 	}

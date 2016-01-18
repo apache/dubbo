@@ -12,20 +12,20 @@ import com.alibaba.dubbo.remoting.exchange.support.MultiMessage;
  */
 public class MultiMessageHandler extends AbstractChannelHandlerDelegate {
 
-    public MultiMessageHandler(ChannelHandler handler) {
-        super(handler);
-    }
+	public MultiMessageHandler(ChannelHandler handler) {
+		super(handler);
+	}
 
-    @SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked")
 	@Override
-    public void received(Channel channel, Object message) throws RemotingException {
-        if (message instanceof MultiMessage) {
-            MultiMessage list = (MultiMessage)message;
-            for(Object obj : list) {
-                handler.received(channel, obj);
-            }
-        } else {
-            handler.received(channel, message);
-        }
-    }
+	public void received(Channel channel, Object message) throws RemotingException {
+		if (message instanceof MultiMessage) {
+			MultiMessage list = (MultiMessage) message;
+			for (Object obj : list) {
+				handler.received(channel, obj);
+			}
+		} else {
+			handler.received(channel, message);
+		}
+	}
 }

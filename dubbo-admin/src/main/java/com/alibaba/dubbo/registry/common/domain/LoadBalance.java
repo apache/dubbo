@@ -17,61 +17,61 @@ package com.alibaba.dubbo.registry.common.domain;
 
 /**
  * 负载均衡
+ * 
  * @author rain.chenjr
  *
  */
-public class LoadBalance extends Entity{
+public class LoadBalance extends Entity {
 
-    private static final long serialVersionUID = -6050324375352581440L;
-    
-    public static final String ALL_METHOD = "*";
+	private static final long serialVersionUID = -6050324375352581440L;
 
-    private String            service;            /* 服务名称 */
-   
-    private String            method;             /* 方法名称 */
-    
-    private String            strategy;              /*负载均衡策略*/
-    
-    private String            username;              /*用户名*/
+	public static final String ALL_METHOD = "*";
 
-    public LoadBalance() {
-    }
+	private String service; /* 服务名称 */
 
-    public LoadBalance(Long id) {
-        super(id);
-    }
-    
-    public String getService() {
-        return service;
-    }
+	private String method; /* 方法名称 */
 
-    public void setService(String service) {
-        this.service = service;
-    }
+	private String strategy; /* 负载均衡策略 */
 
-    public String getMethod() {
-        return method;
-    }
+	private String username; /* 用户名 */
 
-    public void setMethod(String method) {
-        this.method = method;
-    }
+	public LoadBalance() {
+	}
 
-    public String getStrategy() {
-        return strategy;
-    }
+	public LoadBalance(Long id) {
+		super(id);
+	}
 
-    public void setStrategy(String strategy) {
-        this.strategy = strategy;
-    }
+	public String getService() {
+		return service;
+	}
 
-    public String getUsername() {
-        return username;
-    }
+	public void setService(String service) {
+		this.service = service;
+	}
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+	public String getMethod() {
+		return method;
+	}
 
-    
+	public void setMethod(String method) {
+		this.method = method;
+	}
+
+	public String getStrategy() {
+		return strategy;
+	}
+
+	public void setStrategy(String strategy) {
+		this.strategy = strategy;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
 }

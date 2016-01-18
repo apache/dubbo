@@ -20,22 +20,23 @@ import org.junit.Test;
 
 /**
  * TODO Comment of PageListTest
+ * 
  * @author haomin.liuhm
  *
  */
 public class PageListTest {
 
-    @Test
-    public void testGetPageCount(){
-        //int start, int limit, int total, List<T> list
-        PageList<Object> pl = new PageList<Object>(0, 100, 52, null);
-        Assert.assertEquals(1, pl.getPageCount());
-        
-        pl = new PageList<Object>(0, -100, -3, null);
-        Assert.assertEquals(1, pl.getPageCount());
-        
-        pl = new PageList<Object>(0, 30, 100, null);
-        Assert.assertEquals(4, pl.getPageCount());
-    }
-    
+	@Test
+	public void testGetPageCount() {
+		// int start, int limit, int total, List<T> list
+		PageList<Object> pl = new PageList<Object>(0, 100, 52, null);
+		Assert.assertEquals(1, pl.getPageCount());
+
+		pl = new PageList<Object>(0, -100, -3, null);
+		Assert.assertEquals(1, pl.getPageCount());
+
+		pl = new PageList<Object>(0, 30, 100, null);
+		Assert.assertEquals(4, pl.getPageCount());
+	}
+
 }

@@ -28,23 +28,23 @@ import com.alibaba.dubbo.common.serialize.Serialization;
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-public class NativeJavaSerialization implements Serialization  {
+public class NativeJavaSerialization implements Serialization {
 
-    public static final String NAME = "nativejava";
+	public static final String NAME = "nativejava";
 
-    public byte getContentTypeId() {
-        return 7;
-    }
+	public byte getContentTypeId() {
+		return 7;
+	}
 
-    public String getContentType() {
-        return "x-application/nativejava";
-    }
+	public String getContentType() {
+		return "x-application/nativejava";
+	}
 
-    public ObjectOutput serialize(URL url, OutputStream output) throws IOException {
-        return new NativeJavaObjectOutput(output);
-    }
+	public ObjectOutput serialize(URL url, OutputStream output) throws IOException {
+		return new NativeJavaObjectOutput(output);
+	}
 
-    public ObjectInput deserialize(URL url, InputStream input) throws IOException {
-        return new NativeJavaObjectInput(input);
-    }
+	public ObjectInput deserialize(URL url, InputStream input) throws IOException {
+		return new NativeJavaObjectInput(input);
+	}
 }

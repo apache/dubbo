@@ -31,20 +31,20 @@ import com.alibaba.dubbo.common.serialize.Serialization;
  */
 public class FastJsonSerialization implements Serialization {
 
-    public byte getContentTypeId() {
-        return 6;
-    }
+	public byte getContentTypeId() {
+		return 6;
+	}
 
-    public String getContentType() {
-        return "text/json";
-    }
-    
-    public ObjectOutput serialize(URL url, OutputStream output) throws IOException {
-        return new FastJsonObjectOutput(output);
-    }
+	public String getContentType() {
+		return "text/json";
+	}
 
-    public ObjectInput deserialize(URL url, InputStream input) throws IOException {
-        return new FastJsonObjectInput(input);
-    }
+	public ObjectOutput serialize(URL url, OutputStream output) throws IOException {
+		return new FastJsonObjectOutput(output);
+	}
+
+	public ObjectInput deserialize(URL url, InputStream input) throws IOException {
+		return new FastJsonObjectInput(input);
+	}
 
 }

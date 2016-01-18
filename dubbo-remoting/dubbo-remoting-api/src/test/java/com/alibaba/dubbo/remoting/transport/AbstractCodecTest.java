@@ -34,33 +34,30 @@ import static org.hamcrest.CoreMatchers.*;
  */
 public class AbstractCodecTest extends TestCase {
 
-    public void test_checkPayload_default8M() throws Exception {
-        Channel channel = createMock(Channel.class);
-        expect(channel.getUrl()).andReturn(URL.valueOf("dubbo://1.1.1.1")).anyTimes();
-        replay(channel);
+	public void test_checkPayload_default8M() throws Exception {
+		Channel channel = createMock(Channel.class);
+		expect(channel.getUrl()).andReturn(URL.valueOf("dubbo://1.1.1.1")).anyTimes();
+		replay(channel);
 
-        AbstractCodec.checkPayload(channel, 1 * 1024 * 1024);
+		AbstractCodec.checkPayload(channel, 1 * 1024 * 1024);
 
-        try {
-            AbstractCodec.checkPayload(channel, 15 * 1024 * 1024);
-        }
-        catch (IOException expected) {
-            assertThat(expected.getMessage(), allOf(
-                    containsString("Data length too large: "),
-                    containsString("max payload: " + 8 * 1024 * 1024)
-            ));
-        }
+		try {
+			AbstractCodec.checkPayload(channel, 15 * 1024 * 1024);
+		} catch (IOException expected) {
+			assertThat(expected.getMessage(),
+					allOf(containsString("Data length too large: "), containsString("max payload: " + 8 * 1024 * 1024)));
+		}
 
-        verify(channel);
-    }
+		verify(channel);
+	}
 
-    public void test_checkPayload_minusPayloadNoLimit() throws Exception {
-        Channel channel = createMock(Channel.class);
-        expect(channel.getUrl()).andReturn(URL.valueOf("dubbo://1.1.1.1?payload=-1")).anyTimes();
-        replay(channel);
+	public void test_checkPayload_minusPayloadNoLimit() throws Exception {
+		Channel channel = createMock(Channel.class);
+		expect(channel.getUrl()).andReturn(URL.valueOf("dubbo://1.1.1.1?payload=-1")).anyTimes();
+		replay(channel);
 
-        AbstractCodec.checkPayload(channel, 15 * 1024 * 1024);
+		AbstractCodec.checkPayload(channel, 15 * 1024 * 1024);
 
-        verify(channel);
-    }
+		verify(channel);
+	}
 }

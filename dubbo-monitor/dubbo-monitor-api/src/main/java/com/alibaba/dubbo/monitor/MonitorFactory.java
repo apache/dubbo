@@ -26,14 +26,14 @@ import com.alibaba.dubbo.common.extension.SPI;
  */
 @SPI("dubbo")
 public interface MonitorFactory {
-    
-    /**
-     * Create monitor.
-     * 
-     * @param url
-     * @return monitor
-     */
-    @Adaptive("protocol")
-    Monitor getMonitor(URL url);
+
+	/**
+	 * Create monitor.
+	 * 
+	 * @param url
+	 * @return monitor
+	 */
+	@Adaptive("protocol")
+	Monitor getMonitor(URL url);
 
 }

@@ -27,12 +27,12 @@ import com.alibaba.dubbo.examples.annotation.api.AnnotationService;
  */
 @Component("annotationAction")
 public class AnnotationAction {
-    
-    @Reference
-    private AnnotationService annotationService;
-    
-    public String doSayHello(String name) {
-        return annotationService.sayHello(name);
-    }
+
+	@Reference
+	private AnnotationService annotationService;
+
+	public String doSayHello(String name) {
+		return annotationService.sayHello(name);
+	}
 
 }

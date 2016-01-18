@@ -32,11 +32,11 @@ import com.alibaba.dubbo.monitor.MonitorFactory;
  * @author william.liangf
  */
 public class AbstractMonitorFactoryTest {
-    
-    private MonitorFactory monitorFactory = new AbstractMonitorFactory() {
-        
-        protected Monitor createMonitor(final URL url) {
-            return new Monitor() {
+
+	private MonitorFactory monitorFactory = new AbstractMonitorFactory() {
+
+		protected Monitor createMonitor(final URL url) {
+			return new Monitor() {
 
 				public URL getUrl() {
 					return url;
@@ -46,40 +46,44 @@ public class AbstractMonitorFactoryTest {
 					return true;
 				}
 
-                public void destroy() {
-                }
-                
+				public void destroy() {
+				}
+
 				public void collect(URL statistics) {
 				}
 
 				public List<URL> lookup(URL query) {
 					return null;
 				}
-                
-            };
-        }
-    };
-    
-    @Test
-    public void testMonitorFactoryCache() throws Exception {
-        URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostAddress() + ":2233");
-        Monitor monitor1 = monitorFactory.getMonitor(url);
-        Monitor monitor2 = monitorFactory.getMonitor(url);
-        Assert.assertEquals(monitor1, monitor2);
-    }
-    
-    @Test
-    public void testMonitorFactoryIpCache() throws Exception {
-        Monitor monitor1 = monitorFactory.getMonitor(URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":2233"));
-        Monitor monitor2 = monitorFactory.getMonitor(URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostAddress() + ":2233"));
-        Assert.assertEquals(monitor1, monitor2);
-    }
 
-    @Test
-    public void testMonitorFactoryGroupCache() throws Exception {
-        Monitor monitor1 = monitorFactory.getMonitor(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":2233?group=aaa"));
-        Monitor monitor2 = monitorFactory.getMonitor(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":2233?group=bbb"));
-        Assert.assertNotSame(monitor1, monitor2);
-    }
+			};
+		}
+	};
+
+	@Test
+	public void testMonitorFactoryCache() throws Exception {
+		URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostAddress() + ":2233");
+		Monitor monitor1 = monitorFactory.getMonitor(url);
+		Monitor monitor2 = monitorFactory.getMonitor(url);
+		Assert.assertEquals(monitor1, monitor2);
+	}
+
+	@Test
+	public void testMonitorFactoryIpCache() throws Exception {
+		Monitor monitor1 = monitorFactory.getMonitor(URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName()
+				+ ":2233"));
+		Monitor monitor2 = monitorFactory.getMonitor(URL.valueOf("dubbo://"
+				+ NetUtils.getLocalAddress().getHostAddress() + ":2233"));
+		Assert.assertEquals(monitor1, monitor2);
+	}
+
+	@Test
+	public void testMonitorFactoryGroupCache() throws Exception {
+		Monitor monitor1 = monitorFactory.getMonitor(URL.valueOf("dubbo://" + NetUtils.getLocalHost()
+				+ ":2233?group=aaa"));
+		Monitor monitor2 = monitorFactory.getMonitor(URL.valueOf("dubbo://" + NetUtils.getLocalHost()
+				+ ":2233?group=bbb"));
+		Assert.assertNotSame(monitor1, monitor2);
+	}
 
 }

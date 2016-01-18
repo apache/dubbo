@@ -29,25 +29,29 @@ import com.alibaba.dubbo.examples.annotation.action.AnnotationAction;
  */
 public class AnnotationTest {
 
-    @Test
-    public void testAnnotation() {
-        ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(AnnotationTest.class.getPackage().getName().replace('.', '/') + "/annotation-provider.xml");
-        providerContext.start();
-        try {
-            ClassPathXmlApplicationContext consumerContext = new ClassPathXmlApplicationContext(AnnotationTest.class.getPackage().getName().replace('.', '/') + "/annotation-consumer.xml");
-            consumerContext.start();
-            try {
-                AnnotationAction annotationAction = (AnnotationAction) consumerContext.getBean("annotationAction");
-                String hello = annotationAction.doSayHello("world");
-                assertEquals("annotation: hello, world", hello);
-            } finally {
-                consumerContext.stop();
-                consumerContext.close();
-            }
-        } finally {
-            providerContext.stop();
-            providerContext.close();
-        }
-    }
+	@Test
+	public void testAnnotation() {
+		ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(AnnotationTest.class
+				.getPackage().getName().replace('.', '/')
+				+ "/annotation-provider.xml");
+		providerContext.start();
+		try {
+			ClassPathXmlApplicationContext consumerContext = new ClassPathXmlApplicationContext(AnnotationTest.class
+					.getPackage().getName().replace('.', '/')
+					+ "/annotation-consumer.xml");
+			consumerContext.start();
+			try {
+				AnnotationAction annotationAction = (AnnotationAction) consumerContext.getBean("annotationAction");
+				String hello = annotationAction.doSayHello("world");
+				assertEquals("annotation: hello, world", hello);
+			} finally {
+				consumerContext.stop();
+				consumerContext.close();
+			}
+		} finally {
+			providerContext.stop();
+			providerContext.close();
+		}
+	}
 
 }

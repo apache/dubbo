@@ -28,19 +28,19 @@ import java.lang.annotation.Target;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD})
+@Target({ ElementType.METHOD })
 public @interface Parameter {
 
-    String key() default "";
-    
-    boolean required() default false;
-    
-    boolean excluded() default false;
+	String key() default "";
 
-    boolean escaped() default false;
-    
-    boolean attribute() default false;
+	boolean required() default false;
 
-    boolean append() default false;
-    
+	boolean excluded() default false;
+
+	boolean escaped() default false;
+
+	boolean attribute() default false;
+
+	boolean append() default false;
+
 }

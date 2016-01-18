@@ -3,19 +3,19 @@ package com.alibaba.dubbo.registry.common.domain;
 public class Favorite extends Entity {
 
 	private static final long serialVersionUID = -1281982267153430266L;
-	
-    private String name;
-    
-    private String url;
-    
-    private String username;
-    
-    public Favorite() {
-    }
 
-    public Favorite(Long id) {
-        super(id);
-    }
+	private String name;
+
+	private String url;
+
+	private String username;
+
+	public Favorite() {
+	}
+
+	public Favorite(Long id) {
+		super(id);
+	}
 
 	public String getName() {
 		return name;
@@ -33,12 +33,12 @@ public class Favorite extends Entity {
 		this.url = url;
 	}
 
-    public String getUsername() {
-        return username;
-    }
-    
-    public void setUsername(String username) {
-        this.username = username;
-    }
-    
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
 }

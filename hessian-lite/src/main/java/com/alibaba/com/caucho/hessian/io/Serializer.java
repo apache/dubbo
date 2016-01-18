@@ -51,9 +51,8 @@ package com.alibaba.com.caucho.hessian.io;
 import java.io.IOException;
 
 /**
- * Serializing an object. 
+ * Serializing an object.
  */
 public interface Serializer {
-  public void writeObject(Object obj, AbstractHessianOutput out)
-    throws IOException;
+	public void writeObject(Object obj, AbstractHessianOutput out) throws IOException;
 }

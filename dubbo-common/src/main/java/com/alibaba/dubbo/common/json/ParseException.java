@@ -21,17 +21,14 @@ package com.alibaba.dubbo.common.json;
  * @author qian.lei
  */
 
-public class ParseException extends Exception
-{
+public class ParseException extends Exception {
 	private static final long serialVersionUID = 8611884051738966316L;
 
-	public ParseException()
-	{
+	public ParseException() {
 		super();
 	}
 
-	public ParseException(String message)
-	{
-	    super(message);
+	public ParseException(String message) {
+		super(message);
 	}
 }

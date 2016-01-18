@@ -20,14 +20,12 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
-public class ParametersTest extends TestCase
-{
+public class ParametersTest extends TestCase {
 	final String ServiceName = "com.alibaba.dubbo.rpc.service.GenericService";
 	final String ServiceVersion = "1.0.15";
 	final String LoadBalance = "lcr";
 
-	public void testMap2Parameters() throws Exception
-	{
+	public void testMap2Parameters() throws Exception {
 		Map<String, String> map = new HashMap<String, String>();
 		map.put("name", "com.alibaba.dubbo.rpc.service.GenericService");
 		map.put("version", "1.0.15");
@@ -38,8 +36,7 @@ public class ParametersTest extends TestCase
 		assertEquals(map.get("lb"), LoadBalance);
 	}
 
-	public void testString2Parameters() throws Exception
-	{
+	public void testString2Parameters() throws Exception {
 		String qs = "name=com.alibaba.dubbo.rpc.service.GenericService&version=1.0.15&lb=lcr";
 		Map<String, String> map = StringUtils.parseQueryString(qs);
 		assertEquals(map.get("name"), ServiceName);

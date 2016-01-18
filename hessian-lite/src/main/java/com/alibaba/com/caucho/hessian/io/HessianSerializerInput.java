@@ -60,15 +60,16 @@ import java.util.HashMap;
  * Input stream for Hessian requests, deserializing objects using the
  * java.io.Serialization protocol.
  *
- * <p>HessianSerializerInput is unbuffered, so any client needs to provide
- * its own buffering.
+ * <p>
+ * HessianSerializerInput is unbuffered, so any client needs to provide its own
+ * buffering.
  *
  * <h3>Serialization</h3>
  *
  * <pre>
- * InputStream is = new FileInputStream("test.xml");
+ * InputStream is = new FileInputStream(&quot;test.xml&quot;);
  * HessianOutput in = new HessianSerializerOutput(is);
- *
+ * 
  * Object obj = in.readObject();
  * is.close();
  * </pre>
@@ -79,105 +80,98 @@ import java.util.HashMap;
  * InputStream is = ...; // from http connection
  * HessianInput in = new HessianSerializerInput(is);
  * String value;
- *
+ * 
  * in.startReply();         // read reply header
  * value = in.readString(); // read string value
  * in.completeReply();      // read reply footer
  * </pre>
  */
 public class HessianSerializerInput extends HessianInput {
-  /**
-   * Creates a new Hessian input stream, initialized with an
-   * underlying input stream.
-   *
-   * @param is the underlying input stream.
-   */
-  public HessianSerializerInput(InputStream is)
-  {
-    super(is);
-  }
+	/**
+	 * Creates a new Hessian input stream, initialized with an underlying input
+	 * stream.
+	 *
+	 * @param is
+	 *            the underlying input stream.
+	 */
+	public HessianSerializerInput(InputStream is) {
+		super(is);
+	}
 
-  /**
-   * Creates an uninitialized Hessian input stream.
-   */
-  public HessianSerializerInput()
-  {
-  }
+	/**
+	 * Creates an uninitialized Hessian input stream.
+	 */
+	public HessianSerializerInput() {
+	}
 
-  /**
-   * Reads an object from the input stream.  cl is known not to be
-   * a Map.
-   */
-  protected Object readObjectImpl(Class cl)
-    throws IOException
-  {
-    try {
-      Object obj = cl.newInstance();
+	/**
+	 * Reads an object from the input stream. cl is known not to be a Map.
+	 */
+	protected Object readObjectImpl(Class cl) throws IOException {
+		try {
+			Object obj = cl.newInstance();
 
-      if (_refs == null)
-        _refs = new ArrayList();
-      _refs.add(obj);
+			if (_refs == null)
+				_refs = new ArrayList();
+			_refs.add(obj);
 
-      HashMap fieldMap = getFieldMap(cl);
+			HashMap fieldMap = getFieldMap(cl);
 
-      int code = read();
-      for (; code >= 0 && code != 'z'; code = read()) {
-        _peek = code;
-        
-        Object key = readObject();
-        
-        Field field = (Field) fieldMap.get(key);
+			int code = read();
+			for (; code >= 0 && code != 'z'; code = read()) {
+				_peek = code;
 
-        if (field != null) {
-          Object value = readObject(field.getType());
-          field.set(obj, value);
-        }
-        else {
-          Object value = readObject();
-        }
-      }
-      
-      if (code != 'z')
-        throw expect("map", code);
+				Object key = readObject();
 
-      // if there's a readResolve method, call it
-      try {
-        Method method = cl.getMethod("readResolve", new Class[0]);
-        return method.invoke(obj, new Object[0]);
-      } catch (Exception e) {
-      }
+				Field field = (Field) fieldMap.get(key);
 
-      return obj;
-    } catch (IOException e) {
-      throw e;
-    } catch (Exception e) {
-      throw new IOExceptionWrapper(e);
-    }
-  }
+				if (field != null) {
+					Object value = readObject(field.getType());
+					field.set(obj, value);
+				} else {
+					Object value = readObject();
+				}
+			}
 
-  /**
-   * Creates a map of the classes fields.
-   */
-  protected HashMap getFieldMap(Class cl)
-  {
-    HashMap fieldMap = new HashMap();
-    
-    for (; cl != null; cl = cl.getSuperclass()) {
-      Field []fields = cl.getDeclaredFields();
-      for (int i = 0; i < fields.length; i++) {
-        Field field = fields[i];
+			if (code != 'z')
+				throw expect("map", code);
 
-        if (Modifier.isTransient(field.getModifiers()) ||
-            Modifier.isStatic(field.getModifiers()))
-          continue;
+			// if there's a readResolve method, call it
+			try {
+				Method method = cl.getMethod("readResolve", new Class[0]);
+				return method.invoke(obj, new Object[0]);
+			} catch (Exception e) {
+			}
 
-        // XXX: could parameterize the handler to only deal with public
-        field.setAccessible(true);
+			return obj;
+		} catch (IOException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new IOExceptionWrapper(e);
+		}
+	}
 
-        fieldMap.put(field.getName(), field);
-      }
-    }
+	/**
+	 * Creates a map of the classes fields.
+	 */
+	protected HashMap getFieldMap(Class cl) {
+		HashMap fieldMap = new HashMap();
 
-    return fieldMap;
-  }
+		for (; cl != null; cl = cl.getSuperclass()) {
+			Field[] fields = cl.getDeclaredFields();
+			for (int i = 0; i < fields.length; i++) {
+				Field field = fields[i];
+
+				if (Modifier.isTransient(field.getModifiers()) || Modifier.isStatic(field.getModifiers()))
+					continue;
+
+				// XXX: could parameterize the handler to only deal with public
+				field.setAccessible(true);
+
+				fieldMap.put(field.getName(), field);
+			}
+		}
+
+		return fieldMap;
+	}
 }

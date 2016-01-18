@@ -23,12 +23,13 @@ package com.alibaba.dubbo.rpc.service;
  */
 public interface EchoService {
 
-    /**
-     * echo test.
-     * 
-     * @param message message.
-     * @return message.
-     */
-    Object $echo(Object message);
+	/**
+	 * echo test.
+	 * 
+	 * @param message
+	 *            message.
+	 * @return message.
+	 */
+	Object $echo(Object message);
 
 }

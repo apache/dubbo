@@ -47,113 +47,115 @@ import com.alibaba.dubbo.rpc.protocol.AbstractProxyProtocol;
  */
 public class HttpProtocol extends AbstractProxyProtocol {
 
-    public static final int              DEFAULT_PORT = 80;
+	public static final int DEFAULT_PORT = 80;
 
-    private final Map<String, HttpServer> serverMap = new ConcurrentHashMap<String, HttpServer>();
+	private final Map<String, HttpServer> serverMap = new ConcurrentHashMap<String, HttpServer>();
 
-    private final Map<String, HttpInvokerServiceExporter> skeletonMap = new ConcurrentHashMap<String, HttpInvokerServiceExporter>();
+	private final Map<String, HttpInvokerServiceExporter> skeletonMap = new ConcurrentHashMap<String, HttpInvokerServiceExporter>();
 
-    private HttpBinder httpBinder;
-    
-    public HttpProtocol() {
-        super(RemoteAccessException.class);
-    }
+	private HttpBinder httpBinder;
 
-    public void setHttpBinder(HttpBinder httpBinder) {
-        this.httpBinder = httpBinder;
-    }
+	public HttpProtocol() {
+		super(RemoteAccessException.class);
+	}
 
-    public int getDefaultPort() {
-        return DEFAULT_PORT;
-    }
+	public void setHttpBinder(HttpBinder httpBinder) {
+		this.httpBinder = httpBinder;
+	}
 
-    private class InternalHandler implements HttpHandler {
-        
-        public void handle(HttpServletRequest request, HttpServletResponse response)
-                throws IOException, ServletException {
-            String uri = request.getRequestURI();
-            HttpInvokerServiceExporter skeleton = skeletonMap.get(uri);
-            if (! request.getMethod().equalsIgnoreCase("POST")) {
-                response.setStatus(500);
-            } else {
-                RpcContext.getContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
-                try {
-                    skeleton.handleRequest(request, response);
-                } catch (Throwable e) {
-                    throw new ServletException(e);
-                }
-            }
-        }
-        
-    }
+	public int getDefaultPort() {
+		return DEFAULT_PORT;
+	}
 
-    protected <T> Runnable doExport(final T impl, Class<T> type, URL url) throws RpcException {
-        String addr = url.getIp() + ":" + url.getPort();
-        HttpServer server = serverMap.get(addr);
-        if (server == null) {
-            server = httpBinder.bind(url, new InternalHandler());
-            serverMap.put(addr, server);
-        }
-        final HttpInvokerServiceExporter httpServiceExporter = new HttpInvokerServiceExporter();
-        httpServiceExporter.setServiceInterface(type);
-        httpServiceExporter.setService(impl);
-        try {
-            httpServiceExporter.afterPropertiesSet();
-        } catch (Exception e) {
-            throw new RpcException(e.getMessage(), e);
-        }
-        final String path = url.getAbsolutePath();
-        skeletonMap.put(path, httpServiceExporter);
-        return new Runnable() {
-            public void run() {
-                skeletonMap.remove(path);
-            }
-        };
-    }
+	private class InternalHandler implements HttpHandler {
 
-    @SuppressWarnings("unchecked")
-    protected <T> T doRefer(final Class<T> serviceType, final URL url) throws RpcException {
-        final HttpInvokerProxyFactoryBean httpProxyFactoryBean = new HttpInvokerProxyFactoryBean();
-        httpProxyFactoryBean.setServiceUrl(url.toIdentityString());
-        httpProxyFactoryBean.setServiceInterface(serviceType);
-        String client = url.getParameter(Constants.CLIENT_KEY);
-        if (client == null || client.length() == 0 || "simple".equals(client)) {
-        	SimpleHttpInvokerRequestExecutor httpInvokerRequestExecutor = new SimpleHttpInvokerRequestExecutor() {
-				protected void prepareConnection(HttpURLConnection con,
-						int contentLength) throws IOException {
+		public void handle(HttpServletRequest request, HttpServletResponse response) throws IOException,
+				ServletException {
+			String uri = request.getRequestURI();
+			HttpInvokerServiceExporter skeleton = skeletonMap.get(uri);
+			if (!request.getMethod().equalsIgnoreCase("POST")) {
+				response.setStatus(500);
+			} else {
+				RpcContext.getContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
+				try {
+					skeleton.handleRequest(request, response);
+				} catch (Throwable e) {
+					throw new ServletException(e);
+				}
+			}
+		}
+
+	}
+
+	protected <T> Runnable doExport(final T impl, Class<T> type, URL url) throws RpcException {
+		String addr = url.getIp() + ":" + url.getPort();
+		HttpServer server = serverMap.get(addr);
+		if (server == null) {
+			server = httpBinder.bind(url, new InternalHandler());
+			serverMap.put(addr, server);
+		}
+		final HttpInvokerServiceExporter httpServiceExporter = new HttpInvokerServiceExporter();
+		httpServiceExporter.setServiceInterface(type);
+		httpServiceExporter.setService(impl);
+		try {
+			httpServiceExporter.afterPropertiesSet();
+		} catch (Exception e) {
+			throw new RpcException(e.getMessage(), e);
+		}
+		final String path = url.getAbsolutePath();
+		skeletonMap.put(path, httpServiceExporter);
+		return new Runnable() {
+			public void run() {
+				skeletonMap.remove(path);
+			}
+		};
+	}
+
+	@SuppressWarnings("unchecked")
+	protected <T> T doRefer(final Class<T> serviceType, final URL url) throws RpcException {
+		final HttpInvokerProxyFactoryBean httpProxyFactoryBean = new HttpInvokerProxyFactoryBean();
+		httpProxyFactoryBean.setServiceUrl(url.toIdentityString());
+		httpProxyFactoryBean.setServiceInterface(serviceType);
+		String client = url.getParameter(Constants.CLIENT_KEY);
+		if (client == null || client.length() == 0 || "simple".equals(client)) {
+			SimpleHttpInvokerRequestExecutor httpInvokerRequestExecutor = new SimpleHttpInvokerRequestExecutor() {
+				protected void prepareConnection(HttpURLConnection con, int contentLength) throws IOException {
 					super.prepareConnection(con, contentLength);
 					con.setReadTimeout(url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
-					con.setConnectTimeout(url.getParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT));
+					con.setConnectTimeout(url.getParameter(Constants.CONNECT_TIMEOUT_KEY,
+							Constants.DEFAULT_CONNECT_TIMEOUT));
 				}
-        	};
-        	httpProxyFactoryBean.setHttpInvokerRequestExecutor(httpInvokerRequestExecutor);
-        } else if ("commons".equals(client)) {
-        	CommonsHttpInvokerRequestExecutor httpInvokerRequestExecutor = new CommonsHttpInvokerRequestExecutor();
-        	httpInvokerRequestExecutor.setReadTimeout(url.getParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT));
-        	httpProxyFactoryBean.setHttpInvokerRequestExecutor(httpInvokerRequestExecutor);
-        } else if (client != null && client.length() > 0) {
-        	throw new IllegalStateException("Unsupported http protocol client " + client + ", only supported: simple, commons");
-        }
-        httpProxyFactoryBean.afterPropertiesSet();
-        return (T) httpProxyFactoryBean.getObject();
-    }
+			};
+			httpProxyFactoryBean.setHttpInvokerRequestExecutor(httpInvokerRequestExecutor);
+		} else if ("commons".equals(client)) {
+			CommonsHttpInvokerRequestExecutor httpInvokerRequestExecutor = new CommonsHttpInvokerRequestExecutor();
+			httpInvokerRequestExecutor.setReadTimeout(url.getParameter(Constants.CONNECT_TIMEOUT_KEY,
+					Constants.DEFAULT_CONNECT_TIMEOUT));
+			httpProxyFactoryBean.setHttpInvokerRequestExecutor(httpInvokerRequestExecutor);
+		} else if (client != null && client.length() > 0) {
+			throw new IllegalStateException("Unsupported http protocol client " + client
+					+ ", only supported: simple, commons");
+		}
+		httpProxyFactoryBean.afterPropertiesSet();
+		return (T) httpProxyFactoryBean.getObject();
+	}
 
-    protected int getErrorCode(Throwable e) {
-        if (e instanceof RemoteAccessException) {
-            e = e.getCause();
-        }
-        if (e != null) {
-            Class<?> cls = e.getClass();
-            // 是根据测试Case发现的问题，对RpcException.setCode进行设置
-            if (SocketTimeoutException.class.equals(cls)) {
-                return RpcException.TIMEOUT_EXCEPTION;
-            } else if (IOException.class.isAssignableFrom(cls)) {
-                return RpcException.NETWORK_EXCEPTION;
-            } else if (ClassNotFoundException.class.isAssignableFrom(cls)) {
-                return RpcException.SERIALIZATION_EXCEPTION;
-            }
-        }
-        return super.getErrorCode(e);
-    }
+	protected int getErrorCode(Throwable e) {
+		if (e instanceof RemoteAccessException) {
+			e = e.getCause();
+		}
+		if (e != null) {
+			Class<?> cls = e.getClass();
+			// 是根据测试Case发现的问题，对RpcException.setCode进行设置
+			if (SocketTimeoutException.class.equals(cls)) {
+				return RpcException.TIMEOUT_EXCEPTION;
+			} else if (IOException.class.isAssignableFrom(cls)) {
+				return RpcException.NETWORK_EXCEPTION;
+			} else if (ClassNotFoundException.class.isAssignableFrom(cls)) {
+				return RpcException.SERIALIZATION_EXCEPTION;
+			}
+		}
+		return super.getErrorCode(e);
+	}
 
 }

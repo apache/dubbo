@@ -22,8 +22,8 @@ import com.alibaba.dubbo.examples.version.api.VersionService;
  */
 public class VersionServiceImpl2 implements VersionService {
 
-    public String sayHello(String name) {
-        return "hello2, " + name;
-    }
+	public String sayHello(String name) {
+		return "hello2, " + name;
+	}
 
 }

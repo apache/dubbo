@@ -23,12 +23,12 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * @author william.liangf
  */
 public class VersionProvider {
-    
-    public static void main(String[] args) throws Exception {
-        String config = VersionProvider.class.getPackage().getName().replace('.', '/') + "/version-provider.xml";
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(config);
-        context.start();
-        System.in.read();
-    }
-    
+
+	public static void main(String[] args) throws Exception {
+		String config = VersionProvider.class.getPackage().getName().replace('.', '/') + "/version-provider.xml";
+		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(config);
+		context.start();
+		System.in.read();
+	}
+
 }

@@ -21,17 +21,20 @@ import com.alibaba.dubbo.registry.RegistryFactory;
 
 /**
  * TODO Comment of MockRegistryFactory
+ * 
  * @author haomin.liuhm
  *
  */
 public class MockRegistryFactory implements RegistryFactory {
 
-    /* 
-     * @see com.alibaba.dubbo.registry.RegistryFactory#getRegistry(com.alibaba.dubbo.common.URL)
-     */
-    public Registry getRegistry(URL url) {
-        
-        return new MockRegistry();
-    }
+	/*
+	 * @see
+	 * com.alibaba.dubbo.registry.RegistryFactory#getRegistry(com.alibaba.dubbo
+	 * .common.URL)
+	 */
+	public Registry getRegistry(URL url) {
+
+		return new MockRegistry();
+	}
 
 }

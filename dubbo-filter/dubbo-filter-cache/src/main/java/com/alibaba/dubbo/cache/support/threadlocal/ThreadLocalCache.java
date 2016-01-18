@@ -28,23 +28,23 @@ import com.alibaba.dubbo.common.URL;
  */
 public class ThreadLocalCache implements Cache {
 
-    private final ThreadLocal<Map<Object, Object>> store;
+	private final ThreadLocal<Map<Object, Object>> store;
 
-    public ThreadLocalCache(URL url) {
-        this.store = new ThreadLocal<Map<Object, Object>>() {
-            @Override
-            protected Map<Object, Object> initialValue() {
-                return new HashMap<Object, Object>();
-            }
-        };
-    }
+	public ThreadLocalCache(URL url) {
+		this.store = new ThreadLocal<Map<Object, Object>>() {
+			@Override
+			protected Map<Object, Object> initialValue() {
+				return new HashMap<Object, Object>();
+			}
+		};
+	}
 
-    public void put(Object key, Object value) {
-        store.get().put(key, value);
-    }
+	public void put(Object key, Object value) {
+		store.get().put(key, value);
+	}
 
-    public Object get(Object key) {
-        return store.get().get(key);
-    }
+	public Object get(Object key) {
+		return store.get().get(key);
+	}
 
 }

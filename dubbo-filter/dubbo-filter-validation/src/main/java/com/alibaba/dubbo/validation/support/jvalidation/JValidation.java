@@ -26,9 +26,9 @@ import com.alibaba.dubbo.validation.support.AbstractValidation;
  */
 public class JValidation extends AbstractValidation {
 
-    @Override
-    protected Validator createValidator(URL url) {
-        return new JValidator(url);
-    }
+	@Override
+	protected Validator createValidator(URL url) {
+		return new JValidator(url);
+	}
 
 }

@@ -31,83 +31,83 @@ import com.alibaba.dubbo.remoting.exchange.ExchangeServer;
  * @author william.liangf
  */
 public class ExchangeServerDelegate implements ExchangeServer {
-    
-    private transient ExchangeServer server;
-    
-    public ExchangeServerDelegate() {
-    }
 
-    public ExchangeServerDelegate(ExchangeServer server){
-        setServer(server);
-    }
+	private transient ExchangeServer server;
 
-    public ExchangeServer getServer() {
-        return server;
-    }
-    
-    public void setServer(ExchangeServer server) {
-        this.server = server;
-    }
+	public ExchangeServerDelegate() {
+	}
 
-    public boolean isBound() {
-        return server.isBound();
-    }
+	public ExchangeServerDelegate(ExchangeServer server) {
+		setServer(server);
+	}
 
-    public void reset(URL url) {
-        server.reset(url);
-    }
+	public ExchangeServer getServer() {
+		return server;
+	}
 
-    @Deprecated
-    public void reset(com.alibaba.dubbo.common.Parameters parameters){
-        reset(getUrl().addParameters(parameters.getParameters()));
-    }
-    
-    public Collection<Channel> getChannels() {
-        return server.getChannels();
-    }
+	public void setServer(ExchangeServer server) {
+		this.server = server;
+	}
 
-    public Channel getChannel(InetSocketAddress remoteAddress) {
-        return server.getChannel(remoteAddress);
-    }
+	public boolean isBound() {
+		return server.isBound();
+	}
 
-    public URL getUrl() {
-        return server.getUrl();
-    }
+	public void reset(URL url) {
+		server.reset(url);
+	}
 
-    public ChannelHandler getChannelHandler() {
-        return server.getChannelHandler();
-    }
+	@Deprecated
+	public void reset(com.alibaba.dubbo.common.Parameters parameters) {
+		reset(getUrl().addParameters(parameters.getParameters()));
+	}
 
-    public InetSocketAddress getLocalAddress() {
-        return server.getLocalAddress();
-    }
+	public Collection<Channel> getChannels() {
+		return server.getChannels();
+	}
 
-    public void send(Object message) throws RemotingException {
-        server.send(message);
-    }
+	public Channel getChannel(InetSocketAddress remoteAddress) {
+		return server.getChannel(remoteAddress);
+	}
 
-    public void send(Object message, boolean sent) throws RemotingException {
-        server.send(message, sent);
-    }
+	public URL getUrl() {
+		return server.getUrl();
+	}
 
-    public void close() {
-        server.close();
-    }
+	public ChannelHandler getChannelHandler() {
+		return server.getChannelHandler();
+	}
 
-    public boolean isClosed() {
-        return server.isClosed();
-    }
+	public InetSocketAddress getLocalAddress() {
+		return server.getLocalAddress();
+	}
 
-    public Collection<ExchangeChannel> getExchangeChannels() {
-        return server.getExchangeChannels();
-    }
+	public void send(Object message) throws RemotingException {
+		server.send(message);
+	}
 
-    public ExchangeChannel getExchangeChannel(InetSocketAddress remoteAddress) {
-        return server.getExchangeChannel(remoteAddress);
-    }
+	public void send(Object message, boolean sent) throws RemotingException {
+		server.send(message, sent);
+	}
 
-    public void close(int timeout) {
-        server.close(timeout);
-    }
+	public void close() {
+		server.close();
+	}
+
+	public boolean isClosed() {
+		return server.isClosed();
+	}
+
+	public Collection<ExchangeChannel> getExchangeChannels() {
+		return server.getExchangeChannels();
+	}
+
+	public ExchangeChannel getExchangeChannel(InetSocketAddress remoteAddress) {
+		return server.getExchangeChannel(remoteAddress);
+	}
+
+	public void close(int timeout) {
+		server.close(timeout);
+	}
 
 }

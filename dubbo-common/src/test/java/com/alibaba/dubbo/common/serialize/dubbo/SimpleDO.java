@@ -17,12 +17,11 @@ package com.alibaba.dubbo.common.serialize.dubbo;
 
 import java.io.Serializable;
 
-public class SimpleDO implements Serializable
-{
+public class SimpleDO implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    public int a, b, c;
+	public int a, b, c;
 
 	float d = 1.2f, e = 12.56f;
 

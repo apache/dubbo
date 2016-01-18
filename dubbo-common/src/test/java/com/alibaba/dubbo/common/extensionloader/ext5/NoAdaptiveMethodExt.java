@@ -25,5 +25,5 @@ import com.alibaba.dubbo.common.extension.SPI;
  */
 @SPI("impl1")
 public interface NoAdaptiveMethodExt {
-    String echo(URL url, String s);
+	String echo(URL url, String s);
 }

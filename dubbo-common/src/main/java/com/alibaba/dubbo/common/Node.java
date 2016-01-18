@@ -24,23 +24,23 @@ import com.alibaba.dubbo.common.URL;
  */
 public interface Node {
 
-    /**
-     * get url.
-     * 
-     * @return url.
-     */
-    URL getUrl();
-    
-    /**
-     * is available.
-     * 
-     * @return available.
-     */
-    boolean isAvailable();
+	/**
+	 * get url.
+	 * 
+	 * @return url.
+	 */
+	URL getUrl();
 
-    /**
-     * destroy.
-     */
-    void destroy();
+	/**
+	 * is available.
+	 * 
+	 * @return available.
+	 */
+	boolean isAvailable();
+
+	/**
+	 * destroy.
+	 */
+	void destroy();
 
 }

@@ -27,46 +27,34 @@ import com.alibaba.dubbo.common.serialize.support.nativejava.NativeJavaObjectOut
  * @author qian.lei
  */
 
-public class JavaObjectOutput extends NativeJavaObjectOutput
-{
-	public JavaObjectOutput(OutputStream os) throws IOException
-	{
+public class JavaObjectOutput extends NativeJavaObjectOutput {
+	public JavaObjectOutput(OutputStream os) throws IOException {
 		super(new ObjectOutputStream(os));
 	}
 
-	public JavaObjectOutput(OutputStream os, boolean compact) throws IOException
-	{
+	public JavaObjectOutput(OutputStream os, boolean compact) throws IOException {
 		super(compact ? new CompactedObjectOutputStream(os) : new ObjectOutputStream(os));
 	}
 
-	public void writeUTF(String v) throws IOException
-	{
-		if( v == null )
-		{
+	public void writeUTF(String v) throws IOException {
+		if (v == null) {
 			getObjectOutputStream().writeInt(-1);
-		}
-		else
-		{
+		} else {
 			getObjectOutputStream().writeInt(v.length());
 			getObjectOutputStream().writeUTF(v);
 		}
 	}
 
-	public void writeObject(Object obj) throws IOException
-	{
-		if( obj == null )
-		{
+	public void writeObject(Object obj) throws IOException {
+		if (obj == null) {
 			getObjectOutputStream().writeByte(0);
-		}
-		else
-		{
+		} else {
 			getObjectOutputStream().writeByte(1);
 			getObjectOutputStream().writeObject(obj);
 		}
 	}
 
-	public void flushBuffer() throws IOException
-	{
+	public void flushBuffer() throws IOException {
 		getObjectOutputStream().flush();
 	}
 }

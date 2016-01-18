@@ -30,92 +30,93 @@ import com.alibaba.dubbo.remoting.RemotingException;
  *
  */
 public class AbstractMockChannel implements Channel {
-    public static final String LOCAL_ADDRESS = "local";
-    public static final String REMOTE_ADDRESS = "remote";
-    public static final String ERROR_WHEN_SEND = "error_when_send";
-    private URL remoteUrl ;
-    InetSocketAddress localAddress ;
-    InetSocketAddress remoteAddress ;
-    private ChannelHandler handler;
-    private boolean isClosed ;
-    private Map<String, Object> attributes = new HashMap<String, Object>(1);
-    private volatile Object receivedMessage = null;
-    
-    public AbstractMockChannel(){
-        
-    }
-    
-    public AbstractMockChannel(URL remoteUrl){
-        this.remoteUrl = remoteUrl;
-        this.remoteAddress = NetUtils.toAddress(remoteUrl.getParameter(REMOTE_ADDRESS));
-        this.localAddress = NetUtils.toAddress(remoteUrl.getParameter(LOCAL_ADDRESS));
-    }
-    public AbstractMockChannel(ChannelHandler handler){
-        this.handler = handler;
-    }
+	public static final String LOCAL_ADDRESS = "local";
+	public static final String REMOTE_ADDRESS = "remote";
+	public static final String ERROR_WHEN_SEND = "error_when_send";
+	private URL remoteUrl;
+	InetSocketAddress localAddress;
+	InetSocketAddress remoteAddress;
+	private ChannelHandler handler;
+	private boolean isClosed;
+	private Map<String, Object> attributes = new HashMap<String, Object>(1);
+	private volatile Object receivedMessage = null;
 
-    public URL getUrl() {
-        return remoteUrl;
-    }
+	public AbstractMockChannel() {
 
-    public ChannelHandler getChannelHandler() {
-        return handler;
-    }
+	}
 
-    public InetSocketAddress getLocalAddress() {
-        return localAddress ;
-    }
+	public AbstractMockChannel(URL remoteUrl) {
+		this.remoteUrl = remoteUrl;
+		this.remoteAddress = NetUtils.toAddress(remoteUrl.getParameter(REMOTE_ADDRESS));
+		this.localAddress = NetUtils.toAddress(remoteUrl.getParameter(LOCAL_ADDRESS));
+	}
 
-    public void send(Object message) throws RemotingException {
-        if (remoteUrl.getParameter(ERROR_WHEN_SEND, Boolean.FALSE)){
-            receivedMessage = null ;
-            throw new RemotingException(localAddress, remoteAddress, "mock error");
-        } else {
-            receivedMessage = message;
-        }
-    }
-    
-    public void send(Object message, boolean sent) throws RemotingException {
-        send(message);
-    }
+	public AbstractMockChannel(ChannelHandler handler) {
+		this.handler = handler;
+	}
 
-    public void close() {
-        close(0);
-    }
+	public URL getUrl() {
+		return remoteUrl;
+	}
 
-    public void close(int timeout) {
-        isClosed = true;
-    }
+	public ChannelHandler getChannelHandler() {
+		return handler;
+	}
 
-    public boolean isClosed() {
-        return isClosed;
-    }
+	public InetSocketAddress getLocalAddress() {
+		return localAddress;
+	}
 
-    public InetSocketAddress getRemoteAddress() {
-        return remoteAddress;
-    }
+	public void send(Object message) throws RemotingException {
+		if (remoteUrl.getParameter(ERROR_WHEN_SEND, Boolean.FALSE)) {
+			receivedMessage = null;
+			throw new RemotingException(localAddress, remoteAddress, "mock error");
+		} else {
+			receivedMessage = message;
+		}
+	}
 
-    public boolean isConnected() {
-        return isClosed;
-    }
+	public void send(Object message, boolean sent) throws RemotingException {
+		send(message);
+	}
 
-    public boolean hasAttribute(String key) {
-        return attributes.containsKey(key);
-    }
+	public void close() {
+		close(0);
+	}
 
-    public Object getAttribute(String key) {
-        return attributes.get(key);
-    }
+	public void close(int timeout) {
+		isClosed = true;
+	}
 
-    public void setAttribute(String key, Object value) {
-        attributes.put(key, value);
-    }
+	public boolean isClosed() {
+		return isClosed;
+	}
 
-    public void removeAttribute(String key) {
-        attributes.remove(key);
-    }
+	public InetSocketAddress getRemoteAddress() {
+		return remoteAddress;
+	}
 
-    public Object getReceivedMessage() {
-        return receivedMessage;
-    }
+	public boolean isConnected() {
+		return isClosed;
+	}
+
+	public boolean hasAttribute(String key) {
+		return attributes.containsKey(key);
+	}
+
+	public Object getAttribute(String key) {
+		return attributes.get(key);
+	}
+
+	public void setAttribute(String key, Object value) {
+		attributes.put(key, value);
+	}
+
+	public void removeAttribute(String key) {
+		attributes.remove(key);
+	}
+
+	public Object getReceivedMessage() {
+		return receivedMessage;
+	}
 }

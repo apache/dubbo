@@ -33,52 +33,54 @@ import com.alibaba.dubbo.rpc.RpcResult;
  */
 public final class DubboCountCodec implements Codec2 {
 
-    private DubboCodec codec = new DubboCodec();
+	private DubboCodec codec = new DubboCodec();
 
-    public void encode(Channel channel, ChannelBuffer buffer, Object msg) throws IOException {
-        codec.encode(channel, buffer, msg);
-    }
+	public void encode(Channel channel, ChannelBuffer buffer, Object msg) throws IOException {
+		codec.encode(channel, buffer, msg);
+	}
 
-    public Object decode(Channel channel, ChannelBuffer buffer) throws IOException {
-        int save = buffer.readerIndex();
-        MultiMessage result = MultiMessage.create();
-        do {
-            Object obj = codec.decode(channel, buffer);
-            if (Codec2.DecodeResult.NEED_MORE_INPUT == obj) {
-                buffer.readerIndex(save);
-                break;
-            } else {
-                result.addMessage(obj);
-                logMessageLength(obj, buffer.readerIndex() - save);
-                save = buffer.readerIndex();
-            }
-        } while (true);
-        if (result.isEmpty()) {
-            return Codec2.DecodeResult.NEED_MORE_INPUT;
-        }
-        if (result.size() == 1) {
-            return result.get(0);
-        }
-        return result;
-    }
+	public Object decode(Channel channel, ChannelBuffer buffer) throws IOException {
+		int save = buffer.readerIndex();
+		MultiMessage result = MultiMessage.create();
+		do {
+			Object obj = codec.decode(channel, buffer);
+			if (Codec2.DecodeResult.NEED_MORE_INPUT == obj) {
+				buffer.readerIndex(save);
+				break;
+			} else {
+				result.addMessage(obj);
+				logMessageLength(obj, buffer.readerIndex() - save);
+				save = buffer.readerIndex();
+			}
+		} while (true);
+		if (result.isEmpty()) {
+			return Codec2.DecodeResult.NEED_MORE_INPUT;
+		}
+		if (result.size() == 1) {
+			return result.get(0);
+		}
+		return result;
+	}
 
-    private void logMessageLength(Object result, int bytes) {
-        if (bytes <= 0) { return; }
-        if (result instanceof Request) {
-            try {
-                ((RpcInvocation) ((Request) result).getData()).setAttachment(
-                    Constants.INPUT_KEY, String.valueOf(bytes));
-            } catch (Throwable e) {
-                /* ignore */
-            }
-        } else if (result instanceof Response) {
-            try {
-                ((RpcResult) ((Response) result).getResult()).setAttachment(
-                    Constants.OUTPUT_KEY, String.valueOf(bytes));
-            } catch (Throwable e) {
-                /* ignore */
-            }
-        }
-    }
+	private void logMessageLength(Object result, int bytes) {
+		if (bytes <= 0) {
+			return;
+		}
+		if (result instanceof Request) {
+			try {
+				((RpcInvocation) ((Request) result).getData())
+						.setAttachment(Constants.INPUT_KEY, String.valueOf(bytes));
+			} catch (Throwable e) {
+				/* ignore */
+			}
+		} else if (result instanceof Response) {
+			try {
+				((RpcResult) ((Response) result).getResult())
+						.setAttachment(Constants.OUTPUT_KEY, String.valueOf(bytes));
+			} catch (Throwable e) {
+				/* ignore */
+			}
+		}
+	}
 
 }

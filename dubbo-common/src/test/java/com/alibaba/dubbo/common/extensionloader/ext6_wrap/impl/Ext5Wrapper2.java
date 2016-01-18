@@ -24,16 +24,16 @@ import com.alibaba.dubbo.common.extensionloader.ext6_wrap.WrappedExt;
  * @author ding.lid
  */
 public class Ext5Wrapper2 implements WrappedExt {
-    WrappedExt instance;
-    
-    public static AtomicInteger echoCount = new AtomicInteger();
+	WrappedExt instance;
 
-    public Ext5Wrapper2(WrappedExt instance) {
-        this.instance = instance;
-    }
+	public static AtomicInteger echoCount = new AtomicInteger();
 
-    public String echo(URL url, String s) {
-        echoCount.incrementAndGet();
-        return instance.echo(url, s);
-    }
+	public Ext5Wrapper2(WrappedExt instance) {
+		this.instance = instance;
+	}
+
+	public String echo(URL url, String s) {
+		echoCount.incrementAndGet();
+		return instance.echo(url, s);
+	}
 }

@@ -8,7 +8,7 @@ import com.alibaba.dubbo.rpc.service.GenericService;
  */
 public class GenericDemoService implements GenericService {
 
-    public Object $invoke(String method, String[] parameterTypes, Object[] args) throws GenericException {
-        return null;
-    }
+	public Object $invoke(String method, String[] parameterTypes, Object[] args) throws GenericException {
+		return null;
+	}
 }

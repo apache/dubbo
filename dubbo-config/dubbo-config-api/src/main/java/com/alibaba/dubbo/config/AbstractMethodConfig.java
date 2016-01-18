@@ -29,143 +29,143 @@ import com.alibaba.dubbo.rpc.cluster.LoadBalance;
  */
 public abstract class AbstractMethodConfig extends AbstractConfig {
 
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    // 远程调用超时时间(毫秒)
-    protected Integer             timeout;
+	// 远程调用超时时间(毫秒)
+	protected Integer timeout;
 
-    // 重试次数
-    protected Integer             retries;
+	// 重试次数
+	protected Integer retries;
 
-    // 最大并发调用
-    protected Integer             actives;
-    
-    // 负载均衡
-    protected String              loadbalance;
+	// 最大并发调用
+	protected Integer actives;
 
-    // 是否异步
-    protected Boolean             async;
-    
-    // 异步发送是否等待发送成功
-    protected Boolean             sent;
+	// 负载均衡
+	protected String loadbalance;
 
-    // 服务接口的失败mock实现类名
-    protected String              mock;
+	// 是否异步
+	protected Boolean async;
 
-    // 合并器
-    protected String              merger;
-    
-    // 服务接口的失败mock实现类名
-    protected String              cache;
+	// 异步发送是否等待发送成功
+	protected Boolean sent;
 
-    // 服务接口的失败mock实现类名
-    protected String              validation;
+	// 服务接口的失败mock实现类名
+	protected String mock;
 
-    // 自定义参数
-    protected Map<String, String> parameters;
+	// 合并器
+	protected String merger;
 
-    public Integer getTimeout() {
-        return timeout;
-    }
+	// 服务接口的失败mock实现类名
+	protected String cache;
 
-    public void setTimeout(Integer timeout) {
-        this.timeout = timeout;
-    }
+	// 服务接口的失败mock实现类名
+	protected String validation;
 
-    public Integer getRetries() {
-        return retries;
-    }
+	// 自定义参数
+	protected Map<String, String> parameters;
 
-    public void setRetries(Integer retries) {
-        this.retries = retries;
-    }
+	public Integer getTimeout() {
+		return timeout;
+	}
 
-    public String getLoadbalance() {
-        return loadbalance;
-    }
+	public void setTimeout(Integer timeout) {
+		this.timeout = timeout;
+	}
 
-    public void setLoadbalance(String loadbalance) {
-        checkExtension(LoadBalance.class, "loadbalance", loadbalance);
-        this.loadbalance = loadbalance;
-    }
+	public Integer getRetries() {
+		return retries;
+	}
 
-    public Boolean isAsync() {
-        return async;
-    }
+	public void setRetries(Integer retries) {
+		this.retries = retries;
+	}
 
-    public void setAsync(Boolean async) {
-        this.async = async;
-    }
+	public String getLoadbalance() {
+		return loadbalance;
+	}
 
-    public Integer getActives() {
-        return actives;
-    }
-    
-    public void setActives(Integer actives) {
-        this.actives = actives;
-    }
+	public void setLoadbalance(String loadbalance) {
+		checkExtension(LoadBalance.class, "loadbalance", loadbalance);
+		this.loadbalance = loadbalance;
+	}
 
-    public Boolean getSent() {
-        return sent;
-    }
+	public Boolean isAsync() {
+		return async;
+	}
 
-    public void setSent(Boolean sent) {
-        this.sent = sent;
-    }
+	public void setAsync(Boolean async) {
+		this.async = async;
+	}
 
-    @Parameter(escaped = true)
-    public String getMock() {
-        return mock;
-    }
+	public Integer getActives() {
+		return actives;
+	}
 
-    public void setMock(String mock) {
-        if (mock != null && mock.startsWith(Constants.RETURN_PREFIX)) {
-            checkLength("mock", mock);
-        } else {
-            checkName("mock", mock);
-        }
-        this.mock = mock;
-    }
-    
-    public void setMock(Boolean mock) {
-        if (mock == null) {
-            setMock((String) null);
-        } else {
-            setMock(String.valueOf(mock));
-        }
-    }
+	public void setActives(Integer actives) {
+		this.actives = actives;
+	}
 
-    public String getMerger() {
-        return merger;
-    }
+	public Boolean getSent() {
+		return sent;
+	}
 
-    public void setMerger(String merger) {
-        this.merger = merger;
-    }
+	public void setSent(Boolean sent) {
+		this.sent = sent;
+	}
 
-    public String getCache() {
-        return cache;
-    }
+	@Parameter(escaped = true)
+	public String getMock() {
+		return mock;
+	}
 
-    public void setCache(String cache) {
-        this.cache = cache;
-    }
+	public void setMock(String mock) {
+		if (mock != null && mock.startsWith(Constants.RETURN_PREFIX)) {
+			checkLength("mock", mock);
+		} else {
+			checkName("mock", mock);
+		}
+		this.mock = mock;
+	}
 
-    public String getValidation() {
-        return validation;
-    }
+	public void setMock(Boolean mock) {
+		if (mock == null) {
+			setMock((String) null);
+		} else {
+			setMock(String.valueOf(mock));
+		}
+	}
 
-    public void setValidation(String validation) {
-        this.validation = validation;
-    }
+	public String getMerger() {
+		return merger;
+	}
 
-    public Map<String, String> getParameters() {
-        return parameters;
-    }
+	public void setMerger(String merger) {
+		this.merger = merger;
+	}
 
-    public void setParameters(Map<String, String> parameters) {
-        checkParameterName(parameters);
-        this.parameters = parameters;
-    }
+	public String getCache() {
+		return cache;
+	}
+
+	public void setCache(String cache) {
+		this.cache = cache;
+	}
+
+	public String getValidation() {
+		return validation;
+	}
+
+	public void setValidation(String validation) {
+		this.validation = validation;
+	}
+
+	public Map<String, String> getParameters() {
+		return parameters;
+	}
+
+	public void setParameters(Map<String, String> parameters) {
+		checkParameterName(parameters);
+		this.parameters = parameters;
+	}
 
 }

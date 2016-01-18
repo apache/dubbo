@@ -26,12 +26,12 @@ public class DubboUser implements Serializable {
 	private DubboUser() {
 	}
 
-    public static final User getCurrentUser() {
-        return (User) userHolder.get();
-    }
+	public static final User getCurrentUser() {
+		return (User) userHolder.get();
+	}
 
-    public static final void setCurrentUser(User user) {
-        userHolder.set(user);
-    }
+	public static final void setCurrentUser(User user) {
+		userHolder.set(user);
+	}
 
 }

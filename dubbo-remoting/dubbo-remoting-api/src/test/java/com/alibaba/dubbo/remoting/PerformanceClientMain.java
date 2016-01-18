@@ -15,14 +15,13 @@
  */
 package com.alibaba.dubbo.remoting;
 
-
 /**
  * PerformanceClientMain
  */
 public class PerformanceClientMain {
 
-    public static void main(String[] args) throws Throwable {
-        new PerformanceClientTest().testClient();
-    }
+	public static void main(String[] args) throws Throwable {
+		new PerformanceClientTest().testClient();
+	}
 
 }

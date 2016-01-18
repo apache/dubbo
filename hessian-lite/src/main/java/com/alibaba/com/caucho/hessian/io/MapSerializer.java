@@ -57,48 +57,42 @@ import java.util.Map;
  * Serializing a JDK 1.2 java.util.Map.
  */
 public class MapSerializer extends AbstractSerializer {
-  private boolean _isSendJavaType = true;
+	private boolean _isSendJavaType = true;
 
-  /**
-   * Set true if the java type of the collection should be sent.
-   */
-  public void setSendJavaType(boolean sendJavaType)
-  {
-    _isSendJavaType = sendJavaType;
-  }
+	/**
+	 * Set true if the java type of the collection should be sent.
+	 */
+	public void setSendJavaType(boolean sendJavaType) {
+		_isSendJavaType = sendJavaType;
+	}
 
-  /**
-   * Return true if the java type of the collection should be sent.
-   */
-  public boolean getSendJavaType()
-  {
-    return _isSendJavaType;
-  }
-    
-  public void writeObject(Object obj, AbstractHessianOutput out)
-    throws IOException
-  {
-    if (out.addRef(obj))
-      return;
+	/**
+	 * Return true if the java type of the collection should be sent.
+	 */
+	public boolean getSendJavaType() {
+		return _isSendJavaType;
+	}
 
-    Map map = (Map) obj;
+	public void writeObject(Object obj, AbstractHessianOutput out) throws IOException {
+		if (out.addRef(obj))
+			return;
 
-    Class cl = obj.getClass();
-    
-    if (cl.equals(HashMap.class)
-	|| ! _isSendJavaType
-	|| ! (obj instanceof java.io.Serializable))
-      out.writeMapBegin(null);
-    else
-      out.writeMapBegin(obj.getClass().getName());
+		Map map = (Map) obj;
 
-    Iterator iter = map.entrySet().iterator();
-    while (iter.hasNext()) {
-      Map.Entry entry = (Map.Entry) iter.next();
+		Class cl = obj.getClass();
 
-      out.writeObject(entry.getKey());
-      out.writeObject(entry.getValue());
-    }
-    out.writeMapEnd();
-  }
+		if (cl.equals(HashMap.class) || !_isSendJavaType || !(obj instanceof java.io.Serializable))
+			out.writeMapBegin(null);
+		else
+			out.writeMapBegin(obj.getClass().getName());
+
+		Iterator iter = map.entrySet().iterator();
+		while (iter.hasNext()) {
+			Map.Entry entry = (Map.Entry) iter.next();
+
+			out.writeObject(entry.getKey());
+			out.writeObject(entry.getValue());
+		}
+		out.writeMapEnd();
+	}
 }

@@ -28,63 +28,65 @@ import org.junit.Test;
  */
 public class ThriftProtocolTest extends AbstractTest {
 
-    public static final int DEFAULT_PORT = 30660;
+	public static final int DEFAULT_PORT = 30660;
 
-    private ThriftProtocol protocol;
+	private ThriftProtocol protocol;
 
-    private Invoker<Demo> invoker;
+	private Invoker<Demo> invoker;
 
-    private URL url;
+	private URL url;
 
-    @Before
-    public void setUp() throws Exception {
+	@Before
+	public void setUp() throws Exception {
 
-        init();
+		init();
 
-        protocol = new ThriftProtocol();
+		protocol = new ThriftProtocol();
 
-        url = URL.valueOf( ThriftProtocol.NAME + "://127.0.0.1:" + PORT + "/" + Demo.class.getName() );
+		url = URL.valueOf(ThriftProtocol.NAME + "://127.0.0.1:" + PORT + "/" + Demo.class.getName());
 
-    }
+	}
 
-    @After
-    public void tearDown() throws Exception {
+	@After
+	public void tearDown() throws Exception {
 
-        destroy();
+		destroy();
 
-        if ( protocol != null ) {
-            protocol.destroy();
-            protocol = null;
-        }
+		if (protocol != null) {
+			protocol.destroy();
+			protocol = null;
+		}
 
-        if ( invoker != null ) {
-            invoker.destroy();
-            invoker = null;
-        }
+		if (invoker != null) {
+			invoker.destroy();
+			invoker = null;
+		}
 
-    }
+	}
 
-    @Test
-    public void testRefer() throws Exception {
-        // FIXME
-        /*invoker = protocol.refer( Demo.class, url );
+	@Test
+	public void testRefer() throws Exception {
+		// FIXME
+		/*
+		 * invoker = protocol.refer( Demo.class, url );
+		 * 
+		 * Assert.assertNotNull( invoker );
+		 * 
+		 * RpcInvocation invocation = new RpcInvocation();
+		 * 
+		 * invocation.setMethodName( "echoString" );
+		 * 
+		 * invocation.setParameterTypes( new Class<?>[]{ String.class } );
+		 * 
+		 * String arg = "Hello, World!";
+		 * 
+		 * invocation.setArguments( new Object[] { arg } );
+		 * 
+		 * Result result = invoker.invoke( invocation );
+		 * 
+		 * Assert.assertEquals( arg, result.getResult() );
+		 */
 
-        Assert.assertNotNull( invoker );
-
-        RpcInvocation invocation = new RpcInvocation();
-
-        invocation.setMethodName( "echoString" );
-
-        invocation.setParameterTypes( new Class<?>[]{ String.class } );
-
-        String arg = "Hello, World!";
-
-        invocation.setArguments( new Object[] { arg } );
-
-        Result result = invoker.invoke( invocation );
-
-        Assert.assertEquals( arg, result.getResult() );*/
-
-    }
+	}
 
 }

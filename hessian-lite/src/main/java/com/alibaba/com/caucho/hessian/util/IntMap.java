@@ -49,204 +49,195 @@
 package com.alibaba.com.caucho.hessian.util;
 
 /**
- * The IntMap provides a simple hashmap from keys to integers.  The API is
- * an abbreviation of the HashMap collection API.
+ * The IntMap provides a simple hashmap from keys to integers. The API is an
+ * abbreviation of the HashMap collection API.
  *
- * <p>The convenience of IntMap is avoiding all the silly wrapping of
- * integers.
+ * <p>
+ * The convenience of IntMap is avoiding all the silly wrapping of integers.
  */
 public class IntMap {
-  /**
-   * Encoding of a null entry.  Since NULL is equal to Integer.MIN_VALUE, 
-   * it's impossible to distinguish between the two.
-   */
-  public final static int NULL = 0xdeadbeef; // Integer.MIN_VALUE + 1;
+	/**
+	 * Encoding of a null entry. Since NULL is equal to Integer.MIN_VALUE, it's
+	 * impossible to distinguish between the two.
+	 */
+	public final static int NULL = 0xdeadbeef; // Integer.MIN_VALUE + 1;
 
-  private static final Object DELETED = new Object();
+	private static final Object DELETED = new Object();
 
-  private Object []_keys;
-  private int []_values;
+	private Object[] _keys;
+	private int[] _values;
 
-  private int _size;
-  private int _mask;
+	private int _size;
+	private int _mask;
 
-  /**
-   * Create a new IntMap.  Default size is 16.
-   */
-  public IntMap()
-  {
-    _keys = new Object[256];
-    _values = new int[256];
+	/**
+	 * Create a new IntMap. Default size is 16.
+	 */
+	public IntMap() {
+		_keys = new Object[256];
+		_values = new int[256];
 
-    _mask = _keys.length - 1;
-    _size = 0;
-  }
+		_mask = _keys.length - 1;
+		_size = 0;
+	}
 
-  /**
-   * Clear the hashmap.
-   */
-  public void clear()
-  {
-    Object []keys = _keys;
-    int []values = _values;
+	/**
+	 * Clear the hashmap.
+	 */
+	public void clear() {
+		Object[] keys = _keys;
+		int[] values = _values;
 
-    for (int i = keys.length - 1; i >= 0; i--) {
-      keys[i] = null;
-      values[i] = 0;
-    }
+		for (int i = keys.length - 1; i >= 0; i--) {
+			keys[i] = null;
+			values[i] = 0;
+		}
 
-    _size = 0;
-  }
-  /**
-   * Returns the current number of entries in the map.
-   */
-  public int size()
-  {
-    return _size;
-  }
+		_size = 0;
+	}
 
-  /**
-   * Puts a new value in the property table with the appropriate flags
-   */
-  public int get(Object key)
-  {
-    int mask = _mask;
-    int hash = key.hashCode() % mask & mask;
+	/**
+	 * Returns the current number of entries in the map.
+	 */
+	public int size() {
+		return _size;
+	}
 
-    Object []keys = _keys;
+	/**
+	 * Puts a new value in the property table with the appropriate flags
+	 */
+	public int get(Object key) {
+		int mask = _mask;
+		int hash = key.hashCode() % mask & mask;
 
-    while (true) {
-      Object mapKey = keys[hash];
+		Object[] keys = _keys;
 
-      if (mapKey == null)
-        return NULL;
-      else if (mapKey == key || mapKey.equals(key))
-        return _values[hash];
+		while (true) {
+			Object mapKey = keys[hash];
 
-      hash = (hash + 1) % mask;
-    }
-  }
+			if (mapKey == null)
+				return NULL;
+			else if (mapKey == key || mapKey.equals(key))
+				return _values[hash];
 
-  /**
-   * Expands the property table
-   */
-  private void resize(int newSize)
-  {
-    Object []newKeys = new Object[newSize];
-    int []newValues = new int[newSize];
+			hash = (hash + 1) % mask;
+		}
+	}
 
-    int mask = _mask = newKeys.length - 1;
+	/**
+	 * Expands the property table
+	 */
+	private void resize(int newSize) {
+		Object[] newKeys = new Object[newSize];
+		int[] newValues = new int[newSize];
 
-    Object []keys = _keys;
-    int values[] = _values;
+		int mask = _mask = newKeys.length - 1;
 
-    for (int i = keys.length - 1; i >= 0; i--) {
-      Object key = keys[i];
+		Object[] keys = _keys;
+		int values[] = _values;
 
-      if (key == null || key == DELETED)
-        continue;
+		for (int i = keys.length - 1; i >= 0; i--) {
+			Object key = keys[i];
 
-      int hash = key.hashCode() % mask & mask;
+			if (key == null || key == DELETED)
+				continue;
 
-      while (true) {
-        if (newKeys[hash] == null) {
-          newKeys[hash] = key;
-          newValues[hash] = values[i];
-          break;
-        }
+			int hash = key.hashCode() % mask & mask;
 
-        hash = (hash + 1) % mask;
-      }
-    }
+			while (true) {
+				if (newKeys[hash] == null) {
+					newKeys[hash] = key;
+					newValues[hash] = values[i];
+					break;
+				}
 
-    _keys = newKeys;
-    _values = newValues;
-  }
+				hash = (hash + 1) % mask;
+			}
+		}
 
-  /**
-   * Puts a new value in the property table with the appropriate flags
-   */
-  public int put(Object key, int value)
-  {
-    int mask = _mask;
-    int hash = key.hashCode() % mask & mask;
+		_keys = newKeys;
+		_values = newValues;
+	}
 
-    Object []keys = _keys;
+	/**
+	 * Puts a new value in the property table with the appropriate flags
+	 */
+	public int put(Object key, int value) {
+		int mask = _mask;
+		int hash = key.hashCode() % mask & mask;
 
-    while (true) {
-      Object testKey = keys[hash];
+		Object[] keys = _keys;
 
-      if (testKey == null || testKey == DELETED) {
-        keys[hash] = key;
-        _values[hash] = value;
+		while (true) {
+			Object testKey = keys[hash];
 
-        _size++;
+			if (testKey == null || testKey == DELETED) {
+				keys[hash] = key;
+				_values[hash] = value;
 
-        if (keys.length <= 4 * _size)
-          resize(4 * keys.length);
+				_size++;
 
-        return NULL;
-      }
-      else if (key != testKey && ! key.equals(testKey)) {
-        hash = (hash + 1) % mask;
+				if (keys.length <= 4 * _size)
+					resize(4 * keys.length);
 
-        continue;
-      }
-      else {
-        int old = _values[hash];
+				return NULL;
+			} else if (key != testKey && !key.equals(testKey)) {
+				hash = (hash + 1) % mask;
 
-        _values[hash] = value;
+				continue;
+			} else {
+				int old = _values[hash];
 
-        return old;
-      }
-    }
-  }
+				_values[hash] = value;
 
-  /**
-   * Deletes the entry.  Returns true if successful.
-   */
-  public int remove(Object key)
-  {
-    int mask = _mask;
-    int hash = key.hashCode() % mask & mask;
+				return old;
+			}
+		}
+	}
 
-    while (true) {
-      Object mapKey = _keys[hash];
+	/**
+	 * Deletes the entry. Returns true if successful.
+	 */
+	public int remove(Object key) {
+		int mask = _mask;
+		int hash = key.hashCode() % mask & mask;
 
-      if (mapKey == null)
-        return NULL;
-      else if (mapKey == key) {
-        _keys[hash] = DELETED;
+		while (true) {
+			Object mapKey = _keys[hash];
 
-        _size--;
+			if (mapKey == null)
+				return NULL;
+			else if (mapKey == key) {
+				_keys[hash] = DELETED;
 
-        return _values[hash];
-      }
+				_size--;
 
-      hash = (hash + 1) % mask;
-    }
-  }
+				return _values[hash];
+			}
 
-  public String toString()
-  {
-    StringBuffer sbuf = new StringBuffer();
+			hash = (hash + 1) % mask;
+		}
+	}
 
-    sbuf.append("IntMap[");
-    boolean isFirst = true;
+	public String toString() {
+		StringBuffer sbuf = new StringBuffer();
 
-    for (int i = 0; i <= _mask; i++) {
-      if (_keys[i] != null && _keys[i] != DELETED) {
-        if (! isFirst)
-          sbuf.append(", ");
+		sbuf.append("IntMap[");
+		boolean isFirst = true;
 
-        isFirst = false;
-        sbuf.append(_keys[i]);
-        sbuf.append(":");
-        sbuf.append(_values[i]);
-      }
-    }
-    sbuf.append("]");
+		for (int i = 0; i <= _mask; i++) {
+			if (_keys[i] != null && _keys[i] != DELETED) {
+				if (!isFirst)
+					sbuf.append(", ");
 
-    return sbuf.toString();
-  }
+				isFirst = false;
+				sbuf.append(_keys[i]);
+				sbuf.append(":");
+				sbuf.append(_values[i]);
+			}
+		}
+		sbuf.append("]");
+
+		return sbuf.toString();
+	}
 }

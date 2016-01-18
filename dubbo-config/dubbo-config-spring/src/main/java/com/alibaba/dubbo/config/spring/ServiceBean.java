@@ -47,212 +47,224 @@ import com.alibaba.dubbo.config.spring.extension.SpringExtensionFactory;
  * @author william.liangf
  * @export
  */
-public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean, DisposableBean, ApplicationContextAware, ApplicationListener, BeanNameAware {
+public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean, DisposableBean,
+		ApplicationContextAware, ApplicationListener, BeanNameAware {
 
 	private static final long serialVersionUID = 213195494150089726L;
 
-    private static transient ApplicationContext SPRING_CONTEXT;
-    
+	private static transient ApplicationContext SPRING_CONTEXT;
+
 	private transient ApplicationContext applicationContext;
 
-    private transient String beanName;
+	private transient String beanName;
 
-    private transient boolean supportedApplicationListener;
-    
+	private transient boolean supportedApplicationListener;
+
 	public ServiceBean() {
-        super();
-    }
+		super();
+	}
 
-    public ServiceBean(Service service) {
-        super(service);
-    }
+	public ServiceBean(Service service) {
+		super(service);
+	}
 
-    public static ApplicationContext getSpringContext() {
-	    return SPRING_CONTEXT;
+	public static ApplicationContext getSpringContext() {
+		return SPRING_CONTEXT;
 	}
 
 	public void setApplicationContext(ApplicationContext applicationContext) {
 		this.applicationContext = applicationContext;
 		SpringExtensionFactory.addApplicationContext(applicationContext);
 		if (applicationContext != null) {
-		    SPRING_CONTEXT = applicationContext;
-		    try {
-	            Method method = applicationContext.getClass().getMethod("addApplicationListener", new Class<?>[]{ApplicationListener.class}); // 兼容Spring2.0.1
-	            method.invoke(applicationContext, new Object[] {this});
-	            supportedApplicationListener = true;
-	        } catch (Throwable t) {
-                if (applicationContext instanceof AbstractApplicationContext) {
-    	            try {
-    	                Method method = AbstractApplicationContext.class.getDeclaredMethod("addListener", new Class<?>[]{ApplicationListener.class}); // 兼容Spring2.0.1
-                        if (! method.isAccessible()) {
-                            method.setAccessible(true);
-                        }
-    	                method.invoke(applicationContext, new Object[] {this});
-                        supportedApplicationListener = true;
-    	            } catch (Throwable t2) {
-    	            }
-	            }
-	        }
+			SPRING_CONTEXT = applicationContext;
+			try {
+				Method method = applicationContext.getClass().getMethod("addApplicationListener",
+						new Class<?>[] { ApplicationListener.class }); // 兼容Spring2.0.1
+				method.invoke(applicationContext, new Object[] { this });
+				supportedApplicationListener = true;
+			} catch (Throwable t) {
+				if (applicationContext instanceof AbstractApplicationContext) {
+					try {
+						Method method = AbstractApplicationContext.class.getDeclaredMethod("addListener",
+								new Class<?>[] { ApplicationListener.class }); // 兼容Spring2.0.1
+						if (!method.isAccessible()) {
+							method.setAccessible(true);
+						}
+						method.invoke(applicationContext, new Object[] { this });
+						supportedApplicationListener = true;
+					} catch (Throwable t2) {
+					}
+				}
+			}
 		}
 	}
 
-    public void setBeanName(String name) {
-        this.beanName = name;
-    }
+	public void setBeanName(String name) {
+		this.beanName = name;
+	}
 
-    public void onApplicationEvent(ApplicationEvent event) {
-        if (ContextRefreshedEvent.class.getName().equals(event.getClass().getName())) {
-        	if (isDelay() && ! isExported() && ! isUnexported()) {
-                if (logger.isInfoEnabled()) {
-                    logger.info("The service ready on spring started. service: " + getInterface());
-                }
-                export();
-            }
-        }
-    }
-    
-    private boolean isDelay() {
-        Integer delay = getDelay();
-        ProviderConfig provider = getProvider();
-        if (delay == null && provider != null) {
-            delay = provider.getDelay();
-        }
-        return supportedApplicationListener && (delay == null || delay.intValue() == -1);
-    }
+	public void onApplicationEvent(ApplicationEvent event) {
+		if (ContextRefreshedEvent.class.getName().equals(event.getClass().getName())) {
+			if (isDelay() && !isExported() && !isUnexported()) {
+				if (logger.isInfoEnabled()) {
+					logger.info("The service ready on spring started. service: " + getInterface());
+				}
+				export();
+			}
+		}
+	}
 
-    @SuppressWarnings({ "unchecked", "deprecation" })
+	private boolean isDelay() {
+		Integer delay = getDelay();
+		ProviderConfig provider = getProvider();
+		if (delay == null && provider != null) {
+			delay = provider.getDelay();
+		}
+		return supportedApplicationListener && (delay == null || delay.intValue() == -1);
+	}
+
+	@SuppressWarnings({ "unchecked", "deprecation" })
 	public void afterPropertiesSet() throws Exception {
-        if (getProvider() == null) {
-            Map<String, ProviderConfig> providerConfigMap = applicationContext == null ? null  : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ProviderConfig.class, false, false);
-            if (providerConfigMap != null && providerConfigMap.size() > 0) {
-                Map<String, ProtocolConfig> protocolConfigMap = applicationContext == null ? null  : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ProtocolConfig.class, false, false);
-                if ((protocolConfigMap == null || protocolConfigMap.size() == 0)
-                        && providerConfigMap.size() > 1) { // 兼容旧版本
-                    List<ProviderConfig> providerConfigs = new ArrayList<ProviderConfig>();
-                    for (ProviderConfig config : providerConfigMap.values()) {
-                        if (config.isDefault() != null && config.isDefault().booleanValue()) {
-                            providerConfigs.add(config);
-                        }
-                    }
-                    if (providerConfigs.size() > 0) {
-                        setProviders(providerConfigs);
-                    }
-                } else {
-                    ProviderConfig providerConfig = null;
-                    for (ProviderConfig config : providerConfigMap.values()) {
-                        if (config.isDefault() == null || config.isDefault().booleanValue()) {
-                            if (providerConfig != null) {
-                                throw new IllegalStateException("Duplicate provider configs: " + providerConfig + " and " + config);
-                            }
-                            providerConfig = config;
-                        }
-                    }
-                    if (providerConfig != null) {
-                        setProvider(providerConfig);
-                    }
-                }
-            }
-        }
-        if (getApplication() == null
-                && (getProvider() == null || getProvider().getApplication() == null)) {
-            Map<String, ApplicationConfig> applicationConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ApplicationConfig.class, false, false);
-            if (applicationConfigMap != null && applicationConfigMap.size() > 0) {
-                ApplicationConfig applicationConfig = null;
-                for (ApplicationConfig config : applicationConfigMap.values()) {
-                    if (config.isDefault() == null || config.isDefault().booleanValue()) {
-                        if (applicationConfig != null) {
-                            throw new IllegalStateException("Duplicate application configs: " + applicationConfig + " and " + config);
-                        }
-                        applicationConfig = config;
-                    }
-                }
-                if (applicationConfig != null) {
-                    setApplication(applicationConfig);
-                }
-            }
-        }
-        if (getModule() == null
-                && (getProvider() == null || getProvider().getModule() == null)) {
-            Map<String, ModuleConfig> moduleConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ModuleConfig.class, false, false);
-            if (moduleConfigMap != null && moduleConfigMap.size() > 0) {
-                ModuleConfig moduleConfig = null;
-                for (ModuleConfig config : moduleConfigMap.values()) {
-                    if (config.isDefault() == null || config.isDefault().booleanValue()) {
-                        if (moduleConfig != null) {
-                            throw new IllegalStateException("Duplicate module configs: " + moduleConfig + " and " + config);
-                        }
-                        moduleConfig = config;
-                    }
-                }
-                if (moduleConfig != null) {
-                    setModule(moduleConfig);
-                }
-            }
-        }
-        if ((getRegistries() == null || getRegistries().size() == 0)
-                && (getProvider() == null || getProvider().getRegistries() == null || getProvider().getRegistries().size() == 0)
-                && (getApplication() == null || getApplication().getRegistries() == null || getApplication().getRegistries().size() == 0)) {
-            Map<String, RegistryConfig> registryConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, RegistryConfig.class, false, false);
-            if (registryConfigMap != null && registryConfigMap.size() > 0) {
-                List<RegistryConfig> registryConfigs = new ArrayList<RegistryConfig>();
-                for (RegistryConfig config : registryConfigMap.values()) {
-                    if (config.isDefault() == null || config.isDefault().booleanValue()) {
-                        registryConfigs.add(config);
-                    }
-                }
-                if (registryConfigs != null && registryConfigs.size() > 0) {
-                    super.setRegistries(registryConfigs);
-                }
-            }
-        }
-        if (getMonitor() == null
-                && (getProvider() == null || getProvider().getMonitor() == null)
-                && (getApplication() == null || getApplication().getMonitor() == null)) {
-            Map<String, MonitorConfig> monitorConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, MonitorConfig.class, false, false);
-            if (monitorConfigMap != null && monitorConfigMap.size() > 0) {
-                MonitorConfig monitorConfig = null;
-                for (MonitorConfig config : monitorConfigMap.values()) {
-                    if (config.isDefault() == null || config.isDefault().booleanValue()) {
-                        if (monitorConfig != null) {
-                            throw new IllegalStateException("Duplicate monitor configs: " + monitorConfig + " and " + config);
-                        }
-                        monitorConfig = config;
-                    }
-                }
-                if (monitorConfig != null) {
-                    setMonitor(monitorConfig);
-                }
-            }
-        }
-        if ((getProtocols() == null || getProtocols().size() == 0)
-                && (getProvider() == null || getProvider().getProtocols() == null || getProvider().getProtocols().size() == 0)) {
-            Map<String, ProtocolConfig> protocolConfigMap = applicationContext == null ? null  : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ProtocolConfig.class, false, false);
-            if (protocolConfigMap != null && protocolConfigMap.size() > 0) {
-                List<ProtocolConfig> protocolConfigs = new ArrayList<ProtocolConfig>();
-                for (ProtocolConfig config : protocolConfigMap.values()) {
-                    if (config.isDefault() == null || config.isDefault().booleanValue()) {
-                        protocolConfigs.add(config);
-                    }
-                }
-                if (protocolConfigs != null && protocolConfigs.size() > 0) {
-                    super.setProtocols(protocolConfigs);
-                }
-            }
-        }
-        if (getPath() == null || getPath().length() == 0) {
-            if (beanName != null && beanName.length() > 0 
-                    && getInterface() != null && getInterface().length() > 0
-                    && beanName.startsWith(getInterface())) {
-                setPath(beanName);
-            }
-        }
-        if (! isDelay()) {
-            export();
-        }
-    }
+		if (getProvider() == null) {
+			Map<String, ProviderConfig> providerConfigMap = applicationContext == null ? null : BeanFactoryUtils
+					.beansOfTypeIncludingAncestors(applicationContext, ProviderConfig.class, false, false);
+			if (providerConfigMap != null && providerConfigMap.size() > 0) {
+				Map<String, ProtocolConfig> protocolConfigMap = applicationContext == null ? null : BeanFactoryUtils
+						.beansOfTypeIncludingAncestors(applicationContext, ProtocolConfig.class, false, false);
+				if ((protocolConfigMap == null || protocolConfigMap.size() == 0) && providerConfigMap.size() > 1) { // 兼容旧版本
+					List<ProviderConfig> providerConfigs = new ArrayList<ProviderConfig>();
+					for (ProviderConfig config : providerConfigMap.values()) {
+						if (config.isDefault() != null && config.isDefault().booleanValue()) {
+							providerConfigs.add(config);
+						}
+					}
+					if (providerConfigs.size() > 0) {
+						setProviders(providerConfigs);
+					}
+				} else {
+					ProviderConfig providerConfig = null;
+					for (ProviderConfig config : providerConfigMap.values()) {
+						if (config.isDefault() == null || config.isDefault().booleanValue()) {
+							if (providerConfig != null) {
+								throw new IllegalStateException("Duplicate provider configs: " + providerConfig
+										+ " and " + config);
+							}
+							providerConfig = config;
+						}
+					}
+					if (providerConfig != null) {
+						setProvider(providerConfig);
+					}
+				}
+			}
+		}
+		if (getApplication() == null && (getProvider() == null || getProvider().getApplication() == null)) {
+			Map<String, ApplicationConfig> applicationConfigMap = applicationContext == null ? null : BeanFactoryUtils
+					.beansOfTypeIncludingAncestors(applicationContext, ApplicationConfig.class, false, false);
+			if (applicationConfigMap != null && applicationConfigMap.size() > 0) {
+				ApplicationConfig applicationConfig = null;
+				for (ApplicationConfig config : applicationConfigMap.values()) {
+					if (config.isDefault() == null || config.isDefault().booleanValue()) {
+						if (applicationConfig != null) {
+							throw new IllegalStateException("Duplicate application configs: " + applicationConfig
+									+ " and " + config);
+						}
+						applicationConfig = config;
+					}
+				}
+				if (applicationConfig != null) {
+					setApplication(applicationConfig);
+				}
+			}
+		}
+		if (getModule() == null && (getProvider() == null || getProvider().getModule() == null)) {
+			Map<String, ModuleConfig> moduleConfigMap = applicationContext == null ? null : BeanFactoryUtils
+					.beansOfTypeIncludingAncestors(applicationContext, ModuleConfig.class, false, false);
+			if (moduleConfigMap != null && moduleConfigMap.size() > 0) {
+				ModuleConfig moduleConfig = null;
+				for (ModuleConfig config : moduleConfigMap.values()) {
+					if (config.isDefault() == null || config.isDefault().booleanValue()) {
+						if (moduleConfig != null) {
+							throw new IllegalStateException("Duplicate module configs: " + moduleConfig + " and "
+									+ config);
+						}
+						moduleConfig = config;
+					}
+				}
+				if (moduleConfig != null) {
+					setModule(moduleConfig);
+				}
+			}
+		}
+		if ((getRegistries() == null || getRegistries().size() == 0)
+				&& (getProvider() == null || getProvider().getRegistries() == null || getProvider().getRegistries()
+						.size() == 0)
+				&& (getApplication() == null || getApplication().getRegistries() == null || getApplication()
+						.getRegistries().size() == 0)) {
+			Map<String, RegistryConfig> registryConfigMap = applicationContext == null ? null : BeanFactoryUtils
+					.beansOfTypeIncludingAncestors(applicationContext, RegistryConfig.class, false, false);
+			if (registryConfigMap != null && registryConfigMap.size() > 0) {
+				List<RegistryConfig> registryConfigs = new ArrayList<RegistryConfig>();
+				for (RegistryConfig config : registryConfigMap.values()) {
+					if (config.isDefault() == null || config.isDefault().booleanValue()) {
+						registryConfigs.add(config);
+					}
+				}
+				if (registryConfigs != null && registryConfigs.size() > 0) {
+					super.setRegistries(registryConfigs);
+				}
+			}
+		}
+		if (getMonitor() == null && (getProvider() == null || getProvider().getMonitor() == null)
+				&& (getApplication() == null || getApplication().getMonitor() == null)) {
+			Map<String, MonitorConfig> monitorConfigMap = applicationContext == null ? null : BeanFactoryUtils
+					.beansOfTypeIncludingAncestors(applicationContext, MonitorConfig.class, false, false);
+			if (monitorConfigMap != null && monitorConfigMap.size() > 0) {
+				MonitorConfig monitorConfig = null;
+				for (MonitorConfig config : monitorConfigMap.values()) {
+					if (config.isDefault() == null || config.isDefault().booleanValue()) {
+						if (monitorConfig != null) {
+							throw new IllegalStateException("Duplicate monitor configs: " + monitorConfig + " and "
+									+ config);
+						}
+						monitorConfig = config;
+					}
+				}
+				if (monitorConfig != null) {
+					setMonitor(monitorConfig);
+				}
+			}
+		}
+		if ((getProtocols() == null || getProtocols().size() == 0)
+				&& (getProvider() == null || getProvider().getProtocols() == null || getProvider().getProtocols()
+						.size() == 0)) {
+			Map<String, ProtocolConfig> protocolConfigMap = applicationContext == null ? null : BeanFactoryUtils
+					.beansOfTypeIncludingAncestors(applicationContext, ProtocolConfig.class, false, false);
+			if (protocolConfigMap != null && protocolConfigMap.size() > 0) {
+				List<ProtocolConfig> protocolConfigs = new ArrayList<ProtocolConfig>();
+				for (ProtocolConfig config : protocolConfigMap.values()) {
+					if (config.isDefault() == null || config.isDefault().booleanValue()) {
+						protocolConfigs.add(config);
+					}
+				}
+				if (protocolConfigs != null && protocolConfigs.size() > 0) {
+					super.setProtocols(protocolConfigs);
+				}
+			}
+		}
+		if (getPath() == null || getPath().length() == 0) {
+			if (beanName != null && beanName.length() > 0 && getInterface() != null && getInterface().length() > 0
+					&& beanName.startsWith(getInterface())) {
+				setPath(beanName);
+			}
+		}
+		if (!isDelay()) {
+			export();
+		}
+	}
 
-    public void destroy() throws Exception {
-        unexport();
-    }
+	public void destroy() throws Exception {
+		unexport();
+	}
 
 }

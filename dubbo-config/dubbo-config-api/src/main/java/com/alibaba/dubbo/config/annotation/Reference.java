@@ -29,87 +29,87 @@ import java.lang.annotation.Target;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD, ElementType.METHOD})
+@Target({ ElementType.FIELD, ElementType.METHOD })
 public @interface Reference {
 
-    Class<?> interfaceClass() default void.class;
+	Class<?> interfaceClass() default void.class;
 
-    String interfaceName() default "";
+	String interfaceName() default "";
 
-    String version() default "";
+	String version() default "";
 
-    String group() default "";
+	String group() default "";
 
-    String url() default "";
+	String url() default "";
 
-    String client() default "";
+	String client() default "";
 
-    boolean generic() default false;
+	boolean generic() default false;
 
-    boolean injvm() default false;
+	boolean injvm() default false;
 
-    boolean check() default false;
+	boolean check() default false;
 
-    boolean init() default false;
+	boolean init() default false;
 
-    boolean lazy() default false;
+	boolean lazy() default false;
 
-    boolean stubevent() default false;
+	boolean stubevent() default false;
 
-    String reconnect() default "";
+	String reconnect() default "";
 
-    boolean sticky() default false;
+	boolean sticky() default false;
 
-    String proxy() default "";
+	String proxy() default "";
 
-    String stub() default "";
+	String stub() default "";
 
-    String cluster() default "";
+	String cluster() default "";
 
-    int connections() default 0;
+	int connections() default 0;
 
-    int callbacks() default 0;
+	int callbacks() default 0;
 
-    String onconnect() default "";
+	String onconnect() default "";
 
-    String ondisconnect() default "";
+	String ondisconnect() default "";
 
-    String owner() default "";
+	String owner() default "";
 
-    String layer() default "";
+	String layer() default "";
 
-    int retries() default 0;
+	int retries() default 0;
 
-    String loadbalance() default "";
+	String loadbalance() default "";
 
-    boolean async() default false;
+	boolean async() default false;
 
-    int actives() default 0;
+	int actives() default 0;
 
-    boolean sent() default false;
+	boolean sent() default false;
 
-    String mock() default "";
+	String mock() default "";
 
-    String validation() default "";
+	String validation() default "";
 
-    int timeout() default 0;
+	int timeout() default 0;
 
-    String cache() default "";
+	String cache() default "";
 
-    String[] filter() default {};
+	String[] filter() default {};
 
-    String[] listener() default {};
+	String[] listener() default {};
 
-    String[] parameters() default {};
+	String[] parameters() default {};
 
-    String application() default "";
+	String application() default "";
 
-    String module() default "";
+	String module() default "";
 
-    String consumer() default "";
+	String consumer() default "";
 
-    String monitor() default "";
+	String monitor() default "";
 
-    String[] registry() default {};
+	String[] registry() default {};
 
 }

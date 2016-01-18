@@ -18,9 +18,9 @@ package com.alibaba.dubbo.common.json;
 public class MyException extends Exception {
 
 	private static final long serialVersionUID = 2905707783883694687L;
-	
+
 	private String code;
-	
+
 	public MyException() {
 	}
 

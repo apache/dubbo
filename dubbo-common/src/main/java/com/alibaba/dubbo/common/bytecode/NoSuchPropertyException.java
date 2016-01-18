@@ -21,17 +21,14 @@ package com.alibaba.dubbo.common.bytecode;
  * @author qian.lei
  */
 
-public class NoSuchPropertyException extends RuntimeException
-{
+public class NoSuchPropertyException extends RuntimeException {
 	private static final long serialVersionUID = -2725364246023268766L;
 
-	public NoSuchPropertyException()
-	{
+	public NoSuchPropertyException() {
 		super();
 	}
 
-	public NoSuchPropertyException(String msg)
-	{
+	public NoSuchPropertyException(String msg) {
 		super(msg);
 	}
 }

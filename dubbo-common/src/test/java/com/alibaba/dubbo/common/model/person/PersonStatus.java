@@ -19,6 +19,5 @@ package com.alibaba.dubbo.common.model.person;
  * @author tony.chenl
  */
 public enum PersonStatus {
-    ENABLED,
-    DISABLED
+	ENABLED, DISABLED
 }
