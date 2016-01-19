@@ -23,6 +23,7 @@ import java.lang.reflect.Type;
 
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.serialize.Cleanable;
 import com.alibaba.dubbo.common.serialize.ObjectInput;
 import com.alibaba.dubbo.common.utils.Assert;
 import com.alibaba.dubbo.common.utils.StringUtils;
@@ -73,34 +74,41 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
         ObjectInput in = CodecSupport.getSerialization(channel.getUrl(), serializationType)
             .deserialize(channel.getUrl(), input);
 
-        byte flag = in.readByte();
-        switch (flag) {
-            case DubboCodec.RESPONSE_NULL_VALUE:
-                break;
-            case DubboCodec.RESPONSE_VALUE:
-                try {
-                    Type[] returnType = RpcUtils.getReturnTypes(invocation);
-                    setValue(returnType == null || returnType.length == 0 ? in.readObject() :
-                                 (returnType.length == 1 ? in.readObject((Class<?>) returnType[0])
-                                     : in.readObject((Class<?>) returnType[0], returnType[1])));
-                } catch (ClassNotFoundException e) {
-                    throw new IOException(StringUtils.toString("Read response data failed.", e));
-                }
-                break;
-            case DubboCodec.RESPONSE_WITH_EXCEPTION:
-                try {
-                    Object obj = in.readObject();
-                    if (obj instanceof Throwable == false)
-                        throw new IOException("Response data error, expect Throwable, but get " + obj);
-                    setException((Throwable) obj);
-                } catch (ClassNotFoundException e) {
-                    throw new IOException(StringUtils.toString("Read response data failed.", e));
-                }
-                break;
-            default:
-                throw new IOException("Unknown result flag, expect '0' '1' '2', get " + flag);
+        try {
+            byte flag = in.readByte();
+            switch (flag) {
+                case DubboCodec.RESPONSE_NULL_VALUE:
+                    break;
+                case DubboCodec.RESPONSE_VALUE:
+                    try {
+                        Type[] returnType = RpcUtils.getReturnTypes(invocation);
+                        setValue(returnType == null || returnType.length == 0 ? in.readObject() :
+                                     (returnType.length == 1 ? in.readObject((Class<?>) returnType[0])
+                                         : in.readObject((Class<?>) returnType[0], returnType[1])));
+                    } catch (ClassNotFoundException e) {
+                        throw new IOException(StringUtils.toString("Read response data failed.", e));
+                    }
+                    break;
+                case DubboCodec.RESPONSE_WITH_EXCEPTION:
+                    try {
+                        Object obj = in.readObject();
+                        if (obj instanceof Throwable == false)
+                            throw new IOException("Response data error, expect Throwable, but get " + obj);
+                        setException((Throwable) obj);
+                    } catch (ClassNotFoundException e) {
+                        throw new IOException(StringUtils.toString("Read response data failed.", e));
+                    }
+                    break;
+                default:
+                    throw new IOException("Unknown result flag, expect '0' '1' '2', get " + flag);
+            }
+            return this;
+        } finally {
+            // modified by lishen
+            if (in instanceof Cleanable) {
+                ((Cleanable) in).cleanup();
+            }
         }
-        return this;
     }
 
     public void decode() throws Exception {

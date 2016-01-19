@@ -1,12 +1,12 @@
 <!--
  - Copyright 1999-2011 Alibaba Group.
- -  
+ -
  - Licensed under the Apache License, Version 2.0 (the "License");
  - you may not use this file except in compliance with the License.
  - You may obtain a copy of the License at
- -  
+ -
  -      http://www.apache.org/licenses/LICENSE-2.0
- -  
+ -
  - Unless required by applicable law or agreed to in writing, software
  - distributed under the License is distributed on an "AS IS" BASIS,
  - WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,7 +19,7 @@
 	<parent>
 		<groupId>com.alibaba</groupId>
 		<artifactId>dubbo-config</artifactId>
-		<version>2.5.4-SNAPSHOT</version>
+		<version>2.8.4</version>
 	</parent>
 	<artifactId>dubbo-config-spring</artifactId>
 	<packaging>jar</packaging>
@@ -36,7 +36,11 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
-			<artifactId>spring</artifactId>
+			<artifactId>spring-beans</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.alibaba</groupId>
@@ -64,9 +68,9 @@
 		</dependency>
 		<dependency>
 			<groupId>com.alibaba</groupId>
-            <artifactId>dubbo-rpc-injvm</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
+			<artifactId>dubbo-rpc-injvm</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>dubbo-remoting-netty</artifactId>
@@ -86,30 +90,15 @@
 	</dependencies>
 	<build>
 		<plugins>
-			<!-- upload xsd file command line
-			mvn org.codehaus.mojo:wagon-maven-plugin:1.0-beta-3:upload-single -Dwagon.fromFile=src/main/resources/META-INF/dubbo.xsd -Dwagon.url=dav:http://code.alibabatech.com/schema/dubbo/ -Dwagon.serverId=opensesame.releases.account
-			-->
-			<!--
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>wagon-maven-plugin</artifactId>
-				<version>1.0-beta-3</version>
-				<executions>
-					<execution>
-						<id>upload-schema</id>
-						<phase>deploy</phase>
-						<goals>
-							<goal>upload-single</goal>
-						</goals>
-						<configuration>
-							<fromFile>${basedir}/src/main/resources/META-INF/dubbo.xsd</fromFile>
-							<url>dav:http://code.alibabatech.com/schema/dubbo/</url>
-							<serverId>opensesame.releases.account</serverId>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			-->
+			<!-- upload xsd file command line mvn org.codehaus.mojo:wagon-maven-plugin:1.0-beta-3:upload-single 
+				-Dwagon.fromFile=src/main/resources/META-INF/dubbo.xsd -Dwagon.url=dav:http://code.alibabatech.com/schema/dubbo/ 
+				-Dwagon.serverId=opensesame.releases.account -->
+			<!-- <plugin> <groupId>org.codehaus.mojo</groupId> <artifactId>wagon-maven-plugin</artifactId> 
+				<version>1.0-beta-3</version> <executions> <execution> <id>upload-schema</id> 
+				<phase>deploy</phase> <goals> <goal>upload-single</goal> </goals> <configuration> 
+				<fromFile>${basedir}/src/main/resources/META-INF/dubbo.xsd</fromFile> <url>dav:http://code.alibabatech.com/schema/dubbo/</url> 
+				<serverId>opensesame.releases.account</serverId> </configuration> </execution> 
+				</executions> </plugin> -->
 		</plugins>
 	</build>
 </project>

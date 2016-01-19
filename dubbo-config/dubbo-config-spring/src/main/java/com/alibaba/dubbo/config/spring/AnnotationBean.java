@@ -24,7 +24,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -134,15 +136,19 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
         if (! isMatchPackage(bean)) {
             return bean;
         }
-        Service service = bean.getClass().getAnnotation(Service.class);
+        Class<?> clazz = bean.getClass();
+        if(isProxyBean(bean)){
+            clazz = AopUtils.getTargetClass(bean);
+        }
+        Service service = clazz.getAnnotation(Service.class);
         if (service != null) {
             ServiceBean<Object> serviceConfig = new ServiceBean<Object>(service);
             if (void.class.equals(service.interfaceClass())
                     && "".equals(service.interfaceName())) {
-                if (bean.getClass().getInterfaces().length > 0) {
-                    serviceConfig.setInterface(bean.getClass().getInterfaces()[0]);
+                if (clazz.getInterfaces().length > 0) {
+                    serviceConfig.setInterface(clazz.getInterfaces()[0]);
                 } else {
-                    throw new IllegalStateException("Failed to export remote service class " + bean.getClass().getName() + ", cause: The @Service undefined interfaceClass or interfaceName, and the service class unimplemented any interfaces.");
+                    throw new IllegalStateException("Failed to export remote service class " + clazz.getName() + ", cause: The @Service undefined interfaceClass or interfaceName, and the service class unimplemented any interfaces.");
                 }
             }
             if (applicationContext != null) {
@@ -175,7 +181,8 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
                 }
                 if (service.protocol() != null && service.protocol().length > 0) {
                     List<ProtocolConfig> protocolConfigs = new ArrayList<ProtocolConfig>();
-                    for (String protocolId : service.registry()) {
+                    // modified by lishen; fix dubbo's bug
+                    for (String protocolId : service.protocol()) {
                         if (protocolId != null && protocolId.length() > 0) {
                             protocolConfigs.add((ProtocolConfig)applicationContext.getBean(protocolId, ProtocolConfig.class));
                         }
@@ -202,7 +209,11 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
         if (! isMatchPackage(bean)) {
             return bean;
         }
-        Method[] methods = bean.getClass().getMethods();
+        Class<?> clazz = bean.getClass();
+        if(isProxyBean(bean)){
+            clazz = AopUtils.getTargetClass(bean);
+        }
+        Method[] methods = clazz.getMethods();
         for (Method method : methods) {
             String name = method.getName();
             if (name.length() > 3 && name.startsWith("set")
@@ -214,15 +225,17 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
                 	if (reference != null) {
 	                	Object value = refer(reference, method.getParameterTypes()[0]);
 	                	if (value != null) {
-	                		method.invoke(bean, new Object[] {  });
+	                		method.invoke(bean, new Object[] { value });
 	                	}
                 	}
-                } catch (Throwable e) {
-                    logger.error("Failed to init remote service reference at method " + name + " in class " + bean.getClass().getName() + ", cause: " + e.getMessage(), e);
+                } catch (Exception e) {
+                    // modified by lishen
+                    throw new BeanInitializationException("Failed to init remote service reference at method " + name + " in class " + bean.getClass().getName(), e);
+//                    logger.error("Failed to init remote service reference at method " + name + " in class " + bean.getClass().getName() + ", cause: " + e.getMessage(), e);
                 }
             }
         }
-        Field[] fields = bean.getClass().getDeclaredFields();
+        Field[] fields = clazz.getDeclaredFields();
         for (Field field : fields) {
             try {
                 if (! field.isAccessible()) {
@@ -235,8 +248,10 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
 	                	field.set(bean, value);
 	                }
             	}
-            } catch (Throwable e) {
-            	logger.error("Failed to init remote service reference at filed " + field.getName() + " in class " + bean.getClass().getName() + ", cause: " + e.getMessage(), e);
+            } catch (Exception e) {
+                // modified by lishen
+                throw new BeanInitializationException("Failed to init remote service reference at filed " + field.getName() + " in class " + bean.getClass().getName(), e);
+//            	logger.error("Failed to init remote service reference at filed " + field.getName() + " in class " + bean.getClass().getName() + ", cause: " + e.getMessage(), e);
             }
         }
         return bean;
@@ -306,13 +321,21 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
         if (annotationPackages == null || annotationPackages.length == 0) {
             return true;
         }
-        String beanClassName = bean.getClass().getName();
+        Class clazz = bean.getClass();
+        if(isProxyBean(bean)){
+            clazz = AopUtils.getTargetClass(bean);
+        }
+        String beanClassName = clazz.getName();
         for (String pkg : annotationPackages) {
             if (beanClassName.startsWith(pkg)) {
                 return true;
             }
         }
         return false;
+    }
+
+    private boolean isProxyBean(Object bean) {
+        return AopUtils.isAopProxy(bean);
     }
 
 }

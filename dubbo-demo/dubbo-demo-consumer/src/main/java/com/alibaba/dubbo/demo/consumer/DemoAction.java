@@ -15,29 +15,75 @@
  */
 package com.alibaba.dubbo.demo.consumer;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 
-import com.alibaba.dubbo.demo.DemoService;
+import com.alibaba.dubbo.demo.bid.*;
+import com.alibaba.dubbo.demo.user.User;
+import com.alibaba.dubbo.demo.user.facade.AnotherUserRestService;
+import com.alibaba.dubbo.rpc.RpcContext;
 
 public class DemoAction {
-    
-    private DemoService demoService;
 
-    public void setDemoService(DemoService demoService) {
-        this.demoService = demoService;
+    private BidService bidService;
+
+    private AnotherUserRestService anotherUserRestService;
+
+    public void setBidService(BidService bidService) {
+        this.bidService = bidService;
     }
 
-	public void start() throws Exception {
-        for (int i = 0; i < Integer.MAX_VALUE; i ++) {
-            try {
-            	String hello = demoService.sayHello("world" + i);
-                System.out.println("[" + new SimpleDateFormat("HH:mm:ss").format(new Date()) + "] " + hello);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            Thread.sleep(2000);
+    public void setAnotherUserRestService(AnotherUserRestService anotherUserRestService) {
+        this.anotherUserRestService = anotherUserRestService;
+    }
+
+    public void start() throws Exception {
+        BidRequest request = new BidRequest();
+
+        Impression imp = new Impression();
+        imp.setBidFloor(1.1);
+        imp.setId("abc");
+        List<Impression> imps = new ArrayList<Impression>(1);
+        imps.add(imp);
+        request.setImpressions(imps);
+
+        Geo geo = new Geo();
+        geo.setCity("beijing");
+        geo.setCountry("china");
+        geo.setLat(100.1f);
+        geo.setLon(100.1f);
+
+        Device device = new Device();
+        device.setMake("apple");
+        device.setOs("ios");
+        device.setVersion("7.0");
+        device.setLang("zh_CN");
+        device.setModel("iphone");
+        device.setGeo(geo);
+        request.setDevice(device);
+
+//        long start = System.currentTimeMillis();
+
+//        for (int i = 0; i < 10000; i ++) {
+//        System.out.println(bidService.bid(request).getId());
+        System.out.println("SUCCESS: got bid response id: " + bidService.bid(request).getId());
+//        }
+
+//        System.out.println(">>>>> Total time consumed:" + (System.currentTimeMillis() - start));
+
+        try {
+            bidService.throwNPE();
+            System.out.println("ERROR: no exception found");
+        } catch (NullPointerException e) {
+            System.out.println("SUCCESS: caught exception " + e.getClass());
         }
-	}
+
+        User user = new User(1L, "larrypage");
+        System.out.println("SUCCESS: registered user with id " + anotherUserRestService.registerUser(user).getId());
+
+        RpcContext.getContext().setAttachment("clientName", "demo");
+        RpcContext.getContext().setAttachment("clientImpl", "dubbox");
+        System.out.println("SUCCESS: got user " + anotherUserRestService.getUser(1L));
+    }
 
 }

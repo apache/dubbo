@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.alibaba</groupId>
+  <artifactId>dubbo-demo-lite-archetype</artifactId>
+  <version>2.8.4</version>
+  <packaging>maven-archetype</packaging>
+
+  <name>dubbo-demo-lite-archetype</name>
+
+  <build>
+    <extensions>
+      <extension>
+        <groupId>org.apache.maven.archetype</groupId>
+        <artifactId>archetype-packaging</artifactId>
+        <version>2.2</version>
+      </extension>
+    </extensions>
+
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-archetype-plugin</artifactId>
+          <version>2.2</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+  <description>The demo lite module of dubbo project</description>
+
+  <url>http://code.alibabatech.com/wiki/display/dubbo/dubbo-demo-lite</url>
+
+  <developers>
+    <developer>
+      <id>shawn.qianx</id>
+      <name>QianXiao(Shawn)</name>
+      <email>shawn.qianx (AT) alibaba-inc.com</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+      <timezone>+8</timezone>
+    </developer>
+    <developer>
+      <id>william.liangf</id>
+      <name>LiangFei(William)</name>
+      <email>william.liangf (AT) alibaba-inc.com</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+      <timezone>+8</timezone>
+    </developer>
+    <developer>
+      <id>ding.lid</id>
+      <name>LiDing(Jerry)</name>
+      <email>ding.lid (AT) alibaba-inc.com</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+      <timezone>+8</timezone>
+    </developer>
+    <developer>
+      <id>chao.liuc</id>
+      <name>LiuChao(Charles)</name>
+      <email>chao.liuc (AT) alibaba-inc.com</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+      <timezone>+8</timezone>
+    </developer>
+    <developer>
+      <id>haoming.liuhm</id>
+      <name>LiuHaoMin(Ludvik)</name>
+      <email>haoming.liuhm (AT) alibaba-inc.com</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+      <timezone>+8</timezone>
+    </developer>
+    <developer>
+      <id>tony.chenl</id>
+      <name>ChenLei(Tony)</name>
+      <email>tony.chenl (AT) alibaba-inc.com</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+      <timezone>+8</timezone>
+    </developer>
+    <developer>
+      <id>gang.lvg</id>
+      <name>LvGang(Kimi)</name>
+      <email>gang.lvg (AT) alibaba-inc.com</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+      <timezone>+8</timezone>
+    </developer>
+  </developers>
+
+  <licenses>
+    <license>
+      <name>Apache 2</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+      <comments>A business-friendly OSS license</comments>
+    </license>
+  </licenses>
+
+  <scm>
+    <connection>scm:svn:http://code.alibabatech.com/svn/dubbo/trunk/dubbo-demo-lite</connection>
+    <url>http://code.alibabatech.com/svn/dubbo/trunk/dubbo-demo-lite</url>
+  </scm>
+</project>

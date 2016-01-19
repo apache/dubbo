@@ -165,17 +165,19 @@ class J2oVisitor implements JSONVisitor
 					}
 				}
 				if (mValue instanceof Throwable && "message".equals(name)) {
-					try {
-						Field field = Throwable.class.getDeclaredField("detailMessage");
-						if (! field.isAccessible()) {
-							field.setAccessible(true);
-						}
-						field.set(mValue, obj);
-					} catch (NoSuchFieldException e) {
-						throw new ParseException(StringUtils.toString(e));
-					} catch (IllegalAccessException e) {
-						throw new ParseException(StringUtils.toString(e));
-					}
+                    try {
+                        Field field = Throwable.class.getDeclaredField("detailMessage");
+                        if (!field.isAccessible()) {
+                            field.setAccessible(true);
+                        }
+                        field.set(mValue, obj);
+                    } catch (NoSuchFieldException e) {
+                        throw new ParseException(StringUtils.toString(e));
+                    } catch (IllegalAccessException e) {
+                        throw new ParseException(StringUtils.toString(e));
+                    }
+                } else if (mValue instanceof Throwable && "suppressed".equals(name)) { // modified by lishen
+                     // simply ignore this field for jdk 1.7+
 				} else if (! CLASS_PROPERTY.equals(name)) {
 					mWrapper.setPropertyValue(mValue, name, obj);
 				}
