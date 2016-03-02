@@ -155,7 +155,7 @@ public class RegistryProtocol implements Protocol {
                 }
             }
         }
-        return (ExporterChangeableWrapper<T>) exporter;
+        return exporter;
     }
     
     /**

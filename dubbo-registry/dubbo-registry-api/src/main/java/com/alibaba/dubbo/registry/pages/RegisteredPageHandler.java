@@ -40,7 +40,7 @@ public class RegisteredPageHandler implements PageHandler {
         Collection<Registry> registries = AbstractRegistryFactory.getRegistries();
         StringBuilder select = new StringBuilder();
         Registry registry = null;
-        if (registries != null && registries.size() > 0) {
+        if (registries.size() > 0) {
             if (registries.size() == 1) {
                 registry = registries.iterator().next();
                 select.append(" &gt; " + registry.getUrl().getAddress());
@@ -51,7 +51,7 @@ public class RegisteredPageHandler implements PageHandler {
                     select.append("<option value=\">");
                     select.append(sp);
                     if (((registryAddress == null || registryAddress.length() == 0) && registry == null)
-                            || registryAddress.equals(sp)) {
+                            || sp.equals(registryAddress)) { // registryAddress 可能为null
                         registry = r;
                         select.append("\" selected=\"selected");
                     }

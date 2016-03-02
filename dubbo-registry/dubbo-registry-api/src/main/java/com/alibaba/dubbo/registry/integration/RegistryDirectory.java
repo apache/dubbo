@@ -173,11 +173,11 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             }
         }
         // configurators 
-        if (configuratorUrls != null && configuratorUrls.size() >0 ){
+        if (configuratorUrls.size() > 0){
             this.configurators = toConfigurators(configuratorUrls);
         }
         // routers
-        if (routerUrls != null && routerUrls.size() >0 ){
+        if (routerUrls.size() > 0){
             List<Router> routers = toRouters(routerUrls);
             if(routers != null){ // null - do nothing
                 setRouters(routers);
@@ -203,8 +203,12 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * 3.如果传入的invokerUrl列表是空，则表示只是下发的override规则或route规则，需要重新交叉对比，决定是否需要重新引用。
      * @param invokerUrls 传入的参数不能为null
      */
-    private void refreshInvoker(List<URL> invokerUrls){
-        if (invokerUrls != null && invokerUrls.size() == 1 && invokerUrls.get(0) != null
+    private void refreshInvoker(List<URL> invokerUrls) {
+        if(invokerUrls == null) { // 这里不 cover 住, 下面很多代码可能抛空指针异常
+            throw new NullPointerException("invoker urls can not be null!");
+        }
+
+        if (invokerUrls.size() == 1 && invokerUrls.get(0) != null
                 && Constants.EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
             this.forbidden = true; // 禁止访问
             this.methodInvokerMap = null; // 置空列表
@@ -281,10 +285,13 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * @return
      */
     public static List<Configurator> toConfigurators(List<URL> urls){
-        List<Configurator> configurators = new ArrayList<Configurator>(urls.size());
+        //这里不 cover null, 下面的 urls.size()就可能报错
         if (urls == null || urls.size() == 0){
-            return configurators;
+            return new ArrayList<Configurator>(0);
         }
+
+        List<Configurator> configurators = new ArrayList<Configurator>(urls.size());
+
         for(URL url : urls){
             if (Constants.EMPTY_PROTOCOL.equals(url.getProtocol())) {
                 configurators.clear();
@@ -314,7 +321,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         if(urls == null || urls.size() < 1){
             return routers ;
         }
-        if (urls != null && urls.size() > 0) {
+        if (urls.size() > 0) {
             for (URL url : urls) {
                 if (Constants.EMPTY_PROTOCOL.equals(url.getProtocol())) {
                     continue;
@@ -385,7 +392,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             Invoker<T> invoker = localUrlInvokerMap == null ? null : localUrlInvokerMap.get(key);
             if (invoker == null) { // 缓存中没有，重新refer
                 try {
-                	boolean enabled = true;
+                	boolean enabled;
                 	if (url.hasParameter(Constants.DISABLED_KEY)) {
                 		enabled = ! url.getParameter(Constants.DISABLED_KEY, false);
                 	} else {

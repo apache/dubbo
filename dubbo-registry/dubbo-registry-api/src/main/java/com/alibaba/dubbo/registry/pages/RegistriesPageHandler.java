@@ -41,7 +41,7 @@ public class RegistriesPageHandler implements PageHandler {
         Collection<Registry> registries = AbstractRegistryFactory.getRegistries();
         int registeredCount = 0;
         int subscribedCount = 0;
-        if (registries != null && registries.size() > 0) {
+        if (registries.size() > 0) {
             for (Registry registry : registries) {
                 String server = registry.getUrl().getAddress();
                 List<String> row = new ArrayList<String>();

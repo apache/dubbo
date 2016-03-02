@@ -40,7 +40,7 @@ public class SubscribedPageHandler implements PageHandler {
         Collection<Registry> registries = AbstractRegistryFactory.getRegistries();
         StringBuilder select = new StringBuilder();
         Registry registry = null;
-        if (registries != null && registries.size() > 0) {
+        if (registries.size() > 0) {
             if (registries.size() == 1) {
                 registry = registries.iterator().next();
                 select.append(" &gt; " + registry.getUrl().getAddress());
@@ -51,7 +51,7 @@ public class SubscribedPageHandler implements PageHandler {
                     select.append("<option value=\">");
                     select.append(sp);
                     if (((registryAddress == null || registryAddress.length() == 0) && registry == null)
-                            || registryAddress.equals(sp)) {
+                            || sp.equals(registryAddress)) {//registryAddress 可能为 null
                         registry = r;
                         select.append("\" selected=\"selected");
                     }
@@ -64,7 +64,7 @@ public class SubscribedPageHandler implements PageHandler {
         }
         if (registry instanceof AbstractRegistry) {
             Set<URL> services = ((AbstractRegistry) registry).getSubscribed().keySet();
-            if (services != null && services.size() > 0) {
+            if (services.size() > 0) {
                 for (URL u : services) {
                     List<String> row = new ArrayList<String>();
                     row.add(u.toFullString().replace("<", "&lt;").replace(">", "&gt;"));
