@@ -216,8 +216,8 @@ public class ConditionRouter implements Router, Comparable<Router> {
         final Set<String> mismatches = new HashSet<String>();
         public boolean isMatch(String value, URL param) {
             for (String match : matches) {
-                if (! UrlUtils.isMatchGlobPattern(match, value, param)) {
-                    return false;
+                if (UrlUtils.isMatchGlobPattern(match, value, param)) {
+                    return true;
                 }
             }
             for (String mismatch : mismatches) {
@@ -225,7 +225,7 @@ public class ConditionRouter implements Router, Comparable<Router> {
                     return false;
                 }
             }
-            return true;
+            return false;
         }
     }
 }
