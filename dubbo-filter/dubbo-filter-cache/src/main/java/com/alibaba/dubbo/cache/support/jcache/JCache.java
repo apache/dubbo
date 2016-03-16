@@ -15,16 +15,16 @@
  */
 package com.alibaba.dubbo.cache.support.jcache;
 
+import com.alibaba.dubbo.common.URL;
+
 import javax.cache.Cache;
 import javax.cache.CacheBuilder;
 import javax.cache.CacheManager;
 import javax.cache.Caching;
 
-import com.alibaba.dubbo.common.URL;
-
 /**
  * JCache
- * 
+ *
  * @author william.liangf
  */
 public class JCache implements com.alibaba.dubbo.cache.Cache {

@@ -18,21 +18,21 @@ package com.alibaba.dubbo.common.model.person;
 import java.io.Serializable;
 
 /**
- * 电话号码 
- * 
+ * 电话号码
+ *
  * @author xk1430
  */
 public class Phone implements Serializable {
 
     private static final long serialVersionUID = 4399060521859707703L;
 
-    private String            country;
+    private String country;
 
-    private String            area;
+    private String area;
 
-    private String            number;
+    private String number;
 
-    private String            extensionNumber;
+    private String extensionNumber;
 
     public Phone() {
     }

@@ -15,25 +15,23 @@
  */
 package com.alibaba.dubbo.common;
 
-import com.alibaba.dubbo.common.URL;
-
 /**
  * Node. (API/SPI, Prototype, ThreadSafe)
- * 
+ *
  * @author william.liangf
  */
 public interface Node {
 
     /**
      * get url.
-     * 
+     *
      * @return url.
      */
     URL getUrl();
-    
+
     /**
      * is available.
-     * 
+     *
      * @return available.
      */
     boolean isAvailable();

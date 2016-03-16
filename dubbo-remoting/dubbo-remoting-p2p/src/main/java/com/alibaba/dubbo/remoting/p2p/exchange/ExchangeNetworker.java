@@ -20,14 +20,14 @@ import com.alibaba.dubbo.remoting.RemotingException;
 
 /**
  * Networker
- * 
+ *
  * @author william.liangf
  */
 public interface ExchangeNetworker {
 
     /**
      * lookup group.
-     * 
+     *
      * @param url group url
      * @return group.
      */

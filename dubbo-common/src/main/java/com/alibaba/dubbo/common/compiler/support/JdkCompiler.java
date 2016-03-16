@@ -15,44 +15,21 @@
  */
 package com.alibaba.dubbo.common.compiler.support;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import com.alibaba.dubbo.common.utils.ClassHelper;
+
+import javax.tools.*;
+import javax.tools.JavaFileObject.Kind;
+import java.io.*;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.tools.DiagnosticCollector;
-import javax.tools.FileObject;
-import javax.tools.ForwardingJavaFileManager;
-import javax.tools.JavaCompiler;
-import javax.tools.JavaFileManager;
-import javax.tools.JavaFileObject;
-import javax.tools.JavaFileObject.Kind;
-import javax.tools.SimpleJavaFileObject;
-import javax.tools.StandardJavaFileManager;
-import javax.tools.StandardLocation;
-import javax.tools.ToolProvider;
-
-import com.alibaba.dubbo.common.utils.ClassHelper;
+import java.util.*;
 
 /**
  * JdkCompiler. (SPI, Singleton, ThreadSafe)
- * 
+ *
  * @author william.liangf
  */
 public class JdkCompiler extends AbstractCompiler {
@@ -60,21 +37,21 @@ public class JdkCompiler extends AbstractCompiler {
     private final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
     private final DiagnosticCollector<JavaFileObject> diagnosticCollector = new DiagnosticCollector<JavaFileObject>();
-    
+
     private final ClassLoaderImpl classLoader;
-    
+
     private final JavaFileManagerImpl javaFileManager;
 
     private volatile List<String> options;
 
-    public JdkCompiler(){
+    public JdkCompiler() {
         options = new ArrayList<String>();
         options.add("-target");
         options.add("1.6");
         StandardJavaFileManager manager = compiler.getStandardFileManager(diagnosticCollector, null, null);
         final ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        if (loader instanceof URLClassLoader 
-                && (! loader.getClass().getName().equals("sun.misc.Launcher$AppClassLoader"))) {
+        if (loader instanceof URLClassLoader
+                && (!loader.getClass().getName().equals("sun.misc.Launcher$AppClassLoader"))) {
             try {
                 URLClassLoader urlClassLoader = (URLClassLoader) loader;
                 List<File> files = new ArrayList<File>();
@@ -93,25 +70,25 @@ public class JdkCompiler extends AbstractCompiler {
         });
         javaFileManager = new JavaFileManagerImpl(manager, classLoader);
     }
-    
+
     @Override
     public Class<?> doCompile(String name, String sourceCode) throws Throwable {
         int i = name.lastIndexOf('.');
         String packageName = i < 0 ? "" : name.substring(0, i);
         String className = i < 0 ? name : name.substring(i + 1);
         JavaFileObjectImpl javaFileObject = new JavaFileObjectImpl(className, sourceCode);
-        javaFileManager.putFileForInput(StandardLocation.SOURCE_PATH, packageName, 
-                                        className + ClassUtils.JAVA_EXTENSION, javaFileObject);
-        Boolean result = compiler.getTask(null, javaFileManager, diagnosticCollector, options, 
-                                          null, Arrays.asList(new JavaFileObject[]{javaFileObject})).call();
-        if (result == null || ! result.booleanValue()) {
+        javaFileManager.putFileForInput(StandardLocation.SOURCE_PATH, packageName,
+                className + ClassUtils.JAVA_EXTENSION, javaFileObject);
+        Boolean result = compiler.getTask(null, javaFileManager, diagnosticCollector, options,
+                null, Arrays.asList(new JavaFileObject[]{javaFileObject})).call();
+        if (result == null || !result.booleanValue()) {
             throw new IllegalStateException("Compilation failed. class: " + name + ", diagnostics: " + diagnosticCollector);
         }
         return classLoader.loadClass(name);
     }
-    
+
     private final class ClassLoaderImpl extends ClassLoader {
-        
+
         private final Map<String, JavaFileObject> classes = new HashMap<String, JavaFileObject>();
 
         ClassLoaderImpl(final ClassLoader parentClassLoader) {
@@ -157,24 +134,24 @@ public class JdkCompiler extends AbstractCompiler {
             return super.getResourceAsStream(name);
         }
     }
-    
+
     private static final class JavaFileObjectImpl extends SimpleJavaFileObject {
 
         private ByteArrayOutputStream bytecode;
 
-        private final CharSequence    source;
+        private final CharSequence source;
 
-        public JavaFileObjectImpl(final String baseName, final CharSequence source){
+        public JavaFileObjectImpl(final String baseName, final CharSequence source) {
             super(ClassUtils.toURI(baseName + ClassUtils.JAVA_EXTENSION), Kind.SOURCE);
             this.source = source;
         }
 
-        JavaFileObjectImpl(final String name, final Kind kind){
+        JavaFileObjectImpl(final String name, final Kind kind) {
             super(ClassUtils.toURI(name), kind);
             source = null;
         }
 
-        public JavaFileObjectImpl(URI uri, Kind kind){
+        public JavaFileObjectImpl(URI uri, Kind kind) {
             super(uri, kind);
             source = null;
         }
@@ -201,9 +178,9 @@ public class JdkCompiler extends AbstractCompiler {
             return bytecode.toByteArray();
         }
     }
-    
+
     private static final class JavaFileManagerImpl extends ForwardingJavaFileManager<JavaFileManager> {
-        
+
         private final ClassLoaderImpl classLoader;
 
         private final Map<URI, JavaFileObject> fileObjects = new HashMap<URI, JavaFileObject>();

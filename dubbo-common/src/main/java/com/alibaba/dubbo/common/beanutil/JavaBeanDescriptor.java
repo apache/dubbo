@@ -38,7 +38,9 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
 
     public static final int TYPE_ARRAY = 5;
 
-    /** @see com.alibaba.dubbo.common.utils.ReflectUtils#isPrimitive(Class)  */
+    /**
+     * @see com.alibaba.dubbo.common.utils.ReflectUtils#isPrimitive(Class)
+     */
     public static final int TYPE_PRIMITIVE = 6;
 
     public static final int TYPE_BEAN = 7;
@@ -51,12 +53,14 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
 
     /**
      * Used to define a type is valid.
+     *
      * @see #isValidType(int)
      */
     private static final int TYPE_MAX = TYPE_BEAN;
 
     /**
      * Used to define a type is valid.
+     *
      * @see #isValidType(int)
      */
     private static final int TYPE_MIN = TYPE_CLASS;
@@ -67,14 +71,15 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
 
     private Map<Object, Object> properties = new LinkedHashMap<Object, Object>();
 
-    public JavaBeanDescriptor() {}
+    public JavaBeanDescriptor() {
+    }
 
     public JavaBeanDescriptor(String className, int type) {
         notEmpty(className, "class name is empty");
         if (!isValidType(type)) {
             throw new IllegalArgumentException(
-                new StringBuilder(16).append("type [ ")
-                    .append(type).append(" ] is unsupported").toString());
+                    new StringBuilder(16).append("type [ ")
+                            .append(type).append(" ] is unsupported").toString());
         }
 
         this.className = className;

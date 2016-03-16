@@ -18,20 +18,16 @@ package com.alibaba.dubbo.validation.filter;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.utils.ConfigUtils;
-import com.alibaba.dubbo.rpc.Filter;
-import com.alibaba.dubbo.rpc.Invocation;
-import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.Result;
-import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.*;
 import com.alibaba.dubbo.validation.Validation;
 import com.alibaba.dubbo.validation.Validator;
 
 /**
  * ValidationFilter
- * 
+ *
  * @author william.liangf
  */
-@Activate(group = { Constants.CONSUMER, Constants.PROVIDER }, value = Constants.VALIDATION_KEY, order = 10000)
+@Activate(group = {Constants.CONSUMER, Constants.PROVIDER}, value = Constants.VALIDATION_KEY, order = 10000)
 public class ValidationFilter implements Filter {
 
     private Validation validation;
@@ -41,7 +37,7 @@ public class ValidationFilter implements Filter {
     }
 
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        if (validation != null && ! invocation.getMethodName().startsWith("$") 
+        if (validation != null && !invocation.getMethodName().startsWith("$")
                 && ConfigUtils.isNotEmpty(invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.VALIDATION_KEY))) {
             try {
                 Validator validator = validation.getValidator(invoker.getUrl());

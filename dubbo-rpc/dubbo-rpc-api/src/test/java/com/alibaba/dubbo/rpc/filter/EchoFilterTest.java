@@ -15,22 +15,17 @@
  */
 package com.alibaba.dubbo.rpc.filter;
 
-import static org.junit.Assert.assertEquals;
-
+import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.rpc.*;
+import com.alibaba.dubbo.rpc.support.DemoService;
 import org.easymock.EasyMock;
 import org.junit.Test;
 
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.rpc.Filter;
-import com.alibaba.dubbo.rpc.Invocation;
-import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.Result;
-import com.alibaba.dubbo.rpc.RpcResult;
-import com.alibaba.dubbo.rpc.support.DemoService;
+import static org.junit.Assert.assertEquals;
 
 /**
  * EchoFilterTest.java
- * 
+ *
  * @author tony.chenl
  */
 public class EchoFilterTest {
@@ -42,8 +37,8 @@ public class EchoFilterTest {
     public void testEcho() {
         Invocation invocation = EasyMock.createMock(Invocation.class);
         EasyMock.expect(invocation.getMethodName()).andReturn("$echo").anyTimes();
-        EasyMock.expect(invocation.getParameterTypes()).andReturn(new Class<?>[] { Enum.class }).anyTimes();
-        EasyMock.expect(invocation.getArguments()).andReturn(new Object[] { "hello" }).anyTimes();
+        EasyMock.expect(invocation.getParameterTypes()).andReturn(new Class<?>[]{Enum.class}).anyTimes();
+        EasyMock.expect(invocation.getArguments()).andReturn(new Object[]{"hello"}).anyTimes();
         EasyMock.expect(invocation.getAttachments()).andReturn(null).anyTimes();
         EasyMock.replay(invocation);
         Invoker<DemoService> invoker = EasyMock.createMock(Invoker.class);
@@ -64,8 +59,8 @@ public class EchoFilterTest {
     public void testNonEcho() {
         Invocation invocation = EasyMock.createMock(Invocation.class);
         EasyMock.expect(invocation.getMethodName()).andReturn("echo").anyTimes();
-        EasyMock.expect(invocation.getParameterTypes()).andReturn(new Class<?>[] { Enum.class }).anyTimes();
-        EasyMock.expect(invocation.getArguments()).andReturn(new Object[] { "hello" }).anyTimes();
+        EasyMock.expect(invocation.getParameterTypes()).andReturn(new Class<?>[]{Enum.class}).anyTimes();
+        EasyMock.expect(invocation.getArguments()).andReturn(new Object[]{"hello"}).anyTimes();
         EasyMock.expect(invocation.getAttachments()).andReturn(null).anyTimes();
         EasyMock.replay(invocation);
         Invoker<DemoService> invoker = EasyMock.createMock(Invoker.class);

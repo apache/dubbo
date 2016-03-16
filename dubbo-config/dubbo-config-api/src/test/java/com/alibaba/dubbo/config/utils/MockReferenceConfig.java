@@ -43,7 +43,7 @@ public class MockReferenceConfig extends ReferenceConfig<String> {
 
     @Override
     public synchronized String get() {
-        if(value != null) return value;
+        if (value != null) return value;
 
         value = "" + counter.getAndIncrement();
         return value;

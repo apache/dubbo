@@ -23,17 +23,17 @@ import java.io.Serializable;
 public class BigPerson implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    String                    personId;
+    String personId;
 
-    String                    loginName;
+    String loginName;
 
-    PersonStatus              status;
+    PersonStatus status;
 
-    String                    email;
+    String email;
 
-    String                    penName;
+    String penName;
 
-    PersonInfo                infoProfile;
+    PersonInfo infoProfile;
 
     public BigPerson() {
 

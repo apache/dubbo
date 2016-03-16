@@ -33,7 +33,7 @@ public class FakeChannelHandlers extends ChannelHandlers {
     @Override
     protected ChannelHandler wrapInternal(ChannelHandler handler, URL url) {
         return ExtensionLoader.getExtensionLoader(Dispatcher.class)
-            .getAdaptiveExtension().dispatch(handler, url);
+                .getAdaptiveExtension().dispatch(handler, url);
     }
 
     public static void setTestingChannelHandlers() {

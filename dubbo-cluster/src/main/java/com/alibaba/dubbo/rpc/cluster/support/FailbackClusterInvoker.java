@@ -15,30 +15,21 @@
  */
 package com.alibaba.dubbo.rpc.cluster.support;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.NamedThreadFactory;
-import com.alibaba.dubbo.rpc.Invocation;
-import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.Result;
-import com.alibaba.dubbo.rpc.RpcException;
-import com.alibaba.dubbo.rpc.RpcResult;
+import com.alibaba.dubbo.rpc.*;
 import com.alibaba.dubbo.rpc.cluster.Directory;
 import com.alibaba.dubbo.rpc.cluster.LoadBalance;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.*;
+
 /**
  * 失败自动恢复，后台记录失败请求，定时重发，通常用于消息通知操作。
- * 
+ *
  * @author tony.chenl
  */
 public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
@@ -53,7 +44,7 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
     private final ConcurrentMap<Invocation, AbstractClusterInvoker<?>> failed = new ConcurrentHashMap<Invocation, AbstractClusterInvoker<?>>();
 
-    public FailbackClusterInvoker(Directory<T> directory){
+    public FailbackClusterInvoker(Directory<T> directory) {
         super(directory);
     }
 
@@ -83,7 +74,7 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
             return;
         }
         for (Map.Entry<Invocation, AbstractClusterInvoker<?>> entry : new HashMap<Invocation, AbstractClusterInvoker<?>>(
-                                                                                                                         failed).entrySet()) {
+                failed).entrySet()) {
             Invocation invocation = entry.getKey();
             Invoker<?> invoker = entry.getValue();
             try {
@@ -102,7 +93,7 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
             return invoker.invoke(invocation);
         } catch (Throwable e) {
             logger.error("Failback to invoke method " + invocation.getMethodName() + ", wait for retry in background. Ignored exception: "
-                                 + e.getMessage() + ", ", e);
+                    + e.getMessage() + ", ", e);
             addFailed(invocation, this);
             return new RpcResult(); // ignore
         }

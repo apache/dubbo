@@ -2,7 +2,7 @@ package com.alibaba.dubbo.registry.support;
 
 /**
  * Wrapper异常，用于指示 {@link FailbackRegistry}跳过Failback。
- * <p>
+ * <p/>
  * NOTE: 期望找到其它更常规的指示方式。
  *
  * @author ding.lid

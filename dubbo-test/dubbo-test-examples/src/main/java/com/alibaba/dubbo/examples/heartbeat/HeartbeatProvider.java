@@ -24,8 +24,8 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class HeartbeatProvider {
 
     public static void main(String[] args) throws Exception {
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext( 
-                HeartbeatProvider.class.getPackage().getName().replace( '.', '/' ) + "/heartbeat-provider.xml" );
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
+                HeartbeatProvider.class.getPackage().getName().replace('.', '/') + "/heartbeat-provider.xml");
         context.start();
         System.in.read();
     }

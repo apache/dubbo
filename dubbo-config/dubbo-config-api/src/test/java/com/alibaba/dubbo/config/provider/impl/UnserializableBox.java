@@ -22,9 +22,9 @@ import com.alibaba.dubbo.config.api.Box;
  */
 public class UnserializableBox implements Box {
     private static final long serialVersionUID = -4141012025649711421L;
-    
-    private int    count = 3;
-    private String name  = "Jerry";
+
+    private int count = 3;
+    private String name = "Jerry";
 
     public int getCount() {
         return count;

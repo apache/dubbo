@@ -15,25 +15,24 @@
  */
 package com.alibaba.dubbo.rpc.filter;
 
-import static org.junit.Assert.assertEquals;
-
-import org.easymock.EasyMock;
-import org.junit.Test;
-
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.support.DemoService;
+import org.easymock.EasyMock;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * ExceptionFilterTest
- * 
+ *
  * @author william.liangf
  */
 public class ExceptionFilterTest {
-    
+
     @SuppressWarnings("unchecked")
     @Test
     public void testRpcException() {
@@ -46,9 +45,9 @@ public class ExceptionFilterTest {
         Invoker<DemoService> invoker = EasyMock.createMock(Invoker.class);
         EasyMock.expect(invoker.getInterface()).andReturn(DemoService.class);
         EasyMock.expect(invoker.invoke(EasyMock.eq(invocation))).andThrow(exception);
-        
+
         EasyMock.replay(logger, invoker);
-        
+
         try {
             exceptionFilter.invoke(invoker, invocation);
         } catch (RpcException e) {
@@ -57,5 +56,5 @@ public class ExceptionFilterTest {
         EasyMock.verify(logger, invoker);
         RpcContext.removeContext();
     }
-    
+
 }

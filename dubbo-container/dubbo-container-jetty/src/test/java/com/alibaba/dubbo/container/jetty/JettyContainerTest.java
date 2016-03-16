@@ -15,19 +15,18 @@
  */
 package com.alibaba.dubbo.container.jetty;
 
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
+import com.alibaba.dubbo.container.Container;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.alibaba.dubbo.common.extension.ExtensionLoader;
-import com.alibaba.dubbo.container.Container;
-
 /**
  * StandaloneContainerTest
- * 
+ *
  * @author william.liangf
  */
 public class JettyContainerTest {
-    
+
     @Test
     public void testContainer() {
         JettyContainer container = (JettyContainer) ExtensionLoader.getExtensionLoader(Container.class).getExtension("jetty");

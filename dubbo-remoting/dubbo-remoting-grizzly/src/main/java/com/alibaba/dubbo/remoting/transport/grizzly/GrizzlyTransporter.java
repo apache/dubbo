@@ -16,15 +16,11 @@
 package com.alibaba.dubbo.remoting.transport.grizzly;
 
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.remoting.ChannelHandler;
-import com.alibaba.dubbo.remoting.Client;
-import com.alibaba.dubbo.remoting.RemotingException;
-import com.alibaba.dubbo.remoting.Server;
-import com.alibaba.dubbo.remoting.Transporter;
+import com.alibaba.dubbo.remoting.*;
 
 /**
  * GrizzlyTransporter
- * 
+ *
  * @author william.liangf
  */
 public class GrizzlyTransporter implements Transporter {

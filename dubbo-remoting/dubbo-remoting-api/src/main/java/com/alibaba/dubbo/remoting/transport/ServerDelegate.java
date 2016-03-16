@@ -15,35 +15,35 @@
  */
 package com.alibaba.dubbo.remoting.transport;
 
-import java.net.InetSocketAddress;
-import java.util.Collection;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.Server;
 
+import java.net.InetSocketAddress;
+import java.util.Collection;
+
 /**
  * ServerDelegate
- * 
+ *
  * @author william.liangf
  */
 public class ServerDelegate implements Server {
-    
+
     private transient Server server;
-    
+
     public ServerDelegate() {
     }
 
-    public ServerDelegate(Server server){
+    public ServerDelegate(Server server) {
         setServer(server);
     }
 
     public Server getServer() {
         return server;
     }
-    
+
     public void setServer(Server server) {
         this.server = server;
     }
@@ -55,9 +55,9 @@ public class ServerDelegate implements Server {
     public void reset(URL url) {
         server.reset(url);
     }
-    
+
     @Deprecated
-    public void reset(com.alibaba.dubbo.common.Parameters parameters){
+    public void reset(com.alibaba.dubbo.common.Parameters parameters) {
         reset(getUrl().addParameters(parameters.getParameters()));
     }
 
@@ -92,7 +92,7 @@ public class ServerDelegate implements Server {
     public void close() {
         server.close();
     }
-    
+
     public void close(int timeout) {
         server.close(timeout);
     }

@@ -15,17 +15,13 @@
  */
 package com.alibaba.remoting.transport.mina;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-import static org.junit.matchers.JUnitMatchers.containsString;
-
-import org.junit.Test;
-
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.remoting.Transporter;
 import com.alibaba.dubbo.remoting.transport.mina.MinaTransporter;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+import static org.junit.matchers.JUnitMatchers.containsString;
 
 /**
  * @author ding.lid

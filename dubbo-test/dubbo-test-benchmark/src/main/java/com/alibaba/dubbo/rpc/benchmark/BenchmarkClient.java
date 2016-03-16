@@ -10,7 +10,7 @@ public class BenchmarkClient extends AbstractBenchmarkClient {
                                             CyclicBarrier barrier,
                                             CountDownLatch latch, long endTime, long startTime) {
         return new SimpleProcessorBenchmarkClientRunnable(targetIP, targetPort, clientNums, rpcTimeout,
-                                                         barrier, latch, startTime, endTime);
+                barrier, latch, startTime, endTime);
     }
 
     public static void main(String[] args) throws Exception {

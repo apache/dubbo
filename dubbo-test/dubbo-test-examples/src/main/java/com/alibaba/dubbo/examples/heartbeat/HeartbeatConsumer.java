@@ -17,7 +17,6 @@
 package com.alibaba.dubbo.examples.heartbeat;
 
 import com.alibaba.dubbo.examples.heartbeat.api.HelloService;
-
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**

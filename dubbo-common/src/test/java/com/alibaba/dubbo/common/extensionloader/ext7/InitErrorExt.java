@@ -22,7 +22,7 @@ import com.alibaba.dubbo.common.extension.SPI;
 /**
  * 用于测试：
  * DUBBO-144 扩展点加载失败（如依赖的三方库运行时没有），如扩展点没有用到，则加载不要报错（在使用到时报错）
- * 
+ *
  * @author ding.lid
  */
 @SPI

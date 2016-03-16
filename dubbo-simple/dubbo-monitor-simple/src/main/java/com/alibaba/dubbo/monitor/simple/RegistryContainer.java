@@ -15,15 +15,6 @@
  */
 package com.alibaba.dubbo.monitor.simple;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
@@ -35,9 +26,12 @@ import com.alibaba.dubbo.container.spring.SpringContainer;
 import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.RegistryService;
 
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * RegistryContainer
- * 
+ *
  * @author william.liangf
  */
 public class RegistryContainer implements Container {
@@ -61,13 +55,13 @@ public class RegistryContainer implements Container {
     private final Map<String, List<URL>> serviceConsumers = new ConcurrentHashMap<String, List<URL>>();
 
     private RegistryService registry;
-    
+
     private static RegistryContainer INSTANCE = null;
-    
+
     public RegistryContainer() {
         INSTANCE = this;
     }
-    
+
     public static RegistryContainer getInstance() {
         if (INSTANCE == null) {
             ExtensionLoader.getExtensionLoader(Container.class).getExtension("registry");
@@ -82,7 +76,7 @@ public class RegistryContainer implements Container {
     public Set<String> getApplications() {
         return Collections.unmodifiableSet(applications);
     }
-    
+
     public Set<String> getDependencies(String application, boolean reverse) {
         if (reverse) {
             Set<String> dependencies = new HashSet<String>();
@@ -211,13 +205,13 @@ public class RegistryContainer implements Container {
         }
         registry = (RegistryService) SpringContainer.getContext().getBean("registryService");
         URL subscribeUrl = new URL(Constants.ADMIN_PROTOCOL, NetUtils.getLocalHost(), 0, "",
-                                    Constants.INTERFACE_KEY, Constants.ANY_VALUE, 
-                                    Constants.GROUP_KEY, Constants.ANY_VALUE, 
-                                    Constants.VERSION_KEY, Constants.ANY_VALUE,
-                                    Constants.CLASSIFIER_KEY, Constants.ANY_VALUE,
-                                    Constants.CATEGORY_KEY, Constants.PROVIDERS_CATEGORY + "," 
-                                            + Constants.CONSUMERS_CATEGORY,
-                                    Constants.CHECK_KEY, String.valueOf(false));
+                Constants.INTERFACE_KEY, Constants.ANY_VALUE,
+                Constants.GROUP_KEY, Constants.ANY_VALUE,
+                Constants.VERSION_KEY, Constants.ANY_VALUE,
+                Constants.CLASSIFIER_KEY, Constants.ANY_VALUE,
+                Constants.CATEGORY_KEY, Constants.PROVIDERS_CATEGORY + ","
+                + Constants.CONSUMERS_CATEGORY,
+                Constants.CHECK_KEY, String.valueOf(false));
         registry.subscribe(subscribeUrl, new NotifyListener() {
             public void notify(List<URL> urls) {
                 if (urls == null || urls.size() == 0) {
@@ -250,7 +244,7 @@ public class RegistryContainer implements Container {
                                     serviceApplications = providerServiceApplications.get(service);
                                 }
                                 serviceApplications.add(application);
-        
+
                                 Set<String> applicationServices = providerApplicationServices.get(application);
                                 if (applicationServices == null) {
                                     providerApplicationServices.put(application, new ConcurrentHashSet<String>());
@@ -276,7 +270,7 @@ public class RegistryContainer implements Container {
                                     serviceApplications = consumerServiceApplications.get(service);
                                 }
                                 serviceApplications.add(application);
-        
+
                                 Set<String> applicationServices = consumerApplicationServices.get(application);
                                 if (applicationServices == null) {
                                     consumerApplicationServices.put(application, new ConcurrentHashSet<String>());
@@ -284,7 +278,7 @@ public class RegistryContainer implements Container {
                                 }
                                 applicationServices.add(service);
                             }
-                            
+
                         }
                     }
                 }

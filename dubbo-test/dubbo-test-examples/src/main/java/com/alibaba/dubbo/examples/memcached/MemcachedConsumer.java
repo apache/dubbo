@@ -15,13 +15,13 @@
  */
 package com.alibaba.dubbo.examples.memcached;
 
-import java.util.Map;
-
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import java.util.Map;
 
 /**
  * GenericConsumer
- * 
+ *
  * @author chao.liuc
  */
 public class MemcachedConsumer {
@@ -41,7 +41,7 @@ public class MemcachedConsumer {
         cache.put("hello", "world");
         value = cache.get("hello");
         System.out.println(value);
-        if (! "world".equals(value)) {
+        if (!"world".equals(value)) {
             throw new IllegalStateException(value + " != world");
         }
         System.in.read();

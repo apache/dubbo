@@ -1,15 +1,5 @@
 package com.alibaba.dubbo.remoting.transport.codec;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.InetSocketAddress;
-import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
@@ -20,8 +10,17 @@ import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.Codec;
 import com.alibaba.dubbo.remoting.RemotingException;
-import com.alibaba.dubbo.remoting.buffer.ChannelBufferOutputStream;
 import com.alibaba.dubbo.remoting.transport.CodecSupport;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.InetSocketAddress;
+import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * @author <a href="mailto:gang.lvg@taobao.com">kimi</a>
@@ -64,11 +63,11 @@ public class DeprecatedTelnetCodec implements Codec {
             InetSocketAddress address = channel.getRemoteAddress();
             URL url = channel.getUrl();
             boolean client = url.getPort() == address.getPort()
-                && NetUtils.filterLocalHost(url.getIp()).equals(
-                NetUtils.filterLocalHost(address.getAddress()
-                                             .getHostAddress()));
+                    && NetUtils.filterLocalHost(url.getIp()).equals(
+                    NetUtils.filterLocalHost(address.getAddress()
+                            .getHostAddress()));
             channel.setAttribute(Constants.SIDE_KEY, client ? "client"
-                : "server");
+                    : "server");
             return client;
         }
     }
@@ -284,7 +283,7 @@ public class DeprecatedTelnetCodec implements Codec {
                     i = i + 2;
                 }
             } else if (b == -1 && i < message.length - 2
-                && (message[i + 1] == -3 || message[i + 1] == -5)) { // handshake
+                    && (message[i + 1] == -3 || message[i + 1] == -5)) { // handshake
                 i = i + 2;
             } else {
                 copy[index++] = message[i];

@@ -1,11 +1,11 @@
 package com.alibaba.dubbo.config.spring.registry;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.Registry;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author <a href="mailto:gang.lvg@taobao.com">kimi</a>

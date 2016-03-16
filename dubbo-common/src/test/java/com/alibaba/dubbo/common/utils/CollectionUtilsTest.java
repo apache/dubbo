@@ -15,18 +15,11 @@
  */
 package com.alibaba.dubbo.common.utils;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.*;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.junit.Test;
+
+import java.util.*;
+
+import static org.junit.Assert.*;
 
 /**
  * @author ding.lid
@@ -136,27 +129,27 @@ public class CollectionUtilsTest {
         list = Arrays.asList("a", "b");
         assertEquals("a/b", CollectionUtils.join(list, "/"));
     }
-    
+
     @Test
     public void test_mapEquals() throws Exception {
         assertTrue(CollectionUtils.mapEquals(null, null));
         assertFalse(CollectionUtils.mapEquals(null, new HashMap<String, String>()));
         assertFalse(CollectionUtils.mapEquals(new HashMap<String, String>(), null));
-        
+
         assertTrue(CollectionUtils.mapEquals(CollectionUtils.toStringMap("1", "a", "2", "b"), CollectionUtils.toStringMap("1", "a", "2", "b")));
         assertFalse(CollectionUtils.mapEquals(CollectionUtils.toStringMap("1", "a"), CollectionUtils.toStringMap("1", "a", "2", "b")));
     }
-    
+
     @Test
     public void test_toMap() throws Exception {
         assertTrue(CollectionUtils.toMap().isEmpty());
-        
-        
+
+
         Map<String, Integer> expected = new HashMap<String, Integer>();
         expected.put("a", 1);
         expected.put("b", 2);
         expected.put("c", 3);
-        
+
         assertEquals(expected, CollectionUtils.toMap("a", 1, "b", 2, "c", 3));
     }
 }

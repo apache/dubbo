@@ -20,7 +20,7 @@ import com.alibaba.dubbo.remoting.p2p.Peer;
 
 /**
  * Peer
- * 
+ *
  * @author william.liangf
  */
 public interface ExchangePeer extends Peer, ExchangeServer {

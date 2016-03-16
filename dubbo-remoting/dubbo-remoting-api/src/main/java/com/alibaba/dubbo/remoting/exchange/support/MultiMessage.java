@@ -16,12 +16,7 @@
 
 package com.alibaba.dubbo.remoting.exchange.support;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
@@ -45,7 +40,8 @@ public final class MultiMessage implements Iterable {
 
     private final List messages = new ArrayList();
 
-    private MultiMessage() {}
+    private MultiMessage() {
+    }
 
     public void addMessage(Object msg) {
         messages.add(msg);

@@ -21,7 +21,7 @@ import com.alibaba.dubbo.common.extensionloader.compatible.impl.CompatibleExtImp
 import com.alibaba.dubbo.common.extensionloader.compatible.impl.CompatibleExtImpl2;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author ding.lid

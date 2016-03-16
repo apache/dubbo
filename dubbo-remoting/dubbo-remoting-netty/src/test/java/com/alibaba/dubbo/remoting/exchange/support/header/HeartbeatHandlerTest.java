@@ -16,23 +16,17 @@
 
 package com.alibaba.dubbo.remoting.exchange.support.header;
 
-import org.junit.After;
-import org.junit.Test;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.RemotingException;
-import com.alibaba.dubbo.remoting.exchange.ExchangeChannel;
-import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
-import com.alibaba.dubbo.remoting.exchange.ExchangeHandler;
-import com.alibaba.dubbo.remoting.exchange.ExchangeServer;
-import com.alibaba.dubbo.remoting.exchange.Exchangers;
+import com.alibaba.dubbo.remoting.exchange.*;
 import com.alibaba.dubbo.remoting.transport.dispatcher.FakeChannelHandlers;
-
 import junit.framework.Assert;
+import org.junit.After;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
@@ -127,7 +121,7 @@ public class HeartbeatHandlerTest {
         }
 
         public void received(Channel channel, Object message) throws RemotingException {
-        	logger.error(this.getClass().getSimpleName() + message.toString());
+            logger.error(this.getClass().getSimpleName() + message.toString());
         }
 
         public void caught(Channel channel, Throwable exception) throws RemotingException {

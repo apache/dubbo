@@ -1,10 +1,5 @@
 package com.alibaba.dubbo.remoting.transport.codec;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
-import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.io.Bytes;
 import com.alibaba.dubbo.common.io.StreamUtils;
 import com.alibaba.dubbo.common.io.UnsafeByteArrayInputStream;
@@ -22,6 +17,10 @@ import com.alibaba.dubbo.remoting.exchange.Request;
 import com.alibaba.dubbo.remoting.exchange.Response;
 import com.alibaba.dubbo.remoting.exchange.support.DefaultFuture;
 import com.alibaba.dubbo.remoting.transport.CodecSupport;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * @author <a href="mailto:gang.lvg@taobao.com">kimi</a>
@@ -73,7 +72,7 @@ final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Cod
     protected Object decode(Channel channel, InputStream is, int readable, byte[] header) throws IOException {
         // check magic number.
         if (readable > 0 && header[0] != MAGIC_HIGH
-            || readable > 1 && header[1] != MAGIC_LOW) {
+                || readable > 1 && header[1] != MAGIC_LOW) {
             int length = header.length;
             if (header.length < readable) {
                 header = Bytes.copyOf(header, readable);

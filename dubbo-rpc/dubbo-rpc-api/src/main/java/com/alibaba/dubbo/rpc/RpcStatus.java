@@ -15,20 +15,20 @@
  */
 package com.alibaba.dubbo.rpc;
 
+import com.alibaba.dubbo.common.URL;
+
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.alibaba.dubbo.common.URL;
-
 /**
  * URL statistics. (API, Cached, ThreadSafe)
- * 
+ *
+ * @author william.liangf
  * @see com.alibaba.dubbo.rpc.filter.ActiveLimitFilter
  * @see com.alibaba.dubbo.rpc.filter.ExecuteLimitFilter
  * @see com.alibaba.dubbo.rpc.cluster.loadbalance.LeastActiveLoadBalance
- * @author william.liangf
  */
 public class RpcStatus {
 
@@ -37,7 +37,6 @@ public class RpcStatus {
     private static final ConcurrentMap<String, ConcurrentMap<String, RpcStatus>> METHOD_STATISTICS = new ConcurrentHashMap<String, ConcurrentMap<String, RpcStatus>>();
 
     /**
-     * 
      * @param url
      * @return status
      */
@@ -50,18 +49,16 @@ public class RpcStatus {
         }
         return status;
     }
-    
+
     /**
-     * 
      * @param url
      */
     public static void removeStatus(URL url) {
         String uri = url.toIdentityString();
         SERVICE_STATISTICS.remove(uri);
     }
-    
+
     /**
-     * 
      * @param url
      * @param methodName
      * @return status
@@ -82,7 +79,6 @@ public class RpcStatus {
     }
 
     /**
-     * 
      * @param url
      */
     public static void removeStatus(URL url, String methodName) {
@@ -94,20 +90,18 @@ public class RpcStatus {
     }
 
     /**
-     * 
      * @param url
      */
     public static void beginCount(URL url, String methodName) {
         beginCount(getStatus(url));
         beginCount(getStatus(url, methodName));
     }
-    
+
     private static void beginCount(RpcStatus status) {
         status.active.incrementAndGet();
     }
 
     /**
-     * 
      * @param url
      * @param elapsed
      * @param succeeded
@@ -116,7 +110,7 @@ public class RpcStatus {
         endCount(getStatus(url), elapsed, succeeded);
         endCount(getStatus(url, methodName), elapsed, succeeded);
     }
-    
+
     private static void endCount(RpcStatus status, long elapsed, boolean succeeded) {
         status.active.decrementAndGet();
         status.total.incrementAndGet();
@@ -154,12 +148,13 @@ public class RpcStatus {
     private final AtomicLong failedMaxElapsed = new AtomicLong();
 
     private final AtomicLong succeededMaxElapsed = new AtomicLong();
-    
-    private RpcStatus() {}
+
+    private RpcStatus() {
+    }
 
     /**
      * set value.
-     * 
+     *
      * @param key
      * @param value
      */
@@ -169,7 +164,7 @@ public class RpcStatus {
 
     /**
      * get value.
-     * 
+     *
      * @param key
      * @return value
      */
@@ -179,7 +174,7 @@ public class RpcStatus {
 
     /**
      * get active.
-     * 
+     *
      * @return active
      */
     public int getActive() {
@@ -188,16 +183,16 @@ public class RpcStatus {
 
     /**
      * get total.
-     * 
+     *
      * @return total
      */
     public long getTotal() {
         return total.longValue();
     }
-    
+
     /**
      * get total elapsed.
-     * 
+     *
      * @return total elapsed
      */
     public long getTotalElapsed() {
@@ -206,7 +201,7 @@ public class RpcStatus {
 
     /**
      * get average elapsed.
-     * 
+     *
      * @return average elapsed
      */
     public long getAverageElapsed() {
@@ -219,7 +214,7 @@ public class RpcStatus {
 
     /**
      * get max elapsed.
-     * 
+     *
      * @return max elapsed
      */
     public long getMaxElapsed() {
@@ -228,7 +223,7 @@ public class RpcStatus {
 
     /**
      * get failed.
-     * 
+     *
      * @return failed
      */
     public int getFailed() {
@@ -237,7 +232,7 @@ public class RpcStatus {
 
     /**
      * get failed elapsed.
-     * 
+     *
      * @return failed elapsed
      */
     public long getFailedElapsed() {
@@ -246,7 +241,7 @@ public class RpcStatus {
 
     /**
      * get failed average elapsed.
-     * 
+     *
      * @return failed average elapsed
      */
     public long getFailedAverageElapsed() {
@@ -259,7 +254,7 @@ public class RpcStatus {
 
     /**
      * get failed max elapsed.
-     * 
+     *
      * @return failed max elapsed
      */
     public long getFailedMaxElapsed() {
@@ -268,7 +263,7 @@ public class RpcStatus {
 
     /**
      * get succeeded.
-     * 
+     *
      * @return succeeded
      */
     public long getSucceeded() {
@@ -277,7 +272,7 @@ public class RpcStatus {
 
     /**
      * get succeeded elapsed.
-     * 
+     *
      * @return succeeded elapsed
      */
     public long getSucceededElapsed() {
@@ -286,7 +281,7 @@ public class RpcStatus {
 
     /**
      * get succeeded average elapsed.
-     * 
+     *
      * @return succeeded average elapsed
      */
     public long getSucceededAverageElapsed() {
@@ -299,7 +294,7 @@ public class RpcStatus {
 
     /**
      * get succeeded max elapsed.
-     * 
+     *
      * @return succeeded max elapsed.
      */
     public long getSucceededMaxElapsed() {

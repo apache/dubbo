@@ -7,22 +7,23 @@ import java.util.Map;
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
 public enum ThriftType {
-    
+
     BOOL, BYTE, I16, I32, I64, DOUBLE, STRING;
-    
+
     public static ThriftType get(Class<?> key) {
         if (key != null) {
             return types.get(key);
         }
         throw new NullPointerException("key == null");
     }
-    
-    private static final Map<Class<?>, ThriftType> types = 
-        new HashMap<Class<?>, ThriftType>();
-    
+
+    private static final Map<Class<?>, ThriftType> types =
+            new HashMap<Class<?>, ThriftType>();
+
     private static void put(Class<?> key, ThriftType value) {
         types.put(key, value);
     }
+
     static {
         put(boolean.class, BOOL);
         put(Boolean.class, BOOL);
@@ -30,5 +31,5 @@ public enum ThriftType {
         put(Byte.class, BYTE);
         put(short.class, I16);
     }
-    
+
 }

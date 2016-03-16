@@ -15,33 +15,32 @@
  */
 package com.alibaba.dubbo.rpc.protocol.hessian;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URL;
-
+import com.caucho.hessian.client.HessianConnection;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.message.BasicHeader;
 
-import com.caucho.hessian.client.HessianConnection;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
 
 /**
  * HttpClientConnection
- * 
+ *
  * @author william.liangf
  */
 public class HttpClientConnection implements HessianConnection {
-    
+
     private final HttpClient httpClient;
 
     private final ByteArrayOutputStream output;
-    
+
     private final HttpPost request;
-    
+
     private volatile HttpResponse response;
 
     public HttpClientConnection(HttpClient httpClient, URL url) {
@@ -68,7 +67,7 @@ public class HttpClientConnection implements HessianConnection {
     }
 
     public String getStatusMessage() {
-        return response == null || response.getStatusLine() == null ? null :  response.getStatusLine().getReasonPhrase();
+        return response == null || response.getStatusLine() == null ? null : response.getStatusLine().getReasonPhrase();
     }
 
     public InputStream getInputStream() throws IOException {

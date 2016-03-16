@@ -15,6 +15,9 @@
  */
 package com.alibaba.dubbo.common.json;
 
+import junit.framework.Assert;
+import junit.framework.TestCase;
+
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.HashMap;
@@ -22,196 +25,186 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
+public class JSONTest extends TestCase {
+    public void testException() throws Exception {
+        MyException e = new MyException("001", "AAAAAAAA");
 
-public class JSONTest extends TestCase
-{
-	public void testException() throws Exception {
-		MyException e = new MyException("001", "AAAAAAAA");
-		
-		StringWriter writer = new StringWriter();
-		JSON.json(e, writer);
-		String json = writer.getBuffer().toString();
-		System.out.println(json);
-		// Assert.assertEquals("{\"code\":\"001\",\"message\":\"AAAAAAAA\"}", json);
-		
-		StringReader reader = new StringReader(json);
-		MyException result = JSON.parse(reader, MyException.class);
-		Assert.assertEquals("001", result.getCode());
-		Assert.assertEquals("AAAAAAAA", result.getMessage());
-	}
+        StringWriter writer = new StringWriter();
+        JSON.json(e, writer);
+        String json = writer.getBuffer().toString();
+        System.out.println(json);
+        // Assert.assertEquals("{\"code\":\"001\",\"message\":\"AAAAAAAA\"}", json);
 
-	@SuppressWarnings("unchecked")
-	public void testMap() throws Exception {
-		Map<String, String> map = new HashMap<String, String>();
-		map.put("aaa", "bbb");
-		
-		StringWriter writer = new StringWriter();
-		JSON.json(map, writer);
-		String json = writer.getBuffer().toString();
-		Assert.assertEquals("{\"aaa\":\"bbb\"}", json);
-		
-		StringReader reader = new StringReader(json);
-		Map<String, String> result = JSON.parse(reader, Map.class);
-		Assert.assertEquals("bbb", result.get("aaa"));
-	}
+        StringReader reader = new StringReader(json);
+        MyException result = JSON.parse(reader, MyException.class);
+        Assert.assertEquals("001", result.getCode());
+        Assert.assertEquals("AAAAAAAA", result.getMessage());
+    }
 
-	@SuppressWarnings("unchecked")
-	public void testMapArray() throws Exception {
-		Map<String, String> map = new HashMap<String, String>();
-		map.put("aaa", "bbb");
+    @SuppressWarnings("unchecked")
+    public void testMap() throws Exception {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("aaa", "bbb");
 
-		StringWriter writer = new StringWriter();
-		JSON.json(new Object[] {map}, writer); // args
-		String json = writer.getBuffer().toString();
-		Assert.assertEquals("[{\"aaa\":\"bbb\"}]", json);
+        StringWriter writer = new StringWriter();
+        JSON.json(map, writer);
+        String json = writer.getBuffer().toString();
+        Assert.assertEquals("{\"aaa\":\"bbb\"}", json);
 
-		StringReader reader = new StringReader(json);
-		Object[] result = JSON.parse(reader, new Class<?>[] { Map.class });
-		Assert.assertEquals(1, result.length);
-		Assert.assertEquals("bbb", ((Map<String, String>)result[0]).get("aaa"));
-	}
+        StringReader reader = new StringReader(json);
+        Map<String, String> result = JSON.parse(reader, Map.class);
+        Assert.assertEquals("bbb", result.get("aaa"));
+    }
 
-	@SuppressWarnings("unchecked")
-	public void testLinkedMap() throws Exception {
-		LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
-		map.put("aaa", "bbb");
-		
-		StringWriter writer = new StringWriter();
-		JSON.json(map, writer);
-		String json = writer.getBuffer().toString();
-		Assert.assertEquals("{\"aaa\":\"bbb\"}", json);
+    @SuppressWarnings("unchecked")
+    public void testMapArray() throws Exception {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("aaa", "bbb");
 
-		StringReader reader = new StringReader(json);
-		LinkedHashMap<String, String> result = JSON.parse(reader, LinkedHashMap.class);
-		Assert.assertEquals("bbb", result.get("aaa"));
-	}
+        StringWriter writer = new StringWriter();
+        JSON.json(new Object[]{map}, writer); // args
+        String json = writer.getBuffer().toString();
+        Assert.assertEquals("[{\"aaa\":\"bbb\"}]", json);
 
-	public void testObject2Json() throws Exception
-	{
-		Bean bean = new Bean();
-		bean.array = new int[]{1, 3, 4};
-		bean.setName("ql");
+        StringReader reader = new StringReader(json);
+        Object[] result = JSON.parse(reader, new Class<?>[]{Map.class});
+        Assert.assertEquals(1, result.length);
+        Assert.assertEquals("bbb", ((Map<String, String>) result[0]).get("aaa"));
+    }
 
-		String json = JSON.json(bean);
-		bean = JSON.parse(json, Bean.class);
-		assertEquals(bean.getName(), "ql");
-		assertEquals(bean.getDisplayName(), "钱磊");
-		assertEquals(bean.bytes.length, DEFAULT_BYTES.length);
-		assertEquals(bean.$$, DEFAULT_$$);
+    @SuppressWarnings("unchecked")
+    public void testLinkedMap() throws Exception {
+        LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
+        map.put("aaa", "bbb");
 
-		assertEquals("{\"name\":\"ql\",\"array\":[1,3,4]}", JSON.json(bean, new String[]{"name", "array"}));
-	}
+        StringWriter writer = new StringWriter();
+        JSON.json(map, writer);
+        String json = writer.getBuffer().toString();
+        Assert.assertEquals("{\"aaa\":\"bbb\"}", json);
 
-	public void testParse2JSONObject() throws Exception
-	{
-		JSONObject jo = (JSONObject)JSON.parse("{name:'qianlei',array:[1,2,3,4,98.123],b1:TRUE,$1:NULL,$2:FALSE,__3:NULL}");
-		assertEquals(jo.getString("name"), "qianlei");
-		assertEquals(jo.getArray("array").length(), 5);
-		assertEquals(jo.get("$2"), Boolean.FALSE);
-		assertEquals(jo.get("__3"), null);
+        StringReader reader = new StringReader(json);
+        LinkedHashMap<String, String> result = JSON.parse(reader, LinkedHashMap.class);
+        Assert.assertEquals("bbb", result.get("aaa"));
+    }
 
-		for(int i=0;i<10000;i++)
-			JSON.parse("{\"name\":\"qianlei\",\"array\":[1,2,3,4,98.123],\"displayName\":\"钱磊\"}");
+    public void testObject2Json() throws Exception {
+        Bean bean = new Bean();
+        bean.array = new int[]{1, 3, 4};
+        bean.setName("ql");
 
-		long now = System.currentTimeMillis();
-		for(int i=0;i<10000;i++)
-			JSON.parse("{\"name\":\"qianlei\",\"array\":[1,2,3,4,98.123],\"displayName\":\"钱磊\"}");
-		System.out.println("parse to JSONObject 10000 times in: " + ( System.currentTimeMillis()-now) );
-	}
+        String json = JSON.json(bean);
+        bean = JSON.parse(json, Bean.class);
+        assertEquals(bean.getName(), "ql");
+        assertEquals(bean.getDisplayName(), "钱磊");
+        assertEquals(bean.bytes.length, DEFAULT_BYTES.length);
+        assertEquals(bean.$$, DEFAULT_$$);
 
-	@SuppressWarnings("unchecked")
-	public void testParse2Class() throws Exception
-	{
-		int[] o1 = {1,2,3,4,5}, o2 = JSON.parse("[1.2,2,3,4,5]", int[].class);
-		assertEquals(o2.length, 5);
-		for(int i=0;i<5;i++)
-			assertEquals(o1[i], o2[i]);
+        assertEquals("{\"name\":\"ql\",\"array\":[1,3,4]}", JSON.json(bean, new String[]{"name", "array"}));
+    }
 
-		List l1 = (List)JSON.parse("[1.2,2,3,4,5]", List.class);
-		assertEquals(l1.size(), 5);
-		for(int i=0;i<5;i++)
-			assertEquals(o1[i], ((Number)l1.get(i)).intValue());
+    public void testParse2JSONObject() throws Exception {
+        JSONObject jo = (JSONObject) JSON.parse("{name:'qianlei',array:[1,2,3,4,98.123],b1:TRUE,$1:NULL,$2:FALSE,__3:NULL}");
+        assertEquals(jo.getString("name"), "qianlei");
+        assertEquals(jo.getArray("array").length(), 5);
+        assertEquals(jo.get("$2"), Boolean.FALSE);
+        assertEquals(jo.get("__3"), null);
 
-		Bean bean = JSON.parse("{name:'qianlei',array:[1,2,3,4,98.123],displayName:'钱磊',$$:214726,$b:TRUE}", Bean.class);
-		assertEquals(bean.getName(), "qianlei");
-		assertEquals(bean.getDisplayName(), "钱磊");
-		assertEquals(bean.array.length, 5);
-		assertEquals(bean.$$, 214726);
-		assertEquals(bean.$b, true);
+        for (int i = 0; i < 10000; i++)
+            JSON.parse("{\"name\":\"qianlei\",\"array\":[1,2,3,4,98.123],\"displayName\":\"钱磊\"}");
 
-		for(int i=0;i<10000;i++)
-			JSON.parse("{name:'qianlei',array:[1,2,3,4,98.123],displayName:'钱磊'}", Bean1.class);
-	
-		long now = System.currentTimeMillis();
-		for(int i=0;i<10000;i++)
-			JSON.parse("{name:'qianlei',array:[1,2,3,4,98.123],displayName:'钱磊'}", Bean1.class);
-		System.out.println("parse to Class 10000 times in: " + ( System.currentTimeMillis()-now) );
-	}
+        long now = System.currentTimeMillis();
+        for (int i = 0; i < 10000; i++)
+            JSON.parse("{\"name\":\"qianlei\",\"array\":[1,2,3,4,98.123],\"displayName\":\"钱磊\"}");
+        System.out.println("parse to JSONObject 10000 times in: " + (System.currentTimeMillis() - now));
+    }
 
-	public void testParse2Arguments() throws Exception
-	{
-		Object[] test = JSON.parse("[1.2, 2, {name:'qianlei',array:[1,2,3,4,98.123]} ]", new Class<?>[]{ int.class, int.class, Bean.class });
-		assertEquals(test[1], 2);
-		assertEquals(test[2].getClass(), Bean.class);
-		test = JSON.parse("[1.2, 2]", new Class<?>[]{ int.class, int.class });
-		assertEquals(test[0], 1);
-	}
+    @SuppressWarnings("unchecked")
+    public void testParse2Class() throws Exception {
+        int[] o1 = {1, 2, 3, 4, 5}, o2 = JSON.parse("[1.2,2,3,4,5]", int[].class);
+        assertEquals(o2.length, 5);
+        for (int i = 0; i < 5; i++)
+            assertEquals(o1[i], o2[i]);
 
-	static byte[] DEFAULT_BYTES = {3,12,14,41,12,2,3,12,4,67,23};
+        List l1 = (List) JSON.parse("[1.2,2,3,4,5]", List.class);
+        assertEquals(l1.size(), 5);
+        for (int i = 0; i < 5; i++)
+            assertEquals(o1[i], ((Number) l1.get(i)).intValue());
 
-	static int DEFAULT_$$ = 152;
+        Bean bean = JSON.parse("{name:'qianlei',array:[1,2,3,4,98.123],displayName:'钱磊',$$:214726,$b:TRUE}", Bean.class);
+        assertEquals(bean.getName(), "qianlei");
+        assertEquals(bean.getDisplayName(), "钱磊");
+        assertEquals(bean.array.length, 5);
+        assertEquals(bean.$$, 214726);
+        assertEquals(bean.$b, true);
 
-	public static class Bean1
-	{
-		private String name,displayName;
+        for (int i = 0; i < 10000; i++)
+            JSON.parse("{name:'qianlei',array:[1,2,3,4,98.123],displayName:'钱磊'}", Bean1.class);
 
-		public int[] array;
+        long now = System.currentTimeMillis();
+        for (int i = 0; i < 10000; i++)
+            JSON.parse("{name:'qianlei',array:[1,2,3,4,98.123],displayName:'钱磊'}", Bean1.class);
+        System.out.println("parse to Class 10000 times in: " + (System.currentTimeMillis() - now));
+    }
 
-		public String getDisplayName() {
-			return displayName;
-		}
+    public void testParse2Arguments() throws Exception {
+        Object[] test = JSON.parse("[1.2, 2, {name:'qianlei',array:[1,2,3,4,98.123]} ]", new Class<?>[]{int.class, int.class, Bean.class});
+        assertEquals(test[1], 2);
+        assertEquals(test[2].getClass(), Bean.class);
+        test = JSON.parse("[1.2, 2]", new Class<?>[]{int.class, int.class});
+        assertEquals(test[0], 1);
+    }
 
-		public void setDisplayName(String displayName) {
-			this.displayName = displayName;
-		}
+    static byte[] DEFAULT_BYTES = {3, 12, 14, 41, 12, 2, 3, 12, 4, 67, 23};
 
-		public String getName() {
-			return name;
-		}
+    static int DEFAULT_$$ = 152;
 
-		public void setName(String name) {
-			this.name = name;
-		}
-	}
+    public static class Bean1 {
+        private String name, displayName;
 
-	public static class Bean
-	{
-		private String name, displayName = "钱磊";
+        public int[] array;
 
-		public int[] array;
+        public String getDisplayName() {
+            return displayName;
+        }
 
-		public boolean $b;
+        public void setDisplayName(String displayName) {
+            this.displayName = displayName;
+        }
 
-		public int $$ = DEFAULT_$$;
+        public String getName() {
+            return name;
+        }
 
-		public byte[] bytes = DEFAULT_BYTES;
+        public void setName(String name) {
+            this.name = name;
+        }
+    }
 
-		public String getDisplayName() {
-			return displayName;
-		}
+    public static class Bean {
+        private String name, displayName = "钱磊";
 
-		public void setDisplayName(String displayName) {
-			this.displayName = displayName;
-		}
+        public int[] array;
 
-		public String getName() {
-			return name;
-		}
+        public boolean $b;
 
-		public void setName(String name) {
-			this.name = name;
-		}
-	}
+        public int $$ = DEFAULT_$$;
+
+        public byte[] bytes = DEFAULT_BYTES;
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public void setDisplayName(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+    }
 }

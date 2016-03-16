@@ -17,6 +17,7 @@ package com.alibaba.dubbo.config.utils;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 /**

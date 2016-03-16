@@ -15,6 +15,14 @@
  */
 package com.alibaba.dubbo.remoting.p2p.support;
 
+import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.utils.IOUtils;
+import com.alibaba.dubbo.common.utils.NamedThreadFactory;
+import com.alibaba.dubbo.common.utils.NetUtils;
+import com.alibaba.dubbo.remoting.ChannelHandler;
+import com.alibaba.dubbo.remoting.RemotingException;
+import com.alibaba.dubbo.remoting.p2p.Peer;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -25,23 +33,15 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.utils.IOUtils;
-import com.alibaba.dubbo.common.utils.NamedThreadFactory;
-import com.alibaba.dubbo.common.utils.NetUtils;
-import com.alibaba.dubbo.remoting.ChannelHandler;
-import com.alibaba.dubbo.remoting.RemotingException;
-import com.alibaba.dubbo.remoting.p2p.Peer;
-
 /**
  * FileGroup
- * 
+ *
  * @author william.liangf
  */
 public class FileGroup extends AbstractGroup {
-    
+
     private final File file;
-    
+
     private volatile long last;
 
     // 定时任务执行器
@@ -50,7 +50,7 @@ public class FileGroup extends AbstractGroup {
     // 重连定时器，定时检查连接是否可用，不可用时，无限次重连
     private final ScheduledFuture<?> checkModifiedFuture;
 
-    public FileGroup(URL url){
+    public FileGroup(URL url) {
         super(url);
         String path = url.getAbsolutePath();
         file = new File(path);
@@ -69,7 +69,7 @@ public class FileGroup extends AbstractGroup {
     public void close() {
         super.close();
         try {
-            if (! checkModifiedFuture.isCancelled()) {
+            if (!checkModifiedFuture.isCancelled()) {
                 checkModifiedFuture.cancel(true);
             }
         } catch (Throwable t) {
@@ -84,7 +84,7 @@ public class FileGroup extends AbstractGroup {
             changed();
         }
     }
-    
+
     private void changed() throws RemotingException {
         try {
             String[] lines = IOUtils.readLines(file);
@@ -106,13 +106,13 @@ public class FileGroup extends AbstractGroup {
                     return peer;
                 }
             }
-            IOUtils.appendLines(file, new String[] {full});
+            IOUtils.appendLines(file, new String[]{full});
         } catch (IOException e) {
             throw new RemotingException(new InetSocketAddress(NetUtils.getLocalHost(), 0), getUrl().toInetSocketAddress(), e.getMessage(), e);
         }
         return peer;
     }
-    
+
     @Override
     public void leave(URL url) throws RemotingException {
         super.leave(url);

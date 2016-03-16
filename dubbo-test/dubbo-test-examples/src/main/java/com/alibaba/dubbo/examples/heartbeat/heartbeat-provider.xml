@@ -23,12 +23,13 @@
 
     <!--<dubbo:registry address="127.0.0.1:9090"/>-->
 
-    <dubbo:protocol name="dubbo" port="20880" />
+    <dubbo:protocol name="dubbo" port="20880"/>
 
     <bean id="helloService" class="com.alibaba.dubbo.examples.remoting.heartbeat.impl.HelloServiceImpl"/>
 
-    <dubbo:service registry="N/A" interface="com.alibaba.dubbo.examples.remoting.heartbeat.api.HelloService" ref="helloService">
-        <dubbo:parameter key="heartbeat" value="3000" />
+    <dubbo:service registry="N/A" interface="com.alibaba.dubbo.examples.remoting.heartbeat.api.HelloService"
+                   ref="helloService">
+        <dubbo:parameter key="heartbeat" value="3000"/>
     </dubbo:service>
 
 </beans>

@@ -15,15 +15,15 @@
  */
 package com.alibaba.dubbo.rpc.cluster.loadbalance;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.AtomicPositiveInteger;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Round robin load balance.
@@ -33,8 +33,8 @@ import com.alibaba.dubbo.rpc.Invoker;
  */
 public class RoundRobinLoadBalance extends AbstractLoadBalance {
 
-    public static final String NAME = "roundrobin"; 
-    
+    public static final String NAME = "roundrobin";
+
     private final ConcurrentMap<String, AtomicPositiveInteger> sequences = new ConcurrentHashMap<String, AtomicPositiveInteger>();
 
     private final ConcurrentMap<String, AtomicPositiveInteger> weightSequences = new ConcurrentHashMap<String, AtomicPositiveInteger>();

@@ -15,8 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.protocol.dubbo;
 
-import java.net.InetSocketAddress;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.Channel;
@@ -26,27 +24,25 @@ import com.alibaba.dubbo.remoting.TimeoutException;
 import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
 import com.alibaba.dubbo.remoting.exchange.support.header.HeaderExchangeClient;
 import com.alibaba.dubbo.remoting.transport.ClientDelegate;
-import com.alibaba.dubbo.rpc.Invocation;
-import com.alibaba.dubbo.rpc.Result;
-import com.alibaba.dubbo.rpc.RpcException;
-import com.alibaba.dubbo.rpc.RpcInvocation;
-import com.alibaba.dubbo.rpc.RpcResult;
+import com.alibaba.dubbo.rpc.*;
 import com.alibaba.dubbo.rpc.protocol.AbstractInvoker;
 
+import java.net.InetSocketAddress;
+
 /**
- * 基于已有channel的invoker. 
- * 
+ * 基于已有channel的invoker.
+ *
  * @author chao.liuc
  */
 class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
 
     private final Channel channel;
-    private final String serviceKey ; 
+    private final String serviceKey;
 
     public ChannelWrappedInvoker(Class<T> serviceType, Channel channel, URL url, String serviceKey) {
 
-        super(serviceType, url, new String[] { Constants.GROUP_KEY,
-                Constants.TOKEN_KEY, Constants.TIMEOUT_KEY });
+        super(serviceType, url, new String[]{Constants.GROUP_KEY,
+                Constants.TOKEN_KEY, Constants.TIMEOUT_KEY});
         this.channel = channel;
         this.serviceKey = serviceKey;
     }
@@ -62,7 +58,7 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
 
         try {
             if (getUrl().getMethodParameter(invocation.getMethodName(), Constants.ASYNC_KEY, false)) { // 不可靠异步
-                currentClient.send(inv,getUrl().getMethodParameter(invocation.getMethodName(), Constants.SENT_KEY, false));
+                currentClient.send(inv, getUrl().getMethodParameter(invocation.getMethodName(), Constants.SENT_KEY, false));
                 return new RpcResult();
             }
             int timeout = getUrl().getMethodParameter(invocation.getMethodName(),
@@ -86,7 +82,7 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
     public static class ChannelWrapper extends ClientDelegate {
 
         private final Channel channel;
-        private final URL     url;
+        private final URL url;
 
         public ChannelWrapper(Channel channel) {
             this.channel = channel;

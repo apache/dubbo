@@ -16,37 +16,32 @@
 package com.alibaba.dubbo.common.utils;
 
 import java.lang.reflect.Array;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ClassHelper {
 
     public static Class<?> forNameWithThreadContextClassLoader(String name)
-        throws ClassNotFoundException {
+            throws ClassNotFoundException {
         return forName(name, Thread.currentThread().getContextClassLoader());
     }
 
     public static Class<?> forNameWithCallerClassLoader(String name, Class<?> caller)
-        throws ClassNotFoundException {
+            throws ClassNotFoundException {
         return forName(name, caller.getClassLoader());
     }
 
     public static ClassLoader getCallerClassLoader(Class<?> caller) {
         return caller.getClassLoader();
     }
-    
-	/**
-	 * get class loader 
-	 * 
-	 * @param cls
-	 * @return class loader
-	 */
+
+    /**
+     * get class loader
+     *
+     * @param cls
+     * @return class loader
+     */
     public static ClassLoader getClassLoader(Class<?> cls) {
-    	ClassLoader cl = null;
+        ClassLoader cl = null;
         try {
             cl = Thread.currentThread().getContextClassLoader();
         } catch (Throwable ex) {
@@ -63,18 +58,18 @@ public class ClassHelper {
      * Return the default ClassLoader to use: typically the thread context
      * ClassLoader, if available; the ClassLoader that loaded the ClassUtils
      * class will be used as fallback.
-     * <p>
+     * <p/>
      * Call this method if you intend to use the thread context ClassLoader in a
      * scenario where you absolutely need a non-null ClassLoader reference: for
      * example, for class path resource loading (but not necessarily for
      * <code>Class.forName</code>, which accepts a <code>null</code> ClassLoader
      * reference as well).
-     * 
+     *
      * @return the default ClassLoader (never <code>null</code>)
      * @see java.lang.Thread#getContextClassLoader()
      */
     public static ClassLoader getClassLoader() {
-    	return getClassLoader(ClassHelper.class);
+        return getClassLoader(ClassHelper.class);
     }
 
     /**
@@ -89,13 +84,13 @@ public class ClassHelper {
      * Replacement for <code>Class.forName()</code> that also returns Class
      * instances for primitives (like "int") and array class names (like
      * "String[]").
-     * 
-     * @param name the name of the Class
+     *
+     * @param name        the name of the Class
      * @param classLoader the class loader to use (may be <code>null</code>,
-     *            which indicates the default class loader)
+     *                    which indicates the default class loader)
      * @return Class instance for the supplied name
      * @throws ClassNotFoundException if the class was not found
-     * @throws LinkageError if the class file could not be loaded
+     * @throws LinkageError           if the class file could not be loaded
      * @see Class#forName(String, boolean, ClassLoader)
      */
     public static Class<?> forName(String name, ClassLoader classLoader)
@@ -137,14 +132,14 @@ public class ClassHelper {
     /**
      * Resolve the given class name as primitive class, if appropriate,
      * according to the JVM's naming rules for primitive classes.
-     * <p>
+     * <p/>
      * Also supports the JVM's internal class names for primitive arrays. Does
      * <i>not</i> support the "[]" suffix notation for primitive arrays; this is
      * only supported by {@link #forName}.
-     * 
+     *
      * @param name the name of the potentially primitive class
      * @return the primitive class, or <code>null</code> if the name does not
-     *         denote a primitive class or primitive array class
+     * denote a primitive class or primitive array class
      */
     public static Class<?> resolvePrimitiveClassName(String name) {
         Class<?> result = null;
@@ -157,22 +152,26 @@ public class ClassHelper {
         return result;
     }
 
-    /** Suffix for array class names: "[]" */
-    public static final String  ARRAY_SUFFIX            = "[]";
-    /** Prefix for internal array class names: "[L" */
-    private static final String INTERNAL_ARRAY_PREFIX   = "[L";
+    /**
+     * Suffix for array class names: "[]"
+     */
+    public static final String ARRAY_SUFFIX = "[]";
+    /**
+     * Prefix for internal array class names: "[L"
+     */
+    private static final String INTERNAL_ARRAY_PREFIX = "[L";
 
     /**
      * Map with primitive type name as key and corresponding primitive type as
      * value, for example: "int" -> "int.class".
      */
-    private static final Map<String,Class<?>>    primitiveTypeNameMap    = new HashMap<String, Class<?>>(16);
+    private static final Map<String, Class<?>> primitiveTypeNameMap = new HashMap<String, Class<?>>(16);
 
     /**
      * Map with primitive wrapper type as key and corresponding primitive type
      * as value, for example: Integer.class -> int.class.
      */
-    private static final Map<Class<?>,Class<?>>    primitiveWrapperTypeMap = new HashMap<Class<?>, Class<?>>(8);
+    private static final Map<Class<?>, Class<?>> primitiveWrapperTypeMap = new HashMap<Class<?>, Class<?>>(8);
 
     static {
         primitiveWrapperTypeMap.put(Boolean.class, boolean.class);
@@ -187,19 +186,19 @@ public class ClassHelper {
         Set<Class<?>> primitiveTypeNames = new HashSet<Class<?>>(16);
         primitiveTypeNames.addAll(primitiveWrapperTypeMap.values());
         primitiveTypeNames.addAll(Arrays
-                .asList(new Class<?>[] { boolean[].class, byte[].class, char[].class, double[].class,
-            float[].class, int[].class, long[].class, short[].class }));
-        for (Iterator<Class<?>> it = primitiveTypeNames.iterator(); it.hasNext();) {
+                .asList(new Class<?>[]{boolean[].class, byte[].class, char[].class, double[].class,
+                        float[].class, int[].class, long[].class, short[].class}));
+        for (Iterator<Class<?>> it = primitiveTypeNames.iterator(); it.hasNext(); ) {
             Class<?> primitiveClass = (Class<?>) it.next();
             primitiveTypeNameMap.put(primitiveClass.getName(), primitiveClass);
         }
     }
 
-    public static String toShortString(Object obj){
-        if(obj == null){
+    public static String toShortString(Object obj) {
+        if (obj == null) {
             return "null";
         }
         return obj.getClass().getSimpleName() + "@" + System.identityHashCode(obj);
-        
+
     }
 }

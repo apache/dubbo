@@ -22,11 +22,7 @@ import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;
 
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
@@ -34,10 +30,10 @@ import java.util.Map;
 public class MockChannel implements Channel {
 
     private Map<String, Object> attributes = new HashMap<String, Object>();
-    
+
     private volatile boolean closed = false;
     private List<Object> sentObjects = new ArrayList<Object>();
-    
+
     public InetSocketAddress getRemoteAddress() {
         return null;
     }
@@ -93,7 +89,7 @@ public class MockChannel implements Channel {
     public boolean isClosed() {
         return closed;
     }
-    
+
     public List<Object> getSentObjects() {
         return Collections.unmodifiableList(sentObjects);
     }

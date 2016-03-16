@@ -15,9 +15,6 @@
  */
 package com.alibaba.dubbo.remoting.exchange.support;
 
-import java.net.InetSocketAddress;
-import java.util.Collection;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
@@ -25,26 +22,29 @@ import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.exchange.ExchangeChannel;
 import com.alibaba.dubbo.remoting.exchange.ExchangeServer;
 
+import java.net.InetSocketAddress;
+import java.util.Collection;
+
 /**
  * ExchangeServerDelegate
- * 
+ *
  * @author william.liangf
  */
 public class ExchangeServerDelegate implements ExchangeServer {
-    
+
     private transient ExchangeServer server;
-    
+
     public ExchangeServerDelegate() {
     }
 
-    public ExchangeServerDelegate(ExchangeServer server){
+    public ExchangeServerDelegate(ExchangeServer server) {
         setServer(server);
     }
 
     public ExchangeServer getServer() {
         return server;
     }
-    
+
     public void setServer(ExchangeServer server) {
         this.server = server;
     }
@@ -58,10 +58,10 @@ public class ExchangeServerDelegate implements ExchangeServer {
     }
 
     @Deprecated
-    public void reset(com.alibaba.dubbo.common.Parameters parameters){
+    public void reset(com.alibaba.dubbo.common.Parameters parameters) {
         reset(getUrl().addParameters(parameters.getParameters()));
     }
-    
+
     public Collection<Channel> getChannels() {
         return server.getChannels();
     }

@@ -19,17 +19,16 @@ import com.alibaba.dubbo.common.URL;
 
 /**
  * @author ding.lid
- *
  */
 public class UrlHolder {
     private Double Num;
-    
+
     private URL url;
-    
+
     private String name;
-    
+
     private int age;
-    
+
     public Double getNum() {
         return Num;
     }

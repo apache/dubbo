@@ -15,18 +15,17 @@
  */
 package com.alibaba.dubbo.remoting.transport.netty;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.Server;
 import com.alibaba.dubbo.remoting.exchange.ExchangeChannel;
 import com.alibaba.dubbo.remoting.exchange.Exchangers;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * User: heyman
@@ -50,7 +49,7 @@ public class NettyClientTest {
             Thread.sleep(5);
             clients.add(client);
         }
-        for (ExchangeChannel client : clients){
+        for (ExchangeChannel client : clients) {
             client.close();
         }
         Thread.sleep(1000);
@@ -69,11 +68,12 @@ public class NettyClientTest {
         try {
             if (server != null)
                 server.close();
-        } finally {}
+        } finally {
+        }
     }
-    
+
     public static void main(String[] args) throws RemotingException, InterruptedException {
-    	ExchangeChannel client = Exchangers.connect(URL.valueOf("exchange://10.20.153.10:20880?client=netty&heartbeat=1000"));
-    	Thread.sleep(60*1000*50);
-	}
+        ExchangeChannel client = Exchangers.connect(URL.valueOf("exchange://10.20.153.10:20880?client=netty&heartbeat=1000"));
+        Thread.sleep(60 * 1000 * 50);
+    }
 }

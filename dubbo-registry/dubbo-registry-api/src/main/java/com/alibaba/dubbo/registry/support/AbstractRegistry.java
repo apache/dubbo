@@ -15,28 +15,6 @@
  */
 package com.alibaba.dubbo.registry.support;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.RandomAccessFile;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
@@ -48,9 +26,20 @@ import com.alibaba.dubbo.common.utils.UrlUtils;
 import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.Registry;
 
+import java.io.*;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+
 /**
  * AbstractRegistry. (SPI, Prototype, ThreadSafe)
- * 
+ *
  * @author chao.liuc
  * @author william.liangf
  */
@@ -77,8 +66,8 @@ public abstract class AbstractRegistry implements Registry {
     private final ExecutorService registryCacheExecutor = Executors.newFixedThreadPool(1, new NamedThreadFactory("DubboSaveRegistryCache", true));
 
     //是否是同步保存文件
-    private final boolean syncSaveFile ;
-    
+    private final boolean syncSaveFile;
+
     private final AtomicLong lastCacheChanged = new AtomicLong();
 
     private final Set<URL> registered = new ConcurrentHashSet<URL>();
@@ -95,8 +84,8 @@ public abstract class AbstractRegistry implements Registry {
         File file = null;
         if (ConfigUtils.isNotEmpty(filename)) {
             file = new File(filename);
-            if(! file.exists() && file.getParentFile() != null && ! file.getParentFile().exists()){
-                if(! file.getParentFile().mkdirs()){
+            if (!file.exists() && file.getParentFile() != null && !file.getParentFile().exists()) {
+                if (!file.getParentFile().mkdirs()) {
                     throw new IllegalArgumentException("Invalid registry store file " + file + ", cause: Failed to create directory " + file.getParentFile() + "!");
                 }
             }
@@ -137,22 +126,24 @@ public abstract class AbstractRegistry implements Registry {
         return properties;
     }
 
-    public AtomicLong getLastCacheChanged(){
+    public AtomicLong getLastCacheChanged() {
         return lastCacheChanged;
     }
 
-    private class SaveProperties implements Runnable{
+    private class SaveProperties implements Runnable {
         private long version;
-        private SaveProperties(long version){
+
+        private SaveProperties(long version) {
             this.version = version;
         }
+
         public void run() {
             doSaveProperties(version);
         }
     }
-    
+
     public void doSaveProperties(long version) {
-        if(version < lastCacheChanged.get()){
+        if (version < lastCacheChanged.get()) {
             return;
         }
         if (file == null) {
@@ -176,35 +167,35 @@ public abstract class AbstractRegistry implements Registry {
                     logger.warn(e.getMessage(), e);
                 }
             }
-        }     
-     // 保存
+        }
+        // 保存
         try {
-			newProperties.putAll(properties);
+            newProperties.putAll(properties);
             File lockfile = new File(file.getAbsolutePath() + ".lock");
             if (!lockfile.exists()) {
-            	lockfile.createNewFile();
+                lockfile.createNewFile();
             }
             RandomAccessFile raf = new RandomAccessFile(lockfile, "rw");
             try {
                 FileChannel channel = raf.getChannel();
                 try {
                     FileLock lock = channel.tryLock();
-                	if (lock == null) {
+                    if (lock == null) {
                         throw new IOException("Can not lock the registry cache file " + file.getAbsolutePath() + ", ignore and retry later, maybe multi java process use the file, please config: dubbo.registry.file=xxx.properties");
                     }
-                	// 保存
+                    // 保存
                     try {
-                    	if (! file.exists()) {
+                        if (!file.exists()) {
                             file.createNewFile();
                         }
-                        FileOutputStream outputFile = new FileOutputStream(file);  
+                        FileOutputStream outputFile = new FileOutputStream(file);
                         try {
                             newProperties.store(outputFile, "Dubbo Registry Cache");
                         } finally {
-                        	outputFile.close();
+                            outputFile.close();
                         }
                     } finally {
-                    	lock.release();
+                        lock.release();
                     }
                 } finally {
                     channel.close();
@@ -269,7 +260,7 @@ public abstract class AbstractRegistry implements Registry {
         if (notifiedUrls != null && notifiedUrls.size() > 0) {
             for (List<URL> urls : notifiedUrls.values()) {
                 for (URL u : urls) {
-                    if (! Constants.EMPTY_PROTOCOL.equals(u.getProtocol())) {
+                    if (!Constants.EMPTY_PROTOCOL.equals(u.getProtocol())) {
                         result.add(u);
                     }
                 }
@@ -285,7 +276,7 @@ public abstract class AbstractRegistry implements Registry {
             List<URL> urls = reference.get();
             if (urls != null && urls.size() > 0) {
                 for (URL u : urls) {
-                    if (! Constants.EMPTY_PROTOCOL.equals(u.getProtocol())) {
+                    if (!Constants.EMPTY_PROTOCOL.equals(u.getProtocol())) {
                         result.add(u);
                     }
                 }
@@ -298,7 +289,7 @@ public abstract class AbstractRegistry implements Registry {
         if (url == null) {
             throw new IllegalArgumentException("register url == null");
         }
-        if (logger.isInfoEnabled()){
+        if (logger.isInfoEnabled()) {
             logger.info("Register: " + url);
         }
         registered.add(url);
@@ -308,7 +299,7 @@ public abstract class AbstractRegistry implements Registry {
         if (url == null) {
             throw new IllegalArgumentException("unregister url == null");
         }
-        if (logger.isInfoEnabled()){
+        if (logger.isInfoEnabled()) {
             logger.info("Unregister: " + url);
         }
         registered.remove(url);
@@ -321,7 +312,7 @@ public abstract class AbstractRegistry implements Registry {
         if (listener == null) {
             throw new IllegalArgumentException("subscribe listener == null");
         }
-        if (logger.isInfoEnabled()){
+        if (logger.isInfoEnabled()) {
             logger.info("Subscribe: " + url);
         }
         Set<NotifyListener> listeners = subscribed.get(url);
@@ -339,7 +330,7 @@ public abstract class AbstractRegistry implements Registry {
         if (listener == null) {
             throw new IllegalArgumentException("unsubscribe listener == null");
         }
-        if (logger.isInfoEnabled()){
+        if (logger.isInfoEnabled()) {
             logger.info("Unsubscribe: " + url);
         }
         Set<NotifyListener> listeners = subscribed.get(url);
@@ -351,7 +342,7 @@ public abstract class AbstractRegistry implements Registry {
     protected void recover() throws Exception {
         // register
         Set<URL> recoverRegistered = new HashSet<URL>(getRegistered());
-        if (! recoverRegistered.isEmpty()) {
+        if (!recoverRegistered.isEmpty()) {
             if (logger.isInfoEnabled()) {
                 logger.info("Recover register url " + recoverRegistered);
             }
@@ -361,7 +352,7 @@ public abstract class AbstractRegistry implements Registry {
         }
         // subscribe
         Map<URL, Set<NotifyListener>> recoverSubscribed = new HashMap<URL, Set<NotifyListener>>(getSubscribed());
-        if (! recoverSubscribed.isEmpty()) {
+        if (!recoverSubscribed.isEmpty()) {
             if (logger.isInfoEnabled()) {
                 logger.info("Recover subscribe url " + recoverSubscribed.keySet());
             }
@@ -384,22 +375,22 @@ public abstract class AbstractRegistry implements Registry {
     }
 
     protected void notify(List<URL> urls) {
-        if(urls == null || urls.isEmpty()) return;
-        
+        if (urls == null || urls.isEmpty()) return;
+
         for (Map.Entry<URL, Set<NotifyListener>> entry : getSubscribed().entrySet()) {
             URL url = entry.getKey();
-            
-            if(! UrlUtils.isMatch(url, urls.get(0))) {
+
+            if (!UrlUtils.isMatch(url, urls.get(0))) {
                 continue;
             }
-            
+
             Set<NotifyListener> listeners = entry.getValue();
             if (listeners != null) {
                 for (NotifyListener listener : listeners) {
                     try {
                         notify(url, listener, filterEmpty(url, urls));
                     } catch (Throwable t) {
-                        logger.error("Failed to notify registry event, urls: " +  urls + ", cause: " + t.getMessage(), t);
+                        logger.error("Failed to notify registry event, urls: " + urls + ", cause: " + t.getMessage(), t);
                     }
                 }
             }
@@ -413,8 +404,8 @@ public abstract class AbstractRegistry implements Registry {
         if (listener == null) {
             throw new IllegalArgumentException("notify listener == null");
         }
-        if ((urls == null || urls.size() == 0) 
-                && ! Constants.ANY_VALUE.equals(url.getServiceInterface())) {
+        if ((urls == null || urls.size() == 0)
+                && !Constants.ANY_VALUE.equals(url.getServiceInterface())) {
             logger.warn("Ignore empty notify urls for subscribe url " + url);
             return;
         }
@@ -424,13 +415,13 @@ public abstract class AbstractRegistry implements Registry {
         Map<String, List<URL>> result = new HashMap<String, List<URL>>();
         for (URL u : urls) {
             if (UrlUtils.isMatch(url, u)) {
-            	String category = u.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY);
-            	List<URL> categoryList = result.get(category);
-            	if (categoryList == null) {
-            		categoryList = new ArrayList<URL>();
-            		result.put(category, categoryList);
-            	}
-            	categoryList.add(u);
+                String category = u.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY);
+                List<URL> categoryList = result.get(category);
+                if (categoryList == null) {
+                    categoryList = new ArrayList<URL>();
+                    result.put(category, categoryList);
+                }
+                categoryList.add(u);
             }
         }
         if (result.size() == 0) {
@@ -454,7 +445,7 @@ public abstract class AbstractRegistry implements Registry {
         if (file == null) {
             return;
         }
-        
+
         try {
             StringBuilder buf = new StringBuilder();
             Map<String, List<URL>> categoryNotified = notified.get(url);
@@ -481,11 +472,11 @@ public abstract class AbstractRegistry implements Registry {
     }
 
     public void destroy() {
-        if (logger.isInfoEnabled()){
+        if (logger.isInfoEnabled()) {
             logger.info("Destroy registry:" + getUrl());
         }
         Set<URL> destroyRegistered = new HashSet<URL>(getRegistered());
-        if (! destroyRegistered.isEmpty()) {
+        if (!destroyRegistered.isEmpty()) {
             for (URL url : new HashSet<URL>(getRegistered())) {
                 if (url.getParameter(Constants.DYNAMIC_KEY, true)) {
                     try {
@@ -500,7 +491,7 @@ public abstract class AbstractRegistry implements Registry {
             }
         }
         Map<URL, Set<NotifyListener>> destroySubscribed = new HashMap<URL, Set<NotifyListener>>(getSubscribed());
-        if (! destroySubscribed.isEmpty()) {
+        if (!destroySubscribed.isEmpty()) {
             for (Map.Entry<URL, Set<NotifyListener>> entry : destroySubscribed.entrySet()) {
                 URL url = entry.getKey();
                 for (NotifyListener listener : entry.getValue()) {
@@ -510,7 +501,7 @@ public abstract class AbstractRegistry implements Registry {
                             logger.info("Destroy unsubscribe url " + url);
                         }
                     } catch (Throwable t) {
-                        logger.warn("Failed to unsubscribe url " + url + " to registry " + getUrl() + " on destroy, cause: " +t.getMessage(), t);
+                        logger.warn("Failed to unsubscribe url " + url + " to registry " + getUrl() + " on destroy, cause: " + t.getMessage(), t);
                     }
                 }
             }

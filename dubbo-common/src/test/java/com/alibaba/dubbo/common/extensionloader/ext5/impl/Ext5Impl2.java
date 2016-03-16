@@ -20,7 +20,6 @@ import com.alibaba.dubbo.common.extensionloader.ext5.NoAdaptiveMethodExt;
 
 /**
  * @author ding.lid
- *
  */
 public class Ext5Impl2 implements NoAdaptiveMethodExt {
     public String echo(URL url, String s) {

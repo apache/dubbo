@@ -21,16 +21,11 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
-import com.alibaba.dubbo.rpc.Filter;
-import com.alibaba.dubbo.rpc.Invocation;
-import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.Result;
-import com.alibaba.dubbo.rpc.RpcException;
-import com.alibaba.dubbo.rpc.RpcResult;
+import com.alibaba.dubbo.rpc.*;
 
 /**
  * CacheFilter
- * 
+ *
  * @author william.liangf
  */
 @Activate(group = {Constants.CONSUMER, Constants.PROVIDER}, value = Constants.CACHE_KEY)
@@ -53,7 +48,7 @@ public class CacheFilter implements Filter {
                         return new RpcResult(value);
                     }
                     Result result = invoker.invoke(invocation);
-                    if (! result.hasException()) {
+                    if (!result.hasException()) {
                         cache.put(key, result.getValue());
                     }
                     return result;

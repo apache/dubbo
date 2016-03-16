@@ -15,10 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.filter;
 
-import static org.junit.Assert.assertEquals;
-
-import org.junit.Test;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.LogUtil;
 import com.alibaba.dubbo.rpc.Filter;
@@ -26,10 +22,13 @@ import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.support.MockInvocation;
 import com.alibaba.dubbo.rpc.support.MyInvoker;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * AccessLogFilterTest.java
- * 
+ *
  * @author tony.chenl
  */
 public class AccessLogFilterTest {

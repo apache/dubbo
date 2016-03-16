@@ -15,29 +15,23 @@
  */
 package com.alibaba.dubbo.rpc.protocol;
 
-import java.util.List;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
-import com.alibaba.dubbo.rpc.Exporter;
-import com.alibaba.dubbo.rpc.Filter;
-import com.alibaba.dubbo.rpc.Invocation;
-import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.Protocol;
-import com.alibaba.dubbo.rpc.Result;
-import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.*;
+
+import java.util.List;
 
 /**
  * ListenerProtocol
- * 
+ *
  * @author william.liangf
  */
 public class ProtocolFilterWrapper implements Protocol {
 
     private final Protocol protocol;
 
-    public ProtocolFilterWrapper(Protocol protocol){
+    public ProtocolFilterWrapper(Protocol protocol) {
         if (protocol == null) {
             throw new IllegalArgumentException("protocol == null");
         }
@@ -70,7 +64,7 @@ public class ProtocolFilterWrapper implements Protocol {
         Invoker<T> last = invoker;
         List<Filter> filters = ExtensionLoader.getExtensionLoader(Filter.class).getActivateExtension(invoker.getUrl(), key, group);
         if (filters.size() > 0) {
-            for (int i = filters.size() - 1; i >= 0; i --) {
+            for (int i = filters.size() - 1; i >= 0; i--) {
                 final Filter filter = filters.get(i);
                 final Invoker<T> next = last;
                 last = new Invoker<T>() {
@@ -104,5 +98,5 @@ public class ProtocolFilterWrapper implements Protocol {
         }
         return last;
     }
-    
+
 }

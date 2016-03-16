@@ -20,7 +20,7 @@ import java.util.List;
 
 /**
  * DependItem
- * 
+ *
  * @author william.liangf
  */
 public class DependItem {
@@ -30,14 +30,14 @@ public class DependItem {
     private int index;
 
     private int level;
-    
+
     private DependItem parent;
 
     private final List<Integer> recursives = new ArrayList<Integer>();
 
     public DependItem() {
     }
-    
+
     public DependItem(String application, int level) {
         this.application = application;
         this.level = level;
@@ -85,7 +85,7 @@ public class DependItem {
     public List<Integer> getRecursives() {
         return recursives;
     }
-    
+
     public void addRecursive(int padding, int value) {
         while (recursives.size() < padding) {
             recursives.add(0);

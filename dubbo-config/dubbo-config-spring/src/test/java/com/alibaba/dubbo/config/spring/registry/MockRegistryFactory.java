@@ -1,12 +1,12 @@
 package com.alibaba.dubbo.config.spring.registry;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.registry.Registry;
 import com.alibaba.dubbo.registry.RegistryFactory;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:gang.lvg@taobao.com">kimi</a>

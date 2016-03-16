@@ -17,7 +17,7 @@ package com.alibaba.dubbo.rpc.protocol.dubbo.support;
 
 /**
  * NonSerialized
- * 
+ *
  * @author william.liangf
  */
 public class NonSerialized {

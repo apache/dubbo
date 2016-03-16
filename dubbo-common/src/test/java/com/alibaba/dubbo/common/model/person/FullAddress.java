@@ -24,19 +24,19 @@ public class FullAddress implements Serializable {
 
     private static final long serialVersionUID = 5163979984269419831L;
 
-    private String            countryId;
+    private String countryId;
 
-    private String            countryName;
+    private String countryName;
 
-    private String            provinceName;
+    private String provinceName;
 
-    private String            cityId;
+    private String cityId;
 
-    private String            cityName;
+    private String cityName;
 
-    private String            streetAddress;
+    private String streetAddress;
 
-    private String            zipCode;
+    private String zipCode;
 
     public void setCountryId(String countryId) {
         this.countryId = countryId;

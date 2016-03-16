@@ -21,7 +21,7 @@ import com.alibaba.dubbo.remoting.exchange.support.Replier;
 
 /**
  * DataHandler
- * 
+ *
  * @author william.liangf
  */
 public class WorldHandler implements Replier<World> {

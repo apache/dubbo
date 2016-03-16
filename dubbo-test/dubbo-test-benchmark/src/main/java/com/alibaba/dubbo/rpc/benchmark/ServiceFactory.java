@@ -1,24 +1,24 @@
 package com.alibaba.dubbo.rpc.benchmark;
 
-import java.util.concurrent.ConcurrentHashMap;
-
 import com.alibaba.dubbo.config.ApplicationConfig;
 import com.alibaba.dubbo.config.ReferenceConfig;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * Abstract Service Factory,create custom nums Service
- * 
+ *
  * @author tony.chenl
  */
 public class ServiceFactory<T> {
 
-    String targetIP       = null;
+    String targetIP = null;
 
-    int    targetPort     = 0;
+    int targetPort = 0;
 
-    int    connectTimeout = 0;
+    int connectTimeout = 0;
 
-    int    clientNums     = 0;
+    int clientNums = 0;
 
     public String getTargetIP() {
         return targetIP;
@@ -56,19 +56,19 @@ public class ServiceFactory<T> {
     private static ConcurrentHashMap<String, Object> services = new ConcurrentHashMap<String, Object>();
 
     @SuppressWarnings("unchecked")
-    public T get(final Class<T> cls){
+    public T get(final Class<T> cls) {
         String key = cls.getName();
         if (services.containsKey(key)) {
             return (T) services.get(key);
 
         } else {
-            T service = createClient(cls, targetIP, targetPort, connectTimeout,clientNums);
+            T service = createClient(cls, targetIP, targetPort, connectTimeout, clientNums);
             services.put(key, service);
             return (T) services.get(key);
         }
     }
 
-    protected T createClient(Class<T> cls, String targetIP, int targetPort, int connectTimeout,int clientNums){
+    protected T createClient(Class<T> cls, String targetIP, int targetPort, int connectTimeout, int clientNums) {
         ReferenceConfig<T> referenceConfig = new ReferenceConfig<T>();
         referenceConfig.setInterface(cls);
         StringBuilder url = new StringBuilder();

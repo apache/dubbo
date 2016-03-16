@@ -1,6 +1,5 @@
 package com.alibaba.dubbo.remoting.transport;
 
-import com.alibaba.dubbo.remoting.exchange.support.MultiMessage;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;
@@ -17,11 +16,11 @@ public class MultiMessageHandler extends AbstractChannelHandlerDelegate {
     }
 
     @SuppressWarnings("unchecked")
-	@Override
+    @Override
     public void received(Channel channel, Object message) throws RemotingException {
         if (message instanceof MultiMessage) {
-            MultiMessage list = (MultiMessage)message;
-            for(Object obj : list) {
+            MultiMessage list = (MultiMessage) message;
+            for (Object obj : list) {
                 handler.received(channel, obj);
             }
         } else {

@@ -23,7 +23,7 @@ import com.alibaba.dubbo.remoting.transport.ChannelHandlerDispatcher;
 
 /**
  * Transporter facade. (API, Static, ThreadSafe)
- * 
+ *
  * @author william.liangf
  */
 public class Transporters {
@@ -77,7 +77,7 @@ public class Transporters {
         Version.checkDuplicate(RemotingException.class);
     }
 
-    private Transporters(){
+    private Transporters() {
     }
 
 }

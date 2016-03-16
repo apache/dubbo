@@ -15,22 +15,22 @@
  */
 package com.alibaba.dubbo.monitor.simple.pages;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.container.page.Page;
 import com.alibaba.dubbo.container.page.PageHandler;
 import com.alibaba.dubbo.monitor.simple.RegistryContainer;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * ProvidersPageHandler
- * 
+ *
  * @author william.liangf
  */
 public class ProvidersPageHandler implements PageHandler {
-    
+
     public Page handle(URL url) {
         String service = url.getParameter("service");
         String host = url.getParameter("host");
@@ -47,12 +47,12 @@ public class ProvidersPageHandler implements PageHandler {
                     rows.add(row);
                 }
             }
-            return new Page("<a href=\"services.html\">Services</a> &gt; " + service 
-                    + " &gt; Providers | <a href=\"consumers.html?service=" + service 
-                    + "\">Consumers</a> | <a href=\"statistics.html?service=" + service 
-                    + "\">Statistics</a> | <a href=\"charts.html?service=" + service 
+            return new Page("<a href=\"services.html\">Services</a> &gt; " + service
+                    + " &gt; Providers | <a href=\"consumers.html?service=" + service
+                    + "\">Consumers</a> | <a href=\"statistics.html?service=" + service
+                    + "\">Statistics</a> | <a href=\"charts.html?service=" + service
                     + "\">Charts</a>", "Providers (" + rows.size() + ")",
-                    new String[] { "Provider URL:", "Unregister" }, rows);
+                    new String[]{"Provider URL:", "Unregister"}, rows);
         } else if (host != null && host.length() > 0) {
             List<List<String>> rows = new ArrayList<List<String>>();
             List<URL> providers = RegistryContainer.getInstance().getProvidersByHost(host);
@@ -66,7 +66,7 @@ public class ProvidersPageHandler implements PageHandler {
                 }
             }
             return new Page("<a href=\"hosts.html\">Hosts</a> &gt; " + NetUtils.getHostName(host) + "/" + host + " &gt; Providers | <a href=\"consumers.html?host=" + host + "\">Consumers</a>", "Providers (" + rows.size() + ")",
-                    new String[] { "Provider URL:", "Unregister" }, rows);
+                    new String[]{"Provider URL:", "Unregister"}, rows);
         } else if (application != null && application.length() > 0) {
             List<List<String>> rows = new ArrayList<List<String>>();
             List<URL> providers = RegistryContainer.getInstance().getProvidersByApplication(application);
@@ -80,7 +80,7 @@ public class ProvidersPageHandler implements PageHandler {
                 }
             }
             return new Page("<a href=\"applications.html\">Applications</a> &gt; " + application + " &gt; Providers | <a href=\"consumers.html?application=" + application + "\">Consumers</a> | <a href=\"dependencies.html?application=" + application + "\">Depends On</a> | <a href=\"dependencies.html?application=" + application + "&reverse=true\">Used By</a>", "Providers (" + rows.size() + ")",
-                    new String[] { "Provider URL:", "Unregister" }, rows);
+                    new String[]{"Provider URL:", "Unregister"}, rows);
         } else {
             throw new IllegalArgumentException("Please input service or host or application parameter.");
         }

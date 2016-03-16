@@ -24,25 +24,25 @@ import java.util.List;
 public class PersonInfo implements Serializable {
     private static final long serialVersionUID = 7443011149612231882L;
 
-    List<Phone>               phones;
+    List<Phone> phones;
 
-    Phone                     fax;
+    Phone fax;
 
-    FullAddress               fullAddress;
+    FullAddress fullAddress;
 
-    String                    mobileNo;
+    String mobileNo;
 
-    String                    name;
+    String name;
 
-    boolean                   male;
+    boolean male;
 
-    boolean                   female;
+    boolean female;
 
-    String                    department;
+    String department;
 
-    String                    jobTitle;
+    String jobTitle;
 
-    String                    homepageUrl;
+    String homepageUrl;
 
     public List<Phone> getPhones() {
         return phones;

@@ -24,7 +24,7 @@ import com.alibaba.dubbo.rpc.service.EchoService;
 
 /**
  * AbstractProxyFactory
- * 
+ *
  * @author william.liangf
  */
 public abstract class AbstractProxyFactory implements ProxyFactory {
@@ -38,17 +38,17 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
                 interfaces = new Class<?>[types.length + 2];
                 interfaces[0] = invoker.getInterface();
                 interfaces[1] = EchoService.class;
-                for (int i = 0; i < types.length; i ++) {
+                for (int i = 0; i < types.length; i++) {
                     interfaces[i + 1] = ReflectUtils.forName(types[i]);
                 }
             }
         }
         if (interfaces == null) {
-            interfaces = new Class<?>[] {invoker.getInterface(), EchoService.class};
+            interfaces = new Class<?>[]{invoker.getInterface(), EchoService.class};
         }
         return getProxy(invoker, interfaces);
     }
-    
+
     public abstract <T> T getProxy(Invoker<T> invoker, Class<?>[] types);
 
 }

@@ -25,13 +25,13 @@ public class SerializablePerson implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String name = "name1";
-    
+
     byte oneByte = 123;
-    
+
     private int age = 11;
-    
+
     private String[] value = {"value1", "value2"};
-    
+
     public String getName() {
         return name;
     }

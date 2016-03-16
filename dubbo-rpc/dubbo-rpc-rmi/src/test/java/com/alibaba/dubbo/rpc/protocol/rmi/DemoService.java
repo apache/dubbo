@@ -19,25 +19,24 @@ package com.alibaba.dubbo.rpc.protocol.rmi;
  * <code>TestService</code>
  */
 
-public interface DemoService
-{
-	void sayHello(String name);
+public interface DemoService {
+    void sayHello(String name);
 
-	String echo(String text);
+    String echo(String text);
 
-	long timestamp();
-	
-	void throwTimeout();
+    long timestamp();
 
-	String getThreadName();
+    void throwTimeout();
 
-	int getSize(String[] strs);
+    String getThreadName();
 
-	int getSize(Object[] os);
+    int getSize(String[] strs);
 
-	Object invoke(String service, String method) throws Exception;
+    int getSize(Object[] os);
 
-	int stringLength(String str);
+    Object invoke(String service, String method) throws Exception;
 
-	Type enumlength(Type... types);
+    int stringLength(String str);
+
+    Type enumlength(Type... types);
 }
