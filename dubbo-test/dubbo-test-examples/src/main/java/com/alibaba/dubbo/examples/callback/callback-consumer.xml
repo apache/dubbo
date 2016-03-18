@@ -22,7 +22,7 @@
 
     <dubbo:application name="callback-consumer"  />
     
-    <dubbo:registry address="multicast://224.5.6.7:1234" />
+    <dubbo:registry protocol="zookeeper" address="127.0.0.1:2181" />
     
 	<dubbo:reference id="callbackService" interface="com.alibaba.dubbo.examples.callback.api.CallbackService" />
 

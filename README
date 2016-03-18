@@ -76,7 +76,7 @@ Source Building
 
     cd ~/dubbo
     mvn clean install -Dmaven.test.skip
-    cd dubbo/target
+    #cd dubbo/target?没有啊
     ls
 
 4. Install the demo provider:
