@@ -277,7 +277,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         unexported = true;
     }
     
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     private void doExportUrls() {
         List<URL> registryURLs = loadRegistries(true);
         for (ProtocolConfig protocolConfig : protocols) {
