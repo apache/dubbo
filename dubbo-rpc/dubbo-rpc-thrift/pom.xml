@@ -59,6 +59,16 @@
 			<scope>provided</scope>
 			<optional>true</optional>
 		</dependency>
+		<dependency>
+		  <groupId>org.slf4j</groupId>
+		  <artifactId>slf4j-api</artifactId>
+		  <scope>provided</scope>
+		</dependency>
+		<dependency>
+		  <groupId>commons-lang</groupId>
+		  <artifactId>commons-lang</artifactId>
+		  <scope>provided</scope>
+		</dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>dubbo-config-spring</artifactId>
@@ -71,5 +81,7 @@
             <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>
+        
+        
 	</dependencies>
 </project>
