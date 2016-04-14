@@ -537,5 +537,14 @@
 			</roles>
 			<timezone>+8</timezone>
 		</developer>
+        <developer>
+            <name>WuXiaoFei(Teaey)</name>
+            <id>xiaofei.wxf</id>
+            <email>xiaofei.wxf (AT) alibaba-inc.com</email>
+            <roles>
+                <role>Developer</role>
+            </roles>
+            <timezone>+8</timezone>
+        </developer>
 	</developers>
 </project>
