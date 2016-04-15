@@ -7,6 +7,10 @@ import com.alibaba.dubbo.examples.nospring.api.NoSpringService;
 
 public class NoSpringConsumer {
 
+	/**
+	 * group = args[0]
+	 * @param args
+	 */
 	public static void main(String[] args) {
 		// 当前应用配置
 		ApplicationConfig application = new ApplicationConfig();
@@ -15,7 +19,7 @@ public class NoSpringConsumer {
 		// 连接注册中心配置
 		RegistryConfig registry = new RegistryConfig();
 //		registry.setAddress("multicast://224.5.6.7:1234");
-		registry.setAddress("zookeeper://ubuntu:2181");
+		registry.setAddress("zookeeper://127.0.0.1:2181");
 		registry.setUsername("aaa");
 		registry.setPassword("bbb");
 		 
@@ -27,6 +31,7 @@ public class NoSpringConsumer {
 		reference.setRegistry(registry); // 多个注册中心可以用setRegistries()
 		reference.setInterface(NoSpringService.class);
 		reference.setVersion("1.0.0");
+		reference.setGroup(args[0]);
 		 
 		// 和本地bean一样使用xxxService
 		final NoSpringService xxxService = reference.get(); // 注意：此代理对象内部封装了所有通讯细节，对象较重，请缓存复用
@@ -41,6 +46,11 @@ public class NoSpringConsumer {
 					System.out.println(result);
 				}
 			}, "consumer-"+i).start();
+		}
+
+		try {
+			Thread.sleep(10000000000L);
+		}catch (Exception ex){
 		}
 	}
 }

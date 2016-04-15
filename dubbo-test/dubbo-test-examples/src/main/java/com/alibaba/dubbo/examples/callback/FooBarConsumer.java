@@ -18,21 +18,19 @@ package com.alibaba.dubbo.examples.callback;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.alibaba.dubbo.examples.callback.api.CallbackListener;
-import com.alibaba.dubbo.examples.callback.api.CallbackService;
+import com.alibaba.dubbo.examples.callback.api.FooService;
 
 /**
- * CallbackConsumer
- * 
- * @author william.liangf
+ * TANHUA
  */
-public class CallbackConsumer {
+public class FooBarConsumer {
 
     public static void main(String[] args) throws Exception {
-        String config = CallbackConsumer.class.getPackage().getName().replace('.', '/') + "/callback-consumer.xml";
+        String config = FooBarConsumer.class.getPackage().getName().replace('.', '/') + "/foobar-consumer.xml";
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(config);
         context.start();
-        final CallbackService callbackService = (CallbackService) context.getBean("callbackService");
-        callbackService.addListener("foo.bar", new CallbackListener() {
+        final FooService fooService = (FooService) context.getBean("fooService");
+        fooService.asyncCallInFoo("foo.bar", new CallbackListener() {
             public void changed(String msg) {
                 System.out.println("callback1:" + msg);
             }
