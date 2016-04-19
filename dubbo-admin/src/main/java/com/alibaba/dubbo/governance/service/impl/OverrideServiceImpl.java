@@ -74,9 +74,9 @@ public class OverrideServiceImpl extends AbstractService implements OverrideServ
             return;
         }
 
-        URL newOverride = oldOverride.removeParameter("enabled");
         registryService.unregister(oldOverride);
-        registryService.register(newOverride);
+		URL newOverride = oldOverride.addParameter("enabled", true);
+		registryService.register(newOverride);
         
     }
 
@@ -85,17 +85,17 @@ public class OverrideServiceImpl extends AbstractService implements OverrideServ
             throw new IllegalStateException("no override id");
         }
         
-        URL oldProvider = findOverrideUrl(id);
-        if(oldProvider == null) {
+        URL oldOverride = findOverrideUrl(id);
+        if(oldOverride == null) {
             throw new IllegalStateException("Override was changed!");
         }
-        if(!oldProvider.getParameter("enabled", true)) {
+        if(!oldOverride.getParameter("enabled", true)) {
             return;
         }
 
-        URL newProvider = oldProvider.addParameter("enabled", false);
-        registryService.unregister(oldProvider);
-        registryService.register(newProvider);
+        registryService.unregister(oldOverride);
+		URL newOverride = oldOverride.addParameter("enabled", false);
+		registryService.register(newOverride);
         
     }
 
