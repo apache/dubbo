@@ -23,11 +23,11 @@
 	</parent>
 	<groupId>com.alibaba</groupId>
 	<artifactId>dubbo</artifactId>
-	<version>2.4.3</version>
+    <version>2.5.4-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>Dubbo</name>
 	<description>Dubbo is a distributed service framework enpowers applications with service import/export capability with high performance RPC.</description>
-	<url>http://code.alibabatech.com/wiki/display/dubbo</url>
+    <url>http://dubbo.io</url>
 	<inceptionYear>2012</inceptionYear>
 	<licenses>
 		<license>
@@ -193,7 +193,7 @@
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
 			<version>1.0.6</version>
-                        <scope>provided</scope>
+            <scope>provided</scope>
 		</dependency>
 	</dependencies>
 	<build>
@@ -269,13 +269,13 @@
 		<updateReleaseInfo>true</updateReleaseInfo>
 	</properties>
 	<issueManagement>
-		<system>jira</system>
-		<url>http://code.alibabatech.com/jira/browse/DUBBO</url>
+        <system>github</system>
+        <url>https://github.com/alibaba/dubbo/issues</url>
 	</issueManagement>
 	<scm>
-		<url>http://code.alibabatech.com/svn/dubbo/trunk</url>
-		<connection>scm:svn:http://code.alibabatech.com/svn/dubbo/trunk</connection>
-		<developerConnection>scm:svn:http://code.alibabatech.com/svn/dubbo/trunk</developerConnection>
+        <url>https://github.com/alibaba/dubbo</url>
+        <connection>scm:https://github.com/alibaba/dubbo</connection>
+        <developerConnection>scm:svn:https://github.com/alibaba/dubbo</developerConnection>
 	</scm>
 	<mailingLists>
 		<mailingList>
@@ -350,5 +350,14 @@
 			</roles>
 			<timezone>+8</timezone>
 		</developer>
+        <developer>
+            <name>WuXiaoFei(Teaey)</name>
+            <id>xiaofei.wxf</id>
+            <email>xiaofei.wxf (AT) alibaba-inc.com</email>
+            <roles>
+                <role>Developer</role>
+            </roles>
+            <timezone>+8</timezone>
+        </developer>
 	</developers>
 </project>
