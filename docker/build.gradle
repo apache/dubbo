@@ -1,0 +1,43 @@
+
+task buildDubbo(type: Exec)  {
+    workingDir '../'
+    commandLine 'cmd', '/c', 'mvn', 'clean', 'install', '-Dmaven.test.skip'
+}
+
+def getTarFileName(file) {
+    String tarFile = '' + file + '-' + dubboVersion + '-assembly.tar.gz'
+    return tarFile
+}
+
+def createUnzipTask(demoType, demoName, pathPrefix) {
+    return tasks.create("unzip${demoType}"){
+        String demoNameWithVersion = demoName + '-' + dubboVersion
+        String tarFile = getTarFileName(demoName)
+        copy {
+            from tarTree(pathPrefix + demoName + '/target/' + tarFile)
+            into binTarget
+        }
+        file(binTarget +'/'+demoNameWithVersion).renameTo(file(binTarget + '/'+demoName))
+    }
+}
+
+createUnzipTask('DemoProvider', 'dubbo-demo-provider', '../dubbo-demo/')
+createUnzipTask('DemoConsumer', 'dubbo-demo-consumer', '../dubbo-demo/')
+createUnzipTask('SimpleMonitor', 'dubbo-monitor-simple', '../dubbo-simple/')
+createUnzipTask('SimpleRegistry', 'dubbo-registry-simple', '../dubbo-simple/')
+
+//createUnzipTask('ZookeeperRegistry', 'dubbo-registry-zookeeper', '../dubbo-registry/')
+//createUnzipTask('RedisRegistry', 'dubbo-registry-redis', '../dubbo-registry/')
+//createUnzipTask('DubboAdmin', 'dubbo-admin', '../')
+
+//
+//task s("tar${baseName}Artifact", Tar) {
+//    compression = Compression.GZIP
+//    from fromDir {
+//        into toDir
+//    }
+//    extension = "tar.gz"
+//    baseName = baseName
+//    version = "${project.artifactVersion}"
+//    dependsOn buildTask
+//}
