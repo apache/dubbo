@@ -17,7 +17,17 @@ def createUnzipTask(demoType, demoName, pathPrefix) {
             from tarTree(pathPrefix + demoName + '/target/' + tarFile)
             into binTarget
         }
-        file(binTarget +'/'+demoNameWithVersion).renameTo(file(binTarget + '/'+demoName))
+        File finalDir = new File(binTarget + '/'+demoName)
+        finalDir.mkdirs()
+        file(binTarget +'/'+demoNameWithVersion).renameTo(new File(finalDir, '/app'))
+
+        def dockerfileDir = new File( 'dockerfiles/'+demoName )
+        if(dockerfileDir.exists()){
+            copy{
+                from dockerfileDir
+                into finalDir
+            }
+        }
     }
 }
 
