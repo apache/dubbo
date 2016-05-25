@@ -31,6 +31,25 @@ def createUnzipTask(demoType, demoName, pathPrefix) {
     }
 }
 
+task unzipDubboAdmin(){
+    String webFiles = "../dubbo-admin/target/dubbo-admin-" + dubboVersion
+    String warFile = webFiles + ".war"
+    String finalDir = binTarget + "/dubbo-admin"
+
+    def dockerfileDir = new File( 'dockerfiles/dubbo-admin' )
+    if(dockerfileDir.exists()){
+        copy{
+            from dockerfileDir
+            into finalDir
+        }
+    }
+
+    copy {
+        from zipTree(warFile)
+        into finalDir + "/app"
+    }
+}
+
 createUnzipTask('DemoProvider', 'dubbo-demo-provider', '../dubbo-demo/')
 createUnzipTask('DemoConsumer', 'dubbo-demo-consumer', '../dubbo-demo/')
 createUnzipTask('SimpleMonitor', 'dubbo-monitor-simple', '../dubbo-simple/')

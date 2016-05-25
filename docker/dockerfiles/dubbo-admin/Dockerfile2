@@ -1,0 +1,11 @@
+FROM jetty
+MAINTAINER Gao <altiplanogao@hotmail.com>
+
+ENV APP_PATH=/dubbo/dubbo-admin
+ENV DEPLOY_PATH=/var/lib/jetty/webapps/ROOT
+#VOLUME ["/dubbo/dubbo-admin/conf"]
+EXPOSE 8080
+
+RUN mkdir -m 0755 -p $APP_PATH
+ADD app $APP_PATH
+RUN ln -s $APP_PATH $DEPLOY_PATH
