@@ -467,7 +467,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             if (!Constants.SCOPE_REMOTE.toString().equalsIgnoreCase(scope)) {
                 exportLocal(url);
             }
-            //如果配置不是local则暴露为远程服务.(配置为local，则表示只暴露远程服务)
+            //如果配置不是local则暴露为远程服务.(配置为local，则表示只暴露本地服务)
             if (! Constants.SCOPE_LOCAL.toString().equalsIgnoreCase(scope) ){
                 if (logger.isInfoEnabled()) {
                     logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
