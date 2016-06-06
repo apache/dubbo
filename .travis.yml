@@ -3,6 +3,5 @@ jdk:
     - oraclejdk8
     - oraclejdk7
 
-# temporarily disable test
-install:
-      -
+script: mvn -DskipTests=true clean package
+
