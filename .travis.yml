@@ -1,7 +1,8 @@
 language: java
 jdk:
-    - oraclejdk8
+    #    - oraclejdk8
     - oraclejdk7
+    - openjdk6
 
-script: mvn -DskipTests=true clean package
+#script: mvn -DskipTests=true clean package
 
