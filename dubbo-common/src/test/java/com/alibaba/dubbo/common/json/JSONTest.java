@@ -30,7 +30,6 @@ import static org.junit.Assert.assertEquals;
 
 public class JSONTest {
 	@Test
-	@Ignore
 	public void testException() throws Exception {
 		MyException e = new MyException("001", "AAAAAAAA");
 		
