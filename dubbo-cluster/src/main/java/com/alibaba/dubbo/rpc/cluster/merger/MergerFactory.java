@@ -36,10 +36,10 @@ public class MergerFactory {
         Merger result;
         if (returnType.isArray()) {
             Class type = returnType.getComponentType();
-            result = mergerCache.get(type);
+            result = mergerCache.get(returnType);
             if (result == null) {
                 loadMergers();
-                result = mergerCache.get(type);
+                result = mergerCache.get(returnType);
             }
             if(result == null && ! type.isPrimitive()) {
                 result = ArrayMerger.INSTANCE;
