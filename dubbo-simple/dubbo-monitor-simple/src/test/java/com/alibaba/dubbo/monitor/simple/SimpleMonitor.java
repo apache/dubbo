@@ -15,9 +15,14 @@
  */
 package com.alibaba.dubbo.monitor.simple;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 public class SimpleMonitor {
     
-    public static void main(String[] args) {
+    public static void main(String[] args) throws UnknownHostException {
+    	String host = InetAddress.getLocalHost().getHostAddress();
+    	System.out.println(host);
         com.alibaba.dubbo.container.Main.main(args);
     }
     
