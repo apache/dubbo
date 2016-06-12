@@ -143,7 +143,6 @@ public class AtomicPositiveIntegerTest {
         assertEquals(2, i3.get());
     }
 
-
     @Test
     public void test_addAndGet() throws Exception {
         int get = i1.addAndGet(3);
@@ -157,5 +156,11 @@ public class AtomicPositiveIntegerTest {
         get = i3.addAndGet(3);
         assertEquals(2, get);
         assertEquals(2, i3.get());
+    }
+
+    @Test
+    public void test_equals() {
+        assertEquals(new AtomicPositiveInteger(), new AtomicPositiveInteger());
+        assertEquals(new AtomicPositiveInteger(1), new AtomicPositiveInteger(1));
     }
 }
