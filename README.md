@@ -1,10 +1,10 @@
 [![Build Status](https://travis-ci.org/alibaba/dubbo.svg?branch=master)](https://travis-ci.org/alibaba/dubbo) [![Gitter](https://badges.gitter.im/alibaba/dubbo.svg)](https://gitter.im/alibaba/dubbo?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-Dubbo is a distributed, high performance RPC framework enpowering applications with service import/export capabilities.
+Dubbo is a distributed, high performance RPC framework which empowers applications with service import/export capabilities.
 
 It's composed of three key parts:
 
-* Remoting: a network communication framework provides sync-over-async and request-response messaging.
+* Remoting: a network communication framework providing sync-over-async and request-response messaging.
 * Clustering: a remote procedure call abstraction with load-balancing/failover/clustering capabilities.
 * Registry: a service directory framework for service registration and service event publish/subscription
 
