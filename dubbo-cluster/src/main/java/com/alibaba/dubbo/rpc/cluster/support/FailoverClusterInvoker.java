@@ -65,7 +65,7 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
         	//重试时，进行重新选择，避免重试时invoker列表已发生变化.
         	//注意：如果列表发生了变化，那么invoked判断会失效，因为invoker示例已经改变
         	if (i > 0) {
-        		checkWheatherDestoried();
+        		checkWhetherDestroyed();
         		copyinvokers = list(invocation);
         		//重新检查一下
         		checkInvokers(copyinvokers, invocation);
