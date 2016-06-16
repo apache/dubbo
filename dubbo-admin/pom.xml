@@ -26,6 +26,7 @@
 	<name>${project.artifactId}</name>
 	<description>The admin module of dubbo project</description>
 	<properties>
+		<spring_version>3.2.16.RELEASE</spring_version>
 		<wtpversion>1.5</wtpversion>
 		<wtpContextName>/</wtpContextName>
 		<eclipse.useProjectReferences>false</eclipse.useProjectReferences>
