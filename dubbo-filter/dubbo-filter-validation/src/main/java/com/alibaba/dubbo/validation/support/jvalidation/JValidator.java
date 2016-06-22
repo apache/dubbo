@@ -184,9 +184,11 @@ public class JValidator implements Validator {
                                         && member.getParameterTypes().length == 0
                                         && member.getDeclaringClass() == annotation.annotationType()) {
                                     Object value = member.invoke(annotation, new Object[0]);
-                                    MemberValue memberValue = createMemberValue(
-                                           classFile.getConstPool(), pool.get(member.getReturnType().getName()), value);
-                                    ja.addMemberValue(member.getName(), memberValue);
+                                    if (null != value) {
+                                        MemberValue memberValue = createMemberValue(
+                                               classFile.getConstPool(), pool.get(member.getReturnType().getName()), value);
+                                        ja.addMemberValue(member.getName(), memberValue);
+                                    }
                                 }
                             }
                             attribute.addAnnotation(ja);
