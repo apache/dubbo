@@ -31,7 +31,9 @@ public class Menu {
     public Menu() {}
     
     public Menu( Map<String, List<String>> menus ) {
-        this.menus.putAll( menus );
+        for (String key : menus.keySet()) {
+            this.menus.put(key, new ArrayList<String>(menus.get(key)));
+        }
     }
     
     public void putMenuItem( String menu, String item ) {

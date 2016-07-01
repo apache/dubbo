@@ -261,6 +261,9 @@ public final class ReflectUtils {
                 return (Class<?>) ((ParameterizedType) genericClass).getRawType();
             } else if (genericClass instanceof GenericArrayType) { // 处理数组泛型
                 return (Class<?>) ((GenericArrayType) genericClass).getGenericComponentType();
+            } else if (((Class)genericClass).isArray()) {
+                // 在 JDK 7 以上的版本, Foo<int[]> 不再是 GenericArrayType
+                return ((Class)genericClass).getComponentType();
             } else {
                 return (Class<?>) genericClass;
             }
@@ -784,9 +787,9 @@ public final class ReflectUtils {
 	 */
 	public static Method findMethodByMethodSignature(Class<?> clazz, String methodName, String[] parameterTypes)
 	        throws NoSuchMethodException, ClassNotFoundException {
-	    String signature = methodName;
+	    String signature = clazz.getName() + "." + methodName;
         if(parameterTypes != null && parameterTypes.length > 0){
-            signature = methodName + StringUtils.join(parameterTypes);
+            signature += StringUtils.join(parameterTypes);
         }
         Method method = Signature_METHODS_CACHE.get(signature);
         if(method != null){
