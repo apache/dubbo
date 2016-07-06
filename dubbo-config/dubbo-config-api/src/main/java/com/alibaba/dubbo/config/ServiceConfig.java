@@ -531,10 +531,11 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             setProtocol(new ProtocolConfig());
         }
         for (ProtocolConfig protocolConfig : protocols) {
+            appendProperties(protocolConfig);
+            //原有顺序错误，且此处不应将name和id固定为dubbo，这样会使classpath下的配置文件配置失效，应当在配置文件未读取到配置信息时才使用默认
             if (StringUtils.isEmpty(protocolConfig.getName())) {
                 protocolConfig.setName("dubbo");
             }
-            appendProperties(protocolConfig);
         }
     }
 
