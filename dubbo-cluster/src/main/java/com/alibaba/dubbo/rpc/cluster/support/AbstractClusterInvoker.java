@@ -212,7 +212,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
     
     public Result invoke(final Invocation invocation) throws RpcException {
 
-        checkWheatherDestoried();
+        checkWhetherDestroyed();
 
         LoadBalance loadbalance;
         
@@ -227,7 +227,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         return doInvoke(invocation, invokers, loadbalance);
     }
 
-    protected void checkWheatherDestoried() {
+    protected void checkWhetherDestroyed() {
 
         if(destroyed){
             throw new RpcException("Rpc cluster invoker for " + getInterface() + " on consumer " + NetUtils.getLocalHost()
