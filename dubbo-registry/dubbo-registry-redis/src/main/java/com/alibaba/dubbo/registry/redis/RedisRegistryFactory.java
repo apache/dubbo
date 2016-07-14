@@ -17,7 +17,7 @@ package com.alibaba.dubbo.registry.redis;
 
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.registry.Registry;
-import com.alibaba.dubbo.registry.RegistryFactory;
+import com.alibaba.dubbo.registry.support.AbstractRegistryFactory;
 
 /**
  * RedisRegistryFactory
