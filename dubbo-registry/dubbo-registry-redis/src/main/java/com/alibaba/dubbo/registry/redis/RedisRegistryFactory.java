@@ -24,9 +24,9 @@ import com.alibaba.dubbo.registry.RegistryFactory;
  * 
  * @author william.liangf
  */
-public class RedisRegistryFactory implements RegistryFactory {
+public class RedisRegistryFactory extends AbstractRegistryFactory {
 
-    public Registry getRegistry(URL url) {
+    public Registry createRegistry(URL url) {
         return new RedisRegistry(url);
     }
 
