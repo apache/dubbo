@@ -426,7 +426,8 @@ public class RedisRegistry extends FailbackRegistry {
                 urls.add(url.setProtocol(Constants.EMPTY_PROTOCOL)
                         .setAddress(Constants.ANYHOST_VALUE)
                         .setPath(toServiceName(key))
-                        .addParameter(Constants.CATEGORY_KEY, category));
+                        .addParameter(Constants.CATEGORY_KEY, category)
+						.addParameter(Constants.INTERFACE_KEY, toServiceName(key)));
             }
             result.addAll(urls);
             if (logger.isInfoEnabled()) {
