@@ -532,10 +532,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * @param invokers
      */
     private void destroyUnusedInvokers(Map<String, Invoker<T>> oldUrlInvokerMap, Map<String, Invoker<T>> newUrlInvokerMap) {
-        if (newUrlInvokerMap == null || newUrlInvokerMap.size() == 0) {
-            destroyAllInvokers();
-            return;
-        }
         // check deleted invoker
         List<String> deleted = null;
         if (oldUrlInvokerMap != null) {

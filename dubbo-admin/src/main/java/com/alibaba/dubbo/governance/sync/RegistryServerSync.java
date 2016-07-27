@@ -15,6 +15,7 @@
  */
 package com.alibaba.dubbo.governance.sync;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,6 +84,9 @@ public class RegistryServerSync implements InitializingBean, DisposableBean, Not
         }
         // Map<category, Map<servicename, Map<Long, URL>>>
         final Map<String, Map<String, Map<Long, URL>>> categories = new HashMap<String, Map<String, Map<Long, URL>>>();
+        final Map<String, List<String>> catInterfaceVersions = new HashMap<String, List<String>>();
+        final Map<String, List<String>> catServiceKeys = new HashMap<String, List<String>>();
+		
         for(URL url : urls) {
         	String category = url.getParameter(Constants.CATEGORY_KEY, Constants.PROVIDERS_CATEGORY);
             if(Constants.EMPTY_PROTOCOL.equalsIgnoreCase(url.getProtocol())) { // 注意：empty协议的group和version为*
@@ -110,7 +114,32 @@ public class RegistryServerSync implements InitializingBean, DisposableBean, Not
                     services = new HashMap<String, Map<Long,URL>>();
                     categories.put(category, services);
                 }
+                
+				// 处理multi group情况，可能会只剩下单个group在提供服务
+                List<String> interfaceVersions = catInterfaceVersions.get(category);
+                if (null == interfaceVersions) {
+                    interfaceVersions = new ArrayList<String>();
+                    catInterfaceVersions.put(category, interfaceVersions);
+                }
+                String interfaceVersion = url.getServiceInterface();
+                String version = url.getParameter(Constants.VERSION_KEY);
+                if (version != null && version.length() > 0) {
+                    interfaceVersion += ":" + version;
+                }
+                if (!interfaceVersions.contains(interfaceVersion)) {
+                    interfaceVersions.add(interfaceVersion);
+                }
+
                 String service = url.getServiceKey();
+                List<String> serviceKeys = catServiceKeys.get(category);
+                if (null == serviceKeys) {
+                    serviceKeys = new ArrayList<String>();
+                    catServiceKeys.put(category, serviceKeys);
+                }
+                if (!serviceKeys.contains(service)) {
+                    serviceKeys.add(service);
+                }
+				
                 Map<Long, URL> ids = services.get(service);
                 if(ids == null) {
                     ids = new HashMap<Long, URL>();
@@ -119,6 +148,8 @@ public class RegistryServerSync implements InitializingBean, DisposableBean, Not
                 ids.put(ID.incrementAndGet(), url);
             }
         }
+		
+		List<String> deleteServiceKeys = new ArrayList<String>();
         for(Map.Entry<String, Map<String, Map<Long, URL>>> categoryEntry : categories.entrySet()) {
             String category = categoryEntry.getKey();
             ConcurrentMap<String, Map<Long, URL>> services = registryCache.get(category);
@@ -126,7 +157,21 @@ public class RegistryServerSync implements InitializingBean, DisposableBean, Not
                 services = new ConcurrentHashMap<String, Map<Long,URL>>();
                 registryCache.put(category, services);
             }
+            
+            // 清理已经不提供服务的group interface
+            List<String> interfaceVersions = catInterfaceVersions.get(category);
+            List<String> serviceKeys = catServiceKeys.get(category);
+            for (String key : services.keySet()) {
+                for (String interfaceVersion : interfaceVersions) {
+                    if (key.endsWith(interfaceVersion) && !serviceKeys.contains(key)) {
+                        deleteServiceKeys.add(key);
+                    }
+                }
+            }
             services.putAll(categoryEntry.getValue());
+            for (String deleteServiceKey : deleteServiceKeys) {
+                services.remove(deleteServiceKey);
+            }
         }
     }
 }
