@@ -38,7 +38,7 @@ public class UnsafeStringWriter extends Writer
 		if( size < 0 )
 		    throw new IllegalArgumentException("Negative buffer size");
 
-		lock = mBuffer = new StringBuilder();
+		lock = mBuffer = new StringBuilder(size);
 	}
 
 	@Override
