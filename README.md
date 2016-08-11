@@ -89,7 +89,6 @@ ls
     ```sh
 cd ~/dubbo/dubbo-demo/dubbo-demo-provider/target
 tar zxvf dubbo-demo-provider-2.*-assembly.tar.gz
-chmod -R 776 dubbo-*-SNAPSHOT/
 cd dubbo-*-SNAPSHOT/bin
 ./start.sh
 ```
@@ -99,7 +98,6 @@ cd dubbo-*-SNAPSHOT/bin
     ```sh
 cd ~/dubbo/dubbo-demo/dubbo-demo-consumer/target
 tar zxvf dubbo-demo-consumer-2.*-assembly.tar.gz
-chmod -R 776 dubbo-*-SNAPSHOT/
 cd dubbo-*-SNAPSHOT/bin
 ./start.sh
 cd ../logs
@@ -111,7 +109,6 @@ tail -f stdout.log
     ```sh
 cd ~/dubbo/dubbo-simple/dubbo-monitor-simple/target
 tar zxvf dubbo-monitor-simple-2.*-assembly.tar.gz
-chmod -R 776 dubbo-*-SNAPSHOT/
 cd dubbo-*-SNAPSHOT/bin
 ./start.sh
 http://127.0.0.1:8080
@@ -122,7 +119,6 @@ http://127.0.0.1:8080
     ```sh
 cd ~/dubbo/dubbo-simple/dubbo-registry-simple/target
 tar zxvf dubbo-registry-simple-2.*-assembly.tar.gz
-chmod -R 776 dubbo-*-SNAPSHOT/
 cd dubbo-*-SNAPSHOT/bin
 ./start.sh
 
