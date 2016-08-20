@@ -349,6 +349,6 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
             }
         }
 
-        throw new NoSuchBeanDefinitionException(RegistryConfig.class, id);
+        throw new NoSuchBeanDefinitionException(clz, id);
     }
 }
