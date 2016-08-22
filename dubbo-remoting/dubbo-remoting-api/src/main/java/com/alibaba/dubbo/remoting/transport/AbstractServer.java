@@ -15,11 +15,6 @@
  */
 package com.alibaba.dubbo.remoting.transport;
 
-import java.net.InetSocketAddress;
-import java.util.Collection;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
@@ -31,6 +26,11 @@ import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.Server;
 import com.alibaba.dubbo.remoting.transport.dispatcher.WrappedChannelHandler;
+
+import java.net.InetSocketAddress;
+import java.util.Collection;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * AbstractServer
@@ -60,7 +60,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
         String host = url.getParameter(Constants.ANYHOST_KEY, false) 
                         || NetUtils.isInvalidLocalHost(getUrl().getHost()) 
                         ? NetUtils.ANYHOST : getUrl().getHost();
-        bindAddress = new InetSocketAddress(host, getUrl().getPort());
+        bindAddress = new InetSocketAddress(NetUtils.getLocalHost(), getUrl().getPort());
         this.accepts = url.getParameter(Constants.ACCEPTS_KEY, Constants.DEFAULT_ACCEPTS);
         this.idleTimeout = url.getParameter(Constants.IDLE_TIMEOUT_KEY, Constants.DEFAULT_IDLE_TIMEOUT);
         try {
