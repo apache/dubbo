@@ -1,0 +1,1 @@
+standalone= com.alibaba.dubbo.registry.standalone.StandaloneRegistryFacotry

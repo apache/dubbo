@@ -268,12 +268,6 @@ public class MulticastRegistry extends FailbackRegistry {
             admin = true;
         }
         broadcast(Constants.SUBSCRIBE + " " + url.toFullString());
-        synchronized (listener) {
-            try {
-                listener.wait(url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
-            } catch (InterruptedException e) {
-            }
-        }
     }
 
     protected void doUnsubscribe(URL url, NotifyListener listener) {
