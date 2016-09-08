@@ -144,7 +144,7 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
             clazz = getSuperclass();	
         }
         
-        Service service = bean.getClass().getAnnotation(Service.class);
+        Service service = clazz.getAnnotation(Service.class);
         if (service != null) {
             ServiceBean<Object> serviceConfig = new ServiceBean<Object>(service);
             if (void.class.equals(service.interfaceClass())
@@ -222,7 +222,7 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
             clazz = getSuperclass();	
         }
         
-        Method[] methods = bean.getClass().getMethods();
+        Method[] methods = clazz.getMethods();
         for (Method method : methods) {
             String name = method.getName();
             if (name.length() > 3 && name.startsWith("set")
