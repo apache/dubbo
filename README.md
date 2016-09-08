@@ -10,6 +10,7 @@ Dubbox adds features like RESTful remoting, Kyro/FST serialization, etc to the p
 * Dylan 独立开发者 dinguangx@163.com
 * Kangfoo 独立开发者
 
+有技术问题请移步此处讨论 https://github.com/dangdangdotcom/dubbox/issues
 
 ## Dubbox当前的主要功能
 
