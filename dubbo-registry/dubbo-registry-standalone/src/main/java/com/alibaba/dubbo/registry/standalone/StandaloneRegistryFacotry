@@ -1,0 +1,19 @@
+package com.alibaba.dubbo.registry.standalone;
+
+import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.registry.Registry;
+import com.alibaba.dubbo.registry.support.AbstractRegistryFactory;
+
+/** 单机版的注册中心工厂类
+ * @author wjguo
+ * datetime 2016年9月5日 下午8:08:43  
+ *
+ */
+public class StandaloneRegistryFacotry extends AbstractRegistryFactory {
+
+	@Override
+	protected Registry createRegistry(URL url) {
+		return new StandaloneRegistry(url);
+	}
+
+}
