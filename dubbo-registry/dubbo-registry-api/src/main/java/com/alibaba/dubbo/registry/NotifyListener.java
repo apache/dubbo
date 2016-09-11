@@ -41,4 +41,9 @@ public interface NotifyListener {
      */
     void notify(List<URL> urls);
 
+    /**
+     * @author zhouwei
+     * this is a start time
+     */
+
 }
