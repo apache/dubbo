@@ -139,9 +139,9 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
         if(isProxyBean(bean)){
             clazz = AopUtils.getTargetClass(bean);
         }
-        //还没有获取到原始的calss对象，需要进一步解析
-        if ("$$".contains(clazz.getName())) {
-            clazz = getSuperclass();	
+        //如果获取值还是代理，则需要进一步解析
+        if (clazz.getSimpleName().contains("$$")) {
+        	clazz = clazz.getSuperclass();
         }
         
         Service service = clazz.getAnnotation(Service.class);
@@ -217,9 +217,9 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
         if(isProxyBean(bean)){
             clazz = AopUtils.getTargetClass(bean);
         }
-        //还没有获取到原始的calss对象，需要进一步解析
-        if ("$$".contains(clazz.getName())) {
-            clazz = getSuperclass();	
+        //如果获取值还是代理，则需要进一步解析
+        if (clazz.getSimpleName().contains("$$")) {
+        	clazz = clazz.getSuperclass();
         }
         
         Method[] methods = clazz.getMethods();
