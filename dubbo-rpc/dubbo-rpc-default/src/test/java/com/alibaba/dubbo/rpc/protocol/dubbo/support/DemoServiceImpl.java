@@ -40,6 +40,10 @@ public class DemoServiceImpl implements DemoService
 		return text;
 	}
 
+	public Map echo(Map map) {
+		return map;
+	}
+
 	public long timestamp() {
 		return System.currentTimeMillis();
 	}

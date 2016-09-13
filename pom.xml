@@ -81,8 +81,8 @@
 	</profiles>
 	<properties>
 		<!-- Common libs -->
-		<spring_version>2.5.6.SEC03</spring_version>
-		<javassist_version>3.15.0-GA</javassist_version>
+		<spring_version>3.2.16.RELEASE</spring_version>
+		<javassist_version>3.20.0-GA</javassist_version>
 		<netty_version>3.2.5.Final</netty_version>
 		<mina_version>1.1.7</mina_version>
 		<grizzly_version>2.1.4</grizzly_version>
@@ -120,7 +120,7 @@
 		<easymock_version>3.0</easymock_version>
 		<jmockit_version>0.999.8</jmockit_version>
 		<!-- Build args -->
-		<!--<argline>-server -Xms64m -Xmx64m -XX:PermSize=64m -XX:MaxPermSize=64m</argline>-->
+		<argline>-server -Xms64m -Xmx256m -XX:PermSize=64m -XX:MaxPermSize=128m -Dfile.encoding=UTF-8 -Djava.net.preferIPv4Stack=true</argline>
 		<skip_maven_deploy>false</skip_maven_deploy>
 		<updateReleaseInfo>true</updateReleaseInfo>
 		<project.build.sourceEncoding>${file_encoding}</project.build.sourceEncoding>
@@ -130,9 +130,9 @@
         <profile.name>oss</profile.name>
 
         <!-- for maven compiler plugin -->
-        <maven_compiler_plugin_version>2.3.2</maven_compiler_plugin_version>
-        <java_source_version>1.5</java_source_version>
-        <java_target_version>1.5</java_target_version>
+        <maven_compiler_plugin_version>3.5.1</maven_compiler_plugin_version>
+        <java_source_version>1.6</java_source_version>
+        <java_target_version>1.6</java_target_version>
         <file_encoding>UTF-8</file_encoding>
         
 	</properties>
@@ -141,8 +141,10 @@
 			<!-- Common libs -->
 			<dependency>
 				<groupId>org.springframework</groupId>
-				<artifactId>spring</artifactId>
+				<artifactId>spring-framework-bom</artifactId>
 				<version>${spring_version}</version>
+				<type>pom</type>
+				<scope>import</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.javassist</groupId>
@@ -537,5 +539,14 @@
 			</roles>
 			<timezone>+8</timezone>
 		</developer>
+        <developer>
+            <name>WuXiaoFei(Teaey)</name>
+            <id>xiaofei.wxf</id>
+            <email>xiaofei.wxf (AT) alibaba-inc.com</email>
+            <roles>
+                <role>Developer</role>
+            </roles>
+            <timezone>+8</timezone>
+        </developer>
 	</developers>
 </project>

@@ -155,11 +155,11 @@ public final class URL implements Serializable {
 		this.password = password;
 		this.host = host;
 		this.port = (port < 0 ? 0 : port);
-		this.path = path;
 		// trim the beginning "/"
 		while(path != null && path.startsWith("/")) {
 		    path = path.substring(1);
 		}
+		this.path = path;
 		if (parameters == null) {
 		    parameters = new HashMap<String, String>();
 		} else {

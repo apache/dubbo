@@ -167,20 +167,16 @@ public class AtomicPositiveInteger extends Number {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((i == null) ? 0 : i.hashCode());
+        result = prime * result + i.hashCode();
         return result;
     }
 
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
+        if (!(obj instanceof AtomicPositiveInteger)) return false;
         AtomicPositiveInteger other = (AtomicPositiveInteger) obj;
-        if (i == null) {
-            if (other.i != null) return false;
-        } else if (!i.equals(other.i)) return false;
-        return true;
+        return i.intValue() == other.i.intValue();
     }
 
 }

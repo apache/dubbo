@@ -23,10 +23,13 @@ import java.util.List;
 import java.util.Map;
 
 import junit.framework.Assert;
-import junit.framework.TestCase;
+import org.junit.Ignore;
+import org.junit.Test;
 
-public class JSONTest extends TestCase
-{
+import static org.junit.Assert.assertEquals;
+
+public class JSONTest {
+	@Test
 	public void testException() throws Exception {
 		MyException e = new MyException("001", "AAAAAAAA");
 		
@@ -42,6 +45,7 @@ public class JSONTest extends TestCase
 		Assert.assertEquals("AAAAAAAA", result.getMessage());
 	}
 
+	@Test
 	@SuppressWarnings("unchecked")
 	public void testMap() throws Exception {
 		Map<String, String> map = new HashMap<String, String>();
@@ -57,6 +61,7 @@ public class JSONTest extends TestCase
 		Assert.assertEquals("bbb", result.get("aaa"));
 	}
 
+	@Test
 	@SuppressWarnings("unchecked")
 	public void testMapArray() throws Exception {
 		Map<String, String> map = new HashMap<String, String>();
@@ -73,6 +78,7 @@ public class JSONTest extends TestCase
 		Assert.assertEquals("bbb", ((Map<String, String>)result[0]).get("aaa"));
 	}
 
+	@Test
 	@SuppressWarnings("unchecked")
 	public void testLinkedMap() throws Exception {
 		LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
@@ -88,6 +94,7 @@ public class JSONTest extends TestCase
 		Assert.assertEquals("bbb", result.get("aaa"));
 	}
 
+	@Test
 	public void testObject2Json() throws Exception
 	{
 		Bean bean = new Bean();
@@ -104,6 +111,7 @@ public class JSONTest extends TestCase
 		assertEquals("{\"name\":\"ql\",\"array\":[1,3,4]}", JSON.json(bean, new String[]{"name", "array"}));
 	}
 
+	@Test
 	public void testParse2JSONObject() throws Exception
 	{
 		JSONObject jo = (JSONObject)JSON.parse("{name:'qianlei',array:[1,2,3,4,98.123],b1:TRUE,$1:NULL,$2:FALSE,__3:NULL}");
@@ -121,6 +129,7 @@ public class JSONTest extends TestCase
 		System.out.println("parse to JSONObject 10000 times in: " + ( System.currentTimeMillis()-now) );
 	}
 
+	@Test
 	@SuppressWarnings("unchecked")
 	public void testParse2Class() throws Exception
 	{
@@ -132,7 +141,7 @@ public class JSONTest extends TestCase
 		List l1 = (List)JSON.parse("[1.2,2,3,4,5]", List.class);
 		assertEquals(l1.size(), 5);
 		for(int i=0;i<5;i++)
-			assertEquals(o1[i], ((Number)l1.get(i)).intValue());
+			assertEquals(o1[i], ((Number) l1.get(i)).intValue());
 
 		Bean bean = JSON.parse("{name:'qianlei',array:[1,2,3,4,98.123],displayName:'钱磊',$$:214726,$b:TRUE}", Bean.class);
 		assertEquals(bean.getName(), "qianlei");
@@ -150,6 +159,7 @@ public class JSONTest extends TestCase
 		System.out.println("parse to Class 10000 times in: " + ( System.currentTimeMillis()-now) );
 	}
 
+	@Test
 	public void testParse2Arguments() throws Exception
 	{
 		Object[] test = JSON.parse("[1.2, 2, {name:'qianlei',array:[1,2,3,4,98.123]} ]", new Class<?>[]{ int.class, int.class, Bean.class });

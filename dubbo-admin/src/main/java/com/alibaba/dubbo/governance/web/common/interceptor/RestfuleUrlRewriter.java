@@ -101,7 +101,7 @@ public class RestfuleUrlRewriter implements RewriteSubstitutionHandler {
             return;
         }
         //兼容包含group的path
-        String[] split = (String[]) temp.toArray();
+        String[] split = temp.toArray(new String[temp.size()]);
         
         if(temp.size()>2&&temp.contains("services")){
             List<String> parts = new ArrayList<String>();
