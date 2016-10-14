@@ -22,7 +22,7 @@ import java.net.SocketTimeoutException;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.commons.pool.impl.GenericObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -66,28 +66,30 @@ public class RedisProtocol extends AbstractProtocol {
         return ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(url.getParameter(Constants.SERIALIZATION_KEY, "java"));
     }
 
-    public <T> Invoker<T> refer(final Class<T> type, final URL url) throws RpcException {
+    @SuppressWarnings("resource")
+	public <T> Invoker<T> refer(final Class<T> type, final URL url) throws RpcException {
         try {
-            GenericObjectPool.Config config = new GenericObjectPool.Config();
-            config.testOnBorrow = url.getParameter("test.on.borrow", true);
-            config.testOnReturn = url.getParameter("test.on.return", false);
-            config.testWhileIdle = url.getParameter("test.while.idle", false);
+        	GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+            config.setTestOnBorrow(url.getParameter("test.on.borrow", true));
+            config.setTestOnReturn(url.getParameter("test.on.return", false));
+            config.setTestWhileIdle(url.getParameter("test.while.idle", false));
             if (url.getParameter("max.idle", 0) > 0)
-                config.maxIdle = url.getParameter("max.idle", 0);
+                config.setMaxIdle(url.getParameter("max.idle", 0));
             if (url.getParameter("min.idle", 0) > 0)
-                config.minIdle = url.getParameter("min.idle", 0);
+                config.setMinIdle(url.getParameter("min.idle", 0));
             if (url.getParameter("max.active", 0) > 0)
-                config.maxActive = url.getParameter("max.active", 0);
-            if (url.getParameter("max.wait", 0) > 0)
-                config.maxWait = url.getParameter("max.wait", 0);
+                config.setMaxTotal(url.getParameter("max.active", 0));
+            if (url.getParameter("max.wait", url.getParameter("timeout", 0)) > 0)
+                config.setMaxWaitMillis(url.getParameter("max.wait", url.getParameter("timeout", 0)));
             if (url.getParameter("num.tests.per.eviction.run", 0) > 0)
-                config.numTestsPerEvictionRun = url.getParameter("num.tests.per.eviction.run", 0);
+                config.setNumTestsPerEvictionRun(url.getParameter("num.tests.per.eviction.run", 0));
             if (url.getParameter("time.between.eviction.runs.millis", 0) > 0)
-                config.timeBetweenEvictionRunsMillis = url.getParameter("time.between.eviction.runs.millis", 0);
+                config.setTimeBetweenEvictionRunsMillis(url.getParameter("time.between.eviction.runs.millis", 0));
             if (url.getParameter("min.evictable.idle.time.millis", 0) > 0)
-                config.minEvictableIdleTimeMillis = url.getParameter("min.evictable.idle.time.millis", 0);
-            final JedisPool jedisPool = new JedisPool(config, url.getHost(), url.getPort(DEFAULT_PORT), 
-                url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
+                config.setSoftMinEvictableIdleTimeMillis(url.getParameter("min.evictable.idle.time.millis", 0));
+            
+            final JedisPool jedisPool = new JedisPool(config, url.getHost(), url.getPort(DEFAULT_PORT), url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
+            
             final int expiry = url.getParameter("expiry", 0);
             final String get = url.getParameter("get", "get");
             final String set = url.getParameter("set", Map.class.equals(type) ? "put" : "set");
@@ -145,7 +147,7 @@ public class RedisProtocol extends AbstractProtocol {
                     finally {
                         if(resource != null) {
                             try {
-                                jedisPool.returnResource(resource);
+                            	resource.close();
                             }
                             catch (Throwable t) {
                                 logger.warn("returnResource error: " + t.getMessage(), t);
