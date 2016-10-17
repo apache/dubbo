@@ -36,7 +36,7 @@ public class LruCache implements Cache {
             private static final long serialVersionUID = -3834209229668463829L;
 
             @Override
-            protected boolean removeEldestEntry(Entry<Object, Object> eldest) {
+            protected boolean removeEldestEntry(Map.Entry<Object, Object> eldest) {
                 return size() > max;
             }
         };
