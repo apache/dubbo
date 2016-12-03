@@ -2,15 +2,6 @@
 option java_package = "com.alibaba.dubbo.rpc.protocol.protobuf";
 option java_outer_classname = "ProtobufMessage";
 
-//for c++
-//package texaspoker;
-
-enum CryptType
-{
-    NONE = 0;
-    MD5 = 1;
-    TEA = 2;
-};
 enum PackageType 
 {
     HEARTBEAT = 0;
@@ -36,14 +27,8 @@ message Response
 };
 message RpcMessage 
 {
-    optional uint64 uuid = 1;
+    optional PackageType type = 1;
     optional uint64 timestamp = 2;
-    optional uint32 version = 3;
-    optional uint64 identify = 4;
-    optional PackageType type = 5;
-    optional CryptType crypt = 6;
-    optional bytes serialized = 7;
-};
-message Placeholder 
-{
+    optional uint64 identify = 3;
+    optional bytes serialized = 4;
 };

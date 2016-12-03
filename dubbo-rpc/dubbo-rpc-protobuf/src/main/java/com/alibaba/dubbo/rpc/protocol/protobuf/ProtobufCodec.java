@@ -1,9 +1,17 @@
 /**
- * 包名:com.alibaba.dubbo.rpc.protocol.protobuf
- * 文件名:ProtobufCodec.java
- * 创建人:xichen
- * 创建日期:2015年12月20日-下午10:13:46
- * Copyright (c) 2015 Illuminate 公司-版权所有
+ * Copyright (c) 2015 Illuminate inc.
+ *
+ * * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.alibaba.dubbo.rpc.protocol.protobuf;
 
@@ -71,12 +79,9 @@ public class ProtobufCodec implements Codec2 {
   private void encodeHeartbeat(Channel channel, ChannelBuffer buffer, Request request) throws IOException {
     // 打包消息体
     ProtobufMessage.RpcMessage.Builder rpcMessageBuilder = ProtobufMessage.RpcMessage.newBuilder();
-    rpcMessageBuilder.setUuid(0);
-    rpcMessageBuilder.setVersion(0);
     rpcMessageBuilder.setType(ProtobufMessage.PackageType.HEARTBEAT);
     rpcMessageBuilder.setIdentify(0);
     rpcMessageBuilder.setTimestamp(System.currentTimeMillis());
-    rpcMessageBuilder.setCrypt(ProtobufMessage.CryptType.NONE);
     ProtobufMessage.RpcMessage rpcMessage = rpcMessageBuilder.build();
 
     // 编码消息体
@@ -123,12 +128,9 @@ public class ProtobufCodec implements Codec2 {
 
     // 打包消息体
     ProtobufMessage.RpcMessage.Builder rpcMessageBuilder = ProtobufMessage.RpcMessage.newBuilder();
-    rpcMessageBuilder.setUuid(0);
-    rpcMessageBuilder.setVersion(0);
     rpcMessageBuilder.setType(mType);
     rpcMessageBuilder.setIdentify(seqID);
     rpcMessageBuilder.setTimestamp(System.currentTimeMillis());
-    rpcMessageBuilder.setCrypt(ProtobufMessage.CryptType.NONE);
     rpcMessageBuilder.setSerialized(rpcRequest.toByteString());
     ProtobufMessage.RpcMessage rpcMessage = rpcMessageBuilder.build();
 
@@ -153,11 +155,8 @@ public class ProtobufCodec implements Codec2 {
 
     // 打包消息体
     ProtobufMessage.RpcMessage.Builder rpcMessageBuilder = ProtobufMessage.RpcMessage.newBuilder();
-    rpcMessageBuilder.setUuid(0);
-    rpcMessageBuilder.setVersion(0);
     rpcMessageBuilder.setIdentify(seqID);
     rpcMessageBuilder.setTimestamp(System.currentTimeMillis());
-    rpcMessageBuilder.setCrypt(ProtobufMessage.CryptType.NONE);
     rpcMessageBuilder.setType(ProtobufMessage.PackageType.RESPONSE);
     rpcMessageBuilder.setSerialized(rpcResponse.toByteString());
     ProtobufMessage.RpcMessage rpcMessage = rpcMessageBuilder.build();

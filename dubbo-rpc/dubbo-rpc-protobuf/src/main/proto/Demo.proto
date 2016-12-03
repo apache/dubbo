@@ -2,9 +2,6 @@
 option java_package = "com.alibaba.dubbo.rpc.protocol.protobuf.proto";
 option java_outer_classname = "DemoProto";
 
-//for c++
-//package voicegame;
-
 message EchoRequest {
     required int32 data = 1;
 }
