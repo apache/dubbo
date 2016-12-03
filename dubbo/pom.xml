@@ -161,6 +161,17 @@
 		</dependency>
 		<dependency>
 			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo-rpc-protobuf</artifactId>
+			<version>${project.parent.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.google.protobuf</groupId>
+					<artifactId>protobuf-java</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
 			<artifactId>dubbo-rpc-memcached</artifactId>
 			<version>${project.parent.version}</version>
 			<exclusions>
@@ -324,6 +335,7 @@
 									<include>com.alibaba:dubbo-rpc-http</include>
 									<include>com.alibaba:dubbo-rpc-webservice</include>
 									<include>com.alibaba:dubbo-rpc-thrift</include>
+									<include>com.alibaba:dubbo-rpc-protobuf</include>
 									<include>com.alibaba:dubbo-rpc-memcached</include>
 									<include>com.alibaba:dubbo-rpc-redis</include>
 									<include>com.alibaba:dubbo-filter-validation</include>
