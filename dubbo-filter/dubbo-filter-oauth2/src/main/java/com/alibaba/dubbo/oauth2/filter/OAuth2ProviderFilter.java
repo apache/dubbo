@@ -54,16 +54,24 @@ public class OAuth2ProviderFilter implements Filter {
         }
 
         //拿取token作为权限字段 ROLE_ADMIN,ROLE_USER
-        String auth = invoker.getUrl().getParameter("token");
+        String roles = invoker.getUrl().getParameter("token");
+        if (roles == null) {
+            return invoker.invoke(invocation);
+        }
 
         String access_token = invocation.getAttachment("access_token");
         UserDetails userInfo = getUserInfo(access_token);
         Set<String> authorities = userInfo.getAuthorities();
-        if (!authorities.contains(auth)) {
-            throw new RpcException("Permission denied!:" + JSON.toJSONString(userInfo));
+
+        for (String role : roles.split(",")) {
+            if (!authorities.contains(role.trim())) {
+                return invoker.invoke(invocation);
+
+            }
         }
 
-        return invoker.invoke(invocation);
+        throw new RpcException("Permission denied!:" + JSON.toJSONString(userInfo));
+
     }
 
 
