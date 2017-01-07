@@ -17,12 +17,14 @@
             <groupId>com.alibaba</groupId>
             <artifactId>dubbo-rpc-api</artifactId>
             <version>${project.parent.version}</version>
+            <optional>true</optional>
         </dependency>
 
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>dubbo-config-spring</artifactId>
             <version>${project.parent.version}</version>
+            <optional>true</optional>
         </dependency>
 
         <dependency>
@@ -38,6 +40,7 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 </project>

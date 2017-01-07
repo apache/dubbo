@@ -457,6 +457,12 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-filter-oauth2</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
 	</dependencies>
 	<build>
 		<plugins>
@@ -532,6 +538,7 @@
                                     <include>com.alibaba:dubbo-rpc-avro</include>
                                     <include>com.alibaba:dubbo-filter-validation</include>
                                     <include>com.alibaba:dubbo-filter-cache</include>
+                                    <include>com.alibaba:dubbo-filter-oauth2</include>
                                     <include>com.alibaba:dubbo-cluster</include>
                                     <include>com.alibaba:dubbo-registry-api</include>
                                     <include>com.alibaba:dubbo-registry-default</include>
