@@ -36,7 +36,7 @@ public class Constants {
     public static final String  SUBSCRIBE                          = "subscribe";
 
     public static final String  UNSUBSCRIBE                        = "unsubscribe";
-    
+
     public static final String  CATEGORY_KEY                       = "category";
 
     public static final String  PROVIDERS_CATEGORY                 = "providers";
@@ -74,7 +74,7 @@ public class Constants {
     public static final String  $ECHO                              = "$echo";
 
     public static final int     DEFAULT_IO_THREADS                 = Runtime.getRuntime()
-                                                                           .availableProcessors() + 1;
+            .availableProcessors() + 1;
 
     public static final String  DEFAULT_PROXY                      = "javassist";
 
@@ -118,6 +118,8 @@ public class Constants {
 
     public static final int     DEFAULT_THREADS                    = 200;
 
+    public static final boolean DEFAULT_KEEP_ALIVE = true;
+
     public static final int     DEFAULT_QUEUES                     = 0;
 
     public static final int     DEFAULT_ALIVE                      = 60 * 1000;
@@ -133,6 +135,8 @@ public class Constants {
     public static final int     DEFAULT_TIMEOUT                    = 1000;
 
     public static final int     DEFAULT_CONNECT_TIMEOUT            = 3000;
+
+    public static final int     DEFAULT_REGISTRY_CONNECT_TIMEOUT   = 5000;
 
     public static final int     DEFAULT_RETRIES                    = 2;
 
@@ -153,7 +157,7 @@ public class Constants {
 
     public static final String  LOADBALANCE_KEY                    = "loadbalance";
 
-    // key for router type, for e.g., "script"/"file",  corresponding to ScriptRouterFactory.NAME, FileRouterFactory.NAME 
+    // key for router type, for e.g., "script"/"file",  corresponding to ScriptRouterFactory.NAME, FileRouterFactory.NAME
     public static final String  ROUTER_KEY                         = "router";
 
     public static final String  CLUSTER_KEY                        = "cluster";
@@ -260,6 +264,16 @@ public class Constants {
 
     public static final String  SERIALIZATION_KEY                  = "serialization";
 
+    // modified by lishen
+    public static final String EXTENSION_KEY = "extension";
+
+    // modified by lishen
+    public static final String  KEEP_ALIVE_KEY                  = "keepalive";
+
+    // modified by lishen
+    // TODO change to a better name
+    public static final String  OPTIMIZER_KEY                  = "optimizer";
+
     public static final String  EXCHANGER_KEY                      = "exchanger";
 
     public static final String  TRANSPORTER_KEY                    = "transporter";
@@ -295,7 +309,7 @@ public class Constants {
     public static final String  PID_KEY                            = "pid";
 
     public static final String  TIMESTAMP_KEY                      = "timestamp";
-    
+
     public static final String  WARMUP_KEY                         = "warmup";
 
     public static final int     DEFAULT_WARMUP                     = 10 * 60 * 1000;
@@ -339,19 +353,19 @@ public class Constants {
     public static final String  COMMA_SEPARATOR                    = ",";
 
     public static final Pattern COMMA_SPLIT_PATTERN                = Pattern
-                                                                           .compile("\\s*[,]+\\s*");
+            .compile("\\s*[,]+\\s*");
 
     public final static String  PATH_SEPARATOR                     = "/";
 
     public static final String  REGISTRY_SEPARATOR                 = "|";
 
     public static final Pattern REGISTRY_SPLIT_PATTERN             = Pattern
-                                                                           .compile("\\s*[|;]+\\s*");
+            .compile("\\s*[|;]+\\s*");
 
     public static final String  SEMICOLON_SEPARATOR                = ";";
 
     public static final Pattern SEMICOLON_SPLIT_PATTERN            = Pattern
-                                                                           .compile("\\s*[;]+\\s*");
+            .compile("\\s*[;]+\\s*");
 
     public static final String  CONNECT_QUEUE_CAPACITY             = "connect.queue.capacity";
 
@@ -445,14 +459,14 @@ public class Constants {
      * 重试周期
      */
     public static final int DEFAULT_REGISTRY_RETRY_PERIOD          =  5 * 1000;
-    
+
     /**
      * 注册中心自动重连时间
      */
     public static final String  REGISTRY_RECONNECT_PERIOD_KEY      = "reconnect.period";
 
     public static final int     DEFAULT_REGISTRY_RECONNECT_PERIOD  = 3 * 1000;
-    
+
     public static final String  SESSION_TIMEOUT_KEY                = "session";
 
     public static final int     DEFAULT_SESSION_TIMEOUT            = 60 * 1000;
@@ -522,7 +536,7 @@ public class Constants {
     public static final String  OVERRIDE_PROTOCOL                  = "override";
 
     public static final String  PRIORITY_KEY                       = "priority";
-    
+
     public static final String  RULE_KEY                           = "rule";
 
     public static final String  TYPE_KEY                           = "type";
@@ -546,17 +560,17 @@ public class Constants {
     public static final String LOCAL_PROTOCOL                      = "injvm";
 
     public static final String AUTO_ATTACH_INVOCATIONID_KEY 	   = "invocationid.autoattach";
-    
+
     public static final String SCOPE_KEY						   = "scope";
-    
+
     public static final String SCOPE_LOCAL						   = "local";
-    
+
     public static final String SCOPE_REMOTE						   = "remote";
-    
+
     public static final String SCOPE_NONE						   = "none";
-    
+
     public static final String RELIABLE_PROTOCOL				   = "napoli";
-    
+
     public static final String TPS_LIMIT_RATE_KEY                  = "tps";
 
     public static final String TPS_LIMIT_INTERVAL_KEY              = "tps.interval";
@@ -566,9 +580,9 @@ public class Constants {
     public static final String DECODE_IN_IO_THREAD_KEY             = "decode.in.io";
 
     public static final boolean DEFAULT_DECODE_IN_IO_THREAD        = true;
-    
+
     public static final String INPUT_KEY                           = "input";
-    
+
     public static final String OUTPUT_KEY                          = "output";
 
     public static final String EXECUTOR_SERVICE_COMPONENT_KEY      = ExecutorService.class.getName();

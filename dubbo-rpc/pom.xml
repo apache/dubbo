@@ -39,5 +39,10 @@
 		<module>dubbo-rpc-thrift</module>
 		<module>dubbo-rpc-memcached</module>
 		<module>dubbo-rpc-redis</module>
+        <module>dubbo-rpc-springmvc</module>
+        <module>dubbo-rpc-thrift9</module>
+        <module>dubbo-rpc-jsonrpc</module>
+        <module>dubbo-rpc-avro</module>
+        <module>dubbo-rpc-rest</module>
 	</modules>
 </project>

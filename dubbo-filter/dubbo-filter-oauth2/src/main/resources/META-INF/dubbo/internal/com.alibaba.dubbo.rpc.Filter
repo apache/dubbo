@@ -1,0 +1,2 @@
+oAuth2ConsumerFilter=com.alibaba.dubbo.oauth2.filter.OAuth2ConsumerFilter
+oauth2ProviderFilter=com.alibaba.dubbo.oauth2.filter.OAuth2ProviderFilter

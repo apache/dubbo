@@ -1,0 +1,1 @@
+jsonrpc=com.alibaba.dubbo.rpc.protocol.jsonrpc.JsonRpcProtocol

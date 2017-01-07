@@ -81,12 +81,12 @@
 	</profiles>
 	<properties>
 		<!-- Common libs -->
-		<spring_version>3.2.16.RELEASE</spring_version>
+		<spring_version>4.3.5.RELEASE</spring_version>
 		<javassist_version>3.20.0-GA</javassist_version>
 		<netty_version>3.2.5.Final</netty_version>
 		<mina_version>1.1.7</mina_version>
 		<grizzly_version>2.1.4</grizzly_version>
-		<httpclient_version>4.1.2</httpclient_version>
+		<httpclient_version>4.5.2</httpclient_version>
 		<hessian_lite_version>3.2.1-fixed-2</hessian_lite_version>
 		<xstream_version>1.4.1</xstream_version>
 		<fastjson_version>1.1.39</fastjson_version>
@@ -131,8 +131,8 @@
 
         <!-- for maven compiler plugin -->
         <maven_compiler_plugin_version>3.5.1</maven_compiler_plugin_version>
-        <java_source_version>1.6</java_source_version>
-        <java_target_version>1.6</java_target_version>
+        <java_source_version>1.7</java_source_version>
+        <java_target_version>1.7</java_target_version>
         <file_encoding>UTF-8</file_encoding>
         
 	</properties>
@@ -342,6 +342,49 @@
 				<artifactId>cglib-nodep</artifactId>
 				<version>${cglib_version}</version>
 			</dependency>
+
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>fastjson</artifactId>
+                <version>1.2.12</version>
+            </dependency>
+            <!-- TODO move versions into properties -->
+            <dependency>
+                <groupId>javax.ws.rs</groupId>
+                <artifactId>javax.ws.rs-api</artifactId>
+                <version>2.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-jaxrs</artifactId>
+                <version>3.1.0.Final</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-client</artifactId>
+                <version>3.1.0.Final</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-netty</artifactId>
+                <version>3.1.0.Final</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-jdk-http</artifactId>
+                <version>3.1.0.Final</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-jackson-provider</artifactId>
+                <version>3.1.0.Final</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-jaxb-provider</artifactId>
+                <version>3.1.0.Final</version>
+            </dependency>
+
 		</dependencies>
 	</dependencyManagement>
 	<dependencies>
@@ -381,71 +424,11 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
+                <version>2.19</version>
 				<configuration>
 					<useSystemClassLoader>true</useSystemClassLoader>
 					<forkMode>once</forkMode>
 					<argLine>${argline}</argLine>
-					<systemProperties>
-						<!-- common shared -->
-						<property>
-							<name>transporter</name>
-							<value>${transporter}</value>
-						</property>
-						<property>
-							<name>serialization</name>
-							<value>${serialization}</value>
-						</property>
-						<!-- server side -->
-						<property>
-							<name>port</name>
-							<value>${port}</value>
-						</property>
-						<property>
-							<name>threadpool</name>
-							<value>${threadpool}</value>
-						</property>
-						<property>
-							<name>threads</name>
-							<value>${threads}</value>
-						</property>
-						<property>
-							<name>iothreads</name>
-							<value>${iothreads}</value>
-						</property>
-						<!-- client side -->
-						<property>
-							<name>server</name>
-							<value>${server}</value>
-						</property>
-						<property>
-							<name>timeout</name>
-							<value>${timeout}</value>
-						</property>
-						<property>
-							<name>length</name>
-							<value>${length}</value>
-						</property>
-						<property>
-							<name>connections</name>
-							<value>${connections}</value>
-						</property>
-						<property>
-							<name>base</name>
-							<value>${base}</value>
-						</property>
-						<property>
-							<name>concurrent</name>
-							<value>${concurrent}</value>
-						</property>
-						<property>
-							<name>runs</name>
-							<value>${runs}</value>
-						</property>
-						<property>
-							<name>onerror</name>
-							<value>${onerror}</value>
-						</property>
-					</systemProperties>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -455,6 +438,16 @@
 					<skip>${skip_maven_deploy}</skip>
 				</configuration>
 			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <source>${java_target_version}</source>
+                    <target>${java_target_version}</target>
+                    <encoding>utf-8</encoding>
+                </configuration>
+            </plugin>
 		</plugins>
 	</build>
 

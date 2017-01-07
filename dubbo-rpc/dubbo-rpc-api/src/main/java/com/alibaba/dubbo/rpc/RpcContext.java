@@ -98,9 +98,59 @@ public class RpcContext {
 
 	@Deprecated
     private Invocation invocation;
-    
+
+    private Object request;
+    private Object response;
+
 	protected RpcContext() {
 	}
+    /**
+     * Get the request object of the underlying RPC protocol, e.g. HttpServletRequest
+     *
+     * @return null if the underlying protocol doesn't provide support for getting request
+     */
+    public Object getRequest() {
+        return request;
+    }
+
+    /**
+     * Get the request object of the underlying RPC protocol, e.g. HttpServletRequest
+     *
+     * @return null if the underlying protocol doesn't provide support for getting request or the request is not of the specified type
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T getRequest(Class<T> clazz) {
+        return (request != null && clazz.isAssignableFrom(request.getClass())) ? (T) request : null;
+    }
+
+
+    public void setRequest(Object request) {
+        this.request = request;
+    }
+
+    /**
+     * Get the response object of the underlying RPC protocol, e.g. HttpServletResponse
+     *
+     * @return null if the underlying protocol doesn't provide support for getting response
+     */
+    public Object getResponse() {
+        return response;
+    }
+
+    /**
+     * Get the response object of the underlying RPC protocol, e.g. HttpServletResponse
+     *
+     * @return null if the underlying protocol doesn't provide support for getting response or the response is not of the specified type
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T getResponse(Class<T> clazz) {
+        return (response != null && clazz.isAssignableFrom(response.getClass())) ? (T) response : null;
+    }
+
+    public void setResponse(Object response) {
+        this.response = response;
+    }
+
 
     /**
      * is provider side.

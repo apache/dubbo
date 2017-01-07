@@ -1,0 +1,1 @@
+thrift9=com.alibaba.dubbo.rpc.protocol.thrift9.Thrift9Protocol

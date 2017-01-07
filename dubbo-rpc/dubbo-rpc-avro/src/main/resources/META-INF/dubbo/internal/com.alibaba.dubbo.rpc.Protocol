@@ -1,0 +1,1 @@
+avro=com.alibaba.dubbo.rpc.protocol.avro.AvroProtocol
