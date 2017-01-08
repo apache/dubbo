@@ -22,9 +22,7 @@
 	
 	<bean id="demoService" class="com.alibaba.dubbo.demo.provider.DemoServiceImpl" />
 
-    <dubbo:service interface="com.alibaba.dubbo.demo.DemoService" ref="demoService" filter="oauth2ProviderFilter" />
-
     <!--验证权限 临时 使用 token作为所需权限-->
-    <!--<dubbo:service interface="com.alibaba.dubbo.demo.DemoService" ref="demoService" filter="oauth2ProviderFilter" token="ROLE_USER" />-->
+    <!--<dubbo:service interface="com.alibaba.dubbo.demo.DemoService" ref="demoService" filter="oAuth2Filter" token="ROLE_USER" />-->
 	
 </beans>

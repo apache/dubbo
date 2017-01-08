@@ -61,7 +61,7 @@ public class SpringMvcHttpServer {
 
 
         try {
-            dispatcher.setContextConfigLocation("classpath:META-INF/spring/dubbo-springmvc.xml");
+            dispatcher.setContextConfigLocation("classpath:META-INF/dubbo-springmvc.xml");
             dispatcher.init(new SimpleServletConfig(servletContext));
 
         } catch (Exception e) {

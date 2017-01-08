@@ -23,6 +23,6 @@
 	<dubbo:reference id="demoService" interface="com.alibaba.dubbo.demo.DemoService"/>
 
     <!--加入 权限验证 -->
-<!--    <dubbo:reference id="demoService" interface="com.alibaba.dubbo.demo.DemoService" filter="oAuth2ConsumerFilter"/>-->
+    <!--<dubbo:reference id="demoService" interface="com.alibaba.dubbo.demo.DemoService" filter="oAuth2Filter"/>-->
 
 </beans>
