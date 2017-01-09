@@ -6,6 +6,8 @@ import com.alibaba.dubbo.remoting.http.HttpBinder;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.protocol.AbstractProxyProtocol;
 import com.alibaba.dubbo.rpc.protocol.springmvc.exception.SpringMvcErrorDecoder;
+import com.alibaba.dubbo.rpc.protocol.springmvc.oauth2.FeignOAuth2Interceptor;
+import com.alibaba.dubbo.rpc.protocol.springmvc.oauth2.SpringMvcOAuth2Interceptor;
 import com.alibaba.dubbo.rpc.protocol.springmvc.support.ApacheHttpClient;
 import com.alibaba.dubbo.rpc.protocol.springmvc.support.SpringMvcFeign;
 import com.alibaba.dubbo.rpc.protocol.springmvc.util.SpringUtil;
@@ -64,6 +66,18 @@ public class SpringMvcProtocol extends AbstractProxyProtocol {
             servers.put(addr, server);
         }
 
+        String filter = url.getParameter("filter");
+        //判断是否包含OAuth2Filter
+        if (filter != null && filter.contains("oAuth2Filter")) {
+            //权限字段
+            String token = url.getParameter("token");
+            Set<String> beanNames = SpringUtil.getBeanNamesForType(SpringMvcOAuth2Interceptor.class);
+            if(beanNames.size()>0){
+                SpringMvcOAuth2Interceptor bean = SpringUtil.getBean(SpringMvcOAuth2Interceptor.class);
+                bean.setEnable(true);
+                bean.addRole(url.getServiceInterface(),token);
+            }
+        }
         server.deploy(type);
 
         return new Runnable() {
@@ -86,9 +100,15 @@ public class SpringMvcProtocol extends AbstractProxyProtocol {
 
         String api = schema + url.getHost() + ":" + url.getPort() + getContextPath(url);
 
+
         //注册请求拦截器,请求前认证
         Set<RequestInterceptor> requestInterceptors = SpringUtil.getBeans(RequestInterceptor.class);
+        String filter = url.getParameter("filter");
 
+        //判断是否包含OAuth2Filter
+        if (filter != null && filter.contains("oAuth2Filter")) {
+            requestInterceptors.add(new FeignOAuth2Interceptor());
+        }
         return SpringMvcFeign.builder()
                 .requestInterceptors(requestInterceptors)
                 .client(new ApacheHttpClient(SpringMvcFeign.getDefaultHttpClientPool(connections, timeout, 0, true)))

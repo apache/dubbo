@@ -44,5 +44,6 @@
         <module>dubbo-rpc-jsonrpc</module>
         <module>dubbo-rpc-avro</module>
         <module>dubbo-rpc-rest</module>
-	</modules>
+        <module>dubbo-rpc-grpc</module>
+    </modules>
 </project>

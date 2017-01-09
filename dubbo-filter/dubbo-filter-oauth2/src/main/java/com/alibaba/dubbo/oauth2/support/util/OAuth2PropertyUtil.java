@@ -17,7 +17,7 @@ import java.util.Set;
 public class OAuth2PropertyUtil {
 
 
-    public static OAuth2Properties loadOAuth2Properties() {
+    public static synchronized OAuth2Properties loadOAuth2Properties() {
         OAuth2Properties oAuth2Properties = null;
         Set<ApplicationContext> springContext = SpringUtil.getApplicationContexts();
         for (ApplicationContext applicationContext : springContext) {

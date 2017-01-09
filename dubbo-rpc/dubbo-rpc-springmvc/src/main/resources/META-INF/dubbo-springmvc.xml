@@ -9,4 +9,12 @@
     <mvc:annotation-driven/>
 
     <bean id="springMvcExceptionHandler" class="com.alibaba.dubbo.rpc.protocol.springmvc.exception.SpringMvcExceptionHandler"/>
+
+    <!--OAuth2 拦截器-->
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <mvc:mapping path="/**"/>
+            <bean class="com.alibaba.dubbo.rpc.protocol.springmvc.oauth2.SpringMvcOAuth2Interceptor"/>
+        </mvc:interceptor>
+    </mvc:interceptors>
 </beans>

@@ -19,7 +19,7 @@ public class TokenDetails {
     @JSONField(name = "expires_in")
     private long expiresIn;
 
-    private long createdTime;
+    private long createdTime = System.currentTimeMillis();
 
     public String getAccessToken() {
         return accessToken;
