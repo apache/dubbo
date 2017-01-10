@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+	<channel>
+		<title>Spring Tool Suites Updates</title>
+		<link>https://spring.io/tools</link>
+		<description>This feeds imforms about important updates relevant to users of STS.</description>
+		<generator>Feeder 2.0.7(1195) http://reinventedsoftware.com/feeder/</generator>
+		<docs>http://blogs.law.harvard.edu/tech/rss</docs>
+		<language>en-us</language>
+		<managingEditor>sts@springsource.com</managingEditor>
+		<pubDate>Thu, 22 Dec 2016 10:38:33 +0100</pubDate>
+		<lastBuildDate>Thu, 22 Dec 2016 10:38:33 +0100</lastBuildDate>
+		<atom:link href="http://dist.springsource.com.s3.amazonaws.com/release/STS/doc/updates.xml" rel="self" type="application/rss+xml"/>
+
+<!--		<item>
+            <title>Thanks for installing STS/GGTS 3.6.0.M1</title>
+            <link>http://static.springsource.org/sts/nan/v360/NewAndNoteworthy-M1.html</link>
+			<description><![CDATA[<form><p><a href="http://gopivotal.com">Pivotal</a> has released the first milestone build of the upcoming next version of
+				the Spring Tool Suite (STS) and the Groovy/Grails Tool Suite (GGTS), the best Eclipse-powered development environment for building Spring, Groovy and Grails powered enterprise application.</p>
+			<p>Please review the following documents:</p>
+			<li bindent="3"><a href="http://static.springsource.org/sts/nan/v360/NewAndNoteworthy-M1.html">3.6.0.M1 New &amp; Noteworthy</a></li><p></p></form>]]></description>
+            <pubDate>Thu, 29 May 2014 12:13:33 +0100</pubDate>
+			<category>version=[3.6.0.201405280524-M1,3.7.0)</category>
+            <category>severity=important</category>
+	        <guid isPermaLink="false">thanks-for-installing-sts-360m1</guid>
+		</item>
+
+		<item>
+			<title>STS/GGTS 3.6.0.M1 has been released</title>
+			<link>http://static.springsource.org/sts/nan/v360/NewAndNoteworthy-M1.html</link>
+			<description><![CDATA[<form><p><a href="http://gopivotal.com">Pivotal</a> has released the first milestone build of the upcoming next version of
+				the Spring Tool Suite (STS) and the Groovy/Grails Tool Suite (GGTS), the best Eclipse-powered development environment for building Spring, Groovy and Grails powered enterprise application.</p>
+			<p>Please review the following documents:</p>
+			<li bindent="3"><a href="http://static.springsource.org/sts/nan/v360/NewAndNoteworthy-M1.html">3.6.0.M1 New &amp; Noteworthy</a></li><p></p></form>]]></description>
+            <pubDate>Thu, 29 May 2014 12:12:33 +0100</pubDate>
+			<category>version=[0,3.6.0.201405280524-M1)</category>
+			<category>severity=important</category>
+			<guid isPermaLink="false">sts-360m1-released</guid>
+		</item>
+-->
+
+		<item>
+            <title>Thanks for installing STS 3.8.3</title>
+            <link>http://spring.io/tools</link>
+            <description><![CDATA[<form><p><a href="http://pivotal.io">Pivotal</a> has released an update to Spring Tool Suite (STS), the best Eclipse-powered development environment for building Spring powered enterprise application.</p>
+		<p>Please review the following documents:</p>
+		<li bindent="3"><a href="http://docs.spring.io/sts/nan/v383/NewAndNoteworthy.html">3.8.3 New &amp; Noteworthy</a></li><p></p></form>]]></description>
+            <pubDate>Thu, 22 Dec 2016 12:13:33 +0100</pubDate>
+			<category>version=[3.8.3.201612190658-RELEASE,3.9.0)</category>
+		<!--            <category>severity=important</category>-->
+	        <guid isPermaLink="false">thanks-for-installing-sts-383</guid>
+		</item>
+		
+		<item>
+			<title>STS 3.8.3 has been released</title>
+			<link>http://spring.io/tools</link>
+			<description><![CDATA[<form><p><a href="http://pivotal.io">Pivotal</a> has released an update to Spring Tool Suite (STS), the best Eclipse-powered development environment for building Spring powered enterprise application.</p><p>It is recommend to update as soon as possible.</p>
+		<p>Please review the following documents:</p>
+		<li bindent="3"><a href="http://docs.spring.io/sts/nan/v383/NewAndNoteworthy.html">3.8.3 New &amp; Noteworthy</a></li><p></p></form>]]></description>
+        	<pubDate>Thu, 22 Dec 2016 12:12:33 +0100</pubDate>
+			<category>version=[0,3.8.3.201612190658-RELEASE)</category>
+			<category>severity=important</category>
+			<guid isPermaLink="false">sts-383-released</guid>
+		</item>
+
+<!--
+		<item>
+            <title>Thanks for installing STS/GGTS 3.4.0</title>
+            <link>http://spring.io/tools</link>
+            <description><![CDATA[<form><p><a href="http://gopivotal.com">Pivotal</a> has released an update to Spring Tool Suite (STS) and Groovy/Grails Tool Suite (GGTS), the best Eclipse-powered development environment for building Spring, Groovy, and Grails powered enterprise application.</p>
+		<p>Please review the following documents:</p>
+		<li bindent="3"><a href="http://static.springsource.org/sts/nan/v340/NewAndNoteworthy.html">3.4.0 New &amp; Noteworthy</a></li><p></p></form>]]></description>
+            <pubDate>Tue, 08 Oct 2013 12:13:33 +0100</pubDate>
+			<category>version=[3.4.0.201310051510-RELEASE,3.5.0)</category>
+            <category>severity=important</category>
+	        <guid isPermaLink="false">thanks-for-installing-sts-340</guid>
+		</item>
+		
+		<item>
+			<title>STS/GGTS 3.4.0 has been released</title>
+			<link>http://spring.io/tools</link>
+			<description><![CDATA[<form><p><a href="http://gopivotal.com">Pivotal</a> has released an update to Spring Tool Suite (STS) and Groovy/Grails Tool Suite (GGTS), the best Eclipse-powered development environment for building Spring, Groovy, and Grails powered enterprise application.</p><p>It is recommend to update as soon as possible. Users of STS 2.9.x or previous versions should start with a fresh install of STS/GGTS 3.4.0.</p>
+		<p>Please review the following documents:</p>
+		<li bindent="3"><a href="http://static.springsource.org/sts/nan/v340/NewAndNoteworthy.html">3.4.0 New &amp; Noteworthy</a></li><p></p></form>]]></description>
+        	<pubDate>Tue, 08 Oct 2013 12:12:33 +0100</pubDate>
+			<category>version=[0,3.4.0.201310051510-RELEASE)</category>
+			<category>severity=important</category>
+			<guid isPermaLink="false">sts-340-released</guid>
+		</item>
+-->
+<!--		<item>
+			<title>Cloud Foundry Tools for Eclipse 1.0.1.M1 released</title>
+			<link>http://www.eclipse.org/cft</link>
+            <description><![CDATA[<form><p><a href="http://www.eclipse.org">Eclipse</a> has released Cloud Foundry Tools for Eclipse version 1.0.1.M1. This marks the first milestone release after the initial Eclipse Neon release and contains important bug fixes.</p></form>]]></description>
+			<pubDate>Wed, 06 Jul 2016 10:38:33 +0100</pubDate>
+			<category>version=2.9.0</category>
+			<category>severity=important</category>
+			<category>bundle=!org.eclipse.cft.server.core.feature.feature.group</category>
+			<guid isPermaLink="false">cloud-foundry-tools-101m1-released</guid>
+		</item>
+-->
+<!--
+		<item>
+			<title>Cloud Foundry Integration for Eclipse 1.3.0 released</title>
+			<link>http://www.cloudfoundry.com</link>
+            <description><![CDATA[<form><p><a href="http://springsource.com">SpringSource</a> has released the fifth release of the Eclipse integration for VMware<a href="http://www.cloudfoundry.com">Cloud Foundry</a>, including support for Micro Cloud Foundry, incremental update performance improvements and debugging support for Java/Spring applications running on Micro Cloud Foundry, using tunnels to services directly from within your IDE, and the new support for standalone applications.</p>
+				<p>Cloud Foundry is the industry's first open platform as a service. Run your Spring, Rails and Node.js applications. Deploy from your IDE or command line.</p>
+				<li bindent="3"><a href="http://docs.cloudfoundry.com/tools/STS/sts-eclipse.html">Getting Started with Eclipse/STS and Cloud Foundry</a></li>
+				<li bindent="3"><a href="https://github.com/SpringSource/eclipse-integration-cloudfoundry">Cloud Foundry Integration for Eclipse at GitHub</a></li>
+				<li bindent="3"><a href="http://start.cloudfoundry.com/getting-started.html">Getting Started with Cloud Foundry</a></li>
+				<li bindent="3"><a href="http://forum.springsource.org/forumdisplay.php?f=32">Community support forum</a></li><p></p></form>]]></description>
+			<pubDate>Fri, 12 Oct 2012 10:38:33 +0100</pubDate>
+			<category>version=2.9.0</category>
+			<category>severity=important</category>
+			<category>bundle=!org.cloudfoundry.ide.eclipse.feature.group</category>
+			<guid isPermaLink="false">cloud-foundry-integration-130-released</guid>
+		</item>
+-->
+<!--
+		<item>
+			<title>Cloud Foundry Integration for Eclipse 1.0 released</title>
+			<link>http://www.cloudfoundry.com</link>
+            <description><![CDATA[<form><p><a href="http://springsource.com">SpringSource</a> has just released the first release of the Eclipse integration for VMware<a href="http://www.cloudfoundry.com">Cloud Foundry</a>, including support for Micro Cloud Foundry, incremental update performance improvements and debugging support for Java/Spring applications running on Micro Cloud Foundry.</p>
+		<p>Cloud Foundry is the industry's first open platform as a service. Run your Spring, Rails and Node.js applications. Deploy from your IDE or command line.</p>
+		<li bindent="3"><a href="http://start.cloudfoundry.com/getting-started.html">Getting Started with Cloud Foundry</a></li>
+		<li bindent="3"><a href="http://www.youtube.com/watch?v=XcI-2V-mmmw">On Youtube: Getting Started with STS and Cloud Foundry</a></li>
+		<li bindent="3"><a href="http://forum.springsource.org/forumdisplay.php?f=32">Community support forum</a></li><p></p></form>]]></description>
+			<pubDate>Fri, 23 Mar 2012 10:38:33 +0100</pubDate>
+			<category>version=2.9.0</category>
+			<category>severity=important</category>
+			<category>bundle=!org.cloudfoundry.ide.eclipse.feature.group</category>
+			<guid isPermaLink="false">cloud-foundry-integration-100-released</guid>
+		</item>
+-->
+<!--
+		<item>
+			<title>Cloud Foundry support now available</title>
+			<link>http://www.cloudfoundry.com</link>
+            <description><![CDATA[<form><p><a href="http://springsource.com">SpringSource</a> has just released Eclipse support for VMware<a href="http://www.cloudfoundry.com">Cloud Foundry</a>.</p>
+<p>Cloud Foundry is the industry's first open platform as a service. Run your Spring, Rails and Node.js applications. Deploy from your IDE or command line.</p>
+<li bindent="3"><a href="http://dist.springsource.com/release/STS/doc/STS-cloud_foundry.pdf">Documentation for the Eclipse support</a></li>
+<li bindent="3"><a href="http://forum.springsource.org/forumdisplay.php?f=32">Community support forum</a></li><p></p></form>]]></description>
+			<pubDate>Tue, 12 Apr 2011 10:38:33 +0100</pubDate>
+			<category>version=2.5.1</category>
+			<category>severity=important</category>
+			<category>bundle=!com.cloudfoundry.sts.server.feature.group</category>
+			<guid isPermaLink="false">cloud-foundry-support-m1-released</guid>
+		</item>
+-->
+		<item>
+			<title>Patch released to fix a Xerces classloading issue</title>
+			<link>https://issuetracker.springsource.com/browse/STS-1672</link>
+            <description><![CDATA[<form><p><a href="http://springsource.com">SpringSource</a> has just published a patch to fix a severe issue in STS that causes parsing of Spring XML files to fail with a Xerces classloading issue.</p><p>It is recommend to update as soon as possible. The feature patch is available from the STS Dashboard -> Extensions tab.</p>
+<p>Get to get more details about the issue please read the following bug entries:</p>
+<li bindent="3"><a href="https://issuetracker.springsource.com/browse/STS-1672">Issue in the STS JIRA</a></li>
+<li bindent="3"><a href="http://forum.springsource.org/showthread.php?t=105729">Community forum discussion</a></li><p>We apologize that this patch did not make it into the 2.6.0 release of STS.</p></form>]]></description>
+			<pubDate>Mon, 21 Mar 2011 10:38:33 +0100</pubDate>
+			<category>version=[2.6.0.201103160035-RELEASE,2.7.0.201105101000-M1)</category>
+			<category>severity=important</category>
+			<category>bundle=!org.springframework.ide.eclipse.patch.feature.feature.group</category>
+			<guid isPermaLink="false">patch-STS1672-released</guid>
+		</item>
+<!--		<item>
+			<title>Patch released to fix bug in Eclipse WTP</title>
+			<link>https://bugs.eclipse.org/bugs/show_bug.cgi?id=327801</link>
+            <description><![CDATA[<form><p><a href="http://springsource.com">SpringSource</a> has just published a patch to fix a severe issue in Eclipse WTP that causes complete UI freezes on restarts.</p><p>It is recommend to update as soon as possible. The feature patch is available from the STS Dashboard -> Extensions tab.</p>
+<p>Get to get more details about the issue please read the following bug entries:</p>
+<li bindent="3"><a href="https://issuetracker.springsource.com/browse/STS-1456">Issue in the STS JIRA</a></li>
+<li bindent="3"><a href="https://issues.sonatype.org/browse/MECLIPSEWTP-62">Issue in M2Eclipse JIRA</a></li>
+<li bindent="3"><a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=327801">Issue in Eclipse' bugzilla</a></li><p>We apologize that this patch did not make it into the 2.5.2 release of STS.</p></form>]]></description>
+			<pubDate>Tue, 11 Jan 2011 10:38:33 +0100</pubDate>
+			<category>version=[2.5.1,2.6.0.201102251000-M2)</category>
+			<category>severity=important</category>
+			<category>bundle=!org.eclipse.wst.common_core.feature.patch_327801.feature.group</category>
+			<guid isPermaLink="false">patch-327801-released</guid>
+		</item>
+-->
+<!--				<item>
+		            <title>VMforce announced - Cloud for Java</title>
+		            <link>http://www.springsource.org/node/2504</link>
+		            <description><![CDATA[<form><p>Today <a href="http://www.vmware.com">VMware</a> announced a new enterprise Platform as a Service (PaaS), VMforce, that is designed to run Spring-based applications. Rod Johnson provides an explanation about the technology in his latest <a href="http://blog.springsource.com/2010/04/27/vmforce-spring-cloud/">blog post</a> and Steve Herrod talks about the <a href="http://blogs.vmware.com/console/2010/04/vmforce-and-vmwares-open-paas-strategy.html">VMware PaaS vision</a>.</p><p>VMforce will be available for developer preview in the second half of this year.</p><p>Make sure to check out the <a href="http://www.springsource.org/node/2504">video</a> of the announcement.</p></form>]]></description>
+		            <pubDate>Wed, 28 Apr 2010 10:00:33 +0100</pubDate>
+		            <category>version=2.3.2</category>
+					<category>severity=important</category>
+		            <guid isPermaLink="false">understanding-vmforce</guid>
+		        </item>-->
+<!--		<item>
+            <title>Thanks for installing STS 2.5.2.SR1</title>
+            <link>http://www.springsource.com/products/sts</link>
+            <description><![CDATA[<form><p><a href="http://springsource.com">SpringSource</a> has released an update to SpringSource Tool Suite (STS), the best Eclipse-powered development environment for building Spring, Groovy and Grails powered enterprise application.</p>
+<p>Please review the following documents:</p>
+<li bindent="3"><a href="http://download.springsource.com/release/STS/doc/STS-new_and_noteworthy.pdf">New &amp; Noteworthy</a></li>
+<li bindent="3"><a href="http://download.springsource.com/release/STS/doc/STS-feature_comparison.pdf">Feature Comparison</a></li><p></p></form>]]></description>
+            <pubDate>Mon, 28 Feb 2011 10:36:33 +0100</pubDate>
+            <category>version=[2.5.2.201102261000-SR1,2.6.0.201101271000-M1)</category>
+            <category>severity=important</category>
+            <guid isPermaLink="false">thanks-for-installing-sts-252sr1</guid>
+        </item>
+		<item>
+			<title>STS 2.5.2.SR1 has been released</title>
+			<link>http://www.springsource.com/products/sts</link>
+            <description><![CDATA[<form><p><a href="http://springsource.com">SpringSource</a> has released an update to SpringSource Tool Suite (STS), the best Eclipse-powered development environment for building Spring, Groovy and Grails powered enterprise application.</p><p>It is recommend to update as soon as possible.</p>
+<p>Please review the following documents:</p>
+<li bindent="3"><a href="http://download.springsource.com/release/STS/doc/STS-new_and_noteworthy.pdf">New &amp; Noteworthy</a></li>
+<li bindent="3"><a href="http://download.springsource.com/release/STS/doc/STS-feature_comparison.pdf">Feature Comparison</a></li><p></p></form>]]></description>
+			<pubDate>Mon, 28 Feb 2011 10:37:33 +0100</pubDate>
+			<category>version=[0,2.5.2.201102261000-SR1)</category>
+			<category>severity=important</category>
+			<guid isPermaLink="false">sts-252sr1-released</guid>
+		</item> -->
+<!--	<item>
+			<title>STS 2.5.0.RELEASE will be released soon</title>
+			<link>http://www.springsource.com/products/sts</link>
+            <description><![CDATA[<form><p><a href="http://springide.org">SpringSource</a> will release an update to SpringSource Tool Suite (STS), the best Eclipse-powered development environment for building Spring, Groovy and Grails powered enterprise application. It is recommended to update to this version as soon as possible. </p>
+<p>Please review the following documents:</p>
+<li bindent="3"><a href="http://download.springsource.com/release/STS/doc/STS-new_and_noteworthy.pdf">New &amp; Noteworthy</a></li>
+<li bindent="3"><a href="http://download.springsource.com/release/STS/doc/STS-feature_comparison.pdf">Feature Comparison</a></li><p></p></form>]]></description>
+			<pubDate>Sun, 24 Oct 2010 10:10:33 +0100</pubDate>
+			<category>version=[0,2.5.0.201010241000-RELEASE)</category>
+			<category>severity=important</category>
+			<guid isPermaLink="false">sts-250GA-released</guid>
+		</item>-->
+<!--		<item>
+			<title>Spring Roo 1.1.0 - now available from the Extension install</title>
+			<link>http://www.springsource.org/node/2399</link>
+			<description><![CDATA[<form><p>The STS extension install has been updated to provide access to the GA release of Spring Roo 1.0.2. To install Roo 1.0.2 into your STS installation click the 'Extension' tab from below and select the 'Spring Roo' entry for installation.</p><p>If you previously installed Roo from the Extension Install please select 'Find Updates' instead.</p></form>]]></description>
+			<pubDate>Mon, 25 Oct 2010 10:00:33 +0100</pubDate>
+			<category>version=2.3.1</category>
+			<category>severity=important</category>
+			<guid isPermaLink="false">extension-install-updated</guid>
+		</item>
+		<item>
+			<title>Spring Roo 1.0.2 - now available from the Extension install</title>
+			<link>http://www.springsource.org/node/2399</link>
+			<description><![CDATA[<form><p>The STS extension install has been updated to provide access to the GA release of Spring Roo 1.0.2. To install Roo 1.0.2 into your STS installation click the 'Extension' tab from below and select the 'Spring Roo' entry for installation.</p><p>If you previously installed Roo use 'Help -> Check for Updates' instead.</p></form>]]></description>
+			<pubDate>Sun, 21 Feb 2010 16:45:32 +0100</pubDate>
+			<category>version=[0,2.3.1)</category>
+			<category>severity=important</category>
+			<guid isPermaLink="false">extension-install-updated</guid>
+		</item>-->
+<!--		<item>
+			<title>Groovy-Eclipse 2.0.0 is final</title>
+			<link>http://docs.codehaus.org/display/GROOVY/Groovy-Eclipse+2.0.0+New+and+Noteworthy</link>
+			<description><![CDATA[<form><p>SpringSource is proud to announce the release of Groovy-Eclipse 2.0.0.</p><p>This version has much improved support for incremental, cross-language compilation and also comes with lots of improvements for editing Groovy code. A full list of features and bug fixes is available in the <a href="http://docs.codehaus.org/display/GROOVY/Groovy-Eclipse+2.0.0+New+and+Noteworthy">New &amp; Noteworthy</a>.</p>
+			<p>The STS extension install has been updated to provide access to the GA release of Groovy-Eclipse 2.0.0.</p></form>]]></description>
+			<pubDate>Fri, 15 Jan 2010 16:45:31 +0100</pubDate>
+			<category>version=2.3.0</category>
+			<category>severity=important</category>
+			<guid isPermaLink="false">groovy-eclipse-2-0-0-is-final</guid>
+		</item>-->
+		<!--	<item>
+			<title>Spring Roo 1.0.0 - now available from the Extension install</title>
+			<link>http://www.springsource.org/node/2273</link>
+			<description><![CDATA[<form><p>The STS extension install has been updated to provide access to the GA release of Spring Roo 1.0.0. To install Roo 1.0.0 into your STS installation click the 'Extension' tab from below and select the 'Spring Roo' entry for installation.</p><p>If you want to learn more about the release, check out Ben Alex's recent <a href="http://blog.springsource.com/2009/12/31/spring-roo-1-0-0-released/">blog post</a>.</p></form>]]></description>
+			<pubDate>Thu, 31 Dec 2009 16:45:31 +0100</pubDate>
+			<category>version=2.3.0</category>
+			<category>severity=important</category>
+			<guid isPermaLink="false">extension-install-updated</guid>
+		</item>-->
+		<!--        <item>
+            <title>Thanks for installing STS 2.3.0</title>
+            <link>http://www.springsource.org/node/2172</link>
+            <description><![CDATA[<form><p><a href="http://springide.org">SpringSource</a> has released an update to SpringSource Tool Suite (STS), the best Eclipse-powered development environment for building Spring, Groovy and Grails powered enterprise application. It is recommended to update to this version as soon as possible. </p>
+<p>Please review the following documents:</p>
+<li bindent="3"><a href="http://download.springsource.com/release/STS/doc/STS-new_and_noteworthy-2.3.0.RELEASE.pdf">New &amp; Noteworthy</a></li>
+<li bindent="3"><a href="http://download.springsource.com/release/STS/doc/STS-feature_comparison-2.3.0.RELEASE.pdf">Feature Comparison</a></li>
+</form>]]></description>
+            <pubDate>Thu, 17 Dec 2009 21:45:31 +0100</pubDate>
+            <category>version=2.3.0</category>
+            <guid isPermaLink="false">thanks-for-installing-sts-230</guid>
+        </item>-->
+		<!--        <item>
+            <title>Spring Framework 3.0</title>
+            <link>http://blog.springsource.com/2009/12/16/spring-framework-3-0-goes-ga/</link>
+            <description><![CDATA[<form><p>The SpringSource team is proud to announce the release of Spring 3.0. There are lots of new features and enhancements in this new version, so make sure to download Spring 3.0 and try it out.</p>
+<p><a href="http://www.springsource.com/download/community">Download</a> | <a href="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/">Documentation</a> | <a  href="http://static.springsource.org/spring/docs/3.0.x/javadoc-api/">Javadoc API</a> | <a href="http://static.springsource.org/spring/docs/3.0.0.RELEASE/changelog.txt">Change Log</a> | <a href="http://jira.springframework.org/browse/SPR">JIRA</a></p></form>]]></description>
+            <pubDate>Wed, 16 Dec 2009 21:45:52 +0100</pubDate>
+            <category>version=2.1.0</category>
+            <category>severity=important</category>
+            <guid isPermaLink="false">spring-framework-30</guid>
+        </item>-->
+		<!--        <item>
+            <title>STS is Cloud Foundry Ready</title>
+            <link>http://blog.springsource.com/2009/11/10/cloud-foundry-integrated-into-developer-tools/</link>
+            <description><![CDATA[<form><p>With the latest version, you can access SpringSource Cloud Foundry right from within STS and deploy your Spring, Grails and Roo applications to the cloud. Give it a try!</p></form>]]></description>
+            <pubDate>Tue, 01 Dec 2009 21:45:52 +0100</pubDate>
+            <category>version=2.1.0</category>
+            <guid isPermaLink="false">sts-is-cloud-foundry-ready</guid>
+        </item>-->
+	</channel>
+</rss>

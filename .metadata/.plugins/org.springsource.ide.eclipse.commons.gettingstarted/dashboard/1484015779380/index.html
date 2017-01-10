@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Spring</title>
+<meta
+	content="width=device-width, initial-scale=1.0, maximum-scale=1, minimum-scale=1, user-scalable=no"
+	id="Viewport" name="viewport" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" type="text/css"
+	href="common/bootstrap/css/bootstrap.css" />
+<link
+	href="https://fonts.googleapis.com/css?family=Varela+Round|Montserrat:400,700"
+	rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css"
+	href="http://fontawesome.io/assets/font-awesome/css/font-awesome.css" />
+<link rel="stylesheet" type="text/css" href="common/css/fontcustom.css" />
+<link rel="stylesheet" type="text/css" href="common/css/icons.css" />
+<link rel="stylesheet" type="text/css" href="common/css/buttons.css" />
+<link rel="stylesheet" type="text/css" href="common/css/typography.css" />
+<link rel="stylesheet" type="text/css" href="common/css/main.css" />
+<link rel="stylesheet" type="text/css" href="common/css/application.css" />
+<link rel="stylesheet" type="text/css"
+	href="common/css/markdown-content.css" />
+<link rel="stylesheet" type="text/css" href="common/css/docs.css" />
+<link rel="stylesheet" type="text/css" href="common/css/homepage.css" />
+<link rel="stylesheet" type="text/css" href="common/css/tools.css" />
+<link rel="stylesheet" type="text/css" href="common/css/projects.css" />
+<link rel="stylesheet" type="text/css" href="common/css/highlight.css" />
+<link rel="stylesheet" type="text/css" href="common/css/responsive.css" />
+<script type="text/javascript" src="common/js/jquery.js"></script>
+<script type="text/javascript"
+	src="common/bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript"
+	src="common/bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js"></script>
+<script type="text/javascript" src="common/js/filter.js"></script>
+<script type="text/javascript" src="common/js/application.js"></script>
+<script type="text/javascript" src="common/js/guide.js"></script>
+
+<link rel="stylesheet" type="text/css" href="common/css/blog.css" />
+<link rel="stylesheet" type="text/css" href="common/css/dashboard.css" />
+
+</head>
+<body>
+	<script>
+		function addHtml(element, html) {
+			if (html) {
+				document.getElementById(element).innerHTML = html;
+			}
+		}
+
+		function search(input) {
+			if (input.value != "") {
+				ide.call('openWebPage', 'https://spring.io/search?q=' + input.value)
+				input.value = "";
+			}
+		}
+	</script>
+	<div class="viewport">
+		<header class="navbar header--navbar">
+			<div class="navbar-inner">
+				<div class="container-fluid">
+					<div class="spring-logo--container">
+						<a class="spring-logo" href=""><span></span></a>
+					</div>
+					<ul class="nav pull-right">
+						<li class="navbar-link"><a href=""
+							onclick="ide.call('openWebPage', 'http://spring.io/docs')">Docs</a></li>
+						<li class="navbar-link"><a href=""
+							onclick="ide.call('openWebPage', 'http://spring.io/guides')">Guides</a></li>
+						<li class="navbar-link"><a href=""
+							onclick="ide.call('openWebPage', 'https://issuetracker.springsource.com/browse/STS')">Issues</a></li>
+						<li class="navbar-link"><a href=""
+							onclick="ide.call('openWebPage', 'http://spring.io/blog')">Blog</a></li>
+						<li class="navbar-link"><a href=""
+							onclick="ide.call('openWebPage', 'http://forum.springsource.org/forumdisplay.php?32-SpringSource-Tool-Suite')">Forum</a></li>
+						<li class="navbar-link nav-search"><i
+							class="fa fa-search navbar-search--icon js-search-input-open"></i>
+							<div class="search-input-close js-search-input-close">x</div></li>
+					</ul>
+				</div>
+			</div>
+			<div class="search-dropdown--container js-search-dropdown">
+				<div class="container-fluid">
+					<div class="search-form--container">
+						<form action="" class="form-inline form-search" method="get">
+							<input class="search-query search-form--form js-search-input"
+								name="q" onchange="search(this)"
+								placeholder="Search for documentation, guides, and posts..."
+								type="text" value="" />
+							<button class="search-form--submit" type="submit">
+								<i class="fa fa-search"></i>
+							</button>
+						</form>
+					</div>
+				</div>
+			</div>
+		</header>
+		<div class="body--container container-fluid ">
+			<div class="main-body--wrapper"
+				style="padding-top: 20px; margin-top: 0px;">
+				<!-- Override Spring IO Page Whitespace -->
+				<div class="row-fluid blog--wrapper">
+					<div class="span8">
+						<h3 class="feed-header">Tooling Updates</h3>
+						<div id="updates">
+						  <img src="common/img/loading.gif"/> Loading updates...
+						</div>
+						<h3 class="feed-header">News</h3>
+						<div id="feeds">
+						  <img src="common/img/loading.gif"/> Loading feeds...
+						</div>
+					</div>
+
+					<aside class="span4 content-right-pane--container" id="sidebar">
+						<div class="right-pane-widget--container">
+							<h2>Get Started!</h2>
+							<div id="gettingStarted">
+							</div>
+							<div id="projectWizards">
+							</div>
+						</div>
+						<div class="right-pane-widget--container">
+							<h2>Manage</h2>
+							<a class="ide_widget btn btn-black uppercase" href=""
+								onclick="ide.call('openEditor', 'org.springsource.ide.eclipse.commons.gettingstarted.dashboard.ExtensionsEditor')">IDE Extensions</a>
+						</div>
+					</aside>
+				</div>
+			</div>
+		</div>
+		<footer class="footer">
+			<div class="container-fluid">
+				<div class="row-fluid">
+					<div class="span8">
+						&copy;
+						<script type="text/javascript">
+							var d = new Date();
+							document.write(d.getFullYear());
+						</script>
+						Pivotal Software, Inc. All Rights Reserved.
+					</div>
+				</div>
+			</div>
+		</footer>
+	</div>
+</body>
+</html>

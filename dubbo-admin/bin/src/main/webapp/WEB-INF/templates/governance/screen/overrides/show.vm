@@ -1,0 +1,163 @@
+<div class="ico_btn">
+	<a href="../overrides"><img src="$rootContextPath.getURI("images/ico_back.png")" width="12" height="12" /><span class="ico_font">$i18n.get("back")</span></a>
+	<span class="ico_line">|</span>
+	<a href="$override.id/edit" >
+			<img src="$rootContextPath.getURI("images/ico_edit.png")" width="13" height="13" />
+			<span class="ico_font">$i18n.get("edit")</span></a>
+	<span class="ico_line">|</span>
+	<a href="#" onclick="showConfirm('$i18n.get("confirm.delete")', '$override.id', '$override.id/delete'); return false;">
+			<img src="$rootContextPath.getURI("images/ico_delete.png")" width="12" height="12" />
+			<span class="ico_font">$i18n.get("delete")</span></a>	
+</div>
+<br/>
+
+<table cellpadding="0" cellspacing="0" class="info" id="dynamicTable">
+	<tr>
+		<td style="width: 100px;"><b>$i18n.get("service"):</b></td>
+		<td style="width: 300px;">$override.service</td>
+	</tr>
+	<tr>
+		<td><b>$i18n.get("status"): <b></td>
+		<td>
+			#if($override.enabled) 
+				$i18n.get("enable")
+			#else
+				$i18n.get("disable")
+			#end
+		</td>
+	</tr>
+	<tr>
+		<td style="width: 100px;"><b>$i18n.get("application")</b></td>
+		<td>$!override.application</td>
+	</tr>
+	<tr>
+		<td style="width: 100px;"><b>$i18n.get("clientAddress")</b></td>
+		<td>$!override.address</td>
+	</tr>
+</table>
+<br>
+
+<hr>
+<b>$i18n.get("override.config")</b>
+<br>
+<table cellpadding="0" cellspacing="0" class="info" id="paramTable">
+	#foreach($p in $parameters.entrySet())
+	<tr id="paramTable.old.$velocityCount">
+		<td style="width: 150px;"><b>$i18n.get("parameter.key"): </b> $p.key</td>
+		<td><b>$i18n.get("parameter.value"): </b> $p.value
+		</td>
+	</tr>
+	#end
+</table>
+
+<br>
+<br>
+<hr>
+	
+<b>$i18n.get("override.mock")</b> 
+<br>
+<table cellpadding="0" cellspacing="0" class="info" id="mockTable">
+	#if($mockDefaultMethodJson)
+	<tr>
+		<td style="width: 150px;"><b>$i18n.get("mock.all.method"):</b></th>
+		<td>
+		#if($mockDefaultMethodForce == "force")
+		$i18n.get("force.mock")
+		#else
+		$i18n.get("fail.mock")
+		#end
+		:
+		$mockDefaultMethodJson
+		</td>
+	</tr>
+	#end
+	#foreach($m in $methodJsons.entrySet())
+		<td ><b>$i18n.get("mock.method")<font color="orange"><code>${m.key}</code></font>$i18n.get("mock.value"):</b></td>
+		<td>
+		#if($methodForces.get($m.key) == "force")
+		$i18n.get("force.mock")
+		#else
+		$i18n.get("fail.mock")
+		#end
+		:
+		$m.value
+		</td>
+	</tr>
+	#end
+</table>
+<br /><hr><br />
+</form>
+	
+
+<script language="javascript">
+		function fnSetService(obj){
+		if(obj.value!=''){
+			document.getElementById('service').value = obj.value;
+		}
+	}
+	
+	function check(){
+			var service =  byId('service').value.trim();
+		if(service == ''){
+			showAlert("$i18n.get("PleaseInput", $i18n.get("service"))", 'service');
+			return false;
+		}
+		return true;
+	}
+	
+  function ismaxlength(obj){	
+     var mlength=obj.getAttribute? parseInt(obj.getAttribute("maxlength")) : ""	
+     if (obj.getAttribute && obj.value.length>mlength)		
+	    showAlert("content maxlength is " + mlength + "!", 'docContent');
+	    return false;
+      }
+	 
+  function imposeMaxLength(obj){  
+     var mlength=obj.getAttribute? parseInt(obj.getAttribute("maxlength")) : ""  
+     return (obj.value.length <mlength);
+  }
+  
+
+var paramTRLastIndex = 1; // 行号
+
+function paramTableAddRow(){
+	var table = byId("paramTable");
+	var newTR = table.insertRow(table.rows.length);
+	newTR.id = "paramTable" + paramTRLastIndex;
+
+	var newNameTH = document.createElement('th');
+	
+	var newNameTD=newTR.insertCell(0);
+	newNameTD.innerHTML = "<b>参数名: </b><input name='overrideKey" + paramTRLastIndex + "' id='overrideKey" + paramTRLastIndex + "' type='text' style='width: 100px;' />";
+	var newMockTD=newTR.insertCell(1);
+	newMockTD.innerHTML = "<b>参数值: </b><input type='text' id='overrideValue" + paramTRLastIndex + "' name='overrideValue" + paramTRLastIndex + "' class='setting_input' style='width: 500px;' value='' maxlength='200'/>"
+		+ "&nbsp;<a href='javascript:;' onclick=\"tableDeleteRow('paramTable', 'paramTable" + paramTRLastIndex + "'); return false;\">删除</a>";
+	
+	paramTRLastIndex++; //将行号推进下一行
+}
+
+var mockTRLastIndex = 1; // 行号
+
+function mockTableAddRow(){
+	var table = byId("mockTable");
+	var newTR = table.insertRow(table.rows.length);
+	newTR.id = "mockTable" + mockTRLastIndex;
+
+	var newNameTH = document.createElement('th');
+	
+	var newNameTD=newTR.insertCell(0);
+	newNameTD.innerHTML = "<b>方法名：</b><input name='mockMethodName" + mockTRLastIndex + "' id='mockMethodName" + mockTRLastIndex + "' type='text' style='width: 100px;' />";
+	var newMockTD=newTR.insertCell(1);
+	newMockTD.innerHTML = "<b>Mock值：</b><input name='mockMethodJson" + mockTRLastIndex + "' id='mockMethodJson" + mockTRLastIndex + "' type='text' style='width: 500px;' />"
+		+ "&nbsp;<a href='javascript:;' onclick=\"tableDeleteRow('mockTable', 'mockTable" + mockTRLastIndex + "'); return false;\">删除</a>";
+	
+	mockTRLastIndex++; //将行号推进下一行
+}
+
+function tableDeleteRow(tableid, rowid){
+	var table = byId(tableid);
+	var row = byId(rowid);
+	
+	table.deleteRow(row.rowIndex);
+}
+</script>

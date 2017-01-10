@@ -1,0 +1,104 @@
+<div class="ico_btn">
+	#if($currentUser.role != "G")
+	<a href="#" onclick="if(! hasCheckbox('ids')) { showAlert('$i18n.get("empty.list")'); } else if(! hasChecked('ids')) { showAlert('$i18n.get("please.select")'); } else { showConfirm('$i18n.get("confirm.batch.forbid")', 'consumers/' + getChecked('ids') + '/forbid');} return false;"><img src="$rootContextPath.getURI("images/ico_disable.png")" width="12" height="12" /><span class="ico_font">$i18n.get("batch.forbid")</span></a>
+	<span class="ico_line">|</span>
+	<a href="#" onclick="if(! hasCheckbox('ids')) { showAlert('$i18n.get("empty.list")'); } else if(! hasChecked('ids')) { showAlert('$i18n.get("please.select")'); } else { showConfirm('$i18n.get("confirm.batch.allow")', 'consumers/' + getChecked('ids') + '/allow');} return false;"><img src="$rootContextPath.getURI("images/ico_enable.png")" width="12" height="12" /><span class="ico_font">$i18n.get("batch.allow")</span></a>
+	<span class="ico_line">|</span>
+	<a href="#" onclick="if(! hasCheckbox('ids')) { showAlert('$i18n.get("empty.list")'); } else if(! hasChecked('ids')) { showAlert('$i18n.get("please.select")'); } else { showConfirm('$i18n.get("confirm.only.forbid")', 'consumers/' + getChecked('ids') + '/onlyforbid');} return false;"><img src="$rootContextPath.getURI("images/ico_disable.png")" width="12" height="12" /><span class="ico_font">$i18n.get("only.forbid")</span></a>
+	<span class="ico_line">|</span>
+	<a href="#" onclick="if(! hasCheckbox('ids')) { showAlert('$i18n.get("empty.list")'); } else if(! hasChecked('ids')) { showAlert('$i18n.get("please.select")'); } else { showConfirm('$i18n.get("confirm.only.allow")', 'consumers/' + getChecked('ids') + '/onlyallow');} return false;"><img src="$rootContextPath.getURI("images/ico_enable.png")" width="12" height="12" /><span class="ico_font">$i18n.get("only.allow")</span></a>
+	<span class="ico_line">|</span>
+	<a href="#" onclick="if(! hasCheckbox('ids')) { showAlert('$i18n.get("empty.list")'); } else if(! hasChecked('ids')) { showAlert('$i18n.get("please.select")'); } else { showConfirm('$i18n.get("confirm.batch.force.mock")', 'consumers/' + getChecked('ids') + '/shield');} return false;"><img src="$rootContextPath.getURI("images/ico_cancel.png")" width="12" height="12" /><span class="ico_font">$i18n.get("batch.force.mock")</span></a>
+	<span class="ico_line">|</span>
+	<a href="#" onclick="if(! hasCheckbox('ids')) { showAlert('$i18n.get("empty.list")'); } else if(! hasChecked('ids')) { showAlert('$i18n.get("please.select")'); } else { showConfirm('$i18n.get("confirm.batch.fail.mock")', 'consumers/' + getChecked('ids') + '/tolerant');} return false;"><img src="$rootContextPath.getURI("images/ico_run.png")" width="12" height="12" /><span class="ico_font">$i18n.get("batch.fail.mock")</span></a>
+	<span class="ico_line">|</span>
+	<a href="#" onclick="if(! hasCheckbox('ids')) { showAlert('$i18n.get("empty.list")'); } else if(! hasChecked('ids')) { showAlert('$i18n.get("please.select")'); } else { showConfirm('$i18n.get("confirm.batch.cancel.mock")', 'consumers/' + getChecked('ids') + '/recover');} return false;"><img src="$rootContextPath.getURI("images/ico_enable.png")" width="12" height="12" /><span class="ico_font">$i18n.get("batch.cancel.mock")</span></a>
+	#if($service)
+	<span class="ico_line">|</span>
+	<a href="#" onclick="showConfirm('$i18n.get("confirm.all.force.mock")', 'consumers/0/allshield'); return false;"><img src="$rootContextPath.getURI("images/ico_cancel.png")" width="12" height="12" /><span class="ico_font">$i18n.get("all.force.mock")</span></a>
+	<span class="ico_line">|</span>
+	<a href="#" onclick="showConfirm('$i18n.get("confirm.all.fail.mock")', 'consumers/0/alltolerant'); return false;"><img src="$rootContextPath.getURI("images/ico_run.png")" width="12" height="12" /><span class="ico_font">$i18n.get("all.fail.mock")</span></a>
+	<span class="ico_line">|</span>
+	<a href="#" onclick="showConfirm('$i18n.get("confirm.all.cancel.mock")', 'consumers/0/allrecover'); return false;"><img src="$rootContextPath.getURI("images/ico_enable.png")" width="12" height="12" /><span class="ico_font">$i18n.get("all.cancel.mock")</span></a>
+	#end
+	#end
+</div>
+<br/>
+<table cellpadding="0" cellspacing="0" class="list list_dubbo" id="table_o">
+<tr>
+	<th width="20"><input type="checkbox" onclick="checkAll('table_o', 'ids', this.checked)" /></th>
+	<th>#if($address)$i18n.get("service")#else$i18n.get("address")#end: <input type="text" style="width: 60px;" onkeyup="searchTable('table_o', 1, this.value);" onclick="searchTable('table_o', 1, this.value);" />&nbsp;<img src="$rootContextPath.getURI("images/ico_search.png")" width="12" height="12" /></th>
+	<th>$i18n.get("application"): <input type="text" style="width: 60px;" onkeyup="searchTable('table_o', 2, this.value);" onclick="searchTable('table_o', 2, this.value);" />&nbsp;<img src="$rootContextPath.getURI("images/ico_search.png")" width="12" height="12" /></th>
+	<th width="110">$i18n.get("access"): <select onchange="searchTable('table_o', 3, this.value);" onclick="searchTable('table_o', 3, this.value);"><option value="">$i18n.get("all")</option><option value="$i18n.get("Allowed")">$i18n.get("Allowed")</option><option value="$i18n.get("Forbidden")">$i18n.get("Forbidden")</option></select></th>
+    <th width="110">$i18n.get("mock"): <select onchange="searchTable('table_o', 4, this.value);" onclick="searchTable('table_o', 4, this.value);"><option value="">$i18n.get("all")</option><option value="$i18n.get("no.mocked")">$i18n.get("no.mocked")</option><option value="$i18n.get("force.mocked")">$i18n.get("force.mocked")</option><option value="$i18n.get("fail.mocked")">$i18n.get("fail.mocked")</option></select></th>
+	<th width="110">$i18n.get("Route"): <select onchange="searchTable('table_o', 5, this.value);" onclick="searchTable('table_o', 5, this.value);"><option value="">$i18n.get("all")</option><option value="$i18n.get("routed")">$i18n.get("routed")</option><option value="$i18n.get("unrouted")">$i18n.get("unrouted")</option></select></th>
+	<th width="110">$i18n.get("notify"): <select onchange="searchTable('table_o', 6, this.value);" onclick="searchTable('table_o', 6, this.value);"><option value="">$i18n.get("all")</option><option value="$i18n.get("notified")">$i18n.get("notified")</option><option value="$i18n.get("unnotified")">$i18n.get("unnotified")</option></select></th>
+	#if($currentUser.role != "G")<th>$i18n.get("operation")</th>#end
+</tr>
+#foreach($consumer in $consumers)
+<tr>
+	<td><input type="checkbox" name="ids" value="$consumer.id" /></td>
+	<td><a href="consumers/$consumer.id">#if($address)$tool.getSimpleName($consumer.service)#else$consumer.address#end</a></td>
+    <td>$consumer.application</td>
+	<td>
+        #if($tool.isInBlackList($consumer))
+			<font color="red">$i18n.get("Forbidden")</font>
+		#else
+			<font color="green">$i18n.get("Allowed")</font>
+		#end
+    </td>
+    <td>
+    	#set($mock=$tool.getConsumerMock($consumer))
+		#if($mock.equals("force%3Areturn+null"))
+			<font color="red">$i18n.get("force.mocked")</font>
+		#elseif ($mock.equals("fail%3Areturn+null"))
+			<font color="blue">$i18n.get("fail.mocked")</font>
+		#else
+			<font color="gray">$i18n.get("no.mocked")</font>
+		#end
+    </td>
+    <td>
+    	#if($consumer.routes && $consumer.routes.size() > 0)
+    		<a href="consumers/$consumer.id/routed">$i18n.get("routed")($consumer.routes.size())</a>
+    	#else
+    		<font color="gray">$i18n.get("unrouted")</font>
+    	#end
+    </td>
+    <td>
+    	#if($consumer.providers && $consumer.providers.size() > 0)
+    		<a href="consumers/$consumer.id/notified">$i18n.get("notified")($consumer.providers.size())</a>
+    	#else
+    		<font color="red">$i18n.get("NoProvider")</font>
+    	#end
+    </td>
+    #if($currentUser.role != "G")
+	<td>
+		#if($currentUser.hasServicePrivilege($consumer.service))
+		<a href="consumers/$consumer.id/edit"><img src="$rootContextPath.getURI("images/ico_edit.png")" width="12" height="12" /><span class="ico_font">$i18n.get("edit")</span></a>
+		<span class="ico_line">|</span>
+		#if($tool.isInBlackList($consumer))
+			<a href="#" onclick="showConfirm('$i18n.get("confirm.allow")', '$consumer.address -&gt; $tool.getSimpleName($consumer.service)', 'consumers/$consumer.id/allow'); return false;"><img src="$rootContextPath.getURI("images/ico_enable.png")" width="12" height="12" /><span class="ico_font">$i18n.get("allow")</span></a>
+		#else
+			<a href="#" onclick="showConfirm('$i18n.get("confirm.forbid")', '$consumer.address -&gt; $tool.getSimpleName($consumer.service)', 'consumers/$consumer.id/forbid'); return false;"><img src="$rootContextPath.getURI("images/ico_disable.png")" width="12" height="12" /><span class="ico_font">$i18n.get("forbid")</span></a>
+		#end
+		<span class="ico_line">|</span>
+		#if($mock.equals("force%3Areturn+null"))
+			<a href="#" onclick="showConfirm('$i18n.get("confirm.cancel.mock")', '$consumer.address -&gt; $tool.getSimpleName($consumer.service)', 'consumers/$consumer.id/recover'); return false;"><img src="$rootContextPath.getURI("images/ico_enable.png")" width="12" height="12" /><span class="ico_font">$i18n.get("cancel.mock")</span></a>
+			<span class="ico_line">|</span>
+			<a href="#" onclick="showConfirm('$i18n.get("confirm.fail.mock")', '$consumer.address -&gt; $tool.getSimpleName($consumer.service)', 'consumers/$consumer.id/tolerant'); return false;"><img src="$rootContextPath.getURI("images/ico_run.png")" width="12" height="12" /><span class="ico_font">$i18n.get("fail.mock")</span></a>
+		#elseif ($mock.equals("fail%3Areturn+null"))
+			<a href="#" onclick="showConfirm('$i18n.get("confirm.force.mock")', '$consumer.address -&gt; $tool.getSimpleName($consumer.service)', 'consumers/$consumer.id/shield'); return false;"><img src="$rootContextPath.getURI("images/ico_cancel.png")" width="12" height="12" /><span class="ico_font">$i18n.get("force.mock")</span></a>
+			<span class="ico_line">|</span>
+			<a href="#" onclick="showConfirm('$i18n.get("confirm.cancel.mock")', '$consumer.address -&gt; $tool.getSimpleName($consumer.service)', 'consumers/$consumer.id/recover'); return false;"><img src="$rootContextPath.getURI("images/ico_enable.png")" width="12" height="12" /><span class="ico_font">$i18n.get("cancel.mock")</span></a>
+		#else
+			<a href="#" onclick="showConfirm('$i18n.get("confirm.force.mock")', '$consumer.address -&gt; $tool.getSimpleName($consumer.service)', 'consumers/$consumer.id/shield'); return false;"><img src="$rootContextPath.getURI("images/ico_cancel.png")" width="12" height="12" /><span class="ico_font">$i18n.get("force.mock")</span></a>
+			<span class="ico_line">|</span>
+			<a href="#" onclick="showConfirm('$i18n.get("confirm.fail.mock")', '$consumer.address -&gt; $tool.getSimpleName($consumer.service)', 'consumers/$consumer.id/tolerant'); return false;"><img src="$rootContextPath.getURI("images/ico_run.png")" width="12" height="12" /><span class="ico_font">$i18n.get("fail.mock")</span></a>
+		#end
+		#end
+	</td>
+	#end
+</tr>
+#end
+</table>
+<div class="page">$i18n.get("page.total")$consumers.size()$i18n.get("page.records") </div>

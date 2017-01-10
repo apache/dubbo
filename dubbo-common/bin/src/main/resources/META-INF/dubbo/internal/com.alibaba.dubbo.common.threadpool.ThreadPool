@@ -1,0 +1,3 @@
+fixed=com.alibaba.dubbo.common.threadpool.support.fixed.FixedThreadPool
+cached=com.alibaba.dubbo.common.threadpool.support.cached.CachedThreadPool
+limited=com.alibaba.dubbo.common.threadpool.support.limited.LimitedThreadPool

@@ -1,0 +1,220 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Dubbo Admin</title>
+
+<link type="text/css" href="$rootContextPath.getURI("css/common.css")" rel="stylesheet"/>
+<link type="text/css" href="$rootContextPath.getURI("css/skin.css")" rel="stylesheet"/>
+<link type="text/css" href="$rootContextPath.getURI("css/dubbo.css")" rel="stylesheet"/>
+<script type="text/javascript" src="$rootContextPath.getURI("js/ajax.js")"></script>
+<script type="text/javascript" src="$rootContextPath.getURI("js/box.js")"></script>
+<script type="text/javascript" src="$rootContextPath.getURI("js/trcolor.js")"></script>
+<script type="text/javascript" src="$rootContextPath.getURI("js/jquery-1.4.2.min.js")"></script> 
+<script type="text/javascript" src="$rootContextPath.getURI("js/jquery.simplemodal-1.4.js")"></script>
+<script type="text/javascript" src="$rootContextPath.getURI("js/dubbo.js")"></script>
+<style type="text/css" media="screen">  
+ .onmouset_out {   
+   background-color: #99CCFF;   
+   padding: 2px 6px 2px 6px;   
+ }   
+ .onmouset_over {    
+   background-color: #006600;   
+   padding: 2px 6px 2px 6px;   
+ }   
+ #result_display {   
+   border: 1px solid #FFFFFF;      
+ }     
+</style>  
+</head>
+
+#if($homepageUrl)
+
+<body>
+<iframe width="100%" height="1000" frameborder=0" marginwidth="0" marginheight="0" src="$homepageUrl">
+</iframe>
+</body>
+
+#else
+
+<body onload="onload();">
+<div id="alertBox" style="display: none; position: absolute; left: 200px; top: 200px; width: 581px; height: 256px;">
+	<table style="background-image: url('$rootContextPath.getURI("images/tip_choose.png")');" width="581" height="256">
+		<tr height="44"><td></td><td width="31"><img src="$rootContextPath.getURI("images/pop_close.png")" onclick="alertOK();" style="cursor: pointer;" width="20" height="20" /></td></tr>
+		<tr height="100"><td align="right"><span id="alertText" style="font-size: 32px;">$i18n.get("please.input")</span><br/><span id="alertData" style="font-size: 12px;"></span></td><td></td></tr>
+		<tr><td align="right"><div class="btn_info" style="float: right; clear: left;"><a href="#" onclick="alertOK();">$i18n.get("confirm")</a></div></td><td></td></tr>
+	</table>
+</div>
+<div id="confirmBox" style="display: none; position: absolute; left: 200px; top: 200px; width: 720px; height: 300px;">
+	<table style="background-image: url('$rootContextPath.getURI("images/tip_confirm.png")');" width="720" height="300">
+		<tr height="42"><td></td><td width="31"><img src="$rootContextPath.getURI("images/pop_close.png")" onclick="confirmCancel();" style="cursor: pointer;" width="20" height="20" /></td></tr>
+		<tr height="120"><td align="right"><span id="confirmText" style="font-size: 32px;">$i18n.get("confirm")</span><br/><span id="confirmData" style="font-size: 12px;"></span></td><td></td></tr>
+		<tr><td align="right"><div class="btn_info" style="float: right; clear: left;"><a href="#" onclick="confirmCancel();">$i18n.get("cancel")</a></div>&nbsp;&nbsp;&nbsp;&nbsp;<div class="btn_info" style="float: right; clear: left;"><a href="#" onclick="confirmOK();">$i18n.get("confirm")</a></div></td><td></td></tr>
+	</table>
+</div>
+$control.setTemplate("home:menu.vm") 
+<script language="javascript">setActiveTab(1);</script>
+
+<input type="hidden" name="searchName" id="searchName" value="1"/>
+<input id="providerId" name="providerId" value="" type="hidden"/>
+
+<div class="main">
+ <div class="title"><h2>$i18n.get("search")</h2></div>
+ <div class="crumbs">$i18n.get("home") &gt; $i18n.get("search")</div>
+ <!--
+ <div class="favorite">
+ <div id="Tab2" class="fav_tab">
+   <ul>
+    <li class="active" id="two1" onclick="setTab('two',1,2)"><a href="#">$i18n.get("favorites")</a></li>
+    <li id="two2" onclick="setTab('two',2,2)"><a href="#">$i18n.get("histories")</a></li>
+   </ul>
+ </div>
+ <div class="fav_box" id="fav_box">
+    <div id="con_two_1">
+     <div class="fav_box_title">
+      <div class="fav_title_left">
+       <a onclick="fnSelectAll()"><input name="favoritesAll" type="checkbox" value="" class="checkbox"/> <span>$i18n.get("select.all")</span></a>
+       <a onclick="fnDeleteAll()"><img src="$rootContextPath.getURI("images/ico_delete.png")" width="13" height="13"/><span>$i18n.get("delete")</span></a>
+      </div>
+       <a href="#" onclick="fnFolder()"><img src="$rootContextPath.getURI("images/fav_arrow.png")" width="14" height="15" class="fav_arrow"/></a>
+     </div>
+     <div class="fav_content" style="height:300px">
+      <table cellpadding="0" cellspacing="0">
+	   #foreach($favorites in $favoritesList)
+       <tr>
+        <td><input name="favoritesId" type="checkbox" value="$favorites.id" class="checkbox fav_content_checkbox"/></td>
+        <td><div class="fav_tips"><a href="${favorites.url}" title="$favorites.url">$favorites.name</a></div></td>
+       </tr>
+	   #end
+      </table>
+     </div>
+    </div>
+    <div id="con_two_2" class="none" style="height:320px">
+	 <table cellpadding="0" cellspacing="0">
+		#foreach($history in $histroyList)
+			<tr><td><a href="$history.value">$history.key</a></td></tr>
+	    #end
+      </table>
+	</div>
+ </div>  
+ </div>
+ -->
+ 
+ <div class="search" id="Tab1">
+   <div class="search_categories">
+     <ul>
+      <li id="one1" onclick="setTab2('one',1,3); return false;" class="active"><a href="#">$i18n.get("service")</a><span class="search_line">|</span></li>
+      <li id="one2" onclick="setTab2('one',2,3); return false;"><a href="#">$i18n.get("application")</a><span class="search_line">|</span></li>
+      <li id="one3" onclick="setTab2('one',3,3); return false;"><a href="#">$i18n.get("address")</a><span class="search_line_end">|</span></li>
+     </ul>
+   </div>
+   <div class="contentbox">
+	<div id="con_one_1">
+     <div class="search_input"><input id="searchContent" name="searchContent" type="text" value="" onfocus="fnonfocus();" onblur="fnonblur();" onkeypress= "javascript:if(event.keyCode==13){fnSearch();}"/></div>
+     <div class="search_btn"><a href="#" onclick="fnSearch();return false;"><img src="$rootContextPath.getURI("images/search_btn.png")" width="39" height="31"/></a></div>
+    </div>
+	<div id="serviceDiv" style="display: none; background-color: white; width:480px">
+    	<table id="serviceCompletion"><tr><td>search</td></tr></table>
+    </div>
+   </div>
+   <table id="serviceCompletion" style="margin-top: 20px;">
+		 #if($currentUser.role != "G")
+		<tr>
+			<th>$i18n.get("add"): </th>
+			<td style="padding-left: 10px;">
+			    <a href="$rootContextPath.getURI("governance/providers/add")">$i18n.get("providers")</a>&nbsp;
+				<a href="$rootContextPath.getURI("governance/routes/add")">$i18n.get("routes")</a>&nbsp;
+				<a href="$rootContextPath.getURI("governance/overrides/add")">$i18n.get("overrides")</a>&nbsp;
+				<a href="$rootContextPath.getURI("governance/accesses/add")">$i18n.get("accesses")</a>&nbsp;
+				<a href="$rootContextPath.getURI("governance/weights/add")">$i18n.get("weights")</a>&nbsp;
+				<a href="$rootContextPath.getURI("governance/loadbalances/add")">$i18n.get("loadbalances")</a>&nbsp;
+				<a href="$rootContextPath.getURI("governance/owners/add")">$i18n.get("owners")</a>&nbsp;
+		    </td>
+		</tr>
+		<tr>
+			<th>&nbsp;</th>
+		    <td>&nbsp;</td>
+		</tr>
+		 #end
+		<tr>
+			<th>$i18n.get("stat"):</th>
+			<td  style="padding-left: 10px;">
+				$i18n.get("serviceNum"):$services &nbsp;
+				$i18n.get("applicationNum"):$applications &nbsp;
+				$i18n.get("providerNum"):$providers &nbsp;
+				$i18n.get("consumerNum"):$consumers &nbsp;
+			</td>
+		</tr>
+	</table>
+ </div>
+</div>
+<script type="text/javascript">
+  function onload(){
+        var ctrl = document.getElementById("searchContent");
+        ctrl.focus();
+    }
+	var searchType = "services";
+	var serviceListLoaded = false;
+	function fnSearch(){
+		var searchContent = document.getElementById('searchContent');
+	    var keyword = searchContent.value;
+	    if(keyword == ''
+	    		|| keyword == '$i18n.get("please.input.service")' 
+	    		|| keyword == '$i18n.get("please.input.application")'
+	    		|| keyword == '$i18n.get("please.input.address")') {
+	    	keyword = '*';
+	    }
+	    window.location.href = '$rootContextPath.getURI("governance")/' + searchType + '?keyword=' + keyword;
+	}
+	function setTab2(name, cursel, n) {
+		var obj = document.getElementById('searchContent');
+		for (var i = 1; i <= n; i++) {
+			var menu = document.getElementById(name + i);
+			menu.className = i == cursel ? "active" : "";
+		}
+		var msg = "";
+		if(cursel==1){
+			msg = '$i18n.get("please.input.service")';
+			searchType = "services";
+		}else if(cursel==2){
+			msg = '$i18n.get("please.input.application")';
+			searchType = "applications";
+		}else if(cursel==3){
+			msg = '$i18n.get("please.input.address")';
+			searchType = "addresses";
+		}
+		
+		if (obj.value == '' || obj.value == '$i18n.get("please.input.service")'
+				|| obj.value == '$i18n.get("please.input.application")'
+				|| obj.value == '$i18n.get("please.input.address")') {
+			obj.value = msg;
+		}
+		obj.setAttribute("onfocus" ,"fnonfocus('" + msg + "')");
+		obj.setAttribute("onblur" ,"fnonblur('" + msg + "')");
+		hideService();
+		serviceListLoaded = false;
+	}
+	function fnonfocus(){
+		var obj = document.getElementById('searchContent');
+		if(obj.value == '$i18n.get("please.input.service")'
+				|| obj.value == '$i18n.get("please.input.application")'
+				|| obj.value == '$i18n.get("please.input.address")'){
+			obj.value='';
+		}
+	}
+	function fnonblur(){
+		var obj = document.getElementById('searchContent');
+		if(obj.value == ''){
+			if (searchType == 'services')
+				obj.value = '$i18n.get("please.input.service")';
+			else if (searchType == 'applications')
+				obj.value = '$i18n.get("please.input.application")';
+			else if (searchType == 'addresses')
+				obj.value = '$i18n.get("please.input.address")';
+		}
+	}
+</script>
+</body>
+
+#end
+</html>

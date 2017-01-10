@@ -1,0 +1,1 @@
+redis=com.alibaba.dubbo.rpc.protocol.redis.RedisProtocol

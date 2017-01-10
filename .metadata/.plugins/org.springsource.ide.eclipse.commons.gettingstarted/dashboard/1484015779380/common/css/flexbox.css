@@ -1,0 +1,210 @@
+
+/* GENERAL STYLES */
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  margin: 3%;
+  font-size: 0.9em;
+}
+
+#page-header {
+  margin-top: 1%;
+}
+
+#title {
+  font-size: 1.2em;
+}
+
+#link-to-article {
+  font-size: 0.8em;
+}
+
+#link-to-article a{
+  padding: 3px 0 10px 35px;
+  background: url(../images/nettuts-logo.jpg) no-repeat;
+  display: inline-block;
+}
+
+.example {
+  min-height: 20px;
+  padding: 2%;
+  margin-bottom: 3%;
+  background-color: whiteSmoke;
+  border: 1px solid #EEE;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+  -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.example header {
+  margin-bottom: 10px;
+}
+
+.example header h1, .example header p {
+  margin: 0 0 2% 0;
+  padding: 0;
+  font-size: 1.1em;
+}
+
+.example header p {
+  font-size: 1em;
+}
+
+.flexbox-message {
+  display: none;
+  padding: 1% 3%;
+  margin-bottom: 20px;
+  color: #C09853;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+  background-color: #FCF8E3;
+  border: 1px solid #FBEED5;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
+  color: #B94A48;
+  background-color: #F2DEDE;
+  border-color: #EED3D7;
+}
+
+.no-flexbox-legacy .flexbox-message{
+  display: block;
+}
+
+code {
+  padding: 0 3px 2px;
+  font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+  font-size: 0.9em;
+  color: #333;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+  padding: 2px 4px;
+  color: #D14;
+  background-color: #F7F7F9;
+  border: 1px solid #E1E1E8;
+}
+
+
+
+
+.btn {
+display: inline-block;
+padding: 4px 10px 4px;
+margin-bottom: 10px;
+font-size: 13px;
+line-height: 18px;
+color: 
+#333;
+text-align: center;
+text-shadow: 0 1px 1px 
+rgba(255, 255, 255, 0.75);
+vertical-align: middle;
+cursor: pointer;
+background-color: 
+whiteSmoke;
+background-image: -ms-linear-gradient(top, 
+white, 
+#E6E6E6);
+background-image: -webkit-gradient(linear, 0 0, 0 100%, from(
+white), to(
+#E6E6E6));
+background-image: -webkit-linear-gradient(top, 
+white, 
+#E6E6E6);
+background-image: -o-linear-gradient(top, 
+white, 
+#E6E6E6);
+background-image: linear-gradient(top, 
+white, 
+#E6E6E6);
+background-image: -moz-linear-gradient(top, 
+white, 
+#E6E6E6);
+background-repeat: repeat-x;
+border: 1px solid 
+#CCC;
+border-color: 
+rgba(0, 0, 0, 0.1) 
+rgba(0, 0, 0, 0.1) 
+rgba(0, 0, 0, 0.25);
+border-color: 
+#E6E6E6 
+#E6E6E6 
+#BFBFBF;
+border-bottom-color: 
+#B3B3B3;
+-webkit-border-radius: 4px;
+-moz-border-radius: 4px;
+border-radius: 4px;
+filter: progid:dximagetransform.microsoft.gradient(startColorstr='#ffffff', endColorstr='#e6e6e6', GradientType=0);
+filter: progid:dximagetransform.microsoft.gradient(enabled=false);
+-webkit-box-shadow: inset 0 1px 0 
+rgba(255, 255, 255, 0.2), 0 1px 2px 
+rgba(0, 0, 0, 0.05);
+-moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+box-shadow: inset 0 1px 0 
+rgba(255, 255, 255, 0.2), 0 1px 2px 
+rgba(0, 0, 0, 0.05);
+}
+
+.btn.active, .btn:active {
+background-color: 
+#E6E6E6;
+background-color: 
+#D9D9D9 9;
+background-image: none;
+outline: 0;
+-webkit-box-shadow: inset 0 2px 4px 
+rgba(0, 0, 0, 0.15), 0 1px 2px 
+rgba(0, 0, 0, 0.05);
+-moz-box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.05);
+box-shadow: inset 0 2px 4px 
+rgba(0, 0, 0, 0.15), 0 1px 2px 
+rgba(0, 0, 0, 0.05);
+}
+
+
+#example-5 .different-flex-example > div:nth-child(2),
+#example-5 .final-flex-example > div:nth-child(2),
+#example-6 .ordering-example > div:nth-child(1) 
+ {
+  background-image: -webkit-linear-gradient(top, 
+  #62C462, 
+  #51A351);
+  background-image: -o-linear-gradient(top, 
+  #62C462, 
+  #51A351);
+  background-image: -moz-linear-gradient(top, 
+  #62C462, 
+  #51A351);
+  background-image: linear-gradient(top, 
+  #62C462, 
+  #51A351);
+}
+
+
+
+/* Smartphones (landscape) ----------- */
+@media only screen and (min-width : 321px) {
+/* Styles */
+}
+
+/* Smartphones (portrait) ----------- */
+@media only screen and (max-width : 320px) {
+
+  .example header h1, .example header p {
+    margin: 0 0 4% 0;
+    padding: 0;
+    font-size: 1.1em;
+  }
+
+  .example {
+    margin-bottom: 5%;
+  }
+
+
+}

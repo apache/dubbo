@@ -1,0 +1,229 @@
+@charset "utf-8";
+/* CSS Document */
+/*head*/
+.head{
+	min-width:1150px;
+    height:78px; 
+	background-image:url(../images/head_bg.png);
+}
+
+/*menu*/
+.nav,.nav_harbor{ 
+	color:#FFF;
+    background-image:url(../images/nav_bg.png); 
+	min-width:1150px;
+	height:31px;
+	clear:right;
+}
+.nav ul li a:hover,.nav_harbor ul li a:hover,.nav_harbor ul li:hover a{
+	background-image:url(../images/nav_pass.png);
+}
+.nav ul li ul,.nav ul li ul li{ 
+    background-color:#3d8efa;
+}
+.nav ul li ul li a:hover{ 
+    background-color:#64a6fd;
+}
+.nav ul li.sub_nav{
+	background: url(../images/nav_btn_bg22.png) no-repeat; 
+}
+.nav ul li.sub_nav:hover{
+    color:#fff;
+    background:url(../images/nav_btn_bg22.png) no-repeat 0 -31px;
+}
+.nav ul li.sub_nav a:hover{
+	color:#fff;
+    background:url(../images/nav_btn_bg22.png) no-repeat 0 -31px;
+}
+.nav ul li.sub_nav ul li a:hover{
+    background-color:#64a6fd;
+	background-image:none;
+}
+.nav ul li.current_nosub{
+	background: url(../images/nav_btn_bg44.png) no-repeat; 
+}
+.nav ul li.current_nosub :hover{
+    background:url(../images/nav_btn_bg44.png) no-repeat;
+}
+.nav ul li.current:hover > a{
+    background:url(../images/nav_btn_bg22.png) no-repeat 0 -31px;
+	color:#fff;
+}
+.nav ul li.current,.nav_harbor ul li.current{
+	background-image:url(../images/nav_btn_bg3.png); 
+	background-position:right;
+}
+.nav ul li.current a:hover{
+	background:url(../images/nav_btn_bg22.png) no-repeat 0 -31px;
+}
+.nav ul li.current ul li a:hover{
+    background-color:#64a6fd;
+	background-image:none;
+}
+
+.nav_harbor li .sub{
+	background-color:#3d8efa;
+}
+.nav_harbor .sub ul li a:hover {
+	background-color:#64a5fc;
+}
+li.sub_font{
+	color:#fff82d;
+	font-weight:bold;
+}
+
+/*全局搜索*/
+.search_input{
+	background:url(../images/search_input.png);
+	width:438px;
+	height:31px;
+	float:left;
+}
+.search_input input{
+	border:none;
+	background:url(../images/input.png);
+	width:350px;
+	height:21px;
+	margin:5px 0 0 80px;
+	*margin:4px 0 0 80px;
+	color:#7d8a98;
+	line-height:20px;
+}
+.active{
+	background:url(../images/search_active.png);
+	width:52px;
+	height:20px;
+	display:block;
+}
+
+/*table*/
+table.list th{
+    background:url(../images/table_title_bg.png) repeat-x;
+}
+table.list th.head_title{
+	background:url(../images/table_title_bg.png);
+	width:10px;
+	height:29px;
+}
+
+/*pop*/
+table.pop_top td.pop_lefttop_small{
+	background:url(../images/pop_lefttop_small.png);
+	width:300px;
+	height:105px;
+}
+.pop_tipmessage{
+	background:url(../images/tip_warning.png);
+}
+.pop_tipmessage_choose{
+	background:url(../images/tip_choose.png);
+}
+.pop_tipmessage_del{
+	background:url(../images/tip_del.png);
+}
+.pop_tipmessage_succeed{
+	background:url(../images/tip_succeed.png);
+}
+.pop_tipmessage,.pop_tipmessage_choose,.pop_tipmessage_del,.pop_tipmessage_succeed{
+	width:720px;
+	height:300px;
+}
+
+/*button*/
+.btn{
+	width:65px;
+	height:20px;
+    background:url(../images/button_normal.png);
+	text-align:center;
+	float:left;
+	margin-right:5px;
+	line-height:20px;
+	display:block;
+}
+.btn a:hover{ 
+	color: #C60;
+	width:65px;
+	height:20px;
+    background:url(../images/button_hover.png);
+	text-align:center;
+	float:left;
+	margin-right:5px;
+	display:block;
+}
+.login_btn{
+	width:65px;
+	height:20px;
+    background:url(../images/login_btn_normal.png);
+	text-align:center;
+	margin-right:5px;
+	line-height:20px;
+	display:block;
+}
+.login_btn a:hover{ 
+	color: #C60;
+	width:65px;
+	height:20px;
+    background:url(../images/login_btn_hover.png);
+	text-align:center;
+	float:left;
+	margin-right:5px;
+	display:block;
+}
+	
+
+/*footer*/
+.footer{
+	margin-top:10px;
+	*margin:0;
+	min-width:1150px;
+	background:#808080;
+	height:28px;
+}
+
+/*翻页*/
+.page{ 
+    color:#2a7ec5;
+	float:right;
+	padding-bottom:5px;
+}
+.page a{
+	color:#2a7ec5;
+}
+a.current_num{
+	color:#f09a3e;
+}
+
+/*login*/
+.login{
+	background-image:url(../images/login_bg.png);
+	background-repeat:no-repeat;
+	background-color:#1a4f89;
+}
+.login_container{
+	width:100%;
+	margin-top:200px;
+	background-image:url(../images/login_shadow.png);
+	height:231px;
+}
+.login_box{
+	margin:0 auto;
+    background-image: url(../images/login_box.png); 
+    width:804px; 
+	height:231px;
+}
+
+/*tab*/
+.menubox{
+	background:#8ebdec;
+	height:29px;
+	width:100%;
+	padding-left:10px;
+}
+
+/*可伸缩区块*/
+a.title_o{
+	font-size:14px;
+	font-weight:bold;
+	text-decoration:none;
+	color:#2f7ed3;
+}

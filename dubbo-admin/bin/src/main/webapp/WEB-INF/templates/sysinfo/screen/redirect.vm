@@ -1,0 +1,40 @@
+<div id="alertBox" style="display: none; position: absolute; left: 200px; top: 200px; width: 720px; height: 300px;">
+	<table style="background-image: url('#if($success)$rootContextPath.getURI("images/tip_succeed.png")#else$rootContextPath.getURI("images/tip_del.png")#end');" width="720" height="300">
+		<tr height="42"><td></td><td width="31"><img src="$rootContextPath.getURI("images/pop_close.png")" onclick="window.location.href = '$redirect';" style="cursor: pointer;" width="20" height="20" /></td></tr>
+		<tr height="120"><td align="right"><span style="font-size: 32px;">#if($success)$i18n.get("operation.success")#else$i18n.get("operation.failure")#end</span><br/>$!message$!exception.message</td><td></td></tr>
+		<tr><td align="right">#if(!$success)<div class="btn_info" style="float: right; clear: left;"><a href="$redirect">$i18n.get("confirm")</a></div>#end</td><td></td></tr>
+	</table>
+	<div>
+		<script type="text/javascript">
+			Box.show("alertBox");
+			#if($success)
+				sleep(this,500);
+				this.NextStep=function(){
+					window.location.href = '$redirect';
+				}
+			#end
+			function sleep(obj,iMinSecond){
+				if (window.eventList==null)
+				window.eventList=new Array();
+				var ind=-1;
+				for (var i=0;i<window.eventList.length;i++){
+					if (window.eventList[i]==null){
+						window.eventList[i]=obj;
+						ind=i;
+						break;
+					}
+				}
+				if (ind==-1){
+					ind=window.eventList.length;
+					window.eventList[ind]=obj;
+				}
+				setTimeout("GoOn(" + ind + ")",iMinSecond);
+			}
+			function GoOn(ind){
+				var obj=window.eventList[ind];
+				window.eventList[ind]=null;
+				if (obj.NextStep)
+				obj.NextStep();
+				else obj();
+			}
+		</script>

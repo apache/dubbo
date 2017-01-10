@@ -1,0 +1,40 @@
+#if(! $addresses || $addresses.size() == 0)
+<font color="red">$i18n.get("not.found")</font> (<a href="addresses?keyword=*">$i18n.get("show.all") </a>)
+#elseif($keyword && $addresses.size() == 1)
+<script type="text/javascript">
+	#if($providerAddresses.contains($addresses.iterator().next()))
+		window.location.href = "addresses/$addresses.iterator().next()/providers";
+	#else
+		window.location.href = "addresses/$addresses.iterator().next()/consumers";
+	#end
+</script>
+#else
+<table cellpadding="0" cellspacing="0" class="list list_dubbo" id="table_o">
+<tr>
+	<th>$i18n.get("address"):
+	<input type="text" onkeyup="searchTable('table_o', 0, this.value);" onclick="searchTable('table_o', 0, this.value);" />&nbsp;<img src="$rootContextPath.getURI("images/ico_search.png")" width="12" height="12" />
+	</th>
+	<th width="100">$i18n.get("role"): <select onchange="searchTable('table_o', 1, this.value);" onclick="searchTable('table_o', 1, this.value);"><option value="">$i18n.get("all")</option><option value="$i18n.get("provider")">$i18n.get("provider")</option><option value="$i18n.get("consumer")">$i18n.get("consumer")</option></select></th>
+</tr>
+#foreach($address in $addresses)
+<tr>
+	<td>
+	#if($providerAddresses.contains($address))
+		<a href="addresses/$address/providers">$address</a>
+	#else
+		<a href="addresses/$address/consumers">$address</a>
+	#end
+	</td>
+	<td>
+	#if($providerAddresses.contains($address))
+		<font color="green">$i18n.get("provider")</font>
+	#end
+	#if($consumerAddresses.contains($address))
+		<font color="blue">$i18n.get("consumer")</font>
+	#end
+	</td>
+</tr>
+#end
+</table>
+<div class="page">$i18n.get("page.total")$addresses.size()$i18n.get("page.records") </div>
+#end

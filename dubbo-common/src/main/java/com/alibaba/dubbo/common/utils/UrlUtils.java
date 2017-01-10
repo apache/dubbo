@@ -53,6 +53,9 @@ public class UrlUtils {
         }
         String defaultUsername = defaults == null ? null : defaults.get("username");
         String defaultPassword = defaults == null ? null : defaults.get("password");
+        if(defaultUsername == null || defaultUsername.length() == 0){
+        	defaultUsername = "redis";
+        }
         int defaultPort = StringUtils.parseInteger(defaults == null ? null : defaults.get("port"));
         String defaultPath = defaults == null ? null : defaults.get("path");
         Map<String, String> defaultParameters = defaults == null ? null : new HashMap<String, String>(defaults);

@@ -1,0 +1,120 @@
+<div class="ico_btn">
+	<a href="../weights"><img src="$rootContextPath.getURI("images/ico_back.png")" width="12" height="12" /><span class="ico_font">$i18n.get("back")</span></a>
+</div>
+<br/>
+<form id="df" action="../weights" method="POST">
+<table cellpadding="0" cellspacing="0" class="info">
+	<tr>
+		<th width="100">$i18n.get("service")&nbsp;&nbsp;<font color='red'>*</font></th>
+		<td width="300">
+			#if($service)
+				<input type="hidden" id="multiservice" name="service" value="$service" />$service
+			#else
+				<textarea id="service" name="multiservice" style="ime-mode:disabled" rows="2" cols="40"></textarea>
+				#if ($serviceList && $serviceList.size() > 0)
+					<select id="selectService" name="selectService" onchange="fnSetService(this)">
+						<option value="">$i18n.get("Choose")</option>
+						#foreach ($s in $serviceList)
+							<option value="$s">$tool.getSimpleName($s)</option>
+						#end
+					</select>
+				#end
+			#end
+		</td>
+	</tr>
+	<tr>
+		<th style="width: 100px;">$i18n.get("provider"):&nbsp;&nbsp;<font color='red'>*</font></th>
+		<td>
+			#if($address)
+				<input type="hidden" id="address" name="address" value="$tool.getIP($address)" />$tool.getIP($address)
+			#else
+				<textarea id="address" name="address" rows="2" cols="40"></textarea>
+				#if ($addressList && $addressList.size() > 0)
+					<select id="selectAddeess" name="selectAddeess" onchange="fnSetAddress(this)">
+						<option value="">$i18n.get("Choose")</option>
+						#foreach ($s in $addressList)
+							<option value="$s">$tool.getHostPrefix($s)$s</option>
+						#end
+					</select>
+				#end
+				<font color="blue">$i18n.get("BatchAddressTip")</font>
+			#end
+		</td>
+	</tr>
+	<tr>
+		<th style="width: 100px;">$i18n.get("weights"):&nbsp;&nbsp;<font color='red'>*</font></th>
+		<td><input type="text" id="weight" name="weight" value="" maxlength="3" onkeydown="return checkNumber();"/></td>
+	</tr>
+	<tr>
+		<th><div class="btn"><a href="#" onclick="if(check()){document.getElementById('df').submit();}">$i18n.get("save")</a></div></th>
+		<td></td>
+	</tr>
+</table>
+</form>
+	
+
+<script language="javascript">
+function fnObtainProviderAddress(){
+	window.location.href="../weights.htm?service=$service&_type=weights&_method=add&";
+}
+
+//通过服务名后面的选择框，快速设置service_name的值
+function fnSetService(obj){
+	if(obj.value!=''){
+		byId('service').value = (byId('service').value.length > 0 ? byId('service').value + "\n" : "" ) + obj.value;
+	}
+}
+
+function fnSetAddress(obj){
+	if(obj.value!=''){
+		byId('address').value = (byId('address').value.length > 0 ? byId('address').value + "\n" : "" ) + obj.value;
+	}
+}
+
+function checkService(service) {
+	//if(service.indexOf(',') != -1) return false;
+
+	var interfaceName = service;
+	
+	var gi = service.indexOf('/');
+	if(gi != -1) interfaceName = interfaceName.substring(gi + 1);
+	var vi = interfaceName.indexOf(':');
+	if(vi != -1) interfaceName = interfaceName.substring(0, vi);
+	
+	if(interfaceName.indexOf('*') != -1 && interfaceName.indexOf('*') != interfaceName.length - 1){
+		return false;
+	}
+	
+	return true;
+}
+
+ function check(){
+	   var service =  byId('service').value.trim();
+       if(service == ''){
+	       showAlert("$i18n.get("PleaseInput", $i18n.get("service"))", 'service');
+		   return false;
+	   }
+	  var address = byId('address').value.trim();
+	  if(address == '') {
+		showAlert("$i18n.get("PleaseInput", $i18n.get("address"))", 'address');
+		return false;
+	  }
+	  var exp=/^(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5]):\d+$/;
+	  var exp2=/^(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.\*:\d+$/;
+	  var exp3=/^(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])$/;
+	  var exp4=/^(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.\*$/;
+	  var addresses = address.split("\n");
+	  for (var i = 0; i < addresses.length; i ++) {
+	  	  var address = addresses[i];
+	  	  if (address != "") {
+			  if(! address.match(exp) && ! address.match(exp2) && ! address.match(exp3) && ! address.match(exp4)){
+				  showAlert("$i18n.get("InvalidIp", $i18n.get("address"))", 'address');
+			      return false; 
+			  }
+		  }
+	  }
+	  return true;
+    }
+	
+	//$("#weight").get(0).selectedIndex=$weight.weight;
+</script>
