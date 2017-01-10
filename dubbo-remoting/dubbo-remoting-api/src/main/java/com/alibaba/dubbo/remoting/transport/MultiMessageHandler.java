@@ -19,6 +19,7 @@ public class MultiMessageHandler extends AbstractChannelHandlerDelegate {
     @SuppressWarnings("unchecked")
 	@Override
     public void received(Channel channel, Object message) throws RemotingException {
+        //3  处理  handler  为 heartbeatHandler
         if (message instanceof MultiMessage) {
             MultiMessage list = (MultiMessage)message;
             for(Object obj : list) {

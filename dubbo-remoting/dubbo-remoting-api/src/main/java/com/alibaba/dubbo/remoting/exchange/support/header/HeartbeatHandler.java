@@ -59,6 +59,7 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
     }
 
     public void received(Channel channel, Object message) throws RemotingException {
+        //4 接受消息后进行心跳处理   此时的handler为AllChannelHandler
         setReadTimestamp(channel);
         if (isHeartbeatRequest(message)) {
             Request req = (Request) message;
@@ -87,7 +88,7 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
             }
             return;
         }
-        handler.received(channel, message);
+        handler.received(channel, message);    //AllChannelHandler
     }
 
     private void setReadTimestamp(Channel channel) {

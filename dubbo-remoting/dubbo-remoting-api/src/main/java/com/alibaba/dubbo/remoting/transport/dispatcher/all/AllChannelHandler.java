@@ -51,6 +51,7 @@ public class AllChannelHandler extends WrappedChannelHandler {
     }
 
     public void received(Channel channel, Object message) throws RemotingException {
+        // 5 channelhandler
         ExecutorService cexecutor = getExecutorService();
         try {
             cexecutor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));

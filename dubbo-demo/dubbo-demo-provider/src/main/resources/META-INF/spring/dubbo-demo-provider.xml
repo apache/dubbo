@@ -19,7 +19,12 @@
 	xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
 	http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
-	
+
+	<!-- 当前应用信息配置 -->
+	<dubbo:application name="simple-registry" />
+	<!-- 连接注册中心配置 -->
+	<dubbo:registry protocol="redis" address="10.198.196.215:6379" />
+
 	<bean id="demoService" class="com.alibaba.dubbo.demo.provider.DemoServiceImpl" />
 	
 	<dubbo:service interface="com.alibaba.dubbo.demo.DemoService" ref="demoService" />

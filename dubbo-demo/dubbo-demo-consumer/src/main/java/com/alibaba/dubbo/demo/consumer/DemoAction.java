@@ -15,10 +15,13 @@
  */
 package com.alibaba.dubbo.demo.consumer;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import com.alibaba.dubbo.demo.DemoService;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class DemoAction {
     
@@ -39,5 +42,14 @@ public class DemoAction {
             Thread.sleep(2000);
         }
 	}
+
+    public static void main(String[] args) {
+        ApplicationContext application = new ClassPathXmlApplicationContext("classpath:META-INF/spring/dubbo-demo-action.xml");
+        try {
+            System.in.read();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
 }

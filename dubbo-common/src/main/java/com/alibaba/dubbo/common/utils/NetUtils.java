@@ -301,5 +301,9 @@ public class NetUtils {
 		sb.append(path);
 		return sb.toString();
 	}
+
+    public static void main(String[] args) {
+        System.out.println(getLocalHost());
+    }
     
 }

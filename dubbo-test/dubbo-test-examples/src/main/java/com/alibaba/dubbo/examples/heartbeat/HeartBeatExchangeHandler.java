@@ -38,6 +38,7 @@ public class HeartBeatExchangeHandler extends HeaderExchangeHandler {
 
     @Override
     public void received( Channel channel, Object message ) throws RemotingException {
+        //这个执行步骤是什么时候
         if ( message instanceof Request ) {
             Request req = ( Request ) message;
             if ( req.isHeartbeat() ) {
