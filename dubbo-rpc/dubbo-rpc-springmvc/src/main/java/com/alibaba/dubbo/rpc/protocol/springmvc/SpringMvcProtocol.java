@@ -133,8 +133,6 @@ public class SpringMvcProtocol extends AbstractProxyProtocol {
             requestInterceptors.add(new FeignOAuth2Interceptor());
         }
 
-        updateSpringCloudServerList(url);
-
         Fallback fallback = type.getAnnotation(Fallback.class);
         if (fallback != null && void.class != fallback.fallback() && ClassUtils.isPresent("feign.hystrix.HystrixFeign", SpringMvcProtocol.class.getClassLoader())) {
             T bean = SpringUtil.getBeanNamesForType(fallback.fallback()).size() > 0 ? (T) SpringUtil.getBean(fallback.fallback()) : (T) objectNewInstance(fallback.fallback());
