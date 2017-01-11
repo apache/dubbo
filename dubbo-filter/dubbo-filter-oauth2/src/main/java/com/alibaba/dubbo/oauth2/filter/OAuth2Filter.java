@@ -15,7 +15,7 @@ import java.util.Set;
 /**
  * Created by wuyu on 2017/1/7.
  */
-@Activate(group = {Constants.PROVIDER, Constants.CONSUMER})
+@Activate(group = {Constants.PROVIDER, Constants.CONSUMER}, value = "oAuth2Filter")
 public class OAuth2Filter implements Filter {
 
 
@@ -49,6 +49,8 @@ public class OAuth2Filter implements Filter {
                 throw new RpcException("must carry access_token!");
             }
             UserDetails userInfo = oAuth2Service.getUserInfo(access_token);
+            //传递身份信息
+            invocation.getAttachments().put("principal", JSON.toJSONString(userInfo));
             Set<String> authorities = userInfo.getAuthorities();
 
             for (String role : roles.split(",")) {

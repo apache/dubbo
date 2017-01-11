@@ -1,6 +1,7 @@
 package com.alibaba.dubbo.rpc.protocol.springmvc;
 
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.config.spring.extension.SpringExtensionFactory;
 import com.alibaba.dubbo.remoting.http.HttpBinder;
 import com.alibaba.dubbo.remoting.http.HttpHandler;
 import com.alibaba.dubbo.remoting.http.HttpServer;
@@ -63,7 +64,7 @@ public class SpringMvcHttpServer {
         try {
             dispatcher.setContextConfigLocation("classpath:META-INF/dubbo-springmvc.xml");
             dispatcher.init(new SimpleServletConfig(servletContext));
-
+            SpringExtensionFactory.addApplicationContext(dispatcher.getWebApplicationContext());
         } catch (Exception e) {
             throw new RpcException(e);
         }
@@ -122,7 +123,7 @@ public class SpringMvcHttpServer {
         Set<Method> methods = selectMethods(handler);
         for (Method method : methods) {
             RequestMappingInfo requestMappingInfo = getMappingForMethod(method, handler.getClass());
-            if(requestMappingInfo!=null){
+            if (requestMappingInfo != null) {
                 removeHandlerMethod(requestMappingInfo);
             }
         }
@@ -136,7 +137,7 @@ public class SpringMvcHttpServer {
             Method unregisterMapping = ReflectionUtils.findMethod(RequestMappingHandlerMapping.class, "unregisterMapping", Object.class);
             unregisterMapping.setAccessible(true);
             unregisterMapping.invoke(requestMappingInfo);
-        }else{
+        } else {
             handlerMethodsFiled.setAccessible(true);
             Map handlerMethods = (Map) handlerMethodsFiled.get(requestMapping);
             handlerMethods.remove(requestMapping);
@@ -162,6 +163,10 @@ public class SpringMvcHttpServer {
             }
         });
         return methods;
+    }
+
+    public <T> T getBean(Class<T> clazz) {
+        return dispatcher.getWebApplicationContext().getBean(clazz);
     }
 
     private static class SimpleServletConfig implements ServletConfig {

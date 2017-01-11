@@ -22,7 +22,12 @@
 	
 	<bean id="demoService" class="com.alibaba.dubbo.demo.provider.DemoServiceImpl" />
 
+    <dubbo:service interface="com.alibaba.dubbo.demo.DemoService" ref="demoService" />
+
+    <dubbo:protocol name="springmvc" server="tomcat" port="8080"/>
+
     <!--验证权限 临时 使用 token作为所需权限-->
-    <!--<dubbo:service interface="com.alibaba.dubbo.demo.DemoService" ref="demoService" filter="oAuth2Filter" token="ROLE_USER" />-->
-	
+    <bean class="com.alibaba.dubbo.demo.provider.UserServiceImpl" id="userService" />
+    <dubbo:service  interface="com.alibaba.dubbo.demo.UserService" ref="userService" />
+
 </beans>

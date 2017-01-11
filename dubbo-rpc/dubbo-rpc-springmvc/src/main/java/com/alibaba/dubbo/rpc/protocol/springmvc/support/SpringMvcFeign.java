@@ -2,15 +2,19 @@ package com.alibaba.dubbo.rpc.protocol.springmvc.support;
 
 import com.alibaba.dubbo.rpc.protocol.springmvc.annotation.Api;
 import com.alibaba.dubbo.rpc.protocol.springmvc.message.MessageConverters;
+import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import feign.Feign;
 import feign.Retryer;
+import feign.hystrix.HystrixFeign;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.DefaultConnectionKeepAliveStrategy;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
@@ -25,7 +29,7 @@ public class SpringMvcFeign {
 
     private static final int DEFAULT_MAX_CONN = 20;
 
-    private static final int DEFAULT_TIMEOUT= 2000;
+    private static final int DEFAULT_TIMEOUT = 2000;
 
     private static final int DEFAULT_RETRY_COUNT = 5;
 
@@ -82,6 +86,13 @@ public class SpringMvcFeign {
                 .encoder(new SpringEncoder(converters));
     }
 
+    public static HystrixFeign.Builder hystrixBuilder() {
+        return HystrixFeign.builder()
+                .contract(new SpringMvcContract())
+                .decoder(new SpringDecoder(converters))
+                .encoder(new SpringEncoder(converters));
+    }
+
     public static HttpClient getDefaultHttpClientPool(int maxTotal, int timeout, int retry, boolean keepAlive) {
         PoolingHttpClientConnectionManager manager = new PoolingHttpClientConnectionManager();
         RequestConfig requestConfig = RequestConfig.custom()
@@ -98,6 +109,14 @@ public class SpringMvcFeign {
             httpClient.setKeepAliveStrategy(new DefaultConnectionKeepAliveStrategy());
         }
         return httpClient.build();
+    }
+
+    public static RestTemplate restTemplate(int maxTotal, int timeout) {
+        HttpClient httpClient = getDefaultHttpClientPool(maxTotal, timeout, 0, true);
+        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(httpClient);
+        RestTemplate restTemplate = new RestTemplate(factory);
+        restTemplate.getMessageConverters().add(new FastJsonHttpMessageConverter());
+        return restTemplate;
     }
 
     public static List<HttpMessageConverter<?>> getConverters() {

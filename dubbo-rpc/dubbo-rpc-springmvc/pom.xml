@@ -44,10 +44,52 @@
         </dependency>
 
         <dependency>
-            <groupId>com.netflix.feign</groupId>
+            <groupId>io.github.openfeign</groupId>
             <artifactId>feign-core</artifactId>
-            <version>8.16.2</version>
+            <version>9.3.1</version>
         </dependency>
+        <dependency>
+            <groupId>io.github.openfeign</groupId>
+            <artifactId>feign-ribbon</artifactId>
+            <version>9.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.openfeign</groupId>
+            <artifactId>feign-hystrix</artifactId>
+            <version>9.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>io.reactivex</groupId>
+            <artifactId>rxjava</artifactId>
+            <version>1.1.10</version>
+        </dependency>
+        <dependency>
+            <groupId>com.netflix.archaius</groupId>
+            <artifactId>archaius-core</artifactId>
+            <version>0.7.4</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-configuration</groupId>
+            <artifactId>commons-configuration</artifactId>
+            <version>1.10</version>
+        </dependency>
+
+        <!--
+                <dependency>
+                    <groupId>com.netflix.ribbon</groupId>
+                    <artifactId>ribbon-loadbalancer</artifactId>
+                    <version>2.2.0</version>
+                </dependency>
+                <dependency>
+                    <groupId>com.netflix.ribbon</groupId>
+                    <artifactId>ribbon-core</artifactId>
+                    <version>2.2.0</version>
+                </dependency>
+                <dependency>
+                    <groupId>com.netflix.ribbon</groupId>
+                    <artifactId>ribbon-eureka</artifactId>
+                    <version>2.2.0</version>
+                </dependency>-->
 
         <dependency>
             <groupId>org.hibernate</groupId>

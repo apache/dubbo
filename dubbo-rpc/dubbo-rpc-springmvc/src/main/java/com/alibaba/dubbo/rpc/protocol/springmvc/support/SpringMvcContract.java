@@ -4,9 +4,13 @@ package com.alibaba.dubbo.rpc.protocol.springmvc.support;
  * Created by wuyu on 2016/6/8.
  */
 
+import com.alibaba.dubbo.rpc.protocol.springmvc.util.SpringUtil;
 import feign.Contract;
 import feign.MethodMetadata;
 import feign.Util;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -95,6 +99,24 @@ public class SpringMvcContract extends Contract.BaseContract {
     }
 
     @Override
+    protected void processAnnotationOnClass(MethodMetadata data, Class<?> clz) {
+//        if (clz.getInterfaces().length == 0) {
+//            RequestMapping classAnnotation = clz.getAnnotation(RequestMapping.class);
+//            if (classAnnotation != null) {
+//                // Prepend path from class annotation if specified
+//                if (classAnnotation.value().length > 0) {
+//                    String pathValue = emptyToNull(classAnnotation.value()[0]);
+//                    pathValue = resolve(pathValue);
+//                    if (!pathValue.startsWith("/")) {
+//                        pathValue = "/" + pathValue;
+//                    }
+//                    data.template().insert(0, pathValue);
+//                }
+//            }
+//        }
+    }
+
+    @Override
     protected void processAnnotationOnMethod(MethodMetadata data,
                                              Annotation methodAnnotation, Method method) {
         if (!(methodAnnotation instanceof RequestMapping)) {
@@ -129,7 +151,7 @@ public class SpringMvcContract extends Contract.BaseContract {
         parseHeaders(data, method, methodMapping);
 
         //add Client-Type Header
-        if(!data.template().headers().containsKey(CLIENT_TYPE)){
+        if (!data.template().headers().containsKey(CLIENT_TYPE)) {
             data.template().header(CLIENT_TYPE, "Feign-Client");
         }
 
@@ -258,4 +280,6 @@ public class SpringMvcContract extends Contract.BaseContract {
 
 
     }
+
+
 }

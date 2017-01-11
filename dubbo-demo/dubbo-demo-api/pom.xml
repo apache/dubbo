@@ -28,4 +28,11 @@
 	<properties>
 		<skip_maven_deploy>true</skip_maven_deploy>
 	</properties>
+    <dependencies>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-rpc-springmvc</artifactId>
+            <version>2.5.4-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
 </project>

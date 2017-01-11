@@ -22,6 +22,8 @@
 
 	<dubbo:reference id="demoService" interface="com.alibaba.dubbo.demo.DemoService"/>
 
+    <dubbo:reference interface="com.alibaba.dubbo.demo.UserService"  protocol="springmvc" id="userService"/>
+
     <!--加入 权限验证 -->
     <!--<dubbo:reference id="demoService" interface="com.alibaba.dubbo.demo.DemoService" filter="oAuth2Filter"/>-->
 

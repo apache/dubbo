@@ -2,6 +2,7 @@ package com.alibaba.dubbo.rpc.protocol.springmvc.oauth2;
 
 import com.alibaba.dubbo.oauth2.property.UserDetails;
 import com.alibaba.dubbo.oauth2.support.OAuth2Service;
+import com.alibaba.dubbo.rpc.RpcException;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -9,15 +10,16 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.HashMap;
+import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by wuyu on 2017/1/8.
  */
 public class SpringMvcOAuth2Interceptor implements HandlerInterceptor {
 
-    private Map<String, String> roles = new HashMap<>();
+    private Map<String, String> roles = new ConcurrentHashMap<>();
 
     private OAuth2Service oAuth2Service = OAuth2Service.getInstance();
 
@@ -37,17 +39,30 @@ public class SpringMvcOAuth2Interceptor implements HandlerInterceptor {
                     String authorization = httpServletRequest.getHeader("Authorization");
                     if (authorization != null) {
                         String accessToken = authorization.replace("Bearer", "").trim();
-                        UserDetails userDetails = oAuth2Service.getUserInfo(accessToken);
-                        String role = roles.get(targetClass.getName());
-                        if (userDetails.getAuthorities().contains(role)) {
-                            return true;
+                        try {
+                            UserDetails userDetails = oAuth2Service.getUserInfo(accessToken);
+                            String role = roles.get(iFace.getName());
+                            if (userDetails.getAuthorities().contains(role)) {
+                                return true;
+                            }
+                        } catch (RpcException e) {
+                            writer(httpServletResponse, 401, "{\"error\":\"unauthorized\",\"error_description\":\"" + accessToken + " token error\"}");
+                            return false;
                         }
+
                     }
                 }
             }
         }
 
+        writer(httpServletResponse, 401, "{\"error\":\"unauthorized\",\"error_description\":\"Full authentication is required to access this resource\"}");
         return false;
+    }
+
+    public void writer(HttpServletResponse response, int code, String message) throws IOException {
+        response.addHeader("Content-type", "application/json;charset=utf-8");
+        response.setStatus(code);
+        response.getWriter().write(message);
     }
 
     @Override
@@ -69,9 +84,9 @@ public class SpringMvcOAuth2Interceptor implements HandlerInterceptor {
     }
 
     public void addRole(String clazzName, String role) {
-        if(role!=null){
+        if (role != null) {
             String[] roles = role.split(",");
-            for(String r : roles){
+            for (String r : roles) {
                 this.roles.put(clazzName, r);
             }
 

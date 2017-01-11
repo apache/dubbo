@@ -7,13 +7,13 @@ import com.alibaba.dubbo.oauth2.property.TokenDetails;
 import com.alibaba.dubbo.oauth2.property.UserDetails;
 import com.alibaba.dubbo.oauth2.support.util.OAuth2PropertyUtil;
 import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.Base64Utils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -34,7 +34,7 @@ public class OAuth2Service {
     private Map<String, UserDetails> cache = new LinkedHashMap<String, UserDetails>() {
         @Override
         protected boolean removeEldestEntry(Map.Entry<String, UserDetails> eldest) {
-            return size() > 100;
+            return size() > 1000;
         }
     };
 
@@ -66,11 +66,12 @@ public class OAuth2Service {
                 GET,
                 new HttpEntity(headers),
                 JSONObject.class);
-        JSONObject userInfo = responseEntity.getBody();
-        if (responseEntity.getStatusCodeValue() != 200) {
-            throw new RpcException(userInfo.toJSONString());
+
+        if(responseEntity.getStatusCode().value()!=200){
+            throw new RpcException(responseEntity.toString());
         }
 
+        JSONObject userInfo = responseEntity.getBody();
         JSONArray authorities = userInfo.getJSONArray("authorities");
         String principal = userInfo.getString("principal");
         userDetails = new UserDetails();
@@ -101,7 +102,7 @@ public class OAuth2Service {
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         //basic验证,base64加密,客户端id,安全key
-        headers.add("Authorization", "Basic " + Base64Utils.encodeToString((clientId + ":" + clientSecret).getBytes()));
+        headers.add("Authorization", "Basic " + Base64.encodeToString((clientId + ":" + clientSecret).getBytes()));
         return new HttpEntity(parameters, headers);
     }
 
@@ -109,8 +110,12 @@ public class OAuth2Service {
     public TokenDetails getTokenDetails() {
         if (tokenDetails == null) {
             HttpEntity httpEntity = oAuth2Entity();
-            tokenDetails = restTemplate.postForObject(oAuth2Properties.getAccessTokenUri(), httpEntity, TokenDetails.class);
-            logger.info("get token " + tokenDetails.toString());
+            ResponseEntity<String> responseEntity = restTemplate.postForEntity(oAuth2Properties.getAccessTokenUri(), httpEntity, String.class);
+            if (responseEntity.getStatusCode().value() != 200) {
+                throw new RpcException(responseEntity.getBody());
+            }
+            tokenDetails = JSON.parseObject(responseEntity.getBody(), TokenDetails.class);
+            logger.info("get token " + this.tokenDetails.toString());
         } else {
             long expire = tokenDetails.getCreatedTime() + tokenDetails.getExpiresIn();
             long date = new Date().getTime() / 1000;
