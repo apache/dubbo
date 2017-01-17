@@ -1,2 +1,2 @@
 springmvc=com.alibaba.dubbo.rpc.protocol.springmvc.SpringMvcProtocol
-eureka=com.alibaba.dubbo.rpc.protocol.springmvc.SpringMvcProtocol
+

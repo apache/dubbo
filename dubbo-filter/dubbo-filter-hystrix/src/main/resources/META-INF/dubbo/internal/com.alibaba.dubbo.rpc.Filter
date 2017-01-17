@@ -1,0 +1,1 @@
+oAuth2Filter=com.alibaba.dubbo.hystrix.filter.HystrixFilter

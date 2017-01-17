@@ -15,19 +15,51 @@
  - limitations under the License.
 -->
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo" xmlns:DUBBO="http://code.alibabatech.com/schema/dubbo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
 	http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
-	
-	<bean id="demoService" class="com.alibaba.dubbo.demo.provider.DemoServiceImpl" />
 
-    <dubbo:service interface="com.alibaba.dubbo.demo.DemoService" ref="demoService" />
+    <!--Dubbo:start-->
+    <dubbo:protocol port="20880" name="dubbo"/>
 
+    <bean id="demoService" class="com.alibaba.dubbo.demo.provider.DemoServiceImpl"/>
+    <dubbo:service interface="com.alibaba.dubbo.demo.DemoService" ref="demoService" protocol="dubbo"/>
+    <!--Dubbo:end-->
+
+    <!--SpringMvc:start-->
     <dubbo:protocol name="springmvc" server="tomcat" port="8080"/>
 
-    <!--验证权限 临时 使用 token作为所需权限-->
-    <bean class="com.alibaba.dubbo.demo.provider.UserServiceImpl" id="userService" />
-    <dubbo:service  interface="com.alibaba.dubbo.demo.UserService" ref="userService" />
+    <!--验证权限 临时 使用 token作为所需权限 token="ROLE_USER,ROLE_ADMIN"-->
+    <bean class="com.alibaba.dubbo.demo.provider.UserServiceImpl" id="userService"/>
+    <dubbo:service interface="com.alibaba.dubbo.demo.UserService" ref="userService" protocol="springmvc"/>
+    <!--SpringMvc:end-->
+
+    <!--DubboProxy:start-->
+    <!--代理 Dubbo,并转化为Rest服务 可通过http方式调用dubbo服务-->
+    <bean class="com.alibaba.dubbo.rpc.protocol.springmvc.proxy.ProxyServiceImpl" id="proxyService"/>
+
+    <!--如果本身是web服务,可以省略这一步.该步骤是为了初始化springmvc容器-->
+    <dubbo:service interface="com.alibaba.dubbo.rpc.protocol.springmvc.proxy.ProxyService" ref="proxyService" protocol="springmvc"/>
+    <!--DubboProxy:end-->
+
+
+    <!--Jersey-->
+    <dubbo:protocol port="8081" name="jersey"/>
+    <bean id="commentService" class="com.alibaba.dubbo.demo.provider.CommentServiceImpl"/>
+    <dubbo:service interface="com.alibaba.dubbo.demo.CommentService" ref="commentService" protocol="jersey" />
+    <!--Jersey-->
+
+    <!--Grpc-->
+    <dubbo:protocol port="8082" name="grpc"/>
+    <bean id="helloWorldService" class="com.alibaba.dubbo.demo.provider.grpc.HelloWorldServiceImpl"/>
+    <dubbo:service interface="io.grpc.examples.helloworld.GreeterGrpc$Greeter" ref="helloWorldService" protocol="grpc" />
+    <!--Grpc-->
+
+    <!--Thrift9-->
+    <dubbo:protocol port="8083" name="thrift9"/>
+    <bean id="fooService" class="com.alibaba.dubbo.demo.provider.FooServiceImpl"/>
+    <dubbo:service interface="com.alibaba.dubbo.demo.FooService$Iface" ref="fooService" protocol="thrift9" />
+    <!--Thrift9-->
 
 </beans>

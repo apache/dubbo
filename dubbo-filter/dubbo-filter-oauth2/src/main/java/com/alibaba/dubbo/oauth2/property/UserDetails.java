@@ -11,6 +11,7 @@ public class UserDetails {
 
     private Set<String> authorities;
 
+    private Set<String> scope;
 
     public String getPrincipal() {
         return principal;
@@ -26,5 +27,13 @@ public class UserDetails {
 
     public void setAuthorities(Set<String> authorities) {
         this.authorities = authorities;
+    }
+
+    public Set<String> getScope() {
+        return scope;
+    }
+
+    public void setScope(Set<String> scope) {
+        this.scope = scope;
     }
 }

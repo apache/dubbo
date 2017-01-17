@@ -15,16 +15,30 @@
  - limitations under the License.
 -->
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
 	http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
 
-	<dubbo:reference id="demoService" interface="com.alibaba.dubbo.demo.DemoService"/>
+    <dubbo:reference id="demoService" interface="com.alibaba.dubbo.demo.DemoService"/>
 
-    <dubbo:reference interface="com.alibaba.dubbo.demo.UserService"  protocol="springmvc" id="userService"/>
-
+    <!--springmvc-->
+    <dubbo:reference interface="com.alibaba.dubbo.demo.UserService" protocol="springmvc" id="userService"/>
+    <!--springmvc-->
     <!--加入 权限验证 -->
     <!--<dubbo:reference id="demoService" interface="com.alibaba.dubbo.demo.DemoService" filter="oAuth2Filter"/>-->
+
+    <!--jersey-->
+    <dubbo:reference interface="com.alibaba.dubbo.demo.CommentService" id="commentService"/>
+    <!--jersey-->
+
+    <!--grpc-->
+    <dubbo:reference interface="io.grpc.examples.helloworld.GreeterGrpc$Greeter" id="helloWorldService"/>
+    <!--grpc-->
+
+
+    <!--thrift9-->
+    <dubbo:reference interface="com.alibaba.dubbo.demo.FooService$Iface" id="fooService"/>
+    <!--thrift9-->
 
 </beans>

@@ -7,7 +7,7 @@ import java.lang.annotation.*;
 @Documented
 public @interface Api {
 
-    String value();
+    String value() default "";
 
     int maxConnTotal() default 20;
 
@@ -16,5 +16,8 @@ public @interface Api {
     int retry() default 5;
 
     boolean keepAlive() default false;
+
+    Class<?> fallback() default void.class;
+
 
 }

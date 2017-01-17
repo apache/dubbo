@@ -35,5 +35,6 @@
 		<module>dubbo-remoting-p2p</module>
 		<module>dubbo-remoting-http</module>
 		<module>dubbo-remoting-zookeeper</module>
+        <module>dubbo-remoting-eureka</module>
     </modules>
 </project>

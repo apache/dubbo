@@ -1,9 +1,13 @@
 package com.alibaba.dubbo.rpc.protocol.springmvc.support;
 
+import com.alibaba.dubbo.rpc.protocol.springmvc.SpringMvcProtocol;
 import com.alibaba.dubbo.rpc.protocol.springmvc.annotation.Api;
+import com.alibaba.dubbo.rpc.protocol.springmvc.exception.SpringMvcErrorDecoder;
 import com.alibaba.dubbo.rpc.protocol.springmvc.message.MessageConverters;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
+import feign.Client;
 import feign.Feign;
+import feign.RequestInterceptor;
 import feign.Retryer;
 import feign.hystrix.HystrixFeign;
 import org.apache.http.client.HttpClient;
@@ -14,9 +18,11 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.util.ClassUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.Set;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -91,6 +97,31 @@ public class SpringMvcFeign {
                 .contract(new SpringMvcContract())
                 .decoder(new SpringDecoder(converters))
                 .encoder(new SpringEncoder(converters));
+    }
+
+    public static <T> T hystrixTarget(Class<T> type, String api, T fallback, int maxTotal, int timeout, Set<RequestInterceptor> requestInterceptors) {
+        HystrixFeign.Builder hystrixBuilder = SpringMvcFeign.hystrixBuilder()
+                .requestInterceptors(requestInterceptors)
+                .retryer(new Retryer.Default(100, SECONDS.toMillis(1), 0))
+                .client(getClient(maxTotal, timeout));
+        return fallback != null ? hystrixBuilder.target(type, api, fallback) : hystrixBuilder.target(type, api);
+    }
+
+    public static <T> T target(Class<T> apiType, String api, int maxTotal, int timeout, Set<RequestInterceptor> requestInterceptors) {
+        return SpringMvcFeign.builder()
+                .requestInterceptors(requestInterceptors)
+                .retryer(new Retryer.Default(100, SECONDS.toMillis(1), 0))
+                .errorDecoder(new SpringMvcErrorDecoder())
+                .client(getClient(maxTotal, timeout))
+                .target(apiType, api);
+    }
+
+    public static Client getClient(int maxTotal, int timeout) {
+        if (ClassUtils.isPresent("org.apache.http.client.HttpClient", SpringMvcProtocol.class.getClassLoader())) {
+            return new ApacheHttpClient(SpringMvcFeign.getDefaultHttpClientPool(maxTotal, timeout, 0, true));
+        } else {
+            return new Client.Default(null, null);
+        }
     }
 
     public static HttpClient getDefaultHttpClientPool(int maxTotal, int timeout, int retry, boolean keepAlive) {

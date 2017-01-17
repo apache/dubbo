@@ -45,5 +45,6 @@
         <module>dubbo-rpc-avro</module>
         <module>dubbo-rpc-rest</module>
         <module>dubbo-rpc-grpc</module>
+        <module>dubbo-rpc-jersey</module>
     </modules>
 </project>

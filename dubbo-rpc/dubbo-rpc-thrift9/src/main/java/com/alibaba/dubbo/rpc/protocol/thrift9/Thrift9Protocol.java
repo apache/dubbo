@@ -18,8 +18,7 @@ import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TServerTransport;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
+import java.lang.reflect.*;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -135,14 +134,22 @@ public class Thrift9Protocol extends AbstractProxyProtocol {
         final String addr = url.getIp() + ":" + url.getPort();
         int timeout = url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
         int threads = url.getParameter(Constants.THREADS_KEY, Constants.DEFAULT_THREADS);
-        JdkProxySource clientProxy = new JdkProxySource(Thrift9Protocol.class.getClassLoader(), new Class[]{type});
-        ClientPooledObjectFactory factory = new ClientPooledObjectFactory(url.getIp(), url.getPort(), timeout, type.getName());
-        GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+        final JdkProxySource clientProxy = new JdkProxySource(Thrift9Protocol.class.getClassLoader(), new Class[]{type});
+        ClientPooledObjectFactory factory = new ClientPooledObjectFactory(url.getHost(), url.getPort(), timeout, type.getName());
+        final GenericObjectPoolConfig config = new GenericObjectPoolConfig();
         config.setMaxTotal(threads);
-        GenericObjectPool<TServiceClient> pool = new GenericObjectPool<TServiceClient>(factory, config);
+
+        final GenericObjectPool<TServiceClient> pool = new GenericObjectPool<TServiceClient>(factory, config);
         poolMap.put(addr, pool);
+
         try {
-            return (T) clientProxy.createProxy(pool.borrowObject(), pool);
+            return (T) Proxy.newProxyInstance(Thrift9Protocol.class.getClassLoader(), new Class[]{type}, new InvocationHandler() {
+                @Override
+                public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                    Object obj = clientProxy.createProxy(pool.borrowObject(),pool);
+                    return method.invoke(obj,args);
+                }
+            });
         } catch (Exception e) {
             throw new RpcException(e);
         }

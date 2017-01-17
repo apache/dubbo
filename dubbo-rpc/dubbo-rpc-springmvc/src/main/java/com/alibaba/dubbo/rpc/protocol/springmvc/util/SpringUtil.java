@@ -1,6 +1,5 @@
 package com.alibaba.dubbo.rpc.protocol.springmvc.util;
 
-import com.alibaba.dubbo.config.spring.ServiceBean;
 import com.alibaba.dubbo.config.spring.extension.SpringExtensionFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -99,7 +98,10 @@ public class SpringUtil {
             Set<ApplicationContext> applicationContexts = SpringUtil.getApplicationContexts();
             for (ApplicationContext applicationContext : applicationContexts) {
                 if (applicationContext instanceof ConfigurableApplicationContext) {
-                    return ((ConfigurableApplicationContext) applicationContext).getEnvironment().resolvePlaceholders(value);
+                    String v = ((ConfigurableApplicationContext) applicationContext).getEnvironment().resolvePlaceholders(value);
+                    if(!StringUtils.isEmpty(v)){
+                        return v;
+                    }
                 }
             }
         }

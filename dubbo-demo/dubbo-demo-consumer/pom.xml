@@ -33,7 +33,13 @@
 			<groupId>com.alibaba</groupId>
 			<artifactId>dubbo-demo-api</artifactId>
 			<version>${project.parent.version}</version>
-		</dependency>
+            <exclusions>
+                <exclusion>
+                    <artifactId>netty-all</artifactId>
+                    <groupId>io.netty</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 		<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>dubbo</artifactId>
@@ -42,6 +48,11 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>dubbo-filter-oauth2</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-rpc-grpc</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
 		<dependency>
@@ -87,7 +98,13 @@
 		<dependency>
 			<groupId>com.netflix.curator</groupId>
 			<artifactId>curator-framework</artifactId>
-		</dependency>
+            <exclusions>
+                <exclusion>
+                    <artifactId>guava</artifactId>
+                    <groupId>com.google.guava</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 		<dependency>
 			<groupId>com.googlecode.xmemcached</groupId>
 			<artifactId>xmemcached</artifactId>
@@ -141,9 +158,20 @@
 			<artifactId>cache-api</artifactId>
 		</dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.8.4</version>
+            <artifactId>guava</artifactId>
+            <groupId>com.google.guava</groupId>
+            <version>19.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.thrift</groupId>
+            <artifactId>libthrift</artifactId>
+            <version>0.9.3</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpcore</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 	</dependencies>
 	<build>

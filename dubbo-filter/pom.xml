@@ -32,5 +32,6 @@
 		<module>dubbo-filter-cache</module>
 		<module>dubbo-filter-validation</module>
         <module>dubbo-filter-oauth2</module>
+        <module>dubbo-filter-hystrix</module>
     </modules>
 </project>

@@ -74,6 +74,7 @@ public class OAuth2Service {
         JSONObject userInfo = responseEntity.getBody();
         JSONArray authorities = userInfo.getJSONArray("authorities");
         String principal = userInfo.getString("principal");
+        String scope = userInfo.getString("scope");
         userDetails = new UserDetails();
         Set<String> set = new HashSet<>();
         for (int i = 0; i < authorities.size(); i++) {
@@ -83,6 +84,7 @@ public class OAuth2Service {
         }
         userDetails.setAuthorities(set);
         userDetails.setPrincipal(principal);
+        userDetails.setScope(new HashSet<>(Arrays.asList(scope.split(","))));
         cache.put(token, userDetails);
         return userDetails;
     }
