@@ -41,4 +41,8 @@
     <dubbo:reference interface="com.alibaba.dubbo.demo.FooService$Iface" id="fooService"/>
     <!--thrift9-->
 
+    <!--avro-->
+    <dubbo:reference interface="com.alibaba.dubbo.demo.AvroService" id="avroService"/>
+    <!--avro-->
+
 </beans>

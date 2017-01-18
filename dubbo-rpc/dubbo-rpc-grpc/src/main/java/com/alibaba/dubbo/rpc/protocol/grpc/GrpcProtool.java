@@ -2,34 +2,28 @@ package com.alibaba.dubbo.rpc.protocol.grpc;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.config.ProtocolConfig;
 import com.alibaba.dubbo.config.spring.ServiceBean;
+import com.alibaba.dubbo.rpc.ProxyFactory;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.protocol.AbstractProxyProtocol;
 import io.grpc.BindableService;
-import io.grpc.Channel;
-import io.grpc.ManagedChannel;
 import io.grpc.ServerServiceDefinition;
-import io.grpc.internal.ManagedChannelImpl;
 import io.grpc.internal.ServerImpl;
-import io.grpc.netty.NegotiationType;
-import io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.NettyServerBuilder;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.apache.commons.pool2.proxy.JdkProxySource;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.InetSocketAddress;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by wuyu on 2017/1/13.
@@ -77,6 +71,7 @@ public class GrpcProtool extends AbstractProxyProtocol {
             for (ProtocolConfig protocolConfig : protocols) {
                 if (url.getProtocol().equalsIgnoreCase(protocolConfig.getName())) {
                     Object ref = bean.getRef();
+
                     try {
                         Method bindService = ref.getClass().getMethod("bindService");
                         final Object serviceDefine = bindService.invoke(ref);

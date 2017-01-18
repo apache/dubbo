@@ -60,6 +60,11 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-rpc-avro</artifactId>
+            <version>2.5.4-SNAPSHOT</version>
+        </dependency>
 
     </dependencies>
 </project>

@@ -62,4 +62,10 @@
     <dubbo:service interface="com.alibaba.dubbo.demo.FooService$Iface" ref="fooService" protocol="thrift9" />
     <!--Thrift9-->
 
+    <!--avro-->
+    <dubbo:protocol port="8084" name="avro"/>
+    <bean id="avroService" class="com.alibaba.dubbo.demo.provider.AvroServiceImpl"/>
+    <dubbo:service interface="com.alibaba.dubbo.demo.AvroService" ref="avroService" protocol="avro" />
+    <!--avro-->
+
 </beans>

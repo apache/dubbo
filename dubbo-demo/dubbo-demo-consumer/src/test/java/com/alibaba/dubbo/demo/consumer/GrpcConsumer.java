@@ -39,6 +39,6 @@ public class GrpcConsumer {
         }
 
         //由于采用异步 必须阻塞
-        System.in.read();
+        Thread.sleep(10000);
     }
 }
