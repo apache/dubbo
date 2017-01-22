@@ -56,11 +56,15 @@ public class GrpcProtool extends AbstractProxyProtocol {
             };
         }
 
+        String bindHost = url.getHost();
+        if (url.getParameter("anyhost", false)) {
+            bindHost = "0.0.0.0";
+        }
 
         int threads = url.getParameter(Constants.THREADS_KEY, Constants.DEFAULT_THREADS);
         //gpc 并未提供动态插拔服务,暂时能想到一种方案进行解决
         //1.定义全局事件,等待所有Dubbo export service完成,一次性添加所有服务 并启动。
-        NettyServerBuilder builder = NettyServerBuilder.forAddress(new InetSocketAddress(url.getHost(), port))
+        NettyServerBuilder builder = NettyServerBuilder.forAddress(new InetSocketAddress(bindHost, port))
                 .maxConcurrentCallsPerConnection(threads);
 
 
@@ -122,6 +126,13 @@ public class GrpcProtool extends AbstractProxyProtocol {
             GrpcClientPooledObjectFactory factory = new GrpcClientPooledObjectFactory(url.getHost(), url.getPort(), timeout, blockingStub);
             GenericObjectPoolConfig config = new GenericObjectPoolConfig();
             config.setMaxTotal(threads);
+            config.setMaxIdle(3);
+            config.setBlockWhenExhausted(false);
+            config.setTestOnReturn(true);
+            config.setMaxWaitMillis(timeout);
+            config.setTestWhileIdle(true);
+            config.setMinEvictableIdleTimeMillis(300000);
+            config.setTimeBetweenEvictionRunsMillis(60000);
             pool = new GenericObjectPool<>(factory, config);
 
             poolMap.put(host + ":" + port, pool);
@@ -142,6 +153,8 @@ public class GrpcProtool extends AbstractProxyProtocol {
     public void destroy() {
         for (GenericObjectPool pool : poolMap.values()) {
             try {
+                pool.clear();
+                ;
                 pool.close();
             } catch (Exception e) {
 

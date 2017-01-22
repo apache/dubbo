@@ -1,7 +1,7 @@
 
 #dubbo
 
->1. 增加 springmvc,jsonrpc,avro,grpc,jersey，原生thrift rpc组件.
+>1. 增加 springmvc,jsonrpc,avro,grpc,jersey，websocket rpc,原生thrift rpc组件.
 
 >2. 增加none http容器,只注册服务,不导出服务.使其更好的支持springboot.
 
@@ -66,6 +66,67 @@ public interface CommentService {
 只需配置提供的协议是springmvc 服务为none即可,只注册相关服务,但不导出相关服务.dubbo消费端可以通过提供的注册地址 ,即可消费自定义的rest服务.
 <dubbo:protocol name="springmvc" server="none" />
 ```
+
+###Avro
+```
+<!--avro-->
+<dubbo:protocol port="8084" name="avro"/>
+<bean id="avroService" class="com.alibaba.dubbo.demo.provider.AvroServiceImpl"/>
+<dubbo:service interface="com.alibaba.dubbo.demo.AvroService" ref="avroService" protocol="avro"/>
+<!--avro-->
+
+```
+
+###Thrift9
+
+```
+<!--Thrift9-->
+<dubbo:protocol port="8083" name="thrift9"/>
+<bean id="fooService" class="com.alibaba.dubbo.demo.provider.FooServiceImpl"/>
+<dubbo:service interface="com.alibaba.dubbo.demo.FooService$Iface" ref="fooService" protocol="thrift9"/>
+<!--Thrift9-->
+```
+
+###Grpc
+```
+<!--Grpc-->
+<dubbo:protocol port="8082" name="grpc"/>
+<bean id="helloWorldService" class="com.alibaba.dubbo.demo.provider.grpc.HelloWorldServiceImpl"/>
+<dubbo:service interface="io.grpc.examples.helloworld.GreeterGrpc$Greeter" ref="helloWorldService" protocol="grpc"/>
+<!--Grpc-->
+```
+
+###Jersey
+```
+<!--Jersey-->
+<dubbo:protocol port="8081" name="jersey"/>
+<bean id="commentService" class="com.alibaba.dubbo.demo.provider.CommentServiceImpl"/>
+<dubbo:service interface="com.alibaba.dubbo.demo.CommentService" ref="commentService" protocol="jersey"/>
+<!--Jersey-->
+```
+
+###Dubbo Rest Proxy
+```
+<!--DubboProxy:start-->
+<!--代理 Dubbo,并转化为Rest服务 可通过http方式调用dubbo服务-->
+<bean class="com.alibaba.dubbo.rpc.protocol.springmvc.proxy.ProxyServiceImpl" id="proxyService"/>
+
+<!--如果本身是web服务,可以省略这一步.该步骤是为了初始化springmvc容器-->
+<dubbo:service interface="com.alibaba.dubbo.rpc.protocol.springmvc.proxy.ProxyService" ref="proxyService"
+               protocol="springmvc"/>
+<!--DubboProxy:end-->
+
+```
+
+###WebSocket
+```
+<!--websocket-->
+<dubbo:protocol port="8086" name="ws"/>
+<bean id="webSocketService" class="com.alibaba.dubbo.demo.provider.WebSocketServiceImpl"/>
+<dubbo:service interface="com.alibaba.dubbo.demo.WebSocketService" ref="webSocketService" protocol="ws"/>
+<!--websocket-->
+```
+
 
 ###更好的支持springboot
 ```

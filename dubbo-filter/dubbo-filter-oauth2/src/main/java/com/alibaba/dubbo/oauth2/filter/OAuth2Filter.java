@@ -50,7 +50,8 @@ public class OAuth2Filter implements Filter {
             }
             UserDetails userInfo = oAuth2Service.getUserInfo(access_token);
             //传递身份信息
-            invocation.getAttachments().put("principal", JSON.toJSONString(userInfo));
+            invocation.getAttachments().put("principal", userInfo.getPrincipal());
+            invocation.getAttachments().put("userInfo", JSON.toJSONString(userInfo));
             Set<String> authorities = userInfo.getAuthorities();
 
             for (String role : roles.split(",")) {

@@ -50,6 +50,12 @@ public class AvroProtocol extends AbstractProxyProtocol {
     protected <T> Runnable doExport(final T impl, final Class<T> type, URL url) throws RpcException {
         final String addr = url.getIp() + ":" + url.getPort();
         int threads = url.getPositiveParameter(Constants.IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS);
+
+        String bindHost = url.getHost();
+        if (url.getParameter("anyhost", false)) {
+            bindHost = "0.0.0.0";
+        }
+
         if (serverMap.get(addr) == null) {
             ExecutorService boss = Executors.newCachedThreadPool(new NamedThreadFactory("NettyServerBoss", true));
             ExecutorService worker = Executors.newCachedThreadPool(new NamedThreadFactory("NettyServerWorker", true));
@@ -63,7 +69,7 @@ public class AvroProtocol extends AbstractProxyProtocol {
                     return pipeline;
                 }
             };
-            NettyServer server = new NettyServer(multiplexedResponder, new InetSocketAddress(url.getPort()), channelFactory, pipelineFactory, null);
+            NettyServer server = new NettyServer(multiplexedResponder, new InetSocketAddress(bindHost, url.getPort()), channelFactory, pipelineFactory, null);
             serverMap.put(addr, server);
             multiplexedResponderMap.put(addr, multiplexedResponder);
             server.start();
@@ -75,7 +81,10 @@ public class AvroProtocol extends AbstractProxyProtocol {
         return new Runnable() {
             @Override
             public void run() {
-                multiplexedResponderMap.get(addr).unRegisterResponder(new SpecificResponder(type, impl));
+                MultiplexedResponder multiplexedResponder = multiplexedResponderMap.get(addr);
+                if (multiplexedResponder != null) {
+                    multiplexedResponder.unRegisterResponder(new SpecificResponder(type, impl));
+                }
             }
         };
     }
@@ -91,7 +100,7 @@ public class AvroProtocol extends AbstractProxyProtocol {
 
         try {
             NettyTransceiver nettyTransceiver = new NettyTransceiver(new InetSocketAddress(url.getIp(), url.getPort()), channelFactory, (long) timeout);
-            nettyTransceiverMap.put(addr,nettyTransceiver);
+            nettyTransceiverMap.put(addr, nettyTransceiver);
             return SpecificRequestor.getClient(type, nettyTransceiver);
         } catch (IOException e) {
             throw new RpcException(e);
@@ -101,7 +110,7 @@ public class AvroProtocol extends AbstractProxyProtocol {
     @Override
     public void destroy() {
         super.destroy();
-        for(String key : nettyTransceiverMap.keySet()){
+        for (String key : nettyTransceiverMap.keySet()) {
             nettyTransceiverMap.remove(key).close();
         }
         for (String key : serverMap.keySet()) {

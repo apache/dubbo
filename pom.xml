@@ -112,7 +112,10 @@
 		<webx_version>3.0.8</webx_version>
         <feign_version>9.3.1</feign_version>
         <jersey_version>2.25</jersey_version>
-		<!-- Log libs -->
+        <jackson.version>2.8.4</jackson.version>
+        <jsonrpc_version>1.2.0</jsonrpc_version>
+
+        <!-- Log libs -->
 		<slf4j_version>1.6.2</slf4j_version>
 		<jcl_version>1.1</jcl_version>
 		<log4j_version>1.2.16</log4j_version>
@@ -461,7 +464,46 @@
                 <artifactId>commons-pool2</artifactId>
                 <version>2.4.2</version>
             </dependency>
-		</dependencies>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.github.briandilley.jsonrpc4j</groupId>
+                <artifactId>jsonrpc4j</artifactId>
+                <version>${jsonrpc_version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.corundumstudio.socketio</groupId>
+                <artifactId>netty-socketio</artifactId>
+                <version>1.7.12</version>
+            </dependency>
+            <dependency>
+                <groupId>io.socket</groupId>
+                <artifactId>socket.io-client</artifactId>
+                <version>0.8.3</version>
+            </dependency>
+            <dependency>
+                <groupId>com.squareup.okhttp3</groupId>
+                <artifactId>okhttp</artifactId>
+                <version>3.5.0</version>
+            </dependency>
+
+        </dependencies>
 	</dependencyManagement>
 	<dependencies>
 		<dependency>

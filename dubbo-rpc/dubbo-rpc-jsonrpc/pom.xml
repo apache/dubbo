@@ -51,11 +51,7 @@
         </developer>
     </developers>
 
-    <properties>
-        <dubbo_version>2.4.10</dubbo_version>
-        <jsonrpc_version>1.2.0</jsonrpc_version>
-        <jackson.version>2.7.1</jackson.version>
-    </properties>
+
 
     <dependencies>
         <dependency>
@@ -84,12 +80,10 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
 
         <dependency>

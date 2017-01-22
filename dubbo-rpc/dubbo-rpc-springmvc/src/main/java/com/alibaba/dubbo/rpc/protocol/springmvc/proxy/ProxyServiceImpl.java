@@ -20,6 +20,8 @@ public class ProxyServiceImpl implements ProxyService, DisposableBean {
 
     private Map<String, GenericService> genericServiceMap = new ConcurrentHashMap<String, GenericService>();
 
+    private Map<String, Class> cache = new ConcurrentHashMap<>();
+
     /**
      * http://localhost:8080/proxy/
      * POST,PUT,DELETE
@@ -41,6 +43,7 @@ public class ProxyServiceImpl implements ProxyService, DisposableBean {
         if (config.getService() == null || config.getMethod() == null) {
             throw new IllegalArgumentException(config.toString() + " Miss required parameter! ");
         }
+
         return genericService(config).$invoke(config.getMethod(), config.getArgsType(), config.getArgs());
     }
 

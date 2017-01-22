@@ -46,5 +46,7 @@
         <module>dubbo-rpc-rest</module>
         <module>dubbo-rpc-grpc</module>
         <module>dubbo-rpc-jersey</module>
+        <module>dubbo-rpc-ratpack</module>
+        <module>dubbo-rpc-websocket</module>
     </modules>
 </project>

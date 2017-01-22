@@ -45,4 +45,7 @@
     <dubbo:reference interface="com.alibaba.dubbo.demo.AvroService" id="avroService"/>
     <!--avro-->
 
+    <!--websocket-->
+    <dubbo:reference interface="com.alibaba.dubbo.demo.WebSocketService" id="webSocketService"/>
+    <!--websocket-->
 </beans>
