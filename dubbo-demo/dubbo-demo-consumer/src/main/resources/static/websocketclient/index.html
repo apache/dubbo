@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <meta charset="utf-8"/>
+
+    <title>Demo Chat</title>
+
+    <link href="bootstrap.css" rel="stylesheet">
+
+    <style>
+        body {
+            padding: 20px;
+        }
+
+        #console {
+            height: 400px;
+            overflow: auto;
+        }
+
+        .username-msg {
+            color: orange;
+        }
+
+        .connect-msg {
+            color: green;
+        }
+
+        .disconnect-msg {
+            color: red;
+        }
+
+        .send-msg {
+            color: #888
+        }
+    </style>
+
+
+    <script src="js/socket.io/socket.io.js"></script>
+    <script src="js/moment.min.js"></script>
+    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+
+    <script>
+
+
+        var socket = io.connect('http://localhost:8086/com.alibaba.dubbo.demo.WebSocketService');
+
+        socket.on('connect', function () {
+            output('<span class="connect-msg">连接成功!</span>');
+        });
+
+        socket.on("message", function (message) {
+
+            output(JSON.parse(message).result)
+            console.log(message)
+        });
+
+        socket.on("error", function (message) {
+            output('<span class="disconnect-msg">' + message + '</span>');
+
+        })
+
+        socket.on("auth",function (message) {
+            output(message)
+        })
+
+        socket.on('disconnect', function () {
+            output('<span class="disconnect-msg">连接已经关闭!</span>');
+        });
+
+        function sendDisconnect() {
+            socket.disconnect();
+        }
+
+        function sendMessage() {
+            var name = $('#msg').val();
+
+            //jsonrpc 规范调用
+            var message = "{\"jsonrpc\":\"2.0\", \"id\":\"10\", \"method\":\"sayHello\", \"params\":[\"" + name + "\"]}";
+
+            socket.send(message);
+        }
+
+        function output(message) {
+            var currentTime = "<span class='time'>" + moment().format('HH:mm:ss.SSS') + "</span>";
+            var element = $("<div>" + currentTime + " " + message + "</div>");
+            $('#console').prepend(element);
+        }
+
+        $(document).keydown(function (e) {
+            if (e.keyCode == 13) {
+                $('#send').click();
+            }
+        });
+    </script>
+</head>
+
+<body>
+
+<h1>Dubbo websocket 测试</h1>
+
+<br/>
+
+<div id="console" class="well">
+</div>
+
+<form class="well form-inline" onsubmit="return false;">
+    <input id="msg" class="input-xlarge" type="text" placeholder="Type something..."/>
+    <button type="button" onClick="sendMessage()" class="btn" id="send">Send</button>
+    <button type="button" onClick="sendDisconnect()" class="btn">Disconnect</button>
+</form>
+
+
+</body>
+
+</html>

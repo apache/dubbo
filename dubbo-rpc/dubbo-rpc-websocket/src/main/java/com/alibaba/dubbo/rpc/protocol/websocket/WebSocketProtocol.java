@@ -20,8 +20,6 @@ import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import rx.Observable;
 import rx.Subscriber;
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
@@ -52,7 +50,6 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
 
     private final OAuth2Service oAuth2Service = OAuth2Service.getInstance();
 
-    private final Logger logger = LoggerFactory.getLogger(WebSocketProtocol.class);
 
     @Override
     public int getDefaultPort() {
@@ -202,10 +199,20 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
         final int port = url.getPort();
         final int timeout = url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
         final int connections = url.getParameter(Constants.CONNECTIONS_KEY, 20);
-        String host = "http://" + url.getHost();
+        boolean oauth2 = false;
+        String host = "http://" + url.getHost() + ":" + port + "/" + url.getServiceInterface();
+        if (url.getUsername() != null && url.getPassword() != null) {
+            host = host + "?username=" + url.getUsername() + "&password=" + url.getPassword();
+        } else if (url.getParameter("token") != null && !url.getParameter("reference.filter").contains("oAuth2Filter")) {
+            host = host + "?token=" + url.getParameter("token");
+        } else if (url.getParameter("reference.filter","").contains("oAuth2Filter")) {
+            oauth2 = true;
+        }
+
         final String addr = url.getHost() + ":" + url.getPort();
         if (poolMap.get(addr) == null) {
-            final WebSocketClientPooledObjectFactory factory = new WebSocketClientPooledObjectFactory(host, url.getServiceInterface(), port, timeout);
+
+            final WebSocketClientPooledObjectFactory factory = new WebSocketClientPooledObjectFactory(host, timeout, oauth2);
             GenericObjectPoolConfig config = new GenericObjectPoolConfig();
             config.setMaxTotal(connections);
             config.setMaxIdle(5);
@@ -267,7 +274,9 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
                             try {
                                 List result = (List) jsonRpcClient.getResult();
                                 subscriber.onStart();
-                                subscriber.onNext(result.get(0));
+                                for(Object obj:result){
+                                    subscriber.onNext(obj);
+                                }
                                 subscriber.onCompleted();
                             } catch (Exception e) {
                                 subscriber.onError(e);
