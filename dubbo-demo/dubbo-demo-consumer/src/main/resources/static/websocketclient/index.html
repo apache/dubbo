@@ -42,6 +42,16 @@
 
     <script>
 
+        //通知框，与websocket 无关 请忽略
+        window.addEventListener("load", function () {
+            if (Notification && Notification.permission !== "granted") {
+                Notification.requestPermission(function (status) {
+                    if (Notification.permission !== status) {
+                        Notification.permission = status;
+                    }
+                });
+            }
+        });
 
         var socket = io.connect('http://localhost:8086/com.alibaba.dubbo.demo.WebSocketService');
 
@@ -50,17 +60,40 @@
         });
 
         socket.on("message", function (message) {
+            var msgObj = JSON.parse(message)
+            output(msgObj.result)
 
-            output(JSON.parse(message).result)
-            console.log(message)
+            //通知框，与websocket 无关 请忽略
+            var t = new Date().toLocaleString();
+            var options = {
+                dir: "ltr",
+                lang: "utf-8",
+                icon: "haimian.jpg",
+                body: msgObj.result,
+            };
+            if (Notification && Notification.permission === "granted") {
+                var n = new Notification("WebSocket: " + t, options);
+                n.onshow = function () {
+                    console.log("You got me!");
+                };
+                n.onclick = function () {
+                    alert("You clicked me!");
+                    window.location = "/";
+                };
+                n.onclose = function () {
+                    console.log("notification closed!");
+                };
+                n.onerror = function () {
+                    console.log("An error accured");
+                }
+            }
         });
 
         socket.on("error", function (message) {
             output('<span class="disconnect-msg">' + message + '</span>');
+        });
 
-        })
-
-        socket.on("auth",function (message) {
+        socket.on("auth", function (message) {
             output(message)
         })
 
@@ -92,6 +125,8 @@
                 $('#send').click();
             }
         });
+
+
     </script>
 </head>
 

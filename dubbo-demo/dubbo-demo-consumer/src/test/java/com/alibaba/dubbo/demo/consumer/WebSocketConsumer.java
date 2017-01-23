@@ -20,8 +20,8 @@ public class WebSocketConsumer {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("classpath:META-INF/spring/dubbo-demo-consumer.xml");
         WebSocketService webSocketService = ctx.getBean(WebSocketService.class);
         for (int i = 0; i < 100; i++) {
-            String wuyu = webSocketService.sayHello("wuyu");
-            System.err.println(i + ":" + wuyu);
+            String wuyu = webSocketService.sayHello(i+":wuyu");
+            System.err.println(wuyu);
         }
 
 //        User user = webSocketService.getById("1");

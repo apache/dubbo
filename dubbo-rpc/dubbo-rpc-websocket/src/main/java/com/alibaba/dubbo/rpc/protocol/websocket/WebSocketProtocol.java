@@ -220,8 +220,6 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
             config.setTestOnReturn(true);
             config.setMaxWaitMillis(timeout);
             config.setTestWhileIdle(true);
-            config.setMinEvictableIdleTimeMillis(30000);
-            config.setTimeBetweenEvictionRunsMillis(60000);
             GenericObjectPool<Socket> pool = new GenericObjectPool<>(factory, config);
             poolMap.put(addr, pool);
         }

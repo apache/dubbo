@@ -12,7 +12,11 @@ import com.googlecode.jsonrpc4j.*;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,7 +27,7 @@ public class WebSocketJsonRpcClient extends JsonRpcClient {
 
     private static final Logger LOGGER = Logger.getLogger(JsonRpcClient.class.getName());
 
-    private CountDownLatch countDownLatch = new CountDownLatch(1);
+    private Semaphore semaphore = new Semaphore(1);
 
     private Object result;
 
@@ -36,6 +40,50 @@ public class WebSocketJsonRpcClient extends JsonRpcClient {
     private RequestListener requestListener;
 
     private ExceptionResolver exceptionResolver = DefaultExceptionResolver.INSTANCE;
+
+    public Object getResult() {
+
+        try {
+            semaphore.tryAcquire(timeout, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            setException(e);
+        }
+
+        if (getException() != null) {
+            throw new RpcException(getException());
+        }
+        return result;
+    }
+
+    public Throwable getException() {
+        return exception;
+    }
+
+    public void setException(Throwable exception) {
+        this.exception = exception;
+        release();
+    }
+
+
+    public WebSocketJsonRpcClient(int timeout, ObjectMapper objectMapper) {
+        super(objectMapper);
+        this.mapper = objectMapper;
+        this.timeout = timeout;
+        try {
+            semaphore.acquire();
+        } catch (InterruptedException e) {
+            throw new RpcException(e);
+        }
+    }
+
+    public void setResult(Object result) {
+        this.result = result;
+        release();
+    }
+
+    private void release() {
+        semaphore.release();
+    }
 
 
     @Override
@@ -108,46 +156,4 @@ public class WebSocketJsonRpcClient extends JsonRpcClient {
         // no return type
         return super.readResponse(returnType, ips, id);
     }
-
-    public Object getResult() {
-
-        try {
-            countDownLatch.await(timeout, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            setException(e);
-        }
-
-        if (getException() != null) {
-            throw new RpcException(getException());
-        }
-        return result;
-    }
-
-    public Throwable getException() {
-        return exception;
-    }
-
-    public void setException(Throwable exception) {
-        this.exception = exception;
-        release();
-    }
-
-
-    public WebSocketJsonRpcClient(int timeout, ObjectMapper objectMapper) {
-        super(objectMapper);
-        this.mapper = objectMapper;
-        this.timeout = timeout;
-    }
-
-    public void setResult(Object result) {
-        this.result = result;
-        release();
-    }
-
-    private void release() {
-        if (countDownLatch.getCount() != 0) {
-            countDownLatch.countDown();
-        }
-    }
-
 }
