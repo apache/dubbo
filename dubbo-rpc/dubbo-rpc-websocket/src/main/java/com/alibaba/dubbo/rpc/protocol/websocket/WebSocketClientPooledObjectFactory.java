@@ -21,27 +21,29 @@ import java.util.Map;
  */
 public class WebSocketClientPooledObjectFactory extends BasePooledObjectFactory<Socket> {
 
-    private IO.Options options = new IO.Options();
-
     private String host;
 
     private String namespace;
+
+    private int timeout;
 
     private boolean oAuth2;
 
     private OAuth2Service oAuth2Service = OAuth2Service.getInstance();
 
     public WebSocketClientPooledObjectFactory(String host, int timeout, boolean oAuth2) {
-        options.transports = new String[]{"websocket"};
-        options.reconnection = false;
-        options.timeout = timeout;
         this.host = host;
         this.oAuth2 = oAuth2;
+        this.timeout = timeout;
     }
 
 
     @Override
-    public Socket create() throws Exception {
+    public synchronized Socket create() throws Exception {
+        IO.Options options = new IO.Options();
+        options.transports = new String[]{"websocket"};
+        options.reconnection = false;
+        options.timeout = this.timeout;
         Socket socket = IO.socket(this.host, options);
         // Called upon transport creation.
         socket.io().on(Manager.EVENT_TRANSPORT, new Emitter.Listener() {

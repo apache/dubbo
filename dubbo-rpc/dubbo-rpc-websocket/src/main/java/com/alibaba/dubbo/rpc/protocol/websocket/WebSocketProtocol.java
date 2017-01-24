@@ -12,30 +12,24 @@ import com.corundumstudio.socketio.*;
 import com.corundumstudio.socketio.listener.ConnectListener;
 import com.corundumstudio.socketio.listener.DataListener;
 import com.corundumstudio.socketio.store.StoreFactory;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.socket.client.Socket;
-import io.socket.emitter.Emitter;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import rx.Observable;
 import rx.Subscriber;
-import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.lang.reflect.Type;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.*;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by wuyu on 2017/1/19.
@@ -46,7 +40,7 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
 
     private final Map<String, WebSocketJsonRpcServer> serviceMap = new ConcurrentHashMap<>();
 
-    private final Map<String, GenericObjectPool<Socket>> poolMap = new ConcurrentHashMap<>();
+    private static final Map<String, GenericObjectPool<Socket>> poolMap = new ConcurrentHashMap<>();
 
     private final OAuth2Service oAuth2Service = OAuth2Service.getInstance();
 
@@ -177,7 +171,7 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
                     jsonRpcMultiServer.handle(in, out);
 
                     byte[] bytes = out.toByteArray();
-                    client.sendEvent(Socket.EVENT_MESSAGE, new String(bytes, 0, bytes.length));
+                    client.sendEvent(Socket.EVENT_MESSAGE, new String(bytes, 0, bytes.length, "utf-8"));
                 } finally {
                     in.close();
                     out.close();
@@ -205,7 +199,7 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
             host = host + "?username=" + url.getUsername() + "&password=" + url.getPassword();
         } else if (url.getParameter("token") != null && !url.getParameter("reference.filter").contains("oAuth2Filter")) {
             host = host + "?token=" + url.getParameter("token");
-        } else if (url.getParameter("reference.filter","").contains("oAuth2Filter")) {
+        } else if (url.getParameter("reference.filter", "").contains("oAuth2Filter")) {
             oauth2 = true;
         }
 
@@ -227,91 +221,29 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
 
             @Override
             public Object invoke(Object proxy, final Method method, final Object[] args) throws Throwable {
-                final Socket socket = poolMap.get(addr).borrowObject();
-                final WebSocketJsonRpcClient jsonRpcClient = new WebSocketJsonRpcClient(timeout, new ObjectMapper());
-                final Type returnType = method.getGenericReturnType();
-                final Class returnClazz = method.getReturnType();
-                final ObjectNode request = jsonRpcClient.createRequest(method.getName(), args);
-                socket.once(Socket.EVENT_MESSAGE, new Emitter.Listener() {
-                    @Override
-                    public void call(Object... args) {
-                        Object result = null;
-                        try {
-                            if (Future.class.isAssignableFrom(returnClazz)) {
-                                Type genericType = ((ParameterizedTypeImpl) returnType).getActualTypeArguments()[0];
-                                result = jsonRpcClient.readResponse(genericType, new ByteArrayInputStream(args[0].toString().getBytes("utf-8")));
-                            } else if (Observable.class.isAssignableFrom(returnClazz)) {
-                                Type genericType = ((ParameterizedTypeImpl) returnType).getActualTypeArguments()[0];
-                                List<Object> list = new ArrayList<>();
-                                JsonNode jsonnode = jsonRpcClient.getObjectMapper().readValue(args[0].toString(), JsonNode.class);
-                                JsonNode resultNode = jsonnode.get("result");
-                                if (resultNode.isArray()) {
-                                    for (int i = 0; i < resultNode.size(); i++) {
-                                        Object ele = jsonRpcClient.getObjectMapper().readValue(resultNode.get(i).toString(), (Class) genericType);
-                                        list.add(ele);
-                                    }
-                                    result = list;
-                                }
-                            } else {
-                                result = jsonRpcClient.readResponse(returnType, new ByteArrayInputStream(args[0].toString().getBytes("utf-8")));
-                            }
-                            jsonRpcClient.setResult(result);
-                        } catch (Throwable throwable) {
-                            jsonRpcClient.setException(throwable);
-                        } finally {
-                            poolMap.get(addr).returnObject(socket);
-                        }
-                    }
-                });
-
-                socket.send(request.toString());
+                final WebSocketJsonRpcClient jsonRpcClient = new WebSocketJsonRpcClient(poolMap.get(addr), method, args,timeout);
+                Class returnClazz = method.getReturnType();
+                jsonRpcClient.call();
                 if (Observable.class.isAssignableFrom(returnClazz)) {
                     return Observable.create(new Observable.OnSubscribe<Object>() {
                         @Override
                         public void call(Subscriber<? super Object> subscriber) {
                             try {
-                                List result = (List) jsonRpcClient.getResult();
+                                List result = (List) jsonRpcClient.get(timeout, TimeUnit.MILLISECONDS);
                                 subscriber.onStart();
-                                for(Object obj:result){
+                                for (Object obj : result) {
                                     subscriber.onNext(obj);
                                 }
                                 subscriber.onCompleted();
-                            } catch (Exception e) {
+                            } catch (Throwable e) {
                                 subscriber.onError(e);
                             }
                         }
                     });
                 } else if (Future.class.isAssignableFrom(returnClazz)) {
-                    return new Future<Object>() {
-                        @Override
-                        public boolean cancel(boolean mayInterruptIfRunning) {
-                            return false;
-                        }
-
-                        @Override
-                        public boolean isCancelled() {
-                            return false;
-                        }
-
-                        @Override
-                        public boolean isDone() {
-                            return true;
-                        }
-
-                        @Override
-                        public Object get() throws InterruptedException, ExecutionException {
-                            return jsonRpcClient.getResult();
-                        }
-
-                        @Override
-                        public Object get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                            return get();
-                        }
-                    };
+                    return jsonRpcClient;
                 }
-
-
-                return jsonRpcClient.getResult();
+                return jsonRpcClient.get(timeout, TimeUnit.MILLISECONDS);
             }
         });
     }
@@ -350,4 +282,9 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
         }
         return socketIONamespaces;
     }
+
+    public static Map<String, GenericObjectPool<Socket>> getClientPool() {
+        return Collections.unmodifiableMap(poolMap);
+    }
+
 }

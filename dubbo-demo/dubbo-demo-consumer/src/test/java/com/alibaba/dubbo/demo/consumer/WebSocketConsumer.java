@@ -9,6 +9,8 @@ import rx.Subscriber;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 /**
@@ -18,20 +20,19 @@ public class WebSocketConsumer {
 
     public static void main(String[] args) throws ExecutionException, InterruptedException {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("classpath:META-INF/spring/dubbo-demo-consumer.xml");
-        WebSocketService webSocketService = ctx.getBean(WebSocketService.class);
-        for (int i = 0; i < 100; i++) {
-            String wuyu = webSocketService.sayHello(i+":wuyu");
-            System.err.println(wuyu);
-        }
+        final WebSocketService webSocketService = ctx.getBean(WebSocketService.class);
+        ExecutorService executorService = Executors.newFixedThreadPool(4);
+        String wuyu = webSocketService.sayHello( "wuyu");
+        System.err.println(wuyu);
 
-//        User user = webSocketService.getById("1");
-//        System.err.println(user.toString());
-//
-//        List<User> users = webSocketService.listUser();
-//        System.err.println(users.toString());
+        User user = webSocketService.getById("1");
+        System.err.println(user.toString());
+
+        List<User> users = webSocketService.listUser();
+        System.err.println(users.toString());
 
         Future<String> future = webSocketService.asyncSayHello("wuyu");
-        System.err.println("future:" + future.get());
+//        System.err.println("future:" + future.get());
 
 
         Observable<String> rxSayHello = webSocketService.rxSayHello("wuyu");
