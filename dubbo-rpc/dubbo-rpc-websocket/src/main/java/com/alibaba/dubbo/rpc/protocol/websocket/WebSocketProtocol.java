@@ -221,16 +221,17 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
 
             @Override
             public Object invoke(Object proxy, final Method method, final Object[] args) throws Throwable {
-                final WebSocketJsonRpcClient jsonRpcClient = new WebSocketJsonRpcClient(poolMap.get(addr), method, args,timeout);
+                final WebSocketJsonRpcClient jsonRpcClient = new WebSocketJsonRpcClient(poolMap.get(addr), method, args, timeout);
                 Class returnClazz = method.getReturnType();
                 jsonRpcClient.call();
-                if (Observable.class.isAssignableFrom(returnClazz)) {
+                if (Future.class.isAssignableFrom(returnClazz)) {
+                    return jsonRpcClient;
+                } else if (Observable.class.isAssignableFrom(returnClazz)) {
                     return Observable.create(new Observable.OnSubscribe<Object>() {
                         @Override
                         public void call(Subscriber<? super Object> subscriber) {
                             try {
-                                List result = (List) jsonRpcClient.get(timeout, TimeUnit.MILLISECONDS);
-                                subscriber.onStart();
+                                List result = (List) jsonRpcClient.get();
                                 for (Object obj : result) {
                                     subscriber.onNext(obj);
                                 }
@@ -240,8 +241,6 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
                             }
                         }
                     });
-                } else if (Future.class.isAssignableFrom(returnClazz)) {
-                    return jsonRpcClient;
                 }
                 return jsonRpcClient.get(timeout, TimeUnit.MILLISECONDS);
             }

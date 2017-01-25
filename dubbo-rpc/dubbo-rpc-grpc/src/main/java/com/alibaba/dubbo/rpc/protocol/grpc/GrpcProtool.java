@@ -131,8 +131,6 @@ public class GrpcProtool extends AbstractProxyProtocol {
             config.setTestOnReturn(true);
             config.setMaxWaitMillis(timeout);
             config.setTestWhileIdle(true);
-            config.setMinEvictableIdleTimeMillis(300000);
-            config.setTimeBetweenEvictionRunsMillis(60000);
             pool = new GenericObjectPool<>(factory, config);
 
             poolMap.put(host + ":" + port, pool);
@@ -154,7 +152,6 @@ public class GrpcProtool extends AbstractProxyProtocol {
         for (GenericObjectPool pool : poolMap.values()) {
             try {
                 pool.clear();
-                ;
                 pool.close();
             } catch (Exception e) {
 

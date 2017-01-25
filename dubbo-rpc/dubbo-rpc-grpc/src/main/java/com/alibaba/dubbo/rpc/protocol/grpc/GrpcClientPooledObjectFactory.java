@@ -37,7 +37,7 @@ public class GrpcClientPooledObjectFactory extends BasePooledObjectFactory<Objec
 
 
     @Override
-    public Object create() throws Exception {
+    public synchronized Object create() throws Exception {
         Constructor<?> stubConstructor = clazz.getDeclaredConstructor(Channel.class);
         stubConstructor.setAccessible(true);
         ManagedChannelImpl build = NettyChannelBuilder.forAddress(host, port)
@@ -75,11 +75,11 @@ public class GrpcClientPooledObjectFactory extends BasePooledObjectFactory<Objec
                 channelField = p.getClass().getDeclaredField("channel");
                 channelField.setAccessible(true);
             }
-            channelField.setAccessible(true);
             ManagedChannel managedChannel = (ManagedChannel) channelField.get(p.getObject());
             managedChannel.shutdown();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
 }

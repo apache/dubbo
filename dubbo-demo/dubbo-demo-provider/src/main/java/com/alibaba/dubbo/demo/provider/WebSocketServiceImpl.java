@@ -4,6 +4,7 @@ import com.alibaba.dubbo.demo.User;
 import com.alibaba.dubbo.demo.WebSocketService;
 import rx.Observable;
 import rx.Observer;
+import rx.Subscriber;
 
 import java.util.Arrays;
 import java.util.List;
@@ -63,6 +64,6 @@ public class WebSocketServiceImpl implements WebSocketService {
 
     @Override
     public Observable<String> rxSayHello(String name) {
-        return Observable.just("Hello " + name);
+        return Observable.just("Hello1 "+name,"Hello2 "+name);
     }
 }

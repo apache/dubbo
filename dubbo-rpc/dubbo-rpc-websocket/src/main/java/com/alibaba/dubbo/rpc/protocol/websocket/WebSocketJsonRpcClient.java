@@ -84,6 +84,7 @@ public class WebSocketJsonRpcClient extends JsonRpcClient implements Future {
                             }
                             result = list;
                         }
+
                     } else {
                         result = readResponse(returnType, new ByteArrayInputStream(args[0].toString().getBytes("utf-8")));
                     }
@@ -116,10 +117,7 @@ public class WebSocketJsonRpcClient extends JsonRpcClient implements Future {
 
     @Override
     public synchronized Object get() throws InterruptedException, ExecutionException {
-        while (!done) {
-            this.wait(timeout);
-        }
-
+        this.wait(timeout);
         if (exception != null) {
             throw exception;
         }
@@ -128,9 +126,7 @@ public class WebSocketJsonRpcClient extends JsonRpcClient implements Future {
 
     @Override
     public synchronized Object get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        while (!done) {
-            this.wait(timeout);
-        }
+        this.wait(timeout);
         if (exception != null) {
             throw exception;
         }

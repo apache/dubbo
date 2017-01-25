@@ -19,6 +19,10 @@ import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -62,13 +66,10 @@ public class WebSocketJsonRpcServer extends JsonRpcBasicServer {
 
         if (Observable.class.isAssignableFrom(genericReturnClazz)) {
             final List<Object> list = new ArrayList<>();
-            final Semaphore semaphore = new Semaphore(1);
-
             Observable rxResult = (Observable) result;
             rxResult.subscribe(new Subscriber() {
                 @Override
                 public void onCompleted() {
-                    semaphore.release();
                 }
 
                 @Override
@@ -81,11 +82,6 @@ public class WebSocketJsonRpcServer extends JsonRpcBasicServer {
                     list.add(o);
                 }
             });
-            try {
-                semaphore.tryAcquire(timeout, TimeUnit.MILLISECONDS);
-            } catch (InterruptedException e) {
-                throw new RpcException(e);
-            }
             return mapper.valueToTree(list);
         } else if (Future.class.isAssignableFrom(genericReturnClazz)) {
             Future future = (Future) result;

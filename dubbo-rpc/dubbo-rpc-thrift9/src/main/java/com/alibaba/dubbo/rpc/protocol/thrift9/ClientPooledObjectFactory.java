@@ -36,7 +36,7 @@ public class ClientPooledObjectFactory extends BasePooledObjectFactory<TServiceC
     }
 
     @Override
-    public TServiceClient create() throws Exception {
+    public synchronized TServiceClient create() throws Exception {
         // 使用高密度二进制协议
         TFramedTransport tFramedTransport = new TFramedTransport(new TSocket(host, port, timeout, timeout));
         TProtocol protocol = new TCompactProtocol(tFramedTransport);

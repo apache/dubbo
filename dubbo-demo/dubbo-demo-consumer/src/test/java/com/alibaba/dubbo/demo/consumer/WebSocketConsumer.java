@@ -2,15 +2,12 @@ package com.alibaba.dubbo.demo.consumer;
 
 import com.alibaba.dubbo.demo.User;
 import com.alibaba.dubbo.demo.WebSocketService;
-import com.alibaba.dubbo.rpc.RpcException;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import rx.Observable;
 import rx.Subscriber;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 /**
@@ -21,9 +18,6 @@ public class WebSocketConsumer {
     public static void main(String[] args) throws ExecutionException, InterruptedException {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("classpath:META-INF/spring/dubbo-demo-consumer.xml");
         final WebSocketService webSocketService = ctx.getBean(WebSocketService.class);
-        ExecutorService executorService = Executors.newFixedThreadPool(4);
-        String wuyu = webSocketService.sayHello( "wuyu");
-        System.err.println(wuyu);
 
         User user = webSocketService.getById("1");
         System.err.println(user.toString());
@@ -32,8 +26,7 @@ public class WebSocketConsumer {
         System.err.println(users.toString());
 
         Future<String> future = webSocketService.asyncSayHello("wuyu");
-//        System.err.println("future:" + future.get());
-
+        System.err.println(future.get());
 
         Observable<String> rxSayHello = webSocketService.rxSayHello("wuyu");
         rxSayHello.subscribe(new Subscriber<String>() {
@@ -45,7 +38,7 @@ public class WebSocketConsumer {
 
             @Override
             public void onError(Throwable e) {
-                throw new RpcException(e);
+                System.err.println(e.getMessage());
             }
 
             @Override
@@ -53,7 +46,5 @@ public class WebSocketConsumer {
                 System.err.println("rxSayHello :" + s);
             }
         });
-
-
     }
 }
