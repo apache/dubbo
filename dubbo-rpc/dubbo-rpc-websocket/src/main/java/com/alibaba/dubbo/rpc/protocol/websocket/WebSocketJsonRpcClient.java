@@ -13,6 +13,7 @@ import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -117,7 +118,13 @@ public class WebSocketJsonRpcClient extends JsonRpcClient implements Future {
 
     @Override
     public synchronized Object get() throws InterruptedException, ExecutionException {
-        this.wait(timeout);
+        if (done) {
+            return result;
+        }
+        this.wait();
+        if (!done) {
+            onError(new RuntimeException("Waiting server-side response timeout"));
+        }
         if (exception != null) {
             throw exception;
         }
@@ -126,7 +133,13 @@ public class WebSocketJsonRpcClient extends JsonRpcClient implements Future {
 
     @Override
     public synchronized Object get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+        if (done) {
+            return result;
+        }
         this.wait(timeout);
+        if (!done) {
+            onError(new RuntimeException("Waiting server-side response timeout"));
+        }
         if (exception != null) {
             throw exception;
         }

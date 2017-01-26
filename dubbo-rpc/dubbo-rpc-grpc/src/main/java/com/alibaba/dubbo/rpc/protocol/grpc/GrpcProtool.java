@@ -2,10 +2,8 @@ package com.alibaba.dubbo.rpc.protocol.grpc;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.config.ProtocolConfig;
 import com.alibaba.dubbo.config.spring.ServiceBean;
-import com.alibaba.dubbo.rpc.ProxyFactory;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.protocol.AbstractProxyProtocol;
 import io.grpc.BindableService;
@@ -112,7 +110,7 @@ public class GrpcProtool extends AbstractProxyProtocol {
     protected <T> T doRefer(final Class<T> type, final URL url) throws RpcException {
         String host = url.getHost();
         int port = url.getPort();
-        int timeout = url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+        final int timeout = url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
         int threads = url.getParameter(Constants.THREADS_KEY, Constants.DEFAULT_THREADS);
 
 
@@ -121,13 +119,12 @@ public class GrpcProtool extends AbstractProxyProtocol {
         final JdkProxySource clientProxy;
         try {
 
-            clientProxy = new JdkProxySource(GrpcProtool.class.getClassLoader(), new Class[]{type});
             Class<?> blockingStub = Class.forName(name + "$" + type.getSimpleName() + "Stub");
             GrpcClientPooledObjectFactory factory = new GrpcClientPooledObjectFactory(url.getHost(), url.getPort(), timeout, blockingStub);
             GenericObjectPoolConfig config = new GenericObjectPoolConfig();
             config.setMaxTotal(threads);
             config.setMaxIdle(3);
-            config.setBlockWhenExhausted(false);
+            config.setBlockWhenExhausted(true);
             config.setTestOnReturn(true);
             config.setMaxWaitMillis(timeout);
             config.setTestWhileIdle(true);
@@ -141,7 +138,12 @@ public class GrpcProtool extends AbstractProxyProtocol {
         return (T) Proxy.newProxyInstance(GrpcProtool.class.getClassLoader(), new Class<?>[]{type}, new InvocationHandler() {
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                return method.invoke(clientProxy.createProxy(pool.borrowObject(), pool), args);
+                Object obj = pool.borrowObject(timeout);
+                try {
+                    return method.invoke(obj, args);
+                } finally {
+                    pool.returnObject(obj);
+                }
             }
         });
 

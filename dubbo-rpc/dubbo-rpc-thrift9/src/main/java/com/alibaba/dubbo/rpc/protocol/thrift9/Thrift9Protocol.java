@@ -132,14 +132,13 @@ public class Thrift9Protocol extends AbstractProxyProtocol {
     @Override
     protected <T> T doRefer(Class<T> type, URL url) throws RpcException {
         final String addr = url.getIp() + ":" + url.getPort();
-        int timeout = url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+        final int timeout = url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
         int threads = url.getParameter(Constants.THREADS_KEY, Constants.DEFAULT_THREADS);
-        final JdkProxySource clientProxy = new JdkProxySource(Thrift9Protocol.class.getClassLoader(), new Class[]{type});
         ClientPooledObjectFactory factory = new ClientPooledObjectFactory(url.getHost(), url.getPort(), timeout, type.getName());
         final GenericObjectPoolConfig config = new GenericObjectPoolConfig();
         config.setMaxTotal(threads);
-        config.setMaxIdle(3);
-        config.setBlockWhenExhausted(false);
+        config.setMaxIdle(5);
+        config.setBlockWhenExhausted(true);
         config.setTestOnReturn(true);
         config.setMaxWaitMillis(timeout);
         config.setTestWhileIdle(true);
@@ -148,17 +147,18 @@ public class Thrift9Protocol extends AbstractProxyProtocol {
         final GenericObjectPool<TServiceClient> pool = new GenericObjectPool<TServiceClient>(factory, config);
         poolMap.put(addr, pool);
 
-        try {
-            return (T) Proxy.newProxyInstance(Thrift9Protocol.class.getClassLoader(), new Class[]{type}, new InvocationHandler() {
-                @Override
-                public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                    Object obj = clientProxy.createProxy(pool.borrowObject(),pool);
-                    return method.invoke(obj,args);
+        return (T) Proxy.newProxyInstance(Thrift9Protocol.class.getClassLoader(), new Class[]{type}, new InvocationHandler() {
+            @Override
+            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                TServiceClient obj = pool.borrowObject(timeout);
+                try {
+                    return method.invoke(obj, args);
+                } finally {
+                    pool.returnObject(obj);
                 }
-            });
-        } catch (Exception e) {
-            throw new RpcException(e);
-        }
+            }
+
+        });
 
     }
 

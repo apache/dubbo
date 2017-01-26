@@ -56,7 +56,7 @@ public class GrpcClientPooledObjectFactory extends BasePooledObjectFactory<Objec
     public boolean validateObject(PooledObject<Object> p) {
         try {
             if (channelField == null) {
-                channelField = p.getClass().getDeclaredField("channel");
+                channelField = p.getObject().getClass().getSuperclass().getDeclaredField("channel");
                 channelField.setAccessible(true);
 
             }
@@ -72,7 +72,7 @@ public class GrpcClientPooledObjectFactory extends BasePooledObjectFactory<Objec
     public void destroyObject(PooledObject<Object> p) throws Exception {
         try {
             if (channelField == null) {
-                channelField = p.getClass().getDeclaredField("channel");
+                channelField = p.getObject().getClass().getSuperclass().getDeclaredField("channel");
                 channelField.setAccessible(true);
             }
             ManagedChannel managedChannel = (ManagedChannel) channelField.get(p.getObject());

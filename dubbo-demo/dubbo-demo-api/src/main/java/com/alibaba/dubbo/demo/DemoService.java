@@ -15,8 +15,14 @@
  */
 package com.alibaba.dubbo.demo;
 
+import java.util.List;
+
 public interface DemoService {
 
 	String sayHello(String name);
+
+	User insert(User user);
+
+	List<User> batchInsert(List<User> users);
 
 }

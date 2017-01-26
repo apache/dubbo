@@ -11,6 +11,6 @@ public class SpringMvcConsumer {
 
         ClassPathXmlApplicationContext ctx=new ClassPathXmlApplicationContext("classpath:META-INF/spring/dubbo-demo-consumer.xml");
         UserService userService = ctx.getBean(UserService.class);
-        System.err.println(userService.id("hello"));
+        System.err.println(userService.sayHello("hello"));
     }
 }

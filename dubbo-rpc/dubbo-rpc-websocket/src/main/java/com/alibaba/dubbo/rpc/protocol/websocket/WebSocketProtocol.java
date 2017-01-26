@@ -210,7 +210,7 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
             GenericObjectPoolConfig config = new GenericObjectPoolConfig();
             config.setMaxTotal(connections);
             config.setMaxIdle(5);
-            config.setBlockWhenExhausted(false);
+            config.setBlockWhenExhausted(true);
             config.setTestOnReturn(true);
             config.setMaxWaitMillis(timeout);
             config.setTestWhileIdle(true);

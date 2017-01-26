@@ -28,14 +28,14 @@ public class GenericServiceConfig implements Serializable {
     private String[] argsType;
 
     //参数
-    private Object[] args;
+    private String[] args;
 
-    public Object[] getArgs() {
-        return args;
+    public void setArgs(String[] args) {
+        this.args = args;
     }
 
-    public void setArgs(Object[] args) {
-        this.args = args;
+    public String[] getArgs() {
+        return args;
     }
 
     public String[] getArgsType() {

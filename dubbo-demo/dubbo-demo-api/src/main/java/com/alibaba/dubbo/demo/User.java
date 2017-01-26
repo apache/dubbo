@@ -1,9 +1,11 @@
 package com.alibaba.dubbo.demo;
 
+import java.io.Serializable;
+
 /**
  * Created by wuyu on 2017/1/20.
  */
-public class User {
+public class User implements Serializable{
 
     private String id;
 

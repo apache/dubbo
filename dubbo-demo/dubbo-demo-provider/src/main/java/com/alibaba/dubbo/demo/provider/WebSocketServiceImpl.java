@@ -24,12 +24,17 @@ public class WebSocketServiceImpl implements WebSocketService {
 
     @Override
     public User getById(String id) {
-        return new User("1","wuyu");
+        return new User("1", "wuyu");
     }
 
     @Override
     public List<User> listUser() {
-        return Arrays.asList(new User("1","wuyu"),new User("2","zhangsan"));
+        return Arrays.asList(new User("1", "wuyu"), new User("2", "zhangsan"));
+    }
+
+    @Override
+    public User insert(User user) {
+        return user;
     }
 
     @Override
@@ -64,6 +69,6 @@ public class WebSocketServiceImpl implements WebSocketService {
 
     @Override
     public Observable<String> rxSayHello(String name) {
-        return Observable.just("Hello1 "+name,"Hello2 "+name);
+        return Observable.just("Hello1 " + name, "Hello2 " + name);
     }
 }

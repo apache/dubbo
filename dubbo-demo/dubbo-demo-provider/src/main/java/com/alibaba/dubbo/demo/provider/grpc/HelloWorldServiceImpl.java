@@ -12,7 +12,7 @@ public class HelloWorldServiceImpl extends GreeterGrpc.AbstractGreeter {
     @Override
     public void sayHello(HelloRequest request, StreamObserver<HelloReply> responseObserver) {
         String name = request.getName();
-        System.err.println(name);
         responseObserver.onNext(HelloReply.newBuilder().setMessage("Hello " + name).build());
+        responseObserver.onCompleted();
     }
 }

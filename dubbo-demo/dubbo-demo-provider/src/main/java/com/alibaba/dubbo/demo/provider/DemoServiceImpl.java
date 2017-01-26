@@ -17,8 +17,10 @@ package com.alibaba.dubbo.demo.provider;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 import com.alibaba.dubbo.demo.DemoService;
+import com.alibaba.dubbo.demo.User;
 import com.alibaba.dubbo.rpc.RpcContext;
 
 public class DemoServiceImpl implements DemoService {
@@ -27,5 +29,15 @@ public class DemoServiceImpl implements DemoService {
         System.out.println("[" + new SimpleDateFormat("HH:mm:ss").format(new Date()) + "] Hello " + name + ", request from consumer: " + RpcContext.getContext().getRemoteAddress());
         return "Hello " + name + ", response form provider: " + RpcContext.getContext().getLocalAddress();
     }
-    
+
+    @Override
+    public User insert(User user) {
+        return user;
+    }
+
+    @Override
+    public List<User> batchInsert(List<User> users) {
+        return users;
+    }
+
 }

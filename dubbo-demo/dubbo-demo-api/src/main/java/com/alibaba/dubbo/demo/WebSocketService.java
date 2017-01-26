@@ -17,6 +17,8 @@ public interface WebSocketService {
 
     public List<User> listUser();
 
+    public User insert(User user);
+
     public Future<String> asyncSayHello(String name);
 
     public Observable<String> rxSayHello(String name);
