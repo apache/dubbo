@@ -137,13 +137,11 @@ public class Thrift9Protocol extends AbstractProxyProtocol {
         ClientPooledObjectFactory factory = new ClientPooledObjectFactory(url.getHost(), url.getPort(), timeout, type.getName());
         final GenericObjectPoolConfig config = new GenericObjectPoolConfig();
         config.setMaxTotal(threads);
-        config.setMaxIdle(5);
+        config.setMaxIdle(threads);
         config.setBlockWhenExhausted(true);
         config.setTestOnReturn(true);
         config.setMaxWaitMillis(timeout);
         config.setTestWhileIdle(true);
-        config.setMinEvictableIdleTimeMillis(300000);
-        config.setTimeBetweenEvictionRunsMillis(60000);
         final GenericObjectPool<TServiceClient> pool = new GenericObjectPool<TServiceClient>(factory, config);
         poolMap.put(addr, pool);
 

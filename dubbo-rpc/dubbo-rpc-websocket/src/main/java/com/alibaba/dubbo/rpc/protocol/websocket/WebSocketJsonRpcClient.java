@@ -52,7 +52,7 @@ public class WebSocketJsonRpcClient extends JsonRpcClient implements Future {
     }
 
     public WebSocketJsonRpcClient(GenericObjectPool<Socket> pool, Method method, Object[] args, int timeout) {
-        super(new ObjectMapper());
+        super();
         this.pool = pool;
         this.method = method;
         this.args = args;

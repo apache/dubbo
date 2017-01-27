@@ -17,14 +17,14 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.socket.client.Socket;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.springframework.util.ClassUtils;
 import rx.Observable;
 import rx.Subscriber;
 
+import javax.websocket.server.ServerEndpoint;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+import java.lang.reflect.*;
 import java.net.InetSocketAddress;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -81,83 +81,14 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
             }
 
             serverMap.put(addr, socketIOServer);
-
         }
 
 
-        SocketIONamespace socketIONamespace = socketIOServer.addNamespace("/" + url.getServiceInterface());
+        SocketIONamespace socketIONamespace = socketIOServer.addNamespace(getNamespace(type));
         serviceMap.put(url.getServiceInterface(), new WebSocketJsonRpcServer(new ObjectMapper(), impl, type, timeout));
 
-
-        socketIONamespace.addConnectListener(new ConnectListener() {
-            @Override
-            public void onConnect(SocketIOClient client) {
-                String filter = url.getParameter("service.filter", "");
-                HandshakeData handshakeData = client.getHandshakeData();
-                String error = "{\"status\":\"200\",\"OK\"}";
-
-                try {
-                    //判断是否以用户名密码验证方式
-                    if (url.getUsername() != null && url.getPassword() != null) {
-                        String username = handshakeData.getSingleUrlParam("username");
-                        String password = handshakeData.getSingleUrlParam("password");
-                        //如果验证不通过, 拒绝连接
-                        if (!url.getUsername().equalsIgnoreCase(username) || !url.getPassword().equalsIgnoreCase(password)) {
-                            error = "{\"status\":\"401\",\"error\":\"unauthorized\",\"error_description\":\"username or password e error!\"}";
-                            throw new RpcException(error);
-                        }
-                        RpcContext.getContext().getAttachments().put("principal", username);
-                        //判断是否存在Token，并且未开启oAuth2Filter
-                    } else if (url.getParameter("token") != null && !filter.contains("oAuth2Filter")) {
-                        String token = handshakeData.getSingleUrlParam("token");
-                        if (!url.getParameter("token", "").equalsIgnoreCase(token)) {
-                            error = "{\"status\":\"401\",\"error\":\"unauthorized\",\"error_description\":\"token " + token + " error!\"}";
-                        }
-                        RpcContext.getContext().getAttachments().put("principal", token);
-                    } else if (filter.contains("oAuth2Filter")) {
-
-                        //判断是否开启oauth2 如果开启，将启用OAuth2
-                        String access_token = client.getHandshakeData().getSingleUrlParam("access_token");
-                        if (access_token == null) {
-                            HttpHeaders httpHeaders = client.getHandshakeData().getHttpHeaders();
-                            String authorization = httpHeaders.get("Authorization");
-                            if (authorization != null) {
-                                access_token = authorization.replace("Bearer", "").trim();
-                            }
-                        }
-
-                        if (access_token != null) {
-                            UserDetails userInfo = oAuth2Service.getUserInfo(access_token);
-                            String token = url.getParameter("token", "");
-                            boolean flag = false;
-                            for (String role : token.split(",")) {
-                                if (userInfo.getAuthorities().contains(role.trim())) {
-                                    flag = true;
-                                    break;
-                                }
-                            }
-
-                            if (!flag) {
-                                error = "{\"status\":\"401\",\"error\":\"unauthorized\",\"error_description\":\"" + access_token + "access_token  not has role!\"}";
-                                throw new RpcException(error);
-                            }
-                            RpcContext.getContext().getAttachments().put("principal", userInfo.getPrincipal());
-                            RpcContext.getContext().getAttachments().put("access_token", access_token);
-                        } else {
-                            error = "{\"status\":\"401\",\"error\":\"unauthorized\",\"error_description\":\"access_token  not has role!\"}";
-                            throw new RpcException(error);
-                        }
-                    }
-                } catch (Exception e) {
-                    client.sendEvent("auth", error);
-                    client.disconnect();
-                    logger.warn(error);
-                }
-
-                InetSocketAddress addr = (InetSocketAddress) client.getRemoteAddress();
-                RpcContext.getContext().setRemoteAddress(addr);
-            }
-        });
+        //验证
+        addAuthConnectListener(url, socketIONamespace);
 
 
         socketIONamespace.addEventListener(Socket.EVENT_MESSAGE, String.class, new DataListener<String>() {
@@ -168,8 +99,8 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
                 ByteArrayInputStream in = new ByteArrayInputStream(data.getBytes("utf-8"));
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 try {
+                    setAttachments(client);
                     jsonRpcMultiServer.handle(in, out);
-
                     byte[] bytes = out.toByteArray();
                     client.sendEvent(Socket.EVENT_MESSAGE, new String(bytes, 0, bytes.length, "utf-8"));
                 } finally {
@@ -178,6 +109,13 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
                 }
             }
         });
+
+        try {
+            //如果存在 SocketIo 属性 将自动注入.
+            setSocketIO(type, socketIONamespace);
+        } catch (IllegalAccessException e) {
+            logger.warn("Autowired SocketIONameSpace Error!", e);
+        }
 
 
         return new Runnable() {
@@ -194,7 +132,7 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
         final int timeout = url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
         final int connections = url.getParameter(Constants.CONNECTIONS_KEY, 20);
         boolean oauth2 = false;
-        String host = "http://" + url.getHost() + ":" + port + "/" + url.getServiceInterface();
+        String host = "http://" + url.getHost() + ":" + port + getNamespace(type);
         if (url.getUsername() != null && url.getPassword() != null) {
             host = host + "?username=" + url.getUsername() + "&password=" + url.getPassword();
         } else if (url.getParameter("token") != null && !url.getParameter("reference.filter").contains("oAuth2Filter")) {
@@ -209,7 +147,7 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
             final WebSocketClientPooledObjectFactory factory = new WebSocketClientPooledObjectFactory(host, timeout, oauth2);
             GenericObjectPoolConfig config = new GenericObjectPoolConfig();
             config.setMaxTotal(connections);
-            config.setMaxIdle(5);
+            config.setMaxIdle(connections);
             config.setBlockWhenExhausted(true);
             config.setTestOnReturn(true);
             config.setMaxWaitMillis(timeout);
@@ -269,7 +207,147 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
 
             }
         }
+    }
 
+    private <T> void setSocketIO(Class<T> t, SocketIONamespace socketIONamespace) throws IllegalAccessException {
+        Map<String, ?> beansOfType = ServiceBean.getSpringContext().getBeansOfType(t);
+        if (beansOfType.size() > 0) {
+            Object obj = beansOfType.values().iterator().next();
+            Field[] declaredFields = obj.getClass().getDeclaredFields();
+            for (Field declaredField : declaredFields) {
+                boolean assignableFrom = SocketIONamespace.class.isAssignableFrom(declaredField.getType());
+                if (assignableFrom) {
+                    declaredField.setAccessible(true);
+                    declaredField.set(obj, socketIONamespace);
+                    break;
+                }
+            }
+        }
+
+    }
+
+    public String getNamespace(Class clazz) {
+        String namespace = "/" + clazz.getName();
+        if (ClassUtils.isPresent("javax.websocket.server.ServerEndpoint", WebSocketProtocol.class.getClassLoader())) {
+            ServerEndpoint annotation = (ServerEndpoint) clazz.getAnnotation(ServerEndpoint.class);
+            if (annotation != null && !annotation.value().equals("")) {
+                namespace = annotation.value();
+            }
+        }
+        return namespace;
+    }
+
+
+    public void addAuthConnectListener(final URL url, SocketIONamespace socketIONamespace) {
+        socketIONamespace.addConnectListener(new ConnectListener() {
+            @Override
+            public void onConnect(SocketIOClient client) {
+                String filter = url.getParameter("service.filter", "");
+                HandshakeData handshakeData = client.getHandshakeData();
+                String error = "{\"status\":\"200\",\"OK\"}";
+                try {
+                    //判断是否以用户名密码验证方式
+                    if (url.getUsername() != null && url.getPassword() != null) {
+                        String username = handshakeData.getSingleUrlParam("username");
+                        String password = handshakeData.getSingleUrlParam("password");
+                        //如果验证不通过, 拒绝连接
+                        if (!url.getUsername().equalsIgnoreCase(username) || !url.getPassword().equalsIgnoreCase(password)) {
+                            error = "{\"status\":\"401\",\"error\":\"unauthorized\",\"error_description\":\"username or password e error!\"}";
+                            throw new RpcException(error);
+                        }
+                        //判断是否存在Token，并且未开启oAuth2Filter
+                    } else if (url.getParameter("token") != null && !filter.contains("oAuth2Filter")) {
+                        String token = handshakeData.getSingleUrlParam("token");
+                        if (!url.getParameter("token", "").equalsIgnoreCase(token)) {
+                            error = "{\"status\":\"401\",\"error\":\"unauthorized\",\"error_description\":\"token " + token + " error!\"}";
+                        }
+                    } else if (filter.contains("oAuth2Filter")) {
+
+                        //判断是否开启oauth2 如果开启，将启用OAuth2
+                        String access_token = handshakeData.getSingleUrlParam("access_token");
+                        if (access_token == null) {
+                            HttpHeaders httpHeaders = handshakeData.getHttpHeaders();
+                            String authorization = httpHeaders.get("Authorization");
+                            if (authorization != null) {
+                                access_token = authorization.replace("Bearer", "").trim();
+                            }
+                        }
+
+                        if (access_token != null) {
+                            UserDetails userInfo = oAuth2Service.getUserInfo(access_token);
+                            String token = url.getParameter("token", "");
+                            boolean flag = false;
+                            for (String role : token.split(",")) {
+                                if (userInfo.getAuthorities().contains(role.trim())) {
+                                    flag = true;
+                                    break;
+                                }
+                            }
+
+                            if (!flag) {
+                                error = "{\"status\":\"401\",\"error\":\"unauthorized\",\"error_description\":\"" + access_token + "access_token  not has role!\"}";
+                                throw new RpcException(error);
+                            }
+                        } else {
+                            error = "{\"status\":\"401\",\"error\":\"unauthorized\",\"error_description\":\"access_token  not has role!\"}";
+                            throw new RpcException(error);
+                        }
+                    }
+                } catch (Exception e) {
+                    client.sendEvent("auth", error);
+                    client.disconnect();
+                    logger.warn(error);
+                }
+                setAttachments(client);
+            }
+        });
+    }
+
+    public void setAttachments(SocketIOClient socketIOClient) {
+        InetSocketAddress addr = (InetSocketAddress) socketIOClient.getRemoteAddress();
+        RpcContext.getContext().setRemoteAddress(addr);
+        HandshakeData handshakeData = socketIOClient.getHandshakeData();
+        String username = handshakeData.getSingleUrlParam("username");
+        String token = handshakeData.getSingleUrlParam("token");
+
+        String access_token = handshakeData.getSingleUrlParam("access_token");
+        if (access_token == null) {
+            HttpHeaders httpHeaders = handshakeData.getHttpHeaders();
+            String authorization = httpHeaders.get("Authorization");
+            if (authorization != null) {
+                access_token = authorization.replace("Bearer", "").trim();
+            }
+        }
+
+
+        if (username != null) {
+            RpcContext.getContext().getAttachments().put("principal", username);
+        } else if (token != null) {
+            RpcContext.getContext().getAttachments().put("principal", token);
+        } else if (access_token != null) {
+            UserDetails userInfo = oAuth2Service.getUserInfo(access_token);
+            RpcContext.getContext().getAttachments().put("principal", userInfo.getPrincipal());
+            RpcContext.getContext().getAttachments().put("access_token", access_token);
+        }
+    }
+
+    public <T> void invokeIncludeWebsocketAnnotationMethod(T t, Method method, SocketIOClient client, String data, AckRequest ackSender) throws InvocationTargetException, IllegalAccessException {
+        Class<?>[] parameterTypes = method.getParameterTypes();
+        Object[] parameter = new Object[parameterTypes.length];
+        for (int i = 0; i < parameterTypes.length; i++) {
+            if (SocketIOClient.class.isAssignableFrom(parameterTypes[i])) {
+                parameter[i] = client;
+            }
+
+            if (String.class.isAssignableFrom(parameterTypes[i])) {
+                parameter[i] = data;
+            }
+
+            if (AckRequest.class.isAssignableFrom(parameterTypes[i])) {
+                parameter[i] = ackSender;
+            }
+        }
+        method.invoke(t, parameter);
     }
 
 
@@ -285,5 +363,6 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
     public static Map<String, GenericObjectPool<Socket>> getClientPool() {
         return Collections.unmodifiableMap(poolMap);
     }
+
 
 }

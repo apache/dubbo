@@ -7,6 +7,7 @@ import rx.Observable;
 import rx.Subscriber;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -46,5 +47,18 @@ public class WebSocketConsumer {
                 System.err.println("rxSayHello :" + s);
             }
         });
+
+        Set<String> allClientSessionId = webSocketService.getAllClientSessionId();
+        System.err.println(allClientSessionId);
+
+        Set<String> allClientRemoteSocketAddress = webSocketService.getAllClientRemoteSocketAddress();
+        System.err.println(allClientRemoteSocketAddress);
+
+        Set<String> allRoom = webSocketService.getAllRoom();
+        System.err.println(allRoom);
+
+        //请先在浏览器中打开dubbo-demo-consumer/resources/static/websocketclient/index.html 来查看广播消息
+        webSocketService.sendBroadcastMessage("这是一条广播消息!");
+
     }
 }

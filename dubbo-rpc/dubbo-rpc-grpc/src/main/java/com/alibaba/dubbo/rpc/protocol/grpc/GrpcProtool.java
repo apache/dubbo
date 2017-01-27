@@ -123,7 +123,7 @@ public class GrpcProtool extends AbstractProxyProtocol {
             GrpcClientPooledObjectFactory factory = new GrpcClientPooledObjectFactory(url.getHost(), url.getPort(), timeout, blockingStub);
             GenericObjectPoolConfig config = new GenericObjectPoolConfig();
             config.setMaxTotal(threads);
-            config.setMaxIdle(3);
+            config.setMaxIdle(threads);
             config.setBlockWhenExhausted(true);
             config.setTestOnReturn(true);
             config.setMaxWaitMillis(timeout);

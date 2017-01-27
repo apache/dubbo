@@ -48,5 +48,6 @@
         <module>dubbo-rpc-jersey</module>
         <module>dubbo-rpc-ratpack</module>
         <module>dubbo-rpc-websocket</module>
+        <module>dubbo-rpc-redis2</module>
     </modules>
 </project>

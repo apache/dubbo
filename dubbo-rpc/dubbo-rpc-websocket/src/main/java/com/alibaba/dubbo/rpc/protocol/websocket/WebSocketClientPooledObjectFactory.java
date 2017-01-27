@@ -42,7 +42,7 @@ public class WebSocketClientPooledObjectFactory extends BasePooledObjectFactory<
     public synchronized Socket create() throws Exception {
         IO.Options options = new IO.Options();
         options.transports = new String[]{"websocket"};
-        options.reconnection = false;
+        options.reconnection = true;
         options.timeout = this.timeout;
         Socket socket = IO.socket(this.host, options);
         // Called upon transport creation.

@@ -4,6 +4,7 @@ package com.alibaba.dubbo.demo;
 import rx.Observable;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Future;
 
 /**
@@ -22,4 +23,13 @@ public interface WebSocketService {
     public Future<String> asyncSayHello(String name);
 
     public Observable<String> rxSayHello(String name);
+
+    public Set<String> getAllClientSessionId();
+
+    public Set<String> getAllRoom();
+
+    public void sendBroadcastMessage(String message);
+
+    public Set<String> getAllClientRemoteSocketAddress();
+
 }

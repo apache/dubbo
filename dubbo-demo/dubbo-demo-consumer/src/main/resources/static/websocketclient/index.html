@@ -59,34 +59,18 @@
             output('<span class="connect-msg">连接成功!</span>');
         });
 
+        //订阅广播通道
+        socket.on("broadcast",function (message) {
+            var msgObj = JSON.parse(message)
+            notify(msgObj.result);
+        })
+
         socket.on("message", function (message) {
+            console.log(message)
             var msgObj = JSON.parse(message)
             output(msgObj.result)
+            notify(msgObj.result);
 
-            //通知框，与websocket 无关 请忽略
-            var t = new Date().toLocaleString();
-            var options = {
-                dir: "ltr",
-                lang: "utf-8",
-                icon: "haimian.jpg",
-                body: msgObj.result,
-            };
-            if (Notification && Notification.permission === "granted") {
-                var n = new Notification("WebSocket: " + t, options);
-                n.onshow = function () {
-                    console.log("You got me!");
-                };
-                n.onclick = function () {
-                    alert("You clicked me!");
-                    window.location = "/";
-                };
-                n.onclose = function () {
-                    console.log("notification closed!");
-                };
-                n.onerror = function () {
-                    console.log("An error accured");
-                }
-            }
         });
 
         socket.on("error", function (message) {
@@ -125,6 +109,33 @@
                 $('#send').click();
             }
         });
+
+        function notify(message) {
+            //通知框，与websocket 无关 请忽略
+            var t = new Date().toLocaleString();
+            var options = {
+                dir: "ltr",
+                lang: "utf-8",
+                icon: "haimian.jpg",
+                body: message,
+            };
+            if (Notification && Notification.permission === "granted") {
+                var n = new Notification("WebSocket: " + t, options);
+                n.onshow = function () {
+                    console.log("You got me!");
+                };
+                n.onclick = function () {
+                    alert("You clicked me!");
+                    window.location = "/";
+                };
+                n.onclose = function () {
+                    console.log("notification closed!");
+                };
+                n.onerror = function () {
+                    console.log("An error accured");
+                }
+            }
+        }
 
 
     </script>
