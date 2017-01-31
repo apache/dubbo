@@ -4,19 +4,18 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.config.spring.ServiceBean;
 import com.alibaba.dubbo.rpc.*;
-import com.netflix.hystrix.HystrixCommand;
-import com.netflix.hystrix.HystrixCommandGroupKey;
+import com.netflix.hystrix.*;
+import com.netflix.hystrix.strategy.properties.HystrixPropertiesFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
  * Created by wuyu on 2016/6/13.
  */
-@Activate(group = {Constants.CONSUMER, Constants.PROVIDER}, value = "hystrixFilter")
+@Activate(group = {Constants.CONSUMER}, value = "hystrixFilter")
 public class HystrixFilter implements Filter {
 
     private Logger logger = LoggerFactory.getLogger(HystrixFilter.class);
@@ -31,7 +30,17 @@ public class HystrixFilter implements Filter {
         final Class<?>[] parameterTypes = invocation.getParameterTypes();
         final Object[] arguments = invocation.getArguments();
 
+
         final FallBack fallBack = anInterface.getAnnotation(FallBack.class);
+//        HystrixCommand.Setter setter = HystrixCommand.Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey(anInterfaceName))
+//                .andCommandKey(HystrixCommandKey.Factory.asKey(invocation.getMethodName()))
+//                .andCommandPropertiesDefaults(HystrixCommandProperties.Setter()
+//                        .withCircuitBreakerRequestVolumeThreshold(fallBack.circuitBreakerRequestVolumeThreshold())
+//                        .withCircuitBreakerSleepWindowInMilliseconds(fallBack.circuitBreakerSleepWindowInMilliseconds())
+//                        .withCircuitBreakerErrorThresholdPercentage(fallBack.circuitBreakerRequestVolumeThreshold())
+//                        .withExecutionTimeoutEnabled(fallBack.withExecutionTimeoutEnabled()))
+//                .andThreadPoolPropertiesDefaults(HystrixThreadPoolProperties.Setter().withCoreSize(fallBack.coreSize()));
+
         HystrixCommand<Result> hystrixCommand = new HystrixCommand<Result>(HystrixCommandGroupKey.Factory.asKey(anInterfaceName)) {
             @Override
             protected Result run() throws Exception {

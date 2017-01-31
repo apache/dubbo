@@ -122,9 +122,6 @@ public class WebSocketJsonRpcClient extends JsonRpcClient implements Future {
             return result;
         }
         this.wait();
-        if (!done) {
-            onError(new RuntimeException("Waiting server-side response timeout"));
-        }
         if (exception != null) {
             throw exception;
         }
@@ -138,7 +135,7 @@ public class WebSocketJsonRpcClient extends JsonRpcClient implements Future {
         }
         this.wait(timeout);
         if (!done) {
-            onError(new RuntimeException("Waiting server-side response timeout"));
+            onError(new TimeoutException("Waiting server-side response timeout"));
         }
         if (exception != null) {
             throw exception;

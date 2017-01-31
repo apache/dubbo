@@ -86,7 +86,7 @@ public class WebSocketJsonRpcServer extends JsonRpcBasicServer {
         } else if (Future.class.isAssignableFrom(genericReturnClazz)) {
             Future future = (Future) result;
             try {
-                return mapper.valueToTree(future.get());
+                return mapper.valueToTree(future.get(timeout,TimeUnit.MILLISECONDS));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

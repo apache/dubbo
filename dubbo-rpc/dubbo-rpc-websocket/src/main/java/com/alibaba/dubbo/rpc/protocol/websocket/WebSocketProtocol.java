@@ -169,7 +169,7 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
                         @Override
                         public void call(Subscriber<? super Object> subscriber) {
                             try {
-                                List result = (List) jsonRpcClient.get();
+                                List result = (List) jsonRpcClient.get(timeout,TimeUnit.MILLISECONDS);
                                 for (Object obj : result) {
                                     subscriber.onNext(obj);
                                 }
