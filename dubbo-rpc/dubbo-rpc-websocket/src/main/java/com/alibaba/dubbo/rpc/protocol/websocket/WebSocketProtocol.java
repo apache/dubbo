@@ -95,14 +95,20 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
             @Override
             public void onData(SocketIOClient client, String data, AckRequest ackSender) throws Exception {
                 String namespace = client.getNamespace().getName().substring(1, client.getNamespace().getName().length());
-                WebSocketJsonRpcServer jsonRpcMultiServer = serviceMap.get(namespace);
+                WebSocketJsonRpcServer websocketJsonRpc = serviceMap.get(namespace);
                 ByteArrayInputStream in = new ByteArrayInputStream(data.getBytes("utf-8"));
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 try {
                     setAttachments(client);
-                    jsonRpcMultiServer.handle(in, out);
+                    websocketJsonRpc.handle(in, out);
                     byte[] bytes = out.toByteArray();
-                    client.sendEvent(Socket.EVENT_MESSAGE, new String(bytes, 0, bytes.length, "utf-8"));
+                    Object error = RpcContext.getContext().get("error");
+                    if (error != null) {
+                        RpcContext.getContext().remove("error");
+                        client.sendEvent(Socket.EVENT_ERROR, error.toString());
+                    } else {
+                        client.sendEvent(Socket.EVENT_MESSAGE, new String(bytes, 0, bytes.length, "utf-8"));
+                    }
                 } finally {
                     in.close();
                     out.close();
@@ -169,7 +175,7 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
                         @Override
                         public void call(Subscriber<? super Object> subscriber) {
                             try {
-                                List result = (List) jsonRpcClient.get(timeout,TimeUnit.MILLISECONDS);
+                                List result = (List) jsonRpcClient.get(timeout, TimeUnit.MILLISECONDS);
                                 for (Object obj : result) {
                                     subscriber.onNext(obj);
                                 }
@@ -252,14 +258,14 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
                         String password = handshakeData.getSingleUrlParam("password");
                         //如果验证不通过, 拒绝连接
                         if (!url.getUsername().equalsIgnoreCase(username) || !url.getPassword().equalsIgnoreCase(password)) {
-                            error = "{\"status\":\"401\",\"error\":\"unauthorized\",\"error_description\":\"username or password e error!\"}";
+                            error = "username or password  error!";
                             throw new RpcException(error);
                         }
                         //判断是否存在Token，并且未开启oAuth2Filter
                     } else if (url.getParameter("token") != null && !filter.contains("oAuth2Filter")) {
                         String token = handshakeData.getSingleUrlParam("token");
                         if (!url.getParameter("token", "").equalsIgnoreCase(token)) {
-                            error = "{\"status\":\"401\",\"error\":\"unauthorized\",\"error_description\":\"token " + token + " error!\"}";
+                            error = "token " + token + " error!";
                         }
                     } else if (filter.contains("oAuth2Filter")) {
 
@@ -285,16 +291,16 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
                             }
 
                             if (!flag) {
-                                error = "{\"status\":\"401\",\"error\":\"unauthorized\",\"error_description\":\"" + access_token + "access_token  not has role!\"}";
+                                error = "access_token access_token  not has role!";
                                 throw new RpcException(error);
                             }
                         } else {
-                            error = "{\"status\":\"401\",\"error\":\"unauthorized\",\"error_description\":\"access_token  not has role!\"}";
+                            error = "access_token  not has role!";
                             throw new RpcException(error);
                         }
                     }
                 } catch (Exception e) {
-                    client.sendEvent("auth", error);
+                    client.sendEvent(Socket.EVENT_ERROR, error);
                     client.disconnect();
                     logger.warn(error);
                 }

@@ -29,10 +29,46 @@ mvn install -Dmaven.test.skip=true
  <!-- 如果 server 值为none,只注册服务,不导出服务,由第三方提供rest服务.dubbo消费 第三方rest服务 -->
 <dubbo:protocol name="springmvc" server="none" />
 ```
-###example
+###springmvc depenecies
+```
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-webmvc</artifactId>
+</dependency>
+
+<dependency>
+    <groupId>io.github.openfeign</groupId>
+    <artifactId>feign-core</artifactId>
+</dependency>
+<dependency>
+    <groupId>io.github.openfeign</groupId>
+    <artifactId>feign-hystrix</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.hibernate</groupId>
+    <artifactId>hibernate-validator</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.apache.httpcomponents</groupId>
+    <artifactId>httpclient</artifactId>
+</dependency>
+
+<dependency>
+    <groupId>com.alibaba</groupId>
+    <artifactId>fastjson</artifactId>
+</dependency>
+
+<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-databind</artifactId>
+</dependency>
 
 ```
+###springmvc example
+```
 建议使用高版本的springmvc
+
+
 
 接口定义,用来指定相关方法地址,请求方法/参数.
 @RequestMapping("/comment")
@@ -66,8 +102,16 @@ public interface CommentService {
 只需配置提供的协议是springmvc 服务为none即可,只注册相关服务,但不导出相关服务.dubbo消费端可以通过提供的注册地址 ,即可消费自定义的rest服务.
 <dubbo:protocol name="springmvc" server="none" />
 ```
-
 ###Avro
+```
+<dependency>
+    <groupId>org.apache.avro</groupId>
+    <artifactId>avro-ipc</artifactId>
+    <version>1.8.1</version>
+</dependency>
+
+```
+###Avro example
 ```
 <!--avro-->
 <dubbo:protocol port="8084" name="avro"/>
@@ -77,8 +121,27 @@ public interface CommentService {
 
 ```
 
-###Thrift9
 
+###Thrift9
+```
+<dependency>
+    <groupId>org.apache.thrift</groupId>
+    <artifactId>libthrift</artifactId>
+    <version>0.9.3</version>
+    <exclusions>
+        <exclusion>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+        </exclusion>
+    </exclusions>
+</dependency>
+<dependency>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>commons-pool2</artifactId>
+     <version>2.4.2</version>
+</dependency>
+```
+###Thrift example
 ```
 <!--Thrift9-->
 <dubbo:protocol port="8083" name="thrift9"/>
@@ -88,6 +151,20 @@ public interface CommentService {
 ```
 
 ###Grpc
+```
+<dependency>
+    <groupId>io.grpc</groupId>
+    <artifactId>grpc-all</artifactId>
+    <version>1.0.3</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>commons-pool2</artifactId>
+    <version>2.4.2</version>
+</dependency>
+```
+
+###Grpc example
 ```
 <!--Grpc-->
 <dubbo:protocol port="8082" name="grpc"/>
@@ -105,8 +182,28 @@ public interface CommentService {
 <!--Jersey-->
 ```
 
+
+
 ###Dubbo Rest Proxy
 ```
+/**
+ * http://localhost:8080/
+ * POST,PUT,DELETE
+ * 调用示例
+ * {
+ * "jsonrpc":2.0 ,//兼容jsonrpc， 如果携带次参数 将以jsonrpc 格式返回
+ * "service":"com.alibaba.dubbo.demo.DemoService",
+ * "method":"sayHello", //可以以 com.alibaba.dubbo.demo.DemoService.sayHello 来省略 service
+ * "group":"defaultGroup",//可以不写
+ * "version":"1.0" ,//可以不写
+ * "paramsType":["java.lang.String"], //可以不写 如果有方法重载必须填写
+ * "params":["wuyu"]
+ * }
+ *
+ * @param config
+ * @return
+ */
+ 
 <!--DubboProxy:start-->
 <!--代理 Dubbo,并转化为Rest服务 可通过http方式调用dubbo服务-->
 <bean class="com.alibaba.dubbo.rpc.protocol.springmvc.proxy.ProxyServiceImpl" id="proxyService"/>
@@ -119,6 +216,43 @@ public interface CommentService {
 ```
 
 ###WebSocket
+```
+<dependency>
+    <groupId>com.corundumstudio.socketio</groupId>
+    <artifactId>netty-socketio</artifactId>
+</dependency>
+<dependency>
+    <groupId>io.netty</groupId>
+    <artifactId>netty-all</artifactId>
+    <version>4.1.6.Final</version>
+</dependency>
+<dependency>
+    <groupId>io.socket</groupId>
+    <artifactId>socket.io-client</artifactId>
+    <version>0.8.3</version>
+</dependency>
+<dependency>
+    <groupId>com.squareup.okhttp3</groupId>
+    <artifactId>okhttp</artifactId>
+    <version>3.5.0</version>
+</dependency>
+<dependency>
+    <groupId>com.github.briandilley.jsonrpc4j</groupId>
+    <artifactId>jsonrpc4j</artifactId>
+    <version>1.2.0</version>
+</dependency>
+<dependency>
+    <groupId>io.reactivex</groupId>
+    <artifactId>rxjava</artifactId>
+    <version>1.1.10</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>commons-pool2</artifactId>
+    <version>2.4.2</version>
+</dependency>
+```
+###websocket example
 ```
 <!--websocket-->
 <dubbo:protocol port="8086" name="ws"/>

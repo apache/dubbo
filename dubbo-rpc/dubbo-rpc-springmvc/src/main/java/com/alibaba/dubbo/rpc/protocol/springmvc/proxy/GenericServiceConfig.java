@@ -12,6 +12,12 @@ public class GenericServiceConfig implements Serializable {
 
     private static final long serialVersionUID = 1064223171940612201L;
 
+    //兼容 jsonrpc 如果携带次参数 将以jsonrpc 格式返回
+    private String jsonrpc;
+
+    //兼容 jsonrpc
+    private String id;
+
     //服务名
     private String service;
 
@@ -25,26 +31,10 @@ public class GenericServiceConfig implements Serializable {
     private String version;
 
     //参数类型
-    private String[] argsType;
+    private String[] paramsType;
 
     //参数
-    private String[] args;
-
-    public void setArgs(String[] args) {
-        this.args = args;
-    }
-
-    public String[] getArgs() {
-        return args;
-    }
-
-    public String[] getArgsType() {
-        return argsType;
-    }
-
-    public void setArgsType(String[] argsType) {
-        this.argsType = argsType;
-    }
+    private String[] params;
 
     public String getGroup() {
         return group;
@@ -84,7 +74,25 @@ public class GenericServiceConfig implements Serializable {
         this.version = version;
     }
 
+
+    public String[] getParams() {
+        return params;
+    }
+
+    public void setParams(String[] params) {
+        this.params = params;
+    }
+
     public GenericServiceConfig() {
+    }
+
+
+    public String[] getParamsType() {
+        return paramsType;
+    }
+
+    public void setParamsType(String[] paramsType) {
+        this.paramsType = paramsType;
     }
 
     @Override
@@ -94,8 +102,24 @@ public class GenericServiceConfig implements Serializable {
                 ", method='" + method + '\'' +
                 ", group='" + group + '\'' +
                 ", version='" + version + '\'' +
-                ", argsType=" + Arrays.toString(argsType) +
-                ", args=" + Arrays.toString(args) +
+                ", paramsType=" + Arrays.toString(paramsType) +
+                ", params=" + Arrays.toString(params) +
                 '}';
+    }
+
+    public String getJsonrpc() {
+        return jsonrpc;
+    }
+
+    public void setJsonrpc(String jsonrpc) {
+        this.jsonrpc = jsonrpc;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

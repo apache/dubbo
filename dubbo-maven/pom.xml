@@ -45,7 +45,7 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring</artifactId>
-			<version>3.2.8.RELEASE</version>
+			<version>3.2.18.RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>org.javassist</groupId>

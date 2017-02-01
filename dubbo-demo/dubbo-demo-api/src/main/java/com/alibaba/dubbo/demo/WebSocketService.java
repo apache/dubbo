@@ -24,6 +24,8 @@ public interface WebSocketService {
 
     public Observable<String> rxSayHello(String name);
 
+    public int error(String number);
+
     public Set<String> getAllClientSessionId();
 
     public Set<String> getAllRoom();

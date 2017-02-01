@@ -62,7 +62,7 @@ public class Thrift9Protocol extends AbstractProxyProtocol {
             TProcessor serviceProcessor = (TProcessor) constructor.newInstance(impl);
 
             if (server == null) {
-                TServerTransport transport = transport = new TServerSocket(port);
+                TServerTransport transport = new TServerSocket(port);
 
                 // 多线程处理器参数设置
                 TThreadPoolServer.Args args = new TThreadPoolServer.Args(transport);

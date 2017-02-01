@@ -1,11 +1,14 @@
 package com.alibaba.dubbo.rpc.protocol.websocket;
 
+import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.googlecode.jsonrpc4j.ErrorResolver;
 import com.googlecode.jsonrpc4j.JsonRpcBasicServer;
 import rx.Observable;
 import rx.Subscriber;
@@ -86,13 +89,23 @@ public class WebSocketJsonRpcServer extends JsonRpcBasicServer {
         } else if (Future.class.isAssignableFrom(genericReturnClazz)) {
             Future future = (Future) result;
             try {
-                return mapper.valueToTree(future.get(timeout,TimeUnit.MILLISECONDS));
+                return mapper.valueToTree(future.get(timeout, TimeUnit.MILLISECONDS));
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new RpcException(e);
             }
         }
 
 
         return (m.getGenericReturnType() != null) ? mapper.valueToTree(result) : null;
     }
+
+
+    @Override
+    protected ObjectNode createErrorResponse(String jsonRpc, Object id, int code, String message, Object data) {
+        RpcContext.getContext().set("error",message);
+        return super.createErrorResponse(jsonRpc, id, code, message, data);
+    }
+
+
+
 }

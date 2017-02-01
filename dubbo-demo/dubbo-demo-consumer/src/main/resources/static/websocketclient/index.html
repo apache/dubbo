@@ -38,7 +38,7 @@
 
     <script src="js/socket.io/socket.io.js"></script>
     <script src="js/moment.min.js"></script>
-    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+    <script src="js/jquery-1.7.2.min.js"></script>
 
     <script>
 
@@ -60,7 +60,7 @@
         });
 
         //订阅广播通道
-        socket.on("broadcast",function (message) {
+        socket.on("broadcast", function (message) {
             var msgObj = JSON.parse(message)
             notify(msgObj.result);
         })
@@ -75,11 +75,8 @@
 
         socket.on("error", function (message) {
             output('<span class="disconnect-msg">' + message + '</span>');
+            notify(message);
         });
-
-        socket.on("auth", function (message) {
-            output(message)
-        })
 
         socket.on('disconnect', function () {
             output('<span class="disconnect-msg">连接已经关闭!</span>');
@@ -92,10 +89,10 @@
         function sendMessage() {
             var name = $('#msg').val();
 
-            //jsonrpc 规范调用
-            var message = "{\"jsonrpc\":\"2.0\", \"id\":\"10\", \"method\":\"sayHello\", \"params\":[\"" + name + "\"]}";
+            var req = {jsonrpc: 2.0, id: 10, method: "error", params: [name]};
 
-            socket.send(message);
+            //jsonrpc 规范调用
+            socket.send(JSON.stringify(req));
         }
 
         function output(message) {
@@ -111,15 +108,15 @@
         });
 
         function notify(message) {
-            //通知框，与websocket 无关 请忽略
-            var t = new Date().toLocaleString();
-            var options = {
-                dir: "ltr",
-                lang: "utf-8",
-                icon: "haimian.jpg",
-                body: message,
-            };
             if (Notification && Notification.permission === "granted") {
+                //通知框，与websocket 无关 请忽略
+                var t = moment().format('HH:mm:ss.SSS');
+                var options = {
+                    dir: "ltr",
+                    lang: "utf-8",
+                    icon: "haimian.jpg",
+                    body: message,
+                };
                 var n = new Notification("WebSocket: " + t, options);
                 n.onshow = function () {
                     console.log("You got me!");
@@ -134,6 +131,8 @@
                 n.onerror = function () {
                     console.log("An error accured");
                 }
+            }else{
+                alert(message);
             }
         }
 

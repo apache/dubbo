@@ -67,7 +67,7 @@ public class WebSocketServiceImpl implements WebSocketService {
 
             @Override
             public String get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                return null;
+                return "Hello " + name;
             }
         };
     }
@@ -75,6 +75,11 @@ public class WebSocketServiceImpl implements WebSocketService {
     @Override
     public Observable<String> rxSayHello(String name) {
         return Observable.just("Hello1 " + name, "Hello2 " + name);
+    }
+
+    @Override
+    public int error(String number) {
+        return Integer.parseInt(number);
     }
 
     public Set<String> getAllClientSessionId() {

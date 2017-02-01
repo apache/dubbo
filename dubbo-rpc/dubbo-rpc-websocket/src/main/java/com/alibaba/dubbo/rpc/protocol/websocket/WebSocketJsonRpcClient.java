@@ -1,7 +1,7 @@
 package com.alibaba.dubbo.rpc.protocol.websocket;
 
+import com.alibaba.dubbo.rpc.RpcException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.googlecode.jsonrpc4j.JsonRpcClient;
 import io.socket.client.Socket;
@@ -13,7 +13,6 @@ import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -93,6 +92,19 @@ public class WebSocketJsonRpcClient extends JsonRpcClient implements Future {
                 } catch (Throwable throwable) {
                     onError(throwable);
                 } finally {
+                    socket.off(Socket.EVENT_ERROR);
+                    pool.returnObject(socket);
+                }
+            }
+        });
+
+        socket.once(Socket.EVENT_ERROR, new Emitter.Listener() {
+            @Override
+            public void call(Object... args) {
+                try {
+                    onError(new RpcException(args[0].toString()));
+                } finally {
+                    socket.off(Socket.EVENT_MESSAGE);
                     pool.returnObject(socket);
                 }
             }
