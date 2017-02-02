@@ -1,4 +1,4 @@
-package com.alibaba.dubbo.rpc.protocol.springmvc.proxy;
+package com.alibaba.dubbo.rpc.protocol.proxy;
 
 import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.config.spring.ReferenceBean;
@@ -16,25 +16,15 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.ReflectionUtils;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.method.HandlerMethodSelector;
-import rx.Observable;
-import rx.Subscriber;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Future;
 
 /**
  * Created by wuyu on 2016/7/14.
@@ -47,6 +37,8 @@ public class ProxyServiceImpl implements ProxyService, DisposableBean, Applicati
     private Map<String, Class> clazzCache = new ConcurrentHashMap<>();
 
     private ApplicationContext applicationContext;
+
+
 
 
     /**
@@ -66,8 +58,8 @@ public class ProxyServiceImpl implements ProxyService, DisposableBean, Applicati
      * @param config
      * @return
      */
-    @ResponseBody
-    public Object proxy(@RequestBody GenericServiceConfig config) {
+
+    public Object invoke(GenericServiceConfig config, Type type) {
         if (config.getMethod() == null) {
             throw new IllegalArgumentException(config.toString() + " Miss required parameter! ");
         }
@@ -82,7 +74,6 @@ public class ProxyServiceImpl implements ProxyService, DisposableBean, Applicati
             config.setMethod(methodName);
         }
 
-
         try {
             Class clazz = getClazz(service);
             Object result = null;
@@ -94,36 +85,7 @@ public class ProxyServiceImpl implements ProxyService, DisposableBean, Applicati
                 if (beans.size() == 1) {
                     Object bean = beans.values().iterator().next();
                     result = method.invoke(bean, args);
-                    if (result instanceof Future) {
-                        result = ((Future) result).get();
-                    } else if (result instanceof Observable) {
-                        final List<Object> list = new ArrayList<>();
-                        final List<Throwable> error = new ArrayList<>();
-                        Observable observable = (Observable) result;
-                        observable.subscribe(new Subscriber() {
-                            @Override
-                            public void onCompleted() {
-                            }
-
-                            @Override
-                            public void onError(Throwable e) {
-                                error.add(e);
-                            }
-
-                            @Override
-                            public void onNext(Object o) {
-                                list.add(o);
-                            }
-                        });
-
-                        if (error.size() > 0) {
-                            throw error.get(0);
-                        }
-
-                        result = list;
-                    }
                 }
-
             } else {
                 Object[] params = new Object[config.getParams().length];
                 for (int i = 0; i < config.getParams().length; i++) {
@@ -146,15 +108,15 @@ public class ProxyServiceImpl implements ProxyService, DisposableBean, Applicati
 
             return config.getJsonrpc() == null ? result : createSuccessResponse(config.getJsonrpc(), config.getId(), result);
 
-        } catch (Throwable e) {
+        } catch (Exception e) {
             if (config.getJsonrpc() != null) {
                 e.printStackTrace();
-                return new ResponseEntity<Object>(createErrorResponse(config.getJsonrpc(), config.getId(), -32600, e.toString(), null), HttpStatus.INTERNAL_SERVER_ERROR);
+                return createErrorResponse(config.getJsonrpc(), config.getId(), -32600, e.toString(), null);
             }
             throw new RpcException(e);
         }
-    }
 
+    }
 
     protected Object[] convertArgs(Method method, String[] args) throws IOException {
         Object[] convertArgs = new Object[args.length];
@@ -178,19 +140,17 @@ public class ProxyServiceImpl implements ProxyService, DisposableBean, Applicati
         return convertArgs;
     }
 
+
     protected Method getMethod(String serviceName, final String methodName, final String[] params, String[] paramsType) throws ClassNotFoundException, NoSuchMethodException {
         Class serviceClazz = getClazz(serviceName);
         Class[] clazzTypes = new Class[params.length];
 
         if (paramsType == null || paramsType.length == 0) {
-            Set<Method> methods = HandlerMethodSelector.selectMethods(serviceClazz, new ReflectionUtils.MethodFilter() {
-                @Override
-                public boolean matches(Method method) {
-                    return method.getName().equals(methodName) && method.getParameterTypes().length == params.length;
+            Method[] methods = serviceClazz.getMethods();
+            for (Method m : methods) {
+                if (m.getName().equals(methodName) && m.getParameterTypes().length == params.length) {
+                    return m;
                 }
-            });
-            if (methods.size() == 1) {
-                return methods.iterator().next();
             }
         }
 
@@ -291,6 +251,27 @@ public class ProxyServiceImpl implements ProxyService, DisposableBean, Applicati
         }
         response.put("result", result);
         return response;
+    }
+
+    @Override
+    public <T> T target(Class<T> service) {
+        throw new UnsupportedOperationException("Unsupported target proxy service. url: " + service);
+    }
+
+    @Override
+    public <T> T target(final Class<T> service, final String group, final String version) {
+        return (T) Proxy.newProxyInstance(ProxyService.class.getClassLoader(), new Class[]{service}, new InvocationHandler() {
+            @Override
+            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                GenericService genericService = genericService(new GenericServiceConfig(group, version, service.getName(), method.getName(), null, null));
+                Class<?>[] parameterTypes = method.getParameterTypes();
+                String[] paramsType = new String[parameterTypes.length];
+                for (int i = 0; i < parameterTypes.length; i++) {
+                    paramsType[i] = parameterTypes[i].getName();
+                }
+                return genericService.$invoke(method.getName(), paramsType, args);
+            }
+        });
     }
 
 

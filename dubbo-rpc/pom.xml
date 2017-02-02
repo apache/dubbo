@@ -49,5 +49,6 @@
         <module>dubbo-rpc-ratpack</module>
         <module>dubbo-rpc-websocket</module>
         <module>dubbo-rpc-redis2</module>
+        <module>dubbo-rpc-proxy</module>
     </modules>
 </project>

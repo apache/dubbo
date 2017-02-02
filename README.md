@@ -184,7 +184,7 @@ public interface CommentService {
 
 
 
-###Dubbo Rest Proxy
+###Dubbo springmvc Rest Proxy
 ```
 /**
  * http://localhost:8080/
@@ -214,6 +214,56 @@ public interface CommentService {
 <!--DubboProxy:end-->
 
 ```
+
+
+###RestProxy
+```
+/**
+ * http://localhost:8080/
+ * POST,PUT,DELETE
+ * 调用示例
+ * {
+ * "jsonrpc":2.0 ,//兼容jsonrpc， 如果携带次参数 将以jsonrpc 格式返回
+ * "service":"com.alibaba.dubbo.demo.DemoService",
+ * "method":"sayHello", //可以以 com.alibaba.dubbo.demo.DemoService.sayHello 来省略 service
+ * "group":"defaultGroup",//可以不写
+ * "version":"1.0" ,//可以不写
+ * "paramsType":["java.lang.String"], //可以不写 如果有方法重载必须填写
+ * "params":["wuyu"]
+ * }
+ *
+ * @param config
+ * @return
+ */
+ 
+ <dependency>
+     <groupId>com.alibaba</groupId>
+     <artifactId>fastjson</artifactId>
+ </dependency>
+ <dependency>
+     <groupId>com.fasterxml.jackson.core</groupId>
+     <artifactId>jackson-databind</artifactId>
+ </dependency>
+ <dependency>
+     <groupId>org.apache.httpcomponents</groupId>
+     <artifactId>httpclient</artifactId>
+ </dependency>
+ 
+ 
+Server:
+
+<!--代理 Dubbo,并转化为Rest服务 可通过http方式调用dubbo服务-->
+<dubbo:protocol port="8087" name="restproxy" server="tomcat"/>
+<bean class="com.alibaba.dubbo.rpc.protocol.proxy.ProxyServiceImpl" id="restProxy"/>
+
+<!--发布多个注册中心,代理服务端跨注册中心调用-->
+<dubbo:service interface="com.alibaba.dubbo.rpc.protocol.proxy.ProxyService" ref="restProxy" protocol="restproxy"/>
+
+Client:
+<dubbo:reference interface="com.alibaba.dubbo.rpc.protocol.proxy.ProxyService" id="proxyService"/>
+DemoService demoservice = proxyService.target(DemoService.class);
+```
+
 
 ###WebSocket
 ```

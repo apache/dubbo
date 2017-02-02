@@ -100,6 +100,11 @@
             <artifactId>dubbo-rpc-websocket</artifactId>
             <version>2.5.4-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-rpc-proxy</artifactId>
+            <version>2.5.4-SNAPSHOT</version>
+        </dependency>
 
     </dependencies>
 </project>

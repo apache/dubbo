@@ -1,0 +1,1 @@
+restproxy=com.alibaba.dubbo.rpc.protocol.proxy.RestProxyProtocol

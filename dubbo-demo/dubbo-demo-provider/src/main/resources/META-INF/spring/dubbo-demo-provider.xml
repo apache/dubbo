@@ -83,5 +83,12 @@
     <dubbo:service interface="com.alibaba.dubbo.demo.WebSocketService" ref="webSocketService" protocol="ws"/>
     <!--websocket-->
 
+    <!--DubboProxy:start-->
+    <!--代理 Dubbo,并转化为Rest服务 可通过http方式调用dubbo服务-->
+    <dubbo:protocol port="8087" name="restproxy" server="tomcat"/>
+    <bean class="com.alibaba.dubbo.rpc.protocol.proxy.ProxyServiceImpl" id="restProxy"/>
+    <dubbo:service interface="com.alibaba.dubbo.rpc.protocol.proxy.ProxyService" ref="restProxy" protocol="restproxy"/>
+    <!--DubboProxy:end-->
+
 
 </beans>
