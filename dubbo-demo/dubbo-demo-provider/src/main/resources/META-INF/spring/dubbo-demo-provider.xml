@@ -57,10 +57,11 @@
     <dubbo:service interface="io.grpc.examples.helloworld.GreeterGrpc$Greeter" ref="helloWorldService" protocol="grpc"/>
     <!--Grpc-->
 
-    <!--Thrift9-->
+    <!--Thrift9 hprose 支持两种模式,TThreadPoolServer,TThreadedSelectorServer.-->
     <dubbo:protocol port="8083" name="thrift9"/>
+    <dubbo:protocol port="8090" name="thrift9_selector"/>
     <bean id="fooService" class="com.alibaba.dubbo.demo.provider.FooServiceImpl"/>
-    <dubbo:service interface="com.alibaba.dubbo.demo.FooService$Iface" ref="fooService" protocol="thrift9"/>
+    <dubbo:service interface="com.alibaba.dubbo.demo.FooService$Iface" ref="fooService" protocol="thrift9,thrift9_selector"/>
     <!--Thrift9-->
 
     <!--avro-->
@@ -89,6 +90,19 @@
     <bean class="com.alibaba.dubbo.rpc.protocol.proxy.ProxyServiceImpl" id="restProxy"/>
     <dubbo:service interface="com.alibaba.dubbo.rpc.protocol.proxy.ProxyService" ref="restProxy" protocol="restproxy"/>
     <!--DubboProxy:end-->
+
+    <!--rest:start-->
+    <dubbo:protocol port="8088" name="rest" server="tomcat"/>
+    <bean id="restService" class="com.alibaba.dubbo.demo.provider.RestServiceImpl"/>
+    <dubbo:service interface="com.alibaba.dubbo.demo.RestService" ref="restService" protocol="rest"/>
+    <!--rest:end-->
+
+    <!--hprose:start  hprose 支持两种模式,http,tcp.-->
+    <dubbo:protocol port="8089" name="hprose" server="tomcat"/>
+    <dubbo:protocol port="4321" name="hprose_tcp"/>
+    <bean id="hproseService" class="com.alibaba.dubbo.demo.provider.HproseServiceImpl"/>
+    <dubbo:service interface="com.alibaba.dubbo.demo.HproseService" ref="hproseService" protocol="hprose,hprose_tcp"/>
+    <!--hprose:end-->
 
 
 </beans>

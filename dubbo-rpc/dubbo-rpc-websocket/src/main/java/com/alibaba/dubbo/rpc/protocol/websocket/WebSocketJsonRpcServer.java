@@ -102,10 +102,10 @@ public class WebSocketJsonRpcServer extends JsonRpcBasicServer {
 
     @Override
     protected ObjectNode createErrorResponse(String jsonRpc, Object id, int code, String message, Object data) {
-        RpcContext.getContext().set("error",message);
-        return super.createErrorResponse(jsonRpc, id, code, message, data);
+        ObjectNode errorResponse = super.createErrorResponse(jsonRpc, id, code, message, data);
+        RpcContext.getContext().set("error", errorResponse);
+        return errorResponse;
     }
-
 
 
 }

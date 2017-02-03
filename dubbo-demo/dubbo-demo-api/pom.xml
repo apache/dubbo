@@ -105,6 +105,16 @@
             <artifactId>dubbo-rpc-proxy</artifactId>
             <version>2.5.4-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-rpc-rest</artifactId>
+            <version>2.5.4-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-rpc-hprose</artifactId>
+            <version>2.5.4-SNAPSHOT</version>
+        </dependency>
 
     </dependencies>
 </project>

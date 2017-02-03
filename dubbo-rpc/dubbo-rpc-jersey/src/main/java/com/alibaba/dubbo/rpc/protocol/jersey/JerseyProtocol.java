@@ -6,12 +6,6 @@ import com.alibaba.dubbo.config.ProtocolConfig;
 import com.alibaba.dubbo.config.spring.ServiceBean;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.protocol.AbstractProxyProtocol;
-import feign.Feign;
-import feign.Retryer;
-import feign.gson.GsonDecoder;
-import feign.gson.GsonEncoder;
-import feign.httpclient.ApacheHttpClient;
-import feign.jaxrs.JAXRSContract;
 import io.netty.channel.Channel;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
@@ -23,13 +17,15 @@ import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.moxy.xml.MoxyXmlFeature;
 import org.glassfish.jersey.netty.httpserver.NettyHttpContainerProvider;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
+import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClient43Engine;
 import org.springframework.util.ClassUtils;
 
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * Created by wuyu on 2017/1/15.
@@ -40,12 +36,14 @@ public class JerseyProtocol extends AbstractProxyProtocol {
 
     private Map<String, Channel> serverMap = new ConcurrentHashMap<>();
 
+    private final List<ResteasyClient> clients = Collections.synchronizedList(new LinkedList<ResteasyClient>());
+
+
     @Override
     public int getDefaultPort() {
         return 8081;
     }
 
-    //仅做测试使用,未解决发布多个接口
     @Override
     protected <T> Runnable doExport(T impl, final Class<T> type, URL url) throws RpcException {
         final String addr = url.getHost() + ":" + url.getPort();
@@ -64,7 +62,6 @@ public class JerseyProtocol extends AbstractProxyProtocol {
         if (port == 443 || port == 8433) {
             schema = "https://";
         }
-
         ResourceConfig resourceConfig = new ResourceConfig();
         if (ClassUtils.isPresent("org.glassfish.jersey.jackson.JacksonFeature", JerseyProtocol.class.getClassLoader())) {
             resourceConfig.register(JacksonFeature.class);
@@ -105,16 +102,18 @@ public class JerseyProtocol extends AbstractProxyProtocol {
         if (port == 443 || port == 8433) {
             schema = "https://";
         }
-        String api = schema + url.getHost() + ":" + url.getPort() + "/";
-
-        return Feign.builder()
-                .retryer(new Retryer.Default(100, SECONDS.toMillis(1), 0))
-                .client(new ApacheHttpClient(getDefaultHttpClientPool(connections, timeout, 0, true)))
-                .contract(new JAXRSContract())
-                .decode404()
-                .encoder(new GsonEncoder())
-                .decoder(new GsonDecoder())
-                .target(type, api);
+        HttpClient httpClient = getDefaultHttpClientPool(connections, timeout, 0, true);
+        ApacheHttpClient43Engine engine = new ApacheHttpClient43Engine(httpClient/*, localContext*/);
+        ResteasyClient client = new ResteasyClientBuilder().httpEngine(engine).build();
+        if (ClassUtils.isPresent("org.glassfish.jersey.jackson.JacksonFeature", JerseyProtocol.class.getClassLoader())) {
+            client.register(JacksonFeature.class);
+        }
+        if (ClassUtils.isPresent("org.glassfish.jersey.moxy.xml.MoxyXmlFeature", JerseyProtocol.class.getClassLoader())) {
+            client.register(MoxyXmlFeature.class);
+        }
+        clients.add(client);
+        ResteasyWebTarget target = client.target(schema + url.getHost() + ":" + url.getPort() + "/" + getContextPath(url));
+        return target.proxy(type);
     }
 
     public static HttpClient getDefaultHttpClientPool(int maxTotal, int timeout, int retry, boolean keepAlive) {
@@ -145,6 +144,18 @@ public class JerseyProtocol extends AbstractProxyProtocol {
 
             }
         }
+
+        for (ResteasyClient client : clients) {
+            try {
+                client.close();
+            } catch (Exception e) {
+
+            }
+        }
     }
 
+    protected String getContextPath(URL url) {
+        int pos = url.getPath().lastIndexOf("/");
+        return pos > 0 ? url.getPath().substring(0, pos) : "";
+    }
 }

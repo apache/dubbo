@@ -57,7 +57,7 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
 
         final String addr = url.getHost() + ":" + url.getPort();
         int timeout = url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
-        int connections = url.getParameter(Constants.CONNECTIONS_KEY, 20);
+        int connections = url.getParameter(Constants.THREADPOOL_KEY, 200);
 
         SocketIOServer socketIOServer = serverMap.get(addr);
         if (socketIOServer == null) {
@@ -250,7 +250,7 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
             public void onConnect(SocketIOClient client) {
                 String filter = url.getParameter("service.filter", "");
                 HandshakeData handshakeData = client.getHandshakeData();
-                String error = "{\"status\":\"200\",\"OK\"}";
+                String error = "";
                 try {
                     //判断是否以用户名密码验证方式
                     if (url.getUsername() != null && url.getPassword() != null) {

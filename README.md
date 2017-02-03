@@ -1,7 +1,7 @@
 
 #dubbo
 
->1. 增加 springmvc,jsonrpc,avro,grpc,jersey，websocket rpc,原生thrift rpc组件.
+>1. 增加 springmvc,jsonrpc,avro,grpc,jersey，websocket rpc,hprose,原生thrift rpc组件.
 
 >2. 增加none http容器,只注册服务,不导出服务.使其更好的支持springboot.
 
@@ -174,7 +174,25 @@ public interface CommentService {
 ```
 
 ###Jersey
+
 ```
+<dependency>
+    <groupId>org.glassfish.jersey.containers</groupId>
+    <artifactId>jersey-container-netty-http</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.glassfish.jersey.media</groupId>
+    <artifactId>jersey-media-moxy</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.glassfish.jersey.media</groupId>
+    <artifactId>jersey-media-json-jackson</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.jboss.resteasy</groupId>
+    <artifactId>resteasy-client</artifactId>
+</dependency>
+
 <!--Jersey-->
 <dubbo:protocol port="8081" name="jersey"/>
 <bean id="commentService" class="com.alibaba.dubbo.demo.provider.CommentServiceImpl"/>
@@ -272,11 +290,6 @@ DemoService demoservice = proxyService.target(DemoService.class);
     <artifactId>netty-socketio</artifactId>
 </dependency>
 <dependency>
-    <groupId>io.netty</groupId>
-    <artifactId>netty-all</artifactId>
-    <version>4.1.6.Final</version>
-</dependency>
-<dependency>
     <groupId>io.socket</groupId>
     <artifactId>socket.io-client</artifactId>
     <version>0.8.3</version>
@@ -311,6 +324,23 @@ DemoService demoservice = proxyService.target(DemoService.class);
 <!--websocket-->
 ```
 
+###rest
+```
+<!--rest:start-->
+<dubbo:protocol port="8088" name="rest"/>
+<bean id="restService" class="com.alibaba.dubbo.demo.provider.RestServiceImpl"/>
+<dubbo:service interface="com.alibaba.dubbo.demo.RestService" ref="restService" protocol="rest"/>
+<!--rest:end-->
+```
+###rest
+```
+<!--hprose:start  hprose 支持两种模式,http,tcp.-->
+<dubbo:protocol port="8089" name="hprose" server="tomcat"/>
+<dubbo:protocol port="4321" name="hprose_tcp"/>
+<bean id="hproseService" class="com.alibaba.dubbo.demo.provider.HproseServiceImpl"/>
+<dubbo:service interface="com.alibaba.dubbo.demo.HproseService" ref="hproseService" protocol="hprose,hprose_tcp"/>
+<!--hprose:end-->
+```
 
 ###更好的支持springboot
 ```

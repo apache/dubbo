@@ -50,5 +50,6 @@
         <module>dubbo-rpc-websocket</module>
         <module>dubbo-rpc-redis2</module>
         <module>dubbo-rpc-proxy</module>
+        <module>dubbo-rpc-hprose</module>
     </modules>
 </project>

@@ -13,10 +13,10 @@ import org.apache.thrift.TMultiplexedProcessor;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.TServiceClient;
 import org.apache.thrift.protocol.TCompactProtocol;
+import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
-import org.apache.thrift.transport.TFramedTransport;
-import org.apache.thrift.transport.TServerSocket;
-import org.apache.thrift.transport.TServerTransport;
+import org.apache.thrift.server.TThreadedSelectorServer;
+import org.apache.thrift.transport.*;
 
 import java.lang.reflect.*;
 import java.util.Map;
@@ -30,7 +30,7 @@ public class Thrift9Protocol extends AbstractProxyProtocol {
 
     public static final int DEFAULT_PORT = 20990;
 
-    private final Map<String, TThreadPoolServer> serversMap = new ConcurrentHashMap<String, TThreadPoolServer>();
+    private final Map<String, TServer> serversMap = new ConcurrentHashMap<>();
 
     private final Map<String, TMultiplexedProcessor> processorMap = new ConcurrentHashMap<>();
 
@@ -48,7 +48,7 @@ public class Thrift9Protocol extends AbstractProxyProtocol {
         int port = url.getPort();
         final String addr = url.getIp() + ":" + url.getPort();
 
-        TThreadPoolServer server = serversMap.get(addr);
+        TServer server = serversMap.get(addr);
         final String IfaceName = type.getName();
 
         try {
@@ -62,34 +62,41 @@ public class Thrift9Protocol extends AbstractProxyProtocol {
             TProcessor serviceProcessor = (TProcessor) constructor.newInstance(impl);
 
             if (server == null) {
-                TServerTransport transport = new TServerSocket(port);
+                TMultiplexedProcessor processor = new TMultiplexedProcessor();
+                if (url.getProtocol().equals("thrift9_selector")) {
+                    TNonblockingServerTransport tNonblockingServerTransport = new TNonblockingServerSocket(port);
+                    TThreadedSelectorServer.Args args = new TThreadedSelectorServer.Args(tNonblockingServerTransport);
+                    args.outputTransportFactory(new TFramedTransport.Factory());
+                    args.inputTransportFactory(new TFramedTransport.Factory());
+                    args.protocolFactory(new TCompactProtocol.Factory());
+                    args.selectorThreads(Runtime.getRuntime().availableProcessors() * 2);
+                    args.workerThreads(threads);
+                    server = new TThreadedSelectorServer(args);
+                }else{
+                    TServerTransport transport = new TServerSocket(port);
 
-                // 多线程处理器参数设置
-                TThreadPoolServer.Args args = new TThreadPoolServer.Args(transport);
+                    // 多线程处理器参数设置
+                    TThreadPoolServer.Args args = new TThreadPoolServer.Args(transport);
+                    // 用户请求完成后,出站口
+                    args.outputTransportFactory(new TFramedTransport.Factory());
+                    args.inputTransportFactory(new TFramedTransport.Factory());
 
-                // 用户请求完成后,出站口
-                args.outputTransportFactory(new TFramedTransport.Factory());
-                args.inputTransportFactory(new TFramedTransport.Factory());
+                    // 设置高压缩二进制协议
+                    args.protocolFactory(new TCompactProtocol.Factory());
+                    args.processor(processor);
+                    // 设置线程池初始化数量
+                    args.minWorkerThreads(10);
+                    // 最大允许并发,超过并发,线程阻塞.排队处理
+                    args.maxWorkerThreads(threads);
+                    args.requestTimeoutUnit(TimeUnit.MILLISECONDS);
+                    args.requestTimeout(timeout);
 
-                // 设置高压缩二进制协议
-                args.protocolFactory(new TCompactProtocol.Factory());
+                    // 多线程服务 //默认初始化5个线程
+                    server = new TThreadPoolServer(args);
+                }
 
                 // 服务管理器
-                TMultiplexedProcessor processor = new TMultiplexedProcessor();
-
                 processorMap.put(addr, processor);
-
-                args.processor(processor);
-                // 设置线程池初始化数量
-                args.minWorkerThreads(10);
-                // 最大允许并发,超过并发,线程阻塞.排队处理
-                args.maxWorkerThreads(threads);
-                args.requestTimeoutUnit(TimeUnit.MILLISECONDS);
-                args.requestTimeout(timeout);
-
-                // 多线程服务 //默认初始化5个线程
-                server = new TThreadPoolServer(args);
-
                 serversMap.put(addr, server);
                 // 设置监听器
                 // server.setServerEventHandler(new ServerEven());
@@ -170,7 +177,7 @@ public class Thrift9Protocol extends AbstractProxyProtocol {
         }
         for (String key : serversMap.keySet()) {
             processorMap.remove(key);
-            TThreadPoolServer tThreadPoolServer = this.serversMap.remove(key);
+            TServer tThreadPoolServer = this.serversMap.remove(key);
 
             try {
                 if (tThreadPoolServer.isServing()) {

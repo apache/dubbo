@@ -64,7 +64,7 @@ public class RestProxyProtocol extends AbstractProxyProtocol {
         final String addr = url.getIp() + ":" + url.getPort();
         HttpServer server = serverMap.get(addr);
         if (server == null) {
-            server = httpBinder.bind(url, new RestProxyHanlder());
+            server = httpBinder.bind(url, new RestProxyHandler());
             serverMap.put(addr, server);
         }
 
@@ -167,7 +167,7 @@ public class RestProxyProtocol extends AbstractProxyProtocol {
         return 8080;
     }
 
-    private class RestProxyHanlder implements HttpHandler {
+    private class RestProxyHandler implements HttpHandler {
         @Override
         public void handle(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
             if (request.getMethod().equalsIgnoreCase("GET")) {

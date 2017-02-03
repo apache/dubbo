@@ -49,7 +49,7 @@ public class AvroProtocol extends AbstractProxyProtocol {
     @Override
     protected <T> Runnable doExport(final T impl, final Class<T> type, URL url) throws RpcException {
         final String addr = url.getIp() + ":" + url.getPort();
-        int threads = url.getPositiveParameter(Constants.IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS);
+        int threads = url.getPositiveParameter(Constants.THREADPOOL_KEY, 200);
 
         String bindHost = url.getHost();
         if (url.getParameter("anyhost", false)) {

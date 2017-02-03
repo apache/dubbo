@@ -1,0 +1,2 @@
+hprose=com.alibaba.dubbo.rpc.protocol.hprose.HproseProtocol
+hprose_tcp=com.alibaba.dubbo.rpc.protocol.hprose.HproseTcpProtocol
