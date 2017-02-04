@@ -36,15 +36,15 @@ Dubbox adds features like RESTful remoting, Kyro/FST serialization, etc to the p
 
 ## 文档资料
 
-[在Dubbo中开发REST风格的远程调用（RESTful Remoting）](http://dangdangdotcom.github.io/dubbox/rest.html)
+[在Dubbo中开发REST风格的远程调用（RESTful Remoting）](https://dangdangdotcom.github.io/dubbox/rest.html)
 
-[在Dubbo中使用高效的Java序列化（Kryo和FST）](http://dangdangdotcom.github.io/dubbox/serialization.html)
+[在Dubbo中使用高效的Java序列化（Kryo和FST）](https://dangdangdotcom.github.io/dubbox/serialization.html)
 
-[使用JavaConfig方式配置dubbox](http://dangdangdotcom.github.io/dubbox/java-config.html)
+[使用JavaConfig方式配置dubbox](https://dangdangdotcom.github.io/dubbox/java-config.html)
 
-[Dubbo Jackson序列化使用说明](http://dangdangdotcom.github.io/dubbox/jackson.html)
+[Dubbo Jackson序列化使用说明](https://dangdangdotcom.github.io/dubbox/jackson.html)
 
-[Demo应用简单运行指南](http://dangdangdotcom.github.io/dubbox/demo.html)
+[Demo应用简单运行指南](https://dangdangdotcom.github.io/dubbox/demo.html)
 
 [Dubbox@InfoQ](http://www.infoq.com/cn/news/2014/10/dubbox-open-source) 
 
