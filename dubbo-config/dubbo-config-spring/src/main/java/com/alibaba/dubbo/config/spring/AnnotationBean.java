@@ -136,15 +136,15 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
             return bean;
         }
         Class targetClass = AopUtils.getTargetClass(bean);
-        Service service = (Service) bean.getClass().getAnnotation(Service.class);
+        Service service = (Service) targetClass.getAnnotation(Service.class);
         if (service != null) {
             ServiceBean<Object> serviceConfig = new ServiceBean<Object>(service);
             if (void.class.equals(service.interfaceClass())
-                && "".equals(service.interfaceName())) {
+                    && "".equals(service.interfaceName())) {
                 if (targetClass.getInterfaces().length > 0) {
                     serviceConfig.setInterface(targetClass.getInterfaces()[0]);
                 } else {
-                    throw new IllegalStateException("Failed to export remote service class " + targetClass.getName() + ", cause: The @Service undefined interfaceClass or interfaceName, and the service class unimplemented any interfaces.");
+                    throw new IllegalStateException("Failed to export remote service class " + targetClass.getClass().getName() + ", cause: The @Service undefined interfaceClass or interfaceName, and the service class unimplemented any interfaces.");
                 }
             }
             if (applicationContext != null) {
@@ -208,17 +208,17 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
         for (Method method : methods) {
             String name = method.getName();
             if (name.length() > 3 && name.startsWith("set")
-                && method.getParameterTypes().length == 1
-                && Modifier.isPublic(method.getModifiers())
-                && ! Modifier.isStatic(method.getModifiers())) {
+                    && method.getParameterTypes().length == 1
+                    && Modifier.isPublic(method.getModifiers())
+                    && ! Modifier.isStatic(method.getModifiers())) {
                 try {
-                    Reference reference = method.getAnnotation(Reference.class);
-                    if (reference != null) {
-                        Object value = refer(reference, method.getParameterTypes()[0]);
-                        if (value != null) {
-                            method.invoke(bean, new Object[] {  });
-                        }
-                    }
+                	Reference reference = method.getAnnotation(Reference.class);
+                	if (reference != null) {
+	                	Object value = refer(reference, method.getParameterTypes()[0]);
+	                	if (value != null) {
+	                		method.invoke(bean, new Object[] {  });
+	                	}
+                	}
                 } catch (Throwable e) {
                     logger.error("Failed to init remote service reference at method " + name + " in class " + bean.getClass().getName() + ", cause: " + e.getMessage(), e);
                 }
@@ -231,14 +231,14 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
                     field.setAccessible(true);
                 }
                 Reference reference = field.getAnnotation(Reference.class);
-                if (reference != null) {
-                    Object value = refer(reference, field.getType());
-                    if (value != null) {
-                        field.set(bean, value);
-                    }
-                }
+            	if (reference != null) {
+	                Object value = refer(reference, field.getType());
+	                if (value != null) {
+	                	field.set(bean, value);
+	                }
+            	}
             } catch (Throwable e) {
-                logger.error("Failed to init remote service reference at filed " + field.getName() + " in class " + bean.getClass().getName() + ", cause: " + e.getMessage(), e);
+            	logger.error("Failed to init remote service reference at filed " + field.getName() + " in class " + bean.getClass().getName() + ", cause: " + e.getMessage(), e);
             }
         }
         return bean;
@@ -260,8 +260,8 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
         if (referenceConfig == null) {
             referenceConfig = new ReferenceBean<Object>(reference);
             if (void.class.equals(reference.interfaceClass())
-                && "".equals(reference.interfaceName())
-                && referenceClass.isInterface()) {
+                    && "".equals(reference.interfaceName())
+                    && referenceClass.isInterface()) {
                 referenceConfig.setInterface(referenceClass);
             }
             if (applicationContext != null) {
