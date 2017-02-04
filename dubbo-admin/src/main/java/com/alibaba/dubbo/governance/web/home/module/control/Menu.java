@@ -49,7 +49,7 @@ public class Menu {
         	context.put("bucLogoutAddress", rootContextPath.getURI("logout"));
         }
         if (! context.containsKey("helpUrl")) {
-        	context.put("helpUrl", "http://code.alibabatech.com/wiki/display/dubbo");
+        	context.put("helpUrl", "https://github.com/dangdangdotcom/dubbox/wiki");
         }
         context.put(WebConstants.CURRENT_USER_KEY, user);
         context.put("language", parser.getString("locale"));
