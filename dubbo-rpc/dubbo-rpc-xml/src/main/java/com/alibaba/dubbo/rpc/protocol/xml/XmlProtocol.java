@@ -89,7 +89,7 @@ public class XmlProtocol extends AbstractProxyProtocol {
             config.setReplyTimeout(timeout);
             config.setEnabledForExtensions(true);
             config.setEnabledForExceptions(true);
-            config.setServerURL(new java.net.URL("http://" + url.getHost() + ":" + url.getPort()));
+            config.setServerURL(new java.net.URL("http://" + url.getHost() + ":" + url.getPort()+getContextPath(url)));
             client.setConfig(config);
             client.setMaxThreads(connections);
         } catch (MalformedURLException e) {
@@ -117,4 +117,8 @@ public class XmlProtocol extends AbstractProxyProtocol {
         this.httpBinder = httpBinder;
     }
 
+    private String getContextPath(URL url) {
+        int pos = url.getPath().lastIndexOf("/");
+        return pos > 0 ? url.getPath().substring(0, pos) : "";
+    }
 }
