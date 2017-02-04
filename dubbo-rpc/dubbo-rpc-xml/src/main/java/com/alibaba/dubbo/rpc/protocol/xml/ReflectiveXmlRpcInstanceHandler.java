@@ -100,7 +100,7 @@ public class ReflectiveXmlRpcInstanceHandler implements XmlRpcHandler {
 
     private Object invoke(Object pInstance, Method pMethod, Object[] pArgs) throws XmlRpcException {
         try {
-            return pMethod.invoke(pInstance, pArgs);
+            return pMethod.invoke(bean, pArgs);
         } catch (IllegalAccessException e) {
             throw new XmlRpcException("Illegal access to method "
                     + pMethod.getName() + " in class "
