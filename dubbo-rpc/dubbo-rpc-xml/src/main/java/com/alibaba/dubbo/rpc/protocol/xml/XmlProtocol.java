@@ -11,6 +11,7 @@ import com.alibaba.dubbo.rpc.protocol.AbstractProxyProtocol;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
+import org.apache.xmlrpc.client.util.ClientFactory;
 import org.apache.xmlrpc.server.PropertyHandlerMapping;
 import org.apache.xmlrpc.server.XmlRpcServerConfigImpl;
 import org.apache.xmlrpc.webserver.XmlRpcServletServer;
@@ -82,25 +83,22 @@ public class XmlProtocol extends AbstractProxyProtocol {
     protected <T> T doRefer(final Class<T> type, URL url) throws RpcException {
         int timeout = url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
         int connections = url.getParameter(Constants.CONNECTIONS_KEY, 20);
-        final XmlRpcClient client = new XmlRpcClient();
         try {
+            final XmlRpcClient client = new XmlRpcClient();
             XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
             config.setConnectionTimeout(timeout);
             config.setReplyTimeout(timeout);
             config.setEnabledForExtensions(true);
             config.setEnabledForExceptions(true);
-            config.setServerURL(new java.net.URL("http://" + url.getHost() + ":" + url.getPort()+getContextPath(url)));
+            config.setServerURL(new java.net.URL("http://" + url.getHost() + ":" + url.getPort() + getContextPath(url)));
             client.setConfig(config);
             client.setMaxThreads(connections);
+            ClientFactory clientFactory = new ClientFactory(client);
+            return (T) clientFactory.newInstance(XmlProtocol.class.getClassLoader(),type,type.getName());
         } catch (MalformedURLException e) {
             throw new RpcException(e);
         }
-        return (T) Proxy.newProxyInstance(XmlProtocol.class.getClassLoader(), new Class[]{type}, new InvocationHandler() {
-            @Override
-            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                return client.execute(type.getName() + "." + method.getName(), args);
-            }
-        });
+
     }
 
     private class XmlHttpHandler implements HttpHandler {
