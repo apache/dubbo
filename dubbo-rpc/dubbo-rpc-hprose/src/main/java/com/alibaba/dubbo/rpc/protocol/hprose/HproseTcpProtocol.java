@@ -54,7 +54,10 @@ public class HproseTcpProtocol extends AbstractProxyProtocol {
         return new Runnable() {
             @Override
             public void run() {
-                hproseHttpServiceMap.get(port).remove(type.getName());
+                HproseTcpServer hproseTcpServer = hproseHttpServiceMap.get(port);
+                if (hproseTcpServer != null) {
+                    hproseTcpServer.remove(type.getName());
+                }
             }
         };
     }

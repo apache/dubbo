@@ -621,6 +621,21 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-rpc-xml</artifactId>
+            <version>${project.parent.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.xmlrpc</groupId>
+                    <artifactId>xmlrpc-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.xmlrpc</groupId>
+                    <artifactId>xmlrpc-server</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -699,6 +714,7 @@
                                     <include>com.alibaba:dubbo-rpc-websocket</include>
                                     <include>com.alibaba:dubbo-rpc-proxy</include>
                                     <include>com.alibaba:dubbo-rpc-hprose</include>
+                                    <include>com.alibaba:dubbo-rpc-xml</include>
                                     <include>com.alibaba:dubbo-filter-validation</include>
                                     <include>com.alibaba:dubbo-filter-cache</include>
                                     <include>com.alibaba:dubbo-filter-oauth2</include>

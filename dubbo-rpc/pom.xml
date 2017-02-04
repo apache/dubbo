@@ -51,5 +51,7 @@
         <module>dubbo-rpc-redis2</module>
         <module>dubbo-rpc-proxy</module>
         <module>dubbo-rpc-hprose</module>
+        <module>dubbo-rpc-ice</module>
+        <module>dubbo-rpc-xml</module>
     </modules>
 </project>

@@ -83,6 +83,7 @@
             <artifactId>rxjava</artifactId>
         </dependency>
 
+
 <!--        <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>dubbo-rpc-ratpack</artifactId>
@@ -113,6 +114,16 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>dubbo-rpc-hprose</artifactId>
+            <version>2.5.4-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-rpc-ice</artifactId>
+            <version>2.5.4-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-rpc-xml</artifactId>
             <version>2.5.4-SNAPSHOT</version>
         </dependency>
 

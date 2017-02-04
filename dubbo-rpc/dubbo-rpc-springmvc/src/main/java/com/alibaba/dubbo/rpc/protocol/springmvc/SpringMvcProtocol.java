@@ -83,7 +83,10 @@ public class SpringMvcProtocol extends AbstractProxyProtocol {
 
         return new Runnable() {
             public void run() {
-                servers.get(addr).undeploy(type);
+                SpringMvcHttpServer server = servers.get(addr);
+                if (server != null) {
+                    server.undeploy(type);
+                }
             }
         };
     }

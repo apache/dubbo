@@ -61,4 +61,7 @@
     <dubbo:reference interface="com.alibaba.dubbo.demo.HproseService" id="hproseService"/>
     <!--hprose-->
 
+    <!--xml-->
+    <dubbo:reference interface="com.alibaba.dubbo.demo.XmlService" id="xmlService"/>
+    <!--xml-->
 </beans>

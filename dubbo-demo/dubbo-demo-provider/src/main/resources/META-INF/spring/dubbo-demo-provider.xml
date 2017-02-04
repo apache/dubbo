@@ -104,5 +104,10 @@
     <dubbo:service interface="com.alibaba.dubbo.demo.HproseService" ref="hproseService" protocol="hprose,hprose_tcp"/>
     <!--hprose:end-->
 
+    <!--xml:start-->
+    <dubbo:protocol port="8091" name="xml" server="tomcat"/>
+    <bean id="xmlService" class="com.alibaba.dubbo.demo.provider.XmlServiceImpl"/>
+    <dubbo:service interface="com.alibaba.dubbo.demo.XmlService" ref="xmlService" protocol="xml"/>
+    <!--xml:end-->
 
 </beans>

@@ -127,7 +127,10 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
         return new Runnable() {
             @Override
             public void run() {
-                serverMap.get(addr).removeNamespace(url.getServiceInterface());
+                SocketIOServer socketIOServer = serverMap.get(addr);
+                if (socketIOServer != null) {
+                    socketIOServer.removeNamespace(url.getServiceInterface());
+                }
             }
         };
     }
