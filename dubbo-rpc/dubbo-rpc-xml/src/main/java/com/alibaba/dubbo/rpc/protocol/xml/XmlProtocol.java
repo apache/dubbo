@@ -2,7 +2,6 @@ package com.alibaba.dubbo.rpc.protocol.xml;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.config.spring.ServiceBean;
 import com.alibaba.dubbo.remoting.http.HttpBinder;
 import com.alibaba.dubbo.remoting.http.HttpHandler;
 import com.alibaba.dubbo.rpc.RpcContext;
@@ -20,9 +19,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.net.MalformedURLException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -46,7 +42,6 @@ public class XmlProtocol extends AbstractProxyProtocol {
         final Integer port = url.getPort();
         XmlRpcHandlerMappingImpl phm = new XmlRpcHandlerMappingImpl();
 
-        T bean = ServiceBean.getSpringContext().getBean(type);
         try {
             XmlRpcServletServer xmlRpcServletServer = serverMap.get(port);
             if (xmlRpcServletServer == null) {

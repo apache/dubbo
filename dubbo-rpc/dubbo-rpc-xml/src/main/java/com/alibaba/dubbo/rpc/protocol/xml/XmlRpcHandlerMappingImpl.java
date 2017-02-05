@@ -24,13 +24,8 @@ public class XmlRpcHandlerMappingImpl extends PropertyHandlerMapping {
                 pClass, factory, pMethods, bean);
     }
 
-    @Override
-    public void addHandler(String pKey, Class pClass) throws XmlRpcException {
-        super.addHandler(pKey, pClass);
-    }
-
     public void addHandler(String pKey, Class pClass, Object bean) throws XmlRpcException {
-        beanMap.put(pClass.getName(), bean);
+        beanMap.put(pKey, bean);
         super.addHandler(pKey, pClass);
     }
 
