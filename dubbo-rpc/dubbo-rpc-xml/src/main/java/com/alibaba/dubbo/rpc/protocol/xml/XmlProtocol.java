@@ -60,7 +60,7 @@ public class XmlProtocol extends AbstractProxyProtocol {
                 httpBinder.bind(url, new XmlHttpHandler());
                 serverMap.put(port, xmlRpcServletServer);
             }
-            phm.addHandler(type.getName(), bean.getClass(), bean);
+            phm.addHandler(type.getName(), type, impl);
             xmlRpcServletServer.setHandlerMapping(phm);
         } catch (XmlRpcException e) {
             throw new RpcException(e);

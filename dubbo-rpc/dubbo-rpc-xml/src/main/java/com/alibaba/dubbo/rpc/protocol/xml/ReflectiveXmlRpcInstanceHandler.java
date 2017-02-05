@@ -63,7 +63,7 @@ public class ReflectiveXmlRpcInstanceHandler implements XmlRpcHandler {
     }
 
     private Object getInstance(XmlRpcRequest pRequest) throws XmlRpcException {
-        return requestProcessorFactory.getRequestProcessor(pRequest);
+        return bean;
     }
 
     public Object execute(XmlRpcRequest pRequest) throws XmlRpcException {
@@ -100,7 +100,7 @@ public class ReflectiveXmlRpcInstanceHandler implements XmlRpcHandler {
 
     private Object invoke(Object pInstance, Method pMethod, Object[] pArgs) throws XmlRpcException {
         try {
-            return pMethod.invoke(bean, pArgs);
+            return pMethod.invoke(pInstance, pArgs);
         } catch (IllegalAccessException e) {
             throw new XmlRpcException("Illegal access to method "
                     + pMethod.getName() + " in class "
