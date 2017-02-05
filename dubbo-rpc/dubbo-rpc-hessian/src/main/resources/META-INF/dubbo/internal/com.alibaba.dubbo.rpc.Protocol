@@ -1,1 +1,2 @@
 hessian=com.alibaba.dubbo.rpc.protocol.hessian.HessianProtocol
+burlap=com.alibaba.dubbo.rpc.protocol.burlap.BurlapProtocol

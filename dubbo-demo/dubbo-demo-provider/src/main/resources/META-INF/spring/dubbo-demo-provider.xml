@@ -110,4 +110,9 @@
     <dubbo:service interface="com.alibaba.dubbo.demo.XmlService" ref="xmlService" protocol="xml"/>
     <!--xml:end-->
 
+    <!--jms:start-->
+    <dubbo:protocol port="61617" name="jms"/>
+    <bean id="jsmService" class="com.alibaba.dubbo.demo.provider.JmsServiceImpl"/>
+    <dubbo:service interface="com.alibaba.dubbo.demo.JmsService" ref="jsmService" protocol="jms"/>
+    <!--jms:end-->
 </beans>

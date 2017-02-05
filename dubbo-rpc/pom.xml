@@ -53,5 +53,7 @@
         <module>dubbo-rpc-hprose</module>
         <module>dubbo-rpc-ice</module>
         <module>dubbo-rpc-xml</module>
+        <module>dubbo-rpc-motan</module>
+        <module>dubbo-rpc-jms</module>
     </modules>
 </project>

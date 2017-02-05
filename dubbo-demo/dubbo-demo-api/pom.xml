@@ -126,6 +126,11 @@
             <artifactId>dubbo-rpc-xml</artifactId>
             <version>2.5.4-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-rpc-jms</artifactId>
+            <version>2.5.4-SNAPSHOT</version>
+        </dependency>
 
     </dependencies>
 </project>

@@ -64,4 +64,8 @@
     <!--xml-->
     <dubbo:reference interface="com.alibaba.dubbo.demo.XmlService" id="xmlService"/>
     <!--xml-->
+
+    <!--jms-->
+    <dubbo:reference interface="com.alibaba.dubbo.demo.JmsService" id="jmsService"/>
+    <!--jms-->
 </beans>
