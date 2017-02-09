@@ -115,4 +115,10 @@
     <bean id="jsmService" class="com.alibaba.dubbo.demo.provider.JmsServiceImpl"/>
     <dubbo:service interface="com.alibaba.dubbo.demo.JmsService" ref="jsmService" protocol="jms"/>
     <!--jms:end-->
+
+    <!--jms:start-->
+    <dubbo:protocol port="6380" name="redis2"/>
+    <bean id="redis2Service" class="com.alibaba.dubbo.demo.provider.Redis2ServiceImpl"/>
+    <dubbo:service interface="com.alibaba.dubbo.demo.Redis2Service" ref="redis2Service" protocol="redis2"/>
+    <!--jms:end-->
 </beans>

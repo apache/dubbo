@@ -6,30 +6,40 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import redis.server.netty.RedisCommandDecoder;
+import redis.server.netty.RedisReplyEncoder;
+import redis.server.netty.SimpleRedisServer;
 
 /**
- * Created by wuyu on 2017/1/26.
+ * Created by wuyu on 2017/2/7.
  */
 public class Redis2Server {
 
     private String host = "0.0.0.0";
 
-    private int port = 6381;
+    private int port = 6380;
 
     private EventLoopGroup bossGroup;
 
     private EventLoopGroup workerGroup;
 
-    private Map<String, Object> services = new ConcurrentHashMap<>();
+    private RpcRedisCommandHandler rpcRedisCommandHandler;
 
-    public Redis2Server(String host, int port) {
+    public Redis2Server(String host, int port, int threads, int timeout) {
         this.host = host;
         this.port = port;
-        workerGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors() * 2);
-        bossGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors() * 2);
+        workerGroup = new NioEventLoopGroup(threads);
+        bossGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors() + 1);
+        this.rpcRedisCommandHandler = new RpcRedisCommandHandler(new RpcSimpleRedisServer());
+
+    }
+
+    public Redis2Server(String host, int port, int threads, int timeout, RpcRedisCommandHandler rpcRedisCommandHandler) {
+        this.host = host;
+        this.port = port;
+        workerGroup = new NioEventLoopGroup(threads);
+        bossGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors() + 1);
+        this.rpcRedisCommandHandler = rpcRedisCommandHandler;
     }
 
     public void start() {
@@ -48,12 +58,18 @@ public class Redis2Server {
                     protected void initChannel(SocketChannel ch)
                             throws Exception {
                         ChannelPipeline p = ch.pipeline();
-                        p.addLast(new RedisCommandEncoder());
                         p.addLast(new RedisCommandDecoder());
+                        p.addLast(new RedisReplyEncoder());
+                        p.addLast(getRecRedisCommandHandler());
                     }
                 });
-        ChannelFuture channelFuture = bootstrap.bind(this.host, this.port);
-        channelFuture.syncUninterruptibly();
+
+        try {
+            ChannelFuture f = bootstrap.bind(this.host, this.port).sync().channel().closeFuture();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            stop();
+        }
     }
 
     public void stop() {
@@ -61,13 +77,7 @@ public class Redis2Server {
         workerGroup.shutdownGracefully();
     }
 
-    public void addService(Object service) {
-        services.put(service.getClass().getName(), service);
+    public RpcRedisCommandHandler getRecRedisCommandHandler() {
+        return rpcRedisCommandHandler;
     }
-
-    public void removeService(Object object) {
-        services.remove(object.getClass().getName());
-    }
-
-
 }

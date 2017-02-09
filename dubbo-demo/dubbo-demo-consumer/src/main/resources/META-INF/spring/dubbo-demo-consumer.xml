@@ -68,4 +68,8 @@
     <!--jms-->
     <dubbo:reference interface="com.alibaba.dubbo.demo.JmsService" id="jmsService"/>
     <!--jms-->
+
+    <!--redis2-->
+    <dubbo:reference interface="com.alibaba.dubbo.demo.Redis2Service" id="redis2Service"/>
+    <!--redis2-->
 </beans>

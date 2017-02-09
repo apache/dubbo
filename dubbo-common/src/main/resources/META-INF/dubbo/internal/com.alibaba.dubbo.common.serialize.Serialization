@@ -5,3 +5,4 @@ compactedjava=com.alibaba.dubbo.common.serialize.support.java.CompactedJavaSeria
 json=com.alibaba.dubbo.common.serialize.support.json.JsonSerialization
 fastjson=com.alibaba.dubbo.common.serialize.support.json.FastJsonSerialization
 nativejava=com.alibaba.dubbo.common.serialize.support.nativejava.NativeJavaSerialization
+jackson=com.alibaba.dubbo.common.serialize.support.jackson.JacksonSerialization

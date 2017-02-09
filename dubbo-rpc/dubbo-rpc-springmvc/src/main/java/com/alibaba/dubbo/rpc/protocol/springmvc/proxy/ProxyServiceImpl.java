@@ -7,10 +7,8 @@ import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.service.GenericService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.parser.ParserConfig;
-import com.alibaba.fastjson.parser.deserializer.ASMJavaBeanDeserializer;
-import com.alibaba.fastjson.util.TypeUtils;
 import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
@@ -47,6 +45,8 @@ public class ProxyServiceImpl implements ProxyService, DisposableBean, Applicati
     private Map<String, Class> clazzCache = new ConcurrentHashMap<>();
 
     private ApplicationContext applicationContext;
+
+    private ObjectMapper objectMapper = new ObjectMapper();
 
 
     /**
@@ -91,7 +91,7 @@ public class ProxyServiceImpl implements ProxyService, DisposableBean, Applicati
                 Object[] args = convertArgs(method, config.getParams());
                 //判断本地是否有相关bean,如果有直接调用
                 Map beans = applicationContext.getBeansOfType(getClazz(config.getService()));
-                if (beans.size() == 1) {
+                if (beans.size() >= 1) {
                     Object bean = beans.values().iterator().next();
                     result = method.invoke(bean, args);
                     if (result instanceof Future) {
@@ -122,26 +122,9 @@ public class ProxyServiceImpl implements ProxyService, DisposableBean, Applicati
 
                         result = list;
                     }
+                } else {
+                    result = genericService(config).$invoke(methodName, config.getParamsType(), args);
                 }
-
-            } else {
-                Object[] params = new Object[config.getParams().length];
-                for (int i = 0; i < config.getParams().length; i++) {
-                    if (config.getParams()[i] == null) {
-                        params[i] = null;
-                    } else {
-                        try {
-                            params[i] = JSON.parse(config.getParams()[i]);
-                        } catch (Exception e) {
-                            try {
-                                params[i] = JSON.parseArray(config.getParams()[i]);
-                            } catch (Exception e2) {
-                                params[i] = config.getParams()[i];
-                            }
-                        }
-                    }
-                }
-                result = genericService(config).$invoke(methodName, config.getParamsType(), params);
             }
 
             return config.getJsonrpc() == null ? result : createSuccessResponse(config.getJsonrpc(), config.getId(), result);
@@ -161,17 +144,13 @@ public class ProxyServiceImpl implements ProxyService, DisposableBean, Applicati
         Type[] genericParameterTypes = method.getGenericParameterTypes();
         for (int i = 0; i < genericParameterTypes.length; i++) {
             JavaType javaType = TypeFactory.defaultInstance().constructType(genericParameterTypes[i]);
-            if (javaType.isCollectionLikeType() || javaType.isArrayType()) {
-                convertArgs[i] = JSON.parseArray(args[i], javaType.getContentType().getRawClass());
-            } else if (javaType.isMapLikeType()) {
-                convertArgs[i] = JSON.parseObject(args[i], javaType.getRawClass());
+            if (String.class.isAssignableFrom(method.getReturnType())) {
+                convertArgs[i] = args[i];
+            } else if (objectMapper.canDeserialize(javaType)) {
+                convertArgs[i] = objectMapper.readValue(args[i], javaType);
             } else {
-                ParserConfig parserConfig = ParserConfig.getGlobalInstance();
-                if (parserConfig.getDeserializer(javaType.getRawClass()) instanceof ASMJavaBeanDeserializer) {
-                    convertArgs[i] = JSON.parseObject(args[i], javaType.getRawClass());
-                } else {
-                    convertArgs[i] = TypeUtils.cast(args[i], javaType.getRawClass(), ParserConfig.getGlobalInstance());
-                }
+                convertArgs[i] = objectMapper.convertValue(args[i], javaType);
+
             }
         }
 

@@ -1,4 +1,4 @@
-package com.alibaba.dubbo.rpc.protocol.redis2;
+package redis.netty4;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
