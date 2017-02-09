@@ -332,7 +332,7 @@ DemoService demoservice = proxyService.target(DemoService.class);
 <dubbo:service interface="com.alibaba.dubbo.demo.RestService" ref="restService" protocol="rest"/>
 <!--rest:end-->
 ```
-###rest
+###hprose
 ```
 <!--hprose:start  hprose 支持两种模式,http,tcp.-->
 <dubbo:protocol port="8089" name="hprose" server="tomcat"/>

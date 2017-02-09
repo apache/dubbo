@@ -2,12 +2,16 @@ package com.alibaba.dubbo.rpc.protocol.redis2;
 
 import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
 import com.alibaba.dubbo.config.spring.util.SpringUtil;
+import io.netty.buffer.ByteBuf;
 import redis.netty4.BulkReply;
+import redis.netty4.Reply;
+import redis.netty4.StatusReply;
 import redis.server.netty.RedisException;
 import redis.server.netty.SimpleRedisServer;
 
 import javax.sql.DataSource;
 import java.io.File;
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.reflect.Method;
@@ -23,6 +27,7 @@ public class RpcSimpleRedisServer extends SimpleRedisServer {
 
     private Set<String> serviceSet = new ConcurrentHashSet<>();
 
+
     @Override
     public BulkReply info(byte[] section) throws RedisException {
         BulkReply reply = super.info(section);
@@ -35,11 +40,28 @@ public class RpcSimpleRedisServer extends SimpleRedisServer {
         return new BulkReply(info.getBytes());
     }
 
+    @Override
+    public StatusReply select(byte[] index0) throws RedisException {
+        byte b = index0[0];
+        if ((int) b > 48) {
+            return new StatusReply(null) {
+                @Override
+                public void write(ByteBuf os) throws IOException {
+                    os.writeByte('-');
+                    os.writeBytes("ERR invalid DB index".getBytes());
+                    os.writeBytes(Reply.CRLF);
+                }
+            };
+        }
+        return StatusReply.OK;
+    }
+
+
     public void addServiceKey(String key) {
         serviceSet.add(key);
     }
 
-    public StringBuffer systemInfo() {
+    public static StringBuffer systemInfo() {
         Runtime r = Runtime.getRuntime();
         BigDecimal divide = new BigDecimal((r.totalMemory() - r.freeMemory())).divide(new BigDecimal(r.totalMemory()),
                 2, 4);
@@ -68,7 +90,7 @@ public class RpcSimpleRedisServer extends SimpleRedisServer {
         return sb;
     }
 
-    public String threadInfo() {
+    public static String threadInfo() {
         StringBuilder sb = new StringBuilder();
         sb.append("ThreadInfo\n");
         long[] allThreadIds = ManagementFactory.getThreadMXBean().getAllThreadIds();
@@ -79,7 +101,7 @@ public class RpcSimpleRedisServer extends SimpleRedisServer {
         return sb.toString();
     }
 
-    public String datasourceInfo() {
+    public static String datasourceInfo() {
         Set<DataSource> beans = SpringUtil.getBeans(DataSource.class);
         if (beans.size() == 0) {
             return "";
