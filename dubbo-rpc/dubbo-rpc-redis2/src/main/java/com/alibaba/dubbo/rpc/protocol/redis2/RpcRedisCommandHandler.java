@@ -4,7 +4,10 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import redis.netty4.*;
+import redis.netty4.BulkReply;
+import redis.netty4.Command;
+import redis.netty4.ErrorReply;
+import redis.netty4.Reply;
 import redis.server.netty.RedisCommandHandler;
 import redis.server.netty.RedisException;
 import redis.util.BytesKey;
@@ -56,22 +59,27 @@ public class RpcRedisCommandHandler extends RedisCommandHandler {
                 @Override
                 public Reply execute(Command command) throws RedisException {
                     Object[] objects = command.getObjects();
-                    Object[] params = new Object[types.length];
                     try {
+
+                        Object[] params = new Object[types.length];
                         ObjectMapper objectMapper = converter.getObjectMapper();
-                        for (int i = 0; i < params.length; i++) {
-                            JavaType javaType = converter.getJavaType(types[i]);
-                            String param = new String((byte[]) objects[i + 1], "utf-8");
-                            if ("(nil)".equals(param)) {
-                                params[i] = null;
-                            } else {
-                                params[i] = objectMapper.convertValue(param, javaType);
+
+                        if (types.length > 0) {
+                            for (int i = 0; i < params.length; i++) {
+                                JavaType javaType = converter.getJavaType(types[i]);
+                                String param = new String((byte[]) objects[i + 1], "utf-8");
+                                if ("(nil)".equals(param)) {
+                                    params[i] = null;
+                                } else {
+                                    params[i] = objectMapper.convertValue(param, javaType);
+                                }
                             }
                         }
-
                         Object result = method.invoke(impl, params);
+
+
                         if (result == null) {
-                            return StatusReply.OK;
+                            return BulkReply.NIL_REPLY;
                         }
 
                         if (result instanceof String) {

@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.Connection;
-import redis.netty4.Reply;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -29,19 +28,26 @@ public class Redis2Client {
         try {
             String key = type.getName() + "." + method.getName();
             Type genericReturnType = method.getGenericReturnType();
-            String[] params = new String[args.length];
-            for (int i = 0; i < args.length; i++) {
-                if (args[i] instanceof String) {
-                    params[i] = (String) args[i];
-                } else if (args[i] == null) {
-                    params[i] = "(nil)";
-                } else {
-                    params[i] = objectMapper.writeValueAsString(args[i]);
+
+            String reply = null;
+            if (args != null && args.length > 0) {
+                String[] params = new String[args.length];
+                for (int i = 0; i < args.length; i++) {
+                    if (args[i] instanceof String) {
+                        params[i] = (String) args[i];
+                    } else if (args[i] == null) {
+                        params[i] = "(nil)";
+                    } else {
+                        params[i] = objectMapper.writeValueAsString(args[i]);
+                    }
                 }
+                Connection connection = redis2Connection.sendCommand(key, params);
+                reply = connection.getBulkReply();
+            } else {
+                Connection connection = redis2Connection.sendCommand(key, "(nil)");
+                reply = connection.getBulkReply();
             }
 
-            Connection connection = redis2Connection.sendCommand(key, params);
-            String reply = connection.getBulkReply();
             JavaType javaType = TypeFactory.defaultInstance().constructType(genericReturnType);
 
             if (void.class.isAssignableFrom(method.getReturnType())) {

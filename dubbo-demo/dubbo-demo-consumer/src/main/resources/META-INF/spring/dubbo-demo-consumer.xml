@@ -38,7 +38,7 @@
 
 
     <!--thrift9-->
-    <dubbo:reference interface="com.alibaba.dubbo.demo.FooService$Iface" id="fooService"/>
+    <dubbo:reference interface="com.alibaba.dubbo.demo.FooService$Iface" id="fooService" timeout="10000"/>
     <!--thrift9-->
 
     <!--avro-->
@@ -46,7 +46,7 @@
     <!--avro-->
 
     <!--websocket-->
-    <dubbo:reference interface="com.alibaba.dubbo.demo.WebSocketService" id="webSocketService"/>
+    <dubbo:reference interface="com.alibaba.dubbo.demo.WebSocketService" id="webSocketService" timeout="10000"/>
     <!--websocket-->
 
     <!--restProxy-->

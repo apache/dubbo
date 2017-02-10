@@ -59,9 +59,10 @@
 
     <!--Thrift9 hprose 支持两种模式,TThreadPoolServer,TThreadedSelectorServer.-->
     <dubbo:protocol port="8083" name="thrift9"/>
-    <dubbo:protocol port="8090" name="thrift9_selector"/>
+    <!--<dubbo:protocol port="8090" name="thrift9_selector"/>-->
     <bean id="fooService" class="com.alibaba.dubbo.demo.provider.FooServiceImpl"/>
-    <dubbo:service interface="com.alibaba.dubbo.demo.FooService$Iface" ref="fooService" protocol="thrift9,thrift9_selector"/>
+    <dubbo:service interface="com.alibaba.dubbo.demo.FooService$Iface" ref="fooService" protocol="thrift9"/>
+    <!--<dubbo:service interface="com.alibaba.dubbo.demo.FooService$Iface" ref="fooService" protocol="thrift9_selector"/>-->
     <!--Thrift9-->
 
     <!--avro-->

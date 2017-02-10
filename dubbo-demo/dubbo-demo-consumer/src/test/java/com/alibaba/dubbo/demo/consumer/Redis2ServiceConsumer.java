@@ -21,5 +21,7 @@ public class Redis2ServiceConsumer {
         redis2Service.insert("1");
         String s = redis2Service.sayHello(null);
         System.err.println(s);
+        String s1 = redis2Service.returnNull();
+        System.err.println(s1);
     }
 }

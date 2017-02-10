@@ -11,4 +11,6 @@ public interface Redis2Service {
     public User getById(String id);
 
     public void insert(String id);
+
+    public String returnNull();
 }
