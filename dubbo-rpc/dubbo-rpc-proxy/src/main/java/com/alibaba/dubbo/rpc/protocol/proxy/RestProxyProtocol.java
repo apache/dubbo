@@ -193,7 +193,9 @@ public class RestProxyProtocol extends AbstractProxyProtocol {
                 response.setStatus(500);
             }
             PrintWriter writer = response.getWriter();
-            if (Integer.class.isInstance(message)) {
+            if (message == null) {
+                return ;
+            }else if (Integer.class.isInstance(message)) {
                 writer.print(Integer.class.cast(message).intValue());
             } else if (Long.class.isInstance(message)) {
                 writer.print(Long.class.cast(message).longValue());

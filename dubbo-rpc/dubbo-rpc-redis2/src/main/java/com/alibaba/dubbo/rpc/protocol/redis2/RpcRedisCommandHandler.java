@@ -1,6 +1,5 @@
 package com.alibaba.dubbo.rpc.protocol.redis2;
 
-import com.alibaba.dubbo.common.utils.PojoUtils;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.channel.ChannelHandler;
@@ -62,12 +61,17 @@ public class RpcRedisCommandHandler extends RedisCommandHandler {
                         ObjectMapper objectMapper = converter.getObjectMapper();
                         for (int i = 0; i < params.length; i++) {
                             JavaType javaType = converter.getJavaType(types[i]);
-                            params[i] = objectMapper.convertValue(new String((byte[]) objects[i + 1], "utf-8"), javaType);
+                            String param = new String((byte[]) objects[i + 1], "utf-8");
+                            if ("(nil)".equals(param)) {
+                                params[i] = null;
+                            } else {
+                                params[i] = objectMapper.convertValue(param, javaType);
+                            }
                         }
 
                         Object result = method.invoke(impl, params);
                         if (result == null) {
-                            return new InlineReply(null);
+                            return StatusReply.OK;
                         }
 
                         if (result instanceof String) {
@@ -111,12 +115,13 @@ public class RpcRedisCommandHandler extends RedisCommandHandler {
                 name[i] = (byte) (b + LOWER_DIFF);
             }
         }
+
         Wrapper wrapper = beanMethods.get(new BytesKey(name));
         if (wrapper != null) {
             Reply reply = wrapper.execute(msg);
             ctx.write(reply);
         } else {
-            super.channelRead0(ctx, msg);
+            ctx.fireChannelRead(msg);
         }
     }
 

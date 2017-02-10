@@ -7,8 +7,8 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import redis.server.netty.RedisCommandDecoder;
+import redis.server.netty.RedisCommandHandler;
 import redis.server.netty.RedisReplyEncoder;
-import redis.server.netty.SimpleRedisServer;
 
 /**
  * Created by wuyu on 2017/2/7.
@@ -23,15 +23,19 @@ public class Redis2Server {
 
     private EventLoopGroup workerGroup;
 
+    private EventLoopGroup redisGroup;
+
     private RpcRedisCommandHandler rpcRedisCommandHandler;
+
+    private RpcSimpleRedisServer rpcSimpleRedisServer = new RpcSimpleRedisServer();
 
     public Redis2Server(String host, int port, int threads, int timeout) {
         this.host = host;
         this.port = port;
         workerGroup = new NioEventLoopGroup(threads);
         bossGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors() + 1);
-        this.rpcRedisCommandHandler = new RpcRedisCommandHandler(new RpcSimpleRedisServer());
-
+        this.rpcRedisCommandHandler = new RpcRedisCommandHandler(rpcSimpleRedisServer);
+        redisGroup = new NioEventLoopGroup(1);
     }
 
     public Redis2Server(String host, int port, int threads, int timeout, RpcRedisCommandHandler rpcRedisCommandHandler) {
@@ -40,6 +44,7 @@ public class Redis2Server {
         workerGroup = new NioEventLoopGroup(threads);
         bossGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors() + 1);
         this.rpcRedisCommandHandler = rpcRedisCommandHandler;
+        redisGroup = new NioEventLoopGroup(1);
     }
 
     public void start() {
@@ -60,7 +65,8 @@ public class Redis2Server {
                         ChannelPipeline p = ch.pipeline();
                         p.addLast(new RedisCommandDecoder());
                         p.addLast(new RedisReplyEncoder());
-                        p.addLast(getRecRedisCommandHandler());
+                        p.addLast(getRpcRedisCommandHandler());
+                        p.addLast(redisGroup, new RedisCommandHandler(rpcSimpleRedisServer));
                     }
                 });
 
@@ -75,9 +81,10 @@ public class Redis2Server {
     public void stop() {
         bossGroup.shutdownGracefully();
         workerGroup.shutdownGracefully();
+        redisGroup.shutdownGracefully();
     }
 
-    public RpcRedisCommandHandler getRecRedisCommandHandler() {
+    public RpcRedisCommandHandler getRpcRedisCommandHandler() {
         return rpcRedisCommandHandler;
     }
 }

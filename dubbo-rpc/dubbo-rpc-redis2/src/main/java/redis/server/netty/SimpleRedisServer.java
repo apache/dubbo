@@ -3101,4 +3101,8 @@ public class SimpleRedisServer implements RedisServer {
     public IntegerReply zunionstore(byte[] destination0, byte[] numkeys1, byte[][] key2) throws RedisException {
         return _zstore(destination0, numkeys1, key2, "zunionstore", true);
     }
+
+    public BytesKeyObjectMap<Object> getData() {
+        return data;
+    }
 }

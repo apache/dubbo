@@ -1,12 +1,12 @@
 package redis.util;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.HashMap;
 
 /**
  * Map that uses byte[]s for keys. Wraps them for you. Passing a non-byte[] or
  * non-BytesKey will result in a CCE.
 */
-public class BytesKeyObjectMap<V> extends ConcurrentHashMap<Object, V> {
+public class BytesKeyObjectMap<V> extends HashMap<Object, V> {
 
   private BytesKey makeKey(Object key) {
     return key instanceof byte[] ? new BytesKey((byte[]) key) : (BytesKey) key;

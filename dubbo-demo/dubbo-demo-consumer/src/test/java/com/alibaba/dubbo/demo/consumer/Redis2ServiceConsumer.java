@@ -18,5 +18,8 @@ public class Redis2ServiceConsumer {
         System.err.println(sum);
         User byId = redis2Service.getById("1");
         System.err.println(byId);
+        redis2Service.insert("1");
+        String s = redis2Service.sayHello(null);
+        System.err.println(s);
     }
 }

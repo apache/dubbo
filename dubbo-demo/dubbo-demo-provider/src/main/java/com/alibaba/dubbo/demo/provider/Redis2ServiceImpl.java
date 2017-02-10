@@ -21,4 +21,9 @@ public class Redis2ServiceImpl implements Redis2Service {
     public User getById(String id) {
         return new User(id,"wuyu");
     }
+
+    @Override
+    public void insert(String id) {
+        System.err.println(id);
+    }
 }

@@ -1,12 +1,12 @@
 package redis.util;
 
-import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
+import java.util.HashSet;
 
 /**
  * Map that uses byte[]s for keys. Wraps them for you. Passing a non-byte[] or
  * non-BytesKey will result in a CCE.
  */
-public class BytesKeySet extends ConcurrentHashSet<BytesKey> {
+public class BytesKeySet extends HashSet<BytesKey> {
 
     public boolean add(byte[] member) {
         return super.add(new BytesKey(member));

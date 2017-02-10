@@ -9,4 +9,6 @@ public interface Redis2Service {
     public Integer sum(int i, int j);
 
     public User getById(String id);
+
+    public void insert(String id);
 }

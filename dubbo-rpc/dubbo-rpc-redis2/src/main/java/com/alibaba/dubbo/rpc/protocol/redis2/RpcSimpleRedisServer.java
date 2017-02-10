@@ -8,6 +8,7 @@ import redis.netty4.Reply;
 import redis.netty4.StatusReply;
 import redis.server.netty.RedisException;
 import redis.server.netty.SimpleRedisServer;
+import redis.util.BytesKeyObjectMap;
 
 import javax.sql.DataSource;
 import java.io.File;
@@ -40,11 +41,12 @@ public class RpcSimpleRedisServer extends SimpleRedisServer {
         return new BulkReply(info.getBytes());
     }
 
+
     @Override
     public StatusReply select(byte[] index0) throws RedisException {
         byte b = index0[0];
         if ((int) b > 48) {
-            return new StatusReply(null) {
+            return new StatusReply("") {
                 @Override
                 public void write(ByteBuf os) throws IOException {
                     os.writeByte('-');

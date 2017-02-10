@@ -44,7 +44,7 @@ public class Redis2Protocol extends AbstractProxyProtocol {
             serverMap.put(addr, redis2Server);
         }
 
-        final RpcRedisCommandHandler rpcRedisCommandHandler = redis2Server.getRecRedisCommandHandler();
+        final RpcRedisCommandHandler rpcRedisCommandHandler = redis2Server.getRpcRedisCommandHandler();
         rpcRedisCommandHandler.addHandler(url.toFullString(), type, impl);
 
         return new Runnable() {
