@@ -6,7 +6,7 @@ package com.alibaba.dubbo.demo;
 public interface Redis2Service {
     public String sayHello(String name);
 
-    public Integer sum(int i, int j);
+    public Long sum(Long i, Long j);
 
     public User getById(String id);
 

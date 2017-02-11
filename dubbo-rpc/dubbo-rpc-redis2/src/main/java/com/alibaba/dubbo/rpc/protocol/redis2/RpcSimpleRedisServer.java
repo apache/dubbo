@@ -20,13 +20,14 @@ import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by wuyu on 2017/2/8.
  */
 public class RpcSimpleRedisServer extends SimpleRedisServer {
 
-    private Set<String> serviceSet = new ConcurrentHashSet<>();
+    private Map<String, String> serviceSet = new ConcurrentHashMap<>();
 
 
     @Override
@@ -35,7 +36,7 @@ public class RpcSimpleRedisServer extends SimpleRedisServer {
         String info = threadInfo() + datasourceInfo() + reply.asUTF8String();
 
         info = info + systemInfo();
-        for (String key : serviceSet) {
+        for (String key : serviceSet.values()) {
             info = info + key + "\n";
         }
         return new BulkReply(info.getBytes());
@@ -59,8 +60,12 @@ public class RpcSimpleRedisServer extends SimpleRedisServer {
     }
 
 
-    public void addServiceKey(String key) {
-        serviceSet.add(key);
+    public void addServiceKey(String type, String value) {
+        serviceSet.put(type, value);
+    }
+
+    public void removeServiceKey(String type) {
+        serviceSet.remove(type);
     }
 
     public static StringBuffer systemInfo() {

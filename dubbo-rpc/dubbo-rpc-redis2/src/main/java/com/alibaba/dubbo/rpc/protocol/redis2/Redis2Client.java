@@ -29,19 +29,22 @@ public class Redis2Client {
             String key = type.getName() + "." + method.getName();
             Type genericReturnType = method.getGenericReturnType();
 
-            String reply = null;
+            Object reply;
             if (args != null && args.length > 0) {
                 String[] params = new String[args.length];
                 for (int i = 0; i < args.length; i++) {
-                    if (args[i] instanceof String) {
-                        params[i] = (String) args[i];
-                    } else if (args[i] == null) {
+                    if (args[i] == null) {
                         params[i] = "(nil)";
+                    } else if (args[i] instanceof String) {
+                        params[i] = (String) args[i];
                     } else {
                         params[i] = objectMapper.writeValueAsString(args[i]);
                     }
                 }
                 Connection connection = redis2Connection.sendCommand(key, params);
+//                if(Integer.class.isAssignableFrom(method.getReturnType())||Long.class.isAssignableFrom(method.getReturnType())){
+//                    return objectMapper.convertValue(connection.getIntegerReply(),method.getReturnType());
+//                }
                 reply = connection.getBulkReply();
             } else {
                 Connection connection = redis2Connection.sendCommand(key, "(nil)");
@@ -50,12 +53,14 @@ public class Redis2Client {
 
             JavaType javaType = TypeFactory.defaultInstance().constructType(genericReturnType);
 
-            if (void.class.isAssignableFrom(method.getReturnType())) {
+            if (reply == null) {
+                return null;
+            } else if (void.class.isAssignableFrom(method.getReturnType())) {
                 return null;
             } else if (String.class.isAssignableFrom(method.getReturnType())) {
                 return reply;
             } else if (objectMapper.canDeserialize(javaType)) {
-                return objectMapper.readValue(reply, javaType);
+                return objectMapper.readValue(reply.toString(), javaType);
             }
             return objectMapper.convertValue(reply, javaType);
         } finally {

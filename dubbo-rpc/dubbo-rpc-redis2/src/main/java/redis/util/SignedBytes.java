@@ -1,7 +1,5 @@
 package redis.util;
 
-import com.sun.istack.internal.Nullable;
-
 import java.util.Comparator;
 
 /**
@@ -175,16 +173,9 @@ public class SignedBytes {
     }
 
 
-    public static void checkArgument(
-            boolean expression, @Nullable Object errorMessage) {
-        if (!expression) {
-            throw new IllegalArgumentException(String.valueOf(errorMessage));
-        }
-    }
-
     public static void checkArgument(boolean expression,
-                                     @Nullable String errorMessageTemplate,
-                                     @Nullable Object... errorMessageArgs) {
+                                     String errorMessageTemplate,
+                                     Object... errorMessageArgs) {
         if (!expression) {
             throw new IllegalArgumentException(
                     format(errorMessageTemplate, errorMessageArgs));
@@ -192,7 +183,7 @@ public class SignedBytes {
     }
 
     static String format(String template,
-                         @Nullable Object... args) {
+                         Object... args) {
         template = String.valueOf(template); // null -> "null"
 
         // start substituting the arguments into the '%s' placeholders

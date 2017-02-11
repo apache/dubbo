@@ -55,5 +55,6 @@
         <module>dubbo-rpc-xml</module>
         <module>dubbo-rpc-motan</module>
         <module>dubbo-rpc-jms</module>
+        <module>dubbo-rpc-zuul</module>
     </modules>
 </project>

@@ -13,7 +13,7 @@ public class Redis2ServiceImpl implements Redis2Service {
     }
 
     @Override
-    public Integer sum(int i, int j) {
+    public Long sum(Long i, Long j) {
         return i + j;
     }
 

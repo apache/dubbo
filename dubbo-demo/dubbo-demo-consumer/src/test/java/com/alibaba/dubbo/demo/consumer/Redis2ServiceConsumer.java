@@ -14,7 +14,7 @@ public class Redis2ServiceConsumer {
         Redis2Service redis2Service = ctx.getBean(Redis2Service.class);
         String wuyu = redis2Service.sayHello("wuyu");
         System.err.println(wuyu);
-        Integer sum = redis2Service.sum(1, 2);
+        Long sum = redis2Service.sum(1L, (Long.MAX_VALUE - 1L));
         System.err.println(sum);
         User byId = redis2Service.getById("1");
         System.err.println(byId);

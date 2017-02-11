@@ -54,6 +54,11 @@
             <artifactId>tomcat-embed-logging-juli</artifactId>
             <version>8.0.36</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-websocket</artifactId>
+            <version>8.0.36</version>
+        </dependency>
 
 		<dependency>
 			<groupId>org.eclipse.jetty.aggregate</groupId>

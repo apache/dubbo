@@ -43,6 +43,8 @@ public class RpcRedisCommandHandler extends RedisCommandHandler {
         for (Method method : type.getMethods()) {
             String name = method.getName();
             this.beanMethods.remove(new BytesKey((type.getName() + "." + name).toLowerCase().getBytes()));
+            this.beanMethods.remove(new BytesKey(Md5Util.getSortMD5(type.getName() + "." + name).toLowerCase().getBytes()));
+            rpcSimpleRedisServer.removeServiceKey(type.getName());
         }
     }
 
@@ -51,11 +53,11 @@ public class RpcRedisCommandHandler extends RedisCommandHandler {
     }
 
     public <T> void addHandler(String key, final Class<T> type, final T impl) {
-        rpcSimpleRedisServer.addServiceKey(key);
+        StringBuffer serviceKey = new StringBuffer(key);
         for (final Method method : type.getMethods()) {
             final Type[] types = method.getGenericParameterTypes();
-            String name = type.getName() + "." + method.getName();
-            beanMethods.put(new BytesKey(name.toLowerCase().getBytes()), new Wrapper() {
+            String name = (type.getName() + "." + method.getName()).toLowerCase();
+            Wrapper wrapper = new Wrapper() {
                 @Override
                 public Reply execute(Command command) throws RedisException {
                     Object[] objects = command.getObjects();
@@ -86,6 +88,10 @@ public class RpcRedisCommandHandler extends RedisCommandHandler {
                             return new BulkReply(result.toString().getBytes("utf-8"));
                         }
 
+//                        if (result instanceof Long || result instanceof Integer) {
+//                            return new IntegerReply((Long) objectMapper.convertValue(result, Long.class));
+//                        }
+
                         if (result instanceof byte[]) {
                             return new BulkReply((byte[]) result);
                         }
@@ -103,8 +109,13 @@ public class RpcRedisCommandHandler extends RedisCommandHandler {
                         return new ErrorReply("ERR " + e.getMessage());
                     }
                 }
-            });
+            };
+            beanMethods.put(new BytesKey(name.getBytes()), wrapper);
+            beanMethods.put(new BytesKey(Md5Util.getSortMD5(name).toLowerCase().getBytes()), wrapper);
+            serviceKey.append("&").append(method.getName()).append("=").append((Md5Util.getSortMD5(name)));
         }
+        rpcSimpleRedisServer.addServiceKey(type.getName(), serviceKey.toString());
+
     }
 
     private static final byte LOWER_DIFF = 'a' - 'A';
