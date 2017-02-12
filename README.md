@@ -1,7 +1,7 @@
 
 #dubbo
 
->1. 增加 springmvc,jersey,rest,jsonrpc,xmlrpc,avro,grpc，websocket rpc,hprose,原生thrift,jms,redis rpc,motan,ice.
+>1. 增加 springmvc,jersey,rest,jsonrpc,xmlrpc,avro,grpc，websocket rpc,hprose,原生thrift,jms,redis rpc.
 
 >2. 增加none http容器,只注册服务,不导出服务.使其更好的支持springboot.
 

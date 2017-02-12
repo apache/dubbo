@@ -6,9 +6,14 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.handler.timeout.IdleStateHandler;
 import redis.server.netty.RedisCommandDecoder;
 import redis.server.netty.RedisCommandHandler;
 import redis.server.netty.RedisReplyEncoder;
+
+import java.util.concurrent.Executors;
 
 /**
  * Created by wuyu on 2017/2/7.
@@ -32,7 +37,7 @@ public class Redis2Server {
     public Redis2Server(String host, int port, int threads, int timeout) {
         this.host = host;
         this.port = port;
-        workerGroup = new NioEventLoopGroup(threads);
+        workerGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors() + 1, Executors.newFixedThreadPool(threads));
         bossGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors() + 1);
         this.rpcRedisCommandHandler = new RpcRedisCommandHandler(rpcSimpleRedisServer);
         redisGroup = new NioEventLoopGroup(1);
@@ -41,8 +46,8 @@ public class Redis2Server {
     public Redis2Server(String host, int port, int threads, int timeout, RpcRedisCommandHandler rpcRedisCommandHandler) {
         this.host = host;
         this.port = port;
-        workerGroup = new NioEventLoopGroup(threads);
-        bossGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors() + 1);
+        workerGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors() + 1, Executors.newFixedThreadPool(threads));
+        bossGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors());
         this.rpcRedisCommandHandler = rpcRedisCommandHandler;
         redisGroup = new NioEventLoopGroup(1);
     }

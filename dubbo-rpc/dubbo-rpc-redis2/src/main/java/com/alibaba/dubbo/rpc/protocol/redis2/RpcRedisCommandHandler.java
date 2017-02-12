@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
 import redis.netty4.BulkReply;
 import redis.netty4.Command;
 import redis.netty4.ErrorReply;
@@ -12,6 +14,7 @@ import redis.server.netty.RedisCommandHandler;
 import redis.server.netty.RedisException;
 import redis.util.BytesKey;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -101,11 +104,10 @@ public class RpcRedisCommandHandler extends RedisCommandHandler {
                         throw new RedisException("Invalid server implementation");
                     } catch (InvocationTargetException e) {
                         Throwable te = e.getTargetException();
-                        if (!(te instanceof RedisException)) {
-                            te.printStackTrace();
-                        }
+                        te.printStackTrace();
                         return new ErrorReply("ERR " + te.getMessage());
                     } catch (Exception e) {
+                        e.printStackTrace();
                         return new ErrorReply("ERR " + e.getMessage());
                     }
                 }
@@ -148,6 +150,9 @@ public class RpcRedisCommandHandler extends RedisCommandHandler {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         cause.printStackTrace();
+        if (IOException.class.isAssignableFrom(cause.getClass())) {
+            ctx.close();
+        }
     }
 
 

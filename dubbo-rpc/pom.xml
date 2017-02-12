@@ -56,5 +56,7 @@
         <module>dubbo-rpc-motan</module>
         <module>dubbo-rpc-jms</module>
         <module>dubbo-rpc-zuul</module>
+        <module>dubbo-rpc-mqtt</module>
+        <module>dubbo-rpc-xmpp</module>
     </modules>
 </project>
