@@ -11,6 +11,7 @@ import com.alibaba.dubbo.rpc.protocol.AbstractProxyProtocol;
 import com.corundumstudio.socketio.*;
 import com.corundumstudio.socketio.listener.ConnectListener;
 import com.corundumstudio.socketio.listener.DataListener;
+import com.corundumstudio.socketio.listener.DisconnectListener;
 import com.corundumstudio.socketio.store.StoreFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.handler.codec.http.HttpHeaders;
@@ -57,7 +58,7 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
 
         final String addr = url.getHost() + ":" + url.getPort();
         int timeout = url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
-        int connections = url.getParameter(Constants.THREADPOOL_KEY, 200);
+        int connections = url.getParameter(Constants.THREADS_KEY, 200);
 
         SocketIOServer socketIOServer = serverMap.get(addr);
         if (socketIOServer == null) {
@@ -70,7 +71,6 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
             config.setPort(port);
             config.setWorkerThreads(connections);
             config.setUpgradeTimeout(timeout);
-            config.setWorkerThreads(connections);
             socketIOServer = new SocketIOServer(config);
             socketIOServer.start();
             //检测 spring中是否存在 其他session存储工厂，如果存在 将使用spring 存储工厂
@@ -90,6 +90,12 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
         //验证
         addAuthConnectListener(url, socketIONamespace);
 
+        Map<String, DisconnectListener> beansOfType = ServiceBean.getSpringContext().getBeansOfType(DisconnectListener.class);
+        if(beansOfType.size()>0){
+            for (DisconnectListener disconnectListener : beansOfType.values()) {
+                socketIONamespace.addDisconnectListener(disconnectListener);
+            }
+        }
 
         socketIONamespace.addEventListener(Socket.EVENT_MESSAGE, String.class, new DataListener<String>() {
             @Override
