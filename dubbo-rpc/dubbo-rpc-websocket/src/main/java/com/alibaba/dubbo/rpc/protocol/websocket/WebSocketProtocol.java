@@ -47,7 +47,7 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
 
     @Override
     public int getDefaultPort() {
-        return 0;
+        return 8080;
     }
 
     @Override
@@ -248,6 +248,17 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
 
 
     public void addAuthConnectListener(final URL url, SocketIONamespace socketIONamespace) {
+
+        Map<String, ConnectListener> beansOfType = ServiceBean.getSpringContext().getBeansOfType(ConnectListener.class);
+
+        //判断是否有相关Connectorbean
+        if(beansOfType.size()>0){
+            Collection<ConnectListener> values = beansOfType.values();
+            for (ConnectListener connectListener : values) {
+                socketIONamespace.addConnectListener(connectListener);
+            }
+        }
+
         socketIONamespace.addConnectListener(new ConnectListener() {
             @Override
             public void onConnect(SocketIOClient client) {

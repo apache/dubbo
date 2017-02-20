@@ -12,17 +12,41 @@
     <artifactId>dubbo-rpc-zuul</artifactId>
 
     <dependencies>
+
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-rpc-api</artifactId>
+            <version>${project.parent.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-remoting-http</artifactId>
+            <version>${project.parent.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-config-spring</artifactId>
+            <version>${project.parent.version}</version>
+            <optional>true</optional>
+        </dependency>
         <dependency>
             <groupId>com.netflix.zuul</groupId>
             <artifactId>zuul-core</artifactId>
             <version>1.3.0</version>
         </dependency>
-
+        <!-- https://mvnrepository.com/artifact/com.netflix.netflix-commons/netflix-commons-util -->
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
+            <groupId>com.netflix.netflix-commons</groupId>
+            <artifactId>netflix-commons-util</artifactId>
+            <version>0.3.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

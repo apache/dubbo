@@ -16,7 +16,7 @@
 -->
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo" xmlns:DUBBO="http://code.alibabatech.com/schema/dubbo"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
 	http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
 
@@ -111,15 +111,23 @@
     <dubbo:service interface="com.alibaba.dubbo.demo.XmlService" ref="xmlService" protocol="xml"/>
     <!--xml:end-->
 
-    <!--jms:start-->
-    <dubbo:protocol port="61617" name="jms"/>
-    <bean id="jsmService" class="com.alibaba.dubbo.demo.provider.JmsServiceImpl"/>
-    <dubbo:service interface="com.alibaba.dubbo.demo.JmsService" ref="jsmService" protocol="jms"/>
+    <!--jms:start 依赖activemq 或实现 javax.jms.ConnectionFactory 的bean-->
+    <!--ConfigUtils.setProperty("username");-->
+    <!--ConfigUtils.setProperty("password");-->
+    <!--ConfigUtils.setProperty("brokerURL");-->
+    <!--    <dubbo:protocol port="61617" name="jms"/>
+        <bean id="jsmService" class="com.alibaba.dubbo.demo.provider.JmsServiceImpl"/>
+        <dubbo:service interface="com.alibaba.dubbo.demo.JmsService" ref="jsmService" protocol="jms"/>-->
     <!--jms:end-->
 
-    <!--jms:start-->
+    <!--redis2:start-->
     <dubbo:protocol port="6380" name="redis2"/>
     <bean id="redis2Service" class="com.alibaba.dubbo.demo.provider.Redis2ServiceImpl"/>
     <dubbo:service interface="com.alibaba.dubbo.demo.Redis2Service" ref="redis2Service" protocol="redis2"/>
-    <!--jms:end-->
+    <!--redis2:end-->
+    <!--zuul:start-->
+    <!--    <dubbo:protocol port="8092" server="tomcat" name="zuul"/>
+        <bean id="zuulRouteFilter" class="com.alibaba.dubbo.demo.provider.ZuulRouteFilter"/>
+        <dubbo:service interface="com.netflix.zuul.IZuulFilter" ref="zuulRouteFilter" protocol="zuul"/>-->
+    <!--zuul:end-->
 </beans>

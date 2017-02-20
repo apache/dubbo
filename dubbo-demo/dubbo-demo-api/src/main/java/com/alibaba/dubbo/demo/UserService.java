@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
  * Created by wuyu on 2017/1/10.
  */
 @Api(fallback = UserServiceFallback.class)
+@RequestMapping(value = "/user")
 public interface UserService {
 
     @RequestMapping(value = "/sayHello", method = RequestMethod.GET)

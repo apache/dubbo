@@ -136,6 +136,11 @@
             <artifactId>dubbo-rpc-redis2</artifactId>
             <version>2.5.4-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-rpc-zuul</artifactId>
+            <version>2.5.4-SNAPSHOT</version>
+        </dependency>
 
     </dependencies>
 </project>

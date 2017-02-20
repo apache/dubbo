@@ -42,6 +42,14 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-websocket</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.briandilley.jsonrpc4j</groupId>
+            <artifactId>jsonrpc4j</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>io.github.openfeign</groupId>
@@ -69,6 +77,13 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>javax.portlet</groupId>
+            <artifactId>portlet-api</artifactId>
+            <version>2.0</version>
+            <optional>true</optional>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
 </project>

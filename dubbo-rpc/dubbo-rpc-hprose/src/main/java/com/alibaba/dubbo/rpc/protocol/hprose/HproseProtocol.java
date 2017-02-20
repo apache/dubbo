@@ -51,7 +51,7 @@ public class HproseProtocol extends AbstractProxyProtocol {
             hproseHttpService = new HproseHttpService();
             hproseHttpService.setTimeout(timeout);
             hproseHttpServiceMap.put(port, hproseHttpService);
-            ServletContext servletContext = ServletManager.getInstance().getServletContext(ServletManager.EXTERNAL_SERVER_PORT);
+            ServletContext servletContext = ServletManager.getInstance().getServletContext(url.getPort());
             ServletConfig servletConfig = new SimpleServletConfig(servletContext);
             servletConfigMap.put(port, servletConfig);
             httpBinder.bind(url, new HproseHttpHandler());

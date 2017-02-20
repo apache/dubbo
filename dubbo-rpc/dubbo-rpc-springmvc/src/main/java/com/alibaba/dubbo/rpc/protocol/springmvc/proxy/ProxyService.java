@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
  */
 public interface ProxyService {
 
-    @RequestMapping(value = "/", method = {RequestMethod.POST, RequestMethod.DELETE, RequestMethod.PUT})
+    @RequestMapping(value = "${spring.mvc.proxy.url:/}", method = {RequestMethod.POST, RequestMethod.DELETE, RequestMethod.PUT})
     public Object proxy(@RequestBody GenericServiceConfig config);
 
 }
