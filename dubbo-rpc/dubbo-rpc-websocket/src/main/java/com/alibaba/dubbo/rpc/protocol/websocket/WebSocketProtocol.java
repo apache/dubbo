@@ -39,7 +39,7 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
 
     private final static Map<String, SocketIOServer> serverMap = new ConcurrentHashMap<>();
 
-    private final Map<String, WebSocketJsonRpcServer> serviceMap = new ConcurrentHashMap<>();
+    private final WebSocketMultiJsonRpcServer webSocketMultiJsonRpcServer = new WebSocketMultiJsonRpcServer();
 
     private static final Map<String, GenericObjectPool<Socket>> poolMap = new ConcurrentHashMap<>();
 
@@ -84,29 +84,39 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
         }
 
 
-        SocketIONamespace socketIONamespace = socketIOServer.addNamespace(getNamespace(type));
-        serviceMap.put(url.getServiceInterface(), new WebSocketJsonRpcServer(new ObjectMapper(), impl, type, timeout));
+//        SocketIONamespace socketIONamespace = socketIOServer.addNamespace(getNamespace(type));
+
+        webSocketMultiJsonRpcServer.addService(url.getServiceInterface(), new WebSocketJsonRpcServer(new ObjectMapper(), impl, type, timeout));
+
 
         //验证
-        addAuthConnectListener(url, socketIONamespace);
+        addAuthConnectListener(url, socketIOServer);
+
+        //添加已经注册的jsonrpcservice
+//        ApplicationContext springContext = ServiceBean.getSpringContext();
+//        Map<String, Object> beansWithAnnotation = springContext.getBeansWithAnnotation(JsonRpcService.class);
+//        for (Map.Entry<String, Object> entity : beansWithAnnotation.entrySet()) {
+//            String key = entity.getKey();
+//            Object bean = springContext.getBean(key);
+//            Class<?> targetClass = AopUtils.getTargetClass(bean);
+//            webSocketMultiJsonRpcServer.addService(targetClass.getAnnotation(JsonRpcService.class).value(), new WebSocketJsonRpcServer(new ObjectMapper(), bean, targetClass, timeout);
+//        }
 
         Map<String, DisconnectListener> beansOfType = ServiceBean.getSpringContext().getBeansOfType(DisconnectListener.class);
-        if(beansOfType.size()>0){
+        if (beansOfType.size() > 0) {
             for (DisconnectListener disconnectListener : beansOfType.values()) {
-                socketIONamespace.addDisconnectListener(disconnectListener);
+                socketIOServer.addDisconnectListener(disconnectListener);
             }
         }
 
-        socketIONamespace.addEventListener(Socket.EVENT_MESSAGE, String.class, new DataListener<String>() {
+        socketIOServer.addEventListener(Socket.EVENT_MESSAGE, String.class, new DataListener<String>() {
             @Override
             public void onData(SocketIOClient client, String data, AckRequest ackSender) throws Exception {
-                String namespace = client.getNamespace().getName().substring(1, client.getNamespace().getName().length());
-                WebSocketJsonRpcServer websocketJsonRpc = serviceMap.get(namespace);
                 ByteArrayInputStream in = new ByteArrayInputStream(data.getBytes("utf-8"));
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 try {
-                    setAttachments(client);
-                    websocketJsonRpc.handle(in, out);
+                    setAttachments(client, url);
+                    webSocketMultiJsonRpcServer.handle(in, out);
                     byte[] bytes = out.toByteArray();
                     Object error = RpcContext.getContext().get("error");
                     if (error != null) {
@@ -124,7 +134,7 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
 
         try {
             //如果存在 SocketIo 属性 将自动注入.
-            setSocketIO(type, socketIONamespace);
+            setSocketIO(type, socketIOServer);
         } catch (IllegalAccessException e) {
             logger.warn("Autowired SocketIONameSpace Error!", e);
         }
@@ -133,21 +143,18 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
         return new Runnable() {
             @Override
             public void run() {
-                SocketIOServer socketIOServer = serverMap.get(addr);
-                if (socketIOServer != null) {
-                    socketIOServer.removeNamespace(url.getServiceInterface());
-                }
+                webSocketMultiJsonRpcServer.removeService(url.getServiceInterface());
             }
         };
     }
 
     @Override
-    protected <T> T doRefer(Class<T> type, final URL url) throws RpcException {
+    protected <T> T doRefer(final Class<T> type, final URL url) throws RpcException {
         final int port = url.getPort();
         final int timeout = url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
         final int connections = url.getParameter(Constants.CONNECTIONS_KEY, 20);
         boolean oauth2 = false;
-        String host = "http://" + url.getHost() + ":" + port + getNamespace(type);
+        String host = "http://" + url.getHost() + ":" + port+"/";
         if (url.getUsername() != null && url.getPassword() != null) {
             host = host + "?username=" + url.getUsername() + "&password=" + url.getPassword();
         } else if (url.getParameter("token") != null && !url.getParameter("reference.filter").contains("oAuth2Filter")) {
@@ -174,7 +181,7 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
 
             @Override
             public Object invoke(Object proxy, final Method method, final Object[] args) throws Throwable {
-                final WebSocketJsonRpcClient jsonRpcClient = new WebSocketJsonRpcClient(poolMap.get(addr), method, args, timeout);
+                final WebSocketJsonRpcClient jsonRpcClient = new WebSocketJsonRpcClient(poolMap.get(addr), type, method, args, timeout);
                 Class returnClazz = method.getReturnType();
                 jsonRpcClient.call();
                 if (Future.class.isAssignableFrom(returnClazz)) {
@@ -224,13 +231,13 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
         }
     }
 
-    private <T> void setSocketIO(Class<T> t, SocketIONamespace socketIONamespace) throws IllegalAccessException {
+    private <T> void setSocketIO(Class<T> t, SocketIOServer socketIONamespace) throws IllegalAccessException {
         Map<String, ?> beansOfType = ServiceBean.getSpringContext().getBeansOfType(t);
         if (beansOfType.size() > 0) {
             Object obj = beansOfType.values().iterator().next();
             Field[] declaredFields = obj.getClass().getDeclaredFields();
             for (Field declaredField : declaredFields) {
-                boolean assignableFrom = SocketIONamespace.class.isAssignableFrom(declaredField.getType());
+                boolean assignableFrom = SocketIOServer.class.isAssignableFrom(declaredField.getType());
                 if (assignableFrom) {
                     declaredField.setAccessible(true);
                     declaredField.set(obj, socketIONamespace);
@@ -253,12 +260,12 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
     }
 
 
-    public void addAuthConnectListener(final URL url, SocketIONamespace socketIONamespace) {
+    public void addAuthConnectListener(final URL url, SocketIOServer socketIONamespace) {
 
         Map<String, ConnectListener> beansOfType = ServiceBean.getSpringContext().getBeansOfType(ConnectListener.class);
 
         //判断是否有相关Connectorbean
-        if(beansOfType.size()>0){
+        if (beansOfType.size() > 0) {
             Collection<ConnectListener> values = beansOfType.values();
             for (ConnectListener connectListener : values) {
                 socketIONamespace.addConnectListener(connectListener);
@@ -324,12 +331,12 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
                     client.disconnect();
                     logger.warn(error);
                 }
-                setAttachments(client);
+                setAttachments(client, url);
             }
         });
     }
 
-    public void setAttachments(SocketIOClient socketIOClient) {
+    public void setAttachments(SocketIOClient socketIOClient, URL url) {
         InetSocketAddress addr = (InetSocketAddress) socketIOClient.getRemoteAddress();
         RpcContext.getContext().setRemoteAddress(addr);
         HandshakeData handshakeData = socketIOClient.getHandshakeData();
@@ -350,7 +357,7 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
             RpcContext.getContext().getAttachments().put("principal", username);
         } else if (token != null) {
             RpcContext.getContext().getAttachments().put("principal", token);
-        } else if (access_token != null) {
+        } else if (url.getParameter("service.filter") != null && access_token != null) {
             UserDetails userInfo = oAuth2Service.getUserInfo(access_token);
             RpcContext.getContext().getAttachments().put("principal", userInfo.getPrincipal());
             RpcContext.getContext().getAttachments().put("access_token", access_token);

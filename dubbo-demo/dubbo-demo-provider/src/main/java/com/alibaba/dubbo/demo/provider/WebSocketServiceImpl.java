@@ -5,6 +5,7 @@ import com.alibaba.dubbo.demo.WebSocketService;
 import com.alibaba.dubbo.rpc.protocol.websocket.BroadcastMessage;
 import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.SocketIONamespace;
+import com.corundumstudio.socketio.SocketIOServer;
 import rx.Observable;
 
 import java.net.InetSocketAddress;
@@ -20,7 +21,7 @@ import java.util.concurrent.TimeoutException;
 public class WebSocketServiceImpl implements WebSocketService {
 
     //自动注入
-    private SocketIONamespace socketIONamespace;
+    private SocketIOServer socketIOServer;
 
     @Override
     public String sayHello(String name) {
@@ -83,7 +84,7 @@ public class WebSocketServiceImpl implements WebSocketService {
     }
 
     public Set<String> getAllClientSessionId() {
-        Collection<SocketIOClient> allClients = socketIONamespace.getAllClients();
+        Collection<SocketIOClient> allClients = socketIOServer.getAllClients();
         Set<String> allClientsId = new HashSet<>();
         for (SocketIOClient client : allClients) {
             allClientsId.add(client.getSessionId().toString());
@@ -92,7 +93,7 @@ public class WebSocketServiceImpl implements WebSocketService {
     }
 
     public Set<String> getAllClientRemoteSocketAddress() {
-        Collection<SocketIOClient> allClients = socketIONamespace.getAllClients();
+        Collection<SocketIOClient> allClients = socketIOServer.getAllClients();
         Set<String> allClient = new HashSet<>();
         for (SocketIOClient client : allClients) {
             InetSocketAddress socketAddress = (InetSocketAddress) client.getRemoteAddress();
@@ -102,7 +103,7 @@ public class WebSocketServiceImpl implements WebSocketService {
     }
 
     public Set<String> getAllRoom() {
-        Collection<SocketIOClient> allClients = socketIONamespace.getAllClients();
+        Collection<SocketIOClient> allClients = socketIOServer.getAllClients();
         Set<String> allClient = new HashSet<>();
         for (SocketIOClient client : allClients) {
             Set<String> allRooms = client.getAllRooms();
@@ -113,7 +114,7 @@ public class WebSocketServiceImpl implements WebSocketService {
 
     //发送广播消息,订阅broadcast 通道的客户端将接受到 广播消息
     public void sendBroadcastMessage(String message) {
-        socketIONamespace.getBroadcastOperations().sendEvent("broadcast", BroadcastMessage.newBuilder().setResult("这是一条广播消息!").build());
+        socketIOServer.getBroadcastOperations().sendEvent("broadcast", BroadcastMessage.newBuilder().setResult("这是一条广播消息!").build());
     }
 
 

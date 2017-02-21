@@ -36,6 +36,7 @@
 		<name>Alibaba</name>
 		<url>http://www.alibaba.com</url>
 	</organization>
+
 	<modules>
 		<module>hessian-lite</module>
 		<module>dubbo-common</module>
@@ -81,7 +82,7 @@
 	</profiles>
 	<properties>
 		<!-- Common libs -->
-		<spring_version>4.3.3.RELEASE</spring_version>
+		<spring_version>3.2.18.RELEASE</spring_version>
 		<javassist_version>3.20.0-GA</javassist_version>
 		<netty_version>3.2.5.Final</netty_version>
 		<netty4_version>4.1.6.Final</netty4_version>

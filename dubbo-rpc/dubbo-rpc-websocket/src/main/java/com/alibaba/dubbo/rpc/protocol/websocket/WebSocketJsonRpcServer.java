@@ -14,6 +14,7 @@ import rx.Observable;
 import rx.Subscriber;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -45,6 +46,7 @@ public class WebSocketJsonRpcServer extends JsonRpcBasicServer {
         this.mapper = mapper;
         this.timeout = timeout;
     }
+
 
     @Override
     protected JsonNode invoke(Object target, Method m, List<JsonNode> params) throws IOException, IllegalAccessException, InvocationTargetException {

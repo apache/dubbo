@@ -36,6 +36,8 @@ public class WebSocketJsonRpcClient extends JsonRpcClient implements Future {
 
     private final GenericObjectPool<Socket> pool;
 
+    private final Class service;
+
     private final Method method;
 
     private Object[] args;
@@ -50,16 +52,17 @@ public class WebSocketJsonRpcClient extends JsonRpcClient implements Future {
         this.exception = new ExecutionException(exception);
     }
 
-    public WebSocketJsonRpcClient(GenericObjectPool<Socket> pool, Method method, Object[] args, int timeout) {
+    public WebSocketJsonRpcClient(GenericObjectPool<Socket> pool, Class service, Method method, Object[] args, int timeout) {
         super();
         this.pool = pool;
+        this.service = service;
         this.method = method;
         this.args = args;
         this.timeout = timeout;
     }
 
     public void call() throws Exception {
-        ObjectNode request = createRequest(method.getName(), args);
+        ObjectNode request = createRequest(service.getName() + "." + method.getName(), args);
         final Socket socket = pool.borrowObject(timeout);
         socket.once(Socket.EVENT_MESSAGE, new Emitter.Listener() {
 

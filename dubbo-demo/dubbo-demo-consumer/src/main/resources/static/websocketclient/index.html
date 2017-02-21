@@ -53,7 +53,7 @@
             }
         });
 
-        var socket = io.connect('http://localhost:8086/com.alibaba.dubbo.demo.WebSocketService');
+        var socket = io.connect('http://localhost:8086/');
 
         socket.on('connect', function () {
             output('<span class="connect-msg">连接成功!</span>');
@@ -89,7 +89,7 @@
         function sendMessage() {
             var name = $('#msg').val();
 
-            var req = {jsonrpc: 2.0, id: 10, method: "error", params: [name]};
+            var req = {jsonrpc: 2.0, id: 10, method: "com.alibaba.dubbo.demo.WebSocketService.sayHello", params: [name]};
 
             //jsonrpc 规范调用
             socket.send(JSON.stringify(req));
