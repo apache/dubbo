@@ -36,7 +36,7 @@ public class Redis2Protocol extends AbstractProxyProtocol {
         String addr = host + ":" + port;
 
         int connectTimeout = url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT);
-        int connections = url.getParameter(Constants.THREADPOOL_KEY, 200);
+        int connections = url.getParameter(Constants.THREADS_KEY, 200);
         Redis2Server redis2Server = serverMap.get(addr);
         if (redis2Server == null) {
             redis2Server = new Redis2Server(url.getParameter("anyhost", false) ? "0.0.0.0" : url.getHost(), port, connections, connectTimeout);

@@ -35,7 +35,7 @@ public class HproseTcpProtocol extends AbstractProxyProtocol {
     protected <T> Runnable doExport(T impl, final Class<T> type, final URL url) throws RpcException {
         final int port = url.getPort();
         int timeout = url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
-        int connections = url.getParameter(Constants.THREADPOOL_KEY, 200);
+        int connections = url.getParameter(Constants.THREADS_KEY, 200);
 
         HproseTcpServer hproseServer = hproseHttpServiceMap.get(port);
         if (hproseServer == null) {
