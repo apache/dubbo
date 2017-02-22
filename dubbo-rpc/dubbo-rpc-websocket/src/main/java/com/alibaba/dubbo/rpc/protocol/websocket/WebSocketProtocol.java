@@ -71,14 +71,14 @@ public class WebSocketProtocol extends AbstractProxyProtocol {
             config.setPort(port);
             config.setWorkerThreads(connections);
             config.setUpgradeTimeout(timeout);
-            socketIOServer = new SocketIOServer(config);
-            socketIOServer.start();
             //检测 spring中是否存在 其他session存储工厂，如果存在 将使用spring 存储工厂
             //see https://github.com/mrniko/netty-socketio/wiki/How-To:-create-a-cluster-of-netty-socketio-servers
             Map<String, StoreFactory> beansOfType = ServiceBean.getSpringContext().getBeansOfType(StoreFactory.class);
             if (beansOfType.size() > 0) {
                 config.setStoreFactory(ServiceBean.getSpringContext().getBean(StoreFactory.class));
             }
+            socketIOServer = new SocketIOServer(config);
+            socketIOServer.start();
 
             serverMap.put(addr, socketIOServer);
         }
