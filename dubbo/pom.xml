@@ -106,6 +106,10 @@
                     <groupId>org.eclipse.jetty.aggregate</groupId>
                     <artifactId>jetty-all</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.apache.tomcat.embed</groupId>
+                    <artifactId>tomcat-embed-websocket</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -164,6 +168,7 @@
                     <groupId>org.apache.cxf</groupId>
                     <artifactId>cxf-rt-transports-http</artifactId>
                 </exclusion>
+
             </exclusions>
         </dependency>
         <dependency>
@@ -319,6 +324,16 @@
                     <groupId>commons-configuration</groupId>
                     <artifactId>commons-configuration</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>com.alibaba</groupId>
+                    <artifactId>fastjson</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+
+
             </exclusions>
         </dependency>
 
@@ -444,6 +459,14 @@
                 <exclusion>
                     <groupId>io.github.openfeign</groupId>
                     <artifactId>feign-gson</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jboss.resteasy</groupId>
+                    <artifactId>resteasy-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-all</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -586,7 +609,14 @@
                     <groupId>org.apache.commons</groupId>
                     <artifactId>commons-pool2</artifactId>
                 </exclusion>
-
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpclient</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-all</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -646,6 +676,10 @@
                     <groupId>org.apache.activemq</groupId>
                     <artifactId>activemq-spring</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-jms</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -668,6 +702,10 @@
                 <exclusion>
                     <groupId>org.apache.commons</groupId>
                     <artifactId>commons-pool2</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.moilioncircle</groupId>
+                    <artifactId>redis-replicator</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
