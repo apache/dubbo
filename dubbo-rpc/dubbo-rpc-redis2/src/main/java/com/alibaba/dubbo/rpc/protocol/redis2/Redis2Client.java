@@ -1,5 +1,6 @@
 package com.alibaba.dubbo.rpc.protocol.redis2;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
@@ -17,7 +18,7 @@ public class Redis2Client {
 
     private GenericObjectPool<Redis2Connection> genericObjectPool;
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private ObjectMapper objectMapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
     public Redis2Client(Redis2ConnectionPoolFactory redis2ConnectionPoolFactory, GenericObjectPoolConfig config) {
         this.genericObjectPool = new GenericObjectPool<>(redis2ConnectionPoolFactory, config);

@@ -1,5 +1,6 @@
 package com.alibaba.dubbo.rpc.protocol.redis2;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.util.Assert;
@@ -18,7 +19,7 @@ public class MappingJackson2CommandConverter {
 
     public static final String DEFAULT_ENCODING = "UTF-8";
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private ObjectMapper objectMapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
     private String encoding = DEFAULT_ENCODING;
 

@@ -1,7 +1,9 @@
 package com.alibaba.dubbo.rpc.protocol.websocket;
 
 import com.alibaba.dubbo.rpc.RpcException;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.googlecode.jsonrpc4j.JsonRpcClient;
 import io.socket.client.Socket;
@@ -53,13 +55,14 @@ public class WebSocketJsonRpcClient extends JsonRpcClient implements Future {
     }
 
     public WebSocketJsonRpcClient(GenericObjectPool<Socket> pool, Class service, Method method, Object[] args, int timeout) {
-        super();
+        super(new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL));
         this.pool = pool;
         this.service = service;
         this.method = method;
         this.args = args;
         this.timeout = timeout;
     }
+
 
     public void call() throws Exception {
         ObjectNode request = createRequest(service.getName() + "." + method.getName(), args);

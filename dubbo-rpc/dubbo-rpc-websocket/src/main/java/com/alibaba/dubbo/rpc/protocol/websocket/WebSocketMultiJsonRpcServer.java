@@ -1,5 +1,6 @@
 package com.alibaba.dubbo.rpc.protocol.websocket;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -31,6 +32,7 @@ public class WebSocketMultiJsonRpcServer extends JsonRpcBasicServer {
     public WebSocketMultiJsonRpcServer() {
         super(new BroadcastMessage());
         this.mapper = new ObjectMapper();
+        this.mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     }
 
 
