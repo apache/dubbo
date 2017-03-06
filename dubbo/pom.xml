@@ -25,9 +25,11 @@
 	<packaging>jar</packaging>
 	<name>${project.artifactId}</name>
 	<description>The all in one project of dubbo</description>
+
 	<properties>
-		<skip_maven_deploy>false</skip_maven_deploy>
+		<skip_maven_deploy>true</skip_maven_deploy>
 	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>com.alibaba</groupId>
@@ -259,6 +261,7 @@
 			</exclusions>
 		</dependency>
 	</dependencies>
+
 	<build>
 		<plugins>
 			<plugin>
