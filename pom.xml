@@ -18,7 +18,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.alibaba</groupId>
     <artifactId>dubbo-parent</artifactId>
-    <version>2.4.11</version>
+    <version>2.4.11-x</version>
     <packaging>pom</packaging>
     <name>${project.artifactId}</name>
     <description>The parent project of dubbo</description>
@@ -81,7 +81,7 @@
     <parent>
         <groupId>com.alibaba</groupId>
         <artifactId>dubbo-dependency</artifactId>
-        <version>2.4.11</version>
+        <version>2.4.11-x</version>
     </parent>
 
     <dependencies>
@@ -295,6 +295,14 @@
                 <role>Developer</role>
             </roles>
             <timezone>+8</timezone>
+        </developer>
+        <developer>
+            <name>listening</name>
+            <id>listening</id>
+            <email>893979653@qq.com</email>
+            <roles>
+                <role>Developer</role>
+            </roles>
         </developer>
     </developers>
 </project>

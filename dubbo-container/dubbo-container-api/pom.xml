@@ -19,7 +19,7 @@
 	<parent>
 		<groupId>com.alibaba</groupId>
 		<artifactId>dubbo-container</artifactId>
-		<version>2.4.11</version>
+		<version>2.4.11-x</version>
 	</parent>
 	<artifactId>dubbo-container-api</artifactId>
 	<packaging>jar</packaging>
@@ -38,10 +38,16 @@
 			<groupId>org.mortbay.jetty</groupId>
 			<artifactId>jetty</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <version>${spring_version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${spring_version}</version>
+        </dependency>
 	</dependencies>
 	<build>
 		<plugins>

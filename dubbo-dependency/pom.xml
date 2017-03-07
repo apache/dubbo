@@ -6,7 +6,7 @@
 
     <groupId>com.alibaba</groupId>
     <artifactId>dubbo-dependency</artifactId>
-    <version>2.4.11</version>
+    <version>2.4.11-x</version>
     <packaging>pom</packaging>
 
     <repositories>
@@ -44,20 +44,22 @@
 
     <properties>
         <!-- for maven compiler plugin -->
-        <maven_compiler_plugin_version>2.3.2</maven_compiler_plugin_version>
-        <java_source_version>1.5</java_source_version>
-        <java_target_version>1.5</java_target_version>
+        <maven_compiler_plugin_version>3.6.1</maven_compiler_plugin_version>
+        <java_source_version>1.7</java_source_version>
+        <java_target_version>1.7</java_target_version>
         <file_encoding>UTF-8</file_encoding>
+        <project.build.sourceEncoding>${file_encoding}</project.build.sourceEncoding>
 
-        <maven_source_plugin_version>2.1.1</maven_source_plugin_version>
-        <maven_jar_plugin_version>2.3.2</maven_jar_plugin_version>
-        <maven_war_plugin_version>2.1.1</maven_war_plugin_version>
-        <maven_install_plugin_version>2.3.1</maven_install_plugin_version>
-        <maven_deploy_plugin_version>2.7</maven_deploy_plugin_version>
+        <maven_source_plugin_version>3.0.1</maven_source_plugin_version>
+        <maven_jar_plugin_version>3.0.2</maven_jar_plugin_version>
+        <maven_war_plugin_version>3.0.0</maven_war_plugin_version>
+        <maven_clean_plugin_version>3.0.0</maven_clean_plugin_version>
+        <maven_install_plugin_version>2.5.2</maven_install_plugin_version>
+        <maven_deploy_plugin_version>2.8.2</maven_deploy_plugin_version>
 
         <!-- Common libs -->
-        <spring_version>2.5.6.SEC03</spring_version>
-        <javassist_version>3.15.0-GA</javassist_version>
+        <spring_version>4.2.9.RELEASE</spring_version>
+        <javassist_version>3.21.0-GA</javassist_version>
         <netty_version>3.2.5.Final</netty_version>
         <mina_version>1.1.7</mina_version>
         <grizzly_version>2.1.4</grizzly_version>
@@ -98,7 +100,6 @@
         <!--<argline>-server -Xms64m -Xmx64m -XX:PermSize=64m -XX:MaxPermSize=64m</argline>-->
         <skip_maven_deploy>false</skip_maven_deploy>
         <updateReleaseInfo>true</updateReleaseInfo>
-        <project.build.sourceEncoding>${file_encoding}</project.build.sourceEncoding>
     </properties>
 
     <dependencyManagement>
@@ -106,7 +107,17 @@
             <!-- Common libs -->
             <dependency>
                 <groupId>org.springframework</groupId>
-                <artifactId>spring</artifactId>
+                <artifactId>spring-core</artifactId>
+                <version>${spring_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-context</artifactId>
+                <version>${spring_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-web</artifactId>
                 <version>${spring_version}</version>
             </dependency>
             <dependency>
@@ -339,6 +350,22 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-war-plugin</artifactId>
                     <version>${maven_war_plugin_version}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-clean-plugin</artifactId>
+                    <version>${maven_clean_plugin_version}</version>
+                    <configuration>
+                        <filesets>
+                            <fileset>
+                                <directory>src/main/webapp/WEB-INF/classes</directory>
+                            </fileset>
+                            <fileset>
+                                <directory>src/main/webapp/WEB-INF/lib</directory>
+                            </fileset>
+                        </filesets>
+                    </configuration>
                 </plugin>
 
                 <plugin>
