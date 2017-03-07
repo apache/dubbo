@@ -20,6 +20,15 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
 	http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
 
-	<dubbo:reference id="demoService" interface="com.alibaba.dubbo.demo.DemoService" />
+	<!-- 消费方应用名，用于计算依赖关系，不是匹配条件，不要与提供方一样 -->
+	<dubbo:application name="consumer-of-hello-world-app" />
 
+	<!-- 使用multicast广播注册中心发现服务地址 -->
+	<dubbo:registry address="multicast://224.5.6.7:1234" />
+
+	<dubbo:reference id="helloWorldService" interface="com.alibaba.dubbo.demo.HelloWorldService" />
+
+	<bean id="helloWorldConsumer" class="com.alibaba.dubbo.demo.consumer.HelloWorldConsumer">
+		<property name="helloWorldService" ref="helloWorldService" />
+	</bean>
 </beans>
