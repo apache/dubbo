@@ -32,21 +32,133 @@
             <optional>true</optional>
         </dependency>
         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.netflix.zuul</groupId>
             <artifactId>zuul-core</artifactId>
-            <version>1.3.0</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.netflix.netflix-commons/netflix-commons-util -->
         <dependency>
-            <groupId>com.netflix.netflix-commons</groupId>
-            <artifactId>netflix-commons-util</artifactId>
-            <version>0.3.0</version>
+            <groupId>com.netflix.zuul</groupId>
+            <artifactId>zuul-netflix</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>netty</artifactId>
+                    <groupId>io.netty</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.netflix.netflix-commons</groupId>
+            <artifactId>netflix-commons-util</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-configuration</groupId>
+            <artifactId>commons-configuration</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.netflix.archaius</groupId>
+            <artifactId>archaius-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.netflix.servo</groupId>
+            <artifactId>servo-core</artifactId>
+        </dependency>
+
+
+        <dependency>
+            <groupId>com.netflix.eureka</groupId>
+            <artifactId>eureka-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.netflix.ribbon</groupId>
+            <artifactId>ribbon</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>netty-codec-http</artifactId>
+                    <groupId>io.netty</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>netty-transport-native-epoll</artifactId>
+                    <groupId>io.netty</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.netflix.ribbon</groupId>
+            <artifactId>ribbon-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.netflix.ribbon</groupId>
+            <artifactId>ribbon-httpclient</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.netflix.ribbon</groupId>
+            <artifactId>ribbon-loadbalancer</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.netflix.ribbon</groupId>
+            <artifactId>ribbon-eureka</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+            <version>1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.inject</groupId>
+            <artifactId>guice</artifactId>
+        </dependency>
+
+
+        <!--
+                <dependency>
+                    <groupId>com.netflix.karyon</groupId>
+                    <artifactId>karyon-core</artifactId>
+                    <version>2.0.02</version>
+                </dependency>
+        -->
+
+
+        <!--
+                <dependency>
+                    <groupId>com.netflix.astyanax</groupId>
+                    <artifactId>astyanax-core</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.netflix.astyanax</groupId>
+                    <artifactId>astyanax-recipes</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.netflix.astyanax</groupId>
+                    <artifactId>astyanax-cassandra</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.netflix.governator</groupId>
+                    <artifactId>governator</artifactId>
+                </dependency>
+        -->
+        <!--
+                <dependency>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.google.inject.extensions</groupId>
+                    <artifactId>guice-servlet</artifactId>
+                </dependency>
+        -->
+
+
     </dependencies>
 
 </project>

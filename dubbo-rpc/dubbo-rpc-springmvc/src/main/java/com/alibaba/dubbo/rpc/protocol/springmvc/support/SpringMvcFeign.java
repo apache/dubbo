@@ -12,15 +12,22 @@ import feign.Retryer;
 import feign.hystrix.HystrixFeign;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.DefaultConnectionKeepAliveStrategy;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.ssl.SSLContexts;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.client.RestTemplate;
 
+import javax.net.ssl.SSLContext;
 import java.util.List;
 import java.util.Set;
 
@@ -125,7 +132,12 @@ public class SpringMvcFeign {
     }
 
     public static HttpClient getDefaultHttpClientPool(int maxTotal, int timeout, int retry, boolean keepAlive) {
-        PoolingHttpClientConnectionManager manager = new PoolingHttpClientConnectionManager();
+        SSLContext sslContext = SSLContexts.createSystemDefault();
+        Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
+                .register("http", PlainConnectionSocketFactory.INSTANCE)
+                .register("https", new SSLConnectionSocketFactory(sslContext))
+                .build();
+        PoolingHttpClientConnectionManager manager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectTimeout(timeout)
                 .setSocketTimeout(timeout)

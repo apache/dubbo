@@ -126,8 +126,8 @@
     <dubbo:service interface="com.alibaba.dubbo.demo.Redis2Service" ref="redis2Service" protocol="redis2"/>
     <!--redis2:end-->
     <!--zuul:start-->
-    <!--    <dubbo:protocol port="8092" server="tomcat" name="zuul"/>
-        <bean id="zuulRouteFilter" class="com.alibaba.dubbo.demo.provider.ZuulRouteFilter"/>
-        <dubbo:service interface="com.netflix.zuul.IZuulFilter" ref="zuulRouteFilter" protocol="zuul"/>-->
+    <dubbo:protocol port="8092" server="tomcat" name="zuul"/>
+    <bean id="zuulRouteFilter" class="com.alibaba.dubbo.demo.provider.ZuulRouteFilter"/>
+    <dubbo:service interface="com.netflix.zuul.IZuulFilter" ref="zuulRouteFilter" protocol="zuul"/>
     <!--zuul:end-->
 </beans>

@@ -73,7 +73,7 @@ public class WebSocketJsonRpcClient extends JsonRpcClient implements Future {
             public void call(Object... args) {
                 Object result = null;
                 try {
-                    Type returnType = method.getGenericReturnType();
+                    Type returnType = (method.getGenericReturnType() != null) ? method.getGenericReturnType() : method.getReturnType();
                     Class returnClazz = method.getReturnType();
                     if (Future.class.isAssignableFrom(returnClazz)) {
                         Type genericType = ((ParameterizedTypeImpl) returnType).getActualTypeArguments()[0];

@@ -28,7 +28,7 @@ public class Redis2Client {
         Redis2Connection redis2Connection = genericObjectPool.borrowObject();
         try {
             String key = type.getName() + "." + method.getName();
-            Type genericReturnType = method.getGenericReturnType();
+            Type returnType = (method.getGenericReturnType() != null) ? method.getGenericReturnType() : method.getReturnType();
 
             Object reply;
             if (args != null && args.length > 0) {
@@ -52,7 +52,7 @@ public class Redis2Client {
                 reply = connection.getBulkReply();
             }
 
-            JavaType javaType = TypeFactory.defaultInstance().constructType(genericReturnType);
+            JavaType javaType = TypeFactory.defaultInstance().constructType(returnType);
 
             if (reply == null) {
                 return null;
