@@ -50,7 +50,11 @@ public class LruCache implements Cache {
 
     public Object get(Object key) {
         synchronized (store) {
-            return store.get(key);
+            Object val = store.get(key);
+            if(val == null) return null;
+            store.remove(key);
+            store.put(key, val);
+            return val;
         }
     }
 
