@@ -29,7 +29,7 @@ public class HelloWorldConsumer {
     }
 
     public void start() throws Exception {
-        for (int i = 0; i < Integer.MAX_VALUE; i++) {
+        for (int i = 0; i < 10; i++) {
             try {
                 String hello = helloWorldService.sayHello("world" + i);
                 System.out.println("[" + new SimpleDateFormat("HH:mm:ss").format(new Date()) + "] " + hello);

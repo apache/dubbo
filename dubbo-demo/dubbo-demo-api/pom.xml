@@ -19,13 +19,13 @@
 	<parent>
 		<groupId>com.alibaba</groupId>
 		<artifactId>dubbo-demo</artifactId>
-		<version>2.4.11-lorelib</version>
+		<version>2.4.11-x</version>
 	</parent>
 	<artifactId>dubbo-demo-api</artifactId>
 	<packaging>jar</packaging>
 	<name>${project.artifactId}</name>
 	<description>The demo module of dubbo project</description>
 	<properties>
-		<skip_maven_deploy>true</skip_maven_deploy>
+		<skip_maven_deploy>false</skip_maven_deploy>
 	</properties>
 </project>
