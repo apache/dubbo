@@ -76,7 +76,7 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T>{
             executor.execute(new Runnable() {
                 public void run() {
                     try {
-                        RpcContext.getContext().setAttachments(attachments);
+                        RpcContext.getContext().getAttachments().putAll(attachments);
                         Result result = invoker.invoke(invocation);
                         ref.offer(result);
                     } catch(Throwable e) {
