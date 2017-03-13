@@ -17,6 +17,7 @@ package com.alibaba.dubbo.rpc.cluster.support;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -68,12 +69,14 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T>{
             }
         }
         RpcContext.getContext().setInvokers((List)selected);
+        final Map<String,String> attachments = RpcContext.getContext().getAttachments();
         final AtomicInteger count = new AtomicInteger();
         final BlockingQueue<Object> ref = new LinkedBlockingQueue<Object>();
         for (final Invoker<T> invoker : selected) {
             executor.execute(new Runnable() {
                 public void run() {
                     try {
+                        RpcContext.getContext().setAttachments(attachments);
                         Result result = invoker.invoke(invocation);
                         ref.offer(result);
                     } catch(Throwable e) {
