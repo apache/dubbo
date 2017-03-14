@@ -24,6 +24,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -60,6 +61,10 @@ public class GenericJSONConverter implements JSONConverter
 		else if( obj instanceof JSONNode )
 		{
 			((JSONNode)obj).writeJSON(this, jb, writeClass);
+		}
+		else if( obj instanceof Locale )
+		{
+			jb.valueString(obj.toString());	//fix-JSON.json(Locale) throw StackOverflowError(into the dead loop)
 		}
 		else if( c.isEnum() )
 		{
