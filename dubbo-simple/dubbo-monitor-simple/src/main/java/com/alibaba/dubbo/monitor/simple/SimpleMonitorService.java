@@ -189,7 +189,7 @@ public class SimpleMonitorService implements MonitorService {
                 } else {
                     type = PROVIDER;
                     consumer = statistics.getParameter(CONSUMER);
-                    int i = consumer.indexOf(':');
+                    int i = consumer == null ? -1 : consumer.indexOf(':');
                     if (i > 0) {
                         consumer = consumer.substring(0, i);
                     }
