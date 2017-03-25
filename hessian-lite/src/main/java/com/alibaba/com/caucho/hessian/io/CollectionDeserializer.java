@@ -50,6 +50,7 @@ package com.alibaba.com.caucho.hessian.io;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.*;
 
 /**
@@ -75,11 +76,14 @@ public class CollectionDeserializer extends AbstractListDeserializer {
 
         /**
          * 修改序列化过程中导致属性丢失的bug：对继承自Collection并扩展了新属性的类，对其新增属性反序列化。
+         *
+         * Added By HuQingmiao(443770574@qq.com) on 2017-03-25.
          */
+        /** begin **/
         try {
             Field[] fields = list.getClass().getDeclaredFields();
             for (Field field : fields) {
-                if ("serialVersionUID".equals(field.getName())) {
+                if (Modifier.isStatic(field.getModifiers())) {
                     continue;
                 }
                 boolean isAccessible = field.isAccessible();
@@ -92,6 +96,7 @@ public class CollectionDeserializer extends AbstractListDeserializer {
         } catch (IllegalAccessException e) {
             throw new IOException(e);
         }
+        /** end **/
 
 
         while (!in.isEnd())
@@ -110,11 +115,14 @@ public class CollectionDeserializer extends AbstractListDeserializer {
 
         /**
          * 修改序列化过程中导致属性丢失的bug：对继承自Collection并扩展了新属性的类，对其新增属性反序列化。
+         *
+         * Added By HuQingmiao(443770574@qq.com) on 2017-03-25.
          */
+        /** begin **/
         try {
             Field[] fields = list.getClass().getDeclaredFields();
             for (Field field : fields) {
-                if ("serialVersionUID".equals(field.getName())) {
+                if (Modifier.isStatic(field.getModifiers())) {
                     continue;
                 }
                 boolean isAccessible = field.isAccessible();
@@ -127,6 +135,7 @@ public class CollectionDeserializer extends AbstractListDeserializer {
         } catch (IllegalAccessException e) {
             throw new IOException(e);
         }
+        /** end **/
 
         for (; length > 0; length--)
             list.add(in.readObject());
