@@ -56,6 +56,7 @@ import java.util.*;
  * Deserializing a JDK 1.2 Collection.
  */
 public class CollectionDeserializer extends AbstractListDeserializer {
+
   private Class _type;
   
   public CollectionDeserializer(Class type)
@@ -80,13 +81,13 @@ public class CollectionDeserializer extends AbstractListDeserializer {
        */
       try {
           Field[] fields = list.getClass().getDeclaredFields();
-          for (int i = fields.length - 1; i >= 0; i--) {
-              boolean isAccessible = fields[i].isAccessible();
+        for (Field field : fields) {
+              boolean isAccessible = field.isAccessible();
               if (!isAccessible) {
-                  fields[i].setAccessible(true);
+                  field.setAccessible(true);
               }
-              fields[i].set(list, in.readObject());
-              fields[i].setAccessible(isAccessible);
+              field.set(list, in.readObject());
+              field.setAccessible(isAccessible);
           }
       } catch (IllegalAccessException e) {
           throw new IOException(e);

@@ -96,13 +96,6 @@ public class CollectionSerializer extends AbstractSerializer
     else
       hasEnd = out.writeListBegin(list.size(), obj.getClass().getName());
 
-    Iterator iter = list.iterator();
-    while (iter.hasNext()) {
-      Object value = iter.next();
-
-      out.writeObject(value);
-    }
-
       /**
        * 修改序列化过程中导致属性丢失的bug：对继承自Collection并扩展了新属性的类，对其新增属性序列化。
        */
@@ -120,6 +113,13 @@ public class CollectionSerializer extends AbstractSerializer
       } catch (IllegalAccessException e) {
           throw new IOException(e);
       }
+
+    Iterator iter = list.iterator();
+    while (iter.hasNext()) {
+      Object value = iter.next();
+
+      out.writeObject(value);
+    }
 
     if (hasEnd)
       out.writeListEnd();
