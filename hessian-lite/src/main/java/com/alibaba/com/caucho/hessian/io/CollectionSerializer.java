@@ -50,6 +50,7 @@ package com.alibaba.com.caucho.hessian.io;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -101,6 +102,24 @@ public class CollectionSerializer extends AbstractSerializer
 
       out.writeObject(value);
     }
+
+      /**
+       * 修改序列化存在属性丢失的bug：对继承自Collection并扩展了新属性的类，对其新增属性序列化。
+       */
+      try {
+          Field[] fields = obj.getClass().getDeclaredFields();
+          for (Field field : fields) {
+              boolean isAccessible = field.isAccessible();
+              if (!isAccessible) {
+                  field.setAccessible(true);
+              }
+              Object val = field.get(obj);
+              out.writeObject(val);
+              field.setAccessible(isAccessible);
+          }
+      } catch (IllegalAccessException e) {
+          throw new IOException(e);
+      }
 
     if (hasEnd)
       out.writeListEnd();

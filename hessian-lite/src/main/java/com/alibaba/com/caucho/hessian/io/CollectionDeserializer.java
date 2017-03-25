@@ -49,6 +49,7 @@
 package com.alibaba.com.caucho.hessian.io;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.*;
 
 /**
@@ -74,6 +75,24 @@ public class CollectionDeserializer extends AbstractListDeserializer {
 
     in.addRef(list);
 
+      /**
+       * 修改序列化存在属性丢失的bug：对继承自Collection并扩展了新属性的类，对其新增属性反序列化。
+       */
+      try {
+          Field[] fields = list.getClass().getDeclaredFields();
+          for (int i = fields.length - 1; i >= 0; i--) {
+              boolean isAccessible = fields[i].isAccessible();
+              if (!isAccessible) {
+                  fields[i].setAccessible(true);
+              }
+              fields[i].set(list, in.readObject());
+              fields[i].setAccessible(isAccessible);
+          }
+      } catch (IllegalAccessException e) {
+          throw new IOException(e);
+      }
+
+
     while (! in.isEnd())
       list.add(in.readObject());
 
@@ -88,6 +107,23 @@ public class CollectionDeserializer extends AbstractListDeserializer {
     Collection list = createList();
 
     in.addRef(list);
+
+    /**
+     * 修改序列化存在属性丢失的bug：对继承自Collection并扩展了新属性的类，对其新增属性反序列化。
+     */
+    try {
+      Field[] fields = list.getClass().getDeclaredFields();
+      for (int i = fields.length - 1; i >= 0; i--) {
+        boolean isAccessible = fields[i].isAccessible();
+        if (!isAccessible) {
+          fields[i].setAccessible(true);
+        }
+        fields[i].set(list, in.readObject());
+        fields[i].setAccessible(isAccessible);
+      }
+    } catch (IllegalAccessException e) {
+      throw new IOException(e);
+    }
 
     for (; length > 0; length--)
       list.add(in.readObject());
