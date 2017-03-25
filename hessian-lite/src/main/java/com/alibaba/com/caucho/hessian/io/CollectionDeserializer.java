@@ -57,115 +57,115 @@ import java.util.*;
  */
 public class CollectionDeserializer extends AbstractListDeserializer {
 
-  private Class _type;
-  
-  public CollectionDeserializer(Class type)
-  {
-    _type = type;
-  }
-  
-  public Class getType()
-  {
-    return _type;
-  }
-  
-  public Object readList(AbstractHessianInput in, int length)
-    throws IOException
-  {
-    Collection list = createList();
+    private Class _type;
 
-    in.addRef(list);
+    public CollectionDeserializer(Class type) {
+        _type = type;
+    }
 
-      /**
-       * 修改序列化过程中导致属性丢失的bug：对继承自Collection并扩展了新属性的类，对其新增属性反序列化。
-       */
-      try {
-          Field[] fields = list.getClass().getDeclaredFields();
-        for (Field field : fields) {
-              boolean isAccessible = field.isAccessible();
-              if (!isAccessible) {
-                  field.setAccessible(true);
-              }
-              field.set(list, in.readObject());
-              field.setAccessible(isAccessible);
-          }
-      } catch (IllegalAccessException e) {
-          throw new IOException(e);
-      }
+    public Class getType() {
+        return _type;
+    }
 
+    public Object readList(AbstractHessianInput in, int length)
+            throws IOException {
+        Collection list = createList();
 
-    while (! in.isEnd())
-      list.add(in.readObject());
+        in.addRef(list);
 
-    in.readEnd();
-
-    return list;
-  }
-  
-  public Object readLengthList(AbstractHessianInput in, int length)
-    throws IOException
-  {
-    Collection list = createList();
-
-    in.addRef(list);
-
-    /**
-     * 修改序列化过程中导致属性丢失的bug：对继承自Collection并扩展了新属性的类，对其新增属性反序列化。
-     */
-    try {
-      Field[] fields = list.getClass().getDeclaredFields();
-      for (int i = fields.length - 1; i >= 0; i--) {
-        boolean isAccessible = fields[i].isAccessible();
-        if (!isAccessible) {
-          fields[i].setAccessible(true);
+        /**
+         * 修改序列化过程中导致属性丢失的bug：对继承自Collection并扩展了新属性的类，对其新增属性反序列化。
+         */
+        try {
+            Field[] fields = list.getClass().getDeclaredFields();
+            for (Field field : fields) {
+                if ("serialVersionUID".equals(field.getName())) {
+                    continue;
+                }
+                boolean isAccessible = field.isAccessible();
+                if (!isAccessible) {
+                    field.setAccessible(true);
+                }
+                field.set(list, in.readObject());
+                field.setAccessible(isAccessible);
+            }
+        } catch (IllegalAccessException e) {
+            throw new IOException(e);
         }
-        fields[i].set(list, in.readObject());
-        fields[i].setAccessible(isAccessible);
-      }
-    } catch (IllegalAccessException e) {
-      throw new IOException(e);
+
+
+        while (!in.isEnd())
+            list.add(in.readObject());
+
+        in.readEnd();
+
+        return list;
     }
 
-    for (; length > 0; length--)
-      list.add(in.readObject());
+    public Object readLengthList(AbstractHessianInput in, int length)
+            throws IOException {
+        Collection list = createList();
 
-    return list;
-  }
+        in.addRef(list);
 
-  private Collection createList()
-    throws IOException
-  {
-    Collection list = null;
-    
-    if (_type == null)
-      list = new ArrayList();
-    else if (! _type.isInterface()) {
-      try {
-        list = (Collection) _type.newInstance();
-      } catch (Exception e) {
-      }
+        /**
+         * 修改序列化过程中导致属性丢失的bug：对继承自Collection并扩展了新属性的类，对其新增属性反序列化。
+         */
+        try {
+            Field[] fields = list.getClass().getDeclaredFields();
+            for (Field field : fields) {
+                if ("serialVersionUID".equals(field.getName())) {
+                    continue;
+                }
+                boolean isAccessible = field.isAccessible();
+                if (!isAccessible) {
+                    field.setAccessible(true);
+                }
+                field.set(list, in.readObject());
+                field.setAccessible(isAccessible);
+            }
+        } catch (IllegalAccessException e) {
+            throw new IOException(e);
+        }
+
+        for (; length > 0; length--)
+            list.add(in.readObject());
+
+        return list;
     }
 
-    if (list != null) {
-    }
-    else if (SortedSet.class.isAssignableFrom(_type))
-      list = new TreeSet();
-    else if (Set.class.isAssignableFrom(_type))
-      list = new HashSet();
-    else if (List.class.isAssignableFrom(_type))
-      list = new ArrayList();
-    else if (Collection.class.isAssignableFrom(_type))
-      list = new ArrayList();
-    else {
-      try {
-        list = (Collection) _type.newInstance();
-      } catch (Exception e) {
-        throw new IOExceptionWrapper(e);
-      }
-    }
+    private Collection createList()
+            throws IOException {
+        Collection list = null;
 
-    return list;
-  }
+        if (_type == null)
+            list = new ArrayList();
+        else if (!_type.isInterface()) {
+            try {
+                list = (Collection) _type.newInstance();
+            } catch (Exception e) {
+            }
+        }
+
+        if (list != null) {
+        } else if (SortedSet.class.isAssignableFrom(_type))
+            list = new TreeSet();
+        else if (Set.class.isAssignableFrom(_type))
+            list = new HashSet();
+        else if (List.class.isAssignableFrom(_type))
+            list = new ArrayList();
+        else if (Collection.class.isAssignableFrom(_type))
+            list = new ArrayList();
+        else {
+            try {
+                list = (Collection) _type.newInstance();
+            } catch (Exception e) {
+                throw new IOExceptionWrapper(e);
+            }
+        }
+
+        return list;
+    }
 }
 
 
