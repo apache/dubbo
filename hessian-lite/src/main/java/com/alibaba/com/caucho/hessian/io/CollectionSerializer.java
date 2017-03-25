@@ -104,7 +104,7 @@ public class CollectionSerializer extends AbstractSerializer
     }
 
       /**
-       * 修改序列化存在属性丢失的bug：对继承自Collection并扩展了新属性的类，对其新增属性序列化。
+       * 修改序列化过程中导致属性丢失的bug：对继承自Collection并扩展了新属性的类，对其新增属性序列化。
        */
       try {
           Field[] fields = obj.getClass().getDeclaredFields();

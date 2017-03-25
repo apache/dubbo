@@ -76,7 +76,7 @@ public class CollectionDeserializer extends AbstractListDeserializer {
     in.addRef(list);
 
       /**
-       * 修改序列化存在属性丢失的bug：对继承自Collection并扩展了新属性的类，对其新增属性反序列化。
+       * 修改序列化过程中导致属性丢失的bug：对继承自Collection并扩展了新属性的类，对其新增属性反序列化。
        */
       try {
           Field[] fields = list.getClass().getDeclaredFields();
@@ -109,7 +109,7 @@ public class CollectionDeserializer extends AbstractListDeserializer {
     in.addRef(list);
 
     /**
-     * 修改序列化存在属性丢失的bug：对继承自Collection并扩展了新属性的类，对其新增属性反序列化。
+     * 修改序列化过程中导致属性丢失的bug：对继承自Collection并扩展了新属性的类，对其新增属性反序列化。
      */
     try {
       Field[] fields = list.getClass().getDeclaredFields();
