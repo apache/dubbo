@@ -15,6 +15,7 @@
  */
 package com.alibaba.dubbo.rpc.protocol.redis;
 
+import com.alibaba.dubbo.common.utils.StringUtils;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -68,31 +69,12 @@ public class RedisProtocol extends AbstractProtocol {
 
     public <T> Invoker<T> refer(final Class<T> type, final URL url) throws RpcException {
         try {
-            GenericObjectPool.Config config = new GenericObjectPool.Config();
-            config.testOnBorrow = url.getParameter("test.on.borrow", true);
-            config.testOnReturn = url.getParameter("test.on.return", false);
-            config.testWhileIdle = url.getParameter("test.while.idle", false);
-            if (url.getParameter("max.idle", 0) > 0)
-                config.maxIdle = url.getParameter("max.idle", 0);
-            if (url.getParameter("min.idle", 0) > 0)
-                config.minIdle = url.getParameter("min.idle", 0);
-            if (url.getParameter("max.active", 0) > 0)
-                config.maxActive = url.getParameter("max.active", 0);
-            if (url.getParameter("max.wait", 0) > 0)
-                config.maxWait = url.getParameter("max.wait", 0);
-            if (url.getParameter("num.tests.per.eviction.run", 0) > 0)
-                config.numTestsPerEvictionRun = url.getParameter("num.tests.per.eviction.run", 0);
-            if (url.getParameter("time.between.eviction.runs.millis", 0) > 0)
-                config.timeBetweenEvictionRunsMillis = url.getParameter("time.between.eviction.runs.millis", 0);
-            if (url.getParameter("min.evictable.idle.time.millis", 0) > 0)
-                config.minEvictableIdleTimeMillis = url.getParameter("min.evictable.idle.time.millis", 0);
-            final JedisPool jedisPool = new JedisPool(config, url.getHost(), url.getPort(DEFAULT_PORT), 
-                url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
+            final JedisPool jedisPool = getJedisPool(url);
             final int expiry = url.getParameter("expiry", 0);
             final String get = url.getParameter("get", "get");
             final String set = url.getParameter("set", Map.class.equals(type) ? "put" : "set");
             final String delete = url.getParameter("delete", Map.class.equals(type) ? "remove" : "delete");
-            return new AbstractInvoker<T>(type, url) {
+            Invoker invoker = new AbstractInvoker<T>(type, url) {
                 protected Result doInvoke(Invocation invocation) throws Throwable {
                     Jedis resource = null;
                     try {
@@ -163,8 +145,38 @@ public class RedisProtocol extends AbstractProtocol {
                     }
                 }
             };
+            invokers.add(invoker);
+            return invoker;
         } catch (Throwable t) {
             throw new RpcException("Failed to refer memecached service. interface: " + type.getName() + ", url: " + url + ", cause: " + t.getMessage(), t);
+        }
+    }
+
+    private JedisPool getJedisPool(URL url){
+        GenericObjectPool.Config config = new GenericObjectPool.Config();
+        config.testOnBorrow = url.getParameter("test.on.borrow", true);
+        config.testOnReturn = url.getParameter("test.on.return", false);
+        config.testWhileIdle = url.getParameter("test.while.idle", false);
+        if (url.getParameter("max.idle", 0) > 0)
+            config.maxIdle = url.getParameter("max.idle", 0);
+        if (url.getParameter("min.idle", 0) > 0)
+            config.minIdle = url.getParameter("min.idle", 0);
+        if (url.getParameter("max.active", 0) > 0)
+            config.maxActive = url.getParameter("max.active", 0);
+        if (url.getParameter("max.wait", 0) > 0)
+            config.maxWait = url.getParameter("max.wait", 0);
+        if (url.getParameter("num.tests.per.eviction.run", 0) > 0)
+            config.numTestsPerEvictionRun = url.getParameter("num.tests.per.eviction.run", 0);
+        if (url.getParameter("time.between.eviction.runs.millis", 0) > 0)
+            config.timeBetweenEvictionRunsMillis = url.getParameter("time.between.eviction.runs.millis", 0);
+        if (url.getParameter("min.evictable.idle.time.millis", 0) > 0)
+            config.minEvictableIdleTimeMillis = url.getParameter("min.evictable.idle.time.millis", 0);
+        if(StringUtils.isEmpty(url.getPassword())){
+            return new JedisPool(config, url.getHost(), url.getPort(DEFAULT_PORT),
+                url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
+        } else {
+            return new JedisPool(config, url.getHost(), url.getPort(DEFAULT_PORT),
+                url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT),url.getPassword());
         }
     }
 
