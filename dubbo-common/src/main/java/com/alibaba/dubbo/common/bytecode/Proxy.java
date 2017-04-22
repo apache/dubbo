@@ -64,7 +64,7 @@ public abstract class Proxy
 	 */
 	public static Proxy getProxy(Class<?>... ics)
 	{
-		return getProxy(ClassHelper.getCallerClassLoader(Proxy.class), ics);
+		return getProxy(ClassHelper.getClassLoader(Proxy.class), ics);
 	}
 
 	/**
@@ -78,7 +78,7 @@ public abstract class Proxy
 	{
 		if( ics.length > 65535 )
 			throw new IllegalArgumentException("interface limit exceeded");
-		
+
 		StringBuilder sb = new StringBuilder();
 		for(int i=0;i<ics.length;i++)
 		{
