@@ -22,6 +22,8 @@ import java.util.concurrent.TimeUnit;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
+import com.alibaba.dubbo.common.store.DataStore;
 import com.alibaba.dubbo.common.threadpool.support.AbortPolicyWithReport;
 import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 import com.alibaba.dubbo.remoting.Channel;
@@ -45,7 +47,12 @@ public class ConnectionOrderedChannelHandler extends WrappedChannelHandler {
                                      new LinkedBlockingQueue<Runnable>(url.getPositiveParameter(Constants.CONNECT_QUEUE_CAPACITY, Integer.MAX_VALUE)),
                                      new NamedThreadFactory(threadName, true),
                                      new AbortPolicyWithReport(threadName, url)
-            );  // FIXME 没有地方释放connectionExecutor！
+            );
+
+        DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
+
+        dataStore.put(Constants.EXECUTOR_SERVICE_COMPONENT_KEY, "ConnectionOrderedChannelHandler", connectionExecutor);
+
         queuewarninglimit = url.getParameter(Constants.CONNECT_QUEUE_WARNING_SIZE, Constants.DEFAULT_CONNECT_QUEUE_WARNING_SIZE);
     }
 

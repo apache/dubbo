@@ -41,10 +41,7 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
-import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
-import com.alibaba.dubbo.common.utils.ConfigUtils;
-import com.alibaba.dubbo.common.utils.NamedThreadFactory;
-import com.alibaba.dubbo.common.utils.UrlUtils;
+import com.alibaba.dubbo.common.utils.*;
 import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.Registry;
 
@@ -515,6 +512,8 @@ public abstract class AbstractRegistry implements Registry {
                 }
             }
         }
+
+        ExecutorUtil.shutdownNow(registryCacheExecutor, 100);
     }
 
     public String toString() {

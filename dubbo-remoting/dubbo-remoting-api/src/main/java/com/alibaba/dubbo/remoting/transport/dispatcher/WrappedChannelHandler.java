@@ -36,7 +36,13 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
     protected static final Logger logger = LoggerFactory.getLogger(WrappedChannelHandler.class);
 
     protected static final ExecutorService SHARED_EXECUTOR = Executors.newCachedThreadPool(new NamedThreadFactory("DubboSharedHandler", true));
-    
+
+    static {
+        DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
+
+        dataStore.put(Constants.EXECUTOR_SERVICE_COMPONENT_KEY, "DubboSharedHandler", SHARED_EXECUTOR);
+    }
+
     protected final ExecutorService executor;
     
     protected final ChannelHandler handler;

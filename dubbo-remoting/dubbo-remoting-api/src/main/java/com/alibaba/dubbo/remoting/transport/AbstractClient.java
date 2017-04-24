@@ -59,7 +59,13 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     private final Lock            connectLock = new ReentrantLock();
     
     private static final ScheduledThreadPoolExecutor reconnectExecutorService = new ScheduledThreadPoolExecutor(2, new NamedThreadFactory("DubboClientReconnectTimer", true));
-    
+
+    static {
+        DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
+
+        dataStore.put(Constants.EXECUTOR_SERVICE_COMPONENT_KEY, "DubboClientReconnectTimer", reconnectExecutorService);
+    }
+
     private volatile  ScheduledFuture<?> reconnectExecutorFuture = null;
     
     protected volatile ExecutorService executor;
@@ -78,11 +84,11 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     private long lastConnectedTime = System.currentTimeMillis();
     
     private final long shutdown_timeout ;
-    
-    
+
+
     public AbstractClient(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
-        
+
         send_reconnect = url.getParameter(Constants.SEND_RECONNECT_KEY, false);
         
         shutdown_timeout = url.getParameter(Constants.SHUTDOWN_TIMEOUT_KEY, Constants.DEFAULT_SHUTDOWN_TIMEOUT);
