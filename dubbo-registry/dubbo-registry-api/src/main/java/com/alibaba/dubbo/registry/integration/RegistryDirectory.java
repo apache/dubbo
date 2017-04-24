@@ -223,12 +223,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             }
             Map<String, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls) ;// 将URL列表转成Invoker列表
             Map<String, List<Invoker<T>>> newMethodInvokerMap = toMethodInvokers(newUrlInvokerMap); // 换方法名映射Invoker列表
-            // state change
-            //如果计算错误，则不进行处理.
-            if (newUrlInvokerMap == null || newUrlInvokerMap.size() == 0 ){
-                logger.error(new IllegalStateException("urls to invokers error .invokerUrls.size :"+invokerUrls.size() + ", invoker.size :0. urls :"+invokerUrls.toString()));
-                return ;
-            }
+
             this.methodInvokerMap = multiGroup ? toMergeMethodInvokerMap(newMethodInvokerMap) : newMethodInvokerMap;
             this.urlInvokerMap = newUrlInvokerMap;
             try{
@@ -537,10 +532,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * @param invokers
      */
     private void destroyUnusedInvokers(Map<String, Invoker<T>> oldUrlInvokerMap, Map<String, Invoker<T>> newUrlInvokerMap) {
-        if (newUrlInvokerMap == null || newUrlInvokerMap.size() == 0) {
-            destroyAllInvokers();
-            return;
-        }
         // check deleted invoker
         List<String> deleted = null;
         if (oldUrlInvokerMap != null) {
