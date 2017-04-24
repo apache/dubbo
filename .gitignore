@@ -1,5 +1,6 @@
 # maven ignore
 target/
+.gradle/
 *.jar
 *.war
 *.zip

@@ -109,7 +109,7 @@
 		<sca_version>2.0-M5.1</sca_version>
 		<guice_version>3.0</guice_version>
 		<cglib_version>2.2</cglib_version>
-		<webx_version>3.0.8</webx_version>
+		<webx_version>3.1.6</webx_version>
 		<!-- Log libs -->
 		<slf4j_version>1.7.25</slf4j_version>
 		<jcl_version>1.1</jcl_version>
@@ -364,6 +364,15 @@
 	</dependencies>
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.0.2</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>

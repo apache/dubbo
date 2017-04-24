@@ -1,0 +1,2 @@
+docker build -t altiplanogao/dubbo-demo-consumer .
+docker
