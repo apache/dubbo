@@ -28,6 +28,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.support.AbstractApplicationContext;
 
@@ -108,6 +109,9 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                 }
                 export();
             }
+        }
+        if (event instanceof ContextClosedEvent) {
+            unexport();
         }
     }
     
