@@ -39,7 +39,7 @@ public class JacksonObjectOutput implements ObjectOutput {
 
     @Override
     public void writeInt(int v) throws IOException {
-
+        writeObject(v);
     }
 
     @Override
