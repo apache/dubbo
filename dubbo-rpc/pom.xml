@@ -39,5 +39,7 @@
 		<module>dubbo-rpc-thrift</module>
 		<module>dubbo-rpc-memcached</module>
 		<module>dubbo-rpc-redis</module>
+		<module>dubbo-rpc-jms</module>
+		<module>dubbo-rpc-jms-implementor-acitvemq</module>
 	</modules>
 </project>
