@@ -201,7 +201,7 @@
 		    		<artifactId>zookeeper</artifactId>
 				</exclusion>
 				<exclusion>
-					<groupId>com.github.sgroschupf</groupId>
+					<groupId>com.101tec</groupId>
 					<artifactId>zkclient</artifactId>
 				</exclusion>
 				<exclusion>

@@ -100,9 +100,9 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.github.sgroschupf</groupId>
+			<groupId>com.101tec</groupId>
 			<artifactId>zkclient</artifactId>
-			<version>0.1</version>
+			<version>0.10</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
