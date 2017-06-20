@@ -1,0 +1,49 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>dubbo-filter</artifactId>
+        <groupId>com.alibaba</groupId>
+        <version>2.5.4-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>dubbo-filter-opentracing</artifactId>
+    <packaging>jar</packaging>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <name>${project.artifactId}</name>
+    <description>The validation module of dubbo project</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-rpc-api</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.opentracing</groupId>
+            <artifactId>opentracing-api</artifactId>
+            <version>0.21.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.opentracing</groupId>
+            <artifactId>opentracing-noop</artifactId>
+            <version>0.21.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.opentracing.brave</groupId>
+            <artifactId>brave-opentracing</artifactId>
+            <version>0.20.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.zipkin.reporter</groupId>
+            <artifactId>zipkin-sender-okhttp3</artifactId>
+            <version>0.10.0</version>
+        </dependency>
+    </dependencies>
+</project>
