@@ -34,7 +34,7 @@ public class OpenTracingFilter implements Filter {
 
 
     static {
-        // 将相应的 tracer 实现放到 META-INF/services/com.alibaba.dubbo.trace.filter.support.TracerFactory
+        // 灏嗙浉搴旂殑 tracer 瀹炵幇鏀惧埌 META-INF/services/com.alibaba.dubbo.trace.filter.support.TracerFactory
         Iterator<TracerFactory> iterator = ServiceLoader.load(TracerFactory.class).iterator();
         if (iterator.hasNext()) {
             TracerFactory tracerFactory = iterator.next();
