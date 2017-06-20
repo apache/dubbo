@@ -114,8 +114,6 @@ public class OpenTracingFilter implements Filter {
         spanBuilder.withTag("ClientSend", System.currentTimeMillis());
         Span traceSpan = spanBuilder.start();
 
-        System.out.println("traceId:" + getTraceId(traceSpan));
-
         tracer.inject(traceSpan.context(), Format.Builtin.TEXT_MAP, new TextMap() {
 
             public void put(String key, String value) {
