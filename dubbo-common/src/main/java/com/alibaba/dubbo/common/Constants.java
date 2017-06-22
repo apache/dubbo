@@ -295,6 +295,8 @@ public class Constants {
     public static final String  PID_KEY                            = "pid";
 
     public static final String  TIMESTAMP_KEY                      = "timestamp";
+
+    public static final String REMOTE_TIMESTAMP_KEY              = "remote_timestamp";
     
     public static final String  WARMUP_KEY                         = "warmup";
 

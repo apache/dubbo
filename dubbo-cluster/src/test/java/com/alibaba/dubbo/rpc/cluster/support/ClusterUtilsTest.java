@@ -42,6 +42,7 @@ public class ClusterUtilsTest {
             .addParameter(Constants.CORE_THREADS_KEY, Integer.MAX_VALUE)
             .addParameter(Constants.QUEUES_KEY, Integer.MAX_VALUE)
             .addParameter(Constants.ALIVE_KEY, Integer.MAX_VALUE)
+            .addParameter(Constants.TIMESTAMP_KEY, "100")
             .addParameter(Constants.DEFAULT_KEY_PREFIX + Constants.THREADS_KEY, Integer.MAX_VALUE)
             .addParameter(Constants.DEFAULT_KEY_PREFIX + Constants.THREADPOOL_KEY, "fixed")
             .addParameter(Constants.DEFAULT_KEY_PREFIX + Constants.CORE_THREADS_KEY, Integer.MAX_VALUE)
@@ -52,6 +53,7 @@ public class ClusterUtilsTest {
         URL consumerURL = URL.valueOf("dubbo://localhost:55555");
         consumerURL = consumerURL.addParameter(Constants.PID_KEY, "1234");
 	    consumerURL = consumerURL.addParameter(Constants.THREADPOOL_KEY, "foo");
+        consumerURL = consumerURL.addParameter(Constants.TIMESTAMP_KEY, "50");
 
         URL url = ClusterUtils.mergeUrl(providerURL, consumerURL.getParameters());
 
@@ -77,6 +79,8 @@ public class ClusterUtilsTest {
         Assert.assertEquals(url.getPassword(), "password");
         Assert.assertEquals(url.getParameter(Constants.PID_KEY), "1234");
 	    Assert.assertEquals(url.getParameter(Constants.THREADPOOL_KEY), "foo");
+        Assert.assertEquals(url.getParameter(Constants.TIMESTAMP_KEY), "50");
+        Assert.assertEquals(url.getParameter(Constants.REMOTE_TIMESTAMP_KEY), "100");
     }
 
 }
