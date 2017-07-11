@@ -52,7 +52,7 @@ source .bash_profile
 cd ~
 git clone https://github.com/alibaba/dubbo.git dubbo
 git checkout master
-or: git checkout -b dubbo-2.4.0
+or: git checkout -b dubbo-2.*
 ```
 
 0. Import the dubbo source code to eclipse project:
@@ -87,18 +87,18 @@ ls
 0. Install the demo provider:
 
     ```sh
-cd ~/dubbo/dubbo-demo-provider/target
-tar zxvf dubbo-demo-provider-2.4.0-assembly.tar.gz
-cd dubbo-demo-provider-2.4.0/bin
+cd ~/dubbo/dubbo-demo/dubbo-demo-provider/target
+tar zxvf dubbo-demo-provider-2.*-assembly.tar.gz
+cd dubbo-*-SNAPSHOT/bin
 ./start.sh
 ```
 
 0. Install the demo consumer:
 
     ```sh
-cd ~/dubbo/dubbo-demo-consumer/target
-tar zxvf dubbo-demo-consumer-2.4.0-assembly.tar.gz
-cd dubbo-demo-consumer-2.4.0/bin
+cd ~/dubbo/dubbo-demo/dubbo-demo-consumer/target
+tar zxvf dubbo-demo-consumer-2.*-assembly.tar.gz
+cd dubbo-*-SNAPSHOT/bin
 ./start.sh
 cd ../logs
 tail -f stdout.log
@@ -107,9 +107,9 @@ tail -f stdout.log
 0. Install the simple monitor:
 
     ```sh
-cd ~/dubbo/dubbo-simple-monitor/target
-tar zxvf dubbo-simple-monitor-2.4.0-assembly.tar.gz
-cd dubbo-simple-monitor-2.4.0/bin
+cd ~/dubbo/dubbo-simple/dubbo-monitor-simple/target
+tar zxvf dubbo-monitor-simple-2.*-assembly.tar.gz
+cd dubbo-*-SNAPSHOT/bin
 ./start.sh
 http://127.0.0.1:8080
 ```
@@ -117,21 +117,24 @@ http://127.0.0.1:8080
 0. Install the simple registry:
 
     ```sh
-cd ~/dubbo/dubbo-simple-registry/target
-tar zxvf dubbo-simple-registry-2.4.0-assembly.tar.gz
-cd dubbo-simple-registry-2.4.0/bin
+cd ~/dubbo/dubbo-simple/dubbo-registry-simple/target
+tar zxvf dubbo-registry-simple-2.*-assembly.tar.gz
+cd dubbo-*-SNAPSHOT/bin
 ./start.sh
-cd ~/dubbo/dubbo-demo-provider/conf
+
+cd ~/dubbo/dubbo-demo/dubbo-demo-provider/target/dubbo-*-SNAPSHOT/conf
 vi dubbo.properties
 - edit: dubbo.registry.adddress=dubbo://127.0.0.1:9090
 cd ../bin
 ./restart.sh
-cd ~/dubbo/dubbo-demo-consumer/conf
+
+cd ~/dubbo/dubbo-demo/dubbo-demo-consumer/target/dubbo-*-SNAPSHOT/conf
 vi dubbo.properties
 - edit: dubbo.registry.adddress=dubbo://127.0.0.1:9090
 cd ../bin
 ./restart.sh
-cd ~/dubbo/dubbo-simple-monitor/conf
+
+cd ~/dubbo/dubbo-simple/dubbo-monitor-simple/target/dubbo-*-SNAPSHOT/conf
 vi dubbo.properties
 - edit: dubbo.registry.adddress=dubbo://127.0.0.1:9090
 cd ../bin
@@ -150,17 +153,20 @@ vi zoo.cfg
 - edit: dataDir=/home/xxx/data
 cd ../bin
 ./zkServer.sh start
-cd ~/dubbo/dubbo-demo-provider/conf
+
+cd ~/dubbo/dubbo-demo/dubbo-demo-provider/target/dubbo-*-SNAPSHOT/conf
 vi dubbo.properties
 - edit: dubbo.registry.adddress=zookeeper://127.0.0.1:2181
 cd ../bin
 ./restart.sh
-cd ~/dubbo/dubbo-demo-consumer/conf
+
+cd ~/dubbo/dubbo-demo/dubbo-demo-consumer/target/dubbo-*-SNAPSHOT/conf
 vi dubbo.properties
 - edit: dubbo.registry.adddress=zookeeper://127.0.0.1:2181
 cd ../bin
 ./restart.sh
-cd ~/dubbo/dubbo-simple-monitor/conf
+
+cd ~/dubbo/dubbo-simple/dubbo-monitor-simple/target/dubbo-*-SNAPSHOT/conf
 vi dubbo.properties
 - edit: dubbo.registry.adddress=zookeeper://127.0.0.1:2181
 cd ../bin
@@ -198,6 +204,6 @@ cd ../bin
     ```sh
     cd ~/dubbo/dubbo-admin
     mvn jetty:run -Ddubbo.registry.address=zookeeper://127.0.0.1:2181
-    http://root:root@127.0.0.1:8080
+    http://root:root@localhost:8080/governance/services
 ```
 

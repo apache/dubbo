@@ -9,6 +9,7 @@
 			<directory>src/main/resources</directory>
 			<outputDirectory>dubbo.benchmark</outputDirectory>
 			<fileMode>0755</fileMode>
+			<directoryMode>0755</directoryMode>
 		</fileSet>
 	</fileSets>
 	<dependencySets>

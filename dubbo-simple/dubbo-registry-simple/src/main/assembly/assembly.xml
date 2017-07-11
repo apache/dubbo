@@ -24,11 +24,13 @@
 			<directory>${project.build.directory}/dubbo/META-INF/assembly/bin</directory>
 			<outputDirectory>bin</outputDirectory>
 			<fileMode>0755</fileMode>
+			<directoryMode>0755</directoryMode>
 		</fileSet>
 		<fileSet>
 			<directory>src/main/assembly/conf</directory>
 			<outputDirectory>conf</outputDirectory>
 			<fileMode>0644</fileMode>
+			<directoryMode>0755</directoryMode>
 		</fileSet>
 	</fileSets>
 	<dependencySets>
