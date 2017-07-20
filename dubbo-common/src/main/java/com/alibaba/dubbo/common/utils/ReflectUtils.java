@@ -261,6 +261,9 @@ public final class ReflectUtils {
                 return (Class<?>) ((ParameterizedType) genericClass).getRawType();
             } else if (genericClass instanceof GenericArrayType) { // 处理数组泛型
                 return (Class<?>) ((GenericArrayType) genericClass).getGenericComponentType();
+            } else if (((Class)genericClass).isArray()) {
+                // 在 JDK 7 以上的版本, Foo<int[]> 不再是 GenericArrayType
+                return ((Class)genericClass).getComponentType();
             } else {
                 return (Class<?>) genericClass;
             }

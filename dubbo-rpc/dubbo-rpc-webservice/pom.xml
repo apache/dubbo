@@ -49,9 +49,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
-			<artifactId>spring</artifactId>
-			<scope>provided</scope>
-			<optional>true</optional>
+			<artifactId>spring-context</artifactId>
 		</dependency>
 	</dependencies>
 </project>

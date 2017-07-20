@@ -115,7 +115,8 @@ public class GenericJSONConverter implements JSONConverter
 			{
 				if ((obj instanceof Throwable) && (
 						"localizedMessage".equals(pn) 
-						|| "cause".equals(pn) 
+						|| "cause".equals(pn)
+						|| "suppressed".equals(pn)
 						|| "stackTrace".equals(pn))) {
 					continue;
 				}

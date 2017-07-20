@@ -34,9 +34,9 @@ import com.alibaba.dubbo.rpc.Invoker;
  */
 public class RoundRobinLoadBalance extends AbstractLoadBalance {
 
-    public static final String NAME = "roundrobin";
+	public static final String NAME = "roundrobin";
 
-    private final ConcurrentMap<String, AtomicPositiveInteger> sequences = new ConcurrentHashMap<String, AtomicPositiveInteger>();
+	private final ConcurrentMap<String, AtomicPositiveInteger> sequences = new ConcurrentHashMap<String, AtomicPositiveInteger>();
 
 	private static final class IntegerWrapper {
 		public IntegerWrapper(int value) {
@@ -79,7 +79,7 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
 			sequences.putIfAbsent(key, new AtomicPositiveInteger());
 			sequence = sequences.get(key);
 		}
-        int currentSequence = sequence.getAndIncrement();
+		int currentSequence = sequence.getAndIncrement();
 		if (maxWeight > 0 && minWeight < maxWeight) { // 权重不一样
 			int mod = currentSequence % weightSum;
 			for (int i = 0; i < maxWeight; i++) {

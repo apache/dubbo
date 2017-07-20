@@ -158,4 +158,10 @@ public class AtomicPositiveIntegerTest {
         assertEquals(2, get);
         assertEquals(2, i3.get());
     }
+
+    @Test
+    public void test_equals() {
+        assertEquals(new AtomicPositiveInteger(), new AtomicPositiveInteger());
+        assertEquals(new AtomicPositiveInteger(1), new AtomicPositiveInteger(1));
+    }
 }
