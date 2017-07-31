@@ -43,8 +43,8 @@ $ ls
 $ # Navigate to the provider part
 $ cd ~/dubbo/demo-demo/dubbo-demo-provider/target
 $ # unpack
-$ tar zxvf dubbo-demo-provider-xxx-assembly.tar.gz
-$ cd dubbo-demo-provider-xxx/bin
+$ tar zxvf dubbo-demo-provider-2.5.4-SNAPSHOT-assembly.tar.gz
+$ cd dubbo-demo-provider-2.5.4-SNAPSHOT/bin
 $ ls
 ```
 
@@ -58,8 +58,8 @@ $ ./start.sh
 $ # Navigate to the consumer part
 $ cd ~/dubbo/demo-demo/dubbo-demo-consumer/target
 $ # unpack
-$ tar zxvf dubbo-demo-consumer-xxx-assembly.tar.gz
-$ cd dubbo-demo-consumer-xxx/bin
+$ tar zxvf dubbo-demo-consumer-2.5.4-SNAPSHOT-assembly.tar.gz
+$ cd dubbo-demo-consumer-2.5.4-SNAPSHOT/bin
 $ ls
 ```
 
