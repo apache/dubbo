@@ -546,7 +546,7 @@
 			<roles>
 				<role>Developer</role>
 			</roles>
-			<timezone>+8</timezone>
+			<timezone>+20</timezone>
 		</developer>
 	</developers>
 </project>
