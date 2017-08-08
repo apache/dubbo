@@ -19,14 +19,16 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.Adaptive;
 import com.alibaba.dubbo.common.extension.SPI;
-import com.alibaba.dubbo.remoting.transport.dispatcher.all.AllDispatcher;
+import com.alibaba.dubbo.remoting.transport.dispatcher.message.MessageOnlyDispatcher;
 
 /**
  * ChannelHandlerWrapper (SPI, Singleton, ThreadSafe)
  * 
  * @author chao.liuc
+ * @author wuhongqiang
+ *      AllDispatcher在请求积压时会丢消息导致客户端超时，而MessageOnlyDispatcher会立即给客户端响应
  */
-@SPI(AllDispatcher.NAME)
+@SPI(MessageOnlyDispatcher.NAME)
 public interface Dispatcher {
 
     /**
