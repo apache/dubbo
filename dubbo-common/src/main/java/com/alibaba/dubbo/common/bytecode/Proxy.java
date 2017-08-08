@@ -15,8 +15,6 @@
  */
 package com.alibaba.dubbo.common.bytecode;
 
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -26,7 +24,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.alibaba.dubbo.common.utils.ClassHelper;
@@ -36,6 +33,7 @@ import com.alibaba.dubbo.common.utils.ReflectUtils;
  * Proxy.
  * 
  * @author qian.lei
+ * modify by shenjianlin for "WeakHashMap 导致 一次gc泄露8个字节"
  */
 
 public abstract class Proxy
@@ -52,7 +50,7 @@ public abstract class Proxy
 		public Object invoke(Object proxy, Method method, Object[] args){ throw new UnsupportedOperationException("Method [" + ReflectUtils.getName(method) + "] unimplemented."); }
 	};
 
-	private static final Map<ClassLoader, Map<String, Object>> ProxyCacheMap = new WeakHashMap<ClassLoader, Map<String, Object>>();
+	private static final Map<ClassLoader, Map<String, Object>> ProxyCacheMap = new HashMap<ClassLoader, Map<String, Object>>();  // by shenjianlin
 
 	private static final Object PendingGenerationMarker = new Object();
 
@@ -121,11 +119,9 @@ public abstract class Proxy
 			do
 			{
 				Object value = cache.get(key);
-				if( value instanceof Reference<?> )
-				{
-					proxy = (Proxy)((Reference<?>)value).get();
-					if( proxy != null )
-						return proxy;
+				// by shenjianlin
+				if (value != null && value instanceof Proxy) {
+					return (Proxy) value;
 				}
 
 				if( value == PendingGenerationMarker )
@@ -234,7 +230,7 @@ public abstract class Proxy
 				if( proxy == null )
 					cache.remove(key);
 				else
-					cache.put(key, new WeakReference<Proxy>(proxy));
+					cache.put(key, proxy);  // by shenjianlin
 				cache.notifyAll();
 			}
 		}
