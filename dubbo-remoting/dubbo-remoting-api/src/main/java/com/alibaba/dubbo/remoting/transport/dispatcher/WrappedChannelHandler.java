@@ -15,9 +15,6 @@
  */
 package com.alibaba.dubbo.remoting.transport.dispatcher;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
@@ -29,24 +26,33 @@ import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;
+import com.alibaba.dubbo.remoting.exchange.Request;
+import com.alibaba.dubbo.remoting.exchange.Response;
 import com.alibaba.dubbo.remoting.transport.ChannelHandlerDelegate;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
+
 public class WrappedChannelHandler implements ChannelHandlerDelegate {
-    
+
     protected static final Logger logger = LoggerFactory.getLogger(WrappedChannelHandler.class);
 
-    protected static final ExecutorService SHARED_EXECUTOR = Executors.newCachedThreadPool(new NamedThreadFactory("DubboSharedHandler", true));
-    
+    protected static final ExecutorService SHARED_EXECUTOR = Executors.newCachedThreadPool(
+            new NamedThreadFactory("DubboSharedHandler", true));
+
     protected final ExecutorService executor;
-    
+
     protected final ChannelHandler handler;
 
     protected final URL url;
-    
+
     public WrappedChannelHandler(ChannelHandler handler, URL url) {
         this.handler = handler;
         this.url = url;
-        executor = (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);
+        executor = (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class)
+                .getAdaptiveExtension()
+                .getExecutor(url);
 
         String componentKey = Constants.EXECUTOR_SERVICE_COMPONENT_KEY;
         if (Constants.CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(Constants.SIDE_KEY))) {
@@ -55,11 +61,11 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
         DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
         dataStore.put(componentKey, Integer.toString(url.getPort()), executor);
     }
-    
+
     public void close() {
         try {
             if (executor instanceof ExecutorService) {
-                ((ExecutorService)executor).shutdown();
+                ((ExecutorService) executor).shutdown();
             }
         } catch (Throwable t) {
             logger.warn("fail to destroy thread pool of server: " + t.getMessage(), t);
@@ -85,11 +91,11 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
     public void caught(Channel channel, Throwable exception) throws RemotingException {
         handler.caught(channel, exception);
     }
-    
+
     public ExecutorService getExecutor() {
         return executor;
     }
-    
+
     public ChannelHandler getHandler() {
         if (handler instanceof ChannelHandlerDelegate) {
             return ((ChannelHandlerDelegate) handler).getHandler();
@@ -97,9 +103,29 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
             return handler;
         }
     }
-    
+
     public URL getUrl() {
         return url;
+    }
+
+    // 处理线程池耗尽的情况
+    protected void handleThreadpoolExhausted(Channel channel, Object message, Throwable throwable) throws RemotingException {
+        if (needHandleExhausted(throwable, message)) {
+            Request request = (Request) message;
+            if (request.isTwoWay()) {
+                Response response = new Response(request.getId(), request.getVersion());
+                response.setStatus(Response.SERVER_ERROR);
+                response.setErrorMessage(throwable.getMessage());
+                channel.send(response);
+            }
+        }
+    }
+
+    // 是否需要处理线程池耗尽异常
+    private boolean needHandleExhausted(Throwable throwable, Object message) {
+        // 优先判断错误类型，能够更快得出结论
+        return throwable instanceof RejectedExecutionException
+                && message instanceof Request;
     }
 
 }
