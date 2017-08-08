@@ -35,6 +35,7 @@ import com.alibaba.dubbo.remoting.transport.AbstractChannel;
  * 
  * @author qian.lei
  * @author william.liangf
+ * modify by wuhongqiang
  */
 final class NettyChannel extends AbstractChannel {
 
@@ -45,6 +46,9 @@ final class NettyChannel extends AbstractChannel {
     private final org.jboss.netty.channel.Channel channel;
 
     private final Map<String, Object> attributes = new ConcurrentHashMap<String, Object>();
+
+    //add by wuhongqiang 2014.4.16
+    private volatile ChannelFuture lastChannelFuture;
 
     private NettyChannel(org.jboss.netty.channel.Channel channel, URL url, ChannelHandler handler){
         super(url, handler);
@@ -96,6 +100,9 @@ final class NettyChannel extends AbstractChannel {
         int timeout = 0;
         try {
             ChannelFuture future = channel.write(message);
+            //add by wuhongqiang 2014.4.16
+            //记录最后一个write的future，在close时判断write是否done，否则有可能丢失该message
+            lastChannelFuture = future;
             if (sent) {
                 timeout = getUrl().getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
                 success = future.await(timeout);
@@ -133,6 +140,11 @@ final class NettyChannel extends AbstractChannel {
         try {
             if (logger.isInfoEnabled()) {
                 logger.info("Close netty channel " + channel);
+            }
+            //add by wuhongqiang 2014.4.16
+            //等待最后一个write事件完成才close channel，否则有可能丢失该write的message
+            if (lastChannelFuture != null) {
+                lastChannelFuture.await(getUrl().getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
             }
             channel.close();
         } catch (Exception e) {

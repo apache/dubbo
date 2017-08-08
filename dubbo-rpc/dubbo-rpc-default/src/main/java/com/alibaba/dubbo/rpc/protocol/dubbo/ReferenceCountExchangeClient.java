@@ -27,11 +27,13 @@ import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
 import com.alibaba.dubbo.remoting.exchange.ExchangeHandler;
 import com.alibaba.dubbo.remoting.exchange.ResponseFuture;
+import com.alibaba.dubbo.rpc.protocol.AbstractProtocol;
 
 /**
  * dubbo protocol support class.
  * 
  * @author chao.liuc
+ * modify by wuhongqiang for graceful shutdown work well
  */
 @SuppressWarnings("deprecation")
 final class ReferenceCountExchangeClient implements ExchangeClient {
@@ -128,7 +130,9 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
      * close方法将不再幂等,调用需要注意.
      */
     public void close() {
-        close(0);
+        //modify by wuhongqiang 2014.4.16
+        //默认设置close超时时间，否则没法真正实现graceful shutdown
+        close(AbstractProtocol.getServerShutdownTimeout());
     }
 
     public void close(int timeout) {
