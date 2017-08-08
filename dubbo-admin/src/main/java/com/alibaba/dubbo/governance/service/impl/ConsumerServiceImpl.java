@@ -76,6 +76,8 @@ public class ConsumerServiceImpl extends AbstractService implements ConsumerServ
     public List<String> findAddressesByApplication(String application) {
         List<String> ret = new ArrayList<String>();
         ConcurrentMap<String, Map<Long, URL>> consumerUrls = getRegistryCache().get(Constants.CONSUMERS_CATEGORY);
+        if(consumerUrls == null) return ret;  // 修复admin没有consumer时出现空指针异常 by (wuhongqiang copy from) Jinkai Ma <majinkai@handu.com>
+
         for(Map.Entry<String, Map<Long, URL>> e1 : consumerUrls.entrySet()) {
             Map<Long, URL> value = e1.getValue();
             for(Map.Entry<Long, URL> e2 : value.entrySet()) {

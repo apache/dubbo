@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -55,7 +56,10 @@ import com.alibaba.dubbo.config.annotation.Service;
  * AnnotationBean
  * 
  * @author william.liangf
- * @export
+ * modify by (wuhongqiang copy from) Li Shen <shenli@dangdang.com>
+ *     #1. change the initialization exception handling when using annotation config
+ *     #2. bugfix: no value set for reference method
+ *     #3. bugfix in annotation config
  */
 public class AnnotationBean extends AbstractConfig implements DisposableBean, BeanFactoryPostProcessor, BeanPostProcessor, ApplicationContextAware {
 
@@ -175,7 +179,8 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
                 }
                 if (service.protocol() != null && service.protocol().length > 0) {
                     List<ProtocolConfig> protocolConfigs = new ArrayList<ProtocolConfig>();
-                    for (String protocolId : service.registry()) {
+                    // modified by lishen; fix dubbo's bug #3
+                    for (String protocolId : service.protocol()) {
                         if (protocolId != null && protocolId.length() > 0) {
                             protocolConfigs.add((ProtocolConfig)applicationContext.getBean(protocolId, ProtocolConfig.class));
                         }
@@ -214,11 +219,12 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
                 	if (reference != null) {
 	                	Object value = refer(reference, method.getParameterTypes()[0]);
 	                	if (value != null) {
-	                		method.invoke(bean, new Object[] {  });
+	                		method.invoke(bean, new Object[] { value }); // BUGFIX #2 by lishen
 	                	}
                 	}
-                } catch (Throwable e) {
-                    logger.error("Failed to init remote service reference at method " + name + " in class " + bean.getClass().getName() + ", cause: " + e.getMessage(), e);
+                } catch (Exception e) {
+                    // modified by lishen #1
+                    throw new BeanInitializationException("Failed to init remote service reference at method " + name + " in class " + bean.getClass().getName(), e);
                 }
             }
         }
@@ -235,8 +241,9 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
 	                	field.set(bean, value);
 	                }
             	}
-            } catch (Throwable e) {
-            	logger.error("Failed to init remote service reference at filed " + field.getName() + " in class " + bean.getClass().getName() + ", cause: " + e.getMessage(), e);
+            } catch (Exception e) {
+                // modified by lishen #1
+                throw new BeanInitializationException("Failed to init remote service reference at filed " + field.getName() + " in class " + bean.getClass().getName(), e);
             }
         }
         return bean;

@@ -48,7 +48,7 @@ public @interface Reference {
 
     boolean injvm() default false;
 
-    boolean check() default false;
+    boolean check() default true;  // 框架默认会检查服务是否存在，ReferenceConfig 中check 时null时则是true，而注解中的默认值为false，导致向spring解析时，对ReferenceBean 的check值没有给值，默认为处理为true，导致标签check功能失效. by (wuhongqiang copy from) yang qiju <362991493@qq.com>
 
     boolean init() default false;
 
