@@ -98,7 +98,7 @@ public class RpcStatus {
     }
 
     private static void beginCount(RpcStatus status) {
-        acticeUpdater.incrementAndGet(status);
+        activeUpdater.incrementAndGet(status);
     }
 
     /**
@@ -112,7 +112,7 @@ public class RpcStatus {
     }
 
     private static void endCount(RpcStatus status, long elapsed, boolean succeeded) {
-        acticeUpdater.decrementAndGet(status);
+        activeUpdater.decrementAndGet(status);
         totalUpdater.incrementAndGet(status);
         totalElapsedUpdater.addAndGet(status, elapsed);
         if (status.getMaxElapsed() < elapsed) {
@@ -135,7 +135,7 @@ public class RpcStatus {
 
     @SuppressWarnings({"unused", "FieldMayBeFinal", "RedundantFieldInitialization"})
     private volatile int active = 0;
-    private static final AtomicIntegerFieldUpdater<RpcStatus> acticeUpdater =
+    private static final AtomicIntegerFieldUpdater<RpcStatus> activeUpdater =
             AtomicIntegerFieldUpdater.newUpdater(RpcStatus.class, "active");
 
     @SuppressWarnings({"unused", "FieldMayBeFinal", "RedundantFieldInitialization"})
