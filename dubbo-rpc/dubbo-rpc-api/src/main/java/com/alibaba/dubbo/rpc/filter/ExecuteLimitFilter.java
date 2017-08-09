@@ -47,8 +47,7 @@ public class ExecuteLimitFilter implements Filter {
         boolean succeeded = true;
         RpcStatus.beginCount(url, methodName);
         try {
-            Result result = invoker.invoke(invocation);
-            return result;
+            return invoker.invoke(invocation);
         } catch (Throwable t) {
             succeeded = false;
             if(t instanceof RuntimeException) {
