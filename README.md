@@ -8,196 +8,70 @@ It contains three key parts, which include:
 * **Clustering**: a remote procedure call abstraction with load-balancing/failover/clustering capabilities.
 * **Registration**: a service directory framework for service registration and service event publish/subscription
 
-For more details, please refer to [wiki](https://github.com/alibaba/dubbo/wiki) or [dubbo.io](http://dubbo.io).
+For more details, please refer to [dubbo.io](http://dubbo.io).
+
+## Documentation
+
+* [User's Guide](http://dubbo.io/user-guide/)
+* [Developer's Guide](http://dubbo.io/developer-guide/)
+* [Admin's Guide](http://dubbo.io/admin-guide/)
 
 ## Quick Start
+This guide gets you started with dubbo with a simple working example.
+#### Download the sources(examples)
+You’ll need a local copy of the example code to work through this quickstart. Download the demo code from our [Github repository](https://github.com/alibaba/dubbo) (the following command clones the entire repository, but you just need the `dubbo-demo` for this quickstart and other tutorials):
 
+```sh
+$ cd ~
+$ # Clone the repository to get the source code.
+$ git clone https://github.com/alibaba/dubbo.git dubbo
+$ git checkout master
+$ # or: git checkout -b dubbo-2.4.x
+```
+#### Build & Run
+1. Build the whole sources use the following maven command
 
-Export service:
-
-```xml
-<bean id="barService" class="com.foo.BarServiceImpl" />
-<dubbo:service interface="com.foo.BarService" ref="barService" />
+```sh
+$ cd ~/dubbo
+$ mvn clean install -Dmaven.test.skip
+$ # The demo code for this quickstart all stay in the `dubbo-demo` folder
+$ cd ./dubbo-demo
+$ ls
+```
+2. Run demo-provider. Start the provider and export service  
+```sh
+$ # Navigate to the provider part
+$ cd ~/dubbo/demo-demo/dubbo-demo-provider/target
+$ # unpack
+$ tar zxvf dubbo-demo-provider-2.5.4-SNAPSHOT-assembly.tar.gz
+$ cd dubbo-demo-provider-2.5.4-SNAPSHOT/bin
+$ ls
 ```
 
-Refer to service:
+```sh
+$ # Start the provider
+$ ./start.sh
+```
+3. Run demo-consumer. Start the consumer and consume service provided by _the provider_ above
 
-```xml
-<dubbo:reference id="barService" interface="com.foo.BarService" />
-	
-<bean id="barAction" class="com.foo.BarAction">
-    <property name="barService" ref="barService" />
-</bean>
+```sh
+$ # Navigate to the consumer part
+$ cd ~/dubbo/demo-demo/dubbo-demo-consumer/target
+$ # unpack
+$ tar zxvf dubbo-demo-consumer-2.5.4-SNAPSHOT-assembly.tar.gz
+$ cd dubbo-demo-consumer-2.5.4-SNAPSHOT/bin
+$ ls
 ```
 
-## Source Building
-
-
-0. Install the git and maven command line:
-
-    ```sh
-yum install git
-or: apt-get install git
-cd ~
-wget http://www.apache.org/dist//maven/binaries/apache-maven-2.2.1-bin.tar.gz
-tar zxvf apache-maven-2.2.1-bin.tar.gz
-vi .bash_profile
-append: export PATH=$PATH:~/apache-maven-2.2.1/bin
-source .bash_profile
+```sh
+$ ./start.sh
 ```
+For a more detailed tutorial of this demo, click [here](http://dubbo.io/#quickstart)
 
-0. Checkout the dubbo source code:
+## Getting Help
+* Community
+* Releases
+* Contributors
+* Q&A
 
-    ```sh
-cd ~
-git clone https://github.com/alibaba/dubbo.git dubbo
-git checkout master
-or: git checkout -b dubbo-2.4.0
-```
-
-0. Import the dubbo source code to eclipse project:
-
-    ```sh
-cd ~/dubbo
-mvn eclipse:eclipse
-```
-
-    Then configure the project in eclipse by following the steps below:
-    * Eclipse -> Menu -> File -> Import -> Exsiting Projects to Workspace -> Browse -> Finish
-    * Context Menu -> Run As -> Java Application:
-        * dubbo-demo-provider/src/test/java/com.alibaba.dubbo.demo.provider.DemoProvider
-        * dubbo-demo-consumer/src/test/java/com.alibaba.dubbo.demo.consumer.DemoConsumer
-        * dubbo-monitor-simple/src/test/java/com.alibaba.dubbo.monitor.simple.SimpleMonitor
-        * dubbo-registry-simple/src/test/java/com.alibaba.dubbo.registry.simple.SimpleRegistry
-    * Edit Config:
-        * dubbo-demo-provider/src/test/resources/dubbo.properties
-        * dubbo-demo-consumer/src/test/resources/dubbo.properties
-        * dubbo-monitor-simple/src/test/resources/dubbo.properties
-        * dubbo-registry-simple/src/test/resources/dubbo.properties
-
-0. Build the dubbo binary package:
-
-    ```sh
-cd ~/dubbo
-mvn clean install -Dmaven.test.skip
-cd dubbo/target
-ls
-```
-
-0. Install the demo provider:
-
-    ```sh
-cd ~/dubbo/dubbo-demo-provider/target
-tar zxvf dubbo-demo-provider-2.4.0-assembly.tar.gz
-cd dubbo-demo-provider-2.4.0/bin
-./start.sh
-```
-
-0. Install the demo consumer:
-
-    ```sh
-cd ~/dubbo/dubbo-demo-consumer/target
-tar zxvf dubbo-demo-consumer-2.4.0-assembly.tar.gz
-cd dubbo-demo-consumer-2.4.0/bin
-./start.sh
-cd ../logs
-tail -f stdout.log
-```
-
-0. Install the simple monitor:
-
-    ```sh
-cd ~/dubbo/dubbo-simple-monitor/target
-tar zxvf dubbo-simple-monitor-2.4.0-assembly.tar.gz
-cd dubbo-simple-monitor-2.4.0/bin
-./start.sh
-http://127.0.0.1:8080
-```
-
-0. Install the simple registry:
-
-    ```sh
-cd ~/dubbo/dubbo-simple-registry/target
-tar zxvf dubbo-simple-registry-2.4.0-assembly.tar.gz
-cd dubbo-simple-registry-2.4.0/bin
-./start.sh
-cd ~/dubbo/dubbo-demo-provider/conf
-vi dubbo.properties
-- edit: dubbo.registry.adddress=dubbo://127.0.0.1:9090
-cd ../bin
-./restart.sh
-cd ~/dubbo/dubbo-demo-consumer/conf
-vi dubbo.properties
-- edit: dubbo.registry.adddress=dubbo://127.0.0.1:9090
-cd ../bin
-./restart.sh
-cd ~/dubbo/dubbo-simple-monitor/conf
-vi dubbo.properties
-- edit: dubbo.registry.adddress=dubbo://127.0.0.1:9090
-cd ../bin
-./restart.sh
-```
-
-0. Install the zookeeper registry:
-
-    ```sh
-cd ~
-wget http://www.apache.org/dist//zookeeper/zookeeper-3.3.3/zookeeper-3.3.3.tar.gz
-tar zxvf zookeeper-3.3.3.tar.gz
-cd zookeeper-3.3.3/conf
-cp zoo_sample.cfg zoo.cfg
-vi zoo.cfg
-- edit: dataDir=/home/xxx/data
-cd ../bin
-./zkServer.sh start
-cd ~/dubbo/dubbo-demo-provider/conf
-vi dubbo.properties
-- edit: dubbo.registry.adddress=zookeeper://127.0.0.1:2181
-cd ../bin
-./restart.sh
-cd ~/dubbo/dubbo-demo-consumer/conf
-vi dubbo.properties
-- edit: dubbo.registry.adddress=zookeeper://127.0.0.1:2181
-cd ../bin
-./restart.sh
-cd ~/dubbo/dubbo-simple-monitor/conf
-vi dubbo.properties
-- edit: dubbo.registry.adddress=zookeeper://127.0.0.1:2181
-cd ../bin
-./restart.sh
-```
-
-0. Install the redis registry:
-
-    ```sh
-cd ~
-wget http://redis.googlecode.com/files/redis-2.4.8.tar.gz
-tar xzf redis-2.4.8.tar.gz
-cd redis-2.4.8
-make
-nohup ./src/redis-server redis.conf &
-cd ~/dubbo/dubbo-demo-provider/conf
-vi dubbo.properties
-- edit: dubbo.registry.adddress=redis://127.0.0.1:6379
-cd ../bin
-./restart.sh
-cd ~/dubbo/dubbo-demo-consumer/conf
-vi dubbo.properties
-- edit: dubbo.registry.adddress=redis://127.0.0.1:6379
-cd ../bin
-./restart.sh
-cd ~/dubbo/dubbo-simple-monitor/conf
-vi dubbo.properties
-- edit: dubbo.registry.adddress=redis://127.0.0.1:6379
-cd ../bin
-./restart.sh
-```
-
-0. Install the admin console:
-
-    ```sh
-    cd ~/dubbo/dubbo-admin
-    mvn jetty:run -Ddubbo.registry.address=zookeeper://127.0.0.1:2181
-    http://root:root@127.0.0.1:8080
-```
 
