@@ -15,17 +15,18 @@
  */
 package com.alibaba.dubbo.container;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ConfigUtils;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Main. (API, Static, ThreadSafe)
@@ -42,7 +43,7 @@ public class Main {
 
     private static final ExtensionLoader<Container> loader = ExtensionLoader.getExtensionLoader(Container.class);
     
-    private static volatile boolean running = true;
+    private static CountDownLatch running = new CountDownLatch(1);
 
     public static void main(String[] args) {
         try {
@@ -63,13 +64,10 @@ public class Main {
 	                    for (Container container : containers) {
 	                        try {
 	                            container.stop();
+                                running.countDown(); //count down to notify main thread
 	                            logger.info("Dubbo " + container.getClass().getSimpleName() + " stopped!");
 	                        } catch (Throwable t) {
 	                            logger.error(t.getMessage(), t);
-	                        }
-	                        synchronized (Main.class) {
-	                            running = false;
-	                            Main.class.notify();
 	                        }
 	                    }
 	                }
@@ -86,13 +84,12 @@ public class Main {
             logger.error(e.getMessage(), e);
             System.exit(1);
         }
-        synchronized (Main.class) {
-            while (running) {
-                try {
-                    Main.class.wait();
-                } catch (Throwable e) {
-                }
-            }
+
+        //wait for shutdown hook to count down
+        try {
+            running.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
     
