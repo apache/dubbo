@@ -183,16 +183,16 @@ public abstract class AbstractRegistryService implements RegistryService {
         notified.put(service, urls);
         List<NotifyListener> listeners = notifyListeners.get(service);
         if (listeners != null) {
-            for (NotifyListener listener : listeners) {
+            listeners.forEach(listener -> {
                 try {
                     notify(service, urls, listener);
                 } catch (Throwable t) {
                     logger.error("Failed to notify registry event, service: " + service + ", urls: " +  urls + ", cause: " + t.getMessage(), t);
                 }
-            }
+            });
         }
     }
-    
+
     protected void notify(String service, List<URL> urls, NotifyListener listener) {
         listener.notify(urls);
     }

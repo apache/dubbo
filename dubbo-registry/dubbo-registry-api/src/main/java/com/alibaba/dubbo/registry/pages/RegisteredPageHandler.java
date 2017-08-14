@@ -65,15 +65,16 @@ public class RegisteredPageHandler implements PageHandler {
         if (registry instanceof AbstractRegistry) {
             Set<URL> services = ((AbstractRegistry) registry).getRegistered();
             if (services != null && services.size() > 0) {
-                for (URL u : services) {
+                services.stream().map(u -> {
                     List<String> row = new ArrayList<String>();
                     row.add(u.toFullString().replace("<", "&lt;").replace(">", "&gt;"));
+                    return row;
+                }).forEach(row -> {
                     rows.add(row);
-                }
+                });
             }
         }
         return new Page("<a href=\"registries.html\">Registries</a>" + select.toString() + " &gt; Registered | <a href=\"subscribed.html?registry=" + registryAddress + "\">Subscribed</a>", "Registered (" + rows.size() + ")",
                 new String[] { "Provider URL:" }, rows);
     }
-
 }

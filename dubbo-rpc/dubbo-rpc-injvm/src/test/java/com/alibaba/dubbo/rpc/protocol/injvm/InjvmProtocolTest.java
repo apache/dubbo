@@ -44,22 +44,22 @@ public class InjvmProtocolTest
 
     @After
     public void after() throws Exception {
-        for(Exporter<?> exporter : exporters) {
+        exporters.forEach(exporter -> {
             exporter.unexport();
-        }
+        });
         exporters.clear();
     }
 
-	@Test
-	public void testLocalProtocol() throws Exception
-	{
-		DemoService service = new DemoServiceImpl();
-		Exporter<?> exporter = protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("injvm://127.0.0.1/TestService").addParameter(Constants.INTERFACE_KEY, DemoService.class.getName())));
+    @Test
+    public void testLocalProtocol() throws Exception
+    {
+        DemoService service = new DemoServiceImpl();
+        Exporter<?> exporter = protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("injvm://127.0.0.1/TestService").addParameter(Constants.INTERFACE_KEY, DemoService.class.getName())));
         exporters.add(exporter);
-		service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("injvm://127.0.0.1/TestService").addParameter(Constants.INTERFACE_KEY, DemoService.class.getName())));
-		assertEquals(service.getSize(new String[]{"", "", ""}), 3);
-		service.invoke("injvm://127.0.0.1/TestService", "invoke");
-	}
+        service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("injvm://127.0.0.1/TestService").addParameter(Constants.INTERFACE_KEY, DemoService.class.getName())));
+        assertEquals(service.getSize(new String[]{"", "", ""}), 3);
+        service.invoke("injvm://127.0.0.1/TestService", "invoke");
+    }
 
     @Test
     public void testIsInjvmRefer() throws Exception {

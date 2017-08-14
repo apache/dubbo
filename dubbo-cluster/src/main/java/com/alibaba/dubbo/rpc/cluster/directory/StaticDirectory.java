@@ -72,12 +72,12 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
             return;
         }
         super.destroy();
-        for (Invoker<T> invoker : invokers) {
+        invokers.forEach(invoker -> {
             invoker.destroy();
-        }
+        });
         invokers.clear();
     }
-    
+
     @Override
     protected List<Invoker<T>> doList(Invocation invocation) throws RpcException {
 

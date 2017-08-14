@@ -56,9 +56,9 @@ public class Dump extends Restful {
         List<String> sortedService = getNoProviders();
         Collections.sort(sortedService);
         writer.println(sortedService.size() + " services don't have provider");
-        for (String noProvider : sortedService) {
+        sortedService.forEach(noProvider -> {
             writer.println(noProvider);
-        }
+        });
         writer.flush();
         response.setContentType("text/plain");
     }
@@ -68,9 +68,9 @@ public class Dump extends Restful {
         List<String> sortedService = providerDAO.findServices();
         Collections.sort(sortedService);
         writer.println(sortedService.size() + " services");
-        for (String service : sortedService) {
+        sortedService.forEach(service -> {
             writer.println(service + (providerDAO.findByService(service).size()));
-        }
+        });
         writer.flush();
         response.setContentType("text/plain");
     }
@@ -84,9 +84,9 @@ public class Dump extends Restful {
         }
         Collections.sort(sortedProviders);
         writer.println(sortedProviders.size() + " provider instance");
-        for (String provider : sortedProviders) {
+        sortedProviders.forEach(provider -> {
             writer.println(provider);
-        }
+        });
         writer.flush();
         response.setContentType("text/plain");
     }
@@ -100,13 +100,13 @@ public class Dump extends Restful {
         }
         Collections.sort(sortedConsumerss);
         writer.println(sortedConsumerss.size() + " consumer instance");
-        for (String consumer : sortedConsumerss) {
+        sortedConsumerss.forEach(consumer -> {
             writer.println(consumer);
-        }
+        });
         writer.flush();
         response.setContentType("text/plain");
     }
-    
+
     public void versions(Map<String, Object> context) throws IOException {
         PrintWriter writer = response.getWriter();
         List<Provider> providers = providerDAO.findAll();
@@ -116,9 +116,9 @@ public class Dump extends Restful {
         for (Provider provider : providers) {
             parametersSet.add(provider.getParameters());
         }
-        for (Consumer consumer : consumers) {
+        consumers.forEach(consumer -> {
             parametersSet.add(consumer.getParameters());
-        }
+        });
         Iterator<String> temp = parametersSet.iterator();
         while (temp.hasNext()) {
             Map<String, String> parameter = StringUtils.parseQueryString(temp.next());
@@ -141,7 +141,7 @@ public class Dump extends Restful {
         writer.flush();
         response.setContentType("text/plain");
     }
-    
+
     private List<String> getNoProviders() {
         List<String> providerServices = providerDAO.findServices();
         List<String> consumerServices = consumerDAO.findServices();

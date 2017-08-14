@@ -48,9 +48,9 @@ public class Versions extends Restful {
         for (Provider provider : providers) {
             parametersSet.add(provider.getParameters());
         }
-        for (Consumer consumer : consumers) {
+        consumers.forEach(consumer -> {
             parametersSet.add(consumer.getParameters());
-        }
+        });
         Map<String, Set<String>> versions = new HashMap<String, Set<String>>();
         Iterator<String> temp = parametersSet.iterator();
         while (temp.hasNext()) {
@@ -79,9 +79,9 @@ public class Versions extends Restful {
             for (Provider provider : providers) {
                 parametersSet.add(provider.getParameters());
             }
-            for (Consumer consumer : consumers) {
+            consumers.forEach(consumer -> {
                 parametersSet.add(consumer.getParameters());
-            }
+            });
             Iterator<String> temp = parametersSet.iterator();
             while (temp.hasNext()) {
                 Map<String, String> parameter = StringUtils.parseQueryString(temp.next());
@@ -97,5 +97,4 @@ public class Versions extends Restful {
             context.put("applications", applications);
         }
     }
-
 }

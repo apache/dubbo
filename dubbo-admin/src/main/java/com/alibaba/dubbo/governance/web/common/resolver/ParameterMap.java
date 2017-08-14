@@ -296,9 +296,9 @@ public class ParameterMap implements Map<String, Object> {
     public void clear() {
         Set<String> keys = context.keySet();
         if (keys != null && keys.size() > 0) {
-            for (String key : keys) {
+            keys.forEach(key -> {
                 context.remove(key);
-            }
+            });
         }
     }
 
@@ -310,9 +310,9 @@ public class ParameterMap implements Map<String, Object> {
         Set<String> keys = context.keySet();
         Set<Object> values = new HashSet<Object>();
         if (keys != null && keys.size() > 0) {
-            for (String key : keys) {
+            keys.forEach(key -> {
                 values.add(context.get(key));
-            }
+            });
         }
         return values;
     }
@@ -321,13 +321,13 @@ public class ParameterMap implements Map<String, Object> {
         Set<String> keys = context.keySet();
         Set<Entry<String, Object>> entries = new HashSet<Entry<String, Object>>();
         if (keys != null && keys.size() > 0) {
-            for (String key : keys) {
+            keys.forEach(key -> {
                 entries.add(new ParameterEntry(key));
-            }
+            });
         }
         return entries;
     }
-    
+
     private class ParameterEntry implements Entry<String, Object> {
 
         private final String key;
