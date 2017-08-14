@@ -86,10 +86,13 @@ public class Main {
         }
 
         //wait for shutdown hook to count down
-        try {
-            running.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        while (true) {
+            try {
+                running.await();
+                break;
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
     
