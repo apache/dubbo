@@ -90,8 +90,7 @@ public class Main {
             try {
                 running.await();
                 break;
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            } catch (Throwable t) {
             }
         }
     }
