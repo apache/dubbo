@@ -79,11 +79,10 @@ public class DependenciesPageHandler implements PageHandler {
         indirectly.add(application);
         Set<String> dependencies = RegistryContainer.getInstance().getDependencies(application, reverse);
         if (dependencies != null && dependencies.size() > 0) {
-            for (String dependency : dependencies) {
-                appendDependency(rows, reverse, dependency, level + 1, appended, indirectly);
-            }
+            dependencies.forEach(dependency -> {
+	        appendDependency(rows, reverse, dependency, level + 1, appended, indirectly);
+	    });
         }
         appended.remove(application);
     }
-
 }

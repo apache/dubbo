@@ -145,22 +145,22 @@ public class User extends Entity {
     
     public boolean canGrantPrivilege(String servicePrivilege) {
     	if (servicePrivilege == null || servicePrivilege.length() == 0) {
-    		return true;
+    	    return true;
     	}
     	if (servicePrivileges == null || servicePrivileges.size() == 0) {
-    		return false;
+    	    return false;
     	}
     	String[] privileges = servicePrivilege.trim().split("\\s*,\\s*");
-		for (String privilege : privileges) {
-			boolean hasPrivilege = false;
-			for (String ownPrivilege : servicePrivileges) {
-	            if (matchPrivilege(ownPrivilege, privilege)) {
-	            	hasPrivilege = true;
-	        	}
-	    	}
-			if (! hasPrivilege) {
-				return false;
-			}
+	for (String privilege : privileges) {
+	    boolean hasPrivilege = false;
+	    servicePrivileges.forEach(ownPrivilege -> {
+                if (matchPrivilege(ownPrivilege, privilege)) {
+	            hasPrivilege = true;
+                }
+            });
+	    if (! hasPrivilege) {
+	        return false;
+            }
     	}
     	return true;
     }

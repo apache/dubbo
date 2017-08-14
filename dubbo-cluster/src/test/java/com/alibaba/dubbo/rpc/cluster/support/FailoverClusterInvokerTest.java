@@ -195,16 +195,16 @@ public class FailoverClusterInvokerTest {
         Callable<Object> callable = new Callable<Object>() {
 			public Object call() throws Exception {
 				//模拟invoker全部被destroy掉
-				for (Invoker<Demo> invoker:invokers){
-					invoker.destroy();
-				}
+				invokers.forEach(invoker -> {
+invoker.destroy();
+});
 				invokers.clear();
 				MockInvoker<Demo> invoker3  = new MockInvoker<Demo>(Demo.class, url);
 				invokers.add(invoker3);
 				return null;
 			}
-		};
-		invoker1.setCallable(callable);
+	};
+	invoker1.setCallable(callable);
         invoker2.setCallable(callable);
         
         RpcInvocation inv = new RpcInvocation();
