@@ -37,7 +37,7 @@
 		<url>http://www.alibaba.com</url>
 	</organization>
 	<modules>
-		<module>hessian-lite</module>
+		<!-- <module>hessian-lite</module> -->
 		<module>dubbo-common</module>
 		<module>dubbo-container</module>
 		<module>dubbo-remoting</module>
@@ -549,4 +549,15 @@
             <timezone>+8</timezone>
         </developer>
 	</developers>
+	
+	<distributionManagement>
+		<repository>
+			<id>releases</id>
+			<url>http://192.168.1.102:8081/nexus/content/repositories/releases</url>
+		</repository>
+		<snapshotRepository>
+			<id>snapshots</id>
+			<url>http://192.168.1.102:8081/nexus/content/repositories/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
 </project>
