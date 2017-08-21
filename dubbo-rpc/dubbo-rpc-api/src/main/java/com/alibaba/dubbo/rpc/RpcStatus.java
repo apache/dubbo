@@ -17,6 +17,7 @@ package com.alibaba.dubbo.rpc;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -154,6 +155,12 @@ public class RpcStatus {
     private final AtomicLong failedMaxElapsed = new AtomicLong();
 
     private final AtomicLong succeededMaxElapsed = new AtomicLong();
+
+    /**
+     * 用来配合executes属性来限制并发（使用线程数目）的限制
+     * 2017-08-21 yizhenqiang
+     */
+    private volatile Semaphore executesLimit;
     
     private RpcStatus() {}
 
@@ -316,6 +323,28 @@ public class RpcStatus {
             return getTotal() / (getTotalElapsed() / 1000L);
         }
         return getTotal();
+    }
+
+    /**
+     * 获取一个线程许可
+     * 2017-08-21 yizhenqiang
+     * @param max
+     * @return
+     */
+    public Semaphore getSemaphore(int max) {
+        if(max <= 0) {
+            return null;
+        }
+
+        if(executesLimit == null) {
+            synchronized (this) {
+                if(executesLimit == null) {
+                    executesLimit = new Semaphore(max);
+                }
+            }
+        }
+
+        return executesLimit;
     }
 
 }
