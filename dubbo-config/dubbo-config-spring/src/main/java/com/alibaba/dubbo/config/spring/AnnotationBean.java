@@ -214,7 +214,7 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
                 	if (reference != null) {
 	                	Object value = refer(reference, method.getParameterTypes()[0]);
 	                	if (value != null) {
-	                		method.invoke(bean, new Object[] {  });
+	                		method.invoke(bean, new Object[] { value });
 	                	}
                 	}
                 } catch (Throwable e) {
