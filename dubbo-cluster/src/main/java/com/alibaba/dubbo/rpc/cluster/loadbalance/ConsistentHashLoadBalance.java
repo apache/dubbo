@@ -32,6 +32,9 @@ import com.alibaba.dubbo.rpc.Invoker;
 /**
  * ConsistentHashLoadBalance
  * 
+ * 如果你希望通过参数的值来进行hash的话，请注意以下内容：hash的凭据是参数的toString
+ * 如果能保证值相同的参数的toString的结果是一致的，才能保证能够hash到同一个provider
+ * 
  * @author william.liangf
  */
 public class ConsistentHashLoadBalance extends AbstractLoadBalance {
