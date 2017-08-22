@@ -59,6 +59,10 @@ public class ClusterUtils {
         if (localMap != null && localMap.size() > 0) {
             map.putAll(localMap);
         }
+
+        //保留服务提供端的启动时间，以便AbstractLoadBalance计算warmup权重
+        map.put(Constants.REMOTE_TIMESTAMP_KEY, remoteMap.get(Constants.TIMESTAMP_KEY));
+
         if (remoteMap != null && remoteMap.size() > 0) { 
             // 版本号使用提供者的
             String dubbo = remoteMap.get(Constants.DUBBO_VERSION_KEY);
