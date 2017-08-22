@@ -20,15 +20,39 @@ import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import junit.framework.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
 public class JSONTest {
+	
+	@Test
+	public void testLocale() throws Exception {
+		Locale locale = Locale.US;
+		String result = JSON.json(locale);
+		//check JSON.json(Locale) into the dead loop
+		/**
+		java.lang.StackOverflowError
+			at java.lang.StringBuilder.append(StringBuilder.java:136)
+			at sun.util.locale.provider.LocaleResources.getLocaleName(LocaleResources.java:230)
+			at java.util.Locale.getDisplayName(Locale.java:1879)
+			at java.util.Locale.getDisplayName(Locale.java:1845)
+			at com.alibaba.dubbo.common.bytecode.Wrapper1.getPropertyValue(Wrapper1.java)
+			at com.alibaba.dubbo.common.json.GenericJSONConverter.writeValue(GenericJSONConverter.java:126)
+			at com.alibaba.dubbo.common.json.GenericJSONConverter.writeValue(GenericJSONConverter.java:73)
+			at com.alibaba.dubbo.common.json.GenericJSONConverter.writeValue(GenericJSONConverter.java:130)
+			at com.alibaba.dubbo.common.json.GenericJSONConverter.writeValue(GenericJSONConverter.java:73)
+			at com.alibaba.dubbo.common.json.GenericJSONConverter.writeValue(GenericJSONConverter.java:130)
+			at com.alibaba.dubbo.common.json.GenericJSONConverter.writeValue(GenericJSONConverter.java:73)
+			at com.alibaba.dubbo.common.json.GenericJSONConverter.writeValue(GenericJSONConverter.java:130)
+		 */
+		Assert.assertEquals(result, JSON.json(locale.toString()));
+	}
+	
 	@Test
 	public void testException() throws Exception {
 		MyException e = new MyException("001", "AAAAAAAA");
