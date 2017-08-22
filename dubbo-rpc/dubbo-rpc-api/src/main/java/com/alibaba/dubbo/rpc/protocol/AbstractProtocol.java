@@ -83,7 +83,7 @@ public abstract class AbstractProtocol implements Protocol {
         }
 	}
 	@SuppressWarnings("deprecation")
-    protected static int getServerShutdownTimeout() {
+    public static int getServerShutdownTimeout() {  // protected to public, by wuhonqiang
         int timeout = Constants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
         String value = ConfigUtils.getProperty(Constants.SHUTDOWN_WAIT_KEY);
         if (value != null && value.length() > 0) {

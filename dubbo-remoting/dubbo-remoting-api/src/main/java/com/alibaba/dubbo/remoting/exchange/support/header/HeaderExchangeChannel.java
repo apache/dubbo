@@ -35,6 +35,7 @@ import com.alibaba.dubbo.remoting.exchange.support.DefaultFuture;
  * ExchangeReceiver
  * 
  * @author william.liangf
+ * modify by wuhongqiang for graceful close work well
  */
 final class HeaderExchangeChannel implements ExchangeChannel {
 
@@ -137,7 +138,10 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         closed = true;
         if (timeout > 0) {
             long start = System.currentTimeMillis();
-            while (DefaultFuture.hasFuture(HeaderExchangeChannel.this) 
+            //while (DefaultFuture.hasFuture(HeaderExchangeChannel.this)
+            //modify by wuhongqiang 2014.4.16
+            //DefaultFuture 实例化时传入的是channel，而非HeaderExchangeChannel.this (参见111行)
+            while (DefaultFuture.hasFuture(channel)
                     && System.currentTimeMillis() - start < timeout) {
                 try {
                     Thread.sleep(10);
