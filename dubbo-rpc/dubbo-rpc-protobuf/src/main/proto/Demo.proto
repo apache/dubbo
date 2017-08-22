@@ -1,0 +1,17 @@
+//for java
+option java_package = "com.alibaba.dubbo.rpc.protocol.protobuf.proto";
+option java_outer_classname = "DemoProto";
+
+message EchoRequest {
+    required int32 data = 1;
+}
+
+message EchoResponse {
+    required int32 result = 1;
+}
+
+service DemoService {
+    rpc Echo(EchoRequest) returns (EchoResponse);
+}
+
+option java_generic_services = true;

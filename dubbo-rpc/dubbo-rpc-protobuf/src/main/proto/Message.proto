@@ -1,0 +1,34 @@
+//for java
+option java_package = "com.alibaba.dubbo.rpc.protocol.protobuf";
+option java_outer_classname = "ProtobufMessage";
+
+enum PackageType 
+{
+    HEARTBEAT = 0;
+    REQUEST = 1;
+    RESPONSE = 2;
+    PUSH = 3;
+    ERROR = 4;
+};
+message Heartbeat 
+{
+};
+message Request 
+{
+    optional uint64 identify = 1;
+    optional string method = 2;
+    optional string service = 3;
+    optional bytes request = 4;
+};
+message Response 
+{
+    optional uint32 result = 1;
+    optional bytes response = 2;
+};
+message RpcMessage 
+{
+    optional PackageType type = 1;
+    optional uint64 timestamp = 2;
+    optional uint64 identify = 3;
+    optional bytes serialized = 4;
+};
