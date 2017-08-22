@@ -1,12 +1,12 @@
 /*
  * Copyright 1999-2012 Alibaba Group.
- *  
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *  
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
@@ -53,7 +54,7 @@ import com.alibaba.dubbo.config.annotation.Service;
 
 /**
  * AnnotationBean
- * 
+ *
  * @author william.liangf
  * @export
  */
@@ -134,15 +135,16 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
         if (! isMatchPackage(bean)) {
             return bean;
         }
-        Service service = bean.getClass().getAnnotation(Service.class);
+        Class targetClass = AopUtils.getTargetClass(bean);
+        Service service = (Service) targetClass.getAnnotation(Service.class);
         if (service != null) {
             ServiceBean<Object> serviceConfig = new ServiceBean<Object>(service);
             if (void.class.equals(service.interfaceClass())
                     && "".equals(service.interfaceName())) {
-                if (bean.getClass().getInterfaces().length > 0) {
-                    serviceConfig.setInterface(bean.getClass().getInterfaces()[0]);
+                if (targetClass.getInterfaces().length > 0) {
+                    serviceConfig.setInterface(targetClass.getInterfaces()[0]);
                 } else {
-                    throw new IllegalStateException("Failed to export remote service class " + bean.getClass().getName() + ", cause: The @Service undefined interfaceClass or interfaceName, and the service class unimplemented any interfaces.");
+                    throw new IllegalStateException("Failed to export remote service class " + targetClass.getClass().getName() + ", cause: The @Service undefined interfaceClass or interfaceName, and the service class unimplemented any interfaces.");
                 }
             }
             if (applicationContext != null) {
@@ -171,7 +173,7 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
                 if (service.provider() != null && service.provider().length() > 0) {
                     serviceConfig.setProvider((ProviderConfig)applicationContext.getBean(service.provider(), ProviderConfig.class));
                 } else {
-                    
+
                 }
                 if (service.protocol() != null && service.protocol().length > 0) {
                     List<ProtocolConfig> protocolConfigs = new ArrayList<ProtocolConfig>();
@@ -196,7 +198,7 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
         }
         return bean;
     }
-    
+
     public Object postProcessBeforeInitialization(Object bean, String beanName)
             throws BeansException {
         if (! isMatchPackage(bean)) {
@@ -306,7 +308,7 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
         if (annotationPackages == null || annotationPackages.length == 0) {
             return true;
         }
-        String beanClassName = bean.getClass().getName();
+        String beanClassName = AopUtils.getTargetClass(bean).getName();
         for (String pkg : annotationPackages) {
             if (beanClassName.startsWith(pkg)) {
                 return true;
