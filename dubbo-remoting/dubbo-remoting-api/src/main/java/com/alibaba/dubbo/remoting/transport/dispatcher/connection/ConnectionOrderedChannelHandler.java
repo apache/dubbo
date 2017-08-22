@@ -75,6 +75,7 @@ public class ConnectionOrderedChannelHandler extends WrappedChannelHandler {
         try {
             cexecutor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
         } catch (Throwable t) {
+            handleThreadpoolExhausted(channel, message, t);
             throw new ExecutionException(message, channel, getClass() + " error when process received event .", t);
         }
     }

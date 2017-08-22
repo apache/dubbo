@@ -44,13 +44,12 @@ public class ExecuteLimitFilter implements Filter {
             }
         }
         long begin = System.currentTimeMillis();
-        boolean isException = false;
+        boolean succeeded = true;
         RpcStatus.beginCount(url, methodName);
         try {
-            Result result = invoker.invoke(invocation);
-            return result;
+            return invoker.invoke(invocation);
         } catch (Throwable t) {
-            isException = true;
+            succeeded = false;
             if(t instanceof RuntimeException) {
                 throw (RuntimeException) t;
             }
@@ -59,7 +58,7 @@ public class ExecuteLimitFilter implements Filter {
             }
         }
         finally {
-            RpcStatus.endCount(url, methodName, System.currentTimeMillis() - begin, isException);
+            RpcStatus.endCount(url, methodName, System.currentTimeMillis() - begin, succeeded);
         }
     }
 
