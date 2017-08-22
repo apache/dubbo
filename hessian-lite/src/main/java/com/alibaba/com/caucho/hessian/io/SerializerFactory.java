@@ -89,6 +89,9 @@ public class SerializerFactory extends AbstractSerializerFactory
 
   private boolean _isAllowNonSerializable;
 
+  private boolean _isEnableUnsafeSerializer
+          = (UnsafeDeserializer.isEnabled());
+
   public SerializerFactory()
   {
     this(Thread.currentThread().getContextClassLoader());
@@ -347,7 +350,11 @@ public class SerializerFactory extends AbstractSerializerFactory
    */
   protected Deserializer getDefaultDeserializer(Class cl)
   {
-    return new JavaDeserializer(cl);
+    if (_isEnableUnsafeSerializer) {
+      return new UnsafeDeserializer(cl);
+    }else {
+      return new JavaDeserializer(cl);
+    }
   }
 
   /**
