@@ -31,5 +31,6 @@
 	<modules>
 		<module>dubbo-filter-cache</module>
 		<module>dubbo-filter-validation</module>
-	</modules>
+        <module>dubbo-filter-opentracing</module>
+    </modules>
 </project>
