@@ -192,6 +192,8 @@ public abstract class AbstractConfig implements Serializable {
                         }
                     }
                     if (value != null && value.length() > 0) {
+                        //将value统一转化为小写，以为后方是以小写的value作为键值，同时这样做也不用强求用户配置的时候使用小写
+                        value = value.toLowerCase();
                         method.invoke(config, new Object[] {convertPrimitive(method.getParameterTypes()[0], value)});
                     }
                 }
