@@ -13,8 +13,8 @@
  - See the License for the specific language governing permissions and
  - limitations under the License.
 -->
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
     <groupId>com.alibaba</groupId>
 	<artifactId>dubbo-parent</artifactId>
@@ -81,61 +81,53 @@
 	</profiles>
 	<properties>
 		<!-- Common libs -->
-		<spring_version>3.2.16.RELEASE</spring_version>
+		<spring_version>4.3.10.RELEASE</spring_version>
 		<javassist_version>3.20.0-GA</javassist_version>
 		<netty_version>3.2.5.Final</netty_version>
 		<mina_version>1.1.7</mina_version>
 		<grizzly_version>2.1.4</grizzly_version>
-		<httpclient_version>4.1.2</httpclient_version>
+		<httpclient_version>4.5.3</httpclient_version>
 		<hessian_lite_version>3.2.1-fixed-2</hessian_lite_version>
 		<xstream_version>1.4.1</xstream_version>
 		<fastjson_version>1.2.31</fastjson_version>
 		<bsf_version>3.1</bsf_version>
 		<sorcerer_version>0.8</sorcerer_version>
-		<zookeeper_version>3.3.3</zookeeper_version>
-		<zkclient_version>0.1</zkclient_version>
-		<curator_version>1.1.16</curator_version>
-		<jedis_version>2.1.0</jedis_version>
+		<zookeeper_version>3.4.9</zookeeper_version>
+		<zkclient_version>0.2</zkclient_version>
+		<curator_version>2.12.0</curator_version>
+		<jedis_version>2.9.0</jedis_version>
 		<xmemcached_version>1.3.6</xmemcached_version>
-		<cxf_version>2.6.1</cxf_version>
+		<cxf_version>3.0.14</cxf_version>
 		<thrift_version>0.8.0</thrift_version>
 		<jfreechart_version>1.0.13</jfreechart_version>
-		<hessian_version>4.0.7</hessian_version>
+		<hessian_version>4.0.38</hessian_version>
 		<servlet_version>2.5</servlet_version>
 		<jetty_version>6.1.26</jetty_version>
-		<validation_version>1.0.0.GA</validation_version>
-		<hibernate_validator_version>4.2.0.Final</hibernate_validator_version>
-		<jcache_version>0.4</jcache_version>
+		<validation_version>1.1.0.Final</validation_version>
+		<hibernate_validator_version>5.4.1.Final</hibernate_validator_version>
+		<jel_version>3.0.1-b08</jel_version>
+		<jcache_version>1.0.0</jcache_version>
 		<sca_version>2.0-M5.1</sca_version>
 		<guice_version>3.0</guice_version>
 		<cglib_version>2.2</cglib_version>
 		<webx_version>3.0.8</webx_version>
 		<!-- Log libs -->
 		<slf4j_version>1.7.25</slf4j_version>
-		<jcl_version>1.1</jcl_version>
+		<jcl_version>1.2</jcl_version>
 		<log4j_version>1.2.16</log4j_version>
 		<logback_version>1.2.2</logback_version>
 		<!-- Test libs -->
-		<junit_version>4.10</junit_version>
-		<easymock_version>3.0</easymock_version>
-		<jmockit_version>0.999.8</jmockit_version>
+		<junit_version>4.12</junit_version>
+		<easymock_version>3.4</easymock_version>
+		<jmockit_version>1.33</jmockit_version>
 		<!-- Build args -->
-		<argline>-server -Xms64m -Xmx256m -XX:PermSize=64m -XX:MaxPermSize=128m -Dfile.encoding=UTF-8
-			-Djava.net.preferIPv4Stack=true
-		</argline>
+		<argline>-server -Xms64m -Xmx256m -XX:PermSize=64m -XX:MaxPermSize=128m -Dfile.encoding=UTF-8 -Djava.net.preferIPv4Stack=true</argline>
 		<skip_maven_deploy>false</skip_maven_deploy>
 		<updateReleaseInfo>true</updateReleaseInfo>
 		<project.build.sourceEncoding>${file_encoding}</project.build.sourceEncoding>
 
 		<!-- generate idea copyright -->
-		<copyright>Copyright 1999-2012 Alibaba Group.&#10; &#10;Licensed under the Apache License, Version 2.0 (the
-			&quot;License&quot;);&#10;you may not use this file except in compliance with the License.&#10;You may
-			obtain a copy of the License at&#10; &#10; http://www.apache.org/licenses/LICENSE-2.0&#10; &#10;Unless
-			required by applicable law or agreed to in writing, software&#10;distributed under the License is
-			distributed on an &quot;AS IS&quot; BASIS,&#10;WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
-			or implied.&#10;See the License for the specific language governing permissions and&#10;limitations under
-			the License.
-		</copyright>
+		<copyright>Copyright 1999-2012 Alibaba Group.&#10; &#10;Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);&#10;you may not use this file except in compliance with the License.&#10;You may obtain a copy of the License at&#10; &#10;     http://www.apache.org/licenses/LICENSE-2.0&#10; &#10;Unless required by applicable law or agreed to in writing, software&#10;distributed under the License is distributed on an &quot;AS IS&quot; BASIS,&#10;WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.&#10;See the License for the specific language governing permissions and&#10;limitations under the License.</copyright>
 		<profile.name>oss</profile.name>
 
 		<!-- for maven compiler plugin -->
@@ -211,12 +203,12 @@
 				<version>${zookeeper_version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.github.sgroschupf</groupId>
+				<groupId>com.101tec</groupId>
 				<artifactId>zkclient</artifactId>
 				<version>${zkclient_version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.netflix.curator</groupId>
+				<groupId>org.apache.curator</groupId>
 				<artifactId>curator-framework</artifactId>
 				<version>${curator_version}</version>
 			</dependency>
@@ -276,6 +268,11 @@
 				<version>${hibernate_validator_version}</version>
 			</dependency>
 			<dependency>
+				<groupId>org.glassfish</groupId>
+				<artifactId>javax.el</artifactId>
+				<version>${jel_version}</version>
+			</dependency>
+			<dependency>
 				<groupId>javax.cache</groupId>
 				<artifactId>cache-api</artifactId>
 				<version>${jcache_version}</version>
@@ -308,7 +305,7 @@
 			</dependency>
 			<dependency>
 				<groupId>commons-logging</groupId>
-				<artifactId>commons-logging-api</artifactId>
+				<artifactId>commons-logging</artifactId>
 				<version>${jcl_version}</version>
 			</dependency>
 			<dependency>
@@ -335,15 +332,9 @@
 				<scope>test</scope>
 			</dependency>
 			<dependency>
-				<groupId>com.googlecode.jmockit</groupId>
+				<groupId>org.jmockit</groupId>
 				<artifactId>jmockit</artifactId>
-				<version>${jmockit_version}</version>
-				<scope>test</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.easymock</groupId>
-				<artifactId>easymockclassextension</artifactId>
-				<version>${easymock_version}</version>
+				<version>1.33</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
@@ -363,11 +354,7 @@
 			<artifactId>easymock</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.easymock</groupId>
-			<artifactId>easymockclassextension</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.googlecode.jmockit</groupId>
+			<groupId>org.jmockit</groupId>
 			<artifactId>jmockit</artifactId>
 		</dependency>
 	</dependencies>
@@ -473,6 +460,9 @@
 					<source>${java_source_version}</source>
 					<target>${java_target_version}</target>
 					<encoding>${file_encoding}</encoding>
+					<compilerArgs>
+						<arg>-XX:MaxPermSize=512M</arg>
+					</compilerArgs>
 				</configuration>
 			</plugin>
 		</plugins>
