@@ -155,9 +155,8 @@ public class JValidator implements Validator {
             return null;
         }
         try {
-            String upperName = toUpperMethoName(method.getName());
-            String parameterSimpleName = upperName + "Parameter";
-            String parameterClassName = clazz.getName() + "_" + parameterSimpleName;
+            String parameterClassName = generateMethodParameterClassName(clazz, method);
+            
             Class<?> parameterClass;
             try {
                 parameterClass = (Class<?>) Class.forName(parameterClassName, true, clazz.getClassLoader());
@@ -184,9 +183,9 @@ public class JValidator implements Validator {
                                         && member.getParameterTypes().length == 0
                                         && member.getDeclaringClass() == annotation.annotationType()) {
                                     Object value = member.invoke(annotation, new Object[0]);
-                                    if (value != null && ! value.equals(member.getDefaultValue())) {
+                                    if (null != value) {
                                         MemberValue memberValue = createMemberValue(
-                                                classFile.getConstPool(), pool.get(member.getReturnType().getName()), value);
+                                               classFile.getConstPool(), pool.get(member.getReturnType().getName()), value);
                                         ja.addMemberValue(member.getName(), memberValue);
                                     }
                                 }
@@ -212,7 +211,25 @@ public class JValidator implements Validator {
             return null;
         }
     }
+    
+    private static String generateMethodParameterClassName(Class<?> clazz, Method method) {
+        StringBuffer buffer = new StringBuffer()
+                .append(clazz.getName())
+                .append("_")
+                .append(toUpperMethoName(method.getName()))
+                .append("Parameter");
 
+        Class<?>[] parameterTypes = method.getParameterTypes();
+        if (null != parameterTypes && parameterTypes.length > 0) {
+            for (Class<?> parameterType : parameterTypes) {
+                buffer.append("_")
+                        .append(parameterType.getName());
+            }
+        }
+
+        return buffer.toString();
+    }
+    
     private static boolean hasConstraintParameter(Method method) {
         Annotation[][] parameterAnnotations = method.getParameterAnnotations();
         if (parameterAnnotations != null && parameterAnnotations.length > 0) {
