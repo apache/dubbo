@@ -25,7 +25,7 @@ import com.alibaba.dubbo.common.Resetable;
  * @see com.alibaba.dubbo.remoting.Transporter#connect(com.alibaba.dubbo.common.URL, ChannelHandler)
  * @author qian.lei
  */
-public interface Client extends Endpoint, Channel, Resetable {
+public interface Client extends Channel, Resetable {
 
     /**
      * reconnect.
