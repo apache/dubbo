@@ -24,6 +24,7 @@ import java.lang.annotation.*;
  * @export
  */
 @Documented
+@Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 @Inherited
