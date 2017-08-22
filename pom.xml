@@ -103,8 +103,10 @@
 		<hessian_version>4.0.7</hessian_version>
 		<servlet_version>2.5</servlet_version>
 		<jetty_version>6.1.26</jetty_version>
-		<validation_version>1.0.0.GA</validation_version>
-		<hibernate_validator_version>4.2.0.Final</hibernate_validator_version>
+		<validation_version>1.1.0.Final</validation_version>
+		<hibernate_validator_version>5.2.4.Final</hibernate_validator_version>
+		<javax.el-api_version>2.2.4</javax.el-api_version>
+		<javax.el_version>2.2.4</javax.el_version>
 		<jcache_version>0.4</jcache_version>
 		<sca_version>2.0-M5.1</sca_version>
 		<guice_version>3.0</guice_version>
@@ -265,6 +267,16 @@
 				<groupId>org.hibernate</groupId>
 				<artifactId>hibernate-validator</artifactId>
 				<version>${hibernate_validator_version}</version>
+			</dependency>
+			<dependency>
+				<groupId>javax.el</groupId>
+				<artifactId>javax.el-api</artifactId>
+				<version>${javax.el-api_version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.glassfish.web</groupId>
+				<artifactId>javax.el</artifactId>
+				<version>${javax.el_version}</version>
 			</dependency>
 			<dependency>
 				<groupId>javax.cache</groupId>
