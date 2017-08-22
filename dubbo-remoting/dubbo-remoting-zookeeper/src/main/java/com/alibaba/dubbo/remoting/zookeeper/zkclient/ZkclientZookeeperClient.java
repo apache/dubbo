@@ -1,5 +1,9 @@
 package com.alibaba.dubbo.remoting.zookeeper.zkclient;
 
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.I0Itec.zkclient.IZkChildListener;
@@ -13,11 +17,16 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.zookeeper.ChildListener;
 import com.alibaba.dubbo.remoting.zookeeper.StateListener;
 import com.alibaba.dubbo.remoting.zookeeper.support.AbstractZookeeperClient;
+import org.apache.zookeeper.ZooDefs;
+import org.apache.zookeeper.data.ACL;
+import org.apache.zookeeper.data.Id;
+import org.apache.zookeeper.server.auth.DigestAuthenticationProvider;
 
 public class ZkclientZookeeperClient extends AbstractZookeeperClient<IZkChildListener> {
 
 	private final ZkClient client;
-
+	private static final String scheme = "digest";
+	private ArrayList<ACL> acl = null;
 	private volatile KeeperState state = KeeperState.SyncConnected;
 
 	public ZkclientZookeeperClient(URL url) {
@@ -35,19 +44,42 @@ public class ZkclientZookeeperClient extends AbstractZookeeperClient<IZkChildLis
 			public void handleNewSession() throws Exception {
 				stateChanged(StateListener.RECONNECTED);
 			}
+			public void handleSessionEstablishmentError(Throwable throwable) throws Exception {
+
+			}
 		});
+		if (url.getUsername() != null && url.getPassword() != null) {
+			try {
+				String id = url.getUsername() + ":" + url.getPassword();
+				Id user = new Id(scheme, DigestAuthenticationProvider.generateDigest(id));
+				acl = new ArrayList(Collections.singletonList(new ACL(ZooDefs.Perms.ALL, user)));
+				client.addAuthInfo(scheme, id.getBytes("UTF-8"));
+			} catch (NoSuchAlgorithmException e) {
+
+			} catch (UnsupportedEncodingException e){
+
+			}
+		}
 	}
 
 	public void createPersistent(String path) {
 		try {
-			client.createPersistent(path, true);
+			if (acl != null && acl.size() > 0) {
+				client.createPersistent(path, true, acl);
+			} else {
+				client.createPersistent(path, true);
+			}
 		} catch (ZkNodeExistsException e) {
 		}
 	}
 
 	public void createEphemeral(String path) {
 		try {
-			client.createEphemeral(path);
+			if (acl != null && acl.size() > 0) {
+				client.createEphemeral(path, acl);
+			} else {
+				client.createEphemeral(path);
+			}
 		} catch (ZkNodeExistsException e) {
 		}
 	}
