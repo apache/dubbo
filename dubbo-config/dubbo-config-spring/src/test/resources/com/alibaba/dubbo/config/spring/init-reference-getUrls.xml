@@ -13,19 +13,20 @@
  - See the License for the specific language governing permissions and
  - limitations under the License.
 -->
-<beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
     http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd
     ">
-     
+
     <!-- 当前应用信息配置 -->
-    <dubbo:application name="demo-consumer" />
-    
+    <dubbo:application name="demo-consumer"/>
+
     <!-- 暴露服务配置 -->
-    <dubbo:reference id="demoService" interface="com.alibaba.dubbo.config.spring.api.DemoService" url="dubbo://127.0.0.1:20813;dubbo://127.0.0.1:20814" init="true" timeout="100" scope="remote">
-    	<dubbo:parameter key="connec.timeout" value="1000"/>
+    <dubbo:reference id="demoService" interface="com.alibaba.dubbo.config.spring.api.DemoService"
+                     url="dubbo://127.0.0.1:20813;dubbo://127.0.0.1:20814" init="true" timeout="100" scope="remote">
+        <dubbo:parameter key="connec.timeout" value="1000"/>
     </dubbo:reference>
-     
+
 </beans>

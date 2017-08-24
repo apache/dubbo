@@ -15,50 +15,50 @@
  */
 package com.alibaba.dubbo.rpc.protocol;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.NetUtils;
+import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
+import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
-import com.alibaba.dubbo.rpc.Invocation;
-import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.support.RpcUtils;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * AbstractInvoker.
- * 
+ *
  * @author qian.lei
  * @author william.liangf
  */
 public abstract class AbstractInvoker<T> implements Invoker<T> {
 
-    protected final Logger   logger    = LoggerFactory.getLogger(getClass());
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final Class<T>   type;
+    private final Class<T> type;
 
-    private final URL        url;
+    private final URL url;
 
     private final Map<String, String> attachment;
 
     private volatile boolean available = true;
 
     private volatile boolean destroyed = false;
-    
-    public AbstractInvoker(Class<T> type, URL url){
+
+    public AbstractInvoker(Class<T> type, URL url) {
         this(type, url, (Map<String, String>) null);
     }
-    
+
     public AbstractInvoker(Class<T> type, URL url, String[] keys) {
         this(type, url, convertAttachment(url, keys));
     }
@@ -72,7 +72,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         this.url = url;
         this.attachment = attachment == null ? null : Collections.unmodifiableMap(attachment);
     }
-    
+
     private static Map<String, String> convertAttachment(URL url, String[] keys) {
         if (keys == null || keys.length == 0) {
             return null;
@@ -98,7 +98,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
     public boolean isAvailable() {
         return available;
     }
-    
+
     protected void setAvailable(boolean available) {
         this.available = available;
     }
@@ -110,7 +110,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         destroyed = true;
         setAvailable(false);
     }
-    
+
     public boolean isDestroyed() {
         return destroyed;
     }
@@ -120,26 +120,26 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
     }
 
     public Result invoke(Invocation inv) throws RpcException {
-        if(destroyed) {
-            throw new RpcException("Rpc invoker for service " + this + " on consumer " + NetUtils.getLocalHost() 
-                                            + " use dubbo version " + Version.getVersion()
-                                            + " is DESTROYED, can not be invoked any more!");
+        if (destroyed) {
+            throw new RpcException("Rpc invoker for service " + this + " on consumer " + NetUtils.getLocalHost()
+                    + " use dubbo version " + Version.getVersion()
+                    + " is DESTROYED, can not be invoked any more!");
         }
         RpcInvocation invocation = (RpcInvocation) inv;
         invocation.setInvoker(this);
         if (attachment != null && attachment.size() > 0) {
-        	invocation.addAttachmentsIfAbsent(attachment);
+            invocation.addAttachmentsIfAbsent(attachment);
         }
         Map<String, String> context = RpcContext.getContext().getAttachments();
         if (context != null) {
-        	invocation.addAttachmentsIfAbsent(context);
+            invocation.addAttachmentsIfAbsent(context);
         }
-        if (getUrl().getMethodParameter(invocation.getMethodName(), Constants.ASYNC_KEY, false)){
-        	invocation.setAttachment(Constants.ASYNC_KEY, Boolean.TRUE.toString());
+        if (getUrl().getMethodParameter(invocation.getMethodName(), Constants.ASYNC_KEY, false)) {
+            invocation.setAttachment(Constants.ASYNC_KEY, Boolean.TRUE.toString());
         }
         RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
-        
-        
+
+
         try {
             return doInvoke(invocation);
         } catch (InvocationTargetException e) { // biz exception

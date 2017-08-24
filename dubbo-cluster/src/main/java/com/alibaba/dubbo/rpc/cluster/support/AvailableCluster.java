@@ -15,8 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.cluster.support;
 
-import java.util.List;
-
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
@@ -25,17 +23,19 @@ import com.alibaba.dubbo.rpc.cluster.Cluster;
 import com.alibaba.dubbo.rpc.cluster.Directory;
 import com.alibaba.dubbo.rpc.cluster.LoadBalance;
 
+import java.util.List;
+
 /**
  * AvailableCluster
- * 
+ *
  * @author william.liangf
  */
 public class AvailableCluster implements Cluster {
-    
+
     public static final String NAME = "available";
 
     public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
-        
+
         return new AbstractClusterInvoker<T>(directory) {
             public Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
                 for (Invoker<T> invoker : invokers) {
@@ -46,7 +46,7 @@ public class AvailableCluster implements Cluster {
                 throw new RpcException("No provider available in " + invokers);
             }
         };
-        
+
     }
 
 }

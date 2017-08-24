@@ -2,12 +2,14 @@ package com.alibaba.dubbo.rpc.benchmark;
 
 /**
  * nfs-rpc
- *   Apache License
- *   
- *   http://code.google.com/p/nfs-rpc (c) 2011
+ * Apache License
+ * <p>
+ * http://code.google.com/p/nfs-rpc (c) 2011
  */
+
+import com.alibaba.dubbo.common.utils.ConfigUtils;
+
 import java.io.BufferedWriter;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
@@ -21,60 +23,58 @@ import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 
-import com.alibaba.dubbo.common.utils.ConfigUtils;
-
 /**
  * Abstract benchmark client,test for difference scenes Usage: -Dwrite.statistics=false BenchmarkClient serverIP
  * serverPort concurrents timeout codectype requestSize runtime(seconds) clientNums
- * 
+ *
  * @author <a href="mailto:bluedavy@gmail.com">bluedavy</a>
  */
 public abstract class AbstractBenchmarkClient {
 
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    private static long                   maxTPS     = 0;
+    private static long maxTPS = 0;
 
-    private static long                   minTPS     = 0;
+    private static long minTPS = 0;
 
-    private static long                   allRequestSum;
+    private static long allRequestSum;
 
-    private static long                   allResponseTimeSum;
+    private static long allResponseTimeSum;
 
-    private static long                   allErrorRequestSum;
+    private static long allErrorRequestSum;
 
-    private static long                   allErrorResponseTimeSum;
+    private static long allErrorResponseTimeSum;
 
-    private static int                    runtime;
+    private static int runtime;
 
     // < 0
-    private static long                   below0sum;
+    private static long below0sum;
 
     // (0,1]
-    private static long                   above0sum;
+    private static long above0sum;
 
     // (1,5]
-    private static long                   above1sum;
+    private static long above1sum;
 
     // (5,10]
-    private static long                   above5sum;
+    private static long above5sum;
 
     // (10,50]
-    private static long                   above10sum;
+    private static long above10sum;
 
     // (50,100]
-    private static long                   above50sum;
+    private static long above50sum;
 
     // (100,500]
-    private static long                   above100sum;
+    private static long above100sum;
 
     // (500,1000]
-    private static long                   above500sum;
+    private static long above500sum;
 
     // > 1000
-    private static long                   above1000sum;
+    private static long above1000sum;
 
-    Properties                            properties = ConfigUtils.getProperties();
+    Properties properties = ConfigUtils.getProperties();
 
     public void run(String[] args) throws Exception {
 
@@ -107,7 +107,7 @@ public abstract class AbstractBenchmarkClient {
         long beginTime = System.nanoTime() / 1000L + 30 * 1000 * 1000L;
         for (int i = 0; i < concurrents; i++) {
             ClientRunnable runnable = getClientRunnable(serverIP, serverPort, clientNums, timeout, barrier, latch,
-                                                        beginTime, endtime);
+                    beginTime, endtime);
             runnables.add(runnable);
         }
 
@@ -212,13 +212,13 @@ public abstract class AbstractBenchmarkClient {
         long benchmarkRequest = allRequestSum + allErrorRequestSum;
         long allRequest = benchmarkRequest + ignoreRequest + ignoreErrorRequest;
         System.out.println(" Requests: " + allRequest + " Success: " + (allRequestSum + ignoreRequest) * 100
-                           / allRequest + "% (" + (allRequestSum + ignoreRequest) + ") Error: "
-                           + (allErrorRequestSum + ignoreErrorRequest) * 100 / allRequest + "% ("
-                           + (allErrorRequestSum + ignoreErrorRequest) + ")");
+                / allRequest + "% (" + (allRequestSum + ignoreRequest) + ") Error: "
+                + (allErrorRequestSum + ignoreErrorRequest) * 100 / allRequest + "% ("
+                + (allErrorRequestSum + ignoreErrorRequest) + ")");
         System.out.println(" Avg TPS: " + benchmarkRequest / times.keySet().size() + " Max TPS: " + maxTPS
-                           + " Min TPS: " + minTPS);
+                + " Min TPS: " + minTPS);
         System.out.println(" Avg RT: " + (allErrorResponseTimeSum + allResponseTimeSum) / benchmarkRequest / 1000f
-                           + "ms");
+                + "ms");
         System.out.println(" RT <= 0: " + (below0sum * 100 / allRequest) + "% " + below0sum + "/" + allRequest);
         System.out.println(" RT (0,1]: " + (above0sum * 100 / allRequest) + "% " + above0sum + "/" + allRequest);
         System.out.println(" RT (1,5]: " + (above1sum * 100 / allRequest) + "% " + above1sum + "/" + allRequest);
@@ -227,7 +227,7 @@ public abstract class AbstractBenchmarkClient {
         System.out.println(" RT (50,100]: " + (above50sum * 100 / allRequest) + "% " + above50sum + "/" + allRequest);
         System.out.println(" RT (100,500]: " + (above100sum * 100 / allRequest) + "% " + above100sum + "/" + allRequest);
         System.out.println(" RT (500,1000]: " + (above500sum * 100 / allRequest) + "% " + above500sum + "/"
-                           + allRequest);
+                + allRequest);
         System.out.println(" RT > 1000: " + (above1000sum * 100 / allRequest) + "% " + above1000sum + "/" + allRequest);
         System.exit(0);
     }

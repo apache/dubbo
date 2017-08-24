@@ -15,10 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.filter;
 
-import static org.junit.Assert.assertNotSame;
-
-import org.junit.Test;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Filter;
 import com.alibaba.dubbo.rpc.Invocation;
@@ -27,15 +23,19 @@ import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.support.MockInvocation;
 import com.alibaba.dubbo.rpc.support.MyInvoker;
 
+import org.junit.Test;
+
+import static org.junit.Assert.assertNotSame;
+
 /**
  * ActiveLimitFilterTest.java
- * 
+ *
  * @author tony.chenl
  */
 public class ActiveLimitFilterTest {
 
-    Filter                      activeLimitFilter = new ActiveLimitFilter();
-    private static volatile int count             = 0;
+    private static volatile int count = 0;
+    Filter activeLimitFilter = new ActiveLimitFilter();
 
     @Test
     public void testInvokeNoActives() {

@@ -15,24 +15,24 @@
  */
 package com.alibaba.dubbo.common.threadpool;
 
-import java.util.concurrent.Executor;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.Adaptive;
 import com.alibaba.dubbo.common.extension.SPI;
 
+import java.util.concurrent.Executor;
+
 /**
  * ThreadPool
- * 
+ *
  * @author william.liangf
  */
 @SPI("fixed")
 public interface ThreadPool {
-    
+
     /**
      * 线程池
-     * 
+     *
      * @param url 线程参数
      * @return 线程池
      */

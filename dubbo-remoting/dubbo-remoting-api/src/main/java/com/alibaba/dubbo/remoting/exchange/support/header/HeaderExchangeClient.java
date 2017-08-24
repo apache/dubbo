@@ -15,13 +15,6 @@
  */
 package com.alibaba.dubbo.remoting.exchange.support.header;
 
-import java.net.InetSocketAddress;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
@@ -36,41 +29,43 @@ import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
 import com.alibaba.dubbo.remoting.exchange.ExchangeHandler;
 import com.alibaba.dubbo.remoting.exchange.ResponseFuture;
 
+import java.net.InetSocketAddress;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 /**
  * DefaultMessageClient
- * 
+ *
  * @author william.liangf
  * @author chao.liuc
  */
 public class HeaderExchangeClient implements ExchangeClient {
 
-    private static final Logger logger = LoggerFactory.getLogger( HeaderExchangeClient.class );
+    private static final Logger logger = LoggerFactory.getLogger(HeaderExchangeClient.class);
 
     private static final ScheduledThreadPoolExecutor scheduled = new ScheduledThreadPoolExecutor(2, new NamedThreadFactory("dubbo-remoting-client-heartbeat", true));
-
+    private final Client client;
+    private final ExchangeChannel channel;
     // 心跳定时器
     private ScheduledFuture<?> heatbeatTimer;
-
     // 心跳超时，毫秒。缺省0，不会执行心跳。
     private int heartbeat;
-
     private int heartbeatTimeout;
-    
-    private final Client client;
 
-    private final ExchangeChannel channel;
-
-    public HeaderExchangeClient(Client client){
+    public HeaderExchangeClient(Client client) {
         if (client == null) {
             throw new IllegalArgumentException("client == null");
         }
         this.client = client;
         this.channel = new HeaderExchangeChannel(client);
         String dubbo = client.getUrl().getParameter(Constants.DUBBO_VERSION_KEY);
-        this.heartbeat = client.getUrl().getParameter( Constants.HEARTBEAT_KEY, dubbo != null && dubbo.startsWith("1.0.") ? Constants.DEFAULT_HEARTBEAT : 0 );
-        this.heartbeatTimeout = client.getUrl().getParameter( Constants.HEARTBEAT_TIMEOUT_KEY, heartbeat * 3 );
-        if ( heartbeatTimeout < heartbeat * 2 ) {
-            throw new IllegalStateException( "heartbeatTimeout < heartbeatInterval * 2" );
+        this.heartbeat = client.getUrl().getParameter(Constants.HEARTBEAT_KEY, dubbo != null && dubbo.startsWith("1.0.") ? Constants.DEFAULT_HEARTBEAT : 0);
+        this.heartbeatTimeout = client.getUrl().getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartbeat * 3);
+        if (heartbeatTimeout < heartbeat * 2) {
+            throw new IllegalStateException("heartbeatTimeout < heartbeatInterval * 2");
         }
         startHeatbeatTimer();
     }
@@ -106,11 +101,11 @@ public class HeaderExchangeClient implements ExchangeClient {
     public ExchangeHandler getExchangeHandler() {
         return channel.getExchangeHandler();
     }
-    
+
     public void send(Object message) throws RemotingException {
         channel.send(message);
     }
-    
+
     public void send(Object message, boolean sent) throws RemotingException {
         channel.send(message, sent);
     }
@@ -132,9 +127,9 @@ public class HeaderExchangeClient implements ExchangeClient {
     public void reset(URL url) {
         client.reset(url);
     }
-    
+
     @Deprecated
-    public void reset(com.alibaba.dubbo.common.Parameters parameters){
+    public void reset(com.alibaba.dubbo.common.Parameters parameters) {
         reset(getUrl().addParameters(parameters.getParameters()));
     }
 
@@ -160,37 +155,37 @@ public class HeaderExchangeClient implements ExchangeClient {
 
     private void startHeatbeatTimer() {
         stopHeartbeatTimer();
-        if ( heartbeat > 0 ) {
+        if (heartbeat > 0) {
             heatbeatTimer = scheduled.scheduleWithFixedDelay(
-                    new HeartBeatTask( new HeartBeatTask.ChannelProvider() {
+                    new HeartBeatTask(new HeartBeatTask.ChannelProvider() {
                         public Collection<Channel> getChannels() {
-                            return Collections.<Channel>singletonList( HeaderExchangeClient.this );
+                            return Collections.<Channel>singletonList(HeaderExchangeClient.this);
                         }
                     }, heartbeat, heartbeatTimeout),
-                    heartbeat, heartbeat, TimeUnit.MILLISECONDS );
+                    heartbeat, heartbeat, TimeUnit.MILLISECONDS);
         }
     }
 
     private void stopHeartbeatTimer() {
-        if (heatbeatTimer != null && ! heatbeatTimer.isCancelled()) {
+        if (heatbeatTimer != null && !heatbeatTimer.isCancelled()) {
             try {
                 heatbeatTimer.cancel(true);
                 scheduled.purge();
-            } catch ( Throwable e ) {
+            } catch (Throwable e) {
                 if (logger.isWarnEnabled()) {
                     logger.warn(e.getMessage(), e);
                 }
             }
         }
-        heatbeatTimer =null;
+        heatbeatTimer = null;
     }
 
     private void doClose() {
         stopHeartbeatTimer();
     }
 
-	@Override
-	public String toString() {
-		return "HeaderExchangeClient [channel=" + channel + "]";
-	}
+    @Override
+    public String toString() {
+        return "HeaderExchangeClient [channel=" + channel + "]";
+    }
 }

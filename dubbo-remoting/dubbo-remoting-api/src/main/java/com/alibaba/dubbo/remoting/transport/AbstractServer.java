@@ -15,11 +15,6 @@
  */
 package com.alibaba.dubbo.remoting.transport;
 
-import java.net.InetSocketAddress;
-import java.util.Collection;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
@@ -32,34 +27,33 @@ import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.Server;
 import com.alibaba.dubbo.remoting.transport.dispatcher.WrappedChannelHandler;
 
+import java.net.InetSocketAddress;
+import java.util.Collection;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+
 /**
  * AbstractServer
- * 
+ *
  * @author qian.lei
  * @author ding.lid
  */
 public abstract class AbstractServer extends AbstractEndpoint implements Server {
-    
+
+    protected static final String SERVER_THREAD_POOL_NAME = "DubboServerHandler";
     private static final Logger logger = LoggerFactory.getLogger(AbstractServer.class);
-
-    private InetSocketAddress              localAddress;
-
-    private InetSocketAddress              bindAddress;
-
-    private int                            accepts;
-
-    private int                            idleTimeout = 600; //600 seconds
-    
-    protected static final String SERVER_THREAD_POOL_NAME  ="DubboServerHandler";
-    
     ExecutorService executor;
+    private InetSocketAddress localAddress;
+    private InetSocketAddress bindAddress;
+    private int accepts;
+    private int idleTimeout = 600; //600 seconds
 
     public AbstractServer(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
         localAddress = getUrl().toInetSocketAddress();
-        String host = url.getParameter(Constants.ANYHOST_KEY, false) 
-                        || NetUtils.isInvalidLocalHost(getUrl().getHost()) 
-                        ? NetUtils.ANYHOST : getUrl().getHost();
+        String host = url.getParameter(Constants.ANYHOST_KEY, false)
+                || NetUtils.isInvalidLocalHost(getUrl().getHost())
+                ? NetUtils.ANYHOST : getUrl().getHost();
         bindAddress = new InetSocketAddress(host, getUrl().getPort());
         this.accepts = url.getParameter(Constants.ACCEPTS_KEY, Constants.DEFAULT_ACCEPTS);
         this.idleTimeout = url.getParameter(Constants.IDLE_TIMEOUT_KEY, Constants.DEFAULT_IDLE_TIMEOUT);
@@ -69,16 +63,16 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
                 logger.info("Start " + getClass().getSimpleName() + " bind " + getBindAddress() + ", export " + getLocalAddress());
             }
         } catch (Throwable t) {
-            throw new RemotingException(url.toInetSocketAddress(), null, "Failed to bind " + getClass().getSimpleName() 
-                                        + " on " + getLocalAddress() + ", cause: " + t.getMessage(), t);
+            throw new RemotingException(url.toInetSocketAddress(), null, "Failed to bind " + getClass().getSimpleName()
+                    + " on " + getLocalAddress() + ", cause: " + t.getMessage(), t);
         }
-        if (handler instanceof WrappedChannelHandler ){
-            executor = ((WrappedChannelHandler)handler).getExecutor();
+        if (handler instanceof WrappedChannelHandler) {
+            executor = ((WrappedChannelHandler) handler).getExecutor();
         }
     }
-    
+
     protected abstract void doOpen() throws Throwable;
-    
+
     protected abstract void doClose() throws Throwable;
 
     public void reset(URL url) {
@@ -106,7 +100,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
             logger.error(t.getMessage(), t);
         }
         try {
-            if (url.hasParameter(Constants.THREADS_KEY) 
+            if (url.hasParameter(Constants.THREADS_KEY)
                     && executor instanceof ThreadPoolExecutor && !executor.isShutdown()) {
                 ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) executor;
                 int threads = url.getParameter(Constants.THREADS_KEY, 0);
@@ -140,12 +134,12 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
             }
         }
     }
-    
+
     public void close() {
         if (logger.isInfoEnabled()) {
             logger.info("Close " + getClass().getSimpleName() + " bind " + getBindAddress() + ", export " + getLocalAddress());
         }
-        ExecutorUtil.shutdownNow(executor ,100);
+        ExecutorUtil.shutdownNow(executor, 100);
         try {
             super.close();
         } catch (Throwable e) {
@@ -157,16 +151,16 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
             logger.warn(e.getMessage(), e);
         }
     }
-    
+
     public void close(int timeout) {
-        ExecutorUtil.gracefulShutdown(executor ,timeout);
+        ExecutorUtil.gracefulShutdown(executor, timeout);
         close();
     }
 
     public InetSocketAddress getLocalAddress() {
         return localAddress;
     }
-    
+
     public InetSocketAddress getBindAddress() {
         return bindAddress;
     }
@@ -189,14 +183,14 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
         }
         super.connected(ch);
     }
-    
+
     @Override
     public void disconnected(Channel ch) throws RemotingException {
         Collection<Channel> channels = getChannels();
-        if (channels.size() == 0){
+        if (channels.size() == 0) {
             logger.warn("All clients has discontected from " + ch.getLocalAddress() + ". You can graceful shutdown now.");
         }
         super.disconnected(ch);
     }
-    
+
 }

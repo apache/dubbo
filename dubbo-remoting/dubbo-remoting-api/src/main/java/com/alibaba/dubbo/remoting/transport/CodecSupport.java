@@ -16,10 +16,6 @@
 
 package com.alibaba.dubbo.remoting.transport;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
@@ -27,16 +23,16 @@ import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.serialize.Serialization;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
 public class CodecSupport {
 
     private static final Logger logger = LoggerFactory.getLogger(CodecSupport.class);
-
-    private CodecSupport() {
-    }
-
     private static Map<Byte, Serialization> ID_SERIALIZATION_MAP = new HashMap<Byte, Serialization>();
 
     static {
@@ -46,13 +42,16 @@ public class CodecSupport {
             byte idByte = serialization.getContentTypeId();
             if (ID_SERIALIZATION_MAP.containsKey(idByte)) {
                 logger.error("Serialization extension " + serialization.getClass().getName()
-                                 + " has duplicate id to Serialization extension "
-                                 + ID_SERIALIZATION_MAP.get(idByte).getClass().getName()
-                                 + ", ignore this Serialization extension");
+                        + " has duplicate id to Serialization extension "
+                        + ID_SERIALIZATION_MAP.get(idByte).getClass().getName()
+                        + ", ignore this Serialization extension");
                 continue;
             }
             ID_SERIALIZATION_MAP.put(idByte, serialization);
         }
+    }
+
+    private CodecSupport() {
     }
 
     public static Serialization getSerializationById(Byte id) {
@@ -61,7 +60,7 @@ public class CodecSupport {
 
     public static Serialization getSerialization(URL url) {
         return ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(
-            url.getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
+                url.getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
     }
 
     public static Serialization getSerialization(URL url, Byte id) {

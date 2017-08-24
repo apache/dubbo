@@ -15,19 +15,6 @@
  */
 package com.alibaba.dubbo.remoting.transport.grizzly;
 
-import java.net.InetSocketAddress;
-import java.util.Collection;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-
-import org.glassfish.grizzly.filterchain.FilterChainBuilder;
-import org.glassfish.grizzly.filterchain.TransportFilter;
-import org.glassfish.grizzly.nio.transport.TCPNIOTransport;
-import org.glassfish.grizzly.nio.transport.TCPNIOTransportBuilder;
-import org.glassfish.grizzly.strategies.SameThreadIOStrategy;
-import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
@@ -38,17 +25,30 @@ import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.transport.AbstractServer;
 
+import org.glassfish.grizzly.filterchain.FilterChainBuilder;
+import org.glassfish.grizzly.filterchain.TransportFilter;
+import org.glassfish.grizzly.nio.transport.TCPNIOTransport;
+import org.glassfish.grizzly.nio.transport.TCPNIOTransportBuilder;
+import org.glassfish.grizzly.strategies.SameThreadIOStrategy;
+import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
+
+import java.net.InetSocketAddress;
+import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+
 /**
  * GrizzlyServer
- * 
+ *
  * @author william.liangf
  */
 public class GrizzlyServer extends AbstractServer {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(GrizzlyServer.class);
 
     private final Map<String, Channel> channels = new ConcurrentHashMap<String, Channel>(); // <ip:port, channel>
-    
+
     private TCPNIOTransport transport;
 
     public GrizzlyServer(URL url, ChannelHandler handler) throws RemotingException {
@@ -59,21 +59,21 @@ public class GrizzlyServer extends AbstractServer {
     protected void doOpen() throws Throwable {
         FilterChainBuilder filterChainBuilder = FilterChainBuilder.stateless();
         filterChainBuilder.add(new TransportFilter());
-        
+
         filterChainBuilder.add(new GrizzlyCodecAdapter(getCodec(), getUrl(), this));
         filterChainBuilder.add(new GrizzlyHandler(getUrl(), this));
         TCPNIOTransportBuilder builder = TCPNIOTransportBuilder.newInstance();
-        ThreadPoolConfig config = builder.getWorkerThreadPoolConfig(); 
+        ThreadPoolConfig config = builder.getWorkerThreadPoolConfig();
         config.setPoolName(SERVER_THREAD_POOL_NAME).setQueueLimit(-1);
         String threadpool = getUrl().getParameter(Constants.THREADPOOL_KEY, Constants.DEFAULT_THREADPOOL);
         if (Constants.DEFAULT_THREADPOOL.equals(threadpool)) {
             int threads = getUrl().getPositiveParameter(Constants.THREADS_KEY, Constants.DEFAULT_THREADS);
             config.setCorePoolSize(threads).setMaxPoolSize(threads)
-                .setKeepAliveTime(0L, TimeUnit.SECONDS); 
+                    .setKeepAliveTime(0L, TimeUnit.SECONDS);
         } else if ("cached".equals(threadpool)) {
             int threads = getUrl().getPositiveParameter(Constants.THREADS_KEY, Integer.MAX_VALUE);
             config.setCorePoolSize(0).setMaxPoolSize(threads)
-                .setKeepAliveTime(60L, TimeUnit.SECONDS);
+                    .setKeepAliveTime(60L, TimeUnit.SECONDS);
         } else {
             throw new IllegalArgumentException("Unsupported threadpool type " + threadpool);
         }
@@ -95,7 +95,7 @@ public class GrizzlyServer extends AbstractServer {
     }
 
     public boolean isBound() {
-        return ! transport.isStopped();
+        return !transport.isStopped();
     }
 
     public Collection<Channel> getChannels() {

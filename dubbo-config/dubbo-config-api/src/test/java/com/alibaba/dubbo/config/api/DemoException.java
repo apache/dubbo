@@ -17,7 +17,7 @@ package com.alibaba.dubbo.config.api;
 
 /**
  * DemoException
- * 
+ *
  * @author william.liangf
  */
 public class DemoException extends Exception {

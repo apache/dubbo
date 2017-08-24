@@ -15,21 +15,21 @@
  */
 package com.alibaba.dubbo.rpc.cluster.configurator;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.cluster.Configurator;
 
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * AbstractOverrideConfigurator
- * 
+ *
  * @author william.liangf
  */
 public abstract class AbstractConfigurator implements Configurator {
-    
+
     private final URL configuratorUrl;
 
     public AbstractConfigurator(URL url) {
@@ -37,6 +37,10 @@ public abstract class AbstractConfigurator implements Configurator {
             throw new IllegalArgumentException("configurator url == null");
         }
         this.configuratorUrl = url;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(URL.encode("timeout=100"));
     }
 
     public URL getUrl() {
@@ -48,11 +52,11 @@ public abstract class AbstractConfigurator implements Configurator {
                 || url == null || url.getHost() == null) {
             return url;
         }
-        if (Constants.ANYHOST_VALUE.equals(configuratorUrl.getHost()) 
+        if (Constants.ANYHOST_VALUE.equals(configuratorUrl.getHost())
                 || url.getHost().equals(configuratorUrl.getHost())) {
             String configApplication = configuratorUrl.getParameter(Constants.APPLICATION_KEY, configuratorUrl.getUsername());
             String currentApplication = url.getParameter(Constants.APPLICATION_KEY, url.getUsername());
-            if (configApplication == null || Constants.ANY_VALUE.equals(configApplication) 
+            if (configApplication == null || Constants.ANY_VALUE.equals(configApplication)
                     || configApplication.equals(currentApplication)) {
                 if (configuratorUrl.getPort() == 0 || url.getPort() == configuratorUrl.getPort()) {
                     Set<String> condtionKeys = new HashSet<String>();
@@ -63,11 +67,11 @@ public abstract class AbstractConfigurator implements Configurator {
                     for (Map.Entry<String, String> entry : configuratorUrl.getParameters().entrySet()) {
                         String key = entry.getKey();
                         String value = entry.getValue();
-                        if (key.startsWith("~") || Constants.APPLICATION_KEY.equals(key) 
+                        if (key.startsWith("~") || Constants.APPLICATION_KEY.equals(key)
                                 || Constants.SIDE_KEY.equals(key)) {
                             condtionKeys.add(key);
-                            if (value != null && ! Constants.ANY_VALUE.equals(value)
-                                    && ! value.equals(url.getParameter(key.startsWith("~") ? key.substring(1) : key))) {
+                            if (value != null && !Constants.ANY_VALUE.equals(value)
+                                    && !value.equals(url.getParameter(key.startsWith("~") ? key.substring(1) : key))) {
                                 return url;
                             }
                         }
@@ -85,11 +89,7 @@ public abstract class AbstractConfigurator implements Configurator {
         }
         return getUrl().getHost().compareTo(o.getUrl().getHost());
     }
-    
+
     protected abstract URL doConfigure(URL currentUrl, URL configUrl);
-    
-    public static void main(String[] args) {
-        System.out.println(URL.encode("timeout=100"));
-    }
 
 }

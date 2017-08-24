@@ -15,19 +15,20 @@
  */
 package com.alibaba.dubbo.remoting.transport;
 
-import java.io.IOException;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.Channel;
+
 import junit.framework.TestCase;
+
+import java.io.IOException;
 
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.junit.Assert.assertThat;
-import static org.junit.matchers.JUnitMatchers.*;
-import static org.hamcrest.CoreMatchers.*;
+import static org.junit.matchers.JUnitMatchers.containsString;
 
 /**
  * @author ding.lid
@@ -43,8 +44,7 @@ public class AbstractCodecTest extends TestCase {
 
         try {
             AbstractCodec.checkPayload(channel, 15 * 1024 * 1024);
-        }
-        catch (IOException expected) {
+        } catch (IOException expected) {
             assertThat(expected.getMessage(), allOf(
                     containsString("Data length too large: "),
                     containsString("max payload: " + 8 * 1024 * 1024)

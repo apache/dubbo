@@ -26,11 +26,11 @@ import com.alibaba.dubbo.remoting.transport.DecodeHandler;
 
 /**
  * DefaultMessenger
- * 
+ *
  * @author william.liangf
  */
 public class HeaderExchanger implements Exchanger {
-    
+
     public static final String NAME = "header";
 
     public ExchangeClient connect(URL url, ExchangeHandler handler) throws RemotingException {

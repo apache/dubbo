@@ -15,11 +15,6 @@
  */
 package com.alibaba.dubbo.config.spring.status;
 
-import java.lang.reflect.Method;
-
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.Lifecycle;
-
 import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
@@ -27,14 +22,19 @@ import com.alibaba.dubbo.common.status.Status;
 import com.alibaba.dubbo.common.status.StatusChecker;
 import com.alibaba.dubbo.config.spring.ServiceBean;
 
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.Lifecycle;
+
+import java.lang.reflect.Method;
+
 /**
  * SpringStatusChecker
- * 
+ *
  * @author william.liangf
  */
 @Activate
 public class SpringStatusChecker implements StatusChecker {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(SpringStatusChecker.class);
 
     public Status check() {
@@ -44,7 +44,7 @@ public class SpringStatusChecker implements StatusChecker {
         }
         Status.Level level = Status.Level.OK;
         if (context instanceof Lifecycle) {
-            if (((Lifecycle)context).isRunning()) {
+            if (((Lifecycle) context).isRunning()) {
                 level = Status.Level.OK;
             } else {
                 level = Status.Level.ERROR;
@@ -64,7 +64,7 @@ public class SpringStatusChecker implements StatusChecker {
                 }
             }
             if (method != null) {
-                if (! method.isAccessible()) {
+                if (!method.isAccessible()) {
                     method.setAccessible(true);
                 }
                 String[] configs = (String[]) method.invoke(context, new Object[0]);

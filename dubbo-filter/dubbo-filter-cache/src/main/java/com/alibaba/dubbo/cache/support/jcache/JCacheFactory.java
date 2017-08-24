@@ -21,7 +21,7 @@ import com.alibaba.dubbo.common.URL;
 
 /**
  * JCacheFactory
- * 
+ *
  * @author william.liangf
  */
 public class JCacheFactory extends AbstractCacheFactory {

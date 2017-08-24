@@ -20,7 +20,7 @@ import java.util.Map.Entry;
 
 /**
  * UrlUtils.java
- * 
+ *
  * @author tony.chenl
  */
 public class UrlUtils {
@@ -57,5 +57,5 @@ public class UrlUtils {
         }
         return paramsString.toString();
     }
-    
+
 }

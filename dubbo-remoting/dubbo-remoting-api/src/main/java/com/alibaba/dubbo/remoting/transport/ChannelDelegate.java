@@ -15,29 +15,29 @@
  */
 package com.alibaba.dubbo.remoting.transport;
 
-import java.net.InetSocketAddress;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;
 
+import java.net.InetSocketAddress;
+
 /**
  * ChannelDelegate
- * 
+ *
  * @author william.liangf
  */
 public class ChannelDelegate implements Channel {
-    
+
     private transient Channel channel;
-    
+
     public ChannelDelegate() {
     }
 
     public ChannelDelegate(Channel channel) {
         setChannel(channel);
     }
-    
+
     public Channel getChannel() {
         return channel;
     }
@@ -96,6 +96,7 @@ public class ChannelDelegate implements Channel {
     public void close() {
         channel.close();
     }
+
     public void close(int timeout) {
         channel.close(timeout);
     }

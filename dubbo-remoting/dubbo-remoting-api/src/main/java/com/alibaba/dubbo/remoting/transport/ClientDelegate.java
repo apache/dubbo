@@ -15,33 +15,33 @@
  */
 package com.alibaba.dubbo.remoting.transport;
 
-import java.net.InetSocketAddress;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.Client;
 import com.alibaba.dubbo.remoting.RemotingException;
 
+import java.net.InetSocketAddress;
+
 /**
  * ClientDelegate
- * 
+ *
  * @author william.liangf
  */
 public class ClientDelegate implements Client {
-    
+
     private transient Client client;
 
     public ClientDelegate() {
     }
 
-    public ClientDelegate(Client client){
+    public ClientDelegate(Client client) {
         setClient(client);
     }
-    
+
     public Client getClient() {
         return client;
     }
-    
+
     public void setClient(Client client) {
         if (client == null) {
             throw new IllegalArgumentException("client == null");
@@ -52,9 +52,9 @@ public class ClientDelegate implements Client {
     public void reset(URL url) {
         client.reset(url);
     }
-    
+
     @Deprecated
-    public void reset(com.alibaba.dubbo.common.Parameters parameters){
+    public void reset(com.alibaba.dubbo.common.Parameters parameters) {
         reset(getUrl().addParameters(parameters.getParameters()));
     }
 
@@ -109,6 +109,7 @@ public class ClientDelegate implements Client {
     public void close() {
         client.close();
     }
+
     public void close(int timeout) {
         client.close(timeout);
     }

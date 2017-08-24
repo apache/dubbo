@@ -15,14 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.protocol.dubbo.telnet;
 
-import static org.junit.Assert.assertEquals;
-
-import org.easymock.EasyMock;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.RemotingException;
@@ -32,16 +24,29 @@ import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
 import com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService;
 import com.alibaba.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
+import org.easymock.EasyMock;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+
 /**
  * ChangeTelnetHandlerTest.java
- * 
+ *
  * @author tony.chenl
  */
 public class ChangeTelnetHandlerTest {
 
     private static TelnetHandler change = new ChangeTelnetHandler();
-    private Channel              mockChannel;
+    private Channel mockChannel;
     private Invoker<DemoService> mockInvoker;
+
+    @AfterClass
+    public static void tearDown() {
+
+    }
 
     @SuppressWarnings("unchecked")
     @Before
@@ -62,11 +67,6 @@ public class ChangeTelnetHandlerTest {
         EasyMock.replay(mockChannel, mockInvoker);
     }
 
-    @AfterClass
-    public static void tearDown() {
-
-    }
-
     @After
     public void after() {
         ProtocolUtils.closeAll();
@@ -85,7 +85,7 @@ public class ChangeTelnetHandlerTest {
         DubboProtocol.getDubboProtocol().export(mockInvoker);
         String result = change.telnet(mockChannel, "com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService");
         assertEquals("Used the com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService as default.\r\nYou can cancel default service by command: cd /",
-                     result);
+                result);
     }
 
     @Test

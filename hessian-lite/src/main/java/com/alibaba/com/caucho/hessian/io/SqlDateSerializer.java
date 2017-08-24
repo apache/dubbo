@@ -54,35 +54,32 @@ import java.util.Date;
 /**
  * Serializing a sql date object.
  */
-public class SqlDateSerializer extends AbstractSerializer
-{
-  public void writeObject(Object obj, AbstractHessianOutput out)
-    throws IOException
-  {
-    if (obj == null)
-      out.writeNull();
-    else {
-      Class cl = obj.getClass();
+public class SqlDateSerializer extends AbstractSerializer {
+    public void writeObject(Object obj, AbstractHessianOutput out)
+            throws IOException {
+        if (obj == null)
+            out.writeNull();
+        else {
+            Class cl = obj.getClass();
 
-      if (out.addRef(obj))
-	return;
-      
-      int ref = out.writeObjectBegin(cl.getName());
+            if (out.addRef(obj))
+                return;
 
-      if (ref < -1) {
-	out.writeString("value");
-	out.writeUTCDate(((Date) obj).getTime());
-	out.writeMapEnd();
-      }
-      else {
-	if (ref == -1) {
-	  out.writeInt(1);
-	  out.writeString("value");
-	  out.writeObjectBegin(cl.getName());
-	}
+            int ref = out.writeObjectBegin(cl.getName());
 
-	out.writeUTCDate(((Date) obj).getTime());
-      }
+            if (ref < -1) {
+                out.writeString("value");
+                out.writeUTCDate(((Date) obj).getTime());
+                out.writeMapEnd();
+            } else {
+                if (ref == -1) {
+                    out.writeInt(1);
+                    out.writeString("value");
+                    out.writeObjectBegin(cl.getName());
+                }
+
+                out.writeUTCDate(((Date) obj).getTime());
+            }
+        }
     }
-  }
 }

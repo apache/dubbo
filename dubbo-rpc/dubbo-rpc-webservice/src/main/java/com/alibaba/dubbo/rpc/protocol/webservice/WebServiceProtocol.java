@@ -15,15 +15,15 @@
  */
 package com.alibaba.dubbo.rpc.protocol.webservice;
 
-import java.io.IOException;
-import java.net.SocketTimeoutException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.remoting.http.HttpBinder;
+import com.alibaba.dubbo.remoting.http.HttpHandler;
+import com.alibaba.dubbo.remoting.http.HttpServer;
+import com.alibaba.dubbo.remoting.http.servlet.DispatcherServlet;
+import com.alibaba.dubbo.rpc.RpcContext;
+import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.protocol.AbstractProxyProtocol;
 
 import org.apache.cxf.bus.extension.ExtensionManagerBus;
 import org.apache.cxf.endpoint.Client;
@@ -38,33 +38,32 @@ import org.apache.cxf.transport.servlet.ServletController;
 import org.apache.cxf.transport.servlet.ServletDestinationFactory;
 import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
 
-import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.remoting.http.HttpBinder;
-import com.alibaba.dubbo.remoting.http.HttpHandler;
-import com.alibaba.dubbo.remoting.http.HttpServer;
-import com.alibaba.dubbo.remoting.http.servlet.DispatcherServlet;
-import com.alibaba.dubbo.rpc.RpcContext;
-import com.alibaba.dubbo.rpc.RpcException;
-import com.alibaba.dubbo.rpc.protocol.AbstractProxyProtocol;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.SocketTimeoutException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * WebServiceProtocol.
- * 
+ *
  * @author netcomm
  */
 public class WebServiceProtocol extends AbstractProxyProtocol {
-    
+
     public static final int DEFAULT_PORT = 80;
 
     private final Map<String, HttpServer> serverMap = new ConcurrentHashMap<String, HttpServer>();
-    
+
     private final ExtensionManagerBus bus = new ExtensionManagerBus();
 
     private final HTTPTransportFactory transportFactory = new HTTPTransportFactory(bus);
-	
+
     private HttpBinder httpBinder;
-    
+
     public WebServiceProtocol() {
         super(Fault.class);
         bus.setExtension(new ServletDestinationFactory(), HttpDestinationFactory.class);
@@ -78,31 +77,8 @@ public class WebServiceProtocol extends AbstractProxyProtocol {
         return DEFAULT_PORT;
     }
 
-    private class WebServiceHandler implements HttpHandler {
-
-    	private volatile ServletController servletController;
-
-        public void handle(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        	if (servletController == null) {
-        		HttpServlet httpServlet = DispatcherServlet.getInstance();
-    			if (httpServlet == null) {
-    				response.sendError(500, "No such DispatcherServlet instance.");
-    				return;
-    			}
-        		synchronized (this) {
-        			if (servletController == null) {
-            			servletController = new ServletController(transportFactory.getRegistry(), httpServlet.getServletConfig(), httpServlet);
-        			}
-				}
-        	}
-            RpcContext.getContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
-            servletController.invoke(request, response);
-        }
-
-    }
-
     protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
-    	String addr = url.getIp() + ":" + url.getPort();
+        String addr = url.getIp() + ":" + url.getPort();
         HttpServer httpServer = serverMap.get(addr);
         if (httpServer == null) {
             httpServer = httpBinder.bind(url, new WebServiceHandler());
@@ -110,36 +86,36 @@ public class WebServiceProtocol extends AbstractProxyProtocol {
         }
         final ServerFactoryBean serverFactoryBean = new ServerFactoryBean();
         serverFactoryBean.setAddress(url.getAbsolutePath());
-    	serverFactoryBean.setServiceClass(type);
-    	serverFactoryBean.setServiceBean(impl);
-    	serverFactoryBean.setBus(bus);
+        serverFactoryBean.setServiceClass(type);
+        serverFactoryBean.setServiceBean(impl);
+        serverFactoryBean.setBus(bus);
         serverFactoryBean.setDestinationFactory(transportFactory);
-    	serverFactoryBean.create();
+        serverFactoryBean.create();
         return new Runnable() {
             public void run() {
-            	serverFactoryBean.destroy();
+                serverFactoryBean.destroy();
             }
         };
     }
 
     @SuppressWarnings("unchecked")
     protected <T> T doRefer(final Class<T> serviceType, final URL url) throws RpcException {
-    	ClientProxyFactoryBean proxyFactoryBean = new ClientProxyFactoryBean();
-    	proxyFactoryBean.setAddress(url.setProtocol("http").toIdentityString());
-    	proxyFactoryBean.setServiceClass(serviceType);
-    	proxyFactoryBean.setBus(bus);
-    	T ref = (T) proxyFactoryBean.create();
-    	Client proxy = ClientProxy.getClient(ref);  
-		HTTPConduit conduit = (HTTPConduit) proxy.getConduit();
-		HTTPClientPolicy policy = new HTTPClientPolicy();
-		policy.setConnectionTimeout(url.getParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT));
-		policy.setReceiveTimeout(url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
-		conduit.setClient(policy);
+        ClientProxyFactoryBean proxyFactoryBean = new ClientProxyFactoryBean();
+        proxyFactoryBean.setAddress(url.setProtocol("http").toIdentityString());
+        proxyFactoryBean.setServiceClass(serviceType);
+        proxyFactoryBean.setBus(bus);
+        T ref = (T) proxyFactoryBean.create();
+        Client proxy = ClientProxy.getClient(ref);
+        HTTPConduit conduit = (HTTPConduit) proxy.getConduit();
+        HTTPClientPolicy policy = new HTTPClientPolicy();
+        policy.setConnectionTimeout(url.getParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT));
+        policy.setReceiveTimeout(url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
+        conduit.setClient(policy);
         return ref;
     }
 
     protected int getErrorCode(Throwable e) {
-    	if (e instanceof Fault) {
+        if (e instanceof Fault) {
             e = e.getCause();
         }
         if (e instanceof SocketTimeoutException) {
@@ -148,6 +124,29 @@ public class WebServiceProtocol extends AbstractProxyProtocol {
             return RpcException.NETWORK_EXCEPTION;
         }
         return super.getErrorCode(e);
+    }
+
+    private class WebServiceHandler implements HttpHandler {
+
+        private volatile ServletController servletController;
+
+        public void handle(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+            if (servletController == null) {
+                HttpServlet httpServlet = DispatcherServlet.getInstance();
+                if (httpServlet == null) {
+                    response.sendError(500, "No such DispatcherServlet instance.");
+                    return;
+                }
+                synchronized (this) {
+                    if (servletController == null) {
+                        servletController = new ServletController(transportFactory.getRegistry(), httpServlet.getServletConfig(), httpServlet);
+                    }
+                }
+            }
+            RpcContext.getContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
+            servletController.invoke(request, response);
+        }
+
     }
 
 }

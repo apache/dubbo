@@ -22,7 +22,7 @@ import com.alibaba.dubbo.common.extension.SPI;
 
 /**
  * ProxyFactory. (API/SPI, Singleton, ThreadSafe)
- * 
+ *
  * @author william.liangf
  */
 @SPI("javassist")
@@ -30,7 +30,7 @@ public interface ProxyFactory {
 
     /**
      * create proxy.
-     * 
+     *
      * @param invoker
      * @return proxy
      */
@@ -39,7 +39,7 @@ public interface ProxyFactory {
 
     /**
      * create invoker.
-     * 
+     *
      * @param <T>
      * @param proxy
      * @param type

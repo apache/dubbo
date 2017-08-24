@@ -15,24 +15,24 @@
  */
 package com.alibaba.dubbo.rpc.protocol.injvm;
 
-import java.util.Map;
-
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.protocol.AbstractExporter;
 
+import java.util.Map;
+
 /**
  * InjvmExporter
- * 
+ *
  * @author william.liangf
  */
 class InjvmExporter<T> extends AbstractExporter<T> {
 
     private final String key;
-    
+
     private final Map<String, Exporter<?>> exporterMap;
 
-    InjvmExporter(Invoker<T> invoker, String key, Map<String, Exporter<?>> exporterMap){
+    InjvmExporter(Invoker<T> invoker, String key, Map<String, Exporter<?>> exporterMap) {
         super(invoker);
         this.key = key;
         this.exporterMap = exporterMap;

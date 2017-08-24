@@ -15,42 +15,42 @@
  */
 package com.alibaba.dubbo.remoting.codec;
 
-import java.net.InetSocketAddress;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;
 
+import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author chao.liuc
- *
  */
 public class AbstractMockChannel implements Channel {
     public static final String LOCAL_ADDRESS = "local";
     public static final String REMOTE_ADDRESS = "remote";
     public static final String ERROR_WHEN_SEND = "error_when_send";
-    private URL remoteUrl ;
-    InetSocketAddress localAddress ;
-    InetSocketAddress remoteAddress ;
+    InetSocketAddress localAddress;
+    InetSocketAddress remoteAddress;
+    private URL remoteUrl;
     private ChannelHandler handler;
-    private boolean isClosed ;
+    private boolean isClosed;
     private Map<String, Object> attributes = new HashMap<String, Object>(1);
     private volatile Object receivedMessage = null;
-    
-    public AbstractMockChannel(){
-        
+
+    public AbstractMockChannel() {
+
     }
-    
-    public AbstractMockChannel(URL remoteUrl){
+
+    public AbstractMockChannel(URL remoteUrl) {
         this.remoteUrl = remoteUrl;
         this.remoteAddress = NetUtils.toAddress(remoteUrl.getParameter(REMOTE_ADDRESS));
         this.localAddress = NetUtils.toAddress(remoteUrl.getParameter(LOCAL_ADDRESS));
     }
-    public AbstractMockChannel(ChannelHandler handler){
+
+    public AbstractMockChannel(ChannelHandler handler) {
         this.handler = handler;
     }
 
@@ -63,18 +63,18 @@ public class AbstractMockChannel implements Channel {
     }
 
     public InetSocketAddress getLocalAddress() {
-        return localAddress ;
+        return localAddress;
     }
 
     public void send(Object message) throws RemotingException {
-        if (remoteUrl.getParameter(ERROR_WHEN_SEND, Boolean.FALSE)){
-            receivedMessage = null ;
+        if (remoteUrl.getParameter(ERROR_WHEN_SEND, Boolean.FALSE)) {
+            receivedMessage = null;
             throw new RemotingException(localAddress, remoteAddress, "mock error");
         } else {
             receivedMessage = message;
         }
     }
-    
+
     public void send(Object message, boolean sent) throws RemotingException {
         send(message);
     }

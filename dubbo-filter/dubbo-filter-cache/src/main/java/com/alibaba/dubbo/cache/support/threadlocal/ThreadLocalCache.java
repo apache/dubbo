@@ -15,15 +15,15 @@
  */
 package com.alibaba.dubbo.cache.support.threadlocal;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.alibaba.dubbo.cache.Cache;
 import com.alibaba.dubbo.common.URL;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * ThreadLocalCache
- * 
+ *
  * @author william.liangf
  */
 public class ThreadLocalCache implements Cache {

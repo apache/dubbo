@@ -15,6 +15,11 @@
  */
 package com.alibaba.dubbo.common.serialize.support.json;
 
+import com.alibaba.dubbo.common.json.JSON;
+import com.alibaba.dubbo.common.json.ParseException;
+import com.alibaba.dubbo.common.serialize.ObjectInput;
+import com.alibaba.dubbo.common.utils.PojoUtils;
+
 import java.io.BufferedReader;
 import java.io.EOFException;
 import java.io.IOException;
@@ -24,26 +29,21 @@ import java.io.Reader;
 import java.lang.reflect.Type;
 import java.util.Map;
 
-import com.alibaba.dubbo.common.json.JSON;
-import com.alibaba.dubbo.common.json.ParseException;
-import com.alibaba.dubbo.common.serialize.ObjectInput;
-import com.alibaba.dubbo.common.utils.PojoUtils;
-
 /**
  * JsonObjectInput
- * 
+ *
  * @author william.liangf
  * @author ding.lid
  */
 public class JsonObjectInput implements ObjectInput {
-    
+
     private final BufferedReader reader;
 
-    public JsonObjectInput(InputStream in){
+    public JsonObjectInput(InputStream in) {
         this(new InputStreamReader(in));
     }
 
-    public JsonObjectInput(Reader reader){
+    public JsonObjectInput(Reader reader) {
         this.reader = new BufferedReader(reader);
     }
 
@@ -57,7 +57,7 @@ public class JsonObjectInput implements ObjectInput {
 
     public byte readByte() throws IOException {
         try {
-            return readObject( byte.class);
+            return readObject(byte.class);
         } catch (ClassNotFoundException e) {
             throw new IOException(e.getMessage());
         }
@@ -122,7 +122,7 @@ public class JsonObjectInput implements ObjectInput {
                 return JSON.parse(json, Map.class);
             } else {
                 json = "{\"value\":" + json + "}";
-                
+
                 @SuppressWarnings("unchecked")
                 Map<String, Object> map = JSON.parse(json, Map.class);
                 return map.get("value");
@@ -144,15 +144,14 @@ public class JsonObjectInput implements ObjectInput {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T readObject(Class<T> cls, Type type) throws IOException,ClassNotFoundException
-    {
+    public <T> T readObject(Class<T> cls, Type type) throws IOException, ClassNotFoundException {
         Object value = readObject();
         return (T) PojoUtils.realize(value, cls, type);
     }
 
     private String readLine() throws IOException, EOFException {
         String line = reader.readLine();
-        if(line == null || line.trim().length() == 0) throw new EOFException();
+        if (line == null || line.trim().length() == 0) throw new EOFException();
         return line;
     }
 }

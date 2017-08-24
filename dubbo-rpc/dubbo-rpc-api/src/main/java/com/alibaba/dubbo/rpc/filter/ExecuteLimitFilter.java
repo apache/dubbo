@@ -27,7 +27,7 @@ import com.alibaba.dubbo.rpc.RpcStatus;
 
 /**
  * ThreadLimitInvokerFilter
- * 
+ *
  * @author william.liangf
  */
 @Activate(group = Constants.PROVIDER, value = Constants.EXECUTES_KEY)
@@ -51,14 +51,12 @@ public class ExecuteLimitFilter implements Filter {
             return result;
         } catch (Throwable t) {
             isException = true;
-            if(t instanceof RuntimeException) {
+            if (t instanceof RuntimeException) {
                 throw (RuntimeException) t;
-            }
-            else {
+            } else {
                 throw new RpcException("unexpected exception when ExecuteLimitFilter", t);
             }
-        }
-        finally {
+        } finally {
             RpcStatus.endCount(url, methodName, System.currentTimeMillis() - begin, isException);
         }
     }

@@ -32,45 +32,45 @@ public class ResultMergerTest {
     @Test
     public void testListMerger() throws Exception {
         List<Object> list1 = new ArrayList<Object>();
-        list1.add( null );
-        list1.add( "1" );
-        list1.add( "2" );
+        list1.add(null);
+        list1.add("1");
+        list1.add("2");
         List<Object> list2 = new ArrayList<Object>();
-        list2.add( "3" );
-        list2.add( "4" );
+        list2.add("3");
+        list2.add("4");
 
         List result = MergerFactory.getMerger(List.class).merge(list1, list2);
         Assert.assertEquals(5, result.size());
-        Assert.assertEquals( new ArrayList<String>(){
+        Assert.assertEquals(new ArrayList<String>() {
             {
-                add( null );
-                add( "1" );
-                add( "2" );
-                add( "3" );
-                add( "4" );
+                add(null);
+                add("1");
+                add("2");
+                add("3");
+                add("4");
             }
         }, result);
     }
-    
+
     @Test
     public void testSetMerger() throws Exception {
         Set<Object> set1 = new HashSet<Object>();
-        set1.add( null );
-        set1.add( "1" );
-        set1.add( "2" );
+        set1.add(null);
+        set1.add("1");
+        set1.add("2");
         Set<Object> set2 = new HashSet<Object>();
-        set2.add( "2" );
-        set2.add( "3" );
+        set2.add("2");
+        set2.add("3");
 
         Set result = MergerFactory.getMerger(Set.class).merge(set1, set2);
-        
-        Assert.assertEquals( 4, result.size() );
-        Assert.assertEquals( new HashSet<String>(){
+
+        Assert.assertEquals(4, result.size());
+        Assert.assertEquals(new HashSet<String>() {
             {
-                add( null );
-                add( "1" );
-                add( "2" );
-                add( "3" );
+                add(null);
+                add("1");
+                add("2");
+                add("3");
             }
         }, result);
     }
@@ -85,10 +85,10 @@ public class ResultMergerTest {
         Assert.assertTrue(result.getClass().isArray());
         Assert.assertEquals(6, Array.getLength(result));
         Assert.assertTrue(String.class.isInstance(Array.get(result, 0)));
-        for(int i = 0; i < 6; i++) {
+        for (int i = 0; i < 6; i++) {
             Assert.assertEquals(String.valueOf(i + 1), Array.get(result, i));
         }
-        
+
         int[] intArray1 = {1, 2, 3};
         int[] intArray2 = {4, 5, 6};
         int[] intArray3 = {7};
@@ -99,6 +99,6 @@ public class ResultMergerTest {
         for (int i = 0; i < 7; i++) {
             Assert.assertEquals(i + 1, Array.get(result, i));
         }
-        
+
     }
 }

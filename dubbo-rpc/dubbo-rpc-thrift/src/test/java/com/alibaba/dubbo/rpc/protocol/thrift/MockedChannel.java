@@ -1,10 +1,10 @@
 /**
  * File Created at 2011-12-06
  * $Id$
- *
+ * <p>
  * Copyright 2008 Alibaba.com Croporation Limited.
  * All rights reserved.
- *
+ * <p>
  * This software is the confidential and proprietary information of
  * Alibaba Company. ("Confidential Information").  You shall not
  * disclose such Confidential Information and shall use it only in
@@ -27,7 +27,7 @@ public class MockedChannel implements Channel {
 
     private URL url;
 
-    public MockedChannel( URL url ) {
+    public MockedChannel(URL url) {
         this.url = url;
     }
 
@@ -41,21 +41,21 @@ public class MockedChannel implements Channel {
         return false;
     }
 
-    public boolean hasAttribute( String key ) {
+    public boolean hasAttribute(String key) {
 
         return false;
     }
 
-    public Object getAttribute( String key ) {
+    public Object getAttribute(String key) {
 
         return null;
     }
 
-    public void setAttribute( String key, Object value ) {
+    public void setAttribute(String key, Object value) {
 
     }
 
-    public void removeAttribute( String key ) {
+    public void removeAttribute(String key) {
 
     }
 
@@ -73,11 +73,11 @@ public class MockedChannel implements Channel {
         return null;
     }
 
-    public void send( Object message ) throws RemotingException {
+    public void send(Object message) throws RemotingException {
 
     }
 
-    public void send( Object message, boolean sent ) throws RemotingException {
+    public void send(Object message, boolean sent) throws RemotingException {
 
     }
 
@@ -85,7 +85,7 @@ public class MockedChannel implements Channel {
 
     }
 
-    public void close( int timeout ) {
+    public void close(int timeout) {
 
     }
 

@@ -15,9 +15,6 @@
  */
 package com.alibaba.dubbo.registry.dubbo;
 
-import java.net.InetSocketAddress;
-import java.util.Map;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
@@ -29,39 +26,42 @@ import com.alibaba.dubbo.remoting.exchange.ResponseCallback;
 import com.alibaba.dubbo.remoting.exchange.ResponseFuture;
 import com.alibaba.dubbo.remoting.exchange.support.Replier;
 
+import java.net.InetSocketAddress;
+import java.util.Map;
+
 /**
  * MockedClient
- * 
+ *
  * @author william.liangf
  */
 public class MockedClient implements ExchangeClient {
-    
+
     //private String host;
 
     //private int port;
-    
+
     private boolean connected;
-    
+
     private Object received;
 
     private Object sent;
-    
+
     private Object invoked;
-    
+
     private Replier<?> handler;
- 
+
     private InetSocketAddress address;
-    
+
     private boolean closed = false;
 
     //private ChannelListener listener;
-    
+
     public MockedClient(String host, int port, boolean connected) {
-    	this(host, port, connected, null);
+        this(host, port, connected, null);
     }
 
     public MockedClient(String host, int port, boolean connected, Object received) {
-    	this.address = new InetSocketAddress(host, port);
+        this.address = new InetSocketAddress(host, port);
         this.connected = connected;
         this.received = received;
     }
@@ -87,12 +87,15 @@ public class MockedClient implements ExchangeClient {
             public Object get() throws RemotingException {
                 return received;
             }
+
             public Object get(int timeoutInMillis) throws RemotingException {
                 return received;
             }
+
             public boolean isDone() {
                 return true;
             }
+
             public void setCallback(ResponseCallback callback) {
             }
         };
@@ -118,6 +121,13 @@ public class MockedClient implements ExchangeClient {
         return connected;
     }
 
+    /**
+     * @param connected the connected to set
+     */
+    public void setConnected(boolean connected) {
+        this.connected = connected;
+    }
+
     public Object getSent() {
         return sent;
     }
@@ -130,59 +140,59 @@ public class MockedClient implements ExchangeClient {
         return invoked;
     }
 
-	public InetSocketAddress getRemoteAddress() {
-		return address;
-	}
+    public InetSocketAddress getRemoteAddress() {
+        return address;
+    }
 
-	public String getName() {
-		return "mocked";
-	}
+    public String getName() {
+        return "mocked";
+    }
 
-	public InetSocketAddress getLocalAddress() {
-		return null;
-	}
+    public InetSocketAddress getLocalAddress() {
+        return null;
+    }
 
-	public void setTimeout(int timeout) {
-	}
+    public int getTimeout() {
+        return 0;
+    }
 
-	public int getTimeout() {
-		return 0;
-	}
+    public void setTimeout(int timeout) {
+    }
 
-	public void close(int timeout) {
-	    close();
-	}
+    public void close(int timeout) {
+        close();
+    }
 
-	public boolean isOpen() {
-		return closed;
-	}
+    public boolean isOpen() {
+        return closed;
+    }
 
-	public Codec getCodec() {
-		return null;
-	}
+    public Codec getCodec() {
+        return null;
+    }
 
-	public void setCodec(Codec codec) {
-	}
-
-    public void setHost(String host) {
+    public void setCodec(Codec codec) {
     }
 
     public String getHost() {
         return null;
     }
 
-    public void setPort(int port) {
+    public void setHost(String host) {
     }
 
     public int getPort() {
         return 0;
     }
 
-    public void setThreadCount(int threadCount) {
+    public void setPort(int port) {
     }
 
     public int getThreadCount() {
         return 0;
+    }
+
+    public void setThreadCount(int threadCount) {
     }
 
     public URL getUrl() {
@@ -216,7 +226,7 @@ public class MockedClient implements ExchangeClient {
     }
 
     public void setAttribute(String key, Object value) {
-        
+
     }
 
     public boolean hasAttribute(String key) {
@@ -228,8 +238,9 @@ public class MockedClient implements ExchangeClient {
     }
 
     public void removeAttribute(String key) {
-        
+
     }
+
     /**
      * @return the received
      */
@@ -244,13 +255,6 @@ public class MockedClient implements ExchangeClient {
         this.received = received;
     }
 
-    /**
-     * @param connected the connected to set
-     */
-    public void setConnected(boolean connected) {
-        this.connected = connected;
-    }
-
     public void send(Object message, boolean sent) throws RemotingException {
     }
 
@@ -260,5 +264,5 @@ public class MockedClient implements ExchangeClient {
     @Deprecated
     public void reset(com.alibaba.dubbo.common.Parameters parameters) {
     }
-    
+
 }

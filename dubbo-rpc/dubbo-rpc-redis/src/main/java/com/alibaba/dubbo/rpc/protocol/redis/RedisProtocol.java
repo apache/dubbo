@@ -15,20 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.protocol.redis;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.net.SocketTimeoutException;
-import java.util.Map;
-import java.util.concurrent.TimeoutException;
-
-import org.apache.commons.pool.impl.GenericObjectPool;
-
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.exceptions.JedisDataException;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
@@ -44,10 +30,23 @@ import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.protocol.AbstractInvoker;
 import com.alibaba.dubbo.rpc.protocol.AbstractProtocol;
 
+import org.apache.commons.pool.impl.GenericObjectPool;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisDataException;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.net.SocketTimeoutException;
+import java.util.Map;
+import java.util.concurrent.TimeoutException;
+
 
 /**
  * RedisProtocol
- * 
+ *
  * @author william.liangf
  */
 public class RedisProtocol extends AbstractProtocol {
@@ -61,7 +60,7 @@ public class RedisProtocol extends AbstractProtocol {
     public <T> Exporter<T> export(final Invoker<T> invoker) throws RpcException {
         throw new UnsupportedOperationException("Unsupported export redis service. url: " + invoker.getUrl());
     }
-    
+
     private Serialization getSerialization(URL url) {
         return ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(url.getParameter(Constants.SERIALIZATION_KEY, "java"));
     }
@@ -86,8 +85,8 @@ public class RedisProtocol extends AbstractProtocol {
                 config.timeBetweenEvictionRunsMillis = url.getParameter("time.between.eviction.runs.millis", 0);
             if (url.getParameter("min.evictable.idle.time.millis", 0) > 0)
                 config.minEvictableIdleTimeMillis = url.getParameter("min.evictable.idle.time.millis", 0);
-            final JedisPool jedisPool = new JedisPool(config, url.getHost(), url.getPort(DEFAULT_PORT), 
-                url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
+            final JedisPool jedisPool = new JedisPool(config, url.getHost(), url.getPort(DEFAULT_PORT),
+                    url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
             final int expiry = url.getParameter("expiry", 0);
             final String get = url.getParameter("get", "get");
             final String set = url.getParameter("set", Map.class.equals(type) ? "put" : "set");
@@ -130,8 +129,7 @@ public class RedisProtocol extends AbstractProtocol {
                         } else {
                             throw new UnsupportedOperationException("Unsupported method " + invocation.getMethodName() + " in redis service.");
                         }
-                    }
-                    catch (Throwable t) {
+                    } catch (Throwable t) {
                         RpcException re = new RpcException("Failed to invoke redis service method. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url + ", cause: " + t.getMessage(), t);
                         if (t instanceof TimeoutException || t instanceof SocketTimeoutException) {
                             re.setCode(RpcException.TIMEOUT_EXCEPTION);
@@ -141,13 +139,11 @@ public class RedisProtocol extends AbstractProtocol {
                             re.setCode(RpcException.SERIALIZATION_EXCEPTION);
                         }
                         throw re;
-                    }
-                    finally {
-                        if(resource != null) {
+                    } finally {
+                        if (resource != null) {
                             try {
                                 jedisPool.returnResource(resource);
-                            }
-                            catch (Throwable t) {
+                            } catch (Throwable t) {
                                 logger.warn("returnResource error: " + t.getMessage(), t);
                             }
                         }
