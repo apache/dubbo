@@ -567,7 +567,11 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     public List<Invoker<T>> doList(Invocation invocation) {
         if (forbidden) {
-            throw new RpcException(RpcException.FORBIDDEN_EXCEPTION, "Forbid consumer " + NetUtils.getLocalHost() + " access service " + getInterface().getName() + " from registry " + getUrl().getAddress() + " use dubbo version " + Version.getVersion() + ", Please check registry access list (whitelist/blacklist).");
+            // 1. 没有服务提供者 2. 服务提供者被禁用
+            throw new RpcException(RpcException.FORBIDDEN_EXCEPTION,
+                "No service " + getInterface().getName()
+                    + " available from registry " + getUrl().getAddress() + " to consumer " +  NetUtils.getLocalHost()
+                    + " use dubbo version " + Version.getVersion() + ", may be services disabled or no providers ?");
         }
         List<Invoker<T>> invokers = null;
         Map<String, List<Invoker<T>>> localMethodInvokerMap = this.methodInvokerMap; // local reference
