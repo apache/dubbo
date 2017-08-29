@@ -1219,6 +1219,10 @@ public final class URL implements Serializable {
         return buf.toString();
     }
 
+    public String toServiceStringWithoutResolving() {
+        return buildString(true, false, false, true);
+    }
+
     public String toServiceString() {
         return buildString(true, false, true, true);
     }
