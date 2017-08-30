@@ -29,6 +29,7 @@ import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
 import com.alibaba.dubbo.rpc.Protocol;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * ProtocolConfig
@@ -124,6 +125,8 @@ public class ProtocolConfig extends AbstractConfig {
     // 是否为缺省
     private Boolean isDefault;
 
+    private static final AtomicBoolean destroyed = new AtomicBoolean(false);
+
     public ProtocolConfig() {
     }
 
@@ -136,7 +139,11 @@ public class ProtocolConfig extends AbstractConfig {
         setPort(port);
     }
 
+    // TODO: 2017/8/30 to move this method somewhere else
     public static void destroyAll() {
+        if (!destroyed.compareAndSet(false, true)) {
+            return;
+        }
         AbstractRegistryFactory.destroyAll();
         ExtensionLoader<Protocol> loader = ExtensionLoader.getExtensionLoader(Protocol.class);
         for (String protocolName : loader.getLoadedExtensions()) {
@@ -439,7 +446,6 @@ public class ProtocolConfig extends AbstractConfig {
     public void destory() {
         if (name != null) {
             ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(name).destroy();
-            ;
         }
     }
 

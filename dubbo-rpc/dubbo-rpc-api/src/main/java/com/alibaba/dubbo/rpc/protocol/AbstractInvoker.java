@@ -34,6 +34,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * AbstractInvoker.
@@ -53,7 +54,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
 
     private volatile boolean available = true;
 
-    private volatile boolean destroyed = false;
+    private AtomicBoolean destroyed = new AtomicBoolean(false);
 
     public AbstractInvoker(Class<T> type, URL url) {
         this(type, url, (Map<String, String>) null);
@@ -104,15 +105,14 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
     }
 
     public void destroy() {
-        if (isDestroyed()) {
+        if (!destroyed.compareAndSet(false, true)) {
             return;
         }
-        destroyed = true;
         setAvailable(false);
     }
 
     public boolean isDestroyed() {
-        return destroyed;
+        return destroyed.get();
     }
 
     public String toString() {
@@ -120,7 +120,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
     }
 
     public Result invoke(Invocation inv) throws RpcException {
-        if (destroyed) {
+        if (destroyed.get()) {
             throw new RpcException("Rpc invoker for service " + this + " on consumer " + NetUtils.getLocalHost()
                     + " use dubbo version " + Version.getVersion()
                     + " is DESTROYED, can not be invoked any more!");
