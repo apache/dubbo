@@ -569,7 +569,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         if (forbidden) {
             // 1. 没有服务提供者 2. 服务提供者被禁用
             throw new RpcException(RpcException.FORBIDDEN_EXCEPTION,
-                "No provider " + getInterfaceInfo()
+                "No provider " + getInterface0()
                     + " available from registry " + getUrl().getAddress() + " to consumer " +  NetUtils.getLocalHost()
                     + " use dubbo version " + Version.getVersion() + ", may be providers disabled or not registered ?");
         }
@@ -672,7 +672,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     }
 
     // 构造 group/interface:version 用于提示消息
-    private String getInterfaceInfo() {
+    private String getInterface0() {
         StringBuilder sb = new StringBuilder();
         URL url = getConsumerUrl();
         String group, reversion;
@@ -680,7 +680,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             sb.append(group).append("/");
         }
         sb.append(getInterface().getName());
-        if((reversion = url.getParameter(Constants.REVISION_KEY)) != null){
+        if((reversion = url.getParameter(Constants.VERSION_KEY)) != null){
             sb.append(":").append(reversion);
         }
         return sb.toString();
