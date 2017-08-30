@@ -100,7 +100,7 @@ public class ConditionRouter implements Router, Comparable<Router> {
                     pair = new MatchPair();
                     condition.put(content, pair);
                 } else {
-                    condition.put(content, pair);
+                    pair = condition.get(content);
                 }
             }
             // KV的Value部分开始
@@ -148,7 +148,7 @@ public class ConditionRouter implements Router, Comparable<Router> {
             return invokers;
         }
         try {
-            if (!matchWhen(url)) {
+            if (!matchWhen(url, invocation)) {
                 return invokers;
             }
             List<Invoker<T>> result = new ArrayList<Invoker<T>>();
@@ -185,42 +185,82 @@ public class ConditionRouter implements Router, Comparable<Router> {
         return this.priority == c.priority ? url.toFullString().compareTo(c.url.toFullString()) : (this.priority > c.priority ? 1 : -1);
     }
 
-    public boolean matchWhen(URL url) {
-        return matchCondition(whenCondition, url, null);
+    boolean matchWhen(URL url, Invocation invocation) {
+        return whenCondition == null || whenCondition.isEmpty() || matchCondition(whenCondition, url, null, invocation);
     }
 
-    public boolean matchThen(URL url, URL param) {
-        return thenCondition != null && matchCondition(thenCondition, url, param);
+    private boolean matchThen(URL url, URL param) {
+        return !(thenCondition == null || thenCondition.isEmpty()) && matchCondition(thenCondition, url, param, null);
     }
 
-    private boolean matchCondition(Map<String, MatchPair> condition, URL url, URL param) {
+    private boolean matchCondition(Map<String, MatchPair> condition, URL url, URL param, Invocation invocation) {
         Map<String, String> sample = url.toMap();
-        for (Map.Entry<String, String> entry : sample.entrySet()) {
-            String key = entry.getKey();
-            MatchPair pair = condition.get(key);
-            if (pair != null && !pair.isMatch(entry.getValue(), param)) {
-                return false;
+        boolean result = false;
+        for (Map.Entry<String, MatchPair> matchPair : condition.entrySet()) {
+            String key = matchPair.getKey();
+            String sampleValue;
+            //get real invoked method name from invocation
+            if (invocation != null && (Constants.METHOD_KEY.equals(key) || Constants.METHODS_KEY.equals(key))) {
+                sampleValue = invocation.getMethodName();
+            } else {
+                sampleValue = sample.get(key);
+            }
+            if (sampleValue != null) {
+                if (!matchPair.getValue().isMatch(sampleValue, param)) {
+                    return false;
+                } else {
+                    result = true;
+                }
+            } else {
+                //not pass the condition
+                if (matchPair.getValue().matches.size() > 0) {
+                    return false;
+                } else {
+                    result = true;
+                }
             }
         }
-        return true;
+        return result;
     }
 
     private static final class MatchPair {
         final Set<String> matches = new HashSet<String>();
         final Set<String> mismatches = new HashSet<String>();
 
-        public boolean isMatch(String value, URL param) {
-            for (String match : matches) {
-                if (!UrlUtils.isMatchGlobPattern(match, value, param)) {
-                    return false;
+        private boolean isMatch(String value, URL param) {
+            if (matches.size() > 0 && mismatches.size() == 0) {
+                for (String match : matches) {
+                    if (UrlUtils.isMatchGlobPattern(match, value, param)) {
+                        return true;
+                    }
                 }
+                return false;
             }
-            for (String mismatch : mismatches) {
-                if (UrlUtils.isMatchGlobPattern(mismatch, value, param)) {
-                    return false;
+
+            if (mismatches.size() > 0 && matches.size() == 0) {
+                for (String mismatch : mismatches) {
+                    if (UrlUtils.isMatchGlobPattern(mismatch, value, param)) {
+                        return false;
+                    }
                 }
+                return true;
             }
-            return true;
+
+            if (matches.size() > 0 && mismatches.size() > 0) {
+                //when both mismatches and matches contain the same value, then using mismatches first
+                for (String mismatch : mismatches) {
+                    if (UrlUtils.isMatchGlobPattern(mismatch, value, param)) {
+                        return false;
+                    }
+                }
+                for (String match : matches) {
+                    if (UrlUtils.isMatchGlobPattern(match, value, param)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            return false;
         }
     }
 }
