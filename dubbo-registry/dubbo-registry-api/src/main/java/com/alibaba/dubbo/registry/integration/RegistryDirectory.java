@@ -569,8 +569,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         if (forbidden) {
             // 1. 没有服务提供者 2. 服务提供者被禁用
             throw new RpcException(RpcException.FORBIDDEN_EXCEPTION,
-                "No provider " + getConsumerUrl().getServiceKey()
-                    + " available from registry " + getUrl().getAddress() + " to consumer " +  NetUtils.getLocalHost()
+                "No provider available from registry " + getUrl().getAddress() + " for service " + getConsumerUrl().getServiceKey() + " on consumer " +  NetUtils.getLocalHost()
                     + " use dubbo version " + Version.getVersion() + ", may be providers disabled or not registered ?");
         }
         List<Invoker<T>> invokers = null;
