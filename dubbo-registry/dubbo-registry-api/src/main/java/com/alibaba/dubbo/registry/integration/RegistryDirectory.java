@@ -567,7 +567,11 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     public List<Invoker<T>> doList(Invocation invocation) {
         if (forbidden) {
-            throw new RpcException(RpcException.FORBIDDEN_EXCEPTION, "Forbid consumer " + NetUtils.getLocalHost() + " access service " + getInterface().getName() + " from registry " + getUrl().getAddress() + " use dubbo version " + Version.getVersion() + ", Please check registry access list (whitelist/blacklist).");
+            // 1. 没有服务提供者 2. 服务提供者被禁用
+            throw new RpcException(RpcException.FORBIDDEN_EXCEPTION,
+                "No provider " + getInterfaceInfo()
+                    + " available from registry " + getUrl().getAddress() + " to consumer " +  NetUtils.getLocalHost()
+                    + " use dubbo version " + Version.getVersion() + ", may be providers disabled or not registered ?");
         }
         List<Invoker<T>> invokers = null;
         Map<String, List<Invoker<T>>> localMethodInvokerMap = this.methodInvokerMap; // local reference
@@ -665,5 +669,20 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         public URL getProviderUrl() {
             return providerUrl;
         }
+    }
+
+    // 构造 group/interface:version 用于提示消息
+    private String getInterfaceInfo() {
+        StringBuilder sb = new StringBuilder();
+        URL url = getConsumerUrl();
+        String group, reversion;
+        if((group = url.getParameter(Constants.GROUP_KEY)) != null){
+            sb.append(group).append("/");
+        }
+        sb.append(getInterface().getName());
+        if((reversion = url.getParameter(Constants.REVISION_KEY)) != null){
+            sb.append(":").append(reversion);
+        }
+        return sb.toString();
     }
 }
