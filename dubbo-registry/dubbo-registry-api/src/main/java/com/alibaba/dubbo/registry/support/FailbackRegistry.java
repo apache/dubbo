@@ -33,6 +33,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * FailbackRegistry. (SPI, Prototype, ThreadSafe)
@@ -56,6 +57,8 @@ public abstract class FailbackRegistry extends AbstractRegistry {
     private final ConcurrentMap<URL, Set<NotifyListener>> failedUnsubscribed = new ConcurrentHashMap<URL, Set<NotifyListener>>();
 
     private final ConcurrentMap<URL, Map<NotifyListener, List<URL>>> failedNotified = new ConcurrentHashMap<URL, Map<NotifyListener, List<URL>>>();
+
+    private AtomicBoolean destroyed = new AtomicBoolean(false);
 
     public FailbackRegistry(URL url) {
         super(url);
@@ -122,6 +125,9 @@ public abstract class FailbackRegistry extends AbstractRegistry {
 
     @Override
     public void register(URL url) {
+        if (destroyed.get()){
+            return;
+        }
         super.register(url);
         failedRegistered.remove(url);
         failedUnregistered.remove(url);
@@ -152,6 +158,9 @@ public abstract class FailbackRegistry extends AbstractRegistry {
 
     @Override
     public void unregister(URL url) {
+        if (destroyed.get()){
+            return;
+        }
         super.unregister(url);
         failedRegistered.remove(url);
         failedUnregistered.remove(url);
@@ -182,6 +191,9 @@ public abstract class FailbackRegistry extends AbstractRegistry {
 
     @Override
     public void subscribe(URL url, NotifyListener listener) {
+        if (destroyed.get()){
+            return;
+        }
         super.subscribe(url, listener);
         removeFailedSubscribed(url, listener);
         try {
@@ -216,6 +228,9 @@ public abstract class FailbackRegistry extends AbstractRegistry {
 
     @Override
     public void unsubscribe(URL url, NotifyListener listener) {
+        if (destroyed.get()){
+            return;
+        }
         super.unsubscribe(url, listener);
         removeFailedSubscribed(url, listener);
         try {
@@ -433,6 +448,9 @@ public abstract class FailbackRegistry extends AbstractRegistry {
 
     @Override
     public void destroy() {
+        if (!canDestroy()){
+            return;
+        }
         super.destroy();
         try {
             retryFuture.cancel(true);
@@ -440,6 +458,16 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             logger.warn(t.getMessage(), t);
         }
     }
+
+    // TODO: 2017/8/30 to abstract this method
+    protected boolean canDestroy(){
+        if (destroyed.compareAndSet(false, true)) {
+            return true;
+        }else{
+            return false;
+        }
+    }
+
 
     // ==== 模板方法 ====
 
