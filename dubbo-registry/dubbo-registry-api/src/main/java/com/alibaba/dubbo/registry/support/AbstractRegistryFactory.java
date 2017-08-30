@@ -58,6 +58,7 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
     /**
      * 关闭所有已创建注册中心
      */
+    // TODO: 2017/8/30 to move somewhere else better
     public static void destroyAll() {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Close all registries " + getRegistries());
