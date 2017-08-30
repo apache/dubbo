@@ -569,9 +569,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         if (forbidden) {
             // 1. 没有服务提供者 2. 服务提供者被禁用
             throw new RpcException(RpcException.FORBIDDEN_EXCEPTION,
-                "No service " + getInterface().getName()
+                "No provider " + getInterfaceInfo()
                     + " available from registry " + getUrl().getAddress() + " to consumer " +  NetUtils.getLocalHost()
-                    + " use dubbo version " + Version.getVersion() + ", may be services disabled or no providers ?");
+                    + " use dubbo version " + Version.getVersion() + ", may be providers disabled or not registered ?");
         }
         List<Invoker<T>> invokers = null;
         Map<String, List<Invoker<T>>> localMethodInvokerMap = this.methodInvokerMap; // local reference
@@ -596,6 +596,20 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             }
         }
         return invokers == null ? new ArrayList<Invoker<T>>(0) : invokers;
+    }
+
+    private String getInterfaceInfo() {
+        StringBuilder sb = new StringBuilder();
+        URL url = getConsumerUrl();
+        String group, reversion;
+        if( (group = url.getParameter(Constants.GROUP_KEY)) != null){
+            sb.append(group).append("/");
+        }
+        sb.append(getInterface().getName());
+        if( (reversion = url.getParameter(Constants.REVISION_KEY)) != null){
+            sb.append(":").append(reversion);
+        }
+        return sb.toString();
     }
 
     public Class<T> getInterface() {
