@@ -18,6 +18,7 @@ package com.alibaba.dubbo.rpc.protocol.dubbo;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.AtomicPositiveInteger;
+import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.TimeoutException;
 import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
@@ -132,7 +133,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                 }
                 for (ExchangeClient client : clients) {
                     try {
-                        client.close();
+                        client.close(getShutdownTimeout());
                     } catch (Throwable t) {
                         logger.warn(t.getMessage(), t);
                     }
@@ -142,5 +143,26 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                 destroyLock.unlock();
             }
         }
+    }
+
+    protected static int getShutdownTimeout() {
+        int timeout = Constants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
+        String value = ConfigUtils.getProperty(Constants.SHUTDOWN_WAIT_KEY);
+        if (value != null && value.length() > 0) {
+            try {
+                timeout = Integer.parseInt(value);
+            } catch (Exception e) {
+            }
+        } else {
+            value = ConfigUtils.getProperty(Constants.SHUTDOWN_WAIT_SECONDS_KEY);
+            if (value != null && value.length() > 0) {
+                try {
+                    timeout = Integer.parseInt(value) * 1000;
+                } catch (Exception e) {
+                }
+            }
+        }
+
+        return timeout;
     }
 }
