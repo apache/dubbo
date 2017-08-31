@@ -228,6 +228,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      *
      * @param invokerUrls 传入的参数不能为null
      */
+    // TODO: 2017/8/31 FIXME 使用线程池去刷新地址，否则可能会导致任务堆积
     private void refreshInvoker(List<URL> invokerUrls) {
         if (invokerUrls != null && invokerUrls.size() == 1 && invokerUrls.get(0) != null
                 && Constants.EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
