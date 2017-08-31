@@ -157,7 +157,7 @@ public class RpcStatus {
     private final AtomicLong succeededMaxElapsed = new AtomicLong();
 
     /**
-     * 用来配合executes属性来限制并发（使用线程数目）的限制
+     * 用来实现executes属性的并发限制（即能使用的线程数目限制）
      * 2017-08-21 yizhenqiang
      */
     private volatile Semaphore executesLimit;
