@@ -58,14 +58,15 @@ public class MonitorFilter implements Filter {
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         if (invoker.getUrl().hasParameter(Constants.MONITOR_KEY)) {
             RpcContext context = RpcContext.getContext(); // 提供方必须在invoke()之前获取context信息
+            String remoteHost = context.getRemoteHost();
             long start = System.currentTimeMillis(); // 记录起始时间戮
             getConcurrent(invoker, invocation).incrementAndGet(); // 并发计数
             try {
                 Result result = invoker.invoke(invocation); // 让调用链往下执行
-                collect(invoker, invocation, result, context, start, false);
+                collect(invoker, invocation, result, remoteHost, start, false);
                 return result;
             } catch (RpcException e) {
-                collect(invoker, invocation, null, context, start, true);
+                collect(invoker, invocation, null, remoteHost, start, true);
                 throw e;
             } finally {
                 getConcurrent(invoker, invocation).decrementAndGet(); // 并发计数
@@ -76,7 +77,7 @@ public class MonitorFilter implements Filter {
     }
 
     // 信息采集
-    private void collect(Invoker<?> invoker, Invocation invocation, Result result, RpcContext context, long start, boolean error) {
+    private void collect(Invoker<?> invoker, Invocation invocation, Result result, String remoteHost, long start, boolean error) {
         try {
             // ---- 服务信息获取 ----
             long elapsed = System.currentTimeMillis() - start; // 计算调用耗时
@@ -91,7 +92,6 @@ public class MonitorFilter implements Filter {
             String remoteValue;
             if (Constants.CONSUMER_SIDE.equals(invoker.getUrl().getParameter(Constants.SIDE_KEY))) {
                 // ---- 服务消费方监控 ----
-                context = RpcContext.getContext(); // 消费方必须在invoke()之后获取context信息
                 localPort = 0;
                 remoteKey = MonitorService.PROVIDER;
                 remoteValue = invoker.getUrl().getAddress();
@@ -99,7 +99,7 @@ public class MonitorFilter implements Filter {
                 // ---- 服务提供方监控 ----
                 localPort = invoker.getUrl().getPort();
                 remoteKey = MonitorService.CONSUMER;
-                remoteValue = context.getRemoteHost();
+                remoteValue = remoteHost;
             }
             String input = "", output = "";
             if (invocation.getAttachment(Constants.INPUT_KEY) != null) {
