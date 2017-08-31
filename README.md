@@ -1,6 +1,9 @@
-[![Build Status](https://travis-ci.org/alibaba/dubbo.svg?branch=master)](https://travis-ci.org/alibaba/dubbo) [![Gitter](https://badges.gitter.im/alibaba/dubbo.svg)](https://gitter.im/alibaba/dubbo?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+# ddmframework
 
-Dubbo is a distributed, high performance RPC framework which empowers applications with service import/export capabilities.
+它是一款SOA的轻量级分布式服务框架,TCP/IP长链家高性能连接
+远程通讯: 提供对多种基于长连接的NIO框架抽象封装，包括多种线程模型，序列化，以及“请求-响应”模式的信息交换方式。
+集群容错: 提供基于接口方法的透明远程过程调用，包括多协议支持，以及软负载均衡，失败容错，地址路由，动态配置等集群支持
+自动发现: 基于注册中心目录服务，使服务消费方能动态的查找服务提供方，使地址透明，使服务提供方可以平滑增加或减少机器。
 
 It contains three key parts, which include:
 
@@ -73,5 +76,4 @@ For a more detailed tutorial of this demo, click [here](http://dubbo.io/#quickst
 * Releases
 * Contributors
 * Q&A
-
 
