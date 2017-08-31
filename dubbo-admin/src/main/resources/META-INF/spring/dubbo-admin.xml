@@ -19,8 +19,6 @@
 
     <dubbo:application name="dubbo-admin"/>
 
-    <dubbo:registry address="${dubbo.registry.address}" check="false" file="false"/>
-
     <dubbo:reference id="registryService" interface="com.alibaba.dubbo.registry.RegistryService" check="false"/>
 
     <bean id="configService" class="com.alibaba.dubbo.governance.service.impl.ConfigServiceImpl"/>
@@ -41,5 +39,6 @@
     </bean>
 
     <bean id="governanceCache" class="com.alibaba.dubbo.governance.sync.RegistryServerSync"/>
-
+    <!--必须要有个group，并且一致-->
+    <dubbo:registry group="${dubbo.registry.group}" address="${dubbo.registry.address}" check="false" file="false"/>
 </beans>

@@ -29,4 +29,6 @@
     <!-- 生成远程服务代理，可以和本地bean一样使用demoService -->
     <dubbo:reference id="demoService" check="false" interface="com.alibaba.dubbo.demo.DemoService"/>
 
+    <dubbo:registry group="zookeeper" address="zookeeper://123.206.28.24:2181"/>
+
 </beans>
