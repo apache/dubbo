@@ -46,7 +46,8 @@ public class ExecuteLimitFilter implements Filter {
 
             // if (count.getActive() >= max) {
             /**
-             * 这里通过信号量来做并发（使用线程数量）控制
+             * http://manzhizhen.iteye.com/blog/2386408
+             * 通过信号量来做并发控制（即限制能使用的线程数量）
              * 2017-08-21 yizhenqiang
              */
             executesLimit = count.getSemaphore(max);
