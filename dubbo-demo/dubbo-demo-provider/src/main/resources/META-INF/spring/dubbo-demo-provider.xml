@@ -32,6 +32,8 @@
     <!-- 声明需要暴露的服务接口 -->
     <bean id="demoService" class="com.alibaba.dubbo.demo.provider.DemoServiceImpl"/>
 
+    <dubbo:registry group="zookeeper" address="zookeeper://123.206.28.24:2181"/>
+
     <!-- 和本地bean一样实现服务 -->
     <dubbo:service interface="com.alibaba.dubbo.demo.DemoService" ref="demoService"/>
 
