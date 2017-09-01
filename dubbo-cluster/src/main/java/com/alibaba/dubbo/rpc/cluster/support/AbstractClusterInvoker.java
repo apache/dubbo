@@ -32,6 +32,7 @@ import com.alibaba.dubbo.rpc.support.RpcUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * AbstractClusterInvoker
@@ -47,7 +48,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
     protected final boolean availablecheck;
 
-    private volatile boolean destroyed = false;
+    private AtomicBoolean destroyed = new AtomicBoolean(false);
 
     private volatile Invoker<T> stickyInvoker = null;
 
@@ -81,8 +82,9 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
     }
 
     public void destroy() {
-        directory.destroy();
-        destroyed = true;
+        if (destroyed.compareAndSet(false, true)) {
+            directory.destroy();
+        }
     }
 
     /**
@@ -229,7 +231,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
     protected void checkWhetherDestroyed() {
 
-        if (destroyed) {
+        if (destroyed.get()) {
             throw new RpcException("Rpc cluster invoker for " + getInterface() + " on consumer " + NetUtils.getLocalHost()
                     + " use dubbo version " + Version.getVersion()
                     + " is now destroyed! Can not invoke any more.");
