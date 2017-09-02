@@ -59,6 +59,10 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
         close();
     }
 
+    public void markClosed() {
+        closed = true;
+    }
+
     public URL getUrl() {
         return url;
     }

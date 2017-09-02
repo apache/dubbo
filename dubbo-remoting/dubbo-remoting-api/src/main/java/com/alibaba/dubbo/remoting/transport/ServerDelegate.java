@@ -97,6 +97,11 @@ public class ServerDelegate implements Server {
         server.close(timeout);
     }
 
+    @Override
+    public void markClosed() {
+        server.markClosed();
+    }
+
     public boolean isClosed() {
         return server.isClosed();
     }

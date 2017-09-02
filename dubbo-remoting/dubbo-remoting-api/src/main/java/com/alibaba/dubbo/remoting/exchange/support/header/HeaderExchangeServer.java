@@ -117,6 +117,11 @@ public class HeaderExchangeServer implements ExchangeServer {
         server.close(timeout);
     }
 
+    @Override
+    public void markClosed() {
+        server.markClosed();
+    }
+
     private void sendChannelReadOnlyEvent() {
         Request request = new Request();
         request.setEvent(Request.READONLY_EVENT);
