@@ -140,8 +140,8 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
         }
     }
 
-    public void markClosed() {
-        client.markClosed();
+    public void startClose() {
+        client.startClose();
     }
 
     //幽灵client,

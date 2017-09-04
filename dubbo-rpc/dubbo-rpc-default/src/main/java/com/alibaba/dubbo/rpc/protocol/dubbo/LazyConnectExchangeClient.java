@@ -169,9 +169,9 @@ final class LazyConnectExchangeClient implements ExchangeClient {
     }
 
     @Override
-    public void markClosed() {
+    public void startClose() {
         if (client != null) {
-            client.markClosed();
+            client.startClose();
         }
     }
 
