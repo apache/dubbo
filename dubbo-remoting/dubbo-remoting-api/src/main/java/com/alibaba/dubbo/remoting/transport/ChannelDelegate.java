@@ -102,8 +102,8 @@ public class ChannelDelegate implements Channel {
     }
 
     @Override
-    public void markClosed() {
-        channel.markClosed();
+    public void startClose() {
+        channel.startClose();
     }
 
     public boolean isClosed() {

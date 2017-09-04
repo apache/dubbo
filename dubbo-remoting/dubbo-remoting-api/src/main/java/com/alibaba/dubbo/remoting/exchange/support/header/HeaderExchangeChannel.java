@@ -150,8 +150,8 @@ final class HeaderExchangeChannel implements ExchangeChannel {
     }
 
     @Override
-    public void markClosed() {
-        channel.markClosed();
+    public void startClose() {
+        channel.startClose();
     }
 
     public InetSocketAddress getLocalAddress() {

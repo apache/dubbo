@@ -98,8 +98,8 @@ public class ServerDelegate implements Server {
     }
 
     @Override
-    public void markClosed() {
-        server.markClosed();
+    public void startClose() {
+        server.startClose();
     }
 
     public boolean isClosed() {

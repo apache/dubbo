@@ -34,6 +34,9 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
 
     private volatile URL url;
 
+    // closing closed分别表示关闭流程中、完成关闭
+    private volatile boolean closing;
+
     private volatile boolean closed;
 
     public AbstractPeer(URL url, ChannelHandler handler) {
@@ -59,8 +62,11 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
         close();
     }
 
-    public void markClosed() {
-        closed = true;
+    public void startClose() {
+        if (isClosed()) {
+            return;
+        }
+        closing = true;
     }
 
     public URL getUrl() {
@@ -101,6 +107,10 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
 
     public boolean isClosed() {
         return closed;
+    }
+
+    public boolean isClosing() {
+        return closing && !closed;
     }
 
     public void connected(Channel ch) throws RemotingException {

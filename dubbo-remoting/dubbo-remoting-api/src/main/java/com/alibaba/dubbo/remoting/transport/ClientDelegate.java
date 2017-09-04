@@ -115,8 +115,8 @@ public class ClientDelegate implements Client {
     }
 
     @Override
-    public void markClosed() {
-        client.markClosed();
+    public void startClose() {
+        client.startClose();
     }
 
     public boolean isClosed() {

@@ -111,8 +111,8 @@ public class ExchangeServerDelegate implements ExchangeServer {
     }
 
     @Override
-    public void markClosed() {
-        server.markClosed();
+    public void startClose() {
+        server.startClose();
     }
 
 }

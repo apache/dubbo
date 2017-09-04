@@ -177,8 +177,8 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
     @Override
     public void connected(Channel ch) throws RemotingException {
         // 如果server已进入关闭流程，拒绝新的连接
-        if (this.isClosed()) {
-            logger.warn("Close new channel " + ch + ", cause: server has been destroyed. For example, receive a new connect request while in shutdown process.");
+        if (this.isClosing() || this.isClosed()) {
+            logger.warn("Close new channel " + ch + ", cause: server is closing or has been closed. For example, receive a new connect request while in shutdown process.");
             ch.close();
             return;
         }

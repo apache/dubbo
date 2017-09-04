@@ -76,7 +76,7 @@ public interface Endpoint {
      */
     void close(int timeout);
 
-    void markClosed();
+    void startClose();
 
     /**
      * is closed.
