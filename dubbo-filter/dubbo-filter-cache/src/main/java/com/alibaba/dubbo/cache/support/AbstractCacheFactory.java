@@ -17,7 +17,6 @@ package com.alibaba.dubbo.cache.support;
 
 import com.alibaba.dubbo.cache.Cache;
 import com.alibaba.dubbo.cache.CacheFactory;
-import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,8 +32,7 @@ public abstract class AbstractCacheFactory implements CacheFactory {
     private final ConcurrentMap<String, Cache> caches = new ConcurrentHashMap<String, Cache>();
 
     public Cache getCache(URL url) {
-        // 所有provider ip 共用同一个缓存实例
-        String key = url.getServiceKey() + "." + url.getParameter(Constants.METHOD_KEY);
+        String key = url.toFullString();
         Cache cache = caches.get(key);
         if (cache == null) {
             caches.put(key, createCache(url));

@@ -39,7 +39,7 @@ public class JCache implements com.alibaba.dubbo.cache.Cache {
 
     public JCache(URL url) {
         String method = url.getParameter(Constants.METHOD_KEY, "");
-        String key = url.getServiceKey() + "." + method;
+        String key = url.getAddress() + "." + url.getServiceKey() + "." + method;
         // jcache 为SPI实现的全限定类名
         String type = url.getParameter("jcache");
 
@@ -56,7 +56,7 @@ public class JCache implements com.alibaba.dubbo.cache.Cache {
                                 .setStoreByValue(false)
                                 .setManagementEnabled(true)
                                 .setStatisticsEnabled(true);
-                cache = cacheManager.createCache(url.getServiceKey(), config);
+                cache = cacheManager.createCache(key, config);
             } catch (CacheException e) {
                 // 初始化cache 的并发情况
                 cache = cacheManager.getCache(key);

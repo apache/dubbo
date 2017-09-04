@@ -469,9 +469,6 @@
                     <source>${java_source_version}</source>
                     <target>${java_target_version}</target>
                     <encoding>${file_encoding}</encoding>
-                    <compilerArgs>
-                        <arg>-XX:MaxPermSize=512M</arg>
-                    </compilerArgs>
                 </configuration>
             </plugin>
         </plugins>
