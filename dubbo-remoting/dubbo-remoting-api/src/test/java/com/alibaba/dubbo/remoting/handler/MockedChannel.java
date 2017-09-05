@@ -29,6 +29,7 @@ import java.util.Map;
  */
 public class MockedChannel implements Channel {
     private boolean isClosed;
+    private volatile boolean closing = false;
     private URL url;
     private ChannelHandler handler;
     private Map<String, Object> map = new HashMap<String, Object>();
@@ -65,6 +66,11 @@ public class MockedChannel implements Channel {
 
     public void close(int timeout) {
         this.close();
+    }
+
+    @Override
+    public void startClose() {
+        closing = true;
     }
 
     public boolean isClosed() {

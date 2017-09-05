@@ -140,6 +140,10 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
         }
     }
 
+    public void startClose() {
+        client.startClose();
+    }
+
     //幽灵client,
     private LazyConnectExchangeClient replaceWithLazyClient() {
         //这个操作只为了防止程序bug错误关闭client做的防御措施，初始client必须为false状态

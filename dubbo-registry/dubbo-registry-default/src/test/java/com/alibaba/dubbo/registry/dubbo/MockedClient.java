@@ -163,6 +163,11 @@ public class MockedClient implements ExchangeClient {
         close();
     }
 
+    @Override
+    public void startClose() {
+
+    }
+
     public boolean isOpen() {
         return closed;
     }

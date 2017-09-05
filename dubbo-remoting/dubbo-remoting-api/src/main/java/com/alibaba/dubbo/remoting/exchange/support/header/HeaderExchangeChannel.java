@@ -149,6 +149,11 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         close();
     }
 
+    @Override
+    public void startClose() {
+        channel.startClose();
+    }
+
     public InetSocketAddress getLocalAddress() {
         return channel.getLocalAddress();
     }
