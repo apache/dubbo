@@ -51,6 +51,7 @@ public class RpcStatus {
      * 2017-08-21 yizhenqiang
      */
     private volatile Semaphore executesLimit;
+    private volatile int executesPermits;
 
     private RpcStatus() {
     }
@@ -322,15 +323,15 @@ public class RpcStatus {
             return null;
         }
 
-        if(executesLimit == null) {
+        if (executesLimit == null || executesPermits != maxThreadNum) {
             synchronized (this) {
-                if(executesLimit == null) {
+                if (executesLimit == null || executesPermits != maxThreadNum) {
                     executesLimit = new Semaphore(maxThreadNum);
+                    executesPermits = maxThreadNum;
                 }
             }
         }
 
         return executesLimit;
     }
-
 }
