@@ -37,6 +37,7 @@ public class AbstractMockChannel implements Channel {
     private URL remoteUrl;
     private ChannelHandler handler;
     private boolean isClosed;
+    private volatile boolean closing;
     private Map<String, Object> attributes = new HashMap<String, Object>(1);
     private volatile Object receivedMessage = null;
 
@@ -85,6 +86,11 @@ public class AbstractMockChannel implements Channel {
 
     public void close(int timeout) {
         isClosed = true;
+    }
+
+    @Override
+    public void startClose() {
+        closing = true;
     }
 
     public boolean isClosed() {

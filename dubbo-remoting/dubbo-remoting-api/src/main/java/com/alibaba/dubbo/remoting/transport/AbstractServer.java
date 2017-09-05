@@ -27,7 +27,6 @@ import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.Server;
-import com.alibaba.dubbo.remoting.transport.dispatcher.WrappedChannelHandler;
 
 import java.net.InetSocketAddress;
 import java.util.Collection;
@@ -177,6 +176,13 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
 
     @Override
     public void connected(Channel ch) throws RemotingException {
+        // 如果server已进入关闭流程，拒绝新的连接
+        if (this.isClosing() || this.isClosed()) {
+            logger.warn("Close new channel " + ch + ", cause: server is closing or has been closed. For example, receive a new connect request while in shutdown process.");
+            ch.close();
+            return;
+        }
+
         Collection<Channel> channels = getChannels();
         if (accepts > 0 && channels.size() > accepts) {
             logger.error("Close channel " + ch + ", cause: The server " + ch.getLocalAddress() + " connections greater than max config " + accepts);

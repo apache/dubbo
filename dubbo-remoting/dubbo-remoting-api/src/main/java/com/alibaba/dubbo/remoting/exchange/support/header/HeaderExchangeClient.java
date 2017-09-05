@@ -120,8 +120,15 @@ public class HeaderExchangeClient implements ExchangeClient {
     }
 
     public void close(int timeout) {
+        // 标记client进入关闭流程
+        startClose();
         doClose();
         channel.close(timeout);
+    }
+
+    @Override
+    public void startClose() {
+        channel.startClose();
     }
 
     public void reset(URL url) {

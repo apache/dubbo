@@ -168,6 +168,13 @@ final class LazyConnectExchangeClient implements ExchangeClient {
             client.close(timeout);
     }
 
+    @Override
+    public void startClose() {
+        if (client != null) {
+            client.startClose();
+        }
+    }
+
     public void reset(URL url) {
         checkClient();
         client.reset(url);
