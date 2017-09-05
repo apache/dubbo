@@ -31,9 +31,13 @@ public class LruCache implements Cache {
 
     private final Map<Object, Object> store;
 
+    private static final int DEFAULT_INITIAL_CAPACITY = 1 << 4;
+
+    private static final float DEFAULT_LOAD_FACTOR = 0.75f;
+
     public LruCache(URL url) {
         final int max = url.getParameter("cache.size", 1000);
-        this.store = new LinkedHashMap<Object, Object>() {
+        this.store = new LinkedHashMap<Object, Object>(DEFAULT_INITIAL_CAPACITY,DEFAULT_LOAD_FACTOR,true) {
             private static final long serialVersionUID = -3834209229668463829L;
 
             @Override
