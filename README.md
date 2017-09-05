@@ -41,7 +41,7 @@ $ ls
 2. Run demo-provider. Start the provider and export service  
 ```sh
 $ # Navigate to the provider part
-$ cd ~/dubbo/demo-demo/dubbo-demo-provider/target
+$ cd ~/dubbo/dubbo-demo/dubbo-demo-provider/target
 $ # unpack
 $ tar zxvf dubbo-demo-provider-2.5.4-SNAPSHOT-assembly.tar.gz
 $ cd dubbo-demo-provider-2.5.4-SNAPSHOT/bin
@@ -56,7 +56,7 @@ $ ./start.sh
 
 ```sh
 $ # Navigate to the consumer part
-$ cd ~/dubbo/demo-demo/dubbo-demo-consumer/target
+$ cd ~/dubbo/dubbo-demo/dubbo-demo-consumer/target
 $ # unpack
 $ tar zxvf dubbo-demo-consumer-2.5.4-SNAPSHOT-assembly.tar.gz
 $ cd dubbo-demo-consumer-2.5.4-SNAPSHOT/bin
