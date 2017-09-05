@@ -1086,11 +1086,18 @@ public final class URL implements Serializable {
         return buildString(false, true, parameters); // no show username and password
     }
 
+    /**
+     * 这个toIdentityString调用的地方基本上将这个当作一个服务的标识来使用
+     * 而在dubbo里一个服务应该有 端口:接口:group(interface上的group，不是registry上的):version 四个要素决定
+     * 所以这个标识里我觉得应该带上这几个因素
+     *
+     * @return 标识
+     */
     public String toIdentityString() {
         if (identity != null) {
             return identity;
         }
-        return identity = buildString(true, false); // only return identity message, see the method "equals" and "hashCode"
+        return identity = buildString(true, false, false, true); // only return identity message, see the method "equals" and "hashCode"
     }
 
     public String toIdentityString(String... parameters) {
