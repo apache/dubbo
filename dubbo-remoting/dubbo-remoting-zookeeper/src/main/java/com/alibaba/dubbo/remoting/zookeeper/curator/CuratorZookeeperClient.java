@@ -5,19 +5,17 @@ import com.alibaba.dubbo.remoting.zookeeper.ChildListener;
 import com.alibaba.dubbo.remoting.zookeeper.StateListener;
 import com.alibaba.dubbo.remoting.zookeeper.support.AbstractZookeeperClient;
 
-import com.netflix.curator.framework.CuratorFramework;
-import com.netflix.curator.framework.CuratorFrameworkFactory;
-import com.netflix.curator.framework.CuratorFrameworkFactory.Builder;
-import com.netflix.curator.framework.api.CuratorWatcher;
-import com.netflix.curator.framework.state.ConnectionState;
-import com.netflix.curator.framework.state.ConnectionStateListener;
-import com.netflix.curator.retry.RetryNTimes;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.api.CuratorWatcher;
+import org.apache.curator.framework.state.ConnectionState;
+import org.apache.curator.framework.state.ConnectionStateListener;
+import org.apache.curator.retry.RetryNTimes;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException.NoNodeException;
 import org.apache.zookeeper.KeeperException.NodeExistsException;
 import org.apache.zookeeper.WatchedEvent;
 
-import java.io.IOException;
 import java.util.List;
 
 public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatcher> {
@@ -27,7 +25,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
     public CuratorZookeeperClient(URL url) {
         super(url);
         try {
-            Builder builder = CuratorFrameworkFactory.builder()
+            CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
                     .connectString(url.getBackupAddress())
                     .retryPolicy(new RetryNTimes(Integer.MAX_VALUE, 1000))
                     .connectionTimeoutMs(5000);
@@ -48,7 +46,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
                 }
             });
             client.start();
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }

@@ -25,7 +25,7 @@ import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.protocol.AbstractProxyProtocol;
 
 import org.springframework.remoting.RemoteAccessException;
-import org.springframework.remoting.httpinvoker.CommonsHttpInvokerRequestExecutor;
+import org.springframework.remoting.httpinvoker.HttpComponentsHttpInvokerRequestExecutor;
 import org.springframework.remoting.httpinvoker.HttpInvokerProxyFactoryBean;
 import org.springframework.remoting.httpinvoker.HttpInvokerServiceExporter;
 import org.springframework.remoting.httpinvoker.SimpleHttpInvokerRequestExecutor;
@@ -107,7 +107,7 @@ public class HttpProtocol extends AbstractProxyProtocol {
             };
             httpProxyFactoryBean.setHttpInvokerRequestExecutor(httpInvokerRequestExecutor);
         } else if ("commons".equals(client)) {
-            CommonsHttpInvokerRequestExecutor httpInvokerRequestExecutor = new CommonsHttpInvokerRequestExecutor();
+            HttpComponentsHttpInvokerRequestExecutor httpInvokerRequestExecutor = new HttpComponentsHttpInvokerRequestExecutor();
             httpInvokerRequestExecutor.setReadTimeout(url.getParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT));
             httpProxyFactoryBean.setHttpInvokerRequestExecutor(httpInvokerRequestExecutor);
         } else if (client != null && client.length() > 0) {
