@@ -110,4 +110,9 @@ public class ExchangeServerDelegate implements ExchangeServer {
         server.close(timeout);
     }
 
+    @Override
+    public void startClose() {
+        server.startClose();
+    }
+
 }

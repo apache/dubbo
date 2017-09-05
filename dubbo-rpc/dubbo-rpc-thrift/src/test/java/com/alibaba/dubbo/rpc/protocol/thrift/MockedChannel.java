@@ -89,6 +89,11 @@ public class MockedChannel implements Channel {
 
     }
 
+    @Override
+    public void startClose() {
+
+    }
+
     public boolean isClosed() {
 
         return false;

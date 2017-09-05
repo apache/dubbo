@@ -114,6 +114,11 @@ public class ClientDelegate implements Client {
         client.close(timeout);
     }
 
+    @Override
+    public void startClose() {
+        client.startClose();
+    }
+
     public boolean isClosed() {
         return client.isClosed();
     }

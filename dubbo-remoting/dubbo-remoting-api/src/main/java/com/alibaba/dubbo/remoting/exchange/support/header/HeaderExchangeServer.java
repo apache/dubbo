@@ -98,6 +98,7 @@ public class HeaderExchangeServer implements ExchangeServer {
     }
 
     public void close(final int timeout) {
+        startClose();
         if (timeout > 0) {
             final long max = (long) timeout;
             final long start = System.currentTimeMillis();
@@ -115,6 +116,11 @@ public class HeaderExchangeServer implements ExchangeServer {
         }
         doClose();
         server.close(timeout);
+    }
+
+    @Override
+    public void startClose() {
+        server.startClose();
     }
 
     private void sendChannelReadOnlyEvent() {

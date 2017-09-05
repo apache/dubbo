@@ -27,6 +27,7 @@ import java.net.InetSocketAddress;
 public class MockChannel implements ExchangeChannel {
 
     public static boolean closed = false;
+    public static boolean closing = true;
     final InetSocketAddress localAddress;
     final InetSocketAddress remoteAddress;
 
@@ -56,6 +57,11 @@ public class MockChannel implements ExchangeChannel {
     }
 
     public void close(int timeout) {
+    }
+
+    @Override
+    public void startClose() {
+        closing = true;
     }
 
     public URL getUrl() {

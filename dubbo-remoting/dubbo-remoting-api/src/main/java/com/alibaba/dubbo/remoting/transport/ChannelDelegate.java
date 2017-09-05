@@ -101,6 +101,11 @@ public class ChannelDelegate implements Channel {
         channel.close(timeout);
     }
 
+    @Override
+    public void startClose() {
+        channel.startClose();
+    }
+
     public boolean isClosed() {
         return channel.isClosed();
     }

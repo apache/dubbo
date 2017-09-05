@@ -36,6 +36,7 @@ public class MockChannel implements Channel {
     private Map<String, Object> attributes = new HashMap<String, Object>();
 
     private volatile boolean closed = false;
+    private volatile boolean closing = false;
     private List<Object> sentObjects = new ArrayList<Object>();
 
     public InetSocketAddress getRemoteAddress() {
@@ -88,6 +89,11 @@ public class MockChannel implements Channel {
 
     public void close(int timeout) {
         closed = true;
+    }
+
+    @Override
+    public void startClose() {
+        closing = true;
     }
 
     public boolean isClosed() {
