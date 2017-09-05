@@ -60,7 +60,7 @@ public class WebServiceProtocol extends AbstractProxyProtocol {
 
     private final ExtensionManagerBus bus = new ExtensionManagerBus();
 
-    private final HTTPTransportFactory transportFactory = new HTTPTransportFactory(bus);
+    private final HTTPTransportFactory transportFactory = new HTTPTransportFactory();
 
     private HttpBinder httpBinder;
 
