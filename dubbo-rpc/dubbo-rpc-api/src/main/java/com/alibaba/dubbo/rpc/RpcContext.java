@@ -15,10 +15,13 @@
  */
 package com.alibaba.dubbo.rpc;
 
+import com.alibaba.dubbo.async.AsyncContext;
+import com.alibaba.dubbo.async.AsyncContextImpl;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
 
+import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -621,5 +624,27 @@ public class RpcContext {
         } finally {
             removeAttachment(Constants.RETURN_KEY);
         }
+    }
+
+    private AsyncContext asyncContext;
+
+    private Thread dubboThread;
+
+    public void setDubboThread(Thread thread) {
+        this.dubboThread = thread;
+    }
+
+    public static <T extends Serializable> AsyncContext<T> startAsync() {
+        RpcContext current = getContext();
+        if (current.dubboThread == null || Thread.currentThread() != current.dubboThread) {
+            throw new RuntimeException("必须在服务方法的入口处调用startAsync");
+        }
+        AsyncContext<T> asyncContext = new AsyncContextImpl<T>();
+        current.asyncContext = asyncContext;
+        return asyncContext;
+    }
+
+    public AsyncContext getAsyncContext() {
+        return this.asyncContext;
     }
 }

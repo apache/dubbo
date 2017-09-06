@@ -15,6 +15,7 @@
  */
 package com.alibaba.dubbo.common.bytecode;
 
+import com.alibaba.dubbo.async.AsyncImpl;
 import com.alibaba.dubbo.common.utils.ClassHelper;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
 
@@ -39,6 +40,9 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 
 public abstract class Proxy {
+    private static final String ASYNC_SUFFIX = "Async";
+    private static final int ASYNC_SUFFIX_LEN = ASYNC_SUFFIX.length();
+
     public static final InvocationHandler RETURN_NULL_INVOKER = new InvocationHandler() {
         public Object invoke(Object proxy, Method method, Object[] args) {
             return null;
@@ -167,7 +171,7 @@ public abstract class Proxy {
                     StringBuilder code = new StringBuilder("Object[] args = new Object[").append(pts.length).append("];");
                     for (int j = 0; j < pts.length; j++)
                         code.append(" args[").append(j).append("] = ($w)$").append(j + 1).append(";");
-                    code.append(" Object ret = handler.invoke(this, methods[" + ix + "], args);");
+                    generateInvoke(method, ix, code);
                     if (!Void.TYPE.equals(rt))
                         code.append(" return ").append(asArgument(rt, "ret")).append(";");
 
@@ -217,6 +221,19 @@ public abstract class Proxy {
             }
         }
         return proxy;
+    }
+
+    private static void generateInvoke(Method method, int ix, StringBuilder code) {
+        Class<?> declaringClass = method.getDeclaringClass();
+        if (declaringClass.isAnnotationPresent(AsyncImpl.class)) {
+            String methodName = method.getName();
+            if (methodName.endsWith(ASYNC_SUFFIX)) {
+                methodName = methodName.substring(0, methodName.length() - ASYNC_SUFFIX_LEN);
+            }
+            code.append(" Object ret = handler.invokeAsync(methods[").append(ix).append("], args, \"").append(methodName).append("\");");
+        } else {
+            code.append(" Object ret = handler.invoke(this, methods[").append(ix).append("], args);");
+        }
     }
 
     private static String asArgument(Class<?> cl, String name) {

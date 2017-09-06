@@ -15,6 +15,7 @@
  */
 package com.alibaba.dubbo.config;
 
+import com.alibaba.dubbo.async.AsyncImpl;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.Version;
@@ -69,6 +70,10 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     // 接口类型
     private String interfaceName;
     private Class<?> interfaceClass;
+
+    //对应的异步类
+    private Class<?> asyncInterfaceClass;
+
     // 客户端类型
     private String client;
     // 点对点直连服务提供地址
@@ -272,8 +277,9 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             }
         }
         checkApplication();
-        checkStubAndMock(interfaceClass);
         Map<String, String> map = new HashMap<String, String>();
+        resolveInterfaceClass(map);
+        checkStubAndMock(interfaceClass);
         Map<Object, Object> attributes = new HashMap<Object, Object>();
         map.put(Constants.SIDE_KEY, Constants.CONSUMER_SIDE);
         map.put(Constants.DUBBO_VERSION_KEY, Version.getVersion());
@@ -318,6 +324,27 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         //attributes通过系统context进行存储.
         StaticContext.getSystemContext().putAll(attributes);
         ref = createProxy(map);
+    }
+
+    private void resolveInterfaceClass(Map<String, String> map) {
+        if (ProtocolUtils.isGeneric(getGeneric())) {
+            interfaceClass = GenericService.class;
+        } else {
+            interfaceClass = ReflectUtils.forName(interfaceName);
+            resolveAsyncInterface(interfaceClass, map);
+            checkInterfaceAndMethods(interfaceClass, methods);
+        }
+    }
+
+    private void resolveAsyncInterface(Class<?> interfaceClass, Map<String, String> map) {
+        AsyncImpl annotation = interfaceClass.getAnnotation(AsyncImpl.class);
+        if (annotation == null) return;
+        Class<?> target = annotation.value();
+        if (!target.isAssignableFrom(interfaceClass)) return;
+        this.asyncInterfaceClass = interfaceClass;
+        this.interfaceClass = target;
+        setInterface(this.interfaceClass.getName());
+        map.put(Constants.INTERFACES, interfaceClass.getName());
     }
 
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
@@ -421,6 +448,9 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     }
 
     public Class<?> getInterfaceClass() {
+        if (asyncInterfaceClass != null) {
+            return asyncInterfaceClass;
+        }
         if (interfaceClass != null) {
             return interfaceClass;
         }
