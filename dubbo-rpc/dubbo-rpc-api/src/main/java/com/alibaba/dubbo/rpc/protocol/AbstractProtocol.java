@@ -27,6 +27,7 @@ import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.support.ProtocolUtils;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -77,9 +78,11 @@ public abstract class AbstractProtocol implements Protocol {
     }
 
     public void destroy() {
-        for (Invoker<?> invoker : invokers) {
+        Iterator<Invoker<?>> iterator = invokers.iterator();
+        while (iterator.hasNext()) {
+            Invoker<?> invoker = iterator.next();
+            iterator.remove();
             if (invoker != null) {
-                invokers.remove(invoker);
                 try {
                     if (logger.isInfoEnabled()) {
                         logger.info("Destroy reference: " + invoker.getUrl());
