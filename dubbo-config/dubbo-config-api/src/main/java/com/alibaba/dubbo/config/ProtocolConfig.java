@@ -144,7 +144,6 @@ public class ProtocolConfig extends AbstractConfig {
         if (!destroyed.compareAndSet(false, true)) {
             return;
         }
-        AbstractRegistryFactory.destroyAll();
         ExtensionLoader<Protocol> loader = ExtensionLoader.getExtensionLoader(Protocol.class);
         for (String protocolName : loader.getLoadedExtensions()) {
             try {
@@ -156,6 +155,7 @@ public class ProtocolConfig extends AbstractConfig {
                 logger.warn(t.getMessage(), t);
             }
         }
+        AbstractRegistryFactory.destroyAll();
     }
 
     @Parameter(excluded = true)
