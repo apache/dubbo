@@ -17,6 +17,7 @@ package com.alibaba.dubbo.cache.support.lru;
 
 import com.alibaba.dubbo.cache.Cache;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.utils.LRUCache;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -33,14 +34,7 @@ public class LruCache implements Cache {
 
     public LruCache(URL url) {
         final int max = url.getParameter("cache.size", 1000);
-        this.store = new LinkedHashMap<Object, Object>() {
-            private static final long serialVersionUID = -3834209229668463829L;
-
-            @Override
-            protected boolean removeEldestEntry(Entry<Object, Object> eldest) {
-                return size() > max;
-            }
-        };
+        this.store = new LRUCache<Object,Object>(max);
     }
 
     public void put(Object key, Object value) {
