@@ -15,12 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.protocol.dubbo;
 
-import static org.junit.Assert.assertEquals;
-
-import org.easymock.EasyMock;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Filter;
@@ -32,22 +26,28 @@ import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.protocol.dubbo.filter.FutureFilter;
 import com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService;
 
+import org.easymock.EasyMock;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+
 /**
  * EventFilterTest.java
- * 
+ *
  * @author tony.chenl
- * TODO 暂时依赖callback集成测试，后续补充
+ *         TODO 暂时依赖callback集成测试，后续补充
  */
 public class FutureFilterTest {
-    Filter                    eventFilter = new FutureFilter();
     private static RpcInvocation invocation;
+    Filter eventFilter = new FutureFilter();
 
     @BeforeClass
     public static void setUp() {
         invocation = new RpcInvocation();
         invocation.setMethodName("echo");
-        invocation.setParameterTypes(new Class<?>[] { Enum.class });
-        invocation.setArguments(new Object[] { "hello" });
+        invocation.setParameterTypes(new Class<?>[]{Enum.class});
+        invocation.setArguments(new Object[]{"hello"});
     }
 
     @Test
@@ -75,7 +75,7 @@ public class FutureFilterTest {
         RpcResult result = new RpcResult();
         result.setException(new RuntimeException());
         EasyMock.expect(invoker.invoke(invocation)).andReturn(result).anyTimes();
-        URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1&"+Constants.ON_THROW_METHOD_KEY+"=echo");
+        URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1&" + Constants.ON_THROW_METHOD_KEY + "=echo");
         EasyMock.expect(invoker.getUrl()).andReturn(url).anyTimes();
         EasyMock.replay(invoker);
         eventFilter.invoke(invoker, invocation).recreate();

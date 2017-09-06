@@ -23,16 +23,16 @@ import com.alibaba.dubbo.rpc.RpcException;
 
 /**
  * InvokerWrapper
- * 
+ *
  * @author william.liangf
  */
 public class InvokerWrapper<T> implements Invoker<T> {
-    
+
     private final Invoker<T> invoker;
 
     private final URL url;
 
-    public InvokerWrapper(Invoker<T> invoker, URL url){
+    public InvokerWrapper(Invoker<T> invoker, URL url) {
         this.invoker = invoker;
         this.url = url;
     }

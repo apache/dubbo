@@ -1,12 +1,12 @@
 /**
  * Project: dubbo.registry-1.1.0-SNAPSHOT
- * 
+ * <p>
  * File Created at 2010-4-9
  * $Id: Consumer.java 181192 2012-06-21 05:05:47Z tony.chenl $
- * 
+ * <p>
  * Copyright 2008 Alibaba.com Croporation Limited.
  * All rights reserved.
- *
+ * <p>
  * This software is the confidential and proprietary information of
  * Alibaba Company. ("Confidential Information").  You shall not
  * disclose such Confidential Information and shall use it only in
@@ -15,17 +15,17 @@
  */
 package com.alibaba.dubbo.registry.common.domain;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.StringUtils;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Consumer
- * 
+ *
  * @author william.liangf
  */
 public class Consumer extends Entity {
@@ -35,31 +35,31 @@ public class Consumer extends Entity {
     private String service; /* 消费者所引用的服务名称 */
 
     private String parameters;
-    
+
     private String result;    /*路由结果*/
 
     private String address; /* 消费者地址 */
-    
-	private String registry; /* 消费者连接的注册中心地址 */
-    
+
+    private String registry; /* 消费者连接的注册中心地址 */
+
     private String application; /* 应用名 */
 
     private String username;      /* 消费者用户名 */
-    
+
     private String statistics;    /* 服务调用统计信息 */
-    
-    private Date collected;  /* 服务调用统计时间 */ 
 
-	private Override override;
+    private Date collected;  /* 服务调用统计时间 */
 
-	private List<Override> overrides;
+    private Override override;
+
+    private List<Override> overrides;
 
     private List<Route> routes;
-    
+
     private List<Provider> providers;
-    
-	private Date expired;   /*过期时间*/
-    
+
+    private Date expired;   /*过期时间*/
+
     private long alived;    /*存活时间，单位秒*/
 
     public Consumer() {
@@ -145,52 +145,52 @@ public class Consumer extends Entity {
         return expired;
     }
 
-    
+
     public void setExpired(Date expired) {
         this.expired = expired;
     }
 
-    
+
     public long getAlived() {
         return alived;
     }
 
-    
+
     public void setAlived(long alived) {
         this.alived = alived;
     }
 
-	public Override getOverride() {
-		return override;
-	}
+    public Override getOverride() {
+        return override;
+    }
 
-	public void setOverride(Override override) {
-		this.override = override;
-	}
+    public void setOverride(Override override) {
+        this.override = override;
+    }
 
     public List<Override> getOverrides() {
-		return overrides;
-	}
+        return overrides;
+    }
 
-	public void setOverrides(List<Override> overrides) {
-		this.overrides = overrides;
-	}
+    public void setOverrides(List<Override> overrides) {
+        this.overrides = overrides;
+    }
 
     public List<Route> getRoutes() {
-		return routes;
-	}
+        return routes;
+    }
 
-	public void setRoutes(List<Route> routes) {
-		this.routes = routes;
-	}
+    public void setRoutes(List<Route> routes) {
+        this.routes = routes;
+    }
 
-	public List<Provider> getProviders() {
-		return providers;
-	}
+    public List<Provider> getProviders() {
+        return providers;
+    }
 
-	public void setProviders(List<Provider> providers) {
-		this.providers = providers;
-	}
+    public void setProviders(List<Provider> providers) {
+        this.providers = providers;
+    }
 
     public String toString() {
         return "Consumer [service=" + service + ", parameters=" + parameters + ", result=" + result
@@ -199,7 +199,7 @@ public class Consumer extends Entity {
                 + ", collected=" + collected + ", routes=" + routes + ", overrides=" + overrides
                 + ", expired=" + expired + ", alived=" + alived + "]";
     }
-    
+
     public URL toUrl() {
         String group = null;
         String version = null;
@@ -222,7 +222,7 @@ public class Consumer extends Entity {
         if (version != null) {
             param.put(Constants.VERSION_KEY, version);
         }
-        return URL.valueOf(Constants.CONSUMER_PROTOCOL + "://" + address + "/" + path 
+        return URL.valueOf(Constants.CONSUMER_PROTOCOL + "://" + address + "/" + path
                 + "?" + StringUtils.toQueryString(param));
     }
 

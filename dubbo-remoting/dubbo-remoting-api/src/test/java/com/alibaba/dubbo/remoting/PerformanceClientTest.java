@@ -15,6 +15,16 @@
  */
 package com.alibaba.dubbo.remoting;
 
+import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
+import com.alibaba.dubbo.remoting.exchange.Exchangers;
+import com.alibaba.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
+
+import junit.framework.TestCase;
+import org.junit.Test;
+
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -23,26 +33,15 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import junit.framework.TestCase;
-
-import org.junit.Test;
-
-import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.logger.Logger;
-import com.alibaba.dubbo.common.logger.LoggerFactory;
-import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
-import com.alibaba.dubbo.remoting.exchange.Exchangers;
-import com.alibaba.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
-
 /**
  * PerformanceClientTest
- * 
+ * <p>
  * mvn clean test -Dtest=*PerformanceClientTest -Dserver=10.20.153.187:9911
- * 
+ *
  * @author william.liangf
  */
 public class PerformanceClientTest extends TestCase {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(PerformanceClientTest.class);
 
     @Test
@@ -63,34 +62,34 @@ public class PerformanceClientTest extends TestCase {
         int r = PerformanceUtils.getIntProperty("runs", 10000);
         final int runs = r > 0 ? r : Integer.MAX_VALUE;
         final String onerror = PerformanceUtils.getProperty("onerror", "continue");
-        
+
         final String url = "exchange://" + server + "?transporter=" + transporter + "&serialization=" + serialization + "&timeout=" + timeout;
         // 创建客户端
         final ExchangeClient[] exchangeClients = new ExchangeClient[connections];
-        for (int i = 0; i < connections; i ++) {
+        for (int i = 0; i < connections; i++) {
             //exchangeClients[i] = Exchangers.connect(url,handler);
             exchangeClients[i] = Exchangers.connect(url);
         }
-        
+
         List<String> serverEnvironment = (List<String>) exchangeClients[0].request("environment").get();
         List<String> serverScene = (List<String>) exchangeClients[0].request("scene").get();
-        
+
         // 制造数据
         StringBuilder buf = new StringBuilder(length);
-        for (int i = 0; i < length; i ++) {
+        for (int i = 0; i < length; i++) {
             buf.append("A");
         }
         final String data = buf.toString();
-        
+
         // 计数器
         final AtomicLong count = new AtomicLong();
         final AtomicLong error = new AtomicLong();
         final AtomicLong time = new AtomicLong();
         final AtomicLong all = new AtomicLong();
-        
+
         // 并发调用
         final CountDownLatch latch = new CountDownLatch(concurrent);
-        for (int i = 0; i < concurrent; i ++) {
+        for (int i = 0; i < concurrent; i++) {
             new Thread(new Runnable() {
                 public void run() {
                     try {
@@ -103,7 +102,7 @@ public class PerformanceClientTest extends TestCase {
                                 long start = System.currentTimeMillis();
                                 String result = (String) client.request(data).get();
                                 long end = System.currentTimeMillis();
-                                if (! data.equals(result)) {
+                                if (!data.equals(result)) {
                                     throw new IllegalStateException("Invalid result " + result);
                                 }
                                 time.addAndGet(end - start);
@@ -129,39 +128,39 @@ public class PerformanceClientTest extends TestCase {
                 }
             }).start();
         }
-        
+
         // 输出，tps不精确，但大概反映情况
         new Thread(new Runnable() {
             public void run() {
-                try{
-                    SimpleDateFormat dateFormat = new SimpleDateFormat ("HH:mm:ss");
+                try {
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
                     long lastCount = count.get();
                     long sleepTime = 2000;
-                    long elapsd = sleepTime/1000;
+                    long elapsd = sleepTime / 1000;
                     boolean bfirst = true;
                     while (latch.getCount() > 0) {
-                        long c = count.get()-lastCount ;
-                        if(! bfirst)//第一次不准
-                            System.out.println("["+dateFormat.format(new Date()) +"] count: " + count.get() + ", error: " + error.get() + ",tps:"+(c/elapsd));
-                        
+                        long c = count.get() - lastCount;
+                        if (!bfirst)//第一次不准
+                            System.out.println("[" + dateFormat.format(new Date()) + "] count: " + count.get() + ", error: " + error.get() + ",tps:" + (c / elapsd));
+
                         bfirst = false;
                         lastCount = count.get();
                         Thread.sleep(sleepTime);
-                    } 
-                } catch(Exception e) {
+                    }
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         }).start();
-        
+
         latch.await();
-        
-        for(ExchangeClient client:exchangeClients){
-            if(client.isConnected()){
+
+        for (ExchangeClient client : exchangeClients) {
+            if (client.isConnected()) {
                 client.close();
             }
         }
-        
+
         long total = count.get();
         long failed = error.get();
         long succeeded = total - failed;
@@ -176,24 +175,24 @@ public class PerformanceClientTest extends TestCase {
             qps = concurrent * succeeded * 1000 / elapsed;
             throughput = concurrent * succeeded * length * 2 * 1000 / elapsed;
         }
-        
+
         PerformanceUtils.printBorder();
         PerformanceUtils.printHeader("Dubbo Remoting Performance Test Report");
         PerformanceUtils.printBorder();
         PerformanceUtils.printHeader("Test Environment");
         PerformanceUtils.printSeparator();
-        for (String item: serverEnvironment) {
+        for (String item : serverEnvironment) {
             PerformanceUtils.printBody("Server " + item);
         }
         PerformanceUtils.printSeparator();
         List<String> clientEnvironment = PerformanceUtils.getEnvironment();
-        for (String item: clientEnvironment) {
+        for (String item : clientEnvironment) {
             PerformanceUtils.printBody("Client " + item);
         }
         PerformanceUtils.printSeparator();
         PerformanceUtils.printHeader("Test Scene");
         PerformanceUtils.printSeparator();
-        for (String item: serverScene) {
+        for (String item : serverScene) {
             PerformanceUtils.printBody("Server " + item);
         }
         PerformanceUtils.printBody("Client Transporter: " + transporter);
@@ -214,15 +213,15 @@ public class PerformanceClientTest extends TestCase {
         PerformanceUtils.printBody("Throughput Per Second: " + DecimalFormat.getIntegerInstance().format(throughput) + " bytes/s");
         PerformanceUtils.printBorder();
     }
-    
-    static class PeformanceTestHandler extends ExchangeHandlerAdapter{
+
+    static class PeformanceTestHandler extends ExchangeHandlerAdapter {
 
         public void connected(Channel channel) throws RemotingException {
-            System.out.println("connected event,chanel;"+channel);
+            System.out.println("connected event,chanel;" + channel);
         }
 
         public void disconnected(Channel channel) throws RemotingException {
-            System.out.println("disconnected event,chanel;"+channel);
+            System.out.println("disconnected event,chanel;" + channel);
         }
     }
 }

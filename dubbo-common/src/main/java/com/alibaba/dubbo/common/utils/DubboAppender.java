@@ -15,26 +15,26 @@
  */
 package com.alibaba.dubbo.common.utils;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.spi.LoggingEvent;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class DubboAppender extends ConsoleAppender {
 
-    public static boolean   available = false;
+    public static boolean available = false;
 
-    public static List<Log> logList   = new ArrayList<Log>();
+    public static List<Log> logList = new ArrayList<Log>();
 
     public static void doStart() {
         available = true;
     }
-    
+
     public static void doStop() {
         available = false;
     }
-    
+
     public static void clear() {
         logList.clear();
     }
@@ -55,5 +55,5 @@ public class DubboAppender extends ConsoleAppender {
         log.setLogMessage(event.getMessage().toString());
         return log;
     }
-    
+
 }

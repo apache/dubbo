@@ -22,23 +22,23 @@ import com.alibaba.dubbo.rpc.Invocation;
 
 /**
  * RouterFactory. (SPI, Singleton, ThreadSafe)
- * 
+ * <p>
  * <a href="http://en.wikipedia.org/wiki/Routing">Routing</a>
- * 
+ *
+ * @author chao.liuc
  * @see com.alibaba.dubbo.rpc.cluster.Cluster#join(Directory)
  * @see com.alibaba.dubbo.rpc.cluster.Directory#list(Invocation)
- * @author chao.liuc
  */
 @SPI
 public interface RouterFactory {
-    
+
     /**
      * Create router.
-     * 
+     *
      * @param url
      * @return router
      */
     @Adaptive("protocol")
     Router getRouter(URL url);
-    
+
 }

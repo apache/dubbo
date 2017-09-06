@@ -27,11 +27,11 @@ public class ChannelBufferInputStream extends InputStream {
     private final ChannelBuffer buffer;
     private final int startIndex;
     private final int endIndex;
-    
+
     public ChannelBufferInputStream(ChannelBuffer buffer) {
         this(buffer, buffer.readableBytes());
     }
-    
+
     public ChannelBufferInputStream(ChannelBuffer buffer, int length) {
         if (buffer == null) {
             throw new NullPointerException("buffer");
@@ -42,7 +42,7 @@ public class ChannelBufferInputStream extends InputStream {
         if (length > buffer.readableBytes()) {
             throw new IndexOutOfBoundsException();
         }
-        
+
         this.buffer = buffer;
         startIndex = buffer.readerIndex();
         endIndex = startIndex + length;

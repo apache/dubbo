@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.protocol.dubbo.support;
 
-public enum Type
-{
-	High, Normal, Lower
+public enum Type {
+    High, Normal, Lower
 }

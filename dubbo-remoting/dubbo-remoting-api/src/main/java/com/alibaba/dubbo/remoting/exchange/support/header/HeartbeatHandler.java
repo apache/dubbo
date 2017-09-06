@@ -68,22 +68,22 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
                 channel.send(res);
                 if (logger.isInfoEnabled()) {
                     int heartbeat = channel.getUrl().getParameter(Constants.HEARTBEAT_KEY, 0);
-                    if(logger.isDebugEnabled()) {
+                    if (logger.isDebugEnabled()) {
                         logger.debug("Received heartbeat from remote channel " + channel.getRemoteAddress()
-                                        + ", cause: The channel has no data-transmission exceeds a heartbeat period"
-                                        + (heartbeat > 0 ? ": " + heartbeat + "ms" : ""));
+                                + ", cause: The channel has no data-transmission exceeds a heartbeat period"
+                                + (heartbeat > 0 ? ": " + heartbeat + "ms" : ""));
                     }
-	            }
+                }
             }
             return;
         }
         if (isHeartbeatResponse(message)) {
             if (logger.isDebugEnabled()) {
-            	logger.debug(
-                    new StringBuilder(32)
-                        .append("Receive heartbeat response in thread ")
-                        .append(Thread.currentThread().getName())
-                        .toString());
+                logger.debug(
+                        new StringBuilder(32)
+                                .append("Receive heartbeat response in thread ")
+                                .append(Thread.currentThread().getName())
+                                .toString());
             }
             return;
         }
@@ -111,6 +111,6 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
     }
 
     private boolean isHeartbeatResponse(Object message) {
-        return message instanceof Response && ((Response)message).isHeartbeat();
+        return message instanceof Response && ((Response) message).isHeartbeat();
     }
 }

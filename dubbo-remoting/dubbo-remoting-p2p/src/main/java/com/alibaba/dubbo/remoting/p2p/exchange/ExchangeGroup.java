@@ -22,14 +22,14 @@ import com.alibaba.dubbo.remoting.p2p.Group;
 
 /**
  * Group
- * 
+ *
  * @author william.liangf
  */
 public interface ExchangeGroup extends Group {
 
     /**
      * join.
-     * 
+     *
      * @param url
      */
     ExchangePeer join(URL url, ExchangeHandler handler) throws RemotingException;

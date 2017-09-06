@@ -4,26 +4,26 @@ import java.io.Serializable;
 
 public class Dependency implements Serializable {
 
-	private static final long serialVersionUID = 8526869025719540547L;
+    private static final long serialVersionUID = 8526869025719540547L;
 
-	private String providerApplication;
-	
-	private String consumerApplication;
+    private String providerApplication;
 
-	public String getProviderApplication() {
-		return providerApplication;
-	}
+    private String consumerApplication;
 
-	public void setProviderApplication(String providerApplication) {
-		this.providerApplication = providerApplication;
-	}
+    public String getProviderApplication() {
+        return providerApplication;
+    }
 
-	public String getConsumerApplication() {
-		return consumerApplication;
-	}
+    public void setProviderApplication(String providerApplication) {
+        this.providerApplication = providerApplication;
+    }
 
-	public void setConsumerApplication(String consumerApplication) {
-		this.consumerApplication = consumerApplication;
-	}
+    public String getConsumerApplication() {
+        return consumerApplication;
+    }
+
+    public void setConsumerApplication(String consumerApplication) {
+        this.consumerApplication = consumerApplication;
+    }
 
 }

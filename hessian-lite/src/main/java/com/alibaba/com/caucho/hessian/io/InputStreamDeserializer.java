@@ -49,19 +49,16 @@
 package com.alibaba.com.caucho.hessian.io;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * Serializing a stream object.
  */
 public class InputStreamDeserializer extends AbstractDeserializer {
-  public InputStreamDeserializer()
-  {
-  }
-  
-  public Object readObject(AbstractHessianInput in)
-    throws IOException
-  {
-    return in.readInputStream();
-  }
+    public InputStreamDeserializer() {
+    }
+
+    public Object readObject(AbstractHessianInput in)
+            throws IOException {
+        return in.readInputStream();
+    }
 }

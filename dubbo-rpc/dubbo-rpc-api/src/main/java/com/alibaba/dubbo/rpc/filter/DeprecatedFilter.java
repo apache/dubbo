@@ -15,8 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.filter;
 
-import java.util.Set;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.logger.Logger;
@@ -28,9 +26,11 @@ import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
 
+import java.util.Set;
+
 /**
  * DeprecatedInvokerFilter
- * 
+ *
  * @author william.liangf
  */
 @Activate(group = Constants.CONSUMER, value = Constants.DEPRECATED_KEY)
@@ -42,7 +42,7 @@ public class DeprecatedFilter implements Filter {
 
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         String key = invoker.getInterface().getName() + "." + invocation.getMethodName();
-        if (! logged.contains(key)) {
+        if (!logged.contains(key)) {
             logged.add(key);
             if (invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.DEPRECATED_KEY, false)) {
                 LOGGER.error("The service method " + invoker.getInterface().getName() + "." + getMethodSignature(invocation) + " is DEPRECATED! Declare from " + invoker.getUrl());
@@ -50,7 +50,7 @@ public class DeprecatedFilter implements Filter {
         }
         return invoker.invoke(invocation);
     }
-    
+
     private String getMethodSignature(Invocation invocation) {
         StringBuilder buf = new StringBuilder(invocation.getMethodName());
         buf.append("(");

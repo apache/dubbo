@@ -15,27 +15,27 @@
  */
 package com.alibaba.dubbo.config.support;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.Registry;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * TODO Comment of MockRegistry
- * @author haomin.liuhm
  *
+ * @author haomin.liuhm
  */
 public class MockRegistry implements Registry {
 
     static URL subscribedUrl = new URL("null", "0.0.0.0", 0);
-    
-    public static URL getSubscribedUrl(){
+
+    public static URL getSubscribedUrl() {
         return subscribedUrl;
     }
-    
+
     /* 
      * @see com.alibaba.dubbo.common.Node#getUrl()
      */
@@ -54,21 +54,21 @@ public class MockRegistry implements Registry {
      * @see com.alibaba.dubbo.common.Node#destroy()
      */
     public void destroy() {
-        
+
     }
 
     /* 
      * @see com.alibaba.dubbo.registry.RegistryService#register(com.alibaba.dubbo.common.URL)
      */
     public void register(URL url) {
-        
+
     }
 
     /* 
      * @see com.alibaba.dubbo.registry.RegistryService#unregister(com.alibaba.dubbo.common.URL)
      */
     public void unregister(URL url) {
-        
+
     }
 
     /* 
@@ -77,11 +77,11 @@ public class MockRegistry implements Registry {
     public void subscribe(URL url, NotifyListener listener) {
         this.subscribedUrl = url;
         List<URL> urls = new ArrayList<URL>();
-        
+
         urls.add(url.setProtocol("mockprotocol")
-                    .removeParameter(Constants.CATEGORY_KEY)
-                    .addParameter(Constants.METHODS_KEY, "sayHello"));
-        
+                .removeParameter(Constants.CATEGORY_KEY)
+                .addParameter(Constants.METHODS_KEY, "sayHello"));
+
         listener.notify(urls);
     }
 
@@ -89,7 +89,7 @@ public class MockRegistry implements Registry {
      * @see com.alibaba.dubbo.registry.RegistryService#unsubscribe(com.alibaba.dubbo.common.URL, com.alibaba.dubbo.registry.NotifyListener)
      */
     public void unsubscribe(URL url, NotifyListener listener) {
-        
+
     }
 
     /* 

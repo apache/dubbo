@@ -15,16 +15,16 @@
  */
 package com.alibaba.dubbo.examples.annotation;
 
-import static org.junit.Assert.assertEquals;
+import com.alibaba.dubbo.examples.annotation.action.AnnotationAction;
 
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.alibaba.dubbo.examples.annotation.action.AnnotationAction;
+import static org.junit.Assert.assertEquals;
 
 /**
  * AnnotationTest
- * 
+ *
  * @author william.liangf
  */
 public class AnnotationTest {

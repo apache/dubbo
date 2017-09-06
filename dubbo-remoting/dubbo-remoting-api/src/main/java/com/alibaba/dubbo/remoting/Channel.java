@@ -19,32 +19,32 @@ import java.net.InetSocketAddress;
 
 /**
  * Channel. (API/SPI, Prototype, ThreadSafe)
- * 
+ *
+ * @author qian.lei
+ * @author william.liangf
  * @see com.alibaba.dubbo.remoting.Client
  * @see com.alibaba.dubbo.remoting.Server#getChannels()
  * @see com.alibaba.dubbo.remoting.Server#getChannel(InetSocketAddress)
- * @author qian.lei
- * @author william.liangf
  */
 public interface Channel extends Endpoint {
 
     /**
      * get remote address.
-     * 
+     *
      * @return remote address.
      */
     InetSocketAddress getRemoteAddress();
 
     /**
      * is connected.
-     * 
+     *
      * @return connected
      */
     boolean isConnected();
 
     /**
      * has attribute.
-     * 
+     *
      * @param key key.
      * @return has or has not.
      */
@@ -52,7 +52,7 @@ public interface Channel extends Endpoint {
 
     /**
      * get attribute.
-     * 
+     *
      * @param key key.
      * @return value.
      */
@@ -60,15 +60,15 @@ public interface Channel extends Endpoint {
 
     /**
      * set attribute.
-     * 
-     * @param key key.
+     *
+     * @param key   key.
      * @param value value.
      */
-    void setAttribute(String key,Object value);
-    
+    void setAttribute(String key, Object value);
+
     /**
      * remove attribute.
-     * 
+     *
      * @param key key.
      */
     void removeAttribute(String key);

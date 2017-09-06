@@ -15,14 +15,14 @@
  */
 package com.alibaba.dubbo.remoting.transport.netty;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.exchange.ExchangeChannel;
 import com.alibaba.dubbo.remoting.exchange.ExchangeServer;
 import com.alibaba.dubbo.remoting.exchange.Exchangers;
+
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * User: heyman
@@ -42,15 +42,6 @@ public class NettyStringTest {
         client = Exchangers.connect(URL.valueOf("telnet://127.0.0.1:" + port + "?client=netty"), new TelnetClientHandler());
     }
 
-    @Test
-    public void testHandler() throws Exception {
-        //Thread.sleep(20000);
-        /*client.request("world\r\n");
-        Future future = client.request("world", 10000);
-        String result = (String)future.get();
-        Assert.assertEquals("Did you say 'world'?\r\n",result);*/
-    }
-
     @AfterClass
     public static void tearDown() throws Exception {
         try {
@@ -60,5 +51,14 @@ public class NettyStringTest {
             if (client != null)
                 client.close();
         }
+    }
+
+    @Test
+    public void testHandler() throws Exception {
+        //Thread.sleep(20000);
+        /*client.request("world\r\n");
+        Future future = client.request("world", 10000);
+        String result = (String)future.get();
+        Assert.assertEquals("Did you say 'world'?\r\n",result);*/
     }
 }

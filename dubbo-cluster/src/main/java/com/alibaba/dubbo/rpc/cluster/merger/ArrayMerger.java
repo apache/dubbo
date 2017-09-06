@@ -55,7 +55,7 @@ public class ArrayMerger implements Merger<Object[]> {
                 Array.set(result, index++, Array.get(array, i));
             }
         }
-        return (Object[])result;
+        return (Object[]) result;
     }
 
 }

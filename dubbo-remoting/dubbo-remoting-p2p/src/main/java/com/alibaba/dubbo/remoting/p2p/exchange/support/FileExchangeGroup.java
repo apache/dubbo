@@ -15,6 +15,14 @@
  */
 package com.alibaba.dubbo.remoting.p2p.exchange.support;
 
+import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.utils.IOUtils;
+import com.alibaba.dubbo.common.utils.NamedThreadFactory;
+import com.alibaba.dubbo.common.utils.NetUtils;
+import com.alibaba.dubbo.remoting.RemotingException;
+import com.alibaba.dubbo.remoting.exchange.ExchangeHandler;
+import com.alibaba.dubbo.remoting.p2p.exchange.ExchangePeer;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -25,36 +33,25 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.utils.IOUtils;
-import com.alibaba.dubbo.common.utils.NamedThreadFactory;
-import com.alibaba.dubbo.common.utils.NetUtils;
-import com.alibaba.dubbo.remoting.RemotingException;
-import com.alibaba.dubbo.remoting.exchange.ExchangeHandler;
-import com.alibaba.dubbo.remoting.p2p.exchange.ExchangePeer;
-
 /**
  * FileGroup
- * 
+ *
  * @author william.liangf
  */
 public class FileExchangeGroup extends AbstractExchangeGroup {
-    
-    private final File file;
-    
-    private volatile long last;
 
+    private final File file;
     // 定时任务执行器
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(3, new NamedThreadFactory("FileGroupModifiedChecker", true));
-
     // 重连定时器，定时检查连接是否可用，不可用时，无限次重连
     private final ScheduledFuture<?> checkModifiedFuture;
+    private volatile long last;
 
-    public FileExchangeGroup(URL url){
+    public FileExchangeGroup(URL url) {
         super(url);
         String path = url.getHost() + "/" + url.getPath();
         file = new File(path);
-        if (! file.exists()) {
+        if (!file.exists()) {
             throw new IllegalStateException("The group file not exists. file: " + path);
         }
         checkModifiedFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
@@ -72,7 +69,7 @@ public class FileExchangeGroup extends AbstractExchangeGroup {
     public void close() {
         super.close();
         try {
-            if (! checkModifiedFuture.isCancelled()) {
+            if (!checkModifiedFuture.isCancelled()) {
                 checkModifiedFuture.cancel(true);
             }
         } catch (Throwable t) {
@@ -87,7 +84,7 @@ public class FileExchangeGroup extends AbstractExchangeGroup {
             changed();
         }
     }
-    
+
     private void changed() throws RemotingException {
         try {
             String[] lines = IOUtils.readLines(file);
@@ -109,13 +106,13 @@ public class FileExchangeGroup extends AbstractExchangeGroup {
                     return peer;
                 }
             }
-            IOUtils.appendLines(file, new String[] {full});
+            IOUtils.appendLines(file, new String[]{full});
         } catch (IOException e) {
             throw new RemotingException(new InetSocketAddress(NetUtils.getLocalHost(), 0), getUrl().toInetSocketAddress(), e.getMessage(), e);
         }
         return peer;
     }
-    
+
     @Override
     public void leave(URL url) throws RemotingException {
         super.leave(url);

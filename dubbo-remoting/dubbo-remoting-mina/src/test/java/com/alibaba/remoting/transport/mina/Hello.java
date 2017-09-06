@@ -19,15 +19,15 @@ import java.io.Serializable;
 
 /**
  * Result
- * 
+ *
  * @author william.liangf
  */
 public class Hello implements Serializable {
 
     private static final long serialVersionUID = 8563900571013747774L;
-    
+
     private String name;
-    
+
     public Hello() {
     }
 

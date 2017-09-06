@@ -19,55 +19,55 @@ import java.util.Map;
 
 /**
  * RPC invoke result. (API, Prototype, NonThreadSafe)
- * 
+ *
+ * @author qianlei
+ * @author william.liangf
  * @serial Don't change the class name and package name.
  * @see com.alibaba.dubbo.rpc.Invoker#invoke(Invocation)
  * @see com.alibaba.dubbo.rpc.RpcResult
- * @author qianlei
- * @author william.liangf
  */
 public interface Result {
 
-	/**
-	 * Get invoke result.
-	 * 
-	 * @return result. if no result return null.
-	 */
-	Object getValue();
+    /**
+     * Get invoke result.
+     *
+     * @return result. if no result return null.
+     */
+    Object getValue();
 
-	/**
-	 * Get exception.
-	 * 
-	 * @return exception. if no exception return null.
-	 */
-	Throwable getException();
+    /**
+     * Get exception.
+     *
+     * @return exception. if no exception return null.
+     */
+    Throwable getException();
 
     /**
      * Has exception.
-     * 
+     *
      * @return has exception.
      */
     boolean hasException();
 
     /**
      * Recreate.
-     * 
+     * <p>
      * <code>
      * if (hasException()) {
-     *     throw getException();
+     * throw getException();
      * } else {
-     *     return getValue();
+     * return getValue();
      * }
      * </code>
-     * 
+     *
      * @return result.
      * @throws if has exception throw it.
      */
     Object recreate() throws Throwable;
 
     /**
-     * @deprecated Replace to getValue()
      * @see com.alibaba.dubbo.rpc.Result#getValue()
+     * @deprecated Replace to getValue()
      */
     @Deprecated
     Object getResult();

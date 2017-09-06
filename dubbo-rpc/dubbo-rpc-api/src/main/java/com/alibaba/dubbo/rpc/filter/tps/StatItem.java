@@ -16,10 +16,10 @@
 
 package com.alibaba.dubbo.rpc.filter.tps;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invocation;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
@@ -64,17 +64,17 @@ class StatItem {
     long getLastResetTime() {
         return lastResetTime;
     }
-    
+
     int getToken() {
         return token.get();
     }
-    
+
     public String toString() {
         return new StringBuilder(32).append("StatItem ")
-            .append("[name=").append(name).append(", ")
-            .append("rate = ").append(rate).append(", ")
-            .append("interval = ").append(interval).append("]")
-            .toString();
+                .append("[name=").append(name).append(", ")
+                .append("rate = ").append(rate).append(", ")
+                .append("interval = ").append(interval).append("]")
+                .toString();
     }
 
 }

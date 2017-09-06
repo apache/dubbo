@@ -15,65 +15,65 @@
  */
 package com.alibaba.dubbo.config;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.compiler.support.AdaptiveCompiler;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.config.support.Parameter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * ApplicationConfig
- * 
+ *
  * @author william.liangf
  * @export
  */
 public class ApplicationConfig extends AbstractConfig {
 
-    private static final long    serialVersionUID = 5508512956753757169L;
+    private static final long serialVersionUID = 5508512956753757169L;
 
     // 应用名称
-    private String               name;
+    private String name;
 
     // 模块版本
-    private String               version;
+    private String version;
 
     // 应用负责人
-    private String               owner;
+    private String owner;
 
     // 组织名(BU或部门)
-    private String               organization;
+    private String organization;
 
     // 分层
-    private String               architecture;
+    private String architecture;
 
     // 环境，如：dev/test/run
-    private String               environment;
+    private String environment;
 
     // Java代码编译器
-    private String               compiler;
+    private String compiler;
 
     // 日志输出方式
-    private String               logger;
+    private String logger;
 
     // 注册中心
     private List<RegistryConfig> registries;
 
     // 服务监控
-    private MonitorConfig        monitor;
+    private MonitorConfig monitor;
 
     // 是否为缺省
-    private Boolean              isDefault;
+    private Boolean isDefault;
 
     public ApplicationConfig() {
     }
-    
+
     public ApplicationConfig(String name) {
         setName(name);
     }
-    
+
     @Parameter(key = Constants.APPLICATION_KEY, required = true)
     public String getName() {
         return name;
@@ -105,16 +105,16 @@ public class ApplicationConfig extends AbstractConfig {
         this.owner = owner;
     }
 
-	public String getOrganization() {
-		return organization;
-	}
+    public String getOrganization() {
+        return organization;
+    }
 
-	public void setOrganization(String organization) {
-	    checkName("organization", organization);
-		this.organization = organization;
-	}
+    public void setOrganization(String organization) {
+        checkName("organization", organization);
+        this.organization = organization;
+    }
 
-	public String getArchitecture() {
+    public String getArchitecture() {
         return architecture;
     }
 
@@ -124,18 +124,18 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public String getEnvironment() {
-		return environment;
-	}
+        return environment;
+    }
 
-	public void setEnvironment(String environment) {
-	    checkName("environment", environment);
-	    if(environment != null) {
-            if (! ("develop".equals(environment) || "test".equals(environment) || "product".equals(environment))) {
+    public void setEnvironment(String environment) {
+        checkName("environment", environment);
+        if (environment != null) {
+            if (!("develop".equals(environment) || "test".equals(environment) || "product".equals(environment))) {
                 throw new IllegalStateException("Unsupported environment: " + environment + ", only support develop/test/product, default is product.");
             }
         }
-		this.environment = environment;
-	}
+        this.environment = environment;
+    }
 
     public RegistryConfig getRegistry() {
         return registries == null || registries.size() == 0 ? null : registries.get(0);
@@ -151,21 +151,21 @@ public class ApplicationConfig extends AbstractConfig {
         return registries;
     }
 
-    @SuppressWarnings({ "unchecked" })
+    @SuppressWarnings({"unchecked"})
     public void setRegistries(List<? extends RegistryConfig> registries) {
-        this.registries = (List<RegistryConfig>)registries;
+        this.registries = (List<RegistryConfig>) registries;
     }
 
     public MonitorConfig getMonitor() {
         return monitor;
     }
 
-    public void setMonitor(MonitorConfig monitor) {
-        this.monitor = monitor;
-    }
-
     public void setMonitor(String monitor) {
         this.monitor = new MonitorConfig(monitor);
+    }
+
+    public void setMonitor(MonitorConfig monitor) {
+        this.monitor = monitor;
     }
 
     public String getCompiler() {

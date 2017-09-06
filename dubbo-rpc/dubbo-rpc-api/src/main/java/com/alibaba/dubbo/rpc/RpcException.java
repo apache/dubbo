@@ -17,30 +17,23 @@ package com.alibaba.dubbo.rpc;
 
 /**
  * RPC Exception. (API, Prototype, ThreadSafe)
- * 
- * @serial Don't change the class name and properties.
- * @since 1.0
- * @see com.alibaba.dubbo.rpc.Invoker#invoke(Invocation)
+ *
  * @author shawn.qianx
  * @author william.liangf
+ * @serial Don't change the class name and properties.
  * @export
+ * @see com.alibaba.dubbo.rpc.Invoker#invoke(Invocation)
+ * @since 1.0
  */
 public final class RpcException extends RuntimeException {
 
-	private static final long serialVersionUID = 7815426752583648734L;
-
     public static final int UNKNOWN_EXCEPTION = 0;
-    
     public static final int NETWORK_EXCEPTION = 1;
-    
     public static final int TIMEOUT_EXCEPTION = 2;
-    
     public static final int BIZ_EXCEPTION = 3;
-    
     public static final int FORBIDDEN_EXCEPTION = 4;
-    
     public static final int SERIALIZATION_EXCEPTION = 5;
-    
+    private static final long serialVersionUID = 7815426752583648734L;
     private int code; // RpcException不能有子类，异常类型用ErrorCode表示，以便保持兼容。
 
     public RpcException() {
@@ -78,19 +71,19 @@ public final class RpcException extends RuntimeException {
         super(cause);
         this.code = code;
     }
-    
-    public void setCode(int code) {
-        this.code = code;
-    }
-    
+
     public int getCode() {
         return code;
     }
-    
+
+    public void setCode(int code) {
+        this.code = code;
+    }
+
     public boolean isBiz() {
         return code == BIZ_EXCEPTION;
     }
-    
+
     public boolean isForbidded() {
         return code == FORBIDDEN_EXCEPTION;
     }

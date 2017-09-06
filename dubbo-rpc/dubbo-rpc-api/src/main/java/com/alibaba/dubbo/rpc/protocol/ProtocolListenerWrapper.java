@@ -15,8 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.protocol;
 
-import java.util.Collections;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
@@ -29,16 +27,18 @@ import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.listener.ListenerExporterWrapper;
 import com.alibaba.dubbo.rpc.listener.ListenerInvokerWrapper;
 
+import java.util.Collections;
+
 /**
  * ListenerProtocol
- * 
+ *
  * @author william.liangf
  */
 public class ProtocolListenerWrapper implements Protocol {
 
     private final Protocol protocol;
 
-    public ProtocolListenerWrapper(Protocol protocol){
+    public ProtocolListenerWrapper(Protocol protocol) {
         if (protocol == null) {
             throw new IllegalArgumentException("protocol == null");
         }
@@ -53,7 +53,7 @@ public class ProtocolListenerWrapper implements Protocol {
         if (Constants.REGISTRY_PROTOCOL.equals(invoker.getUrl().getProtocol())) {
             return protocol.export(invoker);
         }
-        return new ListenerExporterWrapper<T>(protocol.export(invoker), 
+        return new ListenerExporterWrapper<T>(protocol.export(invoker),
                 Collections.unmodifiableList(ExtensionLoader.getExtensionLoader(ExporterListener.class)
                         .getActivateExtension(invoker.getUrl(), Constants.EXPORTER_LISTENER_KEY)));
     }
@@ -62,10 +62,10 @@ public class ProtocolListenerWrapper implements Protocol {
         if (Constants.REGISTRY_PROTOCOL.equals(url.getProtocol())) {
             return protocol.refer(type, url);
         }
-        return new ListenerInvokerWrapper<T>(protocol.refer(type, url), 
+        return new ListenerInvokerWrapper<T>(protocol.refer(type, url),
                 Collections.unmodifiableList(
                         ExtensionLoader.getExtensionLoader(InvokerListener.class)
-                        .getActivateExtension(url, Constants.INVOKER_LISTENER_KEY)));
+                                .getActivateExtension(url, Constants.INVOKER_LISTENER_KEY)));
     }
 
     public void destroy() {
