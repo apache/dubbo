@@ -19,6 +19,7 @@ import com.alibaba.dubbo.common.URL;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -44,6 +45,13 @@ public class RpcStatus {
     private final AtomicLong maxElapsed = new AtomicLong();
     private final AtomicLong failedMaxElapsed = new AtomicLong();
     private final AtomicLong succeededMaxElapsed = new AtomicLong();
+
+    /**
+     * 用来实现executes属性的并发限制（即控制能使用的线程数）
+     * 2017-08-21 yizhenqiang
+     */
+    private volatile Semaphore executesLimit;
+    private volatile int executesPermits;
 
     private RpcStatus() {
     }
@@ -304,4 +312,26 @@ public class RpcStatus {
         return getTotal();
     }
 
+    /**
+     * 获取限制线程数的信号量，信号量的许可数就是executes设置的值
+     * 2017-08-21 yizhenqiang
+     * @param maxThreadNum executes设置的值
+     * @return
+     */
+    public Semaphore getSemaphore(int maxThreadNum) {
+        if(maxThreadNum <= 0) {
+            return null;
+        }
+
+        if (executesLimit == null || executesPermits != maxThreadNum) {
+            synchronized (this) {
+                if (executesLimit == null || executesPermits != maxThreadNum) {
+                    executesLimit = new Semaphore(maxThreadNum);
+                    executesPermits = maxThreadNum;
+                }
+            }
+        }
+
+        return executesLimit;
+    }
 }

@@ -983,7 +983,7 @@ public abstract class Builder<T> implements GenericDataFlags {
                 t = t.getSuperclass();
                 if (t == null)
                     throw new RuntimeException("Can not found Constructor?");
-                cs = c.getDeclaredConstructors();
+                cs = t.getDeclaredConstructors();
             }
             while (cs.length == 0);
         }

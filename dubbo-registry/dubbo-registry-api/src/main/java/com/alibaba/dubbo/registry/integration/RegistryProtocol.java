@@ -370,10 +370,13 @@ public class RegistryProtocol implements Protocol {
                 }
 
                 URL originUrl = RegistryProtocol.this.getProviderUrl(originInvoker);
-                URL newUrl = getNewInvokerUrl(originUrl, urls);
+                //增加判断：只有 当前服务与override指定服务 匹配时，override才生效
+                if (urls != null && urls.size() > 0 && originUrl.getServiceKey().equals(urls.get(0).getServiceKey())) {
+                    URL newUrl = getNewInvokerUrl(originUrl, urls);
 
-                if (!originUrl.equals(newUrl)) {
-                    RegistryProtocol.this.doChangeLocalExport(originInvoker, newUrl);
+                    if (!originUrl.equals(newUrl) || (this.configurators == null || this.configurators.size() == 0)) {
+                        RegistryProtocol.this.doChangeLocalExport(originInvoker, newUrl);
+                    }
                 }
             }
         }
