@@ -20,11 +20,11 @@ import com.alibaba.dubbo.rpc.cluster.configurator.AbstractConfigurator;
 
 /**
  * AbsentConfigurator
- * 
+ *
  * @author william.liangf
  */
 public class OverrideConfigurator extends AbstractConfigurator {
-    
+
     public OverrideConfigurator(URL url) {
         super(url);
     }

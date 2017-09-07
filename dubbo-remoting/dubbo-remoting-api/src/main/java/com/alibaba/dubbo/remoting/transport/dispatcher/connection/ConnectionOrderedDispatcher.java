@@ -21,7 +21,7 @@ import com.alibaba.dubbo.remoting.Dispatcher;
 
 /**
  * connect disconnect 保证顺序.
- * 
+ *
  * @author chao.liuc
  */
 public class ConnectionOrderedDispatcher implements Dispatcher {

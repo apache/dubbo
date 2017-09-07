@@ -3,6 +3,10 @@ package com.alibaba.dubbo.rpc.benchmark;
 /**
  * nfs-rpc Apache License http://code.google.com/p/nfs-rpc (c) 2011
  */
+
+import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
+import com.alibaba.dubbo.remoting.exchange.Exchangers;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -10,18 +14,19 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.FutureTask;
 
-import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
-import com.alibaba.dubbo.remoting.exchange.Exchangers;
-
 /**
  * Abstract ExchangeClient Factory,create custom nums ExchangeClient
- * 
+ *
  * @author <a href="mailto:bluedavy@gmail.com">bluedavy</a>
  */
 public class ExchangeClientFactory {
 
     // Cache ExchangeClient
     private static ConcurrentHashMap<String, FutureTask<List<ExchangeClient>>> clients = new ConcurrentHashMap<String, FutureTask<List<ExchangeClient>>>();
+
+    public static ExchangeClientFactory getInstance() {
+        throw new UnsupportedOperationException("should be implemented by true class");
+    }
 
     public ExchangeClient get(final String targetIP, final int targetPort, final int connectTimeout) throws Exception {
         return get(targetIP, targetPort, connectTimeout, 1);
@@ -39,20 +44,20 @@ public class ExchangeClientFactory {
             }
         } else {
             FutureTask<List<ExchangeClient>> task = new FutureTask<List<ExchangeClient>>(
-                                                                                         new Callable<List<ExchangeClient>>() {
+                    new Callable<List<ExchangeClient>>() {
 
-                                                                                             public List<ExchangeClient> call()
-                                                                                                                               throws Exception {
-                                                                                                 List<ExchangeClient> clients = new ArrayList<ExchangeClient>(
-                                                                                                                                                              clientNums);
-                                                                                                 for (int i = 0; i < clientNums; i++) {
-                                                                                                     clients.add(createClient(targetIP,
-                                                                                                                              targetPort,
-                                                                                                                              connectTimeout));
-                                                                                                 }
-                                                                                                 return clients;
-                                                                                             }
-                                                                                         });
+                        public List<ExchangeClient> call()
+                                throws Exception {
+                            List<ExchangeClient> clients = new ArrayList<ExchangeClient>(
+                                    clientNums);
+                            for (int i = 0; i < clientNums; i++) {
+                                clients.add(createClient(targetIP,
+                                        targetPort,
+                                        connectTimeout));
+                            }
+                            return clients;
+                        }
+                    });
             FutureTask<List<ExchangeClient>> currentTask = clients.putIfAbsent(key, task);
             if (currentTask == null) {
                 task.run();
@@ -80,10 +85,6 @@ public class ExchangeClientFactory {
         } catch (Exception e) {
             // IGNORE
         }
-    }
-
-    public static ExchangeClientFactory getInstance() {
-        throw new UnsupportedOperationException("should be implemented by true class");
     }
 
     protected ExchangeClient createClient(String targetIP, int targetPort, int connectTimeout) throws Exception {

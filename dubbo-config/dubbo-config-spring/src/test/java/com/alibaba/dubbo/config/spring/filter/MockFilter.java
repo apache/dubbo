@@ -25,15 +25,15 @@ import com.alibaba.dubbo.rpc.cluster.LoadBalance;
 
 /**
  * MockFilter
- * 
+ *
  * @author william.liangf
  */
 public class MockFilter implements Filter {
-    
+
     private LoadBalance loadBalance;
 
     private Protocol protocol;
-    
+
     private MockDao mockDao;
 
     public MockDao getMockDao() {

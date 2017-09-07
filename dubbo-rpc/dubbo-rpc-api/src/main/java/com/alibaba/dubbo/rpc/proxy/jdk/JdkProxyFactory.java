@@ -15,18 +15,18 @@
  */
 package com.alibaba.dubbo.rpc.proxy.jdk;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.proxy.AbstractProxyFactory;
 import com.alibaba.dubbo.rpc.proxy.AbstractProxyInvoker;
 import com.alibaba.dubbo.rpc.proxy.InvokerInvocationHandler;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+
 /**
  * JavaassistRpcProxyFactory
-
+ *
  * @author william.liangf
  */
 public class JdkProxyFactory extends AbstractProxyFactory {
@@ -39,8 +39,8 @@ public class JdkProxyFactory extends AbstractProxyFactory {
     public <T> Invoker<T> getInvoker(T proxy, Class<T> type, URL url) {
         return new AbstractProxyInvoker<T>(proxy, type, url) {
             @Override
-            protected Object doInvoke(T proxy, String methodName, 
-                                      Class<?>[] parameterTypes, 
+            protected Object doInvoke(T proxy, String methodName,
+                                      Class<?>[] parameterTypes,
                                       Object[] arguments) throws Throwable {
                 Method method = proxy.getClass().getMethod(methodName, parameterTypes);
                 return method.invoke(proxy, arguments);

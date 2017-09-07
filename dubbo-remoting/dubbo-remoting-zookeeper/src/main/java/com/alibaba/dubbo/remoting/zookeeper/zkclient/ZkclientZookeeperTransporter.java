@@ -6,8 +6,8 @@ import com.alibaba.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
 public class ZkclientZookeeperTransporter implements ZookeeperTransporter {
 
-	public ZookeeperClient connect(URL url) {
-		return new ZkclientZookeeperClient(url);
-	}
+    public ZookeeperClient connect(URL url) {
+        return new ZkclientZookeeperClient(url);
+    }
 
 }

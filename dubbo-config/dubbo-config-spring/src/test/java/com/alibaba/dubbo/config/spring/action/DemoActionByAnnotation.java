@@ -15,20 +15,20 @@
  */
 package com.alibaba.dubbo.config.spring.action;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.alibaba.dubbo.config.spring.api.DemoService;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * DemoAction
- * 
+ *
  * @author william.liangf
  */
 public class DemoActionByAnnotation {
-    
+
     @Autowired
     private DemoService demoService;
-    
+
     public DemoService getDemoService() {
         return demoService;
     }

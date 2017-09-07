@@ -15,11 +15,6 @@
  */
 package com.alibaba.dubbo.remoting.p2p.support;
 
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
@@ -32,20 +27,25 @@ import com.alibaba.dubbo.remoting.p2p.Group;
 import com.alibaba.dubbo.remoting.p2p.Peer;
 import com.alibaba.dubbo.remoting.transport.ServerDelegate;
 
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
+
 /**
  * ServerPeer
- * 
+ *
  * @author william.liangf
  */
 public class ServerPeer extends ServerDelegate implements Peer {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(ServerPeer.class);
 
     private final Map<URL, Client> clients;
 
     private final Group group;
-    
-    public ServerPeer(Server server, Map<URL, Client> clients, Group group){
+
+    public ServerPeer(Server server, Map<URL, Client> clients, Group group) {
         super(server);
         this.clients = clients;
         this.group = group;
@@ -63,7 +63,7 @@ public class ServerPeer extends ServerDelegate implements Peer {
             logger.error(e.getMessage(), e);
         }
     }
-    
+
     @Override
     public Collection<Channel> getChannels() {
         Collection<Channel> channels = super.getChannels();

@@ -15,18 +15,18 @@
  */
 package com.alibaba.dubbo.monitor.simple;
 
-import org.junit.Test;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
 
+import org.junit.Test;
+
 /**
  * SimpleMonitorServiceTest
- * 
+ *
  * @author william.liangf
  */
 public class SimpleMonitorServiceTest {
-    
+
     @Test
     public void testMonitor() {
         new SimpleMonitorService().collect(new URL("dubbo", NetUtils.getLocalHost(), 0));

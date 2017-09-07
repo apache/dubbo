@@ -15,13 +15,13 @@
  */
 package com.alibaba.dubbo.examples.annotation;
 
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-
 import com.alibaba.dubbo.examples.annotation.action.AnnotationAction;
+
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * CallbackConsumer
- * 
+ *
  * @author william.liangf
  */
 public class AnnotationConsumer {
@@ -30,7 +30,7 @@ public class AnnotationConsumer {
         String config = AnnotationConsumer.class.getPackage().getName().replace('.', '/') + "/annotation-consumer.xml";
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(config);
         context.start();
-        final AnnotationAction annotationAction = (AnnotationAction)context.getBean("annotationAction");
+        final AnnotationAction annotationAction = (AnnotationAction) context.getBean("annotationAction");
         String hello = annotationAction.doSayHello("world");
         System.out.println("result :" + hello);
         System.in.read();

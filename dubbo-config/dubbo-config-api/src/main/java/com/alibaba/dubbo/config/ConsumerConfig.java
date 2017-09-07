@@ -17,7 +17,7 @@ package com.alibaba.dubbo.config;
 
 /**
  * ConsumerConfig
- * 
+ *
  * @author william.liangf
  * @export
  */
@@ -26,8 +26,8 @@ public class ConsumerConfig extends AbstractReferenceConfig {
     private static final long serialVersionUID = 2827274711143680600L;
 
     // 是否为缺省
-    private Boolean             isDefault;
-    
+    private Boolean isDefault;
+
     @Override
     public void setTimeout(Integer timeout) {
         super.setTimeout(timeout);

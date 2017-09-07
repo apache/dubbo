@@ -16,8 +16,6 @@
 
 package com.alibaba.dubbo.remoting.transport.codec;
 
-import java.io.IOException;
-
 import com.alibaba.dubbo.common.io.UnsafeByteArrayInputStream;
 import com.alibaba.dubbo.common.io.UnsafeByteArrayOutputStream;
 import com.alibaba.dubbo.common.utils.Assert;
@@ -26,20 +24,22 @@ import com.alibaba.dubbo.remoting.Codec;
 import com.alibaba.dubbo.remoting.Codec2;
 import com.alibaba.dubbo.remoting.buffer.ChannelBuffer;
 
+import java.io.IOException;
+
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
 public class CodecAdapter implements Codec2 {
-    
+
     private Codec codec;
-    
+
     public CodecAdapter(Codec codec) {
         Assert.notNull(codec, "codec == null");
         this.codec = codec;
     }
 
     public void encode(Channel channel, ChannelBuffer buffer, Object message)
-        throws IOException {
+            throws IOException {
         UnsafeByteArrayOutputStream os = new UnsafeByteArrayOutputStream(1024);
         codec.encode(channel, os, message);
         buffer.writeBytes(os.toByteArray());
@@ -54,7 +54,7 @@ public class CodecAdapter implements Codec2 {
         buffer.readerIndex(savedReaderIndex + is.position());
         return result == Codec.NEED_MORE_INPUT ? DecodeResult.NEED_MORE_INPUT : result;
     }
-    
+
     public Codec getCodec() {
         return codec;
     }

@@ -19,18 +19,17 @@ import java.io.IOException;
 
 /**
  * JSONSerializable.
- * 
+ *
  * @author qian.lei
  */
 
-interface JSONNode
-{
-	/**
-	 * write json string.
-	 * 
-	 * @param jc json converter.
-	 * @param jb json builder.
-	 * @throws IOException
-	 */
-	void writeJSON(JSONConverter jc, JSONWriter jb, boolean writeClass) throws IOException;
+interface JSONNode {
+    /**
+     * write json string.
+     *
+     * @param jc json converter.
+     * @param jb json builder.
+     * @throws IOException
+     */
+    void writeJSON(JSONConverter jc, JSONWriter jb, boolean writeClass) throws IOException;
 }

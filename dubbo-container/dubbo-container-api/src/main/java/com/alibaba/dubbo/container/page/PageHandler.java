@@ -20,15 +20,15 @@ import com.alibaba.dubbo.common.extension.SPI;
 
 /**
  * PageHandler
- * 
+ *
  * @author william.liangf
  */
 @SPI
 public interface PageHandler {
-    
+
     /**
      * Handle the page.
-     * 
+     *
      * @param url
      * @return the page.
      */

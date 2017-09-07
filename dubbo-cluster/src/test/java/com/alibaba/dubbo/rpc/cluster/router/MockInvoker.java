@@ -23,14 +23,16 @@ import com.alibaba.dubbo.rpc.RpcException;
 
 public class MockInvoker<T> implements Invoker<T> {
     private boolean available = false;
-    private URL url ;
+    private URL url;
 
     public MockInvoker() {
     }
+
     public MockInvoker(URL url) {
         super();
         this.url = url;
     }
+
     public MockInvoker(boolean available) {
         this.available = available;
     }

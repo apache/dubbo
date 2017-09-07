@@ -15,24 +15,24 @@
  */
 package com.alibaba.dubbo.config.provider.impl;
 
-import java.util.List;
-
 import com.alibaba.dubbo.config.api.Box;
 import com.alibaba.dubbo.config.api.DemoException;
 import com.alibaba.dubbo.config.api.DemoService;
 import com.alibaba.dubbo.config.api.User;
 
+import java.util.List;
+
 /**
  * DemoServiceImpl
- * 
+ *
  * @author william.liangf
  */
 public class DemoServiceImpl implements DemoService {
-    
+
     public String sayName(String name) {
         return "say:" + name;
     }
-    
+
     public Box getBox() {
         return null;
     }
@@ -48,5 +48,5 @@ public class DemoServiceImpl implements DemoService {
     public int echo(int i) {
         return i;
     }
-    
+
 }

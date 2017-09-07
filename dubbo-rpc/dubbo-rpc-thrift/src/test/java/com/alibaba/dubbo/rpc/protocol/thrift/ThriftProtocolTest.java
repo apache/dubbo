@@ -1,10 +1,10 @@
 /**
  * File Created at 2011-12-08
  * $Id$
- *
+ * <p>
  * Copyright 2008 Alibaba.com Croporation Limited.
  * All rights reserved.
- *
+ * <p>
  * This software is the confidential and proprietary information of
  * Alibaba Company. ("Confidential Information").  You shall not
  * disclose such Confidential Information and shall use it only in
@@ -15,11 +15,9 @@ package com.alibaba.dubbo.rpc.protocol.thrift;
 
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.Result;
-import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.gen.dubbo.Demo;
+
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -43,7 +41,7 @@ public class ThriftProtocolTest extends AbstractTest {
 
         protocol = new ThriftProtocol();
 
-        url = URL.valueOf( ThriftProtocol.NAME + "://127.0.0.1:" + PORT + "/" + Demo.class.getName() );
+        url = URL.valueOf(ThriftProtocol.NAME + "://127.0.0.1:" + PORT + "/" + Demo.class.getName());
 
     }
 
@@ -52,12 +50,12 @@ public class ThriftProtocolTest extends AbstractTest {
 
         destroy();
 
-        if ( protocol != null ) {
+        if (protocol != null) {
             protocol.destroy();
             protocol = null;
         }
 
-        if ( invoker != null ) {
+        if (invoker != null) {
             invoker.destroy();
             invoker = null;
         }

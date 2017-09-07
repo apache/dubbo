@@ -108,12 +108,12 @@ public class HeapChannelBuffer extends AbstractChannelBuffer {
     }
 
     public void getBytes(int index, OutputStream out, int length)
-        throws IOException {
+            throws IOException {
         out.write(array, index, length);
     }
 
     public int getBytes(int index, GatheringByteChannel out, int length)
-        throws IOException {
+            throws IOException {
         return out.write(ByteBuffer.wrap(array, index, length));
     }
 

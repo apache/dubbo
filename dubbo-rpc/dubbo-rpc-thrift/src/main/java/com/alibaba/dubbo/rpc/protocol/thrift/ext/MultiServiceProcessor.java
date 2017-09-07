@@ -1,10 +1,10 @@
 /**
  * File Created at 2011-12-26
  * $Id$
- *
+ * <p>
  * Copyright 2008 Alibaba.com Croporation Limited.
  * All rights reserved.
- *
+ * <p>
  * This software is the confidential and proprietary information of
  * Alibaba Company. ("Confidential Information").  You shall not
  * disclose such Confidential Information and shall use it only in
@@ -16,6 +16,7 @@ package com.alibaba.dubbo.rpc.protocol.thrift.ext;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.rpc.protocol.thrift.ThriftCodec;
+
 import org.apache.thrift.TException;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -32,23 +33,24 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class MultiServiceProcessor implements TProcessor {
 
-    private static final Logger logger = LoggerFactory.getLogger( MultiServiceProcessor.class );
+    private static final Logger logger = LoggerFactory.getLogger(MultiServiceProcessor.class);
 
     private ConcurrentMap<String, TProcessor> processorMap = new ConcurrentHashMap<String, TProcessor>();
 
     private TProtocolFactory protocolFactory = new TBinaryProtocol.Factory();
 
-    public MultiServiceProcessor() {}
+    public MultiServiceProcessor() {
+    }
 
-    public boolean process( TProtocol in, TProtocol out ) throws TException {
+    public boolean process(TProtocol in, TProtocol out) throws TException {
 
         short magic = in.readI16();
 
-        if ( magic != ThriftCodec.MAGIC ) {
+        if (magic != ThriftCodec.MAGIC) {
             logger.error(
-                    new StringBuilder( 24 )
-                            .append( "Unsupported magic " )
-                            .append( magic ).toString() );
+                    new StringBuilder(24)
+                            .append("Unsupported magic ")
+                            .append(magic).toString());
             return false;
         }
 
@@ -58,63 +60,63 @@ public class MultiServiceProcessor implements TProcessor {
         String serviceName = in.readString();
         long id = in.readI64();
 
-        ByteArrayOutputStream bos = new ByteArrayOutputStream( 1024 );
+        ByteArrayOutputStream bos = new ByteArrayOutputStream(1024);
 
-        TIOStreamTransport transport = new TIOStreamTransport( bos );
+        TIOStreamTransport transport = new TIOStreamTransport(bos);
 
-        TProtocol protocol = protocolFactory.getProtocol( transport );
+        TProtocol protocol = protocolFactory.getProtocol(transport);
 
-        TProcessor processor = processorMap.get( serviceName );
+        TProcessor processor = processorMap.get(serviceName);
 
-        if ( processor == null ) {
+        if (processor == null) {
             logger.error(
-                    new StringBuilder( 32 )
-                            .append( "Could not find processor for service " )
-                            .append( serviceName )
-                            .toString() );
+                    new StringBuilder(32)
+                            .append("Could not find processor for service ")
+                            .append(serviceName)
+                            .toString());
             return false;
         }
 
         // todo if exception
-        boolean result = processor.process( in, protocol );
+        boolean result = processor.process(in, protocol);
 
-        ByteArrayOutputStream header = new ByteArrayOutputStream( 512 );
+        ByteArrayOutputStream header = new ByteArrayOutputStream(512);
 
-        TIOStreamTransport headerTransport = new TIOStreamTransport( header );
+        TIOStreamTransport headerTransport = new TIOStreamTransport(header);
 
-        TProtocol headerProtocol = protocolFactory.getProtocol( headerTransport );
+        TProtocol headerProtocol = protocolFactory.getProtocol(headerTransport);
 
-        headerProtocol.writeI16( magic );
-        headerProtocol.writeI32( Integer.MAX_VALUE );
-        headerProtocol.writeI16( Short.MAX_VALUE );
-        headerProtocol.writeByte( version );
-        headerProtocol.writeString( serviceName );
-        headerProtocol.writeI64( id );
+        headerProtocol.writeI16(magic);
+        headerProtocol.writeI32(Integer.MAX_VALUE);
+        headerProtocol.writeI16(Short.MAX_VALUE);
+        headerProtocol.writeByte(version);
+        headerProtocol.writeString(serviceName);
+        headerProtocol.writeI64(id);
         headerProtocol.getTransport().flush();
 
-        out.writeI16( magic );
-        out.writeI32( bos.size() + header.size() );
-        out.writeI16( ( short ) ( 0xffff & header.size() ) );
-        out.writeByte( version );
-        out.writeString( serviceName );
-        out.writeI64( id );
+        out.writeI16(magic);
+        out.writeI32(bos.size() + header.size());
+        out.writeI16((short) (0xffff & header.size()));
+        out.writeByte(version);
+        out.writeString(serviceName);
+        out.writeI64(id);
 
-        out.getTransport().write( bos.toByteArray() );
+        out.getTransport().write(bos.toByteArray());
         out.getTransport().flush();
 
         return result;
 
     }
 
-    public TProcessor addProcessor( Class service, TProcessor processor ) {
-        if ( service != null && processor != null ) {
-            return processorMap.putIfAbsent( service.getName(), processor );
+    public TProcessor addProcessor(Class service, TProcessor processor) {
+        if (service != null && processor != null) {
+            return processorMap.putIfAbsent(service.getName(), processor);
         }
         return processor;
     }
 
-    public void setProtocolFactory( TProtocolFactory factory ) {
-        if ( factory != null ) {
+    public void setProtocolFactory(TProtocolFactory factory) {
+        if (factory != null) {
             this.protocolFactory = factory;
         }
     }

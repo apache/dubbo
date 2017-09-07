@@ -22,9 +22,9 @@ import com.alibaba.dubbo.rpc.cluster.Directory;
 
 /**
  * 快速失败，只发起一次调用，失败立即报错，通常用于非幂等性的写操作。
- *  
+ * <p>
  * <a href="http://en.wikipedia.org/wiki/Fail-fast">Fail-fast</a>
- * 
+ *
  * @author william.liangf
  */
 public class FailfastCluster implements Cluster {

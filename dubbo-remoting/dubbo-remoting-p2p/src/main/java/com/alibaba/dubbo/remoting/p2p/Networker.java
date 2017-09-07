@@ -21,9 +21,9 @@ import com.alibaba.dubbo.remoting.RemotingException;
 
 /**
  * Networker. (SPI, Singleton, ThreadSafe)
- * 
+ * <p>
  * <a href="http://en.wikipedia.org/wiki/Peer-to-peer">Peer-to-peer</a>
- * 
+ *
  * @author william.liangf
  */
 @SPI
@@ -31,7 +31,7 @@ public interface Networker {
 
     /**
      * lookup group.
-     * 
+     *
      * @param url group url
      * @return group.
      */

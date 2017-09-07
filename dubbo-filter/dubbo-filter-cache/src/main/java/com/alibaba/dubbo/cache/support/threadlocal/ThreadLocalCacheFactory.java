@@ -21,7 +21,7 @@ import com.alibaba.dubbo.common.URL;
 
 /**
  * ThreadLocalCacheFactory
- * 
+ *
  * @author william.liangf
  */
 public class ThreadLocalCacheFactory extends AbstractCacheFactory {

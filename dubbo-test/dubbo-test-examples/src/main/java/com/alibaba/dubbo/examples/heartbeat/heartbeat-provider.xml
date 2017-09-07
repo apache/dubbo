@@ -13,9 +13,9 @@
   -   See the License for the specific language governing permissions and
   -   limitations under the License.
   -->
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xmlns="http://www.springframework.org/schema/beans"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
        http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
 
@@ -23,12 +23,13 @@
 
     <!--<dubbo:registry address="127.0.0.1:9090"/>-->
 
-    <dubbo:protocol name="dubbo" port="20880" />
+    <dubbo:protocol name="dubbo" port="20880"/>
 
     <bean id="helloService" class="com.alibaba.dubbo.examples.remoting.heartbeat.impl.HelloServiceImpl"/>
 
-    <dubbo:service registry="N/A" interface="com.alibaba.dubbo.examples.remoting.heartbeat.api.HelloService" ref="helloService">
-        <dubbo:parameter key="heartbeat" value="3000" />
+    <dubbo:service registry="N/A" interface="com.alibaba.dubbo.examples.remoting.heartbeat.api.HelloService"
+                   ref="helloService">
+        <dubbo:parameter key="heartbeat" value="3000"/>
     </dubbo:service>
 
 </beans>

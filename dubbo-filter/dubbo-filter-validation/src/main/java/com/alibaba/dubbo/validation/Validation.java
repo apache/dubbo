@@ -22,7 +22,7 @@ import com.alibaba.dubbo.common.extension.SPI;
 
 /**
  * Validation
- * 
+ *
  * @author william.liangf
  */
 @SPI("jvalidation")

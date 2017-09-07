@@ -20,7 +20,6 @@ import com.alibaba.dubbo.common.extensionloader.ext6_wrap.WrappedExt;
 
 /**
  * @author ding.lid
- *
  */
 public class Ext5Impl2 implements WrappedExt {
     public String echo(URL url, String s) {

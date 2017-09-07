@@ -15,14 +15,14 @@
  */
 package com.alibaba.dubbo.examples.callback;
 
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-
 import com.alibaba.dubbo.examples.callback.api.CallbackListener;
 import com.alibaba.dubbo.examples.callback.api.CallbackService;
 
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
 /**
  * CallbackConsumer
- * 
+ *
  * @author william.liangf
  */
 public class CallbackConsumer {

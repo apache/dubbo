@@ -19,11 +19,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * ValidationServiceImpl
- * 
+ *
  * @author william.liangf
  */
 public class CacheServiceImpl implements CacheService {
-    
+
     private final AtomicInteger i = new AtomicInteger();
 
     public String findCache(String id) {

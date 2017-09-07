@@ -19,11 +19,11 @@ import com.alibaba.dubbo.common.Resetable;
 
 /**
  * Remoting Client. (API/SPI, Prototype, ThreadSafe)
- * 
+ * <p>
  * <a href="http://en.wikipedia.org/wiki/Client%E2%80%93server_model">Client/Server</a>
- * 
- * @see com.alibaba.dubbo.remoting.Transporter#connect(com.alibaba.dubbo.common.URL, ChannelHandler)
+ *
  * @author qian.lei
+ * @see com.alibaba.dubbo.remoting.Transporter#connect(com.alibaba.dubbo.common.URL, ChannelHandler)
  */
 public interface Client extends Endpoint, Channel, Resetable {
 
@@ -31,8 +31,8 @@ public interface Client extends Endpoint, Channel, Resetable {
      * reconnect.
      */
     void reconnect() throws RemotingException;
-    
+
     @Deprecated
     void reset(com.alibaba.dubbo.common.Parameters parameters);
-    
+
 }

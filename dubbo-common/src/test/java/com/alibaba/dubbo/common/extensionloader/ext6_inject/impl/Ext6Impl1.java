@@ -15,25 +15,25 @@
  */
 package com.alibaba.dubbo.common.extensionloader.ext6_inject.impl;
 
-import junit.framework.Assert;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extensionloader.ext1.SimpleExt;
 import com.alibaba.dubbo.common.extensionloader.ext6_inject.Dao;
 import com.alibaba.dubbo.common.extensionloader.ext6_inject.Ext6;
 
+import junit.framework.Assert;
+
 /**
  * @author ding.lid
  */
 public class Ext6Impl1 implements Ext6 {
-    SimpleExt ext1;
     public Dao obj;
-    
-    public void setDao(Dao obj){
+    SimpleExt ext1;
+
+    public void setDao(Dao obj) {
         Assert.assertNotNull("inject extension instance can not be null", obj);
         Assert.fail();
     }
-    
+
     public void setExt1(SimpleExt ext1) {
         this.ext1 = ext1;
     }
@@ -41,6 +41,6 @@ public class Ext6Impl1 implements Ext6 {
     public String echo(URL url, String s) {
         return "Ext6Impl1-echo-" + ext1.echo(url, s);
     }
-    
+
 
 }

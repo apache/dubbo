@@ -15,14 +15,6 @@
  */
 package com.alibaba.dubbo.registry.simple;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
@@ -35,18 +27,24 @@ import com.alibaba.dubbo.registry.RegistryService;
 import com.alibaba.dubbo.registry.support.AbstractRegistry;
 import com.alibaba.dubbo.rpc.RpcContext;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 /**
  * SimpleRegistryService
- * 
+ *
  * @author william.liangf
  */
 public class SimpleRegistryService extends AbstractRegistry {
 
-    private final ConcurrentMap<String, Set<URL>> remoteRegistered = new ConcurrentHashMap<String, Set<URL>>();
-
-    private final ConcurrentMap<String, ConcurrentMap<URL, Set<NotifyListener>>> remoteSubscribed = new ConcurrentHashMap<String, ConcurrentMap<URL, Set<NotifyListener>>>();
-    
     private final static Logger logger = LoggerFactory.getLogger(SimpleRegistryService.class);
+    private final ConcurrentMap<String, Set<URL>> remoteRegistered = new ConcurrentHashMap<String, Set<URL>>();
+    private final ConcurrentMap<String, ConcurrentMap<URL, Set<NotifyListener>>> remoteSubscribed = new ConcurrentHashMap<String, ConcurrentMap<URL, Set<NotifyListener>>>();
 
     public SimpleRegistryService() {
         super(new URL("dubbo", NetUtils.getLocalHost(), 0, RegistryService.class.getName(), "file", "N/A"));
@@ -57,13 +55,13 @@ public class SimpleRegistryService extends AbstractRegistry {
     }
 
     public List<URL> lookup(URL url) {
-    	List<URL> urls = new ArrayList<URL>();
-    	for (URL u: getRegistered()) {
+        List<URL> urls = new ArrayList<URL>();
+        for (URL u : getRegistered()) {
             if (UrlUtils.isMatch(url, u)) {
                 urls.add(u);
             }
         }
-    	return urls;
+        return urls;
     }
 
     public void register(URL url) {
@@ -92,7 +90,7 @@ public class SimpleRegistryService extends AbstractRegistry {
         if (getUrl().getPort() == 0) {
             URL registryUrl = RpcContext.getContext().getUrl();
             if (registryUrl != null && registryUrl.getPort() > 0
-            		&& RegistryService.class.getName().equals(registryUrl.getPath())) {
+                    && RegistryService.class.getName().equals(registryUrl.getPath())) {
                 super.setUrl(registryUrl);
                 super.register(registryUrl);
             }
@@ -114,7 +112,7 @@ public class SimpleRegistryService extends AbstractRegistry {
     }
 
     public void unsubscribe(URL url, NotifyListener listener) {
-        if (! Constants.ANY_VALUE.equals(url.getServiceInterface())
+        if (!Constants.ANY_VALUE.equals(url.getServiceInterface())
                 && url.getParameter(Constants.REGISTER_KEY, true)) {
             unregister(url);
         }
@@ -134,7 +132,7 @@ public class SimpleRegistryService extends AbstractRegistry {
             if (UrlUtils.isMatch(key, url)) {
                 List<URL> list = lookup(key);
                 for (NotifyListener listener : entry.getValue()) {
-                	listener.notify(list);
+                    listener.notify(list);
                 }
             }
         }
@@ -146,7 +144,7 @@ public class SimpleRegistryService extends AbstractRegistry {
             if (UrlUtils.isMatch(key, url)) {
                 List<URL> list = lookup(key);
                 for (NotifyListener listener : entry.getValue()) {
-                	listener.notify(list);
+                    listener.notify(list);
                 }
             }
         }
@@ -154,36 +152,36 @@ public class SimpleRegistryService extends AbstractRegistry {
 
     protected void subscribed(final URL url, final NotifyListener listener) {
         if (Constants.ANY_VALUE.equals(url.getServiceInterface())) {
-        	new Thread(new Runnable() {
-				public void run() {
-					Map<String, List<URL>> map = new HashMap<String, List<URL>>();
-		        	for (URL u: getRegistered()) {
-		                if (UrlUtils.isMatch(url, u)) {
-		                	String service = u.getServiceInterface();
-		                	List<URL> list = map.get(service);
-		                	if (list == null) {
-		                		list = new ArrayList<URL>();
-		                		map.put(service, list);
-		                	}
-		                	list.add(u);
-		                }
-		            }
-		        	for (List<URL> list : map.values()) {
-		        		try {
-		            		listener.notify(list);
-		            	} catch (Throwable e) {
-		            		logger.warn("Discard to notify " + url.getServiceKey() + " to listener " + listener);
-		            	}
-		        	}
-				}
-			}, "DubboMonitorNotifier").start();
+            new Thread(new Runnable() {
+                public void run() {
+                    Map<String, List<URL>> map = new HashMap<String, List<URL>>();
+                    for (URL u : getRegistered()) {
+                        if (UrlUtils.isMatch(url, u)) {
+                            String service = u.getServiceInterface();
+                            List<URL> list = map.get(service);
+                            if (list == null) {
+                                list = new ArrayList<URL>();
+                                map.put(service, list);
+                            }
+                            list.add(u);
+                        }
+                    }
+                    for (List<URL> list : map.values()) {
+                        try {
+                            listener.notify(list);
+                        } catch (Throwable e) {
+                            logger.warn("Discard to notify " + url.getServiceKey() + " to listener " + listener);
+                        }
+                    }
+                }
+            }, "DubboMonitorNotifier").start();
         } else {
-        	List<URL> list = lookup(url);
-        	try {
-        		listener.notify(list);
-        	} catch (Throwable e) {
-        		logger.warn("Discard to notify " + url.getServiceKey() + " to listener " + listener);
-        	}
+            List<URL> list = lookup(url);
+            try {
+                listener.notify(list);
+            } catch (Throwable e) {
+                logger.warn("Discard to notify " + url.getServiceKey() + " to listener " + listener);
+            }
         }
     }
 
@@ -201,7 +199,7 @@ public class SimpleRegistryService extends AbstractRegistry {
         Map<URL, Set<NotifyListener>> listeners = remoteSubscribed.get(client);
         if (listeners != null && listeners.size() > 0) {
             for (Map.Entry<URL, Set<NotifyListener>> entry : listeners.entrySet()) {
-            	URL url = entry.getKey();
+                URL url = entry.getKey();
                 for (NotifyListener listener : entry.getValue()) {
                     unsubscribe(url, listener);
                 }
