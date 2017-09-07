@@ -46,7 +46,7 @@ public class TimeoutFilter implements Filter {
                 "timeout", Integer.MAX_VALUE)) {
             if (logger.isWarnEnabled()) {
                 logger.warn("invoke time out. method: " + invocation.getMethodName()
-                        + "arguments: " + Arrays.toString(invocation.getArguments()) + " , url is "
+                        + " arguments: " + Arrays.toString(invocation.getArguments()) + " , url is "
                         + invoker.getUrl() + ", invoke elapsed " + elapsed + " ms.");
             }
         }
