@@ -15,7 +15,10 @@
  */
 package com.alibaba.dubbo.remoting.transport.netty;
 
-import java.io.IOException;
+import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.remoting.Codec2;
+import com.alibaba.dubbo.remoting.buffer.DynamicChannelBuffer;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
@@ -29,28 +32,25 @@ import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
 
-import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.remoting.Codec2;
-import com.alibaba.dubbo.remoting.buffer.DynamicChannelBuffer;
+import java.io.IOException;
 
 /**
  * NettyCodecAdapter.
- * 
+ *
  * @author qian.lei
  */
 final class NettyCodecAdapter {
 
     private final ChannelHandler encoder = new InternalEncoder();
-    
+
     private final ChannelHandler decoder = new InternalDecoder();
 
-    private final Codec2         codec;
-    
-    private final URL            url;
-    
-    private final int            bufferSize;
-    
+    private final Codec2 codec;
+
+    private final URL url;
+
+    private final int bufferSize;
+
     private final com.alibaba.dubbo.remoting.ChannelHandler handler;
 
     public NettyCodecAdapter(Codec2 codec, URL url, com.alibaba.dubbo.remoting.ChannelHandler handler) {
@@ -75,10 +75,10 @@ final class NettyCodecAdapter {
         @Override
         protected Object encode(ChannelHandlerContext ctx, Channel ch, Object msg) throws Exception {
             com.alibaba.dubbo.remoting.buffer.ChannelBuffer buffer =
-                com.alibaba.dubbo.remoting.buffer.ChannelBuffers.dynamicBuffer(1024);
+                    com.alibaba.dubbo.remoting.buffer.ChannelBuffers.dynamicBuffer(1024);
             NettyChannel channel = NettyChannel.getOrAddChannel(ch, url, handler);
             try {
-            	codec.encode(channel, buffer, msg);
+                codec.encode(channel, buffer, msg);
             } finally {
                 NettyChannel.removeChannelIfDisconnected(ch);
             }
@@ -89,12 +89,12 @@ final class NettyCodecAdapter {
     private class InternalDecoder extends SimpleChannelUpstreamHandler {
 
         private com.alibaba.dubbo.remoting.buffer.ChannelBuffer buffer =
-            com.alibaba.dubbo.remoting.buffer.ChannelBuffers.EMPTY_BUFFER;
+                com.alibaba.dubbo.remoting.buffer.ChannelBuffers.EMPTY_BUFFER;
 
         @Override
         public void messageReceived(ChannelHandlerContext ctx, MessageEvent event) throws Exception {
             Object o = event.getMessage();
-            if (! (o instanceof ChannelBuffer)) {
+            if (!(o instanceof ChannelBuffer)) {
                 ctx.sendUpstream(event);
                 return;
             }
@@ -113,13 +113,13 @@ final class NettyCodecAdapter {
                 } else {
                     int size = buffer.readableBytes() + input.readableBytes();
                     message = com.alibaba.dubbo.remoting.buffer.ChannelBuffers.dynamicBuffer(
-                        size > bufferSize ? size : bufferSize);
+                            size > bufferSize ? size : bufferSize);
                     message.writeBytes(buffer, buffer.readableBytes());
                     message.writeBytes(input.toByteBuffer());
                 }
             } else {
                 message = com.alibaba.dubbo.remoting.buffer.ChannelBuffers.wrappedBuffer(
-                    input.toByteBuffer());
+                        input.toByteBuffer());
             }
 
             NettyChannel channel = NettyChannel.getOrAddChannel(ctx.getChannel(), url, handler);

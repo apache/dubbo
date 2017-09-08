@@ -24,21 +24,21 @@ import com.alibaba.dubbo.rpc.RpcResult;
 
 /**
  * MockInvoker.java
- * 
+ *
  * @author tony.chenl
  */
 public class MyInvoker<T> implements Invoker<T> {
 
-    URL      url;
+    URL url;
     Class<T> type;
-    boolean  hasException = false;
+    boolean hasException = false;
 
-    public MyInvoker(URL url){
+    public MyInvoker(URL url) {
         this.url = url;
         type = (Class<T>) DemoService.class;
     }
 
-    public MyInvoker(URL url, boolean hasException){
+    public MyInvoker(URL url, boolean hasException) {
         this.url = url;
         type = (Class<T>) DemoService.class;
         this.hasException = hasException;

@@ -20,7 +20,7 @@ import com.alibaba.dubbo.examples.validation.api.ValidationService;
 
 /**
  * ValidationServiceImpl
- * 
+ *
  * @author william.liangf
  */
 public class ValidationServiceImpl implements ValidationService {

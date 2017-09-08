@@ -19,13 +19,14 @@ import com.alibaba.dubbo.common.Constants;
 
 /**
  * RpcConstants
- * 
- * @deprecated Replace to com.alibaba.dubbo.common.Constants
+ *
  * @author william.liangf
+ * @deprecated Replace to com.alibaba.dubbo.common.Constants
  */
 @Deprecated
 public final class RpcConstants extends Constants {
 
-    private RpcConstants() {}
+    private RpcConstants() {
+    }
 
 }

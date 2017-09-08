@@ -17,11 +17,11 @@ package com.alibaba.dubbo.examples.callback.api;
 
 /**
  * CallbackListener
- * 
+ *
  * @author william.liangf
  */
 public interface CallbackListener {
-    
+
     void changed(String msg);
 
 }

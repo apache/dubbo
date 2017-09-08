@@ -20,19 +20,20 @@ import com.alibaba.dubbo.config.spring.api.DemoService;
 
 /**
  * DemoServiceImpl
- * 
+ *
  * @author william.liangf
  */
 public class DemoServiceImpl_LongWaiting implements DemoService {
-    
+
     public String sayName(String name) {
         try {
             Thread.sleep(100 * 1000);
-        } catch (InterruptedException e) {}
-        
+        } catch (InterruptedException e) {
+        }
+
         return "say:" + name;
     }
-    
+
     public Box getBox() {
         return null;
     }

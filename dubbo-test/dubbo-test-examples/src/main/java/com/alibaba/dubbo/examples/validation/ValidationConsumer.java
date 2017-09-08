@@ -15,32 +15,31 @@
  */
 package com.alibaba.dubbo.examples.validation;
 
-import java.util.Date;
-import java.util.Set;
-
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
-
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-
 import com.alibaba.dubbo.examples.validation.api.ValidationParameter;
 import com.alibaba.dubbo.examples.validation.api.ValidationService;
 import com.alibaba.dubbo.rpc.RpcException;
 
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import java.util.Date;
+import java.util.Set;
+
 /**
  * ValidationConsumer
- * 
+ *
  * @author william.liangf
  */
 public class ValidationConsumer {
-    
+
     public static void main(String[] args) throws Exception {
         String config = ValidationConsumer.class.getPackage().getName().replace('.', '/') + "/validation-consumer.xml";
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(config);
         context.start();
-        
-        ValidationService validationService = (ValidationService)context.getBean("validationService");
-        
+
+        ValidationService validationService = (ValidationService) context.getBean("validationService");
+
         // Save OK
         ValidationParameter parameter = new ValidationParameter();
         parameter.setName("liangfei");
@@ -50,28 +49,28 @@ public class ValidationConsumer {
         parameter.setExpiryDate(new Date(System.currentTimeMillis() + 1000000));
         validationService.save(parameter);
         System.out.println("Validation Save OK");
-        
+
         // Save Error
         try {
             parameter = new ValidationParameter();
             validationService.save(parameter);
             System.err.println("Validation Save ERROR");
         } catch (RpcException e) {
-            ConstraintViolationException ve = (ConstraintViolationException)e.getCause();
+            ConstraintViolationException ve = (ConstraintViolationException) e.getCause();
             Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
             System.out.println(violations);
         }
-        
+
         // Delete OK
         validationService.delete(2, "abc");
         System.out.println("Validation Delete OK");
-        
+
         // Delete Error
         try {
             validationService.delete(0, "abc");
             System.err.println("Validation Delete ERROR");
         } catch (RpcException e) {
-            ConstraintViolationException ve = (ConstraintViolationException)e.getCause();
+            ConstraintViolationException ve = (ConstraintViolationException) e.getCause();
             Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
             System.out.println(violations);
         }

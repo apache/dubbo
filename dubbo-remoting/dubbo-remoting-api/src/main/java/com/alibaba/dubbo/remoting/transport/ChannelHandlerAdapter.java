@@ -21,7 +21,7 @@ import com.alibaba.dubbo.remoting.RemotingException;
 
 /**
  * ChannelHandlerAdapter.
- * 
+ *
  * @author qian.lei
  */
 public class ChannelHandlerAdapter implements ChannelHandler {

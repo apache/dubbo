@@ -5,7 +5,7 @@ import junit.framework.Assert;
 /**
  * @author <a href="mailto:gang.lvg@taobao.com">kimi</a>
  */
-public class DirectChannelBufferTest extends AbstractChannelBufferTest{
+public class DirectChannelBufferTest extends AbstractChannelBufferTest {
 
     private ChannelBuffer buffer;
 

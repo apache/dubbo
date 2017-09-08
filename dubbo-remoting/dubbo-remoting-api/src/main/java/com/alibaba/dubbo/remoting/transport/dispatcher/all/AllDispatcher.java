@@ -21,11 +21,11 @@ import com.alibaba.dubbo.remoting.Dispatcher;
 
 /**
  * 默认的线程池配置
- * 
+ *
  * @author chao.liuc
  */
 public class AllDispatcher implements Dispatcher {
-    
+
     public static final String NAME = "all";
 
     public ChannelHandler dispatch(ChannelHandler handler, URL url) {

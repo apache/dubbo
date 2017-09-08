@@ -16,9 +16,6 @@
 
 package com.alibaba.dubbo.rpc.protocol;
 
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invocation;
@@ -27,14 +24,18 @@ import com.alibaba.dubbo.rpc.ProxyFactory;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
 
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 /**
  * AbstractProxyProtocol
- * 
+ *
  * @author william.liangf
  */
 public abstract class AbstractProxyProtocol extends AbstractProtocol {
 
-    private final List<Class<?>> rpcExceptions = new CopyOnWriteArrayList<Class<?>>();;
+    private final List<Class<?>> rpcExceptions = new CopyOnWriteArrayList<Class<?>>();
+    ;
 
     private ProxyFactory proxyFactory;
 
@@ -51,20 +52,20 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
         this.rpcExceptions.add(exception);
     }
 
-    public void setProxyFactory(ProxyFactory proxyFactory) {
-        this.proxyFactory = proxyFactory;
-    }
-
     public ProxyFactory getProxyFactory() {
         return proxyFactory;
     }
 
+    public void setProxyFactory(ProxyFactory proxyFactory) {
+        this.proxyFactory = proxyFactory;
+    }
+
     @SuppressWarnings("unchecked")
-	public <T> Exporter<T> export(final Invoker<T> invoker) throws RpcException {
+    public <T> Exporter<T> export(final Invoker<T> invoker) throws RpcException {
         final String uri = serviceKey(invoker.getUrl());
         Exporter<T> exporter = (Exporter<T>) exporterMap.get(uri);
         if (exporter != null) {
-        	return exporter;
+            return exporter;
         }
         final Runnable runnable = doExport(proxyFactory.getProxy(invoker), invoker.getInterface(), invoker.getUrl());
         exporter = new AbstractExporter<T>(invoker) {

@@ -1,12 +1,12 @@
 package com.alibaba.dubbo.governance.web.personal.module.screen;
 
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.alibaba.dubbo.governance.service.UserService;
 import com.alibaba.dubbo.governance.web.common.module.screen.Restful;
 import com.alibaba.dubbo.registry.common.domain.User;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Map;
 
 public class Infos extends Restful {
     @Autowired
@@ -16,7 +16,7 @@ public class Infos extends Restful {
         User user = userDAO.findById(currentUser.getId());
         context.put("user", user);
     }
-    
+
     public boolean update(Map<String, Object> context) {
         User user = new User();
         user.setId(currentUser.getId());

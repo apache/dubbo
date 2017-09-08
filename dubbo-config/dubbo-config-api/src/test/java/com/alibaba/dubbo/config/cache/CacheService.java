@@ -17,7 +17,7 @@ package com.alibaba.dubbo.config.cache;
 
 /**
  * ValidationService
- * 
+ *
  * @author william.liangf
  */
 public interface CacheService {

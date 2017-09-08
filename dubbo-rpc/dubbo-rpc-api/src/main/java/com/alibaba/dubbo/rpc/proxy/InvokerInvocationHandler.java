@@ -15,22 +15,22 @@
  */
 package com.alibaba.dubbo.rpc.proxy;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+
 /**
  * InvokerHandler
- * 
+ *
  * @author william.liangf
  */
 public class InvokerInvocationHandler implements InvocationHandler {
 
     private final Invoker<?> invoker;
-    
-    public InvokerInvocationHandler(Invoker<?> handler){
+
+    public InvokerInvocationHandler(Invoker<?> handler) {
         this.invoker = handler;
     }
 

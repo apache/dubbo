@@ -15,17 +15,17 @@
  */
 package com.alibaba.dubbo.monitor.simple.pages;
 
-import java.util.List;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.container.page.Page;
 import com.alibaba.dubbo.container.page.PageHandler;
 import com.alibaba.dubbo.monitor.simple.RegistryContainer;
 import com.alibaba.dubbo.registry.NotifyListener;
 
+import java.util.List;
+
 /**
  * UnsubscribePageHandler
- * 
+ *
  * @author william.liangf
  */
 public class UnsubscribePageHandler implements PageHandler {
@@ -49,15 +49,17 @@ public class UnsubscribePageHandler implements PageHandler {
         }
         return new Page("<script type=\"text/javascript\">window.location.href=\"consumers.html?" + parameter + "\";</script>");
     }
-    
-    private static class NotifyListenerAdapter implements NotifyListener {
-        
-        public static final NotifyListener NOTIFY_LISTENER = new NotifyListenerAdapter();
-        
-        private NotifyListenerAdapter() {}
 
-        public void notify(List<URL> urls) {}
-        
+    private static class NotifyListenerAdapter implements NotifyListener {
+
+        public static final NotifyListener NOTIFY_LISTENER = new NotifyListenerAdapter();
+
+        private NotifyListenerAdapter() {
+        }
+
+        public void notify(List<URL> urls) {
+        }
+
     }
 
 }

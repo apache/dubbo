@@ -15,17 +15,16 @@
  */
 package com.alibaba.dubbo.governance.web.sysinfo.module.screen;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletResponse;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.alibaba.dubbo.governance.service.ConsumerService;
 import com.alibaba.dubbo.governance.service.ProviderService;
 import com.alibaba.dubbo.governance.web.common.module.screen.Restful;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author tony.chenl
@@ -33,10 +32,10 @@ import com.alibaba.dubbo.governance.web.common.module.screen.Restful;
 public class Dumps extends Restful {
 
     @Autowired
-    ProviderService         providerDAO;
+    ProviderService providerDAO;
 
     @Autowired
-    ConsumerService         consumerDAO;
+    ConsumerService consumerDAO;
 
     @Autowired
     HttpServletResponse response;

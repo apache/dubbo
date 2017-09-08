@@ -22,30 +22,31 @@ import java.util.Set;
 
 /**
  * UnReg.java
+ *
  * @author tony.chenl
  */
-public class Unreg extends Restful{
-    
+public class Unreg extends Restful {
+
     public Result doExecute(Map<String, Object> context) throws Exception {
-        if(url==null){
+        if (url == null) {
             throw new IllegalArgumentException("please give me the url");
         }
-        if(url.getPath().isEmpty()){
+        if (url.getPath().isEmpty()) {
             throw new IllegalArgumentException("please use interface as your url path");
         }
         HashMap<String, Set<String>> services = new HashMap<String, Set<String>>();
-        Set<String> serviceUrl =  new HashSet<String>();
+        Set<String> serviceUrl = new HashSet<String>();
         serviceUrl.add(url.toIdentityString());
         String name = url.getPath();
-        String version =url.getParameter("version");
-        if(version != null){
+        String version = url.getParameter("version");
+        if (version != null) {
             name = name + ":" + version;
         }
-        String group =url.getParameter("group");
-        if(group != null){
+        String group = url.getParameter("group");
+        if (group != null) {
             name = group + "/" + name;
         }
-        services.put(name,serviceUrl);
+        services.put(name, serviceUrl);
 //        registryService.unregister(operatorAddress,services);
         Result result = new Result();
         result.setMessage("Unregister Successfully!");

@@ -15,26 +15,26 @@
  */
 package com.alibaba.dubbo.rpc.protocol.rmi;
 
-import java.io.IOException;
-import java.net.SocketTimeoutException;
-import java.rmi.RemoteException;
+import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.protocol.AbstractProxyProtocol;
 
 import org.springframework.remoting.RemoteAccessException;
 import org.springframework.remoting.rmi.RmiProxyFactoryBean;
 import org.springframework.remoting.rmi.RmiServiceExporter;
 
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.rpc.RpcException;
-import com.alibaba.dubbo.rpc.protocol.AbstractProxyProtocol;
+import java.io.IOException;
+import java.net.SocketTimeoutException;
+import java.rmi.RemoteException;
 
 /**
  * RmiProtocol.
- * 
+ *
  * @author qian.lei
  */
 public class RmiProtocol extends AbstractProxyProtocol {
 
-    public static final int              DEFAULT_PORT = 1099;
+    public static final int DEFAULT_PORT = 1099;
 
     public RmiProtocol() {
         super(RemoteAccessException.class, RemoteException.class);

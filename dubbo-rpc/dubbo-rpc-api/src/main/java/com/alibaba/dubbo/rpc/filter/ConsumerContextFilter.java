@@ -28,7 +28,7 @@ import com.alibaba.dubbo.rpc.RpcInvocation;
 
 /**
  * ConsumerContextInvokerFilter
- * 
+ *
  * @author william.liangf
  */
 @Activate(group = Constants.CONSUMER, order = -10000)
@@ -39,10 +39,10 @@ public class ConsumerContextFilter implements Filter {
                 .setInvoker(invoker)
                 .setInvocation(invocation)
                 .setLocalAddress(NetUtils.getLocalHost(), 0)
-                .setRemoteAddress(invoker.getUrl().getHost(), 
-                                  invoker.getUrl().getPort());
+                .setRemoteAddress(invoker.getUrl().getHost(),
+                        invoker.getUrl().getPort());
         if (invocation instanceof RpcInvocation) {
-            ((RpcInvocation)invocation).setInvoker(invoker);
+            ((RpcInvocation) invocation).setInvoker(invoker);
         }
         try {
             return invoker.invoke(invocation);

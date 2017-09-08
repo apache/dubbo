@@ -22,9 +22,9 @@ import com.alibaba.dubbo.common.extensionloader.ext7.InitErrorExt;
  * @author ding.lid
  */
 public class Ext7InitErrorImpl implements InitErrorExt {
-    
+
     static {
-        if(true) {
+        if (true) {
             throw new RuntimeException("intended!");
         }
     }

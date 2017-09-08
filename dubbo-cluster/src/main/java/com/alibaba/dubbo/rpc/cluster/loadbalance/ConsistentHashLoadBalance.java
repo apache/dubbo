@@ -15,6 +15,11 @@
  */
 package com.alibaba.dubbo.rpc.cluster.loadbalance;
 
+import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.rpc.Invocation;
+import com.alibaba.dubbo.rpc.Invoker;
+
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -24,14 +29,9 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.rpc.Invocation;
-import com.alibaba.dubbo.rpc.Invoker;
-
 /**
  * ConsistentHashLoadBalance
- * 
+ *
  * @author william.liangf
  */
 public class ConsistentHashLoadBalance extends AbstractLoadBalance {
@@ -55,11 +55,11 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
 
         private final TreeMap<Long, Invoker<T>> virtualInvokers;
 
-        private final int                       replicaNumber;
-        
-        private final int                       identityHashCode;
-        
-        private final int[]                     argumentIndex;
+        private final int replicaNumber;
+
+        private final int identityHashCode;
+
+        private final int[] argumentIndex;
 
         public ConsistentHashSelector(List<Invoker<T>> invokers, String methodName, int identityHashCode) {
             this.virtualInvokers = new TreeMap<Long, Invoker<T>>();
@@ -68,7 +68,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
             this.replicaNumber = url.getMethodParameter(methodName, "hash.nodes", 160);
             String[] index = Constants.COMMA_SPLIT_PATTERN.split(url.getMethodParameter(methodName, "hash.arguments", "0"));
             argumentIndex = new int[index.length];
-            for (int i = 0; i < index.length; i ++) {
+            for (int i = 0; i < index.length; i++) {
                 argumentIndex[i] = Integer.parseInt(index[i]);
             }
             for (Invoker<T> invoker : invokers) {
@@ -121,8 +121,8 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
         private long hash(byte[] digest, int number) {
             return (((long) (digest[3 + number * 4] & 0xFF) << 24)
                     | ((long) (digest[2 + number * 4] & 0xFF) << 16)
-                    | ((long) (digest[1 + number * 4] & 0xFF) << 8) 
-                    | (digest[0 + number * 4] & 0xFF)) 
+                    | ((long) (digest[1 + number * 4] & 0xFF) << 8)
+                    | (digest[0 + number * 4] & 0xFF))
                     & 0xFFFFFFFFL;
         }
 

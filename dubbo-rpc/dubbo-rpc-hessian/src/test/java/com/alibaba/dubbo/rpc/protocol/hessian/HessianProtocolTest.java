@@ -15,11 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.protocol.hessian;
 
-import static org.junit.Assert.fail;
-import junit.framework.Assert;
-
-import org.junit.Test;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.rpc.Exporter;
@@ -29,13 +24,18 @@ import com.alibaba.dubbo.rpc.ProxyFactory;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.protocol.hessian.HessianServiceImpl.MyException;
 
+import junit.framework.Assert;
+import org.junit.Test;
+
+import static org.junit.Assert.fail;
+
 /**
  * HessianProtocolTest
- * 
+ *
  * @author william.liangf
  */
 public class HessianProtocolTest {
-    
+
     @Test
     public void testHessianProtocol() {
         HessianServiceImpl server = new HessianServiceImpl();
@@ -69,7 +69,7 @@ public class HessianProtocolTest {
         invoker.destroy();
         exporter.unexport();
     }
-    
+
     @Test
     public void testTimeOut() {
         HessianServiceImpl server = new HessianServiceImpl();
@@ -84,13 +84,13 @@ public class HessianProtocolTest {
             fail();
         } catch (RpcException expected) {
             Assert.assertEquals(true, expected.isTimeout());
-        }finally{
+        } finally {
             invoker.destroy();
             exporter.unexport();
         }
-        
+
     }
-    
+
     @Test
     public void testCustomException() {
         HessianServiceImpl server = new HessianServiceImpl();

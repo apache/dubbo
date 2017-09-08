@@ -26,13 +26,13 @@ import com.alibaba.dubbo.rpc.ProxyFactory;
 
 /**
  * DefaultMonitorFactroy
- * 
+ *
  * @author william.liangf
  */
 public class DubboMonitorFactroy extends AbstractMonitorFactory {
 
     private Protocol protocol;
-    
+
     private ProxyFactory proxyFactory;
 
     public void setProtocol(Protocol protocol) {
@@ -42,7 +42,7 @@ public class DubboMonitorFactroy extends AbstractMonitorFactory {
     public void setProxyFactory(ProxyFactory proxyFactory) {
         this.proxyFactory = proxyFactory;
     }
-    
+
     @Override
     protected Monitor createMonitor(URL url) {
         url = url.setProtocol(url.getParameter(Constants.PROTOCOL_KEY, "dubbo"));
@@ -55,7 +55,7 @@ public class DubboMonitorFactroy extends AbstractMonitorFactory {
         } else {
             filter = filter + ",";
         }
-        url = url.addParameters(Constants.CLUSTER_KEY, "failsafe", Constants.CHECK_KEY, String.valueOf(false), 
+        url = url.addParameters(Constants.CLUSTER_KEY, "failsafe", Constants.CHECK_KEY, String.valueOf(false),
                 Constants.REFERENCE_FILTER_KEY, filter + "-monitor");
         Invoker<MonitorService> monitorInvoker = protocol.refer(MonitorService.class, url);
         MonitorService monitorService = proxyFactory.getProxy(monitorInvoker);

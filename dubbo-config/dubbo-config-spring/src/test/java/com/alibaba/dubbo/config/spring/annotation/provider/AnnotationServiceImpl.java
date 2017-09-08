@@ -21,18 +21,18 @@ import com.alibaba.dubbo.config.spring.api.DemoService;
 
 /**
  * DemoServiceImpl
- * 
+ *
  * @author william.liangf
  */
 @Service(version = "1.2")
 public class AnnotationServiceImpl implements DemoService {
-    
+
     public String sayName(String name) {
         return "annotation:" + name;
     }
-    
+
     public Box getBox() {
         return null;
     }
-    
+
 }

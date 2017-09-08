@@ -17,7 +17,6 @@ package com.alibaba.dubbo.common.model;
 
 /**
  * @author ding.lid
- *
  */
 public enum AnimalEnum {
     dog, cat, rat, cow, bull, horse;

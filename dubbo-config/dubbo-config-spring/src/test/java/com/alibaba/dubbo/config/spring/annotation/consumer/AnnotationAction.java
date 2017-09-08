@@ -15,24 +15,24 @@ W * Copyright 1999-2011 Alibaba Group.
  */
 package com.alibaba.dubbo.config.spring.annotation.consumer;
 
-import org.springframework.stereotype.Controller;
-
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.spring.api.DemoService;
 
+import org.springframework.stereotype.Controller;
+
 /**
  * AnnotationAction
- * 
+ *
  * @author william.liangf
  */
 @Controller("annotationAction")
 public class AnnotationAction {
-    
+
     @Reference(version = "1.2")
     private DemoService demoService;
-    
+
     public String doSayName(String name) {
         return demoService.sayName(name);
     }
-    
+
 }
