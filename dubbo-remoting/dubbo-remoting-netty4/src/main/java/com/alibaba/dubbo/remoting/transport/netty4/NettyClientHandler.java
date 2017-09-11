@@ -36,8 +36,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @io.netty.channel.ChannelHandler.Sharable
 public class NettyClientHandler extends ChannelDuplexHandler {
 
-    private final Map<String, Channel> channels = new ConcurrentHashMap<String, Channel>(); // <ip:port, channel>
-
     private final URL url;
 
     private final ChannelHandler handler;
@@ -51,10 +49,6 @@ public class NettyClientHandler extends ChannelDuplexHandler {
         }
         this.url = url;
         this.handler = handler;
-    }
-
-    public Map<String, Channel> getChannels() {
-        return channels;
     }
 
 
@@ -73,7 +67,6 @@ public class NettyClientHandler extends ChannelDuplexHandler {
             throws Exception {
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
         try {
-            channels.remove(NetUtils.toAddressString((InetSocketAddress) ctx.channel().remoteAddress()));
             handler.disconnected(channel);
         } finally {
             NettyChannel.removeChannelIfDisconnected(ctx.channel());
