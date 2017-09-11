@@ -474,7 +474,10 @@
                 <executions>
                     <execution>
                         <id>attach-sources</id>
-                        <phase>none</phase>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
