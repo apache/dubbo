@@ -18,7 +18,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.alibaba</groupId>
     <artifactId>dubbo-parent</artifactId>
-    <version>2.5.4</version>
+    <version>2.5.5</version>
     <packaging>pom</packaging>
     <name>${project.artifactId}</name>
     <description>The parent project of dubbo</description>
@@ -89,7 +89,7 @@
         <httpclient_version>4.5.3</httpclient_version>
         <hessian_lite_version>3.2.1-fixed-2</hessian_lite_version>
         <xstream_version>1.4.1</xstream_version>
-        <fastjson_version>1.2.38</fastjson_version>
+        <fastjson_version>1.2.31</fastjson_version>
         <bsf_version>3.1</bsf_version>
         <sorcerer_version>0.8</sorcerer_version>
         <zookeeper_version>3.4.9</zookeeper_version>
@@ -140,7 +140,6 @@
         <profile.name>oss</profile.name>
 
         <!-- for maven compiler plugin -->
-        <maven_compiler_plugin_version>3.5.1</maven_compiler_plugin_version>
         <java_source_version>1.6</java_source_version>
         <java_target_version>1.6</java_target_version>
         <file_encoding>UTF-8</file_encoding>
@@ -463,7 +462,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven_compiler_plugin_version}</version>
                 <configuration>
                     <fork>true</fork>
                     <source>${java_source_version}</source>
