@@ -37,5 +37,6 @@
         <module>dubbo-remoting-p2p</module>
         <module>dubbo-remoting-http</module>
         <module>dubbo-remoting-zookeeper</module>
+        <module>dubbo-remoting-netty4</module>
     </modules>
 </project>
