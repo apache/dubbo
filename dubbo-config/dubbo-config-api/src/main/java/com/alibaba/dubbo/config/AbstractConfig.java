@@ -44,7 +44,7 @@ public abstract class AbstractConfig implements Serializable {
 
     protected static final Logger logger = LoggerFactory.getLogger(AbstractConfig.class);
     private static final long serialVersionUID = 4267533505537413570L;
-    private static final int MAX_LENGTH = 100;
+    private static final int MAX_LENGTH = 200;
 
     private static final int MAX_PATH_LENGTH = 200;
 
