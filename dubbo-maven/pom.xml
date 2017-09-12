@@ -23,7 +23,7 @@
     </parent>
     <groupId>com.alibaba</groupId>
     <artifactId>dubbo</artifactId>
-    <version>2.5.4</version>
+    <version>2.5.5</version>
     <packaging>jar</packaging>
     <name>Dubbo</name>
     <description>Dubbo is a distributed service framework enpowers applications with service import/export capability
@@ -244,6 +244,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.10.1</version>
                 <executions>
                     <execution>
                         <id>attach-javadoc</id>
