@@ -1,85 +1,93 @@
-/*
- * Copyright 1999-2012 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.alibaba.dubbo.common.extension.support;
 
 import com.alibaba.dubbo.common.extension.Activate;
-import com.alibaba.dubbo.common.extension.ExtensionLoader;
-import com.alibaba.dubbo.common.extension.SPI;
+import com.google.common.collect.*;
 
-import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
- * OrderComparetor
- *
- * @author william.liangf
+ * @author zhenyu.nie created on 2016 2016/11/24 15:19
  */
-public class ActivateComparator implements Comparator<Object> {
+public class ActivateComparator<T> {
 
-    public static final Comparator<Object> COMPARATOR = new ActivateComparator();
+    private Map<String, Item<T>> map = new HashMap<String, Item<T>>();
 
-    public int compare(Object o1, Object o2) {
-        if (o1 == null && o2 == null) {
-            return 0;
-        }
-        if (o1 == null) {
-            return -1;
-        }
-        if (o2 == null) {
-            return 1;
-        }
-        if (o1.equals(o2)) {
-            return 0;
-        }
-        Activate a1 = o1.getClass().getAnnotation(Activate.class);
-        Activate a2 = o2.getClass().getAnnotation(Activate.class);
-        if ((a1.before().length > 0 || a1.after().length > 0
-                || a2.before().length > 0 || a2.after().length > 0)
-                && o1.getClass().getInterfaces().length > 0
-                && o1.getClass().getInterfaces()[0].isAnnotationPresent(SPI.class)) {
-            ExtensionLoader<?> extensionLoader = ExtensionLoader.getExtensionLoader(o1.getClass().getInterfaces()[0]);
-            if (a1.before().length > 0 || a1.after().length > 0) {
-                String n2 = extensionLoader.getExtensionName(o2.getClass());
-                for (String before : a1.before()) {
-                    if (before.equals(n2)) {
-                        return -1;
-                    }
-                }
-                for (String after : a1.after()) {
-                    if (after.equals(n2)) {
-                        return 1;
-                    }
-                }
-            }
-            if (a2.before().length > 0 || a2.after().length > 0) {
-                String n1 = extensionLoader.getExtensionName(o1.getClass());
-                for (String before : a2.before()) {
-                    if (before.equals(n1)) {
-                        return 1;
-                    }
-                }
-                for (String after : a2.after()) {
-                    if (after.equals(n1)) {
-                        return -1;
-                    }
-                }
-            }
-        }
-        int n1 = a1 == null ? 0 : a1.order();
-        int n2 = a2 == null ? 0 : a2.order();
-        return n1 > n2 ? 1 : -1; // 就算n1 == n2也不能返回0，否则在HashSet等集合中，会被认为是同一值而覆盖
+    public void add(String name, Activate activate, T object) {
+        map.put(name, new Item<T>(name, activate, object));
     }
 
+    public List<T> sort() {
+        Map<String, Node<T>> nodes = Maps.newHashMapWithExpectedSize(map.size());
+        final Multimap<Node<T>, Node<T>> edges = HashMultimap.create();
+        for (Item<T> item : map.values()) {
+            nodes.put(item.getName(), new Node<T>(item.getName(), item.getActivate().order(), item.getObject()));
+        }
+        for (Item<T> item : map.values()) {
+            Activate activate = item.getActivate();
+            String[] before = activate.before();
+            putEdge(nodes, item, before, new PutEdge<T>() {
+                @Override
+                public void put(Node<T> lhs, Node<T> rhs) {
+                    edges.put(lhs, rhs);
+                }
+            });
+
+            String[] after = activate.after();
+            putEdge(nodes, item, after, new PutEdge<T>() {
+                @Override
+                public void put(Node<T> lhs, Node<T> rhs) {
+                    edges.put(rhs, lhs);
+                }
+            });
+        }
+
+        Sorter<T> sorter = new Sorter<T>(Sets.newHashSet(nodes.values()), edges);
+        List<Node<T>> sortedNodes = sorter.sort();
+        List<T> result = Lists.newArrayListWithCapacity(nodes.size());
+        for (Node<T> node : sortedNodes) {
+            result.add(node.getObject());
+        }
+        return result;
+    }
+
+    private void putEdge(Map<String, Node<T>> nodes, Item<T> item, String[] toPutNames, PutEdge<T> putEdge) {
+        if (toPutNames.length > 0) {
+            for (String putName : toPutNames) {
+                Node<T> putNode = nodes.get(putName);
+                if (putNode != null) {
+                    putEdge.put(nodes.get(item.getName()), putNode);
+                }
+            }
+        }
+    }
+
+    private interface PutEdge<T> {
+        void put(Node<T> lhs, Node<T> rhs);
+    }
+
+    private static class Item<T> {
+        private final String name;
+        private final Activate activate;
+        private final T object;
+
+        public Item(String name, Activate activate, T object) {
+            this.name = name;
+            this.activate = activate;
+            this.object = object;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public Activate getActivate() {
+            return activate;
+        }
+
+        public T getObject() {
+            return object;
+        }
+    }
 }
