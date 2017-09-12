@@ -141,8 +141,8 @@
 
         <!-- for maven compiler plugin -->
         <maven_compiler_plugin_version>3.5.1</maven_compiler_plugin_version>
-        <java_source_version>1.6</java_source_version>
-        <java_target_version>1.6</java_target_version>
+        <java_source_version>1.8</java_source_version>
+        <java_target_version>1.8</java_target_version>
         <file_encoding>UTF-8</file_encoding>
 
     </properties>
