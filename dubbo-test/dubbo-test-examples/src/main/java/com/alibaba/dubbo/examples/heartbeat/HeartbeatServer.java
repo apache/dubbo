@@ -74,7 +74,8 @@ public class HeartbeatServer {
         }
 
         HeartBeatExchangeHandler clientHandler = new HeartBeatExchangeHandler(handler);
-        ExchangeClient exchangeClient = new HeaderExchangeClient(Transporters.connect(clientUrl, clientHandler), true);
+
+        ExchangeClient exchangeClient = new HeaderExchangeClient(Transporters.connect(clientUrl, clientHandler),true);
 
         for (int i = 0; i < 10; i++) {
             Thread.sleep(1000);
