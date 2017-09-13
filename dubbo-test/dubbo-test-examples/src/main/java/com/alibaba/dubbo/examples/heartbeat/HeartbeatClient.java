@@ -74,8 +74,7 @@ public class HeartbeatClient {
         URL url = serverUrl.addParameter(Constants.HEARTBEAT_KEY, 1000);
 
         HeartBeatExchangeHandler clientHandler = new HeartBeatExchangeHandler(handler);
-        ExchangeClient exchangeClient = new HeaderExchangeClient(
-                Transporters.connect(url, clientHandler));
+        ExchangeClient exchangeClient = new HeaderExchangeClient(Transporters.connect(url, clientHandler),true);
 
         for (int i = 0; i < 10; i++) {
             Thread.sleep(1000);
