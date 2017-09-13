@@ -15,11 +15,9 @@
  */
 package com.alibaba.dubbo.remoting.transport.netty4;
 
-import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.Codec2;
 import com.alibaba.dubbo.remoting.buffer.ChannelBuffer;
-import com.alibaba.dubbo.remoting.buffer.DynamicChannelBuffer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
@@ -80,16 +78,12 @@ final class NettyCodecAdapter {
 
         protected void decode(ChannelHandlerContext ctx, ByteBuf input, List<Object> out) throws Exception {
 
-            int readable = input.readableBytes();
-            if (readable <= 0) {
-                return;
-            }
-
             ChannelBuffer message = new NettyBackedChannelBuffer(input);
 
-
             NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
+
             Object msg;
+
             int saveReaderIndex;
 
             try {
