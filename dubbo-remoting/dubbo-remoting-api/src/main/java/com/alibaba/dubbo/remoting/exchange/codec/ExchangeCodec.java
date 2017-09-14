@@ -242,6 +242,7 @@ public class ExchangeCodec extends TelnetCodec {
     }
 
     protected void encodeResponse(Channel channel, ChannelBuffer buffer, Response res) throws IOException {
+        int savedWriteIndex = buffer.writerIndex();
         try {
             Serialization serialization = getSerialization(channel);
             // header.
@@ -257,7 +258,6 @@ public class ExchangeCodec extends TelnetCodec {
             // set request id.
             Bytes.long2bytes(res.getId(), header, 4);
 
-            int savedWriteIndex = buffer.writerIndex();
             buffer.writerIndex(savedWriteIndex + HEADER_LENGTH);
             ChannelBufferOutputStream bos = new ChannelBufferOutputStream(buffer);
             ObjectOutput out = serialization.serialize(channel.getUrl(), bos);
@@ -288,6 +288,8 @@ public class ExchangeCodec extends TelnetCodec {
 
                 if (t instanceof ExceedPayloadLimitException) {
                     logger.warn(t.getMessage(), t);
+                    // 将buffer内容清空
+                    buffer.writerIndex(savedWriteIndex);
                     try {
                         r.setErrorMessage(t.getMessage());
                         channel.send(r);
