@@ -15,10 +15,6 @@
  */
 package com.alibaba.dubbo.monitor.simple.pages;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
@@ -27,14 +23,18 @@ import com.alibaba.dubbo.container.page.Page;
 import com.alibaba.dubbo.container.page.PageHandler;
 import com.alibaba.dubbo.monitor.simple.RegistryContainer;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 /**
  * HostsPageHandler
- * 
+ *
  * @author william.liangf
  */
 @Menu(name = "Hosts", desc = "Show provider and consumer hosts", order = 3000)
 public class HostsPageHandler implements PageHandler {
-    
+
     public Page handle(URL url) {
         List<List<String>> rows = new ArrayList<List<String>>();
         Set<String> hosts = RegistryContainer.getInstance().getHosts();
@@ -44,33 +44,33 @@ public class HostsPageHandler implements PageHandler {
             for (String host : hosts) {
                 List<String> row = new ArrayList<String>();
                 row.add(NetUtils.getHostName(host) + "/" + host);
-                
+
                 List<URL> providers = RegistryContainer.getInstance().getProvidersByHost(host);
                 List<URL> consumers = RegistryContainer.getInstance().getConsumersByHost(host);
-                
+
                 if (providers != null && providers.size() > 0
                         || consumers != null && consumers.size() > 0) {
                     URL provider = (providers != null && providers.size() > 0 ? providers.iterator().next() : consumers.iterator().next());
                     row.add(provider.getParameter(Constants.APPLICATION_KEY, ""));
-                    row.add(provider.getParameter("owner", "") + (provider.hasParameter("organization") ?  " (" + provider.getParameter("organization") + ")" : ""));
+                    row.add(provider.getParameter("owner", "") + (provider.hasParameter("organization") ? " (" + provider.getParameter("organization") + ")" : ""));
                 } else {
                     row.add("");
                     row.add("");
                 }
-                
+
                 int proviedSize = providers == null ? 0 : providers.size();
                 providersCount += proviedSize;
                 row.add(proviedSize == 0 ? "<font color=\"blue\">No provider</font>" : "<a href=\"providers.html?host=" + host + "\">Providers(" + proviedSize + ")</a>");
-                
+
                 int consumersSize = consumers == null ? 0 : consumers.size();
                 consumersCount += consumersSize;
                 row.add(consumersSize == 0 ? "<font color=\"blue\">No consumer</font>" : "<a href=\"consumers.html?host=" + host + "\">Consumers(" + consumersSize + ")</a>");
-                
+
                 rows.add(row);
             }
         }
         return new Page("Hosts", "Hosts (" + rows.size() + ")",
-                new String[] { "Host Name/IP:", "Application", "Owner", "Providers(" + providersCount + ")", "Consumers(" + consumersCount + ")" }, rows);
+                new String[]{"Host Name/IP:", "Application", "Owner", "Providers(" + providersCount + ")", "Consumers(" + consumersCount + ")"}, rows);
     }
 
 }

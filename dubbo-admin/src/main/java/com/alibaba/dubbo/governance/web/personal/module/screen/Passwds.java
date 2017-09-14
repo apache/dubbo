@@ -1,12 +1,12 @@
 package com.alibaba.dubbo.governance.web.personal.module.screen;
 
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.alibaba.dubbo.governance.service.UserService;
 import com.alibaba.dubbo.governance.web.common.module.screen.Restful;
 import com.alibaba.dubbo.registry.common.domain.User;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Map;
 
 public class Passwds extends Restful {
 

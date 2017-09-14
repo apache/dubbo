@@ -15,26 +15,26 @@
  */
 package com.alibaba.dubbo.remoting.http.support;
 
-import java.net.InetSocketAddress;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.http.HttpHandler;
 import com.alibaba.dubbo.remoting.http.HttpServer;
 
+import java.net.InetSocketAddress;
+
 /**
  * AbstractHttpServer
- * 
+ *
  * @author william.liangf
  */
 public abstract class AbstractHttpServer implements HttpServer {
 
     private final URL url;
-    
+
     private final HttpHandler handler;
 
     private volatile boolean closed;
-    
-    public AbstractHttpServer(URL url, HttpHandler handler){
+
+    public AbstractHttpServer(URL url, HttpHandler handler) {
         if (url == null) {
             throw new IllegalArgumentException("url == null");
         }
@@ -44,7 +44,7 @@ public abstract class AbstractHttpServer implements HttpServer {
         this.url = url;
         this.handler = handler;
     }
-    
+
     public HttpHandler getHttpHandler() {
         return handler;
     }
@@ -55,7 +55,7 @@ public abstract class AbstractHttpServer implements HttpServer {
 
     public void reset(URL url) {
     }
-    
+
     public boolean isBound() {
         return true;
     }

@@ -15,32 +15,30 @@
  */
 package com.alibaba.dubbo.registry.support;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-
-import org.junit.Before;
-import org.junit.Test;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.CollectionUtils;
 import com.alibaba.dubbo.registry.NotifyListener;
 
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static org.junit.Assert.assertEquals;
+
 /**
- * 
  * @author liuchao
  */
 public class FailbackRegistryTest {
-    MockRegistry  registry;
     static String service;
-    static URL    serviceUrl;
-    static URL    registryUrl;
+    static URL serviceUrl;
+    static URL registryUrl;
+    MockRegistry registry;
     private int FAILED_PERIOD = 200;
     private int sleeptime = 100;
     private int trytimes = 5;
@@ -52,13 +50,13 @@ public class FailbackRegistryTest {
     public void setUp() throws Exception {
         service = "com.alibaba.dubbo.test.DemoService";
         serviceUrl = URL.valueOf("remote://127.0.0.1/demoservice?method=get");
-        registryUrl = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A").addParameter(Constants.REGISTRY_RETRY_PERIOD_KEY,String.valueOf(FAILED_PERIOD));
+        registryUrl = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A").addParameter(Constants.REGISTRY_RETRY_PERIOD_KEY, String.valueOf(FAILED_PERIOD));
     }
 
     /**
      * Test method for
      * {@link com.alibaba.dubbo.registry.internal.FailbackRegistry#doRetry()}.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -97,7 +95,7 @@ public class FailbackRegistryTest {
         //unsubscribe时会清除failedsubcribe对应key
         assertEquals(false, notified.get());
     }
-    
+
     @Test
     public void testDoRetry_subscribe() throws Exception {
 
@@ -117,7 +115,7 @@ public class FailbackRegistryTest {
         }
         assertEquals(0, latch.getCount());
     }
-    
+
     @Test
     public void testDoRetry_register() throws Exception {
 
@@ -151,7 +149,7 @@ public class FailbackRegistryTest {
         //unsubscribe时会清除failedsubcribe对应key
         assertEquals(true, notified.get());
     }
-    
+
     @Test
     public void testDoRetry_nofify() throws Exception {
 
@@ -162,8 +160,8 @@ public class FailbackRegistryTest {
             public void notify(List<URL> urls) {
                 count.incrementAndGet();
                 //第一次抛出异常，看后面是否会再次调用到incrementAndGet
-                if(count.get() == 1l ){
-                    throw new  RuntimeException("test exception please ignore");
+                if (count.get() == 1l) {
+                    throw new RuntimeException("test exception please ignore");
                 }
             }
         };
@@ -181,10 +179,10 @@ public class FailbackRegistryTest {
         assertEquals(2, count.get());
     }
 
-    
-    
+
     private static class MockRegistry extends FailbackRegistry {
         CountDownLatch latch;
+        private boolean bad = false;
 
         /**
          * @param url
@@ -193,8 +191,6 @@ public class FailbackRegistryTest {
             super(url);
             this.latch = latch;
         }
-
-        private boolean bad = false;
 
         /**
          * @param bad the bad to set
@@ -229,7 +225,7 @@ public class FailbackRegistryTest {
                 throw new RuntimeException("can not invoke!");
             }
             //System.out.println("do doSubscribe");
-            super.notify(url, listener, Arrays.asList(new URL[] { serviceUrl }));
+            super.notify(url, listener, Arrays.asList(new URL[]{serviceUrl}));
             latch.countDown();
         }
 

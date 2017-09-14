@@ -25,21 +25,21 @@ import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.exchange.Request;
 import com.alibaba.dubbo.remoting.exchange.Response;
 import com.alibaba.dubbo.remoting.transport.dispatcher.ChannelEventRunnable;
-import com.alibaba.dubbo.remoting.transport.dispatcher.WrappedChannelHandler;
 import com.alibaba.dubbo.remoting.transport.dispatcher.ChannelEventRunnable.ChannelState;
+import com.alibaba.dubbo.remoting.transport.dispatcher.WrappedChannelHandler;
 
 public class ExecutionChannelHandler extends WrappedChannelHandler {
-    
+
     public ExecutionChannelHandler(ChannelHandler handler, URL url) {
         super(handler, url);
     }
 
     public void connected(Channel channel) throws RemotingException {
-        executor.execute(new ChannelEventRunnable(channel, handler ,ChannelState.CONNECTED));
+        executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.CONNECTED));
     }
 
     public void disconnected(Channel channel) throws RemotingException {
-        executor.execute(new ChannelEventRunnable(channel, handler ,ChannelState.DISCONNECTED));
+        executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.DISCONNECTED));
     }
 
     public void received(Channel channel, Object message) throws RemotingException {
@@ -64,7 +64,7 @@ public class ExecutionChannelHandler extends WrappedChannelHandler {
     }
 
     public void caught(Channel channel, Throwable exception) throws RemotingException {
-        executor.execute(new ChannelEventRunnable(channel, handler ,ChannelState.CAUGHT, exception));
+        executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.CAUGHT, exception));
     }
 
 }

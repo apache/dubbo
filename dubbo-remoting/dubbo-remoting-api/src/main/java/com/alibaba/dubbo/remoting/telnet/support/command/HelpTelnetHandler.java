@@ -15,9 +15,6 @@
  */
 package com.alibaba.dubbo.remoting.telnet.support.command;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.remoting.Channel;
@@ -25,20 +22,23 @@ import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
 import com.alibaba.dubbo.remoting.telnet.support.Help;
 import com.alibaba.dubbo.remoting.telnet.support.TelnetUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * HelpTelnetHandler
- * 
+ *
  * @author william.liangf
  */
 @Activate
 @Help(parameter = "[command]", summary = "Show help.", detail = "Show help.")
 public class HelpTelnetHandler implements TelnetHandler {
-    
+
     private final ExtensionLoader<TelnetHandler> extensionLoader = ExtensionLoader.getExtensionLoader(TelnetHandler.class);
 
     public String telnet(Channel channel, String message) {
         if (message.length() > 0) {
-            if (! extensionLoader.hasExtension(message)) {
+            if (!extensionLoader.hasExtension(message)) {
                 return "No such command " + message;
             }
             TelnetHandler handler = extensionLoader.getExtension(message);

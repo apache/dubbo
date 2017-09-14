@@ -15,9 +15,6 @@
  */
 package com.alibaba.dubbo.container.page.pages;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.container.page.Menu;
@@ -25,9 +22,12 @@ import com.alibaba.dubbo.container.page.Page;
 import com.alibaba.dubbo.container.page.PageHandler;
 import com.alibaba.dubbo.container.page.PageServlet;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * HomePageHandler
- * 
+ *
  * @author william.liangf
  */
 @Menu(name = "Home", desc = "Home page.", order = Integer.MIN_VALUE)
@@ -43,7 +43,7 @@ public class HomePageHandler implements PageHandler {
             row.add(menu.desc());
             rows.add(row);
         }
-        return new Page("Home", "Menus",  new String[] {"Menu Name", "Menu Desc"}, rows);
+        return new Page("Home", "Menus", new String[]{"Menu Name", "Menu Desc"}, rows);
     }
 
 }

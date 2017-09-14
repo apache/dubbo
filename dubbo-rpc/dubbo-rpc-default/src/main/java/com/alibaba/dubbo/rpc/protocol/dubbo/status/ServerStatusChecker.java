@@ -15,17 +15,17 @@
  */
 package com.alibaba.dubbo.rpc.protocol.dubbo.status;
 
-import java.util.Collection;
-
 import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.status.Status;
 import com.alibaba.dubbo.common.status.StatusChecker;
 import com.alibaba.dubbo.remoting.exchange.ExchangeServer;
 import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
+import java.util.Collection;
+
 /**
  * ServerStatusChecker
- * 
+ *
  * @author william.liangf
  */
 @Activate
@@ -39,7 +39,7 @@ public class ServerStatusChecker implements StatusChecker {
         Status.Level level = Status.Level.OK;
         StringBuilder buf = new StringBuilder();
         for (ExchangeServer server : servers) {
-            if (! server.isBound()) {
+            if (!server.isBound()) {
                 level = Status.Level.ERROR;
                 buf.setLength(0);
                 buf.append(server.getLocalAddress());

@@ -55,30 +55,28 @@ import java.util.Vector;
  * Deserializing a JDK 1.2 Collection.
  */
 public class EnumerationDeserializer extends AbstractListDeserializer {
-  private static EnumerationDeserializer _deserializer;
+    private static EnumerationDeserializer _deserializer;
 
-  public static EnumerationDeserializer create()
-  {
-    if (_deserializer == null)
-      _deserializer = new EnumerationDeserializer();
+    public static EnumerationDeserializer create() {
+        if (_deserializer == null)
+            _deserializer = new EnumerationDeserializer();
 
-    return _deserializer;
-  }
-  
-  public Object readList(AbstractHessianInput in, int length)
-    throws IOException
-  {
-    Vector list = new Vector();
+        return _deserializer;
+    }
 
-    in.addRef(list);
+    public Object readList(AbstractHessianInput in, int length)
+            throws IOException {
+        Vector list = new Vector();
 
-    while (! in.isEnd())
-      list.add(in.readObject());
+        in.addRef(list);
 
-    in.readEnd();
+        while (!in.isEnd())
+            list.add(in.readObject());
 
-    return list.elements();
-  }
+        in.readEnd();
+
+        return list.elements();
+    }
 }
 
 

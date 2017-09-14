@@ -1,8 +1,8 @@
 package com.alibaba.dubbo.rpc.protocol.thrift.examples;
 
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-
 import com.alibaba.dubbo.rpc.gen.thrift.Demo;
+
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>

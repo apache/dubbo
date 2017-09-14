@@ -17,24 +17,24 @@ package com.alibaba.dubbo.common.json;
 
 public class MyException extends Exception {
 
-	private static final long serialVersionUID = 2905707783883694687L;
-	
-	private String code;
-	
-	public MyException() {
-	}
+    private static final long serialVersionUID = 2905707783883694687L;
 
-	public MyException(String code, String message) {
-		super(message);
-		this.code = code;
-	}
+    private String code;
 
-	public String getCode() {
-		return code;
-	}
+    public MyException() {
+    }
 
-	public void setCode(String code) {
-		this.code = code;
-	}
+    public MyException(String code, String message) {
+        super(message);
+        this.code = code;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
 
 }

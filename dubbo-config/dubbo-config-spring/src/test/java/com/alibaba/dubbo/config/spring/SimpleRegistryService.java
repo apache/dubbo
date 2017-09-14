@@ -15,11 +15,6 @@
  */
 package com.alibaba.dubbo.config.spring;
 
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
@@ -29,21 +24,23 @@ import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.RegistryService;
 import com.alibaba.dubbo.rpc.RpcContext;
 
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 /**
  * SimpleRegistryService
- * 
+ *
  * @author william.liangf
  */
 public class SimpleRegistryService extends AbstractRegistryService {
 
-    private final ConcurrentMap<String, ConcurrentMap<String, URL>> remoteRegistered = new ConcurrentHashMap<String, ConcurrentMap<String, URL>>();
-
-    private final ConcurrentMap<String, ConcurrentMap<String, NotifyListener>> remoteListeners = new ConcurrentHashMap<String, ConcurrentMap<String, NotifyListener>>();
-    
     private final static Logger logger = LoggerFactory.getLogger(SimpleRegistryService.class);
-
+    private final ConcurrentMap<String, ConcurrentMap<String, URL>> remoteRegistered = new ConcurrentHashMap<String, ConcurrentMap<String, URL>>();
+    private final ConcurrentMap<String, ConcurrentMap<String, NotifyListener>> remoteListeners = new ConcurrentHashMap<String, ConcurrentMap<String, NotifyListener>>();
     private List<String> registries;
-    
+
     @Override
     public void register(String service, URL url) {
         super.register(service, url);
@@ -71,16 +68,16 @@ public class SimpleRegistryService extends AbstractRegistryService {
     @Override
     public void subscribe(String service, URL url, NotifyListener listener) {
         String client = RpcContext.getContext().getRemoteAddressString();
-        if (logger.isInfoEnabled()){
-            logger.info("[subscribe] service: "+service + ",client:"+ client);
+        if (logger.isInfoEnabled()) {
+            logger.info("[subscribe] service: " + service + ",client:" + client);
         }
         List<URL> urls = getRegistered().get(service);
         if ((RegistryService.class.getName() + ":0.0.0").equals(service)
                 && (urls == null || urls.size() == 0)) {
-            register(service, new URL("dubbo", 
-                    NetUtils.getLocalHost(), 
-                    RpcContext.getContext().getLocalPort(), 
-                    com.alibaba.dubbo.registry.RegistryService.class.getName(), 
+            register(service, new URL("dubbo",
+                    NetUtils.getLocalHost(),
+                    RpcContext.getContext().getLocalPort(),
+                    com.alibaba.dubbo.registry.RegistryService.class.getName(),
                     url.getParameters()));
             List<String> rs = registries;
             if (rs != null && rs.size() > 0) {
@@ -90,7 +87,7 @@ public class SimpleRegistryService extends AbstractRegistryService {
             }
         }
         super.subscribe(service, url, listener);
-        
+
         Map<String, NotifyListener> listeners = remoteListeners.get(client);
         if (listeners == null) {
             remoteListeners.putIfAbsent(client, new ConcurrentHashMap<String, NotifyListener>());
@@ -101,8 +98,8 @@ public class SimpleRegistryService extends AbstractRegistryService {
         if (urls != null && urls.size() > 0) {
             listener.notify(urls);
         }
-        
-        
+
+
     }
 
     @Override
@@ -118,7 +115,7 @@ public class SimpleRegistryService extends AbstractRegistryService {
             listener.notify(urls);
         }
     }
-    
+
     public void disconnect() {
         String client = RpcContext.getContext().getRemoteAddressString();
         if (logger.isInfoEnabled()) {
@@ -134,9 +131,9 @@ public class SimpleRegistryService extends AbstractRegistryService {
         if (listeners != null && listeners.size() > 0) {
             for (Map.Entry<String, NotifyListener> entry : listeners.entrySet()) {
                 String service = entry.getKey();
-                super.unsubscribe(service, new URL("subscribe", 
-                        RpcContext.getContext().getRemoteHost(), 
-                        RpcContext.getContext().getRemotePort(), 
+                super.unsubscribe(service, new URL("subscribe",
+                        RpcContext.getContext().getRemoteHost(),
+                        RpcContext.getContext().getRemotePort(),
                         com.alibaba.dubbo.registry.RegistryService.class.getName(), getSubscribed(service)), entry.getValue());
             }
         }

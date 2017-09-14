@@ -15,38 +15,38 @@
  */
 package com.alibaba.dubbo.common.serialize.support.json;
 
+import com.alibaba.dubbo.common.json.JSON;
+import com.alibaba.dubbo.common.serialize.ObjectOutput;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
 
-import com.alibaba.dubbo.common.json.JSON;
-import com.alibaba.dubbo.common.serialize.ObjectOutput;
-
 /**
  * JsonObjectOutput
- * 
+ *
  * @author william.liangf
  */
 public class JsonObjectOutput implements ObjectOutput {
-    
+
     private final PrintWriter writer;
-    
+
     private final boolean writeClass;
-    
+
     public JsonObjectOutput(OutputStream out) {
         this(new OutputStreamWriter(out), false);
     }
-    
+
     public JsonObjectOutput(Writer writer) {
         this(writer, false);
     }
-    
+
     public JsonObjectOutput(OutputStream out, boolean writeClass) {
         this(new OutputStreamWriter(out), writeClass);
     }
-    
+
     public JsonObjectOutput(Writer writer, boolean writeClass) {
         this.writer = new PrintWriter(writer);
         this.writeClass = writeClass;

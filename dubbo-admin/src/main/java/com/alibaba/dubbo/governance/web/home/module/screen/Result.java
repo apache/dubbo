@@ -23,9 +23,9 @@ import java.io.Serializable;
 public class Result implements Serializable {
 
     private static final long serialVersionUID = 4922467873471920132L;
-    private String            status;
-    private Object            message;
-    private int               code;
+    private String status;
+    private Object message;
+    private int code;
 
     public String getStatus() {
         return status;
@@ -42,12 +42,12 @@ public class Result implements Serializable {
     public void setMessage(Object message) {
         this.message = message;
     }
-    
+
     public int getCode() {
         return code;
     }
 
-    
+
     public void setCode(int code) {
         this.code = code;
     }

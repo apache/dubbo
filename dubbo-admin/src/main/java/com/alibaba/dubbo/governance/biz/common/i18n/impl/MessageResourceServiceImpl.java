@@ -1,11 +1,11 @@
 package com.alibaba.dubbo.governance.biz.common.i18n.impl;
 
+import com.alibaba.dubbo.governance.biz.common.i18n.MessageResourceService;
+import com.alibaba.dubbo.governance.web.common.i18n.LocaleUtil;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.NoSuchMessageException;
-
-import com.alibaba.dubbo.governance.biz.common.i18n.MessageResourceService;
-import com.alibaba.dubbo.governance.web.common.i18n.LocaleUtil;
 
 public class MessageResourceServiceImpl implements MessageResourceService {
 

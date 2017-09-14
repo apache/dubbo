@@ -15,11 +15,6 @@
  */
 package com.alibaba.dubbo.registry.pages;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.container.page.Page;
 import com.alibaba.dubbo.container.page.PageHandler;
@@ -27,9 +22,14 @@ import com.alibaba.dubbo.registry.Registry;
 import com.alibaba.dubbo.registry.support.AbstractRegistry;
 import com.alibaba.dubbo.registry.support.AbstractRegistryFactory;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
 /**
  * SubscribedPageHandler
- * 
+ *
  * @author william.liangf
  */
 public class SubscribedPageHandler implements PageHandler {
@@ -73,7 +73,7 @@ public class SubscribedPageHandler implements PageHandler {
             }
         }
         return new Page("<a href=\"registries.html\">Registries</a>" + select.toString() + " &gt; <a href=\"registered.html?registry=" + registryAddress + "\">Registered</a> | Subscribed", "Subscribed (" + rows.size() + ")",
-                new String[] { "Consumer URL:" }, rows);
+                new String[]{"Consumer URL:"}, rows);
     }
 
 }

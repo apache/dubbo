@@ -15,11 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.protocol.dubbo.telnet;
 
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.json.JSON;
 import com.alibaba.dubbo.common.utils.PojoUtils;
@@ -34,15 +29,64 @@ import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
 /**
  * InvokeTelnetHandler
- * 
+ *
  * @author william.liangf
  */
 @Activate
 @Help(parameter = "[service.]method(args)", summary = "Invoke the service method.", detail = "Invoke the service method.")
 public class InvokeTelnetHandler implements TelnetHandler {
-    
+
+    private static Method findMethod(Exporter<?> exporter, String method, List<Object> args) {
+        Invoker<?> invoker = exporter.getInvoker();
+        Method[] methods = invoker.getInterface().getMethods();
+        for (Method m : methods) {
+            if (m.getName().equals(method) && isMatch(m.getParameterTypes(), args)) {
+                return m;
+            }
+        }
+        return null;
+    }
+
+    private static boolean isMatch(Class<?>[] types, List<Object> args) {
+        if (types.length != args.size()) {
+            return false;
+        }
+        for (int i = 0; i < types.length; i++) {
+            Class<?> type = types[i];
+            Object arg = args.get(i);
+            if (ReflectUtils.isPrimitive(arg.getClass())) {
+                if (!ReflectUtils.isPrimitive(type)) {
+                    return false;
+                }
+            } else if (arg instanceof Map) {
+                String name = (String) ((Map<?, ?>) arg).get("class");
+                Class<?> cls = arg.getClass();
+                if (name != null && name.length() > 0) {
+                    cls = ReflectUtils.forName(name);
+                }
+                if (!type.isAssignableFrom(cls)) {
+                    return false;
+                }
+            } else if (arg instanceof Collection) {
+                if (!type.isArray() && !type.isAssignableFrom(arg.getClass())) {
+                    return false;
+                }
+            } else {
+                if (!type.isAssignableFrom(arg.getClass())) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     @SuppressWarnings("unchecked")
     public String telnet(Channel channel, String message) {
         if (message == null || message.length() == 0) {
@@ -54,7 +98,7 @@ public class InvokeTelnetHandler implements TelnetHandler {
             buf.append("Use default service " + service + ".\r\n");
         }
         int i = message.indexOf("(");
-        if (i < 0 || ! message.endsWith(")")) {
+        if (i < 0 || !message.endsWith(")")) {
             return "Invalid parameters, format: service.method(args)";
         }
         String method = message.substring(0, i).trim();
@@ -111,50 +155,6 @@ public class InvokeTelnetHandler implements TelnetHandler {
             buf.append("No such service " + service);
         }
         return buf.toString();
-    }
-
-    private static Method findMethod(Exporter<?> exporter, String method, List<Object> args) {
-        Invoker<?> invoker = exporter.getInvoker();
-        Method[] methods = invoker.getInterface().getMethods();
-        for (Method m : methods) {
-            if (m.getName().equals(method) && isMatch(m.getParameterTypes(), args)) {
-                return m;
-            }
-        }
-        return null;
-    }
-    
-    private static boolean isMatch(Class<?>[] types, List<Object> args) {
-        if (types.length != args.size()) {
-            return false;
-        }
-        for (int i = 0; i < types.length; i ++) {
-            Class<?> type = types[i];
-            Object arg = args.get(i);
-            if (ReflectUtils.isPrimitive(arg.getClass())) {
-                if (! ReflectUtils.isPrimitive(type)) {
-                    return false;
-                }
-            } else if (arg instanceof Map) {
-                String name = (String) ((Map<?, ?>)arg).get("class");
-                Class<?> cls = arg.getClass();
-                if (name != null && name.length() > 0) {
-                    cls = ReflectUtils.forName(name);
-                }
-                if (! type.isAssignableFrom(cls)) {
-                    return false;
-                }
-            } else if (arg instanceof Collection) {
-                if (! type.isArray() && ! type.isAssignableFrom(arg.getClass())) {
-                    return false;
-                }
-            } else {
-                if (! type.isAssignableFrom(arg.getClass())) {
-                    return false;
-                }
-            }
-        }
-        return true;
     }
 
 }

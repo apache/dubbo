@@ -15,17 +15,17 @@
  */
 package com.alibaba.dubbo.examples.cache.impl;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.alibaba.dubbo.examples.cache.api.CacheService;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * ValidationServiceImpl
- * 
+ *
  * @author william.liangf
  */
 public class CacheServiceImpl implements CacheService {
-    
+
     private final AtomicInteger i = new AtomicInteger();
 
     public String findCache(String id) {

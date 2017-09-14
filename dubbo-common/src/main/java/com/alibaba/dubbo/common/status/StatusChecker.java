@@ -19,15 +19,15 @@ import com.alibaba.dubbo.common.extension.SPI;
 
 /**
  * StatusChecker
- * 
+ *
  * @author william.liangf
  */
 @SPI
 public interface StatusChecker {
-    
+
     /**
      * check status
-     * 
+     *
      * @return status
      */
     Status check();

@@ -1,4 +1,4 @@
 [#foreach($service in $services)
-#if ($velocityCount > 1),#end
+    #if ($velocityCount > 1),#end
 "$service"
 #end]

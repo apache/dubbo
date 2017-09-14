@@ -20,14 +20,14 @@ import com.alibaba.dubbo.remoting.exchange.ExchangeChannel;
 
 /**
  * Replier. (API, Prototype, ThreadSafe)
- * 
+ *
  * @author william.liangf
  */
 public interface Replier<T> {
 
     /**
      * reply.
-     * 
+     *
      * @param channel
      * @param request
      * @return response

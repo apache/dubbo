@@ -14,21 +14,21 @@
  - See the License for the specific language governing permissions and
  - limitations under the License.
 -->
-<beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
 	http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
 
-    <dubbo:application name="generic-generic"  />
-    
-    <dubbo:registry address="multicast://224.5.6.7:1234" />
-    
-    <dubbo:protocol name="dubbo" port="20880" />
-    
-    <bean id="userserviceimpl" class="com.alibaba.dubbo.examples.generic.impl.UserServiceImpl" />
-    
-	<dubbo:service interface="com.alibaba.dubbo.examples.generic.api.IUserService" ref="userserviceimpl" >
-	</dubbo:service>
-	
+    <dubbo:application name="generic-generic"/>
+
+    <dubbo:registry address="multicast://224.5.6.7:1234"/>
+
+    <dubbo:protocol name="dubbo" port="20880"/>
+
+    <bean id="userserviceimpl" class="com.alibaba.dubbo.examples.generic.impl.UserServiceImpl"/>
+
+    <dubbo:service interface="com.alibaba.dubbo.examples.generic.api.IUserService" ref="userserviceimpl">
+    </dubbo:service>
+
 </beans>

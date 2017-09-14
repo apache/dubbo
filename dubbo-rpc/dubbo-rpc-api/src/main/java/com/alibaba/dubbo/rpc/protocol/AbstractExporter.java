@@ -22,13 +22,13 @@ import com.alibaba.dubbo.rpc.Invoker;
 
 /**
  * AbstractExporter.
- * 
+ *
  * @author qianlei
  * @author william.liangf
  */
 public abstract class AbstractExporter<T> implements Exporter<T> {
 
-    protected final Logger   logger     = LoggerFactory.getLogger(getClass());
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final Invoker<T> invoker;
 
@@ -50,7 +50,7 @@ public abstract class AbstractExporter<T> implements Exporter<T> {
 
     public void unexport() {
         if (unexported) {
-            return ;
+            return;
         }
         unexported = true;
         getInvoker().destroy();

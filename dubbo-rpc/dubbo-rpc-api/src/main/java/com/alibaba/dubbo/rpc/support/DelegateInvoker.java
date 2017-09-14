@@ -23,7 +23,7 @@ import com.alibaba.dubbo.rpc.RpcException;
 
 /**
  * DelegateInvoker
- * 
+ *
  * @author william.liangf
  */
 public abstract class DelegateInvoker<T> implements Invoker<T> {

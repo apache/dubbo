@@ -15,17 +15,17 @@
  */
 package com.alibaba.dubbo.common.serialize;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.Adaptive;
 import com.alibaba.dubbo.common.extension.SPI;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 /**
  * Serialization. (SPI, Singleton, ThreadSafe)
- * 
+ *
  * @author ding.lid
  * @author william.liangf
  */
@@ -34,21 +34,22 @@ public interface Serialization {
 
     /**
      * get content type id
-     * 
+     *
      * @return content type id
      */
     byte getContentTypeId();
 
     /**
      * get content type
-     * 
+     *
      * @return content type
      */
     String getContentType();
 
     /**
      * create serializer
-     * @param url 
+     *
+     * @param url
      * @param output
      * @return serializer
      * @throws IOException
@@ -58,7 +59,8 @@ public interface Serialization {
 
     /**
      * create deserializer
-     * @param url 
+     *
+     * @param url
      * @param input
      * @return deserializer
      * @throws IOException

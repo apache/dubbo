@@ -21,7 +21,7 @@ import com.alibaba.dubbo.rpc.cluster.ConfiguratorFactory;
 
 /**
  * AbsentConfiguratorFactory
- * 
+ *
  * @author william.liangf
  */
 public class OverrideConfiguratorFactory implements ConfiguratorFactory {

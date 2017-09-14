@@ -15,19 +15,19 @@
  */
 package com.alibaba.dubbo.container.spring;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.container.Container;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 /**
  * StandaloneContainerTest
- * 
+ *
  * @author william.liangf
  */
 public class SpringContainerTest {
-    
+
     @Test
     public void testContainer() {
         SpringContainer container = (SpringContainer) ExtensionLoader.getExtensionLoader(Container.class).getExtension("spring");

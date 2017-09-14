@@ -13,16 +13,17 @@
  - See the License for the specific language governing permissions and
  - limitations under the License.
 -->
-<beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
     http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd
     ">
 
     <!-- 暴露服务配置 -->
-    <dubbo:service id="demoServiceConfig" interface="com.alibaba.dubbo.config.spring.api.DemoService" ref="demoService" />
-     
-    <bean id="demoService" class="com.alibaba.dubbo.config.spring.impl.DemoServiceImpl" />
- 
+    <dubbo:service id="demoServiceConfig" interface="com.alibaba.dubbo.config.spring.api.DemoService"
+                   ref="demoService"/>
+
+    <bean id="demoService" class="com.alibaba.dubbo.config.spring.impl.DemoServiceImpl"/>
+
 </beans>

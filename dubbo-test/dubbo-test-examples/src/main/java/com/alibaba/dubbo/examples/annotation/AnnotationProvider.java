@@ -19,16 +19,16 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * MergeProvider
- * 
+ *
  * @author william.liangf
  */
 public class AnnotationProvider {
-    
+
     public static void main(String[] args) throws Exception {
         String config = AnnotationProvider.class.getPackage().getName().replace('.', '/') + "/annotation-provider.xml";
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(config);
         context.start();
         System.in.read();
     }
-    
+
 }

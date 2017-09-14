@@ -26,11 +26,13 @@ import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.exchange.Request;
 import com.alibaba.dubbo.remoting.exchange.Response;
 import com.alibaba.dubbo.remoting.transport.dispatcher.ChannelEventRunnable;
-import com.alibaba.dubbo.remoting.transport.dispatcher.WrappedChannelHandler;
 import com.alibaba.dubbo.remoting.transport.dispatcher.ChannelEventRunnable.ChannelState;
+import com.alibaba.dubbo.remoting.transport.dispatcher.WrappedChannelHandler;
+
+import java.util.concurrent.ExecutorService;
 
 public class MessageOnlyChannelHandler extends WrappedChannelHandler {
-    
+
     public MessageOnlyChannelHandler(ChannelHandler handler, URL url) {
         super(handler, url);
     }
@@ -44,11 +46,10 @@ public class MessageOnlyChannelHandler extends WrappedChannelHandler {
             cexecutor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
         } catch (Throwable t) {
         	//fix 线程池满了拒绝调用不返回，导致消费者一直等待超时
-        	if(message instanceof Request &&
-        			t instanceof RejectedExecutionException){
+        	if(message instanceof Request && t instanceof RejectedExecutionException){
         		Request request = (Request)message;
         		if(request.isTwoWay()){
-        			String msg = "Server side("+url.getIp()+","+url.getPort()+") threadpool is exhausted ,detail msg:"+t.getMessage();
+        			String msg = "Server side(" + url.getIp() + "," + url.getPort() + ") threadpool is exhausted ,detail msg:" + t.getMessage();
         			Response response = new Response(request.getId(), request.getVersion());
         			response.setStatus(Response.SERVER_THREADPOOL_EXHAUSTED_ERROR);
         			response.setErrorMessage(msg);

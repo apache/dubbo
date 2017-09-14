@@ -15,17 +15,6 @@
  */
 package com.alibaba.dubbo.config;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
-
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.beanutil.JavaBeanAccessor;
 import com.alibaba.dubbo.common.beanutil.JavaBeanDescriptor;
@@ -39,6 +28,17 @@ import com.alibaba.dubbo.config.api.User;
 import com.alibaba.dubbo.config.provider.impl.DemoServiceImpl;
 import com.alibaba.dubbo.rpc.service.GenericException;
 import com.alibaba.dubbo.rpc.service.GenericService;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * GenericServiceTest
@@ -57,7 +57,7 @@ public class GenericServiceTest {
         service.setRef(new GenericService() {
 
             public Object $invoke(String method, String[] parameterTypes, Object[] args)
-                throws GenericException {
+                    throws GenericException {
                 if ("sayName".equals(method)) {
                     return "Generic " + args[0];
                 }
@@ -155,13 +155,13 @@ public class GenericServiceTest {
                 String name = "kimi";
                 ByteArrayOutputStream bos = new ByteArrayOutputStream(512);
                 ExtensionLoader.getExtensionLoader(Serialization.class)
-                    .getExtension("nativejava").serialize(null, bos).writeObject(name);
+                        .getExtension("nativejava").serialize(null, bos).writeObject(name);
                 byte[] arg = bos.toByteArray();
                 Object obj = genericService.$invoke("sayName", new String[]{String.class.getName()}, new Object[]{arg});
                 Assert.assertTrue(obj instanceof byte[]);
                 byte[] result = (byte[]) obj;
                 Assert.assertEquals(ref.sayName(name), ExtensionLoader.getExtensionLoader(Serialization.class)
-                    .getExtension("nativejava").deserialize(null, new ByteArrayInputStream(result)).readObject().toString());
+                        .getExtension("nativejava").deserialize(null, new ByteArrayInputStream(result)).readObject().toString());
 
                 // getUsers
                 List<User> users = new ArrayList<User>();
@@ -170,29 +170,29 @@ public class GenericServiceTest {
                 users.add(user);
                 bos = new ByteArrayOutputStream(512);
                 ExtensionLoader.getExtensionLoader(Serialization.class)
-                    .getExtension("nativejava").serialize(null, bos).writeObject(users);
+                        .getExtension("nativejava").serialize(null, bos).writeObject(users);
                 obj = genericService.$invoke("getUsers",
-                                             new String[]{List.class.getName()},
-                                             new Object[]{bos.toByteArray()});
+                        new String[]{List.class.getName()},
+                        new Object[]{bos.toByteArray()});
                 Assert.assertTrue(obj instanceof byte[]);
                 result = (byte[]) obj;
                 Assert.assertEquals(users,
-                                    ExtensionLoader.getExtensionLoader(Serialization.class)
-                                        .getExtension("nativejava")
-                                        .deserialize(null, new ByteArrayInputStream(result))
-                                        .readObject());
+                        ExtensionLoader.getExtensionLoader(Serialization.class)
+                                .getExtension("nativejava")
+                                .deserialize(null, new ByteArrayInputStream(result))
+                                .readObject());
 
                 // echo(int)
                 bos = new ByteArrayOutputStream(512);
                 ExtensionLoader.getExtensionLoader(Serialization.class).getExtension("nativejava")
-                    .serialize(null, bos).writeObject(Integer.MAX_VALUE);
+                        .serialize(null, bos).writeObject(Integer.MAX_VALUE);
                 obj = genericService.$invoke("echo", new String[]{int.class.getName()}, new Object[]{bos.toByteArray()});
                 Assert.assertTrue(obj instanceof byte[]);
                 Assert.assertEquals(Integer.MAX_VALUE,
-                                    ExtensionLoader.getExtensionLoader(Serialization.class)
-                                        .getExtension("nativejava")
-                                        .deserialize(null, new ByteArrayInputStream((byte[]) obj))
-                                        .readObject());
+                        ExtensionLoader.getExtensionLoader(Serialization.class)
+                                .getExtension("nativejava")
+                                .deserialize(null, new ByteArrayInputStream((byte[]) obj))
+                                .readObject());
 
             } finally {
                 reference.destroy();
@@ -240,15 +240,6 @@ public class GenericServiceTest {
         }
     }
 
-    protected static class GenericParameter {
-
-        String   method;
-
-        String[] parameterTypes;
-
-        Object[] arguments;
-    }
-
     @Test
     public void testGenericImplementationWithBeanSerialization() throws Exception {
         final AtomicReference reference = new AtomicReference();
@@ -290,20 +281,20 @@ public class GenericServiceTest {
             Assert.assertEquals(users.size(), result.size());
             Assert.assertEquals(user.getName(), result.get(0).getName());
 
-            GenericParameter gp = (GenericParameter)reference.get();
+            GenericParameter gp = (GenericParameter) reference.get();
             Assert.assertEquals("getUsers", gp.method);
             Assert.assertEquals(1, gp.parameterTypes.length);
             Assert.assertEquals(ReflectUtils.getName(List.class), gp.parameterTypes[0]);
             Assert.assertEquals(1, gp.arguments.length);
             Assert.assertTrue(gp.arguments[0] instanceof JavaBeanDescriptor);
-            JavaBeanDescriptor descriptor = (JavaBeanDescriptor)gp.arguments[0];
+            JavaBeanDescriptor descriptor = (JavaBeanDescriptor) gp.arguments[0];
             Assert.assertTrue(descriptor.isCollectionType());
             Assert.assertEquals(ArrayList.class.getName(), descriptor.getClassName());
             Assert.assertEquals(1, descriptor.propertySize());
-            descriptor = (JavaBeanDescriptor)descriptor.getProperty(0);
+            descriptor = (JavaBeanDescriptor) descriptor.getProperty(0);
             Assert.assertTrue(descriptor.isBeanType());
             Assert.assertEquals(User.class.getName(), descriptor.getClassName());
-            Assert.assertEquals(user.getName(), ((JavaBeanDescriptor)descriptor.getProperty("name")).getPrimitiveProperty());
+            Assert.assertEquals(user.getName(), ((JavaBeanDescriptor) descriptor.getProperty("name")).getPrimitiveProperty());
             Assert.assertNull(demoService.sayName("zhangsan"));
         } finally {
             if (ref != null) {
@@ -311,6 +302,15 @@ public class GenericServiceTest {
             }
             service.unexport();
         }
+    }
+
+    protected static class GenericParameter {
+
+        String method;
+
+        String[] parameterTypes;
+
+        Object[] arguments;
     }
 
 }

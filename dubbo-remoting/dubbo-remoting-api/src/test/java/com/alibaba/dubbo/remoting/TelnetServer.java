@@ -19,7 +19,7 @@ import com.alibaba.dubbo.remoting.transport.ChannelHandlerAdapter;
 
 /**
  * TelnetServer
- * 
+ *
  * @author william.liangf
  */
 public class TelnetServer {
@@ -29,6 +29,7 @@ public class TelnetServer {
             public void connected(Channel channel) throws RemotingException {
                 channel.send("telnet> ");
             }
+
             public void received(Channel channel, Object message) throws RemotingException {
                 channel.send("Echo: " + message + "\r\n");
                 channel.send("telnet> ");

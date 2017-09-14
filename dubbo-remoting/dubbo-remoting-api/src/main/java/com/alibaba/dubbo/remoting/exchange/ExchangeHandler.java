@@ -21,14 +21,14 @@ import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
 
 /**
  * ExchangeHandler. (API, Prototype, ThreadSafe)
- * 
+ *
  * @author william.liangf
  */
 public interface ExchangeHandler extends ChannelHandler, TelnetHandler {
 
     /**
      * reply.
-     * 
+     *
      * @param channel
      * @param request
      * @return response

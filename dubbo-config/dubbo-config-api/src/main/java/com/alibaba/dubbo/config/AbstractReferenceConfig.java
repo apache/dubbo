@@ -23,44 +23,44 @@ import com.alibaba.dubbo.rpc.support.ProtocolUtils;
 
 /**
  * AbstractConsumerConfig
- * 
- * @see com.alibaba.dubbo.config.ReferenceConfig
+ *
  * @author william.liangf
  * @export
+ * @see com.alibaba.dubbo.config.ReferenceConfig
  */
 public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
     private static final long serialVersionUID = -2786526984373031126L;
 
     // ======== 引用缺省值，当引用属性未设置时使用该缺省值替代  ========
-    
+
     // 检查服务提供者是否存在
-    protected Boolean             check;
+    protected Boolean check;
 
     // 是否加载时即刻初始化
-    protected Boolean             init;
+    protected Boolean init;
 
     // 是否使用泛接口
-    protected String             generic;
+    protected String generic;
 
     // 优先从JVM内获取引用实例
-    protected Boolean             injvm;
-    
-    // lazy create connection
-    protected Boolean             lazy;
+    protected Boolean injvm;
 
-    protected String              reconnect;
-    
-    protected Boolean             sticky;
-    
+    // lazy create connection
+    protected Boolean lazy;
+
+    protected String reconnect;
+
+    protected Boolean sticky;
+
     //stub是否支持event事件. //TODO slove merge problem 
-    protected Boolean             stubevent ;//= Constants.DEFAULT_STUB_EVENT;
+    protected Boolean stubevent;//= Constants.DEFAULT_STUB_EVENT;
 
     // 版本
-    protected String               version;
+    protected String version;
 
     // 服务分组
-    protected String               group;
+    protected String group;
 
     public Boolean isCheck() {
         return check;
@@ -89,12 +89,12 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         }
     }
 
-    public void setGeneric(String generic) {
-        this.generic = generic;
-    }
-
     public String getGeneric() {
         return generic;
+    }
+
+    public void setGeneric(String generic) {
+        this.generic = generic;
     }
 
     /**
@@ -105,12 +105,12 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     public Boolean isInjvm() {
         return injvm;
     }
-    
+
     /**
      * @param injvm
      * @deprecated 通过scope设置，scope=local表示使用injvm协议.
      */
-    @Deprecated 
+    @Deprecated
     public void setInjvm(Boolean injvm) {
         this.injvm = injvm;
     }
@@ -142,7 +142,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
     @Override
     public void setOnconnect(String onconnect) {
-        if (onconnect != null && onconnect.length() >0){
+        if (onconnect != null && onconnect.length() > 0) {
             this.stubevent = true;
         }
         super.setOnconnect(onconnect);
@@ -150,7 +150,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
     @Override
     public void setOndisconnect(String ondisconnect) {
-        if (ondisconnect != null && ondisconnect.length() >0){
+        if (ondisconnect != null && ondisconnect.length() > 0) {
             this.stubevent = true;
         }
         super.setOndisconnect(ondisconnect);
@@ -160,7 +160,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     public Boolean getStubevent() {
         return stubevent;
     }
-    
+
     @Parameter(key = Constants.RECONNECT_KEY)
     public String getReconnect() {
         return reconnect;

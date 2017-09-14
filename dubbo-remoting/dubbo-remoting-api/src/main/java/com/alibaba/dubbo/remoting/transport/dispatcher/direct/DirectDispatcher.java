@@ -21,11 +21,11 @@ import com.alibaba.dubbo.remoting.Dispatcher;
 
 /**
  * 不派发线程池。
- * 
+ *
  * @author chao.liuc
  */
 public class DirectDispatcher implements Dispatcher {
-    
+
     public static final String NAME = "direct";
 
     public ChannelHandler dispatch(ChannelHandler handler, URL url) {

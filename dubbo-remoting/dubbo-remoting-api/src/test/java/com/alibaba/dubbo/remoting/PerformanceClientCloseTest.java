@@ -15,22 +15,21 @@
  */
 package com.alibaba.dubbo.remoting;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
-import junit.framework.TestCase;
-
-import org.junit.Test;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
 import com.alibaba.dubbo.remoting.exchange.Exchangers;
 
+import junit.framework.TestCase;
+import org.junit.Test;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * ProformanceClient
  * 这个测试类会报线程池的异常，因为DefaultChannelHandler中关于线程池的判断产生并发问题（connected事件异步执行，判断已经过了，这时关闭了线程池，然后线程池执行，报错，此问题通过指定Constants.CHANNEL_HANDLER_KEY=connection即可.）
- * 
+ *
  * @author william.liangf
  */
 public class PerformanceClientCloseTest extends TestCase {
@@ -51,12 +50,12 @@ public class PerformanceClientCloseTest extends TestCase {
         final int concurrent = PerformanceUtils.getIntProperty("concurrent", 1);
         final int runs = PerformanceUtils.getIntProperty("runs", Integer.MAX_VALUE);
         final String onerror = PerformanceUtils.getProperty("onerror", "continue");
-        
-        final String url = "exchange://" + server + "?transporter=" + transporter 
-            + "&serialization=" + serialization 
+
+        final String url = "exchange://" + server + "?transporter=" + transporter
+                + "&serialization=" + serialization
 //            + "&"+Constants.CHANNEL_HANDLER_KEY+"=connection"
-            + "&timeout=" + timeout;
-        
+                + "&timeout=" + timeout;
+
         final AtomicInteger count = new AtomicInteger();
         final AtomicInteger error = new AtomicInteger();
         for (int n = 0; n < concurrent; n++) {
