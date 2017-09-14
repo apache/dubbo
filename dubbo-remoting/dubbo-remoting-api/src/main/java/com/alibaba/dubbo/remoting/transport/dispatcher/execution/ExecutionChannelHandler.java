@@ -15,8 +15,6 @@
  */
 package com.alibaba.dubbo.remoting.transport.dispatcher.execution;
 
-import java.util.concurrent.RejectedExecutionException;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
@@ -27,6 +25,8 @@ import com.alibaba.dubbo.remoting.exchange.Response;
 import com.alibaba.dubbo.remoting.transport.dispatcher.ChannelEventRunnable;
 import com.alibaba.dubbo.remoting.transport.dispatcher.ChannelEventRunnable.ChannelState;
 import com.alibaba.dubbo.remoting.transport.dispatcher.WrappedChannelHandler;
+
+import java.util.concurrent.RejectedExecutionException;
 
 public class ExecutionChannelHandler extends WrappedChannelHandler {
 
@@ -46,7 +46,8 @@ public class ExecutionChannelHandler extends WrappedChannelHandler {
     	try {
             executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
         } catch (Throwable t) {
-        	//fix 线程池满了拒绝调用不返回，导致消费者一直等待超时
+            //TODO 临时解决线程池满后异常信息无法发送到对端的问题。待重构
+            //fix 线程池满了拒绝调用不返回，导致消费者一直等待超时
         	if(message instanceof Request &&
         			t instanceof RejectedExecutionException){
         		Request request = (Request)message;
