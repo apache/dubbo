@@ -24,7 +24,6 @@ import com.alibaba.dubbo.common.serialize.ObjectOutput;
 import com.alibaba.dubbo.common.serialize.Serialization;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.remoting.Channel;
-import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.buffer.ChannelBuffer;
 import com.alibaba.dubbo.remoting.buffer.ChannelBufferInputStream;
 import com.alibaba.dubbo.remoting.buffer.ChannelBufferOutputStream;
@@ -241,6 +240,7 @@ public class ExchangeCodec extends TelnetCodec {
     }
 
     protected void encodeResponse(Channel channel, ChannelBuffer buffer, Response res) throws IOException {
+        int savedWriteIndex = buffer.writerIndex();
         try {
             Serialization serialization = getSerialization(channel);
             // header.
@@ -256,23 +256,7 @@ public class ExchangeCodec extends TelnetCodec {
             // set request id.
             Bytes.long2bytes(res.getId(), header, 4);
 
-            int savedWriteIndex = buffer.writerIndex();
-            buffer.writerIndex(savedWriteIndex + HEADER_LENGTH);
-            ChannelBufferOutputStream bos = new ChannelBufferOutputStream(buffer);
-            ObjectOutput out = serialization.serialize(channel.getUrl(), bos);
-            // encode response data or error message.
-            if (status == Response.OK) {
-                if (res.isHeartbeat()) {
-                    encodeHeartbeatData(channel, out, res.getResult());
-                } else {
-                    encodeResponseData(channel, out, res.getResult());
-                }
-            } else out.writeUTF(res.getErrorMessage());
-            out.flushBuffer();
-            bos.flush();
-            bos.close();
-
-            int len = bos.writtenBytes();
+            int len = writeResponseToBuffer(channel, buffer, savedWriteIndex + HEADER_LENGTH, res);
             checkPayload(channel, len);
             Bytes.int2bytes(len, header, 12);
             // write
@@ -282,17 +266,17 @@ public class ExchangeCodec extends TelnetCodec {
         } catch (Throwable t) {
             // 发送失败信息给Consumer，否则Consumer只能等超时了
             if (!res.isEvent() && res.getStatus() != Response.BAD_RESPONSE) {
+                // FIXME 在Codec中打印出错日志？在IoHanndler的caught中统一处理？
+                logger.warn("Fail to encode response: " + res + ", send bad_response info instead, cause: " + t.getMessage(), t);
                 try {
-                    // FIXME 在Codec中打印出错日志？在IoHanndler的caught中统一处理？
-                    logger.warn("Fail to encode response: " + res + ", send bad_response info instead, cause: " + t.getMessage(), t);
-
-                    Response r = new Response(res.getId(), res.getVersion());
-                    r.setStatus(Response.BAD_RESPONSE);
-                    r.setErrorMessage("Failed to send response: " + res + ", cause: " + StringUtils.toString(t));
-                    channel.send(r);
-
+                    //构建出错Response
+                    Response errRes = new Response(res.getId(), res.getVersion());
+                    errRes.setStatus(Response.BAD_RESPONSE);
+                    errRes.setErrorMessage("Failed to send response, cause: " + StringUtils.toString(t));
+                    int len = writeResponseToBuffer(channel, buffer, savedWriteIndex + HEADER_LENGTH, errRes);
+                    buffer.writerIndex(savedWriteIndex + HEADER_LENGTH + len);
                     return;
-                } catch (RemotingException e) {
+                } catch (Exception e) {
                     logger.warn("Failed to send bad_response info back: " + res + ", cause: " + e.getMessage(), e);
                 }
             }
@@ -308,6 +292,29 @@ public class ExchangeCodec extends TelnetCodec {
                 throw new RuntimeException(t.getMessage(), t);
             }
         }
+    }
+
+    private int writeResponseToBuffer(Channel channel, ChannelBuffer buffer, int writeIndex, Response res) throws IOException {
+        buffer.writerIndex(writeIndex);
+        ChannelBufferOutputStream bos = new ChannelBufferOutputStream(buffer);
+
+        Serialization serialization = getSerialization(channel);
+        ObjectOutput out = serialization.serialize(channel.getUrl(), bos);
+        // encode response data or error message.
+        if (res.getStatus() == Response.OK) {
+            if (res.isHeartbeat()) {
+                encodeHeartbeatData(channel, out, res.getResult());
+            } else {
+                encodeResponseData(channel, out, res.getResult());
+            }
+        } else {
+            out.writeUTF(res.getErrorMessage());
+        }
+        out.flushBuffer();
+        bos.flush();
+        bos.close();
+
+        return bos.writtenBytes();
     }
 
     @Override
