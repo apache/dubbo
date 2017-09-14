@@ -831,12 +831,26 @@ public class ExtensionLoader<T> {
     /**
      *  方法参数中是否有com.alibaba.dubbo.rpc.Invocation对象<br/>
      *  2017-09-05 zhangyinyue
-     * @param code 方法体代码字符串
      * @param pts 方法参数
      * @return 是为true
      */
-    private boolean hasInvocation(StringBuilder code,Class<?>[] pts){
+    private boolean hasInvocation(Class<?>[] pts){
         boolean hasInvocation = false;
+        for (int i = 0; i < pts.length; ++i) {
+            if (pts[i].getName().equals("com.alibaba.dubbo.rpc.Invocation")) {
+                hasInvocation = true;
+                break;
+            }
+        }
+        return hasInvocation;
+    }
+
+    /**
+     * 生成对Invocation处理的代码
+     * @param code 生成的方法体代码字符串
+     * @param pts 方法所有的参数
+     */
+    private void makeInvocationCode(StringBuilder code,Class<?>[] pts){
         for (int i = 0; i < pts.length; ++i) {
             if (pts[i].getName().equals("com.alibaba.dubbo.rpc.Invocation")) {
                 // Null Point check
@@ -844,11 +858,9 @@ public class ExtensionLoader<T> {
                 code.append(s);
                 s = String.format("\nString methodName = arg%d.getMethodName();", i);
                 code.append(s);
-                hasInvocation = true;
                 break;
             }
         }
-        return hasInvocation;
     }
 
     /**
@@ -992,7 +1004,8 @@ public class ExtensionLoader<T> {
 
                 String[] value = getMethodAdaptiveAnnotationValue(adaptiveAnnotation);
                 String defaultExtName = cachedDefaultName;
-                boolean hasInvocation = hasInvocation(code,pts);
+                boolean hasInvocation = hasInvocation(pts);
+                makeInvocationCode(code,pts);
                 makeGetNameCode(code,value, defaultExtName, hasInvocation);
 
                 makeExtensionCode(code, rt, method, pts);
