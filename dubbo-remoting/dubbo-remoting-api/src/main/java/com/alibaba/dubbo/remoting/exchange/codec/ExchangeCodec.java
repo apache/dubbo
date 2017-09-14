@@ -283,13 +283,13 @@ public class ExchangeCodec extends TelnetCodec {
         } catch (Throwable t) {
             // 发送失败信息给Consumer，否则Consumer只能等超时了
             if (!res.isEvent() && res.getStatus() != Response.BAD_RESPONSE) {
+                // 将buffer内容清空
+                buffer.writerIndex(savedWriteIndex);
                 Response r = new Response(res.getId(), res.getVersion());
                 r.setStatus(Response.BAD_RESPONSE);
 
                 if (t instanceof ExceedPayloadLimitException) {
                     logger.warn(t.getMessage(), t);
-                    // 将buffer内容清空
-                    buffer.writerIndex(savedWriteIndex);
                     try {
                         r.setErrorMessage(t.getMessage());
                         channel.send(r);
