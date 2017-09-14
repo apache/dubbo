@@ -15,6 +15,12 @@
  */
 package com.alibaba.dubbo.remoting.transport.dispatcher.connection;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.threadpool.support.AbortPolicyWithReport;
@@ -23,6 +29,8 @@ import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.ExecutionException;
 import com.alibaba.dubbo.remoting.RemotingException;
+import com.alibaba.dubbo.remoting.exchange.Request;
+import com.alibaba.dubbo.remoting.exchange.Response;
 import com.alibaba.dubbo.remoting.transport.dispatcher.ChannelEventRunnable;
 import com.alibaba.dubbo.remoting.transport.dispatcher.ChannelEventRunnable.ChannelState;
 import com.alibaba.dubbo.remoting.transport.dispatcher.WrappedChannelHandler;
@@ -75,6 +83,18 @@ public class ConnectionOrderedChannelHandler extends WrappedChannelHandler {
         try {
             cexecutor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
         } catch (Throwable t) {
+        	//fix 线程池满了拒绝调用不返回，导致消费者一直等待超时
+        	if(message instanceof Request && t instanceof RejectedExecutionException){
+        		Request request = (Request)message;
+        		if(request.isTwoWay()){
+        			String msg = "Server side(" + url.getIp() + "," + url.getPort() + ") threadpool is exhausted ,detail msg:" + t.getMessage();
+        			Response response = new Response(request.getId(), request.getVersion());
+        			response.setStatus(Response.SERVER_THREADPOOL_EXHAUSTED_ERROR);
+        			response.setErrorMessage(msg);
+        			channel.send(response);
+        			return;
+        		}
+        	}
             throw new ExecutionException(message, channel, getClass() + " error when process received event .", t);
         }
     }
