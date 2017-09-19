@@ -281,10 +281,10 @@ public class ExchangeCodec extends TelnetCodec {
             buffer.writeBytes(header); // write header.
             buffer.writerIndex(savedWriteIndex + HEADER_LENGTH + len);
         } catch (Throwable t) {
+            // 将buffer内容清空
+            buffer.writerIndex(savedWriteIndex);
             // 发送失败信息给Consumer，否则Consumer只能等超时了
             if (!res.isEvent() && res.getStatus() != Response.BAD_RESPONSE) {
-                // 将buffer内容清空
-                buffer.writerIndex(savedWriteIndex);
                 Response r = new Response(res.getId(), res.getVersion());
                 r.setStatus(Response.BAD_RESPONSE);
 
