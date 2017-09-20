@@ -33,6 +33,7 @@ import com.alibaba.dubbo.remoting.exchange.Response;
 import com.alibaba.dubbo.remoting.exchange.support.DefaultFuture;
 import com.alibaba.dubbo.remoting.telnet.codec.TelnetCodec;
 import com.alibaba.dubbo.remoting.transport.CodecSupport;
+import com.alibaba.dubbo.remoting.transport.ExceedPayloadLimitException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -241,6 +242,7 @@ public class ExchangeCodec extends TelnetCodec {
     }
 
     protected void encodeResponse(Channel channel, ChannelBuffer buffer, Response res) throws IOException {
+        int savedWriteIndex = buffer.writerIndex();
         try {
             Serialization serialization = getSerialization(channel);
             // header.
@@ -256,7 +258,6 @@ public class ExchangeCodec extends TelnetCodec {
             // set request id.
             Bytes.long2bytes(res.getId(), header, 4);
 
-            int savedWriteIndex = buffer.writerIndex();
             buffer.writerIndex(savedWriteIndex + HEADER_LENGTH);
             ChannelBufferOutputStream bos = new ChannelBufferOutputStream(buffer);
             ObjectOutput out = serialization.serialize(channel.getUrl(), bos);
@@ -280,20 +281,32 @@ public class ExchangeCodec extends TelnetCodec {
             buffer.writeBytes(header); // write header.
             buffer.writerIndex(savedWriteIndex + HEADER_LENGTH + len);
         } catch (Throwable t) {
+            // 将buffer内容清空
+            buffer.writerIndex(savedWriteIndex);
             // 发送失败信息给Consumer，否则Consumer只能等超时了
             if (!res.isEvent() && res.getStatus() != Response.BAD_RESPONSE) {
-                try {
+                Response r = new Response(res.getId(), res.getVersion());
+                r.setStatus(Response.BAD_RESPONSE);
+
+                if (t instanceof ExceedPayloadLimitException) {
+                    logger.warn(t.getMessage(), t);
+                    try {
+                        r.setErrorMessage(t.getMessage());
+                        channel.send(r);
+                        return;
+                    } catch (RemotingException e) {
+                        logger.warn("Failed to send bad_response info back: " + t.getMessage() + ", cause: " + e.getMessage(), e);
+                    }
+                } else {
                     // FIXME 在Codec中打印出错日志？在IoHanndler的caught中统一处理？
                     logger.warn("Fail to encode response: " + res + ", send bad_response info instead, cause: " + t.getMessage(), t);
-
-                    Response r = new Response(res.getId(), res.getVersion());
-                    r.setStatus(Response.BAD_RESPONSE);
-                    r.setErrorMessage("Failed to send response: " + res + ", cause: " + StringUtils.toString(t));
-                    channel.send(r);
-
-                    return;
-                } catch (RemotingException e) {
-                    logger.warn("Failed to send bad_response info back: " + res + ", cause: " + e.getMessage(), e);
+                    try {
+                        r.setErrorMessage("Failed to send response: " + res + ", cause: " + StringUtils.toString(t));
+                        channel.send(r);
+                        return;
+                    } catch (RemotingException e) {
+                        logger.warn("Failed to send bad_response info back: " + res + ", cause: " + e.getMessage(), e);
+                    }
                 }
             }
 
