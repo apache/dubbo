@@ -74,8 +74,9 @@ public class OverrideServiceImpl extends AbstractService implements OverrideServ
         if (oldOverride.getParameter("enabled", true)) {
             return;
         }
-
-        URL newOverride = oldOverride.removeParameter("enabled");
+        //URL newOverride = oldOverride.removeParameter("enabled");
+        //修复添加动态配置后启用后不能删除
+        URL newOverride = oldOverride.addParameter("enabled","true");
         registryService.unregister(oldOverride);
         registryService.register(newOverride);
 
