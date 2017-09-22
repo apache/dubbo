@@ -734,6 +734,242 @@ public class ExtensionLoader<T> {
         return compiler.compile(code, classLoader);
     }
 
+
+    /**
+     *  对接口方法中URL参数的处理：<br/>
+     *  1、有类型为URL参数；<br/>
+     *  2、参数没有URL类型,但参数对象有URL成员变量；<br/>
+     *  2017-09-05 zhangyinyue
+     * @param code  生成的方法体代码字符串
+     * @param pts  方法所有的参数
+     * @param method 接口方法
+     */
+    private void makeUrlParameterCode(StringBuilder code,Class<?>[] pts, Method method){
+        int urlTypeIndex = -1;
+        for (int i = 0; i < pts.length; ++i) {
+            if (pts[i].equals(URL.class)) {
+                urlTypeIndex = i;
+                break;
+            }
+        }
+        // 有类型为URL的参数
+        if (urlTypeIndex != -1) {
+            // Null Point check
+            String s = String.format("\nif (arg%d == null) throw new IllegalArgumentException(\"url == null\");",
+                    urlTypeIndex);
+            code.append(s);
+
+            s = String.format("\n%s url = arg%d;", URL.class.getName(), urlTypeIndex);
+            code.append(s);
+        }
+        // 参数没有URL类型
+        else {
+            String attribMethod = null;
+
+            // 找到参数的URL属性
+            LBL_PTS:
+            for (int i = 0; i < pts.length; ++i) {
+                Method[] ms = pts[i].getMethods();
+                for (Method m : ms) {
+                    String name = m.getName();
+                    if ((name.startsWith("get") || name.length() > 3)
+                            && Modifier.isPublic(m.getModifiers())
+                            && !Modifier.isStatic(m.getModifiers())
+                            && m.getParameterTypes().length == 0
+                            && m.getReturnType() == URL.class) {
+                        urlTypeIndex = i;
+                        attribMethod = name;
+                        break LBL_PTS;
+                    }
+                }
+            }
+            if (attribMethod == null) {
+                throw new IllegalStateException("fail to create adative class for interface " + type.getName()
+                        + ": not found url parameter or url attribute in parameters of method " + method.getName());
+            }
+
+            // Null point check
+            String s = String.format("\nif (arg%d == null) throw new IllegalArgumentException(\"%s argument == null\");",
+                    urlTypeIndex, pts[urlTypeIndex].getName());
+            code.append(s);
+            s = String.format("\nif (arg%d.%s() == null) throw new IllegalArgumentException(\"%s argument %s() == null\");",
+                    urlTypeIndex, attribMethod, pts[urlTypeIndex].getName(), attribMethod);
+            code.append(s);
+
+            s = String.format("%s url = arg%d.%s();", URL.class.getName(), urlTypeIndex, attribMethod);
+            code.append(s);
+        }
+    }
+
+    /**
+     *  获取接口方法Adaptive注解的value值<br/>
+     *  2017-09-05 zhangyinyue
+     * @param adaptiveAnnotation 方法Adaptive注解
+     * @return String[] value
+     */
+    private String[] getMethodAdaptiveAnnotationValue(Adaptive adaptiveAnnotation){
+        String[] value = adaptiveAnnotation.value();
+        // 没有设置Key，则使用“扩展点接口名的点分隔 作为Key
+        if (value.length == 0) {
+            char[] charArray = type.getSimpleName().toCharArray();
+            StringBuilder sb = new StringBuilder(128);
+            for (int i = 0; i < charArray.length; i++) {
+                if (Character.isUpperCase(charArray[i])) {
+                    if (i != 0) {
+                        sb.append(".");
+                    }
+                    sb.append(Character.toLowerCase(charArray[i]));
+                } else {
+                    sb.append(charArray[i]);
+                }
+            }
+            value = new String[]{sb.toString()};
+        }
+        return value;
+    }
+
+    /**
+     *  方法参数中是否有com.alibaba.dubbo.rpc.Invocation对象<br/>
+     *  2017-09-05 zhangyinyue
+     * @param pts 方法参数
+     * @return 是为true
+     */
+    private boolean hasInvocation(Class<?>[] pts){
+        boolean hasInvocation = false;
+        for (int i = 0; i < pts.length; ++i) {
+            if (pts[i].getName().equals("com.alibaba.dubbo.rpc.Invocation")) {
+                hasInvocation = true;
+                break;
+            }
+        }
+        return hasInvocation;
+    }
+
+    /**
+     * 生成对Invocation处理的代码
+     * @param code 生成的方法体代码字符串
+     * @param pts 方法所有的参数
+     */
+    private void makeInvocationCode(StringBuilder code,Class<?>[] pts){
+        for (int i = 0; i < pts.length; ++i) {
+            if (pts[i].getName().equals("com.alibaba.dubbo.rpc.Invocation")) {
+                // Null Point check
+                String s = String.format("\nif (arg%d == null) throw new IllegalArgumentException(\"invocation == null\");", i);
+                code.append(s);
+                s = String.format("\nString methodName = arg%d.getMethodName();", i);
+                code.append(s);
+                break;
+            }
+        }
+    }
+
+    /**
+     *  生成代码中获取extName的代码 <br/>
+     *  2017-09-05 zhangyinyue
+     * @param code 方法体代码字符串
+     * @param value 接口方法Adaptive注解的value值
+     * @param defaultExtName 默认的扩展值
+     * @param hasInvocation 方法参数中是否有com.alibaba.dubbo.rpc.Invocation对象
+     */
+    private void makeGetNameCode(StringBuilder code, String[] value, String defaultExtName, boolean hasInvocation){
+        String getNameCode = null;
+        for (int i = value.length - 1; i >= 0; --i) {
+            if (i == value.length - 1) {
+                if (null != defaultExtName) {
+                    if (!"protocol".equals(value[i]))
+                        if (hasInvocation)
+                            getNameCode = String.format("url.getMethodParameter(methodName, \"%s\", \"%s\")", value[i], defaultExtName);
+                        else
+                            getNameCode = String.format("url.getParameter(\"%s\", \"%s\")", value[i], defaultExtName);
+                    else
+                        getNameCode = String.format("( url.getProtocol() == null ? \"%s\" : url.getProtocol() )", defaultExtName);
+                } else {
+                    if (!"protocol".equals(value[i]))
+                        if (hasInvocation)
+                            getNameCode = String.format("url.getMethodParameter(methodName, \"%s\", \"%s\")", value[i], defaultExtName);
+                        else
+                            getNameCode = String.format("url.getParameter(\"%s\")", value[i]);
+                    else
+                        getNameCode = "url.getProtocol()";
+                }
+            } else {
+                if (!"protocol".equals(value[i]))
+                    if (hasInvocation)
+                        getNameCode = String.format("url.getMethodParameter(methodName, \"%s\", \"%s\")", value[i], defaultExtName);
+                    else
+                        getNameCode = String.format("url.getParameter(\"%s\", %s)", value[i], getNameCode);
+                else
+                    getNameCode = String.format("url.getProtocol() == null ? (%s) : url.getProtocol()", getNameCode);
+            }
+        }
+
+        code.append("\nString extName = ").append(getNameCode).append(";");
+        // check extName == null?
+        String s = String.format("\nif(extName == null) " +
+                        "throw new IllegalStateException(\"Fail to get extension(%s) name from url(\" + url.toString() + \") use keys(%s)\");",
+                type.getName(), Arrays.toString(value));
+        code.append(s);
+    }
+
+    /**
+     *  生成扩展执行代码<br/>
+     *  2017-09-05 zhangyinyue
+     * @param code 方法体代码字符串
+     * @param rt 返回类型
+     * @param method 方法对象
+     * @param pts 方法参数
+     */
+    private void makeExtensionCode(StringBuilder code, Class<?> rt, Method method, Class<?>[] pts){
+        String s = String.format("\n%s extension = (%<s)%s.getExtensionLoader(%s.class).getExtension(extName);",
+                type.getName(), ExtensionLoader.class.getSimpleName(), type.getName());
+        code.append(s);
+
+        // return statement
+        if (!rt.equals(void.class)) {
+            code.append("\nreturn ");
+        }
+
+        s = String.format("extension.%s(", method.getName());
+        code.append(s);
+        for (int i = 0; i < pts.length; i++) {
+            if (i != 0)
+                code.append(", ");
+            code.append("arg").append(i);
+        }
+        code.append(");");
+    }
+
+    /**
+     *  生成方法头部代码 <br/>
+     *  2017-09-05 zhangyinyue
+     * @param codeBuidler 整个类的代码字段串
+     * @param rt 返回类型
+     * @param pts 方法参数
+     * @param ets 异常类型
+     * @param method 方法对象
+     */
+    private void makeMethodHeaderCode(StringBuilder codeBuidler, Class<?> rt, Class<?>[] pts, Class<?>[] ets, Method method){
+        codeBuidler.append("\npublic " + rt.getCanonicalName() + " " + method.getName() + "(");
+        for (int i = 0; i < pts.length; i++) {
+            if (i > 0) {
+                codeBuidler.append(", ");
+            }
+            codeBuidler.append(pts[i].getCanonicalName());
+            codeBuidler.append(" ");
+            codeBuidler.append("arg" + i);
+        }
+        codeBuidler.append(")");
+        if (ets.length > 0) {
+            codeBuidler.append(" throws ");
+            for (int i = 0; i < ets.length; i++) {
+                if (i > 0) {
+                    codeBuidler.append(", ");
+                }
+                codeBuidler.append(ets[i].getCanonicalName());
+            }
+        }
+    }
+
     private String createAdaptiveExtensionClassCode() {
         StringBuilder codeBuidler = new StringBuilder();
         Method[] methods = type.getMethods();
@@ -764,168 +1000,17 @@ public class ExtensionLoader<T> {
                         .append(method.toString()).append(" of interface ")
                         .append(type.getName()).append(" is not adaptive method!\");");
             } else {
-                int urlTypeIndex = -1;
-                for (int i = 0; i < pts.length; ++i) {
-                    if (pts[i].equals(URL.class)) {
-                        urlTypeIndex = i;
-                        break;
-                    }
-                }
-                // 有类型为URL的参数
-                if (urlTypeIndex != -1) {
-                    // Null Point check
-                    String s = String.format("\nif (arg%d == null) throw new IllegalArgumentException(\"url == null\");",
-                            urlTypeIndex);
-                    code.append(s);
+                makeUrlParameterCode(code, pts, method);
 
-                    s = String.format("\n%s url = arg%d;", URL.class.getName(), urlTypeIndex);
-                    code.append(s);
-                }
-                // 参数没有URL类型
-                else {
-                    String attribMethod = null;
-
-                    // 找到参数的URL属性
-                    LBL_PTS:
-                    for (int i = 0; i < pts.length; ++i) {
-                        Method[] ms = pts[i].getMethods();
-                        for (Method m : ms) {
-                            String name = m.getName();
-                            if ((name.startsWith("get") || name.length() > 3)
-                                    && Modifier.isPublic(m.getModifiers())
-                                    && !Modifier.isStatic(m.getModifiers())
-                                    && m.getParameterTypes().length == 0
-                                    && m.getReturnType() == URL.class) {
-                                urlTypeIndex = i;
-                                attribMethod = name;
-                                break LBL_PTS;
-                            }
-                        }
-                    }
-                    if (attribMethod == null) {
-                        throw new IllegalStateException("fail to create adative class for interface " + type.getName()
-                                + ": not found url parameter or url attribute in parameters of method " + method.getName());
-                    }
-
-                    // Null point check
-                    String s = String.format("\nif (arg%d == null) throw new IllegalArgumentException(\"%s argument == null\");",
-                            urlTypeIndex, pts[urlTypeIndex].getName());
-                    code.append(s);
-                    s = String.format("\nif (arg%d.%s() == null) throw new IllegalArgumentException(\"%s argument %s() == null\");",
-                            urlTypeIndex, attribMethod, pts[urlTypeIndex].getName(), attribMethod);
-                    code.append(s);
-
-                    s = String.format("%s url = arg%d.%s();", URL.class.getName(), urlTypeIndex, attribMethod);
-                    code.append(s);
-                }
-
-                String[] value = adaptiveAnnotation.value();
-                // 没有设置Key，则使用“扩展点接口名的点分隔 作为Key
-                if (value.length == 0) {
-                    char[] charArray = type.getSimpleName().toCharArray();
-                    StringBuilder sb = new StringBuilder(128);
-                    for (int i = 0; i < charArray.length; i++) {
-                        if (Character.isUpperCase(charArray[i])) {
-                            if (i != 0) {
-                                sb.append(".");
-                            }
-                            sb.append(Character.toLowerCase(charArray[i]));
-                        } else {
-                            sb.append(charArray[i]);
-                        }
-                    }
-                    value = new String[]{sb.toString()};
-                }
-
-                boolean hasInvocation = false;
-                for (int i = 0; i < pts.length; ++i) {
-                    if (pts[i].getName().equals("com.alibaba.dubbo.rpc.Invocation")) {
-                        // Null Point check
-                        String s = String.format("\nif (arg%d == null) throw new IllegalArgumentException(\"invocation == null\");", i);
-                        code.append(s);
-                        s = String.format("\nString methodName = arg%d.getMethodName();", i);
-                        code.append(s);
-                        hasInvocation = true;
-                        break;
-                    }
-                }
-
+                String[] value = getMethodAdaptiveAnnotationValue(adaptiveAnnotation);
                 String defaultExtName = cachedDefaultName;
-                String getNameCode = null;
-                for (int i = value.length - 1; i >= 0; --i) {
-                    if (i == value.length - 1) {
-                        if (null != defaultExtName) {
-                            if (!"protocol".equals(value[i]))
-                                if (hasInvocation)
-                                    getNameCode = String.format("url.getMethodParameter(methodName, \"%s\", \"%s\")", value[i], defaultExtName);
-                                else
-                                    getNameCode = String.format("url.getParameter(\"%s\", \"%s\")", value[i], defaultExtName);
-                            else
-                                getNameCode = String.format("( url.getProtocol() == null ? \"%s\" : url.getProtocol() )", defaultExtName);
-                        } else {
-                            if (!"protocol".equals(value[i]))
-                                if (hasInvocation)
-                                    getNameCode = String.format("url.getMethodParameter(methodName, \"%s\", \"%s\")", value[i], defaultExtName);
-                                else
-                                    getNameCode = String.format("url.getParameter(\"%s\")", value[i]);
-                            else
-                                getNameCode = "url.getProtocol()";
-                        }
-                    } else {
-                        if (!"protocol".equals(value[i]))
-                            if (hasInvocation)
-                                getNameCode = String.format("url.getMethodParameter(methodName, \"%s\", \"%s\")", value[i], defaultExtName);
-                            else
-                                getNameCode = String.format("url.getParameter(\"%s\", %s)", value[i], getNameCode);
-                        else
-                            getNameCode = String.format("url.getProtocol() == null ? (%s) : url.getProtocol()", getNameCode);
-                    }
-                }
-                code.append("\nString extName = ").append(getNameCode).append(";");
-                // check extName == null?
-                String s = String.format("\nif(extName == null) " +
-                                "throw new IllegalStateException(\"Fail to get extension(%s) name from url(\" + url.toString() + \") use keys(%s)\");",
-                        type.getName(), Arrays.toString(value));
-                code.append(s);
+                boolean hasInvocation = hasInvocation(pts);
+                makeInvocationCode(code,pts);
+                makeGetNameCode(code,value, defaultExtName, hasInvocation);
 
-                s = String.format("\n%s extension = (%<s)%s.getExtensionLoader(%s.class).getExtension(extName);",
-                        type.getName(), ExtensionLoader.class.getSimpleName(), type.getName());
-                code.append(s);
-
-                // return statement
-                if (!rt.equals(void.class)) {
-                    code.append("\nreturn ");
-                }
-
-                s = String.format("extension.%s(", method.getName());
-                code.append(s);
-                for (int i = 0; i < pts.length; i++) {
-                    if (i != 0)
-                        code.append(", ");
-                    code.append("arg").append(i);
-                }
-                code.append(");");
+                makeExtensionCode(code, rt, method, pts);
             }
-
-            codeBuidler.append("\npublic " + rt.getCanonicalName() + " " + method.getName() + "(");
-            for (int i = 0; i < pts.length; i++) {
-                if (i > 0) {
-                    codeBuidler.append(", ");
-                }
-                codeBuidler.append(pts[i].getCanonicalName());
-                codeBuidler.append(" ");
-                codeBuidler.append("arg" + i);
-            }
-            codeBuidler.append(")");
-            if (ets.length > 0) {
-                codeBuidler.append(" throws ");
-                for (int i = 0; i < ets.length; i++) {
-                    if (i > 0) {
-                        codeBuidler.append(", ");
-                    }
-                    codeBuidler.append(ets[i].getCanonicalName());
-                }
-            }
+            makeMethodHeaderCode(codeBuidler, rt, pts, ets, method);
             codeBuidler.append(" {");
             codeBuidler.append(code.toString());
             codeBuidler.append("\n}");
