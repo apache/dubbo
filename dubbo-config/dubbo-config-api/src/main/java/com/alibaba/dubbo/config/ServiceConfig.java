@@ -347,19 +347,18 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
     }
 
-    private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
-        String name = protocolConfig.getName();
-        if (name == null || name.length() == 0) {
-            name = "dubbo";
-        }
 
-        String host = protocolConfig.getHost();
+    /**
+     * 对获取host的处理
+     * @param host 主机地址
+     * @param registryURLs 注册的url集合
+     * @return String host
+     */
+    private String processHost(String host,List<URL> registryURLs){
         if (provider != null && (host == null || host.length() == 0)) {
             host = provider.getHost();
         }
-        boolean anyhost = false;
         if (NetUtils.isInvalidLocalHost(host)) {
-            anyhost = true;
             try {
                 host = InetAddress.getLocalHost().getHostAddress();
             } catch (UnknownHostException e) {
@@ -391,8 +390,16 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 }
             }
         }
+        return host;
+    }
 
-        Integer port = protocolConfig.getPort();
+    /**
+     * 对端口的处理
+     * @param port 端口号
+     * @param name  protocol协议的名字
+     * @return Integer port
+     */
+    private Integer processPort(Integer port, String name){
         if (provider != null && (port == null || port == 0)) {
             port = provider.getPort();
         }
@@ -408,22 +415,14 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             }
             logger.warn("Use random available port(" + port + ") for protocol " + name);
         }
+        return port;
+    }
 
-        Map<String, String> map = new HashMap<String, String>();
-        if (anyhost) {
-            map.put(Constants.ANYHOST_KEY, "true");
-        }
-        map.put(Constants.SIDE_KEY, Constants.PROVIDER_SIDE);
-        map.put(Constants.DUBBO_VERSION_KEY, Version.getVersion());
-        map.put(Constants.TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
-        if (ConfigUtils.getPid() > 0) {
-            map.put(Constants.PID_KEY, String.valueOf(ConfigUtils.getPid()));
-        }
-        appendParameters(map, application);
-        appendParameters(map, module);
-        appendParameters(map, provider, Constants.DEFAULT_KEY);
-        appendParameters(map, protocolConfig);
-        appendParameters(map, this);
+    /**
+     * 处理method子标签的配置规则
+     * @param map 构造url对象的参数map
+     */
+    private void processMethodConfig(Map<String, String> map){
         if (methods != null && methods.size() > 0) {
             for (MethodConfig method : methods) {
                 appendParameters(map, method, method.getName());
@@ -479,49 +478,15 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 }
             } // end of methods for
         }
+    }
 
-        if (ProtocolUtils.isGeneric(generic)) {
-            map.put("generic", generic);
-            map.put("methods", Constants.ANY_VALUE);
-        } else {
-            String revision = Version.getVersion(interfaceClass, version);
-            if (revision != null && revision.length() > 0) {
-                map.put("revision", revision);
-            }
-
-            String[] methods = Wrapper.getWrapper(interfaceClass).getMethodNames();
-            if (methods.length == 0) {
-                logger.warn("NO method found in service interface " + interfaceClass.getName());
-                map.put("methods", Constants.ANY_VALUE);
-            } else {
-                map.put("methods", StringUtils.join(new HashSet<String>(Arrays.asList(methods)), ","));
-            }
-        }
-        if (!ConfigUtils.isEmpty(token)) {
-            if (ConfigUtils.isDefault(token)) {
-                map.put("token", UUID.randomUUID().toString());
-            } else {
-                map.put("token", token);
-            }
-        }
-        if ("injvm".equals(protocolConfig.getName())) {
-            protocolConfig.setRegister(false);
-            map.put("notify", "false");
-        }
-        // 导出服务
-        String contextPath = protocolConfig.getContextpath();
-        if ((contextPath == null || contextPath.length() == 0) && provider != null) {
-            contextPath = provider.getContextpath();
-        }
-        URL url = new URL(name, host, port, (contextPath == null || contextPath.length() == 0 ? "" : contextPath + "/") + path, map);
-
-        if (ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
-                .hasExtension(url.getProtocol())) {
-            url = ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
-                    .getExtension(url.getProtocol()).getConfigurator(url).configure(url);
-        }
-
-        String scope = url.getParameter(Constants.SCOPE_KEY);
+    /**
+     * 对暴露域的处理，包括本地暴露和暴露为远程服务
+     * @param scope 暴露域的配置
+     * @param url url对象
+     * @param registryURLs 注册的url集合
+     */
+    private void processScope(String scope, URL url, List<URL> registryURLs){
         //配置为none不暴露
         if (!Constants.SCOPE_NONE.toString().equalsIgnoreCase(scope)) {
 
@@ -558,6 +523,90 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 }
             }
         }
+    }
+
+    /**
+     *  对调用的处理，包括泛化调用和接口调用
+     * @param map 构建URL的参数map
+     */
+    private void processInvoke(Map<String, String> map){
+        if (ProtocolUtils.isGeneric(generic)) {
+            map.put("generic", generic);
+            map.put("methods", Constants.ANY_VALUE);
+        } else {
+            String revision = Version.getVersion(interfaceClass, version);
+            if (StringUtils.isNotEmpty(revision)) {
+                map.put("revision", revision);
+            }
+
+            String[] methods = Wrapper.getWrapper(interfaceClass).getMethodNames();
+            if (methods.length == 0) {
+                logger.warn("NO method found in service interface " + interfaceClass.getName());
+                map.put("methods", Constants.ANY_VALUE);
+            } else {
+                map.put("methods", StringUtils.join(new HashSet<String>(Arrays.asList(methods)), ","));
+            }
+        }
+
+    }
+
+    private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
+        String name = protocolConfig.getName();
+        if (StringUtils.isBlank(name)) {
+            name = "dubbo";
+        }
+
+        String host = processHost(protocolConfig.getHost(),registryURLs);
+        boolean anyhost = NetUtils.isInvalidLocalHost(host);
+
+        Map<String, String> map = new HashMap<String, String>();
+        if (anyhost) {
+            map.put(Constants.ANYHOST_KEY, "true");
+        }
+        map.put(Constants.SIDE_KEY, Constants.PROVIDER_SIDE);
+        map.put(Constants.DUBBO_VERSION_KEY, Version.getVersion());
+        map.put(Constants.TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
+        if (ConfigUtils.getPid() > 0) {
+            map.put(Constants.PID_KEY, String.valueOf(ConfigUtils.getPid()));
+        }
+        appendParameters(map, application);
+        appendParameters(map, module);
+        appendParameters(map, provider, Constants.DEFAULT_KEY);
+        appendParameters(map, protocolConfig);
+        appendParameters(map, this);
+
+        processMethodConfig(map);
+        processInvoke(map);
+
+        if (!ConfigUtils.isEmpty(token)) {
+            if (ConfigUtils.isDefault(token)) {
+                map.put("token", UUID.randomUUID().toString());
+            } else {
+                map.put("token", token);
+            }
+        }
+        if ("injvm".equals(protocolConfig.getName())) {
+            protocolConfig.setRegister(false);
+            map.put("notify", "false");
+        }
+        // 导出服务
+        String contextPath = protocolConfig.getContextpath();
+        if ((contextPath == null || contextPath.length() == 0) && provider != null) {
+            contextPath = provider.getContextpath();
+        }
+        Integer port = processPort(protocolConfig.getPort(),name);
+        String urlPath = (StringUtils.isBlank(contextPath) ? "" : contextPath + "/") + path;
+        URL url = new URL(name, host, port, urlPath, map);
+
+        if (ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
+                .hasExtension(url.getProtocol())) {
+            url = ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
+                    .getExtension(url.getProtocol()).getConfigurator(url).configure(url);
+        }
+
+        String scope = url.getParameter(Constants.SCOPE_KEY);
+        processScope(scope, url, registryURLs);
+
         this.urls.add(url);
     }
 
