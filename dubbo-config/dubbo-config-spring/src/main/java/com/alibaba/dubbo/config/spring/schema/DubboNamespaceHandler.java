@@ -42,16 +42,16 @@ public class DubboNamespaceHandler extends NamespaceHandlerSupport {
     }
 
     public void init() {
-        registerBeanDefinitionParser("application", new DubboBeanDefinitionParser(ApplicationConfig.class, true));
-        registerBeanDefinitionParser("module", new DubboBeanDefinitionParser(ModuleConfig.class, true));
-        registerBeanDefinitionParser("registry", new DubboBeanDefinitionParser(RegistryConfig.class, true));
-        registerBeanDefinitionParser("monitor", new DubboBeanDefinitionParser(MonitorConfig.class, true));
-        registerBeanDefinitionParser("provider", new DubboBeanDefinitionParser(ProviderConfig.class, true));
-        registerBeanDefinitionParser("consumer", new DubboBeanDefinitionParser(ConsumerConfig.class, true));
-        registerBeanDefinitionParser("protocol", new DubboBeanDefinitionParser(ProtocolConfig.class, true));
-        registerBeanDefinitionParser("service", new DubboBeanDefinitionParser(ServiceBean.class, true));
-        registerBeanDefinitionParser("reference", new DubboBeanDefinitionParser(ReferenceBean.class, false));
-        registerBeanDefinitionParser("annotation", new DubboBeanDefinitionParser(AnnotationBean.class, true));
+        registerBeanDefinitionParser("application", new ApplicationBeanDefinitionParser(ApplicationConfig.class));
+        registerBeanDefinitionParser("module", new ModuleBeanDefinitionParser(ModuleConfig.class));
+        registerBeanDefinitionParser("registry", new RegistryBeanDefinitionParser(RegistryConfig.class));
+        registerBeanDefinitionParser("monitor", new MonitorBeanDefinitionParser(MonitorConfig.class));
+        registerBeanDefinitionParser("provider", new ProviderBeanDefinitionParser(ProviderConfig.class));
+        registerBeanDefinitionParser("consumer", new ConsumerBeanDefinitionParser(ConsumerConfig.class));
+        registerBeanDefinitionParser("protocol", new ProtocolBeanDefinitionParser(ProtocolConfig.class));
+        registerBeanDefinitionParser("service", new ServiceBeanDefinitionParser(ServiceBean.class));
+        registerBeanDefinitionParser("reference", new ReferenceBeanDefinitionParser(ReferenceBean.class, false));
+        registerBeanDefinitionParser("annotation", new AnnotationBeanDefinitionParser(AnnotationBean.class));
     }
 
 }
