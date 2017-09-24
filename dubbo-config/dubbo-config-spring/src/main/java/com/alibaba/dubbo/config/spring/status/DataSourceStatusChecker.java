@@ -15,15 +15,6 @@
  */
 package com.alibaba.dubbo.config.spring.status;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.util.Map;
-
-import javax.sql.DataSource;
-
-import org.springframework.context.ApplicationContext;
-
 import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
@@ -31,9 +22,17 @@ import com.alibaba.dubbo.common.status.Status;
 import com.alibaba.dubbo.common.status.StatusChecker;
 import com.alibaba.dubbo.config.spring.ServiceBean;
 
+import org.springframework.context.ApplicationContext;
+
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.util.Map;
+
 /**
  * DataSourceStatusChecker
- * 
+ *
  * @author william.liangf
  */
 @Activate
@@ -65,7 +64,7 @@ public class DataSourceStatusChecker implements StatusChecker {
                     DatabaseMetaData metaData = connection.getMetaData();
                     ResultSet resultSet = metaData.getTypeInfo();
                     try {
-                        if (! resultSet.next()) {
+                        if (!resultSet.next()) {
                             level = Status.Level.ERROR;
                         }
                     } finally {

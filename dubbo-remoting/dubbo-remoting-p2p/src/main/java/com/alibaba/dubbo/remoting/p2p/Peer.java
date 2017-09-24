@@ -20,16 +20,16 @@ import com.alibaba.dubbo.remoting.Server;
 
 /**
  * Peer. (SPI, Prototype, ThreadSafe)
- * 
+ * <p>
  * <a href="http://en.wikipedia.org/wiki/Peer-to-peer">Peer-to-peer</a>
- * 
+ *
  * @author william.liangf
  */
 public interface Peer extends Server {
-    
+
     /**
      * leave.
-     * 
+     *
      * @throws RemotingException
      */
     void leave() throws RemotingException;

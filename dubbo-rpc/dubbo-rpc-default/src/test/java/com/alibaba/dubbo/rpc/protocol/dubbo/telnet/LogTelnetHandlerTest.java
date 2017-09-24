@@ -15,24 +15,24 @@
  */
 package com.alibaba.dubbo.rpc.protocol.dubbo.telnet;
 
-import static org.junit.Assert.assertTrue;
-
-import org.easymock.EasyMock;
-import org.junit.Test;
-
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
 
+import org.easymock.EasyMock;
+import org.junit.Test;
+
+import static org.junit.Assert.assertTrue;
+
 /**
  * LogTelnetHandlerTest.java
- * 
+ *
  * @author tony.chenl
  */
 public class LogTelnetHandlerTest {
 
     private static TelnetHandler log = new LogTelnetHandler();
-    private Channel              mockChannel;
+    private Channel mockChannel;
 
     @Test
     public void testChangeLogLevel() throws RemotingException {

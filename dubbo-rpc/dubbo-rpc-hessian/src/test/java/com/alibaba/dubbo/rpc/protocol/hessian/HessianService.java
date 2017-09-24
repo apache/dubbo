@@ -18,15 +18,15 @@ package com.alibaba.dubbo.rpc.protocol.hessian;
 
 /**
  * HessianService
- * 
+ *
  * @author william.liangf
  */
 public interface HessianService {
-    
+
     String sayHello(String name);
-    
-     void timeOut(int millis);
-    
-     String customException();
+
+    void timeOut(int millis);
+
+    String customException();
 
 }

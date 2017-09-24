@@ -22,7 +22,7 @@ import com.alibaba.dubbo.remoting.http.HttpServer;
 
 /**
  * JettyHttpTransporter
- * 
+ *
  * @author william.liangf
  */
 public class JettyHttpBinder implements HttpBinder {

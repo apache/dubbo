@@ -15,8 +15,14 @@
  */
 package com.alibaba.dubbo.registry.multicast;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.utils.NetUtils;
+import com.alibaba.dubbo.registry.NotifyListener;
+
+import junit.framework.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.net.MulticastSocket;
 import java.util.List;
@@ -24,29 +30,22 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
-import junit.framework.Assert;
-
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.utils.NetUtils;
-import com.alibaba.dubbo.registry.NotifyListener;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * MulticastRegistryTest
- * 
+ *
  * @author tony.chenl
  */
 public class MulticastRegistryTest {
 
-    String            service     = "com.alibaba.dubbo.test.injvmServie";
-    URL               registryUrl = URL.valueOf("multicast://239.255.255.255/");
-    URL               serviceUrl  = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + "/" + service
-                                                + "?methods=test1,test2");
-    URL               consumerUrl = URL.valueOf("subscribe://" + NetUtils.getLocalHost() + "/" + service + "?arg1=1&arg2=2");
-    MulticastRegistry registry    = new MulticastRegistry(registryUrl);
+    String service = "com.alibaba.dubbo.test.injvmServie";
+    URL registryUrl = URL.valueOf("multicast://239.255.255.255/");
+    URL serviceUrl = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + "/" + service
+            + "?methods=test1,test2");
+    URL consumerUrl = URL.valueOf("subscribe://" + NetUtils.getLocalHost() + "/" + service + "?arg1=1&arg2=2");
+    MulticastRegistry registry = new MulticastRegistry(registryUrl);
 
     /**
      * @throws java.lang.Exception

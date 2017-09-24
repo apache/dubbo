@@ -26,24 +26,23 @@ public class MockReferenceConfig extends ReferenceConfig<String> {
     static AtomicLong counter = new AtomicLong();
 
     String value;
-
-    public boolean isGetMethodRun() {
-        return value != null;
-    }
-
     boolean destroyMethodRun = false;
-
-    public boolean isDestroyMethodRun() {
-        return destroyMethodRun;
-    }
 
     public static void setCounter(long c) {
         counter.set(c);
     }
 
+    public boolean isGetMethodRun() {
+        return value != null;
+    }
+
+    public boolean isDestroyMethodRun() {
+        return destroyMethodRun;
+    }
+
     @Override
     public synchronized String get() {
-        if(value != null) return value;
+        if (value != null) return value;
 
         value = "" + counter.getAndIncrement();
         return value;

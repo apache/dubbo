@@ -19,26 +19,26 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * AtomicPositiveInteger
- * 
+ *
  * @author william.liangf
  * @author ding.lid
  */
 public class AtomicPositiveInteger extends Number {
-    
+
     private static final long serialVersionUID = -3038533876489105940L;
-    
+
     private final AtomicInteger i;
-    
+
     public AtomicPositiveInteger() {
         i = new AtomicInteger();
     }
-    
+
     public AtomicPositiveInteger(int initialValue) {
         i = new AtomicInteger(initialValue);
     }
 
     public final int getAndIncrement() {
-        for (;;) {
+        for (; ; ) {
             int current = i.get();
             int next = (current >= Integer.MAX_VALUE ? 0 : current + 1);
             if (i.compareAndSet(current, next)) {
@@ -48,7 +48,7 @@ public class AtomicPositiveInteger extends Number {
     }
 
     public final int getAndDecrement() {
-        for (;;) {
+        for (; ; ) {
             int current = i.get();
             int next = (current <= 0 ? Integer.MAX_VALUE : current - 1);
             if (i.compareAndSet(current, next)) {
@@ -58,7 +58,7 @@ public class AtomicPositiveInteger extends Number {
     }
 
     public final int incrementAndGet() {
-        for (;;) {
+        for (; ; ) {
             int current = i.get();
             int next = (current >= Integer.MAX_VALUE ? 0 : current + 1);
             if (i.compareAndSet(current, next)) {
@@ -68,7 +68,7 @@ public class AtomicPositiveInteger extends Number {
     }
 
     public final int decrementAndGet() {
-        for (;;) {
+        for (; ; ) {
             int current = i.get();
             int next = (current <= 0 ? Integer.MAX_VALUE : current - 1);
             if (i.compareAndSet(current, next)) {
@@ -99,7 +99,7 @@ public class AtomicPositiveInteger extends Number {
         if (delta < 0) {
             throw new IllegalArgumentException("delta " + delta + " < 0");
         }
-        for (;;) {
+        for (; ; ) {
             int current = i.get();
             int next = (current >= Integer.MAX_VALUE - delta + 1 ? delta - 1 : current + delta);
             if (i.compareAndSet(current, next)) {
@@ -112,7 +112,7 @@ public class AtomicPositiveInteger extends Number {
         if (delta < 0) {
             throw new IllegalArgumentException("delta " + delta + " < 0");
         }
-        for (;;) {
+        for (; ; ) {
             int current = i.get();
             int next = (current >= Integer.MAX_VALUE - delta + 1 ? delta - 1 : current + delta);
             if (i.compareAndSet(current, next)) {
@@ -167,20 +167,16 @@ public class AtomicPositiveInteger extends Number {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((i == null) ? 0 : i.hashCode());
+        result = prime * result + i.hashCode();
         return result;
     }
 
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
+        if (!(obj instanceof AtomicPositiveInteger)) return false;
         AtomicPositiveInteger other = (AtomicPositiveInteger) obj;
-        if (i == null) {
-            if (other.i != null) return false;
-        } else if (!i.equals(other.i)) return false;
-        return true;
+        return i.intValue() == other.i.intValue();
     }
 
 }

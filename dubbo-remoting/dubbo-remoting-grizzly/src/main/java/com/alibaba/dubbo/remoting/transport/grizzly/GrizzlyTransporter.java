@@ -24,7 +24,7 @@ import com.alibaba.dubbo.remoting.Transporter;
 
 /**
  * GrizzlyTransporter
- * 
+ *
  * @author william.liangf
  */
 public class GrizzlyTransporter implements Transporter {

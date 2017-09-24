@@ -7,21 +7,20 @@
  */
 package com.alibaba.dubbo.governance.web.common.resolver;
 
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.alibaba.citrus.service.dataresolver.DataResolver;
 import com.alibaba.citrus.service.dataresolver.DataResolverContext;
 import com.alibaba.citrus.service.dataresolver.DataResolverFactory;
 import com.alibaba.citrus.turbine.TurbineRunDataInternal;
 import com.alibaba.citrus.turbine.util.TurbineUtil;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.Map;
+
 /**
  * MapDataResolverFactory
- * 
+ *
  * @author william.liangf
  */
 public class MapDataResolverFactory implements DataResolverFactory {
@@ -35,12 +34,12 @@ public class MapDataResolverFactory implements DataResolverFactory {
         }
         return null;
     }
-    
+
     public class MapDataResolver implements DataResolver {
-        
+
         public final DataResolverContext context;
 
-        public MapDataResolver(DataResolverContext context){
+        public MapDataResolver(DataResolverContext context) {
             this.context = context;
         }
 
@@ -50,5 +49,5 @@ public class MapDataResolverFactory implements DataResolverFactory {
         }
 
     }
-    
+
 }

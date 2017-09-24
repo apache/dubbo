@@ -15,6 +15,16 @@
  */
 package com.alibaba.dubbo.common.beanutil;
 
+import com.alibaba.dubbo.common.model.person.BigPerson;
+import com.alibaba.dubbo.common.model.person.FullAddress;
+import com.alibaba.dubbo.common.model.person.PersonInfo;
+import com.alibaba.dubbo.common.model.person.PersonStatus;
+import com.alibaba.dubbo.common.model.person.Phone;
+import com.alibaba.dubbo.common.utils.PojoUtilsTest;
+
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -24,21 +34,127 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import org.junit.Test;
-
-import org.junit.Assert;
-
-import com.alibaba.dubbo.common.model.person.BigPerson;
-import com.alibaba.dubbo.common.model.person.FullAddress;
-import com.alibaba.dubbo.common.model.person.PersonInfo;
-import com.alibaba.dubbo.common.model.person.PersonStatus;
-import com.alibaba.dubbo.common.model.person.Phone;
-import com.alibaba.dubbo.common.utils.PojoUtilsTest;
-
 /**
  * @author <a href="mailto:gang.lvg@taobao.com">kimi</a>
  */
 public class JavaBeanSerializeUtilTest {
+
+    static void assertEqualsEnum(Enum<?> expected, Object obj) {
+        JavaBeanDescriptor descriptor = (JavaBeanDescriptor) obj;
+        Assert.assertTrue(descriptor.isEnumType());
+        Assert.assertEquals(expected.getClass().getName(), descriptor.getClassName());
+        Assert.assertEquals(expected.name(), descriptor.getEnumPropertyName());
+    }
+
+    static void assertEqualsPrimitive(Object expected, Object obj) {
+        if (expected == null) {
+            return;
+        }
+        JavaBeanDescriptor descriptor = (JavaBeanDescriptor) obj;
+        Assert.assertTrue(descriptor.isPrimitiveType());
+        Assert.assertEquals(expected, descriptor.getPrimitiveProperty());
+    }
+
+    static void assertEqualsBigPerson(BigPerson person, Object obj) {
+        JavaBeanDescriptor descriptor = (JavaBeanDescriptor) obj;
+        Assert.assertTrue(descriptor.isBeanType());
+        assertEqualsPrimitive(person.getPersonId(), descriptor.getProperty("personId"));
+        assertEqualsPrimitive(person.getLoginName(), descriptor.getProperty("loginName"));
+        assertEqualsEnum(person.getStatus(), descriptor.getProperty("status"));
+        assertEqualsPrimitive(person.getEmail(), descriptor.getProperty("email"));
+        assertEqualsPrimitive(person.getPenName(), descriptor.getProperty("penName"));
+
+        JavaBeanDescriptor infoProfile = (JavaBeanDescriptor) descriptor.getProperty("infoProfile");
+        Assert.assertTrue(infoProfile.isBeanType());
+        JavaBeanDescriptor phones = (JavaBeanDescriptor) infoProfile.getProperty("phones");
+        Assert.assertTrue(phones.isCollectionType());
+        assertEqualsPhone(person.getInfoProfile().getPhones().get(0), phones.getProperty(0));
+        assertEqualsPhone(person.getInfoProfile().getPhones().get(1), phones.getProperty(1));
+        assertEqualsPhone(person.getInfoProfile().getFax(), infoProfile.getProperty("fax"));
+        assertEqualsFullAddress(person.getInfoProfile().getFullAddress(), infoProfile.getProperty("fullAddress"));
+        assertEqualsPrimitive(person.getInfoProfile().getMobileNo(), infoProfile.getProperty("mobileNo"));
+        assertEqualsPrimitive(person.getInfoProfile().getName(), infoProfile.getProperty("name"));
+        assertEqualsPrimitive(person.getInfoProfile().getDepartment(), infoProfile.getProperty("department"));
+        assertEqualsPrimitive(person.getInfoProfile().getJobTitle(), infoProfile.getProperty("jobTitle"));
+        assertEqualsPrimitive(person.getInfoProfile().getHomepageUrl(), infoProfile.getProperty("homepageUrl"));
+        assertEqualsPrimitive(person.getInfoProfile().isFemale(), infoProfile.getProperty("female"));
+        assertEqualsPrimitive(person.getInfoProfile().isMale(), infoProfile.getProperty("male"));
+    }
+
+    static void assertEqualsPhone(Phone excpected, Object obj) {
+        JavaBeanDescriptor descriptor = (JavaBeanDescriptor) obj;
+        Assert.assertTrue(descriptor.isBeanType());
+        if (excpected.getArea() != null) {
+            assertEqualsPrimitive(excpected.getArea(), descriptor.getProperty("area"));
+        }
+        if (excpected.getCountry() != null) {
+            assertEqualsPrimitive(excpected.getCountry(), descriptor.getProperty("country"));
+        }
+        if (excpected.getExtensionNumber() != null) {
+            assertEqualsPrimitive(excpected.getExtensionNumber(), descriptor.getProperty("extensionNumber"));
+        }
+        if (excpected.getNumber() != null) {
+            assertEqualsPrimitive(excpected.getNumber(), descriptor.getProperty("number"));
+        }
+    }
+
+    static void assertEqualsFullAddress(FullAddress expected, Object obj) {
+        JavaBeanDescriptor descriptor = (JavaBeanDescriptor) obj;
+        Assert.assertTrue(descriptor.isBeanType());
+        if (expected.getCityId() != null) {
+            assertEqualsPrimitive(expected.getCityId(), descriptor.getProperty("cityId"));
+        }
+        if (expected.getCityName() != null) {
+            assertEqualsPrimitive(expected.getCityName(), descriptor.getProperty("cityName"));
+        }
+        if (expected.getCountryId() != null) {
+            assertEqualsPrimitive(expected.getCountryId(), descriptor.getProperty("countryId"));
+        }
+        if (expected.getCountryName() != null) {
+            assertEqualsPrimitive(expected.getCountryName(), descriptor.getProperty("countryName"));
+        }
+        if (expected.getProvinceName() != null) {
+            assertEqualsPrimitive(expected.getProvinceName(), descriptor.getProperty("provinceName"));
+        }
+        if (expected.getStreetAddress() != null) {
+            assertEqualsPrimitive(expected.getStreetAddress(), descriptor.getProperty("streetAddress"));
+        }
+        if (expected.getZipCode() != null) {
+            assertEqualsPrimitive(expected.getZipCode(), descriptor.getProperty("zipCode"));
+        }
+    }
+
+    static BigPerson createBigPerson() {
+        BigPerson bigPerson;
+        bigPerson = new BigPerson();
+        bigPerson.setPersonId("superman111");
+        bigPerson.setLoginName("superman");
+        bigPerson.setStatus(PersonStatus.ENABLED);
+        bigPerson.setEmail("sm@1.com");
+        bigPerson.setPenName("pname");
+
+        ArrayList<Phone> phones = new ArrayList<Phone>();
+        Phone phone1 = new Phone("86", "0571", "87654321", "001");
+        Phone phone2 = new Phone("86", "0571", "87654322", "002");
+        phones.add(phone1);
+        phones.add(phone2);
+
+        PersonInfo pi = new PersonInfo();
+        pi.setPhones(phones);
+        Phone fax = new Phone("86", "0571", "87654321", null);
+        pi.setFax(fax);
+        FullAddress addr = new FullAddress("CN", "zj", "3480", "wensanlu", "315000");
+        pi.setFullAddress(addr);
+        pi.setMobileNo("13584652131");
+        pi.setMale(true);
+        pi.setDepartment("b2b");
+        pi.setHomepageUrl("www.capcom.com");
+        pi.setJobTitle("qa");
+        pi.setName("superman");
+
+        bigPerson.setInfoProfile(pi);
+        return bigPerson;
+    }
 
     @Test
     public void testSerialize_Primitive() throws Exception {
@@ -76,7 +192,7 @@ public class JavaBeanSerializeUtilTest {
         Assert.assertEquals(int.class.getName(), descriptor.getClassName());
         for (int i = 0; i < array.length; i++) {
             Assert.assertEquals(array[i],
-                                ((JavaBeanDescriptor) descriptor.getProperty(i)).getPrimitiveProperty());
+                    ((JavaBeanDescriptor) descriptor.getProperty(i)).getPrimitiveProperty());
         }
 
         Integer[] integers = new Integer[]{1, 2, 3, 4, null, null, null};
@@ -84,11 +200,11 @@ public class JavaBeanSerializeUtilTest {
         Assert.assertTrue(descriptor.isArrayType());
         Assert.assertEquals(Integer.class.getName(), descriptor.getClassName());
         Assert.assertEquals(integers.length, descriptor.propertySize());
-        for(int i = 0; i < integers.length; i++) {
+        for (int i = 0; i < integers.length; i++) {
             if (integers[i] == null) {
                 Assert.assertTrue(integers[i] == descriptor.getProperty(i));
             } else {
-                Assert.assertEquals(integers[i], ((JavaBeanDescriptor)descriptor.getProperty(i)).getPrimitiveProperty());
+                Assert.assertEquals(integers[i], ((JavaBeanDescriptor) descriptor.getProperty(i)).getPrimitiveProperty());
             }
         }
 
@@ -96,20 +212,20 @@ public class JavaBeanSerializeUtilTest {
         descriptor = JavaBeanSerializeUtil.serialize(second, JavaBeanAccessor.METHOD);
         Assert.assertTrue(descriptor.isArrayType());
         Assert.assertEquals(int[].class.getName(), descriptor.getClassName());
-        for(int i = 0; i < second.length; i++) {
-            for(int j = 0; j < second[i].length; j++) {
-                JavaBeanDescriptor item = (((JavaBeanDescriptor)descriptor.getProperty(i)));
+        for (int i = 0; i < second.length; i++) {
+            for (int j = 0; j < second[i].length; j++) {
+                JavaBeanDescriptor item = (((JavaBeanDescriptor) descriptor.getProperty(i)));
                 Assert.assertTrue(item.isArrayType());
                 Assert.assertEquals(int.class.getName(), item.getClassName());
-                Assert.assertEquals(second[i][j], ((JavaBeanDescriptor)item.getProperty(j)).getPrimitiveProperty());
+                Assert.assertEquals(second[i][j], ((JavaBeanDescriptor) item.getProperty(j)).getPrimitiveProperty());
             }
         }
 
-        BigPerson[] persons = new BigPerson[] {createBigPerson(), createBigPerson()};
+        BigPerson[] persons = new BigPerson[]{createBigPerson(), createBigPerson()};
         descriptor = JavaBeanSerializeUtil.serialize(persons);
         Assert.assertTrue(descriptor.isArrayType());
         Assert.assertEquals(BigPerson.class.getName(), descriptor.getClassName());
-        for(int i = 0; i < persons.length; i++) {
+        for (int i = 0; i < persons.length; i++) {
             assertEqualsBigPerson(persons[i], descriptor.getProperty(i));
         }
     }
@@ -118,19 +234,19 @@ public class JavaBeanSerializeUtilTest {
     public void testDeserialize_Array() throws Exception {
         final int len = 10;
         JavaBeanDescriptor descriptor = new JavaBeanDescriptor(int.class.getName(), JavaBeanDescriptor.TYPE_ARRAY);
-        for(int i = 0; i < len; i++) {
+        for (int i = 0; i < len; i++) {
             descriptor.setProperty(i, i);
         }
 
         Object obj = JavaBeanSerializeUtil.deserialize(descriptor);
         Assert.assertTrue(obj.getClass().isArray());
         Assert.assertTrue(int.class == obj.getClass().getComponentType());
-        for(int i = 0; i < len; i++) {
+        for (int i = 0; i < len; i++) {
             Assert.assertEquals(i, Array.get(obj, i));
         }
 
         descriptor = new JavaBeanDescriptor(int[].class.getName(), JavaBeanDescriptor.TYPE_ARRAY);
-        for(int i = 0; i < len; i++) {
+        for (int i = 0; i < len; i++) {
             JavaBeanDescriptor innerItem = new JavaBeanDescriptor(int.class.getName(), JavaBeanDescriptor.TYPE_ARRAY);
             for (int j = 0; j < len; j++) {
                 innerItem.setProperty(j, j);
@@ -140,7 +256,7 @@ public class JavaBeanSerializeUtilTest {
         obj = JavaBeanSerializeUtil.deserialize(descriptor);
         Assert.assertTrue(obj.getClass().isArray());
         Assert.assertEquals(int[].class, obj.getClass().getComponentType());
-        for(int i = 0; i < len; i++) {
+        for (int i = 0; i < len; i++) {
             Object innerItem = Array.get(obj, i);
             Assert.assertTrue(innerItem.getClass().isArray());
             Assert.assertEquals(int.class, innerItem.getClass().getComponentType());
@@ -213,32 +329,32 @@ public class JavaBeanSerializeUtilTest {
         Assert.assertTrue(descriptor.isBeanType());
         assertEqualsPrimitive(bean.getDate(), descriptor.getProperty("date"));
         assertEqualsEnum(bean.getStatus(), descriptor.getProperty("status"));
-        Assert.assertTrue(((JavaBeanDescriptor)descriptor.getProperty("type")).isClassType());
-        Assert.assertEquals(Bean.class.getName(), ((JavaBeanDescriptor)descriptor.getProperty("type")).getClassNameProperty());
-        Assert.assertTrue(((JavaBeanDescriptor)descriptor.getProperty("array")).isArrayType());
-        Assert.assertEquals(0, ((JavaBeanDescriptor)descriptor.getProperty("array")).propertySize());
+        Assert.assertTrue(((JavaBeanDescriptor) descriptor.getProperty("type")).isClassType());
+        Assert.assertEquals(Bean.class.getName(), ((JavaBeanDescriptor) descriptor.getProperty("type")).getClassNameProperty());
+        Assert.assertTrue(((JavaBeanDescriptor) descriptor.getProperty("array")).isArrayType());
+        Assert.assertEquals(0, ((JavaBeanDescriptor) descriptor.getProperty("array")).propertySize());
 
-        JavaBeanDescriptor property = (JavaBeanDescriptor)descriptor.getProperty("collection");
+        JavaBeanDescriptor property = (JavaBeanDescriptor) descriptor.getProperty("collection");
         Assert.assertTrue(property.isCollectionType());
         Assert.assertEquals(1, property.propertySize());
-        property = (JavaBeanDescriptor)property.getProperty(0);
+        property = (JavaBeanDescriptor) property.getProperty(0);
         Assert.assertTrue(property.isBeanType());
         Assert.assertEquals(Phone.class.getName(), property.getClassName());
         Assert.assertEquals(0, property.propertySize());
 
-        property = (JavaBeanDescriptor)descriptor.getProperty("addresses");
+        property = (JavaBeanDescriptor) descriptor.getProperty("addresses");
         Assert.assertTrue(property.isMapType());
         Assert.assertEquals(bean.getAddresses().getClass().getName(), property.getClassName());
         Assert.assertEquals(1, property.propertySize());
 
 
         Map.Entry<Object, Object> entry = property.iterator().next();
-        Assert.assertTrue(((JavaBeanDescriptor)entry.getKey()).isPrimitiveType());
-        Assert.assertEquals("first", ((JavaBeanDescriptor)entry.getKey()).getPrimitiveProperty());
+        Assert.assertTrue(((JavaBeanDescriptor) entry.getKey()).isPrimitiveType());
+        Assert.assertEquals("first", ((JavaBeanDescriptor) entry.getKey()).getPrimitiveProperty());
 
-        Assert.assertTrue(((JavaBeanDescriptor)entry.getValue()).isBeanType());
-        Assert.assertEquals(FullAddress.class.getName(), ((JavaBeanDescriptor)entry.getValue()).getClassName());
-        Assert.assertEquals(0, ((JavaBeanDescriptor)entry.getValue()).propertySize());
+        Assert.assertTrue(((JavaBeanDescriptor) entry.getValue()).isBeanType());
+        Assert.assertEquals(FullAddress.class.getName(), ((JavaBeanDescriptor) entry.getValue()).getClassName());
+        Assert.assertEquals(0, ((JavaBeanDescriptor) entry.getValue()).propertySize());
     }
 
     @Test
@@ -262,18 +378,18 @@ public class JavaBeanSerializeUtilTest {
         JavaBeanDescriptor beanDescriptor = JavaBeanSerializeUtil.serialize(bean, JavaBeanAccessor.METHOD);
         Object deser = JavaBeanSerializeUtil.deserialize(beanDescriptor);
         Assert.assertTrue(deser instanceof Bean);
-        Bean deserBean = (Bean)deser;
+        Bean deserBean = (Bean) deser;
         Assert.assertEquals(bean.getDate(), deserBean.getDate());
         Assert.assertEquals(bean.getStatus(), deserBean.getStatus());
         Assert.assertEquals(bean.getType(), deserBean.getType());
         Assert.assertEquals(bean.getCollection().size(), deserBean.getCollection().size());
         Assert.assertEquals(bean.getCollection().iterator().next().getClass(),
-                            deserBean.getCollection().iterator().next().getClass());
+                deserBean.getCollection().iterator().next().getClass());
         Assert.assertEquals(bean.getAddresses().size(), deserBean.getAddresses().size());
         Assert.assertEquals(bean.getAddresses().entrySet().iterator().next().getKey(),
-                            deserBean.getAddresses().entrySet().iterator().next().getKey());
+                deserBean.getAddresses().entrySet().iterator().next().getKey());
         Assert.assertEquals(bean.getAddresses().entrySet().iterator().next().getValue().getClass(),
-                            deserBean.getAddresses().entrySet().iterator().next().getValue().getClass());
+                deserBean.getAddresses().entrySet().iterator().next().getValue().getClass());
     }
 
     @Test
@@ -291,122 +407,7 @@ public class JavaBeanSerializeUtilTest {
         Assert.assertEquals(map.size(), result.propertySize());
         Object object = result.iterator().next().getValue();
         Assert.assertTrue(object instanceof JavaBeanDescriptor);
-        JavaBeanDescriptor actual = (JavaBeanDescriptor)object;
+        JavaBeanDescriptor actual = (JavaBeanDescriptor) object;
         Assert.assertEquals(map.get("first"), actual);
-    }
-
-    static void assertEqualsEnum(Enum<?> expected, Object obj) {
-        JavaBeanDescriptor descriptor = (JavaBeanDescriptor) obj;
-        Assert.assertTrue(descriptor.isEnumType());
-        Assert.assertEquals(expected.getClass().getName(), descriptor.getClassName());
-        Assert.assertEquals(expected.name(), descriptor.getEnumPropertyName());
-    }
-
-    static void assertEqualsPrimitive(Object expected, Object obj) {
-        if (expected == null) { return; }
-        JavaBeanDescriptor descriptor = (JavaBeanDescriptor) obj;
-        Assert.assertTrue(descriptor.isPrimitiveType());
-        Assert.assertEquals(expected, descriptor.getPrimitiveProperty());
-    }
-
-    static void assertEqualsBigPerson(BigPerson person, Object obj) {
-        JavaBeanDescriptor descriptor = (JavaBeanDescriptor)obj;
-        Assert.assertTrue(descriptor.isBeanType());
-        assertEqualsPrimitive(person.getPersonId(), descriptor.getProperty("personId"));
-        assertEqualsPrimitive(person.getLoginName(), descriptor.getProperty("loginName"));
-        assertEqualsEnum(person.getStatus(), descriptor.getProperty("status"));
-        assertEqualsPrimitive(person.getEmail(), descriptor.getProperty("email"));
-        assertEqualsPrimitive(person.getPenName(), descriptor.getProperty("penName"));
-
-        JavaBeanDescriptor infoProfile = (JavaBeanDescriptor)descriptor.getProperty("infoProfile");
-        Assert.assertTrue(infoProfile.isBeanType());
-        JavaBeanDescriptor phones = (JavaBeanDescriptor) infoProfile.getProperty("phones");
-        Assert.assertTrue(phones.isCollectionType());
-        assertEqualsPhone(person.getInfoProfile().getPhones().get(0), phones.getProperty(0));
-        assertEqualsPhone(person.getInfoProfile().getPhones().get(1), phones.getProperty(1));
-        assertEqualsPhone(person.getInfoProfile().getFax(), infoProfile.getProperty("fax"));
-        assertEqualsFullAddress(person.getInfoProfile().getFullAddress(), infoProfile.getProperty("fullAddress"));
-        assertEqualsPrimitive(person.getInfoProfile().getMobileNo(), infoProfile.getProperty("mobileNo"));
-        assertEqualsPrimitive(person.getInfoProfile().getName(), infoProfile.getProperty("name"));
-        assertEqualsPrimitive(person.getInfoProfile().getDepartment(), infoProfile.getProperty("department"));
-        assertEqualsPrimitive(person.getInfoProfile().getJobTitle(), infoProfile.getProperty("jobTitle"));
-        assertEqualsPrimitive(person.getInfoProfile().getHomepageUrl(), infoProfile.getProperty("homepageUrl"));
-        assertEqualsPrimitive(person.getInfoProfile().isFemale(), infoProfile.getProperty("female"));
-        assertEqualsPrimitive(person.getInfoProfile().isMale(), infoProfile.getProperty("male"));
-    }
-
-    static void assertEqualsPhone(Phone excpected, Object obj) {
-        JavaBeanDescriptor descriptor = (JavaBeanDescriptor)obj;
-        Assert.assertTrue(descriptor.isBeanType());
-        if (excpected.getArea() != null) {
-            assertEqualsPrimitive(excpected.getArea(), descriptor.getProperty("area"));
-        }
-        if (excpected.getCountry() != null) {
-            assertEqualsPrimitive(excpected.getCountry(), descriptor.getProperty("country"));
-        }
-        if (excpected.getExtensionNumber()!= null) {
-            assertEqualsPrimitive(excpected.getExtensionNumber(), descriptor.getProperty("extensionNumber"));
-        }
-        if (excpected.getNumber() != null) {
-            assertEqualsPrimitive(excpected.getNumber(), descriptor.getProperty("number"));
-        }
-    }
-
-    static void assertEqualsFullAddress(FullAddress expected, Object obj) {
-        JavaBeanDescriptor descriptor = (JavaBeanDescriptor)obj;
-        Assert.assertTrue(descriptor.isBeanType());
-        if (expected.getCityId() != null) {
-            assertEqualsPrimitive(expected.getCityId(), descriptor.getProperty("cityId"));
-        }
-        if (expected.getCityName() != null) {
-            assertEqualsPrimitive(expected.getCityName(), descriptor.getProperty("cityName"));
-        }
-        if (expected.getCountryId() != null) {
-            assertEqualsPrimitive(expected.getCountryId(), descriptor.getProperty("countryId"));
-        }
-        if (expected.getCountryName() != null) {
-            assertEqualsPrimitive(expected.getCountryName(), descriptor.getProperty("countryName"));
-        }
-        if (expected.getProvinceName() != null) {
-            assertEqualsPrimitive(expected.getProvinceName(), descriptor.getProperty("provinceName"));
-        }
-        if (expected.getStreetAddress() != null) {
-            assertEqualsPrimitive(expected.getStreetAddress(), descriptor.getProperty("streetAddress"));
-        }
-        if (expected.getZipCode() != null) {
-            assertEqualsPrimitive(expected.getZipCode(), descriptor.getProperty("zipCode"));
-        }
-    }
-
-    static BigPerson createBigPerson() {
-        BigPerson bigPerson;
-        bigPerson = new BigPerson();
-        bigPerson.setPersonId("superman111");
-        bigPerson.setLoginName("superman");
-        bigPerson.setStatus(PersonStatus.ENABLED);
-        bigPerson.setEmail("sm@1.com");
-        bigPerson.setPenName("pname");
-
-        ArrayList<Phone> phones = new ArrayList<Phone>();
-        Phone phone1 = new Phone("86", "0571", "87654321", "001");
-        Phone phone2 = new Phone("86", "0571", "87654322", "002");
-        phones.add(phone1);
-        phones.add(phone2);
-
-        PersonInfo pi = new PersonInfo();
-        pi.setPhones(phones);
-        Phone fax = new Phone("86", "0571", "87654321", null);
-        pi.setFax(fax);
-        FullAddress addr = new FullAddress("CN", "zj", "3480", "wensanlu", "315000");
-        pi.setFullAddress(addr);
-        pi.setMobileNo("13584652131");
-        pi.setMale(true);
-        pi.setDepartment("b2b");
-        pi.setHomepageUrl("www.capcom.com");
-        pi.setJobTitle("qa");
-        pi.setName("superman");
-
-        bigPerson.setInfoProfile(pi);
-        return bigPerson;
     }
 }

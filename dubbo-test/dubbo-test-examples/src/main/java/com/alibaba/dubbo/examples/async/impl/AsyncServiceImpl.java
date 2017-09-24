@@ -19,7 +19,7 @@ import com.alibaba.dubbo.examples.async.api.AsyncService;
 
 /**
  * AsyncServiceImpl
- * 
+ *
  * @author william.liangf
  */
 public class AsyncServiceImpl implements AsyncService {

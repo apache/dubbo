@@ -22,19 +22,19 @@ import com.alibaba.dubbo.common.extension.SPI;
 
 /**
  * HttpBinder
- * 
+ *
  * @author william.liangf
  */
 @SPI("jetty")
 public interface HttpBinder {
-    
+
     /**
      * bind the server.
-     * 
+     *
      * @param url server url.
      * @return server.
      */
     @Adaptive({Constants.SERVER_KEY})
     HttpServer bind(URL url, HttpHandler handler);
-    
+
 }

@@ -53,39 +53,35 @@ package com.alibaba.com.caucho.hessian.io;
  * This exception is required for MicroHessianInput.
  */
 public class HessianServiceException extends Exception {
-  private String code;
-  private Object detail;
+    private String code;
+    private Object detail;
 
-  /**
-   * Zero-arg constructor.
-   */
-  public HessianServiceException()
-  {
-  }
+    /**
+     * Zero-arg constructor.
+     */
+    public HessianServiceException() {
+    }
 
-  /**
-   * Create the exception.
-   */
-  public HessianServiceException(String message, String code, Object detail)
-  {
-    super(message);
-    this.code = code;
-    this.detail = detail;
-  }
+    /**
+     * Create the exception.
+     */
+    public HessianServiceException(String message, String code, Object detail) {
+        super(message);
+        this.code = code;
+        this.detail = detail;
+    }
 
-  /**
-   * Returns the code.
-   */
-  public String getCode()
-  {
-    return code;
-  }
+    /**
+     * Returns the code.
+     */
+    public String getCode() {
+        return code;
+    }
 
-  /**
-   * Returns the detail.
-   */
-  public Object getDetail()
-  {
-    return detail;
-  }
+    /**
+     * Returns the detail.
+     */
+    public Object getDetail() {
+        return detail;
+    }
 }

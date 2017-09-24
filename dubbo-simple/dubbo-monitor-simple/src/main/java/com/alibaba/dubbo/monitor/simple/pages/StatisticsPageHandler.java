@@ -15,6 +15,13 @@
  */
 package com.alibaba.dubbo.monitor.simple.pages;
 
+import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.container.page.Page;
+import com.alibaba.dubbo.container.page.PageHandler;
+import com.alibaba.dubbo.monitor.MonitorService;
+import com.alibaba.dubbo.monitor.simple.CountUtils;
+import com.alibaba.dubbo.monitor.simple.SimpleMonitorService;
+
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -23,16 +30,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.container.page.Page;
-import com.alibaba.dubbo.container.page.PageHandler;
-import com.alibaba.dubbo.monitor.MonitorService;
-import com.alibaba.dubbo.monitor.simple.CountUtils;
-import com.alibaba.dubbo.monitor.simple.SimpleMonitorService;
-
 /**
  * StatisticsPageHandler
- * 
+ *
  * @author william.liangf
  */
 public class StatisticsPageHandler implements PageHandler {
@@ -104,7 +104,7 @@ public class StatisticsPageHandler implements PageHandler {
             nav.append(expand);
         }
         nav.append("&date=' + this.value;}\" /> &gt; ");
-        if (! MonitorService.PROVIDER.equals(expand) && ! MonitorService.CONSUMER.equals(expand)) {
+        if (!MonitorService.PROVIDER.equals(expand) && !MonitorService.CONSUMER.equals(expand)) {
             nav.append("Summary");
         } else {
             nav.append("<a href=\"statistics.html?service=");
@@ -132,14 +132,14 @@ public class StatisticsPageHandler implements PageHandler {
             nav.append("&expand=consumer\">+Consumer</a>");
         }
         return new Page(nav.toString(), "Statistics (" + rows.size() + ")",
-                new String[] { "Method:", "Success", "Failure", "Avg Elapsed (ms)",
-                        "Max Elapsed (ms)", "Max Concurrent" }, rows);
+                new String[]{"Method:", "Success", "Failure", "Avg Elapsed (ms)",
+                        "Max Elapsed (ms)", "Max Concurrent"}, rows);
     }
-    
+
     private long[] newStatistics() {
         return new long[10];
     }
-    
+
     private void appendStatistics(File providerDir, long[] statistics) {
         statistics[0] += CountUtils.sum(new File(providerDir, MonitorService.CONSUMER + "." + MonitorService.SUCCESS));
         statistics[1] += CountUtils.sum(new File(providerDir, MonitorService.PROVIDER + "." + MonitorService.SUCCESS));
@@ -152,13 +152,13 @@ public class StatisticsPageHandler implements PageHandler {
         statistics[8] = Math.max(statistics[8], CountUtils.max(new File(providerDir, MonitorService.CONSUMER + "." + MonitorService.MAX_CONCURRENT)));
         statistics[9] = Math.max(statistics[9], CountUtils.max(new File(providerDir, MonitorService.PROVIDER + "." + MonitorService.MAX_CONCURRENT)));
     }
-    
+
     private List<String> toRow(String name, long[] statistics) {
         List<String> row = new ArrayList<String>();
         row.add(name);
         row.add(String.valueOf(statistics[0]) + " --&gt; " + String.valueOf(statistics[1]));
         row.add(String.valueOf(statistics[2]) + " --&gt; " + String.valueOf(statistics[3]));
-        row.add(String.valueOf(statistics[0] == 0 ? 0 : statistics[4] / statistics[0]) 
+        row.add(String.valueOf(statistics[0] == 0 ? 0 : statistics[4] / statistics[0])
                 + " --&gt; " + String.valueOf(statistics[1] == 0 ? 0 : statistics[5] / statistics[1]));
         row.add(String.valueOf(statistics[6]) + " --&gt; " + String.valueOf(statistics[7]));
         row.add(String.valueOf(statistics[8]) + " --&gt; " + String.valueOf(statistics[9]));

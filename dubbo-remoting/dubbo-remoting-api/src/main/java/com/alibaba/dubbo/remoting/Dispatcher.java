@@ -23,7 +23,7 @@ import com.alibaba.dubbo.remoting.transport.dispatcher.all.AllDispatcher;
 
 /**
  * ChannelHandlerWrapper (SPI, Singleton, ThreadSafe)
- * 
+ *
  * @author chao.liuc
  */
 @SPI(AllDispatcher.NAME)
@@ -31,12 +31,13 @@ public interface Dispatcher {
 
     /**
      * dispatch the message to threadpool.
-     * 
+     *
      * @param handler
      * @param url
      * @return channel handler
      */
-    @Adaptive({Constants.DISPATCHER_KEY, "dispather", "channel.handler"}) // 后两个参数为兼容旧配置
+    @Adaptive({Constants.DISPATCHER_KEY, "dispather", "channel.handler"})
+    // 后两个参数为兼容旧配置
     ChannelHandler dispatch(ChannelHandler handler, URL url);
 
 }

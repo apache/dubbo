@@ -1,10 +1,10 @@
 /**
  * File Created at 2011-12-22
  * $Id$
- *
+ * <p>
  * Copyright 2008 Alibaba.com Croporation Limited.
  * All rights reserved.
- *
+ * <p>
  * This software is the confidential and proprietary information of
  * Alibaba Company. ("Confidential Information").  You shall not
  * disclose such Confidential Information and shall use it only in
@@ -31,35 +31,35 @@ public class RandomAccessByteArrayOutputStream extends OutputStream {
 
     public RandomAccessByteArrayOutputStream() {
 
-        this( 32 );
+        this(32);
     }
 
-    public RandomAccessByteArrayOutputStream( int size ) {
+    public RandomAccessByteArrayOutputStream(int size) {
 
-        if ( size < 0 )
-            throw new IllegalArgumentException( "Negative initial size: " + size );
+        if (size < 0)
+            throw new IllegalArgumentException("Negative initial size: " + size);
         buffer = new byte[size];
     }
 
-    public void write( int b ) {
+    public void write(int b) {
 
         int newcount = count + 1;
-        if ( newcount > buffer.length )
-            buffer = Bytes.copyOf( buffer, Math.max( buffer.length << 1, newcount ) );
-        buffer[count] = ( byte ) b;
+        if (newcount > buffer.length)
+            buffer = Bytes.copyOf(buffer, Math.max(buffer.length << 1, newcount));
+        buffer[count] = (byte) b;
         count = newcount;
     }
 
-    public void write( byte b[], int off, int len ) {
+    public void write(byte b[], int off, int len) {
 
-        if ( ( off < 0 ) || ( off > b.length ) || ( len < 0 ) || ( ( off + len ) > b.length ) || ( ( off + len ) < 0 ) )
+        if ((off < 0) || (off > b.length) || (len < 0) || ((off + len) > b.length) || ((off + len) < 0))
             throw new IndexOutOfBoundsException();
-        if ( len == 0 )
+        if (len == 0)
             return;
         int newcount = count + len;
-        if ( newcount > buffer.length )
-            buffer = Bytes.copyOf( buffer, Math.max( buffer.length << 1, newcount ) );
-        System.arraycopy( b, off, buffer, count, len );
+        if (newcount > buffer.length)
+            buffer = Bytes.copyOf(buffer, Math.max(buffer.length << 1, newcount));
+        System.arraycopy(b, off, buffer, count, len);
         count = newcount;
     }
 
@@ -68,7 +68,7 @@ public class RandomAccessByteArrayOutputStream extends OutputStream {
         return count;
     }
 
-    public void setWriteIndex( int index ) {
+    public void setWriteIndex(int index) {
         count = index;
     }
 
@@ -79,29 +79,30 @@ public class RandomAccessByteArrayOutputStream extends OutputStream {
 
     public byte[] toByteArray() {
 
-        return Bytes.copyOf( buffer, count );
+        return Bytes.copyOf(buffer, count);
     }
 
     public ByteBuffer toByteBuffer() {
 
-        return ByteBuffer.wrap( buffer, 0, count );
+        return ByteBuffer.wrap(buffer, 0, count);
     }
 
-    public void writeTo( OutputStream out ) throws IOException {
+    public void writeTo(OutputStream out) throws IOException {
 
-        out.write( buffer, 0, count );
+        out.write(buffer, 0, count);
     }
 
     public String toString() {
 
-        return new String( buffer, 0, count );
+        return new String(buffer, 0, count);
     }
 
-    public String toString( String charset ) throws UnsupportedEncodingException {
+    public String toString(String charset) throws UnsupportedEncodingException {
 
-        return new String( buffer, 0, count, charset );
+        return new String(buffer, 0, count, charset);
     }
 
-    public void close() throws IOException {}
+    public void close() throws IOException {
+    }
 
 }

@@ -15,19 +15,19 @@
  */
 package com.alibaba.dubbo.common.extension.support;
 
-import java.util.Comparator;
-
 import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.extension.SPI;
 
+import java.util.Comparator;
+
 /**
  * OrderComparetor
- * 
+ *
  * @author william.liangf
  */
 public class ActivateComparator implements Comparator<Object> {
-    
+
     public static final Comparator<Object> COMPARATOR = new ActivateComparator();
 
     public int compare(Object o1, Object o2) {
@@ -45,8 +45,8 @@ public class ActivateComparator implements Comparator<Object> {
         }
         Activate a1 = o1.getClass().getAnnotation(Activate.class);
         Activate a2 = o2.getClass().getAnnotation(Activate.class);
-        if ((a1.before().length > 0 || a1.after().length > 0  
-                || a2.before().length > 0 || a2.after().length > 0) 
+        if ((a1.before().length > 0 || a1.after().length > 0
+                || a2.before().length > 0 || a2.after().length > 0)
                 && o1.getClass().getInterfaces().length > 0
                 && o1.getClass().getInterfaces()[0].isAnnotationPresent(SPI.class)) {
             ExtensionLoader<?> extensionLoader = ExtensionLoader.getExtensionLoader(o1.getClass().getInterfaces()[0]);

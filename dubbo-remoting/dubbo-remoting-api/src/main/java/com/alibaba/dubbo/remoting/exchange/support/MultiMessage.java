@@ -29,6 +29,11 @@ import java.util.List;
  */
 public final class MultiMessage implements Iterable {
 
+    private final List messages = new ArrayList();
+
+    private MultiMessage() {
+    }
+
     public static MultiMessage createFromCollection(Collection collection) {
         MultiMessage result = new MultiMessage();
         result.addMessages(collection);
@@ -42,10 +47,6 @@ public final class MultiMessage implements Iterable {
     public static MultiMessage create() {
         return new MultiMessage();
     }
-
-    private final List messages = new ArrayList();
-
-    private MultiMessage() {}
 
     public void addMessage(Object msg) {
         messages.add(msg);

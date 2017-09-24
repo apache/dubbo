@@ -19,16 +19,16 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * MergeProvider
- * 
+ *
  * @author william.liangf
  */
 public class AsyncProvider {
-    
+
     public static void main(String[] args) throws Exception {
         String config = AsyncProvider.class.getPackage().getName().replace('.', '/') + "/async-provider.xml";
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(config);
         context.start();
         System.in.read();
     }
-    
+
 }

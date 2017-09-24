@@ -15,25 +15,25 @@
  */
 package com.alibaba.dubbo.remoting.handler;
 
-import java.net.InetSocketAddress;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;
 
+import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author chao.liuc
- *
  */
 public class MockedChannel implements Channel {
-    private boolean isClosed ; 
-    private URL url; 
-    private ChannelHandler handler ;
-    private Map <String,Object> map = new HashMap<String, Object>(); 
-    
+    private boolean isClosed;
+    private volatile boolean closing = false;
+    private URL url;
+    private ChannelHandler handler;
+    private Map<String, Object> map = new HashMap<String, Object>();
+
     public MockedChannel() {
         super();
     }
@@ -44,12 +44,12 @@ public class MockedChannel implements Channel {
     }
 
     public ChannelHandler getChannelHandler() {
-        
+
         return this.handler;
     }
 
     public InetSocketAddress getLocalAddress() {
-        
+
         return null;
     }
 
@@ -66,6 +66,11 @@ public class MockedChannel implements Channel {
 
     public void close(int timeout) {
         this.close();
+    }
+
+    @Override
+    public void startClose() {
+        closing = true;
     }
 
     public boolean isClosed() {

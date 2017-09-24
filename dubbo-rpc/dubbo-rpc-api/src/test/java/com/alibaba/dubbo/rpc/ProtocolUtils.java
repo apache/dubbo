@@ -20,26 +20,26 @@ import com.alibaba.dubbo.common.extension.ExtensionLoader;
 
 /**
  * TODO Comment of ProtocolUtils
- * @author william.liangf
  *
+ * @author william.liangf
  */
 public class ProtocolUtils {
 
     private static Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
     private static ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-    
+
     public static <T> T refer(Class<T> type, String url) {
         return refer(type, URL.valueOf(url));
     }
-    
+
     public static <T> T refer(Class<T> type, URL url) {
         return proxy.getProxy(protocol.refer(type, url));
     }
-    
+
     public static <T> Exporter<T> export(T instance, Class<T> type, String url) {
         return export(instance, type, URL.valueOf(url));
     }
-    
+
     public static <T> Exporter<T> export(T instance, Class<T> type, URL url) {
         return protocol.export(proxy.getInvoker(instance, type, url));
     }

@@ -7,15 +7,6 @@
  */
 package com.alibaba.dubbo.governance.web.governance.module.screen;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.governance.service.ConsumerService;
@@ -33,25 +24,34 @@ import com.alibaba.dubbo.registry.common.route.RouteRule.MatchPair;
 import com.alibaba.dubbo.registry.common.route.RouteUtils;
 import com.alibaba.dubbo.registry.common.util.Tool;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * Consumers. URI: /services/$service/consumers
- * 
+ *
  * @author william.liangf
  */
 public class Consumers extends Restful {
 
     @Autowired
     private ProviderService providerService;
-    
+
     @Autowired
     private ConsumerService consumerService;
-    
+
     @Autowired
     private OverrideService overrideService;
-    
+
     @Autowired
     private RouteService routeService;
-    
+
     public void index(Map<String, Object> context) throws Exception {
         String service = (String) context.get("service");
         String application = (String) context.get("application");
@@ -59,13 +59,13 @@ public class Consumers extends Restful {
         List<Consumer> consumers;
         List<Override> overrides;
         List<Provider> providers = null;
-    	List<Route> routes = null;
+        List<Route> routes = null;
         // service
         if (service != null && service.length() > 0) {
             consumers = consumerService.findByService(service);
             overrides = overrideService.findByService(service);
             providers = providerService.findByService(service);
-        	routes = routeService.findByService(service);
+            routes = routeService.findByService(service);
         }
         // address
         else if (address != null && address.length() > 0) {
@@ -84,46 +84,46 @@ public class Consumers extends Restful {
         }
         if (consumers != null && consumers.size() > 0) {
             for (Consumer consumer : consumers) {
-            	if (service == null || service.length() == 0) {
-            		providers = providerService.findByService(consumer.getService());
-            		routes = routeService.findByService(consumer.getService());
-            	}
+                if (service == null || service.length() == 0) {
+                    providers = providerService.findByService(consumer.getService());
+                    routes = routeService.findByService(consumer.getService());
+                }
                 List<Route> routed = new ArrayList<Route>();
                 consumer.setProviders(RouteUtils.route(consumer.getService(), consumer.getAddress(), consumer.getParameters(), providers, overrides, routes, null, routed));
-            	consumer.setRoutes(routed);
-            	OverrideUtils.setConsumerOverrides(consumer, overrides);
+                consumer.setRoutes(routed);
+                OverrideUtils.setConsumerOverrides(consumer, overrides);
             }
         }
         context.put("consumers", consumers);
     }
-    
+
     public void show(Long id, Map<String, Object> context) {
-    	Consumer consumer = consumerService.findConsumer(id);
-    	List<Provider> providers = providerService.findByService(consumer.getService());
-    	List<Route> routes = routeService.findByService(consumer.getService());
-    	List<Override> overrides = overrideService.findByService(consumer.getService());
-    	List<Route> routed = new ArrayList<Route>();
+        Consumer consumer = consumerService.findConsumer(id);
+        List<Provider> providers = providerService.findByService(consumer.getService());
+        List<Route> routes = routeService.findByService(consumer.getService());
+        List<Override> overrides = overrideService.findByService(consumer.getService());
+        List<Route> routed = new ArrayList<Route>();
         consumer.setProviders(RouteUtils.route(consumer.getService(), consumer.getAddress(), consumer.getParameters(), providers, overrides, routes, null, routed));
-    	consumer.setRoutes(routed);
-    	OverrideUtils.setConsumerOverrides(consumer, overrides);
-    	context.put("consumer", consumer);
-    	context.put("providers", consumer.getProviders());
-    	context.put("routes", consumer.getRoutes());
-    	context.put("overrides", consumer.getOverrides());
+        consumer.setRoutes(routed);
+        OverrideUtils.setConsumerOverrides(consumer, overrides);
+        context.put("consumer", consumer);
+        context.put("providers", consumer.getProviders());
+        context.put("routes", consumer.getRoutes());
+        context.put("overrides", consumer.getOverrides());
     }
-    
+
     public void edit(Long id, Map<String, Object> context) {
-    	show(id, context);
+        show(id, context);
     }
-    
+
     public boolean update(Consumer newConsumer, Map<String, Object> context) {
-    	Long id = newConsumer.getId();
-    	String parameters = newConsumer.getParameters();
-    	Consumer consumer = consumerService.findConsumer(id);
-		if (consumer == null) {
-			context.put("message", getMessage("NoSuchOperationData", id));
-			return false;
-		}
+        Long id = newConsumer.getId();
+        String parameters = newConsumer.getParameters();
+        Consumer consumer = consumerService.findConsumer(id);
+        if (consumer == null) {
+            context.put("message", getMessage("NoSuchOperationData", id));
+            return false;
+        }
         String service = consumer.getService();
         if (!super.currentUser.hasServicePrivilege(service)) {
             context.put("message", getMessage("HaveNoServicePrivilege", service));
@@ -132,9 +132,9 @@ public class Consumers extends Restful {
         Map<String, String> oldMap = StringUtils.parseQueryString(consumer.getParameters());
         Map<String, String> newMap = StringUtils.parseQueryString(parameters);
         for (Map.Entry<String, String> entry : oldMap.entrySet()) {
-        	if (entry.getValue().equals(newMap.get(entry.getKey()))) {
-        		newMap.remove(entry.getKey());
-        	}
+            if (entry.getValue().equals(newMap.get(entry.getKey()))) {
+                newMap.remove(entry.getKey());
+            }
         }
         String address = consumer.getAddress();
         List<Override> overrides = overrideService.findByServiceAndAddress(consumer.getService(), consumer.getAddress());
@@ -142,13 +142,13 @@ public class Consumers extends Restful {
         Override override = consumer.getOverride();
         if (override != null) {
             if (newMap.size() > 0) {
-            	override.setParams(StringUtils.toQueryString(newMap));
+                override.setParams(StringUtils.toQueryString(newMap));
                 override.setEnabled(true);
                 override.setOperator(operator);
                 override.setOperatorAddress(operatorAddress);
                 overrideService.updateOverride(override);
             } else {
-            	overrideService.deleteOverride(override.getId());
+                overrideService.deleteOverride(override.getId());
             }
         } else {
             override = new Override();
@@ -162,40 +162,40 @@ public class Consumers extends Restful {
         }
         return true;
     }
-    
+
     public void routed(Long id, Map<String, Object> context) {
-    	show(id, context);
+        show(id, context);
     }
 
     public void notified(Long id, Map<String, Object> context) {
-    	show(id, context);
+        show(id, context);
     }
 
     public void overrided(Long id, Map<String, Object> context) {
-    	show(id, context);
+        show(id, context);
     }
-    
+
     public boolean shield(Long[] ids, Map<String, Object> context) throws Exception {
-    	return mock(ids, context, "force:return null");
+        return mock(ids, context, "force:return null");
     }
 
     public boolean tolerant(Long[] ids, Map<String, Object> context) throws Exception {
-    	return mock(ids, context, "fail:return null");
+        return mock(ids, context, "fail:return null");
     }
 
     public boolean recover(Long[] ids, Map<String, Object> context) throws Exception {
-    	return mock(ids, context, "");
+        return mock(ids, context, "");
     }
 
     private boolean mock(Long[] ids, Map<String, Object> context, String mock) throws Exception {
-        if (ids == null || ids.length == 0){
+        if (ids == null || ids.length == 0) {
             context.put("message", getMessage("NoSuchOperationData"));
             return false;
         }
         List<Consumer> consumers = new ArrayList<Consumer>();
         for (Long id : ids) {
             Consumer c = consumerService.findConsumer(id);
-            if(c != null){
+            if (c != null) {
                 consumers.add(c);
                 if (!super.currentUser.hasServicePrivilege(c.getService())) {
                     context.put("message", getMessage("HaveNoServicePrivilege", c.getService()));
@@ -203,12 +203,12 @@ public class Consumers extends Restful {
                 }
             }
         }
-        for(Consumer consumer : consumers) {
+        for (Consumer consumer : consumers) {
             String service = consumer.getService();
             String address = Tool.getIP(consumer.getAddress());
             List<Override> overrides = overrideService.findByServiceAndAddress(service, address);
             if (overrides != null && overrides.size() > 0) {
-                for (Override override: overrides) {
+                for (Override override : overrides) {
                     Map<String, String> map = StringUtils.parseQueryString(override.getParams());
                     if (mock == null || mock.length() == 0) {
                         map.remove("mock");
@@ -216,13 +216,13 @@ public class Consumers extends Restful {
                         map.put("mock", URL.encode(mock));
                     }
                     if (map.size() > 0) {
-                    	override.setParams(StringUtils.toQueryString(map));
+                        override.setParams(StringUtils.toQueryString(map));
                         override.setEnabled(true);
                         override.setOperator(operator);
                         override.setOperatorAddress(operatorAddress);
                         overrideService.updateOverride(override);
                     } else {
-                    	overrideService.deleteOverride(override.getId());
+                        overrideService.deleteOverride(override.getId());
                     }
                 }
             } else if (mock != null && mock.length() > 0) {
@@ -240,52 +240,52 @@ public class Consumers extends Restful {
     }
 
     public boolean allshield(Map<String, Object> context) throws Exception {
-    	return allmock(context, "force:return null");
+        return allmock(context, "force:return null");
     }
 
     public boolean alltolerant(Map<String, Object> context) throws Exception {
-    	return allmock(context, "fail:return null");
+        return allmock(context, "fail:return null");
     }
 
     public boolean allrecover(Map<String, Object> context) throws Exception {
-    	return allmock(context, "");
+        return allmock(context, "");
     }
-    
+
     private boolean allmock(Map<String, Object> context, String mock) throws Exception {
-    	String service = (String) context.get("service");
+        String service = (String) context.get("service");
         if (service == null || service.length() == 0) {
             context.put("message", getMessage("NoSuchOperationData"));
             return false;
         }
-        if (! super.currentUser.hasServicePrivilege(service)) {
+        if (!super.currentUser.hasServicePrivilege(service)) {
             context.put("message", getMessage("HaveNoServicePrivilege", service));
             return false;
         }
         List<Override> overrides = overrideService.findByService(service);
         Override allOverride = null;
         if (overrides != null && overrides.size() > 0) {
-            for (Override override: overrides) {
-            	if (override.isDefault()) {
-            		allOverride = override;
-            		break;
-            	}
+            for (Override override : overrides) {
+                if (override.isDefault()) {
+                    allOverride = override;
+                    break;
+                }
             }
         }
         if (allOverride != null) {
-        	Map<String, String> map = StringUtils.parseQueryString(allOverride.getParams());
+            Map<String, String> map = StringUtils.parseQueryString(allOverride.getParams());
             if (mock == null || mock.length() == 0) {
                 map.remove("mock");
             } else {
                 map.put("mock", URL.encode(mock));
             }
             if (map.size() > 0) {
-            	allOverride.setParams(StringUtils.toQueryString(map));
-            	allOverride.setEnabled(true);
-            	allOverride.setOperator(operator);
-            	allOverride.setOperatorAddress(operatorAddress);
+                allOverride.setParams(StringUtils.toQueryString(map));
+                allOverride.setEnabled(true);
+                allOverride.setOperator(operator);
+                allOverride.setOperatorAddress(operatorAddress);
                 overrideService.updateOverride(allOverride);
             } else {
-            	overrideService.deleteOverride(allOverride.getId());
+                overrideService.deleteOverride(allOverride.getId());
             }
         } else if (mock != null && mock.length() > 0) {
             Override override = new Override();
@@ -300,30 +300,30 @@ public class Consumers extends Restful {
     }
 
     public boolean allow(Long[] ids, Map<String, Object> context) throws Exception {
-    	return access(ids, context, true, false);
+        return access(ids, context, true, false);
     }
-    
+
     public boolean forbid(Long[] ids, Map<String, Object> context) throws Exception {
-    	return access(ids, context, false, false);
+        return access(ids, context, false, false);
     }
 
     public boolean onlyallow(Long[] ids, Map<String, Object> context) throws Exception {
-    	return access(ids, context, true, true);
+        return access(ids, context, true, true);
     }
 
     public boolean onlyforbid(Long[] ids, Map<String, Object> context) throws Exception {
-    	return access(ids, context, false, true);
+        return access(ids, context, false, true);
     }
 
     private boolean access(Long[] ids, Map<String, Object> context, boolean allow, boolean only) throws Exception {
-    	if (ids == null || ids.length == 0){
+        if (ids == null || ids.length == 0) {
             context.put("message", getMessage("NoSuchOperationData"));
             return false;
         }
         List<Consumer> consumers = new ArrayList<Consumer>();
         for (Long id : ids) {
             Consumer c = consumerService.findConsumer(id);
-            if(c != null){
+            if (c != null) {
                 consumers.add(c);
                 if (!super.currentUser.hasServicePrivilege(c.getService())) {
                     context.put("message", getMessage("HaveNoServicePrivilege", c.getService()));
@@ -332,27 +332,27 @@ public class Consumers extends Restful {
             }
         }
         Map<String, Set<String>> serviceAddresses = new HashMap<String, Set<String>>();
-        for(Consumer consumer : consumers) {
-        	String service = consumer.getService();
-        	String address = Tool.getIP(consumer.getAddress());
-        	Set<String> addresses = serviceAddresses.get(service);
-        	if (addresses == null) {
-        		addresses = new HashSet<String>();
-        		serviceAddresses.put(service, addresses);
-        	}
-        	addresses.add(address);
+        for (Consumer consumer : consumers) {
+            String service = consumer.getService();
+            String address = Tool.getIP(consumer.getAddress());
+            Set<String> addresses = serviceAddresses.get(service);
+            if (addresses == null) {
+                addresses = new HashSet<String>();
+                serviceAddresses.put(service, addresses);
+            }
+            addresses.add(address);
         }
-        for(Map.Entry<String, Set<String>> entry : serviceAddresses.entrySet()) {
+        for (Map.Entry<String, Set<String>> entry : serviceAddresses.entrySet()) {
             String service = entry.getKey();
             boolean isFirst = false;
             List<Route> routes = routeService.findForceRouteByService(service);
             Route route = null;
-            if(routes == null || routes.size() == 0){
+            if (routes == null || routes.size() == 0) {
                 isFirst = true;
-                route  = new Route();
+                route = new Route();
                 route.setService(service);
                 route.setForce(true);
-                route.setName(service+" blackwhitelist");
+                route.setName(service + " blackwhitelist");
                 route.setFilterRule("false");
                 route.setEnabled(true);
             } else {
@@ -360,53 +360,53 @@ public class Consumers extends Restful {
             }
             Map<String, MatchPair> when = null;
             MatchPair matchPair = null;
-            if(isFirst){
+            if (isFirst) {
                 when = new HashMap<String, MatchPair>();
-                matchPair = new MatchPair(new HashSet<String>(),new HashSet<String>());
+                matchPair = new MatchPair(new HashSet<String>(), new HashSet<String>());
                 when.put("consumer.host", matchPair);
-            }else{
+            } else {
                 when = RouteRule.parseRule(route.getMatchRule());
                 matchPair = when.get("consumer.host");
             }
             if (only) {
-            	matchPair.getUnmatches().clear();
-            	matchPair.getMatches().clear();
-            	if (allow) {
-            		matchPair.getUnmatches().addAll(entry.getValue());
-            	} else {
-            		matchPair.getMatches().addAll(entry.getValue());
-            	}
+                matchPair.getUnmatches().clear();
+                matchPair.getMatches().clear();
+                if (allow) {
+                    matchPair.getUnmatches().addAll(entry.getValue());
+                } else {
+                    matchPair.getMatches().addAll(entry.getValue());
+                }
             } else {
-            	for (String consumerAddress : entry.getValue()) {
-                	if(matchPair.getUnmatches().size() > 0) { // 白名单优先
-                		matchPair.getMatches().remove(consumerAddress); // 去掉黑名单中相同数据
-                		if (allow) { // 如果允许访问
-                			matchPair.getUnmatches().add(consumerAddress); // 加入白名单
-                		} else { // 如果禁止访问
-                			matchPair.getUnmatches().remove(consumerAddress); // 从白名单中去除
-                		}
+                for (String consumerAddress : entry.getValue()) {
+                    if (matchPair.getUnmatches().size() > 0) { // 白名单优先
+                        matchPair.getMatches().remove(consumerAddress); // 去掉黑名单中相同数据
+                        if (allow) { // 如果允许访问
+                            matchPair.getUnmatches().add(consumerAddress); // 加入白名单
+                        } else { // 如果禁止访问
+                            matchPair.getUnmatches().remove(consumerAddress); // 从白名单中去除
+                        }
                     } else { // 黑名单生效
-                    	if (allow) { // 如果允许访问
-                    		matchPair.getMatches().remove(consumerAddress); // 从黑名单中去除
-                    	} else { // 如果禁止访问
-                    		matchPair.getMatches().add(consumerAddress); // 加入黑名单
-                    	}
+                        if (allow) { // 如果允许访问
+                            matchPair.getMatches().remove(consumerAddress); // 从黑名单中去除
+                        } else { // 如果禁止访问
+                            matchPair.getMatches().add(consumerAddress); // 加入黑名单
+                        }
                     }
                 }
             }
             StringBuilder sb = new StringBuilder();
-            RouteRule.contidionToString(sb,when);
+            RouteRule.contidionToString(sb, when);
             route.setMatchRule(sb.toString());
             route.setUsername(operator);
             if (matchPair.getMatches().size() > 0 || matchPair.getUnmatches().size() > 0) {
-            	if(isFirst) {
-                	routeService.createRoute(route);
+                if (isFirst) {
+                    routeService.createRoute(route);
                 } else {
-                	routeService.updateRoute(route);
+                    routeService.updateRoute(route);
                 }
-            } else if (! isFirst) {
-        		routeService.deleteRoute(route.getId());
-        	}
+            } else if (!isFirst) {
+                routeService.deleteRoute(route.getId());
+            }
         }
         return true;
     }

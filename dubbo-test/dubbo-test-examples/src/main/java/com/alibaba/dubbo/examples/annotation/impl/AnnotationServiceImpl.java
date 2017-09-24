@@ -20,7 +20,7 @@ import com.alibaba.dubbo.examples.annotation.api.AnnotationService;
 
 /**
  * AsyncServiceImpl
- * 
+ *
  * @author william.liangf
  */
 @Service

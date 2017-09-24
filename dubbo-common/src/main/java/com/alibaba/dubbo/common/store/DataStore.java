@@ -29,7 +29,7 @@ public interface DataStore {
     /**
      * return a snapshot value of componentName
      */
-    Map<String,Object> get(String componentName);
+    Map<String, Object> get(String componentName);
 
     Object get(String componentName, String key);
 

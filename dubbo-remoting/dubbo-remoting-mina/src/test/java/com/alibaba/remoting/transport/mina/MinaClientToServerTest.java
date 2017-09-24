@@ -24,7 +24,7 @@ import com.alibaba.dubbo.remoting.exchange.support.Replier;
 
 /**
  * MinaServerClientTest
- * 
+ *
  * @author william.liangf
  */
 public class MinaClientToServerTest extends ClientToServerTest {
