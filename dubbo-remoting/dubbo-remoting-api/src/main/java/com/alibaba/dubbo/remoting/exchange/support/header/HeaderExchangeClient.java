@@ -55,7 +55,7 @@ public class HeaderExchangeClient implements ExchangeClient {
     private int heartbeat;
     private int heartbeatTimeout;
 
-    public HeaderExchangeClient(Client client) {
+    public HeaderExchangeClient(Client client, boolean needHeartbeat) {
         if (client == null) {
             throw new IllegalArgumentException("client == null");
         }
@@ -67,7 +67,9 @@ public class HeaderExchangeClient implements ExchangeClient {
         if (heartbeatTimeout < heartbeat * 2) {
             throw new IllegalStateException("heartbeatTimeout < heartbeatInterval * 2");
         }
-        startHeatbeatTimer();
+        if (needHeartbeat) {
+            startHeatbeatTimer();
+        }
     }
 
     public ResponseFuture request(Object request) throws RemotingException {

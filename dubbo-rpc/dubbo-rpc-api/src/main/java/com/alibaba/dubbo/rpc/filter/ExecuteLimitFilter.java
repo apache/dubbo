@@ -55,20 +55,20 @@ public class ExecuteLimitFilter implements Filter {
             }
         }
         long begin = System.currentTimeMillis();
-        boolean isException = false;
+        boolean isSuccess = true;
         RpcStatus.beginCount(url, methodName);
         try {
             Result result = invoker.invoke(invocation);
             return result;
         } catch (Throwable t) {
-            isException = true;
+            isSuccess = false;
             if (t instanceof RuntimeException) {
                 throw (RuntimeException) t;
             } else {
                 throw new RpcException("unexpected exception when ExecuteLimitFilter", t);
             }
         } finally {
-            RpcStatus.endCount(url, methodName, System.currentTimeMillis() - begin, isException);
+            RpcStatus.endCount(url, methodName, System.currentTimeMillis() - begin, isSuccess);
             if(acquireResult) {
                 executesLimit.release();
             }
