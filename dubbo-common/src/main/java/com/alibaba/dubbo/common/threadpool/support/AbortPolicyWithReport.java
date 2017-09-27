@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -80,7 +81,7 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
         Executors.newSingleThreadExecutor().execute(new Runnable() {
             @Override
             public void run() {
-                String dumpPath = url.getParameter(Constants.FILE_KEY, System.getProperty("user.home"));
+                String dumpPath = url.getParameter(Constants.DUMP_DIRECTORY, System.getProperty("user.home"));
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
                 String dateStr = sdf.format(new Date());
                 FileOutputStream jstackStream = null;

@@ -316,6 +316,8 @@ public class Constants {
 
     public static final String FILE_KEY = "file";
 
+    public static final String DUMP_DIRECTORY = "dump.directory";
+
     public static final String WAIT_KEY = "wait";
 
     public static final String CLASSIFIER_KEY = "classifier";
