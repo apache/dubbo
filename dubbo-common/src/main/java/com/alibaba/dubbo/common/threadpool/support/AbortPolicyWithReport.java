@@ -63,7 +63,7 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
                 url.getProtocol(), url.getIp(), url.getPort());
         logger.warn(msg);
         dumpJStack();
-        //throw new RejectedExecutionException(msg);
+        throw new RejectedExecutionException(msg);
     }
 
     private void dumpJStack() {
