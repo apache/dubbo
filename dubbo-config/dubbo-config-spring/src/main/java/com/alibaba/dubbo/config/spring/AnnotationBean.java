@@ -129,7 +129,17 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
         if (!isMatchPackage(bean)) {
             return bean;
         }
-        Service service = bean.getClass().getAnnotation(Service.class);
+        
+        Class<?> clazz = bean.getClass();
+        if(isProxyBean(bean)){
+            clazz = AopUtils.getTargetClass(bean);
+        }
+        //如果获取值还是代理，则需要进一步解析
+        if (clazz.getSimpleName().contains("$$")) {
+        	clazz = clazz.getSuperclass();
+        }
+        
+        Service service = clazz.getAnnotation(Service.class);
         if (service != null) {
             ServiceBean<Object> serviceConfig = new ServiceBean<Object>(service);
             if (void.class.equals(service.interfaceClass())
@@ -197,7 +207,17 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
         if (!isMatchPackage(bean)) {
             return bean;
         }
-        Method[] methods = bean.getClass().getMethods();
+        
+        Class<?> clazz = bean.getClass();
+        if(isProxyBean(bean)){
+            clazz = AopUtils.getTargetClass(bean);
+        }
+        //如果获取值还是代理，则需要进一步解析
+        if (clazz.getSimpleName().contains("$$")) {
+        	clazz = clazz.getSuperclass();
+        }
+        
+        Method[] methods = clazz.getMethods();
         for (Method method : methods) {
             String name = method.getName();
             if (name.length() > 3 && name.startsWith("set")
