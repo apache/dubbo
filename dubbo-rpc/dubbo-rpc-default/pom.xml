@@ -51,6 +51,10 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>dubbo-remoting-netty</artifactId>
             <version>${project.parent.version}</version>

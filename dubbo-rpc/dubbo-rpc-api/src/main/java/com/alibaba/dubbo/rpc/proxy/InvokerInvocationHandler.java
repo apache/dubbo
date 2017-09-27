@@ -15,11 +15,15 @@
  */
 package com.alibaba.dubbo.rpc.proxy;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.rpc.Invoker;
+import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * InvokerHandler
@@ -50,6 +54,13 @@ public class InvokerInvocationHandler implements InvocationHandler {
             return invoker.equals(args[0]);
         }
         return invoker.invoke(new RpcInvocation(method, args)).recreate();
+    }
+
+    public Object invokeAsync(Method method, Object[] args, String originalMethod) throws Throwable {
+        Map<String, String> attachments = new HashMap<String, String>();
+        attachments.put(Constants.ASYNC_KEY, "true");
+        RpcInvocation invocation = new RpcInvocation(originalMethod, method.getParameterTypes(), args, attachments);
+        return invoker.invoke(invocation);
     }
 
 }

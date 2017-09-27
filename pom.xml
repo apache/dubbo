@@ -51,6 +51,7 @@
         <module>dubbo-simple</module>
         <module>dubbo-admin</module>
         <module>dubbo-demo</module>
+        <module>dubbo-async</module>
     </modules>
     <profiles>
         <profile>
@@ -147,6 +148,11 @@
     </properties>
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>15.0</version>
+            </dependency>
             <!-- Common libs -->
             <dependency>
                 <groupId>org.springframework</groupId>

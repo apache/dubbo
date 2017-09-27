@@ -15,6 +15,8 @@
  */
 package com.alibaba.dubbo.remoting.exchange.support.header;
 
+import com.alibaba.dubbo.async.AsyncContext;
+import com.alibaba.dubbo.async.AsyncContextImpl;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
@@ -31,6 +33,8 @@ import com.alibaba.dubbo.remoting.exchange.Request;
 import com.alibaba.dubbo.remoting.exchange.Response;
 import com.alibaba.dubbo.remoting.exchange.support.DefaultFuture;
 import com.alibaba.dubbo.remoting.transport.ChannelHandlerDelegate;
+import com.alibaba.dubbo.rpc.RpcContext;
+import com.alibaba.dubbo.rpc.RpcResult;
 
 import java.net.InetSocketAddress;
 
@@ -77,8 +81,8 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         }
     }
 
-    Response handleRequest(ExchangeChannel channel, Request req) throws RemotingException {
-        Response res = new Response(req.getId(), req.getVersion());
+    void handleRequest(final ExchangeChannel channel, Request req) throws RemotingException {
+        final Response res = new Response(req.getId(), req.getVersion());
         if (req.isBroken()) {
             Object data = req.getData();
 
@@ -88,21 +92,48 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
             else msg = data.toString();
             res.setErrorMessage("Fail to decode request due to: " + msg);
             res.setStatus(Response.BAD_REQUEST);
-
-            return res;
+            channel.send(res);
+            return;
         }
         // find handler by message class.
         Object msg = req.getData();
         try {
+            RpcContext context = RpcContext.getContext();
             // handle data.
             Object result = handler.reply(channel, msg);
             res.setStatus(Response.OK);
-            res.setResult(result);
+            AsyncContext asyncContext = context.getAsyncContext();
+            if (asyncContext == null) {
+                res.setResult(result);
+                channel.send(res);
+            } else {
+                final AsyncContextImpl impl = (AsyncContextImpl) asyncContext;
+                impl.then(new Runnable() {
+                    @Override
+                    public void run() {
+                        Throwable exception = impl.getException();
+                        if (exception != null) {
+                            RpcResult result = new RpcResult(exception);
+                            res.setResult(result);
+                        } else {
+                            RpcResult result = new RpcResult(impl.getResult());
+                            res.setResult(result);
+                        }
+
+                        try {
+                            channel.send(res);
+                        } catch (RemotingException e) {
+                            logger.error("将结果写回client端时，client端连接已关闭", e);
+                        }
+                    }
+                });
+            }
+
         } catch (Throwable e) {
             res.setStatus(Response.SERVICE_ERROR);
             res.setErrorMessage(StringUtils.toString(e));
+            channel.send(res);
         }
-        return res;
     }
 
     public void connected(Channel channel) throws RemotingException {
@@ -167,8 +198,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
                     handlerEvent(channel, request);
                 } else {
                     if (request.isTwoWay()) {
-                        Response response = handleRequest(exchangeChannel, request);
-                        channel.send(response);
+                        handleRequest(exchangeChannel, request);
                     } else {
                         handler.received(exchangeChannel, request.getData());
                     }
