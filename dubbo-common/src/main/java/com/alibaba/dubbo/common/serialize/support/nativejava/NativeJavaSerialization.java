@@ -16,19 +16,19 @@
 
 package com.alibaba.dubbo.common.serialize.support.nativejava;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.serialize.ObjectInput;
 import com.alibaba.dubbo.common.serialize.ObjectOutput;
 import com.alibaba.dubbo.common.serialize.Serialization;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-public class NativeJavaSerialization implements Serialization  {
+public class NativeJavaSerialization implements Serialization {
 
     public static final String NAME = "nativejava";
 

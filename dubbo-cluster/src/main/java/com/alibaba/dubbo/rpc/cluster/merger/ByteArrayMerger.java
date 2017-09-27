@@ -21,7 +21,7 @@ import com.alibaba.dubbo.rpc.cluster.Merger;
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-public class ByteArrayMerger implements Merger<byte[]>{
+public class ByteArrayMerger implements Merger<byte[]> {
 
     public byte[] merge(byte[]... items) {
         int total = 0;

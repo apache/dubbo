@@ -1,10 +1,10 @@
 /**
  * File Created at 2011-12-09
  * $Id$
- *
+ * <p>
  * Copyright 2008 Alibaba.com Croporation Limited.
  * All rights reserved.
- *
+ * <p>
  * This software is the confidential and proprietary information of
  * Alibaba Company. ("Confidential Information").  You shall not
  * disclose such Confidential Information and shall use it only in
@@ -23,8 +23,8 @@ import org.apache.thrift.transport.TTransportFactory;
 public class FramedTransportFactory extends TTransportFactory {
 
     @Override
-    public TTransport getTransport( TTransport trans ) {
+    public TTransport getTransport(TTransport trans) {
 
-        return new TFramedTransport( trans );
+        return new TFramedTransport(trans);
     }
 }

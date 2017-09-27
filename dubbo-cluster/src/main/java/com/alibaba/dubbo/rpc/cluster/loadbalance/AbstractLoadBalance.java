@@ -15,20 +15,25 @@
  */
 package com.alibaba.dubbo.rpc.cluster.loadbalance;
 
-import java.util.List;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Invocation;
+import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.cluster.LoadBalance;
+
+import java.util.List;
 
 /**
  * AbstractLoadBalance
- * 
+ *
  * @author william.liangf
  */
 public abstract class AbstractLoadBalance implements LoadBalance {
+
+    static int calculateWarmupWeight(int uptime, int warmup, int weight) {
+        int ww = (int) ((float) uptime / ((float) warmup / (float) weight));
+        return ww < 1 ? 1 : (ww > weight ? weight : ww);
+    }
 
     public <T> Invoker<T> select(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         if (invokers == null || invokers.size() == 0)
@@ -43,21 +48,16 @@ public abstract class AbstractLoadBalance implements LoadBalance {
     protected int getWeight(Invoker<?> invoker, Invocation invocation) {
         int weight = invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.WEIGHT_KEY, Constants.DEFAULT_WEIGHT);
         if (weight > 0) {
-	        long timestamp = invoker.getUrl().getParameter(Constants.TIMESTAMP_KEY, 0L);
-	    	if (timestamp > 0L) {
-	    		int uptime = (int) (System.currentTimeMillis() - timestamp);
-	    		int warmup = invoker.getUrl().getParameter(Constants.WARMUP_KEY, Constants.DEFAULT_WARMUP);
-	    		if (uptime > 0 && uptime < warmup) {
-	    			weight = calculateWarmupWeight(uptime, warmup, weight);
-	    		}
-	    	}
+            long timestamp = invoker.getUrl().getParameter(Constants.TIMESTAMP_KEY, 0L);
+            if (timestamp > 0L) {
+                int uptime = (int) (System.currentTimeMillis() - timestamp);
+                int warmup = invoker.getUrl().getParameter(Constants.WARMUP_KEY, Constants.DEFAULT_WARMUP);
+                if (uptime > 0 && uptime < warmup) {
+                    weight = calculateWarmupWeight(uptime, warmup, weight);
+                }
+            }
         }
-    	return weight;
-    }
-    
-    static int calculateWarmupWeight(int uptime, int warmup, int weight) {
-    	int ww = (int) ( (float) uptime / ( (float) warmup / (float) weight ) );
-    	return ww < 1 ? 1 : (ww > weight ? weight : ww);
+        return weight;
     }
 
 }

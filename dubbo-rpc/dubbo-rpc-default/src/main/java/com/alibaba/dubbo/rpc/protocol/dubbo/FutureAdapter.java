@@ -15,27 +15,27 @@
  */
 package com.alibaba.dubbo.rpc.protocol.dubbo;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.exchange.ResponseFuture;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 /**
  * FutureAdapter
- * 
+ *
  * @author william.liangf
  */
 public class FutureAdapter<V> implements Future<V> {
-    
+
     private final ResponseFuture future;
 
-    public FutureAdapter(ResponseFuture future){
+    public FutureAdapter(ResponseFuture future) {
         this.future = future;
     }
 

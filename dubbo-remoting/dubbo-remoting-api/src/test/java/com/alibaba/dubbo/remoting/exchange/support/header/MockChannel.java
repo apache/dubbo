@@ -34,10 +34,11 @@ import java.util.Map;
 public class MockChannel implements Channel {
 
     private Map<String, Object> attributes = new HashMap<String, Object>();
-    
+
     private volatile boolean closed = false;
+    private volatile boolean closing = false;
     private List<Object> sentObjects = new ArrayList<Object>();
-    
+
     public InetSocketAddress getRemoteAddress() {
         return null;
     }
@@ -90,10 +91,15 @@ public class MockChannel implements Channel {
         closed = true;
     }
 
+    @Override
+    public void startClose() {
+        closing = true;
+    }
+
     public boolean isClosed() {
         return closed;
     }
-    
+
     public List<Object> getSentObjects() {
         return Collections.unmodifiableList(sentObjects);
     }

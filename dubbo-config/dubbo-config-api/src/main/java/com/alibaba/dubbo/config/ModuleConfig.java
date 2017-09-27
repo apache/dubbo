@@ -15,49 +15,49 @@
  */
 package com.alibaba.dubbo.config;
 
+import com.alibaba.dubbo.config.support.Parameter;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import com.alibaba.dubbo.config.support.Parameter;
-
 /**
  * ModuleConfig
- * 
+ *
  * @author william.liangf
  * @export
  */
 public class ModuleConfig extends AbstractConfig {
 
-    private static final long    serialVersionUID = 5508512956753757169L;
+    private static final long serialVersionUID = 5508512956753757169L;
 
     // 模块名称
-    private String               name;
+    private String name;
 
     // 模块版本
-    private String               version;
+    private String version;
 
     // 应用负责人
-    private String               owner;
+    private String owner;
 
     // 组织名(BU或部门)
-    private String               organization;
+    private String organization;
 
     // 注册中心
     private List<RegistryConfig> registries;
 
     // 服务监控
-    private MonitorConfig        monitor;
+    private MonitorConfig monitor;
 
     // 是否为缺省
-    private Boolean              isDefault;
+    private Boolean isDefault;
 
     public ModuleConfig() {
     }
-    
+
     public ModuleConfig(String name) {
         setName(name);
     }
-    
+
     @Parameter(key = "module", required = true)
     public String getName() {
         return name;
@@ -89,14 +89,14 @@ public class ModuleConfig extends AbstractConfig {
         this.owner = owner;
     }
 
-	public String getOrganization() {
-		return organization;
-	}
+    public String getOrganization() {
+        return organization;
+    }
 
-	public void setOrganization(String organization) {
-	    checkName("organization", organization);
-		this.organization = organization;
-	}
+    public void setOrganization(String organization) {
+        checkName("organization", organization);
+        this.organization = organization;
+    }
 
     public RegistryConfig getRegistry() {
         return registries == null || registries.size() == 0 ? null : registries.get(0);
@@ -112,21 +112,21 @@ public class ModuleConfig extends AbstractConfig {
         return registries;
     }
 
-    @SuppressWarnings({ "unchecked" })
+    @SuppressWarnings({"unchecked"})
     public void setRegistries(List<? extends RegistryConfig> registries) {
-        this.registries = (List<RegistryConfig>)registries;
+        this.registries = (List<RegistryConfig>) registries;
     }
 
     public MonitorConfig getMonitor() {
         return monitor;
     }
 
-    public void setMonitor(MonitorConfig monitor) {
-        this.monitor = monitor;
-    }
-
     public void setMonitor(String monitor) {
         this.monitor = new MonitorConfig(monitor);
+    }
+
+    public void setMonitor(MonitorConfig monitor) {
+        this.monitor = monitor;
     }
 
     public Boolean isDefault() {

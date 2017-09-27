@@ -15,16 +15,16 @@
  */
 package com.alibaba.dubbo.common.serialize.serialization;
 
+import com.alibaba.dubbo.common.model.Person;
+
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.junit.Test;
-
-import com.alibaba.dubbo.common.model.Person;
 
 /**
  * @author ding.lid
@@ -39,7 +39,7 @@ public abstract class AbstractSerializationPersionOkTest extends AbstractSeriali
     public void test_Person_withType() throws Exception {
         assertObjectWithType(new Person(), Person.class);
     }
-    
+
     @Test
     public void test_PersonList() throws Exception {
         List<Person> args = new ArrayList<Person>();
@@ -71,7 +71,7 @@ public abstract class AbstractSerializationPersionOkTest extends AbstractSeriali
 
         assertObject(args);
     }
-    
+
     @Test
     public void test_StringPersonListMap() throws Exception {
         Map<String, List<Person>> args = new HashMap<String, List<Person>>();

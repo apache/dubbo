@@ -3,56 +3,57 @@ package com.alibaba.dubbo.rpc.benchmark;
 /**
  * nfs-rpc Apache License http://code.google.com/p/nfs-rpc (c) 2011
  */
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 /**
  * Simple Processor RPC Benchmark Client Thread
- * 
+ *
  * @author <a href="mailto:bluedavy@gmail.com">bluedavy</a>
  */
 public abstract class AbstractClientRunnable implements ClientRunnable {
 
-    private static final Log LOGGER             = LogFactory.getLog(AbstractClientRunnable.class);
+    private static final Log LOGGER = LogFactory.getLog(AbstractClientRunnable.class);
 
-    private CyclicBarrier    barrier;
+    private CyclicBarrier barrier;
 
-    private CountDownLatch   latch;
+    private CountDownLatch latch;
 
-    private long             endTime;
+    private long endTime;
 
-    private boolean          running            = true;
+    private boolean running = true;
 
     // response time spread
-    private long[]           responseSpreads    = new long[9];
+    private long[] responseSpreads = new long[9];
 
     // error request per second
-    private long[]           errorTPS           = null;
+    private long[] errorTPS = null;
 
     // error response times per second
-    private long[]           errorResponseTimes = null;
+    private long[] errorResponseTimes = null;
 
     // tps per second
-    private long[]           tps                = null;
+    private long[] tps = null;
 
     // response times per second
-    private long[]           responseTimes      = null;
+    private long[] responseTimes = null;
 
     // benchmark startTime
-    private long             startTime;
+    private long startTime;
 
     // benchmark maxRange
-    private int              maxRange;
+    private int maxRange;
 
-    private ServiceFactory   serviceFactory     = new ServiceFactory();
+    private ServiceFactory serviceFactory = new ServiceFactory();
 
     public AbstractClientRunnable(String targetIP, int targetPort, int clientNums, int rpcTimeout,
-                                  CyclicBarrier barrier, CountDownLatch latch, long startTime, long endTime){
+                                  CyclicBarrier barrier, CountDownLatch latch, long startTime, long endTime) {
 
         this.barrier = barrier;
         this.latch = latch;
@@ -104,7 +105,7 @@ public abstract class AbstractClientRunnable implements ClientRunnable {
                 int range = Integer.parseInt(String.valueOf(beginTime - startTime)) / 1000000;
                 if (range >= maxRange) {
                     System.err.println("benchmark range exceeds maxRange,range is: " + range + ",maxRange is: "
-                                       + maxRange);
+                            + maxRange);
                     continue;
                 }
                 if (result != null) {
@@ -126,7 +127,7 @@ public abstract class AbstractClientRunnable implements ClientRunnable {
                 int range = Integer.parseInt(String.valueOf(beginTime - startTime)) / 1000000;
                 if (range >= maxRange) {
                     System.err.println("benchmark range exceeds maxRange,range is: " + range + ",maxRange is: "
-                                       + maxRange);
+                            + maxRange);
                     continue;
                 }
                 errorTPS[range] = errorTPS[range] + 1;

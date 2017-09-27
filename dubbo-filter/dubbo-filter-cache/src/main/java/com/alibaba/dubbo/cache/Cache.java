@@ -17,7 +17,7 @@ package com.alibaba.dubbo.cache;
 
 /**
  * Cache
- * 
+ *
  * @author william.liangf
  */
 public interface Cache {

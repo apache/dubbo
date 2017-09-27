@@ -15,17 +15,17 @@
  */
 package com.alibaba.dubbo.rpc.listener;
 
-import java.util.List;
-
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.ExporterListener;
 import com.alibaba.dubbo.rpc.Invoker;
 
+import java.util.List;
+
 /**
  * ListenerExporter
- * 
+ *
  * @author william.liangf
  */
 public class ListenerExporterWrapper<T> implements Exporter<T> {
@@ -33,10 +33,10 @@ public class ListenerExporterWrapper<T> implements Exporter<T> {
     private static final Logger logger = LoggerFactory.getLogger(ListenerExporterWrapper.class);
 
     private final Exporter<T> exporter;
-    
+
     private final List<ExporterListener> listeners;
 
-    public ListenerExporterWrapper(Exporter<T> exporter, List<ExporterListener> listeners){
+    public ListenerExporterWrapper(Exporter<T> exporter, List<ExporterListener> listeners) {
         if (exporter == null) {
             throw new IllegalArgumentException("exporter == null");
         }

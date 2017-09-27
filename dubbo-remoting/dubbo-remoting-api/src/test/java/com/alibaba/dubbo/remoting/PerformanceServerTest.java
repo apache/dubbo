@@ -15,13 +15,6 @@
  */
 package com.alibaba.dubbo.remoting;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import junit.framework.TestCase;
-
-import org.junit.Test;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
@@ -31,56 +24,42 @@ import com.alibaba.dubbo.remoting.exchange.Exchangers;
 import com.alibaba.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
 import com.alibaba.dubbo.remoting.transport.dispatcher.execution.ExecutionDispatcher;
 
+import junit.framework.TestCase;
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * PerformanceServer
- * 
+ * <p>
  * mvn clean test -Dtest=*PerformanceServerTest -Dport=9911
- * 
+ *
  * @author william.liangf
  */
 public class PerformanceServerTest extends TestCase {
 
     private static final Logger logger = LoggerFactory.getLogger(PerformanceServerTest.class);
     private static ExchangeServer server = null;
-    @Test
-    public void testServer() throws Exception {
-        // 读取参数
-        if (PerformanceUtils.getProperty("port", null) == null) {
-            logger.warn("Please set -Dport=9911");
-            return;
-        }
-        final int port = PerformanceUtils.getIntProperty("port", 9911);
-        final boolean telnet = PerformanceUtils.getBooleanProperty("telnet", true);
-        if(telnet)statTelnetServer(port+1);
-        server = statServer();
-        
-        synchronized (PerformanceServerTest.class) {
-            while (true) {
-                try {
-                    PerformanceServerTest.class.wait();
-                } catch (InterruptedException e) {
-                }
-            }
-        }
-    }
-    private static void restartServer(int times,int alive,int sleep) throws Exception{
-        if(server!=null && !server.isClosed()){
+
+    private static void restartServer(int times, int alive, int sleep) throws Exception {
+        if (server != null && !server.isClosed()) {
             server.close();
             Thread.sleep(100);
         }
-        
-        for(int i=0;i<times;i++){
-            logger.info("restart times:"+i);
+
+        for (int i = 0; i < times; i++) {
+            logger.info("restart times:" + i);
             server = statServer();
-            if(alive>0)Thread.sleep(alive);
+            if (alive > 0) Thread.sleep(alive);
             server.close();
-            if(sleep>0)Thread.sleep(sleep);
+            if (sleep > 0) Thread.sleep(sleep);
         }
-        
+
         server = statServer();
     }
-    
-    private static ExchangeServer statServer() throws Exception{
+
+    private static ExchangeServer statServer() throws Exception {
         final int port = PerformanceUtils.getIntProperty("port", 9911);
         final String transporter = PerformanceUtils.getProperty(Constants.TRANSPORTER_KEY, Constants.DEFAULT_TRANSPORTER);
         final String serialization = PerformanceUtils.getProperty(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION);
@@ -89,16 +68,17 @@ public class PerformanceServerTest extends TestCase {
         final int iothreads = PerformanceUtils.getIntProperty(Constants.IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS);
         final int buffer = PerformanceUtils.getIntProperty(Constants.BUFFER_KEY, Constants.DEFAULT_BUFFER_SIZE);
         final String channelHandler = PerformanceUtils.getProperty(Constants.DISPATCHER_KEY, ExecutionDispatcher.NAME);
-        
-        
+
+
         // 启动服务器
-        ExchangeServer server = Exchangers.bind("exchange://0.0.0.0:" + port + "?transporter=" 
-                        + transporter + "&serialization=" 
-                        + serialization + "&threadpool=" + threadpool 
-                        + "&threads=" + threads + "&iothreads=" + iothreads +"&buffer="+buffer +"&channel.handler="+channelHandler, new ExchangeHandlerAdapter() {
+        ExchangeServer server = Exchangers.bind("exchange://0.0.0.0:" + port + "?transporter="
+                + transporter + "&serialization="
+                + serialization + "&threadpool=" + threadpool
+                + "&threads=" + threads + "&iothreads=" + iothreads + "&buffer=" + buffer + "&channel.handler=" + channelHandler, new ExchangeHandlerAdapter() {
             public String telnet(Channel channel, String message) throws RemotingException {
-                 return "echo: " + message + "\r\ntelnet> ";
+                return "echo: " + message + "\r\ntelnet> ";
             }
+
             public Object reply(ExchangeChannel channel, Object request) throws RemotingException {
                 if ("environment".equals(request)) {
                     return PerformanceUtils.getEnvironment();
@@ -112,52 +92,74 @@ public class PerformanceServerTest extends TestCase {
                 return request;
             }
         });
-        
+
         return server;
     }
-    
-    private static ExchangeServer statTelnetServer(int port) throws Exception{
-       // 启动服务器
-        ExchangeServer telnetserver = Exchangers.bind("exchange://0.0.0.0:" + port , new ExchangeHandlerAdapter() {
+
+    private static ExchangeServer statTelnetServer(int port) throws Exception {
+        // 启动服务器
+        ExchangeServer telnetserver = Exchangers.bind("exchange://0.0.0.0:" + port, new ExchangeHandlerAdapter() {
             public String telnet(Channel channel, String message) throws RemotingException {
-                if(message.equals("help")){
+                if (message.equals("help")) {
                     return "support cmd: \r\n\tstart \r\n\tstop \r\n\tshutdown \r\n\trestart times [alive] [sleep] \r\ntelnet>";
-                } else if(message.equals("stop")){
-                    logger.info("server closed:"+server);
-                    server.close();                    
+                } else if (message.equals("stop")) {
+                    logger.info("server closed:" + server);
+                    server.close();
                     return "stop server\r\ntelnet>";
-                } else if(message.startsWith("start")){
+                } else if (message.startsWith("start")) {
                     try {
-                        restartServer(0,0,0);
+                        restartServer(0, 0, 0);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                     return "start server\r\ntelnet>";
-                } else if(message.startsWith("shutdown")){
-                        System.exit(0);
+                } else if (message.startsWith("shutdown")) {
+                    System.exit(0);
                     return "start server\r\ntelnet>";
-                } else if(message.startsWith("channels")){
-                    return "server.getExchangeChannels():"+server.getExchangeChannels().size()+"\r\ntelnet>";
-                } else if(message.startsWith("restart ")){ //r times [sleep] r 10 or r 10 100
+                } else if (message.startsWith("channels")) {
+                    return "server.getExchangeChannels():" + server.getExchangeChannels().size() + "\r\ntelnet>";
+                } else if (message.startsWith("restart ")) { //r times [sleep] r 10 or r 10 100
                     String[] args = message.split(" ");
                     int times = Integer.parseInt(args[1]);
-                    int alive = args.length>2?Integer.parseInt(args[2]):0;
-                    int sleep = args.length>3?Integer.parseInt(args[3]):100;
+                    int alive = args.length > 2 ? Integer.parseInt(args[2]) : 0;
+                    int sleep = args.length > 3 ? Integer.parseInt(args[3]) : 100;
                     try {
-                        restartServer(times,alive,sleep);
+                        restartServer(times, alive, sleep);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    
-                    return "restart server,times:"+times+" stop alive time: "+alive+",sleep time: " + sleep+" usage:r times [alive] [sleep] \r\ntelnet>";
-                } else{
+
+                    return "restart server,times:" + times + " stop alive time: " + alive + ",sleep time: " + sleep + " usage:r times [alive] [sleep] \r\ntelnet>";
+                } else {
                     return "echo: " + message + "\r\ntelnet> ";
                 }
-                
+
             }
         });
-        
+
         return telnetserver;
+    }
+
+    @Test
+    public void testServer() throws Exception {
+        // 读取参数
+        if (PerformanceUtils.getProperty("port", null) == null) {
+            logger.warn("Please set -Dport=9911");
+            return;
+        }
+        final int port = PerformanceUtils.getIntProperty("port", 9911);
+        final boolean telnet = PerformanceUtils.getBooleanProperty("telnet", true);
+        if (telnet) statTelnetServer(port + 1);
+        server = statServer();
+
+        synchronized (PerformanceServerTest.class) {
+            while (true) {
+                try {
+                    PerformanceServerTest.class.wait();
+                } catch (InterruptedException e) {
+                }
+            }
+        }
     }
 
 }

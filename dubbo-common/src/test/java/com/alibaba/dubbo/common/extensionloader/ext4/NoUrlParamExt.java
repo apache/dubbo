@@ -15,10 +15,10 @@
  */
 package com.alibaba.dubbo.common.extensionloader.ext4;
 
-import java.util.List;
-
 import com.alibaba.dubbo.common.extension.Adaptive;
 import com.alibaba.dubbo.common.extension.SPI;
+
+import java.util.List;
 
 /**
  * @author ding.lid

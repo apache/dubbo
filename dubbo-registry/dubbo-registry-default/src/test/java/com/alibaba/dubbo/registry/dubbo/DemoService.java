@@ -19,9 +19,8 @@ package com.alibaba.dubbo.registry.dubbo;
  * <code>TestService</code>
  */
 
-public interface DemoService
-{
-	void sayHello(String name);
+public interface DemoService {
+    void sayHello(String name);
 
-	int plus(int a,int b);
+    int plus(int a, int b);
 }

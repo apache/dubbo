@@ -15,19 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.cluster.router.file;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import javax.script.ScriptEngineManager;
-
-import junit.framework.Assert;
-
-import org.easymock.EasyMock;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.rpc.Invocation;
@@ -42,25 +29,34 @@ import com.alibaba.dubbo.rpc.cluster.RouterFactory;
 import com.alibaba.dubbo.rpc.cluster.directory.StaticDirectory;
 import com.alibaba.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 
+import junit.framework.Assert;
+import org.easymock.EasyMock;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import javax.script.ScriptEngineManager;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * @author chao.liuc
  */
 @SuppressWarnings("unchecked")
 public class FileRouterEngineTest {
+    private static boolean isScriptUnsupported = new ScriptEngineManager().getEngineByName("javascript") == null;
     List<Invoker<FileRouterEngineTest>> invokers = new ArrayList<Invoker<FileRouterEngineTest>>();
-
-    Invoker<FileRouterEngineTest>       invoker1 = EasyMock.createMock(Invoker.class);
-    Invoker<FileRouterEngineTest>       invoker2 = EasyMock.createMock(Invoker.class);
-    Invocation                          invocation;
-    Directory<FileRouterEngineTest>     dic;
-    Result                              result   = new RpcResult();
+    Invoker<FileRouterEngineTest> invoker1 = EasyMock.createMock(Invoker.class);
+    Invoker<FileRouterEngineTest> invoker2 = EasyMock.createMock(Invoker.class);
+    Invocation invocation;
+    Directory<FileRouterEngineTest> dic;
+    Result result = new RpcResult();
     private RouterFactory routerFactory = ExtensionLoader.getExtensionLoader(RouterFactory.class).getAdaptiveExtension();
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
     }
-    
-    private static boolean isScriptUnsupported = new ScriptEngineManager().getEngineByName("javascript") == null;
 
     @Before
     public void setUp() throws Exception {
@@ -141,7 +137,7 @@ public class FileRouterEngineTest {
 
     private void initInvocation(String methodName) {
         invocation = new RpcInvocation();
-        ((RpcInvocation)invocation).setMethodName(methodName);
+        ((RpcInvocation) invocation).setMethodName(methodName);
     }
 
     private void initInvokers(URL url) {

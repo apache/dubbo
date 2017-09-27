@@ -18,21 +18,21 @@ package com.alibaba.dubbo.common.model.person;
 import java.io.Serializable;
 
 /**
- * 电话号码 
- * 
+ * 电话号码
+ *
  * @author xk1430
  */
 public class Phone implements Serializable {
 
     private static final long serialVersionUID = 4399060521859707703L;
 
-    private String            country;
+    private String country;
 
-    private String            area;
+    private String area;
 
-    private String            number;
+    private String number;
 
-    private String            extensionNumber;
+    private String extensionNumber;
 
     public Phone() {
     }
@@ -44,36 +44,36 @@ public class Phone implements Serializable {
         this.extensionNumber = extensionNumber;
     }
 
-    public void setCountry(String country) {
-        this.country = country;
-    }
-
-    public void setArea(String area) {
-        this.area = area;
-    }
-
-    public void setNumber(String number) {
-        this.number = number;
-    }
-
-    public void setExtensionNumber(String extensionNumber) {
-        this.extensionNumber = extensionNumber;
-    }
-
     public String getCountry() {
         return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
     }
 
     public String getArea() {
         return area;
     }
 
+    public void setArea(String area) {
+        this.area = area;
+    }
+
     public String getNumber() {
         return number;
     }
 
+    public void setNumber(String number) {
+        this.number = number;
+    }
+
     public String getExtensionNumber() {
         return extensionNumber;
+    }
+
+    public void setExtensionNumber(String extensionNumber) {
+        this.extensionNumber = extensionNumber;
     }
 
     @Override

@@ -15,18 +15,18 @@
  */
 package com.alibaba.dubbo.remoting.transport;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.concurrent.CopyOnWriteArraySet;
-
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.concurrent.CopyOnWriteArraySet;
+
 /**
  * ChannelListenerDispatcher
- * 
+ *
  * @author william.liangf
  */
 public class ChannelHandlerDispatcher implements ChannelHandler {
@@ -34,10 +34,10 @@ public class ChannelHandlerDispatcher implements ChannelHandler {
     private static final Logger logger = LoggerFactory.getLogger(ChannelHandlerDispatcher.class);
 
     private final Collection<ChannelHandler> channelHandlers = new CopyOnWriteArraySet<ChannelHandler>();
-    
+
     public ChannelHandlerDispatcher() {
     }
-    
+
     public ChannelHandlerDispatcher(ChannelHandler... handlers) {
         this(handlers == null ? null : Arrays.asList(handlers));
     }
@@ -111,5 +111,5 @@ public class ChannelHandlerDispatcher implements ChannelHandler {
             }
         }
     }
-    
+
 }

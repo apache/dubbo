@@ -6,10 +6,12 @@ import org.slf4j.spi.LocationAwareLogger;
 
 import java.io.Serializable;
 
+import java.io.Serializable;
+
 public class Slf4jLogger implements Logger, Serializable {
 
-	private static final long serialVersionUID = 1L;
-
+    private static final long serialVersionUID = 1L;
+  
     private static final String FQCN = FailsafeLogger.class.getName();
 
     private final org.slf4j.Logger logger;

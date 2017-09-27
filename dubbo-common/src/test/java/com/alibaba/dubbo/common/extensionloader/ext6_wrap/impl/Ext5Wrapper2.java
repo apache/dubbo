@@ -15,18 +15,17 @@
  */
 package com.alibaba.dubbo.common.extensionloader.ext6_wrap.impl;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extensionloader.ext6_wrap.WrappedExt;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author ding.lid
  */
 public class Ext5Wrapper2 implements WrappedExt {
-    WrappedExt instance;
-    
     public static AtomicInteger echoCount = new AtomicInteger();
+    WrappedExt instance;
 
     public Ext5Wrapper2(WrappedExt instance) {
         this.instance = instance;

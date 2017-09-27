@@ -1,10 +1,10 @@
 /**
  * File Created at 2012-02-02
  * $Id$
- *
+ * <p>
  * Copyright 2008 Alibaba.com Croporation Limited.
  * All rights reserved.
- *
+ * <p>
  * This software is the confidential and proprietary information of
  * Alibaba Company. ("Confidential Information").  You shall not
  * disclose such Confidential Information and shall use it only in
@@ -20,12 +20,12 @@ public class ThriftClassNameGenerator implements ClassNameGenerator {
 
     public static final String NAME = "thrift";
 
-    public String generateArgsClassName( String serviceName, String methodName ) {
-        return ThriftUtils.generateMethodArgsClassNameThrift( serviceName, methodName );
+    public String generateArgsClassName(String serviceName, String methodName) {
+        return ThriftUtils.generateMethodArgsClassNameThrift(serviceName, methodName);
     }
 
-    public String generateResultClassName( String serviceName, String methodName ) {
-        return ThriftUtils.generateMethodResultClassNameThrift( serviceName, methodName );
+    public String generateResultClassName(String serviceName, String methodName) {
+        return ThriftUtils.generateMethodResultClassNameThrift(serviceName, methodName);
     }
 
 }

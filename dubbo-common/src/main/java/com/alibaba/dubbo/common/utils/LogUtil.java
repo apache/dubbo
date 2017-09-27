@@ -15,13 +15,13 @@
  */
 package com.alibaba.dubbo.common.utils;
 
-import java.util.Iterator;
-import java.util.List;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 
 import org.apache.log4j.Level;
 
-import com.alibaba.dubbo.common.logger.Logger;
-import com.alibaba.dubbo.common.logger.LoggerFactory;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author tony.chenl
@@ -33,7 +33,7 @@ public class LogUtil {
     public static void start() {
         DubboAppender.doStart();
     }
-    
+
     public static void stop() {
         DubboAppender.doStop();
     }
@@ -66,13 +66,13 @@ public class LogUtil {
         }
         return count;
     }
-    
-    public static int findLevelWithThreadName(Level expectedLevel,String threadName) {
+
+    public static int findLevelWithThreadName(Level expectedLevel, String threadName) {
         int count = 0;
         List<Log> logList = DubboAppender.logList;
         for (int i = 0; i < logList.size(); i++) {
             Log log = logList.get(i);
-            if (log.getLogLevel().equals(expectedLevel) && log.getLogThread().equals(threadName)) 
+            if (log.getLogLevel().equals(expectedLevel) && log.getLogThread().equals(threadName))
                 count++;
         }
         return count;
@@ -97,7 +97,7 @@ public class LogUtil {
         }
         return count;
     }
-    
+
     public static int findMessage(Level expectedLevel, String expectedMessage) {
         int count = 0;
         List<Log> logList = DubboAppender.logList;

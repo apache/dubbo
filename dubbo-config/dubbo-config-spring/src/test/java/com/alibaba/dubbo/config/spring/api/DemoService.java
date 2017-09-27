@@ -17,13 +17,13 @@ package com.alibaba.dubbo.config.spring.api;
 
 /**
  * DemoService
- * 
+ *
  * @author william.liangf
  */
 public interface DemoService {
-    
+
     String sayName(String name);
-    
+
     Box getBox();
-    
+
 }

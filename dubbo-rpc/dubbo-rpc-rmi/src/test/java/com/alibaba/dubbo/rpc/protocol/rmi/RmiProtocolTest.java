@@ -16,11 +16,6 @@
 package com.alibaba.dubbo.rpc.protocol.rmi;
 
 
-import static junit.framework.Assert.assertEquals;
-
-import org.junit.Ignore;
-import org.junit.Test;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.rpc.Exporter;
@@ -29,15 +24,15 @@ import com.alibaba.dubbo.rpc.ProxyFactory;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.service.EchoService;
 
-public class RmiProtocolTest
-{
+import org.junit.Ignore;
+import org.junit.Test;
+
+import static junit.framework.Assert.assertEquals;
+
+public class RmiProtocolTest {
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
     private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-    
-    
-    public static interface NonStdRmiInterface {
-        void bark();
-    }
+
     /*
     @Test
     public void test_getRemoteClass() throws Exception {
@@ -46,8 +41,7 @@ public class RmiProtocolTest
     }
     */
     @Test
-    public void testRmiProtocolTimeout() throws Exception
-    {
+    public void testRmiProtocolTimeout() throws Exception {
         System.setProperty("sun.rmi.transport.tcp.responseTimeout", "1000");
         DemoService service = new DemoServiceImpl();
         Exporter<?> rpcExporter = protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("rmi://127.0.0.1:9001/TestService")));
@@ -63,67 +57,69 @@ public class RmiProtocolTest
             rpcExporter.unexport();
         }
     }
-    
-	@Test
-	public void testRmiProtocol() throws Exception
-	{
-	    {
-    		DemoService service = new DemoServiceImpl();
-    		Exporter<?> rpcExporter = protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("rmi://127.0.0.1:9001/TestService")));
-    		
-    		service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("rmi://127.0.0.1:9001/TestService")));
-    		assertEquals(service.getSize(null), -1);
-    		assertEquals(service.getSize(new String[]{"", "", ""}), 3);
-    		Object result = service.invoke("rmi://127.0.0.1:9001/TestService", "invoke");
-    		assertEquals("rmi://127.0.0.1:9001/TestService:invoke", result);
-    		
-    		rpcExporter.unexport();
-	    }
 
-	    {
-    		RemoteService remoteService = new RemoteServiceImpl();
-    		Exporter<?> rpcExporter = protocol.export(proxy.getInvoker(remoteService, RemoteService.class, URL.valueOf("rmi://127.0.0.1:9002/remoteService")));
-    		
-    		remoteService = proxy.getProxy(protocol.refer(RemoteService.class, URL.valueOf("rmi://127.0.0.1:9002/remoteService")));
-    		remoteService.getThreadName();
-    		for(int i=0;i<100;i++) {
+    @Test
+    public void testRmiProtocol() throws Exception {
+        {
+            DemoService service = new DemoServiceImpl();
+            Exporter<?> rpcExporter = protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("rmi://127.0.0.1:9001/TestService")));
+
+            service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("rmi://127.0.0.1:9001/TestService")));
+            assertEquals(service.getSize(null), -1);
+            assertEquals(service.getSize(new String[]{"", "", ""}), 3);
+            Object result = service.invoke("rmi://127.0.0.1:9001/TestService", "invoke");
+            assertEquals("rmi://127.0.0.1:9001/TestService:invoke", result);
+
+            rpcExporter.unexport();
+        }
+
+        {
+            RemoteService remoteService = new RemoteServiceImpl();
+            Exporter<?> rpcExporter = protocol.export(proxy.getInvoker(remoteService, RemoteService.class, URL.valueOf("rmi://127.0.0.1:9002/remoteService")));
+
+            remoteService = proxy.getProxy(protocol.refer(RemoteService.class, URL.valueOf("rmi://127.0.0.1:9002/remoteService")));
+            remoteService.getThreadName();
+            for (int i = 0; i < 100; i++) {
                 String say = remoteService.sayHello("abcd");
                 assertEquals("hello abcd@" + RemoteServiceImpl.class.getName(), say);
             }
-    		rpcExporter.unexport();
-	    }
-	}
-	
-	// FIXME RMI协议目前的实现不支持转型成 EchoService
-	@Ignore
-	@Test
-	public void testRmiProtocol_echoService() throws Exception
-    {
-	    DemoService service = new DemoServiceImpl();
-	    Exporter<?> rpcExporter = protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("rmi://127.0.0.1:9002/TestService")));
-        
-	    // cast to EchoService
+            rpcExporter.unexport();
+        }
+    }
+
+    // FIXME RMI协议目前的实现不支持转型成 EchoService
+    @Ignore
+    @Test
+    public void testRmiProtocol_echoService() throws Exception {
+        DemoService service = new DemoServiceImpl();
+        Exporter<?> rpcExporter = protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("rmi://127.0.0.1:9002/TestService")));
+
+        // cast to EchoService
         EchoService echo = proxy.getProxy(protocol.refer(EchoService.class, URL.valueOf("rmi://127.0.0.1:9002/TestService")));
         assertEquals(echo.$echo("test"), "test");
         assertEquals(echo.$echo("abcdefg"), "abcdefg");
         assertEquals(echo.$echo(1234), 1234);
-        
+
         rpcExporter.unexport();
-        
+
         RemoteService remoteService = new RemoteServiceImpl();
         rpcExporter = protocol.export(proxy.getInvoker(remoteService, RemoteService.class, URL.valueOf("rmi://127.0.0.1:9002/remoteService")));
-        
+
         // cast to EchoService
         echo = proxy.getProxy(protocol.refer(EchoService.class, URL.valueOf("rmi://127.0.0.1:9002/remoteService")));
         assertEquals(echo.$echo("test"), "test");
         assertEquals(echo.$echo("abcdefg"), "abcdefg");
         assertEquals(echo.$echo(1234), 1234);
-        
+
         rpcExporter.unexport();
     }
 
+    public static interface NonStdRmiInterface {
+        void bark();
+    }
+
 	/*@Test
-	public void testRpcInvokerGroup() throws Exception
+    public void testRpcInvokerGroup() throws Exception
 	{
 		DemoService service = new DemoServiceImpl();
 		RpcUtils.export("demo://127.0.0.1:9030/com.alibaba.dubbo.rpc.TestService",DemoService.class,service);

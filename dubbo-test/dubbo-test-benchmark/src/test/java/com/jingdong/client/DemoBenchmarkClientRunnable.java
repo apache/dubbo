@@ -15,26 +15,27 @@
  */
 package com.jingdong.client;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.CyclicBarrier;
-
 import com.alibaba.dubbo.rpc.benchmark.AbstractClientRunnable;
 import com.alibaba.dubbo.rpc.benchmark.DemoService;
 import com.alibaba.dubbo.rpc.benchmark.ServiceFactory;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
+
 /**
  * DemoBenchmarkClient.java
+ *
  * @author tony.chenl
  */
-public class DemoBenchmarkClientRunnable extends AbstractClientRunnable{
+public class DemoBenchmarkClientRunnable extends AbstractClientRunnable {
 
     public DemoBenchmarkClientRunnable(String targetIP, int targetPort, int clientNums, int rpcTimeout,
                                        CyclicBarrier barrier, CountDownLatch latch, long startTime,
-                                       long endTime){
+                                       long endTime) {
         super(targetIP, targetPort, clientNums, rpcTimeout, barrier, latch, startTime, endTime);
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public Object invoke(ServiceFactory serviceFactory) {
         DemoService demoService = (DemoService) serviceFactory.get(DemoService.class);

@@ -15,85 +15,85 @@
  */
 package com.alibaba.dubbo.common.serialize.serialization;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.ByteArrayInputStream;
-import java.util.Arrays;
-
-import org.junit.Ignore;
-import org.junit.Test;
-
 import com.alibaba.dubbo.common.serialize.ObjectInput;
 import com.alibaba.dubbo.common.serialize.ObjectOutput;
 import com.alibaba.dubbo.common.serialize.support.hessian.Hessian2Serialization;
 
+import org.junit.Ignore;
+import org.junit.Test;
+
+import java.io.ByteArrayInputStream;
+import java.util.Arrays;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 /**
  * @author ding.lid
- *
  */
 public class Hessian2SerializationTest extends AbstractSerializationPersionFailTest {
     {
         serialization = new Hessian2Serialization();
     }
-    
+
     // Hessian2 
-    
+
     @Test
     public void test_boolArray_withType() throws Exception {
-        boolean[] data = new boolean[] { true, false, true};
-        
+        boolean[] data = new boolean[]{true, false, true};
+
         ObjectOutput objectOutput = serialization.serialize(url, byteArrayOutputStream);
         objectOutput.writeObject(data);
         objectOutput.flushBuffer();
-        
+
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
                 byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
-        
+
         assertTrue(Arrays.equals(data, (boolean[]) deserialize.readObject(boolean[].class)));
-        
+
         try {
             deserialize.readObject(boolean[].class);
             fail();
-        } 
-        catch (ArrayIndexOutOfBoundsException e) {} 
+        } catch (ArrayIndexOutOfBoundsException e) {
+        }
         // NOTE： Hessian2抛出了ArrayIndexOutOfBoundsException 而不是 IOException！！
         // 容忍这个问题！！
     }
-    
+
     @Ignore("type missing, char[] -> String")
     @Test
-    public void test_charArray() throws Exception {}
-    
+    public void test_charArray() throws Exception {
+    }
+
     @Test
     public void test_shortArray_withType() throws Exception {
-        short[] data = new short[] { 37, 39, 12 };
-        
+        short[] data = new short[]{37, 39, 12};
+
         ObjectOutput objectOutput = serialization.serialize(url, byteArrayOutputStream);
         objectOutput.writeObject(data);
         objectOutput.flushBuffer();
-        
+
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
                 byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
-        
+
         assertArrayEquals(data, (short[]) deserialize.readObject(short[].class));
-        
+
         try {
             deserialize.readObject(short[].class);
             fail();
-        } 
-        catch (ArrayIndexOutOfBoundsException e) {} 
+        } catch (ArrayIndexOutOfBoundsException e) {
+        }
         // NOTE： Hessian2抛出了ArrayIndexOutOfBoundsException 而不是 IOException！！
         // 容忍这个问题！！
     }
-    
+
     @Test
     public void test_intArray_withType() throws Exception {
-        int[] data = new int[] { 234, 0, -1};
-        
+        int[] data = new int[]{234, 0, -1};
+
         ObjectOutput objectOutput = serialization.serialize(url, byteArrayOutputStream);
         objectOutput.writeObject(data);
         objectOutput.flushBuffer();
@@ -107,16 +107,16 @@ public class Hessian2SerializationTest extends AbstractSerializationPersionFailT
         try {
             deserialize.readObject(int[].class);
             fail();
-        } 
-        catch (ArrayIndexOutOfBoundsException e) {} 
+        } catch (ArrayIndexOutOfBoundsException e) {
+        }
         // NOTE： Hessian2抛出了ArrayIndexOutOfBoundsException 而不是 IOException！！
         // 容忍这个问题！！
     }
-    
+
     @Test
     public void test_longArray_withType() throws Exception {
-        long[] data = new long[] { 234, 0, -1};
-        
+        long[] data = new long[]{234, 0, -1};
+
         ObjectOutput objectOutput = serialization.serialize(url, byteArrayOutputStream);
         objectOutput.writeObject(data);
         objectOutput.flushBuffer();
@@ -130,63 +130,63 @@ public class Hessian2SerializationTest extends AbstractSerializationPersionFailT
         try {
             deserialize.readObject(long[].class);
             fail();
-        } 
-        catch (ArrayIndexOutOfBoundsException e) {} 
+        } catch (ArrayIndexOutOfBoundsException e) {
+        }
         // NOTE： Hessian2抛出了ArrayIndexOutOfBoundsException 而不是 IOException！！
         // 容忍这个问题！！
     }
-    
+
     @Test
     public void test_floatArray_withType() throws Exception {
-        float[] data = new float[] { 37F, -3.14F, 123456.7F };
-        
+        float[] data = new float[]{37F, -3.14F, 123456.7F};
+
         ObjectOutput objectOutput = serialization.serialize(url, byteArrayOutputStream);
         objectOutput.writeObject(data);
         objectOutput.flushBuffer();
-        
+
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
                 byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
-        
+
         assertArrayEquals(data, (float[]) deserialize.readObject(), 0.0001F);
-        
+
         try {
             deserialize.readObject(float[].class);
             fail();
-        } 
-        catch (ArrayIndexOutOfBoundsException e) {} 
+        } catch (ArrayIndexOutOfBoundsException e) {
+        }
         // NOTE： Hessian2抛出了ArrayIndexOutOfBoundsException 而不是 IOException！！
         // 容忍这个问题！！
     }
-    
+
     @Test
     public void test_doubleArray_withType() throws Exception {
-        double[] data = new double[] { 37D, -3.14D, 123456.7D };
-        
+        double[] data = new double[]{37D, -3.14D, 123456.7D};
+
         ObjectOutput objectOutput = serialization.serialize(url, byteArrayOutputStream);
         objectOutput.writeObject(data);
         objectOutput.flushBuffer();
-        
+
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
                 byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
-        
+
         assertArrayEquals(data, (double[]) deserialize.readObject(double[].class), 0.0001);
-        
+
         try {
             deserialize.readObject(double[].class);
             fail();
-        } 
-        catch (ArrayIndexOutOfBoundsException e) {} 
+        } catch (ArrayIndexOutOfBoundsException e) {
+        }
         // NOTE： Hessian2抛出了ArrayIndexOutOfBoundsException 而不是 IOException！！
         // 容忍这个问题！！
     }
-    
+
     @Test
     public void test_StringArray_withType() throws Exception {
-        
-        String[] data = new String[] { "1", "b" };
-        
+
+        String[] data = new String[]{"1", "b"};
+
 
         ObjectOutput objectOutput = serialization.serialize(url, byteArrayOutputStream);
         objectOutput.writeObject(data);
@@ -201,18 +201,20 @@ public class Hessian2SerializationTest extends AbstractSerializationPersionFailT
         try {
             deserialize.readObject(String[].class);
             fail();
-        } 
-        catch (ArrayIndexOutOfBoundsException e) {} 
+        } catch (ArrayIndexOutOfBoundsException e) {
+        }
         // NOTE： Hessian2抛出了ArrayIndexOutOfBoundsException 而不是 IOException！！
         // 容忍这个问题！！
     }
-    
+
     @Ignore("type missing, Byte -> Integer")
     @Test
-    public void test_ByteWrap() throws Exception { }
-    
+    public void test_ByteWrap() throws Exception {
+    }
+
     // FIXME
     @Ignore("Bad Stream read other type data")
     @Test
-    public void test_MediaContent_badStream() throws Exception {}
+    public void test_MediaContent_badStream() throws Exception {
+    }
 }

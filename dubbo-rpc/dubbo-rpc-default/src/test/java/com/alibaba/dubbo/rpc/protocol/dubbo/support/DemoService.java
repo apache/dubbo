@@ -19,43 +19,41 @@ import java.util.Map;
 import java.util.Set;
 
 
-
 /**
  * <code>TestService</code>
  */
 
-public interface DemoService
-{
-	void sayHello(String name);
-	
-	Set<String> keys(Map<String, String> map);
+public interface DemoService {
+    void sayHello(String name);
 
-	String echo(String text);
+    Set<String> keys(Map<String, String> map);
 
-	Map echo(Map map);
+    String echo(String text);
 
-	long timestamp();
+    Map echo(Map map);
 
-	String getThreadName();
+    long timestamp();
 
-	int getSize(String[] strs);
+    String getThreadName();
 
-	int getSize(Object[] os);
+    int getSize(String[] strs);
 
-	Object invoke(String service, String method) throws Exception;
+    int getSize(Object[] os);
 
-	int stringLength(String str);
+    Object invoke(String service, String method) throws Exception;
 
-	Type enumlength(Type... types);
-	
+    int stringLength(String str);
+
+    Type enumlength(Type... types);
+
 //	Type enumlength(Type type);
-	
-	String get(CustomArgument arg1);
-	
-	byte getbyte(byte arg);
-	
-	void nonSerializedParameter(NonSerialized ns);
-	
-	NonSerialized returnNonSerialized();
-	
+
+    String get(CustomArgument arg1);
+
+    byte getbyte(byte arg);
+
+    void nonSerializedParameter(NonSerialized ns);
+
+    NonSerialized returnNonSerialized();
+
 }

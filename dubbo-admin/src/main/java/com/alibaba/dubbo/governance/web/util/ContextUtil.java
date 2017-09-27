@@ -1,12 +1,12 @@
 /**
  * Project: dubbo.registry.console-2.1.0-SNAPSHOT
- * 
+ * <p>
  * File Created at Oct 31, 2011
  * $Id: ContextUtil.java 181192 2012-06-21 05:05:47Z tony.chenl $
- * 
+ * <p>
  * Copyright 1999-2100 Alibaba.com Corporation Limited.
  * All rights reserved.
- *
+ * <p>
  * This software is the confidential and proprietary information of
  * Alibaba Company. ("Confidential Information").  You shall not
  * disclose such Confidential Information and shall use it only in
@@ -23,13 +23,13 @@ import java.util.Map;
  *
  */
 public class ContextUtil {
-    
-    private ContextUtil(Map<String, Object> c){
+
+    private ContextUtil(Map<String, Object> c) {
     }
-    
-    public static Object get(Map<String, Object> context, Object key, Object defaultv){
+
+    public static Object get(Map<String, Object> context, Object key, Object defaultv) {
         Object res = context.get(key);
-        if(res == null){
+        if (res == null) {
             res = defaultv;
         }
         return res;

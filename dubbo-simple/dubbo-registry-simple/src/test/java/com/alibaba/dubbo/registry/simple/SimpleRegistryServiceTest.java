@@ -17,11 +17,9 @@ package com.alibaba.dubbo.registry.simple;
 
 import org.junit.Test;
 
-import com.alibaba.dubbo.registry.simple.SimpleRegistryService;
-
 /**
  * SimpleRegistryServiceTest
- * 
+ *
  * @author william.liangf
  */
 public class SimpleRegistryServiceTest {
