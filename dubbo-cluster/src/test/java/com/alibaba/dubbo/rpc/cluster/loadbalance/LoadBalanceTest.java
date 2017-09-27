@@ -20,6 +20,7 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
+import com.alibaba.dubbo.rpc.RpcStatus;
 import com.alibaba.dubbo.rpc.cluster.LoadBalance;
 
 import junit.framework.Assert;
@@ -62,7 +63,6 @@ public class LoadBalanceTest {
     @Before
     public void setUp() throws Exception {
 
-
         invocation = EasyMock.createMock(Invocation.class);
         EasyMock.expect(invocation.getMethodName()).andReturn("method1").anyTimes();
 
@@ -72,27 +72,31 @@ public class LoadBalanceTest {
         invoker4 = EasyMock.createMock(Invoker.class);
         invoker5 = EasyMock.createMock(Invoker.class);
 
-        URL url = URL.valueOf("test://127.0.0.1/DemoService");
+        URL url1 = URL.valueOf("test://127.0.0.1:1/DemoService");
+        URL url2 = URL.valueOf("test://127.0.0.1:2/DemoService");
+        URL url3 = URL.valueOf("test://127.0.0.1:3/DemoService");
+        URL url4 = URL.valueOf("test://127.0.0.1:4/DemoService");
+        URL url5 = URL.valueOf("test://127.0.0.1:5/DemoService");
 
         EasyMock.expect(invoker1.isAvailable()).andReturn(true).anyTimes();
         EasyMock.expect(invoker1.getInterface()).andReturn(LoadBalanceTest.class).anyTimes();
-        EasyMock.expect(invoker1.getUrl()).andReturn(url).anyTimes();
+        EasyMock.expect(invoker1.getUrl()).andReturn(url1).anyTimes();
 
         EasyMock.expect(invoker2.isAvailable()).andReturn(true).anyTimes();
         EasyMock.expect(invoker2.getInterface()).andReturn(LoadBalanceTest.class).anyTimes();
-        EasyMock.expect(invoker2.getUrl()).andReturn(url).anyTimes();
+        EasyMock.expect(invoker2.getUrl()).andReturn(url2).anyTimes();
 
         EasyMock.expect(invoker3.isAvailable()).andReturn(true).anyTimes();
         EasyMock.expect(invoker3.getInterface()).andReturn(LoadBalanceTest.class).anyTimes();
-        EasyMock.expect(invoker3.getUrl()).andReturn(url).anyTimes();
+        EasyMock.expect(invoker3.getUrl()).andReturn(url3).anyTimes();
 
         EasyMock.expect(invoker4.isAvailable()).andReturn(true).anyTimes();
         EasyMock.expect(invoker4.getInterface()).andReturn(LoadBalanceTest.class).anyTimes();
-        EasyMock.expect(invoker4.getUrl()).andReturn(url).anyTimes();
+        EasyMock.expect(invoker4.getUrl()).andReturn(url4).anyTimes();
 
         EasyMock.expect(invoker5.isAvailable()).andReturn(true).anyTimes();
         EasyMock.expect(invoker5.getInterface()).andReturn(LoadBalanceTest.class).anyTimes();
-        EasyMock.expect(invoker5.getUrl()).andReturn(url).anyTimes();
+        EasyMock.expect(invoker5.getUrl()).andReturn(url5).anyTimes();
 
         EasyMock.replay(invocation, invoker1, invoker2, invoker3, invoker4, invoker5);
 
@@ -119,9 +123,25 @@ public class LoadBalanceTest {
         Map<Invoker, AtomicLong> counter = getInvokeCounter(runs, RandomLoadBalance.NAME);
         for (Invoker minvoker : counter.keySet()) {
             Long count = counter.get(minvoker).get();
-//            System.out.println(count);
-            Assert.assertTrue("abs diff shoud < avg", Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size()));
+            // System.out.println(count);
+            Assert.assertTrue("abs diff shoud < avg",
+                Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size()));
         }
+
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j <= i; j++) {
+                RpcStatus.beginCount(invokers.get(i).getUrl(), invocation.getMethodName());
+            }
+        }
+        counter = getInvokeCounter(runs, LeastActiveLoadBalance.NAME);
+        for (Invoker minvoker : counter.keySet()) {
+            Long count = counter.get(minvoker).get();
+        }
+        Assert.assertEquals(runs, counter.get(invoker1).intValue());
+        Assert.assertEquals(0, counter.get(invoker2).intValue());
+        Assert.assertEquals(0, counter.get(invoker3).intValue());
+        Assert.assertEquals(0, counter.get(invoker4).intValue());
+        Assert.assertEquals(0, counter.get(invoker5).intValue());
     }
 
     @Test
@@ -130,11 +150,11 @@ public class LoadBalanceTest {
         Map<Invoker, AtomicLong> counter = getInvokeCounter(runs, LeastActiveLoadBalance.NAME);
         for (Invoker minvoker : counter.keySet()) {
             Long count = counter.get(minvoker).get();
-//            System.out.println(count);
-            Assert.assertTrue("abs diff shoud < avg", Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size()));
+            //            System.out.println(count);
+            Assert.assertTrue("abs diff shoud < avg",
+                Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size()));
         }
     }
-
 
     public Map<Invoker, AtomicLong> getInvokeCounter(int runs, String loadbalanceName) {
         Map<Invoker, AtomicLong> counter = new ConcurrentHashMap<Invoker, AtomicLong>();
@@ -151,20 +171,34 @@ public class LoadBalanceTest {
 
     @Test
     public void testLoadBalanceWarmup() {
-        Assert.assertEquals(1, AbstractLoadBalance.calculateWarmupWeight(0, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
-        Assert.assertEquals(1, AbstractLoadBalance.calculateWarmupWeight(13, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
-        Assert.assertEquals(1, AbstractLoadBalance.calculateWarmupWeight(6 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
-        Assert.assertEquals(2, AbstractLoadBalance.calculateWarmupWeight(12 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
-        Assert.assertEquals(10, AbstractLoadBalance.calculateWarmupWeight(60 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
-        Assert.assertEquals(50, AbstractLoadBalance.calculateWarmupWeight(5 * 60 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
-        Assert.assertEquals(50, AbstractLoadBalance.calculateWarmupWeight(5 * 60 * 1000 + 23, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
-        Assert.assertEquals(50, AbstractLoadBalance.calculateWarmupWeight(5 * 60 * 1000 + 5999, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
-        Assert.assertEquals(51, AbstractLoadBalance.calculateWarmupWeight(5 * 60 * 1000 + 6000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
-        Assert.assertEquals(90, AbstractLoadBalance.calculateWarmupWeight(9 * 60 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
-        Assert.assertEquals(98, AbstractLoadBalance.calculateWarmupWeight(10 * 60 * 1000 - 12 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
-        Assert.assertEquals(99, AbstractLoadBalance.calculateWarmupWeight(10 * 60 * 1000 - 6 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
-        Assert.assertEquals(100, AbstractLoadBalance.calculateWarmupWeight(10 * 60 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
-        Assert.assertEquals(100, AbstractLoadBalance.calculateWarmupWeight(20 * 60 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
+        Assert.assertEquals(1,
+            AbstractLoadBalance.calculateWarmupWeight(0, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
+        Assert.assertEquals(1,
+            AbstractLoadBalance.calculateWarmupWeight(13, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
+        Assert.assertEquals(1,
+            AbstractLoadBalance.calculateWarmupWeight(6 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
+        Assert.assertEquals(2,
+            AbstractLoadBalance.calculateWarmupWeight(12 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
+        Assert.assertEquals(10,
+            AbstractLoadBalance.calculateWarmupWeight(60 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
+        Assert.assertEquals(50, AbstractLoadBalance
+            .calculateWarmupWeight(5 * 60 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
+        Assert.assertEquals(50, AbstractLoadBalance
+            .calculateWarmupWeight(5 * 60 * 1000 + 23, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
+        Assert.assertEquals(50, AbstractLoadBalance
+            .calculateWarmupWeight(5 * 60 * 1000 + 5999, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
+        Assert.assertEquals(51, AbstractLoadBalance
+            .calculateWarmupWeight(5 * 60 * 1000 + 6000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
+        Assert.assertEquals(90, AbstractLoadBalance
+            .calculateWarmupWeight(9 * 60 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
+        Assert.assertEquals(98, AbstractLoadBalance
+            .calculateWarmupWeight(10 * 60 * 1000 - 12 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
+        Assert.assertEquals(99, AbstractLoadBalance
+            .calculateWarmupWeight(10 * 60 * 1000 - 6 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
+        Assert.assertEquals(100, AbstractLoadBalance
+            .calculateWarmupWeight(10 * 60 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
+        Assert.assertEquals(100, AbstractLoadBalance
+            .calculateWarmupWeight(20 * 60 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
     }
 
 }
