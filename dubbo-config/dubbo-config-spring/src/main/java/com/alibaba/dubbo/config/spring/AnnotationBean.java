@@ -266,7 +266,7 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
             		//判断Spring容器中是否已经存在value接口类型的bean
 	                String[] arr = applicationContext.getBeanNamesForType(field.getType());
                 	if((arr == null || arr.length == 0) ){
-                		//让Spring的aop对value进行代理
+                		//让Spring的aop对value进行代理 
                 		value = applicationContext.getAutowireCapableBeanFactory().applyBeanPostProcessorsAfterInitialization(value, field.getType().getName());
                 		//将value以单例的形式注入到Spring容器中
                 		((DefaultListableBeanFactory)applicationContext.getAutowireCapableBeanFactory()).registerSingleton(field.getType().getName(), value);
