@@ -78,6 +78,7 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
         if (!guard.tryAcquire()) {
             return;
         }
+
         Executors.newSingleThreadExecutor().execute(new Runnable() {
             @Override
             public void run() {
@@ -100,6 +101,8 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
                         }
                     }
                 }
+
+                lastPrintTime = System.currentTimeMillis();
             }
         });
 
