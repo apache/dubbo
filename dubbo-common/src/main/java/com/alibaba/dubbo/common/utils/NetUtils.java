@@ -53,6 +53,7 @@ public class NetUtils {
     private static final Pattern IP_PATTERN = Pattern.compile("\\d{1,3}(\\.\\d{1,3}){3,5}$");
     private static final Map<String, String> hostNameCache = new LRUCache<String, String>(1000);
     private static volatile InetAddress LOCAL_ADDRESS = null;
+    private static String bind;
 
     public static int getRandomPort() {
         return RND_PORT_START + RANDOM.nextInt(RND_PORT_RANGE);
@@ -145,6 +146,9 @@ public class NetUtils {
     }
 
     public static String getLocalHost() {
+        if (StringUtils.isNotEmpty(bind)) {
+            return bind;
+        }
         InetAddress address = getLocalAddress();
         return address == null ? LOCALHOST : address.getHostAddress();
     }
@@ -292,4 +296,11 @@ public class NetUtils {
         return sb.toString();
     }
 
+    public static void setBind(String bind) {
+        NetUtils.bind = bind;
+    }
+
+    public static String getBind() {
+        return bind;
+    }
 }
