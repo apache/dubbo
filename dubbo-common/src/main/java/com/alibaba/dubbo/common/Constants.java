@@ -296,6 +296,8 @@ public class Constants {
 
     public static final String TIMESTAMP_KEY = "timestamp";
 
+    public static final String REMOTE_TIMESTAMP_KEY = "remote.timestamp";
+
     public static final String WARMUP_KEY = "warmup";
 
     public static final int DEFAULT_WARMUP = 10 * 60 * 1000;
