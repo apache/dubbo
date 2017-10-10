@@ -20,6 +20,7 @@ import com.alibaba.dubbo.common.bytecode.ClassGenerator;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
+import com.alibaba.dubbo.validation.MethodValidated;
 import com.alibaba.dubbo.validation.Validator;
 
 import javassist.ClassPool;
@@ -239,41 +240,55 @@ public class JValidator implements Validator {
         }
         Set<ConstraintViolation<?>> violations = new HashSet<ConstraintViolation<?>>();
         Method method = clazz.getMethod(methodName, parameterTypes);
+        Class<?>[] methodClasses = null;
+        if (method.isAnnotationPresent(MethodValidated.class)){
+            methodClasses = method.getAnnotation(MethodValidated.class).value();
+        }
+
         Object parameterBean = getMethodParameterBean(clazz, method, arguments);
         if (parameterBean != null) {
             if (methodClass != null) {
                 violations.addAll(validator.validate(parameterBean, Default.class, clazz, methodClass));
+            } else if (methodClasses != null) {
+                for (int i = 0; i < methodClasses.length; i++) {
+                    violations.addAll(validator.validate(parameterBean, Default.class, clazz, methodClasses[i]));
+                }
             } else {
                 violations.addAll(validator.validate(parameterBean, Default.class, clazz));
             }
         }
         for (Object arg : arguments) {
-            validate(violations, arg, clazz, methodClass);
+            validate(violations, arg, clazz, methodClass, methodClasses);
         }
         if (violations.size() > 0) {
+            logger.error("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + violations);
             throw new ConstraintViolationException("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + violations, violations);
         }
     }
 
-    private void validate(Set<ConstraintViolation<?>> violations, Object arg, Class<?> clazz, Class<?> methodClass) {
+    private void validate(Set<ConstraintViolation<?>> violations, Object arg, Class<?> clazz, Class<?> methodClass, Class<?>[] methodClasses ) {
         if (arg != null && !isPrimitives(arg.getClass())) {
             if (Object[].class.isInstance(arg)) {
                 for (Object item : (Object[]) arg) {
-                    validate(violations, item, clazz, methodClass);
+                    validate(violations, item, clazz, methodClass, methodClasses);
                 }
             } else if (Collection.class.isInstance(arg)) {
                 for (Object item : (Collection<?>) arg) {
-                    validate(violations, item, clazz, methodClass);
+                    validate(violations, item, clazz, methodClass, methodClasses);
                 }
             } else if (Map.class.isInstance(arg)) {
                 for (Map.Entry<?, ?> entry : ((Map<?, ?>) arg).entrySet()) {
-                    validate(violations, entry.getKey(), clazz, methodClass);
-                    validate(violations, entry.getValue(), clazz, methodClass);
+                    validate(violations, entry.getKey(), clazz, methodClass, methodClasses);
+                    validate(violations, entry.getValue(), clazz, methodClass, methodClasses);
                 }
             } else {
                 if (methodClass != null) {
                     violations.addAll(validator.validate(arg, Default.class, clazz, methodClass));
-                } else {
+                } else if (methodClasses != null) {
+                    for (int i = 0; i < methodClasses.length; i++) {
+                        violations.addAll(validator.validate(arg, Default.class, clazz, methodClasses[i]));
+                    }
+                }else {
                     violations.addAll(validator.validate(arg, Default.class, clazz));
                 }
             }
