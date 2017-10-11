@@ -70,6 +70,12 @@
             <version>3.2.5.Final</version>
         </dependency>
         <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>4.0.35.Final</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.apache.mina</groupId>
             <artifactId>mina-core</artifactId>
             <version>1.1.7</version>
