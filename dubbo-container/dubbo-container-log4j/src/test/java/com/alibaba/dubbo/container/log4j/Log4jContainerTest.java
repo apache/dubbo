@@ -15,18 +15,18 @@
  */
 package com.alibaba.dubbo.container.log4j;
 
-import org.junit.Test;
-
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.container.Container;
 
+import org.junit.Test;
+
 /**
  * StandaloneContainerTest
- * 
+ *
  * @author william.liangf
  */
 public class Log4jContainerTest {
-    
+
     @Test
     public void testContainer() {
         Log4jContainer container = (Log4jContainer) ExtensionLoader.getExtensionLoader(Container.class).getExtension("log4j");

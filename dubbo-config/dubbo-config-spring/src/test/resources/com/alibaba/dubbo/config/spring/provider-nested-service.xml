@@ -13,28 +13,29 @@
  - See the License for the specific language governing permissions and
  - limitations under the License.
 -->
-<beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
     http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd
     ">
-     
-    <dubbo:application name="service-class" />
-    
-    <dubbo:registry address="N/A" />
-    
-    <dubbo:protocol name="dubbo" port="20887" />
-    
-    <dubbo:provider timeout="2000" />
-    
-    <dubbo:service id="serviceConfig" interface="com.alibaba.dubbo.config.spring.api.DemoService" ref="demoService" />
-    
+
+    <dubbo:application name="service-class"/>
+
+    <dubbo:registry address="N/A"/>
+
+    <dubbo:protocol name="dubbo" port="20887"/>
+
+    <dubbo:provider timeout="2000"/>
+
+    <dubbo:service id="serviceConfig" interface="com.alibaba.dubbo.config.spring.api.DemoService" ref="demoService"/>
+
     <!-- 嵌套配置 -->
     <dubbo:provider timeout="1000">
-    	<dubbo:service id="serviceConfig2" interface="com.alibaba.dubbo.config.spring.api.DemoService" ref="demoService" group="demo2" />
+        <dubbo:service id="serviceConfig2" interface="com.alibaba.dubbo.config.spring.api.DemoService" ref="demoService"
+                       group="demo2"/>
     </dubbo:provider>
-    
-    <bean id="demoService" class="com.alibaba.dubbo.config.spring.impl.DemoServiceImpl" />
-     
+
+    <bean id="demoService" class="com.alibaba.dubbo.config.spring.impl.DemoServiceImpl"/>
+
 </beans>

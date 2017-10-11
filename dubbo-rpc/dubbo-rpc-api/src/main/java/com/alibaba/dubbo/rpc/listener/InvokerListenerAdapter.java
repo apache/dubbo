@@ -21,7 +21,7 @@ import com.alibaba.dubbo.rpc.RpcException;
 
 /**
  * InvokerListenerAdapter
- * 
+ *
  * @author william.liangf
  */
 public abstract class InvokerListenerAdapter implements InvokerListener {

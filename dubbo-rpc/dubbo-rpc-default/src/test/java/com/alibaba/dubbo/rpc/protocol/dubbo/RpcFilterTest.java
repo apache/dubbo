@@ -15,8 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.protocol.dubbo;
 
-import junit.framework.TestCase;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.rpc.Protocol;
@@ -25,23 +23,23 @@ import com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService;
 import com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl;
 import com.alibaba.dubbo.rpc.service.EchoService;
 
-public class RpcFilterTest extends TestCase
-{
+import junit.framework.TestCase;
+
+public class RpcFilterTest extends TestCase {
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
     private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-    
-	public void testRpcFilter() throws Exception
-	{
-		DemoService service = new DemoServiceImpl();
-		URL url = URL.valueOf("dubbo://127.0.0.1:9010/com.alibaba.dubbo.rpc.DemoService?service.filter=echo");
-		protocol.export(proxy.getInvoker(service, DemoService.class, url));
-		service = proxy.getProxy(protocol.refer(DemoService.class, url));
-		assertEquals("123",service.echo("123"));
-		// cast to EchoService
-		EchoService echo = proxy.getProxy(protocol.refer(EchoService.class, url));
-		assertEquals(echo.$echo("test"), "test");
-		assertEquals(echo.$echo("abcdefg"), "abcdefg");
-		assertEquals(echo.$echo(1234), 1234);
-	}
+
+    public void testRpcFilter() throws Exception {
+        DemoService service = new DemoServiceImpl();
+        URL url = URL.valueOf("dubbo://127.0.0.1:9010/com.alibaba.dubbo.rpc.DemoService?service.filter=echo");
+        protocol.export(proxy.getInvoker(service, DemoService.class, url));
+        service = proxy.getProxy(protocol.refer(DemoService.class, url));
+        assertEquals("123", service.echo("123"));
+        // cast to EchoService
+        EchoService echo = proxy.getProxy(protocol.refer(EchoService.class, url));
+        assertEquals(echo.$echo("test"), "test");
+        assertEquals(echo.$echo("abcdefg"), "abcdefg");
+        assertEquals(echo.$echo(1234), 1234);
+    }
 
 }

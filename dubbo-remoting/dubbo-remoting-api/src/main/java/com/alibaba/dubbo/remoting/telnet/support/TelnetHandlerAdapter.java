@@ -67,7 +67,7 @@ public class TelnetHandlerAdapter extends ChannelHandlerAdapter implements Telne
         if (buf.length() > 0) {
             buf.append("\r\n");
         }
-        if (prompt != null && prompt.length() > 0 && ! noprompt) {
+        if (prompt != null && prompt.length() > 0 && !noprompt) {
             buf.append(prompt);
         }
         return buf.toString();

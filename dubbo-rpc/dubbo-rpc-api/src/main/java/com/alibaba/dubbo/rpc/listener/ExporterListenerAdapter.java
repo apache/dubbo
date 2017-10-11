@@ -21,7 +21,7 @@ import com.alibaba.dubbo.rpc.RpcException;
 
 /**
  * ExporterListenerAdapter
- * 
+ *
  * @author william.liangf
  */
 public abstract class ExporterListenerAdapter implements ExporterListener {

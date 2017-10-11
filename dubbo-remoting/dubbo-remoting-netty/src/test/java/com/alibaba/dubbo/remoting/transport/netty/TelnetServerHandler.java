@@ -36,7 +36,7 @@ public class TelnetServerHandler implements Replier<String> {
         String response;
         if (msg.length() == 0) {
             response = "Please type something.\r\n";
-        }  else {
+        } else {
             response = "Did you say '" + msg + "'?\r\n";
         }
         //System.out.println(response);

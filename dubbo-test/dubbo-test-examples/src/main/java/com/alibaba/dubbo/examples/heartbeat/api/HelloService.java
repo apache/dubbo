@@ -20,7 +20,7 @@ package com.alibaba.dubbo.examples.heartbeat.api;
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
 public interface HelloService {
-    
+
     public String sayHello(String name);
 
 }

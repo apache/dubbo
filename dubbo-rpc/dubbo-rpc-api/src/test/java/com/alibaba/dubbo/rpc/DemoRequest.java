@@ -19,46 +19,41 @@ import java.io.Serializable;
 
 /**
  * TestRequest.
- * 
+ *
  * @author qian.lei
  */
 
-class DemoRequest implements Serializable
-{
-	private static final long serialVersionUID = -2579095288792344869L;
+class DemoRequest implements Serializable {
+    private static final long serialVersionUID = -2579095288792344869L;
 
-	private String mServiceName;
-	
-	private String mMethodName;
+    private String mServiceName;
 
-	private Class<?>[] mParameterTypes;
+    private String mMethodName;
 
-	private Object[] mArguments;
+    private Class<?>[] mParameterTypes;
 
-	public DemoRequest(String serviceName,String methodName, Class<?>[] parameterTypes,Object[] args)
-	{
-		mServiceName = serviceName;
-		mMethodName = methodName;
-		mParameterTypes = parameterTypes;
-		mArguments = args;
-	}
+    private Object[] mArguments;
 
-	public String getServiceName()
-	{
-		return mServiceName;
-	}
+    public DemoRequest(String serviceName, String methodName, Class<?>[] parameterTypes, Object[] args) {
+        mServiceName = serviceName;
+        mMethodName = methodName;
+        mParameterTypes = parameterTypes;
+        mArguments = args;
+    }
 
-	public String getMethodName()
-	{
-		return mMethodName;
-	}
+    public String getServiceName() {
+        return mServiceName;
+    }
 
-	public Class<?>[] getParameterTypes() {
-		return mParameterTypes;
-	}
+    public String getMethodName() {
+        return mMethodName;
+    }
 
-	public Object[] getArguments()
-	{
-		return mArguments;
-	}
+    public Class<?>[] getParameterTypes() {
+        return mParameterTypes;
+    }
+
+    public Object[] getArguments() {
+        return mArguments;
+    }
 }

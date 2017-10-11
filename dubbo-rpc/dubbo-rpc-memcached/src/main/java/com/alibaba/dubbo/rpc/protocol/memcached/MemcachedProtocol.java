@@ -15,17 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.protocol.memcached;
 
-import java.io.IOException;
-import java.net.SocketTimeoutException;
-import java.util.Map;
-import java.util.concurrent.TimeoutException;
-
-import net.rubyeye.xmemcached.MemcachedClient;
-import net.rubyeye.xmemcached.MemcachedClientBuilder;
-import net.rubyeye.xmemcached.XMemcachedClientBuilder;
-import net.rubyeye.xmemcached.exception.MemcachedException;
-import net.rubyeye.xmemcached.utils.AddrUtil;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Exporter;
@@ -37,9 +26,20 @@ import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.protocol.AbstractInvoker;
 import com.alibaba.dubbo.rpc.protocol.AbstractProtocol;
 
+import net.rubyeye.xmemcached.MemcachedClient;
+import net.rubyeye.xmemcached.MemcachedClientBuilder;
+import net.rubyeye.xmemcached.XMemcachedClientBuilder;
+import net.rubyeye.xmemcached.exception.MemcachedException;
+import net.rubyeye.xmemcached.utils.AddrUtil;
+
+import java.io.IOException;
+import java.net.SocketTimeoutException;
+import java.util.Map;
+import java.util.concurrent.TimeoutException;
+
 /**
  * MemcachedProtocol
- * 
+ *
  * @author william.liangf
  */
 public class MemcachedProtocol extends AbstractProtocol {
@@ -100,6 +100,7 @@ public class MemcachedProtocol extends AbstractProtocol {
                         throw re;
                     }
                 }
+
                 public void destroy() {
                     super.destroy();
                     try {

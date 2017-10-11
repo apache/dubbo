@@ -3,67 +3,68 @@ package com.alibaba.dubbo.rpc.benchmark;
 /**
  * nfs-rpc Apache License http://code.google.com/p/nfs-rpc (c) 2011
  */
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 /**
  * Simple Processor RPC Benchmark Client Thread
- * 
+ *
  * @author <a href="mailto:bluedavy@gmail.com">bluedavy</a>
  */
 public class SimpleProcessorBenchmarkClientRunnable implements ClientRunnable {
 
-    private static final Log      LOGGER             = LogFactory.getLog(SimpleProcessorBenchmarkClientRunnable.class);
+    private static final Log LOGGER = LogFactory.getLog(SimpleProcessorBenchmarkClientRunnable.class);
 
-    private int                   requestSize;
+    private int requestSize;
 
-    private CyclicBarrier         barrier;
+    private CyclicBarrier barrier;
 
-    private CountDownLatch        latch;
+    private CountDownLatch latch;
 
-    private long                  endTime;
+    private long endTime;
 
-    private boolean               running            = true;
+    private boolean running = true;
 
-    private ExchangeClientFactory clientFactory      = new ExchangeClientFactory();
+    private ExchangeClientFactory clientFactory = new ExchangeClientFactory();
 
-    private String                targetIP;
+    private String targetIP;
 
-    private int                   targetPort;
+    private int targetPort;
 
-    private int                   clientNums;
+    private int clientNums;
 
-    private int                   rpcTimeout;
+    private int rpcTimeout;
 
     // response time spread
-    private long[]                responseSpreads    = new long[9];
+    private long[] responseSpreads = new long[9];
 
     // error request per second
-    private long[]                errorTPS           = null;
+    private long[] errorTPS = null;
 
     // error response times per second
-    private long[]                errorResponseTimes = null;
+    private long[] errorResponseTimes = null;
 
     // tps per second
-    private long[]                tps                = null;
+    private long[] tps = null;
 
     // response times per second
-    private long[]                responseTimes      = null;
+    private long[] responseTimes = null;
 
     // benchmark startTime
-    private long                  startTime;
+    private long startTime;
 
     // benchmark maxRange
-    private int                   maxRange;
+    private int maxRange;
 
     public SimpleProcessorBenchmarkClientRunnable(String targetIP, int targetPort, int clientNums, int rpcTimeout,
                                                   CyclicBarrier barrier, CountDownLatch latch, long startTime,
-                                                  long endTime){
+                                                  long endTime) {
 
         this.targetIP = targetIP;
         this.targetPort = targetPort;
@@ -117,7 +118,7 @@ public class SimpleProcessorBenchmarkClientRunnable implements ClientRunnable {
                 int range = Integer.parseInt(String.valueOf(beginTime - startTime)) / 1000;
                 if (range >= maxRange) {
                     System.err.println("benchmark range exceeds maxRange,range is: " + range + ",maxRange is: "
-                                       + maxRange);
+                            + maxRange);
                     continue;
                 }
                 if (((ResponseObject) response).getBytes() != null) {
@@ -139,7 +140,7 @@ public class SimpleProcessorBenchmarkClientRunnable implements ClientRunnable {
                 int range = Integer.parseInt(String.valueOf(beginTime - startTime)) / 1000;
                 if (range >= maxRange) {
                     System.err.println("benchmark range exceeds maxRange,range is: " + range + ",maxRange is: "
-                                       + maxRange);
+                            + maxRange);
                     continue;
                 }
                 errorTPS[range] = errorTPS[range] + 1;

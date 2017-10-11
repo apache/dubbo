@@ -19,7 +19,6 @@ import com.alibaba.dubbo.common.serialize.support.java.JavaSerialization;
 
 /**
  * @author ding.lid
- *
  */
 public class JavaSerializationTest extends AbstractSerializationPersionFailTest {
     {

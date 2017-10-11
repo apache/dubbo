@@ -17,26 +17,26 @@ package com.alibaba.dubbo.rpc;
 
 /**
  * Exporter. (API/SPI, Prototype, ThreadSafe)
- * 
+ *
+ * @author william.liangf
  * @see com.alibaba.dubbo.rpc.Protocol#export(Invoker)
  * @see com.alibaba.dubbo.rpc.ExporterListener
  * @see com.alibaba.dubbo.rpc.protocol.AbstractExporter
- * @author william.liangf
  */
 public interface Exporter<T> {
-    
+
     /**
      * get invoker.
-     * 
+     *
      * @return invoker
      */
     Invoker<T> getInvoker();
-    
+
     /**
      * unexport.
-     * 
+     * <p>
      * <code>
-     *     getInvoker().destroy();
+     * getInvoker().destroy();
      * </code>
      */
     void unexport();

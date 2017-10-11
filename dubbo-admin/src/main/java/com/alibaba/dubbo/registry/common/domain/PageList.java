@@ -1,11 +1,11 @@
 /**
  * Project: dubbo.registry.server-1.1.0-SNAPSHOT
- * 
+ * <p>
  * File Created at 2010-7-7
- * 
+ * <p>
  * Copyright 1999-2010 Alibaba.com Croporation Limited.
  * All rights reserved.
- *
+ * <p>
  * This software is the confidential and proprietary information of
  * Alibaba Company. ("Confidential Information").  You shall not
  * disclose such Confidential Information and shall use it only in
@@ -19,7 +19,7 @@ import java.util.List;
 
 /**
  * PageList
- * 
+ *
  * @author william.liangf
  */
 public class PageList<T> implements Serializable {
@@ -31,9 +31,9 @@ public class PageList<T> implements Serializable {
     private int limit;
 
     private int total;
-    
+
     private List<T> list;
-    
+
     public PageList() {
     }
 
@@ -75,25 +75,25 @@ public class PageList<T> implements Serializable {
     public void setList(List<T> list) {
         this.list = list;
     }
-    
-    public int getPageCount(){
+
+    public int getPageCount() {
 
         int lim = limit;
-        if(limit < 1){
+        if (limit < 1) {
             lim = 1;
         }
-        
+
         int page = total / lim;
-        if (page < 1){
+        if (page < 1) {
             return 1;
         }
-        
+
         int remain = total % lim;
-        
-        if(remain > 0){
+
+        if (remain > 0) {
             page += 1;
         }
-        
+
         return page;
     }
 

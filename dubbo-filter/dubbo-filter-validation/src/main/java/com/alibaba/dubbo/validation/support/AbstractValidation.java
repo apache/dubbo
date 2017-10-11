@@ -15,16 +15,16 @@
  */
 package com.alibaba.dubbo.validation.support;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.validation.Validation;
 import com.alibaba.dubbo.validation.Validator;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 /**
  * AbstractValidation
- * 
+ *
  * @author william.liangf
  */
 public abstract class AbstractValidation implements Validation {

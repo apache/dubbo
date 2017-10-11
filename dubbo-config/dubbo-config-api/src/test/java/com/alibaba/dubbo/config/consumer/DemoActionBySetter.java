@@ -19,11 +19,11 @@ import com.alibaba.dubbo.config.api.DemoService;
 
 /**
  * DemoAction
- * 
+ *
  * @author william.liangf
  */
 public class DemoActionBySetter {
-    
+
     private DemoService demoService;
 
     public DemoService getDemoService() {

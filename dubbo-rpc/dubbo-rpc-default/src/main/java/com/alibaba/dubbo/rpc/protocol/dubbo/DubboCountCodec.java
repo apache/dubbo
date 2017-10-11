@@ -16,8 +16,6 @@
 
 package com.alibaba.dubbo.rpc.protocol.dubbo;
 
-import java.io.IOException;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.Codec2;
@@ -27,6 +25,8 @@ import com.alibaba.dubbo.remoting.exchange.Response;
 import com.alibaba.dubbo.remoting.exchange.support.MultiMessage;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
+
+import java.io.IOException;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
@@ -63,18 +63,20 @@ public final class DubboCountCodec implements Codec2 {
     }
 
     private void logMessageLength(Object result, int bytes) {
-        if (bytes <= 0) { return; }
+        if (bytes <= 0) {
+            return;
+        }
         if (result instanceof Request) {
             try {
                 ((RpcInvocation) ((Request) result).getData()).setAttachment(
-                    Constants.INPUT_KEY, String.valueOf(bytes));
+                        Constants.INPUT_KEY, String.valueOf(bytes));
             } catch (Throwable e) {
                 /* ignore */
             }
         } else if (result instanceof Response) {
             try {
                 ((RpcResult) ((Response) result).getResult()).setAttachment(
-                    Constants.OUTPUT_KEY, String.valueOf(bytes));
+                        Constants.OUTPUT_KEY, String.valueOf(bytes));
             } catch (Throwable e) {
                 /* ignore */
             }

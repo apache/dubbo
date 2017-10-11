@@ -19,9 +19,8 @@ package com.alibaba.dubbo.rpc.cluster.filter;
  * <code>TestService</code>
  */
 
-public interface DemoService
-{
-	String sayHello(String name);
+public interface DemoService {
+    String sayHello(String name);
 
-	int plus(int a,int b);
+    int plus(int a, int b);
 }

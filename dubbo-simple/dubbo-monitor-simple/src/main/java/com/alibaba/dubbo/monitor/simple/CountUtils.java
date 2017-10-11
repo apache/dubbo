@@ -15,18 +15,18 @@
  */
 package com.alibaba.dubbo.monitor.simple;
 
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.regex.Pattern;
 
-import com.alibaba.dubbo.common.logger.Logger;
-import com.alibaba.dubbo.common.logger.LoggerFactory;
-
 /**
  * CountUtils
- * 
+ *
  * @author william.liangf
  */
 public class CountUtils {
@@ -34,13 +34,13 @@ public class CountUtils {
     private static final Logger logger = LoggerFactory.getLogger(CountUtils.class);
 
     private static final Pattern NUMBER_PATTERN = Pattern.compile("\\d+");
-    
+
     private static final int SUM = 0;
-    
+
     private static final int MAX = 1;
-    
+
     private static final int AVG = 2;
-    
+
     public static long sum(File file) {
         return calc(file, SUM);
     }
@@ -52,7 +52,7 @@ public class CountUtils {
     public static long avg(File file) {
         return calc(file, AVG);
     }
-    
+
     private static long calc(File file, int op) {
         if (file.exists()) {
             try {
@@ -67,7 +67,7 @@ public class CountUtils {
                             line = line.substring(i + 1).trim();
                             if (NUMBER_PATTERN.matcher(line).matches()) {
                                 int value = Integer.parseInt(line);
-                                times ++;
+                                times++;
                                 if (op == MAX) {
                                     count = Math.max(count, value);
                                 } else {
@@ -89,5 +89,5 @@ public class CountUtils {
         }
         return 0;
     }
-    
+
 }

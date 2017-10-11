@@ -51,23 +51,23 @@ package com.alibaba.com.caucho.hessian.io;
 import java.io.IOException;
 
 /**
- * Deserializing an object. 
+ * Deserializing an object.
  */
 public interface Deserializer {
-  public Class getType();
+    public Class getType();
 
-  public Object readObject(AbstractHessianInput in)
-    throws IOException;
-  
-  public Object readList(AbstractHessianInput in, int length)
-    throws IOException;
-  
-  public Object readLengthList(AbstractHessianInput in, int length)
-    throws IOException;
-  
-  public Object readMap(AbstractHessianInput in)
-    throws IOException;
-  
-  public Object readObject(AbstractHessianInput in, String []fieldNames)
-    throws IOException;
+    public Object readObject(AbstractHessianInput in)
+            throws IOException;
+
+    public Object readList(AbstractHessianInput in, int length)
+            throws IOException;
+
+    public Object readLengthList(AbstractHessianInput in, int length)
+            throws IOException;
+
+    public Object readMap(AbstractHessianInput in)
+            throws IOException;
+
+    public Object readObject(AbstractHessianInput in, String[] fieldNames)
+            throws IOException;
 }

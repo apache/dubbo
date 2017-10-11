@@ -14,7 +14,7 @@ if [ -z "$SERVER_NAME" ]; then
     SERVER_NAME=`hostname`
 fi
 
-PIDS=`ps -f | grep java | grep "$CONF_DIR" |awk '{print $2}'`
+PIDS=`ps -ef | grep java | grep "$CONF_DIR" |awk '{print $2}'`
 if [ -n "$PIDS" ]; then
     echo "ERROR: The $SERVER_NAME already started!"
     echo "PID: $PIDS"

@@ -15,28 +15,29 @@
  */
 package com.alibaba.dubbo.config.provider.impl;
 
-import java.util.List;
-
 import com.alibaba.dubbo.config.api.Box;
 import com.alibaba.dubbo.config.api.DemoException;
 import com.alibaba.dubbo.config.api.DemoService;
 import com.alibaba.dubbo.config.api.User;
 
+import java.util.List;
+
 /**
  * DemoServiceImpl
- * 
+ *
  * @author william.liangf
  */
 public class DemoServiceImpl_LongWaiting implements DemoService {
-    
+
     public String sayName(String name) {
         try {
             Thread.sleep(100 * 1000);
-        } catch (InterruptedException e) {}
-        
+        } catch (InterruptedException e) {
+        }
+
         return "say:" + name;
     }
-    
+
     public Box getBox() {
         return null;
     }
@@ -52,5 +53,5 @@ public class DemoServiceImpl_LongWaiting implements DemoService {
     public int echo(int i) {
         return i;
     }
-    
+
 }

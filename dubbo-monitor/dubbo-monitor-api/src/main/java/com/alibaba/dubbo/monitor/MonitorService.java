@@ -15,20 +15,20 @@
  */
 package com.alibaba.dubbo.monitor;
 
-import java.util.List;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 
+import java.util.List;
+
 /**
  * MonitorService. (SPI, Prototype, ThreadSafe)
- * 
+ *
  * @author william.liangf
  */
 public interface MonitorService {
-    
+
     String APPLICATION = "application";
-    
+
     String INTERFACE = "interface";
 
     String METHOD = "method";
@@ -40,13 +40,13 @@ public interface MonitorService {
     String CONSUMER = "consumer";
 
     String PROVIDER = "provider";
-    
+
     String TIMESTAMP = "timestamp";
 
     String SUCCESS = "success";
 
     String FAILURE = "failure";
-    
+
     String INPUT = Constants.INPUT_KEY;
 
     String OUTPUT = Constants.OUTPUT_KEY;
@@ -69,7 +69,7 @@ public interface MonitorService {
      * 1.1 host,application,interface,group,version,method 记录监控来源主机，应用，接口，方法信息。
      * 1.2 如果是消费者发送的数据，加上provider地址参数，反之，加上来源consumer地址参数。
      * 1.3 success,faulure,elapsed 记录距上次采集，调用的成功次数，失败次数，成功调用总耗时，平均时间将用总耗时除以成功次数。
-     * 
+     *
      * @param statistics
      */
     void collect(URL statistics);
@@ -81,7 +81,7 @@ public interface MonitorService {
      * 1.2 side=consumer,provider 查询由调用的哪一端采集的数据，缺省为都查询。
      * 1.3 缺省为view=summary，返回全天汇总信息，支持view=chart表示返回全天趋势图表图片的URL地址，可以进接嵌入其它系统的页面上展示。
      * 1.4 date=2012-07-03 指定查询数据的日期，缺省为当天。
-     * 
+     *
      * @param query
      * @return statistics
      */

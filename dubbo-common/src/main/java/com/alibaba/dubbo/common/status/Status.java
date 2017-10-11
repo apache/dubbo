@@ -17,11 +17,41 @@ package com.alibaba.dubbo.common.status;
 
 /**
  * Status
- * 
+ *
  * @author william.liangf
  */
 public class Status {
-    
+
+    private final Level level;
+    private final String message;
+    private final String description;
+
+    public Status(Level level) {
+        this(level, null, null);
+    }
+
+    public Status(Level level, String message) {
+        this(level, message, null);
+    }
+
+    public Status(Level level, String message, String description) {
+        this.level = level;
+        this.message = message;
+        this.description = description;
+    }
+
+    public Level getLevel() {
+        return level;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
     /**
      * Level
      */
@@ -29,54 +59,22 @@ public class Status {
         /**
          * OK
          */
-        OK, 
-        
+        OK,
+
         /**
          * WARN
          */
-        WARN, 
-        
+        WARN,
+
         /**
          * ERROR
          */
-        ERROR, 
-        
+        ERROR,
+
         /**
          * UNKNOWN
          */
         UNKNOWN
-    }
-    
-    private final Level level;
-
-    private final String message;
-
-    private final String description;
-    
-    public Status(Level level){
-        this(level, null, null);
-    }
-
-    public Status(Level level, String message){
-        this(level, message, null);
-    }
-    
-    public Status(Level level, String message, String description){
-        this.level = level;
-        this.message = message;
-        this.description = description;
-    }
-    
-    public Level getLevel() {
-        return level;
-    }
-    
-    public String getMessage() {
-        return message;
-    }
-    
-    public String getDescription() {
-        return description;
     }
 
 }

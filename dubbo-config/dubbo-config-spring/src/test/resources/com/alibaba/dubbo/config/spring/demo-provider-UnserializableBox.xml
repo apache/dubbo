@@ -13,25 +13,25 @@
  - See the License for the specific language governing permissions and
  - limitations under the License.
 -->
-<beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
     http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd
     ">
-     
+
     <!-- 当前应用信息配置 -->
-    <dubbo:application name="demo-provider" />
-    
+    <dubbo:application name="demo-provider"/>
+
     <!-- 连接注册中心配置 -->
-    <dubbo:registry address="N/A" />
-     
+    <dubbo:registry address="N/A"/>
+
     <!-- 暴露服务协议配置 -->
-    <dubbo:protocol name="dubbo" port="20813" />
-    
+    <dubbo:protocol name="dubbo" port="20813"/>
+
     <!-- 暴露服务配置 -->
-    <dubbo:service interface="com.alibaba.dubbo.config.spring.api.DemoService" ref="demoService" />
-     
-    <bean id="demoService" class="com.alibaba.dubbo.config.spring.impl.UnserializableBoxDemoServiceImpl" />
- 
+    <dubbo:service interface="com.alibaba.dubbo.config.spring.api.DemoService" ref="demoService"/>
+
+    <bean id="demoService" class="com.alibaba.dubbo.config.spring.impl.UnserializableBoxDemoServiceImpl"/>
+
 </beans>

@@ -15,25 +15,25 @@
  */
 package com.alibaba.dubbo.rpc.protocol.dubbo.telnet;
 
-import static org.junit.Assert.assertEquals;
+import com.alibaba.dubbo.remoting.Channel;
+import com.alibaba.dubbo.remoting.RemotingException;
+import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
 
 import org.easymock.EasyMock;
 import org.junit.After;
 import org.junit.Test;
 
-import com.alibaba.dubbo.remoting.Channel;
-import com.alibaba.dubbo.remoting.RemotingException;
-import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
+import static org.junit.Assert.assertEquals;
 
 /**
  * CountTelnetHandlerTest.java
- * 
+ *
  * @author tony.chenl
  */
 public class CurrentTelnetHandlerTest {
 
     private static TelnetHandler count = new CurrentTelnetHandler();
-    private Channel              mockChannel;
+    private Channel mockChannel;
 
     @After
     public void after() {
@@ -57,7 +57,7 @@ public class CurrentTelnetHandlerTest {
         String result = count.telnet(mockChannel, "");
         assertEquals("/", result);
     }
-    
+
     @Test
     public void testMessageError() throws RemotingException {
         mockChannel = EasyMock.createMock(Channel.class);

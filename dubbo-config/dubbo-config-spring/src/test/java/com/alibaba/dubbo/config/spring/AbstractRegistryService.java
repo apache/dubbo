@@ -15,6 +15,12 @@
  */
 package com.alibaba.dubbo.config.spring;
 
+import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.registry.NotifyListener;
+import com.alibaba.dubbo.registry.RegistryService;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -23,15 +29,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.logger.Logger;
-import com.alibaba.dubbo.common.logger.LoggerFactory;
-import com.alibaba.dubbo.registry.NotifyListener;
-import com.alibaba.dubbo.registry.RegistryService;
-
 /**
  * AbstractRegistryService
- * 
+ *
  * @author william.liangf
  */
 public abstract class AbstractRegistryService implements RegistryService {
@@ -50,11 +50,11 @@ public abstract class AbstractRegistryService implements RegistryService {
     // 已通知的服务
     // Map<serviceName, Map<url, queryString>>
     private final ConcurrentMap<String, List<URL>> notified = new ConcurrentHashMap<String, List<URL>>();
-    
+
     // 已订阅服务的监听器列表
     // Map<serviceName, List<notificationListener>>
     private final ConcurrentMap<String, List<NotifyListener>> notifyListeners = new ConcurrentHashMap<String, List<NotifyListener>>();
-    
+
     public void register(URL url) {
         if (logger.isInfoEnabled()) {
             logger.info("Register service: " + url.getServiceKey() + ",url:" + url);
@@ -75,7 +75,7 @@ public abstract class AbstractRegistryService implements RegistryService {
         }
         subscribe(url.getServiceKey(), url, listener);
     }
-    
+
     public void unsubscribe(URL url, NotifyListener listener) {
         if (logger.isInfoEnabled()) {
             logger.info("Unsubscribe service: " + url.getServiceKey() + ",url:" + url);
@@ -99,11 +99,11 @@ public abstract class AbstractRegistryService implements RegistryService {
             registered.putIfAbsent(service, new CopyOnWriteArrayList<URL>());
             urls = registered.get(service);
         }
-        if (! urls.contains(url)) {
+        if (!urls.contains(url)) {
             urls.add(url);
         }
     }
-    
+
     public void unregister(String service, URL url) {
         if (service == null) {
             throw new IllegalArgumentException("service == null");
@@ -125,7 +125,7 @@ public abstract class AbstractRegistryService implements RegistryService {
             }
         }
     }
-    
+
     public void subscribe(String service, URL url, NotifyListener listener) {
         if (service == null) {
             throw new IllegalArgumentException("service == null");
@@ -136,7 +136,7 @@ public abstract class AbstractRegistryService implements RegistryService {
         if (listener == null) {
             throw new IllegalArgumentException("listener == null");
         }
-        subscribed.put(service, url.getParameters()); 
+        subscribed.put(service, url.getParameters());
         addListener(service, listener);
     }
 
@@ -153,9 +153,9 @@ public abstract class AbstractRegistryService implements RegistryService {
         subscribed.remove(service);
         removeListener(service, listener);
     }
-    
+
     //consumer 与 provider的 listener可以一起存储,都是根据服务名称共享
-    private void addListener(final String service, final NotifyListener listener){
+    private void addListener(final String service, final NotifyListener listener) {
         if (listener == null) {
             return;
         }
@@ -164,12 +164,12 @@ public abstract class AbstractRegistryService implements RegistryService {
             notifyListeners.putIfAbsent(service, new CopyOnWriteArrayList<NotifyListener>());
             listeners = notifyListeners.get(service);
         }
-        if (listeners != null && !listeners.contains(listener)){
+        if (listeners != null && !listeners.contains(listener)) {
             listeners.add(listener);
         }
     }
-    
-    private void removeListener(final String service, final NotifyListener listener){
+
+    private void removeListener(final String service, final NotifyListener listener) {
         if (listener == null) {
             return;
         }
@@ -178,7 +178,7 @@ public abstract class AbstractRegistryService implements RegistryService {
             listeners.remove(listener);
         }
     }
-    
+
     private void doNotify(String service, List<URL> urls) {
         notified.put(service, urls);
         List<NotifyListener> listeners = notifyListeners.get(service);
@@ -187,16 +187,16 @@ public abstract class AbstractRegistryService implements RegistryService {
                 try {
                     notify(service, urls, listener);
                 } catch (Throwable t) {
-                    logger.error("Failed to notify registry event, service: " + service + ", urls: " +  urls + ", cause: " + t.getMessage(), t);
+                    logger.error("Failed to notify registry event, service: " + service + ", urls: " + urls + ", cause: " + t.getMessage(), t);
                 }
             }
         }
     }
-    
+
     protected void notify(String service, List<URL> urls, NotifyListener listener) {
         listener.notify(urls);
     }
-    
+
     protected final void forbid(String service) {
         doNotify(service, new ArrayList<URL>(0));
     }
@@ -208,31 +208,31 @@ public abstract class AbstractRegistryService implements RegistryService {
         }
         doNotify(service, urls);
     }
-    
+
     public Map<String, List<URL>> getRegistered() {
         return Collections.unmodifiableMap(registered);
     }
-    
+
     public List<URL> getRegistered(String service) {
         return Collections.unmodifiableList(registered.get(service));
     }
-    
+
     public Map<String, Map<String, String>> getSubscribed() {
         return Collections.unmodifiableMap(subscribed);
     }
-    
+
     public Map<String, String> getSubscribed(String service) {
         return subscribed.get(service);
     }
-    
+
     public Map<String, List<URL>> getNotified() {
         return Collections.unmodifiableMap(notified);
     }
-    
+
     public List<URL> getNotified(String service) {
         return Collections.unmodifiableList(notified.get(service));
     }
-    
+
     public Map<String, List<NotifyListener>> getListeners() {
         return Collections.unmodifiableMap(notifyListeners);
     }

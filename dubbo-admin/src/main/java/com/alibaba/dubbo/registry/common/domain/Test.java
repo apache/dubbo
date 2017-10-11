@@ -1,11 +1,11 @@
 /**
  * Project: dubbo.registry-1.1.0-SNAPSHOT
- * 
+ * <p>
  * File Created at 2010-5-26
- * 
+ * <p>
  * Copyright 1999-2010 Alibaba.com Croporation Limited.
  * All rights reserved.
- *
+ * <p>
  * This software is the confidential and proprietary information of
  * Alibaba Company. ("Confidential Information").  You shall not
  * disclose such Confidential Information and shall use it only in
@@ -16,36 +16,36 @@ package com.alibaba.dubbo.registry.common.domain;
 
 /**
  * Test
- * 
+ *
  * @author william.liangf
  */
 public class Test extends Entity {
 
     private static final long serialVersionUID = 872527738197173003L;
-    
-    private String            name;
-    
-    private String            service;
 
-    private String            method;
+    private String name;
 
-    private String            parameters;
+    private String service;
 
-    private boolean           exception;
+    private String method;
 
-    private String            result;
+    private String parameters;
 
-    private String            username;
+    private boolean exception;
 
-    private boolean           autoRun;
-    
+    private String result;
+
+    private String username;
+
+    private boolean autoRun;
+
     public Test() {
     }
 
     public Test(Long id) {
         super(id);
     }
-    
+
     public String getService() {
         return service;
     }
@@ -70,7 +70,7 @@ public class Test extends Entity {
         this.parameters = parameters;
     }
 
-	public String getResult() {
+    public String getResult() {
         return result;
     }
 
@@ -86,28 +86,28 @@ public class Test extends Entity {
         this.username = username;
     }
 
-	public boolean isException() {
-		return exception;
-	}
+    public boolean isException() {
+        return exception;
+    }
 
-	public void setException(boolean exception) {
-		this.exception = exception;
-	}
+    public void setException(boolean exception) {
+        this.exception = exception;
+    }
 
-	public boolean isAutoRun() {
-		return autoRun;
-	}
+    public boolean isAutoRun() {
+        return autoRun;
+    }
 
-	public void setAutoRun(boolean autoRun) {
-		this.autoRun = autoRun;
-	}
+    public void setAutoRun(boolean autoRun) {
+        this.autoRun = autoRun;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
 }

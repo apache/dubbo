@@ -15,13 +15,13 @@
  */
 package com.alibaba.dubbo.common.utils;
 
+import org.junit.Test;
+
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.junit.matchers.JUnitMatchers.containsString;
-
-import org.junit.Test;
 
 /**
  * @author ding.lid

@@ -15,20 +15,7 @@
  */
 package com.alibaba.dubbo.rpc.cluster.support;
 
-import static org.junit.Assert.assertFalse;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import junit.framework.Assert;
-
-import org.easymock.EasyMock;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
@@ -36,22 +23,33 @@ import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.cluster.Directory;
 
+import junit.framework.Assert;
+import org.easymock.EasyMock;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.Assert.assertFalse;
+
 /**
  * ForkingClusterInvokerTest
- * 
+ *
  * @author tony.chenl
  */
 @SuppressWarnings("unchecked")
 public class ForkingClusterInvokerTest {
 
     List<Invoker<ForkingClusterInvokerTest>> invokers = new ArrayList<Invoker<ForkingClusterInvokerTest>>();
-    URL                                      url      = URL.valueOf("test://test:11/test?forks=2");
-    Invoker<ForkingClusterInvokerTest>       invoker1 = EasyMock.createMock(Invoker.class);
-    Invoker<ForkingClusterInvokerTest>       invoker2 = EasyMock.createMock(Invoker.class);
-    Invoker<ForkingClusterInvokerTest>       invoker3 = EasyMock.createMock(Invoker.class);
-    RpcInvocation                               invocation = new RpcInvocation();
-    Directory<ForkingClusterInvokerTest>     dic;
-    Result                                   result   = new RpcResult();
+    URL url = URL.valueOf("test://test:11/test?forks=2");
+    Invoker<ForkingClusterInvokerTest> invoker1 = EasyMock.createMock(Invoker.class);
+    Invoker<ForkingClusterInvokerTest> invoker2 = EasyMock.createMock(Invoker.class);
+    Invoker<ForkingClusterInvokerTest> invoker3 = EasyMock.createMock(Invoker.class);
+    RpcInvocation invocation = new RpcInvocation();
+    Directory<ForkingClusterInvokerTest> dic;
+    Result result = new RpcResult();
 
     /**
      * @throws java.lang.Exception
@@ -127,8 +125,8 @@ public class ForkingClusterInvokerTest {
     public void testInvokeExceptoin() {
         resetInvokerToException();
         ForkingClusterInvoker<ForkingClusterInvokerTest> invoker = new ForkingClusterInvoker<ForkingClusterInvokerTest>(
-                                                                                     dic);
-        
+                dic);
+
         try {
             invoker.invoke(invocation);
             Assert.fail();
@@ -144,9 +142,9 @@ public class ForkingClusterInvokerTest {
         resetInvokerToNoException();
 
         ForkingClusterInvoker<ForkingClusterInvokerTest> invoker = new ForkingClusterInvoker<ForkingClusterInvokerTest>(
-                                                                                                                        dic);
+                dic);
         Result ret = invoker.invoke(invocation);
         Assert.assertSame(result, ret);
     }
-    
+
 }

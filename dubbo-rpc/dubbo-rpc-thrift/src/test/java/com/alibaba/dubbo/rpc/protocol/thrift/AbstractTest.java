@@ -1,10 +1,10 @@
 /**
  * File Created at 2011-11-25
  * $Id$
- *
+ * <p>
  * Copyright 2008 Alibaba.com Croporation Limited.
  * All rights reserved.
- *
+ * <p>
  * This software is the confidential and proprietary information of
  * Alibaba Company. ("Confidential Information").  You shall not
  * disclose such Confidential Information and shall use it only in
@@ -20,6 +20,7 @@ import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.gen.dubbo.$__DemoStub;
 import com.alibaba.dubbo.rpc.gen.dubbo.Demo;
 import com.alibaba.dubbo.rpc.protocol.thrift.ext.MultiServiceProcessor;
+
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.server.TServer;
@@ -44,17 +45,17 @@ public abstract class AbstractTest {
     protected Invoker<?> invoker;
 
     protected void init() throws Exception {
-        TServerTransport serverTransport = new TServerSocket( PORT );
+        TServerTransport serverTransport = new TServerSocket(PORT);
 
         TBinaryProtocol.Factory bFactory = new TBinaryProtocol.Factory();
 
         server = new TThreadPoolServer(
-                new TThreadPoolServer.Args( serverTransport )
-                        .inputProtocolFactory( bFactory )
-                        .outputProtocolFactory( bFactory )
-                        .inputTransportFactory( getTransportFactory() )
-                        .outputTransportFactory( getTransportFactory() )
-                        .processor( getProcessor() ) );
+                new TThreadPoolServer.Args(serverTransport)
+                        .inputProtocolFactory(bFactory)
+                        .outputProtocolFactory(bFactory)
+                        .inputTransportFactory(getTransportFactory())
+                        .outputTransportFactory(getTransportFactory())
+                        .processor(getProcessor()));
 
         Thread startTread = new Thread() {
 
@@ -65,34 +66,34 @@ public abstract class AbstractTest {
 
         };
 
-        startTread.setName( "thrift-server" );
+        startTread.setName("thrift-server");
 
         startTread.start();
 
-        while( !server.isServing() ) {
-            Thread.sleep( 100 );
+        while (!server.isServing()) {
+            Thread.sleep(100);
         }
 
         protocol = ExtensionLoader.getExtensionLoader(Protocol.class)
-                .getExtension( ThriftProtocol.NAME );
+                .getExtension(ThriftProtocol.NAME);
 
-        invoker = protocol.refer( getInterface(), getUrl() );
+        invoker = protocol.refer(getInterface(), getUrl());
 
     }
 
     protected void destroy() throws Exception {
 
-        if ( server != null ) {
+        if (server != null) {
             server.stop();
             server = null;
         }
 
-        if ( protocol != null ) {
+        if (protocol != null) {
             protocol.destroy();
             protocol = null;
         }
 
-        if ( invoker != null ) {
+        if (invoker != null) {
             invoker.destroy();
             invoker = null;
         }
@@ -111,7 +112,7 @@ public abstract class AbstractTest {
         MultiServiceProcessor result = new MultiServiceProcessor();
         result.addProcessor(
                 com.alibaba.dubbo.rpc.gen.dubbo.Demo.class,
-                new $__DemoStub.Processor( getServiceImpl() ) );
+                new $__DemoStub.Processor(getServiceImpl()));
         return result;
     }
 
@@ -121,11 +122,11 @@ public abstract class AbstractTest {
 
     protected URL getUrl() {
         return URL.valueOf(
-                "thrift://127.0.0.1:" + PORT + "/" + getInterface().getName() );
+                "thrift://127.0.0.1:" + PORT + "/" + getInterface().getName());
     }
 
     @After
-    public void tearDown() throws Exception{
+    public void tearDown() throws Exception {
         destroy();
     }
 

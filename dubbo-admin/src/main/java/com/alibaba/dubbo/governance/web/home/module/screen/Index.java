@@ -15,15 +15,6 @@
  */
 package com.alibaba.dubbo.governance.web.home.module.screen;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.alibaba.citrus.turbine.Context;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
@@ -33,9 +24,17 @@ import com.alibaba.dubbo.governance.web.common.pulltool.RootContextPath;
 import com.alibaba.dubbo.registry.common.domain.Consumer;
 import com.alibaba.dubbo.registry.common.domain.Provider;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 /**
  * Index
- * 
+ *
  * @author william.liangf
  */
 public class Index {
@@ -44,16 +43,16 @@ public class Index {
 
     @Autowired
     private HttpServletRequest request;
-    
+
     @Autowired
     private ProviderService providerService;
-    
+
     @Autowired
     private ConsumerService consumerService;
-    
+
     public void execute(Context context) {
         Set<String> applications = new HashSet<String>();
-        Set<String> services  = new HashSet<String>(); 
+        Set<String> services = new HashSet<String>();
         List<Provider> pList = new ArrayList<Provider>();
         try {
             pList = providerService.findAll();
@@ -64,7 +63,7 @@ public class Index {
             applications.add(p.getApplication());
             services.add(p.getService());
         }
-        List<Consumer> cList  = new ArrayList<Consumer>();
+        List<Consumer> cList = new ArrayList<Consumer>();
         try {
             cList = consumerService.findAll();
         } catch (Exception e) {

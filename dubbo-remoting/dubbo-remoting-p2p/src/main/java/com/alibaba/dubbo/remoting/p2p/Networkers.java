@@ -22,13 +22,13 @@ import com.alibaba.dubbo.remoting.RemotingException;
 
 /**
  * Networkers. (API, Static, ThreadSafe)
- * 
+ * <p>
  * <a href="http://en.wikipedia.org/wiki/Peer-to-peer">Peer-to-peer</a>
- * 
+ *
  * @author william.liangf
  */
 public class Networkers {
-    
+
     public static Peer join(String group, String peer, ChannelHandler handler) throws RemotingException {
         return join(URL.valueOf(group), URL.valueOf(peer), handler);
     }
@@ -36,11 +36,11 @@ public class Networkers {
     public static Peer join(URL group, URL peer, ChannelHandler handler) throws RemotingException {
         return lookup(group).join(peer, handler);
     }
-    
+
     public static Group lookup(String group) throws RemotingException {
         return lookup(URL.valueOf(group));
     }
-    
+
     public static Group lookup(URL group) throws RemotingException {
         Networker networker = ExtensionLoader.getExtensionLoader(Networker.class).getExtension(group.getProtocol());
         return networker.lookup(group);

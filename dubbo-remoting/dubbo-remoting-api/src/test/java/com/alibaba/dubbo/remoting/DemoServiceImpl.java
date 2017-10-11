@@ -19,15 +19,12 @@ package com.alibaba.dubbo.remoting;
  * <code>TestServiceImpl</code>
  */
 
-public class DemoServiceImpl implements DemoService
-{
-	public void sayHello(String name)
-	{
-		System.out.println("hello " + name);
-	}
+public class DemoServiceImpl implements DemoService {
+    public void sayHello(String name) {
+        System.out.println("hello " + name);
+    }
 
-	public int plus(int a,int b)
-	{
-		return a + b;
-	}
+    public int plus(int a, int b) {
+        return a + b;
+    }
 }

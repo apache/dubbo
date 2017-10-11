@@ -15,8 +15,6 @@
  */
 package com.alibaba.dubbo.registry.dubbo;
 
-import java.net.InetSocketAddress;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;
@@ -24,15 +22,16 @@ import com.alibaba.dubbo.remoting.exchange.ExchangeChannel;
 import com.alibaba.dubbo.remoting.exchange.ExchangeHandler;
 import com.alibaba.dubbo.remoting.exchange.ResponseFuture;
 
+import java.net.InetSocketAddress;
+
 public class MockChannel implements ExchangeChannel {
 
+    public static boolean closed = false;
+    public static boolean closing = true;
     final InetSocketAddress localAddress;
-
     final InetSocketAddress remoteAddress;
 
-    public static boolean   closed = false;
-
-    public MockChannel(String localHostname, int localPort, String remoteHostName, int remotePort){
+    public MockChannel(String localHostname, int localPort, String remoteHostName, int remotePort) {
         localAddress = new InetSocketAddress(localHostname, localPort);
         remoteAddress = new InetSocketAddress(remoteHostName, remotePort);
         closed = false;
@@ -58,6 +57,11 @@ public class MockChannel implements ExchangeChannel {
     }
 
     public void close(int timeout) {
+    }
+
+    @Override
+    public void startClose() {
+        closing = true;
     }
 
     public URL getUrl() {

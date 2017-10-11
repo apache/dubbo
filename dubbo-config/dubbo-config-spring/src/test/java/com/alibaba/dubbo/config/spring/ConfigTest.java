@@ -15,22 +15,6 @@
  */
 package com.alibaba.dubbo.config.spring;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.matchers.JUnitMatchers.containsString;
-
-import java.util.Collection;
-import java.util.List;
-
-import org.junit.Test;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanCreationException;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
@@ -54,7 +38,6 @@ import com.alibaba.dubbo.config.spring.impl.HelloServiceImpl;
 import com.alibaba.dubbo.config.spring.registry.MockRegistry;
 import com.alibaba.dubbo.config.spring.registry.MockRegistryFactory;
 import com.alibaba.dubbo.registry.Registry;
-import com.alibaba.dubbo.registry.RegistryFactory;
 import com.alibaba.dubbo.registry.RegistryService;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Filter;
@@ -64,15 +47,35 @@ import com.alibaba.dubbo.rpc.service.GenericException;
 import com.alibaba.dubbo.rpc.service.GenericService;
 
 import junit.framework.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import java.util.Collection;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.matchers.JUnitMatchers.containsString;
 
 
 /**
  * ConfigTest
- * 
+ *
  * @author william.liangf
  */
 public class ConfigTest {
-    
+
+    private static void unexportService(ServiceConfig<?> config) {
+        if (config != null) {
+            config.unexport();
+        }
+    }
+
     @Test
     public void testSpringExtensionInject() {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/spring-extension-inject.xml");
@@ -111,7 +114,7 @@ public class ConfigTest {
             ServiceConfig<DemoService> serviceConfig = (ServiceConfig<DemoService>) ctx.getBean("serviceConfig");
             assertNotNull(serviceConfig.getProvider());
             assertEquals(2000, serviceConfig.getProvider().getTimeout().intValue());
-            
+
             ServiceConfig<DemoService> serviceConfig2 = (ServiceConfig<DemoService>) ctx.getBean("serviceConfig2");
             assertNotNull(serviceConfig2.getProvider());
             assertEquals(1000, serviceConfig2.getProvider().getTimeout().intValue());
@@ -143,7 +146,7 @@ public class ConfigTest {
         assertTrue(str.contains(" interface=\"com.alibaba.dubbo.config.spring.api.DemoService\" "));
         assertTrue(str.endsWith(" />"));
     }
-    
+
     @Test
     public void testMultiProtocol() {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/multi-protocol.xml");
@@ -171,7 +174,7 @@ public class ConfigTest {
             ctx.close();
         }
     }
-    
+
     @Test
     public void testMultiProtocolError() {
         try {
@@ -235,7 +238,7 @@ public class ConfigTest {
             List<URL> urls = registryService.getRegistered().get("com.alibaba.dubbo.config.spring.api.DemoService");
             assertNull(urls);
             int i = 0;
-            while ((i ++) < 60 && urls == null) {
+            while ((i++) < 60 && urls == null) {
                 urls = registryService.getRegistered().get("com.alibaba.dubbo.config.spring.api.DemoService");
                 Thread.sleep(10);
             }
@@ -266,7 +269,7 @@ public class ConfigTest {
             exporter.unexport();
         }
     }
-    
+
     @Test
     public void testRmiTimeout() throws Exception {
         if (System.getProperty("sun.rmi.transport.tcp.responseTimeout") != null) {
@@ -315,7 +318,7 @@ public class ConfigTest {
             providerContext.close();
         }
     }
-    
+
     @Test
     public void testAppendFilter() throws Exception {
         ProviderConfig provider = new ProviderConfig();
@@ -334,7 +337,7 @@ public class ConfigTest {
             assertNotNull(urls);
             assertEquals(1, urls.size());
             assertEquals("classloader,monitor,accesslog,trace", urls.get(0).getParameter("service.filter"));
-            
+
             ConsumerConfig consumer = new ConsumerConfig();
             consumer.setFilter("classloader,monitor");
             ReferenceConfig<DemoService> reference = new ReferenceConfig<DemoService>();
@@ -357,7 +360,7 @@ public class ConfigTest {
             service.unexport();
         }
     }
-    
+
     @Test
     public void testInitReference() throws Exception {
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/demo-provider.xml");
@@ -366,7 +369,7 @@ public class ConfigTest {
             ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/init-reference.xml");
             ctx.start();
             try {
-                DemoService demoService = (DemoService)ctx.getBean("demoService");
+                DemoService demoService = (DemoService) ctx.getBean("demoService");
                 assertEquals("say:world", demoService.sayName("world"));
             } finally {
                 ctx.stop();
@@ -394,7 +397,7 @@ public class ConfigTest {
             ctx.close();
         }
     }
-    
+
     // DUBBO-147   通过RpcContext可以获得所有尝试过的Invoker
     @Test
     public void test_RpcContext_getUrls() throws Exception {
@@ -426,7 +429,7 @@ public class ConfigTest {
             providerContext.close();
         }
     }
-    
+
     // BUG: DUBBO-846 2.0.9中，服务方法上的retry="false"设置失效
     @Test
     public void test_retrySettingFail() throws Exception {
@@ -458,7 +461,7 @@ public class ConfigTest {
             providerContext.close();
         }
     }
-    
+
     // BUG: DUBBO-146 Dubbo序列化失败（如传输对象没有实现Serialiable接口），Provider端也没有异常输出，Consumer端超时出错
     @Test
     public void test_returnSerializationFail() throws Exception {
@@ -468,7 +471,7 @@ public class ConfigTest {
             ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/init-reference.xml");
             ctx.start();
             try {
-                DemoService demoService = (DemoService)ctx.getBean("demoService");
+                DemoService demoService = (DemoService) ctx.getBean("demoService");
                 try {
                     demoService.getBox();
                     fail();
@@ -493,13 +496,13 @@ public class ConfigTest {
             ApplicationConfig application = (ApplicationConfig) providerContext.getBean("application");
             assertEquals("demo-provider", application.getName());
             assertEquals("world", application.getOwner());
-            
+
             RegistryConfig registry = (RegistryConfig) providerContext.getBean("registry");
             assertEquals("N/A", registry.getAddress());
-            
+
             ProtocolConfig dubbo = (ProtocolConfig) providerContext.getBean("dubbo");
             assertEquals(20813, dubbo.getPort().intValue());
-            
+
         } finally {
             providerContext.stop();
             providerContext.close();
@@ -510,14 +513,14 @@ public class ConfigTest {
     public void testApiOverrideProperties() throws Exception {
         ApplicationConfig application = new ApplicationConfig();
         application.setName("api-override-properties");
-        
+
         RegistryConfig registry = new RegistryConfig();
         registry.setAddress("N/A");
-        
+
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setName("dubbo");
         protocol.setPort(13123);
-        
+
         ServiceConfig<DemoService> service = new ServiceConfig<DemoService>();
         service.setInterface(DemoService.class);
         service.setRef(new DemoServiceImpl());
@@ -525,13 +528,13 @@ public class ConfigTest {
         service.setRegistry(registry);
         service.setProtocol(protocol);
         service.export();
-        
+
         try {
             URL url = service.toUrls().get(0);
             assertEquals("api-override-properties", url.getParameter("application"));
             assertEquals("world", url.getParameter("owner"));
             assertEquals(13123, url.getPort());
-            
+
             ReferenceConfig<DemoService> reference = new ReferenceConfig<DemoService>();
             reference.setApplication(new ApplicationConfig("consumer"));
             reference.setRegistry(new RegistryConfig(RegistryConfig.NO_AVAILABLE));
@@ -582,7 +585,7 @@ public class ConfigTest {
             providerContext.close();
         }
     }
-    
+
     @SuppressWarnings("unchecked")
     @Test
     public void testSystemPropertyOverrideXmlDefault() throws Exception {
@@ -708,14 +711,14 @@ public class ConfigTest {
         try {
             ApplicationConfig application = new ApplicationConfig();
             application.setName("aaa");
-            
+
             RegistryConfig registry = new RegistryConfig();
             registry.setAddress("127.0.0.1");
-            
+
             ProtocolConfig protocol = new ProtocolConfig();
             protocol.setName("rmi");
             protocol.setPort(1099);
-            
+
             ServiceConfig<DemoService> service = new ServiceConfig<DemoService>();
             service.setInterface(DemoService.class);
             service.setRef(new DemoServiceImpl());
@@ -723,7 +726,7 @@ public class ConfigTest {
             service.setRegistry(registry);
             service.setProtocol(protocol);
             service.export();
-            
+
             try {
                 URL url = service.toUrls().get(0);
                 assertEquals("sysover", url.getParameter("application"));
@@ -744,7 +747,7 @@ public class ConfigTest {
 
     @Test
     public void testSystemPropertyOverrideProperties() throws Exception {
-        String portString = System.getProperty( "dubbo.protocol.port");
+        String portString = System.getProperty("dubbo.protocol.port");
         System.clearProperty("dubbo.protocol.port");
         try {
             int port = 1234;
@@ -807,7 +810,7 @@ public class ConfigTest {
             assertTrue(e.getMessage().contains(""));
         }
     }
-    
+
     @Test
     public void testAnnotation() {
         SimpleRegistryService registryService = new SimpleRegistryService();
@@ -903,7 +906,7 @@ public class ConfigTest {
             helloService.export();
 
             Assert.assertEquals(demoService.getExportedUrls().get(0).getPort(),
-                                helloService.getExportedUrls().get(0).getPort());
+                    helloService.getExportedUrls().get(0).getPort());
         } finally {
             unexportService(demoService);
             unexportService(helloService);
@@ -951,7 +954,7 @@ public class ConfigTest {
         service.setRegistry(new RegistryConfig("mock://localhost"));
         service.setInterface(DemoService.class.getName());
         service.setGeneric(Constants.GENERIC_SERIALIZATION_BEAN);
-        service.setRef(new GenericService(){
+        service.setRef(new GenericService() {
 
             public Object $invoke(String method, String[] parameterTypes, Object[] args) throws GenericException {
                 return null;
@@ -960,7 +963,7 @@ public class ConfigTest {
         try {
             service.export();
             Collection<Registry> collection = MockRegistryFactory.getCachedRegistry();
-            MockRegistry registry = (MockRegistry)collection.iterator().next();
+            MockRegistry registry = (MockRegistry) collection.iterator().next();
             URL url = registry.getRegistered().get(0);
             Assert.assertEquals(Constants.GENERIC_SERIALIZATION_BEAN, url.getParameter(Constants.GENERIC_KEY));
         } finally {
@@ -975,16 +978,10 @@ public class ConfigTest {
         try {
             ctx.start();
             ServiceConfig serviceConfig = (ServiceConfig) ctx.getBean("dubboDemoService");
-            URL url = (URL)serviceConfig.getExportedUrls().get(0);
+            URL url = (URL) serviceConfig.getExportedUrls().get(0);
             Assert.assertEquals(Constants.GENERIC_SERIALIZATION_BEAN, url.getParameter(Constants.GENERIC_KEY));
         } finally {
             ctx.destroy();
-        }
-    }
-
-    private static void unexportService(ServiceConfig<?> config) {
-        if (config != null) {
-            config.unexport();
         }
     }
 }

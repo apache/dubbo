@@ -15,6 +15,16 @@
  */
 package com.alibaba.dubbo.governance.web.sysinfo.module.screen;
 
+import com.alibaba.dubbo.common.utils.StringUtils;
+import com.alibaba.dubbo.governance.service.ConsumerService;
+import com.alibaba.dubbo.governance.service.ProviderService;
+import com.alibaba.dubbo.governance.web.common.module.screen.Restful;
+import com.alibaba.dubbo.registry.common.domain.Consumer;
+import com.alibaba.dubbo.registry.common.domain.Provider;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -26,27 +36,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletResponse;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
-import com.alibaba.dubbo.common.utils.StringUtils;
-import com.alibaba.dubbo.governance.service.ConsumerService;
-import com.alibaba.dubbo.governance.service.ProviderService;
-import com.alibaba.dubbo.governance.web.common.module.screen.Restful;
-import com.alibaba.dubbo.registry.common.domain.Consumer;
-import com.alibaba.dubbo.registry.common.domain.Provider;
-
 /**
  * @author tony.chenl
  */
 public class Dump extends Restful {
-    
-    @Autowired
-    ProviderService         providerDAO;
 
     @Autowired
-    ConsumerService         consumerDAO;
+    ProviderService providerDAO;
+
+    @Autowired
+    ConsumerService consumerDAO;
 
     @Autowired
     HttpServletResponse response;
@@ -106,7 +105,7 @@ public class Dump extends Restful {
         writer.flush();
         response.setContentType("text/plain");
     }
-    
+
     public void versions(Map<String, Object> context) throws IOException {
         PrintWriter writer = response.getWriter();
         List<Provider> providers = providerDAO.findAll();
@@ -141,7 +140,7 @@ public class Dump extends Restful {
         writer.flush();
         response.setContentType("text/plain");
     }
-    
+
     private List<String> getNoProviders() {
         List<String> providerServices = providerDAO.findServices();
         List<String> consumerServices = consumerDAO.findServices();
