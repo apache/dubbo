@@ -10,9 +10,11 @@
     <artifactId>dubbo-remoting-netty4</artifactId>
     <packaging>jar</packaging>
 
-    <name>dubbo-remoting-netty4</name>
+    <name>${project.artifactId}</name>
+    <description>The netty4 remoting module of dubbo project</description>
 
     <properties>
+        <skip_maven_deploy>true</skip_maven_deploy>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
