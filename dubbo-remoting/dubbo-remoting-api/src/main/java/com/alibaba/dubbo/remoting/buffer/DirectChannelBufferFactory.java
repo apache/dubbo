@@ -25,12 +25,12 @@ public class DirectChannelBufferFactory implements ChannelBufferFactory {
 
     private static final DirectChannelBufferFactory INSTANCE = new DirectChannelBufferFactory();
 
-    public static ChannelBufferFactory getInstance() {
-        return INSTANCE;
-    }
-
     public DirectChannelBufferFactory() {
         super();
+    }
+
+    public static ChannelBufferFactory getInstance() {
+        return INSTANCE;
     }
 
     public ChannelBuffer getBuffer(int capacity) {

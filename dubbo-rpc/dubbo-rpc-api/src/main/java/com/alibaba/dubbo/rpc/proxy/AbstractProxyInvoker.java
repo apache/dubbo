@@ -15,36 +15,36 @@
  */
 package com.alibaba.dubbo.rpc.proxy;
 
-import java.lang.reflect.InvocationTargetException;
-
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.Invocation;
+import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
+import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcResult;
+
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * InvokerWrapper
- * 
+ *
  * @author william.liangf
  */
 public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
-    
+
     private final T proxy;
-    
+
     private final Class<T> type;
-    
+
     private final URL url;
 
-    public AbstractProxyInvoker(T proxy, Class<T> type, URL url){
+    public AbstractProxyInvoker(T proxy, Class<T> type, URL url) {
         if (proxy == null) {
             throw new IllegalArgumentException("proxy == null");
         }
         if (type == null) {
             throw new IllegalArgumentException("interface == null");
         }
-        if (! type.isInstance(proxy)) {
+        if (!type.isInstance(proxy)) {
             throw new IllegalArgumentException(proxy.getClass().getName() + " not implement interface " + type);
         }
         this.proxy = proxy;
@@ -76,13 +76,13 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
             throw new RpcException("Failed to invoke remote proxy method " + invocation.getMethodName() + " to " + getUrl() + ", cause: " + e.getMessage(), e);
         }
     }
-    
+
     protected abstract Object doInvoke(T proxy, String methodName, Class<?>[] parameterTypes, Object[] arguments) throws Throwable;
 
     @Override
     public String toString() {
-        return getInterface() + " -> " + getUrl()==null?" ":getUrl().toString();
+        return getInterface() + " -> " + getUrl() == null ? " " : getUrl().toString();
     }
 
-    
+
 }

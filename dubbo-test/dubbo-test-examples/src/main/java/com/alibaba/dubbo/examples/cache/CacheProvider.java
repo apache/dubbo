@@ -19,11 +19,11 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * CacheProvider
- * 
+ *
  * @author william.liangf
  */
 public class CacheProvider {
-    
+
     public static void main(String[] args) throws Exception {
         String config = CacheProvider.class.getPackage().getName().replace('.', '/') + "/cache-provider.xml";
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(config);

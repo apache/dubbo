@@ -17,7 +17,7 @@ package com.alibaba.dubbo.config.validation;
 
 /**
  * ValidationServiceImpl
- * 
+ *
  * @author william.liangf
  */
 public class ValidationServiceImpl implements ValidationService {

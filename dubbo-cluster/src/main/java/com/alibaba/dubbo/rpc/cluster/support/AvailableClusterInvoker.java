@@ -15,8 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.cluster.support;
 
-import java.util.List;
-
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
@@ -24,9 +22,11 @@ import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.cluster.Directory;
 import com.alibaba.dubbo.rpc.cluster.LoadBalance;
 
+import java.util.List;
+
 /**
  * AvailableCluster
- * 
+ *
  * @author william.liangf
  */
 public class AvailableClusterInvoker<T> extends AbstractClusterInvoker<T> {

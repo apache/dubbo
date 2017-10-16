@@ -15,15 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.protocol.dubbo.telnet;
 
-import static org.junit.Assert.assertEquals;
-
-import java.lang.reflect.Method;
-
-import org.easymock.EasyMock;
-import org.junit.After;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
@@ -37,18 +28,27 @@ import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
 import com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService;
 import com.alibaba.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
+import org.easymock.EasyMock;
+import org.junit.After;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import java.lang.reflect.Method;
+
+import static org.junit.Assert.assertEquals;
+
 /**
  * CountTelnetHandlerTest.java
- * 
+ *
  * @author tony.chenl
  */
 public class ListTelnetHandlerTest {
 
     private static TelnetHandler list = new ListTelnetHandler();
-    private Channel              mockChannel;
+    private static String detailMethods;
+    private static String methodsName;
+    private Channel mockChannel;
     private Invoker<DemoService> mockInvoker;
-    private static String        detailMethods;
-    private static String        methodsName;
 
     @BeforeClass
     public static void setUp() {
@@ -67,10 +67,10 @@ public class ListTelnetHandlerTest {
         }
         detailMethods = buf.toString();
         methodsName = buf2.toString();
-        
+
         ProtocolUtils.closeAll();
     }
-    
+
     @After
     public void after() {
         ProtocolUtils.closeAll();
@@ -130,14 +130,14 @@ public class ListTelnetHandlerTest {
         int port = NetUtils.getAvailablePort();
         mockInvoker = EasyMock.createMock(Invoker.class);
         EasyMock.expect(mockInvoker.getInterface()).andReturn(DemoService.class).anyTimes();
-        EasyMock.expect(mockInvoker.getUrl()).andReturn(URL.valueOf("dubbo://127.0.0.1:"+port+"/demo")).anyTimes();
+        EasyMock.expect(mockInvoker.getUrl()).andReturn(URL.valueOf("dubbo://127.0.0.1:" + port + "/demo")).anyTimes();
         EasyMock.expect(mockInvoker.invoke((Invocation) EasyMock.anyObject())).andReturn(new RpcResult("ok")).anyTimes();
         mockChannel = EasyMock.createMock(Channel.class);
         EasyMock.expect(mockChannel.getAttribute("telnet.service")).andReturn(null).anyTimes();
         EasyMock.replay(mockChannel, mockInvoker);
         DubboProtocol.getDubboProtocol().export(mockInvoker);
         String result = list.telnet(mockChannel, "-l");
-        assertEquals("com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService -> dubbo://127.0.0.1:"+port+"/demo", result);
+        assertEquals("com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService -> dubbo://127.0.0.1:" + port + "/demo", result);
         EasyMock.reset(mockChannel);
     }
 
@@ -154,7 +154,7 @@ public class ListTelnetHandlerTest {
         DubboProtocol.getDubboProtocol().export(mockInvoker);
         String result = list.telnet(mockChannel, "");
         assertEquals("Use default service com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService.\r\n\r\n"
-                     + methodsName, result);
+                + methodsName, result);
         EasyMock.reset(mockChannel);
     }
 

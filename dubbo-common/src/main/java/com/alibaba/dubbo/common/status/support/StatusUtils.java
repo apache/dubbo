@@ -15,18 +15,18 @@
  */
 package com.alibaba.dubbo.common.status.support;
 
-import java.util.Map;
-
 import com.alibaba.dubbo.common.status.Status;
 import com.alibaba.dubbo.common.status.Status.Level;
 
+import java.util.Map;
+
 /**
  * StatusManager
- * 
+ *
  * @author william.liangf
  */
 public class StatusUtils {
-    
+
     public static Status getSummaryStatus(Map<String, Status> statuses) {
         Level level = Level.OK;
         StringBuilder msg = new StringBuilder();
@@ -41,7 +41,7 @@ public class StatusUtils {
                 }
                 msg.append(key);
             } else if (Level.WARN.equals(l)) {
-                if(! Level.ERROR.equals(level)) {
+                if (!Level.ERROR.equals(level)) {
                     level = Level.WARN;
                 }
                 if (msg.length() > 0) {

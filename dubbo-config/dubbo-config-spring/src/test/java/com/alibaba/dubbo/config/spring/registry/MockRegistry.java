@@ -1,11 +1,11 @@
 package com.alibaba.dubbo.config.spring.registry;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.Registry;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author <a href="mailto:gang.lvg@taobao.com">kimi</a>
@@ -18,19 +18,19 @@ public class MockRegistry implements Registry {
 
     private List<URL> subscribered = new ArrayList<URL>();
 
+    public MockRegistry(URL url) {
+        if (url == null) {
+            throw new NullPointerException();
+        }
+        this.url = url;
+    }
+
     public List<URL> getRegistered() {
         return registered;
     }
 
     public List<URL> getSubscribered() {
         return subscribered;
-    }
-
-    public MockRegistry(URL url) {
-        if (url == null) {
-            throw new NullPointerException();
-        }
-        this.url = url;
     }
 
     public URL getUrl() {

@@ -15,6 +15,11 @@
  */
 package com.alibaba.dubbo.governance.web.sysinfo.module.screen;
 
+import com.alibaba.dubbo.common.logger.Level;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.governance.web.common.module.screen.Restful;
+import com.alibaba.dubbo.registry.common.domain.User;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.ByteBuffer;
@@ -22,11 +27,6 @@ import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
-
-import com.alibaba.dubbo.common.logger.Level;
-import com.alibaba.dubbo.common.logger.LoggerFactory;
-import com.alibaba.dubbo.governance.web.common.module.screen.Restful;
-import com.alibaba.dubbo.registry.common.domain.User;
 
 /**
  * @author tony.chenl
@@ -68,15 +68,15 @@ public class Logs extends Restful {
         context.put("modified", modified);
         context.put("content", content);
     }
-    
+
     public boolean change(Map<String, Object> context) throws Exception {
-        String contextLevel = (String)context.get("level");
+        String contextLevel = (String) context.get("level");
         if (contextLevel == null || contextLevel.length() == 0) {
             context.put("message", getMessage("MissRequestParameters", "level"));
             return false;
         }
-        if (! User.ROOT.equals(role)) {
-           context.put("message", getMessage("HaveNoRootPrivilege"));
+        if (!User.ROOT.equals(role)) {
+            context.put("message", getMessage("HaveNoRootPrivilege"));
             return false;
         }
         Level level = Level.valueOf(contextLevel);

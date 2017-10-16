@@ -15,11 +15,6 @@
  */
 package com.alibaba.dubbo.registry.dubbo;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.bytecode.Wrapper;
@@ -34,31 +29,52 @@ import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.ProxyFactory;
 import com.alibaba.dubbo.rpc.cluster.Cluster;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+
 /**
  * DubboRegistryFactory
- * 
+ *
  * @author william.liangf
  */
 public class DubboRegistryFactory extends AbstractRegistryFactory {
-    
+
     private Protocol protocol;
+    private ProxyFactory proxyFactory;
+    private Cluster cluster;
+
+    private static URL getRegistryURL(URL url) {
+        return url.setPath(RegistryService.class.getName())
+                .removeParameter(Constants.EXPORT_KEY).removeParameter(Constants.REFER_KEY)
+                .addParameter(Constants.INTERFACE_KEY, RegistryService.class.getName())
+                .addParameter(Constants.CLUSTER_STICKY_KEY, "true")
+                .addParameter(Constants.LAZY_CONNECT_KEY, "true")
+                .addParameter(Constants.RECONNECT_KEY, "false")
+                .addParameterIfAbsent(Constants.TIMEOUT_KEY, "10000")
+                .addParameterIfAbsent(Constants.CALLBACK_INSTANCES_LIMIT_KEY, "10000")
+                .addParameterIfAbsent(Constants.CONNECT_TIMEOUT_KEY, "10000")
+                .addParameter(Constants.METHODS_KEY, StringUtils.join(new HashSet<String>(Arrays.asList(Wrapper.getWrapper(RegistryService.class).getDeclaredMethodNames())), ","))
+                //.addParameter(Constants.STUB_KEY, RegistryServiceStub.class.getName())
+                //.addParameter(Constants.STUB_EVENT_KEY, Boolean.TRUE.toString()) //for event dispatch
+                //.addParameter(Constants.ON_DISCONNECT_KEY, "disconnect")
+                .addParameter("subscribe.1.callback", "true")
+                .addParameter("unsubscribe.1.callback", "false");
+    }
 
     public void setProtocol(Protocol protocol) {
         this.protocol = protocol;
     }
 
-    private ProxyFactory proxyFactory;
-
     public void setProxyFactory(ProxyFactory proxyFactory) {
         this.proxyFactory = proxyFactory;
     }
 
-    private Cluster cluster;
-
     public void setCluster(Cluster cluster) {
         this.cluster = cluster;
     }
-    
+
     public Registry createRegistry(URL url) {
         url = getRegistryURL(url);
         List<URL> urls = new ArrayList<URL>();
@@ -79,23 +95,5 @@ public class DubboRegistryFactory extends AbstractRegistryFactory {
         directory.notify(urls);
         directory.subscribe(new URL(Constants.CONSUMER_PROTOCOL, NetUtils.getLocalHost(), 0, RegistryService.class.getName(), url.getParameters()));
         return registry;
-    }
-    
-    private static URL getRegistryURL(URL url) {
-        return url.setPath(RegistryService.class.getName())
-                .removeParameter(Constants.EXPORT_KEY).removeParameter(Constants.REFER_KEY)
-                .addParameter(Constants.INTERFACE_KEY, RegistryService.class.getName())
-                .addParameter(Constants.CLUSTER_STICKY_KEY, "true")
-                .addParameter(Constants.LAZY_CONNECT_KEY, "true")
-                .addParameter(Constants.RECONNECT_KEY, "false")
-                .addParameterIfAbsent(Constants.TIMEOUT_KEY, "10000")
-                .addParameterIfAbsent(Constants.CALLBACK_INSTANCES_LIMIT_KEY, "10000")
-                .addParameterIfAbsent(Constants.CONNECT_TIMEOUT_KEY, "10000")
-                .addParameter(Constants.METHODS_KEY, StringUtils.join(new HashSet<String>(Arrays.asList(Wrapper.getWrapper(RegistryService.class).getDeclaredMethodNames())), ","))
-                //.addParameter(Constants.STUB_KEY, RegistryServiceStub.class.getName())
-                //.addParameter(Constants.STUB_EVENT_KEY, Boolean.TRUE.toString()) //for event dispatch
-                //.addParameter(Constants.ON_DISCONNECT_KEY, "disconnect")
-                .addParameter("subscribe.1.callback", "true")
-                .addParameter("unsubscribe.1.callback", "false");
     }
 }

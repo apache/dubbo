@@ -15,6 +15,11 @@
  */
 package com.alibaba.dubbo.common.beanutil;
 
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.LogHelper;
+import com.alibaba.dubbo.common.utils.ReflectUtils;
+
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -25,17 +30,38 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
-import com.alibaba.dubbo.common.logger.Logger;
-import com.alibaba.dubbo.common.logger.LoggerFactory;
-import com.alibaba.dubbo.common.utils.LogHelper;
-import com.alibaba.dubbo.common.utils.ReflectUtils;
-
 /**
  * @author <a href="mailto:gang.lvg@taobao.com">kimi</a>
  */
 public final class JavaBeanSerializeUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(JavaBeanSerializeUtil.class);
+    private static final Map<String, Class<?>> TYPES = new HashMap<String, Class<?>>();
+    private static final String ARRAY_PREFIX = "[";
+    private static final String REFERENCE_TYPE_PREFIX = "L";
+    private static final String REFERENCE_TYPE_SUFFIX = ";";
+
+    static {
+        TYPES.put(boolean.class.getName(), boolean.class);
+        TYPES.put(byte.class.getName(), byte.class);
+        TYPES.put(short.class.getName(), short.class);
+        TYPES.put(int.class.getName(), int.class);
+        TYPES.put(long.class.getName(), long.class);
+        TYPES.put(float.class.getName(), float.class);
+        TYPES.put(double.class.getName(), double.class);
+        TYPES.put(void.class.getName(), void.class);
+        TYPES.put("Z", boolean.class);
+        TYPES.put("B", byte.class);
+        TYPES.put("C", char.class);
+        TYPES.put("D", double.class);
+        TYPES.put("F", float.class);
+        TYPES.put("I", int.class);
+        TYPES.put("J", long.class);
+        TYPES.put("S", short.class);
+    }
+
+    private JavaBeanSerializeUtil() {
+    }
 
     public static JavaBeanDescriptor serialize(Object obj) {
         JavaBeanDescriptor result = serialize(obj, JavaBeanAccessor.FIELD);
@@ -47,7 +73,7 @@ public final class JavaBeanSerializeUtil {
             return null;
         }
         if (obj instanceof JavaBeanDescriptor) {
-            return (JavaBeanDescriptor)obj;
+            return (JavaBeanDescriptor) obj;
         }
         IdentityHashMap<Object, JavaBeanDescriptor> cache = new IdentityHashMap<Object, JavaBeanDescriptor>();
         JavaBeanDescriptor result = createDescriptorIfAbsent(obj, accessor, cache);
@@ -76,7 +102,7 @@ public final class JavaBeanSerializeUtil {
         if (cache.containsKey(obj)) {
             return cache.get(obj);
         } else if (obj instanceof JavaBeanDescriptor) {
-            return (JavaBeanDescriptor)obj;
+            return (JavaBeanDescriptor) obj;
         } else {
             JavaBeanDescriptor result = createDescriptorForSerialize(obj.getClass());
             cache.put(obj, result);
@@ -167,8 +193,8 @@ public final class JavaBeanSerializeUtil {
 
     public static Object deserialize(JavaBeanDescriptor beanDescriptor) {
         Object result = deserialize(
-            beanDescriptor,
-            Thread.currentThread().getContextClassLoader());
+                beanDescriptor,
+                Thread.currentThread().getContextClassLoader());
         return result;
     }
 
@@ -277,7 +303,7 @@ public final class JavaBeanSerializeUtil {
         } catch (NoSuchMethodException e) {
             for (Method m : cls.getMethods()) {
                 if (ReflectUtils.isBeanPropertyWriteMethod(m)
-                    && m.getName().equals(name)) {
+                        && m.getName().equals(name)) {
                     method = m;
                 }
             }
@@ -388,40 +414,11 @@ public final class JavaBeanSerializeUtil {
         return result;
     }
 
-    private static final Map<String, Class<?>> TYPES = new HashMap<String, Class<?>>();
-
-    static {
-        TYPES.put(boolean.class.getName(), boolean.class);
-        TYPES.put(byte.class.getName(), byte.class);
-        TYPES.put(short.class.getName(), short.class);
-        TYPES.put(int.class.getName(), int.class);
-        TYPES.put(long.class.getName(), long.class);
-        TYPES.put(float.class.getName(), float.class);
-        TYPES.put(double.class.getName(), double.class);
-        TYPES.put(void.class.getName(), void.class);
-        TYPES.put("Z", boolean.class);
-        TYPES.put("B", byte.class);
-        TYPES.put("C", char.class);
-        TYPES.put("D", double.class);
-        TYPES.put("F", float.class);
-        TYPES.put("I", int.class);
-        TYPES.put("J", long.class);
-        TYPES.put("S", short.class);
-    }
-
-    private static final String ARRAY_PREFIX = "[";
-
-    private static final String REFERENCE_TYPE_PREFIX = "L";
-
-    private static final String REFERENCE_TYPE_SUFFIX = ";";
-
     /**
      * 把 Class.forName 的返回值转换为 Class.
      *
      * @param name Class.getName()
-     *
      * @return Class
-     *
      * @throws ClassNotFoundException Class.forName
      */
     public static Class<?> name2Class(ClassLoader loader, String name) throws ClassNotFoundException {
@@ -453,15 +450,12 @@ public final class JavaBeanSerializeUtil {
 
     private static boolean isReferenceType(String type) {
         return type != null
-            && type.startsWith(REFERENCE_TYPE_PREFIX)
-            && type.endsWith(REFERENCE_TYPE_SUFFIX);
+                && type.startsWith(REFERENCE_TYPE_PREFIX)
+                && type.endsWith(REFERENCE_TYPE_SUFFIX);
     }
 
     private static Method getEnumValueOfMethod(Class cl) throws NoSuchMethodException {
         return cl.getMethod("valueOf", Class.class, String.class);
-    }
-
-    private JavaBeanSerializeUtil() {
     }
 
 }

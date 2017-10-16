@@ -24,10 +24,10 @@ import com.alibaba.dubbo.remoting.exchange.support.header.HeaderExchanger;
 
 /**
  * Exchanger. (SPI, Singleton, ThreadSafe)
- * 
+ * <p>
  * <a href="http://en.wikipedia.org/wiki/Message_Exchange_Pattern">Message Exchange Pattern</a>
  * <a href="http://en.wikipedia.org/wiki/Request-response">Request-Response</a>
- * 
+ *
  * @author william.liangf
  */
 @SPI(HeaderExchanger.NAME)
@@ -35,7 +35,7 @@ public interface Exchanger {
 
     /**
      * bind.
-     * 
+     *
      * @param url
      * @param handler
      * @return message server
@@ -45,7 +45,7 @@ public interface Exchanger {
 
     /**
      * connect.
-     * 
+     *
      * @param url
      * @param handler
      * @return message channel

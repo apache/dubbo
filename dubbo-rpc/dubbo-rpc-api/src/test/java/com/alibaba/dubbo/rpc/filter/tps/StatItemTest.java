@@ -16,13 +16,12 @@
 
 package com.alibaba.dubbo.rpc.filter.tps;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.RpcInvocation;
+
+import org.junit.After;
+import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
@@ -34,7 +33,7 @@ public class StatItemTest {
 
     private StatItem statItem;
 
-    private URL        url        = URL.valueOf("test://localhost");
+    private URL url = URL.valueOf("test://localhost");
 
     private Invocation invocation = new RpcInvocation();
 

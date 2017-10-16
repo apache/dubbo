@@ -21,7 +21,7 @@ import com.alibaba.dubbo.common.extension.SPI;
 
 /**
  * CacheFactory
- * 
+ *
  * @author william.liangf
  */
 @SPI("lru")

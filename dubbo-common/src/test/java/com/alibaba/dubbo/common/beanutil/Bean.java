@@ -1,27 +1,27 @@
 package com.alibaba.dubbo.common.beanutil;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.Map;
-
 import com.alibaba.dubbo.common.model.person.FullAddress;
 import com.alibaba.dubbo.common.model.person.PersonStatus;
 import com.alibaba.dubbo.common.model.person.Phone;
+
+import java.util.Collection;
+import java.util.Date;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:gang.lvg@taobao.com">kimi</a>
  */
 public class Bean {
 
-    private Class<?>                 type;
+    private Class<?> type;
 
-    private PersonStatus             status;
+    private PersonStatus status;
 
-    private Date                     date;
+    private Date date;
 
-    private Phone[]                  array;
+    private Phone[] array;
 
-    private Collection<Phone>        collection;
+    private Collection<Phone> collection;
 
     private Map<String, FullAddress> addresses;
 

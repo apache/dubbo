@@ -23,17 +23,17 @@ import java.io.Serializable;
 public class BigPerson implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    String                    personId;
+    String personId;
 
-    String                    loginName;
+    String loginName;
 
-    PersonStatus              status;
+    PersonStatus status;
 
-    String                    email;
+    String email;
 
-    String                    penName;
+    String penName;
 
-    PersonInfo                infoProfile;
+    PersonInfo infoProfile;
 
     public BigPerson() {
 
@@ -59,36 +59,36 @@ public class BigPerson implements Serializable {
         this.infoProfile = infoProfile;
     }
 
-    public void setLoginName(String loginName) {
-        this.loginName = loginName;
-    }
-
-    public void setStatus(PersonStatus status) {
-        this.status = status;
+    public String getEmail() {
+        return this.email;
     }
 
     public void setEmail(String email) {
         this.email = email;
     }
 
-    public void setPenName(String penName) {
-        this.penName = penName;
-    }
-
-    public String getEmail() {
-        return this.email;
-    }
-
     public String getLoginName() {
         return this.loginName;
+    }
+
+    public void setLoginName(String loginName) {
+        this.loginName = loginName;
     }
 
     public PersonStatus getStatus() {
         return this.status;
     }
 
+    public void setStatus(PersonStatus status) {
+        this.status = status;
+    }
+
     public String getPenName() {
         return penName;
+    }
+
+    public void setPenName(String penName) {
+        this.penName = penName;
     }
 
     @Override

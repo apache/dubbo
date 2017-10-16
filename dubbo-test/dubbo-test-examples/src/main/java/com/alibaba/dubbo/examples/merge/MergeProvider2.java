@@ -19,16 +19,16 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * MergeProvider2
- * 
+ *
  * @author william.liangf
  */
 public class MergeProvider2 {
-    
+
     public static void main(String[] args) throws Exception {
         String config = MergeProvider2.class.getPackage().getName().replace('.', '/') + "/merge-provider2.xml";
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(config);
         context.start();
         System.in.read();
     }
-    
+
 }

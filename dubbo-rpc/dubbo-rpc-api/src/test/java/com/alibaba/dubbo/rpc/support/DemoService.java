@@ -22,30 +22,29 @@ import com.alibaba.dubbo.rpc.CustomArgument;
  * <code>TestService</code>
  */
 
-public interface DemoService
-{
-	void sayHello(String name);
+public interface DemoService {
+    void sayHello(String name);
 
-	String echo(String text);
+    String echo(String text);
 
-	long timestamp();
+    long timestamp();
 
-	String getThreadName();
+    String getThreadName();
 
-	int getSize(String[] strs);
+    int getSize(String[] strs);
 
-	int getSize(Object[] os);
+    int getSize(Object[] os);
 
-	Object invoke(String service, String method) throws Exception;
+    Object invoke(String service, String method) throws Exception;
 
-	int stringLength(String str);
+    int stringLength(String str);
 
-	Type enumlength(Type... types);
-	
+    Type enumlength(Type... types);
+
 //	Type enumlength(Type type);
-	
-	String get(CustomArgument arg1);
-	
-	byte getbyte(byte arg);
-	
+
+    String get(CustomArgument arg1);
+
+    byte getbyte(byte arg);
+
 }

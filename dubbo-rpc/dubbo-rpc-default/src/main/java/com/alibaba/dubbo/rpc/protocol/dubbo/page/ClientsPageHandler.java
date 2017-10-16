@@ -15,10 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.protocol.dubbo.page;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.container.page.Page;
@@ -27,9 +23,13 @@ import com.alibaba.dubbo.remoting.exchange.ExchangeChannel;
 import com.alibaba.dubbo.remoting.exchange.ExchangeServer;
 import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 /**
  * ClientsPageHandler
- * 
+ *
  * @author william.liangf
  */
 public class ClientsPageHandler implements PageHandler {

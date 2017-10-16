@@ -21,7 +21,7 @@ import com.alibaba.dubbo.validation.support.AbstractValidation;
 
 /**
  * JValidation
- * 
+ *
  * @author william.liangf
  */
 public class JValidation extends AbstractValidation {

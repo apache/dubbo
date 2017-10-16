@@ -15,10 +15,6 @@
  */
 package com.alibaba.dubbo.registry.pages;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.container.page.Menu;
@@ -28,9 +24,13 @@ import com.alibaba.dubbo.registry.Registry;
 import com.alibaba.dubbo.registry.support.AbstractRegistry;
 import com.alibaba.dubbo.registry.support.AbstractRegistryFactory;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 /**
  * RegistriesPageHandler
- * 
+ *
  * @author william.liangf
  */
 @Menu(name = "Registries", desc = "Show connected registries.", order = 10000)
@@ -65,7 +65,7 @@ public class RegistriesPageHandler implements PageHandler {
             }
         }
         return new Page("Registries", "Registries (" + rows.size() + ")",
-                new String[] { "Registry Address:", "Status", "Registered(" + registeredCount + ")", "Subscribed(" + subscribedCount + ")" }, rows);
+                new String[]{"Registry Address:", "Status", "Registered(" + registeredCount + ")", "Subscribed(" + subscribedCount + ")"}, rows);
     }
 
 }

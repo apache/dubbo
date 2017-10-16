@@ -15,15 +15,25 @@
  */
 package com.alibaba.dubbo.common.utils;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
 
-public class NetUtilsTest extends TestCase {
-	
-	public void testValidAddress() throws Exception {
-		Assert.assertTrue(NetUtils.isValidAddress("10.20.130.230:20880"));
-		Assert.assertFalse(NetUtils.isValidAddress("10.20.130.230"));
-		Assert.assertFalse(NetUtils.isValidAddress("10.20.130.230:666666"));
-	}
+import org.junit.Test;
+
+import static junit.framework.TestCase.assertFalse;
+import static junit.framework.TestCase.assertTrue;
+
+public class NetUtilsTest {
+    @Test
+    public void testValidAddress() throws Exception {
+        assertTrue(NetUtils.isValidAddress("10.20.130.230:20880"));
+        assertFalse(NetUtils.isValidAddress("10.20.130.230"));
+        assertFalse(NetUtils.isValidAddress("10.20.130.230:666666"));
+    }
+
+    @Test
+    public void testIsInvalidPort() throws Exception {
+        assertTrue(NetUtils.isInvalidPort(0));
+        assertTrue(NetUtils.isInvalidPort(65536));
+        assertFalse(NetUtils.isInvalidPort(1024));
+    }
 
 }

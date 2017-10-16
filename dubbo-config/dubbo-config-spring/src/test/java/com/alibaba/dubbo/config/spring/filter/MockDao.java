@@ -17,7 +17,7 @@ package com.alibaba.dubbo.config.spring.filter;
 
 /**
  * MockDao
- * 
+ *
  * @author william.liangf
  */
 public interface MockDao {
