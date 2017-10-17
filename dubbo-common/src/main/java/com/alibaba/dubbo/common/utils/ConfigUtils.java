@@ -186,6 +186,10 @@ public class ConfigUtils {
         return replaceProperty(properties.getProperty(key, defaultValue), (Map) properties);
     }
 
+    public static String getSystemProperty(String key) {
+        return System.getProperty(key);
+    }
+
     public static Properties loadProperties(String fileName) {
         return loadProperties(fileName, false, false);
     }
