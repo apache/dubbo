@@ -127,7 +127,7 @@ final public class MockInvoker<T> implements Invoker<T> {
                 Invoker<T> invoker = getInvoker(mock);
                 return invoker.invoke(invocation);
             } catch (Throwable t) {
-                throw new RpcException("Failed to create mock implemention class " + mock, t);
+                throw new RpcException("Failed to create mock implementation class " + mock, t);
             }
         }
     }
@@ -166,11 +166,11 @@ final public class MockInvoker<T> implements Invoker<T> {
 
             Class<?> mockClass = ReflectUtils.forName(mockService);
             if (!serviceType.isAssignableFrom(mockClass)) {
-                throw new IllegalArgumentException("The mock implemention class " + mockClass.getName() + " not implement interface " + serviceType.getName());
+                throw new IllegalArgumentException("The mock implementation class " + mockClass.getName() + " not implement interface " + serviceType.getName());
             }
 
             if (!serviceType.isAssignableFrom(mockClass)) {
-                throw new IllegalArgumentException("The mock implemention class " + mockClass.getName() + " not implement interface " + serviceType.getName());
+                throw new IllegalArgumentException("The mock implementation class " + mockClass.getName() + " not implement interface " + serviceType.getName());
             }
             try {
                 T mockObject = (T) mockClass.newInstance();
@@ -180,7 +180,7 @@ final public class MockInvoker<T> implements Invoker<T> {
                 }
                 return invoker;
             } catch (InstantiationException e) {
-                throw new IllegalStateException("No such empty constructor \"public " + mockClass.getSimpleName() + "()\" in mock implemention class " + mockClass.getName(), e);
+                throw new IllegalStateException("No such empty constructor \"public " + mockClass.getSimpleName() + "()\" in mock implementation class " + mockClass.getName(), e);
             } catch (IllegalAccessException e) {
                 throw new IllegalStateException(e);
             }
