@@ -57,6 +57,10 @@ public class ClusterUtils {
 
             map.remove(Constants.ALIVE_KEY);
             map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.ALIVE_KEY);
+
+            //是否开启MonitorFilter不使用提供者的
+            map.remove(Constants.MONITOR_KEY);
+            map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.MONITOR_KEY);
         }
 
         if (localMap != null && localMap.size() > 0) {
