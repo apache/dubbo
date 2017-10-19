@@ -46,12 +46,21 @@ public class InvokeTelnetHandler implements TelnetHandler {
     private static Method findMethod(Exporter<?> exporter, String method, List<Object> args) {
         Invoker<?> invoker = exporter.getInvoker();
         Method[] methods = invoker.getInterface().getMethods();
+        Method invokeMethod = null;
         for (Method m : methods) {
-            if (m.getName().equals(method) && isMatch(m.getParameterTypes(), args)) {
-                return m;
+            if (m.getName().equals(method) && m.getParameterTypes().length == args.size()) {
+                if (invokeMethod != null) { // 重载
+                    if (isMatch(invokeMethod.getParameterTypes(), args)) {
+                        invokeMethod = m;
+                        break;
+                    }
+                } else {
+                    invokeMethod = m;
+                }
+                invoker = exporter.getInvoker();
             }
         }
-        return null;
+        return invokeMethod;
     }
 
     private static boolean isMatch(Class<?>[] types, List<Object> args) {
