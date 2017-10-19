@@ -17,11 +17,11 @@ package com.alibaba.dubbo.examples.annotation.api;
 
 /**
  * AsyncService
- * 
+ *
  * @author william.liangf
  */
 public interface AnnotationService {
-    
+
     String sayHello(String name);
 
 }

@@ -21,35 +21,35 @@ import com.alibaba.dubbo.remoting.RemotingException;
 
 /**
  * Group. (SPI, Prototype, ThreadSafe)
- * 
+ * <p>
  * <a href="http://en.wikipedia.org/wiki/Peer-to-peer">Peer-to-peer</a>
- * 
+ *
  * @author william.liangf
  */
 public interface Group {
 
     /**
      * get group url.
-     * 
+     *
      * @return group url.
      */
     URL getUrl();
 
     /**
      * join.
-     * 
+     *
      * @param url
      */
     Peer join(URL url, ChannelHandler handler) throws RemotingException;
-    
+
     /**
      * leave.
-     * 
+     *
      * @param url
      * @throws RemotingException
      */
     void leave(URL url) throws RemotingException;
-    
+
     /**
      * close the group.
      */

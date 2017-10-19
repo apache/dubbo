@@ -15,32 +15,32 @@
  */
 package com.alibaba.dubbo.remoting.exchange.support;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.exchange.ExchangeChannel;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * ReplierDispatcher
- * 
+ *
  * @author william.liangf
  */
 public class ReplierDispatcher implements Replier<Object> {
 
     private final Replier<?> defaultReplier;
-    
+
     private final Map<Class<?>, Replier<?>> repliers = new ConcurrentHashMap<Class<?>, Replier<?>>();
 
-    public ReplierDispatcher(){
+    public ReplierDispatcher() {
         this(null, null);
     }
-    
-    public ReplierDispatcher(Replier<?> defaultReplier){
+
+    public ReplierDispatcher(Replier<?> defaultReplier) {
         this(defaultReplier, null);
     }
 
-    public ReplierDispatcher(Replier<?> defaultReplier, Map<Class<?>, Replier<?>> repliers){
+    public ReplierDispatcher(Replier<?> defaultReplier, Map<Class<?>, Replier<?>> repliers) {
         this.defaultReplier = defaultReplier;
         if (repliers != null && repliers.size() > 0) {
             this.repliers.putAll(repliers);
@@ -58,8 +58,8 @@ public class ReplierDispatcher implements Replier<Object> {
     }
 
     private Replier<?> getReplier(Class<?> type) {
-        for(Map.Entry<Class<?>, Replier<?>> entry : repliers.entrySet()) {
-            if(entry.getKey().isAssignableFrom(type)) {
+        for (Map.Entry<Class<?>, Replier<?>> entry : repliers.entrySet()) {
+            if (entry.getKey().isAssignableFrom(type)) {
                 return entry.getValue();
             }
         }
@@ -69,9 +69,9 @@ public class ReplierDispatcher implements Replier<Object> {
         throw new IllegalStateException("Replier not found, Unsupported message object: " + type);
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public Object reply(ExchangeChannel channel, Object request) throws RemotingException {
-        return ((Replier)getReplier(request.getClass())).reply(channel, request);
+        return ((Replier) getReplier(request.getClass())).reply(channel, request);
     }
 
 }

@@ -17,14 +17,15 @@ package com.alibaba.dubbo.rpc.cluster.filter;
 
 /**
  * MockService.java
+ *
  * @author tony.chenl
  */
-public class MockService implements DemoService{
+public class MockService implements DemoService {
     public String sayHello(String name) {
         return name;
     }
 
     public int plus(int a, int b) {
-        return a+b;
+        return a + b;
     }
 }

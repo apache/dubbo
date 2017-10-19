@@ -16,12 +16,12 @@
 
 package com.alibaba.dubbo.common.serialize.support.nativejava;
 
+import com.alibaba.dubbo.common.serialize.ObjectOutput;
+import com.alibaba.dubbo.common.utils.Assert;
+
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-
-import com.alibaba.dubbo.common.serialize.ObjectOutput;
-import com.alibaba.dubbo.common.utils.Assert;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>

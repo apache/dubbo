@@ -23,6 +23,9 @@ import com.alibaba.dubbo.common.logger.Logger;
  */
 public class LogHelper {
 
+    private LogHelper() {
+    }
+
     public static void trace(Logger logger, String msg) {
         if (logger == null) {
             return;
@@ -171,9 +174,6 @@ public class LogHelper {
         if (logger.isErrorEnabled()) {
             logger.error(msg, e);
         }
-    }
-
-    private LogHelper() {
     }
 
 }

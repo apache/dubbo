@@ -1,12 +1,12 @@
 /**
  * Project: dubbo.registry.server-1.1.0-SNAPSHOT
- * 
+ * <p>
  * File Created at 2010-6-30
  * $Id: Feature.java 181192 2012-06-21 05:05:47Z tony.chenl $
- * 
+ * <p>
  * Copyright 2008 Alibaba.com Croporation Limited.
  * All rights reserved.
- *
+ * <p>
  * This software is the confidential and proprietary information of
  * Alibaba Company. ("Confidential Information").  You shall not
  * disclose such Confidential Information and shall use it only in
@@ -20,14 +20,14 @@ package com.alibaba.dubbo.registry.common.domain;
  *
  * @author ding.lid
  */
-public class Feature extends Entity{
-	
+public class Feature extends Entity {
+
     private static final long serialVersionUID = 3246619851259746169L;
 
     private String name;
-    
+
     private boolean enabled;
-    
+
     private String username;
 
     public Feature() {
@@ -36,7 +36,7 @@ public class Feature extends Entity{
     public Feature(Long id) {
         super(id);
     }
-    
+
     public String getName() {
         return name;
     }

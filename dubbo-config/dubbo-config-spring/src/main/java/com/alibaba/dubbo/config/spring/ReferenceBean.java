@@ -15,17 +15,6 @@
  */
 package com.alibaba.dubbo.config.spring;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.beans.factory.BeanFactoryUtils;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.FactoryBean;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-
 import com.alibaba.dubbo.config.ApplicationConfig;
 import com.alibaba.dubbo.config.ConsumerConfig;
 import com.alibaba.dubbo.config.ModuleConfig;
@@ -36,19 +25,30 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.spring.extension.SpringExtensionFactory;
 import com.alibaba.dubbo.config.support.Parameter;
 
+import org.springframework.beans.factory.BeanFactoryUtils;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 /**
  * ReferenceFactoryBean
- * 
+ *
  * @author william.liangf
  * @export
  */
 public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean, ApplicationContextAware, InitializingBean, DisposableBean {
 
-	private static final long serialVersionUID = 213195494150089726L;
-	
-	private transient ApplicationContext applicationContext;
+    private static final long serialVersionUID = 213195494150089726L;
 
-	public ReferenceBean() {
+    private transient ApplicationContext applicationContext;
+
+    public ReferenceBean() {
         super();
     }
 
@@ -57,10 +57,10 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
     }
 
     public void setApplicationContext(ApplicationContext applicationContext) {
-		this.applicationContext = applicationContext;
-		SpringExtensionFactory.addApplicationContext(applicationContext);
-	}
-    
+        this.applicationContext = applicationContext;
+        SpringExtensionFactory.addApplicationContext(applicationContext);
+    }
+
     public Object getObject() throws Exception {
         return get();
     }
@@ -74,10 +74,10 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
         return true;
     }
 
-    @SuppressWarnings({ "unchecked"})
+    @SuppressWarnings({"unchecked"})
     public void afterPropertiesSet() throws Exception {
         if (getConsumer() == null) {
-            Map<String, ConsumerConfig> consumerConfigMap = applicationContext == null ? null  : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ConsumerConfig.class, false, false);
+            Map<String, ConsumerConfig> consumerConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ConsumerConfig.class, false, false);
             if (consumerConfigMap != null && consumerConfigMap.size() > 0) {
                 ConsumerConfig consumerConfig = null;
                 for (ConsumerConfig config : consumerConfigMap.values()) {

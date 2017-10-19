@@ -15,46 +15,46 @@
  */
 package com.alibaba.dubbo.remoting;
 
-import javax.sound.midi.Receiver;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.Adaptive;
 import com.alibaba.dubbo.common.extension.SPI;
 
+import javax.sound.midi.Receiver;
+
 /**
  * Transporter. (SPI, Singleton, ThreadSafe)
- * 
+ * <p>
  * <a href="http://en.wikipedia.org/wiki/Transport_Layer">Transport Layer</a>
  * <a href="http://en.wikipedia.org/wiki/Client%E2%80%93server_model">Client/Server</a>
- * 
- * @see com.alibaba.dubbo.remoting.Transporters
+ *
  * @author ding.lid
  * @author william.liangf
+ * @see com.alibaba.dubbo.remoting.Transporters
  */
 @SPI("netty")
 public interface Transporter {
 
     /**
      * Bind a server.
-     * 
-     * @see com.alibaba.dubbo.remoting.Transporters#bind(URL, Receiver, ChannelHandler)
-     * @param url server url
+     *
+     * @param url     server url
      * @param handler
      * @return server
-     * @throws RemotingException 
+     * @throws RemotingException
+     * @see com.alibaba.dubbo.remoting.Transporters#bind(URL, Receiver, ChannelHandler)
      */
     @Adaptive({Constants.SERVER_KEY, Constants.TRANSPORTER_KEY})
     Server bind(URL url, ChannelHandler handler) throws RemotingException;
 
     /**
      * Connect to a server.
-     * 
-     * @see com.alibaba.dubbo.remoting.Transporters#connect(URL, Receiver, ChannelListener)
-     * @param url server url
+     *
+     * @param url     server url
      * @param handler
      * @return client
-     * @throws RemotingException 
+     * @throws RemotingException
+     * @see com.alibaba.dubbo.remoting.Transporters#connect(URL, Receiver, ChannelListener)
      */
     @Adaptive({Constants.CLIENT_KEY, Constants.TRANSPORTER_KEY})
     Client connect(URL url, ChannelHandler handler) throws RemotingException;

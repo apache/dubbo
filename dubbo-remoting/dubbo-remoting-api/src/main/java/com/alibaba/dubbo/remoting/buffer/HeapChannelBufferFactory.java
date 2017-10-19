@@ -21,16 +21,16 @@ import java.nio.ByteBuffer;
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
-public class HeapChannelBufferFactory implements ChannelBufferFactory{
+public class HeapChannelBufferFactory implements ChannelBufferFactory {
 
     private static final HeapChannelBufferFactory INSTANCE = new HeapChannelBufferFactory();
 
-    public static ChannelBufferFactory getInstance() {
-        return INSTANCE;
-    }
-
     public HeapChannelBufferFactory() {
         super();
+    }
+
+    public static ChannelBufferFactory getInstance() {
+        return INSTANCE;
     }
 
     public ChannelBuffer getBuffer(int capacity) {

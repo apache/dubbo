@@ -17,11 +17,11 @@ package com.alibaba.dubbo.remoting;
 
 /**
  * PerformanceServerMain
- * 
+ *
  * @author william.liangf
  */
-public class PerformanceServerMain{
-    
+public class PerformanceServerMain {
+
     public static void main(String[] args) throws Exception {
         new PerformanceServerTest().testServer();
     }

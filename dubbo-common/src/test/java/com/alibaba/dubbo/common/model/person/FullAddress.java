@@ -24,75 +24,19 @@ public class FullAddress implements Serializable {
 
     private static final long serialVersionUID = 5163979984269419831L;
 
-    private String            countryId;
+    private String countryId;
 
-    private String            countryName;
+    private String countryName;
 
-    private String            provinceName;
+    private String provinceName;
 
-    private String            cityId;
+    private String cityId;
 
-    private String            cityName;
+    private String cityName;
 
-    private String            streetAddress;
+    private String streetAddress;
 
-    private String            zipCode;
-
-    public void setCountryId(String countryId) {
-        this.countryId = countryId;
-    }
-
-    public void setCountryName(String countryName) {
-        this.countryName = countryName;
-    }
-
-    public void setProvinceName(String provinceName) {
-        this.provinceName = provinceName;
-    }
-
-    public void setCityId(String cityId) {
-        this.cityId = cityId;
-    }
-
-    public void setCityName(String cityName) {
-        this.cityName = cityName;
-    }
-
-    public void setStreetAddress(String streetAddress) {
-        this.streetAddress = streetAddress;
-    }
-
-    public void setZipCode(String zipCode) {
-        this.zipCode = zipCode;
-    }
-
-    public String getCountryId() {
-        return countryId;
-    }
-
-    public String getCountryName() {
-        return countryName;
-    }
-
-    public String getProvinceName() {
-        return provinceName;
-    }
-
-    public String getCityId() {
-        return cityId;
-    }
-
-    public String getCityName() {
-        return cityName;
-    }
-
-    public String getStreetAddress() {
-        return streetAddress;
-    }
-
-    public String getZipCode() {
-        return zipCode;
-    }
+    private String zipCode;
 
     public FullAddress() {
     }
@@ -116,6 +60,62 @@ public class FullAddress implements Serializable {
         this.cityId = cityId;
         this.cityName = cityName;
         this.streetAddress = streetAddress;
+        this.zipCode = zipCode;
+    }
+
+    public String getCountryId() {
+        return countryId;
+    }
+
+    public void setCountryId(String countryId) {
+        this.countryId = countryId;
+    }
+
+    public String getCountryName() {
+        return countryName;
+    }
+
+    public void setCountryName(String countryName) {
+        this.countryName = countryName;
+    }
+
+    public String getProvinceName() {
+        return provinceName;
+    }
+
+    public void setProvinceName(String provinceName) {
+        this.provinceName = provinceName;
+    }
+
+    public String getCityId() {
+        return cityId;
+    }
+
+    public void setCityId(String cityId) {
+        this.cityId = cityId;
+    }
+
+    public String getCityName() {
+        return cityName;
+    }
+
+    public void setCityName(String cityName) {
+        this.cityName = cityName;
+    }
+
+    public String getStreetAddress() {
+        return streetAddress;
+    }
+
+    public void setStreetAddress(String streetAddress) {
+        this.streetAddress = streetAddress;
+    }
+
+    public String getZipCode() {
+        return zipCode;
+    }
+
+    public void setZipCode(String zipCode) {
         this.zipCode = zipCode;
     }
 

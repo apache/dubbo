@@ -19,14 +19,14 @@ import com.alibaba.dubbo.common.URL;
 
 /**
  * Configurator. (SPI, Prototype, ThreadSafe)
- * 
+ *
  * @author william.liangf
  */
 public interface Configurator extends Comparable<Configurator> {
-    
+
     /**
      * get the configurator url.
-     * 
+     *
      * @return configurator url.
      */
     URL getUrl();
@@ -34,6 +34,7 @@ public interface Configurator extends Comparable<Configurator> {
     /**
      * Configure the provider url.
      * O
+     *
      * @param url - old rovider url.
      * @return new provider url.
      */

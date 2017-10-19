@@ -24,7 +24,7 @@ import com.alibaba.dubbo.remoting.RemotingException;
 
 /**
  * AbstractPeer
- * 
+ *
  * @author qian.lei
  * @author william.liangf
  */
@@ -32,9 +32,12 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
 
     private final ChannelHandler handler;
 
-    private volatile URL         url;
+    private volatile URL url;
 
-    private volatile boolean     closed;
+    // closing closed分别表示关闭流程中、完成关闭
+    private volatile boolean closing;
+
+    private volatile boolean closed;
 
     public AbstractPeer(URL url, ChannelHandler handler) {
         if (url == null) {
@@ -59,6 +62,13 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
         close();
     }
 
+    public void startClose() {
+        if (isClosed()) {
+            return;
+        }
+        closing = true;
+    }
+
     public URL getUrl() {
         return url;
     }
@@ -77,7 +87,7 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
             return handler;
         }
     }
-    
+
     /**
      * @return ChannelHandler
      */
@@ -85,17 +95,22 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
     public ChannelHandler getHandler() {
         return getDelegateHandler();
     }
-    
+
     /**
      * 返回最终的handler，可能已被wrap,需要区别于getChannelHandler
+     *
      * @return ChannelHandler
      */
     public ChannelHandler getDelegateHandler() {
         return handler;
     }
-    
+
     public boolean isClosed() {
         return closed;
+    }
+
+    public boolean isClosing() {
+        return closing && !closed;
     }
 
     public void connected(Channel ch) throws RemotingException {

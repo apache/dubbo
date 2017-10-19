@@ -15,22 +15,22 @@
  */
 package com.alibaba.dubbo.examples.annotation.action;
 
-import org.springframework.stereotype.Component;
-
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.examples.annotation.api.AnnotationService;
 
+import org.springframework.stereotype.Component;
+
 /**
  * AnnotationAction
- * 
+ *
  * @author william.liangf
  */
 @Component("annotationAction")
 public class AnnotationAction {
-    
+
     @Reference
     private AnnotationService annotationService;
-    
+
     public String doSayHello(String name) {
         return annotationService.sayHello(name);
     }

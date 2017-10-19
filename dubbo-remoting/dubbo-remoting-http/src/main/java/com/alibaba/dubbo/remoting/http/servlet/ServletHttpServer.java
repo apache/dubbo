@@ -20,10 +20,10 @@ import com.alibaba.dubbo.remoting.http.HttpHandler;
 import com.alibaba.dubbo.remoting.http.support.AbstractHttpServer;
 
 public class ServletHttpServer extends AbstractHttpServer {
-    
-    public ServletHttpServer(URL url, HttpHandler handler){
+
+    public ServletHttpServer(URL url, HttpHandler handler) {
         super(url, handler);
         DispatcherServlet.addHttpHandler(url.getPort(), handler);
     }
-    
+
 }

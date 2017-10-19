@@ -21,7 +21,6 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcException;
-import com.alibaba.dubbo.rpc.RpcStatus;
 import com.alibaba.dubbo.rpc.support.MockInvocation;
 import com.alibaba.dubbo.rpc.support.MyInvoker;
 
@@ -40,18 +39,18 @@ public class TpsLimitFilterTest {
     public void testWithoutCount() throws Exception {
         URL url = URL.valueOf("test://test");
         url = url.addParameter(Constants.INTERFACE_KEY,
-                               "com.alibaba.dubbo.rpc.file.TpsService");
+                "com.alibaba.dubbo.rpc.file.TpsService");
         url = url.addParameter(Constants.TPS_LIMIT_RATE_KEY, 5);
         Invoker<TpsLimitFilterTest> invoker = new MyInvoker<TpsLimitFilterTest>(url);
         Invocation invocation = new MockInvocation();
         filter.invoke(invoker, invocation);
     }
-    
+
     @Test(expected = RpcException.class)
     public void testFail() throws Exception {
         URL url = URL.valueOf("test://test");
         url = url.addParameter(Constants.INTERFACE_KEY,
-                               "com.alibaba.dubbo.rpc.file.TpsService");
+                "com.alibaba.dubbo.rpc.file.TpsService");
         url = url.addParameter(Constants.TPS_LIMIT_RATE_KEY, 5);
         Invoker<TpsLimitFilterTest> invoker = new MyInvoker<TpsLimitFilterTest>(url);
         Invocation invocation = new MockInvocation();

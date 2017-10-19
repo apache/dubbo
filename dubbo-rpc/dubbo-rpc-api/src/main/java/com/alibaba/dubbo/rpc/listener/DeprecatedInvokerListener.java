@@ -24,7 +24,7 @@ import com.alibaba.dubbo.rpc.RpcException;
 
 /**
  * DeprecatedProtocolFilter
- * 
+ *
  * @author william.liangf
  */
 @Activate(Constants.DEPRECATED_KEY)

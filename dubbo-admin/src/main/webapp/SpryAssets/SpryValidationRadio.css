@@ -4,13 +4,12 @@
 
 /* Copyright (c) 2007. Adobe Systems Incorporated. All rights reserved. */
 
-
 /* These are the classes applied on the messages
  * (required message and invalid value message )
  * which prevent them from being displayed by default.
  */
-.radioRequiredMsg, .radioInvalidMsg{
-	display: none;
+.radioRequiredMsg, .radioInvalidMsg {
+    display: none;
 }
 
 /* These selectors change the way messages look when the widget is in one of the error states.
@@ -19,8 +18,8 @@
  * and this way only the specific error message can be shown by setting the display property to "inline".
  */
 .radioRequiredState .radioRequiredMsg,
-.radioInvalidState .radioInvalidMsg{
-	display: inline;
-	color: #CC3333;
-	border: 1px solid #CC3333;
+.radioInvalidState .radioInvalidMsg {
+    display: inline;
+    color: #CC3333;
+    border: 1px solid #CC3333;
 }

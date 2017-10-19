@@ -15,11 +15,6 @@
  */
 package com.alibaba.dubbo.remoting.transport.mina;
 
-import java.net.InetSocketAddress;
-
-import org.apache.mina.common.IoSession;
-import org.apache.mina.common.WriteFuture;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
@@ -28,9 +23,14 @@ import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.transport.AbstractChannel;
 
+import org.apache.mina.common.IoSession;
+import org.apache.mina.common.WriteFuture;
+
+import java.net.InetSocketAddress;
+
 /**
  * MinaChannel
- * 
+ *
  * @author qian.lei
  * @author william.liangf
  */
@@ -40,9 +40,9 @@ final class MinaChannel extends AbstractChannel {
 
     private static final String CHANNEL_KEY = MinaChannel.class.getName() + ".CHANNEL";
 
-    private final IoSession     session;
+    private final IoSession session;
 
-    private MinaChannel(IoSession session, URL url, ChannelHandler handler){
+    private MinaChannel(IoSession session, URL url, ChannelHandler handler) {
         super(url, handler);
         if (session == null) {
             throw new IllegalArgumentException("mina session == null");
@@ -69,7 +69,7 @@ final class MinaChannel extends AbstractChannel {
     }
 
     static void removeChannelIfDisconnectd(IoSession session) {
-        if (session != null && ! session.isConnected()) {
+        if (session != null && !session.isConnected()) {
             session.removeAttribute(CHANNEL_KEY);
         }
     }
@@ -88,7 +88,7 @@ final class MinaChannel extends AbstractChannel {
 
     public void send(Object message, boolean sent) throws RemotingException {
         super.send(message, sent);
-        
+
         boolean success = true;
         int timeout = 0;
         try {
@@ -100,8 +100,8 @@ final class MinaChannel extends AbstractChannel {
         } catch (Throwable e) {
             throw new RemotingException(this, "Failed to send message " + message + " to " + getRemoteAddress() + ", cause: " + e.getMessage(), e);
         }
-        
-        if(!success) {
+
+        if (!success) {
             throw new RemotingException(this, "Failed to send message " + message + " to " + getRemoteAddress()
                     + "in timeout(" + timeout + "ms) limit");
         }

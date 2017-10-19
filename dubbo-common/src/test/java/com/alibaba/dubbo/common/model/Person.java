@@ -21,16 +21,18 @@ import java.util.Arrays;
  * @author ding.lid
  */
 public class Person {
-    private String name = "name1";
-    
     byte oneByte = 123;
-    
+    private String name = "name1";
     private int age = 11;
-    
+
     private String[] value = {"value1", "value2"};
-    
+
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public byte getOneByte() {
@@ -39,10 +41,6 @@ public class Person {
 
     public void setOneByte(byte b) {
         this.oneByte = b;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public int getAge() {

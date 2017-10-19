@@ -20,17 +20,17 @@ import com.alibaba.dubbo.config.spring.api.DemoService;
 
 /**
  * DemoServiceImpl
- * 
+ *
  * @author william.liangf
  */
 public class DemoServiceImpl implements DemoService {
-    
+
     private String prefix = "say:";
-    
+
     public String sayName(String name) {
         return prefix + name;
     }
-    
+
     public Box getBox() {
         return null;
     }
@@ -42,5 +42,5 @@ public class DemoServiceImpl implements DemoService {
     public void setPrefix(String prefix) {
         this.prefix = prefix;
     }
-    
+
 }

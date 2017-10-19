@@ -15,27 +15,30 @@
  */
 package com.alibaba.dubbo.rpc.cluster.support;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * ClusterUtils
- * 
+ *
  * @author william.liangf
  */
 public class ClusterUtils {
-    
+
+    private ClusterUtils() {
+    }
+
     public static URL mergeUrl(URL remoteUrl, Map<String, String> localMap) {
         Map<String, String> map = new HashMap<String, String>();
         Map<String, String> remoteMap = remoteUrl.getParameters();
-        
-        
+
+
         if (remoteMap != null && remoteMap.size() > 0) {
             map.putAll(remoteMap);
-            
+
             //线程池配置不使用提供者的
             map.remove(Constants.THREAD_NAME_KEY);
             map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.THREAD_NAME_KEY);
@@ -55,11 +58,11 @@ public class ClusterUtils {
             map.remove(Constants.ALIVE_KEY);
             map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.ALIVE_KEY);
         }
-        
+
         if (localMap != null && localMap.size() > 0) {
             map.putAll(localMap);
         }
-        if (remoteMap != null && remoteMap.size() > 0) { 
+        if (remoteMap != null && remoteMap.size() > 0) {
             // 版本号使用提供者的
             String dubbo = remoteMap.get(Constants.DUBBO_VERSION_KEY);
             if (dubbo != null && dubbo.length() > 0) {
@@ -77,6 +80,8 @@ public class ClusterUtils {
             if (methods != null && methods.length() > 0) {
                 map.put(Constants.METHODS_KEY, methods);
             }
+            // 保留provider的启动timestamp
+            map.put(Constants.REMOTE_TIMESTAMP_KEY, remoteMap.get(Constants.TIMESTAMP_KEY));
             // 合并filter和listener
             String remoteFilter = remoteMap.get(Constants.REFERENCE_FILTER_KEY);
             String localFilter = localMap.get(Constants.REFERENCE_FILTER_KEY);
@@ -95,6 +100,4 @@ public class ClusterUtils {
         return remoteUrl.clearParameters().addParameters(map);
     }
 
-    private ClusterUtils() {}
-    
 }

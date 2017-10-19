@@ -15,27 +15,6 @@
  */
 package com.alibaba.dubbo.common.utils;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.alibaba.dubbo.common.model.Person;
 import com.alibaba.dubbo.common.model.SerializablePerson;
 import com.alibaba.dubbo.common.model.person.BigPerson;
@@ -44,21 +23,80 @@ import com.alibaba.dubbo.common.model.person.PersonInfo;
 import com.alibaba.dubbo.common.model.person.PersonStatus;
 import com.alibaba.dubbo.common.model.person.Phone;
 
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 /**
  * @author ding.lid
  */
 public class PojoUtilsTest {
-    
+
+    BigPerson bigPerson;
+
+    {
+        bigPerson = new BigPerson();
+        bigPerson.setPersonId("id1");
+        bigPerson.setLoginName("name1");
+        bigPerson.setStatus(PersonStatus.ENABLED);
+        bigPerson.setEmail("abc@123.com");
+        bigPerson.setPenName("pname");
+
+        ArrayList<Phone> phones = new ArrayList<Phone>();
+        Phone phone1 = new Phone("86", "0571", "11223344", "001");
+        Phone phone2 = new Phone("86", "0571", "11223344", "002");
+        phones.add(phone1);
+        phones.add(phone2);
+
+        PersonInfo pi = new PersonInfo();
+        pi.setPhones(phones);
+        Phone fax = new Phone("86", "0571", "11223344", null);
+        pi.setFax(fax);
+        FullAddress addr = new FullAddress("CN", "zj", "1234", "Road1", "333444");
+        pi.setFullAddress(addr);
+        pi.setMobileNo("1122334455");
+        pi.setMale(true);
+        pi.setDepartment("b2b");
+        pi.setHomepageUrl("www.abc.com");
+        pi.setJobTitle("dev");
+        pi.setName("name2");
+
+        bigPerson.setInfoProfile(pi);
+    }
+
+    private static Child newChild(String name, int age) {
+        Child result = new Child();
+        result.setName(name);
+        result.setAge(age);
+        return result;
+    }
+
     public void assertObject(Object data) {
         assertObject(data, null);
     }
-    
+
     public void assertObject(Object data, Type type) {
         Object generalize = PojoUtils.generalize(data);
         Object realize = PojoUtils.realize(generalize, data.getClass(), type);
         assertEquals(data, realize);
     }
-    
+
     public <T> void assertArrayObject(T[] data) {
         Object generalize = PojoUtils.generalize(data);
         @SuppressWarnings("unchecked")
@@ -91,17 +129,17 @@ public class PojoUtilsTest {
         assertObject(new Person());
         assertObject(new SerializablePerson());
     }
-    
+
     @Test
     public void test_Map_List_pojo() throws Exception {
         Map<String, List<Object>> map = new HashMap<String, List<Object>>();
-        
+
         List<Object> list = new ArrayList<Object>();
         list.add(new Person());
         list.add(new SerializablePerson());
-        
+
         map.put("k", list);
-        
+
         Object generalize = PojoUtils.generalize(map);
         Object realize = PojoUtils.realize(generalize, Map.class);
         assertEquals(map, realize);
@@ -109,46 +147,46 @@ public class PojoUtilsTest {
 
     @Test
     public void test_PrimitiveArray() throws Exception {
-        assertObject(new boolean[] { true, false });
-        assertObject(new Boolean[] { true, false, true });
+        assertObject(new boolean[]{true, false});
+        assertObject(new Boolean[]{true, false, true});
 
-        assertObject(new byte[] { 1, 12, 28, 78 });
-        assertObject(new Byte[] { 1, 12, 28, 78 });
+        assertObject(new byte[]{1, 12, 28, 78});
+        assertObject(new Byte[]{1, 12, 28, 78});
 
-        assertObject(new char[] { 'a', '中', '无' });
-        assertObject(new Character[] { 'a', '中', '无' });
+        assertObject(new char[]{'a', '中', '无'});
+        assertObject(new Character[]{'a', '中', '无'});
 
-        assertObject(new short[] { 37, 39, 12 });
-        assertObject(new Short[] { 37, 39, 12 });
+        assertObject(new short[]{37, 39, 12});
+        assertObject(new Short[]{37, 39, 12});
 
-        assertObject(new int[] { 37, -39, 12456 });
-        assertObject(new Integer[] { 37, -39, 12456 });
-        
-        assertObject(new long[] { 37L, -39L, 123456789L });
-        assertObject(new Long[] { 37L, -39L, 123456789L });
+        assertObject(new int[]{37, -39, 12456});
+        assertObject(new Integer[]{37, -39, 12456});
 
-        assertObject(new float[] { 37F, -3.14F, 123456.7F });
-        assertObject(new Float[] { 37F, -39F, 123456.7F });
-        
-        assertObject(new double[] { 37D, -3.14D, 123456.7D });
-        assertObject(new Double[] { 37D, -39D, 123456.7D});
-        
+        assertObject(new long[]{37L, -39L, 123456789L});
+        assertObject(new Long[]{37L, -39L, 123456789L});
 
-        assertArrayObject(new Boolean[] { true, false, true });
+        assertObject(new float[]{37F, -3.14F, 123456.7F});
+        assertObject(new Float[]{37F, -39F, 123456.7F});
 
-        assertArrayObject(new Byte[] { 1, 12, 28, 78 });
+        assertObject(new double[]{37D, -3.14D, 123456.7D});
+        assertObject(new Double[]{37D, -39D, 123456.7D});
 
-        assertArrayObject(new Character[] { 'a', '中', '无' });
 
-        assertArrayObject(new Short[] { 37, 39, 12 });
+        assertArrayObject(new Boolean[]{true, false, true});
 
-        assertArrayObject(new Integer[] { 37, -39, 12456 });
-        
-        assertArrayObject(new Long[] { 37L, -39L, 123456789L });
+        assertArrayObject(new Byte[]{1, 12, 28, 78});
 
-        assertArrayObject(new Float[] { 37F, -39F, 123456.7F });
-        
-        assertArrayObject(new Double[] { 37D, -39D, 123456.7D});
+        assertArrayObject(new Character[]{'a', '中', '无'});
+
+        assertArrayObject(new Short[]{37, 39, 12});
+
+        assertArrayObject(new Integer[]{37, -39, 12456});
+
+        assertArrayObject(new Long[]{37L, -39L, 123456789L});
+
+        assertArrayObject(new Float[]{37F, -39F, 123456.7F});
+
+        assertArrayObject(new Double[]{37D, -39D, 123456.7D});
     }
 
     @Test
@@ -163,19 +201,25 @@ public class PojoUtilsTest {
         assertArrayObject(array);
     }
 
-    public List<Person> returnListPersonMethod() {return null;}
-    public BigPerson returnBigPersonMethod() {return null;}
-    public Type getType(String methodName){
+    public List<Person> returnListPersonMethod() {
+        return null;
+    }
+
+    public BigPerson returnBigPersonMethod() {
+        return null;
+    }
+
+    public Type getType(String methodName) {
         Method method;
         try {
-            method = getClass().getDeclaredMethod(methodName, new Class<?>[]{} );
+            method = getClass().getDeclaredMethod(methodName, new Class<?>[]{});
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
         Type gtype = method.getGenericReturnType();
         return gtype;
     }
-    
+
     @Test
     public void test_simpleCollection() throws Exception {
         Type gtype = getType("returnListPersonMethod");
@@ -186,154 +230,28 @@ public class PojoUtilsTest {
             person.setName("xxxx");
             list.add(person);
         }
-        assertObject(list,gtype);
-    }
-
-    
-    BigPerson bigPerson;
-    {
-        bigPerson = new BigPerson();
-        bigPerson.setPersonId("id1");
-        bigPerson.setLoginName("name1");
-        bigPerson.setStatus(PersonStatus.ENABLED);
-        bigPerson.setEmail("abc@123.com");
-        bigPerson.setPenName("pname");
-
-        ArrayList<Phone> phones = new ArrayList<Phone>();
-        Phone phone1 = new Phone("86", "0571", "11223344", "001");
-        Phone phone2 = new Phone("86", "0571", "11223344", "002");
-        phones.add(phone1);
-        phones.add(phone2);
-
-        PersonInfo pi = new PersonInfo();
-        pi.setPhones(phones);
-        Phone fax = new Phone("86", "0571", "11223344", null);
-        pi.setFax(fax);
-        FullAddress addr = new FullAddress("CN", "zj", "1234", "Road1", "333444");
-        pi.setFullAddress(addr);
-        pi.setMobileNo("1122334455");
-        pi.setMale(true);
-        pi.setDepartment("b2b");
-        pi.setHomepageUrl("www.abc.com");
-        pi.setJobTitle("dev");
-        pi.setName("name2");
-
-        bigPerson.setInfoProfile(pi);
+        assertObject(list, gtype);
     }
 
     @Test
     public void test_total() throws Exception {
         Object generalize = PojoUtils.generalize(bigPerson);
         Type gtype = getType("returnBigPersonMethod");
-        Object realize = PojoUtils.realize(generalize, BigPerson.class,gtype);
+        Object realize = PojoUtils.realize(generalize, BigPerson.class, gtype);
         assertEquals(bigPerson, realize);
     }
 
+    // 循环测试
+
     @Test
     public void test_total_Array() throws Exception {
-        Object[] persons = new Object[] { bigPerson, bigPerson, bigPerson };
+        Object[] persons = new Object[]{bigPerson, bigPerson, bigPerson};
 
         Object generalize = PojoUtils.generalize(persons);
         Object[] realize = (Object[]) PojoUtils.realize(generalize, Object[].class);
         assertArrayEquals(persons, realize);
     }
-    
-    // 循环测试
-    
-    public static class Parent {
-        String name;
-        
-        int age;
-        
-        Child child;
-        
-        public String gender;
-        
-        public String email;
-        
-        private String securityEmail;
-        
-        public void setEmail(String email)  {
-            this.securityEmail = email;
-        }
-        
-        public String getEmail() {
-            return this.securityEmail;
-        }
 
-        public static Parent getNewParent() {
-            return new Parent();
-        }
-        
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public int getAge() {
-            return age;
-        }
-
-        public void setAge(int age) {
-            this.age = age;
-        }
-
-        public Child getChild() {
-            return child;
-        }
-
-        public void setChild(Child child) {
-            this.child = child;
-        }
-    }
-    
-    public static class Child {
-        String toy;
-        
-        public String gender;
-        
-        public int age;
-
-        private String name;
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public void setAge(int age) {
-            this.age = age;
-        }
-        
-        public int getAge() {
-            return age;
-        }
-        
-        public String getToy() {
-            return toy;
-        }
-
-        public void setToy(String toy) {
-            this.toy = toy;
-        }
-
-        public Parent getParent() {
-            return parent;
-        }
-
-        public void setParent(Parent parent) {
-            this.parent = parent;
-        }
-
-        Parent parent;
-    }
-    
     @Test
     public void test_Loop_pojo() throws Exception {
         Parent p = new Parent();
@@ -342,24 +260,24 @@ public class PojoUtilsTest {
 
         Child c = new Child();
         c.setToy("haha");
-        
+
         p.setChild(c);
         c.setParent(p);
-        
+
         Object generalize = PojoUtils.generalize(p);
         Parent parent = (Parent) PojoUtils.realize(generalize, Parent.class);
-        
+
         assertEquals(10, parent.getAge());
         assertEquals("jerry", parent.getName());
-        
+
         assertEquals("haha", parent.getChild().getToy());
         assertSame(parent, parent.getChild().getParent());
     }
-    
+
     @Test
     public void test_Loop_Map() throws Exception {
         Map<String, Object> map = new HashMap<String, Object>();
-        
+
         map.put("k", "v");
         map.put("m", map);
         assertSame(map, map.get("m"));
@@ -369,11 +287,11 @@ public class PojoUtilsTest {
         @SuppressWarnings("unchecked")
         Map<String, Object> ret = (Map<String, Object>) PojoUtils.realize(generalize, Map.class);
         System.out.println(ret);
-        
+
         assertEquals("v", ret.get("k"));
         assertSame(ret, ret.get("m"));
     }
-    
+
     @Test
     public void test_LoopPojoInMap() throws Exception {
         Parent p = new Parent();
@@ -382,99 +300,110 @@ public class PojoUtilsTest {
 
         Child c = new Child();
         c.setToy("haha");
-        
+
         p.setChild(c);
         c.setParent(p);
-        
+
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("k", p);
-        
+
         Object generalize = PojoUtils.generalize(map);
         @SuppressWarnings("unchecked")
         Map<String, Object> realize = (Map<String, Object>) PojoUtils.realize(generalize, Map.class, getType("getMapGenericType"));
-        
+
         Parent parent = (Parent) realize.get("k");
-        
+
         assertEquals(10, parent.getAge());
         assertEquals("jerry", parent.getName());
-        
+
         assertEquals("haha", parent.getChild().getToy());
         assertSame(parent, parent.getChild().getParent());
     }
-    
+
     @Test
     public void test_LoopPojoInList() throws Exception {
         Parent p = new Parent();
         p.setAge(10);
         p.setName("jerry");
-        
+
         Child c = new Child();
         c.setToy("haha");
-        
+
         p.setChild(c);
         c.setParent(p);
-        
+
         List<Object> list = new ArrayList<Object>();
         list.add(p);
-        
+
         Object generalize = PojoUtils.generalize(list);
         @SuppressWarnings("unchecked")
         List<Object> realize = (List<Object>) PojoUtils.realize(generalize, List.class, getType("getListGenericType"));
-        
+
         Parent parent = (Parent) realize.get(0);
-        
+
         assertEquals(10, parent.getAge());
         assertEquals("jerry", parent.getName());
-        
+
         assertEquals("haha", parent.getChild().getToy());
         assertSame(parent, parent.getChild().getParent());
     }
-    
+
     @Test
     public void test_PojoInList() throws Exception {
         Parent p = new Parent();
         p.setAge(10);
         p.setName("jerry");
-        
+
         List<Object> list = new ArrayList<Object>();
         list.add(p);
-        
+
         Object generalize = PojoUtils.generalize(list);
         @SuppressWarnings("unchecked")
         List<Object> realize = (List<Object>) PojoUtils.realize(generalize, List.class, getType("getListGenericType"));
-        
+
         Parent parent = (Parent) realize.get(0);
-        
+
         assertEquals(10, parent.getAge());
         assertEquals("jerry", parent.getName());
     }
 
-    public void setLong(long l){}
-    
-    public void setInt(int l){}
-    
-    public List<Parent> getListGenericType(){return null;};
-    public Map<String, Parent> getMapGenericType(){return null;};
-    
+    public void setLong(long l) {
+    }
+
+    public void setInt(int l) {
+    }
+
+    public List<Parent> getListGenericType() {
+        return null;
+    }
+
+    public Map<String, Parent> getMapGenericType() {
+        return null;
+    }
+
+    ;
+
     // java.lang.IllegalArgumentException: argument type mismatch
     @Test
     public void test_realize_LongPararmter_IllegalArgumentException() throws Exception {
         Method method = PojoUtilsTest.class.getMethod("setLong", long.class);
         assertNotNull(method);
-        
+
         Object value = PojoUtils.realize("563439743927993", method.getParameterTypes()[0], method.getGenericParameterTypes()[0]);
-        
+
         method.invoke(new PojoUtilsTest(), value);
     }
-    
+
+    ;
+
     // java.lang.IllegalArgumentException: argument type mismatch
     @Test
     public void test_realize_IntPararmter_IllegalArgumentException() throws Exception {
         Method method = PojoUtilsTest.class.getMethod("setInt", int.class);
         assertNotNull(method);
-        
+
         Object value = PojoUtils.realize("123", method.getParameterTypes()[0], method.getGenericParameterTypes()[0]);
-        
+
         method.invoke(new PojoUtilsTest(), value);
     }
 
@@ -489,8 +418,8 @@ public class PojoUtilsTest {
         Map map = (Map) generalize;
         assertEquals(Integer.MAX_VALUE, map.get("age"));
         assertEquals(name, map.get("name"));
-        
-        Parent realize = (Parent)PojoUtils.realize(generalize, Parent.class);
+
+        Parent realize = (Parent) PojoUtils.realize(generalize, Parent.class);
         assertEquals(Integer.MAX_VALUE, realize.getAge());
         assertEquals(name, realize.getName());
     }
@@ -520,41 +449,12 @@ public class PojoUtilsTest {
         child.setAge(20);
         child.setParent(parent);
         Object obj = PojoUtils.generalize(parent);
-        Parent realizedParent = (Parent)PojoUtils.realize(obj, Parent.class);
+        Parent realizedParent = (Parent) PojoUtils.realize(obj, Parent.class);
         Assert.assertEquals(parent.gender, realizedParent.gender);
         Assert.assertEquals(child.gender, parent.getChild().gender);
         Assert.assertEquals(child.age, realizedParent.getChild().getAge());
         Assert.assertEquals(parent.getEmail(), realizedParent.getEmail());
         Assert.assertNull(realizedParent.email);
-    }
-
-    public static class TestData {
-        private Map<String, Child> children = new HashMap<String, Child>();
-        private List<Child> list = new ArrayList<Child>();
-
-        public List<Child> getList() {
-            return list;
-        }
-
-        public void setList(List<Child> list) {
-            if (list != null && !list.isEmpty()) {
-                this.list.addAll(list);
-            }
-        }
-
-        public Map<String, Child> getChildren() {
-            return children;
-        }
-
-        public void setChildren(Map<String, Child> children) {
-            if (children!= null && !children.isEmpty()) {
-                this.children.putAll(children);
-            }
-        }
-
-        public void addChild(Child child) {
-            this.children.put(child.getName(), child);
-        }
     }
 
     @Test
@@ -578,7 +478,7 @@ public class PojoUtilsTest {
         TestData realizadData = (TestData) PojoUtils.realize(obj, TestData.class);
         Assert.assertEquals(data.getChildren().size(), realizadData.getChildren().size());
         Assert.assertEquals(data.getChildren().keySet(), realizadData.getChildren().keySet());
-        for(Map.Entry<String, Child> entry : data.getChildren().entrySet()) {
+        for (Map.Entry<String, Child> entry : data.getChildren().entrySet()) {
             Child c = realizadData.getChildren().get(entry.getKey());
             Assert.assertNotNull(c);
             Assert.assertEquals(entry.getValue().getName(), c.getName());
@@ -627,11 +527,11 @@ public class PojoUtilsTest {
         Object generializeObject = PojoUtils.generalize(result);
         Object realizeObject = PojoUtils.realize(generializeObject, ListResult.class);
         Assert.assertTrue(realizeObject instanceof ListResult);
-        ListResult listResult = (ListResult)realizeObject;
+        ListResult listResult = (ListResult) realizeObject;
         List l = listResult.getResult();
         Assert.assertTrue(l.size() == 1);
         Assert.assertTrue(l.get(0) instanceof Parent);
-        Parent realizeParent = (Parent)l.get(0);
+        Parent realizeParent = (Parent) l.get(0);
         Assert.assertEquals(parent.getName(), realizeParent.getName());
         Assert.assertEquals(parent.getAge(), realizeParent.getAge());
     }
@@ -651,16 +551,130 @@ public class PojoUtilsTest {
         Object realizeObject = PojoUtils.realize(generializeObject, ListResult.class);
 
         Assert.assertTrue(realizeObject instanceof ListResult);
-        ListResult realizeList = (ListResult)realizeObject;
+        ListResult realizeList = (ListResult) realizeObject;
         List realizeInnerList = realizeList.getResult();
         Assert.assertEquals(1, realizeInnerList.size());
         Assert.assertTrue(realizeInnerList.get(0) instanceof InnerPojo);
-        InnerPojo realizeParentList = (InnerPojo)realizeInnerList.get(0);
+        InnerPojo realizeParentList = (InnerPojo) realizeInnerList.get(0);
         Assert.assertEquals(1, realizeParentList.getList().size());
         Assert.assertTrue(realizeParentList.getList().get(0) instanceof Parent);
-        Parent realizeParent = (Parent)realizeParentList.getList().get(0);
+        Parent realizeParent = (Parent) realizeParentList.getList().get(0);
         Assert.assertEquals(parent.getName(), realizeParent.getName());
         Assert.assertEquals(parent.getAge(), realizeParent.getAge());
+    }
+
+    public static class Parent {
+        public String gender;
+        public String email;
+        String name;
+        int age;
+        Child child;
+        private String securityEmail;
+
+        public static Parent getNewParent() {
+            return new Parent();
+        }
+
+        public String getEmail() {
+            return this.securityEmail;
+        }
+
+        public void setEmail(String email) {
+            this.securityEmail = email;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public int getAge() {
+            return age;
+        }
+
+        public void setAge(int age) {
+            this.age = age;
+        }
+
+        public Child getChild() {
+            return child;
+        }
+
+        public void setChild(Child child) {
+            this.child = child;
+        }
+    }
+
+    public static class Child {
+        public String gender;
+        public int age;
+        String toy;
+        Parent parent;
+        private String name;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public int getAge() {
+            return age;
+        }
+
+        public void setAge(int age) {
+            this.age = age;
+        }
+
+        public String getToy() {
+            return toy;
+        }
+
+        public void setToy(String toy) {
+            this.toy = toy;
+        }
+
+        public Parent getParent() {
+            return parent;
+        }
+
+        public void setParent(Parent parent) {
+            this.parent = parent;
+        }
+    }
+
+    public static class TestData {
+        private Map<String, Child> children = new HashMap<String, Child>();
+        private List<Child> list = new ArrayList<Child>();
+
+        public List<Child> getList() {
+            return list;
+        }
+
+        public void setList(List<Child> list) {
+            if (list != null && !list.isEmpty()) {
+                this.list.addAll(list);
+            }
+        }
+
+        public Map<String, Child> getChildren() {
+            return children;
+        }
+
+        public void setChildren(Map<String, Child> children) {
+            if (children != null && !children.isEmpty()) {
+                this.children.putAll(children);
+            }
+        }
+
+        public void addChild(Child child) {
+            this.children.put(child.getName(), child);
+        }
     }
 
     public static class InnerPojo<T> {
@@ -685,12 +699,5 @@ public class PojoUtilsTest {
         public void setResult(List<T> result) {
             this.result = result;
         }
-    }
-
-    private static Child newChild(String name, int age) {
-        Child result = new Child();
-        result.setName(name);
-        result.setAge(age);
-        return result;
     }
 }

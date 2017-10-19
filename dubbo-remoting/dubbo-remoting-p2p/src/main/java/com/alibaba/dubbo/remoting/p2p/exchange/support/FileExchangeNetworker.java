@@ -22,7 +22,7 @@ import com.alibaba.dubbo.remoting.p2p.exchange.ExchangeNetworker;
 
 /**
  * FileNetworker
- * 
+ *
  * @author william.liangf
  */
 public class FileExchangeNetworker implements ExchangeNetworker {

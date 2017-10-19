@@ -24,13 +24,13 @@ import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
 /**
  * ChangeServiceTelnetHandler
- * 
+ *
  * @author william.liangf
  */
 @Activate
 @Help(parameter = "[service]", summary = "Change default service.", detail = "Change default service.")
 public class ChangeTelnetHandler implements TelnetHandler {
-    
+
     public static final String SERVICE_KEY = "telnet.service";
 
     public String telnet(Channel channel, String message) {
