@@ -197,11 +197,6 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                                     ProtocolConfig protocol = new ProtocolConfig();
                                     protocol.setName(value);
                                     reference = protocol;
-                                } else if ("monitor".equals(property)
-                                        && (!parserContext.getRegistry().containsBeanDefinition(value)
-                                        || !MonitorConfig.class.getName().equals(parserContext.getRegistry().getBeanDefinition(value).getBeanClassName()))) {
-                                    // 兼容旧版本配置
-                                    reference = convertMonitor(value);
                                 } else if ("onreturn".equals(property)) {
                                     int index = value.lastIndexOf(".");
                                     String returnRef = value.substring(0, index);
@@ -247,29 +242,6 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
             beanDefinition.getPropertyValues().addPropertyValue("parameters", parameters);
         }
         return beanDefinition;
-    }
-
-    protected static MonitorConfig convertMonitor(String monitor) {
-        if (monitor == null || monitor.length() == 0) {
-            return null;
-        }
-        if (GROUP_AND_VERION.matcher(monitor).matches()) {
-            String group;
-            String version;
-            int i = monitor.indexOf(':');
-            if (i > 0) {
-                group = monitor.substring(0, i);
-                version = monitor.substring(i + 1);
-            } else {
-                group = monitor;
-                version = null;
-            }
-            MonitorConfig monitorConfig = new MonitorConfig();
-            monitorConfig.setGroup(group);
-            monitorConfig.setVersion(version);
-            return monitorConfig;
-        }
-        return null;
     }
 
     private static boolean isPrimitive(Class<?> cls) {

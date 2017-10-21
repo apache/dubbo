@@ -136,11 +136,6 @@
                         <xsd:documentation><![CDATA[ The service registry. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
-                <xsd:attribute name="monitor" type="xsd:string" use="optional">
-                    <xsd:annotation>
-                        <xsd:documentation><![CDATA[ The service monitor. ]]></xsd:documentation>
-                    </xsd:annotation>
-                </xsd:attribute>
                 <xsd:attribute name="callbacks" type="xsd:string" use="optional">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[ The callback instance limit peer connection.]]></xsd:documentation>
@@ -353,11 +348,6 @@
                 <xsd:documentation><![CDATA[ The application registry. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="monitor" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[ The application monitor. ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
         <xsd:attribute name="default" type="xsd:string" use="optional">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Is default. ]]></xsd:documentation>
@@ -394,11 +384,6 @@
         <xsd:attribute name="registry" type="xsd:string" use="optional">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The module registry. ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="monitor" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[ The module monitor. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="default" type="xsd:string" use="optional">
