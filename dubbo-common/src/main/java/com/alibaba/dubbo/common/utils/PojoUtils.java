@@ -412,12 +412,16 @@ public class PojoUtils {
                     Class<?> keyClazz;
                     if (keyType instanceof Class) {
                         keyClazz = (Class<?>) keyType;
+                    } else if (keyType instanceof ParameterizedType) {
+                        keyClazz = (Class<?>) ((ParameterizedType) keyType).getRawType();
                     } else {
                         keyClazz = entry.getKey() == null ? null : entry.getKey().getClass();
                     }
                     Class<?> valueClazz;
                     if (valueType instanceof Class) {
                         valueClazz = (Class<?>) valueType;
+                    } else if (valueType instanceof ParameterizedType) {
+                        valueClazz = (Class<?>) ((ParameterizedType) valueType).getRawType();
                     } else {
                         valueClazz = entry.getValue() == null ? null : entry.getValue().getClass();
                     }
