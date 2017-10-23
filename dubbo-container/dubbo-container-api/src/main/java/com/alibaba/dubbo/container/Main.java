@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Main. (API, Static, ThreadSafe)
@@ -42,7 +44,9 @@ public class Main {
 
     private static final ExtensionLoader<Container> loader = ExtensionLoader.getExtensionLoader(Container.class);
 
-    private static volatile boolean running = true;
+    private static final ReentrantLock LOCK = new ReentrantLock();
+
+    private static final Condition STOP = LOCK.newCondition();
 
     public static void main(String[] args) {
         try {
@@ -67,9 +71,11 @@ public class Main {
                             } catch (Throwable t) {
                                 logger.error(t.getMessage(), t);
                             }
-                            synchronized (Main.class) {
-                                running = false;
-                                Main.class.notify();
+                            try {
+                                LOCK.lock();
+                                STOP.signal();
+                            } finally {
+                                LOCK.unlock();
                             }
                         }
                     }
@@ -86,13 +92,13 @@ public class Main {
             logger.error(e.getMessage(), e);
             System.exit(1);
         }
-        synchronized (Main.class) {
-            while (running) {
-                try {
-                    Main.class.wait();
-                } catch (Throwable e) {
-                }
-            }
+        try {
+            LOCK.lock();
+            STOP.await();
+        } catch (InterruptedException e) {
+            logger.warn("Dubbo service server stopped, interrupted by other thread!", e);
+        } finally {
+            LOCK.unlock();
         }
     }
 

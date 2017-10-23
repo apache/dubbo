@@ -47,7 +47,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * dubbo protocol support.
@@ -60,12 +59,9 @@ public class DubboProtocol extends AbstractProtocol {
 
     public static final String NAME = "dubbo";
 
-    public static final String COMPATIBLE_CODEC_NAME = "dubbo1compatible";
-
     public static final int DEFAULT_PORT = 20880;
     private static final String IS_CALLBACK_SERVICE_INVOKE = "_isCallBackServiceInvoke";
     private static DubboProtocol INSTANCE;
-    public final ReentrantLock lock = new ReentrantLock();
     private final Map<String, ExchangeServer> serverMap = new ConcurrentHashMap<String, ExchangeServer>(); // <host:port,Exchanger>
     private final Map<String, ReferenceCountExchangeClient> referenceClientMap = new ConcurrentHashMap<String, ReferenceCountExchangeClient>(); // <host:port,Exchanger>
     private final ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap = new ConcurrentHashMap<String, LazyConnectExchangeClient>();
@@ -273,7 +269,7 @@ public class DubboProtocol extends AbstractProtocol {
         if (str != null && str.length() > 0 && !ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(str))
             throw new RpcException("Unsupported server type: " + str + ", url: " + url);
 
-        url = url.addParameter(Constants.CODEC_KEY, Version.isCompatibleVersion() ? COMPATIBLE_CODEC_NAME : DubboCodec.NAME);
+        url = url.addParameter(Constants.CODEC_KEY, DubboCodec.NAME);
         ExchangeServer server;
         try {
             server = Exchangers.bind(url, requestHandler);
@@ -329,16 +325,16 @@ public class DubboProtocol extends AbstractProtocol {
                 client.incrementAndGetCount();
                 return client;
             } else {
-//                logger.warn(new IllegalStateException("client is closed,but stay in clientmap .client :"+ client));
                 referenceClientMap.remove(key);
             }
         }
-        ExchangeClient exchagneclient = initClient(url);
-
-        client = new ReferenceCountExchangeClient(exchagneclient, ghostClientMap);
-        referenceClientMap.put(key, client);
-        ghostClientMap.remove(key);
-        return client;
+        synchronized (key.intern()) {
+            ExchangeClient exchangeClient = initClient(url);
+            client = new ReferenceCountExchangeClient(exchangeClient, ghostClientMap);
+            referenceClientMap.put(key, client);
+            ghostClientMap.remove(key);
+            return client;
+        }
     }
 
     /**
@@ -351,7 +347,7 @@ public class DubboProtocol extends AbstractProtocol {
 
         String version = url.getParameter(Constants.DUBBO_VERSION_KEY);
         boolean compatible = (version != null && version.startsWith("1.0."));
-        url = url.addParameter(Constants.CODEC_KEY, Version.isCompatibleVersion() && compatible ? COMPATIBLE_CODEC_NAME : DubboCodec.NAME);
+        url = url.addParameter(Constants.CODEC_KEY, DubboCodec.NAME);
         //默认开启heartbeat
         url = url.addParameterIfAbsent(Constants.HEARTBEAT_KEY, String.valueOf(Constants.DEFAULT_HEARTBEAT));
 
@@ -370,8 +366,7 @@ public class DubboProtocol extends AbstractProtocol {
                 client = Exchangers.connect(url, requestHandler);
             }
         } catch (RemotingException e) {
-            throw new RpcException("Fail to create remoting client for service(" + url
-                    + "): " + e.getMessage(), e);
+            throw new RpcException("Fail to create remoting client for service(" + url + "): " + e.getMessage(), e);
         }
         return client;
     }

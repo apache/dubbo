@@ -104,9 +104,7 @@ public class JValidator implements Validator {
             return null;
         }
         try {
-            String upperName = toUpperMethoName(method.getName());
-            String parameterSimpleName = upperName + "Parameter";
-            String parameterClassName = clazz.getName() + "_" + parameterSimpleName;
+            String parameterClassName = generateMethodParameterClassName(clazz, method);
             Class<?> parameterClass;
             try {
                 parameterClass = (Class<?>) Class.forName(parameterClassName, true, clazz.getClassLoader());
@@ -133,7 +131,7 @@ public class JValidator implements Validator {
                                         && member.getParameterTypes().length == 0
                                         && member.getDeclaringClass() == annotation.annotationType()) {
                                     Object value = member.invoke(annotation, new Object[0]);
-                                    if (value != null && !value.equals(member.getDefaultValue())) {
+                                    if (null != value) {
                                         MemberValue memberValue = createMemberValue(
                                                 classFile.getConstPool(), pool.get(member.getReturnType().getName()), value);
                                         ja.addMemberValue(member.getName(), memberValue);
@@ -160,6 +158,20 @@ public class JValidator implements Validator {
             logger.warn(e.getMessage(), e);
             return null;
         }
+    }
+
+    private static String generateMethodParameterClassName(Class<?> clazz, Method method) {
+        StringBuilder builder = new StringBuilder().append(clazz.getName())
+                .append("_")
+                .append(toUpperMethoName(method.getName()))
+                .append("Parameter");
+
+        Class<?>[] parameterTypes = method.getParameterTypes();
+        for (Class<?> parameterType : parameterTypes) {
+            builder.append("_").append(parameterType.getName());
+        }
+
+        return builder.toString();
     }
 
     private static boolean hasConstraintParameter(Method method) {

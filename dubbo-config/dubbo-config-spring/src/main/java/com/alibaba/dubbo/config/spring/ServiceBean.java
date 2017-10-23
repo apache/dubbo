@@ -117,7 +117,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
         if (delay == null && provider != null) {
             delay = provider.getDelay();
         }
-        return supportedApplicationListener && (delay == null || delay.intValue() == -1);
+        return supportedApplicationListener && (delay == null || delay == -1);
     }
 
     @SuppressWarnings({"unchecked", "deprecation"})
