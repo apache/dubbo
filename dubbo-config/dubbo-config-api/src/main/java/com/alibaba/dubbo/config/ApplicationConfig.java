@@ -18,6 +18,7 @@ package com.alibaba.dubbo.config;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.compiler.support.AdaptiveCompiler;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.config.support.Parameter;
 
 import java.util.ArrayList;
@@ -66,6 +67,9 @@ public class ApplicationConfig extends AbstractConfig {
 
     // 是否为缺省
     private Boolean isDefault;
+
+    // 绑定Ip
+    private String bind;
 
     public ApplicationConfig() {
     }
@@ -194,4 +198,12 @@ public class ApplicationConfig extends AbstractConfig {
         this.isDefault = isDefault;
     }
 
+    public String getBind() {
+        return bind;
+    }
+
+    public void setBind(String bind) {
+        NetUtils.setBind(bind);
+        this.bind = bind;
+    }
 }

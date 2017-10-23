@@ -357,6 +357,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (provider != null && (host == null || host.length() == 0)) {
             host = provider.getHost();
         }
+        String bind = NetUtils.getBind();
+        if (StringUtils.isNotEmpty(bind)) {
+            host = bind;
+        }
         boolean anyhost = false;
         if (NetUtils.isInvalidLocalHost(host)) {
             anyhost = true;
