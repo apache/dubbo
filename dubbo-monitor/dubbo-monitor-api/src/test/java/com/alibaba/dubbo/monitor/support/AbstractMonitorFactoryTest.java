@@ -70,7 +70,7 @@ public class AbstractMonitorFactoryTest {
     @Test
     public void testMonitorFactoryIpCache() throws Exception {
         Monitor monitor1 = monitorFactory.getMonitor(URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":2233"));
-        Monitor monitor2 = monitorFactory.getMonitor(URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostAddress() + ":2233"));
+        Monitor monitor2 = monitorFactory.getMonitor(URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":2233"));
         Assert.assertEquals(monitor1, monitor2);
     }
 
