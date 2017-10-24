@@ -20,10 +20,13 @@ import com.alibaba.dubbo.rpc.Filter;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.support.BlockMyInvoker;
 import com.alibaba.dubbo.rpc.support.MockInvocation;
 import com.alibaba.dubbo.rpc.support.MyInvoker;
 
 import org.junit.Test;
+
+import java.util.concurrent.CountDownLatch;
 
 import static org.junit.Assert.assertNotSame;
 
@@ -56,12 +59,18 @@ public class ActiveLimitFilterTest {
     @Test
     public void testInvokeGreaterActives() {
         URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives=1&timeout=1");
-        final Invoker<ActiveLimitFilterTest> invoker = new MyInvoker<ActiveLimitFilterTest>(url);
+        final Invoker<ActiveLimitFilterTest> invoker = new BlockMyInvoker<ActiveLimitFilterTest>(url, 100);
         final Invocation invocation = new MockInvocation();
+        final CountDownLatch latch = new CountDownLatch(1);
         for (int i = 0; i < 100; i++) {
             Thread thread = new Thread(new Runnable() {
 
                 public void run() {
+                    try {
+                        latch.await();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     for (int i = 0; i < 100; i++) {
                         try {
                             activeLimitFilter.invoke(invoker, invocation);
@@ -73,6 +82,8 @@ public class ActiveLimitFilterTest {
             });
             thread.start();
         }
+        latch.countDown();
+
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
