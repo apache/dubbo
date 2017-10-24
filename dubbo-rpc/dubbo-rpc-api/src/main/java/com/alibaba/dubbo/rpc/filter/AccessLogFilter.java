@@ -17,7 +17,7 @@ package com.alibaba.dubbo.rpc.filter;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.Activate;
-import com.alibaba.dubbo.common.json.JSON;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
@@ -139,7 +139,7 @@ public class AccessLogFilter implements Filter {
                 sn.append(") ");
                 Object[] args = inv.getArguments();
                 if (args != null && args.length > 0) {
-                    sn.append(JSON.json(args));
+                    sn.append(JSON.toJSONString(args));
                 }
                 String msg = sn.toString();
                 if (ConfigUtils.isDefault(accesslog)) {

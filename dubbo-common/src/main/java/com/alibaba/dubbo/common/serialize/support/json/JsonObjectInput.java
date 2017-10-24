@@ -35,6 +35,7 @@ import java.util.Map;
  * @author william.liangf
  * @author ding.lid
  */
+@Deprecated
 public class JsonObjectInput implements ObjectInput {
 
     private final BufferedReader reader;
