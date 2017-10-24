@@ -29,7 +29,7 @@ import java.io.Writer;
  *
  * @author qian.lei
  */
-
+@Deprecated
 public class JSON {
     public static final char LBRACE = '{', RBRACE = '}';
 
