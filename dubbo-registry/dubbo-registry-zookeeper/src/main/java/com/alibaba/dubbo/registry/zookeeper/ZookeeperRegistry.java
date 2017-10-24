@@ -83,6 +83,17 @@ public class ZookeeperRegistry extends FailbackRegistry {
 
         try {
             zkClient = zookeeperTransporter.connect(url);
+            zkClient.addStateListener(new StateListener() {
+                public void stateChanged(int state) {
+                    if (state == RECONNECTED) {
+                        try {
+                            recover();
+                        } catch (Exception e) {
+                            logger.error(e.getMessage(), e);
+                        }
+                    }
+                }
+            });
             return;
         } catch (Throwable throwable) {
             logger.error("fail to connect zk ", throwable);
