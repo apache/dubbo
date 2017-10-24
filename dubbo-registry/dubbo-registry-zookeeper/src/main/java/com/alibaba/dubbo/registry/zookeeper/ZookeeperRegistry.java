@@ -20,6 +20,7 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
+import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 import com.alibaba.dubbo.common.utils.UrlUtils;
 import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.support.FailbackRegistry;
@@ -34,6 +35,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * ZookeeperRegistry
@@ -54,9 +59,18 @@ public class ZookeeperRegistry extends FailbackRegistry {
 
     private final ConcurrentMap<URL, ConcurrentMap<NotifyListener, ChildListener>> zkListeners = new ConcurrentHashMap<URL, ConcurrentMap<NotifyListener, ChildListener>>();
 
-    private final ZookeeperClient zkClient;
+    private ZookeeperClient zkClient;
 
-    public ZookeeperRegistry(URL url, ZookeeperTransporter zookeeperTransporter) {
+    // 重连定时器，定时检查连接是否可用，不可用时，无限次重连
+    private ScheduledFuture<?> reconnectFuture;
+
+    // 重连检测周期3秒(单位毫秒)
+    private static final int RECONNECT_PERIOD_DEFAULT = 5 * 1000;
+
+    // 定时任务执行器
+    private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1, new NamedThreadFactory("DubboRegistryReconnectTimer", true));
+
+    public ZookeeperRegistry(final URL url, final ZookeeperTransporter zookeeperTransporter) {
         super(url);
         if (url.isAnyHost()) {
             throw new IllegalStateException("registry address == null");
@@ -66,19 +80,41 @@ public class ZookeeperRegistry extends FailbackRegistry {
             group = Constants.PATH_SEPARATOR + group;
         }
         this.root = group;
-        zkClient = zookeeperTransporter.connect(url);
-        zkClient.addStateListener(new StateListener() {
-            public void stateChanged(int state) {
-                if (state == RECONNECTED) {
-                    try {
-                        recover();
-                    } catch (Exception e) {
-                        logger.error(e.getMessage(), e);
-                    }
+
+        try {
+            zkClient = zookeeperTransporter.connect(url);
+            return;
+        } catch (Throwable throwable) {
+            logger.error("fail to connect zk ", throwable);
+        }
+
+        int reconnectPeriod = url.getParameter(Constants.REGISTRY_RECONNECT_PERIOD_KEY, RECONNECT_PERIOD_DEFAULT);
+        reconnectFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
+            public void run() {
+                // 检测并连接注册中心
+                try {
+                    zkClient = zookeeperTransporter.connect(url);
+                    zkClient.addStateListener(new StateListener() {
+                        public void stateChanged(int state) {
+                            if (state == RECONNECTED) {
+                                try {
+                                    recover();
+                                } catch (Exception e) {
+                                    logger.error(e.getMessage(), e);
+                                }
+                            }
+                        }
+                    });
+
+                    reconnectFuture.cancel(false);
+                } catch (Throwable t) { // 防御性容错
+                    logger.error("Unexpected error occur at reconnect, cause: " + t.getMessage(), t);
                 }
             }
-        });
+        }, reconnectPeriod, reconnectPeriod, TimeUnit.MILLISECONDS);
+
     }
+
 
     static String appendDefaultPort(String address) {
         if (address != null && address.length() > 0) {
@@ -93,12 +129,16 @@ public class ZookeeperRegistry extends FailbackRegistry {
     }
 
     public boolean isAvailable() {
-        return zkClient.isConnected();
+        return zkClient != null && zkClient.isConnected();
     }
 
     public void destroy() {
         super.destroy();
         try {
+            if (zkClient == null) {
+                reconnectFuture.cancel(false);
+                return;
+            }
             zkClient.close();
         } catch (Exception e) {
             logger.warn("Failed to close zookeeper client " + getUrl() + ", cause: " + e.getMessage(), e);
@@ -107,6 +147,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
 
     protected void doRegister(URL url) {
         try {
+            checkAvailable();
             zkClient.create(toUrlPath(url), url.getParameter(Constants.DYNAMIC_KEY, true));
         } catch (Throwable e) {
             throw new RpcException("Failed to register " + url + " to zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
@@ -115,6 +156,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
 
     protected void doUnregister(URL url) {
         try {
+            checkAvailable();
             zkClient.delete(toUrlPath(url));
         } catch (Throwable e) {
             throw new RpcException("Failed to unregister " + url + " to zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
@@ -123,6 +165,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
 
     protected void doSubscribe(final URL url, final NotifyListener listener) {
         try {
+            checkAvailable();
             if (Constants.ANY_VALUE.equals(url.getServiceInterface())) {
                 String root = toRootPath();
                 ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
@@ -187,6 +230,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     }
 
     protected void doUnsubscribe(URL url, NotifyListener listener) {
+        checkAvailable();
         ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
         if (listeners != null) {
             ChildListener zkListener = listeners.get(listener);
@@ -197,6 +241,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     }
 
     public List<URL> lookup(URL url) {
+        checkAvailable();
         if (url == null) {
             throw new IllegalArgumentException("lookup url == null");
         }
@@ -282,5 +327,12 @@ public class ZookeeperRegistry extends FailbackRegistry {
         }
         return urls;
     }
+
+    private void checkAvailable() {
+        if (!isAvailable()) {
+            throw new IllegalStateException("zookeeper not Available");
+        }
+    }
+
 
 }
