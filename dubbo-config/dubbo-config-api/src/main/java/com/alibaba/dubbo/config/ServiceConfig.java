@@ -359,8 +359,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private String hostToRegistry(ProtocolConfig protocolConfig, List<URL> registryURLs, Map<String, String> map) {
         String host = ConfigUtils.getSystemProperty(Constants.DUBBO_IP_TO_REGISTRY);
 
-        if (NetUtils.isInvalidLocalHost(host)) {
-            logger.warn("Unvalid system property 'dubbo.address.ip=" + host + "', please check!");
+        if (host == null || host.length() == 0) {
             host = protocolConfig.getHost();
             if (provider != null && (host == null || host.length() == 0)) {
                 host = provider.getHost();
@@ -398,6 +397,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 }
             }
         }
+        // 如果从环境变量读取的ip不合法，则终止启动流程，即时失败反馈
+        else if (NetUtils.isInvalidLocalHost(host)) {
+            throw new IllegalArgumentException("Specified unvalid registry ip from property:" + Constants.DUBBO_IP_TO_REGISTRY + ", value:" + host);
+        }
 
         // TODO anyhost现在统一设置为true，网络层全部绑定0.0.0.0
         map.put(Constants.ANYHOST_KEY, "true");
@@ -415,13 +418,18 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
      */
     private Integer portToRegistry(ProtocolConfig protocolConfig, String name) {
         String configPort = ConfigUtils.getSystemProperty(Constants.DUBBO_PORT_TO_REGISTRY);
+        // 如果从环境变量读取的port不合法，则终止启动流程，即时失败反馈
         if (configPort != null && configPort.length() > 0) {
             try {
-                return Integer.parseInt(configPort);
+                Integer intPort = Integer.parseInt(configPort);
+                if (intPort <= 0) {
+                    throw new IllegalArgumentException("Specified unvalid registry port from property:" + Constants.DUBBO_IP_TO_REGISTRY + ", value:" + configPort);
+                }
             } catch (Exception e) {
-                logger.warn("Unvalid system property 'dubbo.address.port=" + configPort + "', please check!");
+                throw new IllegalArgumentException("Specified unvalid registry port from property:" + Constants.DUBBO_IP_TO_REGISTRY + ", value:" + configPort);
             }
         }
+
         Integer port = protocolConfig.getPort();
         if (provider != null && (port == null || port == 0)) {
             port = provider.getPort();
@@ -668,19 +676,19 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         return interfaceName;
     }
 
+    public void setInterface(String interfaceName) {
+        this.interfaceName = interfaceName;
+        if (id == null || id.length() == 0) {
+            id = interfaceName;
+        }
+    }
+
     public void setInterface(Class<?> interfaceClass) {
         if (interfaceClass != null && !interfaceClass.isInterface()) {
             throw new IllegalStateException("The interface class " + interfaceClass + " is not a interface!");
         }
         this.interfaceClass = interfaceClass;
         setInterface(interfaceClass == null ? (String) null : interfaceClass.getName());
-    }
-
-    public void setInterface(String interfaceName) {
-        this.interfaceName = interfaceName;
-        if (id == null || id.length() == 0) {
-            id = interfaceName;
-        }
     }
 
     public T getRef() {
