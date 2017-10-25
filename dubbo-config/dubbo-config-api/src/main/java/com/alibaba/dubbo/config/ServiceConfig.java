@@ -347,51 +347,81 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
     }
 
-    private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
-        String name = protocolConfig.getName();
-        if (name == null || name.length() == 0) {
-            name = "dubbo";
-        }
+    /**
+     * provider注册到注册中心服务地址，即ip地址
+     * 配置优先级：系统环境变量 -> java命令参数-D -> 配置文件host属性 -> /etc/hosts中hostname-ip映射关系 -> 默认联通注册中心地址的网卡地址 -> 第一个可用的网卡地址
+     *
+     * @param protocolConfig
+     * @param registryURLs
+     * @param map
+     * @return
+     */
+    private String hostToRegistry(ProtocolConfig protocolConfig, List<URL> registryURLs, Map<String, String> map) {
+        String host = ConfigUtils.getSystemProperty(Constants.DUBBO_IP_TO_REGISTRY);
 
-        String host = protocolConfig.getHost();
-        if (provider != null && (host == null || host.length() == 0)) {
-            host = provider.getHost();
-        }
-        boolean anyhost = false;
         if (NetUtils.isInvalidLocalHost(host)) {
-            anyhost = true;
-            try {
-                host = InetAddress.getLocalHost().getHostAddress();
-            } catch (UnknownHostException e) {
-                logger.warn(e.getMessage(), e);
+            logger.warn("Unvalid system property 'dubbo.address.ip=" + host + "', please check!");
+            host = protocolConfig.getHost();
+            if (provider != null && (host == null || host.length() == 0)) {
+                host = provider.getHost();
             }
             if (NetUtils.isInvalidLocalHost(host)) {
-                if (registryURLs != null && registryURLs.size() > 0) {
-                    for (URL registryURL : registryURLs) {
-                        try {
-                            Socket socket = new Socket();
-                            try {
-                                SocketAddress addr = new InetSocketAddress(registryURL.getHost(), registryURL.getPort());
-                                socket.connect(addr, 1000);
-                                host = socket.getLocalAddress().getHostAddress();
-                                break;
-                            } finally {
-                                try {
-                                    socket.close();
-                                } catch (Throwable e) {
-                                }
-                            }
-                        } catch (Exception e) {
-                            logger.warn(e.getMessage(), e);
-                        }
-                    }
+                try {
+                    host = InetAddress.getLocalHost().getHostAddress();
+                } catch (UnknownHostException e) {
+                    logger.warn(e.getMessage(), e);
                 }
                 if (NetUtils.isInvalidLocalHost(host)) {
-                    host = NetUtils.getLocalHost();
+                    if (registryURLs != null && registryURLs.size() > 0) {
+                        for (URL registryURL : registryURLs) {
+                            try {
+                                Socket socket = new Socket();
+                                try {
+                                    SocketAddress addr = new InetSocketAddress(registryURL.getHost(), registryURL.getPort());
+                                    socket.connect(addr, 1000);
+                                    host = socket.getLocalAddress().getHostAddress();
+                                    break;
+                                } finally {
+                                    try {
+                                        socket.close();
+                                    } catch (Throwable e) {
+                                    }
+                                }
+                            } catch (Exception e) {
+                                logger.warn(e.getMessage(), e);
+                            }
+                        }
+                    }
+                    if (NetUtils.isInvalidLocalHost(host)) {
+                        host = NetUtils.getLocalHost();
+                    }
                 }
             }
         }
 
+        // TODO anyhost现在统一设置为true，网络层全部绑定0.0.0.0
+        map.put(Constants.ANYHOST_KEY, "true");
+
+        return host;
+    }
+
+    /**
+     * provider注册&监听端口
+     * 配置优先级：启动环境变量 -> java命令参数-D -> protocol配置文件port属性配置 -> 协议默认端口
+     *
+     * @param protocolConfig
+     * @param name
+     * @return
+     */
+    private Integer portToRegistry(ProtocolConfig protocolConfig, String name) {
+        String configPort = ConfigUtils.getSystemProperty(Constants.DUBBO_PORT_TO_REGISTRY);
+        if (configPort != null && configPort.length() > 0) {
+            try {
+                return Integer.parseInt(configPort);
+            } catch (Exception e) {
+                logger.warn("Unvalid system property 'dubbo.address.port=" + configPort + "', please check!");
+            }
+        }
         Integer port = protocolConfig.getPort();
         if (provider != null && (port == null || port == 0)) {
             port = provider.getPort();
@@ -408,11 +438,16 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             }
             logger.warn("Use random available port(" + port + ") for protocol " + name);
         }
+        return port;
+    }
+
+    private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
+        String name = protocolConfig.getName();
+        if (name == null || name.length() == 0) {
+            name = "dubbo";
+        }
 
         Map<String, String> map = new HashMap<String, String>();
-        if (anyhost) {
-            map.put(Constants.ANYHOST_KEY, "true");
-        }
         map.put(Constants.SIDE_KEY, Constants.PROVIDER_SIDE);
         map.put(Constants.DUBBO_VERSION_KEY, Version.getVersion());
         map.put(Constants.TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
@@ -513,6 +548,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if ((contextPath == null || contextPath.length() == 0) && provider != null) {
             contextPath = provider.getContextpath();
         }
+
+        String host = this.hostToRegistry(protocolConfig, registryURLs, map);
+        Integer port = this.portToRegistry(protocolConfig, name);
         URL url = new URL(name, host, port, (contextPath == null || contextPath.length() == 0 ? "" : contextPath + "/") + path, map);
 
         if (ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
@@ -630,19 +668,19 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         return interfaceName;
     }
 
-    public void setInterface(String interfaceName) {
-        this.interfaceName = interfaceName;
-        if (id == null || id.length() == 0) {
-            id = interfaceName;
-        }
-    }
-
     public void setInterface(Class<?> interfaceClass) {
         if (interfaceClass != null && !interfaceClass.isInterface()) {
             throw new IllegalStateException("The interface class " + interfaceClass + " is not a interface!");
         }
         this.interfaceClass = interfaceClass;
         setInterface(interfaceClass == null ? (String) null : interfaceClass.getName());
+    }
+
+    public void setInterface(String interfaceName) {
+        this.interfaceName = interfaceName;
+        if (id == null || id.length() == 0) {
+            id = interfaceName;
+        }
     }
 
     public T getRef() {
