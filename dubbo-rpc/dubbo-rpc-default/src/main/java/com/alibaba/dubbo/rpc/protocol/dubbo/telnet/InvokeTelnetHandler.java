@@ -141,7 +141,7 @@ public class InvokeTelnetHandler implements TelnetHandler {
                     long start = System.currentTimeMillis();
                     Object result = invoker.invoke(new RpcInvocation(invokeMethod, array)).recreate();
                     long end = System.currentTimeMillis();
-                    buf.append(JSON.toJSON(result));
+                    buf.append(JSON.toJSONString(result));
                     buf.append("\r\nelapsed: ");
                     buf.append(end - start);
                     buf.append(" ms.");
