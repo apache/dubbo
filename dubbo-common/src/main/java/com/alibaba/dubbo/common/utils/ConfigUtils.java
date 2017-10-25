@@ -186,6 +186,20 @@ public class ConfigUtils {
         return replaceProperty(properties.getProperty(key, defaultValue), (Map) properties);
     }
 
+    /**
+     *  系统环境变量 -> java命令参数-D
+     *
+     * @param key
+     * @return
+     */
+    public static String getSystemProperty(String key) {
+        String value = System.getenv(key);
+        if (value == null || value.length() == 0) {
+            value = System.getProperty(key);
+        }
+        return value;
+    }
+
     public static Properties loadProperties(String fileName) {
         return loadProperties(fileName, false, false);
     }

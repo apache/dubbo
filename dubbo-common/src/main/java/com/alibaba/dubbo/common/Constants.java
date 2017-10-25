@@ -582,6 +582,10 @@ public class Constants {
 
     public static final String GENERIC_SERIALIZATION_BEAN = "bean";
 
+    public static final String DUBBO_IP_TO_REGISTRY = "DUBBO_IP_TO_REGISTRY";
+
+    public static final String DUBBO_PORT_TO_REGISTRY = "DUBBO_PORT_TO_REGISTRY";
+
     /*
      * private Constants(){ }
      */
