@@ -24,7 +24,7 @@
     <dubbo:application name="demo-provider"/>
 
     <!-- 使用multicast广播注册中心暴露服务地址 -->
-    <dubbo:registry address="multicast://224.5.6.7:1234"/>
+    <dubbo:registry address="redis://127.0.0.1:6379" username="root" password="foobared"/>
 
     <!-- 用dubbo协议在20880端口暴露服务 -->
     <dubbo:protocol name="dubbo" port="20880"/>
