@@ -19,7 +19,6 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
-import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 import com.alibaba.dubbo.monitor.Monitor;
 import com.alibaba.dubbo.monitor.MonitorFactory;
 import com.alibaba.dubbo.monitor.MonitorService;
@@ -29,8 +28,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
@@ -52,12 +49,6 @@ public abstract class AbstractMonitorFactory implements MonitorFactory {
 
     private static final Map<String, Future<Monitor>> MONITOR_CREATORS = new ConcurrentHashMap<String, Future<Monitor>>();
 
-    private static final ExecutorService monitorScanner = Executors.newFixedThreadPool(1, new NamedThreadFactory("DubboMonitorScanner", true));
-
-    static {
-        monitorScanner.submit(new MonitorScanTask());
-    }
-
     public static Collection<Monitor> getMonitors() {
         return Collections.unmodifiableCollection(MONITORS.values());
     }
@@ -68,8 +59,19 @@ public abstract class AbstractMonitorFactory implements MonitorFactory {
         LOCK.lock();
         try {
             Monitor monitor = MONITORS.get(key);
-            if (monitor != null || MONITOR_CREATORS.get(key) != null) {
+            if (monitor != null) {
                 return monitor;
+            }
+
+            Future<Monitor> future = MONITOR_CREATORS.get(key);
+            if (future != null) {
+                try {
+                    monitor = future.get(100, TimeUnit.MICROSECONDS);
+                    MONITORS.put(key, monitor);
+                    MONITOR_CREATORS.remove(key);
+                    return monitor;
+                } catch (Throwable t) {
+                }
             }
 
             final URL monitorUrl = url;
@@ -79,7 +81,6 @@ public abstract class AbstractMonitorFactory implements MonitorFactory {
             thread.setDaemon(true);
             thread.start();
             try {
-                System.out.println("main: " + System.currentTimeMillis());
                 monitor = task.get(10, TimeUnit.MILLISECONDS);
             } catch (Throwable t) {
                 MONITOR_CREATORS.put(key, task);
@@ -97,33 +98,6 @@ public abstract class AbstractMonitorFactory implements MonitorFactory {
 
     protected abstract Monitor createMonitor(URL url);
 
-    static class MonitorScanTask implements Runnable {
-        @Override
-        public void run() {
-            while (true) {
-                for (Map.Entry<String, Future<Monitor>> entry : MONITOR_CREATORS.entrySet()) {
-                    System.out.println(MONITOR_CREATORS.size());
-                    String key = entry.getKey();
-                    Future<Monitor> future = MONITOR_CREATORS.get(key);
-                    if (future != null) {
-                        try {
-                            Monitor monitor = future.get(10, TimeUnit.MILLISECONDS);
-                            System.out.println(monitor);
-                            MONITORS.put(key, monitor);
-                            MONITOR_CREATORS.remove(key);
-                        } catch (Throwable t) {
-                            logger.info(t);
-                        }
-                    }
-                }
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException e) {
-                }
-            }
-        }
-    }
-
     class MonitorCreator implements Callable<Monitor> {
 
         private URL url;
@@ -135,7 +109,6 @@ public abstract class AbstractMonitorFactory implements MonitorFactory {
         @Override
         public Monitor call() throws Exception {
             Monitor monitor = AbstractMonitorFactory.this.createMonitor(url);
-            System.out.println("thread: " + System.currentTimeMillis());
             return monitor;
         }
     }
