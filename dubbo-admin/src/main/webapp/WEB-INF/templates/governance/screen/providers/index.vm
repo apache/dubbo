@@ -89,14 +89,15 @@
                 #set($errorLevel = "ok")
                 #set($errorMessage = "")
 
-                #if ($providerApplication == "")
-                    #set($providerApplication = $provider.application)
-                #end
-
-                #if($providerApplication != $provider.application)
-                    #if ($errorLevel != "error") #set($errorLevel = "warn") #end
-                    #set($errorMessage ="$errorMessage<br>$i18n.get('warn'): $i18n.get(
-                        'CheckProviderApplicationDifferent', $providerApplication, $provider.application)")
+                #foreach($patchProvider in $providers)
+                    #if ($patchProvider.application != $provider.application)
+                        #if ($provider.service == $patchProvider.service)
+                            #if ($errorLevel != "error") #set($errorLevel = "warn") #end
+                            #set($errorMessage ="$errorMessage<br>$i18n.get('warn'): $i18n.get(
+                                'CheckProviderApplicationDifferent', $patchProvider.application, $provider.application)")
+                            #break
+                        #end
+                    #end
                 #end
 
                 #if($provider.address.startsWith("127.") || $provider.address.startsWith(
