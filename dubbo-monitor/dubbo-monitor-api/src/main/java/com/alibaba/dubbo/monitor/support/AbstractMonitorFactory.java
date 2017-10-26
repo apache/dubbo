@@ -17,8 +17,11 @@ package com.alibaba.dubbo.monitor.support;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.concurrent.ListenableFuture;
+import com.alibaba.dubbo.common.concurrent.ListenableFutureTask;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 import com.alibaba.dubbo.monitor.Monitor;
 import com.alibaba.dubbo.monitor.MonitorFactory;
 import com.alibaba.dubbo.monitor.MonitorService;
@@ -28,9 +31,10 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -47,64 +51,36 @@ public abstract class AbstractMonitorFactory implements MonitorFactory {
     // 注册中心集合 Map<RegistryAddress, Registry>
     private static final Map<String, Monitor> MONITORS = new ConcurrentHashMap<String, Monitor>();
 
-    private static final Map<String, Future<Monitor>> MONITOR_CREATORS = new ConcurrentHashMap<String, Future<Monitor>>();
+    private static final Map<String, ListenableFuture<Monitor>> FUTURES = new ConcurrentHashMap<String, ListenableFuture<Monitor>>();
+
+    private static final ExecutorService creatorExecutor = Executors.newCachedThreadPool(new NamedThreadFactory("DubboMonitorCreator", true));
+    private static final ExecutorService callbackExecutor = Executors.newFixedThreadPool(1, new NamedThreadFactory("DubboMonitorCallback", true));
 
     private int count = 0;
+
 
     public static Collection<Monitor> getMonitors() {
         return Collections.unmodifiableCollection(MONITORS.values());
     }
 
-    /**
-     * TODO 待ListenableFuture模式优化
-     *
-     * @param url
-     * @return
-     */
     public Monitor getMonitor(URL url) {
         url = url.setPath(MonitorService.class.getName()).addParameter(Constants.INTERFACE_KEY, MonitorService.class.getName());
         String key = url.toServiceStringWithoutResolving();
         LOCK.lock();
         try {
             Monitor monitor = MONITORS.get(key);
-            if (monitor != null) {
+            Future<Monitor> future = FUTURES.get(key);
+            if (monitor != null || future != null) {
                 return monitor;
             }
 
-            Future<Monitor> future = MONITOR_CREATORS.get(key);
-            if (future != null) {
-                if (future.isDone()) {
-                    try {
-                        monitor = future.get();
-                        MONITORS.put(key, monitor);
-                        MONITOR_CREATORS.remove(key);
-                    } catch (Throwable t) {
-                    }
-                }
-                return monitor;
-            }
+            final URL monitorUrl = url;
+            final ListenableFutureTask<Monitor> listenableFutureTask = ListenableFutureTask.create(new MonitorCreator(monitorUrl));
+            listenableFutureTask.addListener(new MonitorListener(key), callbackExecutor);
+            creatorExecutor.execute(listenableFutureTask);
+            FUTURES.put(key, listenableFutureTask);
 
-            // 数量：key=注册中心地址，数量一般很少
-            if (count < 10) {
-                final URL monitorUrl = url;
-                FutureTask<Monitor> task = new FutureTask<Monitor>(new MonitorCreator(monitorUrl));
-                Thread thread = new Thread(task);
-                thread.setName("DubboMointorCreator-thread-" + ++count);
-                thread.setDaemon(true);
-                thread.start();
-                try {
-                    monitor = task.get(10, TimeUnit.MILLISECONDS);
-                } catch (Throwable t) {
-                    MONITOR_CREATORS.put(key, task);
-                }
-                if (monitor != null) {
-                    MONITORS.put(key, monitor);
-                }
-            } else {
-                monitor = this.createMonitor(url);
-            }
-
-            return monitor;
+            return null;
         } finally {
             // 释放锁
             LOCK.unlock();
@@ -125,6 +101,29 @@ public abstract class AbstractMonitorFactory implements MonitorFactory {
         public Monitor call() throws Exception {
             Monitor monitor = AbstractMonitorFactory.this.createMonitor(url);
             return monitor;
+        }
+    }
+
+    class MonitorListener implements Runnable {
+
+        private String key;
+
+        public MonitorListener(String key) {
+            this.key = key;
+        }
+
+        @Override
+        public void run() {
+            try {
+                ListenableFuture<Monitor> listenableFuture = AbstractMonitorFactory.FUTURES.get(key);
+                AbstractMonitorFactory.MONITORS.put(key, listenableFuture.get());
+                AbstractMonitorFactory.FUTURES.remove(key);
+            } catch (InterruptedException e) {
+                logger.warn("Thread was interrupted unexpectedly, monitor will never be got.");
+                AbstractMonitorFactory.FUTURES.remove(key);
+            } catch (ExecutionException e) {
+                logger.warn("Create monitor failed, monitor data will not be collected until you fix this problem. ", e);
+            }
         }
     }
 
