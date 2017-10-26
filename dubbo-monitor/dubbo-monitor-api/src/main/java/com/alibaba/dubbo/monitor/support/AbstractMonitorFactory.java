@@ -73,11 +73,13 @@ public abstract class AbstractMonitorFactory implements MonitorFactory {
 
             Future<Monitor> future = MONITOR_CREATORS.get(key);
             if (future != null) {
-                try {
-                    monitor = future.get(100, TimeUnit.MICROSECONDS);
-                    MONITORS.put(key, monitor);
-                    MONITOR_CREATORS.remove(key);
-                } catch (Throwable t) {
+                if (future.isDone()) {
+                    try {
+                        monitor = future.get();
+                        MONITORS.put(key, monitor);
+                        MONITOR_CREATORS.remove(key);
+                    } catch (Throwable t) {
+                    }
                 }
                 return monitor;
             }
