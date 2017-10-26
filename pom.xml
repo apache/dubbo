@@ -111,6 +111,7 @@
         <guice_version>3.0</guice_version>
         <cglib_version>2.2</cglib_version>
         <webx_version>3.0.8</webx_version>
+        <velocity_version>3.1.6</velocity_version>
         <!-- Log libs -->
         <slf4j_version>1.7.25</slf4j_version>
         <jcl_version>1.2</jcl_version>
@@ -299,6 +300,11 @@
                 <groupId>com.alibaba.citrus</groupId>
                 <artifactId>citrus-webx-all</artifactId>
                 <version>${webx_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.velocity</groupId>
+                <artifactId>velocity</artifactId>
+                <version>${velocity_version}</version>
             </dependency>
             <!-- Log libs -->
             <dependency>
