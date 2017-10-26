@@ -18,6 +18,7 @@ package com.alibaba.dubbo.rpc.support;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.common.utils.PojoUtils;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
@@ -29,7 +30,6 @@ import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
-import com.alibaba.fastjson.JSON;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
@@ -72,7 +72,7 @@ final public class MockInvoker<T> implements Invoker<T> {
         } else if (returnTypes != null && returnTypes.length > 0 && returnTypes[0] == String.class) {
             value = mock;
         } else if (StringUtils.isNumeric(mock)) {
-            value = JSON.parse(mock);
+            value = JSON.parseObject(mock);
         } else if (mock.startsWith("{")) {
             value = JSON.parseObject(mock, Map.class);
         } else if (mock.startsWith("[")) {
@@ -127,7 +127,7 @@ final public class MockInvoker<T> implements Invoker<T> {
                 Invoker<T> invoker = getInvoker(mock);
                 return invoker.invoke(invocation);
             } catch (Throwable t) {
-                throw new RpcException("Failed to create mock implementation class " + mock, t);
+                throw new RpcException("Failed to create mock implemention class " + mock, t);
             }
         }
     }
@@ -166,11 +166,11 @@ final public class MockInvoker<T> implements Invoker<T> {
 
             Class<?> mockClass = ReflectUtils.forName(mockService);
             if (!serviceType.isAssignableFrom(mockClass)) {
-                throw new IllegalArgumentException("The mock implementation class " + mockClass.getName() + " not implement interface " + serviceType.getName());
+                throw new IllegalArgumentException("The mock implemention class " + mockClass.getName() + " not implement interface " + serviceType.getName());
             }
 
             if (!serviceType.isAssignableFrom(mockClass)) {
-                throw new IllegalArgumentException("The mock implementation class " + mockClass.getName() + " not implement interface " + serviceType.getName());
+                throw new IllegalArgumentException("The mock implemention class " + mockClass.getName() + " not implement interface " + serviceType.getName());
             }
             try {
                 T mockObject = (T) mockClass.newInstance();
@@ -180,7 +180,7 @@ final public class MockInvoker<T> implements Invoker<T> {
                 }
                 return invoker;
             } catch (InstantiationException e) {
-                throw new IllegalStateException("No such empty constructor \"public " + mockClass.getSimpleName() + "()\" in mock implementation class " + mockClass.getName(), e);
+                throw new IllegalStateException("No such empty constructor \"public " + mockClass.getSimpleName() + "()\" in mock implemention class " + mockClass.getName(), e);
             } catch (IllegalAccessException e) {
                 throw new IllegalStateException(e);
             }
