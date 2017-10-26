@@ -49,10 +49,18 @@ public abstract class AbstractMonitorFactory implements MonitorFactory {
 
     private static final Map<String, Future<Monitor>> MONITOR_CREATORS = new ConcurrentHashMap<String, Future<Monitor>>();
 
+    private int count = 0;
+
     public static Collection<Monitor> getMonitors() {
         return Collections.unmodifiableCollection(MONITORS.values());
     }
 
+    /**
+     * TODO 待ListenableFuture模式优化
+     *
+     * @param url
+     * @return
+     */
     public Monitor getMonitor(URL url) {
         url = url.setPath(MonitorService.class.getName()).addParameter(Constants.INTERFACE_KEY, MonitorService.class.getName());
         String key = url.toServiceStringWithoutResolving();
@@ -69,24 +77,29 @@ public abstract class AbstractMonitorFactory implements MonitorFactory {
                     monitor = future.get(100, TimeUnit.MICROSECONDS);
                     MONITORS.put(key, monitor);
                     MONITOR_CREATORS.remove(key);
-                    return monitor;
                 } catch (Throwable t) {
                 }
+                return monitor;
             }
 
-            final URL monitorUrl = url;
-            FutureTask<Monitor> task = new FutureTask<Monitor>(new MonitorCreator(monitorUrl));
-            Thread thread = new Thread(task);
-            thread.setName("DubboMointorCreator-thread-1");
-            thread.setDaemon(true);
-            thread.start();
-            try {
-                monitor = task.get(10, TimeUnit.MILLISECONDS);
-            } catch (Throwable t) {
-                MONITOR_CREATORS.put(key, task);
-            }
-            if (monitor != null) {
-                MONITORS.put(key, monitor);
+            // 数量：key=注册中心地址，数量一般很少
+            if (count < 10) {
+                final URL monitorUrl = url;
+                FutureTask<Monitor> task = new FutureTask<Monitor>(new MonitorCreator(monitorUrl));
+                Thread thread = new Thread(task);
+                thread.setName("DubboMointorCreator-thread-" + ++count);
+                thread.setDaemon(true);
+                thread.start();
+                try {
+                    monitor = task.get(10, TimeUnit.MILLISECONDS);
+                } catch (Throwable t) {
+                    MONITOR_CREATORS.put(key, task);
+                }
+                if (monitor != null) {
+                    MONITORS.put(key, monitor);
+                }
+            } else {
+                monitor = this.createMonitor(url);
             }
 
             return monitor;
