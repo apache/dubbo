@@ -89,6 +89,7 @@ public class ValidationTest {
                 } catch (RpcException e) {
                     ConstraintViolationException ve = (ConstraintViolationException) e.getCause();
                     Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
+                    Assert.assertTrue(violations.size() == 3);
                     Assert.assertNotNull(violations);
                 }
 
