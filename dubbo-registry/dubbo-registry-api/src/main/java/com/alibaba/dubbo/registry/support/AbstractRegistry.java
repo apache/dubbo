@@ -83,7 +83,7 @@ public abstract class AbstractRegistry implements Registry {
         setUrl(url);
         // 启动文件保存定时器
         syncSaveFile = url.getParameter(Constants.REGISTRY_FILESAVE_SYNC_KEY, false);
-        String filename = url.getParameter(Constants.FILE_KEY, System.getProperty("user.home") + "/.dubbo/dubbo-registry-" + url.getHost() + ".cache");
+        String filename = url.getParameter(Constants.FILE_KEY, System.getProperty("user.home") + "/.dubbo/dubbo-registry-" + url.getParameter(Constants.APPLICATION_KEY) + "-" + url.getAddress() + ".cache");
         File file = null;
         if (ConfigUtils.isNotEmpty(filename)) {
             file = new File(filename);
@@ -149,28 +149,8 @@ public abstract class AbstractRegistry implements Registry {
         if (file == null) {
             return;
         }
-        Properties newProperties = new Properties();
-        // 保存之前先读取一遍，防止多个注册中心之间冲突
-        InputStream in = null;
-        try {
-            if (file.exists()) {
-                in = new FileInputStream(file);
-                newProperties.load(in);
-            }
-        } catch (Throwable e) {
-            logger.warn("Failed to load registry store file, cause: " + e.getMessage(), e);
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    logger.warn(e.getMessage(), e);
-                }
-            }
-        }
         // 保存
         try {
-            newProperties.putAll(properties);
             File lockfile = new File(file.getAbsolutePath() + ".lock");
             if (!lockfile.exists()) {
                 lockfile.createNewFile();
@@ -190,7 +170,7 @@ public abstract class AbstractRegistry implements Registry {
                         }
                         FileOutputStream outputFile = new FileOutputStream(file);
                         try {
-                            newProperties.store(outputFile, "Dubbo Registry Cache");
+                            properties.store(outputFile, "Dubbo Registry Cache");
                         } finally {
                             outputFile.close();
                         }

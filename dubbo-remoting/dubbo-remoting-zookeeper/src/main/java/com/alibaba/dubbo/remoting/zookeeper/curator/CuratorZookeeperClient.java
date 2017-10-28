@@ -88,6 +88,15 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
         }
     }
 
+    public boolean checkExists(String path) {
+        try {
+            if (client.checkExists().forPath(path) != null) {
+                return true;
+            }
+        } catch (Exception e) {
+        }
+        return false;
+    }
     public boolean isConnected() {
         return client.getZookeeperClient().isConnected();
     }
