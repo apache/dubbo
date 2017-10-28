@@ -94,7 +94,6 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
                 return true;
             }
         } catch (Exception e) {
-            e.printStackTrace();
         }
         return false;
     }
