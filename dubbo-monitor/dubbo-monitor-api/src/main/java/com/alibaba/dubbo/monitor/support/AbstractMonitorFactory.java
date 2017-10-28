@@ -33,8 +33,10 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -53,11 +55,7 @@ public abstract class AbstractMonitorFactory implements MonitorFactory {
 
     private static final Map<String, ListenableFuture<Monitor>> FUTURES = new ConcurrentHashMap<String, ListenableFuture<Monitor>>();
 
-    private static final ExecutorService creatorExecutor = Executors.newCachedThreadPool(new NamedThreadFactory("DubboMonitorCreator", true));
-    private static final ExecutorService callbackExecutor = Executors.newFixedThreadPool(1, new NamedThreadFactory("DubboMonitorCallback", true));
-
-    private int count = 0;
-
+    private static final ExecutorService executor = new ThreadPoolExecutor(0, 10, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new NamedThreadFactory("DubboMonitorCreator", true));
 
     public static Collection<Monitor> getMonitors() {
         return Collections.unmodifiableCollection(MONITORS.values());
@@ -66,18 +64,24 @@ public abstract class AbstractMonitorFactory implements MonitorFactory {
     public Monitor getMonitor(URL url) {
         url = url.setPath(MonitorService.class.getName()).addParameter(Constants.INTERFACE_KEY, MonitorService.class.getName());
         String key = url.toServiceStringWithoutResolving();
+        Monitor monitor = MONITORS.get(key);
+        Future<Monitor> future = FUTURES.get(key);
+        if (monitor != null || future != null) {
+            return monitor;
+        }
+
         LOCK.lock();
         try {
-            Monitor monitor = MONITORS.get(key);
-            Future<Monitor> future = FUTURES.get(key);
+            monitor = MONITORS.get(key);
+            future = FUTURES.get(key);
             if (monitor != null || future != null) {
                 return monitor;
             }
 
             final URL monitorUrl = url;
             final ListenableFutureTask<Monitor> listenableFutureTask = ListenableFutureTask.create(new MonitorCreator(monitorUrl));
-            listenableFutureTask.addListener(new MonitorListener(key), callbackExecutor);
-            creatorExecutor.execute(listenableFutureTask);
+            listenableFutureTask.addListener(new MonitorListener(key), executor);
+            executor.execute(listenableFutureTask);
             FUTURES.put(key, listenableFutureTask);
 
             return null;
@@ -120,7 +124,7 @@ public abstract class AbstractMonitorFactory implements MonitorFactory {
                 AbstractMonitorFactory.FUTURES.remove(key);
             } catch (InterruptedException e) {
                 logger.warn("Thread was interrupted unexpectedly, monitor will never be got.");
-                AbstractMonitorFactory.FUTURES.remove(key);
+//                AbstractMonitorFactory.FUTURES.remove(key);
             } catch (ExecutionException e) {
                 logger.warn("Create monitor failed, monitor data will not be collected until you fix this problem. ", e);
             }
