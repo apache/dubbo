@@ -38,7 +38,7 @@ public class JettyHttpServer extends AbstractHttpServer {
 
     public JettyHttpServer(URL url, final HttpHandler handler) {
         super(url, handler);
-        DispatcherServlet.addHttpHandler(url.getPort(), handler);
+        DispatcherServlet.addHttpHandler(url.getParameter(Constants.BIND_PORT_KEY, url.getPort()), handler);
 
         int threads = url.getParameter(Constants.THREADS_KEY, Constants.DEFAULT_THREADS);
         QueuedThreadPool threadPool = new QueuedThreadPool();
@@ -48,11 +48,11 @@ public class JettyHttpServer extends AbstractHttpServer {
 
         SelectChannelConnector connector = new SelectChannelConnector();
 
-        String bindIp = url.getParameter(Constants.BIND_IP_KEY);
+        String bindIp = url.getParameter(Constants.BIND_IP_KEY, url.getHost());
         if (!url.isAnyHost() && NetUtils.isValidLocalHost(bindIp)) {
             connector.setHost(bindIp);
         }
-        connector.setPort(url.getParameter(Constants.BIND_PORT_KEY, 8080));
+        connector.setPort(url.getParameter(Constants.BIND_PORT_KEY, url.getPort()));
 
         server = new Server();
         server.setThreadPool(threadPool);

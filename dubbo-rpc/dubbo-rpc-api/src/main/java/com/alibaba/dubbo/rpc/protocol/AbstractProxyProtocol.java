@@ -125,11 +125,11 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
     }
 
     protected String getAddr(URL url) {
-        String bindIp = url.getParameter(Constants.BIND_IP_KEY);
+        String bindIp = url.getParameter(Constants.BIND_IP_KEY, url.getHost());
         if (url.getParameter(Constants.ANYHOST_KEY, false)) {
             bindIp = Constants.ANYHOST_VALUE;
         }
-        return NetUtils.getIpByHost(bindIp) + ":" + url.getParameter(Constants.BIND_PORT_KEY);
+        return NetUtils.getIpByHost(bindIp) + ":" + url.getParameter(Constants.BIND_PORT_KEY, url.getPort());
     }
 
     protected int getErrorCode(Throwable e) {
