@@ -124,7 +124,7 @@ public abstract class AbstractMonitorFactory implements MonitorFactory {
                 AbstractMonitorFactory.FUTURES.remove(key);
             } catch (InterruptedException e) {
                 logger.warn("Thread was interrupted unexpectedly, monitor will never be got.");
-//                AbstractMonitorFactory.FUTURES.remove(key);
+                AbstractMonitorFactory.FUTURES.remove(key);
             } catch (ExecutionException e) {
                 logger.warn("Create monitor failed, monitor data will not be collected until you fix this problem. ", e);
             }
