@@ -53,8 +53,8 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
         super(url, handler);
         localAddress = getUrl().toInetSocketAddress();
 
-        String bindIp = getUrl().getParameter(Constants.BIND_IP_KEY, "");
-        int bindPort = getUrl().getParameter(Constants.BIND_PORT_KEY, 0);
+        String bindIp = getUrl().getParameter(Constants.BIND_IP_KEY, getUrl().getHost());
+        int bindPort = getUrl().getParameter(Constants.BIND_PORT_KEY, getUrl().getPort());
         if (url.getParameter(Constants.ANYHOST_KEY, false) || NetUtils.isInvalidLocalHost(bindIp)) {
             bindIp = NetUtils.ANYHOST;
         }
