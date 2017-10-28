@@ -29,6 +29,7 @@ import java.io.Writer;
  *
  * @author william.liangf
  */
+@Deprecated
 public class JsonObjectOutput implements ObjectOutput {
 
     private final PrintWriter writer;
