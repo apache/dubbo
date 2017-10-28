@@ -53,7 +53,7 @@
         </xsd:attribute>
         <xsd:attribute name="mock" type="xsd:string" use="optional">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ Use service mock implemention. ]]></xsd:documentation>
+                <xsd:documentation><![CDATA[ Use service mock implementation. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="merger" type="xsd:string" use="optional">
@@ -83,12 +83,12 @@
                 </xsd:attribute>
                 <xsd:attribute name="local" type="xsd:string" use="optional">
                     <xsd:annotation>
-                        <xsd:documentation><![CDATA[ Use service local implemention. ]]></xsd:documentation>
+                        <xsd:documentation><![CDATA[ Use service local implementation. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:attribute name="stub" type="xsd:string" use="optional">
                     <xsd:annotation>
-                        <xsd:documentation><![CDATA[ Use service local implemention. ]]></xsd:documentation>
+                        <xsd:documentation><![CDATA[ Use service local implementation. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:attribute name="proxy" type="xsd:string" use="optional">

@@ -486,12 +486,13 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 invokersList.add(invoker);
             }
         }
-        newMethodInvokerMap.put(Constants.ANY_VALUE, invokersList);
+        List<Invoker<T>> newInvokersList = route(invokersList, null);
+        newMethodInvokerMap.put(Constants.ANY_VALUE, newInvokersList);
         if (serviceMethods != null && serviceMethods.length > 0) {
             for (String method : serviceMethods) {
                 List<Invoker<T>> methodInvokers = newMethodInvokerMap.get(method);
                 if (methodInvokers == null || methodInvokers.size() == 0) {
-                    methodInvokers = invokersList;
+                    methodInvokers = newInvokersList;
                 }
                 newMethodInvokerMap.put(method, route(methodInvokers, method));
             }

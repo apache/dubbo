@@ -7,8 +7,13 @@ CONF_DIR=$DEPLOY_DIR/conf
 
 SERVER_NAME=`sed '/dubbo.application.name/!d;s/.*=//' conf/dubbo.properties | tr -d '\r'`
 SERVER_PROTOCOL=`sed '/dubbo.protocol.name/!d;s/.*=//' conf/dubbo.properties | tr -d '\r'`
+SERVER_HOST=`sed '/dubbo.protocol.host/!d;s/.*=//' conf/dubbo.properties | tr -d '\r'`
 SERVER_PORT=`sed '/dubbo.protocol.port/!d;s/.*=//' conf/dubbo.properties | tr -d '\r'`
 LOGS_FILE=`sed '/dubbo.log4j.file/!d;s/.*=//' conf/dubbo.properties | tr -d '\r'`
+
+if [ -z "$SERVER_HOST" ]; then
+    SERVER_HOST=`127.0.0.1`
+fi
 
 if [ -z "$SERVER_NAME" ]; then
     SERVER_NAME=`hostname`
@@ -69,7 +74,7 @@ while [ $COUNT -lt 1 ]; do
     sleep 1 
     if [ -n "$SERVER_PORT" ]; then
         if [ "$SERVER_PROTOCOL" == "dubbo" ]; then
-    	    COUNT=`echo status | nc -i 1 127.0.0.1 $SERVER_PORT | grep -c OK`
+    	    COUNT=`echo status | nc -i 1 $SERVER_HOST $SERVER_PORT | grep -c OK`
         else
             COUNT=`netstat -an | grep $SERVER_PORT | wc -l`
         fi
