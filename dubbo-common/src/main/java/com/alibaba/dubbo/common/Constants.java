@@ -586,6 +586,16 @@ public class Constants {
 
     public static final String DUBBO_PORT_TO_REGISTRY = "DUBBO_PORT_TO_REGISTRY";
 
+    public static final String DUBBO_IP_TO_BIND = "DUBBO_IP_TO_BIND";
+
+    public static final String DUBBO_PORT_TO_BIND = "DUBBO_PORT_TO_BIND";
+
+    public static final String BIND_IP_KEY = "bind.ip";
+
+    public static final String BIND_PORT_KEY = "bind.port";
+
+    public static final String REGISTER_IP_KEY = "register.ip";
+
     /*
      * private Constants(){ }
      */

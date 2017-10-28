@@ -47,10 +47,12 @@ public class JettyHttpServer extends AbstractHttpServer {
         threadPool.setMinThreads(threads);
 
         SelectChannelConnector connector = new SelectChannelConnector();
-        if (!url.isAnyHost() && NetUtils.isValidLocalHost(url.getHost())) {
-            connector.setHost(url.getHost());
+
+        String bindIp = url.getParameter(Constants.BIND_IP_KEY);
+        if (!url.isAnyHost() && NetUtils.isValidLocalHost(bindIp)) {
+            connector.setHost(bindIp);
         }
-        connector.setPort(url.getPort());
+        connector.setPort(url.getParameter(Constants.BIND_PORT_KEY, 8080));
 
         server = new Server();
         server.setThreadPool(threadPool);
@@ -65,7 +67,7 @@ public class JettyHttpServer extends AbstractHttpServer {
         try {
             server.start();
         } catch (Exception e) {
-            throw new IllegalStateException("Failed to start jetty server on " + url.getAddress() + ", cause: "
+            throw new IllegalStateException("Failed to start jetty server on " + url.getParameter(Constants.BIND_IP_KEY) + ":" + url.getParameter(Constants.BIND_PORT_KEY) + ", cause: "
                     + e.getMessage(), e);
         }
     }

@@ -16,7 +16,9 @@
 
 package com.alibaba.dubbo.rpc.protocol;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
@@ -120,6 +122,14 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
                 + invocation.getMethodName() + ", cause: " + e.getMessage(), e);
         re.setCode(getErrorCode(e));
         return re;
+    }
+
+    protected String getAddr(URL url) {
+        String bindIp = url.getParameter(Constants.BIND_IP_KEY);
+        if (url.getParameter(Constants.ANYHOST_KEY, false)) {
+            bindIp = Constants.ANYHOST_VALUE;
+        }
+        return NetUtils.getIpByHost(bindIp) + ":" + url.getParameter(Constants.BIND_PORT_KEY);
     }
 
     protected int getErrorCode(Throwable e) {
