@@ -25,7 +25,7 @@ import java.util.Map;
  *
  * @author qian.lei
  */
-
+@Deprecated
 public class JSONObject implements JSONNode {
     private Map<String, Object> mMap = new HashMap<String, Object>();
 

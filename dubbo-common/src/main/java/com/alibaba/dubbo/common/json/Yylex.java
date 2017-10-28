@@ -21,6 +21,7 @@ package com.alibaba.dubbo.common.json;
  * on 7/3/10 3:12 AM from the specification file
  * <tt>/Users/qianlei/dev/proj/dubbo-1.1/dubbo.common/src/main/java/com/alibaba/dubbo/common/json/json.flex</tt>
  */
+@Deprecated
 public class Yylex {
 
     /**

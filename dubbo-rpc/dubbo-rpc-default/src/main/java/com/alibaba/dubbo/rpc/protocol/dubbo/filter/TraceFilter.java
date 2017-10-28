@@ -17,7 +17,7 @@ package com.alibaba.dubbo.rpc.protocol.dubbo.filter;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.Activate;
-import com.alibaba.dubbo.common.json.JSON;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
@@ -105,7 +105,7 @@ public class TraceFilter implements Filter {
                                 channel.send("\r\n" + RpcContext.getContext().getRemoteAddress() + " -> "
                                         + invoker.getInterface().getName()
                                         + "." + invocation.getMethodName()
-                                        + "(" + JSON.json(invocation.getArguments()) + ")" + " -> " + JSON.json(result.getValue())
+                                        + "(" + JSON.toJSONString(invocation.getArguments()) + ")" + " -> " + JSON.toJSONString(result.getValue())
                                         + "\r\nelapsed: " + (end - start) + " ms."
                                         + "\r\n\r\n" + prompt);
                             }

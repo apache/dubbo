@@ -16,7 +16,6 @@
 package com.alibaba.dubbo.rpc.protocol.dubbo.telnet;
 
 import com.alibaba.dubbo.common.extension.Activate;
-import com.alibaba.dubbo.common.json.JSON;
 import com.alibaba.dubbo.common.utils.PojoUtils;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
@@ -28,6 +27,7 @@ import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
+import com.alibaba.fastjson.JSON;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -110,7 +110,7 @@ public class InvokeTelnetHandler implements TelnetHandler {
         }
         List<Object> list;
         try {
-            list = (List<Object>) JSON.parse("[" + args + "]", List.class);
+            list = JSON.parseArray("[" + args + "]", Object.class);
         } catch (Throwable t) {
             return "Invalid json argument, cause: " + t.getMessage();
         }
@@ -141,7 +141,7 @@ public class InvokeTelnetHandler implements TelnetHandler {
                     long start = System.currentTimeMillis();
                     Object result = invoker.invoke(new RpcInvocation(invokeMethod, array)).recreate();
                     long end = System.currentTimeMillis();
-                    buf.append(JSON.json(result));
+                    buf.append(JSON.toJSONString(result));
                     buf.append("\r\nelapsed: ");
                     buf.append(end - start);
                     buf.append(" ms.");

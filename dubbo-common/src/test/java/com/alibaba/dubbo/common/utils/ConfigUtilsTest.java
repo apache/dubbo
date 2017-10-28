@@ -48,8 +48,8 @@ public class ConfigUtilsTest {
     @Test
     public void testMergeValues() {
         List<String> merged = ConfigUtils.mergeValues(Serialization.class, "aaa,bbb,default.cunstom",
-                toArray("dubbo", "default.hessian2", "json"));
-        Assert.assertEquals(toArray("dubbo", "json", "aaa", "bbb", "default.cunstom"), merged);
+                toArray("dubbo", "default.hessian2", "fastjson"));
+        Assert.assertEquals(toArray("dubbo", "fastjson", "aaa", "bbb", "default.cunstom"), merged);
     }
 
     /**
@@ -58,8 +58,8 @@ public class ConfigUtilsTest {
     @Test
     public void testMergeValues_addDefault() {
         List<String> merged = ConfigUtils.mergeValues(Serialization.class, "aaa,bbb,default,zzz",
-                toArray("dubbo", "default.hessian2", "json"));
-        Assert.assertEquals(toArray("aaa", "bbb", "dubbo", "json", "zzz"), merged);
+                toArray("dubbo", "default.hessian2", "fastjson"));
+        Assert.assertEquals(toArray("aaa", "bbb", "dubbo", "fastjson", "zzz"), merged);
     }
 
     /**
@@ -85,8 +85,8 @@ public class ConfigUtilsTest {
      */
     @Test
     public void testMergeValuesDelete() {
-        List<String> merged = ConfigUtils.mergeValues(Serialization.class, "-dubbo,aaa", toArray("dubbo", "default.hessian2", "json"));
-        Assert.assertEquals(toArray("json", "aaa"), merged);
+        List<String> merged = ConfigUtils.mergeValues(Serialization.class, "-dubbo,aaa", toArray("dubbo", "default.hessian2", "fastjson"));
+        Assert.assertEquals(toArray("fastjson", "aaa"), merged);
     }
 
     @Test

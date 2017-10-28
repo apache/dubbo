@@ -25,7 +25,7 @@ import java.util.List;
  *
  * @author qian.lei
  */
-
+@Deprecated
 public class JSONArray implements JSONNode {
     private List<Object> mArray = new ArrayList<Object>();
 
