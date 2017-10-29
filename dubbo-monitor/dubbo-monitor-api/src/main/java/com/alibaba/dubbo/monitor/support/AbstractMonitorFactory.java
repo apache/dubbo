@@ -80,7 +80,7 @@ public abstract class AbstractMonitorFactory implements MonitorFactory {
 
             final URL monitorUrl = url;
             final ListenableFutureTask<Monitor> listenableFutureTask = ListenableFutureTask.create(new MonitorCreator(monitorUrl));
-            listenableFutureTask.addListener(new MonitorListener(key), executor);
+            listenableFutureTask.addListener(new MonitorListener(key));
             executor.execute(listenableFutureTask);
             FUTURES.put(key, listenableFutureTask);
 

@@ -2,8 +2,10 @@ package com.alibaba.dubbo.common.concurrent;
 
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /**
  * <p>A list of listeners, each with an associated {@code Executor}, that
@@ -35,6 +37,8 @@ public final class ExecutionList {
 
     private boolean executed;
 
+    private static final Executor DEFAULT_EXECUTOR = Executors.newSingleThreadExecutor(new NamedThreadFactory("DubboFutureCallbackDefaultExecutor", true));
+
     /**
      * Creates a new, empty {@link ExecutionList}.
      */
@@ -63,8 +67,11 @@ public final class ExecutionList {
         // Fail fast on a null.  We throw NPE here because the contract of
         // Executor states that it throws NPE on null listener, so we propagate
         // that contract up into the add method as well.
-        if (runnable == null || executor == null) {
+        if (runnable == null) {
             throw new NullPointerException("Both Runnable and Executor can not be null!");
+        }
+        if (executor == null) {
+            executor = DEFAULT_EXECUTOR;
         }
 
         // Lock while we check state.  We must maintain the lock while adding the

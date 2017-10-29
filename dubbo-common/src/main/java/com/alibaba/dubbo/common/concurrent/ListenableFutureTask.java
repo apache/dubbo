@@ -65,6 +65,11 @@ public class ListenableFutureTask<V> extends FutureTask<V>
         executionList.add(listener, exec);
     }
 
+    @Override
+    public void addListener(Runnable listener) {
+        executionList.add(listener, null);
+    }
+
     /**
      * Internal implementation detail used to invoke the listeners.
      */
