@@ -21,7 +21,7 @@ public class ZkclientZookeeperClient extends AbstractZookeeperClient<IZkChildLis
 
     public ZkclientZookeeperClient(URL url) {
         super(url);
-        client = new ZkClientWrapper(url.getBackupAddress(), 5000);
+        client = new ZkClientWrapper(url.getBackupAddress(), 30000);
         client.addListener(new IZkStateListener() {
             public void handleStateChanged(KeeperState state) throws Exception {
                 ZkclientZookeeperClient.this.state = state;

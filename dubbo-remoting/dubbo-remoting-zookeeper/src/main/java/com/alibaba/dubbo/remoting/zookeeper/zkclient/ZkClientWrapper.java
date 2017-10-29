@@ -16,6 +16,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * 连接超时后，能自动监听连接状态的zkclient包装类
+ * 也为和curator在使用上总体保持一致
  * @author ken.lj
  * @date 2017/10/29
  */
