@@ -3,12 +3,14 @@ package com.alibaba.dubbo.remoting.zookeeper.curator;
 import com.alibaba.dubbo.common.URL;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
  * @author ken.lj
  * @date 2017/10/16
  */
+@Ignore
 public class CuratorZookeeperClientTest {
 
     @Test
