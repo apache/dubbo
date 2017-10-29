@@ -68,6 +68,14 @@ public class ZkclientZookeeperClient extends AbstractZookeeperClient<IZkChildLis
         }
     }
 
+    public boolean checkExists(String path) {
+        try {
+            return client.exists(path);
+        } catch (Throwable t) {
+        }
+        return false;
+    }
+
     public boolean isConnected() {
         return state == KeeperState.SyncConnected;
     }

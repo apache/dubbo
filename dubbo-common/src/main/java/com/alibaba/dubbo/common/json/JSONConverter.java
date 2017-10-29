@@ -22,7 +22,7 @@ import java.io.IOException;
  *
  * @author qianlei
  */
-
+@Deprecated
 public interface JSONConverter {
     /**
      * write object.

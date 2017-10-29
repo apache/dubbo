@@ -54,7 +54,6 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.jvnet.sorcerer</groupId>

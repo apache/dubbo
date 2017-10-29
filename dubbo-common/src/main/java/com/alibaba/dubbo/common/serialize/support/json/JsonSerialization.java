@@ -29,6 +29,7 @@ import java.io.OutputStream;
  *
  * @author william.liangf
  */
+@Deprecated
 public class JsonSerialization implements Serialization {
 
     public byte getContentTypeId() {
