@@ -22,6 +22,7 @@ import com.alibaba.dubbo.config.support.Parameter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -66,6 +67,12 @@ public class ApplicationConfig extends AbstractConfig {
 
     // 是否为缺省
     private Boolean isDefault;
+
+    // thread stack存储路径
+    private String dumpDirectory;
+
+    // 自定义参数
+    private Map<String, String> parameters;
 
     public ApplicationConfig() {
     }
@@ -160,12 +167,12 @@ public class ApplicationConfig extends AbstractConfig {
         return monitor;
     }
 
-    public void setMonitor(String monitor) {
-        this.monitor = new MonitorConfig(monitor);
-    }
-
     public void setMonitor(MonitorConfig monitor) {
         this.monitor = monitor;
+    }
+
+    public void setMonitor(String monitor) {
+        this.monitor = new MonitorConfig(monitor);
     }
 
     public String getCompiler() {
@@ -194,4 +201,21 @@ public class ApplicationConfig extends AbstractConfig {
         this.isDefault = isDefault;
     }
 
+    @Parameter(key = "dump.directory")
+    public String getDumpDirectory() {
+        return dumpDirectory;
+    }
+
+    public void setDumpDirectory(String dumpDirectory) {
+        this.dumpDirectory = dumpDirectory;
+    }
+
+    public Map<String, String> getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(Map<String, String> parameters) {
+        checkParameterName(parameters);
+        this.parameters = parameters;
+    }
 }

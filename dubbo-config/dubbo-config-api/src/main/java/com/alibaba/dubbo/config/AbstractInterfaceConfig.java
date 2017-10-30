@@ -201,11 +201,16 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (monitor == null) {
             String monitorAddress = ConfigUtils.getProperty("dubbo.monitor.address");
             String monitorProtocol = ConfigUtils.getProperty("dubbo.monitor.protocol");
-            if (monitorAddress != null && monitorAddress.length() > 0
-                    || monitorProtocol != null && monitorProtocol.length() > 0) {
-                monitor = new MonitorConfig();
-            } else {
+            if ((monitorAddress == null || monitorAddress.length() == 0) && (monitorProtocol == null || monitorProtocol.length() == 0)) {
                 return null;
+            }
+
+            monitor = new MonitorConfig();
+            if (monitorAddress != null && monitorAddress.length() > 0) {
+                monitor.setAddress(monitorAddress);
+            }
+            if (monitorProtocol != null && monitorProtocol.length() > 0) {
+                monitor.setProtocol(monitorProtocol);
             }
         }
         appendProperties(monitor);
