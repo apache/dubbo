@@ -54,7 +54,7 @@ public class ZkClientWrapper {
             }
             started = true;
         } else {
-            throw new IllegalStateException("Zkclient has already been started!");
+            logger.warn("Zkclient has already been started!");
         }
     }
 
@@ -66,9 +66,9 @@ public class ZkClientWrapper {
                     client = listenableFutureTask.get();
                     client.subscribeStateChanges(listener);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    logger.warn(Thread.currentThread().getName() + " was interrupted unexpectedly, which may cause unpredictable exception!");
                 } catch (ExecutionException e) {
-                    e.printStackTrace();
+                    logger.error("Got an exception when trying to create zkclient instance, can not connect to zookeeper server, please check!", e);
                 }
             }
         });
@@ -79,44 +79,42 @@ public class ZkClientWrapper {
     }
 
     public void createPersistent(String path) {
-        Assert.notNull(client, new IllegalStateException("Zookeeper is not connected!"));
+        Assert.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
         client.createPersistent(path, true);
     }
 
     public void createEphemeral(String path) {
-        Assert.notNull(client, new IllegalStateException("Zookeeper is not connected!"));
+        Assert.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
         client.createEphemeral(path);
     }
 
     public void delete(String path) {
-        if (client == null) {
-            throw new IllegalStateException("Zookeeper is not connected!");
-        }
+        Assert.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
         client.delete(path);
     }
 
     public List<String> getChildren(String path) {
-        Assert.notNull(client, new IllegalStateException("Zookeeper is not connected!"));
+        Assert.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
         return client.getChildren(path);
     }
 
     public boolean exists(String path) {
-        Assert.notNull(client, new IllegalStateException("Zookeeper is not connected!"));
+        Assert.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
         return client.exists(path);
     }
 
     public void close() {
-        Assert.notNull(client, new IllegalStateException("Zookeeper is not connected!"));
+        Assert.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
         client.close();
     }
 
     public List<String> subscribeChildChanges(String path, final IZkChildListener listener) {
-        Assert.notNull(client, new IllegalStateException("Zookeeper is not connected!"));
+        Assert.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
         return client.subscribeChildChanges(path, listener);
     }
 
     public void unsubscribeChildChanges(String path, IZkChildListener listener) {
-        Assert.notNull(client, new IllegalStateException("Zookeeper is not connected!"));
+        Assert.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
         client.unsubscribeChildChanges(path, listener);
     }
 
