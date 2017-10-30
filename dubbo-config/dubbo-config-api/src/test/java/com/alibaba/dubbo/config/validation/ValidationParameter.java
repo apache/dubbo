@@ -34,6 +34,9 @@ public class ValidationParameter implements Serializable {
 
     private static final long serialVersionUID = 7158911668568000392L;
 
+    @NotNull(groups = ValidationService.Update.class)
+    private Integer id;
+
     @NotNull // 不允许为空
     @Size(min = 2, max = 20) // 长度或大小范围
     private String name;
@@ -51,6 +54,14 @@ public class ValidationParameter implements Serializable {
 
     @Future // 必须为一个未来的时间
     private Date expiryDate;
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;
