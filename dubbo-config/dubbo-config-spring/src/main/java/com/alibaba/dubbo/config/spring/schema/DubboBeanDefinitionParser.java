@@ -30,6 +30,7 @@ import com.alibaba.dubbo.config.ProviderConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.config.spring.ReferenceBean;
 import com.alibaba.dubbo.config.spring.ServiceBean;
+import com.alibaba.dubbo.config.spring.context.annotation.AnnotationBeanProcessorRegistrar;
 import com.alibaba.dubbo.rpc.Protocol;
 
 import org.springframework.beans.PropertyValue;
@@ -37,6 +38,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.config.TypedStringValue;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.support.ManagedMap;
 import org.springframework.beans.factory.support.RootBeanDefinition;
@@ -47,6 +49,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Date;
@@ -436,7 +439,23 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
     }
 
     public BeanDefinition parse(Element element, ParserContext parserContext) {
+
+        registerAnnotationBeanProcessor(parserContext.getRegistry());
+
         return parse(element, parserContext, beanClass, required);
+    }
+
+    /**
+     * Registers {@link Annotation} Bean Processor
+     *
+     * @param beanDefinitionRegistry {@link BeanDefinitionRegistry}
+     */
+    private void registerAnnotationBeanProcessor(BeanDefinitionRegistry beanDefinitionRegistry) {
+
+        AnnotationBeanProcessorRegistrar registrar = new AnnotationBeanProcessorRegistrar();
+
+        registrar.register(beanDefinitionRegistry);
+
     }
 
 }
