@@ -235,7 +235,7 @@ public class JValidator implements Validator {
     }
 
     public void validate(String methodName, Class<?>[] parameterTypes, Object[] arguments) throws Exception {
-        List<Class<?>> groups = new ArrayList<>();
+        List<Class<?>> groups = new ArrayList<Class<?>>();
         String methodClassName = clazz.getName() + "$" + toUpperMethoName(methodName);
         Class<?> methodClass = null;
         try {
