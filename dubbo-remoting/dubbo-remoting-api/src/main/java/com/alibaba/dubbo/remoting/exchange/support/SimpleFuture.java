@@ -21,14 +21,14 @@ import com.alibaba.dubbo.remoting.exchange.ResponseFuture;
 
 /**
  * SimpleFuture
- * 
+ *
  * @author william.liangf
  */
 public class SimpleFuture implements ResponseFuture {
-    
+
     private final Object value;
 
-    public SimpleFuture(Object value){
+    public SimpleFuture(Object value) {
         this.value = value;
     }
 

@@ -15,70 +15,87 @@
  */
 package com.alibaba.dubbo.monitor.support;
 
-import java.util.List;
-
-import junit.framework.Assert;
-
-import org.junit.Test;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.monitor.Monitor;
 import com.alibaba.dubbo.monitor.MonitorFactory;
 
+import junit.framework.Assert;
+import org.junit.Test;
+
+import java.util.List;
+
 /**
  * AbstractMonitorFactoryTest
- * 
+ *
  * @author william.liangf
  */
 public class AbstractMonitorFactoryTest {
-    
+
     private MonitorFactory monitorFactory = new AbstractMonitorFactory() {
-        
+
         protected Monitor createMonitor(final URL url) {
             return new Monitor() {
 
-				public URL getUrl() {
-					return url;
-				}
+                public URL getUrl() {
+                    return url;
+                }
 
-				public boolean isAvailable() {
-					return true;
-				}
+                public boolean isAvailable() {
+                    return true;
+                }
 
                 public void destroy() {
                 }
-                
-				public void collect(URL statistics) {
-				}
 
-				public List<URL> lookup(URL query) {
-					return null;
-				}
-                
+                public void collect(URL statistics) {
+                }
+
+                public List<URL> lookup(URL query) {
+                    return null;
+                }
+
             };
         }
     };
-    
+
     @Test
     public void testMonitorFactoryCache() throws Exception {
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostAddress() + ":2233");
         Monitor monitor1 = monitorFactory.getMonitor(url);
         Monitor monitor2 = monitorFactory.getMonitor(url);
+        if (monitor1 == null || monitor2 == null) {
+            Thread.sleep(2000);
+            monitor1 = monitorFactory.getMonitor(url);
+            monitor2 = monitorFactory.getMonitor(url);
+        }
         Assert.assertEquals(monitor1, monitor2);
     }
-    
+
     @Test
     public void testMonitorFactoryIpCache() throws Exception {
-        Monitor monitor1 = monitorFactory.getMonitor(URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":2233"));
-        Monitor monitor2 = monitorFactory.getMonitor(URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostAddress() + ":2233"));
+        URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":2233");
+        Monitor monitor1 = monitorFactory.getMonitor(url);
+        Monitor monitor2 = monitorFactory.getMonitor(url);
+        if (monitor1 == null || monitor2 == null) {
+            Thread.sleep(2000);
+            monitor1 = monitorFactory.getMonitor(url);
+            monitor2 = monitorFactory.getMonitor(url);
+        }
         Assert.assertEquals(monitor1, monitor2);
     }
 
     @Test
     public void testMonitorFactoryGroupCache() throws Exception {
-        Monitor monitor1 = monitorFactory.getMonitor(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":2233?group=aaa"));
-        Monitor monitor2 = monitorFactory.getMonitor(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":2233?group=bbb"));
+        URL url1 = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":2233?group=aaa");
+        URL url2 = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":2233?group=bbb");
+        Monitor monitor1 = monitorFactory.getMonitor(url1);
+        Monitor monitor2 = monitorFactory.getMonitor(url2);
+        if (monitor1 == null || monitor2 == null) {
+            Thread.sleep(2000);
+            monitor1 = monitorFactory.getMonitor(url1);
+            monitor2 = monitorFactory.getMonitor(url2);
+        }
         Assert.assertNotSame(monitor1, monitor2);
     }
 

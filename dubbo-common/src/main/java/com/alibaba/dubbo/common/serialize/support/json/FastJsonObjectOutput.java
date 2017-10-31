@@ -15,30 +15,30 @@
  */
 package com.alibaba.dubbo.common.serialize.support.json;
 
+import com.alibaba.dubbo.common.serialize.ObjectOutput;
+import com.alibaba.fastjson.serializer.JSONSerializer;
+import com.alibaba.fastjson.serializer.SerializeWriter;
+import com.alibaba.fastjson.serializer.SerializerFeature;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
 
-import com.alibaba.dubbo.common.serialize.ObjectOutput;
-import com.alibaba.fastjson.serializer.JSONSerializer;
-import com.alibaba.fastjson.serializer.SerializeWriter;
-import com.alibaba.fastjson.serializer.SerializerFeature;
-
 /**
  * JsonObjectOutput
- * 
+ *
  * @author william.liangf
  */
 public class FastJsonObjectOutput implements ObjectOutput {
 
     private final PrintWriter writer;
-    
+
     public FastJsonObjectOutput(OutputStream out) {
         this(new OutputStreamWriter(out));
     }
-    
+
     public FastJsonObjectOutput(Writer writer) {
         this.writer = new PrintWriter(writer);
     }
@@ -89,6 +89,7 @@ public class FastJsonObjectOutput implements ObjectOutput {
         serializer.config(SerializerFeature.WriteEnumUsingToString, true);
         serializer.write(obj);
         out.writeTo(writer);
+        out.close(); // for reuse SerializeWriter buf
         writer.println();
         writer.flush();
     }

@@ -6,8 +6,8 @@ import com.alibaba.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
 public class CuratorZookeeperTransporter implements ZookeeperTransporter {
 
-	public ZookeeperClient connect(URL url) {
-		return new CuratorZookeeperClient(url);
-	}
+    public ZookeeperClient connect(URL url) {
+        return new CuratorZookeeperClient(url);
+    }
 
 }

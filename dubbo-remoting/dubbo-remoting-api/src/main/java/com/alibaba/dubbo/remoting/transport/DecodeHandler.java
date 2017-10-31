@@ -42,11 +42,11 @@ public class DecodeHandler extends AbstractChannelHandlerDelegate {
         }
 
         if (message instanceof Request) {
-            decode(((Request)message).getData());
+            decode(((Request) message).getData());
         }
 
         if (message instanceof Response) {
-            decode( ((Response)message).getResult());
+            decode(((Response) message).getResult());
         }
 
         handler.received(channel, message);
@@ -55,18 +55,18 @@ public class DecodeHandler extends AbstractChannelHandlerDelegate {
     private void decode(Object message) {
         if (message != null && message instanceof Decodeable) {
             try {
-                ((Decodeable)message).decode();
+                ((Decodeable) message).decode();
                 if (log.isDebugEnabled()) {
                     log.debug(new StringBuilder(32).append("Decode decodeable message ")
-                                  .append(message.getClass().getName()).toString());
+                            .append(message.getClass().getName()).toString());
                 }
             } catch (Throwable e) {
                 if (log.isWarnEnabled()) {
                     log.warn(
-                        new StringBuilder(32)
-                            .append("Call Decodeable.decode failed: ")
-                            .append(e.getMessage()).toString(),
-                        e);
+                            new StringBuilder(32)
+                                    .append("Call Decodeable.decode failed: ")
+                                    .append(e.getMessage()).toString(),
+                            e);
                 }
             } // ~ end of catch
         } // ~ end of if

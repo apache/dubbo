@@ -15,10 +15,10 @@
  */
 package com.alibaba.dubbo.common.extensionloader.ext6_inject.impl;
 
-import java.util.List;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extensionloader.ext6_inject.Ext6;
+
+import java.util.List;
 
 /**
  * @author ding.lid

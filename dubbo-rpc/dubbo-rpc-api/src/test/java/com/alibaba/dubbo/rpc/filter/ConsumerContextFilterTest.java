@@ -15,10 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.filter;
 
-import static org.junit.Assert.assertEquals;
-
-import org.junit.Test;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.rpc.Filter;
@@ -29,22 +25,28 @@ import com.alibaba.dubbo.rpc.support.DemoService;
 import com.alibaba.dubbo.rpc.support.MockInvocation;
 import com.alibaba.dubbo.rpc.support.MyInvoker;
 
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+
 /**
  * ConsumerContextFilterTest.java
+ *
  * @author tony.chenl
  */
 public class ConsumerContextFilterTest {
-    Filter     consumerContextFilter = new ConsumerContextFilter();
+    Filter consumerContextFilter = new ConsumerContextFilter();
+
     @Test
-    public void testSetContext(){
+    public void testSetContext() {
         URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1");
         Invoker<DemoService> invoker = new MyInvoker<DemoService>(url);
         Invocation invocation = new MockInvocation();
         consumerContextFilter.invoke(invoker, invocation);
-        assertEquals(invoker,RpcContext.getContext().getInvoker());
-        assertEquals(invocation,RpcContext.getContext().getInvocation());
-        assertEquals(NetUtils.getLocalHost() + ":0",RpcContext.getContext().getLocalAddressString());
-        assertEquals("test:11",RpcContext.getContext().getRemoteAddressString());
-        
+        assertEquals(invoker, RpcContext.getContext().getInvoker());
+        assertEquals(invocation, RpcContext.getContext().getInvocation());
+        assertEquals(NetUtils.getLocalHost() + ":0", RpcContext.getContext().getLocalAddressString());
+        assertEquals("test:11", RpcContext.getContext().getRemoteAddressString());
+
     }
 }

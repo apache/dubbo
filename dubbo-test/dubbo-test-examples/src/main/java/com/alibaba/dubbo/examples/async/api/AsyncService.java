@@ -17,11 +17,11 @@ package com.alibaba.dubbo.examples.async.api;
 
 /**
  * AsyncService
- * 
+ *
  * @author william.liangf
  */
 public interface AsyncService {
-    
+
     String sayHello(String name);
 
 }

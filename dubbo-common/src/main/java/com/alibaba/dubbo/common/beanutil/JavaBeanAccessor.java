@@ -20,11 +20,17 @@ package com.alibaba.dubbo.common.beanutil;
  */
 public enum JavaBeanAccessor {
 
-    /** Field accessor. */
+    /**
+     * Field accessor.
+     */
     FIELD,
-    /** Method accessor.*/
+    /**
+     * Method accessor.
+     */
     METHOD,
-    /** Method prefer to field. */
+    /**
+     * Method prefer to field.
+     */
     ALL;
 
     public static boolean isAccessByMethod(JavaBeanAccessor accessor) {

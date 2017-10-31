@@ -15,17 +15,17 @@
  */
 package com.alibaba.dubbo.remoting;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.Adaptive;
 import com.alibaba.dubbo.common.extension.SPI;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 /**
  * Codec. (SPI, Singleton, ThreadSafe)
- * 
+ *
  * @author qianlei
  * @author ding.lid
  * @author william.liangf
@@ -34,32 +34,32 @@ import com.alibaba.dubbo.common.extension.SPI;
 @SPI
 public interface Codec {
 
-	/**
-	 * Need more input poison.
-	 * 
-	 * @see #decode(Channel, InputStream)
-	 */
-	Object NEED_MORE_INPUT = new Object();
+    /**
+     * Need more input poison.
+     *
+     * @see #decode(Channel, InputStream)
+     */
+    Object NEED_MORE_INPUT = new Object();
 
     /**
      * Encode message.
-     * 
+     *
      * @param channel channel.
-     * @param output output stream.
+     * @param output  output stream.
      * @param message message.
      */
-	@Adaptive({Constants.CODEC_KEY})
+    @Adaptive({Constants.CODEC_KEY})
     void encode(Channel channel, OutputStream output, Object message) throws IOException;
 
-	/**
-	 * Decode message.
-	 * 
-	 * @see #NEED_MORE_INPUT
-	 * @param channel channel.
-	 * @param input input stream.
-	 * @return message or <code>NEED_MORE_INPUT</code> poison.
-	 */
+    /**
+     * Decode message.
+     *
+     * @param channel channel.
+     * @param input   input stream.
+     * @return message or <code>NEED_MORE_INPUT</code> poison.
+     * @see #NEED_MORE_INPUT
+     */
     @Adaptive({Constants.CODEC_KEY})
-	Object decode(Channel channel, InputStream input) throws IOException;
+    Object decode(Channel channel, InputStream input) throws IOException;
 
 }

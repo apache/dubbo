@@ -20,7 +20,7 @@ import java.util.Comparator;
 
 /**
  * MenuComparator
- * 
+ *
  * @author william.liangf
  */
 public class MenuComparator implements Comparator<PageHandler>, Serializable {
@@ -37,7 +37,7 @@ public class MenuComparator implements Comparator<PageHandler>, Serializable {
         if (o2 == null) {
             return 1;
         }
-        return o1.equals(o2) ? 0 : (o1.getClass().getAnnotation(Menu.class).order() 
+        return o1.equals(o2) ? 0 : (o1.getClass().getAnnotation(Menu.class).order()
                 > o2.getClass().getAnnotation(Menu.class).order() ? 1 : -1);
     }
 

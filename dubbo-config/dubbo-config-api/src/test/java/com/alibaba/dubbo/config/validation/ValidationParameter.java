@@ -15,9 +15,6 @@
  */
 package com.alibaba.dubbo.config.validation;
 
-import java.io.Serializable;
-import java.util.Date;
-
 import javax.validation.constraints.Future;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -25,15 +22,20 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * ValidationParameter
- * 
+ *
  * @author william.liangf
  */
 public class ValidationParameter implements Serializable {
-    
+
     private static final long serialVersionUID = 7158911668568000392L;
+
+    @NotNull(groups = ValidationService.Update.class)
+    private Integer id;
 
     @NotNull // 不允许为空
     @Size(min = 2, max = 20) // 长度或大小范围
@@ -52,6 +54,14 @@ public class ValidationParameter implements Serializable {
 
     @Future // 必须为一个未来的时间
     private Date expiryDate;
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;

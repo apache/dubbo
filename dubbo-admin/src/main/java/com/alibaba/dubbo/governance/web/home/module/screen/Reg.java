@@ -24,15 +24,15 @@ import java.util.Map;
 public class Reg extends Restful {
 
     public Result doExecute(Map<String, Object> context) throws Exception {
-        if(url==null){
+        if (url == null) {
             throw new IllegalArgumentException("please give me the url");
         }
-        if(url.getPath().isEmpty()){
+        if (url.getPath().isEmpty()) {
             throw new IllegalArgumentException("please use interface as your url path");
         }
-        Map<String,String> tmp = new HashMap<String,String>();
-        tmp.put(url.toIdentityString(),url.toParameterString());
-        Map<String,Map<String,String>> register = new HashMap<String,Map<String,String>>();
+        Map<String, String> tmp = new HashMap<String, String>();
+        tmp.put(url.toIdentityString(), url.toParameterString());
+        Map<String, Map<String, String>> register = new HashMap<String, Map<String, String>>();
         register.put(url.getPath(), tmp);
 //        Map<String, Map<String, String>> newRegister = RegistryUtils.convertRegister(register);
 //        registryService.register(operatorAddress, newRegister, false);

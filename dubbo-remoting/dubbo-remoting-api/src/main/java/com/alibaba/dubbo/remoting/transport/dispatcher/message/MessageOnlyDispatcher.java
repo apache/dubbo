@@ -21,7 +21,7 @@ import com.alibaba.dubbo.remoting.Dispatcher;
 
 /**
  * 只有message receive使用线程池.
- * 
+ *
  * @author chao.liuc
  */
 public class MessageOnlyDispatcher implements Dispatcher {

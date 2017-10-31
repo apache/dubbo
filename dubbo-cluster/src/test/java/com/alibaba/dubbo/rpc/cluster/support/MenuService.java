@@ -21,9 +21,9 @@ import java.util.List;
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
 public interface MenuService {
-    
+
     public Menu getMenu();
-    
-    public void addMenu( String menu, List<String> items );
+
+    public void addMenu(String menu, List<String> items);
 
 }

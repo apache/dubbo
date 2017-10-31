@@ -15,13 +15,12 @@
  */
 package com.alibaba.dubbo.config;
 
-import org.junit.Test;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.config.api.DemoService;
 import com.alibaba.dubbo.config.provider.impl.DemoServiceImpl;
 
 import junit.framework.Assert;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
@@ -57,7 +56,7 @@ public class ReferenceConfigTest {
             demoService.export();
             rc.get();
             Assert.assertTrue(!Constants.LOCAL_PROTOCOL.equalsIgnoreCase(
-                rc.getInvoker().getUrl().getProtocol()));
+                    rc.getInvoker().getUrl().getProtocol()));
         } finally {
             demoService.unexport();
         }

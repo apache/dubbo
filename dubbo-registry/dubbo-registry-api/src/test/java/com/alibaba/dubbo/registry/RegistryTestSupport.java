@@ -209,7 +209,7 @@ public class RegistryTestSupport {
         String q = subscribedMap.get("com.alibaba.complex.ComplexService");
         assertEquals("version=1.0.0&application=kylin&methods=findPerson,findVAccount", q);
     }*/
-    
+
     public void testDummy() {
     }
 }

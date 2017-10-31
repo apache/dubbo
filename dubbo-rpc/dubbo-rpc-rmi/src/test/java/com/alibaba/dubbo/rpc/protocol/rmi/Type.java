@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.protocol.rmi;
 
-public enum Type
-{
-	High, Normal, Lower
+public enum Type {
+    High, Normal, Lower
 }

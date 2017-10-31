@@ -16,11 +16,6 @@
 
 package com.alibaba.dubbo.rpc.protocol.dubbo;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.reflect.Type;
-
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.serialize.ObjectInput;
@@ -35,6 +30,11 @@ import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.support.RpcUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.reflect.Type;
+
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
@@ -42,15 +42,15 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
 
     private static final Logger log = LoggerFactory.getLogger(DecodeableRpcResult.class);
 
-    private Channel     channel;
+    private Channel channel;
 
-    private byte        serializationType;
+    private byte serializationType;
 
     private InputStream inputStream;
 
-    private Response    response;
+    private Response response;
 
-    private Invocation  invocation;
+    private Invocation invocation;
 
     private volatile boolean hasDecoded;
 
@@ -71,7 +71,7 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
 
     public Object decode(Channel channel, InputStream input) throws IOException {
         ObjectInput in = CodecSupport.getSerialization(channel.getUrl(), serializationType)
-            .deserialize(channel.getUrl(), input);
+                .deserialize(channel.getUrl(), input);
 
         byte flag = in.readByte();
         switch (flag) {
@@ -81,8 +81,8 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
                 try {
                     Type[] returnType = RpcUtils.getReturnTypes(invocation);
                     setValue(returnType == null || returnType.length == 0 ? in.readObject() :
-                                 (returnType.length == 1 ? in.readObject((Class<?>) returnType[0])
-                                     : in.readObject((Class<?>) returnType[0], returnType[1])));
+                            (returnType.length == 1 ? in.readObject((Class<?>) returnType[0])
+                                    : in.readObject((Class<?>) returnType[0], returnType[1])));
                 } catch (ClassNotFoundException e) {
                     throw new IOException(StringUtils.toString("Read response data failed.", e));
                 }
