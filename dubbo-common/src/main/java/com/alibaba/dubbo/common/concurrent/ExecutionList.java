@@ -2,8 +2,12 @@ package com.alibaba.dubbo.common.concurrent;
 
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <p>A list of listeners, each with an associated {@code Executor}, that
@@ -35,6 +39,8 @@ public final class ExecutionList {
 
     private boolean executed;
 
+    private static final Executor DEFAULT_EXECUTOR = new ThreadPoolExecutor(1, 10, 60000L, TimeUnit.MILLISECONDS, new SynchronousQueue<Runnable>(), new NamedThreadFactory("DubboFutureCallbackDefault", true));
+
     /**
      * Creates a new, empty {@link ExecutionList}.
      */
@@ -63,10 +69,13 @@ public final class ExecutionList {
         // Fail fast on a null.  We throw NPE here because the contract of
         // Executor states that it throws NPE on null listener, so we propagate
         // that contract up into the add method as well.
-        if (runnable == null || executor == null) {
-            throw new NullPointerException("Both Runnable and Executor can not be null!");
+        if (runnable == null) {
+            throw new NullPointerException("Runnable can not be null!");
         }
-
+        if (executor == null) {
+            logger.info("Executor for listenablefuture is null, will use default executor!");
+            executor = DEFAULT_EXECUTOR;
+        }
         // Lock while we check state.  We must maintain the lock while adding the
         // new pair so that another thread can't run the list out from under us.
         // We only add to the list if we have not yet started execution.
