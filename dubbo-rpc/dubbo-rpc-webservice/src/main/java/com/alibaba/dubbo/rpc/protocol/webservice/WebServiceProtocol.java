@@ -78,7 +78,7 @@ public class WebServiceProtocol extends AbstractProxyProtocol {
     }
 
     protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
-        String addr = url.getIp() + ":" + url.getPort();
+        String addr = getAddr(url);
         HttpServer httpServer = serverMap.get(addr);
         if (httpServer == null) {
             httpServer = httpBinder.bind(url, new WebServiceHandler());
