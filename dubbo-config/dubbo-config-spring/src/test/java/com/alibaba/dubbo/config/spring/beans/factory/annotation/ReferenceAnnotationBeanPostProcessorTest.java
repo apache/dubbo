@@ -2,6 +2,7 @@ package com.alibaba.dubbo.config.spring.beans.factory.annotation;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.spring.api.DemoService;
+import com.alibaba.dubbo.config.spring.context.annotation.DubboComponentScan;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Component;
  * {@link ReferenceAnnotationBeanPostProcessor} Test
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
- * @since ReferenceAnnotationBeanPostProcessor
+ * @since 2.5.7
  */
 public class ReferenceAnnotationBeanPostProcessorTest {
 
@@ -24,11 +25,11 @@ public class ReferenceAnnotationBeanPostProcessorTest {
     @Test
     public void test() throws Exception {
 
+
         // Starts Provider
         new ClassPathXmlApplicationContext(PROVIDER_LOCATION);
 
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
-
         context.register(TestBean.class);
 
         context.refresh();
@@ -44,7 +45,9 @@ public class ReferenceAnnotationBeanPostProcessorTest {
 
         DemoService demoService = testBean.getDemoService();
 
-        System.out.println(demoService.sayName("Mercy"));
+        Assert.assertEquals("annotation:Mercy", demoService.sayName("Mercy"));
+
+        context.close();
 
     }
 
@@ -84,8 +87,8 @@ public class ReferenceAnnotationBeanPostProcessorTest {
 
     }
 
-    @Component
-    @ImportResource("META-INF/spring/dubbo-consumer.xml")
+    @ImportResource("META-INF/spring/dubbo-annotation-consumer.xml")
+    @DubboComponentScan(basePackageClasses = ReferenceAnnotationBeanPostProcessorTest.class)
     private static class TestBean extends ParentBean {
 
         private DemoService demoService;

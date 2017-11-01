@@ -1,0 +1,30 @@
+package com.alibaba.dubbo.config.spring.beans.factory.annotation;
+
+import com.alibaba.dubbo.config.annotation.Service;
+import com.alibaba.dubbo.config.spring.api.Box;
+import com.alibaba.dubbo.config.spring.api.DemoService;
+
+/**
+ * {@link DemoService} Service implementation
+ *
+ * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
+ * @since 2.5.7
+ */
+@Service
+public class DemoServiceImpl implements DemoService {
+
+    @Override
+    public String sayName(String name) {
+        return "Hello," + name;
+    }
+
+    @Override
+    public Box getBox() {
+        return new Box() {
+            @Override
+            public String getName() {
+                return "MyBox";
+            }
+        };
+    }
+}

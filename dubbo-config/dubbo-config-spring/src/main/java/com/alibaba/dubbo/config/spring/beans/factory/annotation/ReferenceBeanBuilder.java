@@ -6,11 +6,9 @@ import com.alibaba.dubbo.config.spring.ReferenceBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.List;
+import static com.alibaba.dubbo.config.spring.util.BeanFactoryUtils.getOptionalBean;
 
 /**
  * {@link ReferenceBean} Builder
@@ -18,34 +16,14 @@ import java.util.List;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 2.5.7
  */
-class ReferenceBeanBuilder {
+class ReferenceBeanBuilder extends AbstractAnnotationConfigBeanBuilder<Reference, ReferenceBean> {
 
-    private Reference reference;
 
-    private Class<?> referenceClass;
-
-    private ApplicationContext applicationContext;
-
-    private ClassLoader classLoader;
-
-    public ReferenceBeanBuilder setReference(Reference reference) {
-        this.reference = reference;
-        return this;
+    private ReferenceBeanBuilder(Reference annotation, ClassLoader classLoader, ApplicationContext applicationContext) {
+        super(annotation, classLoader, applicationContext);
     }
 
-    public ReferenceBeanBuilder setReferenceClass(Class<?> referenceClass) {
-        Assert.notNull(referenceClass, "");
-        this.referenceClass = referenceClass;
-        return this;
-    }
-
-    public ReferenceBeanBuilder setApplicationContext(ApplicationContext applicationContext) {
-        this.applicationContext = applicationContext;
-        this.classLoader = applicationContext.getClassLoader();
-        return this;
-    }
-
-    private void setInterface(ReferenceBean referenceBean) {
+    private void configureInterface(Reference reference, ReferenceBean referenceBean) {
 
         Class<?> interfaceClass = reference.interfaceClass();
 
@@ -64,7 +42,7 @@ class ReferenceBeanBuilder {
         }
 
         if (interfaceClass == null) {
-            interfaceClass = referenceClass;
+            interfaceClass = this.interfaceClass;
         }
 
         Assert.isTrue(interfaceClass.isInterface(),
@@ -75,96 +53,62 @@ class ReferenceBeanBuilder {
     }
 
 
-    private void setRegistryConfigs(ReferenceBean<?> referenceBean) {
-
-        String[] registryConfigNames = reference.registry();
-
-        if (ObjectUtils.isEmpty(registryConfigNames)) {
-            return;
-        }
-
-        List<RegistryConfig> registryConfigs = new ArrayList<RegistryConfig>(registryConfigNames.length);
-
-        for (String registryConfigName : registryConfigNames) {
-            RegistryConfig registryConfig = applicationContext.getBean(registryConfigName, RegistryConfig.class);
-            registryConfigs.add(registryConfig);
-        }
-
-        referenceBean.setRegistries(registryConfigs);
-
-    }
-
-    private void setConsumer(ReferenceBean<?> referenceBean) {
+    private void configureConsumerConfig(Reference reference, ReferenceBean<?> referenceBean) {
 
         String consumerBeanName = reference.consumer();
 
-        if (StringUtils.hasText(consumerBeanName)) {
-            ConsumerConfig consumerConfig = applicationContext.getBean(consumerBeanName, ConsumerConfig.class);
-            referenceBean.setConsumer(consumerConfig);
-        }
+        ConsumerConfig consumerConfig = getOptionalBean(applicationContext, consumerBeanName, ConsumerConfig.class);
+
+        referenceBean.setConsumer(consumerConfig);
 
     }
 
-    private void setMonitor(ReferenceBean<?> referenceBean) {
+    @Override
+    protected ReferenceBean doBuild() {
+        return new ReferenceBean<Object>(annotation);
+    }
 
-        String monitorBeanName = reference.monitor();
+    @Override
+    protected void preConfigureBean(Reference annotation, ReferenceBean bean) {
+        Assert.notNull(interfaceClass, "The interface class must set first!");
+    }
 
-        if (StringUtils.hasText(monitorBeanName)) {
-            MonitorConfig monitorConfig = applicationContext.getBean(monitorBeanName, MonitorConfig.class);
-            referenceBean.setMonitor(monitorConfig);
-        }
+    @Override
+    protected String resolveModuleConfigBeanName(Reference annotation) {
+        return annotation.module();
+    }
+
+    @Override
+    protected String resolveApplicationConfigBeanName(Reference annotation) {
+        return annotation.application();
+    }
+
+    @Override
+    protected String[] resolveRegistryConfigBeanNames(Reference annotation) {
+        return annotation.registry();
+    }
+
+    @Override
+    protected String resolveMonitorConfigBeanName(Reference annotation) {
+        return annotation.monitor();
+    }
+
+    @Override
+    protected void postConfigureBean(Reference annotation, ReferenceBean bean) throws Exception {
+
+        bean.setApplicationContext(applicationContext);
+
+        configureInterface(annotation, bean);
+
+        configureConsumerConfig(annotation, bean);
+
+        bean.afterPropertiesSet();
 
     }
 
-    private void setApplication(ReferenceBean<?> referenceBean) {
-
-        String applicationBeanName = reference.application();
-
-        if (StringUtils.hasText(applicationBeanName)) {
-            ApplicationConfig applicationConfig = applicationContext.getBean(applicationBeanName, ApplicationConfig.class);
-            referenceBean.setApplication(applicationConfig);
-        }
-
-    }
-
-    public void setModule(ReferenceBean<?> referenceBean) {
-
-        String moduleBeanName = reference.module();
-
-        if (StringUtils.hasText(moduleBeanName)) {
-            ModuleConfig moduleConfig = applicationContext.getBean(moduleBeanName, ModuleConfig.class);
-            referenceBean.setModule(moduleConfig);
-        }
-
-    }
-
-
-    public ReferenceBean build() throws Exception {
-
-        ReferenceBean<?> referenceBean = new ReferenceBean<Object>(reference);
-
-        referenceBean.setApplicationContext(applicationContext);
-
-        setInterface(referenceBean);
-
-        setRegistryConfigs(referenceBean);
-
-        setConsumer(referenceBean);
-
-        setMonitor(referenceBean);
-
-        setApplication(referenceBean);
-
-        setModule(referenceBean);
-
-        referenceBean.afterPropertiesSet();
-
-        return referenceBean;
-
-    }
-
-    public static ReferenceBeanBuilder create() {
-        return new ReferenceBeanBuilder();
+    public static ReferenceBeanBuilder create(Reference annotation, ClassLoader classLoader,
+                                              ApplicationContext applicationContext) {
+        return new ReferenceBeanBuilder(annotation, classLoader, applicationContext);
     }
 
 }

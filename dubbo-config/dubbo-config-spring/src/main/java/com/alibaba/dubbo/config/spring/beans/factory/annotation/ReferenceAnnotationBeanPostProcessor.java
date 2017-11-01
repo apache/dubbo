@@ -7,9 +7,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.PropertyValues;
-import org.springframework.beans.factory.BeanCreationException;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.*;
 import org.springframework.beans.factory.annotation.InjectionMetadata;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter;
@@ -44,13 +42,19 @@ import static org.springframework.core.annotation.AnnotatedElementUtils.getMerge
  * @since 2.5.7
  */
 public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBeanPostProcessorAdapter
-        implements MergedBeanDefinitionPostProcessor, PriorityOrdered, BeanFactoryAware, ApplicationContextAware {
+        implements MergedBeanDefinitionPostProcessor, PriorityOrdered, ApplicationContextAware, BeanClassLoaderAware,
+        DisposableBean {
+
+    /**
+     * The bean name of {@link ReferenceAnnotationBeanPostProcessor}
+     */
+    public static String BEAN_NAME = "referenceAnnotationBeanPostProcessor";
 
     private final Log logger = LogFactory.getLog(getClass());
 
-    private ConfigurableListableBeanFactory beanFactory;
-
     private ApplicationContext applicationContext;
+
+    private ClassLoader classLoader;
 
     private final ConcurrentMap<String, InjectionMetadata> injectionMetadataCache =
             new ConcurrentHashMap<String, InjectionMetadata>(256);
@@ -208,16 +212,6 @@ public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBean
     }
 
     @Override
-    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-        if (!(beanFactory instanceof ConfigurableListableBeanFactory)) {
-            throw new IllegalArgumentException(
-                    getClass().getName() + " requires a ConfigurableListableBeanFactory");
-        }
-        this.beanFactory = (ConfigurableListableBeanFactory) beanFactory;
-    }
-
-
-    @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
@@ -232,9 +226,32 @@ public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBean
 
     @Override
     public int getOrder() {
-        return Ordered.LOWEST_PRECEDENCE;
+        return LOWEST_PRECEDENCE;
     }
 
+    @Override
+    public void destroy() throws Exception {
+
+        for (ReferenceBean referenceBean : referenceBeansCache.values()) {
+            if (logger.isInfoEnabled()) {
+                logger.info(referenceBean + " was destroying!");
+            }
+            referenceBean.destroy();
+        }
+
+        injectionMetadataCache.clear();
+        referenceBeansCache.clear();
+
+        if (logger.isInfoEnabled()) {
+            logger.info(getClass() + " was destroying!");
+        }
+
+    }
+
+    @Override
+    public void setBeanClassLoader(ClassLoader classLoader) {
+        this.classLoader = classLoader;
+    }
 
     /**
      * {@link Reference} {@link Method} {@link InjectionMetadata.InjectedElement}
@@ -304,10 +321,9 @@ public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBean
 
         if (referenceBean == null) {
 
-            ReferenceBeanBuilder beanBuilder = ReferenceBeanBuilder.create();
-            beanBuilder.setReference(reference);
-            beanBuilder.setReferenceClass(referenceClass);
-            beanBuilder.setApplicationContext(applicationContext);
+            ReferenceBeanBuilder beanBuilder = ReferenceBeanBuilder
+                    .create(reference, classLoader, applicationContext)
+                    .interfaceClass(referenceClass);
 
             referenceBean = beanBuilder.build();
 
