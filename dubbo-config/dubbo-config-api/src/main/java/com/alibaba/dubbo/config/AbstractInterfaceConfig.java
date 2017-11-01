@@ -97,6 +97,20 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     // 服务暴露或引用的scope,如果为local，则表示只在当前JVM内查找.
     private String scope;
 
+    /**
+     * 方法配置信息
+     */
+    protected List<MethodConfig> methods;
+
+    public List<MethodConfig> getMethods() {
+        return methods;
+    }
+
+    @SuppressWarnings("unchecked")
+    public void setMethods(List<? extends MethodConfig> methods) {
+        this.methods = (List<MethodConfig>) methods;
+    }
+
     protected void checkRegistry() {
         // 兼容旧版本
         if (registries == null || registries.size() == 0) {
@@ -314,6 +328,25 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 } catch (NoSuchMethodException e) {
                     throw new IllegalStateException("No such empty constructor \"public " + mockClass.getSimpleName() + "()\" in mock implementation class " + mockClass.getName());
                 }
+            }
+        }
+    }
+
+    protected void initRegistryAndMonitor() {
+        if (module != null) {
+            if (registries == null) {
+                registries = module.getRegistries();
+            }
+            if (monitor == null) {
+                monitor = module.getMonitor();
+            }
+        }
+        if (application != null) {
+            if (registries == null) {
+                registries = application.getRegistries();
+            }
+            if (monitor == null) {
+                monitor = application.getMonitor();
             }
         }
     }
