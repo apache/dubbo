@@ -70,7 +70,7 @@ public class DubboComponentScanRegistrarTest {
     }
 
 
-    @DubboComponentScan("com.alibaba.dubbo.config.spring.beans.factory.annotation")
+    @DubboComponentScan(basePackages = "com.alibaba.dubbo.config.spring.context.annotation")
     @ImportResource("META-INF/spring/dubbo-annotation-provider.xml")
     public static class ProviderConfiguration {
 

@@ -1,4 +1,4 @@
-package com.alibaba.dubbo.config.spring.beans.factory.annotation;
+package com.alibaba.dubbo.config.spring.context.annotation;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.dubbo.config.spring.api.Box;
