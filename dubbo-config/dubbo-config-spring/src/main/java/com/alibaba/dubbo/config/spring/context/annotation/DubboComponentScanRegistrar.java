@@ -1,27 +1,33 @@
 package com.alibaba.dubbo.config.spring.context.annotation;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.alibaba.dubbo.config.spring.ServiceBean;
 import com.alibaba.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
-import com.alibaba.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationBeanPostProcessor;
 import com.alibaba.dubbo.config.spring.util.BeanRegistrar;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.BeanDefinitionHolder;
+import org.springframework.beans.factory.config.RuntimeBeanReference;
+import org.springframework.beans.factory.support.*;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.ResourceLoaderAware;
-import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
-import org.springframework.util.ClassUtils;
+import org.springframework.util.*;
 
 import java.util.*;
 
-import static com.alibaba.dubbo.config.spring.util.BeanRegistrar.registerInfrastructureBean;
+import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
+import static org.springframework.beans.factory.support.BeanDefinitionReaderUtils.registerWithGeneratedName;
+import static org.springframework.core.annotation.AnnotationUtils.findAnnotation;
+import static org.springframework.util.ClassUtils.resolveClassName;
 
 /**
  * Dubbo {@link DubboComponentScan} Bean Registrar
@@ -32,7 +38,8 @@ import static com.alibaba.dubbo.config.spring.util.BeanRegistrar.registerInfrast
  * @see ImportBeanDefinitionRegistrar
  * @since 2.5.7
  */
-public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistrar, ResourceLoaderAware, EnvironmentAware {
+public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistrar, ResourceLoaderAware,
+        EnvironmentAware, BeanClassLoaderAware {
 
     private final Log logger = LogFactory.getLog(getClass());
 
@@ -40,67 +47,208 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
 
     private Environment environment;
 
+    private ClassLoader classLoader;
+
     @Override
     public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
 
-        registerServiceBeans(importingClassMetadata, registry);
+        Set<String> packagesToScan = getPackagesToScan(importingClassMetadata);
 
-        registerServiceAnnotationBeanPostProcessor(registry);
+        registerServiceBeans(packagesToScan, registry);
 
         registerReferenceAnnotationBeanPostProcessor(registry);
 
     }
 
-
     /**
      * Registers Beans whose classes was annotated {@link Service}
      *
-     * @param importingClassMetadata {@link AnnotationMetadata}
-     * @param registry               {@link BeanDefinitionRegistry}
+     * @param packagesToScan The base packages to scan
+     * @param registry       {@link BeanDefinitionRegistry}
      */
-    private void registerServiceBeans(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+    private void registerServiceBeans(Set<String> packagesToScan, BeanDefinitionRegistry registry) {
 
-        Set<String> packagesToScan = getPackagesToScan(importingClassMetadata);
+        DubboClassPathBeanDefinitionScanner dubboClassPathBeanDefinitionScanner =
+                new DubboClassPathBeanDefinitionScanner(registry, environment, resourceLoader);
 
-        ClassPathBeanDefinitionScanner classPathBeanDefinitionScanner =
-                new ClassPathBeanDefinitionScanner(registry, false);
-
-        classPathBeanDefinitionScanner.addIncludeFilter(new AnnotationTypeFilter(Service.class));
-
-        classPathBeanDefinitionScanner.setResourceLoader(resourceLoader);
-        classPathBeanDefinitionScanner.setEnvironment(environment);
-
-        Set<String> beanNames = new HashSet<String>(Arrays.asList(registry.getBeanDefinitionNames()));
+        dubboClassPathBeanDefinitionScanner.addIncludeFilter(new AnnotationTypeFilter(Service.class));
 
         for (String packageToScan : packagesToScan) {
-            int serviceBeansCount = classPathBeanDefinitionScanner.scan(packageToScan);
 
-            String[] names = registry.getBeanDefinitionNames();
+            Set<BeanDefinitionHolder> beanDefinitionHolders = dubboClassPathBeanDefinitionScanner.doScan(packageToScan);
 
-            Set<String> newBeanNames = new HashSet<String>(Arrays.asList(names));
-            newBeanNames.removeAll(beanNames);
-
-            beanNames.addAll(Arrays.asList(registry.getBeanDefinitionNames()));
+            for (BeanDefinitionHolder beanDefinitionHolder : beanDefinitionHolders) {
+                registerServiceBean(beanDefinitionHolder, registry);
+            }
 
             if (logger.isInfoEnabled()) {
-                logger.info(serviceBeansCount + " annotated @Service Components{ bean names : " + newBeanNames +
-                        "} were scanned under package[" + packageToScan + "]");
+                logger.info(beanDefinitionHolders.size() + " annotated @Service Components { " +
+                        beanDefinitionHolders +
+                        " } were scanned under package[" + packageToScan + "]");
             }
         }
 
     }
 
+    private Class<?> resolveClass(BeanDefinitionHolder beanDefinitionHolder) {
+
+        BeanDefinition beanDefinition = beanDefinitionHolder.getBeanDefinition();
+
+        return resolveClass(beanDefinition);
+
+    }
+
+    private Class<?> resolveClass(BeanDefinition beanDefinition) {
+
+        String beanClassName = beanDefinition.getBeanClassName();
+
+        return resolveClassName(beanClassName, classLoader);
+
+    }
+
     /**
-     * Registers {@link ServiceAnnotationBeanPostProcessor} into {@link BeanFactory}
+     * Registers {@link ServiceBean} from new annotated {@link Service} {@link BeanDefinition}
      *
-     * @param registry {@link BeanDefinitionRegistry}
+     * @param beanDefinitionHolder
+     * @param registry
+     * @see ServiceBean
+     * @see BeanDefinition
      */
-    private void registerServiceAnnotationBeanPostProcessor(BeanDefinitionRegistry registry) {
+    private void registerServiceBean(BeanDefinitionHolder beanDefinitionHolder, BeanDefinitionRegistry registry) {
 
-        registerInfrastructureBean(registry, ServiceAnnotationBeanPostProcessor.BEAN_NAME,
-                ServiceAnnotationBeanPostProcessor.class);
+        Class<?> beanClass = resolveClass(beanDefinitionHolder);
+
+        Service service = findAnnotation(beanClass, Service.class);
+
+        Class<?> interfaceClass = resolveServiceInterfaceClass(beanClass, service);
+
+        String beanName = beanDefinitionHolder.getBeanName();
+
+        AbstractBeanDefinition serviceBeanDefinition = buildServiceBeanDefinition(service, interfaceClass, beanName);
+
+        registerWithGeneratedName(serviceBeanDefinition, registry);
+
+    }
+
+    private ManagedList<RuntimeBeanReference> toRuntimeBeanReferences(String... beanNames) {
+
+        ManagedList<RuntimeBeanReference> runtimeBeanReferences = new ManagedList<RuntimeBeanReference>();
+
+        if (!ObjectUtils.isEmpty(beanNames)) {
+
+            for (String beanName : beanNames) {
+                runtimeBeanReferences.add(new RuntimeBeanReference(beanName));
+            }
+
+        }
+
+        return runtimeBeanReferences;
+
+    }
+
+    private AbstractBeanDefinition buildServiceBeanDefinition(Service service, Class<?> interfaceClass,
+                                                              String annotatedServiceBeanName) {
+
+        BeanDefinitionBuilder builder = rootBeanDefinition(ServiceBean.class)
+                .addConstructorArgValue(service)
+                // References "ref" property to annotated-@Service Bean
+                .addPropertyReference("ref", annotatedServiceBeanName)
+                .addPropertyValue("interfaceClass", interfaceClass);
+
+        /**
+         * Add {@link com.alibaba.dubbo.config.ProviderConfig} Bean reference
+         */
+        String providerConfigBeanName = service.provider();
+        if (StringUtils.hasText(providerConfigBeanName)) {
+            builder.addPropertyReference("provider", providerConfigBeanName);
+        }
+
+        /**
+         * Add {@link com.alibaba.dubbo.config.MonitorConfig} Bean reference
+         */
+        String monitorConfigBeanName = service.monitor();
+        if (StringUtils.hasText(monitorConfigBeanName)) {
+            builder.addPropertyReference("monitor", monitorConfigBeanName);
+        }
+
+        /**
+         * Add {@link com.alibaba.dubbo.config.ApplicationConfig} Bean reference
+         */
+        String applicationConfigBeanName = service.application();
+        if (StringUtils.hasText(applicationConfigBeanName)) {
+            builder.addPropertyReference("application", applicationConfigBeanName);
+        }
+
+        /**
+         * Add {@link com.alibaba.dubbo.config.ModuleConfig} Bean reference
+         */
+        String moduleConfigBeanName = service.module();
+        if (StringUtils.hasText(moduleConfigBeanName)) {
+            builder.addPropertyReference("application", moduleConfigBeanName);
+        }
 
 
+        /**
+         * Add {@link com.alibaba.dubbo.config.RegistryConfig} Bean reference
+         */
+        String[] registryConfigBeanNames = service.registry();
+
+        List<RuntimeBeanReference> registryRuntimeBeanReferences = toRuntimeBeanReferences(registryConfigBeanNames);
+
+        if (!registryRuntimeBeanReferences.isEmpty()) {
+            builder.addPropertyValue("registries", registryRuntimeBeanReferences);
+        }
+
+        /**
+         * Add {@link com.alibaba.dubbo.config.ProtocolConfig} Bean reference
+         */
+        String[] protocolConfigBeanNames = service.protocol();
+
+        List<RuntimeBeanReference> protocolRuntimeBeanReferences = toRuntimeBeanReferences(protocolConfigBeanNames);
+
+        if (!registryRuntimeBeanReferences.isEmpty()) {
+            builder.addPropertyValue("protocols", protocolRuntimeBeanReferences);
+        }
+
+        return builder.getBeanDefinition();
+
+    }
+
+    private Class<?> resolveServiceInterfaceClass(Class<?> annotatedServiceBeanClass, Service service) {
+
+        Class<?> interfaceClass = service.interfaceClass();
+
+        if (void.class.equals(interfaceClass)) {
+
+            interfaceClass = null;
+
+            String interfaceClassName = service.interfaceName();
+
+            if (StringUtils.hasText(interfaceClassName)) {
+                if (ClassUtils.isPresent(interfaceClassName, classLoader)) {
+                    interfaceClass = resolveClassName(interfaceClassName, classLoader);
+                }
+            }
+
+        }
+
+        if (interfaceClass == null) {
+
+            Class<?>[] allInterfaces = annotatedServiceBeanClass.getInterfaces();
+
+            if (allInterfaces.length > 0) {
+                interfaceClass = allInterfaces[0];
+            }
+
+        }
+
+        Assert.notNull(interfaceClass,
+                "@Service interfaceClass() or interfaceName() or interface class must be present!");
+
+        Assert.isTrue(interfaceClass.isInterface(),
+                "The type that was annotated @Service is not an interface!");
+
+        return interfaceClass;
     }
 
     /**
@@ -140,6 +288,11 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
     @Override
     public void setEnvironment(Environment environment) {
         this.environment = environment;
+    }
+
+    @Override
+    public void setBeanClassLoader(ClassLoader classLoader) {
+        this.classLoader = classLoader;
     }
 
 }

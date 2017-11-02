@@ -24,7 +24,7 @@
     <dubbo:application name="dubbo-annotation-provider"/>
 
     <!-- 连接注册中心配置 -->
-    <dubbo:registry address="N/A"/>
+    <dubbo:registry id="my-registry" address="N/A"/>
 
     <dubbo:protocol name="dubbo" port="12345"/>
 

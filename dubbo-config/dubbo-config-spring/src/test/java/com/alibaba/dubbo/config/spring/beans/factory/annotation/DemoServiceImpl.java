@@ -10,7 +10,12 @@ import com.alibaba.dubbo.config.spring.api.DemoService;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 2.5.7
  */
-@Service
+@Service(
+        version = "2.5.7",
+        application = "dubbo-annotation-provider",
+        protocol = "dubbo",
+        registry = "my-registry"
+)
 public class DemoServiceImpl implements DemoService {
 
     @Override

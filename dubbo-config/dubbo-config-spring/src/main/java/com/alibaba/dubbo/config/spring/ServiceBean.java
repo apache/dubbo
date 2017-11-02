@@ -53,6 +53,8 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
 
     private static transient ApplicationContext SPRING_CONTEXT;
 
+    private final transient Service service;
+
     private transient ApplicationContext applicationContext;
 
     private transient String beanName;
@@ -61,10 +63,12 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
 
     public ServiceBean() {
         super();
+        this.service = null;
     }
 
     public ServiceBean(Service service) {
         super(service);
+        this.service = service;
     }
 
     public static ApplicationContext getSpringContext() {
@@ -98,6 +102,15 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
 
     public void setBeanName(String name) {
         this.beanName = name;
+    }
+
+    /**
+     * Gets associated {@link Service}
+     *
+     * @return associated {@link Service}
+     */
+    public Service getService() {
+        return service;
     }
 
     public void onApplicationEvent(ApplicationEvent event) {

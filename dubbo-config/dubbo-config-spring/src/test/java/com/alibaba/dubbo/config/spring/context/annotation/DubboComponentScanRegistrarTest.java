@@ -11,6 +11,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.stereotype.Component;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -55,6 +56,7 @@ public class DubboComponentScanRegistrarTest {
 
     }
 
+    @Configuration("consumerConfiguration")
     @DubboComponentScan(
             basePackageClasses = ConsumerConfiguration.class
 
@@ -62,7 +64,7 @@ public class DubboComponentScanRegistrarTest {
     @ImportResource("META-INF/spring/dubbo-annotation-consumer.xml")
     public static class ConsumerConfiguration {
 
-        @Reference(url = "dubbo://127.0.0.1:12345")
+        @Reference(version = "2.5.7", url = "dubbo://127.0.0.1:12345")
         private DemoService demoService;
 
     }
