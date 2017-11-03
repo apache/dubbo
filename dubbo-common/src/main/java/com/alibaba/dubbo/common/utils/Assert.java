@@ -30,4 +30,10 @@ public abstract class Assert {
         }
     }
 
+    public static void notNull(Object obj, RuntimeException exeception) {
+        if (obj == null) {
+            throw exeception;
+        }
+    }
+
 }

@@ -150,7 +150,7 @@ public class JValidator implements Validator {
                     ctField.getFieldInfo().addAttribute(attribute);
                     ctClass.addField(ctField);
                 }
-                parameterClass = ctClass.toClass();
+                parameterClass = ctClass.toClass(clazz.getClassLoader(), null);
             }
             Object parameterBean = parameterClass.newInstance();
             for (int i = 0; i < args.length; i++) {

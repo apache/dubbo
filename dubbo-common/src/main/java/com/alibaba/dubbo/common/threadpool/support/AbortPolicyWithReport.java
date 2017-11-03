@@ -83,7 +83,18 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
             @Override
             public void run() {
                 String dumpPath = url.getParameter(Constants.DUMP_DIRECTORY, System.getProperty("user.home"));
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+
+                SimpleDateFormat sdf;
+
+                String OS = System.getProperty("os.name").toLowerCase();
+
+                // window system don't support ":" in file name
+                if(OS.contains("win")){
+                    sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+                }else {
+                    sdf = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+                }
+
                 String dateStr = sdf.format(new Date());
                 FileOutputStream jstackStream = null;
                 try {
