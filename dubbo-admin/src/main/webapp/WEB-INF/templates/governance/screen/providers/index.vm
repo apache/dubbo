@@ -90,21 +90,9 @@
                 #set($errorMessage = "")
                 #set($appList = $!serviceAppMap.get($provider.service))
                 #if($appList.size()>1)
-                    #set($appOne = "")
-                    #set($appTwo = "")
-                    #set($index = 0)
-                    #foreach($app in $appList)
-                        #set($index = $index+1)
-                        #if($index == 1)
-                            #set($appOne = $app)
-                        #end
-                        #if($index == 2)
-                            #set($appTwo = $app)
-                        #end
-                    #end
                     #if ($errorLevel != "error") #set($errorLevel = "warn") #end
                     #set($errorMessage ="$errorMessage<br>$i18n.get('warn'): $i18n.get(
-                        'CheckProviderApplicationDifferent', $appOne, $appTwo)")
+                        'CheckProviderApplicationDifferent', $appList)")
                 #end
 
                 #if($provider.address.startsWith("127.") || $provider.address.startsWith(
