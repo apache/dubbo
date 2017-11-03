@@ -117,7 +117,7 @@ public class Providers extends Restful {
 
     /**
      * @author WangXin
-     * 计算各个服务对应的，方便页面对"重复"的提示
+     * 计算各个服务对应的应用列表，方便页面对"重复"的提示
      * @param providers app services
      */
     private Map<String, Set<String>> getServiceAppMap(List<Provider> providers) {
