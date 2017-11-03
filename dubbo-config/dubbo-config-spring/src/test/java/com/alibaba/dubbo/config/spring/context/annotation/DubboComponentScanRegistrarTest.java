@@ -1,19 +1,12 @@
 package com.alibaba.dubbo.config.spring.context.annotation;
 
-import com.alibaba.dubbo.config.annotation.Reference;
-import com.alibaba.dubbo.config.spring.ServiceBean;
 import com.alibaba.dubbo.config.spring.api.DemoService;
+import com.alibaba.dubbo.config.spring.context.annotation.consumer.ConsumerConfiguration;
+import com.alibaba.dubbo.config.spring.context.annotation.provider.ProviderConfiguration;
+
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.ImportResource;
-import org.springframework.stereotype.Component;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * {@link DubboComponentScanRegistrar} Test
@@ -46,33 +39,12 @@ public class DubboComponentScanRegistrarTest {
 
         ConsumerConfiguration consumerConfiguration = consumerContext.getBean(ConsumerConfiguration.class);
 
-        value = consumerConfiguration.demoService.sayName("Mercy");
+        value = consumerConfiguration.getDemoService().sayName("Mercy");
 
         Assert.assertEquals("Hello,Mercy", value);
 
         providerContext.close();
         consumerContext.close();
-
-
-    }
-
-    @Configuration("consumerConfiguration")
-    @DubboComponentScan(
-            basePackageClasses = ConsumerConfiguration.class
-
-    )
-    @ImportResource("META-INF/spring/dubbo-annotation-consumer.xml")
-    public static class ConsumerConfiguration {
-
-        @Reference(version = "2.5.7", url = "dubbo://127.0.0.1:12345")
-        private DemoService demoService;
-
-    }
-
-
-    @DubboComponentScan(basePackages = "com.alibaba.dubbo.config.spring.context.annotation")
-    @ImportResource("META-INF/spring/dubbo-annotation-provider.xml")
-    public static class ProviderConfiguration {
 
 
     }
