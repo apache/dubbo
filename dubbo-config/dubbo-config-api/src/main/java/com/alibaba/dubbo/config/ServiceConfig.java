@@ -637,7 +637,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         // 记录bind port，作为url的key
         map.put(Constants.BIND_PORT_KEY, String.valueOf(portToBind));
 
-        // registry ip，默认不作为bind ip
+        // registry port，默认不作为bind port
         String portToRegistryStr = getValueFromConfig(protocolConfig, Constants.DUBBO_PORT_TO_REGISTRY);
         Integer portToRegistry = parsePort(portToRegistryStr);
         if (portToRegistry == null) {
