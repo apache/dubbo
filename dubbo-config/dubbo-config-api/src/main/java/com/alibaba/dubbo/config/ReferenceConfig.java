@@ -53,10 +53,13 @@ import java.util.Properties;
 import static com.alibaba.dubbo.common.utils.NetUtils.isInvalidLocalHost;
 
 /**
- * ReferenceConfig
+ * Consumer端服务配置类
+ * <p>一个Consumer端调用一个远程服务需要提供如下两个信息:
+ *    1.RegistryConfig:注册中心信息,用于获取远程服务的地址信息
+ *    2.ApplicationConfig:应用自身的信息
+ * </p>
  *
  * @author william.liangf
- * @export
  */
 public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
@@ -68,14 +71,22 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
     private static final ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
     private final List<URL> urls = new ArrayList<URL>();
-    // 接口类型
+    /**
+     *  引用的远程接口名字
+     */
     private String interfaceName;
     private Class<?> interfaceClass;
-    // 客户端类型
+    /**
+     *   客户端类型
+     */
     private String client;
-    // 点对点直连服务提供地址
+    /**
+     * 点对点直连服务提供地址
+     */
     private String url;
-    // 方法配置
+    /**
+     * 方法配置
+     */
     private List<MethodConfig> methods;
     // 缺省配置
     private ConsumerConfig consumer;
@@ -257,22 +268,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 monitor = consumer.getMonitor();
             }
         }
-        if (module != null) {
-            if (registries == null) {
-                registries = module.getRegistries();
-            }
-            if (monitor == null) {
-                monitor = module.getMonitor();
-            }
-        }
-        if (application != null) {
-            if (registries == null) {
-                registries = application.getRegistries();
-            }
-            if (monitor == null) {
-                monitor = application.getMonitor();
-            }
-        }
+        initRegistryAndMonitor();
         checkApplication();
         checkStubAndMock(interfaceClass);
         Map<String, String> map = new HashMap<String, String>();
@@ -302,7 +298,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         appendParameters(map, module);
         appendParameters(map, consumer, Constants.DEFAULT_KEY);
         appendParameters(map, this);
-        String prifix = StringUtils.getServiceKey(map);
+        String prefix = StringUtils.getServiceKey(map);
         if (methods != null && methods.size() > 0) {
             for (MethodConfig method : methods) {
                 appendParameters(map, method, method.getName());
@@ -313,7 +309,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                         map.put(method.getName() + ".retries", "0");
                     }
                 }
-                appendAttributes(attributes, method, prifix + "." + method.getName());
+                appendAttributes(attributes, method, prefix + "." + method.getName());
                 checkAndConvertImplicitConfig(method, map, attributes);
             }
         }
@@ -346,7 +342,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 isJvmRefer = false;
             }
         } else {
-            isJvmRefer = isInjvm().booleanValue();
+            isJvmRefer = isInjvm();
         }
 
         if (isJvmRefer) {
@@ -496,15 +492,6 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
     public void setUrl(String url) {
         this.url = url;
-    }
-
-    public List<MethodConfig> getMethods() {
-        return methods;
-    }
-
-    @SuppressWarnings("unchecked")
-    public void setMethods(List<? extends MethodConfig> methods) {
-        this.methods = (List<MethodConfig>) methods;
     }
 
     public ConsumerConfig getConsumer() {

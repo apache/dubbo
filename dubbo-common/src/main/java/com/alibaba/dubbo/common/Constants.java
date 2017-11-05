@@ -67,8 +67,6 @@ public class Constants {
 
     public static final boolean DEFAULT_SENT = false;
 
-    public static final String REGISTRY_PROTOCOL = "registry";
-
     public static final String $INVOKE = "$invoke";
 
     public static final String $ECHO = "$echo";
@@ -152,7 +150,7 @@ public class Constants {
 
     public static final String LOADBALANCE_KEY = "loadbalance";
 
-    // key for router type, for e.g., "script"/"file",  corresponding to ScriptRouterFactory.NAME, FileRouterFactory.NAME 
+    // key for router type, for e.g., "script"/"file",  corresponding to ScriptRouterFactory.NAME, FileRouterFactory.NAME
     public static final String ROUTER_KEY = "router";
 
     public static final String CLUSTER_KEY = "cluster";
@@ -546,8 +544,6 @@ public class Constants {
     //invocation attachment属性中如果有此值，则选择mock invoker
     public static final String INVOCATION_NEED_MOCK = "invocation.need.mock";
 
-    public static final String LOCAL_PROTOCOL = "injvm";
-
     public static final String AUTO_ATTACH_INVOCATIONID_KEY = "invocationid.autoattach";
 
     public static final String SCOPE_KEY = "scope";
@@ -596,8 +592,56 @@ public class Constants {
 
     public static final String REGISTER_IP_KEY = "register.ip";
 
-    /*
-     * private Constants(){ }
+    public static final String NOTIFY_KEY = "notify";
+
+
+    /**
+     * 应用配置名称
      */
+    public static final String DUBBO_APPLICATION_NAME = "dubbo.application.name";
+
+    /**
+     * 注册中心的地址信息
+     * <p>
+     *  通过在dubbo.properties将该参数作为key进行配置,Dubbo会自动解析该内容作为注册中心的地址
+     * </p>
+     */
+    public static final String DUBBO_REGISTRY_ADDRESS = "dubbo.registry.address";
+
+    /**
+     * Monitor地址信息
+     */
+    public static final String DUBBO_MONITOR_ADDRESS = "dubbo.monitor.address";
+
+    public static final String DUBBO_MONITOR_PROTOCOL = "dubbo.monitor.protocol";
+
+    //--------------------------------协议相关配置-------------------------------//
+
+    public static final String PROTOCOL = "protocol";
+
+    /**
+     * Dubbo协议,当URL的协议为Dubbo时，Protocol的Adaptive实例将会使用DubboProtocol来进行export和refer
+     *
+     * @see com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol
+     */
+    public static final String DUBBO_PROTOCOL = "dubbo";
+
+    /**
+     * 注册协议
+     *
+     * @see com.alibaba.dubbo.registry.integration.RegistryProtocol
+     */
+    public static final String REGISTRY_PROTOCOL = "registry";
+
+    /**
+     * 本地协议
+     */
+    public static final String LOCAL_PROTOCOL = "injvm";
+
+    /**
+     * 远程协议
+     */
+    public static final String REMOTE_PROTOCOL = "remote";
+
 
 }
