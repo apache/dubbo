@@ -35,6 +35,7 @@ import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TIOStreamTransport;
 import org.apache.thrift.transport.TTransport;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -42,6 +43,7 @@ import java.io.ByteArrayInputStream;
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">gang.lvg</a>
  */
+@Ignore
 public class ThriftCodecTest {
 
     private ThriftCodec codec = new ThriftCodec();

@@ -7,7 +7,6 @@ import com.alibaba.dubbo.remoting.zookeeper.support.AbstractZookeeperClient;
 
 import org.I0Itec.zkclient.IZkChildListener;
 import org.I0Itec.zkclient.IZkStateListener;
-import org.I0Itec.zkclient.ZkClient;
 import org.I0Itec.zkclient.exception.ZkNoNodeException;
 import org.I0Itec.zkclient.exception.ZkNodeExistsException;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
@@ -16,14 +15,14 @@ import java.util.List;
 
 public class ZkclientZookeeperClient extends AbstractZookeeperClient<IZkChildListener> {
 
-    private final ZkClient client;
+    private final ZkClientWrapper client;
 
     private volatile KeeperState state = KeeperState.SyncConnected;
 
     public ZkclientZookeeperClient(URL url) {
         super(url);
-        client = new ZkClient(url.getBackupAddress());
-        client.subscribeStateChanges(new IZkStateListener() {
+        client = new ZkClientWrapper(url.getBackupAddress(), 30000);
+        client.addListener(new IZkStateListener() {
             public void handleStateChanged(KeeperState state) throws Exception {
                 ZkclientZookeeperClient.this.state = state;
                 if (state == KeeperState.Disconnected) {
@@ -37,11 +36,13 @@ public class ZkclientZookeeperClient extends AbstractZookeeperClient<IZkChildLis
                 stateChanged(StateListener.RECONNECTED);
             }
         });
+        client.start();
     }
+
 
     public void createPersistent(String path) {
         try {
-            client.createPersistent(path, true);
+            client.createPersistent(path);
         } catch (ZkNodeExistsException e) {
         }
     }
@@ -66,6 +67,14 @@ public class ZkclientZookeeperClient extends AbstractZookeeperClient<IZkChildLis
         } catch (ZkNoNodeException e) {
             return null;
         }
+    }
+
+    public boolean checkExists(String path) {
+        try {
+            return client.exists(path);
+        } catch (Throwable t) {
+        }
+        return false;
     }
 
     public boolean isConnected() {

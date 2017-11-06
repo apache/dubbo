@@ -87,6 +87,9 @@ public class MonitorFilter implements Filter {
             String method = RpcUtils.getMethodName(invocation); // 获取方法名
             URL url = invoker.getUrl().getUrlParameter(Constants.MONITOR_KEY);
             Monitor monitor = monitorFactory.getMonitor(url);
+            if (monitor == null) {
+                return;
+            }
             int localPort;
             String remoteKey;
             String remoteValue;

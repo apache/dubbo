@@ -53,7 +53,7 @@
         </xsd:attribute>
         <xsd:attribute name="mock" type="xsd:string" use="optional">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ Use service mock implemention. ]]></xsd:documentation>
+                <xsd:documentation><![CDATA[ Use service mock implementation. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="merger" type="xsd:string" use="optional">
@@ -83,12 +83,12 @@
                 </xsd:attribute>
                 <xsd:attribute name="local" type="xsd:string" use="optional">
                     <xsd:annotation>
-                        <xsd:documentation><![CDATA[ Use service local implemention. ]]></xsd:documentation>
+                        <xsd:documentation><![CDATA[ Use service local implementation. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:attribute name="stub" type="xsd:string" use="optional">
                     <xsd:annotation>
-                        <xsd:documentation><![CDATA[ Use service local implemention. ]]></xsd:documentation>
+                        <xsd:documentation><![CDATA[ Use service local implementation. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:attribute name="proxy" type="xsd:string" use="optional">
@@ -297,12 +297,20 @@
                         <xsd:documentation><![CDATA[ The service protocol. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
+                <xsd:attribute name="warmup" type="xsd:string" use="optional">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ The warmup time in Milliseconds. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
                 <xsd:anyAttribute namespace="##other" processContents="lax"/>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
 
     <xsd:complexType name="applicationType">
+        <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+            <xsd:element ref="parameter" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
         <xsd:attribute name="id" type="xsd:ID">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The unique identifier for a bean. ]]></xsd:documentation>
@@ -677,11 +685,17 @@
         <xsd:complexContent>
             <xsd:extension base="abstractReferenceType">
                 <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+                    <xsd:element ref="reference" minOccurs="0" maxOccurs="unbounded"/>
                     <xsd:element ref="parameter" minOccurs="0" maxOccurs="unbounded"/>
                 </xsd:sequence>
                 <xsd:attribute name="default" type="xsd:string" use="optional">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[ Is default. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="client" type="xsd:string" use="optional">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ Transporter layer framework: netty mina.... ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:anyAttribute namespace="##other" processContents="lax"/>

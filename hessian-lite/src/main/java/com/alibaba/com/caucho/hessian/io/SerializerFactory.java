@@ -73,6 +73,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -323,6 +324,8 @@ public class SerializerFactory extends AbstractSerializerFactory {
 
         } else if (isZoneId(cl)) //must before "else if (JavaSerializer.getWriteReplace(cl) != null)"
             serializer = ZoneIdSerializer.getInstance();
+        else if (isEnumSet(cl))
+            serializer = EnumSetSerializer.getInstance();
         else if (JavaSerializer.getWriteReplace(cl) != null)
             serializer = new JavaSerializer(cl, _loader);
 
@@ -671,6 +674,10 @@ public class SerializerFactory extends AbstractSerializerFactory {
             // ignore
         }
         return false;
+    }
+
+    private static boolean isEnumSet(Class cl) {
+        return EnumSet.class.isAssignableFrom(cl);
     }
 
     /**

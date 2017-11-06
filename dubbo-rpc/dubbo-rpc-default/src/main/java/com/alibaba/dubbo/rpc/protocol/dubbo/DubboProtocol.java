@@ -59,8 +59,6 @@ public class DubboProtocol extends AbstractProtocol {
 
     public static final String NAME = "dubbo";
 
-    public static final String COMPATIBLE_CODEC_NAME = "dubbo1compatible";
-
     public static final int DEFAULT_PORT = 20880;
     private static final String IS_CALLBACK_SERVICE_INVOKE = "_isCallBackServiceInvoke";
     private static DubboProtocol INSTANCE;
@@ -271,7 +269,7 @@ public class DubboProtocol extends AbstractProtocol {
         if (str != null && str.length() > 0 && !ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(str))
             throw new RpcException("Unsupported server type: " + str + ", url: " + url);
 
-        url = url.addParameter(Constants.CODEC_KEY, Version.isCompatibleVersion() ? COMPATIBLE_CODEC_NAME : DubboCodec.NAME);
+        url = url.addParameter(Constants.CODEC_KEY, DubboCodec.NAME);
         ExchangeServer server;
         try {
             server = Exchangers.bind(url, requestHandler);
@@ -349,7 +347,7 @@ public class DubboProtocol extends AbstractProtocol {
 
         String version = url.getParameter(Constants.DUBBO_VERSION_KEY);
         boolean compatible = (version != null && version.startsWith("1.0."));
-        url = url.addParameter(Constants.CODEC_KEY, Version.isCompatibleVersion() && compatible ? COMPATIBLE_CODEC_NAME : DubboCodec.NAME);
+        url = url.addParameter(Constants.CODEC_KEY, DubboCodec.NAME);
         //默认开启heartbeat
         url = url.addParameterIfAbsent(Constants.HEARTBEAT_KEY, String.valueOf(Constants.DEFAULT_HEARTBEAT));
 
