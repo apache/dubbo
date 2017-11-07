@@ -16,7 +16,6 @@
 package com.alibaba.dubbo.common;
 
 import com.alibaba.dubbo.common.utils.CollectionUtils;
-
 import org.junit.Test;
 
 import java.io.File;
@@ -633,4 +632,11 @@ public class URLTest {
         assertEquals("path", url.getPath());
     }
 
+    @Test
+    public void testAddParameters() throws Exception {
+        URL url = URL.valueOf("dubbo://127.0.0.1:20880");
+        Map<String, String> parameters = new HashMap<String, String>();
+        parameters.put("version", null);
+        url.addParameters(parameters);
+    }
 }

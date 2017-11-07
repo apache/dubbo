@@ -100,7 +100,7 @@ public class NetUtils {
     }
 
     public static boolean isInvalidPort(int port) {
-        return port > MIN_PORT || port <= MAX_PORT;
+        return port <= MIN_PORT || port > MAX_PORT;
     }
 
     public static boolean isValidAddress(String address) {

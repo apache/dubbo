@@ -26,7 +26,7 @@ import java.io.UnsupportedEncodingException;
  *
  * @author qian.lei
  */
-
+@Deprecated
 public class JSONReader {
     private static ThreadLocal<Yylex> LOCAL_LEXER = new ThreadLocal<Yylex>() {
     };

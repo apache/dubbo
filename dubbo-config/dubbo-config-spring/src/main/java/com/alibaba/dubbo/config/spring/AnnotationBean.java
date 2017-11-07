@@ -57,6 +57,7 @@ import java.util.concurrent.ConcurrentMap;
  * @author william.liangf
  * @export
  */
+@Deprecated
 public class AnnotationBean extends AbstractConfig implements DisposableBean, BeanFactoryPostProcessor, BeanPostProcessor, ApplicationContextAware {
 
     private static final long serialVersionUID = -7582802454287589552L;
@@ -132,6 +133,7 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
         Service service = bean.getClass().getAnnotation(Service.class);
         if (service != null) {
             ServiceBean<Object> serviceConfig = new ServiceBean<Object>(service);
+            serviceConfig.setRef(bean);
             if (void.class.equals(service.interfaceClass())
                     && "".equals(service.interfaceName())) {
                 if (bean.getClass().getInterfaces().length > 0) {
@@ -170,7 +172,7 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
                 }
                 if (service.protocol() != null && service.protocol().length > 0) {
                     List<ProtocolConfig> protocolConfigs = new ArrayList<ProtocolConfig>();
-                    for (String protocolId : service.registry()) {
+                    for (String protocolId : service.protocol()) {
                         if (protocolId != null && protocolId.length() > 0) {
                             protocolConfigs.add((ProtocolConfig) applicationContext.getBean(protocolId, ProtocolConfig.class));
                         }
@@ -185,7 +187,6 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
                     throw new IllegalStateException(e.getMessage(), e);
                 }
             }
-            serviceConfig.setRef(bean);
             serviceConfigs.add(serviceConfig);
             serviceConfig.export();
         }

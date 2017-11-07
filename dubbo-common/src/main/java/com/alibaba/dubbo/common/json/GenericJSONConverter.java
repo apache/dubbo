@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+@Deprecated
 public class GenericJSONConverter implements JSONConverter {
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
     private static final Map<Class<?>, Encoder> GlobalEncoderMap = new HashMap<Class<?>, Encoder>();

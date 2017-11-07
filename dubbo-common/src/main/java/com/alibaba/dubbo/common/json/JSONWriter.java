@@ -30,7 +30,7 @@ import java.io.Writer;
  *
  * @author qian.lei
  */
-
+@Deprecated
 public class JSONWriter {
     private static final byte UNKNOWN = 0, ARRAY = 1, OBJECT = 2, OBJECT_VALUE = 3;
     private static final String[] CONTROL_CHAR_MAP = new String[]{

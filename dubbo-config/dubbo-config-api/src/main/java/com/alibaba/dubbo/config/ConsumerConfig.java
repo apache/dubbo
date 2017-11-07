@@ -28,6 +28,9 @@ public class ConsumerConfig extends AbstractReferenceConfig {
     // 是否为缺省
     private Boolean isDefault;
 
+    // 网络通信框架的客户端类型: netty mina ...
+    private String client;
+
     @Override
     public void setTimeout(Integer timeout) {
         super.setTimeout(timeout);
@@ -46,4 +49,11 @@ public class ConsumerConfig extends AbstractReferenceConfig {
         this.isDefault = isDefault;
     }
 
+    public String getClient() {
+        return client;
+    }
+
+    public void setClient(String client) {
+        this.client = client;
+    }
 }

@@ -23,7 +23,7 @@
     </parent>
     <groupId>com.alibaba</groupId>
     <artifactId>dubbo</artifactId>
-    <version>2.5.5</version>
+    <version>2.5.7</version>
     <packaging>jar</packaging>
     <name>Dubbo</name>
     <description>Dubbo is a distributed service framework enpowers applications with service import/export capability
@@ -68,6 +68,12 @@
             <groupId>org.jboss.netty</groupId>
             <artifactId>netty</artifactId>
             <version>3.2.5.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>4.0.35.Final</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.mina</groupId>
@@ -187,6 +193,12 @@
             <groupId>javax.validation</groupId>
             <artifactId>validation-api</artifactId>
             <version>1.1.0.Final</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.el</artifactId>
+            <version>3.0.1-b08</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

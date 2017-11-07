@@ -47,6 +47,7 @@ import com.alibaba.dubbo.rpc.service.GenericException;
 import com.alibaba.dubbo.rpc.service.GenericService;
 
 import junit.framework.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -68,6 +69,7 @@ import static org.junit.matchers.JUnitMatchers.containsString;
  *
  * @author william.liangf
  */
+@Ignore
 public class ConfigTest {
 
     private static void unexportService(ServiceConfig<?> config) {

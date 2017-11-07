@@ -70,7 +70,12 @@ public class Response {
     /**
      * internal server error.
      */
-    public static final byte CLIENT_ERROR = 90;
+    public static final byte CLIENT_ERROR      = 90;
+    
+    /**
+     * server side threadpool exhausted and quick return.
+     */
+    public static final byte SERVER_THREADPOOL_EXHAUSTED_ERROR      = 100;
 
     private long mId = 0;
 

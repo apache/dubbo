@@ -36,7 +36,7 @@ import java.util.concurrent.ConcurrentMap;
  *
  * @author qian.lei.
  */
-
+@Deprecated
 class J2oVisitor implements JSONVisitor {
     public static final boolean[] EMPTY_BOOL_ARRAY = new boolean[0];
 
