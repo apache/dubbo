@@ -1,10 +1,20 @@
 package com.alibaba.dubbo.test;
 
+import com.alibaba.dubbo.config.annotation.Service;
+import com.alibaba.dubbo.demo.DemoService;
+
 /**
- * TODO
+ * Default {@link DemoService} implementation
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
- * @since TODO
+ * @since 2.5.8
  */
-public class DefaultDemoService {
+@Service
+public class DefaultDemoService implements DemoService {
+
+    @Override
+    public String sayHello(String name) {
+        return "DefaultDemoService - sayHell() : " + name;
+    }
+
 }
