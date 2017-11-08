@@ -11,7 +11,10 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
-import org.springframework.beans.factory.support.*;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
@@ -20,7 +23,10 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
-import org.springframework.util.*;
+import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 
@@ -269,7 +275,9 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
                 metadata.getAnnotationAttributes(DubboComponentScan.class.getName()));
         String[] basePackages = attributes.getStringArray("basePackages");
         Class<?>[] basePackageClasses = attributes.getClassArray("basePackageClasses");
-        Set<String> packagesToScan = new LinkedHashSet<String>();
+        String[] value = attributes.getStringArray("value");
+        // Appends value array attributes
+        Set<String> packagesToScan = new LinkedHashSet<String>(Arrays.asList(value));
         packagesToScan.addAll(Arrays.asList(basePackages));
         for (Class<?> basePackageClass : basePackageClasses) {
             packagesToScan.add(ClassUtils.getPackageName(basePackageClass));
