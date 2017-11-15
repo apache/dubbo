@@ -65,7 +65,7 @@ public abstract class Proxy {
      * @return Proxy instance.
      */
     public static Proxy getProxy(Class<?>... ics) {
-        return getProxy(ClassHelper.getCallerClassLoader(Proxy.class), ics);
+        return getProxy(ClassHelper.getClassLoader(Proxy.class), ics);
     }
 
     /**

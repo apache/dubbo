@@ -20,7 +20,6 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
-import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.common.utils.UrlUtils;
 import com.alibaba.dubbo.registry.NotifyListener;
@@ -37,6 +36,7 @@ import com.alibaba.dubbo.rpc.cluster.Configurator;
 import com.alibaba.dubbo.rpc.protocol.InvokerWrapper;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -121,7 +121,7 @@ public class RegistryProtocol implements Protocol {
         // 订阅override数据
         // FIXME 提供者订阅时，会影响同一JVM即暴露服务，又引用同一服务的的场景，因为subscribed以服务名为缓存的key，导致订阅信息覆盖。
         final URL overrideSubscribeUrl = getSubscribedOverrideUrl(registedProviderUrl);
-        final OverrideListener overrideSubscribeListener = new OverrideListener(overrideSubscribeUrl);
+        final OverrideListener overrideSubscribeListener = new OverrideListener(overrideSubscribeUrl, originInvoker);
         overrideListeners.put(overrideSubscribeUrl, overrideSubscribeListener);
         registry.subscribe(overrideSubscribeUrl, overrideSubscribeListener);
         //保证每次export都返回一个新的exporter实例
@@ -165,7 +165,7 @@ public class RegistryProtocol implements Protocol {
                 }
             }
         }
-        return (ExporterChangeableWrapper<T>) exporter;
+        return exporter;
     }
 
     /**
@@ -180,7 +180,6 @@ public class RegistryProtocol implements Protocol {
         final ExporterChangeableWrapper<T> exporter = (ExporterChangeableWrapper<T>) bounds.get(key);
         if (exporter == null) {
             logger.warn(new IllegalStateException("error state, exporter should not be null"));
-            return;//不存在是异常场景 直接返回
         } else {
             final Invoker<T> invokerDelegete = new InvokerDelegete<T>(originInvoker, newInvokerUrl);
             exporter.setExporter(protocol.export(invokerDelegete));
@@ -211,7 +210,10 @@ public class RegistryProtocol implements Protocol {
     private URL getRegistedProviderUrl(final Invoker<?> originInvoker) {
         URL providerUrl = getProviderUrl(originInvoker);
         //注册中心看到的地址
-        final URL registedProviderUrl = providerUrl.removeParameters(getFilteredKeys(providerUrl)).removeParameter(Constants.MONITOR_KEY);
+        final URL registedProviderUrl = providerUrl.removeParameters(getFilteredKeys(providerUrl))
+                .removeParameter(Constants.MONITOR_KEY)
+                .removeParameter(Constants.BIND_IP_KEY)
+                .removeParameter(Constants.BIND_PORT_KEY);
         return registedProviderUrl;
     }
 
@@ -277,7 +279,9 @@ public class RegistryProtocol implements Protocol {
         RegistryDirectory<T> directory = new RegistryDirectory<T>(type, url);
         directory.setRegistry(registry);
         directory.setProtocol(protocol);
-        URL subscribeUrl = new URL(Constants.CONSUMER_PROTOCOL, NetUtils.getLocalHost(), 0, type.getName(), directory.getUrl().getParameters());
+        // REFER_KEY的所有属性
+        Map<String, String> parameters = new HashMap<String, String>(directory.getUrl().getParameters());
+        URL subscribeUrl = new URL(Constants.CONSUMER_PROTOCOL, parameters.remove(Constants.REGISTER_IP_KEY), 0, type.getName(), parameters);
         if (!Constants.ANY_VALUE.equals(url.getServiceInterface())
                 && url.getParameter(Constants.REGISTER_KEY, true)) {
             registry.register(subscribeUrl.addParameters(Constants.CATEGORY_KEY, Constants.CONSUMERS_CATEGORY,
@@ -327,67 +331,73 @@ public class RegistryProtocol implements Protocol {
     private class OverrideListener implements NotifyListener {
 
         private final URL subscribeUrl;
-        private volatile List<Configurator> configurators;
+        private final Invoker originInvoker;
 
-        public OverrideListener(URL subscribeUrl) {
+        public OverrideListener(URL subscribeUrl, Invoker originalInvoker) {
             this.subscribeUrl = subscribeUrl;
+            this.originInvoker = originalInvoker;
         }
 
-        /*
-         *  provider 端可识别的override url只有这两种.
-         *  override://0.0.0.0/serviceName?timeout=10
-         *  override://0.0.0.0/?timeout=10
+        /**
+         * @param urls 已注册信息列表，总不为空，含义同{@link com.alibaba.dubbo.registry.RegistryService#lookup(URL)}的返回值。
          */
-        public void notify(List<URL> urls) {
-            List<URL> result = null;
-            for (URL url : urls) {
+        public synchronized void notify(List<URL> urls) {
+            logger.debug("original override urls: " + urls);
+            List<URL> matchedUrls = getMatchedUrls(urls, subscribeUrl);
+            logger.debug("subscribe url: " + subscribeUrl + ", override urls: " + matchedUrls);
+            //没有匹配的
+            if (matchedUrls.isEmpty()) {
+                return;
+            }
+
+            List<Configurator> configurators = RegistryDirectory.toConfigurators(matchedUrls);
+
+            final Invoker<?> invoker;
+            if (originInvoker instanceof InvokerDelegete) {
+                invoker = ((InvokerDelegete<?>) originInvoker).getInvoker();
+            } else {
+                invoker = originInvoker;
+            }
+            //最原始的invoker
+            URL originUrl = RegistryProtocol.this.getProviderUrl(invoker);
+            String key = getCacheKey(originInvoker);
+            ExporterChangeableWrapper<?> exporter = bounds.get(key);
+            if (exporter == null) {
+                logger.warn(new IllegalStateException("error state, exporter should not be null"));
+                return;
+            }
+            //当前的，可能经过了多次merge
+            URL currentUrl = exporter.getInvoker().getUrl();
+            //与本次配置merge的
+            URL newUrl = getConfigedInvokerUrl(configurators, originUrl);
+            if (!currentUrl.equals(newUrl)) {
+                RegistryProtocol.this.doChangeLocalExport(originInvoker, newUrl);
+                logger.info("exported provider url changed, origin url: " + originUrl + ", old export url: " + currentUrl + ", new export url: " + newUrl);
+            }
+        }
+
+        private List<URL> getMatchedUrls(List<URL> configuratorUrls, URL currentSubscribe) {
+            List<URL> result = new ArrayList<URL>();
+            for (URL url : configuratorUrls) {
                 URL overrideUrl = url;
+                // 兼容旧版本
                 if (url.getParameter(Constants.CATEGORY_KEY) == null
                         && Constants.OVERRIDE_PROTOCOL.equals(url.getProtocol())) {
-                    // 兼容旧版本
                     overrideUrl = url.addParameter(Constants.CATEGORY_KEY, Constants.CONFIGURATORS_CATEGORY);
                 }
-                if (!UrlUtils.isMatch(subscribeUrl, overrideUrl)) {
-                    if (result == null) {
-                        result = new ArrayList<URL>(urls);
-                    }
-                    result.remove(url);
-                    logger.warn("Subsribe category=configurator, but notifed non-configurator urls. may be registry bug. unexcepted url: " + url);
-                }
-            }
-            if (result != null) {
-                urls = result;
-            }
-            this.configurators = RegistryDirectory.toConfigurators(urls);
-            List<ExporterChangeableWrapper<?>> exporters = new ArrayList<ExporterChangeableWrapper<?>>(bounds.values());
-            for (ExporterChangeableWrapper<?> exporter : exporters) {
-                Invoker<?> invoker = exporter.getOriginInvoker();
-                final Invoker<?> originInvoker;
-                if (invoker instanceof InvokerDelegete) {
-                    originInvoker = ((InvokerDelegete<?>) invoker).getInvoker();
-                } else {
-                    originInvoker = invoker;
-                }
 
-                URL originUrl = RegistryProtocol.this.getProviderUrl(originInvoker);
-                //增加判断：只有 当前服务与override指定服务 匹配时，override才生效
-                if (urls != null && urls.size() > 0 && originUrl.getServiceKey().equals(urls.get(0).getServiceKey())) {
-                    URL newUrl = getNewInvokerUrl(originUrl, urls);
-
-                    if (!originUrl.equals(newUrl) || (this.configurators == null || this.configurators.size() == 0)) {
-                        RegistryProtocol.this.doChangeLocalExport(originInvoker, newUrl);
-                    }
+                //检查是不是要应用到当前服务上
+                if (UrlUtils.isMatch(currentSubscribe, overrideUrl)) {
+                    result.add(url);
                 }
             }
+            return result;
         }
 
-        private URL getNewInvokerUrl(URL url, List<URL> urls) {
-            List<Configurator> localConfigurators = this.configurators; // local reference
-            // 合并override参数
-            if (localConfigurators != null && localConfigurators.size() > 0) {
-                for (Configurator configurator : localConfigurators) {
-                    url = configurator.configure(url);
-                }
+        //合并配置的url
+        private URL getConfigedInvokerUrl(List<Configurator> configurators, URL url) {
+            for (Configurator configurator : configurators) {
+                url = configurator.configure(url);
             }
             return url;
         }

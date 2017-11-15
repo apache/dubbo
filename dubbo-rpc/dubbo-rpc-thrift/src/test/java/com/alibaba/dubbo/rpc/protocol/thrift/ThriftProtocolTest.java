@@ -19,7 +19,6 @@ import com.alibaba.dubbo.rpc.gen.dubbo.Demo;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
@@ -61,11 +60,11 @@ public class ThriftProtocolTest extends AbstractTest {
         }
 
     }
-
+/*
     @Test
     public void testRefer() throws Exception {
         // FIXME
-        /*invoker = protocol.refer( Demo.class, url );
+        *//*invoker = protocol.refer( Demo.class, url );
 
         Assert.assertNotNull( invoker );
 
@@ -81,8 +80,8 @@ public class ThriftProtocolTest extends AbstractTest {
 
         Result result = invoker.invoke( invocation );
 
-        Assert.assertEquals( arg, result.getResult() );*/
+        Assert.assertEquals( arg, result.getResult() );*//*
 
-    }
+    }*/
 
 }

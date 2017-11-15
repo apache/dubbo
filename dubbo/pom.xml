@@ -19,7 +19,7 @@
     <parent>
         <groupId>com.alibaba</groupId>
         <artifactId>dubbo-parent</artifactId>
-        <version>2.5.4-SNAPSHOT</version>
+        <version>2.5.7</version>
     </parent>
     <artifactId>dubbo</artifactId>
     <packaging>jar</packaging>
@@ -48,6 +48,11 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>dubbo-remoting-netty</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-remoting-netty4</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
@@ -266,7 +271,10 @@
                 <executions>
                     <execution>
                         <id>attach-sources</id>
-                        <phase>none</phase>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
@@ -311,6 +319,7 @@
                                     <include>com.alibaba:dubbo-common</include>
                                     <include>com.alibaba:dubbo-remoting-api</include>
                                     <include>com.alibaba:dubbo-remoting-netty</include>
+                                    <include>com.alibaba:dubbo-remoting-netty4</include>
                                     <include>com.alibaba:dubbo-remoting-mina</include>
                                     <include>com.alibaba:dubbo-remoting-grizzly</include>
                                     <include>com.alibaba:dubbo-remoting-p2p</include>

@@ -15,6 +15,7 @@
  */
 package com.alibaba.dubbo.common.bytecode;
 
+import com.alibaba.dubbo.common.utils.ClassHelper;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
 
 import javassist.CannotCompileException;
@@ -253,7 +254,7 @@ public final class ClassGenerator {
     }
 
     public Class<?> toClass() {
-        return toClass(getClass().getClassLoader(), getClass().getProtectionDomain());
+        return toClass(ClassHelper.getClassLoader(ClassGenerator.class), getClass().getProtectionDomain());
     }
 
     public Class<?> toClass(ClassLoader loader, ProtectionDomain pd) {

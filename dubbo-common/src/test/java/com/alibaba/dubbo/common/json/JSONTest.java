@@ -27,6 +27,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
+@Deprecated
 public class JSONTest {
     static byte[] DEFAULT_BYTES = {3, 12, 14, 41, 12, 2, 3, 12, 4, 67, 23};
     static int DEFAULT_$$ = 152;

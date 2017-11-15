@@ -67,6 +67,9 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     // 是否注册
     private Boolean register;
 
+    // 预热时间
+    private Integer warmup;
+
     public String getVersion() {
         return version;
     }
@@ -122,17 +125,17 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
         return token;
     }
 
+    public void setToken(String token) {
+        checkName("token", token);
+        this.token = token;
+    }
+
     public void setToken(Boolean token) {
         if (token == null) {
             setToken((String) null);
         } else {
             setToken(String.valueOf(token));
         }
-    }
-
-    public void setToken(String token) {
-        checkName("token", token);
-        this.token = token;
     }
 
     public Boolean isDeprecated() {
@@ -172,16 +175,16 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
         return accesslog;
     }
 
+    public void setAccesslog(String accesslog) {
+        this.accesslog = accesslog;
+    }
+
     public void setAccesslog(Boolean accesslog) {
         if (accesslog == null) {
             setAccesslog((String) null);
         } else {
             setAccesslog(String.valueOf(accesslog));
         }
-    }
-
-    public void setAccesslog(String accesslog) {
-        this.accesslog = accesslog;
     }
 
     public Integer getExecutes() {
@@ -217,5 +220,13 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
         if (Boolean.FALSE.equals(register)) {
             setRegistry(new RegistryConfig(RegistryConfig.NO_AVAILABLE));
         }
+    }
+
+    public Integer getWarmup() {
+        return warmup;
+    }
+
+    public void setWarmup(Integer warmup) {
+        this.warmup = warmup;
     }
 }

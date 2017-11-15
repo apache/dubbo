@@ -17,11 +17,10 @@ package com.alibaba.dubbo.common.utils;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.io.UnsafeStringWriter;
-import com.alibaba.dubbo.common.json.JSON;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -420,8 +419,8 @@ public final class StringUtils {
                 buf.append(arg);
             } else {
                 try {
-                    buf.append(JSON.json(arg));
-                } catch (IOException e) {
+                    buf.append(JSON.toJSONString(arg));
+                } catch (Exception e) {
                     logger.warn(e.getMessage(), e);
                     buf.append(arg);
                 }

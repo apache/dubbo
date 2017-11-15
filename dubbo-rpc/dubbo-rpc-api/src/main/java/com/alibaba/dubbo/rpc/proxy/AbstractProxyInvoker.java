@@ -81,7 +81,7 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
 
     @Override
     public String toString() {
-        return getInterface() + " -> " + getUrl() == null ? " " : getUrl().toString();
+        return getInterface() + " -> " + (getUrl() == null ? " " : getUrl().toString());
     }
 
 

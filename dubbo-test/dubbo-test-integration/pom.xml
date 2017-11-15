@@ -19,7 +19,7 @@
     <parent>
         <groupId>com.alibaba</groupId>
         <artifactId>dubbo-test</artifactId>
-        <version>2.5.4-SNAPSHOT</version>
+        <version>2.5.7</version>
     </parent>
     <artifactId>dubbo-test-integration</artifactId>
     <packaging>jar</packaging>
@@ -111,6 +111,10 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-validator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.el</artifactId>
         </dependency>
     </dependencies>
 

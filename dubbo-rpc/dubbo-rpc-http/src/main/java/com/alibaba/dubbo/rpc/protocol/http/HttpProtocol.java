@@ -67,7 +67,7 @@ public class HttpProtocol extends AbstractProxyProtocol {
     }
 
     protected <T> Runnable doExport(final T impl, Class<T> type, URL url) throws RpcException {
-        String addr = url.getIp() + ":" + url.getPort();
+        String addr = getAddr(url);
         HttpServer server = serverMap.get(addr);
         if (server == null) {
             server = httpBinder.bind(url, new InternalHandler());
