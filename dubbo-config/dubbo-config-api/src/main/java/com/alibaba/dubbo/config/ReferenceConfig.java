@@ -470,7 +470,10 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             throw new IllegalStateException("The interface class " + interfaceClass + " is not a interface!");
         }
         this.interfaceClass = interfaceClass;
-        setInterface(interfaceClass == null ? (String) null : interfaceClass.getName());
+         if (!(isGeneric()
+                || (getConsumer() != null && getConsumer().isGeneric()))) {
+            setInterface(interfaceClass == null ? (String) null : interfaceClass.getName());
+        }
     }
 
     public void setInterface(String interfaceName) {
