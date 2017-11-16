@@ -201,7 +201,7 @@ public abstract class AbstractConfig implements Serializable {
                     int i = name.startsWith("get") ? 3 : 2;
                     String prop = StringUtils.camelToSplitName(name.substring(i, i + 1).toLowerCase() + name.substring(i + 1), ".");
                     String key;
-                    if (parameter != null && parameter.key() != null && parameter.key().length() > 0) {
+                    if (parameter != null && parameter.key().length() > 0) {
                         key = parameter.key();
                     } else {
                         key = prop;
@@ -213,11 +213,11 @@ public abstract class AbstractConfig implements Serializable {
                             str = URL.encode(str);
                         }
                         if (parameter != null && parameter.append()) {
-                            String pre = (String) parameters.get(Constants.DEFAULT_KEY + "." + key);
+                            String pre = parameters.get(Constants.DEFAULT_KEY + "." + key);
                             if (pre != null && pre.length() > 0) {
                                 str = pre + "," + str;
                             }
-                            pre = (String) parameters.get(key);
+                            pre = parameters.get(key);
                             if (pre != null && pre.length() > 0) {
                                 str = pre + "," + str;
                             }
@@ -265,10 +265,11 @@ public abstract class AbstractConfig implements Serializable {
                         && method.getParameterTypes().length == 0
                         && isPrimitive(method.getReturnType())) {
                     Parameter parameter = method.getAnnotation(Parameter.class);
-                    if (parameter == null || !parameter.attribute())
+                    if (parameter == null || !parameter.attribute()){
                         continue;
+                    }
                     String key;
-                    if (parameter != null && parameter.key() != null && parameter.key().length() > 0) {
+                    if (parameter.key().length() > 0) {
                         key = parameter.key();
                     } else {
                         int i = name.startsWith("get") ? 3 : 2;

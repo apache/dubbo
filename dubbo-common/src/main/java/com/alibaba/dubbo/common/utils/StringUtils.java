@@ -45,13 +45,20 @@ public final class StringUtils {
 
     private static final Pattern INT_PATTERN = Pattern.compile("^\\d+$");
 
+    public static final String EMPTY_STRING = "";
+
     private StringUtils() {
     }
 
     public static boolean isBlank(String str) {
-        if (str == null || str.length() == 0)
+        if (str == null || EMPTY_STRING.equals(str.trim())) {
             return true;
+        }
         return false;
+    }
+
+    public static boolean isNotBlank(String str){
+        return !isBlank(str);
     }
 
     /**
@@ -61,8 +68,9 @@ public final class StringUtils {
      * @return is empty.
      */
     public static boolean isEmpty(String str) {
-        if (str == null || str.length() == 0)
+        if (str == null || str.length() == 0) {
             return true;
+        }
         return false;
     }
 
