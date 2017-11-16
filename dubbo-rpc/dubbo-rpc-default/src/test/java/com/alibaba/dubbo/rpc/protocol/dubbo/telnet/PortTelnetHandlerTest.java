@@ -59,6 +59,11 @@ public class PortTelnetHandlerTest {
         ProtocolUtils.closeAll();
     }
 
+    /**
+     * NAT网络场景，server channel.getRemoteAddress()可能拿到的是网关或NAT转换后的地址
+     * 只判断端口
+     * @throws Exception
+     */
     @Test
     public void testListClient() throws Exception {
         ExchangeClient client1 = Exchangers.connect("dubbo://127.0.0.1:20887/demo");
@@ -70,8 +75,8 @@ public class PortTelnetHandlerTest {
         System.out.printf("Result: %s %n", result);
         System.out.printf("Client 1 Address %s %n", client1Addr);
         System.out.printf("Client 2 Address %s %n", client2Addr);
-        assertTrue(result.contains(client1Addr));
-        assertTrue(result.contains(client2Addr));
+        assertTrue(result.contains(String.valueOf(client1.getLocalAddress().getPort())));
+        assertTrue(result.contains(String.valueOf(client2.getLocalAddress().getPort())));
 
     }
 

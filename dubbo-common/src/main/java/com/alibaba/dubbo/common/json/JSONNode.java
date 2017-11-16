@@ -22,7 +22,7 @@ import java.io.IOException;
  *
  * @author qian.lei
  */
-
+@Deprecated
 interface JSONNode {
     /**
      * write json string.

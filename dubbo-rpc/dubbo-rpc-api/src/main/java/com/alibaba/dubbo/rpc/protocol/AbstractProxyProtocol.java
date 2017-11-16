@@ -16,7 +16,9 @@
 
 package com.alibaba.dubbo.rpc.protocol;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
@@ -35,7 +37,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public abstract class AbstractProxyProtocol extends AbstractProtocol {
 
     private final List<Class<?>> rpcExceptions = new CopyOnWriteArrayList<Class<?>>();
-    ;
 
     private ProxyFactory proxyFactory;
 
@@ -120,6 +121,14 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
                 + invocation.getMethodName() + ", cause: " + e.getMessage(), e);
         re.setCode(getErrorCode(e));
         return re;
+    }
+
+    protected String getAddr(URL url) {
+        String bindIp = url.getParameter(Constants.BIND_IP_KEY, url.getHost());
+        if (url.getParameter(Constants.ANYHOST_KEY, false)) {
+            bindIp = Constants.ANYHOST_VALUE;
+        }
+        return NetUtils.getIpByHost(bindIp) + ":" + url.getParameter(Constants.BIND_PORT_KEY, url.getPort());
     }
 
     protected int getErrorCode(Throwable e) {

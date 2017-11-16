@@ -27,7 +27,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
         try {
             CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
                     .connectString(url.getBackupAddress())
-                    .retryPolicy(new RetryNTimes(Integer.MAX_VALUE, 1000))
+                    .retryPolicy(new RetryNTimes(1, 1000))
                     .connectionTimeoutMs(5000);
             String authority = url.getAuthority();
             if (authority != null && authority.length() > 0) {
@@ -88,6 +88,15 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
         }
     }
 
+    public boolean checkExists(String path) {
+        try {
+            if (client.checkExists().forPath(path) != null) {
+                return true;
+            }
+        } catch (Exception e) {
+        }
+        return false;
+    }
     public boolean isConnected() {
         return client.getZookeeperClient().isConnected();
     }

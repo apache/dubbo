@@ -20,7 +20,7 @@ package com.alibaba.dubbo.common.json;
  *
  * @author qian.lei
  */
-
+@Deprecated
 public class JSONToken {
     // token type
     public static final int ANY = 0, IDENT = 0x01, LBRACE = 0x02, LSQUARE = 0x03, RBRACE = 0x04, RSQUARE = 0x05, COMMA = 0x06, COLON = 0x07;

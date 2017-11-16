@@ -36,7 +36,10 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
     public void create(String path, boolean ephemeral) {
         int i = path.lastIndexOf('/');
         if (i > 0) {
-            create(path.substring(0, i), false);
+            String parentPath = path.substring(0, i);
+            if (!checkExists(parentPath)) {
+                create(parentPath, false);
+            }
         }
         if (ephemeral) {
             createEphemeral(path);
@@ -104,6 +107,8 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
     protected abstract void createPersistent(String path);
 
     protected abstract void createEphemeral(String path);
+
+    protected abstract boolean checkExists(String path);
 
     protected abstract TargetChildListener createTargetChildListener(String path, ChildListener listener);
 
