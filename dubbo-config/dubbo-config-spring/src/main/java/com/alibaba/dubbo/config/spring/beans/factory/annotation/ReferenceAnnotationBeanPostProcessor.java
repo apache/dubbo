@@ -49,7 +49,7 @@ public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBean
     /**
      * The bean name of {@link ReferenceAnnotationBeanPostProcessor}
      */
-    public static String BEAN_NAME = "referenceAnnotationBeanPostProcessor";
+    public static final String BEAN_NAME = "referenceAnnotationBeanPostProcessor";
 
     private final Log logger = LogFactory.getLog(getClass());
 
