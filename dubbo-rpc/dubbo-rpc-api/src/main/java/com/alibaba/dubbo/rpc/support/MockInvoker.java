@@ -18,7 +18,6 @@ package com.alibaba.dubbo.rpc.support;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
-import com.alibaba.dubbo.common.json.JSON;
 import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.common.utils.PojoUtils;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
@@ -30,6 +29,7 @@ import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
+import com.alibaba.fastjson.JSON;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
@@ -74,9 +74,9 @@ final public class MockInvoker<T> implements Invoker<T> {
         } else if (StringUtils.isNumeric(mock)) {
             value = JSON.parse(mock);
         } else if (mock.startsWith("{")) {
-            value = JSON.parse(mock, Map.class);
+            value = JSON.parseObject(mock, Map.class);
         } else if (mock.startsWith("[")) {
-            value = JSON.parse(mock, List.class);
+            value = JSON.parseObject(mock, List.class);
         } else {
             value = mock;
         }

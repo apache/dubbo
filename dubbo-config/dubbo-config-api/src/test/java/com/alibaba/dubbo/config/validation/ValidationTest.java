@@ -81,6 +81,36 @@ public class ValidationTest {
                     Assert.assertNotNull(violations);
                 }
 
+                //检查Save分组 save error
+                try {
+                    parameter = new ValidationParameter();
+                    parameter.setName("liangfei");
+                    parameter.setAge(50);
+                    parameter.setLoginDate(new Date(System.currentTimeMillis() - 1000000));
+                    parameter.setExpiryDate(new Date(System.currentTimeMillis() + 1000000));
+                    validationService.save(parameter);
+                    Assert.fail();
+                } catch (RpcException e) {
+                    ConstraintViolationException ve = (ConstraintViolationException) e.getCause();
+                    Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
+                    Assert.assertNotNull(violations);
+                }
+
+                // relatedQuery error 不传id和email的值，触发Save和Update的检查异常
+                try {
+                    parameter = new ValidationParameter();
+                    parameter.setName("liangfei");
+                    parameter.setAge(50);
+                    parameter.setLoginDate(new Date(System.currentTimeMillis() - 1000000));
+                    parameter.setExpiryDate(new Date(System.currentTimeMillis() + 1000000));
+                    validationService.relatedQuery(parameter);
+                    Assert.fail();
+                } catch (RpcException e) {
+                    ConstraintViolationException ve = (ConstraintViolationException) e.getCause();
+                    Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
+                    Assert.assertEquals(violations.size(),2);
+                }
+
                 // Save Error
                 try {
                     parameter = new ValidationParameter();
@@ -89,6 +119,7 @@ public class ValidationTest {
                 } catch (RpcException e) {
                     ConstraintViolationException ve = (ConstraintViolationException) e.getCause();
                     Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
+                    Assert.assertTrue(violations.size() == 3);
                     Assert.assertNotNull(violations);
                 }
 

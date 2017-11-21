@@ -20,7 +20,7 @@ package com.alibaba.dubbo.common.json;
  *
  * @author qian.lei
  */
-
+@Deprecated
 public interface JSONVisitor {
     public static final String CLASS_PROPERTY = "class";
 

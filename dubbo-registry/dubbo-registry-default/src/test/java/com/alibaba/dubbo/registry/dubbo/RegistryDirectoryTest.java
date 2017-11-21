@@ -56,10 +56,10 @@ public class RegistryDirectoryTest {
     String service = DemoService.class.getName();
     RpcInvocation invocation = new RpcInvocation();
     URL noMeaningUrl = URL.valueOf("notsupport:/" + service + "?refer=" + URL.encode("interface=" + service));
-    URL SERVICEURL = URL.valueOf("dubbo://127.0.0.1:9091/" + service + "?lazy=true");
-    URL SERVICEURL2 = URL.valueOf("dubbo://127.0.0.1:9092/" + service + "?lazy=true");
-    URL SERVICEURL3 = URL.valueOf("dubbo://127.0.0.1:9093/" + service + "?lazy=true");
-    URL SERVICEURL_DUBBO_NOPATH = URL.valueOf("dubbo://127.0.0.1:9092" + "?lazy=true");
+    URL SERVICEURL = URL.valueOf("dubbo://127.0.0.1:9091/" + service + "?lazy=true&side=consumer");
+    URL SERVICEURL2 = URL.valueOf("dubbo://127.0.0.1:9092/" + service + "?lazy=true&side=consumer");
+    URL SERVICEURL3 = URL.valueOf("dubbo://127.0.0.1:9093/" + service + "?lazy=true&side=consumer");
+    URL SERVICEURL_DUBBO_NOPATH = URL.valueOf("dubbo://127.0.0.1:9092" + "?lazy=true&side=consumer");
 
     @Before
     public void setUp() {
@@ -694,8 +694,8 @@ public class RegistryDirectoryTest {
         invocation = new RpcInvocation();
 
         List<URL> durls = new ArrayList<URL>();
-        durls.add(SERVICEURL.setHost("10.20.30.140").addParameter("timeout", "1"));//一个一样，一个不一样
-        durls.add(SERVICEURL2.setHost("10.20.30.141").addParameter("timeout", "2"));
+        durls.add(SERVICEURL.setHost("10.20.30.140").addParameter("timeout", "1").addParameter(Constants.SIDE_KEY, Constants.CONSUMER_SIDE));//一个一样，一个不一样
+        durls.add(SERVICEURL2.setHost("10.20.30.141").addParameter("timeout", "2").addParameter(Constants.SIDE_KEY, Constants.CONSUMER_SIDE));
         registryDirectory.notify(durls);
 
         durls = new ArrayList<URL>();
@@ -835,7 +835,7 @@ public class RegistryDirectoryTest {
         registryDirectory.notify(durls);
 
         durls = new ArrayList<URL>();
-        durls.add(URL.valueOf("override://10.20.30.140?" + Constants.DISABLED_KEY + "=true"));
+        durls.add(URL.valueOf("override://10.20.30.140:9091?" + Constants.DISABLED_KEY + "=true"));
         registryDirectory.notify(durls);
 
         List<Invoker<?>> invokers = registryDirectory.list(invocation);
@@ -901,7 +901,7 @@ public class RegistryDirectoryTest {
 
         // 通过覆盖规则启用
         durls = new ArrayList<URL>();
-        durls.add(URL.valueOf("override://10.20.30.140?" + Constants.DISABLED_KEY + "=false"));
+        durls.add(URL.valueOf("override://10.20.30.140:9091?" + Constants.DISABLED_KEY + "=false"));
         registryDirectory.notify(durls);
         List<Invoker<?>> invokers2 = registryDirectory.list(invocation);
         Assert.assertEquals(2, invokers2.size());
