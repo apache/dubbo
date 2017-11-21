@@ -65,7 +65,7 @@ public class BeanFactoryUtils {
 
         for (String beanName : beanNames) {
             if (StringUtils.isContains(allBeanNames, beanName)) {
-                beans.add(beanOfTypeIncludingAncestors(beanFactory, beanType));
+                beans.add(beanFactory.getBean(beanName, beanType));
             }
         }
 

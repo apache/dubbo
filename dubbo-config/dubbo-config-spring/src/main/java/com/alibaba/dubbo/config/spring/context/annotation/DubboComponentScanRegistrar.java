@@ -143,7 +143,10 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
         if (!ObjectUtils.isEmpty(beanNames)) {
 
             for (String beanName : beanNames) {
-                runtimeBeanReferences.add(new RuntimeBeanReference(beanName));
+
+                String resolvedBeanName = environment.resolvePlaceholders(beanName);
+
+                runtimeBeanReferences.add(new RuntimeBeanReference(resolvedBeanName));
             }
 
         }
@@ -151,6 +154,12 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
         return runtimeBeanReferences;
 
     }
+
+    private void addPropertyReference(BeanDefinitionBuilder builder, String propertyName, String beanName) {
+        String resolvedBeanName = environment.resolvePlaceholders(beanName);
+        builder.addPropertyReference(propertyName, resolvedBeanName);
+    }
+
 
     private AbstractBeanDefinition buildServiceBeanDefinition(Service service, Class<?> interfaceClass,
                                                               String annotatedServiceBeanName) {
@@ -166,7 +175,7 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
          */
         String providerConfigBeanName = service.provider();
         if (StringUtils.hasText(providerConfigBeanName)) {
-            builder.addPropertyReference("provider", providerConfigBeanName);
+            addPropertyReference(builder, "provider", providerConfigBeanName);
         }
 
         /**
@@ -174,7 +183,7 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
          */
         String monitorConfigBeanName = service.monitor();
         if (StringUtils.hasText(monitorConfigBeanName)) {
-            builder.addPropertyReference("monitor", monitorConfigBeanName);
+            addPropertyReference(builder, "monitor", monitorConfigBeanName);
         }
 
         /**
@@ -182,7 +191,7 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
          */
         String applicationConfigBeanName = service.application();
         if (StringUtils.hasText(applicationConfigBeanName)) {
-            builder.addPropertyReference("application", applicationConfigBeanName);
+            addPropertyReference(builder, "application", applicationConfigBeanName);
         }
 
         /**
@@ -190,7 +199,7 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
          */
         String moduleConfigBeanName = service.module();
         if (StringUtils.hasText(moduleConfigBeanName)) {
-            builder.addPropertyReference("application", moduleConfigBeanName);
+            addPropertyReference(builder, "module", moduleConfigBeanName);
         }
 
 
