@@ -30,6 +30,7 @@ public class ThreadLocalCache implements Cache {
 
     private final ThreadLocal<Map<Object, Object>> store;
 
+    // TODO This url is not used
     public ThreadLocalCache(URL url) {
         this.store = new ThreadLocal<Map<Object, Object>>() {
             @Override
@@ -39,10 +40,12 @@ public class ThreadLocalCache implements Cache {
         };
     }
 
+    @Override
     public void put(Object key, Object value) {
         store.get().put(key, value);
     }
 
+    @Override
     public Object get(Object key) {
         return store.get().get(key);
     }
