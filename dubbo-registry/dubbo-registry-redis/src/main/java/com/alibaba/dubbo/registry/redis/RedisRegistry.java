@@ -107,7 +107,7 @@ public class RedisRegistry extends FailbackRegistry {
             config.setMinEvictableIdleTimeMillis(url.getParameter("min.evictable.idle.time.millis", 0));
 
         String cluster = url.getParameter("cluster", "failover");
-        if (!"failover".equals(cluster) && !"replicate".equals(cluster)) {
+        if (!"failover".equals(cluster) && !"replicate".equals(cluster)&& !url.getPath().equals("com.alibaba.dubbo.monitor.MonitorService")) {
             throw new IllegalArgumentException("Unsupported redis cluster: " + cluster + ". The redis cluster only supported failover or replicate.");
         }
         replicate = "replicate".equals(cluster);
