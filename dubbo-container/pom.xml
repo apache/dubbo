@@ -33,6 +33,7 @@
         <module>dubbo-container-spring</module>
         <module>dubbo-container-jetty</module>
         <module>dubbo-container-log4j</module>
+        <module>dubbo-container-log4j2</module>
         <module>dubbo-container-logback</module>
     </modules>
 </project>

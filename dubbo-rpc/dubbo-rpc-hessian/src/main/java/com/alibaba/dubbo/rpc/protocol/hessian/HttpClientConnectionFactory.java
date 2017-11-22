@@ -15,6 +15,8 @@
  */
 package com.alibaba.dubbo.rpc.protocol.hessian;
 
+import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.rpc.RpcContext;
 import com.caucho.hessian.client.HessianConnection;
 import com.caucho.hessian.client.HessianConnectionFactory;
 import com.caucho.hessian.client.HessianProxyFactory;
@@ -40,7 +42,12 @@ public class HttpClientConnectionFactory implements HessianConnectionFactory {
     }
 
     public HessianConnection open(URL url) throws IOException {
-        return new HttpClientConnection(httpClient, url);
+        HttpClientConnection httpClientConnection = new HttpClientConnection(httpClient, url);
+        for (String key : RpcContext.getContext().getAttachments().keySet()) {
+            //防止名称冲突, 在key前添加header
+            httpClientConnection.addHeader(Constants.DEFAULT_EXCHANGER + key, RpcContext.getContext().getAttachment(key));
+        }
+        return httpClientConnection;
     }
 
 }

@@ -20,8 +20,8 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.http.HttpBinder;
 import com.alibaba.dubbo.remoting.http.HttpHandler;
 import com.alibaba.dubbo.remoting.http.HttpServer;
-import com.alibaba.dubbo.rpc.RpcContext;
-import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.*;
+import com.alibaba.dubbo.rpc.protocol.AbstractInvoker;
 import com.alibaba.dubbo.rpc.protocol.AbstractProxyProtocol;
 
 import com.caucho.hessian.HessianException;
@@ -36,6 +36,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -45,6 +47,13 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author qianlei
  */
 public class HessianProtocol extends AbstractProxyProtocol {
+
+    public static final ThreadLocal<Map<String, String>> HEADER_MAP_THREAD_LOCAL = new ThreadLocal<Map<String, String>>() {
+        @Override
+        protected Map<String, String> initialValue() {
+            return new HashMap<String, String>();
+        }
+    };
 
     private final Map<String, HttpServer> serverMap = new ConcurrentHashMap<String, HttpServer>();
 
@@ -84,6 +93,7 @@ public class HessianProtocol extends AbstractProxyProtocol {
     @SuppressWarnings("unchecked")
     protected <T> T doRefer(Class<T> serviceType, URL url) throws RpcException {
         HessianProxyFactory hessianProxyFactory = new HessianProxyFactory();
+        hessianProxyFactory.setOverloadEnabled(true);
         String client = url.getParameter(Constants.CLIENT_KEY, Constants.DEFAULT_HTTP_CLIENT);
         if ("httpclient".equals(client)) {
             hessianProxyFactory.setConnectionFactory(new HttpClientConnectionFactory());
@@ -138,14 +148,28 @@ public class HessianProtocol extends AbstractProxyProtocol {
                 response.setStatus(500);
             } else {
                 RpcContext.getContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
+
                 try {
+                    Map<String, String> headerMap = HEADER_MAP_THREAD_LOCAL.get();
+                    Enumeration enumeration = request.getHeaderNames();
+
+                    while (enumeration.hasMoreElements()) {
+                        String key = String.valueOf(enumeration.nextElement());
+                        if (key.startsWith(Constants.DEFAULT_EXCHANGER)) {
+                            headerMap.put(key.replace(Constants.DEFAULT_EXCHANGER, ""), request.getHeader(key));
+                        }
+                    }
+
+                    RpcContext.getContext().setAttachments(headerMap);
+
                     skeleton.invoke(request.getInputStream(), response.getOutputStream());
                 } catch (Throwable e) {
                     throw new ServletException(e);
+                } finally {
+                    HEADER_MAP_THREAD_LOCAL.remove();
                 }
             }
         }
-
     }
 
 }
