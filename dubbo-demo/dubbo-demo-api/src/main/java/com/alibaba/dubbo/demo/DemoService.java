@@ -15,12 +15,8 @@
  */
 package com.alibaba.dubbo.demo;
 
-import java.util.Date;
-
 public interface DemoService {
 
     String sayHello(String name);
-
-    String sayHello(String name, Date date);
 
 }
