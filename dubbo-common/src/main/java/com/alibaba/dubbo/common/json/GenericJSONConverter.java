@@ -27,6 +27,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -371,6 +372,8 @@ public class GenericJSONConverter implements JSONConverter {
                     writeValue(item, jb, writeClass);
             }
             jb.arrayEnd();
+        } else if (obj instanceof Locale) {
+            jb.valueString(obj.toString());
         } else {
             jb.objectBegin();
 
