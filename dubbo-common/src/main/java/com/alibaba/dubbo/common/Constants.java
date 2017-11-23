@@ -73,8 +73,7 @@ public class Constants {
 
     public static final String $ECHO = "$echo";
 
-    public static final int DEFAULT_IO_THREADS = Runtime.getRuntime()
-            .availableProcessors() + 1;
+    public static final int DEFAULT_IO_THREADS = Math.min(Runtime.getRuntime().availableProcessors() + 1, 32);
 
     public static final String DEFAULT_PROXY = "javassist";
 
@@ -306,6 +305,8 @@ public class Constants {
 
     public static final String TIMESTAMP_KEY = "timestamp";
 
+    public static final String REMOTE_TIMESTAMP_KEY = "remote.timestamp";
+
     public static final String WARMUP_KEY = "warmup";
 
     public static final int DEFAULT_WARMUP = 10 * 60 * 1000;
@@ -325,6 +326,8 @@ public class Constants {
     public static final String GENERIC_KEY = "generic";
 
     public static final String FILE_KEY = "file";
+
+    public static final String DUMP_DIRECTORY = "dump.directory";
 
     public static final String WAIT_KEY = "wait";
 

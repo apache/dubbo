@@ -167,7 +167,7 @@
 
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-netty</artifactId>
+            <artifactId>resteasy-netty4</artifactId>
         </dependency>
 
         <dependency>
@@ -206,6 +206,11 @@
                     <artifactId>servlet-api</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-rpc-rest</artifactId>
+            <version>2.5.4-SNAPSHOT</version>
         </dependency>
     </dependencies>
 

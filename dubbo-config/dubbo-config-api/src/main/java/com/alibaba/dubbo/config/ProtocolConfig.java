@@ -131,6 +131,8 @@ public class ProtocolConfig extends AbstractConfig {
     // 是否为缺省
     private Boolean isDefault;
 
+    private static final AtomicBoolean destroyed = new AtomicBoolean(false);
+
     public ProtocolConfig() {
     }
 
@@ -141,6 +143,25 @@ public class ProtocolConfig extends AbstractConfig {
     public ProtocolConfig(String name, int port) {
         setName(name);
         setPort(port);
+    }
+
+    // TODO: 2017/8/30 to move this method somewhere else
+    public static void destroyAll() {
+        if (!destroyed.compareAndSet(false, true)) {
+            return;
+        }
+        AbstractRegistryFactory.destroyAll();
+        ExtensionLoader<Protocol> loader = ExtensionLoader.getExtensionLoader(Protocol.class);
+        for (String protocolName : loader.getLoadedExtensions()) {
+            try {
+                Protocol protocol = loader.getLoadedExtension(protocolName);
+                if (protocol != null) {
+                    protocol.destroy();
+                }
+            } catch (Throwable t) {
+                logger.warn(t.getMessage(), t);
+            }
+        }
     }
 
     @Parameter(excluded = true)

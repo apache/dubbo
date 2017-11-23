@@ -45,6 +45,8 @@
                     com.alibaba.dubbo.examples.rest.api.extension.CustomExceptionMapper,
                     com.alibaba.dubbo.rpc.protocol.rest.support.LoggingFilter"/>
 
+    <dubbo:protocol name="dubbo" port="20880" threads="200" />
+
     <!-- use the external tomcat or other server with the servlet approach; the port and contextpath must be exactly the same as those in external server -->
     <!--<dubbo:protocol name="rest" port="8888" contextpath="services" server="servlet"/>-->
 

@@ -209,7 +209,7 @@
                 </exclusion>
                 <exclusion>
                     <groupId>org.jboss.resteasy</groupId>
-                    <artifactId>resteasy-netty</artifactId>
+                    <artifactId>resteasy-netty4</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.jboss.resteasy</groupId>

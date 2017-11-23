@@ -122,7 +122,7 @@
         <junit_version>4.12</junit_version>
         <easymock_version>3.4</easymock_version>
         <jmockit_version>1.33</jmockit_version>
-        <resteasy_version>3.0.7.Final</resteasy_version>
+        <resteasy_version>3.1.4.Final</resteasy_version>
         <jaxrs_version>2.0</jaxrs_version>
         <!-- Build args -->
         <argline>-server -Xms64m -Xmx256m -XX:PermSize=64m -XX:MaxPermSize=128m -Dfile.encoding=UTF-8
@@ -386,7 +386,7 @@
             </dependency>
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-netty</artifactId>
+                <artifactId>resteasy-netty4</artifactId>
                 <version>${resteasy_version}</version>
             </dependency>
             <dependency>
