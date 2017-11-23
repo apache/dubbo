@@ -100,18 +100,11 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
         }
 
         private Invoker<T> selectForKey(long hash) {
-            Invoker<T> invoker;
-            Long key = hash;
-            if (!virtualInvokers.containsKey(key)) {
-                SortedMap<Long, Invoker<T>> tailMap = virtualInvokers.tailMap(key);
-                if (tailMap.isEmpty()) {
-                    key = virtualInvokers.firstKey();
-                } else {
-                    key = tailMap.firstKey();
-                }
-            }
-            invoker = virtualInvokers.get(key);
-            return invoker;
+            Map.Entry<Long, Invoker<T>> entry = virtualInvokers.tailMap(hash, true).firstEntry();
+        	if (entry == null) {
+        		entry = virtualInvokers.lastEntry();
+        	}
+        	return entry.getValue();
         }
 
         private long hash(byte[] digest, int number) {
