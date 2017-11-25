@@ -1,6 +1,7 @@
 package com.alibaba.dubbo.remoting.zookeeper.curator;
 
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.remoting.zookeeper.ChildListener;
 import com.alibaba.dubbo.remoting.zookeeper.StateListener;
 import com.alibaba.dubbo.remoting.zookeeper.support.AbstractZookeeperClient;
@@ -16,6 +17,8 @@ import org.apache.zookeeper.KeeperException.NoNodeException;
 import org.apache.zookeeper.KeeperException.NodeExistsException;
 import org.apache.zookeeper.WatchedEvent;
 
+
+import java.util.Collections;
 import java.util.List;
 
 public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatcher> {
@@ -123,6 +126,8 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
         ((CuratorWatcherImpl) listener).unwatch();
     }
 
+    private final static List<String> EMPTY_CHILDREN = Collections.unmodifiableList(Collections.EMPTY_LIST);
+
     private class CuratorWatcherImpl implements CuratorWatcher {
 
         private volatile ChildListener listener;
@@ -137,7 +142,14 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
 
         public void process(WatchedEvent event) throws Exception {
             if (listener != null) {
-                listener.childChanged(event.getPath(), client.getChildren().usingWatcher(this).forPath(event.getPath()));
+                String path = event.getPath() == null ? "" : event.getPath();
+                listener.childChanged(path,
+                    // if path is null, curator using watcher will throw NullPointerException.
+                    // if client connect or disconnect to server, zookeeper will queue
+                    // watched event(Watcher.Event.EventType.None, .., path = null).
+                    StringUtils.isNotEmpty(path)
+                        ? client.getChildren().usingWatcher(this).forPath(path)
+                        : EMPTY_CHILDREN);
             }
         }
     }
