@@ -207,11 +207,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>dubbo-rpc-rest</artifactId>
-            <version>2.5.4-SNAPSHOT</version>
-        </dependency>
     </dependencies>
 
     <build>
