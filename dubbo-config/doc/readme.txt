@@ -1,0 +1,1 @@
+配置模块，是 Dubbo 对外的 API，用户通过 Config 使用 Dubbo，隐藏Dubbo 所有细节。
