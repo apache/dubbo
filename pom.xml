@@ -51,6 +51,7 @@
         <module>dubbo-simple</module>
         <module>dubbo-admin</module>
         <module>dubbo-demo</module>
+        <module>dubbo-plugin</module>
     </modules>
     <profiles>
         <profile>
