@@ -41,6 +41,9 @@ public class ProviderConsumerRegTable {
 
     public static ProviderInvokerWrapper getWrapper(Invoker invoker) {
         URL providerUrl = invoker.getUrl();
+        if (Constants.REGISTRY_PROTOCOL.equals(providerUrl.getProtocol())) {
+            providerUrl = URL.valueOf(providerUrl.getParameterAndDecoded(Constants.EXPORT_KEY));
+        }
         String serviceName = providerUrl.getServiceInterface();
         String version = providerUrl.getParameter(Constants.VERSION_KEY);
         String serviceUniqueName = serviceName + ":" + version;
@@ -59,8 +62,8 @@ public class ProviderConsumerRegTable {
         return null;
     }
 
-    public static void registerConsuemr(Invoker invoker, URL registryUrl, URL consumerUrl,RegistryDirectory registryDirectory) {
-        ConsumerInvokerWrapper wrapperInvoker = new ConsumerInvokerWrapper(invoker,registryUrl,consumerUrl,registryDirectory);
+    public static void registerConsuemr(Invoker invoker, URL registryUrl, URL consumerUrl, RegistryDirectory registryDirectory) {
+        ConsumerInvokerWrapper wrapperInvoker = new ConsumerInvokerWrapper(invoker, registryUrl, consumerUrl, registryDirectory);
         String serviceName = consumerUrl.getServiceInterface();
         String version = consumerUrl.getParameter(Constants.VERSION_KEY);
         String serviceUniqueName = serviceName + ":" + version;

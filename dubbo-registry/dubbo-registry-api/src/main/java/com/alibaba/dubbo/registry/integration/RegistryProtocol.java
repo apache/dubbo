@@ -118,19 +118,8 @@ public class RegistryProtocol implements Protocol {
     }
 
     public <T> Exporter<T> export(final Invoker<T> originInvoker) throws RpcException {
-
-//        DelegateProviderMetaDataInvoker delegateProviderMetaDataInvoker = (DelegateProviderMetaDataInvoker)originInvoker;
-//        ApplicationModel.addProviderInvoker(delegateProviderMetaDataInvoker.getMetadata().getUniqueServiceName(),delegateProviderMetaDataInvoker);
-
         //export invoker
         final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker);
-
-        //to judge to delay publish whether or not
-        boolean shouldDelay = false;
-
-        if (originInvoker.getUrl().getParameter("delay", true)) {
-            shouldDelay = true;
-        }
 
         URL registryUrl = getRegistryUrl(originInvoker);
 
@@ -138,9 +127,12 @@ public class RegistryProtocol implements Protocol {
         final Registry registry = getRegistry(originInvoker);
         final URL registedProviderUrl = getRegistedProviderUrl(originInvoker);
 
+        //to judge to delay publish whether or not
+        boolean register = registedProviderUrl.getParameter("register", true);
+
         ProviderConsumerRegTable.registerProvider(originInvoker, registryUrl, registedProviderUrl);
 
-        if (!shouldDelay) {
+        if (register) {
             register(registryUrl, registedProviderUrl);
             ProviderConsumerRegTable.getWrapper(originInvoker).setReg(true);
         }
