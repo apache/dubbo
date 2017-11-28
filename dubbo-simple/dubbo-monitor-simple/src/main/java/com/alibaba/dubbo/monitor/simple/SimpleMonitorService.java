@@ -77,6 +77,7 @@ public class SimpleMonitorService implements MonitorService {
     private String chartsDirectory = "charts";
     private volatile boolean running = true;
 
+
     public SimpleMonitorService() {
         queue = new LinkedBlockingQueue<URL>(Integer.parseInt(ConfigUtils.getProperty("dubbo.monitor.queue", "100000")));
         writeThread = new Thread(new Runnable() {
@@ -399,4 +400,19 @@ public class SimpleMonitorService implements MonitorService {
         return null;
     }
 
+    public String getStatisticsDirectory() {
+        return statisticsDirectory;
+    }
+
+    public void setStatisticsDirectory(String statisticsDirectory) {
+        this.statisticsDirectory = statisticsDirectory;
+    }
+
+    public String getChartsDirectory() {
+        return chartsDirectory;
+    }
+
+    public void setChartsDirectory(String chartsDirectory) {
+        this.chartsDirectory = chartsDirectory;
+    }
 }
