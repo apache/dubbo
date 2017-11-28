@@ -12,11 +12,11 @@ SERVER_PORT=`sed '/dubbo.protocol.port/!d;s/.*=//' conf/dubbo.properties | tr -d
 LOGS_FILE=`sed '/dubbo.log4j.file/!d;s/.*=//' conf/dubbo.properties | tr -d '\r'`
 
 if [ -z "$SERVER_HOST" ]; then
-    SERVER_HOST=`127.0.0.1`
+    SERVER_HOST='127.0.0.1'
 fi
 
 if [ -z "$SERVER_NAME" ]; then
-    SERVER_NAME=`hostname`
+    SERVER_NAME='hostname'
 fi
 
 PIDS=`ps -ef | grep java | grep -v grep | grep "$CONF_DIR" |awk '{print $2}'`
