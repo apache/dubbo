@@ -16,7 +16,7 @@ if [ -z "$SERVER_HOST" ]; then
 fi
 
 if [ -z "$SERVER_NAME" ]; then
-    SERVER_NAME='hostname'
+    SERVER_NAME=`hostname`
 fi
 
 PIDS=`ps -ef | grep java | grep -v grep | grep "$CONF_DIR" |awk '{print $2}'`
