@@ -18,21 +18,12 @@ package com.alibaba.dubbo.registry.support;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
+import com.alibaba.dubbo.common.utils.ExecutorUtil;
 import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 import com.alibaba.dubbo.registry.NotifyListener;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -455,6 +446,11 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         try {
             retryFuture.cancel(true);
         } catch (Throwable t) {
+            logger.warn(t.getMessage(), t);
+        }
+        try{
+            ExecutorUtil.gracefulShutdown(retryExecutor,Constants.DEFAULT_TIMEOUT);
+        }catch (Throwable t) {
             logger.warn(t.getMessage(), t);
         }
     }
