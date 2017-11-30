@@ -103,7 +103,7 @@ public class JavaSerializer extends AbstractSerializer {
             }
         }
 
-        ArrayList fields = new ArrayList();
+        List fields = new ArrayList();
         fields.addAll(primitiveFields);
         fields.addAll(compoundFields);
         Collections.reverse(fields);
