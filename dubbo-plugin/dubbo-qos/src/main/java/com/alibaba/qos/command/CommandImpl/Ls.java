@@ -93,7 +93,11 @@ public class Ls implements BaseCommand {
         Set<ConsumerInvokerWrapper> providerInvokerWrapperSet = ProviderConsumerRegTable.getConsumerInvoker(serviceUniqueName);
         for (ConsumerInvokerWrapper consumerInvokerWrapper : providerInvokerWrapperSet) {
             //TODO not thread safe,fixme
-            count += consumerInvokerWrapper.getRegistryDirectory().getUrlInvokerMap().size();
+            int addNum = 0;
+            if (consumerInvokerWrapper.getRegistryDirectory().getUrlInvokerMap() != null) {
+                addNum = consumerInvokerWrapper.getRegistryDirectory().getUrlInvokerMap().size();
+            }
+            count += addNum;
         }
         return count;
     }
