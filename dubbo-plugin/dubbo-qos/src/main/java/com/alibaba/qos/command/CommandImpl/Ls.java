@@ -38,17 +38,15 @@ public class Ls implements BaseCommand {
 
         TTable tTable = new TTable(new TTable.ColumnDefine[]{
                 new TTable.ColumnDefine(TTable.Align.MIDDLE),
-                new TTable.ColumnDefine(TTable.Align.MIDDLE),
                 new TTable.ColumnDefine(TTable.Align.MIDDLE)
         });
 
         //Header
-        tTable.addRow("Provider Service Name", "GROUP", "PUB");
+        tTable.addRow("Provider Service Name", "PUB");
 
         //Content
         for (ProviderModel providerModel : ProviderModelList) {
-            tTable.addRow(providerModel.getServiceName(), providerModel.getMetadata().getGroup(),
-                    isReg(providerModel.getServiceName()) ? "Y" : "N");
+            tTable.addRow(providerModel.getServiceName(), isReg(providerModel.getServiceName()) ? "Y" : "N");
         }
         stringBuilder.append(tTable.rendering());
 
@@ -62,18 +60,16 @@ public class Ls implements BaseCommand {
 
         TTable tTable = new TTable(new TTable.ColumnDefine[]{
                 new TTable.ColumnDefine(TTable.Align.MIDDLE),
-                new TTable.ColumnDefine(TTable.Align.MIDDLE),
                 new TTable.ColumnDefine(TTable.Align.MIDDLE)
         });
 
         //Header
-        tTable.addRow("Consumer Service Name", "GROUP", "NUM");
+        tTable.addRow("Consumer Service Name", "NUM");
 
         //Content
         //TODO to calculate consumerAddressNum
         for (ConsumerModel consumerModel : consumerModelList) {
-            tTable.addRow(consumerModel.getServiceName(), consumerModel.getMetadata().getGroup(),
-                    getConsumerAddressNum(consumerModel.getServiceName()));
+            tTable.addRow(consumerModel.getServiceName(), getConsumerAddressNum(consumerModel.getServiceName()));
         }
 
         stringBuilder.append(tTable.rendering());

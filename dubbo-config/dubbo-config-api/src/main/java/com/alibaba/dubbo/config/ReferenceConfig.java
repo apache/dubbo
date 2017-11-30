@@ -534,7 +534,15 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
     @Parameter(excluded = true)
     public String getUniqueServiceName() {
-        return interfaceName + ":" + version;
+        StringBuilder buf = new StringBuilder();
+        if (group != null && group.length() > 0) {
+            buf.append(group).append("/");
+        }
+        buf.append(interfaceName);
+        if (version != null && version.length() > 0) {
+            buf.append(":").append(version);
+        }
+        return buf.toString();
     }
 
 }

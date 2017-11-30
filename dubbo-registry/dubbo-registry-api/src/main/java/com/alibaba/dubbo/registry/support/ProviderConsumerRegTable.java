@@ -20,9 +20,7 @@ public class ProviderConsumerRegTable {
 
     public static void registerProvider(Invoker invoker, URL registryUrl, URL providerUrl) {
         ProviderInvokerWrapper wrapperInvoker = new ProviderInvokerWrapper(invoker, registryUrl, providerUrl);
-        String serviceName = providerUrl.getServiceInterface();
-        String version = providerUrl.getParameter(Constants.VERSION_KEY);
-        String serviceUniqueName = serviceName + ":" + version;
+        String serviceUniqueName = providerUrl.getServiceKey();
         Set<ProviderInvokerWrapper> invokers = providerInvokers.get(serviceUniqueName);
         if (invokers == null) {
             providerInvokers.putIfAbsent(serviceUniqueName, new ConcurrentHashSet<ProviderInvokerWrapper>());
@@ -39,14 +37,12 @@ public class ProviderConsumerRegTable {
         return invokers;
     }
 
-    public static ProviderInvokerWrapper getWrapper(Invoker invoker) {
+    public static ProviderInvokerWrapper getProviderWrapper(Invoker invoker) {
         URL providerUrl = invoker.getUrl();
         if (Constants.REGISTRY_PROTOCOL.equals(providerUrl.getProtocol())) {
             providerUrl = URL.valueOf(providerUrl.getParameterAndDecoded(Constants.EXPORT_KEY));
         }
-        String serviceName = providerUrl.getServiceInterface();
-        String version = providerUrl.getParameter(Constants.VERSION_KEY);
-        String serviceUniqueName = serviceName + ":" + version;
+        String serviceUniqueName = providerUrl.getServiceKey();
         Set<ProviderInvokerWrapper> invokers = providerInvokers.get(serviceUniqueName);
         if (invokers == null) {
             return null;
@@ -64,9 +60,7 @@ public class ProviderConsumerRegTable {
 
     public static void registerConsuemr(Invoker invoker, URL registryUrl, URL consumerUrl, RegistryDirectory registryDirectory) {
         ConsumerInvokerWrapper wrapperInvoker = new ConsumerInvokerWrapper(invoker, registryUrl, consumerUrl, registryDirectory);
-        String serviceName = consumerUrl.getServiceInterface();
-        String version = consumerUrl.getParameter(Constants.VERSION_KEY);
-        String serviceUniqueName = serviceName + ":" + version;
+        String serviceUniqueName = consumerUrl.getServiceKey();
         Set<ConsumerInvokerWrapper> invokers = consumerInvokers.get(serviceUniqueName);
         if (invokers == null) {
             consumerInvokers.putIfAbsent(serviceUniqueName, new ConcurrentHashSet<ConsumerInvokerWrapper>());

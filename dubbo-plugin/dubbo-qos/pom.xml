@@ -31,17 +31,17 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>dubbo-common</artifactId>
-            <version>2.5.7</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.1.16.Final</version>
+            <version>4.0.35.Final</version>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>dubbo-config-api</artifactId>
-            <version>2.5.7</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

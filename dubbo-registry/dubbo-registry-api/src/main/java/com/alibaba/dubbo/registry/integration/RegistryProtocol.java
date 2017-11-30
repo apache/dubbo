@@ -134,7 +134,7 @@ public class RegistryProtocol implements Protocol {
 
         if (register) {
             register(registryUrl, registedProviderUrl);
-            ProviderConsumerRegTable.getWrapper(originInvoker).setReg(true);
+            ProviderConsumerRegTable.getProviderWrapper(originInvoker).setReg(true);
         }
 
         // 订阅override数据

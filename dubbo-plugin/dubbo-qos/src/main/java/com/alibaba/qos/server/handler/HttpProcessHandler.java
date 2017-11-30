@@ -13,7 +13,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -67,16 +66,16 @@ public class HttpProcessHandler extends SimpleChannelInboundHandler<HttpRequest>
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK,
                 Unpooled.wrappedBuffer(result.getBytes()));
         HttpHeaders httpHeaders = response.headers();
-        httpHeaders.set(HttpHeaderNames.CONTENT_TYPE, "text/plain");
-        httpHeaders.set(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
+        httpHeaders.set(HttpHeaders.Names.CONTENT_TYPE, "text/plain");
+        httpHeaders.set(HttpHeaders.Names.CONTENT_LENGTH, response.content().readableBytes());
         return response;
     }
 
     private static final FullHttpResponse http_404() {
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND);
         HttpHeaders httpHeaders = response.headers();
-        httpHeaders.set(HttpHeaderNames.CONTENT_TYPE, "text/plain");
-        httpHeaders.set(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
+        httpHeaders.set(HttpHeaders.Names.CONTENT_TYPE, "text/plain");
+        httpHeaders.set(HttpHeaders.Names.CONTENT_LENGTH, response.content().readableBytes());
         return response;
     }
 
@@ -84,8 +83,8 @@ public class HttpProcessHandler extends SimpleChannelInboundHandler<HttpRequest>
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR
                 , Unpooled.wrappedBuffer(errorMessage.getBytes()));
         HttpHeaders httpHeaders = response.headers();
-        httpHeaders.set(HttpHeaderNames.CONTENT_TYPE, "text/plain");
-        httpHeaders.set(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
+        httpHeaders.set(HttpHeaders.Names.CONTENT_TYPE, "text/plain");
+        httpHeaders.set(HttpHeaders.Names.CONTENT_LENGTH, response.content().readableBytes());
         return response;
     }
 
