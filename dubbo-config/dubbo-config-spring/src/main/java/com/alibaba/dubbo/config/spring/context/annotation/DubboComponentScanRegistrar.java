@@ -11,7 +11,10 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
-import org.springframework.beans.factory.support.*;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
@@ -20,7 +23,10 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
-import org.springframework.util.*;
+import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 
@@ -137,7 +143,10 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
         if (!ObjectUtils.isEmpty(beanNames)) {
 
             for (String beanName : beanNames) {
-                runtimeBeanReferences.add(new RuntimeBeanReference(beanName));
+
+                String resolvedBeanName = environment.resolvePlaceholders(beanName);
+
+                runtimeBeanReferences.add(new RuntimeBeanReference(resolvedBeanName));
             }
 
         }
@@ -145,6 +154,12 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
         return runtimeBeanReferences;
 
     }
+
+    private void addPropertyReference(BeanDefinitionBuilder builder, String propertyName, String beanName) {
+        String resolvedBeanName = environment.resolvePlaceholders(beanName);
+        builder.addPropertyReference(propertyName, resolvedBeanName);
+    }
+
 
     private AbstractBeanDefinition buildServiceBeanDefinition(Service service, Class<?> interfaceClass,
                                                               String annotatedServiceBeanName) {
@@ -160,7 +175,7 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
          */
         String providerConfigBeanName = service.provider();
         if (StringUtils.hasText(providerConfigBeanName)) {
-            builder.addPropertyReference("provider", providerConfigBeanName);
+            addPropertyReference(builder, "provider", providerConfigBeanName);
         }
 
         /**
@@ -168,7 +183,7 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
          */
         String monitorConfigBeanName = service.monitor();
         if (StringUtils.hasText(monitorConfigBeanName)) {
-            builder.addPropertyReference("monitor", monitorConfigBeanName);
+            addPropertyReference(builder, "monitor", monitorConfigBeanName);
         }
 
         /**
@@ -176,7 +191,7 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
          */
         String applicationConfigBeanName = service.application();
         if (StringUtils.hasText(applicationConfigBeanName)) {
-            builder.addPropertyReference("application", applicationConfigBeanName);
+            addPropertyReference(builder, "application", applicationConfigBeanName);
         }
 
         /**
@@ -184,7 +199,7 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
          */
         String moduleConfigBeanName = service.module();
         if (StringUtils.hasText(moduleConfigBeanName)) {
-            builder.addPropertyReference("application", moduleConfigBeanName);
+            addPropertyReference(builder, "module", moduleConfigBeanName);
         }
 
 
@@ -269,7 +284,9 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
                 metadata.getAnnotationAttributes(DubboComponentScan.class.getName()));
         String[] basePackages = attributes.getStringArray("basePackages");
         Class<?>[] basePackageClasses = attributes.getClassArray("basePackageClasses");
-        Set<String> packagesToScan = new LinkedHashSet<String>();
+        String[] value = attributes.getStringArray("value");
+        // Appends value array attributes
+        Set<String> packagesToScan = new LinkedHashSet<String>(Arrays.asList(value));
         packagesToScan.addAll(Arrays.asList(basePackages));
         for (Class<?> basePackageClass : basePackageClasses) {
             packagesToScan.add(ClassUtils.getPackageName(basePackageClass));

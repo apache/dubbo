@@ -1,6 +1,6 @@
 package com.alibaba.dubbo.config.spring.beans.factory.annotation;
 
-import com.alibaba.dubbo.config.*;
+import com.alibaba.dubbo.config.ConsumerConfig;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.spring.ReferenceBean;
 import org.springframework.context.ApplicationContext;
