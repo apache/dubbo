@@ -3,7 +3,6 @@ package com.alibaba.dubbo.config.spring.context.annotation;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.annotation.AliasFor;
 
 import java.lang.annotation.*;
 
@@ -29,7 +28,6 @@ public @interface DubboComponentScan {
      *
      * @return the base packages to scan
      */
-    @AliasFor("basePackages")
     String[] value() default {};
 
     /**
@@ -41,7 +39,6 @@ public @interface DubboComponentScan {
      *
      * @return the base packages to scan
      */
-    @AliasFor("value")
     String[] basePackages() default {};
 
     /**
