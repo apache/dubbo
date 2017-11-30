@@ -1,8 +1,10 @@
 package com.alibaba.dubbo.config.spring.context.annotation;
 
-import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.dubbo.config.spring.api.Box;
 import com.alibaba.dubbo.config.spring.api.DemoService;
+import org.springframework.stereotype.Service;
+
+;
 
 /**
  * {@link DemoService} Service implementation
@@ -10,12 +12,13 @@ import com.alibaba.dubbo.config.spring.api.DemoService;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 2.5.7
  */
-@Service(
+@com.alibaba.dubbo.config.annotation.Service(
         version = "2.5.7",
-        application = "dubbo-annotation-provider",
-        protocol = "dubbo",
-        registry = "my-registry"
+        application = "${demo.service.application}",
+        protocol = "${demo.service.protocol}",
+        registry = "${demo.service.registry}"
 )
+@Service
 public class DemoServiceImpl implements DemoService {
 
     @Override
