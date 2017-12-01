@@ -25,6 +25,9 @@ import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.config.annotation.Service;
+import com.alibaba.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
+import com.alibaba.dubbo.config.model.ApplicationModel;
+import com.alibaba.dubbo.config.model.ProviderModel;
 import com.alibaba.dubbo.config.support.Parameter;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invoker;
@@ -310,6 +313,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             path = interfaceName;
         }
         doExportUrls();
+        ProviderModel providerModel = new ProviderModel(getUniqueServiceName(), this, ref);
+        ApplicationModel.initProviderModel(getUniqueServiceName(), providerModel);
     }
 
     private void checkRef() {
@@ -483,8 +488,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 if (logger.isInfoEnabled()) {
                     logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
                 }
-                if (registryURLs != null && registryURLs.size() > 0
-                        && url.getParameter("register", true)) {
+                if (registryURLs != null && registryURLs.size() > 0) {
                     for (URL registryURL : registryURLs) {
                         url = url.addParameterIfAbsent("dynamic", registryURL.getParameter("dynamic"));
                         URL monitorUrl = loadMonitor(registryURL);
@@ -495,14 +499,16 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                             logger.info("Register dubbo service " + interfaceClass.getName() + " url " + url + " to registry " + registryURL);
                         }
                         Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString()));
+                        DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
 
-                        Exporter<?> exporter = protocol.export(invoker);
+                        Exporter<?> exporter = protocol.export(wrapperInvoker);
                         exporters.add(exporter);
                     }
                 } else {
                     Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, url);
+                    DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
 
-                    Exporter<?> exporter = protocol.export(invoker);
+                    Exporter<?> exporter = protocol.export(wrapperInvoker);
                     exporters.add(exporter);
                 }
             }
@@ -812,5 +818,18 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     @Deprecated
     public void setProviders(List<ProviderConfig> providers) {
         this.protocols = convertProviderToProtocol(providers);
+    }
+
+    @Parameter(excluded = true)
+    public String getUniqueServiceName() {
+        StringBuilder buf = new StringBuilder();
+        if (group != null && group.length() > 0) {
+            buf.append(group).append("/");
+        }
+        buf.append(interfaceName);
+        if (version != null && version.length() > 0) {
+            buf.append(":").append(version);
+        }
+        return buf.toString();
     }
 }
