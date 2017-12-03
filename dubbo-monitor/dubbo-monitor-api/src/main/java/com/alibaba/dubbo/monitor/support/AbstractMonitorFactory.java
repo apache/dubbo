@@ -40,7 +40,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * AbstractMonitorFactroy. (SPI, Singleton, ThreadSafe)
+ * AbstractMonitorFactory. (SPI, Singleton, ThreadSafe)
  *
  * @author william.liangf
  */
