@@ -446,7 +446,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         List<Router> routers = getRouters();
         if (routers != null) {
             for (Router router : routers) {
-                if (router.getUrl() != null && !router.getUrl().getParameter(Constants.RUNTIME_KEY, true)) {
+                if (router.getUrl() != null) {
                     invokers = router.route(invokers, getConsumerUrl(), invocation);
                 }
             }
