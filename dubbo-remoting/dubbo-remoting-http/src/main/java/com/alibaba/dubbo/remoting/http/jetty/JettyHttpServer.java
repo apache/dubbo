@@ -22,12 +22,15 @@ import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.remoting.http.HttpHandler;
 import com.alibaba.dubbo.remoting.http.servlet.DispatcherServlet;
+import com.alibaba.dubbo.remoting.http.servlet.ServletManager;
 import com.alibaba.dubbo.remoting.http.support.AbstractHttpServer;
-
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.nio.SelectChannelConnector;
+import org.mortbay.jetty.servlet.Context;
 import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.ServletHolder;
+import org.mortbay.log.Log;
+import org.mortbay.log.StdErrLog;
 import org.mortbay.thread.QueuedThreadPool;
 
 public class JettyHttpServer extends AbstractHttpServer {
@@ -35,9 +38,16 @@ public class JettyHttpServer extends AbstractHttpServer {
     private static final Logger logger = LoggerFactory.getLogger(JettyHttpServer.class);
 
     private Server server;
+    
+    private URL url;
 
     public JettyHttpServer(URL url, final HttpHandler handler) {
         super(url, handler);
+        this.url = url;
+        // TODO we should leave this setting to slf4j
+        Log.setLog(new StdErrLog());
+        Log.getLog().setDebugEnabled(false);
+        
         DispatcherServlet.addHttpHandler(url.getParameter(Constants.BIND_PORT_KEY, url.getPort()), handler);
 
         int threads = url.getParameter(Constants.THREADS_KEY, Constants.DEFAULT_THREADS);
@@ -61,8 +71,13 @@ public class JettyHttpServer extends AbstractHttpServer {
         ServletHandler servletHandler = new ServletHandler();
         ServletHolder servletHolder = servletHandler.addServletWithMapping(DispatcherServlet.class, "/*");
         servletHolder.setInitOrder(2);
-
-        server.addHandler(servletHandler);
+    
+        // dubbo's original impl can't support the use of ServletContext
+        //        server.addHandler(servletHandler);
+        // TODO Context.SESSIONS is the best option here?
+        Context context = new Context(server, "/", Context.SESSIONS);
+        context.setServletHandler(servletHandler);
+        ServletManager.getInstance().addServletContext(url.getPort(), context.getServletContext());
 
         try {
             server.start();
@@ -74,6 +89,7 @@ public class JettyHttpServer extends AbstractHttpServer {
 
     public void close() {
         super.close();
+        ServletManager.getInstance().removeServletContext(url.getPort());
         if (server != null) {
             try {
                 server.stop();
