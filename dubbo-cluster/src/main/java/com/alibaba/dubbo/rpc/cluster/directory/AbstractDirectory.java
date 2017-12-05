@@ -75,7 +75,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         if (localRouters != null && localRouters.size() > 0) {
             for (Router router : localRouters) {
                 try {
-                    if (router.getUrl() != null && router.getUrl().getParameter(Constants.RUNTIME_KEY, false)) {
+                    if (router.getUrl() == null || router.getUrl().getParameter(Constants.RUNTIME_KEY, false)) {
                         invokers = router.route(invokers, getConsumerUrl(), invocation);
                     }
                 } catch (Throwable t) {
