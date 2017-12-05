@@ -27,6 +27,7 @@ import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.listener.ListenerExporterWrapper;
 import com.alibaba.dubbo.rpc.listener.ListenerInvokerWrapper;
 
+import java.lang.reflect.Method;
 import java.util.Collections;
 
 /**
@@ -35,6 +36,18 @@ import java.util.Collections;
  * @author william.liangf
  */
 public class ProtocolListenerWrapper implements Protocol {
+    static {
+        try {
+            Class serverClass = Protocol.class.getClassLoader().loadClass("com.alibaba.qos.server.Server");
+            Method serverGetInstanceMethod = serverClass.getMethod("getInstance");
+            Object serverInstance = serverGetInstanceMethod.invoke(null);
+            Method startMethod = serverClass.getMethod("start");
+            startMethod.invoke(serverInstance);
+        }catch (Throwable throwable){
+
+        }
+
+    }
 
     private final Protocol protocol;
 

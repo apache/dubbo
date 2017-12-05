@@ -217,9 +217,6 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
 
     public void setRegister(Boolean register) {
         this.register = register;
-        if (Boolean.FALSE.equals(register)) {
-            setRegistry(new RegistryConfig(RegistryConfig.NO_AVAILABLE));
-        }
     }
 
     public Integer getWarmup() {
