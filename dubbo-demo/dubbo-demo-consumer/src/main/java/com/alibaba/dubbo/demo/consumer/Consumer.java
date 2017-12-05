@@ -10,6 +10,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class Consumer {
 
     public static void main(String[] args) {
+        System.setProperty("dubbo.qos.port", "33333"); //防止和Provider的22222端口冲突
         System.setProperty("java.net.preferIPv4Stack", "true"); //防止无线网络自动返回IPv6地址
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"META-INF/spring/dubbo-demo-consumer.xml"});
         context.start();
