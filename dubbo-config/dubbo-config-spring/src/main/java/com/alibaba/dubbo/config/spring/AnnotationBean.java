@@ -130,6 +130,10 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
         if (!isMatchPackage(bean)) {
             return bean;
         }
+		Class<?> clazz = bean.getClass();
+        if(isProxyBean(bean)){
+            clazz = AopUtils.getTargetClass(bean);
+        }
         Service service = bean.getClass().getAnnotation(Service.class);
         if (service != null) {
             ServiceBean<Object> serviceConfig = new ServiceBean<Object>(service);
@@ -197,6 +201,10 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
             throws BeansException {
         if (!isMatchPackage(bean)) {
             return bean;
+        }
+		Class<?> clazz = bean.getClass();
+        if(isProxyBean(bean)){
+            clazz = AopUtils.getTargetClass(bean);
         }
         Method[] methods = bean.getClass().getMethods();
         for (Method method : methods) {
@@ -302,13 +310,21 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
         if (annotationPackages == null || annotationPackages.length == 0) {
             return true;
         }
-        String beanClassName = bean.getClass().getName();
+        Class clazz = bean.getClass();
+        if(isProxyBean(bean)){
+            clazz = AopUtils.getTargetClass(bean);
+        }
+        String beanClassName = clazz.getName();
         for (String pkg : annotationPackages) {
             if (beanClassName.startsWith(pkg)) {
                 return true;
             }
         }
         return false;
+    }
+
+    private boolean isProxyBean(Object bean) {
+        return AopUtils.isAopProxy(bean);
     }
 
 }
