@@ -2,6 +2,7 @@ package com.alibaba.qos.server;
 
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.qos.common.Constants;
 import com.alibaba.qos.server.handler.QosProcessHandler;
 import io.netty.bootstrap.ServerBootstrap;
@@ -14,7 +15,6 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.concurrent.DefaultThreadFactory;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * <pre>
@@ -36,7 +36,7 @@ public class Server {
         return INSTANCE;
     }
 
-    private final int port = Integer.getInteger(Constants.QOS_PORT, Constants.DEFAULT_PORT);
+    private int port = Integer.parseInt(ConfigUtils.getProperty(Constants.QOS_PORT, Constants.DEFAULT_PORT + ""));
 
     public int getPort() {
         return port;
@@ -67,7 +67,7 @@ public class Server {
      * 启动server，绑定端口
      */
     public void start() throws Throwable {
-        if (!hasStarted.compareAndSet(false,true)){
+        if (!hasStarted.compareAndSet(false, true)) {
             return;
         }
         boss = new NioEventLoopGroup(0, new DefaultThreadFactory("qos-boss", true));
