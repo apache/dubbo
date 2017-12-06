@@ -60,7 +60,7 @@
                 #foreach ($tab in $tabs)
                     #if($tool.checkUrl($currentUser,"/sysinfo/$tab"))
                         <li id="$tab"#if($_type == $tab) class="active"#else style="color: white;"#end
-                            onclick="window.location.href='/sysinfo/$tab';">$i18n.get($tab)</li>
+                            onclick="window.location.href='sysinfo/$tab';">$i18n.get($tab)</li>
                     #end
                 #end
             </ul>
