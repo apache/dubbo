@@ -23,8 +23,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * <p>Providers.</p>
@@ -107,9 +109,33 @@ public class Providers extends Restful {
         }
 
         context.put("providers", providers);
+        context.put("serviceAppMap", getServiceAppMap(providers));
 
         // 设置搜索结果到cookie中
         setSearchHistroy(context, value);
+    }
+
+    /**
+     * @author WangXin
+     * 计算各个服务对应的应用列表，方便页面对"重复"的提示
+     * @param providers app services
+     */
+    private Map<String, Set<String>> getServiceAppMap(List<Provider> providers) {
+        Map<String, Set<String>> serviceAppMap = new HashMap<String, Set<String>>();
+        if (providers != null && providers.size() >= 0) {
+            for (Provider provider : providers) {
+                Set<String> appSet;
+                String service = provider.getService();
+                if (serviceAppMap.get(service) == null) {
+                    appSet = new HashSet<String>();
+                } else {
+                    appSet = serviceAppMap.get(service);
+                }
+                appSet.add(provider.getApplication());
+                serviceAppMap.put(service, appSet);
+            }
+        }
+        return serviceAppMap;
     }
 
     /**
