@@ -4,7 +4,7 @@
 ![](https://img.shields.io/maven-central/v/com.alibaba/dubbo.svg)
 
 Please visit [dubbo.io](http://dubbo.io) for detailed documentation. Want to find more or contact us, see the following links.  
-* [Affiliated projects](http://github.com/alibaba/dubbo). More awesome projects facilitating dubbo.
+* [Affiliated projects](http://github.com/dubbo). More awesome projects facilitating dubbo.
 * [Usage mailing list](https://groups.google.com/forum/#!forum/dubbo). For open-ended questions and discussion, see [Google Groups](https://sites.google.com/site/tomihasa/google-groups-faq#subscribetogroup) for how to subscribe.
 * [Issue report](https://github.com/alibaba/dubbo/issues). Report a defect or feature request
 * [Gitter channel](https://gitter.im/alibaba/dubbo). 
