@@ -20,6 +20,7 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.NamedThreadFactory;
+import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.common.utils.UrlUtils;
 import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.support.FailbackRegistry;
@@ -106,7 +107,7 @@ public class RedisRegistry extends FailbackRegistry {
             config.setMinEvictableIdleTimeMillis(url.getParameter("min.evictable.idle.time.millis", 0));
 
         String cluster = url.getParameter("cluster", "failover");
-        if (!"failover".equals(cluster) && !"replicate".equals(cluster)) {
+        if (!"failover".equals(cluster) && !"replicate".equals(cluster)&& !url.getPath().equals("com.alibaba.dubbo.monitor.MonitorService")) {
             throw new IllegalArgumentException("Unsupported redis cluster: " + cluster + ". The redis cluster only supported failover or replicate.");
         }
         replicate = "replicate".equals(cluster);
@@ -128,8 +129,14 @@ public class RedisRegistry extends FailbackRegistry {
                 host = address;
                 port = DEFAULT_REDIS_PORT;
             }
-            this.jedisPools.put(address, new JedisPool(config, host, port,
-                    url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT)));
+            if(StringUtils.isEmpty(url.getPassword())){
+                this.jedisPools.put(address, new JedisPool(config, host, port,
+                        url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT),null,url.getParameter("db.index",0)));
+            }else {
+                this.jedisPools.put(address, new JedisPool(config, host, port,
+                        url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT),url.getPassword(),url.getParameter("db.index",0)));
+            }
+
         }
 
         this.reconnectPeriod = url.getParameter(Constants.REGISTRY_RECONNECT_PERIOD_KEY, Constants.DEFAULT_REGISTRY_RECONNECT_PERIOD);
