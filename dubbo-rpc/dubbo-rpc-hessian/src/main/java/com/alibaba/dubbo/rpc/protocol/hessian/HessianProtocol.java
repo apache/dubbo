@@ -91,6 +91,7 @@ public class HessianProtocol extends AbstractProxyProtocol {
             throw new IllegalStateException("Unsupported http protocol client=\"" + client + "\"!");
         }
         int timeout = url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+        hessianProxyFactory.setOverloadEnabled(true);
         hessianProxyFactory.setConnectTimeout(timeout);
         hessianProxyFactory.setReadTimeout(timeout);
         return (T) hessianProxyFactory.create(serviceType, url.setProtocol("http").toJavaURL(), Thread.currentThread().getContextClassLoader());
