@@ -45,7 +45,7 @@
                     src="$rootContextPath.getURI("images/ico_search.png")" width="12" height="12"/>
         </th>
         <th width="135">$i18n.get("status"):
-        <select onchange="searchTable('table_o', 1, this.value);" onclick="searchTable('table_o', 1, this.value);">
+        <select onchange="searchTable('table_o', 2, this.value);" onclick="searchTable('table_o', 2, this.value);">
             <option value="">$i18n.get("all")</option>
             #if($application)
                 <option value="$i18n.get("provided")">$i18n.get("provided")</option>
