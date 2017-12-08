@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
  * {@link DemoService} Service implementation
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
- * @since 2.5.7
+ * @since 2.5.8
  */
 @com.alibaba.dubbo.config.annotation.Service(
         version = "2.5.7",
