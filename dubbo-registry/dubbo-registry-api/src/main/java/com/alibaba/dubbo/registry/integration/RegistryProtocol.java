@@ -26,6 +26,7 @@ import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.Registry;
 import com.alibaba.dubbo.registry.RegistryFactory;
 import com.alibaba.dubbo.registry.RegistryService;
+import com.alibaba.dubbo.registry.support.ProviderConsumerRegTable;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
@@ -111,13 +112,31 @@ public class RegistryProtocol implements Protocol {
         return overrideListeners;
     }
 
+    public void register(URL registryUrl, URL registedProviderUrl) {
+        Registry registry = registryFactory.getRegistry(registryUrl);
+        registry.register(registedProviderUrl);
+    }
+
     public <T> Exporter<T> export(final Invoker<T> originInvoker) throws RpcException {
         //export invoker
         final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker);
+
+        URL registryUrl = getRegistryUrl(originInvoker);
+
         //registry provider
         final Registry registry = getRegistry(originInvoker);
         final URL registedProviderUrl = getRegistedProviderUrl(originInvoker);
-        registry.register(registedProviderUrl);
+
+        //to judge to delay publish whether or not
+        boolean register = registedProviderUrl.getParameter("register", true);
+
+        ProviderConsumerRegTable.registerProvider(originInvoker, registryUrl, registedProviderUrl);
+
+        if (register) {
+            register(registryUrl, registedProviderUrl);
+            ProviderConsumerRegTable.getProviderWrapper(originInvoker).setReg(true);
+        }
+
         // 订阅override数据
         // FIXME 提供者订阅时，会影响同一JVM即暴露服务，又引用同一服务的的场景，因为subscribed以服务名为缓存的key，导致订阅信息覆盖。
         final URL overrideSubscribeUrl = getSubscribedOverrideUrl(registedProviderUrl);
@@ -193,13 +212,19 @@ public class RegistryProtocol implements Protocol {
      * @return
      */
     private Registry getRegistry(final Invoker<?> originInvoker) {
+        URL registryUrl = getRegistryUrl(originInvoker);
+        return registryFactory.getRegistry(registryUrl);
+    }
+
+    private URL getRegistryUrl(Invoker<?> originInvoker) {
         URL registryUrl = originInvoker.getUrl();
         if (Constants.REGISTRY_PROTOCOL.equals(registryUrl.getProtocol())) {
             String protocol = registryUrl.getParameter(Constants.REGISTRY_KEY, Constants.DEFAULT_DIRECTORY);
             registryUrl = registryUrl.setProtocol(protocol).removeParameter(Constants.REGISTRY_KEY);
         }
-        return registryFactory.getRegistry(registryUrl);
+        return registryUrl;
     }
+
 
     /**
      * 返回注册到注册中心的URL，对URL参数进行一次过滤
@@ -291,7 +316,10 @@ public class RegistryProtocol implements Protocol {
                 Constants.PROVIDERS_CATEGORY
                         + "," + Constants.CONFIGURATORS_CATEGORY
                         + "," + Constants.ROUTERS_CATEGORY));
-        return cluster.join(directory);
+
+        Invoker invoker = cluster.join(directory);
+        ProviderConsumerRegTable.registerConsuemr(invoker, url, subscribeUrl, directory);
+        return invoker;
     }
 
     public void destroy() {

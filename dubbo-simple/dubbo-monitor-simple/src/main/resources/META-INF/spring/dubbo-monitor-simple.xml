@@ -25,8 +25,6 @@
     </bean>
 
     <bean id="monitorService" class="com.alibaba.dubbo.monitor.simple.SimpleMonitorService">
-        <property name="statisticsDirectory" value="${dubbo.statistics.directory}"/>
-        <property name="chartsDirectory" value="${dubbo.charts.directory}"/>
     </bean>
 
     <dubbo:application name="${dubbo.application.name}" owner="${dubbo.application.owner}"/>

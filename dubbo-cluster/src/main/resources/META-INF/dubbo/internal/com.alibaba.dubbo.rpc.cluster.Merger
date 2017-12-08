@@ -1,6 +1,6 @@
-map=com.alibaba.dubbo.rpc.cluster.merger.ListMerger
+map=com.alibaba.dubbo.rpc.cluster.merger.MapMerger
 set=com.alibaba.dubbo.rpc.cluster.merger.SetMerger
-list=com.alibaba.dubbo.rpc.cluster.merger.MapMerger
+list=com.alibaba.dubbo.rpc.cluster.merger.ListMerger
 byte=com.alibaba.dubbo.rpc.cluster.merger.ByteArrayMerger
 char=com.alibaba.dubbo.rpc.cluster.merger.CharArrayMerger
 short=com.alibaba.dubbo.rpc.cluster.merger.ShortArrayMerger
