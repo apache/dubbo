@@ -1,9 +1,6 @@
 package com.alibaba.dubbo.config.spring.context.annotation;
 
-import com.alibaba.dubbo.config.ApplicationConfig;
-import com.alibaba.dubbo.config.ModuleConfig;
-import com.alibaba.dubbo.config.ProtocolConfig;
-import com.alibaba.dubbo.config.RegistryConfig;
+import com.alibaba.dubbo.config.*;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -18,7 +15,7 @@ import org.springframework.context.annotation.PropertySource;
 public class EnableDubboConfigTest {
 
     @Test
-    public void test() {
+    public void testSingle() {
 
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
         context.register(TestConfig.class);
@@ -40,6 +37,19 @@ public class EnableDubboConfigTest {
         ProtocolConfig protocolConfig = context.getBean(ProtocolConfig.class);
         Assert.assertEquals("dubbo", protocolConfig.getName());
         Assert.assertEquals(Integer.valueOf(20880), protocolConfig.getPort());
+
+        // monitor
+        MonitorConfig monitorConfig = context.getBean(MonitorConfig.class);
+        Assert.assertEquals("zookeeper://127.0.0.1:32770", monitorConfig.getAddress());
+
+        // provider
+        ProviderConfig providerConfig = context.getBean(ProviderConfig.class);
+        Assert.assertEquals("127.0.0.1", providerConfig.getHost());
+
+
+        // consumer
+        ConsumerConfig consumerConfig = context.getBean(ConsumerConfig.class);
+        Assert.assertEquals("netty", consumerConfig.getClient());
 
     }
 
