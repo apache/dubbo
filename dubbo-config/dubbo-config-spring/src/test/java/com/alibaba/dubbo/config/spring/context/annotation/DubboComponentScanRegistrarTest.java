@@ -7,12 +7,16 @@ import com.alibaba.dubbo.config.spring.context.annotation.provider.ProviderConfi
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.transaction.annotation.Transactional;
+
+import static org.springframework.core.annotation.AnnotationUtils.findAnnotation;
 
 /**
  * {@link DubboComponentScanRegistrar} Test
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
- * @since 2.5.7
+ * @since 2.5.8
  */
 public class DubboComponentScanRegistrarTest {
 
@@ -26,6 +30,12 @@ public class DubboComponentScanRegistrarTest {
         providerContext.refresh();
 
         DemoService demoService = providerContext.getBean(DemoService.class);
+
+        // DemoServiceImpl with @Transactional
+        Assert.assertEquals(DemoServiceImpl.class, demoService.getClass());
+
+        // Test @Transactional is present or not
+        Assert.assertNotNull(findAnnotation(demoService.getClass(), Transactional.class));
 
         String value = demoService.sayName("Mercy");
 
