@@ -1,7 +1,6 @@
 package com.alibaba.dubbo.config.spring.context.annotation.provider;
 
 import com.alibaba.dubbo.config.spring.context.annotation.DubboComponentScan;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.Primary;

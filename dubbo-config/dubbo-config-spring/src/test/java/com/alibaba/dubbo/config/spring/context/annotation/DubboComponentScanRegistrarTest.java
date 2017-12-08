@@ -3,12 +3,10 @@ package com.alibaba.dubbo.config.spring.context.annotation;
 import com.alibaba.dubbo.config.spring.api.DemoService;
 import com.alibaba.dubbo.config.spring.context.annotation.consumer.ConsumerConfiguration;
 import com.alibaba.dubbo.config.spring.context.annotation.provider.ProviderConfiguration;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.core.annotation.AnnotationUtils.findAnnotation;

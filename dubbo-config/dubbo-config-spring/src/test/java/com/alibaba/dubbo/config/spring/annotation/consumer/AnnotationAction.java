@@ -17,7 +17,6 @@ package com.alibaba.dubbo.config.spring.annotation.consumer;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.spring.api.DemoService;
-
 import org.springframework.stereotype.Controller;
 
 /**
