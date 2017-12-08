@@ -5,7 +5,6 @@ import com.alibaba.dubbo.config.spring.api.DemoService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-;
 
 /**
  * {@link DemoService} Service implementation

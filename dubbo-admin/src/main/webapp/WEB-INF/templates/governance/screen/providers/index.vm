@@ -88,15 +88,11 @@
             <td>
                 #set($errorLevel = "ok")
                 #set($errorMessage = "")
-
-                #if ($providerApplication == "")
-                    #set($providerApplication = $provider.application)
-                #end
-
-                #if($providerApplication != $provider.application)
+                #set($appList = $!serviceAppMap.get($provider.service))
+                #if($appList.size()>1)
                     #if ($errorLevel != "error") #set($errorLevel = "warn") #end
                     #set($errorMessage ="$errorMessage<br>$i18n.get('warn'): $i18n.get(
-                        'CheckProviderApplicationDifferent', $providerApplication, $provider.application)")
+                        'CheckProviderApplicationDifferent', $appList)")
                 #end
 
                 #if($provider.address.startsWith("127.") || $provider.address.startsWith(
