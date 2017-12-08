@@ -6,6 +6,7 @@ import com.alibaba.dubbo.config.spring.context.annotation.provider.ProviderConfi
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,15 +32,17 @@ public class DubboComponentScanRegistrarTest {
 
         DemoService demoService = providerContext.getBean(DemoService.class);
 
-        // DemoServiceImpl with @Transactional
-        Assert.assertEquals(DemoServiceImpl.class, demoService.getClass());
-
-        // Test @Transactional is present or not
-        Assert.assertNotNull(findAnnotation(demoService.getClass(), Transactional.class));
-
         String value = demoService.sayName("Mercy");
 
         Assert.assertEquals("Hello,Mercy", value);
+
+        Class<?> beanClass = AopUtils.getTargetClass(demoService);
+
+        // DemoServiceImpl with @Transactional
+        Assert.assertEquals(DemoServiceImpl.class, beanClass);
+
+        // Test @Transactional is present or not
+        Assert.assertNotNull(findAnnotation(beanClass, Transactional.class));
 
         AnnotationConfigApplicationContext consumerContext = new AnnotationConfigApplicationContext();
 
