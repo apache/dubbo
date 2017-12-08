@@ -4,6 +4,7 @@ import com.alibaba.dubbo.config.AbstractConfig;
 import com.alibaba.dubbo.config.ApplicationConfig;
 import com.alibaba.dubbo.config.ModuleConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
+import com.alibaba.dubbo.config.spring.beans.factory.annotation.DubboConfigBindingBeanPostProcessor;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.PropertySources;
 
@@ -20,6 +21,7 @@ import java.lang.annotation.*;
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @see DubboConfigBindingRegistrar
+ * @see DubboConfigBindingBeanPostProcessor
  * @see EnableDubboConfigBindings
  * @since 2.5.8
  */

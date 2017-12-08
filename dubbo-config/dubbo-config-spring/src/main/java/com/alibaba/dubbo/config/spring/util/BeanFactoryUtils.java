@@ -10,7 +10,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static org.springframework.beans.factory.BeanFactoryUtils.*;
+import static org.springframework.beans.factory.BeanFactoryUtils.beanNamesForTypeIncludingAncestors;
+import static org.springframework.beans.factory.BeanFactoryUtils.beansOfTypeIncludingAncestors;
 
 /**
  * {@link BeanFactory} Utilities class
