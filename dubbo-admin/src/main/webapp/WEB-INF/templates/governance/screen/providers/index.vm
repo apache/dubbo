@@ -73,8 +73,9 @@
         #if($currentUser.role != "G")
             <th>$i18n.get("operation")</th>#end
     </tr>
-    #set($providerApplication = "")
+
     #foreach($provider in $providers)
+        #set($providerApplication = "")
         <tr>
             <td><input type="checkbox" name="ids" value="$provider.id"/></td>
             <td>
