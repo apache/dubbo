@@ -3,6 +3,7 @@ package com.alibaba.dubbo.config.spring.context.annotation;
 import com.alibaba.dubbo.config.spring.api.Box;
 import com.alibaba.dubbo.config.spring.api.DemoService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 ;
 
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
         registry = "${demo.service.registry}"
 )
 @Service
+@Transactional
 public class DemoServiceImpl implements DemoService {
 
     @Override
