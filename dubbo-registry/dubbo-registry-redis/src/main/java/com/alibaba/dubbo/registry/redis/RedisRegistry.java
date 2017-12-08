@@ -20,6 +20,7 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.NamedThreadFactory;
+import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.common.utils.UrlUtils;
 import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.support.FailbackRegistry;
@@ -117,6 +118,8 @@ public class RedisRegistry extends FailbackRegistry {
         if (backups != null && backups.length > 0) {
             addresses.addAll(Arrays.asList(backups));
         }
+
+        String password = url.getPassword();
         for (String address : addresses) {
             int i = address.indexOf(':');
             String host;
@@ -128,8 +131,13 @@ public class RedisRegistry extends FailbackRegistry {
                 host = address;
                 port = DEFAULT_REDIS_PORT;
             }
-            this.jedisPools.put(address, new JedisPool(config, host, port,
-                    url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT)));
+            if (StringUtils.isEmpty(password)) {
+                this.jedisPools.put(address, new JedisPool(config, host, port,
+                        url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT)));
+            } else {
+                this.jedisPools.put(address, new JedisPool(config, host, port,
+                        url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT), password));
+            }
         }
 
         this.reconnectPeriod = url.getParameter(Constants.REGISTRY_RECONNECT_PERIOD_KEY, Constants.DEFAULT_REGISTRY_RECONNECT_PERIOD);
