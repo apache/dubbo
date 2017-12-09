@@ -15,10 +15,12 @@
  */
 package com.alibaba.dubbo.config;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.serialize.Serialization;
 import com.alibaba.dubbo.common.status.StatusChecker;
 import com.alibaba.dubbo.common.threadpool.ThreadPool;
+import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.config.support.Parameter;
 import com.alibaba.dubbo.registry.support.AbstractRegistryFactory;
 import com.alibaba.dubbo.remoting.Codec;
@@ -29,6 +31,7 @@ import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
 import com.alibaba.dubbo.rpc.Protocol;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -145,6 +148,14 @@ public class ProtocolConfig extends AbstractConfig {
             return;
         }
         AbstractRegistryFactory.destroyAll();
+
+        /**
+         * 为了防止和注册中心断连（上面代码）后立马结束provider暴露的服务，这里等待一小段时间，可配
+         * {@link Constants.SHUTDOWN_PROVIDER_MIN_WAIT}
+         * yizhenqiang 2017-12-07
+         */
+        waitAMomentBeforeCloseProvider();
+
         ExtensionLoader<Protocol> loader = ExtensionLoader.getExtensionLoader(Protocol.class);
         for (String protocolName : loader.getLoadedExtensions()) {
             try {
@@ -446,6 +457,27 @@ public class ProtocolConfig extends AbstractConfig {
     public void destory() {
         if (name != null) {
             ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(name).destroy();
+        }
+    }
+
+    /**
+     * 先不急着关闭provider的应答，等上游consumer处理完最后的消息
+     * yizhenqiang 2017-12-09
+     */
+    private static void waitAMomentBeforeCloseProvider() {
+        String providerMinTimeoutStr = ConfigUtils.getProperty(Constants.SHUTDOWN_PROVIDER_MIN_WAIT,
+                Constants.SHUTDOWN_PROVIDER_MIN_WAIT_DEFAULT);
+        Long providerMinTimeout;
+        try {
+            providerMinTimeout = Long.parseLong(providerMinTimeoutStr);
+        } catch (Exception e) {
+            providerMinTimeout = Long.parseLong(Constants.SHUTDOWN_PROVIDER_MIN_WAIT_DEFAULT);
+        }
+        try {
+            // 等待指定时间，让上游consumer能收到最后的应答
+            TimeUnit.MILLISECONDS.sleep(providerMinTimeout);
+        } catch (InterruptedException e) {
+            logger.warn(e.getMessage(), e);
         }
     }
 

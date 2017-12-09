@@ -34,6 +34,7 @@ import com.alibaba.dubbo.rpc.protocol.AbstractInvoker;
 import com.alibaba.dubbo.rpc.support.RpcUtils;
 
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -131,16 +132,25 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                 if (invokers != null) {
                     invokers.remove(this);
                 }
-                for (ExchangeClient client : clients) {
-                    try {
-                        client.close(getShutdownTimeout());
-                    } catch (Throwable t) {
-                        logger.warn(t.getMessage(), t);
-                    }
-                }
+
+                /**
+                 * 在真正关闭client前等稍许时间，让consumer有时间完成剩下的请求
+                 */
+                waitAMountAndCloseClient();
 
             } finally {
                 destroyLock.unlock();
+            }
+        }
+    }
+
+    @Override
+    protected void closeClient() {
+        for (ExchangeClient client : clients) {
+            try {
+                client.close();
+            } catch (Throwable t) {
+                logger.warn(t.getMessage(), t);
             }
         }
     }
