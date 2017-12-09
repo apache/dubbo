@@ -499,6 +499,16 @@ public class Constants {
 
     public static final String SHUTDOWN_WAIT_KEY = "dubbo.service.shutdown.wait";
 
+    /**
+     * 为了做到不重试也能优雅停机，这里露出provider和consumer在优雅停机时的最小等待时间，单位毫秒
+     * 可以和{@link SHUTDOWN_WAIT_KEY}一起使用
+     * yizhenqiang 2017-12-07
+     */
+    public static final String SHUTDOWN_PROVIDER_MIN_WAIT          = "provider.shutdown.min.wait";
+    public static final String SHUTDOWN_PROVIDER_MIN_WAIT_DEFAULT  = "3000";
+    public static final String SHUTDOWN_CONSUMER_MIN_WAIT          = "consumer.shutdown.min.wait";
+    public static final String SHUTDOWN_CONSUMER_MIN_WAIT_DEFAULT  = "2000";
+
     public static final String IS_SERVER_KEY = "isserver";
 
     /**
