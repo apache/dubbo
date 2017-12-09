@@ -16,11 +16,11 @@
 package com.alibaba.dubbo.monitor.simple.pages;
 
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.container.page.Page;
 import com.alibaba.dubbo.container.page.PageHandler;
 import com.alibaba.dubbo.monitor.MonitorService;
 import com.alibaba.dubbo.monitor.simple.CountUtils;
-import com.alibaba.dubbo.monitor.simple.SimpleMonitorService;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -48,7 +48,7 @@ public class StatisticsPageHandler implements PageHandler {
         }
         String expand = url.getParameter("expand");
         List<List<String>> rows = new ArrayList<List<String>>();
-        String directory = SimpleMonitorService.getInstance().getStatisticsDirectory();
+        String directory = ConfigUtils.getProperty("dubbo.statistics.directory");
         String filename = directory + "/" + date + "/" + service;
         File serviceDir = new File(filename);
         if (serviceDir.exists()) {

@@ -15,6 +15,7 @@
  */
 package com.alibaba.dubbo.rpc.cluster.router.file;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.rpc.Invocation;
@@ -132,6 +133,7 @@ public class FileRouterEngineTest {
     private URL initUrl(String filename) {
         filename = getClass().getClassLoader().getResource(getClass().getPackage().getName().replace('.', '/') + "/" + filename).toString();
         URL url = URL.valueOf(filename);
+        url = url.addParameter(Constants.RUNTIME_KEY, true);
         return url;
     }
 

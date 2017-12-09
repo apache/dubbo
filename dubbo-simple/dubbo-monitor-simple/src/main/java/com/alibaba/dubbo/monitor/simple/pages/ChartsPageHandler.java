@@ -16,10 +16,10 @@
 package com.alibaba.dubbo.monitor.simple.pages;
 
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.container.page.Page;
 import com.alibaba.dubbo.container.page.PageHandler;
 import com.alibaba.dubbo.monitor.MonitorService;
-import com.alibaba.dubbo.monitor.simple.SimpleMonitorService;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -44,7 +44,7 @@ public class ChartsPageHandler implements PageHandler {
             date = new SimpleDateFormat("yyyyMMdd").format(new Date());
         }
         List<List<String>> rows = new ArrayList<List<String>>();
-        String directory = SimpleMonitorService.getInstance().getChartsDirectory();
+        String directory = ConfigUtils.getProperty("dubbo.charts.directory");
         File chartsDir = new File(directory);
         String filename = directory + "/" + date + "/" + service;
         File serviceDir = new File(filename);
