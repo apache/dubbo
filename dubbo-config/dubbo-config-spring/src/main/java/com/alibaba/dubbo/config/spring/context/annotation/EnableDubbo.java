@@ -27,25 +27,25 @@ public @interface EnableDubbo {
     /**
      * Base packages to scan for annotated @Service classes.
      * <p>
-     * Use {@link #basePackageClasses()} for a type-safe alternative to String-based
+     * Use {@link #scanBasePackageClasses()} for a type-safe alternative to String-based
      * package names.
      *
      * @return the base packages to scan
      * @see DubboComponentScan#basePackages()
      */
-    @AliasFor(annotation = DubboComponentScan.class)
-    String[] basePackages() default {};
+    @AliasFor(annotation = DubboComponentScan.class, attribute = "basePackages")
+    String[] scanBasePackages() default {};
 
     /**
-     * Type-safe alternative to {@link #basePackages()} for specifying the packages to
+     * Type-safe alternative to {@link #scanBasePackages()} for specifying the packages to
      * scan for annotated @Service classes. The package of each class specified will be
      * scanned.
      *
      * @return classes from the base packages to scan
      * @see DubboComponentScan#basePackageClasses
      */
-    @AliasFor(annotation = DubboComponentScan.class)
-    Class<?>[] basePackageClasses() default {};
+    @AliasFor(annotation = DubboComponentScan.class, attribute = "basePackageClasses")
+    Class<?>[] scanBasePackageClasses() default {};
 
 
     /**

@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 2.5.7
  */
-@EnableDubbo(basePackageClasses = TestConsumerConfiguration.class, multipleConfig = true)
+@EnableDubbo(scanBasePackageClasses = TestConsumerConfiguration.class, multipleConfig = true)
 @PropertySource("META-INF/dubbb-consumer.properties")
 @EnableTransactionManagement
 public class TestConsumerConfiguration {
