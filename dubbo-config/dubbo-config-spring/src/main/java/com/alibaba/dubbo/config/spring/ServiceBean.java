@@ -25,6 +25,7 @@ import com.alibaba.dubbo.config.ServiceConfig;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.dubbo.config.spring.extension.SpringExtensionFactory;
 
+import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
@@ -265,4 +266,11 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
         unexport();
     }
 
+    // added by lishen
+    protected Class getServiceClass(T ref) {
+        if (AopUtils.isAopProxy(ref)) {
+            return AopUtils.getTargetClass(ref);
+        }
+        return super.getServiceClass(ref);
+    }
 }
