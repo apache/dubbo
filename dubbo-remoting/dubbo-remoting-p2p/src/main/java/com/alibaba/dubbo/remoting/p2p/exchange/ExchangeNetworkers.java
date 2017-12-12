@@ -22,11 +22,11 @@ import com.alibaba.dubbo.remoting.exchange.ExchangeHandler;
 
 /**
  * Networkers
- * 
+ *
  * @author william.liangf
  */
 public class ExchangeNetworkers {
-    
+
     public static ExchangePeer join(String group, String peer, ExchangeHandler handler) throws RemotingException {
         return join(URL.valueOf(group), URL.valueOf(peer), handler);
     }
@@ -34,11 +34,11 @@ public class ExchangeNetworkers {
     public static ExchangePeer join(URL group, URL peer, ExchangeHandler handler) throws RemotingException {
         return lookup(group).join(peer, handler);
     }
-    
+
     public static ExchangeGroup lookup(String group) throws RemotingException {
         return lookup(URL.valueOf(group));
     }
-    
+
     public static ExchangeGroup lookup(URL group) throws RemotingException {
         ExchangeNetworker networker = ExtensionLoader.getExtensionLoader(ExchangeNetworker.class).getExtension(group.getProtocol());
         return networker.lookup(group);

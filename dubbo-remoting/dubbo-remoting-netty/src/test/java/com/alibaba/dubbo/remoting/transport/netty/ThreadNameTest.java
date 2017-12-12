@@ -15,15 +15,15 @@
  */
 package com.alibaba.dubbo.remoting.transport.netty;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
@@ -80,13 +80,13 @@ public class ThreadNameTest {
         private boolean success;
         private boolean client;
 
-        public boolean isSuccess() {
-            return success;
-        }
-
         ThreadNameVerifyHandler(String msg, boolean client) {
             message = msg;
             this.client = client;
+        }
+
+        public boolean isSuccess() {
+            return success;
         }
 
         private void checkThreadName() {
@@ -97,7 +97,7 @@ public class ThreadNameTest {
 
         private void output(String method) {
             System.out.println(Thread.currentThread().getName()
-                                   + " " + (client ? "client " + method : "server " + method));
+                    + " " + (client ? "client " + method : "server " + method));
         }
 
         public void connected(Channel channel) throws RemotingException {

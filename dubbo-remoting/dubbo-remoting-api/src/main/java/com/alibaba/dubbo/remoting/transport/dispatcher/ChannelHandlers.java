@@ -25,22 +25,17 @@ import com.alibaba.dubbo.remoting.transport.MultiMessageHandler;
 
 /**
  * @author chao.liuc
- *
  */
 public class ChannelHandlers {
 
-    public static ChannelHandler wrap(ChannelHandler handler, URL url){
+    private static ChannelHandlers INSTANCE = new ChannelHandlers();
+
+    protected ChannelHandlers() {
+    }
+
+    public static ChannelHandler wrap(ChannelHandler handler, URL url) {
         return ChannelHandlers.getInstance().wrapInternal(handler, url);
     }
-
-    protected ChannelHandlers() {}
-
-    protected ChannelHandler wrapInternal(ChannelHandler handler, URL url) {
-        return new MultiMessageHandler(new HeartbeatHandler(ExtensionLoader.getExtensionLoader(Dispatcher.class)
-                                        .getAdaptiveExtension().dispatch(handler, url)));
-    }
-
-    private static ChannelHandlers INSTANCE = new ChannelHandlers();
 
     protected static ChannelHandlers getInstance() {
         return INSTANCE;
@@ -48,5 +43,10 @@ public class ChannelHandlers {
 
     static void setTestingChannelHandlers(ChannelHandlers instance) {
         INSTANCE = instance;
+    }
+
+    protected ChannelHandler wrapInternal(ChannelHandler handler, URL url) {
+        return new MultiMessageHandler(new HeartbeatHandler(ExtensionLoader.getExtensionLoader(Dispatcher.class)
+                .getAdaptiveExtension().dispatch(handler, url)));
     }
 }

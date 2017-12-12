@@ -1,8 +1,8 @@
 /**
  * Function: 分页封装类，控制分页
- * 
+ * <p>
  * File Created at 2011-6-10
- * 
+ * <p>
  * Copyright 2011 Alibaba.com Croporation Limited.
  * All rights reserved.
  */
@@ -12,7 +12,7 @@ import java.io.Serializable;
 
 /**
  * TODO Comment of Paginator
- * 
+ *
  * @author guanghui.shigh
  */
 public class Paginator implements Serializable, Cloneable {
@@ -20,33 +20,33 @@ public class Paginator implements Serializable, Cloneable {
     private static final long serialVersionUID = 3688506614705500726L;
 
     // 每页默认的项数; 默认:10
-    int                       itemsPerPage     = 10;
+    int itemsPerPage = 10;
 
     // 滑动窗口默认的大小; 默认:7
-    int                       sliderSize       = 7;
+    int sliderSize = 7;
 
     // 当前页面;
-    int                       currentPage;
+    int currentPage;
 
     // 当前页面;
-    String                    path;
+    String path;
 
     // 总记录数
-    int                       totalItems;
+    int totalItems;
 
     // 总页数
-    int                       totalPage;
+    int totalPage;
 
     /**
      * 最简化的分页构造器。
-     * 
+     *
      * @param itemsPerPage 每页项数。
      */
-    public Paginator(int currentPage, int totalItems, String path){
+    public Paginator(int currentPage, int totalItems, String path) {
         initPagination(currentPage, totalItems, 0, 0, path);
     }
 
-    public Paginator(String currentPage, int totalItems, String path){
+    public Paginator(String currentPage, int totalItems, String path) {
         int currentPageTemp = 1;
         if (!(currentPage == null || currentPage.equals(""))) {
             currentPageTemp = Integer.parseInt(currentPage);
@@ -56,7 +56,7 @@ public class Paginator implements Serializable, Cloneable {
 
     /**
      * 完整的分页构造器。
-     * 
+     *
      * @param currentPage 。
      * @param totalItems(必须项) 记录总数，大于等于0
      * @param sliderSize
@@ -80,7 +80,7 @@ public class Paginator implements Serializable, Cloneable {
     /**
      * 取得指定大小的页码滑动窗口，并将当前页尽可能地放在滑动窗口的中间部位。例如: 总共有13页，当前页是第5页，取得一个大小为5的滑动窗口，将包括 3，4，5，6, 7这几个页码，第5页被放在中间。如果当前页是12，则返回页码为
      * 9，10，11，12，13。
-     * 
+     *
      * @return 包含页码的数组，如果指定滑动窗口大小小于1或总页数为0，则返回空数组。
      */
     public int[] getSlider() {
@@ -119,7 +119,7 @@ public class Paginator implements Serializable, Cloneable {
 
         StringBuffer str = new StringBuffer("<div class=\"page\">");
         str.append("<script type=\"text/javascript\">function gotoPage(page){window.location.href=\"/" + path
-                   + "/pages/\" + page;}</script>");
+                + "/pages/\" + page;}</script>");
 
         // 生成翻页部分
         // 1. 总记录数
@@ -175,7 +175,7 @@ public class Paginator implements Serializable, Cloneable {
 
     /**
      * 获得起始记录
-     * 
+     *
      * @return
      */
     public int getStartIndex() {

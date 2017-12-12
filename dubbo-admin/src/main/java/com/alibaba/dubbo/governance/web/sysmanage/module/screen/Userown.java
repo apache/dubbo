@@ -7,29 +7,29 @@
  */
 package com.alibaba.dubbo.governance.web.sysmanage.module.screen;
 
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.alibaba.dubbo.governance.service.OwnerService;
 import com.alibaba.dubbo.governance.web.common.module.screen.Restful;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
+import java.util.Map;
+
 /**
  * Providers. URI: /services/$service/owners
- * 
+ *
  * @author william.liangf
  */
 public class Userown extends Restful {
 
-	@Autowired
-	private OwnerService ownerDAO;
+    @Autowired
+    private OwnerService ownerDAO;
 
-	public void index(Map<String, Object> context) {
-		String user = (String) context.get("user");
-		List<String> services;
-		services = ownerDAO.findServiceNamesByUsername(user);
-		context.put("user", user);
-		context.put("services", services);
-	}
+    public void index(Map<String, Object> context) {
+        String user = (String) context.get("user");
+        List<String> services;
+        services = ownerDAO.findServiceNamesByUsername(user);
+        context.put("user", user);
+        context.put("services", services);
+    }
 }

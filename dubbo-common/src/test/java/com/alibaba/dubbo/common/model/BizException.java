@@ -15,14 +15,14 @@
  */
 package com.alibaba.dubbo.common.model;
 
-public class BizException extends RuntimeException{
-    
+public class BizException extends RuntimeException {
+
     private static final long serialVersionUID = 1L;
-    
-    public BizException(String message){
+
+    public BizException(String message) {
         super(message);
     }
-    
+
     public BizException() {
     }
 }

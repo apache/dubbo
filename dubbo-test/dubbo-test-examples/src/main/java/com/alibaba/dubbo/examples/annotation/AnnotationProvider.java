@@ -15,20 +15,38 @@
  */
 package com.alibaba.dubbo.examples.annotation;
 
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import com.alibaba.dubbo.config.ProviderConfig;
+import com.alibaba.dubbo.config.spring.context.annotation.EnableDubbo;
+
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 
 /**
  * MergeProvider
- * 
+ *
  * @author william.liangf
  */
 public class AnnotationProvider {
-    
+
     public static void main(String[] args) throws Exception {
-        String config = AnnotationProvider.class.getPackage().getName().replace('.', '/') + "/annotation-provider.xml";
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(config);
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ProviderConfiguration.class);
         context.start();
         System.in.read();
     }
-    
+
+    @Configuration
+    @EnableDubbo(scanBasePackages = "com.alibaba.dubbo.examples.annotation.impl", multipleConfig = true)
+    @PropertySource("classpath:/com/alibaba/dubbo/examples/annotation/dubbo-provider.properties")
+//    @ComponentScan(value = {"com.alibaba.dubbo.examples.annotation.impl"})
+    static public class ProviderConfiguration {
+        @Bean
+        public ProviderConfig providerConfig() {
+            ProviderConfig providerConfig = new ProviderConfig();
+            providerConfig.setTimeout(1000);
+            return providerConfig;
+        }
+    }
+
 }

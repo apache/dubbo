@@ -15,6 +15,17 @@
  */
 package com.alibaba.dubbo.container.page;
 
+import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.StringUtils;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -26,37 +37,20 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.extension.ExtensionLoader;
-import com.alibaba.dubbo.common.logger.Logger;
-import com.alibaba.dubbo.common.logger.LoggerFactory;
-import com.alibaba.dubbo.common.utils.StringUtils;
-
 /**
  * PageServlet
- * 
+ *
  * @author william.liangf
  */
 public class PageServlet extends HttpServlet {
 
-    private static final long     serialVersionUID = -8370312705453328501L;
-
-    protected static final Logger logger           = LoggerFactory.getLogger(PageServlet.class);
-
-    protected final Random        random           = new Random();
-    
-    protected final Map<String, PageHandler>  pages = new ConcurrentHashMap<String, PageHandler>();
-
-    protected final List<PageHandler>    menus = new ArrayList<PageHandler>();
-    
+    protected static final Logger logger = LoggerFactory.getLogger(PageServlet.class);
+    private static final long serialVersionUID = -8370312705453328501L;
     private static PageServlet INSTANCE;
-    
+    protected final Random random = new Random();
+    protected final Map<String, PageHandler> pages = new ConcurrentHashMap<String, PageHandler>();
+    protected final List<PageHandler> menus = new ArrayList<PageHandler>();
+
     public static PageServlet getInstance() {
         return INSTANCE;
     }
@@ -86,7 +80,7 @@ public class PageServlet extends HttpServlet {
         }
         Collections.sort(menus, new MenuComparator());
     }
-    
+
     @Override
     protected final void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -96,7 +90,7 @@ public class PageServlet extends HttpServlet {
     @Override
     protected final void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        if (! response.isCommitted()) {
+        if (!response.isCommitted()) {
             PrintWriter writer = response.getWriter();
             String uri = request.getRequestURI();
             boolean isHtml = false;
@@ -127,7 +121,7 @@ public class PageServlet extends HttpServlet {
                 Page page = null;
                 try {
                     String query = request.getQueryString();
-                    page = pageHandler.handle(URL.valueOf(request.getRequestURL().toString() 
+                    page = pageHandler.handle(URL.valueOf(request.getRequestURL().toString()
                             + (query == null || query.length() == 0 ? "" : "?" + query)));
                 } catch (Throwable t) {
                     logger.warn(t.getMessage(), t);
@@ -162,7 +156,7 @@ public class PageServlet extends HttpServlet {
                             nav = ExtensionLoader.getExtensionLoader(PageHandler.class).getExtensionName(pageHandler);
                             nav = nav.substring(0, 1).toUpperCase() + nav.substring(1);
                         }
-                        if (! "index".equals(uri)) {
+                        if (!"index".equals(uri)) {
                             nav = "<a href=\"/\">Home</a> &gt; " + nav;
                         }
                         writeMenu(request, writer, nav);

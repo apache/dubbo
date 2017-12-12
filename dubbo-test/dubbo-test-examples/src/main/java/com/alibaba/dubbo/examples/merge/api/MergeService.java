@@ -19,11 +19,11 @@ import java.util.List;
 
 /**
  * MergeService
- * 
+ *
  * @author william.liangf
  */
 public interface MergeService {
-    
+
     List<String> mergeResult();
 
 }

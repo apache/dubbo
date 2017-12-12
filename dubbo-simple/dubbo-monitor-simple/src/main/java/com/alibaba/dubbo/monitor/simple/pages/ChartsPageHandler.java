@@ -15,21 +15,21 @@
  */
 package com.alibaba.dubbo.monitor.simple.pages;
 
+import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.utils.ConfigUtils;
+import com.alibaba.dubbo.container.page.Page;
+import com.alibaba.dubbo.container.page.PageHandler;
+import com.alibaba.dubbo.monitor.MonitorService;
+
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.container.page.Page;
-import com.alibaba.dubbo.container.page.PageHandler;
-import com.alibaba.dubbo.monitor.MonitorService;
-import com.alibaba.dubbo.monitor.simple.SimpleMonitorService;
-
 /**
  * ChartsPageHandler
- * 
+ *
  * @author william.liangf
  */
 public class ChartsPageHandler implements PageHandler {
@@ -44,7 +44,7 @@ public class ChartsPageHandler implements PageHandler {
             date = new SimpleDateFormat("yyyyMMdd").format(new Date());
         }
         List<List<String>> rows = new ArrayList<List<String>>();
-        String directory = SimpleMonitorService.getInstance().getChartsDirectory();
+        String directory = ConfigUtils.getProperty("dubbo.charts.directory");
         File chartsDir = new File(directory);
         String filename = directory + "/" + date + "/" + service;
         File serviceDir = new File(filename);
@@ -72,9 +72,9 @@ public class ChartsPageHandler implements PageHandler {
         nav.append(service);
         nav.append("&date=' + this.value;}\" />");
         return new Page(nav.toString(), "Charts (" + rows.size() + ")",
-                new String[] { "Method", "Requests per second (QPS)", "Average response time (ms)"}, rows);
+                new String[]{"Method", "Requests per second (QPS)", "Average response time (ms)"}, rows);
     }
-    
+
     private List<String> toRow(File dir, String uri) {
         List<String> row = new ArrayList<String>();
         row.add(dir.getName());
@@ -92,5 +92,5 @@ public class ChartsPageHandler implements PageHandler {
         }
         return row;
     }
-    
+
 }

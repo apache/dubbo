@@ -15,8 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.protocol.dubbo;
 
-import java.net.InetSocketAddress;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.Channel;
@@ -33,22 +31,24 @@ import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.protocol.AbstractInvoker;
 
+import java.net.InetSocketAddress;
+
 /**
- * 基于已有channel的invoker. 
- * 
+ * 基于已有channel的invoker.
+ *
  * @author chao.liuc
  */
 class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
 
     private final Channel channel;
-    private final String serviceKey ; 
+    private final String serviceKey;
+    private final ExchangeClient currentClient;
 
-    public ChannelWrappedInvoker(Class<T> serviceType, Channel channel, URL url, String serviceKey) {
-
-        super(serviceType, url, new String[] { Constants.GROUP_KEY,
-                Constants.TOKEN_KEY, Constants.TIMEOUT_KEY });
+    ChannelWrappedInvoker(Class<T> serviceType, Channel channel, URL url, String serviceKey) {
+        super(serviceType, url, new String[]{Constants.GROUP_KEY, Constants.TOKEN_KEY, Constants.TIMEOUT_KEY});
         this.channel = channel;
         this.serviceKey = serviceKey;
+        this.currentClient = new HeaderExchangeClient(new ChannelWrapper(this.channel), false);
     }
 
     @Override
@@ -58,15 +58,12 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
         inv.setAttachment(Constants.PATH_KEY, getInterface().getName());
         inv.setAttachment(Constants.CALLBACK_SERVICE_KEY, serviceKey);
 
-        ExchangeClient currentClient = new HeaderExchangeClient(new ChannelWrapper(this.channel));
-
         try {
             if (getUrl().getMethodParameter(invocation.getMethodName(), Constants.ASYNC_KEY, false)) { // 不可靠异步
-                currentClient.send(inv,getUrl().getMethodParameter(invocation.getMethodName(), Constants.SENT_KEY, false));
+                currentClient.send(inv, getUrl().getMethodParameter(invocation.getMethodName(), Constants.SENT_KEY, false));
                 return new RpcResult();
             }
-            int timeout = getUrl().getMethodParameter(invocation.getMethodName(),
-                    Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+            int timeout = getUrl().getMethodParameter(invocation.getMethodName(), Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
             if (timeout > 0) {
                 return (Result) currentClient.request(inv, timeout).get();
             } else {
@@ -83,12 +80,22 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
         }
     }
 
+    public void destroy() {
+        //channel资源的清空由channel创建者清除.
+//        super.destroy();
+//        try {
+//            channel.close();
+//        } catch (Throwable t) {
+//            logger.warn(t.getMessage(), t);
+//        }
+    }
+
     public static class ChannelWrapper extends ClientDelegate {
 
         private final Channel channel;
-        private final URL     url;
+        private final URL url;
 
-        public ChannelWrapper(Channel channel) {
+        ChannelWrapper(Channel channel) {
             this.channel = channel;
             this.url = channel.getUrl().addParameter("codec", DubboCodec.NAME);
         }
@@ -110,7 +117,7 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
         }
 
         public boolean isClosed() {
-            return channel == null ? true : channel.isClosed();
+            return channel == null || channel.isClosed();
         }
 
         public void reset(URL url) {
@@ -122,7 +129,7 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
         }
 
         public boolean isConnected() {
-            return channel == null ? false : channel.isConnected();
+            return channel != null && channel.isConnected();
         }
 
         public boolean hasAttribute(String key) {
@@ -152,17 +159,5 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
         public void send(Object message, boolean sent) throws RemotingException {
             channel.send(message, sent);
         }
-
     }
-
-    public void destroy() {
-        //channel资源的清空由channel创建者清除.
-//        super.destroy();
-//        try {
-//            channel.close();
-//        } catch (Throwable t) {
-//            logger.warn(t.getMessage(), t);
-//        }
-    }
-
 }

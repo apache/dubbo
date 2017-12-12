@@ -15,26 +15,27 @@
  */
 package com.alibaba.dubbo.registry.redis;
 
+import com.alibaba.dubbo.common.URL;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.registry.NotifyListener;
-
 /**
  * RedisRegistryTest
- * 
+ *
  * @author tony.chenl
  */
 public class RedisRegistryTest {
 
-    String            service     = "com.alibaba.dubbo.test.injvmServie";
-    URL               registryUrl = URL.valueOf("redis://239.255.255.255/");
-    URL               serviceUrl  = URL.valueOf("redis://redis/" + service
-                                                + "?notify=false&methods=test1,test2");
-    URL               consumerUrl = URL.valueOf("redis://consumer/" + service + "?notify=false&methods=test1,test2");
+    String service = "com.alibaba.dubbo.test.injvmServie";
+    URL registryUrl = URL.valueOf("redis://239.255.255.255/");
+    URL registryUrlWithPasswd = URL.valueOf("zookeeper://239.255.255.255?password=123456");
+    URL serviceUrl = URL.valueOf("redis://redis/" + service
+            + "?notify=false&methods=test1,test2");
+    URL consumerUrl = URL.valueOf("redis://consumer/" + service + "?notify=false&methods=test1,test2");
     // RedisRegistry registry    = new RedisRegistry(registryUrl);
+    // RedisRegistry registryWithPasswd  = new RedisRegistry(registryUrlWithPasswd);
 
     /**
      * @throws java.lang.Exception
@@ -48,7 +49,7 @@ public class RedisRegistryTest {
      */
     @Before
     public void setUp() throws Exception {
-        //registry.register(service, serviceUrl);
+        //registry.register(serviceUrl);
     }
 
     /**
@@ -91,6 +92,11 @@ public class RedisRegistryTest {
         Map<String, String> arg = registry.getSubscribed(service);
         assertEquals(subscribearg, StringUtils.toQueryString(arg));*/
 
+    }
+
+    @Test
+    public void testRedisPasswd() {
+        // Assert.assertNotNull(registryWithPasswd);
     }
 
 }

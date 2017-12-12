@@ -25,7 +25,8 @@ public final class ChannelBuffers {
 
     public static final ChannelBuffer EMPTY_BUFFER = new HeapChannelBuffer(0);
 
-    private ChannelBuffers() {}
+    private ChannelBuffers() {
+    }
 
     public static ChannelBuffer dynamicBuffer() {
         return dynamicBuffer(256);
@@ -86,7 +87,7 @@ public final class ChannelBuffers {
         }
 
         ChannelBuffer buffer = new ByteBufferBackedChannelBuffer(
-            ByteBuffer.allocateDirect(capacity));
+                ByteBuffer.allocateDirect(capacity));
         buffer.clear();
         return buffer;
     }

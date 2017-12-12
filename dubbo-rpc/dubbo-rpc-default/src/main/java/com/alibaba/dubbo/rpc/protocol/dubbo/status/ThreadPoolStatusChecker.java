@@ -15,10 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.protocol.dubbo.status;
 
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
@@ -26,9 +22,13 @@ import com.alibaba.dubbo.common.status.Status;
 import com.alibaba.dubbo.common.status.StatusChecker;
 import com.alibaba.dubbo.common.store.DataStore;
 
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+
 /**
  * ThreadPoolStatusChecker
- * 
+ *
  * @author william.liangf
  */
 @Activate
@@ -40,7 +40,7 @@ public class ThreadPoolStatusChecker implements StatusChecker {
 
         StringBuilder msg = new StringBuilder();
         Status.Level level = Status.Level.OK;
-        for(Map.Entry<String, Object> entry : executors.entrySet()) {
+        for (Map.Entry<String, Object> entry : executors.entrySet()) {
             String port = entry.getKey();
             ExecutorService executor = (ExecutorService) entry.getValue();
 
@@ -48,12 +48,12 @@ public class ThreadPoolStatusChecker implements StatusChecker {
                 ThreadPoolExecutor tp = (ThreadPoolExecutor) executor;
                 boolean ok = tp.getActiveCount() < tp.getMaximumPoolSize() - 1;
                 Status.Level lvl = Status.Level.OK;
-                if(!ok) {
+                if (!ok) {
                     level = Status.Level.WARN;
                     lvl = Status.Level.WARN;
                 }
 
-                if(msg.length() > 0) {
+                if (msg.length() > 0) {
                     msg.append(";");
                 }
                 msg.append("Pool status:" + lvl

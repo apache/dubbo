@@ -15,9 +15,9 @@
  */
 package com.alibaba.dubbo.common.utils;
 
-import java.io.Serializable;
-
 import org.apache.log4j.Level;
+
+import java.io.Serializable;
 
 /**
  * @author tony.chenl
@@ -28,35 +28,35 @@ public class Log implements Serializable {
     private Level logLevel;
     private String logMessage;
     private String logThread;
-    
+
     public String getLogName() {
         return logName;
     }
-    
+
     public void setLogName(String logName) {
         this.logName = logName;
     }
-    
+
     public Level getLogLevel() {
         return logLevel;
     }
-    
+
     public void setLogLevel(Level logLevel) {
         this.logLevel = logLevel;
     }
-    
+
     public String getLogMessage() {
         return logMessage;
     }
-    
+
     public void setLogMessage(String logMessage) {
         this.logMessage = logMessage;
     }
-    
+
     public String getLogThread() {
         return logThread;
     }
-    
+
     public void setLogThread(String logThread) {
         this.logThread = logThread;
     }
@@ -92,5 +92,5 @@ public class Log implements Serializable {
         } else if (!logThread.equals(other.logThread)) return false;
         return true;
     }
-    
+
 }

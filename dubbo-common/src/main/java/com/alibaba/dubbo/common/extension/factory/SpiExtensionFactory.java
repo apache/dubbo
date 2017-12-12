@@ -21,7 +21,7 @@ import com.alibaba.dubbo.common.extension.SPI;
 
 /**
  * SpiExtensionFactory
- * 
+ *
  * @author william.liangf
  */
 public class SpiExtensionFactory implements ExtensionFactory {

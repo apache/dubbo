@@ -21,15 +21,15 @@ import com.alibaba.dubbo.common.extension.SPI;
 
 /**
  * MonitorFactory. (SPI, Singleton, ThreadSafe)
- * 
+ *
  * @author william.liangf
  */
 @SPI("dubbo")
 public interface MonitorFactory {
-    
+
     /**
      * Create monitor.
-     * 
+     *
      * @param url
      * @return monitor
      */

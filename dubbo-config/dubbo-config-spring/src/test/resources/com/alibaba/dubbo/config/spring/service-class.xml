@@ -13,22 +13,23 @@
  - See the License for the specific language governing permissions and
  - limitations under the License.
 -->
-<beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
     http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd
     ">
-     
-    <dubbo:application name="service-class" />
-    
-    <dubbo:registry address="N/A" />
-    
-    <dubbo:protocol name="dubbo" port="20887" />
-    
+
+    <dubbo:application name="service-class"/>
+
+    <dubbo:registry address="N/A"/>
+
+    <dubbo:protocol name="dubbo" port="20887"/>
+
     <!-- 暴露服务配置 -->
-    <dubbo:service interface="com.alibaba.dubbo.config.spring.api.DemoService" class="com.alibaba.dubbo.config.spring.impl.DemoServiceImpl">
-    	<property name="prefix" value="welcome:" />
+    <dubbo:service interface="com.alibaba.dubbo.config.spring.api.DemoService"
+                   class="com.alibaba.dubbo.config.spring.impl.DemoServiceImpl">
+        <property name="prefix" value="welcome:"/>
     </dubbo:service>
-     
+
 </beans>

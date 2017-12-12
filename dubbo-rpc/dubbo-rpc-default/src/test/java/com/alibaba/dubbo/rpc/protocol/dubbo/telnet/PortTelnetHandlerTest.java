@@ -15,18 +15,7 @@
  */
 package com.alibaba.dubbo.rpc.protocol.dubbo.telnet;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import org.easymock.EasyMock;
-import org.easymock.IAnswer;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.logger.Logger;
-import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
 import com.alibaba.dubbo.remoting.exchange.Exchangers;
@@ -36,9 +25,17 @@ import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
 import com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService;
 import com.alibaba.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
+import org.easymock.EasyMock;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 /**
  * PortTelnetHandlerTest.java
- * 
+ *
  * @author tony.chenl
  */
 public class PortTelnetHandlerTest {
@@ -62,6 +59,11 @@ public class PortTelnetHandlerTest {
         ProtocolUtils.closeAll();
     }
 
+    /**
+     * NAT网络场景，server channel.getRemoteAddress()可能拿到的是网关或NAT转换后的地址
+     * 只判断端口
+     * @throws Exception
+     */
     @Test
     public void testListClient() throws Exception {
         ExchangeClient client1 = Exchangers.connect("dubbo://127.0.0.1:20887/demo");
@@ -73,8 +75,8 @@ public class PortTelnetHandlerTest {
         System.out.printf("Result: %s %n", result);
         System.out.printf("Client 1 Address %s %n", client1Addr);
         System.out.printf("Client 2 Address %s %n", client2Addr);
-        assertTrue(result.contains(client1Addr));
-        assertTrue(result.contains(client2Addr));
+        assertTrue(result.contains(String.valueOf(client1.getLocalAddress().getPort())));
+        assertTrue(result.contains(String.valueOf(client2.getLocalAddress().getPort())));
 
     }
 

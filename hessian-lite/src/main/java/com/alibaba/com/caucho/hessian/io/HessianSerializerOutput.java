@@ -56,12 +56,12 @@ import java.lang.reflect.Modifier;
 
 /**
  * Output stream for Hessian requests.
- *
+ * <p>
  * <p>HessianOutput is unbuffered, so any client needs to provide
  * its own buffering.
- *
+ * <p>
  * <h3>Serialization</h3>
- *
+ * <p>
  * <pre>
  * OutputStream os = new FileOutputStream("test.xml");
  * HessianOutput out = new HessianSerializerOutput(os);
@@ -69,9 +69,9 @@ import java.lang.reflect.Modifier;
  * out.writeObject(obj);
  * os.close();
  * </pre>
- *
+ * <p>
  * <h3>Writing an RPC Call</h3>
- *
+ * <p>
  * <pre>
  * OutputStream os = ...; // from http connection
  * HessianOutput out = new HessianSerializerOutput(os);
@@ -83,64 +83,61 @@ import java.lang.reflect.Modifier;
  * </pre>
  */
 public class HessianSerializerOutput extends HessianOutput {
-  /**
-   * Creates a new Hessian output stream, initialized with an
-   * underlying output stream.
-   *
-   * @param os the underlying output stream.
-   */
-  public HessianSerializerOutput(OutputStream os)
-  {
-    super(os);
-  }
-
-  /**
-   * Creates an uninitialized Hessian output stream.
-   */
-  public HessianSerializerOutput()
-  {
-  }
-
-  /**
-   * Applications which override this can do custom serialization.
-   *
-   * @param object the object to write.
-   */
-  public void writeObjectImpl(Object obj)
-    throws IOException
-  {
-    Class cl = obj.getClass();
-    
-    try {
-      Method method = cl.getMethod("writeReplace", new Class[0]);
-      Object repl = method.invoke(obj, new Object[0]);
-
-      writeObject(repl);
-      return;
-    } catch (Exception e) {
+    /**
+     * Creates a new Hessian output stream, initialized with an
+     * underlying output stream.
+     *
+     * @param os the underlying output stream.
+     */
+    public HessianSerializerOutput(OutputStream os) {
+        super(os);
     }
 
-    try {
-      writeMapBegin(cl.getName());
-      for (; cl != null; cl = cl.getSuperclass()) {
-        Field []fields = cl.getDeclaredFields();
-        for (int i = 0; i < fields.length; i++) {
-          Field field = fields[i];
+    /**
+     * Creates an uninitialized Hessian output stream.
+     */
+    public HessianSerializerOutput() {
+    }
 
-          if (Modifier.isTransient(field.getModifiers()) ||
-              Modifier.isStatic(field.getModifiers()))
-            continue;
+    /**
+     * Applications which override this can do custom serialization.
+     *
+     * @param object the object to write.
+     */
+    public void writeObjectImpl(Object obj)
+            throws IOException {
+        Class cl = obj.getClass();
 
-          // XXX: could parameterize the handler to only deal with public
-          field.setAccessible(true);
-      
-          writeString(field.getName());
-          writeObject(field.get(obj));
+        try {
+            Method method = cl.getMethod("writeReplace", new Class[0]);
+            Object repl = method.invoke(obj, new Object[0]);
+
+            writeObject(repl);
+            return;
+        } catch (Exception e) {
         }
-      }
-      writeMapEnd();
-    } catch (IllegalAccessException e) {
-      throw new IOExceptionWrapper(e);
+
+        try {
+            writeMapBegin(cl.getName());
+            for (; cl != null; cl = cl.getSuperclass()) {
+                Field[] fields = cl.getDeclaredFields();
+                for (int i = 0; i < fields.length; i++) {
+                    Field field = fields[i];
+
+                    if (Modifier.isTransient(field.getModifiers()) ||
+                            Modifier.isStatic(field.getModifiers()))
+                        continue;
+
+                    // XXX: could parameterize the handler to only deal with public
+                    field.setAccessible(true);
+
+                    writeString(field.getName());
+                    writeObject(field.get(obj));
+                }
+            }
+            writeMapEnd();
+        } catch (IllegalAccessException e) {
+            throw new IOExceptionWrapper(e);
+        }
     }
-  }
 }

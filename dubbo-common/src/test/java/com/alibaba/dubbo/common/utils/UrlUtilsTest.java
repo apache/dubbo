@@ -15,10 +15,10 @@
  */
 package com.alibaba.dubbo.common.utils;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.URL;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,10 +27,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.Test;
-
-import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.URL;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author tony.chenl
@@ -326,8 +326,8 @@ public class UrlUtilsTest {
     public void testIsServiceKeyMatch() throws Exception {
         URL url = URL.valueOf("test://127.0.0.0");
         URL pattern = url.addParameter(Constants.GROUP_KEY, "test")
-            .addParameter(Constants.INTERFACE_KEY, "test")
-            .addParameter(Constants.VERSION_KEY, "test");
+                .addParameter(Constants.INTERFACE_KEY, "test")
+                .addParameter(Constants.VERSION_KEY, "test");
         URL value = pattern;
         assertTrue(UrlUtils.isServiceKeyMatch(pattern, value));
 

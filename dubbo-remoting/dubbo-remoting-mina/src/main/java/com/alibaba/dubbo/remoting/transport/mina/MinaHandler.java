@@ -15,23 +15,23 @@
  */
 package com.alibaba.dubbo.remoting.transport.mina;
 
-import org.apache.mina.common.IoHandlerAdapter;
-import org.apache.mina.common.IoSession;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 
+import org.apache.mina.common.IoHandlerAdapter;
+import org.apache.mina.common.IoSession;
+
 /**
  * MinaHandler
- * 
+ *
  * @author william.liangf
  */
 public class MinaHandler extends IoHandlerAdapter {
 
     private final URL url;
-    
+
     private final ChannelHandler handler;
-    
+
     public MinaHandler(URL url, ChannelHandler handler) {
         if (url == null) {
             throw new IllegalArgumentException("url == null");

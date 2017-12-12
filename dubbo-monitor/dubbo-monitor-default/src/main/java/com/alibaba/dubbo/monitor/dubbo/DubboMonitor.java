@@ -15,6 +15,14 @@
  */
 package com.alibaba.dubbo.monitor.dubbo;
 
+import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.NamedThreadFactory;
+import com.alibaba.dubbo.monitor.Monitor;
+import com.alibaba.dubbo.monitor.MonitorService;
+import com.alibaba.dubbo.rpc.Invoker;
+
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,37 +33,29 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.logger.Logger;
-import com.alibaba.dubbo.common.logger.LoggerFactory;
-import com.alibaba.dubbo.common.utils.NamedThreadFactory;
-import com.alibaba.dubbo.monitor.Monitor;
-import com.alibaba.dubbo.monitor.MonitorService;
-import com.alibaba.dubbo.rpc.Invoker;
-
 /**
  * DubboMonitor
- * 
+ *
  * @author william.liangf
  */
 public class DubboMonitor implements Monitor {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(DubboMonitor.class);
-    
+
     private static final int LENGTH = 10;
-    
+
     // 定时任务执行器
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(3, new NamedThreadFactory("DubboMonitorSendTimer", true));
 
     // 统计信息收集定时器
     private final ScheduledFuture<?> sendFuture;
-    
+
     private final Invoker<MonitorService> monitorInvoker;
 
     private final MonitorService monitorService;
 
     private final long monitorInterval;
-    
+
     private final ConcurrentMap<Statistics, AtomicReference<long[]>> statisticsMap = new ConcurrentHashMap<Statistics, AtomicReference<long[]>>();
 
     public DubboMonitor(Invoker<MonitorService> monitorInvoker, MonitorService monitorService) {
@@ -74,7 +74,7 @@ public class DubboMonitor implements Monitor {
             }
         }, monitorInterval, monitorInterval, TimeUnit.MILLISECONDS);
     }
-    
+
     public void send() {
         if (logger.isInfoEnabled()) {
             logger.info("Send statistics to monitor " + getUrl());
@@ -95,13 +95,13 @@ public class DubboMonitor implements Monitor {
             long maxOutput = numbers[7];
             long maxElapsed = numbers[8];
             long maxConcurrent = numbers[9];
-             
+
             // 发送汇总信息
             URL url = statistics.getUrl()
                     .addParameters(MonitorService.TIMESTAMP, timestamp,
                             MonitorService.SUCCESS, String.valueOf(success),
-                            MonitorService.FAILURE, String.valueOf(failure), 
-                            MonitorService.INPUT, String.valueOf(input), 
+                            MonitorService.FAILURE, String.valueOf(failure),
+                            MonitorService.INPUT, String.valueOf(input),
                             MonitorService.OUTPUT, String.valueOf(output),
                             MonitorService.ELAPSED, String.valueOf(elapsed),
                             MonitorService.CONCURRENT, String.valueOf(concurrent),
@@ -109,9 +109,9 @@ public class DubboMonitor implements Monitor {
                             MonitorService.MAX_OUTPUT, String.valueOf(maxOutput),
                             MonitorService.MAX_ELAPSED, String.valueOf(maxElapsed),
                             MonitorService.MAX_CONCURRENT, String.valueOf(maxConcurrent)
-                            );
+                    );
             monitorService.collect(url);
-            
+
             // 减掉已统计数据
             long[] current;
             long[] update = new long[LENGTH];
@@ -132,10 +132,10 @@ public class DubboMonitor implements Monitor {
                     update[4] = current[4] - elapsed;
                     update[5] = current[5] - concurrent;
                 }
-            } while (! reference.compareAndSet(current, update));
+            } while (!reference.compareAndSet(current, update));
         }
     }
-    
+
     public void collect(URL url) {
         // 读写统计变量
         int success = url.getParameter(MonitorService.SUCCESS, 0);
@@ -179,12 +179,12 @@ public class DubboMonitor implements Monitor {
                 update[8] = current[8] > elapsed ? current[8] : elapsed;
                 update[9] = current[9] > concurrent ? current[9] : concurrent;
             }
-        } while (! reference.compareAndSet(current, update));
+        } while (!reference.compareAndSet(current, update));
     }
 
-	public List<URL> lookup(URL query) {
-		return monitorService.lookup(query);
-	}
+    public List<URL> lookup(URL query) {
+        return monitorService.lookup(query);
+    }
 
     public URL getUrl() {
         return monitorInvoker.getUrl();

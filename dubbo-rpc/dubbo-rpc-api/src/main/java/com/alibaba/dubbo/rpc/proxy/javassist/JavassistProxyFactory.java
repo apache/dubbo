@@ -24,8 +24,8 @@ import com.alibaba.dubbo.rpc.proxy.AbstractProxyInvoker;
 import com.alibaba.dubbo.rpc.proxy.InvokerInvocationHandler;
 
 /**
- * JavaassistRpcProxyFactory 
-
+ * JavaassistRpcProxyFactory
+ *
  * @author william.liangf
  */
 public class JavassistProxyFactory extends AbstractProxyFactory {
@@ -40,8 +40,8 @@ public class JavassistProxyFactory extends AbstractProxyFactory {
         final Wrapper wrapper = Wrapper.getWrapper(proxy.getClass().getName().indexOf('$') < 0 ? proxy.getClass() : type);
         return new AbstractProxyInvoker<T>(proxy, type, url) {
             @Override
-            protected Object doInvoke(T proxy, String methodName, 
-                                      Class<?>[] parameterTypes, 
+            protected Object doInvoke(T proxy, String methodName,
+                                      Class<?>[] parameterTypes,
                                       Object[] arguments) throws Throwable {
                 return wrapper.invokeMethod(proxy, methodName, parameterTypes, arguments);
             }

@@ -22,7 +22,7 @@ import com.alibaba.dubbo.rpc.cluster.Directory;
 
 /**
  * BroadcastCluster
- * 
+ *
  * @author william.liangf
  */
 public class BroadcastCluster implements Cluster {

@@ -15,8 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.protocol.dubbo.telnet;
 
-import java.lang.reflect.Method;
-
 import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.remoting.Channel;
@@ -27,9 +25,11 @@ import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
 import com.alibaba.dubbo.rpc.protocol.dubbo.filter.TraceFilter;
 
+import java.lang.reflect.Method;
+
 /**
  * TraceTelnetHandler
- * 
+ *
  * @author william.liangf
  */
 @Activate
@@ -57,7 +57,7 @@ public class TraceTelnetHandler implements TelnetHandler {
         } else {
             times = parts.length > 2 ? parts[2] : "1";
         }
-        if (! StringUtils.isInteger(times)) {
+        if (!StringUtils.isInteger(times)) {
             return "Illegal times " + times + ", must be integer.";
         }
         Invoker<?> invoker = null;
@@ -78,7 +78,7 @@ public class TraceTelnetHandler implements TelnetHandler {
                         break;
                     }
                 }
-                if (! found) {
+                if (!found) {
                     return "No such method " + method + " in class " + invoker.getInterface().getName();
                 }
             }

@@ -15,35 +15,35 @@
  */
 package com.alibaba.dubbo.container.logback;
 
-import org.junit.Test;
-
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.container.Container;
 
+import org.junit.Test;
+
 /**
  * StandaloneContainerTest
- * 
+ *
  * @author {@link "mailto:qq55355383@gmail.com" "yi.tong"}
  * @date May 30, 2012
  */
 public class LogbackContainerTest {
 
-	private static final Logger logger = LoggerFactory.getLogger(LogbackContainerTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(LogbackContainerTest.class);
 
-	@Test
-	public void testContainer() {
-		LogbackContainer container = (LogbackContainer) ExtensionLoader.getExtensionLoader(Container.class)
-				.getExtension("logback");
-		container.start();
+    @Test
+    public void testContainer() {
+        LogbackContainer container = (LogbackContainer) ExtensionLoader.getExtensionLoader(Container.class)
+                .getExtension("logback");
+        container.start();
 
-		logger.debug("Test debug:" + this.getClass().getName());
-		logger.warn("Test warn:" + this.getClass().getName());
-		logger.info("Test info:" + this.getClass().getName());
-		logger.error("Test error:" + this.getClass().getName());
+        logger.debug("Test debug:" + this.getClass().getName());
+        logger.warn("Test warn:" + this.getClass().getName());
+        logger.info("Test info:" + this.getClass().getName());
+        logger.error("Test error:" + this.getClass().getName());
 
-		container.stop();
-	}
+        container.stop();
+    }
 
 }

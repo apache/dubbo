@@ -15,8 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.protocol.dubbo.telnet;
 
-import java.lang.reflect.Method;
-
 import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
 import com.alibaba.dubbo.remoting.Channel;
@@ -26,9 +24,11 @@ import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
+import java.lang.reflect.Method;
+
 /**
  * ListTelnetHandler
- * 
+ *
  * @author william.liangf
  */
 @Activate
