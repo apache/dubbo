@@ -67,7 +67,6 @@ public class SimpleMonitorService implements MonitorService {
     private static final String[] types = {SUCCESS, FAILURE, ELAPSED, CONCURRENT, MAX_ELAPSED, MAX_CONCURRENT};
 
     private static final String POISON_PROTOCOL = "poison";
-    private static SimpleMonitorService INSTANCE = null;
     // 定时任务执行器
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1, new NamedThreadFactory("DubboMonitorTimer", true));
     // 图表绘制定时器
@@ -107,11 +106,8 @@ public class SimpleMonitorService implements MonitorService {
                 }
             }
         }, 1, 300, TimeUnit.SECONDS);
-        INSTANCE = this;
-    }
-
-    public static SimpleMonitorService getInstance() {
-        return INSTANCE;
+        statisticsDirectory = ConfigUtils.getProperty("dubbo.statistics.directory");
+        chartsDirectory = ConfigUtils.getProperty("dubbo.charts.directory");
     }
 
     private static void createChart(String key, String service, String method, String date, String[] types, Map<String, long[]> data, double[] summary, String path) {
@@ -178,26 +174,6 @@ public class SimpleMonitorService implements MonitorService {
             return new SimpleDateFormat("yyyy-MM-dd").format(new SimpleDateFormat("yyyyMMdd").parse(date));
         } catch (ParseException e) {
             return date;
-        }
-    }
-
-    public String getStatisticsDirectory() {
-        return statisticsDirectory;
-    }
-
-    public void setStatisticsDirectory(String statistics) {
-        if (statistics != null) {
-            this.statisticsDirectory = statistics;
-        }
-    }
-
-    public String getChartsDirectory() {
-        return chartsDirectory;
-    }
-
-    public void setChartsDirectory(String charts) {
-        if (charts != null) {
-            this.chartsDirectory = charts;
         }
     }
 

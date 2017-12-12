@@ -39,7 +39,41 @@ public class DubboComponentScanRegistrarTest {
 
         ConsumerConfiguration consumerConfiguration = consumerContext.getBean(ConsumerConfiguration.class);
 
-        value = consumerConfiguration.getDemoService().sayName("Mercy");
+        demoService = consumerConfiguration.getDemoService();
+
+        value = demoService.sayName("Mercy");
+
+        Assert.assertEquals("Hello,Mercy", value);
+
+        ConsumerConfiguration.Child child = consumerContext.getBean(ConsumerConfiguration.Child.class);
+
+        // From Child
+
+        demoService = child.getDemoServiceFromChild();
+
+        Assert.assertNotNull(demoService);
+
+        value = demoService.sayName("Mercy");
+
+        Assert.assertEquals("Hello,Mercy", value);
+
+        // From Parent
+
+        demoService = child.getDemoServiceFromParent();
+
+        Assert.assertNotNull(demoService);
+
+        value = demoService.sayName("Mercy");
+
+        Assert.assertEquals("Hello,Mercy", value);
+
+        // From Ancestor
+
+        demoService = child.getDemoServiceFromAncestor();
+
+        Assert.assertNotNull(demoService);
+
+        value = demoService.sayName("Mercy");
 
         Assert.assertEquals("Hello,Mercy", value);
 

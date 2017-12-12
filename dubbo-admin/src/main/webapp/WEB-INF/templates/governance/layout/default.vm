@@ -22,7 +22,7 @@
         #if($_method != "index")$i18n.get($_method)#end $i18n.get($_type)
     </h2></div>
     <div class="crumbs">
-        <a href="/">$i18n.get("home")</a> &gt; $i18n.get("governance")
+        <a href="$rootContextPath.getURI("/")">$i18n.get("home")</a> &gt; $i18n.get("governance")
         #if($application && $application != '*')
             &gt;
             $i18n.get("applications")
@@ -31,7 +31,8 @@
         #if($service && $service != '*')
             &gt;
             #if($application && $application != '*')
-                <a href="/governance/applications/$application/services">$i18n.get("services")</a>
+                <a href="$rootContextPath.getURI("/governance/applications")/$application/services">$i18n.get(
+                    "services")</a>
             #else
                 $i18n.get("services")
             #end
@@ -39,7 +40,8 @@
         #elseif($address && $address != '*')
             &gt;
             #if($application && $application != '*')
-                <a href="/governance/applications/$application/addresses">$i18n.get("addresses")</a>
+                <a href="$rootContextPath.getURI("/governance/applications")/$application/addresses">$i18n.get(
+                    "addresses")</a>
             #else
                 $i18n.get("addresses")
             #end
@@ -172,7 +174,7 @@
         </tr>
     </table>
 </div>
-<form id="favoritesForm" method="POST" action="/governance/favorites/create">
+<form id="favoritesForm" method="POST" action="$rootContextPath.getURI("governance/favorites/create")">
     <input name="search_name" id="search_name" type="hidden"/>
     <input name="search_value" id="search_value" type="hidden"/>
 </form>
@@ -192,7 +194,7 @@
                 || keyword == '$i18n.get("please.input.address")') {
             keyword = '*';
         }
-        window.location.href = '/governance/' + searchType + '?keyword=' + keyword;
+        window.location.href = '$rootContextPath.getURI("governance/")' + searchType + '?keyword=' + keyword;
     }
     function initSearch() {
         #if($application && ! $service && ! $address)

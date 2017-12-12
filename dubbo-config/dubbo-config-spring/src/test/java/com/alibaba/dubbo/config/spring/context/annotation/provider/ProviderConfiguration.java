@@ -3,6 +3,7 @@ package com.alibaba.dubbo.config.spring.context.annotation.provider;
 import com.alibaba.dubbo.config.spring.context.annotation.DubboComponentScan;
 
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.context.annotation.PropertySource;
 
 /**
  * @author ken.lj
@@ -10,6 +11,7 @@ import org.springframework.context.annotation.ImportResource;
  */
 @DubboComponentScan(basePackages = "com.alibaba.dubbo.config.spring.context.annotation")
 @ImportResource("META-INF/spring/dubbo-annotation-provider.xml")
+@PropertySource("META-INF/default.properties")
 public class ProviderConfiguration {
 
 
