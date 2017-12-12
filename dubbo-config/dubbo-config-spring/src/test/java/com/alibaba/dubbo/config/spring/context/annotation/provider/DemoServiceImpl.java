@@ -1,4 +1,4 @@
-package com.alibaba.dubbo.config.spring.context.annotation;
+package com.alibaba.dubbo.config.spring.context.annotation.provider;
 
 import com.alibaba.dubbo.config.spring.api.Box;
 import com.alibaba.dubbo.config.spring.api.DemoService;

@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @date 2017/11/3
  */
-@DubboComponentScan(basePackages = "com.alibaba.dubbo.config.spring.context.annotation")
+@DubboComponentScan(basePackages = "com.alibaba.dubbo.config.spring.context.annotation.provider")
 @PropertySource("META-INF/default.properties")
 @EnableTransactionManagement
 public class ProviderConfiguration {
