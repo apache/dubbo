@@ -263,6 +263,21 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-qos</artifactId>
+            <version>${project.parent.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-lang3</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-all</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -352,6 +367,7 @@
                                     <include>com.alibaba:dubbo-container-jetty</include>
                                     <include>com.alibaba:dubbo-container-log4j</include>
                                     <include>com.alibaba:dubbo-container-logback</include>
+                                    <include>com.alibaba:dubbo-qos</include>
                                 </includes>
                             </artifactSet>
                             <transformers>
@@ -498,6 +514,11 @@
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>META-INF/dubbo/internal/com.alibaba.dubbo.common.logger.LoggerAdapter
+                                    </resource>
+                                </transformer>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/dubbo/internal/com.alibaba.dubbo.qos.command.BaseCommand
                                     </resource>
                                 </transformer>
                             </transformers>

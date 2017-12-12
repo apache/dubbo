@@ -85,6 +85,7 @@
         <spring_version>4.3.10.RELEASE</spring_version>
         <javassist_version>3.20.0-GA</javassist_version>
         <netty_version>3.2.5.Final</netty_version>
+        <netty4_version>4.0.35.Final</netty4_version>
         <mina_version>1.1.7</mina_version>
         <grizzly_version>2.1.4</grizzly_version>
         <httpclient_version>4.5.3</httpclient_version>
@@ -166,6 +167,11 @@
                 <groupId>org.jboss.netty</groupId>
                 <artifactId>netty</artifactId>
                 <version>${netty_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-all</artifactId>
+                <version>${netty4_version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.mina</groupId>

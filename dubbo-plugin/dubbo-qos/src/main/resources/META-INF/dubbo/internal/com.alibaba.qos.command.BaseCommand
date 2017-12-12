@@ -1,5 +1,0 @@
-online=com.alibaba.qos.command.CommandImpl.Online
-help=com.alibaba.qos.command.CommandImpl.Help
-quit=com.alibaba.qos.command.CommandImpl.Quit
-ls=com.alibaba.qos.command.CommandImpl.Ls
-offline=com.alibaba.qos.command.CommandImpl.Offline
