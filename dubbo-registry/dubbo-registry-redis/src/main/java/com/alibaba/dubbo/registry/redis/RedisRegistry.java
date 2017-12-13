@@ -183,7 +183,7 @@ public class RedisRegistry extends FailbackRegistry {
                         break;//  如果服务器端已同步数据，只需写入单台机器
                     }
                 } finally {
-                    jedisPool.returnResource(jedis);
+                    jedis.close();
                 }
             } catch (Throwable t) {
                 logger.warn("Failed to write provider heartbeat to redis registry. registry: " + entry.getKey() + ", cause: " + t.getMessage(), t);
@@ -230,7 +230,7 @@ public class RedisRegistry extends FailbackRegistry {
                         return true; // 至少需单台机器可用
                     }
                 } finally {
-                    jedisPool.returnResource(jedis);
+                    jedis.close();
                 }
             } catch (Throwable t) {
             }
@@ -282,7 +282,7 @@ public class RedisRegistry extends FailbackRegistry {
                         break; //  如果服务器端已同步数据，只需写入单台机器
                     }
                 } finally {
-                    jedisPool.returnResource(jedis);
+                    jedis.close();
                 }
             } catch (Throwable t) {
                 exception = new RpcException("Failed to register service to redis registry. registry: " + entry.getKey() + ", service: " + url + ", cause: " + t.getMessage(), t);
@@ -315,7 +315,7 @@ public class RedisRegistry extends FailbackRegistry {
                         break; //  如果服务器端已同步数据，只需写入单台机器
                     }
                 } finally {
-                    jedisPool.returnResource(jedis);
+                    jedis.close();
                 }
             } catch (Throwable t) {
                 exception = new RpcException("Failed to unregister service to redis registry. registry: " + entry.getKey() + ", service: " + url + ", cause: " + t.getMessage(), t);
@@ -373,7 +373,7 @@ public class RedisRegistry extends FailbackRegistry {
                     success = true;
                     break; // 只需读一个服务器的数据
                 } finally {
-                    jedisPool.returnResource(jedis);
+                    jedis.close();
                 }
             } catch (Throwable t) { // 尝试下一个服务器
                 exception = new RpcException("Failed to subscribe service from redis registry. registry: " + entry.getKey() + ", service: " + url + ", cause: " + t.getMessage(), t);
@@ -498,7 +498,7 @@ public class RedisRegistry extends FailbackRegistry {
                     try {
                         doNotify(jedis, key);
                     } finally {
-                        jedisPool.returnResource(jedis);
+                        jedis.close();
                     }
                 } catch (Throwable t) { // TODO 通知失败没有恢复机制保障
                     logger.error(t.getMessage(), t);
@@ -602,7 +602,7 @@ public class RedisRegistry extends FailbackRegistry {
                                         }
                                         break;
                                     } finally {
-                                        jedisPool.returnBrokenResource(jedis);
+                                        jedis.close();
                                     }
                                 } catch (Throwable t) { // 重试另一台
                                     logger.warn("Failed to subscribe service from redis registry. registry: " + entry.getKey() + ", cause: " + t.getMessage(), t);

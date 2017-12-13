@@ -17,27 +17,13 @@ package com.alibaba.dubbo.registry.common.route;
 
 import com.alibaba.dubbo.registry.common.domain.Route;
 import com.alibaba.dubbo.registry.common.route.RouteRule.MatchPair;
-
-import junit.framework.Assert;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.matchers.JUnitMatchers;
+import org.hamcrest.CoreMatchers;
+import org.junit.*;
 
 import java.text.ParseException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * @author william.liangf
@@ -118,21 +104,21 @@ public class RouteRuleTest {
             RouteRule.parse((Route) null);
             fail();
         } catch (ParseException expected) {
-            assertThat(expected.getMessage(), JUnitMatchers.containsString("null route"));
+            assertThat(expected.getMessage(), CoreMatchers.containsString("null route"));
         }
 
         try {
             RouteRule.parse("", "");
             fail();
         } catch (ParseException expected) {
-            assertThat(expected.getMessage(), JUnitMatchers.containsString("Illegal route rule without then express"));
+            assertThat(expected.getMessage(), CoreMatchers.containsString("Illegal route rule without then express"));
         }
 
         try {
             RouteRule.parse("  ", "  ");
             fail();
         } catch (ParseException expected) {
-            assertThat(expected.getMessage(), JUnitMatchers.containsString("Illegal route rule without then express"));
+            assertThat(expected.getMessage(), CoreMatchers.containsString("Illegal route rule without then express"));
         }
     }
     
@@ -153,7 +139,7 @@ public class RouteRuleTest {
             RouteRule.parse(expr, "");
             Assert.fail();
         } catch (ParseException expected) {
-            assertThat(expected.getMessage(), JUnitMatchers.containsString("Illegal route rule without then express"));
+            assertThat(expected.getMessage(), CoreMatchers.containsString("Illegal route rule without then express"));
         }
     }
 
@@ -164,16 +150,16 @@ public class RouteRuleTest {
                     "provider.application=morgan&provider.host=10.16.26.51&provider.port=1020");
             Assert.fail();
         } catch (ParseException expected) {
-            assertThat(expected.getMessage(), JUnitMatchers.containsString("Illegal route rule"));
-            assertThat(expected.getMessage(), JUnitMatchers.containsString("before \"valueOnnnnnly\"."));
+            assertThat(expected.getMessage(), CoreMatchers.containsString("Illegal route rule"));
+            assertThat(expected.getMessage(), CoreMatchers.containsString("before \"valueOnnnnnly\"."));
         }
         try {
             RouteRule.parse("service=com.alibaba.MemberService,AuthService&consumer.host=127.0.0.1&=valueOnnnnnly",
                     "provider.application=morgan&provider.host=10.16.26.51&provider.port=1020");
             Assert.fail();
         } catch (ParseException expected) {
-            assertThat(expected.getMessage(), JUnitMatchers.containsString("Illegal route rule"));
-            assertThat(expected.getMessage(), JUnitMatchers.containsString("before \"valueOnnnnnly\"."));
+            assertThat(expected.getMessage(), CoreMatchers.containsString("Illegal route rule"));
+            assertThat(expected.getMessage(), CoreMatchers.containsString("before \"valueOnnnnnly\"."));
         }
     }
 
