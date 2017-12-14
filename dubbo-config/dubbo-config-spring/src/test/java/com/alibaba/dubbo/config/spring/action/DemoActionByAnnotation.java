@@ -16,7 +16,6 @@
 package com.alibaba.dubbo.config.spring.action;
 
 import com.alibaba.dubbo.config.spring.api.DemoService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**

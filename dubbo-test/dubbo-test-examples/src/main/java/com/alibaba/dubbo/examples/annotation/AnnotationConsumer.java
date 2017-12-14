@@ -15,9 +15,13 @@
  */
 package com.alibaba.dubbo.examples.annotation;
 
+import com.alibaba.dubbo.config.spring.context.annotation.EnableDubbo;
 import com.alibaba.dubbo.examples.annotation.action.AnnotationAction;
 
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 
 /**
  * CallbackConsumer
@@ -27,13 +31,20 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class AnnotationConsumer {
 
     public static void main(String[] args) throws Exception {
-        String config = AnnotationConsumer.class.getPackage().getName().replace('.', '/') + "/annotation-consumer.xml";
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(config);
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfiguration.class);
         context.start();
         final AnnotationAction annotationAction = (AnnotationAction) context.getBean("annotationAction");
         String hello = annotationAction.doSayHello("world");
         System.out.println("result :" + hello);
         System.in.read();
+    }
+
+    @Configuration
+    @EnableDubbo(scanBasePackages = "com.alibaba.dubbo.examples.annotation.action", multipleConfig = true)
+    @PropertySource("classpath:/com/alibaba/dubbo/examples/annotation/dubbo-consumer.properties")
+    @ComponentScan(value = {"com.alibaba.dubbo.examples.annotation.action"})
+    static public class ConsumerConfiguration {
+
     }
 
 }
