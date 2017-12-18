@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -49,11 +50,10 @@ import java.util.concurrent.TimeUnit;
 /**
  * MulticastRegistry
  *
- * @author william.liangf
  */
 public class MulticastRegistry extends FailbackRegistry {
 
-    // 日志输出
+    // logging output
     private static final Logger logger = LoggerFactory.getLogger(MulticastRegistry.class);
 
     private static final int DEFAULT_MULTICAST_PORT = 1234;
@@ -120,8 +120,8 @@ public class MulticastRegistry extends FailbackRegistry {
             this.cleanFuture = cleanExecutor.scheduleWithFixedDelay(new Runnable() {
                 public void run() {
                     try {
-                        clean(); // 清除过期者
-                    } catch (Throwable t) { // 防御性容错
+                        clean(); // Remove the expired
+                    } catch (Throwable t) { // Defensive fault tolerance
                         logger.error("Unexpected exception occur at clean expired provider, cause: " + t.getMessage(), t);
                     }
                 }
@@ -216,8 +216,8 @@ public class MulticastRegistry extends FailbackRegistry {
                     if (UrlUtils.isMatch(url, u)) {
                         String host = remoteAddress != null && remoteAddress.getAddress() != null
                                 ? remoteAddress.getAddress().getHostAddress() : url.getIp();
-                        if (url.getParameter("unicast", true) // 消费者的机器是否只有一个进程
-                                && !NetUtils.getLocalHost().equals(host)) { // 同机器多进程不能用unicast单播信息，否则只会有一个进程收到信息
+                        if (url.getParameter("unicast", true) // Whether the consumer's machine has only one process
+                                && !NetUtils.getLocalHost().equals(host)) { // Multiple processes in the same machine cannot be unicast with unicast or there will be only one process receiving information
                             unicast(Constants.REGISTER + " " + u.toFullString(), host);
                         } else {
                             broadcast(Constants.REGISTER + " " + u.toFullString());
