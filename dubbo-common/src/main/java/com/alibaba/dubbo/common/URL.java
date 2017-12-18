@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -64,8 +65,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * for this case, url protocol = null, url host = home, url path = user1/router.js
  * </ul>
  *
- * @author william.liangf
- * @author ding.lid
  * @see java.net.URL
  * @see java.net.URI
  */
@@ -306,15 +305,12 @@ public final class URL implements Serializable {
     }
 
     /**
-     * 获取IP地址.
-     * <p>
-     * 请注意：
-     * 如果和Socket的地址对比，
-     * 或用地址作为Map的Key查找，
-     * 请使用IP而不是Host，
-     * 否则配置域名会有问题
+     * Fetch IP address for this URL.
      *
-     * @return ip
+     * Pls. note that IP should be used instead of Host when to compare with socket's address or to search in a map
+     * which use address as its key.
+     *
+     * @return ip in string format
      */
     public String getIp() {
         if (ip == null) {
@@ -445,14 +441,14 @@ public final class URL implements Serializable {
     }
 
     private Map<String, Number> getNumbers() {
-        if (numbers == null) { // 允许并发重复创建
+        if (numbers == null) { // concurrent initialization is tolerant
             numbers = new ConcurrentHashMap<String, Number>();
         }
         return numbers;
     }
 
     private Map<String, URL> getUrls() {
-        if (urls == null) { // 允许并发重复创建
+        if (urls == null) { // concurrent initialization is tolerant
             urls = new ConcurrentHashMap<String, URL>();
         }
         return urls;
@@ -929,7 +925,7 @@ public final class URL implements Serializable {
                 || value == null || value.length() == 0) {
             return this;
         }
-        // 如果没有修改，直接返回。
+        // if value doesn't change, return immediately
         if (value.equals(getParameters().get(key))) { // value != null
             return this;
         }
@@ -955,7 +951,7 @@ public final class URL implements Serializable {
     /**
      * Add parameters to a new url.
      *
-     * @param parameters
+     * @param parameters parameters in key-value pairs
      * @return A new URL
      */
     public URL addParameters(Map<String, String> parameters) {
@@ -978,7 +974,7 @@ public final class URL implements Serializable {
                 }
             }
         }
-        // 如果没有修改，直接返回。
+        // return immediately if there's no change
         if (hasAndEqual) return this;
 
         Map<String, String> map = new HashMap<String, String>(getParameters());
