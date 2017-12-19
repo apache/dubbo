@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
  */
 public class Constants {
 
+    // 常量
     public static final String PROVIDER = "provider";
 
     public static final String CONSUMER = "consumer";
