@@ -305,10 +305,9 @@ public final class URL implements Serializable {
     }
 
     /**
-     * Fetch IP address for this URL.
+     * 获取IP地址
      *
-     * Pls. note that IP should be used instead of Host when to compare with socket's address or to search in a map
-     * which use address as its key.
+     * 请注意：如果和Socket的地址对比，或用地址作为Map的Key查找，请使用IP而不是Host，否则配置域名会有问题
      *
      * @return ip in string format
      */
@@ -441,14 +440,14 @@ public final class URL implements Serializable {
     }
 
     private Map<String, Number> getNumbers() {
-        if (numbers == null) { // concurrent initialization is tolerant
+        if (numbers == null) { // 允许并发重复创建
             numbers = new ConcurrentHashMap<String, Number>();
         }
         return numbers;
     }
 
     private Map<String, URL> getUrls() {
-        if (urls == null) { // concurrent initialization is tolerant
+        if (urls == null) { // 允许并发重复创建
             urls = new ConcurrentHashMap<String, URL>();
         }
         return urls;

@@ -117,7 +117,7 @@ public class ClassUtils {
                 try {
                     return arrayForName("java.lang." + className);
                 } catch (ClassNotFoundException e2) {
-                    // ignore, let the original exception be thrown
+                    // 忽略尝试异常, 抛出原始异常
                 }
             }
             throw e;
@@ -259,9 +259,9 @@ public class ClassUtils {
         try {
             ParameterizedType parameterizedType = ((ParameterizedType) cls.getGenericInterfaces()[0]);
             Object genericClass = parameterizedType.getActualTypeArguments()[i];
-            if (genericClass instanceof ParameterizedType) {
+            if (genericClass instanceof ParameterizedType) { // 处理多级泛型
                 return (Class<?>) ((ParameterizedType) genericClass).getRawType();
-            } else if (genericClass instanceof GenericArrayType) {
+            } else if (genericClass instanceof GenericArrayType) { // 处理数组泛型
                 return (Class<?>) ((GenericArrayType) genericClass).getGenericComponentType();
             } else if (genericClass != null) {
                 return (Class<?>) genericClass;

@@ -1,20 +1,3 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.alibaba.dubbo.common;
 
 import java.util.concurrent.ExecutorService;
@@ -25,7 +8,6 @@ import java.util.regex.Pattern;
  */
 public class Constants {
 
-    // 常量
     public static final String PROVIDER = "provider";
 
     public static final String CONSUMER = "consumer";
@@ -402,7 +384,7 @@ public class Constants {
     public static final String MERGER_KEY = "merger";
 
     /**
-     * To decide whether to exclude unavailable invoker from the cluster
+     * 集群时是否排除非available的invoker
      */
     public static final String CLUSTER_AVAILABLE_CHECK_KEY = "cluster.availablecheck";
 
@@ -414,7 +396,7 @@ public class Constants {
     public static final boolean DEFAULT_CLUSTER_AVAILABLE_CHECK = true;
 
     /**
-     * To decide whether to enable sticky strategy for cluster
+     * 集群时是否启用sticky策略
      */
     public static final String CLUSTER_STICKY_KEY = "sticky";
 
@@ -426,39 +408,39 @@ public class Constants {
     public static final boolean DEFAULT_CLUSTER_STICKY = false;
 
     /**
-     * To decide whether to make connection when the client is created
+     * 创建client时，是否先要建立连接
      */
     public static final String LAZY_CONNECT_KEY = "lazy";
 
     /**
-     * The initial state for lazy connection
+     * lazy连接的初始状态是连接状态还是非连接状态
      */
     public static final String LAZY_CONNECT_INITIAL_STATE_KEY = "connect.lazy.initial.state";
 
     /**
-     * The default value of lazy connection's initial state: true
+     * lazy连接的初始状态默认是连接状态
      *
      * @see #LAZY_CONNECT_INITIAL_STATE_KEY
      */
     public static final boolean DEFAULT_LAZY_CONNECT_INITIAL_STATE = true;
 
     /**
-     * To decide whether register center saves file synchronously, the default value is asynchronously
+     * 注册中心是否同步存储文件，默认异步
      */
     public static final String REGISTRY_FILESAVE_SYNC_KEY = "save.file";
 
     /**
-     * Period of registry center's retry interval
+     * 注册中心失败事件重试事件
      */
     public static final String REGISTRY_RETRY_PERIOD_KEY = "retry.period";
 
     /**
-     * Default value for the period of retry interval in milliseconds: 5000
+     * 重试周期，默认5000毫秒
      */
     public static final int DEFAULT_REGISTRY_RETRY_PERIOD = 5 * 1000;
 
     /**
-     * Reconnection period in milliseconds for register center
+     * 注册中心自动重连时间
      */
     public static final String REGISTRY_RECONNECT_PERIOD_KEY = "reconnect.period";
 
@@ -469,12 +451,12 @@ public class Constants {
     public static final int DEFAULT_SESSION_TIMEOUT = 60 * 1000;
 
     /**
-     * The key name for export URL in register center
+     * 注册中心导出URL参数的KEY
      */
     public static final String EXPORT_KEY = "export";
 
     /**
-     * The key name for reference URL in register center
+     * 注册中心引用URL参数的KEY
      */
     public static final String REFER_KEY = "refer";
 
@@ -484,7 +466,7 @@ public class Constants {
     public static final String CALLBACK_SERVICE_KEY = "callback.service.instid";
 
     /**
-     * The limit of callback service instances for one interface on every client
+     * 每个客户端同一个接口 callback服务实例的限制
      */
     public static final String CALLBACK_INSTANCES_LIMIT_KEY = "callbacks";
 
@@ -500,7 +482,7 @@ public class Constants {
     public static final String IS_CALLBACK_SERVICE = "is_callback_service";
 
     /**
-     * Invokers in channel's callback
+     * channel中callback的invokers
      */
     public static final String CHANNEL_CALLBACK_KEY = "channel.callback.invokers.key";
 

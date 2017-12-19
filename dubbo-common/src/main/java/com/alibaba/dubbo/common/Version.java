@@ -37,7 +37,7 @@ public final class Version {
     private static final boolean COMPATIBLE = hasResource("com/taobao/remoting/impl/ConnectionRequest.class");
 
     static {
-        // check if there's duplicated jar
+        // 检查是否存在重复的jar包
         Version.checkDuplicate(Version.class);
     }
 
@@ -66,13 +66,13 @@ public final class Version {
 
     public static String getVersion(Class<?> cls, String defaultVersion) {
         try {
-            // find version info from MANIFEST.MF first
+            // 首先查找MANIFEST.MF规范中的版本号
             String version = cls.getPackage().getImplementationVersion();
             if (version == null || version.length() == 0) {
                 version = cls.getPackage().getSpecificationVersion();
             }
             if (version == null || version.length() == 0) {
-                // guess version fro jar file name if nothing's found from MANIFEST.MF
+                // 如果MANIFEST.MF规范中没有版本号，基于jar包名获取版本号
                 CodeSource codeSource = cls.getProtectionDomain().getCodeSource();
                 if (codeSource == null) {
                     logger.info("No codeSource for class " + cls.getName() + " when getVersion, use default version " + defaultVersion);
@@ -100,10 +100,10 @@ public final class Version {
                     }
                 }
             }
-            // return default version if no version info is found
+            // 返回版本号，如果为空返回缺省版本号
             return version == null || version.length() == 0 ? defaultVersion : version;
         } catch (Throwable e) {
-            // return default version when any exception is thrown
+            // 忽略异常，返回缺省版本号
             logger.error("return default version, ignore exception " + e.getMessage(), e);
             return defaultVersion;
         }
@@ -119,7 +119,7 @@ public final class Version {
 
     public static void checkDuplicate(String path, boolean failOnError) {
         try {
-            // search in caller's classloader
+            // 在ClassPath搜文件
             Enumeration<URL> urls = ClassHelper.getCallerClassLoader(Version.class).getResources(path);
             Set<String> files = new HashSet<String>();
             while (urls.hasMoreElements()) {
@@ -131,7 +131,7 @@ public final class Version {
                     }
                 }
             }
-            // duplicated jar is found
+            // 如果有多个，就表示重复
             if (files.size() > 1) {
                 String error = "Duplicate class " + path + " in " + files.size() + " jar " + files;
                 if (failOnError) {
