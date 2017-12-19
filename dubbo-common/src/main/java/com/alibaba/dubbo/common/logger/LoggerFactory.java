@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,16 +29,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * 日志输出器工厂
- *
- * @author william.liangf
+ * Logger factory
  */
 public class LoggerFactory {
 
     private static final ConcurrentMap<String, FailsafeLogger> LOGGERS = new ConcurrentHashMap<String, FailsafeLogger>();
     private static volatile LoggerAdapter LOGGER_ADAPTER;
 
-    // 查找常用的日志框架
+    // search common-used logging frameworks
     static {
         String logger = System.getProperty("dubbo.application.logger");
         if ("slf4j".equals(logger)) {
@@ -75,9 +74,9 @@ public class LoggerFactory {
     }
 
     /**
-     * 设置日志输出器供给器
+     * Set logger provider
      *
-     * @param loggerAdapter 日志输出器供给器
+     * @param loggerAdapter logger provider
      */
     public static void setLoggerAdapter(LoggerAdapter loggerAdapter) {
         if (loggerAdapter != null) {
@@ -91,10 +90,10 @@ public class LoggerFactory {
     }
 
     /**
-     * 获取日志输出器
+     * Get logger provider
      *
-     * @param key 分类键
-     * @return 日志输出器, 后验条件: 不返回null.
+     * @param key the returned logger will be named after clazz
+     * @return logger
      */
     public static Logger getLogger(Class<?> key) {
         FailsafeLogger logger = LOGGERS.get(key.getName());
@@ -106,10 +105,10 @@ public class LoggerFactory {
     }
 
     /**
-     * 获取日志输出器
+     * Get logger provider
      *
-     * @param key 分类键
-     * @return 日志输出器, 后验条件: 不返回null.
+     * @param key the returned logger will be named after key
+     * @return logger provider
      */
     public static Logger getLogger(String key) {
         FailsafeLogger logger = LOGGERS.get(key);
@@ -121,27 +120,27 @@ public class LoggerFactory {
     }
 
     /**
-     * 获取日志级别
+     * Get logging level
      *
-     * @return 日志级别
+     * @return logging level
      */
     public static Level getLevel() {
         return LOGGER_ADAPTER.getLevel();
     }
 
     /**
-     * 动态设置输出日志级别
+     * Set the current logging level
      *
-     * @param level 日志级别
+     * @param level logging level
      */
     public static void setLevel(Level level) {
         LOGGER_ADAPTER.setLevel(level);
     }
 
     /**
-     * 获取日志文件
+     * Get the current logging file
      *
-     * @return 日志文件
+     * @return current logging file
      */
     public static File getFile() {
         return LOGGER_ADAPTER.getFile();

@@ -23,7 +23,7 @@
     </parent>
     <groupId>com.alibaba</groupId>
     <artifactId>dubbo</artifactId>
-    <version>2.5.7</version>
+    <version>2.5.8</version>
     <packaging>jar</packaging>
     <name>Dubbo</name>
     <description>Dubbo is a distributed service framework enpowers applications with service import/export capability
@@ -217,6 +217,12 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>1.2.2</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.4</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

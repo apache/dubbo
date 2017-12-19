@@ -51,7 +51,7 @@ public class BeanFactoryUtilsTest {
     @Test
     public void testGetBeans() {
 
-        applicationContext.register(TestBean.class);
+        applicationContext.register(TestBean.class, TestBean2.class);
 
         applicationContext.refresh();
 
@@ -71,6 +71,12 @@ public class BeanFactoryUtilsTest {
         List<TestBean> testBeans = BeanFactoryUtils.getBeans(applicationContext, new String[]{"testBean"}, TestBean.class);
 
         Assert.assertTrue(testBeans.isEmpty());
+
+    }
+
+
+    @Component("testBean2")
+    private static class TestBean2 extends TestBean {
 
     }
 

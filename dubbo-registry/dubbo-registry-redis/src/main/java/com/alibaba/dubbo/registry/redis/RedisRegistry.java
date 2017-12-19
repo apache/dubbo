@@ -1,12 +1,12 @@
 /*
  * Copyright 1999-2012 Alibaba Group.
- *  
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *  
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,6 +20,7 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.NamedThreadFactory;
+import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.common.utils.UrlUtils;
 import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.support.FailbackRegistry;
@@ -51,7 +52,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * RedisRegistry
  *
- * @author william.liangf
  */
 public class RedisRegistry extends FailbackRegistry {
 
@@ -117,6 +117,8 @@ public class RedisRegistry extends FailbackRegistry {
         if (backups != null && backups.length > 0) {
             addresses.addAll(Arrays.asList(backups));
         }
+
+        String password = url.getPassword();
         for (String address : addresses) {
             int i = address.indexOf(':');
             String host;
@@ -128,8 +130,13 @@ public class RedisRegistry extends FailbackRegistry {
                 host = address;
                 port = DEFAULT_REDIS_PORT;
             }
-            this.jedisPools.put(address, new JedisPool(config, host, port,
-                    url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT)));
+            if (StringUtils.isEmpty(password)) {
+                this.jedisPools.put(address, new JedisPool(config, host, port,
+                        url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT)));
+            } else {
+                this.jedisPools.put(address, new JedisPool(config, host, port,
+                        url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT), password));
+            }
         }
 
         this.reconnectPeriod = url.getParameter(Constants.REGISTRY_RECONNECT_PERIOD_KEY, Constants.DEFAULT_REGISTRY_RECONNECT_PERIOD);
@@ -146,8 +153,8 @@ public class RedisRegistry extends FailbackRegistry {
         this.expireFuture = expireExecutor.scheduleWithFixedDelay(new Runnable() {
             public void run() {
                 try {
-                    deferExpired(); // 延长过期时间
-                } catch (Throwable t) { // 防御性容错
+                    deferExpired(); // Extend the expiration time
+                } catch (Throwable t) { // Defensive fault tolerance
                     logger.error("Unexpected exception occur at defer expire time, cause: " + t.getMessage(), t);
                 }
             }
@@ -172,7 +179,7 @@ public class RedisRegistry extends FailbackRegistry {
                         clean(jedis);
                     }
                     if (!replicate) {
-                        break;//  如果服务器端已同步数据，只需写入单台机器
+                        break;//  If the server side has synchronized data, just write a single machine
                     }
                 } finally {
                     jedisPool.returnResource(jedis);
@@ -183,7 +190,7 @@ public class RedisRegistry extends FailbackRegistry {
         }
     }
 
-    // 监控中心负责删除过期脏数据
+    // The monitoring center is responsible for deleting outdated dirty data
     private void clean(Jedis jedis) {
         Set<String> keys = jedis.keys(root + Constants.ANY_VALUE);
         if (keys != null && keys.size() > 0) {
@@ -219,7 +226,7 @@ public class RedisRegistry extends FailbackRegistry {
                 Jedis jedis = jedisPool.getResource();
                 try {
                     if (jedis.isConnected()) {
-                        return true; // 至少需单台机器可用
+                        return true; // At least one single machine is available.
                     }
                 } finally {
                     jedisPool.returnResource(jedis);
@@ -271,7 +278,7 @@ public class RedisRegistry extends FailbackRegistry {
                     jedis.publish(key, Constants.REGISTER);
                     success = true;
                     if (!replicate) {
-                        break; //  如果服务器端已同步数据，只需写入单台机器
+                        break; //  If the server side has synchronized data, just write a single machine
                     }
                 } finally {
                     jedisPool.returnResource(jedis);
@@ -304,7 +311,7 @@ public class RedisRegistry extends FailbackRegistry {
                     jedis.publish(key, Constants.UNREGISTER);
                     success = true;
                     if (!replicate) {
-                        break; //  如果服务器端已同步数据，只需写入单台机器
+                        break; //  If the server side has synchronized data, just write a single machine
                     }
                 } finally {
                     jedisPool.returnResource(jedis);
@@ -363,11 +370,11 @@ public class RedisRegistry extends FailbackRegistry {
                         doNotify(jedis, jedis.keys(service + Constants.PATH_SEPARATOR + Constants.ANY_VALUE), url, Arrays.asList(listener));
                     }
                     success = true;
-                    break; // 只需读一个服务器的数据
+                    break; // Just read one server's data
                 } finally {
                     jedisPool.returnResource(jedis);
                 }
-            } catch (Throwable t) { // 尝试下一个服务器
+            } catch (Throwable t) { // Try the next server
                 exception = new RpcException("Failed to subscribe service from redis registry. registry: " + entry.getKey() + ", service: " + url + ", cause: " + t.getMessage(), t);
             }
         }
@@ -492,7 +499,7 @@ public class RedisRegistry extends FailbackRegistry {
                     } finally {
                         jedisPool.returnResource(jedis);
                     }
-                } catch (Throwable t) { // TODO 通知失败没有恢复机制保障
+                } catch (Throwable t) { // TODO Notification failure does not restore mechanism guarantee
                     logger.error(t.getMessage(), t);
                 }
             }
@@ -545,14 +552,14 @@ public class RedisRegistry extends FailbackRegistry {
         }
 
         private boolean isSkip() {
-            int skip = connectSkip.get(); // 跳过次数增长
-            if (skip >= 10) { // 如果跳过次数增长超过10，取随机数
+            int skip = connectSkip.get(); // Growth of skipping times
+            if (skip >= 10) { // If the number of skipping times increases by more than 10, take the random number
                 if (connectRandom == 0) {
                     connectRandom = random.nextInt(10);
                 }
                 skip = 10 + connectRandom;
             }
-            if (connectSkiped.getAndIncrement() < skip) { // 检查跳过次数
+            if (connectSkiped.getAndIncrement() < skip) { // Check the number of skipping times
                 return true;
             }
             connectSkip.incrementAndGet();
@@ -583,22 +590,22 @@ public class RedisRegistry extends FailbackRegistry {
                                                 }
                                                 resetSkip();
                                             }
-                                            jedis.psubscribe(new NotifySub(jedisPool), service); // 阻塞
+                                            jedis.psubscribe(new NotifySub(jedisPool), service); // blocking
                                         } else {
                                             if (!first) {
                                                 first = false;
                                                 doNotify(jedis, service);
                                                 resetSkip();
                                             }
-                                            jedis.psubscribe(new NotifySub(jedisPool), service + Constants.PATH_SEPARATOR + Constants.ANY_VALUE); // 阻塞
+                                            jedis.psubscribe(new NotifySub(jedisPool), service + Constants.PATH_SEPARATOR + Constants.ANY_VALUE); // blocking
                                         }
                                         break;
                                     } finally {
                                         jedisPool.returnBrokenResource(jedis);
                                     }
-                                } catch (Throwable t) { // 重试另一台
+                                } catch (Throwable t) { // Retry another server
                                     logger.warn("Failed to subscribe service from redis registry. registry: " + entry.getKey() + ", cause: " + t.getMessage(), t);
-                                    // 如果在单台redis的情况下，需要休息一会，避免空转占用过多cpu资源
+                                    // If you only have a single redis, you need to take a rest to avoid overtaking a lot of CPU resources
                                     sleep(reconnectPeriod);
                                 }
                             }
