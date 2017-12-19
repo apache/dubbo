@@ -18,29 +18,19 @@ package com.alibaba.dubbo.rpc.protocol.redis;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
-import com.alibaba.dubbo.common.serialize.ObjectInput;
-import com.alibaba.dubbo.common.serialize.ObjectOutput;
 import com.alibaba.dubbo.common.serialize.Serialization;
-import com.alibaba.dubbo.rpc.Exporter;
-import com.alibaba.dubbo.rpc.Invocation;
-import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.Result;
-import com.alibaba.dubbo.rpc.RpcException;
-import com.alibaba.dubbo.rpc.RpcResult;
+import com.alibaba.dubbo.rpc.*;
 import com.alibaba.dubbo.rpc.protocol.AbstractInvoker;
 import com.alibaba.dubbo.rpc.protocol.AbstractProtocol;
-
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.SocketTimeoutException;
-import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 
@@ -53,10 +43,12 @@ public class RedisProtocol extends AbstractProtocol {
 
     public static final int DEFAULT_PORT = 6379;
 
+    @Override
     public int getDefaultPort() {
         return DEFAULT_PORT;
     }
 
+    @Override
     public <T> Exporter<T> export(final Invoker<T> invoker) throws RpcException {
         throw new UnsupportedOperationException("Unsupported export redis service. url: " + invoker.getUrl());
     }
@@ -65,6 +57,7 @@ public class RedisProtocol extends AbstractProtocol {
         return ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(url.getParameter(Constants.SERIALIZATION_KEY, "java"));
     }
 
+    @Override
     public <T> Invoker<T> refer(final Class<T> type, final URL url) throws RpcException {
         try {
             GenericObjectPoolConfig config = new GenericObjectPoolConfig();
@@ -89,48 +82,26 @@ public class RedisProtocol extends AbstractProtocol {
                 config.setMinEvictableIdleTimeMillis(url.getParameter("min.evictable.idle.time.millis", 0));
             final JedisPool jedisPool = new JedisPool(config, url.getHost(), url.getPort(DEFAULT_PORT),
                     url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
-            final int expiry = url.getParameter("expiry", 0);
-            final String get = url.getParameter("get", "get");
-            final String set = url.getParameter("set", Map.class.equals(type) ? "put" : "set");
-            final String delete = url.getParameter("delete", Map.class.equals(type) ? "remove" : "delete");
             return new AbstractInvoker<T>(type, url) {
+                @Override
                 protected Result doInvoke(Invocation invocation) throws Throwable {
                     Jedis resource = null;
                     try {
                         resource = jedisPool.getResource();
 
-                        if (get.equals(invocation.getMethodName())) {
-                            if (invocation.getArguments().length != 1) {
-                                throw new IllegalArgumentException("The redis get method arguments mismatch, must only one arguments. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url);
-                            }
-                            byte[] value = resource.get(String.valueOf(invocation.getArguments()[0]).getBytes());
-                            if (value == null) {
-                                return new RpcResult();
-                            }
-                            ObjectInput oin = getSerialization(url).deserialize(url, new ByteArrayInputStream(value));
-                            return new RpcResult(oin.readObject());
-                        } else if (set.equals(invocation.getMethodName())) {
-                            if (invocation.getArguments().length != 2) {
-                                throw new IllegalArgumentException("The redis set method arguments mismatch, must be two arguments. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url);
-                            }
-                            byte[] key = String.valueOf(invocation.getArguments()[0]).getBytes();
-                            ByteArrayOutputStream output = new ByteArrayOutputStream();
-                            ObjectOutput value = getSerialization(url).serialize(url, output);
-                            value.writeObject(invocation.getArguments()[1]);
-                            resource.set(key, output.toByteArray());
-                            if (expiry > 1000) {
-                                resource.expire(key, expiry / 1000);
-                            }
-                            return new RpcResult();
-                        } else if (delete.equals(invocation.getMethodName())) {
-                            if (invocation.getArguments().length != 1) {
-                                throw new IllegalArgumentException("The redis delete method arguments mismatch, must only one arguments. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url);
-                            }
-                            resource.del(String.valueOf(invocation.getArguments()[0]).getBytes());
-                            return new RpcResult();
-                        } else {
+                        Class<Jedis> jedisClass = Jedis.class;
+                        Method method;
+                        try {
+                            method =
+                                    jedisClass.getMethod(invocation.getMethodName(),invocation.getParameterTypes());
+                        } catch (NoSuchMethodException e) {
                             throw new UnsupportedOperationException("Unsupported method " + invocation.getMethodName() + " in redis service.");
                         }
+                        Object result = method.invoke(resource, invocation.getArguments());
+                        if (result == null) {
+                            return new RpcResult();
+                        }
+                        return new RpcResult(result);
                     } catch (Throwable t) {
                         RpcException re = new RpcException("Failed to invoke redis service method. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url + ", cause: " + t.getMessage(), t);
                         if (t instanceof TimeoutException || t instanceof SocketTimeoutException) {
@@ -152,6 +123,7 @@ public class RedisProtocol extends AbstractProtocol {
                     }
                 }
 
+                @Override
                 public void destroy() {
                     super.destroy();
                     try {
