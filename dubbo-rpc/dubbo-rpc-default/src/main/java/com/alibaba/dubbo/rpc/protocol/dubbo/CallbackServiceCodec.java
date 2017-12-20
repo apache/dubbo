@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,9 +38,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * callback 服务帮助类.
- *
- * @author chao.liuc
+ * callback service helper
  */
 class CallbackServiceCodec {
     private static final Logger logger = LoggerFactory.getLogger(CallbackServiceCodec.class);
@@ -52,7 +51,7 @@ class CallbackServiceCodec {
     private static final String INV_ATT_CALLBACK_KEY = "sys_callback_arg-";
 
     private static byte isCallBack(URL url, String methodName, int argIndex) {
-        //参数callback的规则是 方法名称.参数index(0开始).callback
+        // parameter callback rule: method-name.parameter-index(starting from 0).callback
         byte isCallback = CALLBACK_NONE;
         if (url != null) {
             String callback = url.getParameter(methodName + "." + argIndex + ".callback");
@@ -68,13 +67,13 @@ class CallbackServiceCodec {
     }
 
     /**
-     * client 端export callback service
+     * export or unexport callback service on client side
      *
      * @param channel
+     * @param url
      * @param clazz
      * @param inst
      * @param export
-     * @param out
      * @throws IOException
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -82,34 +81,34 @@ class CallbackServiceCodec {
         int instid = System.identityHashCode(inst);
 
         Map<String, String> params = new HashMap<String, String>(3);
-        //不需要在重新new client
+        // no need to new client again
         params.put(Constants.IS_SERVER_KEY, Boolean.FALSE.toString());
-        //标识callback 变于排查问题
+        // mark it's a callback, for troubleshooting
         params.put(Constants.IS_CALLBACK_SERVICE, Boolean.TRUE.toString());
         String group = url.getParameter(Constants.GROUP_KEY);
         if (group != null && group.length() > 0) {
             params.put(Constants.GROUP_KEY, group);
         }
-        //增加方法，变于方法检查，自动降级(见dubbo protocol)
+        // add method, for verifying against method, automatic fallback (see dubbo protocol)
         params.put(Constants.METHODS_KEY, StringUtils.join(Wrapper.getWrapper(clazz).getDeclaredMethodNames(), ","));
 
         Map<String, String> tmpmap = new HashMap<String, String>(url.getParameters());
         tmpmap.putAll(params);
-        tmpmap.remove(Constants.VERSION_KEY);//callback不需要区分version
+        tmpmap.remove(Constants.VERSION_KEY);// doesn't need to distinguish version for callback
         tmpmap.put(Constants.INTERFACE_KEY, clazz.getName());
         URL exporturl = new URL(DubboProtocol.NAME, channel.getLocalAddress().getAddress().getHostAddress(), channel.getLocalAddress().getPort(), clazz.getName() + "." + instid, tmpmap);
 
-        //同一个jvm不需要对不同的channel产生多个exporter cache key不会碰撞 
+        // no need to generate multiple exporters for different channel in the same JVM, cache key cannot collide.
         String cacheKey = getClientSideCallbackServiceCacheKey(instid);
         String countkey = getClientSideCountKey(clazz.getName());
         if (export) {
-            //同一个channel 可以有多个callback instance. 不同的instance不重新export
+            // one channel can have multiple callback instances, no need to re-export for different instance.
             if (!channel.hasAttribute(cacheKey)) {
                 if (!isInstancesOverLimit(channel, url, clazz.getName(), instid, false)) {
                     Invoker<?> invoker = proxyFactory.getInvoker(inst, clazz, exporturl);
-                    //资源销毁？
+                    // should destroy resource?
                     Exporter<?> exporter = protocol.export(invoker);
-                    //这个用来记录instid是否发布过服务
+                    // this is used for tracing if instid has published service or not.
                     channel.setAttribute(cacheKey, exporter);
                     logger.info("export a callback service :" + exporturl + ", on " + channel + ", url is: " + url);
                     increaseInstanceCount(channel, countkey);
@@ -127,7 +126,7 @@ class CallbackServiceCodec {
     }
 
     /**
-     * server端 应用一个callbackservice
+     * refer or destroy callback service on server side
      *
      * @param url
      */
@@ -173,7 +172,7 @@ class CallbackServiceCodec {
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);
                 }
-                //取消refer 直接在map中去除，
+                // cancel refer, directly remove from the map
                 channel.removeAttribute(proxyCacheKey);
                 channel.removeAttribute(invokerCacheKey);
                 decreaseInstanceCount(channel, countkey);
@@ -216,7 +215,7 @@ class CallbackServiceCodec {
 
     private static void increaseInstanceCount(Channel channel, String countkey) {
         try {
-            //ignore cuncurrent problem? 
+            //ignore concurrent problem?
             Integer count = (Integer) channel.getAttribute(countkey);
             if (count == null) {
                 count = 1;
@@ -244,7 +243,7 @@ class CallbackServiceCodec {
     }
 
     public static Object encodeInvocationArgument(Channel channel, RpcInvocation inv, int paraIndex) throws IOException {
-        //encode时可直接获取url
+        // get URL directly
         URL url = inv.getInvoker() == null ? null : inv.getInvoker().getUrl();
         byte callbackstatus = isCallBack(url, inv.getMethodName(), paraIndex);
         Object[] args = inv.getArguments();
@@ -264,8 +263,8 @@ class CallbackServiceCodec {
     }
 
     public static Object decodeInvocationArgument(Channel channel, RpcInvocation inv, Class<?>[] pts, int paraIndex, Object inObject) throws IOException {
-        //如果是callback，则创建proxy到客户端，方法的执行可通过channel调用到client端的callback接口
-        //decode时需要根据channel及env获取url
+        // if it's a callback, create proxy on client side, callback interface on client side can be invoked through channel
+        // need get URL from channel and env when decode
         URL url = null;
         try {
             url = DubboProtocol.getDubboProtocol().getInvoker(channel, inv).getUrl();
