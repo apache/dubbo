@@ -1,0 +1,1 @@
+logFilter=com.alibaba.dubbo.examples.rest.api.extension.LogFilter

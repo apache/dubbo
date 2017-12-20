@@ -48,7 +48,7 @@ public class UserRestServiceImpl implements UserRestService {
     public User getUser(@PathParam("id") Long id/*, @Context HttpServletRequest request*/) {
         // test context injection
 //        System.out.println("Client address from @Context injection: " + (request != null ? request.getRemoteAddr() : ""));
-//        System.out.println("Client address from RpcContext: " + RpcContext.getContext().getRemoteAddressString());
+        System.out.println("Client address from RpcContext: " + RpcContext.getContext().getRemoteAddressString());
         if (RpcContext.getContext().getRequest(HttpServletRequest.class) != null) {
             System.out.println("Client IP address from RpcContext: " + RpcContext.getContext().getRequest(HttpServletRequest.class).getRemoteAddr());
         }

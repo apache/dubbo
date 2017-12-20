@@ -135,7 +135,7 @@ public class Constants {
 
     public static final int DEFAULT_CONNECT_TIMEOUT = 3000;
 
-    public static final int DEFAULT_REGISTRY_CONNECT_TIMEOUT = 5000;
+//    public static final int DEFAULT_REGISTRY_CONNECT_TIMEOUT = 5000;
 
     public static final int DEFAULT_RETRIES = 2;
 
