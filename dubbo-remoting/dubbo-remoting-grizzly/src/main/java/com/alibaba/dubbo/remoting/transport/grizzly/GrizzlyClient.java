@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * GrizzlyClient
  *
- * @author william.liangf
+ *
  */
 public class GrizzlyClient extends AbstractClient {
 
