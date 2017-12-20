@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,26 +36,24 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * dubbo protocol support class.
- *
- * @author chao.liuc
  */
 @SuppressWarnings("deprecation")
 final class LazyConnectExchangeClient implements ExchangeClient {
 
-    //当调用时warning，出现这个warning，表示程序可能存在bug.
+    // when this warning rises from invocation, program probably have bug.
     static final String REQUEST_WITH_WARNING_KEY = "lazyclient_request_with_warning";
     private final static Logger logger = LoggerFactory.getLogger(LazyConnectExchangeClient.class);
     protected final boolean requestWithWarning;
     private final URL url;
     private final ExchangeHandler requestHandler;
     private final Lock connectLock = new ReentrantLock();
-    //lazy connect 如果没有初始化时的连接状态
+    // lazy connect, initial state for connection
     private final boolean initialState;
     private volatile ExchangeClient client;
     private AtomicLong warningcount = new AtomicLong(0);
 
     public LazyConnectExchangeClient(URL url, ExchangeHandler requestHandler) {
-        //lazy connect ,need set send.reconnect = true, to avoid channel bad status. 
+        // lazy connect, need set send.reconnect = true, to avoid channel bad status.
         this.url = url.addParameter(Constants.SEND_RECONNECT_KEY, Boolean.TRUE.toString());
         this.requestHandler = requestHandler;
         this.initialState = url.getParameter(Constants.LAZY_CONNECT_INITIAL_STATE_KEY, Constants.DEFAULT_LAZY_CONNECT_INITIAL_STATE);
@@ -103,7 +102,7 @@ final class LazyConnectExchangeClient implements ExchangeClient {
     }
 
     /**
-     * 如果配置了调用warning，则每调用5000次warning一次.
+     * If {@link #REQUEST_WITH_WARNING_KEY} is configured, then warn once every 5000 invocations.
      *
      * @param request
      */
