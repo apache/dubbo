@@ -1,11 +1,5 @@
 package com.alibaba.dubbo.rpc.benchmark;
 
-/**
- * nfs-rpc
- * Apache License
- * <p>
- * http://code.google.com/p/nfs-rpc (c) 2011
- */
 
 import com.alibaba.dubbo.common.utils.ConfigUtils;
 
@@ -23,12 +17,6 @@ import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 
-/**
- * Abstract benchmark client,test for difference scenes Usage: -Dwrite.statistics=false BenchmarkClient serverIP
- * serverPort concurrents timeout codectype requestSize runtime(seconds) clientNums
- *
- * @author <a href="mailto:bluedavy@gmail.com">bluedavy</a>
- */
 public abstract class AbstractBenchmarkClient {
 
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");

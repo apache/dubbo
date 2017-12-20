@@ -16,11 +16,6 @@ import data.media.MediaContent;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-/**
- * 类Dubbo.java的实现描述：Dubbo Seriazition Benchmark
- *
- * @author tony.chenl 2011-9-30 上午10:17:21
- */
 public class Dubbo {
 
     public static Serializer<Object> GenericSerializer = new Serializer<Object>() {
