@@ -226,6 +226,21 @@ public final class StringUtils {
         return sb == null ? src : sb.toString();
     }
 
+    public static List<String> splitToList(String str, char ch) {
+        List<String> result = new ArrayList<String>();
+        if (str == null) return result;
+
+        int start = 0, len = str.length();
+        for (int i = 0; i < len; i++) {
+            if (str.charAt(i) == ch) {
+                result.add(start == i ? "" : str.substring(start, i));
+                start = i + 1;
+            }
+        }
+        if (start <= len) result.add(str.substring(start));
+        return result;
+    }
+
     /**
      * split.
      *
@@ -426,5 +441,48 @@ public final class StringUtils {
             }
         }
         return buf.toString();
+    }
+
+    public static Integer fetchInt(String str, Integer defaultValue) {
+        if (str == null || str.isEmpty()) return defaultValue;
+
+        StringBuilder buf = new StringBuilder();
+        for (int i = 0, len = str.length(); i < len; i++) {
+            char ch = str.charAt(i);
+            if (ch < '0' || ch > '9') break;
+            buf.append(ch);
+        }
+        return buf.length() == 0 ? defaultValue : Integer.valueOf(buf.toString());
+    }
+
+    public static int[] toVersion(String ver) {
+        if (ver == null || ver.isEmpty()) return new int[3];
+
+        List<String> tmp = splitToList(ver, '.');
+        int[] result = new int[tmp.size()];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = fetchInt(tmp.get(i), 0);
+        }
+        return result;
+    }
+
+    public static int compareVersion(String ver1, String ver2) {
+        if (ver1 == ver2) return 0;
+        if (ver1 == null) return ver2.isEmpty() ? 0 : -1;
+        if (ver2 == null) return ver1.isEmpty() ? 0 : 1;
+        if (ver1.equals(ver2)) return 0;
+        
+        int[] v1 = toVersion(ver1), v2 = toVersion(ver2);
+        if (v1.length == 0) return v2.length == 0 ? 0 : -1;
+
+        for (int i = 0, det; i < v1.length; i++) {
+            if (i >= v2.length) return 1;
+            det = v1[i] - v2[i];
+            if (det > 0) return 1;
+            if (det < 0) return -1;
+        }
+        if (v1.length < v2.length) return -1;
+        return ver1.endsWith("SNAPSHOT") ? -1 :
+            ver2.endsWith("SNAPSHOT") ? 1 : 0;
     }
 }

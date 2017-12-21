@@ -16,6 +16,7 @@
 package com.alibaba.dubbo.rpc.protocol.rmi;
 
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.protocol.AbstractProxyProtocol;
 import org.aopalliance.intercept.MethodInvocation;
@@ -71,12 +72,15 @@ public class RmiProtocol extends AbstractProxyProtocol {
     @SuppressWarnings("unchecked")
     protected <T> T doRefer(final Class<T> serviceType, final URL url) throws RpcException {
         final RmiProxyFactoryBean rmiProxyFactoryBean = new RmiProxyFactoryBean();
-        //RMI传输时使用自定义的远程执行对象，从而传递额外的参数
-        rmiProxyFactoryBean.setRemoteInvocationFactory(new RemoteInvocationFactory() {
-            public RemoteInvocation createRemoteInvocation(MethodInvocation methodInvocation) {
-                return new RmiRemoteInvocation(methodInvocation);
-            }
-        });
+        // RemoteInvocation supported from dubbo v2.5.7
+        if (StringUtils.compareVersion(url.getParameter("dubbo", ""), "2.5.7-SNAPSHOT") >= 0) {
+            //RMI传输时使用自定义的远程执行对象，从而传递额外的参数
+            rmiProxyFactoryBean.setRemoteInvocationFactory(new RemoteInvocationFactory() {
+                public RemoteInvocation createRemoteInvocation(MethodInvocation methodInvocation) {
+                    return new RmiRemoteInvocation(methodInvocation);
+                }
+            });
+        }
         rmiProxyFactoryBean.setServiceUrl(url.toIdentityString());
         rmiProxyFactoryBean.setServiceInterface(serviceType);
         rmiProxyFactoryBean.setCacheStub(true);
