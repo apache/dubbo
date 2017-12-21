@@ -30,8 +30,10 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -56,6 +58,12 @@ public class RegistryServerSync implements InitializingBean, DisposableBean, Not
             Constants.CHECK_KEY, String.valueOf(false));
 
     private static final AtomicLong ID = new AtomicLong();
+
+    /**
+     * Make sure ID never changed when the same url notified many times
+     */
+    private final ConcurrentHashMap<String, Long> URL_IDS_MAPPER = new ConcurrentHashMap<String, Long>();
+
     // ConcurrentMap<category, ConcurrentMap<servicename, Map<Long, URL>>>
     private final ConcurrentMap<String, ConcurrentMap<String, Map<Long, URL>>> registryCache = new ConcurrentHashMap<String, ConcurrentMap<String, Map<Long, URL>>>();
     @Autowired
@@ -81,6 +89,7 @@ public class RegistryServerSync implements InitializingBean, DisposableBean, Not
         }
         // Map<category, Map<servicename, Map<Long, URL>>>
         final Map<String, Map<String, Map<Long, URL>>> categories = new HashMap<String, Map<String, Map<Long, URL>>>();
+        String interfaceName = null;
         for (URL url : urls) {
             String category = url.getParameter(Constants.CATEGORY_KEY, Constants.PROVIDERS_CATEGORY);
             if (Constants.EMPTY_PROTOCOL.equalsIgnoreCase(url.getProtocol())) { // 注意：empty协议的group和version为*
@@ -103,6 +112,9 @@ public class RegistryServerSync implements InitializingBean, DisposableBean, Not
                     }
                 }
             } else {
+                if (StringUtils.isEmpty(interfaceName)) {
+                    interfaceName = url.getServiceInterface();
+                }
                 Map<String, Map<Long, URL>> services = categories.get(category);
                 if (services == null) {
                     services = new HashMap<String, Map<Long, URL>>();
@@ -114,8 +126,19 @@ public class RegistryServerSync implements InitializingBean, DisposableBean, Not
                     ids = new HashMap<Long, URL>();
                     services.put(service, ids);
                 }
-                ids.put(ID.incrementAndGet(), url);
+
+                //保证ID对于同一个URL的不可变
+                if (URL_IDS_MAPPER.containsKey(url.toFullString())) {
+                    ids.put(URL_IDS_MAPPER.get(url.toFullString()), url);
+                } else {
+                    long currentId = ID.incrementAndGet();
+                    ids.put(currentId, url);
+                    URL_IDS_MAPPER.putIfAbsent(url.toFullString(), currentId);
+                }
             }
+        }
+        if (categories.size() == 0) {
+            return;
         }
         for (Map.Entry<String, Map<String, Map<Long, URL>>> categoryEntry : categories.entrySet()) {
             String category = categoryEntry.getKey();
@@ -123,6 +146,13 @@ public class RegistryServerSync implements InitializingBean, DisposableBean, Not
             if (services == null) {
                 services = new ConcurrentHashMap<String, Map<Long, URL>>();
                 registryCache.put(category, services);
+            } else {// 修复服务下线后不能清除Map缓存的问题：主要针对某唯一的“服务+分组+版本”服务下线，无法触发empty协议，用services.putAll(categoryEntry.getValue())无法清除缓存
+                Set<String> keys = new HashSet<String>(services.keySet());
+                for (String key : keys) {
+                    if (Tool.getInterface(key).equals(interfaceName) && !categoryEntry.getValue().entrySet().contains(key)) {
+                        services.remove(key);
+                    }
+                }
             }
             services.putAll(categoryEntry.getValue());
         }

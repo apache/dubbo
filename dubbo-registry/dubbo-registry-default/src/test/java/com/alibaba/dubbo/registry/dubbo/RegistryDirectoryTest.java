@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,7 +35,7 @@ import com.alibaba.dubbo.rpc.cluster.loadbalance.RoundRobinLoadBalance;
 import com.alibaba.dubbo.rpc.cluster.router.script.ScriptRouter;
 import com.alibaba.dubbo.rpc.cluster.router.script.ScriptRouterFactory;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -125,7 +126,7 @@ public class RegistryDirectoryTest {
     }
 
     /**
-     * 测试推送只有router的情况
+     * Test push only router
      */
     @Test
     public void testNotified_Normal_withRouters() {
@@ -184,7 +185,7 @@ public class RegistryDirectoryTest {
         }
     }
 
-    //测试调用和registry url的path无关
+    //The test call is independent of the path of the registry url
     @Test
     public void test_NotifiedDubbo1() {
         URL errorPathUrl = URL.valueOf("notsupport:/" + "xxx" + "?refer=" + URL.encode("interface=" + service));
@@ -267,7 +268,7 @@ public class RegistryDirectoryTest {
         Assert.assertEquals(1, invokers.size());
     }
 
-    // 通知成3个invoker===================================
+    // 3 invoker notifications===================================
     private void test_Notified3invokers(RegistryDirectory registryDirectory) {
         List<URL> serviceUrls = new ArrayList<URL>();
         serviceUrls.add(SERVICEURL.addParameter("methods", "getXXX1"));
@@ -313,7 +314,7 @@ public class RegistryDirectoryTest {
         registryDirectory2.setProtocol(protocol);
 
         List<URL> serviceUrls = new ArrayList<URL>();
-        // 检验注册中心的参数需要被清除
+        // The parameters of the inspection registry need to be cleared
         {
             serviceUrls.clear();
             serviceUrls.add(SERVICEURL.addParameter("methods", "getXXX1"));
@@ -326,7 +327,7 @@ public class RegistryDirectoryTest {
             URL url = invoker.getUrl();
             Assert.assertEquals(null, url.getParameter("key"));
         }
-        // 检验服务提供方的参数需要merge
+        // The parameters of the provider for the inspection service need merge
         {
             serviceUrls.clear();
             serviceUrls.add(SERVICEURL.addParameter("methods", "getXXX2").addParameter("key", "provider"));
@@ -339,7 +340,7 @@ public class RegistryDirectoryTest {
             URL url = invoker.getUrl();
             Assert.assertEquals("provider", url.getParameter("key"));
         }
-        // 检验服务query的参数需要与providermerge 。
+        // The parameters of the test service query need to be with the providermerge.
         {
             serviceUrls.clear();
             serviceUrls.add(SERVICEURL.addParameter("methods", "getXXX3").addParameter("key", "provider"));
@@ -560,8 +561,8 @@ public class RegistryDirectoryTest {
     }
 
     /**
-     * 测试override规则是否优先
-     * 场景：先推送override，后推送invoker
+     * Test whether the override rule have a high priority
+     * Scene: first push override , then push invoker
      */
     @Test
     public void testNotifyoverrideUrls_beforeInvoker() {
@@ -569,10 +570,10 @@ public class RegistryDirectoryTest {
         List<URL> overrideUrls = new ArrayList<URL>();
         overrideUrls.add(URL.valueOf("override://0.0.0.0?timeout=1&connections=5"));
         registryDirectory.notify(overrideUrls);
-        //注册中心初始只推送override，dirctory状态应该是false，因为没有invoker存在。
+        //The registry is initially pushed to override only, and the dirctory state should be false because there is no invoker.
         Assert.assertEquals(false, registryDirectory.isAvailable());
 
-        //在推送两个provider,directory状态恢复为true
+        //After pushing two provider, the directory state is restored to true
         List<URL> serviceUrls = new ArrayList<URL>();
         serviceUrls.add(SERVICEURL.addParameter("timeout", "1000"));
         serviceUrls.add(SERVICEURL2.addParameter("timeout", "1000").addParameter("connections", "10"));
@@ -580,7 +581,7 @@ public class RegistryDirectoryTest {
         registryDirectory.notify(serviceUrls);
         Assert.assertEquals(true, registryDirectory.isAvailable());
 
-        //开始验证参数值
+        //Start validation of parameter values
 
         invocation = new RpcInvocation();
 
@@ -592,14 +593,14 @@ public class RegistryDirectoryTest {
     }
 
     /**
-     * 测试override规则是否优先
-     * 场景：先推送override，后推送invoker
+     * Test whether the override rule have a high priority
+     * Scene: first push override , then push invoker
      */
     @Test
     public void testNotifyoverrideUrls_afterInvoker() {
         RegistryDirectory registryDirectory = getRegistryDirectory();
 
-        //在推送两个provider,directory状态恢复为true
+        //After pushing two provider, the directory state is restored to true
         List<URL> serviceUrls = new ArrayList<URL>();
         serviceUrls.add(SERVICEURL.addParameter("timeout", "1000"));
         serviceUrls.add(SERVICEURL2.addParameter("timeout", "1000").addParameter("connections", "10"));
@@ -611,7 +612,7 @@ public class RegistryDirectoryTest {
         overrideUrls.add(URL.valueOf("override://0.0.0.0?timeout=1&connections=5"));
         registryDirectory.notify(overrideUrls);
 
-        //开始验证参数值
+        //Start validation of parameter values
 
         invocation = new RpcInvocation();
 
@@ -623,8 +624,8 @@ public class RegistryDirectoryTest {
     }
 
     /**
-     * 测试override规则是否优先
-     * 场景：与invoker 一起推override规则
+     * Test whether the override rule have a high priority
+     * Scene: push override rules with invoker
      */
     @Test
     public void testNotifyoverrideUrls_withInvoker() {
@@ -638,7 +639,7 @@ public class RegistryDirectoryTest {
         registryDirectory.notify(durls);
         Assert.assertEquals(true, registryDirectory.isAvailable());
 
-        //开始验证参数值
+        //Start validation of parameter values
 
         invocation = new RpcInvocation();
 
@@ -650,9 +651,9 @@ public class RegistryDirectoryTest {
     }
 
     /**
-     * 测试override规则是否优先
-     * 场景：推送的规则与provider的参数是一样的
-     * 期望：不需要重新引用
+     * Test whether the override rule have a high priority
+     * Scene: the rules of the push are the same as the parameters of the provider
+     * Expectation: no need to be re-referenced
      */
     @Test
     public void testNotifyoverrideUrls_Nouse() {
@@ -660,7 +661,7 @@ public class RegistryDirectoryTest {
         invocation = new RpcInvocation();
 
         List<URL> durls = new ArrayList<URL>();
-        durls.add(SERVICEURL.addParameter("timeout", "1"));//一个一样，一个不一样
+        durls.add(SERVICEURL.addParameter("timeout", "1"));//One is the same, one is different
         durls.add(SERVICEURL2.addParameter("timeout", "1").addParameter("connections", "5"));
         registryDirectory.notify(durls);
         List<Invoker<?>> invokers = registryDirectory.list(invocation);
@@ -678,15 +679,15 @@ public class RegistryDirectoryTest {
 
         Invoker<?> a2Invoker = invokers.get(0);
         Invoker<?> b2Invoker = invokers.get(1);
-        //参数不一样，必须重新引用
+        //The parameters are different and must be rereferenced.
         Assert.assertFalse("object not same", a1Invoker == a2Invoker);
 
-        //参数一样，不能重新引用
+        //The parameters can not be rereferenced
         Assert.assertTrue("object same", b1Invoker == b2Invoker);
     }
 
     /**
-     * 测试针对某个provider的Override规则
+     * Test override rules for a certain provider
      */
     @Test
     public void testNofityOverrideUrls_Provider() {
@@ -694,7 +695,7 @@ public class RegistryDirectoryTest {
         invocation = new RpcInvocation();
 
         List<URL> durls = new ArrayList<URL>();
-        durls.add(SERVICEURL.setHost("10.20.30.140").addParameter("timeout", "1").addParameter(Constants.SIDE_KEY, Constants.CONSUMER_SIDE));//一个一样，一个不一样
+        durls.add(SERVICEURL.setHost("10.20.30.140").addParameter("timeout", "1").addParameter(Constants.SIDE_KEY, Constants.CONSUMER_SIDE));//One is the same, one is different
         durls.add(SERVICEURL2.setHost("10.20.30.141").addParameter("timeout", "2").addParameter(Constants.SIDE_KEY, Constants.CONSUMER_SIDE));
         registryDirectory.notify(durls);
 
@@ -711,8 +712,8 @@ public class RegistryDirectoryTest {
     }
 
     /**
-     * 测试清除override规则，同时下发清除规则和其他override规则
-     * 测试是否能够恢复到推送时的providerUrl
+     * Test cleanup override rules, and sent remove rules and other override rules
+     * Whether the test can be restored to the providerUrl when it is pushed
      */
     @Test
     public void testNofityOverrideUrls_Clean1() {
@@ -734,13 +735,13 @@ public class RegistryDirectoryTest {
 
         List<Invoker<?>> invokers = registryDirectory.list(invocation);
         Invoker<?> aInvoker = invokers.get(0);
-        //需要恢复到最初的providerUrl
+        //Need to be restored to the original providerUrl
         Assert.assertEquals("1", aInvoker.getUrl().getParameter("timeout"));
     }
 
     /**
-     * 测试清除override规则，只下发override清除规则
-     * 测试是否能够恢复到推送时的providerUrl
+     * The test clears the override rule and only sends the override cleanup rules
+     * Whether the test can be restored to the providerUrl when it is pushed
      */
     @Test
     public void testNofityOverrideUrls_CleanOnly() {
@@ -767,15 +768,15 @@ public class RegistryDirectoryTest {
         registryDirectory.notify(durls);
         invokers = registryDirectory.list(invocation);
         aInvoker = invokers.get(0);
-        //需要恢复到最初的providerUrl
+        //Need to be restored to the original providerUrl
         Assert.assertEquals("1", aInvoker.getUrl().getParameter("timeout"));
 
         Assert.assertEquals(null, registryDirectory.getUrl().getParameter("mock"));
     }
 
     /**
-     * 测试同时推送清除override和针对某个provider的override
-     * 看override是否能够生效
+     * Test the simultaneous push to clear the override and the override for a certain provider
+     * See if override can take effect
      */
     @Test
     public void testNofityOverrideUrls_CleanNOverride() {
@@ -798,8 +799,8 @@ public class RegistryDirectoryTest {
     }
 
     /**
-     * 测试override通过enable=false，禁用所有服务提供者
-     * 预期:不能通过override禁用所有服务提供者.
+     * Test override disables all service providers through enable=false
+     * Expectation: all service providers can not be disabled through override.
      */
     @Test
     public void testNofityOverrideUrls_disabled_allProvider() {
@@ -816,13 +817,13 @@ public class RegistryDirectoryTest {
         registryDirectory.notify(durls);
 
         List<Invoker<?>> invokers = registryDirectory.list(invocation);
-        //不能通过override禁用所有服务提供者.
+        //All service providers can not be disabled through override.
         Assert.assertEquals(2, invokers.size());
     }
 
     /**
-     * 测试override通过enable=false，禁用指定服务提供者
-     * 预期:可以禁用指定的服务提供者。
+     * Test override disables a specified service provider through enable=false
+     * It is expected that a specified service provider can be disable.
      */
     @Test
     public void testNofityOverrideUrls_disabled_specifiedProvider() {
@@ -850,8 +851,8 @@ public class RegistryDirectoryTest {
     }
 
     /**
-     * 测试override通过enable=false，禁用指定服务提供者
-     * 预期:可以禁用指定的服务提供者。
+     * Test override disables a specified service provider through enable=false
+     * It is expected that a specified service provider can be disable.
      */
     @Test
     public void testNofity_To_Decrease_provider() {
@@ -881,15 +882,15 @@ public class RegistryDirectoryTest {
     }
 
     /**
-     * 测试override通过enable=false，禁用指定服务提供者
-     * 预期:可以禁用指定的服务提供者。
+     * Test override disables a specified service provider through enable=false
+     * It is expected that a specified service provider can be disable.
      */
     @Test
     public void testNofity_disabled_specifiedProvider() {
         RegistryDirectory registryDirectory = getRegistryDirectory();
         invocation = new RpcInvocation();
 
-        // 初始就禁用
+        // Initially disable
         List<URL> durls = new ArrayList<URL>();
         durls.add(SERVICEURL.setHost("10.20.30.140").addParameter(Constants.ENABLED_KEY, "false"));
         durls.add(SERVICEURL.setHost("10.20.30.141"));
@@ -899,7 +900,7 @@ public class RegistryDirectoryTest {
         Assert.assertEquals(1, invokers.size());
         Assert.assertEquals("10.20.30.141", invokers.get(0).getUrl().getHost());
 
-        // 通过覆盖规则启用
+        //Enabled by override rule
         durls = new ArrayList<URL>();
         durls.add(URL.valueOf("override://10.20.30.140:9091?" + Constants.DISABLED_KEY + "=false"));
         registryDirectory.notify(durls);
@@ -932,7 +933,7 @@ public class RegistryDirectoryTest {
     }
 
     /**
-     * 测试mock provider下发
+     * Test mock provider distribution
      */
     @Test
     public void testNotify_MockProviderOnly() {
@@ -958,7 +959,7 @@ public class RegistryDirectoryTest {
 
     // mock protocol
 
-    //测试protocol匹配，只选择匹配的protocol进行refer
+    //Test the matching of protocol and select only the matched protocol for refer
     @Test
     public void test_Notified_acceptProtocol0() {
         URL errorPathUrl = URL.valueOf("notsupport:/xxx?refer=" + URL.encode("interface=" + service));
@@ -976,7 +977,7 @@ public class RegistryDirectoryTest {
         Assert.assertEquals(2, invokers.size());
     }
 
-    //测试protocol匹配，只选择匹配的protocol进行refer
+    //Test the matching of protocol and select only the matched protocol for refer
     @Test
     public void test_Notified_acceptProtocol1() {
         URL errorPathUrl = URL.valueOf("notsupport:/xxx");
@@ -995,7 +996,7 @@ public class RegistryDirectoryTest {
         Assert.assertEquals(1, invokers.size());
     }
 
-    //测试protocol匹配，只选择匹配的protocol进行refer
+    //Test the matching of protocol and select only the matched protocol for refer
     @Test
     public void test_Notified_acceptProtocol2() {
         URL errorPathUrl = URL.valueOf("notsupport:/xxx");

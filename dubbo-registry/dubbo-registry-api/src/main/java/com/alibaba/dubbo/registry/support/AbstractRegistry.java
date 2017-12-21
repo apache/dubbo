@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -52,36 +53,34 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * AbstractRegistry. (SPI, Prototype, ThreadSafe)
  *
- * @author chao.liuc
- * @author william.liangf
  */
 public abstract class AbstractRegistry implements Registry {
 
-    // URL地址分隔符，用于文件缓存中，服务提供者URL分隔
+    // URL address separator, used in file cache, service provider URL separation
     private static final char URL_SEPARATOR = ' ';
-    // URL地址分隔正则表达式，用于解析文件缓存中服务提供者URL列表
+    // URL address separated regular expression for parsing the service provider URL list in the file cache
     private static final String URL_SPLIT = "\\s+";
-    // 日志输出
+    // Log output
     protected final Logger logger = LoggerFactory.getLogger(getClass());
-    // 本地磁盘缓存，其中特殊的key值.registies记录注册中心列表，其它均为notified服务提供者列表
+    // Local disk cache, where the special key value.registies records the list of registry centers, and the others are the list of notified service providers
     private final Properties properties = new Properties();
-    // 文件缓存定时写入
+    // File cache timing writing
     private final ExecutorService registryCacheExecutor = Executors.newFixedThreadPool(1, new NamedThreadFactory("DubboSaveRegistryCache", true));
-    //是否是同步保存文件
+    // Is it synchronized to save the file
     private final boolean syncSaveFile;
     private final AtomicLong lastCacheChanged = new AtomicLong();
     private final Set<URL> registered = new ConcurrentHashSet<URL>();
     private final ConcurrentMap<URL, Set<NotifyListener>> subscribed = new ConcurrentHashMap<URL, Set<NotifyListener>>();
     private final ConcurrentMap<URL, Map<String, List<URL>>> notified = new ConcurrentHashMap<URL, Map<String, List<URL>>>();
     private URL registryUrl;
-    // 本地磁盘缓存文件
+    // Local disk cache file
     private File file;
 
     private AtomicBoolean destroyed = new AtomicBoolean(false);
 
     public AbstractRegistry(URL url) {
         setUrl(url);
-        // 启动文件保存定时器
+        // Start file save timer
         syncSaveFile = url.getParameter(Constants.REGISTRY_FILESAVE_SYNC_KEY, false);
         String filename = url.getParameter(Constants.FILE_KEY, System.getProperty("user.home") + "/.dubbo/dubbo-registry-" + url.getParameter(Constants.APPLICATION_KEY) + "-" + url.getAddress() + ".cache");
         File file = null;
@@ -149,7 +148,7 @@ public abstract class AbstractRegistry implements Registry {
         if (file == null) {
             return;
         }
-        // 保存
+        // Save
         try {
             File lockfile = new File(file.getAbsolutePath() + ".lock");
             if (!lockfile.exists()) {
@@ -163,7 +162,7 @@ public abstract class AbstractRegistry implements Registry {
                     if (lock == null) {
                         throw new IOException("Can not lock the registry cache file " + file.getAbsolutePath() + ", ignore and retry later, maybe multi java process use the file, please config: dubbo.registry.file=xxx.properties");
                     }
-                    // 保存
+                    // Save
                     try {
                         if (!file.exists()) {
                             file.createNewFile();
@@ -252,7 +251,7 @@ public abstract class AbstractRegistry implements Registry {
                     reference.set(urls);
                 }
             };
-            subscribe(url, listener); // 订阅逻辑保证第一次notify后再返回
+            subscribe(url, listener); // Subscribe logic guarantees the first notify to return
             List<URL> urls = reference.get();
             if (urls != null && urls.size() > 0) {
                 for (URL u : urls) {
