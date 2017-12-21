@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -43,8 +44,6 @@ import java.util.regex.Pattern;
 
 /**
  * ReflectUtils
- *
- * @author qian.lei
  */
 public final class ReflectUtils {
 
@@ -767,14 +766,14 @@ public final class ReflectUtils {
     }
 
     /**
-     * 根据方法签名从类中找出方法。
+     * Find method from method signature
      *
-     * @param clazz      查找的类。
-     * @param methodName 方法签名，形如method1(int, String)。也允许只给方法名不参数只有方法名，形如method2。
-     * @return 返回查找到的方法。
+     * @param clazz      Target class to find method
+     * @param methodName Method signature, e.g.: method1(int, String). It is allowed to provide method name only, e.g.: method2
+     * @return target method
      * @throws NoSuchMethodException
      * @throws ClassNotFoundException
-     * @throws IllegalStateException  给定的方法签名找到多个方法（方法签名中没有指定参数，又有有重载的方法的情况）
+     * @throws IllegalStateException  when multiple methods are found (overridden method when parameter info is not provided)
      */
     public static Method findMethodByMethodSignature(Class<?> clazz, String methodName, String[] parameterTypes)
             throws NoSuchMethodException, ClassNotFoundException {
@@ -842,13 +841,14 @@ public final class ReflectUtils {
     }
 
     /**
-     * 检查对象是否是指定接口的实现。
+     * Check if one object is the implementation for a given interface.
      * <p>
-     * 不会触发到指定接口的{@link Class}，所以如果ClassLoader中没有指定接口类时，也不会出错。
+     * This method will not trigger classloading for the given interface, therefore it will not lead to error when
+     * the given interface is not visible by the classloader
      *
-     * @param obj                要检查的对象
-     * @param interfaceClazzName 指定的接口名
-     * @return 返回{@code true}，如果对象实现了指定接口；否则返回{@code false}。
+     * @param obj                Object to examine
+     * @param interfaceClazzName The given interface
+     * @return true if the object implements the given interface, otherwise return false
      */
     public static boolean isInstance(Object obj, String interfaceClazzName) {
         for (Class<?> clazz = obj.getClass();

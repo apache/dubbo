@@ -25,11 +25,11 @@ import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.ProxyFactory;
 
 /**
- * DefaultMonitorFactroy
+ * DefaultMonitorFactory
  *
  * @author william.liangf
  */
-public class DubboMonitorFactroy extends AbstractMonitorFactory {
+public class DubboMonitorFactory extends AbstractMonitorFactory {
 
     private Protocol protocol;
 

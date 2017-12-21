@@ -37,8 +37,6 @@ import java.util.concurrent.atomic.AtomicLong;
  * PerformanceClientTest
  * <p>
  * mvn clean test -Dtest=*PerformanceClientTest -Dserver=10.20.153.187:9911
- *
- * @author william.liangf
  */
 public class PerformanceClientTest extends TestCase {
 

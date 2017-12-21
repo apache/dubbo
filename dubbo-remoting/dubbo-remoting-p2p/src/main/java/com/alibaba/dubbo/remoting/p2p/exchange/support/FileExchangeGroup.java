@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,15 +36,13 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * FileGroup
- *
- * @author william.liangf
  */
 public class FileExchangeGroup extends AbstractExchangeGroup {
 
     private final File file;
-    // 定时任务执行器
+    // scheduled executor service
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(3, new NamedThreadFactory("FileGroupModifiedChecker", true));
-    // 重连定时器，定时检查连接是否可用，不可用时，无限次重连
+    // Reconnect the timer to check whether the connection is available at a time, and when unavailable, an infinite reconnection
     private final ScheduledFuture<?> checkModifiedFuture;
     private volatile long last;
 
@@ -56,10 +55,10 @@ public class FileExchangeGroup extends AbstractExchangeGroup {
         }
         checkModifiedFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
             public void run() {
-                // 检测文件变更
+                // check the file change
                 try {
                     check();
-                } catch (Throwable t) { // 防御性容错
+                } catch (Throwable t) { // Defensive fault tolerance
                     logger.error("Unexpected error occur at reconnect, cause: " + t.getMessage(), t);
                 }
             }

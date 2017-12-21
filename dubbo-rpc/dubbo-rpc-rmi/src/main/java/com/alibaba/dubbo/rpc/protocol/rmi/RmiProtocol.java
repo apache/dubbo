@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,8 +32,6 @@ import java.rmi.RemoteException;
 
 /**
  * RmiProtocol.
- *
- * @author qian.lei
  */
 public class RmiProtocol extends AbstractProxyProtocol {
 
@@ -71,7 +70,7 @@ public class RmiProtocol extends AbstractProxyProtocol {
     @SuppressWarnings("unchecked")
     protected <T> T doRefer(final Class<T> serviceType, final URL url) throws RpcException {
         final RmiProxyFactoryBean rmiProxyFactoryBean = new RmiProxyFactoryBean();
-        //RMI传输时使用自定义的远程执行对象，从而传递额外的参数
+        // RMI needs extra parameter since it uses customized remote invocation object
         rmiProxyFactoryBean.setRemoteInvocationFactory(new RemoteInvocationFactory() {
             public RemoteInvocation createRemoteInvocation(MethodInvocation methodInvocation) {
                 return new RmiRemoteInvocation(methodInvocation);
@@ -92,7 +91,6 @@ public class RmiProtocol extends AbstractProxyProtocol {
         }
         if (e != null && e.getCause() != null) {
             Class<?> cls = e.getCause().getClass();
-            // 是根据测试Case发现的问题，对RpcException.setCode进行设置
             if (SocketTimeoutException.class.equals(cls)) {
                 return RpcException.TIMEOUT_EXCEPTION;
             } else if (IOException.class.isAssignableFrom(cls)) {
