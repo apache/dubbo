@@ -4,9 +4,6 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.EnumSet;
 
-/**
- * @author bw on 24/10/2017.
- */
 public class EnumSetSerializer extends AbstractSerializer {
     private static EnumSetSerializer SERIALIZER = new EnumSetSerializer();
 

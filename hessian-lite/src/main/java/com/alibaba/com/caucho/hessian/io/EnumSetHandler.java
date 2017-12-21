@@ -4,9 +4,6 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.EnumSet;
 
-/**
- * @author bw on 24/10/2017.
- */
 class EnumSetHandler implements Serializable, HessianHandle {
     private Class type;
     private Object[] objects;

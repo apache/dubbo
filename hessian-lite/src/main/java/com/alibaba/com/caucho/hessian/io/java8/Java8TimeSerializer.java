@@ -8,7 +8,7 @@ import com.alibaba.com.caucho.hessian.io.AbstractSerializer;
 
 public class Java8TimeSerializer<T> extends AbstractSerializer {
 
-    //handle 具体类型
+    // Type of handle
     private Class<T> handleType;
 
     private Java8TimeSerializer(Class<T> handleType) {
@@ -25,7 +25,7 @@ public class Java8TimeSerializer<T> extends AbstractSerializer {
             out.writeNull();
             return;
         }
-        
+
         T handle = null;
         try {
             Constructor<T> constructor = handleType.getConstructor(Object.class);
@@ -33,7 +33,7 @@ public class Java8TimeSerializer<T> extends AbstractSerializer {
         } catch (Exception e) {
             throw new RuntimeException("the class :" + handleType.getName() + " construct failed:" + e.getMessage(), e);
         }
-        
+
         out.writeObject(handle);
     }
 }

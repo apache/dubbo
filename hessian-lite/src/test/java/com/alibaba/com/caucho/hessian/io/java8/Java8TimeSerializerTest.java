@@ -14,7 +14,7 @@ import java.lang.reflect.Method;
 import java.util.Calendar;
 
 /**
- * jdk1.8时间类型的序列化测试
+ * Test Java8TimeSerializer class
  */
 public class Java8TimeSerializerTest {
 
