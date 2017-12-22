@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,53 +24,52 @@ import java.util.List;
 /**
  * MethodConfig
  *
- * @author william.liangf
  * @export
  */
 public class MethodConfig extends AbstractMethodConfig {
 
     private static final long serialVersionUID = 884908855422675941L;
 
-    // 方法名
+    // method name
     private String name;
 
-    // 统计参数
+    // stat
     private Integer stat;
 
-    // 是否重试
+    // whether to retry
     private Boolean retry;
 
-    // 是否为可靠异步
+    // if it's reliable
     private Boolean reliable;
 
-    // 方法使用线程数限制
+    // thread limits for method invocations
     private Integer executes;
 
-    // 是否过时
+    // if it's deprecated
     private Boolean deprecated;
 
-    // 是否需要开启stiky策略
+    // whether to enable sticky
     private Boolean sticky;
 
-    // 是否需要返回
+    // whether need to return
     private Boolean isReturn;
 
-    //异步调用回调实例
+    // callback instance when async-call is invoked
     private Object oninvoke;
 
-    //异步调用回调方法
+    // callback method when async-call is invoked
     private String oninvokeMethod;
 
-    //异步调用回调实例
+    // callback instance when async-call is returned
     private Object onreturn;
 
-    //异步调用回调方法
+    // callback method when async-call is returned
     private String onreturnMethod;
 
-    //异步调用异常回调实例
+    // callback instance when async-call has exception thrown
     private Object onthrow;
 
-    //异步调用异常回调方法
+    // callback method when async-call has exception thrown
     private String onthrowMethod;
 
     private List<ArgumentConfig> arguments;

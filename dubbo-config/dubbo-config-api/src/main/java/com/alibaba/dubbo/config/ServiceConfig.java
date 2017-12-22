@@ -1,11 +1,12 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -63,7 +64,6 @@ import static com.alibaba.dubbo.common.utils.NetUtils.isInvalidPort;
 /**
  * ServiceConfig
  *
- * @author william.liangf
  * @export
  */
 public class ServiceConfig<T> extends AbstractServiceConfig {
@@ -79,14 +79,14 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private static final ScheduledExecutorService delayExportExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboServiceDelayExporter", true));
     private final List<URL> urls = new ArrayList<URL>();
     private final List<Exporter<?>> exporters = new ArrayList<Exporter<?>>();
-    // 接口类型
+    // interface type
     private String interfaceName;
     private Class<?> interfaceClass;
-    // 接口实现类引用
+    // reference to interface impl
     private T ref;
-    // 服务名称
+    // service name
     private String path;
-    // 方法配置
+    // method configuration
     private List<MethodConfig> methods;
     private ProviderConfig provider;
     private transient volatile boolean exported;
@@ -318,7 +318,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     private void checkRef() {
-        // 检查引用不为空，并且引用必需实现接口
+        // reference should not be null, and is the implementation of the given interface
         if (ref == null) {
             throw new IllegalStateException("ref not allow null!");
         }
@@ -395,10 +395,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                             if (methods != null && methods.length > 0) {
                                 for (int i = 0; i < methods.length; i++) {
                                     String methodName = methods[i].getName();
-                                    //匹配方法名称，获取方法签名.
+                                    // target the method, and get its signature
                                     if (methodName.equals(method.getName())) {
                                         Class<?>[] argtypes = methods[i].getParameterTypes();
-                                        //一个方法中单个callback
+                                        // one callback in the method
                                         if (argument.getIndex() != -1) {
                                             if (argtypes[argument.getIndex()].getName().equals(argument.getType())) {
                                                 appendParameters(map, argument, method.getName() + "." + argument.getIndex());
@@ -406,7 +406,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                                                 throw new IllegalArgumentException("argument config error : the index attribute and type attirbute not match :index :" + argument.getIndex() + ", type:" + argument.getType());
                                             }
                                         } else {
-                                            //一个方法中多个callback
+                                            // multiple callbacks in the method
                                             for (int j = 0; j < argtypes.length; j++) {
                                                 Class<?> argclazz = argtypes[j];
                                                 if (argclazz.getName().equals(argument.getType())) {
@@ -459,7 +459,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             protocolConfig.setRegister(false);
             map.put("notify", "false");
         }
-        // 导出服务
+        // export service
         String contextPath = protocolConfig.getContextpath();
         if ((contextPath == null || contextPath.length() == 0) && provider != null) {
             contextPath = provider.getContextpath();
@@ -476,14 +476,14 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
 
         String scope = url.getParameter(Constants.SCOPE_KEY);
-        //配置为none不暴露
+        // don't export when none is configured
         if (!Constants.SCOPE_NONE.toString().equalsIgnoreCase(scope)) {
 
-            //配置不是remote的情况下做本地暴露 (配置为remote，则表示只暴露远程服务)
+            // export to local if the config is not remote (export to remote only when config is remote)
             if (!Constants.SCOPE_REMOTE.toString().equalsIgnoreCase(scope)) {
                 exportLocal(url);
             }
-            //如果配置不是local则暴露为远程服务.(配置为local，则表示只暴露本地服务)
+            // export to remote if the config is not local (export to local only when config is local)
             if (!Constants.SCOPE_LOCAL.toString().equalsIgnoreCase(scope)) {
                 if (logger.isInfoEnabled()) {
                     logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
@@ -532,8 +532,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
 
     /**
-     * provider注册&监听ip地址，注册与监听ip可独立配置
-     * 配置优先级：系统环境变量 -> java命令参数-D -> 配置文件host属性 -> /etc/hosts中hostname-ip映射关系 -> 默认联通注册中心地址的网卡地址 -> 第一个可用的网卡地址
+     * Register & bind IP address for service provider, can be configured separately.
+     * Configuration priority: environment variables -> java system properties -> host property in config file ->
+     * /etc/hosts -> default network address -> first available network address
      *
      * @param protocolConfig
      * @param registryURLs
@@ -548,7 +549,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             throw new IllegalArgumentException("Specified invalid bind ip from property:" + Constants.DUBBO_IP_TO_BIND + ", value:" + hostToBind);
         }
 
-        // 如果没通过环境变量设置bind ip，则继续按优先级查找
+        // if bind ip is not found in environment, keep looking up
         if (hostToBind == null || hostToBind.length() == 0) {
             hostToBind = protocolConfig.getHost();
             if (provider != null && (hostToBind == null || hostToBind.length() == 0)) {
@@ -591,12 +592,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
         map.put(Constants.BIND_IP_KEY, hostToBind);
 
-        // registry ip，默认不作为bind ip
+        // registry ip is not used for bind ip by default
         String hostToRegistry = getValueFromConfig(protocolConfig, Constants.DUBBO_IP_TO_REGISTRY);
         if (hostToRegistry != null && hostToRegistry.length() > 0 && isInvalidLocalHost(hostToRegistry)) {
             throw new IllegalArgumentException("Specified invalid registry ip from property:" + Constants.DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
         } else if (hostToRegistry == null || hostToRegistry.length() == 0) {
-            // bind ip默认作为registry ip
+            // bind ip is used as registry ip by default
             hostToRegistry = hostToBind;
         }
 
@@ -606,8 +607,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     /**
-     * provider注册&监听端口，注册与监听port可独立配置
-     * 配置优先级：启动环境变量 -> java命令参数-D -> protocol配置文件port属性配置 -> 协议默认端口
+     * Register port and bind port for the provider, can be configured separately
+     * Configuration priority: environment variable -> java system properties -> port property in protocol config file
+     * -> protocol default port
      *
      * @param protocolConfig
      * @param name
@@ -616,11 +618,11 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private Integer findConfigedPorts(ProtocolConfig protocolConfig, String name, Map<String, String> map) {
         Integer portToBind = null;
 
-        // 解析环境变量配置的bind port
+        // parse bind port from environment
         String port = getValueFromConfig(protocolConfig, Constants.DUBBO_PORT_TO_BIND);
         portToBind = parsePort(port);
 
-        // 如未通过环境变量配置bind port，则继续按优先级查找
+        // if there's no bind port found from environment, keep looking up.
         if (portToBind == null) {
             portToBind = protocolConfig.getPort();
             if (provider != null && (portToBind == null || portToBind == 0)) {
@@ -640,10 +642,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             }
         }
 
-        // 记录bind port，作为url的key
+        // save bind port, used as url's key later
         map.put(Constants.BIND_PORT_KEY, String.valueOf(portToBind));
 
-        // registry port，默认不作为bind port
+        // registry port, not used as bind port by default
         String portToRegistryStr = getValueFromConfig(protocolConfig, Constants.DUBBO_PORT_TO_REGISTRY);
         Integer portToRegistry = parsePort(portToRegistryStr);
         if (portToRegistry == null) {
@@ -690,7 +692,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 && provider != null) {
             setProtocols(provider.getProtocols());
         }
-        // 兼容旧版本
+        // backward compatibility
         if (protocols == null || protocols.size() == 0) {
             setProtocol(new ProtocolConfig());
         }
