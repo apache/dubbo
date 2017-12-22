@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,11 +21,9 @@ import com.alibaba.dubbo.config.support.Parameter;
 import com.alibaba.dubbo.rpc.InvokerListener;
 import com.alibaba.dubbo.rpc.support.ProtocolUtils;
 
-
 /**
  * AbstractConsumerConfig
  *
- * @author william.liangf
  * @export
  * @see com.alibaba.dubbo.config.ReferenceConfig
  */
@@ -32,18 +31,18 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
     private static final long serialVersionUID = -2786526984373031126L;
 
-    // ======== 引用缺省值，当引用属性未设置时使用该缺省值替代  ========
+    // ======== Reference config default values, will take effect if reference's attribute is not set  ========
 
-    // 检查服务提供者是否存在
+    // check if service provider exists
     protected Boolean check;
 
-    // 是否加载时即刻初始化
+    // whether to eagle-init
     protected Boolean init;
 
-    // 是否使用泛接口
+    // whether to use generic interface
     protected String generic;
 
-    // 优先从JVM内获取引用实例
+    // whether to find reference's instance from the current JVM
     protected Boolean injvm;
 
     // lazy create connection
@@ -53,13 +52,13 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
     protected Boolean sticky;
 
-    //stub是否支持event事件. //TODO slove merge problem 
+    // whether to support event in stub. //TODO solve merge problem
     protected Boolean stubevent;//= Constants.DEFAULT_STUB_EVENT;
 
-    // 版本
+    // version
     protected String version;
 
-    // 服务分组
+    // group
     protected String group;
 
     public Boolean isCheck() {
@@ -99,7 +98,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
     /**
      * @return
-     * @deprecated 通过scope进行判断，scope=local
+     * @deprecated instead, use scope to judge if it's in jvm, scope=local
      */
     @Deprecated
     public Boolean isInjvm() {
@@ -108,7 +107,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
     /**
      * @param injvm
-     * @deprecated 通过scope设置，scope=local表示使用injvm协议.
+     * @deprecated instead, use scope to judge if it's in jvm, scope=local
      */
     @Deprecated
     public void setInjvm(Boolean injvm) {
