@@ -167,7 +167,7 @@ public class JValidator implements Validator {
     private static String generateMethodParameterClassName(Class<?> clazz, Method method) {
         StringBuilder builder = new StringBuilder().append(clazz.getName())
                 .append("_")
-                .append(toUpperMethoName(method.getName()))
+                .append(toUpperMethodName(method.getName()))
                 .append("Parameter");
 
         Class<?>[] parameterTypes = method.getParameterTypes();
@@ -192,7 +192,7 @@ public class JValidator implements Validator {
         return false;
     }
 
-    private static String toUpperMethoName(String methodName) {
+    private static String toUpperMethodName(String methodName) {
         return methodName.substring(0, 1).toUpperCase() + methodName.substring(1);
     }
 
@@ -236,7 +236,7 @@ public class JValidator implements Validator {
 
     public void validate(String methodName, Class<?>[] parameterTypes, Object[] arguments) throws Exception {
         List<Class<?>> groups = new ArrayList<Class<?>>();
-        String methodClassName = clazz.getName() + "$" + toUpperMethoName(methodName);
+        String methodClassName = clazz.getName() + "$" + toUpperMethodName(methodName);
         Class<?> methodClass = null;
         try {
             methodClass = Class.forName(methodClassName, false, Thread.currentThread().getContextClassLoader());
