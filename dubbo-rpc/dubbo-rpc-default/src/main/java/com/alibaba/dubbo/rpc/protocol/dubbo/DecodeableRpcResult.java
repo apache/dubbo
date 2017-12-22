@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Type;
+import java.util.HashMap;
 
 public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable {
 
@@ -96,6 +97,24 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
                 break;
             default:
                 throw new IOException("Unknown result flag, expect '0' '1' '2', get " + flag);
+        }
+        byte attachmentFlag = in.readByte();
+        switch (attachmentFlag) {
+            case DubboCodec.RESPONSE_ATTACHMENTS_NO_EXIST:
+                break;
+            case DubboCodec.RESPONSE_ATTACHMENTS_EXIST:
+            	try {
+					HashMap<String, String> attachments = in.readObject(HashMap.class);
+					if(attachments != null 
+							&& attachments.size() > 0){
+						this.getAttachments().putAll(attachments);
+					}
+				} catch (ClassNotFoundException e) {
+					throw new IOException(StringUtils.toString("Read response data failed.", e));
+				}
+                break;
+            default:
+                throw new IOException("Unknown result attachments flag, expect '3' '4', get " + attachmentFlag);
         }
         return this;
     }
