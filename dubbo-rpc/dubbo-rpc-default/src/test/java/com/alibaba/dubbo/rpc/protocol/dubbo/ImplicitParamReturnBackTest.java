@@ -49,9 +49,9 @@ public class ImplicitParamReturnBackTest extends TestCase {
 
     public void testImplicitParamReturnBack() throws Exception {
         DemoService service = new DemoServiceImpl();
-        URL providerURL = URL.valueOf("dubbo://127.0.0.1:9010/com.alibaba.dubbo.rpc.DemoService?service.filter=ProviderFilter");
+        URL providerURL = URL.valueOf("dubbo://127.0.0.1:9010/com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService?service.filter=ProviderFilter");
         protocol.export(proxy.getInvoker(service, DemoService.class, providerURL));
-        URL consumerURL = URL.valueOf("dubbo://127.0.0.1:9010/com.alibaba.dubbo.rpc.DemoService?service.filter=ConsumerFilter");
+        URL consumerURL = URL.valueOf("dubbo://127.0.0.1:9010/com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService?reference.filter=ConsumerFilter");
         service = proxy.getProxy(protocol.refer(DemoService.class, consumerURL));
         service.echo("123");
     }
