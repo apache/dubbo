@@ -14,15 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.qos.command;
+package com.alibaba.dubbo.qos.command.impl;
 
-public interface CommandExecutor {
-    /**
-     * Execute one command and return the execution result
-     *
-     * @param commandContext command context
-     * @return command execution result
-     * @throws NoSuchCommandException
-     */
-    String execute(CommandContext commandContext) throws NoSuchCommandException;
+import com.alibaba.dubbo.qos.command.BaseCommand;
+import com.alibaba.dubbo.qos.command.CommandContext;
+import com.alibaba.dubbo.qos.command.annotation.Cmd;
+import com.alibaba.dubbo.qos.common.Constants;
+
+@Cmd(name = "quit",summary = "quit telnet console")
+public class Quit implements BaseCommand {
+    @Override
+    public String execute(CommandContext commandContext, String[] args) {
+        return Constants.CLOSE;
+    }
 }

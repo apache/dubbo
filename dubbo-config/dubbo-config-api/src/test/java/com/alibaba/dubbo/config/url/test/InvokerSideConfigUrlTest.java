@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,9 +36,6 @@ import org.junit.Test;
 import java.util.Arrays;
 
 
-/**
- * @author haomin.liuhm
- */
 public class InvokerSideConfigUrlTest extends UrlTestBase {
     private static final Logger log = LoggerFactory.getLogger(InvokerSideConfigUrlTest.class);
 
@@ -170,8 +168,8 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
         verifyInvokerUrlGeneration(refConf, refConfTable);
     }
 
-    @Ignore
-    @Test //注册中心的参数不会在与consumer的query merge
+    @Ignore("parameter on register center will not be merged any longer with query parameter request from the consumer")
+    @Test
     public void regConfForConsumerUrlTest() {
 
         verifyInvokerUrlGeneration(regConfForConsumer, regConfForConsumerTable);
@@ -225,7 +223,6 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
 
         assertUrlStringWithLocalTable(subScribedUrlStr, dataTable, configName, column);
 
-        //重新refer会判断如果已经订阅过，不再重新订阅。
         try {
             refConf.destroy();
         } catch (Exception e) {
