@@ -3,7 +3,11 @@ package com.alibaba.dubbo.test.provider;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.dubbo.demo.DemoService;
 
-
+/**
+ * Default {@link DemoService} implementation
+ *
+ * @since 2.5.8
+ */
 @Service(
         version = "2.5.8",
         application = "dubbo-annotation-provider",

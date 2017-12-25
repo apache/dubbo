@@ -24,7 +24,9 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
-
+/**
+ * CallbackConsumer
+ */
 public class AsyncConsumer {
 
     public static void main(String[] args) throws Exception {

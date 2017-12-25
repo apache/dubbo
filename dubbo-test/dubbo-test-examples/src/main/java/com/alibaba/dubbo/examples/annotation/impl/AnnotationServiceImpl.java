@@ -19,6 +19,9 @@ package com.alibaba.dubbo.examples.annotation.impl;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.dubbo.examples.annotation.api.AnnotationService;
 
+/**
+ * AsyncServiceImpl
+ */
 
 @Service
 public class AnnotationServiceImpl implements AnnotationService {

@@ -1,5 +1,8 @@
 package com.alibaba.dubbo.rpc.benchmark;
 
+/**
+ * nfs-rpc Apache License http://code.google.com/p/nfs-rpc (c) 2011
+ */
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -9,7 +12,9 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 
-
+/**
+ * Simple Processor RPC Benchmark Client Thread
+ */
 public class SimpleProcessorBenchmarkClientRunnable implements ClientRunnable {
 
     private static final Log LOGGER = LogFactory.getLog(SimpleProcessorBenchmarkClientRunnable.class);

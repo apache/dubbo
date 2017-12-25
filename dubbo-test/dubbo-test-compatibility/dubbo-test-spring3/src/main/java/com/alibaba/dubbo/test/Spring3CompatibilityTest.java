@@ -7,7 +7,11 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.util.Assert;
 
-
+/**
+ * Dubbo compatibility test on Spring 3.2.x
+ *
+ * @since 2.5.8
+ */
 public class Spring3CompatibilityTest {
 
     public static void main(String[] args) {

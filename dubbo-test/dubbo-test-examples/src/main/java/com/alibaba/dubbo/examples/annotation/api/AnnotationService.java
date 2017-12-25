@@ -16,7 +16,9 @@
  */
 package com.alibaba.dubbo.examples.annotation.api;
 
-
+/**
+ * AsyncService
+ */
 public interface AnnotationService {
 
     String sayHello(String name);

@@ -1,6 +1,9 @@
 package com.alibaba.dubbo.rpc.benchmark;
 
 
+/**
+ * TODO Comment of HelloService
+ */
 public class DemoServiceImpl implements DemoService {
     ResponseObject responseObject = new ResponseObject(100);
 

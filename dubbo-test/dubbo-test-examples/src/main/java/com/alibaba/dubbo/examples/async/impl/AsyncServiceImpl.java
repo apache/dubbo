@@ -18,7 +18,9 @@ package com.alibaba.dubbo.examples.async.impl;
 
 import com.alibaba.dubbo.examples.async.api.AsyncService;
 
-
+/**
+ * AsyncServiceImpl
+ */
 public class AsyncServiceImpl implements AsyncService {
 
     public String sayHello(String name) {

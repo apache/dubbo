@@ -19,6 +19,9 @@ package com.alibaba.dubbo.rpc.benchmark;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 
+/**
+ * RpcClient.java
+ */
 public class RpcClient extends AbstractClientRunnable {
     private static String message = null;
     private static int length = 100;

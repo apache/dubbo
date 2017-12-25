@@ -20,7 +20,9 @@ import com.alibaba.dubbo.examples.cache.api.CacheService;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-
+/**
+ * CacheConsumer
+ */
 public class CacheConsumer {
 
     public static void main(String[] args) throws Exception {

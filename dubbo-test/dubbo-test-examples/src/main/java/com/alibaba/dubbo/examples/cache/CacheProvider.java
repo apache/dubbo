@@ -18,7 +18,9 @@ package com.alibaba.dubbo.examples.cache;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-
+/**
+ * CacheProvider
+ */
 public class CacheProvider {
 
     public static void main(String[] args) throws Exception {

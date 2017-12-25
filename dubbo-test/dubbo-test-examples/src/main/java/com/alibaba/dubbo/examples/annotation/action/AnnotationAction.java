@@ -21,6 +21,9 @@ import com.alibaba.dubbo.examples.annotation.api.AnnotationService;
 
 import org.springframework.stereotype.Component;
 
+/**
+ * AnnotationAction
+ */
 @Component("annotationAction")
 public class AnnotationAction {
 

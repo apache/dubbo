@@ -21,6 +21,9 @@ import com.alibaba.dubbo.examples.callback.api.CallbackService;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+/**
+ * CallbackConsumer
+ */
 public class CallbackConsumer {
 
     public static void main(String[] args) throws Exception {

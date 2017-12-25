@@ -23,6 +23,10 @@ import com.alibaba.dubbo.rpc.benchmark.ServiceFactory;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 
+/**
+ * DemoBenchmarkClient.java
+ */
+
 public class DemoBenchmarkClientRunnable extends AbstractClientRunnable {
 
     public DemoBenchmarkClientRunnable(String targetIP, int targetPort, int clientNums, int rpcTimeout,

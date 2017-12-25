@@ -27,10 +27,10 @@
     <!-- service application config -->
     <dubbo:application name="dubbo_provider"/>
 
-    <!-- provider service global config -->
+    <!-- service provider global config -->
     <dubbo:protocol name="dubbo" port="20885"/>
 
-    <!-- provider service export config -->
+    <!-- service provider export config -->
     <dubbo:service id="helloService" interface="com.alibaba.dubbo.rpc.benchmark.DemoService"
                    ref="demo.local"/>
 

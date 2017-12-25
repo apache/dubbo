@@ -20,7 +20,9 @@ import com.alibaba.dubbo.examples.cache.api.CacheService;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-
+/**
+ * ValidationServiceImpl
+ */
 public class CacheServiceImpl implements CacheService {
 
     private final AtomicInteger i = new AtomicInteger();

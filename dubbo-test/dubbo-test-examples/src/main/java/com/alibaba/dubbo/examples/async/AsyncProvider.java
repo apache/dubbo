@@ -18,7 +18,9 @@ package com.alibaba.dubbo.examples.async;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-
+/**
+ * MergeProvider
+ */
 public class AsyncProvider {
 
     public static void main(String[] args) throws Exception {

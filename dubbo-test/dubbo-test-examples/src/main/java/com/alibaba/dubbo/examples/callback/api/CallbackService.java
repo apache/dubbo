@@ -16,7 +16,9 @@
  */
 package com.alibaba.dubbo.examples.callback.api;
 
-
+/**
+ * CallbackService
+ */
 public interface CallbackService {
 
     void addListener(String key, CallbackListener listener);

@@ -18,7 +18,9 @@ package com.alibaba.dubbo.examples.callback;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-
+/**
+ * MergeProvider
+ */
 public class CallbackProvider {
 
     public static void main(String[] args) throws Exception {

@@ -16,6 +16,9 @@
  */
 package com.alibaba.dubbo.examples.async.api;
 
+/**
+ * AsyncService
+ */
 public interface AsyncService {
 
     String sayHello(String name);

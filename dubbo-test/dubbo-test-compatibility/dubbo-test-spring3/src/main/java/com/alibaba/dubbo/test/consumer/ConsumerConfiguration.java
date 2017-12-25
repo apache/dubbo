@@ -6,6 +6,12 @@ import com.alibaba.dubbo.demo.DemoService;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 
+/**
+ * Consumer {@Link Configuration}
+ *
+ * @since 2.5.8
+ */
+
 @Configuration
 @ImportResource("META-INF/spring/dubbo-consumer.xml")
 @DubboComponentScan
