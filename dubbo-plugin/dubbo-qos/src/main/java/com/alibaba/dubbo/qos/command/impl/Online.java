@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.qos.command.CommandImpl;
+package com.alibaba.dubbo.qos.command.impl;
 
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.logger.Logger;
@@ -32,21 +32,22 @@ import com.alibaba.dubbo.registry.support.ProviderInvokerWrapper;
 import java.util.List;
 import java.util.Set;
 
-@Cmd(name = "offline", summary = "offline dubbo", example = {
-        "offline dubbo",
-        "offline xx.xx.xxx.service"
+@Cmd(name = "online", summary = "online dubbo", example = {
+        "online dubbo",
+        "online xx.xx.xxx.service"
 })
-public class Offline implements BaseCommand {
-    private Logger logger = LoggerFactory.getLogger(Offline.class);
+public class Online implements BaseCommand {
+    private Logger logger = LoggerFactory.getLogger(Online.class);
     private RegistryFactory registryFactory = ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
-        logger.info("receive offline command");
+        logger.info("receive online command");
         String servicePattern = ".*";
         if (args != null && args.length > 0) {
             servicePattern = args[0];
         }
+
         boolean hasService = false;
 
         List<ProviderModel> providerModelList = ApplicationModel.allProviderModels();
@@ -55,12 +56,12 @@ public class Offline implements BaseCommand {
                 hasService = true;
                 Set<ProviderInvokerWrapper> providerInvokerWrapperSet = ProviderConsumerRegTable.getProviderInvoker(providerModel.getServiceName());
                 for (ProviderInvokerWrapper providerInvokerWrapper : providerInvokerWrapperSet) {
-                    if (!providerInvokerWrapper.isReg()) {
+                    if (providerInvokerWrapper.isReg()) {
                         continue;
                     }
                     Registry registry = registryFactory.getRegistry(providerInvokerWrapper.getRegistryUrl());
-                    registry.unregister(providerInvokerWrapper.getProviderUrl());
-                    providerInvokerWrapper.setReg(false);
+                    registry.register(providerInvokerWrapper.getProviderUrl());
+                    providerInvokerWrapper.setReg(true);
                 }
             }
         }
@@ -70,5 +71,6 @@ public class Offline implements BaseCommand {
         } else {
             return "service not found";
         }
+
     }
 }
