@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,10 +29,6 @@ import java.util.Properties;
 import static org.junit.Assert.assertThat;
 import static org.junit.matchers.JUnitMatchers.containsString;
 
-/**
- * @author ding.lid
- * @author tony.chenl
- */
 public class ConfigUtilsTest {
 
     public static <T> List<T> toArray(T... args) {
@@ -42,9 +39,6 @@ public class ConfigUtilsTest {
         return ret;
     }
 
-    /**
-     * 测试点1：用户配置参数在最后 测试点2：用户配置参数如果带-，会删除同名的默认参数 测试点3：default开头的默认参数会被删除
-     */
     @Test
     public void testMergeValues() {
         List<String> merged = ConfigUtils.mergeValues(Serialization.class, "aaa,bbb,default.cunstom",
@@ -52,9 +46,6 @@ public class ConfigUtilsTest {
         Assert.assertEquals(toArray("dubbo", "fastjson", "aaa", "bbb", "default.cunstom"), merged);
     }
 
-    /**
-     * 测试点1：用户配置参数在最后 测试点2：用户配置参数如果带-，会删除同名的默认参数 测试点3：default开头的默认参数会被删除
-     */
     @Test
     public void testMergeValues_addDefault() {
         List<String> merged = ConfigUtils.mergeValues(Serialization.class, "aaa,bbb,default,zzz",
@@ -62,18 +53,12 @@ public class ConfigUtilsTest {
         Assert.assertEquals(toArray("aaa", "bbb", "dubbo", "fastjson", "zzz"), merged);
     }
 
-    /**
-     * 测试点1：用户配置-default，会删除所有默认参数
-     */
     @Test
     public void testMergeValuesDeleteDefault() {
         List<String> merged = ConfigUtils.mergeValues(Serialization.class, "-default", toArray("dubbo", "default.hessian2", "json"));
         Assert.assertEquals(toArray(), merged);
     }
 
-    /**
-     * 测试点1：用户配置-default，会删除所有默认参数
-     */
     @Test
     public void testMergeValuesDeleteDefault_2() {
         List<String> merged = ConfigUtils.mergeValues(Serialization.class, "-default,aaa", toArray("dubbo", "default.hessian2", "json"));

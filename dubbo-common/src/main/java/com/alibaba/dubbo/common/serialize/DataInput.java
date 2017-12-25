@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,8 +20,6 @@ import java.io.IOException;
 
 /**
  * Data input.
- *
- * @author qian.lei
  */
 public interface DataInput {
 
@@ -28,7 +27,7 @@ public interface DataInput {
      * Read boolean.
      *
      * @return boolean.
-     * @throws IOException.
+     * @throws IOException
      */
     boolean readBool() throws IOException;
 
@@ -36,7 +35,7 @@ public interface DataInput {
      * Read byte.
      *
      * @return byte value.
-     * @throws IOException.
+     * @throws IOException
      */
     byte readByte() throws IOException;
 
@@ -44,7 +43,7 @@ public interface DataInput {
      * Read short integer.
      *
      * @return short.
-     * @throws IOException.
+     * @throws IOException
      */
     short readShort() throws IOException;
 
@@ -52,7 +51,7 @@ public interface DataInput {
      * Read integer.
      *
      * @return integer.
-     * @throws IOException.
+     * @throws IOException
      */
     int readInt() throws IOException;
 
@@ -60,7 +59,7 @@ public interface DataInput {
      * Read long.
      *
      * @return long.
-     * @throws IOException.
+     * @throws IOException
      */
     long readLong() throws IOException;
 
@@ -68,7 +67,7 @@ public interface DataInput {
      * Read float.
      *
      * @return float.
-     * @throws IOException.
+     * @throws IOException
      */
     float readFloat() throws IOException;
 
@@ -76,7 +75,7 @@ public interface DataInput {
      * Read double.
      *
      * @return double.
-     * @throws IOException.
+     * @throws IOException
      */
     double readDouble() throws IOException;
 
@@ -84,7 +83,7 @@ public interface DataInput {
      * Read UTF-8 string.
      *
      * @return string.
-     * @throws IOException.
+     * @throws IOException
      */
     String readUTF() throws IOException;
 
@@ -92,7 +91,7 @@ public interface DataInput {
      * Read byte array.
      *
      * @return byte array.
-     * @throws IOException.
+     * @throws IOException
      */
     byte[] readBytes() throws IOException;
 }

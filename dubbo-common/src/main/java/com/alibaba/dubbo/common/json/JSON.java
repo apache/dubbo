@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,8 +27,6 @@ import java.io.Writer;
 
 /**
  * JSON.
- *
- * @author qian.lei
  */
 @Deprecated
 public class JSON {
@@ -50,7 +49,7 @@ public class JSON {
      *
      * @param obj object.
      * @return json string.
-     * @throws IOException.
+     * @throws IOException
      */
     public static String json(Object obj) throws IOException {
         if (obj == null) return NULL;
@@ -68,7 +67,7 @@ public class JSON {
      *
      * @param obj    object.
      * @param writer writer.
-     * @throws IOException.
+     * @throws IOException
      */
     public static void json(Object obj, Writer writer) throws IOException {
         json(obj, writer, false);
@@ -87,7 +86,7 @@ public class JSON {
      * @param obj        object.
      * @param properties property name array.
      * @return json string.
-     * @throws IOException.
+     * @throws IOException
      */
     public static String json(Object obj, String[] properties) throws IOException {
         if (obj == null) return NULL;
@@ -110,7 +109,7 @@ public class JSON {
      * @param obj        object.
      * @param properties property name array.
      * @param writer     writer.
-     * @throws IOException.
+     * @throws IOException
      */
     public static void json(Object obj, final String[] properties, Writer writer, boolean writeClass) throws IOException {
         if (obj == null)
