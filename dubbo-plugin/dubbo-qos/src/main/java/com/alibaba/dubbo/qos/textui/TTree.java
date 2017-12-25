@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.alibaba.dubbo.qos.textui;
 
 import org.apache.commons.lang3.StringUtils;
@@ -12,8 +28,7 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.repeat;
 
 /**
- * 树形控件
- * Created by oldmanpushcart@gmail.com on 15/5/26.
+ * tree
  */
 public class TTree implements TComponent {
 
@@ -22,13 +37,13 @@ public class TTree implements TComponent {
     private static final String STEP_HAS_BOARD = "|   ";
     private static final String STEP_EMPTY_BOARD = "    ";
 
-    // 是否输出耗时
+    // should output cost or not
     private final boolean isPrintCost;
 
-    // 根节点
+    // tree node
     private final Node root;
 
-    // 当前节点
+    // current node
     private Node current;
 
 
@@ -93,7 +108,7 @@ public class TTree implements TComponent {
     }
 
     /**
-     * 递归遍历
+     * recursive visit
      */
     private void recursive(int deep, boolean isLast, String prefix, Node node, Callback callback) {
         callback.callback(deep, isLast, prefix, node);
@@ -118,9 +133,9 @@ public class TTree implements TComponent {
     }
 
     /**
-     * 创建一个分支节点
+     * create a branch node
      *
-     * @param data 节点数据
+     * @param data node data
      * @return this
      */
     public TTree begin(Object data) {
@@ -149,7 +164,7 @@ public class TTree implements TComponent {
     }
 
     /**
-     * 结束一个分支节点
+     * end a branch node
      *
      * @return this
      */
@@ -164,37 +179,37 @@ public class TTree implements TComponent {
 
 
     /**
-     * 树节点
+     * tree node
      */
     private static class Node {
 
         /**
-         * 父节点
+         * parent node
          */
         final Node parent;
 
         /**
-         * 节点数据
+         * node data
          */
         Object data;
 
         /**
-         * 子节点
+         * child nodes
          */
         final List<Node> children = new ArrayList<Node>();
 
         /**
-         * 开始时间戳
+         * begin timestamp
          */
         private long beginTimestamp;
 
         /**
-         * 结束时间戳
+         * end timestamp
          */
         private long endTimestamp;
 
         /**
-         * 构造树节点(根节点)
+         * construct root node
          */
         private Node(Object data) {
             this.parent = null;
@@ -202,10 +217,10 @@ public class TTree implements TComponent {
         }
 
         /**
-         * 构造树节点
+         * construct a regular node
          *
-         * @param parent 父节点
-         * @param data   节点数据
+         * @param parent parent node
+         * @param data   node data
          */
         private Node(Node parent, Object data) {
             this.parent = parent;
@@ -214,7 +229,7 @@ public class TTree implements TComponent {
         }
 
         /**
-         * 是否根节点
+         * is the current node the root node
          *
          * @return true / false
          */
@@ -223,7 +238,7 @@ public class TTree implements TComponent {
         }
 
         /**
-         * 是否叶子节点
+         * if the current node the leaf node
          *
          * @return true / false
          */
@@ -245,7 +260,7 @@ public class TTree implements TComponent {
 
 
     /**
-     * 遍历回调接口
+     * callback interface for recursive visit
      */
     private interface Callback {
 
