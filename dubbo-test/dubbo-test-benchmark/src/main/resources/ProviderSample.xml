@@ -24,13 +24,13 @@
 
     <dubbo:registry address="N/A"/>
 
-    <!-- 服务应用配置 -->
+    <!-- service application config -->
     <dubbo:application name="dubbo_provider"/>
 
-    <!-- 服务提供者全局配置 -->
+    <!-- provider service global config -->
     <dubbo:protocol name="dubbo" port="20885"/>
 
-    <!-- 服务提供者暴露服务配置 -->
+    <!-- provider service export config -->
     <dubbo:service id="helloService" interface="com.alibaba.dubbo.rpc.benchmark.DemoService"
                    ref="demo.local"/>
 

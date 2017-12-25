@@ -5,11 +5,6 @@ import com.alibaba.dubbo.config.ReferenceConfig;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Abstract Service Factory,create custom nums Service
- *
- * @author tony.chenl
- */
 public class ServiceFactory<T> {
 
     // Cache ExchangeClient

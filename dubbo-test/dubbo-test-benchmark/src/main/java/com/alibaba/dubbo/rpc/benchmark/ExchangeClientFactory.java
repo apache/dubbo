@@ -1,8 +1,5 @@
 package com.alibaba.dubbo.rpc.benchmark;
 
-/**
- * nfs-rpc Apache License http://code.google.com/p/nfs-rpc (c) 2011
- */
 
 import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
 import com.alibaba.dubbo.remoting.exchange.Exchangers;
@@ -14,11 +11,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.FutureTask;
 
-/**
- * Abstract ExchangeClient Factory,create custom nums ExchangeClient
- *
- * @author <a href="mailto:bluedavy@gmail.com">bluedavy</a>
- */
 public class ExchangeClientFactory {
 
     // Cache ExchangeClient

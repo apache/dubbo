@@ -1,8 +1,5 @@
 package com.alibaba.dubbo.rpc.benchmark;
 
-/**
- * nfs-rpc Apache License http://code.google.com/p/nfs-rpc (c) 2011
- */
 
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.exchange.ExchangeChannel;
@@ -12,11 +9,7 @@ import com.alibaba.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-/**
- * Abstract benchmark server Usage: BenchmarkServer listenPort maxThreads responseSize
- *
- * @author <a href="mailto:bluedavy@gmail.com">bluedavy</a>
- */
+
 public abstract class AbstractBenchmarkServer {
 
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
