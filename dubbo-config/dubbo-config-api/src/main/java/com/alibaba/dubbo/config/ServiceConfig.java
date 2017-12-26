@@ -388,10 +388,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 List<ArgumentConfig> arguments = method.getArguments();
                 if (arguments != null && arguments.size() > 0) {
                     for (ArgumentConfig argument : arguments) {
-                        //类型自动转换.
+                        // convert argument type
                         if (argument.getType() != null && argument.getType().length() > 0) {
                             Method[] methods = interfaceClass.getMethods();
-                            //遍历所有方法
+                            // visit all methods
                             if (methods != null && methods.length > 0) {
                                 for (int i = 0; i < methods.length; i++) {
                                     String methodName = methods[i].getName();
