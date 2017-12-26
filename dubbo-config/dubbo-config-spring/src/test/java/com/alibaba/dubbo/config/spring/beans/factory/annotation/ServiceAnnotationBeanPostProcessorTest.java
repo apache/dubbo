@@ -16,18 +16,28 @@
  */
 package com.alibaba.dubbo.config.spring.beans.factory.annotation;
 
+import com.alibaba.dubbo.config.spring.ServiceBean;
 import com.alibaba.dubbo.config.spring.api.DemoService;
+import com.alibaba.dubbo.config.spring.api.HelloService;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * {@link ServiceAnnotationBeanPostProcessor} Test
@@ -44,23 +54,34 @@ import org.springframework.test.context.junit4.SpringRunner;
 public class ServiceAnnotationBeanPostProcessorTest {
 
     @Autowired
-    private DemoService demoService;
+    private ConfigurableListableBeanFactory beanFactory;
 
     @Test
     public void test() {
 
-        String value = demoService.sayName("Mercy");
+        Map<String, HelloService> helloServicesMap = beanFactory.getBeansOfType(HelloService.class);
 
-        Assert.assertEquals("Hello,Mercy", value);
+        Assert.assertEquals(2, helloServicesMap.size());
+
+        Map<String, ServiceBean> serviceBeansMap = beanFactory.getBeansOfType(ServiceBean.class);
+
+        Assert.assertEquals(3, serviceBeansMap.size());
 
     }
 
     @ImportResource("META-INF/spring/dubbo-annotation-provider.xml")
     @PropertySource("META-INF/default.properties")
+    @ComponentScan("com.alibaba.dubbo.config.spring.context.annotation.provider")
     public static class TestConfiguration {
 
         @Bean
         public ServiceAnnotationBeanPostProcessor serviceAnnotationBeanPostProcessor
+                (@Value("${packagesToScan}") String... packagesToScan) {
+            return new ServiceAnnotationBeanPostProcessor(packagesToScan);
+        }
+
+        @Bean
+        public ServiceAnnotationBeanPostProcessor serviceAnnotationBeanPostProcessor2
                 (@Value("${packagesToScan}") String... packagesToScan) {
             return new ServiceAnnotationBeanPostProcessor(packagesToScan);
         }
