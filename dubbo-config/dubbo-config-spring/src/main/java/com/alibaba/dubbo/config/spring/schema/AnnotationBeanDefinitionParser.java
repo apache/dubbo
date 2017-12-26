@@ -51,6 +51,10 @@ public class AnnotationBeanDefinitionParser extends AbstractSingleBeanDefinition
 
     }
 
+    protected boolean shouldGenerateIdAsFallback() {
+        return true;
+    }
+
     /**
      * Registers {@link ReferenceAnnotationBeanPostProcessor} into {@link BeanFactory}
      *
