@@ -12,7 +12,6 @@ import org.junit.Test;
  * fix hession serialize bug:
  * the filed of parent class will cover the filed of sub class
  *
- * @author WangXin
  */
 public class HessianJavaSerializeTest extends SerializeTestBase {
 
