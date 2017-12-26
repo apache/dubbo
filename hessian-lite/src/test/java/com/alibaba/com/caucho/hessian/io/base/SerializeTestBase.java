@@ -12,7 +12,6 @@ import java.io.IOException;
 /**
  * hession base serialize utils
  *
- * @author Wangxin
  */
 public class SerializeTestBase {
     /**
