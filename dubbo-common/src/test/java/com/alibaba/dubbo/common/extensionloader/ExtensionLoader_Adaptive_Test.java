@@ -148,7 +148,7 @@ public class ExtensionLoader_Adaptive_Test {
             fail();
         } catch (IllegalStateException expected) {
             assertThat(expected.getMessage(),
-                    allOf(containsString("Can not create adaptive extenstion interface com.alibaba.dubbo.common.extensionloader.ext5.NoAdaptiveMethodExt"),
+                    allOf(containsString("Can not create adaptive extension interface com.alibaba.dubbo.common.extensionloader.ext5.NoAdaptiveMethodExt"),
                             containsString("No adaptive method on extension com.alibaba.dubbo.common.extensionloader.ext5.NoAdaptiveMethodExt, refuse to create the adaptive class")));
         }
         // report same error when get is invoked for multiple times
@@ -157,7 +157,7 @@ public class ExtensionLoader_Adaptive_Test {
             fail();
         } catch (IllegalStateException expected) {
             assertThat(expected.getMessage(),
-                    allOf(containsString("Can not create adaptive extenstion interface com.alibaba.dubbo.common.extensionloader.ext5.NoAdaptiveMethodExt"),
+                    allOf(containsString("Can not create adaptive extension interface com.alibaba.dubbo.common.extensionloader.ext5.NoAdaptiveMethodExt"),
                             containsString("No adaptive method on extension com.alibaba.dubbo.common.extensionloader.ext5.NoAdaptiveMethodExt, refuse to create the adaptive class")));
         }
     }

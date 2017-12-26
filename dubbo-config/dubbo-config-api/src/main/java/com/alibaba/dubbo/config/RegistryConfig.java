@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,29 +25,28 @@ import java.util.Map;
 /**
  * RegistryConfig
  *
- * @author william.liangf
  * @export
  */
 public class RegistryConfig extends AbstractConfig {
 
     public static final String NO_AVAILABLE = "N/A";
     private static final long serialVersionUID = 5508512956753757169L;
-    // 注册中心地址
+    // register center address
     private String address;
 
-    // 注册中心登录用户名
+    // username to login register center
     private String username;
 
-    // 注册中心登录密码
+    // password to login register center
     private String password;
 
-    // 注册中心缺省端口
+    // default port for register center
     private Integer port;
 
-    // 注册中心协议
+    // protocol for register center
     private String protocol;
 
-    // 客户端实现
+    // client impl
     private String transporter;
 
     private String server;
@@ -59,34 +59,34 @@ public class RegistryConfig extends AbstractConfig {
 
     private String version;
 
-    // 注册中心请求超时时间(毫秒)
+    // request timeout in milliseconds for register center
     private Integer timeout;
 
-    // 注册中心会话超时时间(毫秒)
+    // session timeout in milliseconds for register center
     private Integer session;
 
-    // 动态注册中心列表存储文件
+    // file for saving register center dynamic list
     private String file;
 
-    // 停止时等候完成通知时间
+    // wait time before stop
     private Integer wait;
 
-    // 启动时检查注册中心是否存在
+    // whether to check if register center is available when boot up
     private Boolean check;
 
-    // 在该注册中心上注册是动态的还是静态的服务
+    // whether to allow dynamic service to register on the register center
     private Boolean dynamic;
 
-    // 在该注册中心上服务是否暴露
+    // whether to export service on the register center
     private Boolean register;
 
-    // 在该注册中心上服务是否引用
+    // whether allow to subscribe service on the register center
     private Boolean subscribe;
 
-    // 自定义参数
+    // customized parameters
     private Map<String, String> parameters;
 
-    // 是否为缺省
+    // if it's default
     private Boolean isDefault;
 
     public RegistryConfig() {
