@@ -62,6 +62,16 @@ public class ServiceAnnotationBeanPostProcessorTest {
 
         Assert.assertEquals(3, serviceBeansMap.size());
 
+        Map<String, ServiceAnnotationBeanPostProcessor> beanPostProcessorsMap =
+                beanFactory.getBeansOfType(ServiceAnnotationBeanPostProcessor.class);
+
+        Assert.assertEquals(4, beanPostProcessorsMap.size());
+
+        Assert.assertTrue(beanPostProcessorsMap.containsKey("doubleServiceAnnotationBeanPostProcessor"));
+        Assert.assertTrue(beanPostProcessorsMap.containsKey("emptyServiceAnnotationBeanPostProcessor"));
+        Assert.assertTrue(beanPostProcessorsMap.containsKey("serviceAnnotationBeanPostProcessor"));
+        Assert.assertTrue(beanPostProcessorsMap.containsKey("serviceAnnotationBeanPostProcessor2"));
+
     }
 
     @ImportResource("META-INF/spring/dubbo-annotation-provider.xml")

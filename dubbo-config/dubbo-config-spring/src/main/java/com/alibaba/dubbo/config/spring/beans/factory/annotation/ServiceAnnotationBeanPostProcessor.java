@@ -79,7 +79,13 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
 
         Set<String> resolvedPackagesToScan = resolvePackagesToScan(packagesToScan);
 
-        registerServiceBeans(resolvedPackagesToScan, registry);
+        if (!CollectionUtils.isEmpty(resolvedPackagesToScan)) {
+            registerServiceBeans(resolvedPackagesToScan, registry);
+        } else {
+            if (logger.isWarnEnabled()) {
+                logger.warn("packagesToScan is empty , ServiceBean registry will be ignored!");
+            }
+        }
 
     }
 
@@ -321,8 +327,10 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
     private Set<String> resolvePackagesToScan(Set<String> packagesToScan) {
         Set<String> resolvedPackagesToScan = new LinkedHashSet<String>(packagesToScan.size());
         for (String packageToScan : packagesToScan) {
-            String resolvedPackageToScan = environment.resolvePlaceholders(packageToScan);
-            resolvedPackagesToScan.add(resolvedPackageToScan);
+            if (StringUtils.hasText(packageToScan)) {
+                String resolvedPackageToScan = environment.resolvePlaceholders(packageToScan.trim());
+                resolvedPackagesToScan.add(resolvedPackageToScan);
+            }
         }
         return resolvedPackagesToScan;
     }
