@@ -3,7 +3,6 @@ package com.alibaba.com.caucho.hessian.io.beans;
 import java.io.Serializable;
 
 /**
- * @author WangXin
  */
 public class SubUser extends BaseUser implements Serializable {
     private static final long serialVersionUID = 4017613093053853415L;
