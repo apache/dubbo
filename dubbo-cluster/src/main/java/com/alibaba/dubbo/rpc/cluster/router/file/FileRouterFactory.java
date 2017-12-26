@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -38,10 +39,10 @@ public class FileRouterFactory implements RouterFactory {
 
     public Router getRouter(URL url) {
         try {
-            // File URL 转换成 其它Route URL，然后Load
+            // Transform File URL into Script Route URL, and Load
             // file:///d:/path/to/route.js?router=script ==> script:///d:/path/to/route.js?type=js&rule=<file-content>
-            String protocol = url.getParameter(Constants.ROUTER_KEY, ScriptRouterFactory.NAME); // 将原类型转为协议
-            String type = null; // 使用文件后缀做为类型
+            String protocol = url.getParameter(Constants.ROUTER_KEY, ScriptRouterFactory.NAME); // Replace original protocol (maybe 'file') with 'script'
+            String type = null; // Use file suffix to config script type, e.g., js, groovy ...
             String path = url.getPath();
             if (path != null) {
                 int i = path.lastIndexOf('.');
@@ -50,7 +51,9 @@ public class FileRouterFactory implements RouterFactory {
                 }
             }
             String rule = IOUtils.read(new FileReader(new File(url.getAbsolutePath())));
-            URL script = url.setProtocol(protocol).addParameter(Constants.TYPE_KEY, type).addParameterAndEncoded(Constants.RULE_KEY, rule);
+
+            boolean runtime = url.getParameter(Constants.RUNTIME_KEY, false);
+            URL script = url.setProtocol(protocol).addParameter(Constants.TYPE_KEY, type).addParameter(Constants.RUNTIME_KEY, runtime).addParameterAndEncoded(Constants.RULE_KEY, rule);
 
             return routerFactory.getRouter(script);
         } catch (IOException e) {

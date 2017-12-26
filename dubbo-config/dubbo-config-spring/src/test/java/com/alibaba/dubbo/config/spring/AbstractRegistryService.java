@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,27 +32,25 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * AbstractRegistryService
- *
- * @author william.liangf
  */
 public abstract class AbstractRegistryService implements RegistryService {
 
-    // 日志输出
+    // logger
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    // 已注册的服务
+    // registered services
     // Map<serviceName, Map<url, queryString>>
     private final ConcurrentMap<String, List<URL>> registered = new ConcurrentHashMap<String, List<URL>>();
 
-    // 已订阅的服务
+    // subscribed services
     // Map<serviceName, queryString>
     private final ConcurrentMap<String, Map<String, String>> subscribed = new ConcurrentHashMap<String, Map<String, String>>();
 
-    // 已通知的服务
+    // notified services
     // Map<serviceName, Map<url, queryString>>
     private final ConcurrentMap<String, List<URL>> notified = new ConcurrentHashMap<String, List<URL>>();
 
-    // 已订阅服务的监听器列表
+    // notification listeners for the subscribed services
     // Map<serviceName, List<notificationListener>>
     private final ConcurrentMap<String, List<NotifyListener>> notifyListeners = new ConcurrentHashMap<String, List<NotifyListener>>();
 
@@ -154,7 +153,6 @@ public abstract class AbstractRegistryService implements RegistryService {
         removeListener(service, listener);
     }
 
-    //consumer 与 provider的 listener可以一起存储,都是根据服务名称共享
     private void addListener(final String service, final NotifyListener listener) {
         if (listener == null) {
             return;

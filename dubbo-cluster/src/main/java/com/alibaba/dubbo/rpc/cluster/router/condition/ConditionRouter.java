@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2012 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,7 +41,6 @@ import java.util.regex.Pattern;
 /**
  * ConditionRouter
  *
- * @author william.liangf
  */
 public class ConditionRouter implements Router, Comparable<Router> {
 
@@ -67,7 +67,7 @@ public class ConditionRouter implements Router, Comparable<Router> {
             String thenRule = i < 0 ? rule.trim() : rule.substring(i + 2).trim();
             Map<String, MatchPair> when = StringUtils.isBlank(whenRule) || "true".equals(whenRule) ? new HashMap<String, MatchPair>() : parseRule(whenRule);
             Map<String, MatchPair> then = StringUtils.isBlank(thenRule) || "false".equals(thenRule) ? null : parseRule(thenRule);
-            // NOTE: When条件是允许为空的，外部业务来保证类似的约束条件
+            // NOTE: It should be determined on the business level whether the `When condition` can be empty or not.
             this.whenCondition = when;
             this.thenCondition = then;
         } catch (ParseException e) {
@@ -81,20 +81,20 @@ public class ConditionRouter implements Router, Comparable<Router> {
         if (StringUtils.isBlank(rule)) {
             return condition;
         }
-        // 匹配或不匹配Key-Value对
+        // Key-Value pair, stores both match and mismatch conditions
         MatchPair pair = null;
-        // 多个Value值
+        // Multiple values
         Set<String> values = null;
         final Matcher matcher = ROUTE_PATTERN.matcher(rule);
-        while (matcher.find()) { // 逐个匹配
+        while (matcher.find()) { // Try to match one by one
             String separator = matcher.group(1);
             String content = matcher.group(2);
-            // 表达式开始
+            // Start part of the condition expression.
             if (separator == null || separator.length() == 0) {
                 pair = new MatchPair();
                 condition.put(content, pair);
             }
-            // KV开始
+            // The KV part of the condition expression
             else if ("&".equals(separator)) {
                 if (condition.get(content) == null) {
                     pair = new MatchPair();
@@ -103,7 +103,7 @@ public class ConditionRouter implements Router, Comparable<Router> {
                     pair = condition.get(content);
                 }
             }
-            // KV的Value部分开始
+            // The Value in the KV part.
             else if ("=".equals(separator)) {
                 if (pair == null)
                     throw new ParseException("Illegal route rule \""
@@ -114,7 +114,7 @@ public class ConditionRouter implements Router, Comparable<Router> {
                 values = pair.matches;
                 values.add(content);
             }
-            // KV的Value部分开始
+            // The Value in the KV part.
             else if ("!=".equals(separator)) {
                 if (pair == null)
                     throw new ParseException("Illegal route rule \""
@@ -125,8 +125,8 @@ public class ConditionRouter implements Router, Comparable<Router> {
                 values = pair.mismatches;
                 values.add(content);
             }
-            // KV的Value部分的多个条目
-            else if (",".equals(separator)) { // 如果为逗号表示
+            // The Value in the KV part, if Value have more than one items.
+            else if (",".equals(separator)) { // Should be seperateed by ','
                 if (values == null || values.size() == 0)
                     throw new ParseException("Illegal route rule \""
                             + rule + "\", The error char '" + separator

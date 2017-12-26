@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,9 +38,6 @@ import java.util.concurrent.Future;
 
 /**
  * EventFilter
- *
- * @author chao.liuc
- * @author william.liangf
  */
 @Activate(group = Constants.CONSUMER)
 public class FutureFilter implements Filter {
@@ -50,7 +48,8 @@ public class FutureFilter implements Filter {
         final boolean isAsync = RpcUtils.isAsync(invoker.getUrl(), invocation);
 
         fireInvokeCallback(invoker, invocation);
-        //需要在调用前配置好是否有返回值，已供invoker判断是否需要返回future.
+        // need to configure if there's return value before the invocation in order to help invoker to judge if it's
+        // necessary to return future.
         Result result = invoker.invoke(invocation);
         if (isAsync) {
             asyncCallback(invoker, invocation);
@@ -167,7 +166,7 @@ public class FutureFilter implements Filter {
         final Method onthrowMethod = (Method) StaticContext.getSystemContext().get(StaticContext.getKey(invoker.getUrl(), invocation.getMethodName(), Constants.ON_THROW_METHOD_KEY));
         final Object onthrowInst = StaticContext.getSystemContext().get(StaticContext.getKey(invoker.getUrl(), invocation.getMethodName(), Constants.ON_THROW_INSTANCE_KEY));
 
-        //没有设置onthrow callback.
+        //onthrow callback not configured
         if (onthrowMethod == null && onthrowInst == null) {
             return;
         }

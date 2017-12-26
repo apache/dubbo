@@ -25,7 +25,7 @@
             <a href="#" onclick="if(! hasCheckbox('ids')) { showAlert('$i18n.get(
                 "empty.list")'); } else if(! hasChecked('ids')) { showAlert('$i18n.get(
                 "please.select")'); } else { showConfirm('$i18n.get(
-                "confirm.batch.fail.mock")', 'applications/0/recover?application=' + getChecked('ids'));} return false;"><img
+                "confirm.batch.cancel.mock")', 'applications/0/recover?application=' + getChecked('ids'));} return false;"><img
                     src="$rootContextPath.getURI("images/ico_enable.png")" width="12" height="12"/><span
                     class="ico_font">$i18n.get("batch.cancel.mock")</span></a>
             <span class="ico_line">|</span>

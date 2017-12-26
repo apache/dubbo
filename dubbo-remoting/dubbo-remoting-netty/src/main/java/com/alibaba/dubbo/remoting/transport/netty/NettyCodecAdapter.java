@@ -36,8 +36,6 @@ import java.io.IOException;
 
 /**
  * NettyCodecAdapter.
- *
- * @author qian.lei
  */
 final class NettyCodecAdapter {
 

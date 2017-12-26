@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,13 +21,7 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
-import com.alibaba.dubbo.config.ApplicationConfig;
-import com.alibaba.dubbo.config.ConsumerConfig;
-import com.alibaba.dubbo.config.ProtocolConfig;
-import com.alibaba.dubbo.config.ProviderConfig;
-import com.alibaba.dubbo.config.ReferenceConfig;
-import com.alibaba.dubbo.config.RegistryConfig;
-import com.alibaba.dubbo.config.ServiceConfig;
+import com.alibaba.dubbo.config.*;
 import com.alibaba.dubbo.config.spring.action.DemoActionByAnnotation;
 import com.alibaba.dubbo.config.spring.action.DemoActionBySetter;
 import com.alibaba.dubbo.config.spring.annotation.consumer.AnnotationAction;
@@ -45,7 +40,6 @@ import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.service.GenericException;
 import com.alibaba.dubbo.rpc.service.GenericService;
-
 import junit.framework.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -55,19 +49,12 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import java.util.Collection;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.junit.matchers.JUnitMatchers.containsString;
 
 
 /**
  * ConfigTest
- *
- * @author william.liangf
  */
 @Ignore
 public class ConfigTest {
@@ -383,7 +370,7 @@ public class ConfigTest {
         }
     }
 
-    // DUBBO-571 Provider的URL的methods key值中没有继承接口的方法
+    // DUBBO-571 methods key in provider's URL doesn't contain the methods from inherited super interface
     @Test
     public void test_noMethodInterface_methodsKeyHasValue() throws Exception {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/demo-provider-no-methods-interface.xml");
@@ -400,7 +387,7 @@ public class ConfigTest {
         }
     }
 
-    // DUBBO-147   通过RpcContext可以获得所有尝试过的Invoker
+    // DUBBO-147 find all invoker instances which have been tried from RpcContext
     @Test
     public void test_RpcContext_getUrls() throws Exception {
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(
@@ -432,7 +419,7 @@ public class ConfigTest {
         }
     }
 
-    // BUG: DUBBO-846 2.0.9中，服务方法上的retry="false"设置失效
+    // BUG: DUBBO-846 in version 2.0.9, config retry="false" on provider's method doesn't work
     @Test
     public void test_retrySettingFail() throws Exception {
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(
@@ -464,7 +451,8 @@ public class ConfigTest {
         }
     }
 
-    // BUG: DUBBO-146 Dubbo序列化失败（如传输对象没有实现Serialiable接口），Provider端也没有异常输出，Consumer端超时出错
+    // BuG: DUBBO-146 Provider doesn't have exception output, and consumer has timeout error when serialization fails
+    // for example, object transported on the wire doesn't implement Serializable
     @Test
     public void test_returnSerializationFail() throws Exception {
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/demo-provider-UnserializableBox.xml");
