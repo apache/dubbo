@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,12 +35,11 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * 失败转移，当出现失败，重试其它服务器，通常用于读操作，但重试会带来更长延迟。
+ * When invoke fails, log the initial error and retry other invokers (retry n times, which means at most n different invokers will be invoked)
+ * Note that retry causes latency.
  * <p>
  * <a href="http://en.wikipedia.org/wiki/Failover">Failover</a>
  *
- * @author william.liangf
- * @author chao.liuc
  */
 public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
@@ -62,12 +62,12 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
         List<Invoker<T>> invoked = new ArrayList<Invoker<T>>(copyinvokers.size()); // invoked invokers.
         Set<String> providers = new HashSet<String>(len);
         for (int i = 0; i < len; i++) {
-            //重试时，进行重新选择，避免重试时invoker列表已发生变化.
-            //注意：如果列表发生了变化，那么invoked判断会失效，因为invoker示例已经改变
+            //Reselect before retry to avoid a change of candidate `invokers`.
+            //NOTE: if `invokers` changed, then `invoked` also lose accuracy.
             if (i > 0) {
                 checkWhetherDestroyed();
                 copyinvokers = list(invocation);
-                //重新检查一下
+                // check again
                 checkInvokers(copyinvokers, invocation);
             }
             Invoker<T> invoker = select(loadbalance, invocation, copyinvokers, invoked);

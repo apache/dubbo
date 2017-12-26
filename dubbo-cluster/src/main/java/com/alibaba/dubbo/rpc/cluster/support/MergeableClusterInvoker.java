@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -46,7 +47,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
 @SuppressWarnings("unchecked")
 public class MergeableClusterInvoker<T> implements Invoker<T> {
@@ -64,7 +64,7 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
         List<Invoker<T>> invokers = directory.list(invocation);
 
         String merger = getUrl().getMethodParameter(invocation.getMethodName(), Constants.MERGER_KEY);
-        if (ConfigUtils.isEmpty(merger)) { // 如果方法不需要Merge，退化为只调一个Group
+        if (ConfigUtils.isEmpty(merger)) { // If a method doesn't have a merger, only invoke one Group
             for (final Invoker<T> invoker : invokers) {
                 if (invoker.isAvailable()) {
                     return invoker.invoke(invocation);
