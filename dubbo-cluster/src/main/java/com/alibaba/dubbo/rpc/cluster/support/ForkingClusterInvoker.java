@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,11 +36,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * 并行调用，只要一个成功即返回，通常用于实时性要求较高的操作，但需要浪费更多服务资源。
- * <p>
+ * Invoke a specific number of invokers concurrently, usually used for demanding real-time operations, but need to waste more service resources.
+ *
  * <a href="http://en.wikipedia.org/wiki/Fork_(topology)">Fork</a>
  *
- * @author william.liangf
  */
 public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
@@ -60,9 +60,9 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
         } else {
             selected = new ArrayList<Invoker<T>>();
             for (int i = 0; i < forks; i++) {
-                //在invoker列表(排除selected)后,如果没有选够,则存在重复循环问题.见select实现.
+                // TODO. Add some comment here, refer chinese version for more details.
                 Invoker<T> invoker = select(loadbalance, invocation, invokers, selected);
-                if (!selected.contains(invoker)) {//防止重复添加invoker
+                if (!selected.contains(invoker)) {//Avoid add the same invoker several times.
                     selected.add(invoker);
                 }
             }
