@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,17 +22,10 @@ import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
-import com.alibaba.dubbo.config.ArgumentConfig;
-import com.alibaba.dubbo.config.ConsumerConfig;
-import com.alibaba.dubbo.config.MethodConfig;
-import com.alibaba.dubbo.config.MonitorConfig;
-import com.alibaba.dubbo.config.ProtocolConfig;
-import com.alibaba.dubbo.config.ProviderConfig;
-import com.alibaba.dubbo.config.RegistryConfig;
+import com.alibaba.dubbo.config.*;
 import com.alibaba.dubbo.config.spring.ReferenceBean;
 import com.alibaba.dubbo.config.spring.ServiceBean;
 import com.alibaba.dubbo.rpc.Protocol;
-
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
@@ -57,7 +51,6 @@ import java.util.regex.Pattern;
 /**
  * AbstractBeanDefinitionParser
  *
- * @author william.liangf
  * @export
  */
 public class DubboBeanDefinitionParser implements BeanDefinitionParser {
@@ -182,7 +175,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                                             || "version".equals(property) && "0.0.0".equals(value)
                                             || "stat".equals(property) && "-1".equals(value)
                                             || "reliable".equals(property) && "false".equals(value)) {
-                                        // 兼容旧版本xsd中的default值
+                                        // backward compatibility for the default value in old version's xsd
                                         value = null;
                                     }
                                     reference = value;
@@ -193,15 +186,10 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                                     if ("dubbo:provider".equals(element.getTagName())) {
                                         logger.warn("Recommended replace <dubbo:provider protocol=\"" + value + "\" ... /> to <dubbo:protocol name=\"" + value + "\" ... />");
                                     }
-                                    // 兼容旧版本配置
+                                    // backward compatibility
                                     ProtocolConfig protocol = new ProtocolConfig();
                                     protocol.setName(value);
                                     reference = protocol;
-                                } else if ("monitor".equals(property)
-                                        && (!parserContext.getRegistry().containsBeanDefinition(value)
-                                        || !MonitorConfig.class.getName().equals(parserContext.getRegistry().getBeanDefinition(value).getBeanClassName()))) {
-                                    // 兼容旧版本配置
-                                    reference = convertMonitor(value);
                                 } else if ("onreturn".equals(property)) {
                                     int index = value.lastIndexOf(".");
                                     String returnRef = value.substring(0, index);
@@ -247,29 +235,6 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
             beanDefinition.getPropertyValues().addPropertyValue("parameters", parameters);
         }
         return beanDefinition;
-    }
-
-    protected static MonitorConfig convertMonitor(String monitor) {
-        if (monitor == null || monitor.length() == 0) {
-            return null;
-        }
-        if (GROUP_AND_VERION.matcher(monitor).matches()) {
-            String group;
-            String version;
-            int i = monitor.indexOf(':');
-            if (i > 0) {
-                group = monitor.substring(0, i);
-                version = monitor.substring(i + 1);
-            } else {
-                group = monitor;
-                version = null;
-            }
-            MonitorConfig monitorConfig = new MonitorConfig();
-            monitorConfig.setGroup(group);
-            monitorConfig.setVersion(version);
-            return monitorConfig;
-        }
-        return null;
     }
 
     private static boolean isPrimitive(Class<?> cls) {

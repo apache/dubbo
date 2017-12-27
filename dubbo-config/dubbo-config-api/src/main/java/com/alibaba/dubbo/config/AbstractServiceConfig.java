@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,47 +26,49 @@ import java.util.List;
 /**
  * AbstractServiceConfig
  *
- * @author william.liangf
  * @export
  */
 public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
 
     private static final long serialVersionUID = 1L;
 
-    // 服务版本
+    // version
     protected String version;
 
-    // 服务分组
+    // group
     protected String group;
 
-    // 服务是否已经deprecated
+    // whether the service is deprecated
     protected Boolean deprecated;
 
-    // 延迟暴露
+    // delay service exporting
     protected Integer delay;
 
-    // 是否暴露
+    // whether to export the service
     protected Boolean export;
 
-    // 权重
+    // weight
     protected Integer weight;
 
-    // 应用文档
+    // document center
     protected String document;
 
-    // 在注册中心上注册成动态的还是静态的服务
+    // whether to register as a dynamic service or not on register center
     protected Boolean dynamic;
 
-    // 是否使用令牌
+    // whether to use token
     protected String token;
 
-    // 访问日志
+    // access log
     protected String accesslog;
     protected List<ProtocolConfig> protocols;
-    // 允许执行请求数
+    // max allowed execute times
     private Integer executes;
-    // 是否注册
+    // whether to register
     private Boolean register;
+
+    // warm up period
+    private Integer warmup;
 
     public String getVersion() {
         return version;
@@ -122,17 +125,17 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
         return token;
     }
 
+    public void setToken(String token) {
+        checkName("token", token);
+        this.token = token;
+    }
+
     public void setToken(Boolean token) {
         if (token == null) {
             setToken((String) null);
         } else {
             setToken(String.valueOf(token));
         }
-    }
-
-    public void setToken(String token) {
-        checkName("token", token);
-        this.token = token;
     }
 
     public Boolean isDeprecated() {
@@ -172,16 +175,16 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
         return accesslog;
     }
 
+    public void setAccesslog(String accesslog) {
+        this.accesslog = accesslog;
+    }
+
     public void setAccesslog(Boolean accesslog) {
         if (accesslog == null) {
             setAccesslog((String) null);
         } else {
             setAccesslog(String.valueOf(accesslog));
         }
-    }
-
-    public void setAccesslog(String accesslog) {
-        this.accesslog = accesslog;
     }
 
     public Integer getExecutes() {
@@ -214,8 +217,13 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
 
     public void setRegister(Boolean register) {
         this.register = register;
-        if (Boolean.FALSE.equals(register)) {
-            setRegistry(new RegistryConfig(RegistryConfig.NO_AVAILABLE));
-        }
+    }
+
+    public Integer getWarmup() {
+        return warmup;
+    }
+
+    public void setWarmup(Integer warmup) {
+        this.warmup = warmup;
     }
 }

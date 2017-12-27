@@ -10,10 +10,10 @@
     <services:pipeline id="exceptionPipeline"
                        xmlns="http://www.alibaba.com/schema/services/pipeline/valves">
 
-        <!-- 初始化turbine rundata，并在pipelineContext中设置可能会用到的对象(如rundata、utils)，以便valve取得。 -->
+        <!-- Initialize the turbine rundata and set up objects that may be used in pipelineContext (such as rundata, utils) so that valve can be obtained. -->
         <prepareForTurbine/>
 
-        <!-- 根据异常，选择适当的错误页面及statusCode。 -->
+        <!-- According to the exception, select the appropriate error page and statusCode. -->
         <handleException defaultPage="error_other.vm">
             <on-exception
                     type="com.alibaba.citrus.service.template.TemplateNotFoundException"

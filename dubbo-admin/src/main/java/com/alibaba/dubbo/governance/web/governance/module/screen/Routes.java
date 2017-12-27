@@ -1,9 +1,18 @@
 /*
- * Copyright 2011 Alibaba.com All right reserved. This software is the
- * confidential and proprietary information of Alibaba.com ("Confidential
- * Information"). You shall not disclose such Confidential Information and shall
- * use it only in accordance with the terms of the license agreement you entered
- * into with Alibaba.com.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.alibaba.dubbo.governance.web.governance.module.screen;
 
@@ -36,9 +45,6 @@ import java.util.Set;
  * Providers.
  * URI: /services/$service/routes
  *
- * @author ding.lid
- * @author william.liangf
- * @author tony.chenl
  */
 public class Routes extends Restful {
 
@@ -53,7 +59,7 @@ public class Routes extends Restful {
     };
     static String[][] then_names = {
             {"provider.application", "providerApplication", "unproviderApplication"},
-            {"provider.cluster", "providerCluster", "unproviderCluster"}, // 要校验Cluster是否存在
+            {"provider.cluster", "providerCluster", "unproviderCluster"}, // Must check if Cluster exists
             {"provider.host", "providerHost", "unproviderHost"},
             {"provider.protocol", "providerProtocol", "unproviderProtocol"},
             {"provider.port", "providerPort", "unproviderPort"},
@@ -82,10 +88,10 @@ public class Routes extends Restful {
     }
 
     /**
-     * 添加与服务相关的Owner
+     * add owners related with service
      *
-     * @param usernames   用于添加的用户名
-     * @param serviceName 不含通配符
+     * @param usernames   the usernames to add
+     * @param serviceName no wildcards
      */
     public static void addOwnersOfService(Set<String> usernames, String serviceName,
                                           OwnerService ownerDAO) {
@@ -99,10 +105,10 @@ public class Routes extends Restful {
     }
 
     /**
-     * 添加与服务模式相关的Owner
+     * add owners related with service pattern
      *
-     * @param usernames          用于添加的用户名
-     * @param serviceNamePattern 服务模式，Glob模式
+     * @param usernames          the usernames to add
+     * @param serviceNamePattern service pattern, Glob
      */
     public static void addOwnersOfServicePattern(Set<String> usernames, String serviceNamePattern,
                                                  OwnerService ownerDAO) {
@@ -116,7 +122,7 @@ public class Routes extends Restful {
     }
 
     /**
-     * 路由模块首页
+     * Routing module home page
      *
      * @param context
      */
@@ -139,7 +145,7 @@ public class Routes extends Restful {
     }
 
     /**
-     * 显示路由详细信息
+     * Display routing details
      *
      * @param context
      */
@@ -188,7 +194,7 @@ public class Routes extends Restful {
     }
 
     /**
-     * 载入新增路由页面
+     * Load new route page
      *
      * @param context
      */
@@ -207,7 +213,7 @@ public class Routes extends Restful {
     }
 
     /**
-     * 载入修改路由页面
+     * Load modified routing page
      *
      * @param context
      */
@@ -217,7 +223,7 @@ public class Routes extends Restful {
     }
 
     /**
-     * 保存路由信息到数据库中
+     * Save the routing information to the database
      *
      * @param context
      * @return
@@ -233,7 +239,7 @@ public class Routes extends Restful {
             Map<String, String> notWhen_name2valueList = new HashMap<String, String>();
             for (String[] names : when_names) {
                 when_name2valueList.put(names[0], (String) context.get(names[1]));
-                notWhen_name2valueList.put(names[0], (String) context.get(names[2])); // value不为null的情况，这里处理，后面会保证
+                notWhen_name2valueList.put(names[0], (String) context.get(names[2])); // TODO. We should guarantee value is never null in here, will be supported later
             }
 
             Map<String, String> then_name2valueList = new HashMap<String, String>();
@@ -255,7 +261,7 @@ public class Routes extends Restful {
             String matchRule = routeRule.getWhenConditionString();
             String filterRule = routeRule.getThenConditionString();
 
-            //限制表达式的长度
+            // Limit the length of the expression
             if (matchRule.length() > MAX_RULE_LENGTH) {
                 context.put("message", getMessage("When rule is too long!"));
                 return false;
@@ -282,7 +288,7 @@ public class Routes extends Restful {
     }
 
     /**
-     * 保存更新数据到数据库中
+     * Save the update data to the database
      *
      * @param context
      * @return
@@ -301,7 +307,7 @@ public class Routes extends Restful {
                 context.put("message", getMessage("NoSuchRecord"));
                 return false;
             }
-            //判断参数，拼凑rule
+            // Check parameters, patchwork rule
             if (StringUtils.isNotEmpty((String) context.get("name"))) {
                 String service = oldRoute.getService();
                 if (context.get("operator") == null) {
@@ -313,7 +319,7 @@ public class Routes extends Restful {
                 Map<String, String> notWhen_name2valueList = new HashMap<String, String>();
                 for (String[] names : when_names) {
                     when_name2valueList.put(names[0], (String) context.get(names[1]));
-                    notWhen_name2valueList.put(names[0], (String) context.get(names[2])); // value不为null的情况，这里处理，后面会保证
+                    notWhen_name2valueList.put(names[0], (String) context.get(names[2]));
                 }
 
                 Map<String, String> then_name2valueList = new HashMap<String, String>();
@@ -354,7 +360,7 @@ public class Routes extends Restful {
                 String matchRule = result.getWhenConditionString();
                 String filterRule = result.getThenConditionString();
 
-                //限制表达式的长度
+                // Limit the length of the expression
                 if (matchRule.length() > MAX_RULE_LENGTH) {
                     context.put("message", getMessage("When rule is too long!"));
                     return false;
@@ -401,7 +407,7 @@ public class Routes extends Restful {
     }
 
     /**
-     * 删除指定ID的route规则
+     * Remove the route rule for the specified ID
      *
      * @param ids
      * @return
@@ -415,7 +421,7 @@ public class Routes extends Restful {
     }
 
     /**
-     * 启用指定ID的route规则（可以批量处理）
+     * Enable the specified route ID rules (batch processing)
      *
      * @param ids
      * @return
@@ -429,7 +435,7 @@ public class Routes extends Restful {
     }
 
     /**
-     * 禁用指定ID的route规则（可以批量处理）
+     * Disabling route rules for specified IDs (can be batch processed)
      *
      * @param ids
      * @return
@@ -443,7 +449,7 @@ public class Routes extends Restful {
     }
 
     /**
-     * 选择消费者
+     * Choose consumers
      *
      * @param context
      */
@@ -457,7 +463,7 @@ public class Routes extends Restful {
         }
 
         context.put("route", route);
-        // 获取数据
+        // retrieve data
         List<Consumer> consumers = consumerService.findByService(route.getService());
         context.put("consumers", consumers);
 

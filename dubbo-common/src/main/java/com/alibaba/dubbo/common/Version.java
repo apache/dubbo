@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,8 +28,6 @@ import java.util.Set;
 
 /**
  * Version
- *
- * @author william.liangf
  */
 public final class Version {
 
@@ -38,7 +37,7 @@ public final class Version {
     private static final boolean COMPATIBLE = hasResource("com/taobao/remoting/impl/ConnectionRequest.class");
 
     static {
-        // 检查是否存在重复的jar包
+        // check if there's duplicated jar
         Version.checkDuplicate(Version.class);
     }
 
@@ -67,13 +66,13 @@ public final class Version {
 
     public static String getVersion(Class<?> cls, String defaultVersion) {
         try {
-            // 首先查找MANIFEST.MF规范中的版本号
+            // find version info from MANIFEST.MF first
             String version = cls.getPackage().getImplementationVersion();
             if (version == null || version.length() == 0) {
                 version = cls.getPackage().getSpecificationVersion();
             }
             if (version == null || version.length() == 0) {
-                // 如果规范中没有版本号，基于jar包名获取版本号
+                // guess version fro jar file name if nothing's found from MANIFEST.MF
                 CodeSource codeSource = cls.getProtectionDomain().getCodeSource();
                 if (codeSource == null) {
                     logger.info("No codeSource for class " + cls.getName() + " when getVersion, use default version " + defaultVersion);
@@ -101,10 +100,10 @@ public final class Version {
                     }
                 }
             }
-            // 返回版本号，如果为空返回缺省版本号
+            // return default version if no version info is found
             return version == null || version.length() == 0 ? defaultVersion : version;
-        } catch (Throwable e) { // 防御性容错
-            // 忽略异常，返回缺省版本号
+        } catch (Throwable e) {
+            // return default version when any exception is thrown
             logger.error("return default version, ignore exception " + e.getMessage(), e);
             return defaultVersion;
         }
@@ -120,7 +119,7 @@ public final class Version {
 
     public static void checkDuplicate(String path, boolean failOnError) {
         try {
-            // 在ClassPath搜文件
+            // search in caller's classloader
             Enumeration<URL> urls = ClassHelper.getCallerClassLoader(Version.class).getResources(path);
             Set<String> files = new HashSet<String>();
             while (urls.hasMoreElements()) {
@@ -132,7 +131,7 @@ public final class Version {
                     }
                 }
             }
-            // 如果有多个，就表示重复
+            // duplicated jar is found
             if (files.size() > 1) {
                 String error = "Duplicate class " + path + " in " + files.size() + " jar " + files;
                 if (failOnError) {
@@ -141,7 +140,7 @@ public final class Version {
                     logger.error(error);
                 }
             }
-        } catch (Throwable e) { // 防御性容错
+        } catch (Throwable e) {
             logger.error(e.getMessage(), e);
         }
     }

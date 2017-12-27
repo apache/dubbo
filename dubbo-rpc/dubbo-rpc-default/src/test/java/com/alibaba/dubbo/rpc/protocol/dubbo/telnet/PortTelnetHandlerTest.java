@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,8 +36,6 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * PortTelnetHandlerTest.java
- *
- * @author tony.chenl
  */
 public class PortTelnetHandlerTest {
 
@@ -59,6 +58,10 @@ public class PortTelnetHandlerTest {
         ProtocolUtils.closeAll();
     }
 
+    /**
+     * In NAT network scenario, server's channel.getRemoteAddress() possibly get the address of network gateway, or
+     * the address converted by NAT. In this case, check port only.
+     */
     @Test
     public void testListClient() throws Exception {
         ExchangeClient client1 = Exchangers.connect("dubbo://127.0.0.1:20887/demo");
@@ -70,8 +73,8 @@ public class PortTelnetHandlerTest {
         System.out.printf("Result: %s %n", result);
         System.out.printf("Client 1 Address %s %n", client1Addr);
         System.out.printf("Client 2 Address %s %n", client2Addr);
-        assertTrue(result.contains(client1Addr));
-        assertTrue(result.contains(client2Addr));
+        assertTrue(result.contains(String.valueOf(client1.getLocalAddress().getPort())));
+        assertTrue(result.contains(String.valueOf(client2.getLocalAddress().getPort())));
 
     }
 

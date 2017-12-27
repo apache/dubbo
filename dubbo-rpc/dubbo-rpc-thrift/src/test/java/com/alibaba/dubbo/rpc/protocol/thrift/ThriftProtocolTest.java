@@ -1,15 +1,18 @@
-/**
- * File Created at 2011-12-08
- * $Id$
- * <p>
- * Copyright 2008 Alibaba.com Croporation Limited.
- * All rights reserved.
- * <p>
- * This software is the confidential and proprietary information of
- * Alibaba Company. ("Confidential Information").  You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the license agreement you entered into
- * with Alibaba.com.
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.alibaba.dubbo.rpc.protocol.thrift;
 
@@ -19,10 +22,8 @@ import com.alibaba.dubbo.rpc.gen.dubbo.Demo;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
 
 /**
- * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
  */
 public class ThriftProtocolTest extends AbstractTest {
 
@@ -61,11 +62,11 @@ public class ThriftProtocolTest extends AbstractTest {
         }
 
     }
-
+/*
     @Test
     public void testRefer() throws Exception {
         // FIXME
-        /*invoker = protocol.refer( Demo.class, url );
+        *//*invoker = protocol.refer( Demo.class, url );
 
         Assert.assertNotNull( invoker );
 
@@ -81,8 +82,8 @@ public class ThriftProtocolTest extends AbstractTest {
 
         Result result = invoker.invoke( invocation );
 
-        Assert.assertEquals( arg, result.getResult() );*/
+        Assert.assertEquals( arg, result.getResult() );*//*
 
-    }
+    }*/
 
 }

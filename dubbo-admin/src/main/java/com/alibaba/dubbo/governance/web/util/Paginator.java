@@ -1,10 +1,18 @@
-/**
- * Function: 分页封装类，控制分页
- * <p>
- * File Created at 2011-6-10
- * <p>
- * Copyright 2011 Alibaba.com Croporation Limited.
- * All rights reserved.
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.alibaba.dubbo.governance.web.util;
 
@@ -13,34 +21,35 @@ import java.io.Serializable;
 /**
  * TODO Comment of Paginator
  *
- * @author guanghui.shigh
  */
 public class Paginator implements Serializable, Cloneable {
 
     private static final long serialVersionUID = 3688506614705500726L;
 
-    // 每页默认的项数; 默认:10
+    // The default number of items per page; default is 10
     int itemsPerPage = 10;
 
-    // 滑动窗口默认的大小; 默认:7
+    // Sliding window default size; default: 7
     int sliderSize = 7;
 
-    // 当前页面;
+    // The current page.
     int currentPage;
 
-    // 当前页面;
+    // The current page.
     String path;
 
-    // 总记录数
+    // total mumber of items
     int totalItems;
 
-    // 总页数
+    // total number of pages
     int totalPage;
 
     /**
-     * 最简化的分页构造器。
+     * The most simple paging constructor.
      *
-     * @param itemsPerPage 每页项数。
+     * @param currentPage
+     * @param totalItems
+     * @param path
      */
     public Paginator(int currentPage, int totalItems, String path) {
         initPagination(currentPage, totalItems, 0, 0, path);
@@ -55,12 +64,13 @@ public class Paginator implements Serializable, Cloneable {
     }
 
     /**
-     * 完整的分页构造器。
+     * Complete paging constructor.
      *
-     * @param currentPage 。
-     * @param totalItems(必须项) 记录总数，大于等于0
-     * @param sliderSize
-     * @param itemsPerPage 每页项数。
+     * @param currentPageT
+     * @param totalItemsT
+     * @param sliderSizeT
+     * @param itemsPerPageT
+     * @param path
      */
     public void initPagination(int currentPageT, int totalItemsT, int sliderSizeT, int itemsPerPageT, String path) {
         this.totalItems = (totalItemsT > 0) ? totalItemsT : 0;
@@ -78,10 +88,10 @@ public class Paginator implements Serializable, Cloneable {
     }
 
     /**
-     * 取得指定大小的页码滑动窗口，并将当前页尽可能地放在滑动窗口的中间部位。例如: 总共有13页，当前页是第5页，取得一个大小为5的滑动窗口，将包括 3，4，5，6, 7这几个页码，第5页被放在中间。如果当前页是12，则返回页码为
-     * 9，10，11，12，13。
+     * Get a sliding window of fixed size, and the current page should lie in the middle of the sliding window.
+     * For example: a total of 13 pages, the current page is page 5, a size of 5 sliding window should consists of 3,4,5,6,7, page 5 is placed in the middle. If the current page is 12, the return page number should be 9, 10, 11, 12, 13.
      *
-     * @return 包含页码的数组，如果指定滑动窗口大小小于1或总页数为0，则返回空数组。
+     * @return An array containing page numbers, or an empty array if the specified sliding window size is less than 1 or the total number of pages is zero.
      */
     public int[] getSlider() {
         int width = sliderSize;
@@ -113,7 +123,7 @@ public class Paginator implements Serializable, Cloneable {
     }
 
     /**
-     * 构造分页工具条
+     * Construction pagination toolbar
      */
     public String getPaginatorBar() {
 
@@ -121,23 +131,23 @@ public class Paginator implements Serializable, Cloneable {
         str.append("<script type=\"text/javascript\">function gotoPage(page){window.location.href=\"/" + path
                 + "/pages/\" + page;}</script>");
 
-        // 生成翻页部分
-        // 1. 总记录数
-        str.append("共" + this.totalItems + "条数据 &nbsp;&nbsp;");
+        // generate flip section
+        // The total number of records
+        str.append("total items: " + this.totalItems + "&nbsp;&nbsp;");
 
-        // 2. 页数： 当前页/总页数
-        str.append("第" + this.currentPage + "页/共" + this.totalPage + "页&nbsp;&nbsp;");
+        // 2. Pages: current page / total pages
+        str.append("page " + this.currentPage + " of " + this.totalPage + "nbsp;&nbsp;");
 
-        // 3. 首页,上一页
+        // 3. Home, Previous
         if (this.currentPage > 1) {
-            str.append("<a class=\"prev\" href=\"#\" onclick=\"gotoPage(1);\">首页</a>");
-            str.append("<a class=\"prev\" href=\"#\" onclick=\"gotoPage(" + (this.currentPage - 1) + ");\">上一页</a>");
+            str.append("<a class=\"prev\" href=\"#\" onclick=\"gotoPage(1);\">Home</a>");
+            str.append("<a class=\"prev\" href=\"#\" onclick=\"gotoPage(" + (this.currentPage - 1) + ");\">Previous</a>");
         } else {
-            str.append("<a class=\"prev\" href=\"#\">首页</a>");
-            str.append("<a class=\"prev\" href=\"#\">上一页</a>");
+            str.append("<a class=\"prev\" href=\"#\">Home</a>");
+            str.append("<a class=\"prev\" href=\"#\">Previous</a>");
         }
 
-        // 4 . 活动块
+        // 4. Activity block
         int[] slider = getSlider();
         for (int i = 0; i < slider.length; i++) {
             if (slider[i] == this.currentPage) {
@@ -148,16 +158,16 @@ public class Paginator implements Serializable, Cloneable {
             str.append(slider[i] + "</a>");
         }
 
-        // 5 .下一页
+        // 5. Next page
         if (this.currentPage < this.totalPage) {
             str.append("<a class=\"prev\" href=\"#\" onclick=\"gotoPage(" + (this.currentPage + 1) + ");\">");
         } else {
             str.append("<a class=\"prev\" href=\"#\">");
         }
-        str.append("下一页</a>&nbsp;&nbsp;");
+        str.append("Next</a>&nbsp;&nbsp;");
 
-        // 6. 跳转部分
-        str.append("跳到第");
+        // 6. Jump section
+        str.append("jump to page ");
         str.append("<SELECT size=1 onchange=\"gotoPage(this.value);\">");
         for (int i = 1; i < this.totalPage + 1; i++) {
             if (i == this.currentPage) {
@@ -166,15 +176,15 @@ public class Paginator implements Serializable, Cloneable {
                 str.append("<OPTION value=" + i + ">" + i + "</OPTION>");
             }
         }
-        str.append("</SELECT>页");
+        str.append("</SELECT>");
 
-        // 7. 隐藏条件
+        // 7. Implicit conditions
         str.append("</div>");
         return str.toString();
     }
 
     /**
-     * 获得起始记录
+     * Get the initial record
      *
      * @return
      */

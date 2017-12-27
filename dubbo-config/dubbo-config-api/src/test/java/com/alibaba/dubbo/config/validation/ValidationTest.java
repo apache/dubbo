@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2012 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,8 +36,6 @@ import java.util.Set;
 
 /**
  * GenericServiceTest
- *
- * @author william.liangf
  */
 public class ValidationTest {
 
@@ -81,6 +80,37 @@ public class ValidationTest {
                     Assert.assertNotNull(violations);
                 }
 
+                // verify save group, save error
+                try {
+                    parameter = new ValidationParameter();
+                    parameter.setName("liangfei");
+                    parameter.setAge(50);
+                    parameter.setLoginDate(new Date(System.currentTimeMillis() - 1000000));
+                    parameter.setExpiryDate(new Date(System.currentTimeMillis() + 1000000));
+                    validationService.save(parameter);
+                    Assert.fail();
+                } catch (RpcException e) {
+                    ConstraintViolationException ve = (ConstraintViolationException) e.getCause();
+                    Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
+                    Assert.assertNotNull(violations);
+                }
+
+                // relatedQuery error, no id and email is passed, will trigger validation exception for both Save
+                // and Update
+                try {
+                    parameter = new ValidationParameter();
+                    parameter.setName("liangfei");
+                    parameter.setAge(50);
+                    parameter.setLoginDate(new Date(System.currentTimeMillis() - 1000000));
+                    parameter.setExpiryDate(new Date(System.currentTimeMillis() + 1000000));
+                    validationService.relatedQuery(parameter);
+                    Assert.fail();
+                } catch (RpcException e) {
+                    ConstraintViolationException ve = (ConstraintViolationException) e.getCause();
+                    Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
+                    Assert.assertEquals(violations.size(),2);
+                }
+
                 // Save Error
                 try {
                     parameter = new ValidationParameter();
@@ -89,6 +119,7 @@ public class ValidationTest {
                 } catch (RpcException e) {
                     ConstraintViolationException ve = (ConstraintViolationException) e.getCause();
                     Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
+                    Assert.assertTrue(violations.size() == 3);
                     Assert.assertNotNull(violations);
                 }
 

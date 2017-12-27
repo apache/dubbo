@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -57,8 +58,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * SimpleMonitorService
- *
- * @author william.liangf
  */
 public class SimpleMonitorService implements MonitorService {
 
@@ -67,10 +66,7 @@ public class SimpleMonitorService implements MonitorService {
     private static final String[] types = {SUCCESS, FAILURE, ELAPSED, CONCURRENT, MAX_ELAPSED, MAX_CONCURRENT};
 
     private static final String POISON_PROTOCOL = "poison";
-    private static SimpleMonitorService INSTANCE = null;
-    // 定时任务执行器
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1, new NamedThreadFactory("DubboMonitorTimer", true));
-    // 图表绘制定时器
     private final ScheduledFuture<?> chartFuture;
     private final Thread writeThread;
     private final BlockingQueue<URL> queue;
@@ -84,11 +80,11 @@ public class SimpleMonitorService implements MonitorService {
             public void run() {
                 while (running) {
                     try {
-                        write(); // 记录统计日志
-                    } catch (Throwable t) { // 防御性容错
+                        write(); // write statistics
+                    } catch (Throwable t) {
                         logger.error("Unexpected error occur at write stat log, cause: " + t.getMessage(), t);
                         try {
-                            Thread.sleep(5000); // 失败延迟
+                            Thread.sleep(5000); // retry after 5 secs
                         } catch (Throwable t2) {
                         }
                     }
@@ -101,17 +97,14 @@ public class SimpleMonitorService implements MonitorService {
         chartFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
             public void run() {
                 try {
-                    draw(); // 绘制图表
-                } catch (Throwable t) { // 防御性容错
+                    draw(); // draw chart
+                } catch (Throwable t) {
                     logger.error("Unexpected error occur at draw stat chart, cause: " + t.getMessage(), t);
                 }
             }
         }, 1, 300, TimeUnit.SECONDS);
-        INSTANCE = this;
-    }
-
-    public static SimpleMonitorService getInstance() {
-        return INSTANCE;
+        statisticsDirectory = ConfigUtils.getProperty("dubbo.statistics.directory");
+        chartsDirectory = ConfigUtils.getProperty("dubbo.charts.directory");
     }
 
     private static void createChart(String key, String service, String method, String date, String[] types, Map<String, long[]> data, double[] summary, String path) {
@@ -181,26 +174,6 @@ public class SimpleMonitorService implements MonitorService {
         }
     }
 
-    public String getStatisticsDirectory() {
-        return statisticsDirectory;
-    }
-
-    public void setStatisticsDirectory(String statistics) {
-        if (statistics != null) {
-            this.statisticsDirectory = statistics;
-        }
-    }
-
-    public String getChartsDirectory() {
-        return chartsDirectory;
-    }
-
-    public void setChartsDirectory(String charts) {
-        if (charts != null) {
-            this.chartsDirectory = charts;
-        }
-    }
-
     public void close() {
         try {
             running = false;
@@ -247,7 +220,7 @@ public class SimpleMonitorService implements MonitorService {
                 } else {
                     type = PROVIDER;
                     consumer = statistics.getParameter(CONSUMER);
-                    int i = consumer.indexOf(':');
+                    int i = consumer == null ? -1 : consumer.indexOf(':');
                     if (i > 0) {
                         consumer = consumer.substring(0, i);
                     }

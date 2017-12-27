@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.alibaba.dubbo.remoting.zookeeper.support;
 
 import com.alibaba.dubbo.common.URL;
@@ -36,7 +52,10 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
     public void create(String path, boolean ephemeral) {
         int i = path.lastIndexOf('/');
         if (i > 0) {
-            create(path.substring(0, i), false);
+            String parentPath = path.substring(0, i);
+            if (!checkExists(parentPath)) {
+                create(parentPath, false);
+            }
         }
         if (ephemeral) {
             createEphemeral(path);
@@ -104,6 +123,8 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
     protected abstract void createPersistent(String path);
 
     protected abstract void createEphemeral(String path);
+
+    protected abstract boolean checkExists(String path);
 
     protected abstract TargetChildListener createTargetChildListener(String path, ChildListener listener);
 

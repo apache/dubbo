@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -38,9 +39,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * DubboInvoker
- *
- * @author william.liangf
- * @author chao.liuc
  */
 public class DubboInvoker<T> extends AbstractInvoker<T> {
 
@@ -117,11 +115,13 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
     }
 
     public void destroy() {
-        //防止client被关闭多次.在connect per jvm的情况下，client.close方法会调用计数器-1，当计数器小于等于0的情况下，才真正关闭
+        // in order to avoid closing a client multiple times, a counter is used in case of connection per jvm, every
+        // time when client.close() is called, counter counts down once, and when counter reaches zero, client will be
+        // closed.
         if (super.isDestroyed()) {
             return;
         } else {
-            //dubbo check ,避免多次关闭
+            // double check to avoid dup close
             destroyLock.lock();
             try {
                 if (super.isDestroyed()) {

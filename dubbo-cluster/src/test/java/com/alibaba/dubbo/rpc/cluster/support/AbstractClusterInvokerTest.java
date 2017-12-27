@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -47,7 +48,6 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * AbstractClusterInvokerTest
  *
- * @author chao.liuc
  */
 @SuppressWarnings("rawtypes")
 public class AbstractClusterInvokerTest {
@@ -198,7 +198,7 @@ public class AbstractClusterInvokerTest {
         LoadBalance lb = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(RoundRobinLoadBalance.NAME);
         initlistsize5();
         {
-            //边界测试.
+            //Boundary condition test .
             selectedInvokers.clear();
             selectedInvokers.add(invoker2);
             selectedInvokers.add(invoker3);
@@ -208,7 +208,7 @@ public class AbstractClusterInvokerTest {
             Assert.assertSame(invoker1, sinvoker);
         }
         {
-            //边界测试.
+            //Boundary condition test .
             selectedInvokers.clear();
             selectedInvokers.add(invoker1);
             selectedInvokers.add(invoker3);
@@ -218,7 +218,7 @@ public class AbstractClusterInvokerTest {
             Assert.assertSame(invoker2, sinvoker);
         }
         {
-            //边界测试.
+            //Boundary condition test .
             selectedInvokers.clear();
             selectedInvokers.add(invoker1);
             selectedInvokers.add(invoker2);
@@ -228,7 +228,7 @@ public class AbstractClusterInvokerTest {
             Assert.assertSame(invoker3, sinvoker);
         }
         {
-            //边界测试.
+            //Boundary condition test .
             selectedInvokers.clear();
             selectedInvokers.add(invoker1);
             selectedInvokers.add(invoker2);
@@ -238,7 +238,7 @@ public class AbstractClusterInvokerTest {
             Assert.assertSame(invoker5, sinvoker);
         }
         {
-            //边界测试.
+            //Boundary condition test .
             selectedInvokers.clear();
             selectedInvokers.add(invoker1);
             selectedInvokers.add(invoker2);
@@ -257,7 +257,7 @@ public class AbstractClusterInvokerTest {
         LoadBalance lb = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(RoundRobinLoadBalance.NAME);
         initlistsize5();
         {
-            //边界测试.
+            //Boundary condition test .
             selectedInvokers.clear();
             selectedInvokers.add(invoker1);
             selectedInvokers.add(invoker2);
@@ -267,7 +267,7 @@ public class AbstractClusterInvokerTest {
             Assert.assertTrue(sinvoker == invoker4);
         }
         {
-            //边界测试.
+            //Boundary condition test .
             selectedInvokers.clear();
             selectedInvokers.add(invoker2);
             selectedInvokers.add(invoker3);
@@ -277,7 +277,7 @@ public class AbstractClusterInvokerTest {
             Assert.assertTrue(sinvoker == invoker2 || sinvoker == invoker4);
         }
         {
-            //边界测试.
+            //Boundary condition test .
             for (int i = 0; i < 100; i++) {
                 selectedInvokers.clear();
                 Invoker sinvoker = cluster.select(lb, invocation, invokers, selectedInvokers);
@@ -285,7 +285,7 @@ public class AbstractClusterInvokerTest {
             }
         }
         {
-            //边界测试.
+            //Boundary condition test .
             for (int i = 0; i < 100; i++) {
                 selectedInvokers.clear();
                 selectedInvokers.add(invoker1);
@@ -296,7 +296,7 @@ public class AbstractClusterInvokerTest {
             }
         }
         {
-            //边界测试.
+            //Boundary condition test .
             for (int i = 0; i < 100; i++) {
                 selectedInvokers.clear();
                 selectedInvokers.add(invoker1);
@@ -361,7 +361,7 @@ public class AbstractClusterInvokerTest {
     }
 
     /**
-     * 测试均衡.
+     * Test balance.
      */
     @Test
     public void testSelectBalance() {
@@ -394,7 +394,7 @@ public class AbstractClusterInvokerTest {
 
     private void initlistsize5() {
         invokers.clear();
-        selectedInvokers.clear();//需要清除，之前的测试中会主动将正确的invoker2放入其中.
+        selectedInvokers.clear();//Clear first, previous test case will make sure that the right invoker2 will be used.
         invokers.add(invoker1);
         invokers.add(invoker2);
         invokers.add(invoker3);
@@ -451,7 +451,7 @@ public class AbstractClusterInvokerTest {
     }
 
     /**
-     * 测试mock invoker选择是否正常
+     * Test mock invoker selector works as expected
      */
     @Test
     public void testMockedInvokerSelect() {

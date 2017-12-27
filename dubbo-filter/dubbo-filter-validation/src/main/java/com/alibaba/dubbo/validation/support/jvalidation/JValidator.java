@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2012 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,6 +21,7 @@ import com.alibaba.dubbo.common.bytecode.ClassGenerator;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
+import com.alibaba.dubbo.validation.MethodValidated;
 import com.alibaba.dubbo.validation.Validator;
 
 import javassist.ClassPool;
@@ -55,16 +57,17 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
  * JValidator
- *
- * @author william.liangf
  */
 public class JValidator implements Validator {
 
@@ -104,9 +107,7 @@ public class JValidator implements Validator {
             return null;
         }
         try {
-            String upperName = toUpperMethoName(method.getName());
-            String parameterSimpleName = upperName + "Parameter";
-            String parameterClassName = clazz.getName() + "_" + parameterSimpleName;
+            String parameterClassName = generateMethodParameterClassName(clazz, method);
             Class<?> parameterClass;
             try {
                 parameterClass = (Class<?>) Class.forName(parameterClassName, true, clazz.getClassLoader());
@@ -133,7 +134,7 @@ public class JValidator implements Validator {
                                         && member.getParameterTypes().length == 0
                                         && member.getDeclaringClass() == annotation.annotationType()) {
                                     Object value = member.invoke(annotation, new Object[0]);
-                                    if (value != null && !value.equals(member.getDefaultValue())) {
+                                    if (null != value) {
                                         MemberValue memberValue = createMemberValue(
                                                 classFile.getConstPool(), pool.get(member.getReturnType().getName()), value);
                                         ja.addMemberValue(member.getName(), memberValue);
@@ -148,7 +149,7 @@ public class JValidator implements Validator {
                     ctField.getFieldInfo().addAttribute(attribute);
                     ctClass.addField(ctField);
                 }
-                parameterClass = ctClass.toClass();
+                parameterClass = ctClass.toClass(clazz.getClassLoader(), null);
             }
             Object parameterBean = parameterClass.newInstance();
             for (int i = 0; i < args.length; i++) {
@@ -160,6 +161,20 @@ public class JValidator implements Validator {
             logger.warn(e.getMessage(), e);
             return null;
         }
+    }
+
+    private static String generateMethodParameterClassName(Class<?> clazz, Method method) {
+        StringBuilder builder = new StringBuilder().append(clazz.getName())
+                .append("_")
+                .append(toUpperMethoName(method.getName()))
+                .append("Parameter");
+
+        Class<?>[] parameterTypes = method.getParameterTypes();
+        for (Class<?> parameterType : parameterTypes) {
+            builder.append("_").append(parameterType.getName());
+        }
+
+        return builder.toString();
     }
 
     private static boolean hasConstraintParameter(Method method) {
@@ -219,51 +234,60 @@ public class JValidator implements Validator {
     }
 
     public void validate(String methodName, Class<?>[] parameterTypes, Object[] arguments) throws Exception {
-        String methodClassName = clazz.getName() + "_" + toUpperMethoName(methodName);
+        List<Class<?>> groups = new ArrayList<Class<?>>();
+        String methodClassName = clazz.getName() + "$" + toUpperMethoName(methodName);
         Class<?> methodClass = null;
         try {
             methodClass = Class.forName(methodClassName, false, Thread.currentThread().getContextClassLoader());
+            groups.add(methodClass);
         } catch (ClassNotFoundException e) {
         }
         Set<ConstraintViolation<?>> violations = new HashSet<ConstraintViolation<?>>();
         Method method = clazz.getMethod(methodName, parameterTypes);
+        Class<?>[] methodClasses = null;
+        if (method.isAnnotationPresent(MethodValidated.class)){
+            methodClasses = method.getAnnotation(MethodValidated.class).value();
+            groups.addAll(Arrays.asList(methodClasses));
+        }
+        // add into default group
+        groups.add(0, Default.class);
+        groups.add(1, clazz);
+
+        // convert list to array
+        Class<?>[] classgroups = groups.toArray(new Class[0]);
+
         Object parameterBean = getMethodParameterBean(clazz, method, arguments);
         if (parameterBean != null) {
-            if (methodClass != null) {
-                violations.addAll(validator.validate(parameterBean, Default.class, clazz, methodClass));
-            } else {
-                violations.addAll(validator.validate(parameterBean, Default.class, clazz));
-            }
+            violations.addAll(validator.validate(parameterBean, classgroups ));
         }
+
         for (Object arg : arguments) {
-            validate(violations, arg, clazz, methodClass);
+            validate(violations, arg, classgroups);
         }
+
         if (violations.size() > 0) {
+            logger.error("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + violations);
             throw new ConstraintViolationException("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + violations, violations);
         }
     }
 
-    private void validate(Set<ConstraintViolation<?>> violations, Object arg, Class<?> clazz, Class<?> methodClass) {
+    private void validate(Set<ConstraintViolation<?>> violations, Object arg, Class<?>... groups) {
         if (arg != null && !isPrimitives(arg.getClass())) {
             if (Object[].class.isInstance(arg)) {
                 for (Object item : (Object[]) arg) {
-                    validate(violations, item, clazz, methodClass);
+                    validate(violations, item, groups);
                 }
             } else if (Collection.class.isInstance(arg)) {
                 for (Object item : (Collection<?>) arg) {
-                    validate(violations, item, clazz, methodClass);
+                    validate(violations, item, groups);
                 }
             } else if (Map.class.isInstance(arg)) {
                 for (Map.Entry<?, ?> entry : ((Map<?, ?>) arg).entrySet()) {
-                    validate(violations, entry.getKey(), clazz, methodClass);
-                    validate(violations, entry.getValue(), clazz, methodClass);
+                    validate(violations, entry.getKey(), groups);
+                    validate(violations, entry.getValue(), groups);
                 }
             } else {
-                if (methodClass != null) {
-                    violations.addAll(validator.validate(arg, Default.class, clazz, methodClass));
-                } else {
-                    violations.addAll(validator.validate(arg, Default.class, clazz));
-                }
+                violations.addAll(validator.validate(arg, groups));
             }
         }
     }

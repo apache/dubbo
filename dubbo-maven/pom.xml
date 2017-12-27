@@ -1,17 +1,18 @@
 <!--
- - Copyright 1999-2011 Alibaba Group.
- -  
- - Licensed under the Apache License, Version 2.0 (the "License");
- - you may not use this file except in compliance with the License.
- - You may obtain a copy of the License at
- -  
- -	  http://www.apache.org/licenses/LICENSE-2.0
- -  
- - Unless required by applicable law or agreed to in writing, software
- - distributed under the License is distributed on an "AS IS" BASIS,
- - WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- - See the License for the specific language governing permissions and
- - limitations under the License.
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 -->
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -23,25 +24,21 @@
     </parent>
     <groupId>com.alibaba</groupId>
     <artifactId>dubbo</artifactId>
-    <version>2.5.5</version>
+    <version>2.5.8</version>
     <packaging>jar</packaging>
     <name>Dubbo</name>
-    <description>Dubbo is a distributed service framework enpowers applications with service import/export capability
-        with high performance RPC.
-    </description>
+    <description>Dubbo is a high-performance, java based RPC framework open-sourced by Alibaba</description>
     <url>http://dubbo.io</url>
     <inceptionYear>2012</inceptionYear>
     <licenses>
         <license>
             <name>Apache 2</name>
             <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            <distribution>repo</distribution>
-            <comments>A business-friendly OSS license</comments>
         </license>
     </licenses>
     <organization>
-        <name>Alibaba</name>
-        <url>http://www.alibaba.com</url>
+        <name>The Dubbo Project</name>
+        <url>http://dubbo.io</url>
     </organization>
     <dependencies>
         <dependency>
@@ -68,6 +65,12 @@
             <groupId>org.jboss.netty</groupId>
             <artifactId>netty</artifactId>
             <version>3.2.5.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>4.0.35.Final</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.mina</groupId>
@@ -190,6 +193,12 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.el</artifactId>
+            <version>3.0.1-b08</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-validator</artifactId>
             <version>5.4.1.Final</version>
@@ -205,6 +214,12 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>1.2.2</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.4</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
@@ -304,76 +319,12 @@
     </mailingLists>
     <developers>
         <developer>
-            <name>QianXiao(Shawn)</name>
-            <id>shawn.qianx</id>
-            <email>shawn.qianx (AT) alibaba-inc.com</email>
-            <roles>
-                <role>Developer</role>
-            </roles>
-            <timezone>+8</timezone>
-        </developer>
-        <developer>
-            <name>LiangFei(William)</name>
-            <id>william.liangf</id>
-            <email>william.liangf (AT) alibaba-inc.com</email>
-            <roles>
-                <role>Developer</role>
-            </roles>
-            <timezone>+8</timezone>
-        </developer>
-        <developer>
-            <name>LiDing(Jerry)</name>
-            <id>ding.lid</id>
-            <email>ding.lid (AT) alibaba-inc.com</email>
-            <roles>
-                <role>Developer</role>
-            </roles>
-            <timezone>+8</timezone>
-        </developer>
-        <developer>
-            <name>LiuChao(Charles)</name>
-            <id>chao.liuc</id>
-            <email>chao.liuc (AT) alibaba-inc.com</email>
-            <roles>
-                <role>Developer</role>
-            </roles>
-            <timezone>+8</timezone>
-        </developer>
-        <developer>
-            <name>LiuHaoMin(Ludvik)</name>
-            <id>haoming.liuhm</id>
-            <email>haoming.liuhm (AT) alibaba-inc.com</email>
-            <roles>
-                <role>Developer</role>
-            </roles>
-            <timezone>+8</timezone>
-        </developer>
-        <developer>
-            <name>ChenLei(Tony)</name>
-            <id>tony.chenl</id>
-            <email>tony.chenl (AT) alibaba-inc.com</email>
-            <roles>
-                <role>Developer</role>
-            </roles>
-            <timezone>+8</timezone>
-        </developer>
-        <developer>
-            <name>LuGang(Kimi)</name>
-            <id>gang.lvgm</id>
-            <email>gang.lvgm (AT) alibaba-inc.com</email>
-            <roles>
-                <role>Developer</role>
-            </roles>
-            <timezone>+8</timezone>
-        </developer>
-        <developer>
-            <name>WuXiaoFei(Teaey)</name>
-            <id>xiaofei.wxf</id>
-            <email>xiaofei.wxf (AT) alibaba-inc.com</email>
-            <roles>
-                <role>Developer</role>
-            </roles>
-            <timezone>+8</timezone>
+            <id>dubbo.io</id>
+            <name>The Dubbo Project Contributors</name>
+            <email>dubbo@googlegroups.com</email>
+            <url>http://dubbo.io</url>
+            <organization>The Dubbo Project</organization>
+            <organizationUrl>http://dubbo.io</organizationUrl>
         </developer>
     </developers>
 </project>

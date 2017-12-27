@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +17,6 @@
 package com.alibaba.dubbo.rpc.protocol.dubbo.telnet;
 
 import com.alibaba.dubbo.common.extension.Activate;
-import com.alibaba.dubbo.common.json.JSON;
 import com.alibaba.dubbo.common.utils.PojoUtils;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
@@ -28,6 +28,7 @@ import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
+import com.alibaba.fastjson.JSON;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -36,8 +37,6 @@ import java.util.Map;
 
 /**
  * InvokeTelnetHandler
- *
- * @author william.liangf
  */
 @Activate
 @Help(parameter = "[service.]method(args)", summary = "Invoke the service method.", detail = "Invoke the service method.")
@@ -110,7 +109,7 @@ public class InvokeTelnetHandler implements TelnetHandler {
         }
         List<Object> list;
         try {
-            list = (List<Object>) JSON.parse("[" + args + "]", List.class);
+            list = JSON.parseArray("[" + args + "]", Object.class);
         } catch (Throwable t) {
             return "Invalid json argument, cause: " + t.getMessage();
         }
@@ -136,12 +135,12 @@ public class InvokeTelnetHandler implements TelnetHandler {
         if (invoker != null) {
             if (invokeMethod != null) {
                 try {
-                    Object[] array = PojoUtils.realize(list.toArray(), invokeMethod.getParameterTypes());
+                    Object[] array = PojoUtils.realize(list.toArray(), invokeMethod.getParameterTypes(), invokeMethod.getGenericParameterTypes());
                     RpcContext.getContext().setLocalAddress(channel.getLocalAddress()).setRemoteAddress(channel.getRemoteAddress());
                     long start = System.currentTimeMillis();
                     Object result = invoker.invoke(new RpcInvocation(invokeMethod, array)).recreate();
                     long end = System.currentTimeMillis();
-                    buf.append(JSON.json(result));
+                    buf.append(JSON.toJSONString(result));
                     buf.append("\r\nelapsed: ");
                     buf.append(end - start);
                     buf.append(" ms.");

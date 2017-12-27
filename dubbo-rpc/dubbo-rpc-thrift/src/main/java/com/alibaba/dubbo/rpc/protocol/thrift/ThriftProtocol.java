@@ -1,15 +1,18 @@
-/**
- * File Created at 2011-12-06
- * $Id$
- * <p>
- * Copyright 2008 Alibaba.com Croporation Limited.
- * All rights reserved.
- * <p>
- * This software is the confidential and proprietary information of
- * Alibaba Company. ("Confidential Information").  You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the license agreement you entered into
- * with Alibaba.com.
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.alibaba.dubbo.rpc.protocol.thrift;
 
@@ -38,9 +41,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-/**
- * @author <a href="mailto:gang.lvg@alibaba-inc.com">gang.lvg</a>
- */
 public class ThriftProtocol extends AbstractProtocol {
 
     public static final int DEFAULT_PORT = 40880;
@@ -107,11 +107,11 @@ public class ThriftProtocol extends AbstractProtocol {
 
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
 
-        // 只能使用 thrift codec
+        // can use thrift codec only
         URL url = invoker.getUrl().addParameter(Constants.CODEC_KEY, ThriftCodec.NAME);
         // find server.
         String key = url.getAddress();
-        //client 也可以暴露一个只有server可以调用的服务。
+        // client can expose a service for server to invoke only.
         boolean isServer = url.getParameter(Constants.IS_SERVER_KEY, true);
         if (isServer && !serverMap.containsKey(key)) {
             serverMap.put(key, getServer(url));
@@ -187,7 +187,7 @@ public class ThriftProtocol extends AbstractProtocol {
     }
 
     private ExchangeServer getServer(URL url) {
-        //默认开启server关闭时发送readonly事件
+        // enable sending readonly event when server closes by default
         url = url.addParameterIfAbsent(Constants.CHANNEL_READONLYEVENT_SENT_KEY, Boolean.TRUE.toString());
         String str = url.getParameter(Constants.SERVER_KEY, Constants.DEFAULT_REMOTING_SERVER);
 

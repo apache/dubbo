@@ -82,7 +82,7 @@
                                                         <STRONG><FONT
                                                                 color=#ba1c1c>$error.exception.message</FONT></STRONG>:
                                                         <BR/>
-                                                        系统内部错误，请联系管理员!
+                                                        Internal error, please contact the administrator!
                                                         <BR/> <!-- $tool.toStackTraceString($error.exception) -->
                                                     </P>
                                                 </TD>

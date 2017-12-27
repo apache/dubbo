@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,7 +18,7 @@ package com.alibaba.dubbo.rpc.protocol.dubbo.filter;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.Activate;
-import com.alibaba.dubbo.common.json.JSON;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
@@ -37,8 +38,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * TraceFilter
- *
- * @author william.liangf
  */
 @Activate(group = Constants.PROVIDER)
 public class TraceFilter implements Filter {
@@ -105,7 +104,7 @@ public class TraceFilter implements Filter {
                                 channel.send("\r\n" + RpcContext.getContext().getRemoteAddress() + " -> "
                                         + invoker.getInterface().getName()
                                         + "." + invocation.getMethodName()
-                                        + "(" + JSON.json(invocation.getArguments()) + ")" + " -> " + JSON.json(result.getValue())
+                                        + "(" + JSON.toJSONString(invocation.getArguments()) + ")" + " -> " + JSON.toJSONString(result.getValue())
                                         + "\r\nelapsed: " + (end - start) + " ms."
                                         + "\r\n\r\n" + prompt);
                             }

@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,9 +31,6 @@ import java.util.Map;
 
 /**
  * InjvmProtocol
- *
- * @author qian.lei
- * @author william.liangf
  */
 public class InjvmProtocol extends AbstractProtocol implements Protocol {
 
@@ -93,21 +91,21 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
     public boolean isInjvmRefer(URL url) {
         final boolean isJvmRefer;
         String scope = url.getParameter(Constants.SCOPE_KEY);
-        //本身已经是jvm协议了，走正常流程就是了.
+        // Since injvm protocol is configured explicitly, we don't need to set any extra flag, use normal refer process.
         if (Constants.LOCAL_PROTOCOL.toString().equals(url.getProtocol())) {
             isJvmRefer = false;
         } else if (Constants.SCOPE_LOCAL.equals(scope) || (url.getParameter("injvm", false))) {
-            //如果声明为本地引用
-            //scope=local || injvm=true 等价 injvm标签未来废弃掉.
+            // if it's declared as local reference
+            // 'scope=local' is equivalent to 'injvm=true', injvm will be deprecated in the future release
             isJvmRefer = true;
         } else if (Constants.SCOPE_REMOTE.equals(scope)) {
-            //声明了是远程引用，则不做本地引用
+            // it's declared as remote reference
             isJvmRefer = false;
         } else if (url.getParameter(Constants.GENERIC_KEY, false)) {
-            //泛化调用不走本地
+            // generic invocation is not local reference
             isJvmRefer = false;
         } else if (getExporter(exporterMap, url) != null) {
-            //默认情况下如果本地有服务暴露，则引用本地服务.
+            // by default, go through local reference if there's the service exposed locally
             isJvmRefer = true;
         } else {
             isJvmRefer = false;

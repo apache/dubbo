@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -100,8 +101,9 @@ public class EnumBak {
         reference.destroy();
     }
 
-    //    @Test
-    //测试2.0.5调用2.0.3的兼容
+    // verify compatibility when 2.0.5 invokes 2.0.3
+    @Ignore
+    @Test
     public void testEnumCompat() {
         int port = 20880;
         URL consumerurl = URL.valueOf("dubbo://127.0.0.1:" + port + "/test?timeout=" + Integer.MAX_VALUE
@@ -114,8 +116,9 @@ public class EnumBak {
         reference.destroy();
     }
 
-    //    @Test
-    //测试2.0.5调用2.0.3的兼容
+    // verify compatibility when 2.0.5 invokes 2.0.3
+    @Ignore
+    @Test
     public void testGenricEnumCompat() {
         int port = 20880;
         URL consumerurl = URL.valueOf("dubbo://127.0.0.1:" + port + "/test?timeout=" + Integer.MAX_VALUE
@@ -128,8 +131,9 @@ public class EnumBak {
         reference.destroy();
     }
 
-    //    @Test
-    //测试2.0.5调用2.0.3的兼容 自定义类型参数中包含enum类型
+    // verify compatibility when 2.0.5 invokes 2.0.3, enum in custom parameter
+    @Ignore
+    @Test
     public void testGenricCustomArg() {
 
         int port = 20880;
@@ -147,8 +151,8 @@ public class EnumBak {
         reference.destroy();
     }
 
-    //  @Ignore
-//  @Test
+    @Ignore
+    @Test
     public void testGenericExport() throws InterruptedException {
         int port = NetUtils.getAvailablePort();
         port = 20880;

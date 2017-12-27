@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.alibaba.dubbo.remoting.transport.codec;
 
 import com.alibaba.dubbo.common.io.Bytes;
@@ -23,7 +39,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
- * @author <a href="mailto:gang.lvg@taobao.com">kimi</a>
+ *
  */
 final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Codec {
 
@@ -258,10 +274,10 @@ final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Cod
             os.write(header); // write header.
             os.write(data); // write data.
         } catch (Throwable t) {
-            // 发送失败信息给Consumer，否则Consumer只能等超时了
+            // send error message to Consumer, otherwise, Consumer will wait until timeout.
             if (!res.isEvent() && res.getStatus() != Response.BAD_RESPONSE) {
                 try {
-                    // FIXME 在Codec中打印出错日志？在IoHanndler的caught中统一处理？
+                    // FIXME log error info in Codec and put all error handle logic in IoHanndler?
                     logger.warn("Fail to encode response: " + res + ", send bad_response info instead, cause: " + t.getMessage(), t);
 
                     Response r = new Response(res.getId(), res.getVersion());
@@ -275,7 +291,7 @@ final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Cod
                 }
             }
 
-            // 重新抛出收到的异常
+            // Rethrow exception
             if (t instanceof IOException) {
                 throw (IOException) t;
             } else if (t instanceof RuntimeException) {

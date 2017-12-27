@@ -48,6 +48,21 @@
 
 package com.alibaba.com.caucho.hessian.io;
 
+import com.alibaba.com.caucho.hessian.io.java8.DurationHandle;
+import com.alibaba.com.caucho.hessian.io.java8.InstantHandle;
+import com.alibaba.com.caucho.hessian.io.java8.LocalDateHandle;
+import com.alibaba.com.caucho.hessian.io.java8.LocalDateTimeHandle;
+import com.alibaba.com.caucho.hessian.io.java8.LocalTimeHandle;
+import com.alibaba.com.caucho.hessian.io.java8.MonthDayHandle;
+import com.alibaba.com.caucho.hessian.io.java8.OffsetDateTimeHandle;
+import com.alibaba.com.caucho.hessian.io.java8.OffsetTimeHandle;
+import com.alibaba.com.caucho.hessian.io.java8.PeriodHandle;
+import com.alibaba.com.caucho.hessian.io.java8.YearHandle;
+import com.alibaba.com.caucho.hessian.io.java8.YearMonthHandle;
+import com.alibaba.com.caucho.hessian.io.java8.ZoneIdSerializer;
+import com.alibaba.com.caucho.hessian.io.java8.ZoneOffsetHandle;
+import com.alibaba.com.caucho.hessian.io.java8.ZonedDateTimeHandle;
+
 import javax.management.ObjectName;
 import java.io.File;
 import java.io.IOException;
@@ -58,6 +73,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -65,6 +81,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static com.alibaba.com.caucho.hessian.io.java8.Java8TimeSerializer.create;
 
 /**
  * Factory for returning serialization methods.
@@ -173,6 +191,29 @@ public class SerializerFactory extends AbstractSerializerFactory {
             _staticDeserializerMap.put(stackTrace, new StackTraceElementDeserializer());
         } catch (Throwable e) {
         }
+
+        try {
+            if (isJava8()) {
+                _staticSerializerMap.put(Class.forName("java.time.LocalTime"), create(LocalTimeHandle.class));
+                _staticSerializerMap.put(Class.forName("java.time.LocalDate"), create(LocalDateHandle.class));
+                _staticSerializerMap.put(Class.forName("java.time.LocalDateTime"), create(LocalDateTimeHandle.class));
+
+                _staticSerializerMap.put(Class.forName("java.time.Instant"), create(InstantHandle.class));
+                _staticSerializerMap.put(Class.forName("java.time.Duration"), create(DurationHandle.class));
+                _staticSerializerMap.put(Class.forName("java.time.Period"), create(PeriodHandle.class));
+
+                _staticSerializerMap.put(Class.forName("java.time.Year"), create(YearHandle.class));
+                _staticSerializerMap.put(Class.forName("java.time.YearMonth"), create(YearMonthHandle.class));
+                _staticSerializerMap.put(Class.forName("java.time.MonthDay"), create(MonthDayHandle.class));
+
+                _staticSerializerMap.put(Class.forName("java.time.OffsetDateTime"), create(OffsetDateTimeHandle.class));
+                _staticSerializerMap.put(Class.forName("java.time.ZoneOffset"), create(ZoneOffsetHandle.class));
+                _staticSerializerMap.put(Class.forName("java.time.OffsetTime"), create(OffsetTimeHandle.class));
+                _staticSerializerMap.put(Class.forName("java.time.ZonedDateTime"), create(ZonedDateTimeHandle.class));
+            }
+        } catch (Throwable t) {
+            log.warning(String.valueOf(t.getCause()));
+        }
     }
 
     protected Serializer _defaultSerializer;
@@ -280,7 +321,12 @@ public class SerializerFactory extends AbstractSerializerFactory {
         }
 
         if (serializer != null) {
-        } else if (JavaSerializer.getWriteReplace(cl) != null)
+
+        } else if (isZoneId(cl)) //must before "else if (JavaSerializer.getWriteReplace(cl) != null)"
+            serializer = ZoneIdSerializer.getInstance();
+        else if (isEnumSet(cl))
+            serializer = EnumSetSerializer.getInstance();
+        else if (JavaSerializer.getWriteReplace(cl) != null)
             serializer = new JavaSerializer(cl, _loader);
 
         else if (HessianRemoteObject.class.isAssignableFrom(cl))
@@ -619,5 +665,28 @@ public class SerializerFactory extends AbstractSerializerFactory {
         }
 
         return deserializer;
+    }
+
+    private static boolean isZoneId(Class cl) {
+        try {
+            return isJava8() && Class.forName("java.time.ZoneId").isAssignableFrom(cl);
+        } catch (ClassNotFoundException e) {
+            // ignore
+        }
+        return false;
+    }
+
+    private static boolean isEnumSet(Class cl) {
+        return EnumSet.class.isAssignableFrom(cl);
+    }
+
+    /**
+     * check if the environment is java 8 or beyond
+     *
+     * @return if on java 8
+     */
+    private static boolean isJava8() {
+        String javaVersion = System.getProperty("java.specification.version");
+        return Double.valueOf(javaVersion) >= 1.8;
     }
 }

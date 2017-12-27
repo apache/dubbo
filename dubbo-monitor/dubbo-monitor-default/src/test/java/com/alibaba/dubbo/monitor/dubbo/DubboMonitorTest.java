@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,8 +37,6 @@ import java.util.List;
 
 /**
  * DubboMonitorTest
- *
- * @author william.liangf
  */
 public class DubboMonitorTest {
 
@@ -129,20 +128,29 @@ public class DubboMonitorTest {
 
         Exporter<MonitorService> exporter = protocol.export(proxyFactory.getInvoker(monitorService, MonitorService.class, URL.valueOf("dubbo://127.0.0.1:17979/" + MonitorService.class.getName())));
         try {
-            Monitor monitor = monitorFactory.getMonitor(URL.valueOf("dubbo://127.0.0.1:17979?interval=10"));
-            try {
-                monitor.collect(statistics);
-                int i = 0;
-                while (monitorService.getStatistics() == null && i < 200) {
-                    i++;
-                    Thread.sleep(10);
+            Monitor monitor = null;
+            long start = System.currentTimeMillis();
+            while (System.currentTimeMillis() - start < 60000) {
+                monitor = monitorFactory.getMonitor(URL.valueOf("dubbo://127.0.0.1:17979?interval=10"));
+                if (monitor == null) {
+                    continue;
                 }
-                URL result = monitorService.getStatistics();
-                Assert.assertEquals(1, result.getParameter(MonitorService.SUCCESS, 0));
-                Assert.assertEquals(3, result.getParameter(MonitorService.ELAPSED, 0));
-            } finally {
-                monitor.destroy();
+                try {
+                    monitor.collect(statistics);
+                    int i = 0;
+                    while (monitorService.getStatistics() == null && i < 200) {
+                        i++;
+                        Thread.sleep(10);
+                    }
+                    URL result = monitorService.getStatistics();
+                    Assert.assertEquals(1, result.getParameter(MonitorService.SUCCESS, 0));
+                    Assert.assertEquals(3, result.getParameter(MonitorService.ELAPSED, 0));
+                } finally {
+                    monitor.destroy();
+                }
+                break;
             }
+            Assert.assertNotNull(monitor);
         } finally {
             exporter.unexport();
         }

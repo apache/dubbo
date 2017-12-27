@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,9 +36,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * AbstractServer
- *
- * @author qian.lei
- * @author ding.lid
  */
 public abstract class AbstractServer extends AbstractEndpoint implements Server {
 
@@ -52,10 +50,13 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
     public AbstractServer(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
         localAddress = getUrl().toInetSocketAddress();
-        String host = url.getParameter(Constants.ANYHOST_KEY, false)
-                || NetUtils.isInvalidLocalHost(getUrl().getHost())
-                ? NetUtils.ANYHOST : getUrl().getHost();
-        bindAddress = new InetSocketAddress(host, getUrl().getPort());
+
+        String bindIp = getUrl().getParameter(Constants.BIND_IP_KEY, getUrl().getHost());
+        int bindPort = getUrl().getParameter(Constants.BIND_PORT_KEY, getUrl().getPort());
+        if (url.getParameter(Constants.ANYHOST_KEY, false) || NetUtils.isInvalidLocalHost(bindIp)) {
+            bindIp = NetUtils.ANYHOST;
+        }
+        bindAddress = new InetSocketAddress(bindIp, bindPort);
         this.accepts = url.getParameter(Constants.ACCEPTS_KEY, Constants.DEFAULT_ACCEPTS);
         this.idleTimeout = url.getParameter(Constants.IDLE_TIMEOUT_KEY, Constants.DEFAULT_IDLE_TIMEOUT);
         try {
@@ -176,7 +177,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
 
     @Override
     public void connected(Channel ch) throws RemotingException {
-        // 如果server已进入关闭流程，拒绝新的连接
+        // If the server has entered the shutdown process, reject any new connection
         if (this.isClosing() || this.isClosed()) {
             logger.warn("Close new channel " + ch + ", cause: server is closing or has been closed. For example, receive a new connect request while in shutdown process.");
             ch.close();

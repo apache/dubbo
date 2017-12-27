@@ -11,14 +11,14 @@
     <services:resource-loading xmlns="http://www.alibaba.com/schema/services">
         <resource-alias pattern="/" name="/webroot"/>
 
-        <!-- 子模块模板目录：/*/templates -->
-        <!-- 全局模板目录：  /*/templates/global -->
+        <!-- Submodule template directory: /*/templates -->
+        <!-- Global template directory: /*/templates/global -->
         <resource-alias pattern="/*/templates/global" name="/webroot/common/templates"/>
 
-        <!-- 配置文件根目录：/conf -->
+        <!-- Configuration file root: /conf -->
         <resource-alias pattern="/conf" name="/webroot/WEB-INF"/>
 
-        <!-- 内部资源 -->
+        <!-- Internal resources -->
         <resource pattern="/webroot" internal="true">
             <res-loaders:webapp-loader/>
         </resource>

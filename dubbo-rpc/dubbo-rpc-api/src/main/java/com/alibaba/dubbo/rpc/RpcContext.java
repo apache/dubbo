@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,11 +36,10 @@ import java.util.concurrent.TimeoutException;
 /**
  * Thread local context. (API, ThreadLocal, ThreadSafe)
  * <p>
- * 注意：RpcContext是一个临时状态记录器，当接收到RPC请求，或发起RPC请求时，RpcContext的状态都会变化。
- * 比如：A调B，B再调C，则B机器上，在B调C之前，RpcContext记录的是A调B的信息，在B调C之后，RpcContext记录的是B调C的信息。
+ * Note: RpcContext is a temporary state holder. States in RpcContext changes every time when request is sent or received.
+ * For example: A invokes B, then B invokes C. On service B, RpcContext saves invocation info from A to B before B
+ * starts invoking C, and saves invocation info from B to C after B invokes C.
  *
- * @author qian.lei
- * @author william.liangf
  * @export
  * @see com.alibaba.dubbo.rpc.filter.ContextFilter
  */
@@ -550,10 +550,10 @@ public class RpcContext {
     }
 
     /**
-     * 异步调用 ，需要返回值，即使步调用Future.get方法，也会处理调用超时问题.
+     * Async invocation. Timeout will be handled even if <code>Future.get()</code> is not called.
      *
      * @param callable
-     * @return 通过future.get()获取返回结果.
+     * @return get the return result from <code>future.get()</code>
      */
     @SuppressWarnings("unchecked")
     public <T> Future<T> asyncCall(Callable<T> callable) {
@@ -561,7 +561,7 @@ public class RpcContext {
             try {
                 setAttachment(Constants.ASYNC_KEY, Boolean.TRUE.toString());
                 final T o = callable.call();
-                //local调用会直接返回结果.
+                //local invoke will return directly
                 if (o != null) {
                     FutureTask<T> f = new FutureTask<T>(new Callable<T>() {
                         public T call() throws Exception {
@@ -607,16 +607,16 @@ public class RpcContext {
     }
 
     /**
-     * oneway调用，只发送请求，不接收返回结果.
+     * one way async call, send request only, and result is not required
      *
-     * @param callable
+     * @param runnable
      */
-    public void asyncCall(Runnable runable) {
+    public void asyncCall(Runnable runnable) {
         try {
             setAttachment(Constants.RETURN_KEY, Boolean.FALSE.toString());
-            runable.run();
+            runnable.run();
         } catch (Throwable e) {
-            //FIXME 异常是否应该放在future中？
+            // FIXME should put exception in future?
             throw new RpcException("oneway call error ." + e.getMessage(), e);
         } finally {
             removeAttachment(Constants.RETURN_KEY);
