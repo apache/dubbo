@@ -9,7 +9,7 @@
         http://www.springframework.org/schema/beans http://localhost:8080/schema/www.springframework.org/schema/beans/spring-beans.xsd">
 
     <services:form postOnlyByDefault="true">
-        <!-- 定义provider -->
+        <!-- provider definition -->
         <services:group name="provider">
             <services:field name="serviceName"></services:field>
             <services:field name="serviceParameters"></services:field>
