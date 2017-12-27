@@ -45,7 +45,7 @@ public class ContextFilter implements Filter {
             attachments.remove(Constants.DUBBO_VERSION_KEY);
             attachments.remove(Constants.TOKEN_KEY);
             attachments.remove(Constants.TIMEOUT_KEY);
-            attachments.remove(Constants.ASYNC_KEY);//清空消费端的异步参数
+            attachments.remove(Constants.ASYNC_KEY);// Remove async property to avoid being passed to the following invoke chain.
         }
         RpcContext.getContext()
                 .setInvoker(invoker)
