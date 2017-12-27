@@ -73,7 +73,7 @@ public class LocaleValve extends AbstractValve {
             }
         }
         if (locale == null || "".equals(locale)) {
-            locale = "zh";
+            locale = "en";
         }
 
         Locale newLocale = Locale.SIMPLIFIED_CHINESE;
