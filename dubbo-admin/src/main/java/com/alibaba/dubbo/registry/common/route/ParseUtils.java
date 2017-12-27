@@ -64,7 +64,7 @@ public class ParseUtils {
         }
         Matcher matcher = VARIABLE_PATTERN.matcher(expression);
         StringBuffer sb = new StringBuffer();
-        while (matcher.find()) { // 逐个匹配
+        while (matcher.find()) { // match one by one
             String key = matcher.group(1);
             String value = params == null ? null : params.get(key);
             if (value == null) {

@@ -61,7 +61,7 @@ public class ProviderServiceImpl extends AbstractService implements ProviderServ
             throw new IllegalStateException("Provider was changed!");
         }
         if (oldProvider.isDynamic()) {
-            //保证disable的override唯一
+            // Make sure we only have one override configured disable property.
             if (!oldProvider.isEnabled()) {
                 Override override = new Override();
                 override.setAddress(oldProvider.getAddress());
@@ -98,7 +98,7 @@ public class ProviderServiceImpl extends AbstractService implements ProviderServ
         }
 
         if (oldProvider.isDynamic()) {
-            //保证disable的override唯一
+            // Make sure we only have one override configured disable property.
             if (oldProvider.isEnabled()) {
                 Override override = new Override();
                 override.setAddress(oldProvider.getAddress());
@@ -144,7 +144,7 @@ public class ProviderServiceImpl extends AbstractService implements ProviderServ
         Map<String, String> map = StringUtils.parseQueryString(oldProvider.getParameters());
         String weight = map.get(Constants.WEIGHT_KEY);
         if (oldProvider.isDynamic()) {
-            //保证disable的override唯一
+            // Make sure we only have one override configured disable property.
             List<Override> overrides = overrideService.findByServiceAndAddress(oldProvider.getService(), oldProvider.getAddress());
             if (overrides == null || overrides.size() == 0) {
                 int value = getWeight(weight, factor);

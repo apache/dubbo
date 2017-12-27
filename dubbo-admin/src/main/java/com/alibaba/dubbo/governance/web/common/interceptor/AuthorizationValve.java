@@ -176,7 +176,7 @@ public class AuthorizationValve extends AbstractValve {
                 User user = getUser(username);
                 if (user != null) {
                     String pwd = user.getPassword();
-                    // 本地User，密码本地
+                    // A valid user, validate password
                     if (pwd != null && pwd.length() > 0) {
                         String uri = params.get("uri");
                         String nonce = params.get("nonce");

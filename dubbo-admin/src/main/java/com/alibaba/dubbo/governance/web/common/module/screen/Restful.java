@@ -102,7 +102,7 @@ public abstract class Restful {
         String contextPath = (String) context.get("request.contextPath");
         context.put("rootContextPath", new RootContextPath(contextPath));
 
-        // 分析Method
+        // Analyze Method
         if (method == null || method.length() == 0) {
             String id = (String) context.get("id");
             if (id == null || id.length() == 0) {

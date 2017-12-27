@@ -123,7 +123,7 @@ public class ParseUtilsTest {
         assertTrue(ParseUtils.isMatchGlobPattern("abc123*", "abc123abc123"));
         assertFalse(ParseUtils.isMatchGlobPattern("abc123*", "abc333abc123"));
 
-        // 有两个星号，不支持，行为未定义
+        // It is not supported for two asterisks, undefined behavior
         assertFalse(ParseUtils.isMatchGlobPattern("*abc123*", "abc123abc123"));
         assertTrue(ParseUtils.isMatchGlobPattern("*abc123*", "*abc123abc123"));
         assertTrue(ParseUtils.isMatchGlobPattern("*abc123*", "*abc123XXX"));
