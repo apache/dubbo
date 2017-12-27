@@ -31,7 +31,6 @@ import java.util.Set;
 /**
  * ValidationTest
  *
- * @author william.liangf
  */
 public class ValidationTest {
 

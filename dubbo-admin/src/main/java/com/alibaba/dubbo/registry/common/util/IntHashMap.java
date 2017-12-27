@@ -25,9 +25,6 @@ package com.alibaba.dubbo.registry.common.util;
  * not be supported in future releases of Apache Commons Lang.  Utilities of
  * this sort may be included in future releases of Apache Commons Collections.</p>
  *
- * @author Justin Couch
- * @author Alex Chaffee (alex@apache.org)
- * @author Stephen Colebourne
  * @version $Revision: 181192 $
  * @see java.util.HashMap
  * @since 2.0

@@ -29,8 +29,6 @@ import java.util.TreeMap;
  * Provides HTML and XML entity utilities.
  * </p>
  *
- * @author <a href="mailto:alex@purpletech.com">Alexander Day Chaffee</a>
- * @author <a href="mailto:ggregory@seagullsw.com">Gary Gregory</a>
  * @version $Id: Entities.java 181192 2012-06-21 05:05:47Z tony.chenl $
  * @see <a href="http://hotwired.lycos.com/webmonkey/reference/special_characters/">ISO Entities</a>
  * @see <a href="http://www.w3.org/TR/REC-html32#latin1">HTML 3.2 Character Entities for ISO Latin-1</a>
