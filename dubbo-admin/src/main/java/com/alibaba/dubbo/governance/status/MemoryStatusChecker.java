@@ -30,7 +30,7 @@ public class MemoryStatusChecker implements StatusChecker {
         long freeMemory = runtime.freeMemory();
         long totalMemory = runtime.totalMemory();
         long maxMemory = runtime.maxMemory();
-        boolean ok = (maxMemory - (totalMemory - freeMemory) > 2048); // 剩余空间小于2M报警
+        boolean ok = (maxMemory - (totalMemory - freeMemory) > 2048); // Alarm when spare memory < 2M
         String msg = "Max:" + (maxMemory / 1024 / 1024) + "M, Total:"
                 + (totalMemory / 1024 / 1024) + "M, Free:" + (freeMemory / 1024 / 1024)
                 + "M, Use:" + ((totalMemory / 1024 / 1024) - (freeMemory / 1024 / 1024)) + "M";

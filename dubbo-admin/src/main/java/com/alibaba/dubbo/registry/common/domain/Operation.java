@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * 记录错误信息以及记录所有的人为的操作
+ * Record error messages and record all user operations
  *
  */
 public class Operation extends Entity {

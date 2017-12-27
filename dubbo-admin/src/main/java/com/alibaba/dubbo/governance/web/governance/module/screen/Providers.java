@@ -235,7 +235,7 @@ public class Providers extends Restful {
                 }
             }
         }
-        provider.setDynamic(false); // 页面上添加的一定是静态的Provider
+        provider.setDynamic(false); // Provider add through web page must be static
         providerService.create(provider);
         return true;
     }

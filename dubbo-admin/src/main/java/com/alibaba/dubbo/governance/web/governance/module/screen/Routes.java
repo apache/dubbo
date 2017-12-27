@@ -59,7 +59,7 @@ public class Routes extends Restful {
     };
     static String[][] then_names = {
             {"provider.application", "providerApplication", "unproviderApplication"},
-            {"provider.cluster", "providerCluster", "unproviderCluster"}, // 要校验Cluster是否存在
+            {"provider.cluster", "providerCluster", "unproviderCluster"}, // Must check if Cluster exists
             {"provider.host", "providerHost", "unproviderHost"},
             {"provider.protocol", "providerProtocol", "unproviderProtocol"},
             {"provider.port", "providerPort", "unproviderPort"},

@@ -246,10 +246,10 @@ public class RouteUtils {
             for (Route route : routes) {
                 if (isSerivceNameMatched(route.getService(), serviceName)) {
                     RouteRule rule = routeRuleMap.get(route.getId());
-                    // 当满足when条件时
+                    // if matches When Condition
                     if (rule != null && RouteRuleUtils.isMatchCondition(
                             rule.getWhenCondition(), consumerSample, consumerSample)) {
-                        return route; // 第一个满足即返回
+                        return route; // will return if the first condition matches
                     }
                 }
             }
@@ -266,8 +266,8 @@ public class RouteUtils {
     static boolean isSerivceNameMatched(String servicePattern, String serviceName) {
         final int pip = servicePattern.indexOf('/');
         final int pi = serviceName.indexOf('/');
-        if (pip != -1) { // pattern有group
-            if (pi == -1) return false; // servicename无group
+        if (pip != -1) { // pattern has group
+            if (pi == -1) return false; // servicename doesn't have group
 
             String gp = servicePattern.substring(0, pip);
             servicePattern = servicePattern.substring(pip + 1);
