@@ -35,7 +35,7 @@ public class AccessLogFilterTest {
 
     Filter accessLogFilter = new AccessLogFilter();
 
-    // 测试filter不会抛出异常
+    // Test filter won't throw an exception
     @Test
     public void testInvokeException() {
         Invoker<AccessLogFilterTest> invoker = new MyInvoker<AccessLogFilterTest>(null);

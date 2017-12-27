@@ -43,7 +43,7 @@ public class ExplicitCallbackTest {
     protected Invoker<IDemoService> reference = null;
     protected URL serviceURL = null;
     protected URL consumerUrl = null;
-    // ============================华丽的分割线================================================
+    // ============================A gorgeous line of segmentation================================================
     IDemoService demoProxy = null;
 
     @After
