@@ -280,7 +280,7 @@ public class RouteUtils {
 
         final int vip = servicePattern.lastIndexOf(':');
         final int vi = serviceName.lastIndexOf(':');
-        if (vip != -1) { // pattern有group
+        if (vip != -1) { // pattern has group
             if (vi == -1) return false;
 
             String vp = servicePattern.substring(vip + 1);

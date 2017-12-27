@@ -307,7 +307,7 @@ public class Routes extends Restful {
                 context.put("message", getMessage("NoSuchRecord"));
                 return false;
             }
-            // Judgment parameters, patchwork rule
+            // Check parameters, patchwork rule
             if (StringUtils.isNotEmpty((String) context.get("name"))) {
                 String service = oldRoute.getService();
                 if (context.get("operator") == null) {
@@ -319,7 +319,7 @@ public class Routes extends Restful {
                 Map<String, String> notWhen_name2valueList = new HashMap<String, String>();
                 for (String[] names : when_names) {
                     when_name2valueList.put(names[0], (String) context.get(names[1]));
-                    notWhen_name2valueList.put(names[0], (String) context.get(names[2])); // value不为null的情况，这里处理，后面会保证
+                    notWhen_name2valueList.put(names[0], (String) context.get(names[2]));
                 }
 
                 Map<String, String> then_name2valueList = new HashMap<String, String>();
