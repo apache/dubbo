@@ -274,10 +274,10 @@ final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Cod
             os.write(header); // write header.
             os.write(data); // write data.
         } catch (Throwable t) {
-            // 发送失败信息给Consumer，否则Consumer只能等超时了
+            // send error message to Consumer, otherwise, Consumer will wait until timeout.
             if (!res.isEvent() && res.getStatus() != Response.BAD_RESPONSE) {
                 try {
-                    // FIXME 在Codec中打印出错日志？在IoHanndler的caught中统一处理？
+                    // FIXME log error info in Codec and put all error handle logic in IoHanndler?
                     logger.warn("Fail to encode response: " + res + ", send bad_response info instead, cause: " + t.getMessage(), t);
 
                     Response r = new Response(res.getId(), res.getVersion());
@@ -291,7 +291,7 @@ final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Cod
                 }
             }
 
-            // 重新抛出收到的异常
+            // Rethrow exception
             if (t instanceof IOException) {
                 throw (IOException) t;
             } else if (t instanceof RuntimeException) {

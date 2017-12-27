@@ -95,7 +95,7 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
     }
 
     /**
-     * 返回最终的handler，可能已被wrap,需要区别于getChannelHandler
+     * Return the final handler (which may have been wrapped). This method should be distinguished with getChannelHandler() method
      *
      * @return ChannelHandler
      */

@@ -81,7 +81,7 @@ public class ClientReconnectTest {
         int port = NetUtils.getAvailablePort();
         DubboAppender.doStart();
         String url = "exchange://127.0.0.2:" + port + "/client.reconnect.test?check=false&"
-                + Constants.RECONNECT_KEY + "=" + 1; //1ms reconnect,保证有足够频率的重连
+                + Constants.RECONNECT_KEY + "=" + 1; //1ms reconnect, ensure that there is enough frequency to reconnect
         try {
             Exchangers.connect(url);
         } catch (Exception e) {

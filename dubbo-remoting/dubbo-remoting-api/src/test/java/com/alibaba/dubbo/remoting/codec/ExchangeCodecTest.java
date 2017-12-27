@@ -179,7 +179,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
         ChannelBuffer buffer = ChannelBuffers.wrappedBuffer(header);
         Object obj = codec.decode(channel, buffer);
         Assert.assertEquals(TelnetCodec.DecodeResult.NEED_MORE_INPUT, obj);
-        //如果telnet数据与request数据在同一个数据包中，不能因为telnet没有结尾字符而影响其他数据的接收.
+        //If the telnet data and request data are in the same data packet, we should guarantee that the receipt of request data won't be affected by the factor that telnet does not have an end characters.
         Assert.assertEquals(2, buffer.readerIndex());
     }
 
@@ -196,7 +196,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
         System.out.println(obj);
     }
 
-    @Test //status输入有问题，序列化时读取信息出错.
+    @Test //The status input has a problem, and the read information is wrong when the serialization is serialized.
     public void test_Decode_Return_Response_Error() throws IOException {
         byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, 2, 90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         String errorString = "encode request data error ";

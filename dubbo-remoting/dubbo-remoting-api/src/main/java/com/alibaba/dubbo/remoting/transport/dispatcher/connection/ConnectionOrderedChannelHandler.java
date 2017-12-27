@@ -16,12 +16,6 @@
  */
 package com.alibaba.dubbo.remoting.transport.dispatcher.connection;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.threadpool.support.AbortPolicyWithReport;
@@ -35,6 +29,12 @@ import com.alibaba.dubbo.remoting.exchange.Response;
 import com.alibaba.dubbo.remoting.transport.dispatcher.ChannelEventRunnable;
 import com.alibaba.dubbo.remoting.transport.dispatcher.ChannelEventRunnable.ChannelState;
 import com.alibaba.dubbo.remoting.transport.dispatcher.WrappedChannelHandler;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class ConnectionOrderedChannelHandler extends WrappedChannelHandler {
 
@@ -79,7 +79,7 @@ public class ConnectionOrderedChannelHandler extends WrappedChannelHandler {
         try {
             cexecutor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
         } catch (Throwable t) {
-            //fix 线程池满了拒绝调用不返回，导致消费者一直等待超时
+            //fix, reject exception can not be sent to consumer because thread pool is full, resulting in consumers waiting till timeout.
             if (message instanceof Request && t instanceof RejectedExecutionException) {
                 Request request = (Request) message;
                 if (request.isTwoWay()) {

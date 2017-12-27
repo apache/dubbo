@@ -98,7 +98,7 @@ public class MinaClient extends AbstractClient {
                     if (future.isReady()) {
                         IoSession newSession = future.getSession();
                         try {
-                            // 关闭旧的连接
+                            // Close old channel
                             IoSession oldSession = MinaClient.this.session; // copy reference
                             if (oldSession != null) {
                                 try {
