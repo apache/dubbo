@@ -24,15 +24,6 @@ import java.io.Writer;
  * <p>Escapes and unescapes <code>String</code>s for
  * Java, Java Script, HTML, XML, and SQL.</p>
  *
- * @author Apache Jakarta Turbine
- * @author Purple Technology
- * @author <a href="mailto:alex@purpletech.com">Alexander Day Chaffee</a>
- * @author Antony Riley
- * @author Helge Tesgaard
- * @author <a href="sean@boohai.com">Sean Brown</a>
- * @author <a href="mailto:ggregory@seagullsw.com">Gary Gregory</a>
- * @author Phil Steitz
- * @author Pete Gieser
  * @version $Id: StringEscapeUtils.java 181192 2012-06-21 05:05:47Z tony.chenl $
  * @since 2.0
  */

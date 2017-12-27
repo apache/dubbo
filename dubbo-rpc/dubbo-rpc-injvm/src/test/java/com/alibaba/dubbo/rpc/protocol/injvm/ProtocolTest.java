@@ -29,7 +29,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.matchers.JUnitMatchers.containsString;
 
 /**
- * @author ding.lid
  */
 public class ProtocolTest {
 
