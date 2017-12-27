@@ -8,13 +8,13 @@
         http://www.springframework.org/schema/beans http://localhost:8080/schema/www.springframework.org/schema/beans/spring-beans.xsd
     ">
 
-    <!-- 此文件仅被 webx-*.xml 引用。 -->
-    <!-- 注意：此文件需要property-placeholder变量：${component}。 -->
+    <!-- This file should only be referenced by webx-*.xml. -->
+    <!-- NOTE: This file requires property-placeholder variables: ${component}。 -->
 
-    <!-- 综合设置。 -->
+    <!-- other configuration -->
     <services:webx-configuration/>
 
-    <!-- 将beans暴露给模板。 -->
+    <!-- Expose the beans to the template. -->
     <services:pull xmlns="http://www.alibaba.com/schema/services/pull/factories">
         <utils/>
         <rundata-tool/>
