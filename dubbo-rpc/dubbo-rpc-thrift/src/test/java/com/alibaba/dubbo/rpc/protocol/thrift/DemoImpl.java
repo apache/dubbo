@@ -17,9 +17,6 @@
 
 package com.alibaba.dubbo.rpc.protocol.thrift;
 
-/**
- * @author gang.lvg 2011-11-23 14:17
- */
 public class DemoImpl {
 
     public boolean echoBool(boolean arg) {

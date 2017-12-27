@@ -44,9 +44,6 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 
-/**
- * @author <a href="mailto:gang.lvg@alibaba-inc.com">gang.lvg</a>
- */
 @Ignore
 public class ThriftCodecTest {
 

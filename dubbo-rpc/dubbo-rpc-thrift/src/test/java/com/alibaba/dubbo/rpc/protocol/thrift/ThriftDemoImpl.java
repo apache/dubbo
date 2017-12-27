@@ -19,8 +19,5 @@ package com.alibaba.dubbo.rpc.protocol.thrift;
 
 import com.alibaba.dubbo.rpc.gen.thrift.Demo;
 
-/**
- * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
- */
 public class ThriftDemoImpl extends DemoImpl implements Demo.Iface {
 }

@@ -23,9 +23,6 @@ import com.alibaba.dubbo.rpc.gen.dubbo.$__DemoStub;
 import org.junit.Assert;
 import org.junit.Test;
 
-/**
- * @author <a href="mailto:gang.lvg@alibaba-inc.com">gang.lvg</a>
- */
 public class ThriftUtilsTest {
 
     @Test

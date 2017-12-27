@@ -33,9 +33,6 @@ import org.junit.Test;
 import java.lang.reflect.Field;
 import java.util.Map;
 
-/**
- * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
- */
 public class ServiceMethodNotFoundTest extends AbstractTest {
 
     private URL url;
@@ -137,7 +134,7 @@ public class ServiceMethodNotFoundTest extends AbstractTest {
         String arg = "Hello, World!";
 
         invocation.setArguments( new Object[] { arg } );
-        
+
         invocation.setAttachment(Constants.INTERFACE_KEY, DemoImpl.class.getName());
 
         Result result = invoker.invoke( invocation );

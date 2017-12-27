@@ -21,9 +21,6 @@ import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportFactory;
 
-/**
- * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
- */
 public class FramedTransportFactory extends TTransportFactory {
 
     @Override

@@ -24,9 +24,6 @@ import com.alibaba.dubbo.rpc.gen.dubbo.Demo;
 import org.junit.After;
 import org.junit.Before;
 
-/**
- * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
- */
 public class ThriftProtocolTest extends AbstractTest {
 
     public static final int DEFAULT_PORT = 30660;

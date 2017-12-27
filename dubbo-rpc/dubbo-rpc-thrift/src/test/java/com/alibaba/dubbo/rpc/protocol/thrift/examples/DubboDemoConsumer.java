@@ -21,9 +21,6 @@ import com.alibaba.dubbo.rpc.gen.thrift.Demo;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-/**
- * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
- */
 public class DubboDemoConsumer {
 
     public static void main(String[] args) throws Exception {
