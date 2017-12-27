@@ -400,8 +400,8 @@ public class ExchangeCodecTest extends TelnetCodecTest {
         ByteArrayOutputStream out = new ByteArrayOutputStream(1024);
         out.write(bytes, 0, 12);
         /*
-         * 填充长度不能低于256，hessian每次默认会从流中读取256个byte.
-         * 参见 Hessian2Input.readBuffer
+         * The fill length can not be less than 256, because by default, hessian reads 256 bytes from the stream each time.
+         * Refer Hessian2Input.readBuffer for more details
          */
         int padding = 512;
         out.write(Bytes.int2bytes(len + padding));

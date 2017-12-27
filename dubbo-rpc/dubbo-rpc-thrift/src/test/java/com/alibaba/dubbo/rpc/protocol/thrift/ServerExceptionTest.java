@@ -64,7 +64,6 @@ public class ServerExceptionTest extends AbstractTest {
             }
 
             public String echoString(String arg) {
-                // 在 server 端，thrift 无法处理 idl 中没有声明的异常
                 // On server side, thrift can not handle exceptions not declared in idl
                 throw new RuntimeException("just for test");
             }
