@@ -83,5 +83,5 @@ public class ScriptRouterTest {
         Assert.assertEquals(invoker2, fileredInvokers.get(0));
         Assert.assertEquals(invoker3, fileredInvokers.get(1));
     }
-    //TODO 异常场景测试。
+    //TODO Add tests for abnormal scene
 }
