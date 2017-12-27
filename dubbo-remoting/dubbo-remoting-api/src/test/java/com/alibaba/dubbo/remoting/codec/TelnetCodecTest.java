@@ -245,14 +245,14 @@ public class TelnetCodecTest {
 
     @Test
     public void testDecode_Backspace() throws IOException {
-        //32 8 先加空格在补退格.
+        //32 8 first add space and then add backspace.
         testDecode_assertEquals(new byte[]{'\b'}, Codec2.DecodeResult.NEED_MORE_INPUT, new String(new byte[]{32, 8}));
 
-        //测试中文
+        // test chinese
         byte[] chineseBytes = "中".getBytes();
         byte[] request = join(chineseBytes, new byte[]{'\b'});
         testDecode_assertEquals(request, Codec2.DecodeResult.NEED_MORE_INPUT, new String(new byte[]{32, 32, 8, 8}));
-        //中文会带来此问题 (-数判断) 忽略此问题，退格键只有在真的telnet程序中才输入有意义.
+        //There may be some problem handling chinese (negative number recognition). Ignoring this problem, the backspace key is only meaningfully input in a real telnet program.
         testDecode_assertEquals(new byte[]{'a', 'x', -1, 'x', '\b'}, Codec2.DecodeResult.NEED_MORE_INPUT, new String(new byte[]{32, 32, 8, 8}));
     }
 

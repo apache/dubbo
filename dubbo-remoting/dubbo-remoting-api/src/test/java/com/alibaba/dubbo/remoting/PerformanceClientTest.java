@@ -45,7 +45,7 @@ public class PerformanceClientTest extends TestCase {
     @Test
     @SuppressWarnings("unchecked")
     public void testClient() throws Throwable {
-        // 读取参数
+        // read server info from property
         if (PerformanceUtils.getProperty("server", null) == null) {
             logger.warn("Please set -Dserver=127.0.0.1:9911");
             return;
@@ -62,7 +62,7 @@ public class PerformanceClientTest extends TestCase {
         final String onerror = PerformanceUtils.getProperty("onerror", "continue");
 
         final String url = "exchange://" + server + "?transporter=" + transporter + "&serialization=" + serialization + "&timeout=" + timeout;
-        // 创建客户端
+        // Create clients and build connections
         final ExchangeClient[] exchangeClients = new ExchangeClient[connections];
         for (int i = 0; i < connections; i++) {
             //exchangeClients[i] = Exchangers.connect(url,handler);
@@ -72,20 +72,20 @@ public class PerformanceClientTest extends TestCase {
         List<String> serverEnvironment = (List<String>) exchangeClients[0].request("environment").get();
         List<String> serverScene = (List<String>) exchangeClients[0].request("scene").get();
 
-        // 制造数据
+        // Create some data for test
         StringBuilder buf = new StringBuilder(length);
         for (int i = 0; i < length; i++) {
             buf.append("A");
         }
         final String data = buf.toString();
 
-        // 计数器
+        // counters
         final AtomicLong count = new AtomicLong();
         final AtomicLong error = new AtomicLong();
         final AtomicLong time = new AtomicLong();
         final AtomicLong all = new AtomicLong();
 
-        // 并发调用
+        // Start multiple threads
         final CountDownLatch latch = new CountDownLatch(concurrent);
         for (int i = 0; i < concurrent; i++) {
             new Thread(new Runnable() {
@@ -127,7 +127,7 @@ public class PerformanceClientTest extends TestCase {
             }).start();
         }
 
-        // 输出，tps不精确，但大概反映情况
+        // Output, tps is not for accuracy, but it reflects the situation to a certain extent.
         new Thread(new Runnable() {
             public void run() {
                 try {
@@ -138,7 +138,7 @@ public class PerformanceClientTest extends TestCase {
                     boolean bfirst = true;
                     while (latch.getCount() > 0) {
                         long c = count.get() - lastCount;
-                        if (!bfirst)//第一次不准
+                        if (!bfirst)// The first time is inaccurate.
                             System.out.println("[" + dateFormat.format(new Date()) + "] count: " + count.get() + ", error: " + error.get() + ",tps:" + (c / elapsd));
 
                         bfirst = false;

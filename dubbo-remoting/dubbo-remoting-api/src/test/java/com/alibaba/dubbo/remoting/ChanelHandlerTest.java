@@ -36,7 +36,7 @@ public class ChanelHandlerTest extends TestCase {
     private static final Logger logger = LoggerFactory.getLogger(ChanelHandlerTest.class);
 
     public static ExchangeClient initClient(String url) {
-        // 创建客户端
+        // Create client and build connection
         ExchangeClient exchangeClient = null;
         PeformanceTestHandler handler = new PeformanceTestHandler(url);
         boolean run = true;
@@ -73,7 +73,7 @@ public class ChanelHandlerTest extends TestCase {
 
     @Test
     public void testClient() throws Throwable {
-        // 读取参数
+        // read server info from property
         if (PerformanceUtils.getProperty("server", null) == null) {
             logger.warn("Please set -Dserver=127.0.0.1:9911");
             return;
