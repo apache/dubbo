@@ -240,7 +240,7 @@ public class RegistryDirectoryTest {
         Assert.assertEquals(1, invokers.size());
     }
 
-    // 两个invoker===================================
+    // 2 invokers===================================
     private void test_Notified2invokers(RegistryDirectory registryDirectory) {
         List<URL> serviceUrls = new ArrayList<URL>();
         serviceUrls.add(SERVICEURL.addParameter("methods", "getXXX1"));
