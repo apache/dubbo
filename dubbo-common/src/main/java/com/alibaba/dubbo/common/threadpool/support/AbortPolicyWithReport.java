@@ -69,7 +69,7 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
     private void dumpJStack() {
         long now = System.currentTimeMillis();
 
-        //十分钟打一次
+        //dump every 10 minutes
         if (now - lastPrintTime < 10 * 60 * 1000) {
             return;
         }

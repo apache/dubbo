@@ -17,6 +17,7 @@
 package com.alibaba.dubbo.common;
 
 import com.alibaba.dubbo.common.utils.CollectionUtils;
+
 import org.junit.Test;
 
 import java.io.File;
@@ -243,7 +244,7 @@ public class URLTest {
         assertEquals("noValue", url.getParameter("noValue"));
     }
 
-    // TODO 不希望空格？ 详见： DUBBO-502 URL类对特殊字符处理统一约定
+    // TODO Do not want to use spaces? See: DUBBO-502, URL class handles special conventions for special characters.
     @Test
     public void test_valueOf_spaceSafe() throws Exception {
         URL url = URL.valueOf("http://1.2.3.4:8080/path?key=value1 value2");
@@ -257,7 +258,7 @@ public class URLTest {
 
         assertTrue(url.hasParameter("k0"));
 
-        // 没有Value的Key，生成的Value值使用Key值！！ -_-!!!
+        // If a Key has no corresponding Value, then the Key also used as the Value.
         assertEquals("k0", url.getParameter("k0"));
     }
 
