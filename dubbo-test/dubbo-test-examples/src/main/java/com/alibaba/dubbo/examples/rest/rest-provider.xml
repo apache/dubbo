@@ -54,7 +54,7 @@
     <dubbo:service interface="com.alibaba.dubbo.examples.rest.api.UserService" ref="userService"  protocol="dubbo" group="xmlConfig"/>
 
 	<dubbo:service interface="com.alibaba.dubbo.examples.rest.api.facade.UserRestService" ref="userRestService"  protocol="rest" validation="true"/>
-	<dubbo:service interface="com.alibaba.dubbo.examples.rest.api.facade.AnotherUserRestService" ref="anotherUserRestService"  protocol="rest"  timeout="2000" connections="100" validation="true"/>
+	<dubbo:service interface="com.alibaba.dubbo.examples.rest.api.facade.AnotherUserRestService" ref="anotherUserRestService"  protocol="rest,dubbo"  timeout="2000" connections="100" validation="true"/>
 
     <bean id="userService" class="com.alibaba.dubbo.examples.rest.impl.UserServiceImpl" />
 
