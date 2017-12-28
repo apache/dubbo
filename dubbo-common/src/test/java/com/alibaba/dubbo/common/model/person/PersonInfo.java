@@ -20,7 +20,6 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * @author tony.chenl
  */
 public class PersonInfo implements Serializable {
     private static final long serialVersionUID = 7443011149612231882L;

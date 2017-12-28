@@ -69,7 +69,7 @@ public class PerformanceServerTest extends TestCase {
         final String channelHandler = PerformanceUtils.getProperty(Constants.DISPATCHER_KEY, ExecutionDispatcher.NAME);
 
 
-        // 启动服务器
+        // Start server
         ExchangeServer server = Exchangers.bind("exchange://0.0.0.0:" + port + "?transporter="
                 + transporter + "&serialization="
                 + serialization + "&threadpool=" + threadpool
@@ -96,7 +96,7 @@ public class PerformanceServerTest extends TestCase {
     }
 
     private static ExchangeServer statTelnetServer(int port) throws Exception {
-        // 启动服务器
+        // Start server
         ExchangeServer telnetserver = Exchangers.bind("exchange://0.0.0.0:" + port, new ExchangeHandlerAdapter() {
             public String telnet(Channel channel, String message) throws RemotingException {
                 if (message.equals("help")) {
@@ -141,7 +141,7 @@ public class PerformanceServerTest extends TestCase {
 
     @Test
     public void testServer() throws Exception {
-        // 读取参数
+        // Read port from property
         if (PerformanceUtils.getProperty("port", null) == null) {
             logger.warn("Please set -Dport=9911");
             return;

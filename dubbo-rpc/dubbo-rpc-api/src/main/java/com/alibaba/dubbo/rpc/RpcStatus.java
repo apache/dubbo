@@ -48,8 +48,7 @@ public class RpcStatus {
     private final AtomicLong succeededMaxElapsed = new AtomicLong();
 
     /**
-     * 用来实现executes属性的并发限制（即控制能使用的线程数）
-     * 2017-08-21 yizhenqiang
+     * Semaphore used to control concurrency limit set by `executes`
      */
     private volatile Semaphore executesLimit;
     private volatile int executesPermits;

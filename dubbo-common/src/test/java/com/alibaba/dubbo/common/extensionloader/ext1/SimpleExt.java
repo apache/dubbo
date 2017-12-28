@@ -25,13 +25,13 @@ import com.alibaba.dubbo.common.extension.SPI;
  */
 @SPI("impl1")
 public interface SimpleExt {
-    // 没有使用key的@Adaptive ！
+    // @Adaptive example, do not specify a explicit key.
     @Adaptive
     String echo(URL url, String s);
 
     @Adaptive({"key1", "key2"})
     String yell(URL url, String s);
 
-    // 无@Adaptive ！
+    // no @Adaptive
     String bang(URL url, int i);
 }

@@ -363,7 +363,6 @@ public class MockClusterInvokerTest {
         ret = cluster.invoke(invocation);
         Assert.assertEquals("x", ret.getValue());
 
-        //如d
         //If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("sayHello");
@@ -645,7 +644,6 @@ public class MockClusterInvokerTest {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private Invoker<IHelloService> getClusterInvoker(URL url) {
-        //javasssit方式对方法参数类型判断严格,如果invocation数据设置不全，调用会失败.
         // As `javassist` have a strict restriction of argument types, request will fail if Invocation do not contains complete parameter type information
         final URL durl = url.addParameter("proxy", "jdk");
         invokers.clear();

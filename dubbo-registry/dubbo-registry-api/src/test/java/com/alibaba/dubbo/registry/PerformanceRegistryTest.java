@@ -35,7 +35,7 @@ public class PerformanceRegistryTest extends TestCase {
 
     @Test
     public void testRegistry() {
-        // 读取参数
+        // read server info from property
         if (PerformanceUtils.getProperty("server", null) == null) {
             logger.warn("Please set -Dserver=127.0.0.1:9090");
             return;

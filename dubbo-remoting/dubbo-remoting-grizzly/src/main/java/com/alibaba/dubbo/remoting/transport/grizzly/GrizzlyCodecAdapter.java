@@ -61,7 +61,7 @@ public class GrizzlyCodecAdapter extends BaseFilter {
         Connection<?> connection = context.getConnection();
         GrizzlyChannel channel = GrizzlyChannel.getOrAddChannel(connection, url, handler);
         try {
-            ChannelBuffer channelBuffer = ChannelBuffers.dynamicBuffer(1024); // 不需要关闭
+            ChannelBuffer channelBuffer = ChannelBuffers.dynamicBuffer(1024); // Do not need to close
 
             Object msg = context.getMessage();
             codec.encode(channel, channelBuffer, msg);
@@ -84,8 +84,8 @@ public class GrizzlyCodecAdapter extends BaseFilter {
         Connection<?> connection = context.getConnection();
         Channel channel = GrizzlyChannel.getOrAddChannel(connection, url, handler);
         try {
-            if (message instanceof Buffer) { // 收到新的数据包
-                Buffer grizzlyBuffer = (Buffer) message; // 缓存
+            if (message instanceof Buffer) { // receive a new packet
+                Buffer grizzlyBuffer = (Buffer) message; // buffer
 
                 ChannelBuffer frame;
 
@@ -130,7 +130,7 @@ public class GrizzlyCodecAdapter extends BaseFilter {
                         }
                     }
                 } while (frame.readable());
-            } else { // 其它事件直接往下传
+            } else { // Other events are passed down directly
                 return context.getInvokeAction();
             }
         } finally {

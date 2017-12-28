@@ -86,18 +86,24 @@
                                                 <TD>
                                                     <P>
                                                         <STRONG>
-                                                            <FONT color=#ba1c1c>HTTP404错误</FONT></STRONG>:
+                                                            <FONT color=#ba1c1c>HTTP40 ERROR</FONT></STRONG>:
                                                         <BR/>
                                                         <BR/>
-                                                        没有找到您要访问的页面，请检查您是否输入正确URL。 <BR/>
+                                                        Failed to find the page you want to access, please make sure you
+                                                        are accessing the correct URL. <BR/>
                                                         <BR/>
-                                                        请尝试以下操作：</P>
-                                                    <P>·Dubbo2.1已经升级，如果您收藏了之前dubbo的url链接请点击回到首页跳转<BR/><BR/>
-                                                        ·单击<A href="/">
-                                                            <font color="#BA1C1C">回到首页</font></A>链接，尝试其他链接。<BR/>
+                                                        Please try the following: </P>
+                                                    <P>·Dubbo2.1 has been upgraded, and if you have add the Dubbo URL
+                                                        link to your favourite collections, please click back to the
+                                                        home page to jump<BR/><BR/>
+                                                        ·click <A href="/">
+                                                            <font color="#BA1C1C">Home</font></A> link, and try other
+                                                        links.<BR/>
                                                     </P>
                                                     <BR/>
-                                                    <P align="right">如果您在浏览本站时，多次出现此错误，请与Dubbo团队联系&nbsp;</P>
+                                                    <P align="right">If you have made this mistake many times when you
+                                                        are browsing this station, please contact the Dubbo
+                                                        team&nbsp;</P>
                                                 </TD>
                                             </TR>
                                         </TABLE>

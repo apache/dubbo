@@ -65,10 +65,10 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
                     retryFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
 
                         public void run() {
-                            // 收集统计信息
+                            // collect retry statistics
                             try {
                                 retryFailed();
-                            } catch (Throwable t) { // 防御性容错
+                            } catch (Throwable t) { // Defensive fault tolerance
                                 logger.error("Unexpected error occur at collect statistic", t);
                             }
                         }

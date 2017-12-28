@@ -62,13 +62,13 @@ public class ConnectChannelHandlerTest extends WrappedChannelHandlerTest {
         Assert.assertEquals(taskCount, executor.getCompletedTaskCount());
     }
 
-    @Test //biz error 不抛出到线程异常上来.
+    @Test //biz error should not throw and affect biz thread.
     public void test_Connect_Biz_Error() throws RemotingException {
         handler = new ConnectionOrderedChannelHandler(new BizChannelHander(true), url);
         handler.connected(new MockedChannel());
     }
 
-    @Test //biz error 不抛出到线程异常上来.
+    @Test //biz error should not throw and affect biz thread.
     public void test_Disconnect_Biz_Error() throws RemotingException {
         handler = new ConnectionOrderedChannelHandler(new BizChannelHander(true), url);
         handler.disconnected(new MockedChannel());
@@ -113,7 +113,7 @@ public class ConnectChannelHandlerTest extends WrappedChannelHandlerTest {
     }
 
     /**
-     * 事件不通过线程池，直接在IO上执行
+     * Events do not pass through the thread pool and execute directly on the IO
      */
     @SuppressWarnings("deprecation")
     @Ignore("Heartbeat is processed in HeartbeatHandler not WrappedChannelHandler.")

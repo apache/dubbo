@@ -1,49 +1,49 @@
-/**
- * Project: dubbo.registry-1.1.0-SNAPSHOT
- * <p>
- * File Created at 2010-4-9
- * $Id: Change.java 181192 2012-06-21 05:05:47Z tony.chenl $
- * <p>
- * Copyright 2008 Alibaba.com Croporation Limited.
- * All rights reserved.
- * <p>
- * This software is the confidential and proprietary information of
- * Alibaba Company. ("Confidential Information").  You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the license agreement you entered into
- * with Alibaba.com.
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.alibaba.dubbo.registry.common.domain;
 
 /**
- * 服务变更信息对象
+ * Service change information object
  *
- * @author rain.chenjr
  */
 public class Change extends Entity {
 
-    public static final String PROVIDER_TYPE = "P";     //服务提供变更
-    public static final String CONSUMER_TYPE = "N";     //服务消费者变更
-    public static final String ROUTE_TYPE = "R";        //路由变更
-    public static final String WEIGHT_TYPE = "W";       //权重变更
-    public static final String LOADBALANCE_TYPE = "L";  //负载均衡变更
-    public static final String CLUSTER_TYPE = "G";      //分组变更
-    public static final String USER_TYPE = "U";         //用户变更
-    public static final String CONFIG_TYPE = "C";       //系统配置变更
-    public static final String FEATURE_TYPE = "F";      //系统功能变更
-    public static final String LAYER_TYPE = "Y";      //系统功能变更
-    public static final String TEST_TYPE = "T";         //服务测试变更
-    public static final String MOCK_TYPE = "M";         //服务测试变更
-    public static final String ACCESS_TYPE = "A";       //服务访问控制变更
-    public static final String OVERRIDE_TYPE = "O";     //参数覆盖变更
+    public static final String PROVIDER_TYPE = "P";     //provider change
+    public static final String CONSUMER_TYPE = "N";     //consumer change
+    public static final String ROUTE_TYPE = "R";        //route change
+    public static final String WEIGHT_TYPE = "W";       //weight change
+    public static final String LOADBALANCE_TYPE = "L";  //loadbalance change
+    public static final String CLUSTER_TYPE = "G";      //group change
+    public static final String USER_TYPE = "U";         //user change
+    public static final String CONFIG_TYPE = "C";       //system config change
+    public static final String FEATURE_TYPE = "F";      //feature change
+    public static final String LAYER_TYPE = "Y";      //layer change
+    public static final String TEST_TYPE = "T";         //service test change
+    public static final String MOCK_TYPE = "M";         //service mock change
+    public static final String ACCESS_TYPE = "A";       //access change
+    public static final String OVERRIDE_TYPE = "O";     //override change
     private static final long serialVersionUID = 15528419903956898L;
-    private String type;                    /* 变更类型 */
+    private String type;                    /* type of change */
 
-    private String service;                 /* 服务名称 */
+    private String service;                 /* service name */
 
-    private long sequence;                /* 变更序号 */
+    private long sequence;                /* NO. of change */
 
-    private String data;                    /* 变更内容 */
+    private String data;                    /* what is changed */
 
     public Change() {
     }
@@ -75,7 +75,7 @@ public class Change extends Entity {
 
     @Deprecated
     /**
-     * 用change的id作为sequence
+     * us id as sequence
      */
     public long getSequence() {
         return sequence;
@@ -83,7 +83,7 @@ public class Change extends Entity {
 
     @Deprecated
     /**
-     * 用change的id作为sequence
+     * use id as sequence
      */
     public void setSequence(long sequence) {
         this.sequence = sequence;
