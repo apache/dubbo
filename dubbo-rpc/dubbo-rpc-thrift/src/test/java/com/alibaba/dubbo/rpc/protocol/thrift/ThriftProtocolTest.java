@@ -23,8 +23,6 @@ import com.alibaba.dubbo.rpc.gen.dubbo.Demo;
 import org.junit.After;
 import org.junit.Before;
 
-/**
- */
 public class ThriftProtocolTest extends AbstractTest {
 
     public static final int DEFAULT_PORT = 30660;

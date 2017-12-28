@@ -30,8 +30,6 @@ import java.util.Date;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-/**
- */
 public class Status {
     private static final Pattern OK_PATTERN = Pattern.compile("o(k)", Pattern.CASE_INSENSITIVE);
     @Autowired

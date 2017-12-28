@@ -22,8 +22,6 @@ import com.alibaba.dubbo.common.utils.StringUtils;
 
 import java.util.Map;
 
-/**
- */
 public class Override extends Entity {
 
     private static final long serialVersionUID = 114828505391757846L;

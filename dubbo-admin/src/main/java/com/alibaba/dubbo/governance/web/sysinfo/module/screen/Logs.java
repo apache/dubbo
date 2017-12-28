@@ -29,8 +29,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 
-/**
- */
 public class Logs extends Restful {
 
     private static final int SHOW_LOG_LENGTH = 30000;

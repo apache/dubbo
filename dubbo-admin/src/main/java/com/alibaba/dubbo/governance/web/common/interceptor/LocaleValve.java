@@ -30,8 +30,6 @@ import java.util.Set;
 
 import static com.alibaba.citrus.turbine.util.TurbineUtil.getTurbineRunData;
 
-/**
- */
 public class LocaleValve extends AbstractValve {
 
     //Add exceptions for interceptors

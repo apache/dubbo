@@ -20,8 +20,6 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-/**
- */
 public class ToolTest {
     @Test
     public void test_getSimpleName() throws Exception {
