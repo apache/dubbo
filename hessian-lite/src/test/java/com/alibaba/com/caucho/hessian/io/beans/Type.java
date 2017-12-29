@@ -1,4 +1,3 @@
-package com.alibaba.com.caucho.hessian.io.beans;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -16,6 +15,7 @@ package com.alibaba.com.caucho.hessian.io.beans;
  * limitations under the License.
  */
 
+package com.alibaba.com.caucho.hessian.io.beans;
 public enum Type {
     High, Normal, Lower
 }
