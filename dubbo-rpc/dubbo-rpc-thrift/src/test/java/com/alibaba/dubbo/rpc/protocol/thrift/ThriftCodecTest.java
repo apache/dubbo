@@ -43,8 +43,6 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 
-/**
- */
 @Ignore
 public class ThriftCodecTest {
 

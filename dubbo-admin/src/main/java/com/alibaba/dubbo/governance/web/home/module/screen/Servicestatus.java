@@ -25,8 +25,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
 import java.util.Map;
 
-/**
- */
 public class Servicestatus {
 //    @Autowired
 //    private RegistryCache registryCache;

@@ -22,9 +22,6 @@ import io.netty.util.internal.logging.AbstractInternalLogger;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 
-/**
- *
- */
 public class NettyHelper {
 
     public static void setNettyLoggerFactory() {

@@ -19,9 +19,6 @@ package com.alibaba.dubbo.rpc.cluster.merger;
 
 import com.alibaba.dubbo.rpc.cluster.Merger;
 
-/**
- *
- */
 public class ShortArrayMerger implements Merger<short[]> {
 
     public short[] merge(short[]... items) {

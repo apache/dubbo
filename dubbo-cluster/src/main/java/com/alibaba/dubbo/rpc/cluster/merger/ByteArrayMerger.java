@@ -19,9 +19,6 @@ package com.alibaba.dubbo.rpc.cluster.merger;
 
 import com.alibaba.dubbo.rpc.cluster.Merger;
 
-/**
- *
- */
 public class ByteArrayMerger implements Merger<byte[]> {
 
     public byte[] merge(byte[]... items) {

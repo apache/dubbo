@@ -172,7 +172,6 @@ public class ExchangeCodecTest extends TelnetCodecTest {
 
     @Test
     public void test_Decode_MigicCodec_Contain_ExchangeHeader() throws IOException {
-        //
         byte[] header = new byte[]{0, 0, MAGIC_HIGH, MAGIC_LOW, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
         Channel channel = getServerSideChannel(url);
@@ -342,7 +341,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
         byte[] data = new byte[encodeBuffer.writerIndex()];
         encodeBuffer.readBytes(data);
 
-        //encode resault check need decode 
+        //encode resault check need decode
         ChannelBuffer decodeBuffer = ChannelBuffers.wrappedBuffer(data);
         Response obj = (Response) codec.decode(channel, decodeBuffer);
 
@@ -350,7 +349,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
         Assert.assertEquals(response.getStatus(), obj.getStatus());
         Assert.assertEquals(response.isHeartbeat(), obj.isHeartbeat());
         Assert.assertEquals(person, obj.getResult());
-        // encode response verson ?? 
+        // encode response verson ??
 //        Assert.assertEquals(response.getVersion(), obj.getVersion());
 
     }
@@ -373,7 +372,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
         byte[] data = new byte[encodeBuffer.writerIndex()];
         encodeBuffer.readBytes(data);
 
-        //encode resault check need decode 
+        //encode resault check need decode
         ChannelBuffer decodeBuffer = ChannelBuffers.wrappedBuffer(data);
         Response obj = (Response) codec.decode(channel, decodeBuffer);
         Assert.assertEquals(response.getId(), obj.getId());

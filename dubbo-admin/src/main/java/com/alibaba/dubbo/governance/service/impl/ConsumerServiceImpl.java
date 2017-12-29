@@ -29,9 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
-/**
- *
- */
 public class ConsumerServiceImpl extends AbstractService implements ConsumerService {
 
     public List<Consumer> findByService(String service) {

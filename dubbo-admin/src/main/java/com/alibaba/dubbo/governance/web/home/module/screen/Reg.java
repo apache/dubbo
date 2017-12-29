@@ -19,8 +19,6 @@ package com.alibaba.dubbo.governance.web.home.module.screen;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- */
 public class Reg extends Restful {
 
     public Result doExecute(Map<String, Object> context) throws Exception {

@@ -29,8 +29,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-/**
- */
 // FIXME GhostMethod is Bug!! Should be fixed
 public class RouteUtilsTest {
 

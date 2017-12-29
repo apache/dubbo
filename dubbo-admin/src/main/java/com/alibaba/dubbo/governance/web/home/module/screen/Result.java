@@ -18,8 +18,6 @@ package com.alibaba.dubbo.governance.web.home.module.screen;
 
 import java.io.Serializable;
 
-/**
- */
 public class Result implements Serializable {
 
     private static final long serialVersionUID = 4922467873471920132L;
