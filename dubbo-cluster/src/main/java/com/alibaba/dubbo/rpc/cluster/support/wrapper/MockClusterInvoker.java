@@ -32,8 +32,6 @@ import com.alibaba.dubbo.rpc.support.MockInvoker;
 
 import java.util.List;
 
-/**
- */
 public class MockClusterInvoker<T> implements Invoker<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(MockClusterInvoker.class);
@@ -113,7 +111,6 @@ public class MockClusterInvoker<T> implements Invoker<T> {
             } else {
                 throw new RpcException(me.getCode(), getMockExceptionMessage(e, me), me.getCause());
             }
-//			
         } catch (Throwable me) {
             throw new RpcException(getMockExceptionMessage(e, me), me.getCause());
         }

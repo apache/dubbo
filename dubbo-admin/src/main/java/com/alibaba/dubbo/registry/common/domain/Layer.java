@@ -16,8 +16,6 @@
  */
 package com.alibaba.dubbo.registry.common.domain;
 
-/**
- */
 public class Layer extends Entity {
     private static final long serialVersionUID = 6114868933223039253L;
 

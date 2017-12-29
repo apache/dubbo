@@ -22,9 +22,6 @@ import com.alibaba.dubbo.common.utils.StringUtils;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- *
- */
 public class ConvertUtil {
     private ConvertUtil() {
     }

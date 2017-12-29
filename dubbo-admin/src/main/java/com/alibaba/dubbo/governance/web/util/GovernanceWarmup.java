@@ -23,8 +23,6 @@ import com.alibaba.dubbo.registry.common.StatusManager;
 
 import org.springframework.beans.factory.InitializingBean;
 
-/**
- */
 public class GovernanceWarmup implements InitializingBean {
 
     private static final Logger logger = LoggerFactory.getLogger(GovernanceWarmup.class);

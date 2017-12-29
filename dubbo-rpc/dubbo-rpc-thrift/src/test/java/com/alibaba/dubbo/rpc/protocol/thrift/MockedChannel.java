@@ -23,8 +23,6 @@ import com.alibaba.dubbo.remoting.RemotingException;
 
 import java.net.InetSocketAddress;
 
-/**
- */
 public class MockedChannel implements Channel {
 
     private URL url;

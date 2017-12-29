@@ -22,8 +22,6 @@ import com.alibaba.dubbo.rpc.gen.dubbo.$__DemoStub;
 import org.junit.Assert;
 import org.junit.Test;
 
-/**
- */
 public class ThriftUtilsTest {
 
     @Test

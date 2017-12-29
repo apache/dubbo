@@ -32,9 +32,6 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.junit.Assert.assertThat;
 import static org.junit.matchers.JUnitMatchers.containsString;
 
-/**
- *
- */
 public class AbstractCodecTest extends TestCase {
 
     public void test_checkPayload_default8M() throws Exception {

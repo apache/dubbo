@@ -27,8 +27,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 
-/**
- */
 public class Envs extends Restful {
 
     private static final long SECOND = 1000;

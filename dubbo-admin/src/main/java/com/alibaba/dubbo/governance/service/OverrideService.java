@@ -20,8 +20,6 @@ import com.alibaba.dubbo.registry.common.domain.Override;
 
 import java.util.List;
 
-/**
- */
 public interface OverrideService {
 
     void saveOverride(Override override);

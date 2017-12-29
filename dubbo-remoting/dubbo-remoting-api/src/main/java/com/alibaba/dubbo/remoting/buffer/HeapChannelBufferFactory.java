@@ -19,9 +19,6 @@ package com.alibaba.dubbo.remoting.buffer;
 
 import java.nio.ByteBuffer;
 
-/**
- *
- */
 public class HeapChannelBufferFactory implements ChannelBufferFactory {
 
     private static final HeapChannelBufferFactory INSTANCE = new HeapChannelBufferFactory();

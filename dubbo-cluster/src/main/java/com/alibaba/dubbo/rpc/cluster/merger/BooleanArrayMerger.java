@@ -19,8 +19,6 @@ package com.alibaba.dubbo.rpc.cluster.merger;
 
 import com.alibaba.dubbo.rpc.cluster.Merger;
 
-/**
- */
 public class BooleanArrayMerger implements Merger<boolean[]> {
 
     public boolean[] merge(boolean[]... items) {

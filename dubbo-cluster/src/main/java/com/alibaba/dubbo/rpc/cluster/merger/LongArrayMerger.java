@@ -19,9 +19,6 @@ package com.alibaba.dubbo.rpc.cluster.merger;
 
 import com.alibaba.dubbo.rpc.cluster.Merger;
 
-/**
- *
- */
 public class LongArrayMerger implements Merger<long[]> {
 
     public long[] merge(long[]... items) {

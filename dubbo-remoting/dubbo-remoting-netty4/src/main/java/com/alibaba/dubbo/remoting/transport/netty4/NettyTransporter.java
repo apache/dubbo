@@ -23,10 +23,6 @@ import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.Server;
 import com.alibaba.dubbo.remoting.Transporter;
 
-/**
- *
- *
- */
 public class NettyTransporter implements Transporter {
 
     public static final String NAME = "netty4";

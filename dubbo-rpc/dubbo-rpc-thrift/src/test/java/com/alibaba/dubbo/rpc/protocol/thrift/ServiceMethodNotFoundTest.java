@@ -32,8 +32,6 @@ import org.junit.Test;
 import java.lang.reflect.Field;
 import java.util.Map;
 
-/**
- */
 public class ServiceMethodNotFoundTest extends AbstractTest {
 
     private URL url;

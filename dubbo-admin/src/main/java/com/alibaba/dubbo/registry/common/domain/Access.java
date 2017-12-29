@@ -16,9 +16,6 @@
  */
 package com.alibaba.dubbo.registry.common.domain;
 
-/**
- *
- */
 public class Access extends Entity {
 
     private static final long serialVersionUID = -962351722638094446L;
