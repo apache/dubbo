@@ -16,25 +16,26 @@
  */
 package com.alibaba.dubbo.rpc.cluster.loadbalance;
 
-import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.extension.ExtensionLoader;
-import com.alibaba.dubbo.rpc.Invocation;
-import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.RpcStatus;
-import com.alibaba.dubbo.rpc.cluster.LoadBalance;
-
-import junit.framework.Assert;
-import org.easymock.EasyMock;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+
+import org.easymock.EasyMock;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
+import com.alibaba.dubbo.rpc.Invocation;
+import com.alibaba.dubbo.rpc.Invoker;
+import com.alibaba.dubbo.rpc.RpcResult;
+import com.alibaba.dubbo.rpc.RpcStatus;
+import com.alibaba.dubbo.rpc.cluster.LoadBalance;
 
 /**
  * RoundRobinLoadBalanceTest
@@ -134,9 +135,6 @@ public class LoadBalanceTest {
             }
         }
         counter = getInvokeCounter(runs, LeastActiveLoadBalance.NAME);
-        for (Invoker minvoker : counter.keySet()) {
-            Long count = counter.get(minvoker).get();
-        }
         Assert.assertEquals(runs, counter.get(invoker1).intValue());
         Assert.assertEquals(0, counter.get(invoker2).intValue());
         Assert.assertEquals(0, counter.get(invoker3).intValue());
@@ -168,6 +166,8 @@ public class LoadBalanceTest {
         }
         return counter;
     }
+    
+    
 
     @Test
     public void testLoadBalanceWarmup() {
@@ -199,6 +199,34 @@ public class LoadBalanceTest {
             .calculateWarmupWeight(10 * 60 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
         Assert.assertEquals(100, AbstractLoadBalance
             .calculateWarmupWeight(20 * 60 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
+    }
+    
+    public Invocation createInvocation(int i) {
+	    	Invocation invocation = EasyMock.createMock(Invocation.class);
+	    	EasyMock.expect(invocation.getMethodName()).andReturn("method").anyTimes();
+	    	EasyMock.expect(invocation.getParameterTypes()).andReturn(new Class<?>[] { Enum.class }).anyTimes();
+	    	EasyMock.expect(invocation.getArguments()).andReturn(new Object[] { "hello"+i }).anyTimes();
+	    	EasyMock.expect(invocation.getAttachments()).andReturn(null).anyTimes();
+	    	EasyMock.replay(invocation);
+	    	Invoker<LoadBalanceTest> invoker = EasyMock.createMock(Invoker.class);
+	    	EasyMock.expect(invoker.isAvailable()).andReturn(true).anyTimes();
+	    	EasyMock.expect(invoker.getInterface()).andReturn(LoadBalanceTest.class).anyTimes();
+	    	RpcResult result = new RpcResult();
+	    	result.setValue("High");
+	    	EasyMock.expect(invoker.invoke(invocation)).andReturn(result).anyTimes();
+	    	URL u = URL.valueOf("test://test+"+i+":11/test?group=dubbo&version=1.1");
+	    	EasyMock.expect(invoker.getUrl()).andReturn(u).anyTimes();
+	    	EasyMock.replay(invoker);
+	    	return invocation;	
+    }
+
+    public Invoker createInvoker(int i) {
+	    	Invoker invoker = EasyMock.createMock(Invoker.class);
+	    	URL url5 = URL.valueOf("test://127.0.0."+i+"/DemoService");
+	    	EasyMock.expect(invoker.isAvailable()).andReturn(true).anyTimes();
+	    	EasyMock.expect(invoker.getInterface()).andReturn(LoadBalanceTest.class).anyTimes();
+	    	EasyMock.expect(invoker.getUrl()).andReturn(url5).anyTimes();
+	    	return invoker;
     }
 
 }
