@@ -19,8 +19,6 @@ package com.alibaba.dubbo.common.model.person;
 import java.io.Serializable;
 import java.util.List;
 
-/**
- */
 public class PersonInfo implements Serializable {
     private static final long serialVersionUID = 7443011149612231882L;
 

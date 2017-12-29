@@ -34,8 +34,6 @@ import org.apache.thrift.transport.TTransportFactory;
 import org.junit.After;
 import org.junit.Before;
 
-/**
- */
 public abstract class AbstractTest {
 
     static final int PORT = 30660;

@@ -32,8 +32,6 @@ import java.util.Map;
 
 import static com.alibaba.citrus.turbine.util.TurbineUtil.getTurbineRunData;
 
-/**
- */
 public class ServicePrivilegeCheckValve extends AbstractValve {
     private static final Logger logger = LoggerFactory.getLogger(ServicePrivilegeCheckValve.class);
 

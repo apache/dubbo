@@ -32,9 +32,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.assertEquals;
 
-/**
- *
- */
 public class FailbackRegistryTest {
     static String service;
     static URL serviceUrl;

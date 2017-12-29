@@ -320,7 +320,6 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             }
         }
 
-        //
         String hostToRegistry = ConfigUtils.getSystemProperty(Constants.DUBBO_IP_TO_REGISTRY);
         if (hostToRegistry == null || hostToRegistry.length() == 0) {
             hostToRegistry = NetUtils.getLocalHost();

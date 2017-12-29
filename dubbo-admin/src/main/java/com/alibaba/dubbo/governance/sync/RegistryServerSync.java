@@ -39,8 +39,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-/**
- */
 public class RegistryServerSync implements InitializingBean, DisposableBean, NotifyListener {
 
     private static final Logger logger = LoggerFactory.getLogger(RegistryServerSync.class);

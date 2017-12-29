@@ -40,8 +40,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-/**
- */
 public class RouteRuleTest {
     final RouteRule.MatchPair pair;
 

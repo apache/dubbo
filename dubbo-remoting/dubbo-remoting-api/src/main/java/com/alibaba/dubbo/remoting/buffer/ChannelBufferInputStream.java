@@ -20,9 +20,6 @@ package com.alibaba.dubbo.remoting.buffer;
 import java.io.IOException;
 import java.io.InputStream;
 
-/**
- *
- */
 public class ChannelBufferInputStream extends InputStream {
 
     private final ChannelBuffer buffer;

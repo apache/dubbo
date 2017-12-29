@@ -23,9 +23,6 @@ import com.alibaba.dubbo.remoting.buffer.ChannelBuffer;
 
 import java.io.IOException;
 
-/**
- *
- */
 @SPI
 public interface Codec2 {
 

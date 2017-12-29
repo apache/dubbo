@@ -25,9 +25,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-/**
- *
- */
 public class MergerFactory {
 
     private static final ConcurrentMap<Class<?>, Merger<?>> mergerCache =

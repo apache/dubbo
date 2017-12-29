@@ -22,9 +22,6 @@ import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.Dispatcher;
 
-/**
- *
- */
 public class FakeChannelHandlers extends ChannelHandlers {
 
     public FakeChannelHandlers() {

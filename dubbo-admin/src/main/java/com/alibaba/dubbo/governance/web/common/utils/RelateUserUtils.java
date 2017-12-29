@@ -22,8 +22,6 @@ import com.alibaba.dubbo.registry.common.route.ParseUtils;
 import java.util.List;
 import java.util.Set;
 
-/**
- */
 public class RelateUserUtils {
     /**
      * Add an owner related with service

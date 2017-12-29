@@ -18,9 +18,6 @@ package com.alibaba.dubbo.governance.web.sysmanage.module.screen;
 
 import com.alibaba.dubbo.governance.web.common.module.screen.Restful;
 
-/**
- *
- */
 public class Privileges extends Restful {
 
 }

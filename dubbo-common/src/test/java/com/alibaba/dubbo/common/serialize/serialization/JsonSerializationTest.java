@@ -155,8 +155,6 @@ public class JsonSerializationTest extends AbstractSerializationPersionOkTest {
     public void test_LinkedHashMap() throws Exception {
     }
 
-    // 
-
     @Ignore("SPerson type missing")
     @Test
     public void test_SPerson() throws Exception {
