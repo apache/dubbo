@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -43,62 +44,66 @@ import java.util.Map;
 /**
  * AbstractDefaultConfig
  *
- * @author william.liangf
  * @export
  */
 public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     private static final long serialVersionUID = -1559314110797223229L;
 
-    // 服务接口的本地实现类名
+    // local impl class name for the service interface
     protected String local;
 
-    // 服务接口的本地实现类名
+    // local stub class name for the service interface
     protected String stub;
 
-    // 服务监控
+    // service monitor
     protected MonitorConfig monitor;
 
-    // 代理类型
+    // proxy type
     protected String proxy;
 
-    // 集群方式
+    // cluster type
     protected String cluster;
 
-    // 过滤器
+    // filter
     protected String filter;
 
-    // 监听器
+    // listener
     protected String listener;
 
-    // 负责人
+    // owner
     protected String owner;
 
-    // 连接数限制,0表示共享连接，否则为该服务独享连接数
+    // connection limits, 0 means shared connection, otherwise it defines the connections delegated to the
+    // current service
     protected Integer connections;
 
-    // 连接数限制
+    // layer
     protected String layer;
 
-    // 应用信息
+    // application info
     protected ApplicationConfig application;
 
-    // 模块信息
+    // module info
     protected ModuleConfig module;
 
-    // 注册中心
+    // registry centers
     protected List<RegistryConfig> registries;
-    // 连接事件
+
+    // connection events
     protected String onconnect;
-    // 断开事件
+
+    // disconnection events
     protected String ondisconnect;
-    // callback实例个数限制
+
+    // callback limits
     private Integer callbacks;
-    // 服务暴露或引用的scope,如果为local，则表示只在当前JVM内查找.
+
+    // the scope for referring/exporting a service, if it's local, it means searching in current JVM only.
     private String scope;
 
     protected void checkRegistry() {
-        // 兼容旧版本
+        // for backward compatibility
         if (registries == null || registries.size() == 0) {
             String address = ConfigUtils.getProperty("dubbo.registry.address");
             if (address != null && address.length() > 0) {
@@ -127,7 +132,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     @SuppressWarnings("deprecation")
     protected void checkApplication() {
-        // 兼容旧版本
+        // for backward compatibility
         if (application == null) {
             String applicationName = ConfigUtils.getProperty("dubbo.application.name");
             if (applicationName != null && applicationName.length() > 0) {
@@ -243,15 +248,15 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     protected void checkInterfaceAndMethods(Class<?> interfaceClass, List<MethodConfig> methods) {
-        // 接口不能为空
+        // interface cannot be null
         if (interfaceClass == null) {
             throw new IllegalStateException("interface not allow null!");
         }
-        // 检查接口类型必需为接口
+        // to verify interfaceClass is an interface
         if (!interfaceClass.isInterface()) {
             throw new IllegalStateException("The interface class " + interfaceClass + " is not a interface!");
         }
-        // 检查方法是否在接口中存在
+        // check if methods exist in the interface
         if (methods != null && methods.size() > 0) {
             for (MethodConfig methodBean : methods) {
                 String methodName = methodBean.getName();

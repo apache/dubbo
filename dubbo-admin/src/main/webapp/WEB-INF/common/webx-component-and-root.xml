@@ -12,10 +12,10 @@
         http://www.alibaba.com/schema/services/template/engines/velocity/plugins http://localhost:8080/schema/services-template-engines-velocity-plugins.xsd
         http://www.springframework.org/schema/beans http://localhost:8080/schema/www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <!-- 此文件被 webx.xml 和 webx-*.xml 同时引用。 -->
-    <!-- 注意：此文件需要property-placeholder变量：${component}。 -->
+    <!-- This file can be used by webx.xml and webx-*.xml. -->
+    <!-- NOTE: This file requires property-placeholder variables: ${component}。 -->
 
-    <!-- Template渲染服务。 -->
+    <!-- Template render service. -->
     <services:template
             xmlns="http://www.alibaba.com/schema/services/template/engines"
             searchExtensions="true">
@@ -41,13 +41,13 @@
             /> <jsp-engine path="/templates/${component}" /> -->
     </services:template>
 
-    <!-- 名称查找规则。 -->
+    <!--  Name lookup rules. -->
     <services:mapping-rules
             xmlns="http://www.alibaba.com/schema/services/mapping-rules">
 
         <!-- External target name => Internal target name -->
         <extension-rule id="extension.input">
-            <!-- 默认后缀 -->
+            <!-- default suffix -->
             <mapping extension="" to=""/>
 
             <!-- JSP -->
@@ -63,7 +63,7 @@
 
         <!-- Internal target name => External target name -->
         <extension-rule id="extension.output">
-            <!-- 默认后缀 -->
+            <!-- default suffix -->
             <mapping extension="" to="htm"/>
 
             <!-- JSP -->
@@ -106,7 +106,7 @@
 
     </services:mapping-rules>
 
-    <!-- 支持注入参数。 -->
+    <!-- Support parameter injection. -->
     <services:data-resolver
             xmlns="http://www.alibaba.com/schema/services/data-resolver/factories">
         <turbine-rundata-resolver/>

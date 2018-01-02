@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,8 +36,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * DubboMonitor
- *
- * @author william.liangf
  */
 public class DubboMonitor implements Monitor {
 
@@ -44,10 +43,8 @@ public class DubboMonitor implements Monitor {
 
     private static final int LENGTH = 10;
 
-    // 定时任务执行器
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(3, new NamedThreadFactory("DubboMonitorSendTimer", true));
 
-    // 统计信息收集定时器
     private final ScheduledFuture<?> sendFuture;
 
     private final Invoker<MonitorService> monitorInvoker;
@@ -62,13 +59,13 @@ public class DubboMonitor implements Monitor {
         this.monitorInvoker = monitorInvoker;
         this.monitorService = monitorService;
         this.monitorInterval = monitorInvoker.getUrl().getPositiveParameter("interval", 60000);
-        // 启动统计信息收集定时器
+        // collect timer for collecting statistics data
         sendFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
             public void run() {
-                // 收集统计信息
+                // collect data
                 try {
                     send();
-                } catch (Throwable t) { // 防御性容错
+                } catch (Throwable t) {
                     logger.error("Unexpected error occur at send statistic, cause: " + t.getMessage(), t);
                 }
             }
@@ -81,7 +78,7 @@ public class DubboMonitor implements Monitor {
         }
         String timestamp = String.valueOf(System.currentTimeMillis());
         for (Map.Entry<Statistics, AtomicReference<long[]>> entry : statisticsMap.entrySet()) {
-            // 获取已统计数据
+            // get statistics data
             Statistics statistics = entry.getKey();
             AtomicReference<long[]> reference = entry.getValue();
             long[] numbers = reference.get();
@@ -96,7 +93,7 @@ public class DubboMonitor implements Monitor {
             long maxElapsed = numbers[8];
             long maxConcurrent = numbers[9];
 
-            // 发送汇总信息
+            // send statistics data
             URL url = statistics.getUrl()
                     .addParameters(MonitorService.TIMESTAMP, timestamp,
                             MonitorService.SUCCESS, String.valueOf(success),
@@ -112,7 +109,7 @@ public class DubboMonitor implements Monitor {
                     );
             monitorService.collect(url);
 
-            // 减掉已统计数据
+            // reset
             long[] current;
             long[] update = new long[LENGTH];
             do {
@@ -137,21 +134,21 @@ public class DubboMonitor implements Monitor {
     }
 
     public void collect(URL url) {
-        // 读写统计变量
+        // data to collect from url
         int success = url.getParameter(MonitorService.SUCCESS, 0);
         int failure = url.getParameter(MonitorService.FAILURE, 0);
         int input = url.getParameter(MonitorService.INPUT, 0);
         int output = url.getParameter(MonitorService.OUTPUT, 0);
         int elapsed = url.getParameter(MonitorService.ELAPSED, 0);
         int concurrent = url.getParameter(MonitorService.CONCURRENT, 0);
-        // 初始化原子引用
+        // init atomic reference
         Statistics statistics = new Statistics(url);
         AtomicReference<long[]> reference = statisticsMap.get(statistics);
         if (reference == null) {
             statisticsMap.putIfAbsent(statistics, new AtomicReference<long[]>());
             reference = statisticsMap.get(statistics);
         }
-        // CompareAndSet并发加入统计数据
+        // use CompareAndSet to sum
         long[] current;
         long[] update = new long[LENGTH];
         do {

@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,7 +30,6 @@ import java.util.Arrays;
 /**
  * ProviderConfig
  *
- * @author william.liangf
  * @export
  * @see com.alibaba.dubbo.config.ProtocolConfig
  * @see com.alibaba.dubbo.config.ServiceConfig
@@ -38,78 +38,78 @@ public class ProviderConfig extends AbstractServiceConfig {
 
     private static final long serialVersionUID = 6913423882496634749L;
 
-    // ======== 协议缺省值，当协议属性未设置时使用该缺省值替代  ========
+    // ======== protocol default values, it'll take effect when protocol's attributes are not set ========
 
-    // 服务IP地址(多网卡时使用)
+    // service IP addresses (used when there are multiple network cards available)
     private String host;
 
-    // 服务端口
+    // service port
     private Integer port;
 
-    // 上下
+    // context path
     private String contextpath;
 
-    // 线程池类型
+    // thread pool
     private String threadpool;
 
-    // 线程池大小(固定大小)
+    // thread pool size (fixed size)
     private Integer threads;
 
-    // IO线程池大小(固定大小)
+    // IO thread pool size (fixed size)
     private Integer iothreads;
 
-    // 线程池队列大小
+    // thread pool queue length
     private Integer queues;
 
-    // 最大接收连接数
+    // max acceptable connections
     private Integer accepts;
 
-    // 协议编码
+    // protocol codec
     private String codec;
 
-    // 序列化方式
+    // serialization
     private String serialization;
 
-    // 字符集
+    // charset
     private String charset;
 
-    // 最大请求数据长度
+    // payload max length
     private Integer payload;
 
-    // 缓存区大小
+    // buffer size
     private Integer buffer;
 
-    // 网络传输方式
+    // transporter
     private String transporter;
 
-    // 信息交换方式
+    // how information gets exchanged
     private String exchanger;
 
-    // 信息线程模型派发方式
+    // thread dispatching mode
     private String dispatcher;
 
-    // 对称网络组网方式
+    // networker
     private String networker;
 
-    // 服务器端实现
+    // server impl
     private String server;
 
-    // 客户端实现
+    // client impl
     private String client;
 
-    // 支持的telnet命令，多个命令用逗号分隔
+    // supported telnet commands, separated with comma.
     private String telnet;
 
-    // 命令行提示符
+    // command line prompt
     private String prompt;
 
-    // status检查
+    // status check
     private String status;
 
-    // 停止时等候时间
+    // wait time when stop
     private Integer wait;
 
-    // 是否为缺省
+    // if it's default
     private Boolean isDefault;
 
     @Deprecated
@@ -345,7 +345,7 @@ public class ProviderConfig extends AbstractServiceConfig {
     }
 
     /**
-     * 单词拼写错误，请使用{@link #getDispatcher()}
+     * typo, switch to use {@link #getDispatcher()}
      *
      * @deprecated {@link #getDispatcher()}
      */
@@ -356,7 +356,7 @@ public class ProviderConfig extends AbstractServiceConfig {
     }
 
     /**
-     * 单词拼写错误，请使用{@link #setDispatcher(String)}
+     * typo, switch to use {@link #getDispatcher()}
      *
      * @deprecated {@link #setDispatcher(String)}
      */

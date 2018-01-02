@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,12 +15,6 @@
  * limitations under the License.
  */
 package com.alibaba.dubbo.remoting.transport.dispatcher.connection;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
@@ -37,6 +32,7 @@ import com.alibaba.dubbo.remoting.transport.dispatcher.WrappedChannelHandler;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -53,7 +49,7 @@ public class ConnectionOrderedChannelHandler extends WrappedChannelHandler {
                 new LinkedBlockingQueue<Runnable>(url.getPositiveParameter(Constants.CONNECT_QUEUE_CAPACITY, Integer.MAX_VALUE)),
                 new NamedThreadFactory(threadName, true),
                 new AbortPolicyWithReport(threadName, url)
-        );  // FIXME 没有地方释放connectionExecutor！
+        );  // FIXME There's no place to release connectionExecutor!
         queuewarninglimit = url.getParameter(Constants.CONNECT_QUEUE_WARNING_SIZE, Constants.DEFAULT_CONNECT_QUEUE_WARNING_SIZE);
     }
 
@@ -83,18 +79,18 @@ public class ConnectionOrderedChannelHandler extends WrappedChannelHandler {
         try {
             cexecutor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
         } catch (Throwable t) {
-        	//fix 线程池满了拒绝调用不返回，导致消费者一直等待超时
-        	if(message instanceof Request && t instanceof RejectedExecutionException){
-        		Request request = (Request)message;
-        		if(request.isTwoWay()){
-        			String msg = "Server side(" + url.getIp() + "," + url.getPort() + ") threadpool is exhausted ,detail msg:" + t.getMessage();
-        			Response response = new Response(request.getId(), request.getVersion());
-        			response.setStatus(Response.SERVER_THREADPOOL_EXHAUSTED_ERROR);
-        			response.setErrorMessage(msg);
-        			channel.send(response);
-        			return;
-        		}
-        	}
+            //fix, reject exception can not be sent to consumer because thread pool is full, resulting in consumers waiting till timeout.
+            if (message instanceof Request && t instanceof RejectedExecutionException) {
+                Request request = (Request) message;
+                if (request.isTwoWay()) {
+                    String msg = "Server side(" + url.getIp() + "," + url.getPort() + ") threadpool is exhausted ,detail msg:" + t.getMessage();
+                    Response response = new Response(request.getId(), request.getVersion());
+                    response.setStatus(Response.SERVER_THREADPOOL_EXHAUSTED_ERROR);
+                    response.setErrorMessage(msg);
+                    channel.send(response);
+                    return;
+                }
+            }
             throw new ExecutionException(message, channel, getClass() + " error when process received event .", t);
         }
     }

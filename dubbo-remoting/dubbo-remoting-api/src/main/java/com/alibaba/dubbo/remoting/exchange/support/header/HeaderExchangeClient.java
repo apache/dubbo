@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -38,9 +39,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * DefaultMessageClient
- *
- * @author william.liangf
- * @author chao.liuc
  */
 public class HeaderExchangeClient implements ExchangeClient {
 
@@ -49,10 +47,10 @@ public class HeaderExchangeClient implements ExchangeClient {
     private static final ScheduledThreadPoolExecutor scheduled = new ScheduledThreadPoolExecutor(2, new NamedThreadFactory("dubbo-remoting-client-heartbeat", true));
     private final Client client;
     private final ExchangeChannel channel;
-    // 心跳定时器
-    private ScheduledFuture<?> heatbeatTimer;
-    // 心跳超时，毫秒。缺省0，不会执行心跳。
+    // heartbeat timer
+    private ScheduledFuture<?> heartbeatTimer;
     private int heartbeat;
+    // heartbeat timeout (ms), default value is 0 , won't execute a heartbeat.
     private int heartbeatTimeout;
 
     public HeaderExchangeClient(Client client, boolean needHeartbeat) {
@@ -122,7 +120,7 @@ public class HeaderExchangeClient implements ExchangeClient {
     }
 
     public void close(int timeout) {
-        // 标记client进入关闭流程
+        // Mark the client into the closure process
         startClose();
         doClose();
         channel.close(timeout);
@@ -165,7 +163,7 @@ public class HeaderExchangeClient implements ExchangeClient {
     private void startHeatbeatTimer() {
         stopHeartbeatTimer();
         if (heartbeat > 0) {
-            heatbeatTimer = scheduled.scheduleWithFixedDelay(
+            heartbeatTimer = scheduled.scheduleWithFixedDelay(
                     new HeartBeatTask(new HeartBeatTask.ChannelProvider() {
                         public Collection<Channel> getChannels() {
                             return Collections.<Channel>singletonList(HeaderExchangeClient.this);
@@ -176,9 +174,9 @@ public class HeaderExchangeClient implements ExchangeClient {
     }
 
     private void stopHeartbeatTimer() {
-        if (heatbeatTimer != null && !heatbeatTimer.isCancelled()) {
+        if (heartbeatTimer != null && !heartbeatTimer.isCancelled()) {
             try {
-                heatbeatTimer.cancel(true);
+                heartbeatTimer.cancel(true);
                 scheduled.purge();
             } catch (Throwable e) {
                 if (logger.isWarnEnabled()) {
@@ -186,7 +184,7 @@ public class HeaderExchangeClient implements ExchangeClient {
                 }
             }
         }
-        heatbeatTimer = null;
+        heartbeatTimer = null;
     }
 
     private void doClose() {

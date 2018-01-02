@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,13 +34,12 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * 增加router的Directory
+ * Abstract implementation of Directory: Invoker list returned from this Directory's list method have been filtered by Routers
  *
- * @author chao.liuc
  */
 public abstract class AbstractDirectory<T> implements Directory<T> {
 
-    // 日志输出
+    // logger
     private static final Logger logger = LoggerFactory.getLogger(AbstractDirectory.class);
 
     private final URL url;
@@ -75,7 +75,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         if (localRouters != null && localRouters.size() > 0) {
             for (Router router : localRouters) {
                 try {
-                    if (router.getUrl() != null && router.getUrl().getParameter(Constants.RUNTIME_KEY, false)) {
+                    if (router.getUrl() == null || router.getUrl().getParameter(Constants.RUNTIME_KEY, false)) {
                         invokers = router.route(invokers, getConsumerUrl(), invocation);
                     }
                 } catch (Throwable t) {

@@ -1,17 +1,18 @@
-/**
- * Project: dubbo.registry.server-1.1.0-SNAPSHOT
- * <p>
- * File Created at 2010-6-28
- * $Id: Operation.java 181192 2012-06-21 05:05:47Z tony.chenl $
- * <p>
- * Copyright 2008 Alibaba.com Croporation Limited.
- * All rights reserved.
- * <p>
- * This software is the confidential and proprietary information of
- * Alibaba Company. ("Confidential Information").  You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the license agreement you entered into
- * with Alibaba.com.
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.alibaba.dubbo.registry.common.domain;
 
@@ -20,8 +21,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * 记录错误信息以及记录所有的人为的操作
- * @author rain.chenjr
+ * Record error messages and record all user operations
  *
  */
 public class Operation extends Entity {
@@ -47,13 +47,13 @@ public class Operation extends Entity {
                     CLUSTER_TYPE, DOCUMENT_TYPE, LOADBALANCE_TYPE, TEST_TYPE,
                     AGREEMENT_TYPE, USER_TYPE, FEATURE_TYPE, CONFIG_TYPE}));
     private static final long serialVersionUID = 8220325876753890396L;
-    private String username;     //操作者
+    private String username;     // operator
 
-    private String dataType;     //数据类型，如route,cluster
+    private String dataType;     // data type, e.g., route, cluster
 
-    private String operateType;    //操作类型，如删除、修改 、创建
+    private String operateType;    // operations, e.g. update, create
 
-    private String data;       //记录数据信息
+    private String data;       // record data information
 
     public Operation() {
     }

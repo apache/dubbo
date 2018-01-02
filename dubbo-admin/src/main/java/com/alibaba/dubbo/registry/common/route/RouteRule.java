@@ -1,17 +1,18 @@
-/**
- * Project: dubbo.registry.server
- * <p>
- * File Created at Oct 18, 2010
- * $Id: RouteRule.java 182348 2012-06-27 09:16:58Z tony.chenl $
- * <p>
- * Copyright 1999-2100 Alibaba.com Corporation Limited.
- * All rights reserved.
- * <p>
- * This software is the confidential and proprietary information of
- * Alibaba Company. ("Confidential Information").  You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the license agreement you entered into
- * with Alibaba.com.
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.alibaba.dubbo.registry.common.route;
 
@@ -30,23 +31,20 @@ import java.util.regex.Pattern;
 
 
 /**
- * Rule分成两部分，When条件和Then条件。<br>
- * 条件是一组键值（KV）对，表示匹配条件。条件包含的键值中的“值”（Value）可以有多个值，即是一个列表。<br>
- * Rule的含义是，符合了When条件后，则进行Then条件的过虑。<br>
- * 当然被When条件的符合的、被Then条件过滤的，也是一组KV，术语上我们就称为样本（Sample）吧。<br>
- * 使用条件对样本进行的匹配的过程称为“过滤”（或称为“筛选”）（Filter）。
- * 使用When条件过滤和使用Then条件过滤的样本，不需要是相同的集合。如在Dubbo中，分别对应的是Consumer和Provider。
- * 对于RouteRule（路由规则）含义即，符合When条件的Consumer，则对Provider进行Then过滤，出来的Provide即是提供给这个Consumer的Provider。<br>
+ * Router rule can be divided into two parts, When Condition and Then Condition <br>
+ * When/Then Confition is expressed in a style of (KV) pair, the V part of the condition pair can contain multiple values (a list) <br>
+ * The meaning of Rule: If a request matches When Condition, then use Then Condition to filter providers (only providers match Then Condition will be returned). <br>
+ * The process of using Conditions to match consumers and providers is called `Filter`.
+ * When Condition are used to filter Consumers, while Then Condition are used to filter Providers.
+ * RouteRule performs like this: If a Consumer matches When Condition, then only return the Providers matches Then Condition. This means RouteRule should be applied to current Consumer and the providers returned are filtered by RouteRule.<br>
  *
- * Rule的字符串格式如下：<code>
+ * An example of Route Rule：<code>
  * key1 = value11,value12 & key2 = value21 & key2 != value22 => key3 = value3 & key4 = value41,vlaue42 & key5 !=value51
  * </code>。
- * <code>=></code>之前的称为When条件，是KV对；之后是Then条件，是KV对。KV的Value可以有多个值。<br><br>
+ * The part before <code>=></code> is called When Condition, it's a KV pair; the follower part is Then Condition, also a KV pair. V part in KV can have more than one value, separated by ','<br><br>
  *
- * 值对象，线程安全。
+ * Value object, thread safe.
  *
- * @author william.liangf
- * @author ding.lid
  */
 public class RouteRule {
     @SuppressWarnings("unchecked")
@@ -58,7 +56,7 @@ public class RouteRule {
     final Map<String, MatchPair> thenCondition;
     private volatile String tostring = null;
 
-    // FIXME 集合都要加上unmodified的Wrapper，避免构造后的对象被修改
+    // FIXME
     private RouteRule(Map<String, MatchPair> when, Map<String, MatchPair> then) {
         for (Map.Entry<String, MatchPair> entry : when.entrySet()) {
             entry.getValue().freeze();
@@ -67,7 +65,7 @@ public class RouteRule {
             entry.getValue().freeze();
         }
 
-        // NOTE: When条件是允许为空的，外部业务来保证类似的约束条件
+        // NOTE: Both When Condition and Then Condition can be null
         this.whenCondition = when;
         this.thenCondition = then;
     }
@@ -78,20 +76,20 @@ public class RouteRule {
         if (StringUtils.isBlank(rule)) {
             return condition;
         }
-        // 匹配或不匹配Key-Value对
+        // K-V pair, contains matches part and mismatches part
         MatchPair pair = null;
-        // 多个Value值
+        // V part has multiple values
         Set<String> values = null;
         final Matcher matcher = ROUTE_PATTERN.matcher(rule);
-        while (matcher.find()) { // 逐个匹配
+        while (matcher.find()) { // match one by one
             String separator = matcher.group(1);
             String content = matcher.group(2);
-            // 表达式开始
+            // The expression starts
             if (separator == null || separator.length() == 0) {
                 pair = new MatchPair();
                 condition.put(content, pair);
             }
-            // KV开始
+            // The KV starts
             else if ("&".equals(separator)) {
                 if (condition.get(content) == null) {
                     pair = new MatchPair();
@@ -101,7 +99,7 @@ public class RouteRule {
                 }
 
             }
-            // KV的Value部分开始
+            // The Value part of KV starts
             else if ("=".equals(separator)) {
                 if (pair == null)
                     throw new ParseException("Illegal route rule \""
@@ -112,7 +110,7 @@ public class RouteRule {
                 values = pair.matches;
                 values.add(content);
             }
-            // KV的Value部分开始
+            // The Value part of KV starts
             else if ("!=".equals(separator)) {
                 if (pair == null)
                     throw new ParseException("Illegal route rule \""
@@ -123,8 +121,8 @@ public class RouteRule {
                 values = pair.unmatches;
                 values.add(content);
             }
-            // KV的Value部分的多个条目
-            else if (",".equals(separator)) { // 如果为逗号表示
+            // The Value part of KV has multiple values, separated by ','
+            else if (",".equals(separator)) { // separated by ','
                 if (values == null || values.size() == 0)
                     throw new ParseException("Illegal route rule \""
                             + rule + "\", The error char '" + separator
@@ -141,13 +139,13 @@ public class RouteRule {
     }
 
     /**
-     * 把字符串形式的RouteRule的解析成对象。
+     * Parse the RouteRule as a string into an object.
      *
-     * @throws ParseException RouteRule字符串格式不对了。以下输入的情况，RouteRule都是非法的。
-     * <ul> <li> 输入是<code>null</code>。
-     * <li> 输入是空串，或是空白串。
-     * <li> 输入的Rule，没有When条件
-     * <li> 输入的Rule，没有Then条件
+     * @throws ParseException RouteRule string format is wrong. The following input conditions, RouteRule are illegal.
+     * <ul> <li> input is <code>null</code>。
+     * <li> input is "" or " "。
+     * <li> input Rule doesn't have a When Condition
+     * <li> input Rule doesn't have a Then Condition
      * </ul>
      */
     public static RouteRule parse(Route route) throws ParseException {
@@ -186,7 +184,7 @@ public class RouteRule {
 
     /**
      * @see #parse(String)
-     * @throws RuntimeException 解析出错时，Wrap了{@link #parse(String)}方法的抛出的{@link ParseException}的异常。
+     * @throws RuntimeException This is an wrapper exception for the {@link ParseException} thrown by the {@link #parse (String)} method.
      */
     public static RouteRule parseQuitely(Route route) {
         try {
@@ -286,12 +284,12 @@ public class RouteRule {
     }
 
     /**
-     * 使用新的条件值来替换。
+     * Replace with the new condition value.
      *
-     * @param copy 替换的Base
-     * @param whenCondition 要替换的whenCondition，如果Base没有项目，则直接插入。
-     * @param thenCondition 要替换的thenCondition，如果Base没有项目，则直接插入。
-     * @return 替换后的RouteRule
+     * @param copy Replace Base
+     * @param whenCondition WhenCondition to replace, if Base does not have an item, insert it directly.
+     * @param thenCondition ThenCondition to replace, if Base has no items, then insert directly.
+     * @return RouteRule after replacement
      */
     public static RouteRule copyWithReplace(RouteRule copy, Map<String, MatchPair> whenCondition, Map<String, MatchPair> thenCondition) {
         if (null == copy) {
@@ -313,7 +311,7 @@ public class RouteRule {
         return new RouteRule(when, then);
     }
 
-    // TODO 目前ToString出来的列表是乱序的，是否要排序？
+    // TODO ToString out of the current list is out of order, should we sort?
     static void join(StringBuilder sb, Set<String> valueSet) {
         boolean isFirst = true;
         for (String s : valueSet) {
@@ -328,10 +326,9 @@ public class RouteRule {
     }
 
     /**
-     * 样本是否通过条件。
+     * Whether the sample passed the conditions.
      * <p>
-     * 如果样本的KV中，存在Key有对应的MatchPair，且Value不通过MatchPair里，返回{@code false}；
-     * 否则返回{@code true}。
+     * If there is a Key in the KV for the sample, there is a corresponding MatchPair, and Value does not pass through MatchPair; {@code false} is returned; otherwise, {@code true} is returned.
      *
      * @see MatchPair#pass(String)
      */
@@ -349,14 +346,14 @@ public class RouteRule {
     }
 
 
-    // FIXME 去掉这样的方法调用
+    // FIXME Remove such method calls
     public static String join(Set<String> valueSet) {
         StringBuilder sb = new StringBuilder(128);
         join(sb, valueSet);
         return sb.toString();
     }
 
-    // TODO 目前Condition的多个Key是乱序的，是否要排序？
+    // TODO At present, the multiple Key of Condition is in disorder. Should we sort it?
     public static void contidionToString(StringBuilder sb, Map<String, MatchPair> condition) {
         boolean isFirst = true;
         for (Entry<String, MatchPair> entry : condition.entrySet()) {
@@ -437,7 +434,7 @@ public class RouteRule {
         return tostring = sb.toString();
     }
 
-    // 用Eclipse自动生成
+    // Automatic generation with Eclipse
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -447,7 +444,7 @@ public class RouteRule {
         return result;
     }
 
-    // 用Eclipse自动生成
+    // Automatic generation with Eclipse
     @Override
     public boolean equals(Object obj) {
         if (this == obj)
@@ -516,13 +513,13 @@ public class RouteRule {
         }
 
         /**
-         * 给定的值是否通过该{@link MatchPair}匹配。<p>
-         * 返回{@code false}，如果
+         * Whether a given value is matched by the {@link MatchPair}.
+         * return {@code false}, if
          * <ol>
-         * <li>value在unmatches列表中
-         * <li>matches列表有值，但value不在matches列表中。
+         * <li>value is in unmatches
+         * <li>matches is not null, but value is not in matches.
          * </ol>
-         * otherwise返回<code>true</code>。
+         * otherwise, return<code>true</code>。
          */
         public boolean pass(String sample) {
             if (unmatches.contains(sample)) return false;
@@ -535,7 +532,7 @@ public class RouteRule {
             return String.format("{matches=%s,unmatches=%s}", matches.toString(), unmatches.toString());
         }
 
-        // 用Eclipse自动生成
+        // Automatic generation with Eclipse
         @Override
         public int hashCode() {
             final int prime = 31;
@@ -545,7 +542,7 @@ public class RouteRule {
             return result;
         }
 
-        // 用Eclipse自动生成
+        // Automatic generation with Eclipse
         @Override
         public boolean equals(Object obj) {
             if (this == obj)

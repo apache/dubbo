@@ -1,17 +1,18 @@
-/**
- * Project: dubbo.registry-1.1.0-SNAPSHOT
- * <p>
- * File Created at 2010-4-15
- * $Id: ProviderServiceImpl.java 185206 2012-07-09 03:06:37Z tony.chenl $
- * <p>
- * Copyright 2008 Alibaba.com Croporation Limited.
- * All rights reserved.
- * <p>
- * This software is the confidential and proprietary information of
- * Alibaba Company. ("Confidential Information").  You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the license agreement you entered into
- * with Alibaba.com.
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.alibaba.dubbo.governance.service.impl;
 
@@ -38,7 +39,6 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * IbatisProviderService
  *
- * @author tony.chenl
  */
 public class ProviderServiceImpl extends AbstractService implements ProviderService {
 
@@ -61,7 +61,7 @@ public class ProviderServiceImpl extends AbstractService implements ProviderServ
             throw new IllegalStateException("Provider was changed!");
         }
         if (oldProvider.isDynamic()) {
-            //保证disable的override唯一
+            // Make sure we only have one override configured disable property.
             if (!oldProvider.isEnabled()) {
                 Override override = new Override();
                 override.setAddress(oldProvider.getAddress());
@@ -98,7 +98,7 @@ public class ProviderServiceImpl extends AbstractService implements ProviderServ
         }
 
         if (oldProvider.isDynamic()) {
-            //保证disable的override唯一
+            // Make sure we only have one override configured disable property.
             if (oldProvider.isEnabled()) {
                 Override override = new Override();
                 override.setAddress(oldProvider.getAddress());
@@ -144,7 +144,7 @@ public class ProviderServiceImpl extends AbstractService implements ProviderServ
         Map<String, String> map = StringUtils.parseQueryString(oldProvider.getParameters());
         String weight = map.get(Constants.WEIGHT_KEY);
         if (oldProvider.isDynamic()) {
-            //保证disable的override唯一
+            // Make sure we only have one override configured disable property.
             List<Override> overrides = overrideService.findByServiceAndAddress(oldProvider.getService(), oldProvider.getAddress());
             if (overrides == null || overrides.size() == 0) {
                 int value = getWeight(weight, factor);

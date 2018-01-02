@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,15 +24,6 @@ import java.io.Writer;
  * <p>Escapes and unescapes <code>String</code>s for
  * Java, Java Script, HTML, XML, and SQL.</p>
  *
- * @author Apache Jakarta Turbine
- * @author Purple Technology
- * @author <a href="mailto:alex@purpletech.com">Alexander Day Chaffee</a>
- * @author Antony Riley
- * @author Helge Tesgaard
- * @author <a href="sean@boohai.com">Sean Brown</a>
- * @author <a href="mailto:ggregory@seagullsw.com">Gary Gregory</a>
- * @author Phil Steitz
- * @author Pete Gieser
  * @version $Id: StringEscapeUtils.java 181192 2012-06-21 05:05:47Z tony.chenl $
  * @since 2.0
  */

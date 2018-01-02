@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2012 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,16 +25,17 @@ import org.junit.Test;
 /**
  * RedisRegistryTest
  *
- * @author tony.chenl
  */
 public class RedisRegistryTest {
 
     String service = "com.alibaba.dubbo.test.injvmServie";
     URL registryUrl = URL.valueOf("redis://239.255.255.255/");
+    URL registryUrlWithPasswd = URL.valueOf("zookeeper://239.255.255.255?password=123456");
     URL serviceUrl = URL.valueOf("redis://redis/" + service
             + "?notify=false&methods=test1,test2");
     URL consumerUrl = URL.valueOf("redis://consumer/" + service + "?notify=false&methods=test1,test2");
     // RedisRegistry registry    = new RedisRegistry(registryUrl);
+    // RedisRegistry registryWithPasswd  = new RedisRegistry(registryUrlWithPasswd);
 
     /**
      * @throws java.lang.Exception
@@ -47,11 +49,11 @@ public class RedisRegistryTest {
      */
     @Before
     public void setUp() throws Exception {
-        //registry.register(service, serviceUrl);
+        //registry.register(serviceUrl);
     }
 
     /**
-     * Test method for {@link com.alibaba.dubbo.registry.support.injvm.InjvmRegistry#register(java.util.Map)}.
+     * Test method for {@link com.alibaba.dubbo.registry.redis.RedisRegistry#getRegistered()}.
      */
     @Test
     public void testRegister() {
@@ -71,7 +73,7 @@ public class RedisRegistryTest {
 
     /**
      * Test method for
-     * {@link com.alibaba.dubbo.registry.support.injvm.InjvmRegistry#subscribe(java.util.Map, com.alibaba.dubbo.registry.support.NotifyListener)}
+     * {@link com.alibaba.dubbo.registry.redis.RedisRegistry#subscribe(URL, com.alibaba.dubbo.registry.NotifyListener)}
      * .
      */
     @Test
@@ -90,6 +92,11 @@ public class RedisRegistryTest {
         Map<String, String> arg = registry.getSubscribed(service);
         assertEquals(subscribearg, StringUtils.toQueryString(arg));*/
 
+    }
+
+    @Test
+    public void testRedisPasswd() {
+        // Assert.assertNotNull(registryWithPasswd);
     }
 
 }
