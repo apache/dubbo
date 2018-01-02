@@ -20,9 +20,6 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-/**
- *
- */
 public class DynamicChannelBufferTest extends AbstractChannelBufferTest {
 
     private ChannelBuffer buffer;

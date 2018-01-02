@@ -25,8 +25,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
 
-/**
- */
 public class Disable extends Shell {
 
     @Autowired

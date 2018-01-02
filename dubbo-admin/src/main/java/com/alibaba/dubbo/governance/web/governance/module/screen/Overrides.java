@@ -36,8 +36,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- */
 public class Overrides extends Restful {
     static final Pattern AND = Pattern.compile("\\&");
     static final Pattern EQUAL = Pattern.compile("([^=\\s]*)\\s*=\\s*(\\S*)");

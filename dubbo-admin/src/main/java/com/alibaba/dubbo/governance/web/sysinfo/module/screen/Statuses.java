@@ -24,8 +24,6 @@ import com.alibaba.dubbo.registry.common.StatusManager;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- */
 public class Statuses extends Restful {
     public void index(Map<String, Object> context) throws Exception {
         ExtensionLoader<StatusChecker> loader = ExtensionLoader.getExtensionLoader(StatusChecker.class);

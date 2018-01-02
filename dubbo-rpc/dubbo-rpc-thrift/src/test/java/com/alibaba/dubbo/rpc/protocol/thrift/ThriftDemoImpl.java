@@ -18,7 +18,5 @@ package com.alibaba.dubbo.rpc.protocol.thrift;
 
 import com.alibaba.dubbo.rpc.gen.thrift.Demo;
 
-/**
- */
 public class ThriftDemoImpl extends DemoImpl implements Demo.Iface {
 }

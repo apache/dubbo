@@ -34,9 +34,6 @@ import junit.framework.Assert;
 import org.junit.After;
 import org.junit.Test;
 
-/**
- *
- */
 public class HeartbeatHandlerTest {
 
     private static final Logger logger = LoggerFactory.getLogger(HeartbeatHandlerTest.class);

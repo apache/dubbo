@@ -18,9 +18,6 @@ package com.alibaba.dubbo.remoting.buffer;
 
 import junit.framework.Assert;
 
-/**
- *
- */
 public class HeapChannelBufferTest extends AbstractChannelBufferTest {
 
     private ChannelBuffer buffer;

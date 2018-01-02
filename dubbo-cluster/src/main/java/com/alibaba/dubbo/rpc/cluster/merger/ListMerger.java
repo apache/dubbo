@@ -22,9 +22,6 @@ import com.alibaba.dubbo.rpc.cluster.Merger;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- *
- */
 public class ListMerger implements Merger<List<?>> {
 
     public List<Object> merge(List<?>... items) {

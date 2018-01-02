@@ -36,9 +36,6 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 
-/**
- *
- */
 public class TelnetCodecTest {
     protected Codec2 codec;
     byte[] UP = new byte[]{27, 91, 65};

@@ -22,8 +22,6 @@ import com.alibaba.dubbo.common.extension.SPI;
 
 import java.util.List;
 
-/**
- */
 @SPI
 public interface RuleConverter {
 

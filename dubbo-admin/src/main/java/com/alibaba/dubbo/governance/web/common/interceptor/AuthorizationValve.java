@@ -39,8 +39,6 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- */
 public class AuthorizationValve extends AbstractValve {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthorizationValve.class);

@@ -76,7 +76,7 @@ public class EnumBak {
 //        DemoService demoProxy = (DemoService)proxyFactory.createProxy(reference);
 ////        System.out.println(demoProxy.getThreadName());
 //        System.out.println("byte:"+demoProxy.getbyte((byte)-128));
-//        
+//
 //        invoker.destroy();
 //        reference.destroy();
     }
