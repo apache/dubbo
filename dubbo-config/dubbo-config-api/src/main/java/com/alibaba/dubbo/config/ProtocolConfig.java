@@ -124,13 +124,12 @@ public class ProtocolConfig extends AbstractConfig {
     // TODO add this to provider config
     private Boolean keepAlive;
 
-    // 序列化的优化器的实现类名
     // TODO add this to provider config
     private String optimizer;
 
     private String extension;
 
-    // 参数
+    // parameters
     private Map<String, String> parameters;
 
     // if it's default
