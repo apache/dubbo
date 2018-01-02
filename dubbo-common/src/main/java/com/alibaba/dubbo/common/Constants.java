@@ -259,6 +259,12 @@ public class Constants {
 
     public static final String SERIALIZATION_KEY = "serialization";
 
+    public static final String EXTENSION_KEY = "extension";
+
+    public static final String KEEP_ALIVE_KEY = "keepalive";
+
+    public static final String OPTIMIZER_KEY = "optimizer";
+
     public static final String EXCHANGER_KEY = "exchanger";
 
     public static final String TRANSPORTER_KEY = "transporter";

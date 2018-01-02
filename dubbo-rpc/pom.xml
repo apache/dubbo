@@ -40,5 +40,6 @@ limitations under the License.
         <module>dubbo-rpc-thrift</module>
         <module>dubbo-rpc-memcached</module>
         <module>dubbo-rpc-redis</module>
+        <module>dubbo-rpc-rest</module>
     </modules>
 </project>

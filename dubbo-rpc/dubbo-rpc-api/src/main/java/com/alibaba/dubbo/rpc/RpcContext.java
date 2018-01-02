@@ -68,6 +68,13 @@ public class RpcContext {
     private InetSocketAddress localAddress;
 
     private InetSocketAddress remoteAddress;
+
+    // now we don't use the 'values' map to hold these objects
+    // we want these objects to be as generic as possible
+    private Object request;
+
+    private Object response;
+    
     @Deprecated
     private List<Invoker<?>> invokers;
     @Deprecated
@@ -76,6 +83,32 @@ public class RpcContext {
     private Invocation invocation;
 
     protected RpcContext() {
+    }
+
+    /**
+     * Get the request object of the underlying RPC protocol, e.g. HttServletRequest
+     *
+     * @return null if the underlying protocol doesn't provide support for getting request
+     */
+    public Object getRequest() {
+        return request;
+    }
+
+    public void setRequest(Object request) {
+        this.request = request;
+    }
+
+    /**
+     * Get the response object of the underlying RPC protocol, e.g. HttServletResponse
+     *
+     * @return null if the underlying protocol doesn't provide support for getting response
+     */
+    public Object getResponse() {
+        return response;
+    }
+
+    public void setResponse(Object response) {
+        this.response = response;
     }
 
     /**

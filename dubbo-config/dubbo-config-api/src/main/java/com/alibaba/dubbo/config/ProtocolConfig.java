@@ -120,6 +120,16 @@ public class ProtocolConfig extends AbstractConfig {
     private Boolean register;
 
     // parameters
+    // 是否长连接
+    // TODO add this to provider config
+    private Boolean keepAlive;
+
+    // TODO add this to provider config
+    private String optimizer;
+
+    private String extension;
+
+    // parameters
     private Map<String, String> parameters;
 
     // if it's default
@@ -441,6 +451,30 @@ public class ProtocolConfig extends AbstractConfig {
 
     public void setDefault(Boolean isDefault) {
         this.isDefault = isDefault;
+    }
+
+    public Boolean getKeepAlive() {
+        return keepAlive;
+    }
+
+    public void setKeepAlive(Boolean keepAlive) {
+        this.keepAlive = keepAlive;
+    }
+
+    public String getOptimizer() {
+        return optimizer;
+    }
+
+    public void setOptimizer(String optimizer) {
+        this.optimizer = optimizer;
+    }
+
+    public String getExtension() {
+        return extension;
+    }
+
+    public void setExtension(String extension) {
+        this.extension = extension;
     }
 
     public void destory() {
