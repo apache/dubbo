@@ -1,7 +1,7 @@
 package com.alibaba.dubbo.rpc;
 
 /**
- * TODO this is just a workround for rest protocol, and now we just ensure it works in the most common dubbo usages
+ * TODO this is just a workaround for rest protocol, and now we just ensure it works in the most common dubbo usages
  *
  * @author lishen
  */

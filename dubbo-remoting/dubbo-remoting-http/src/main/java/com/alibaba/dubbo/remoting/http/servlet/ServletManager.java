@@ -21,9 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * TODO this may not be a pretty elegant solution,
- * and we may need to make change to the whole remoting-http architecture in the future
  *
- * @author lishen
  */
 public class ServletManager {
 
