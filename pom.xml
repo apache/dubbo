@@ -102,7 +102,7 @@ limitations under the License.
         <thrift_version>0.8.0</thrift_version>
         <jfreechart_version>1.0.13</jfreechart_version>
         <hessian_version>4.0.38</hessian_version>
-        <servlet_version>2.5</servlet_version>
+        <servlet_version>3.1.0</servlet_version>
         <jetty_version>6.1.26</jetty_version>
         <validation_version>1.1.0.Final</validation_version>
         <hibernate_validator_version>5.4.1.Final</hibernate_validator_version>
@@ -113,11 +113,11 @@ limitations under the License.
         <cglib_version>2.2</cglib_version>
         <webx_version>3.1.6</webx_version>
         <velocity_version>1.7</velocity_version>
-        <kryo_version>2.24.0</kryo_version>
-        <kryo_serializers_version>0.26</kryo_serializers_version>
-        <fst_version>1.55</fst_version>
+        <kryo_version>4.0.1</kryo_version>
+        <kryo_serializers_version>0.42</kryo_serializers_version>
+        <fst_version>2.48-jdk-6</fst_version>
         <rs_api_version>2.0</rs_api_version>
-        <resteasy_version>3.0.7.Final</resteasy_version>
+        <resteasy_version>3.1.4.Final</resteasy_version>
         <tomcat_embed_version>8.0.11</tomcat_embed_version>
         <!-- Log libs -->
         <slf4j_version>1.7.25</slf4j_version>
@@ -261,7 +261,7 @@ limitations under the License.
             </dependency>
             <dependency>
                 <groupId>javax.servlet</groupId>
-                <artifactId>servlet-api</artifactId>
+                <artifactId>javax.servlet-api</artifactId>
                 <version>${servlet_version}</version>
             </dependency>
             <dependency>
@@ -310,7 +310,7 @@ limitations under the License.
                 <version>${velocity_version}</version>
             </dependency>
             <dependency>
-                <groupId>com.esotericsoftware.kryo</groupId>
+                <groupId>com.esotericsoftware</groupId>
                 <artifactId>kryo</artifactId>
                 <version>${kryo_version}</version>
             </dependency>
@@ -341,7 +341,7 @@ limitations under the License.
             </dependency>
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-netty</artifactId>
+                <artifactId>resteasy-netty4</artifactId>
                 <version>${resteasy_version}</version>
             </dependency>
             <dependency>

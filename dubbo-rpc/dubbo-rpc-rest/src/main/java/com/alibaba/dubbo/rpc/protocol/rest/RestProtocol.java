@@ -22,18 +22,19 @@ import com.alibaba.dubbo.remoting.http.HttpBinder;
 import com.alibaba.dubbo.remoting.http.servlet.BootstrapListener;
 import com.alibaba.dubbo.remoting.http.servlet.ServletManager;
 import com.alibaba.dubbo.rpc.RpcException;
-import com.alibaba.dubbo.rpc.protocol.AbstractProxyProtocol;
 import com.alibaba.dubbo.rpc.ServiceClassHolder;
+import com.alibaba.dubbo.rpc.protocol.AbstractProxyProtocol;
+
 import org.apache.http.HeaderElement;
 import org.apache.http.HeaderElementIterator;
 import org.apache.http.HttpResponse;
-import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.config.SocketConfig;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.PoolingClientConnectionManager;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeaderElementIterator;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
@@ -53,7 +54,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @author lishen
  */
 public class RestProtocol extends AbstractProxyProtocol {
 
@@ -81,7 +81,7 @@ public class RestProtocol extends AbstractProxyProtocol {
     }
 
     protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
-        String addr = url.getIp() + ":" + url.getPort();
+        String addr = getAddr(url);
         Class implClass = ServiceClassHolder.getInstance().popServiceClass();
         RestServer server = servers.get(addr);
         if (server == null) {
@@ -131,40 +131,41 @@ public class RestProtocol extends AbstractProxyProtocol {
         }
 
         // TODO more configs to add
-
-        PoolingClientConnectionManager connectionManager = new PoolingClientConnectionManager();
+        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
         // 20 is the default maxTotal of current PoolingClientConnectionManager
         connectionManager.setMaxTotal(url.getParameter(Constants.CONNECTIONS_KEY, 20));
         connectionManager.setDefaultMaxPerRoute(url.getParameter(Constants.CONNECTIONS_KEY, 20));
 
         connectionMonitor.addConnectionManager(connectionManager);
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectTimeout(url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT))
+                .setSocketTimeout(url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT))
+                .build();
 
-//        BasicHttpContext localContext = new BasicHttpContext();
+        SocketConfig socketConfig = SocketConfig.custom()
+                .setSoKeepAlive(true)
+                .setTcpNoDelay(true)
+                .build();
 
-        DefaultHttpClient httpClient = new DefaultHttpClient(connectionManager);
-
-        httpClient.setKeepAliveStrategy(new ConnectionKeepAliveStrategy() {
-            public long getKeepAliveDuration(HttpResponse response, HttpContext context) {
-                HeaderElementIterator it = new BasicHeaderElementIterator(response.headerIterator(HTTP.CONN_KEEP_ALIVE));
-                while (it.hasNext()) {
-                    HeaderElement he = it.nextElement();
-                    String param = he.getName();
-                    String value = he.getValue();
-                    if (value != null && param.equalsIgnoreCase("timeout")) {
-                        return Long.parseLong(value) * 1000;
+        CloseableHttpClient httpClient = HttpClientBuilder.create()
+                .setKeepAliveStrategy(new ConnectionKeepAliveStrategy() {
+                    public long getKeepAliveDuration(HttpResponse response, HttpContext context) {
+                        HeaderElementIterator it = new BasicHeaderElementIterator(response.headerIterator(HTTP.CONN_KEEP_ALIVE));
+                        while (it.hasNext()) {
+                            HeaderElement he = it.nextElement();
+                            String param = he.getName();
+                            String value = he.getValue();
+                            if (value != null && param.equalsIgnoreCase("timeout")) {
+                                return Long.parseLong(value) * 1000;
+                            }
+                        }
+                        // TODO constant
+                        return 30 * 1000;
                     }
-                }
-                // TODO constant
-                return 30 * 1000;
-            }
-        });
-
-        HttpParams params = httpClient.getParams();
-        // TODO currently no xml config for Constants.CONNECT_TIMEOUT_KEY so we directly reuse Constants.TIMEOUT_KEY for now
-        HttpConnectionParams.setConnectionTimeout(params, url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
-        HttpConnectionParams.setSoTimeout(params, url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
-        HttpConnectionParams.setTcpNoDelay(params, true);
-        HttpConnectionParams.setSoKeepalive(params, true);
+                })
+                .setDefaultRequestConfig(requestConfig)
+                .setDefaultSocketConfig(socketConfig)
+                .build();
 
         ApacheHttpClient4Engine engine = new ApacheHttpClient4Engine(httpClient/*, localContext*/);
 
@@ -231,9 +232,9 @@ public class RestProtocol extends AbstractProxyProtocol {
 
     protected class ConnectionMonitor extends Thread {
         private volatile boolean shutdown;
-        private final List<ClientConnectionManager> connectionManagers = Collections.synchronizedList(new LinkedList<ClientConnectionManager>());
+        private final List<PoolingHttpClientConnectionManager> connectionManagers = Collections.synchronizedList(new LinkedList<PoolingHttpClientConnectionManager>());
 
-        public void addConnectionManager(ClientConnectionManager connectionManager) {
+        public void addConnectionManager(PoolingHttpClientConnectionManager connectionManager) {
             connectionManagers.add(connectionManager);
         }
 
@@ -242,7 +243,7 @@ public class RestProtocol extends AbstractProxyProtocol {
                 while (!shutdown) {
                     synchronized (this) {
                         wait(1000);
-                        for (ClientConnectionManager connectionManager : connectionManagers) {
+                        for (PoolingHttpClientConnectionManager connectionManager : connectionManagers) {
                             connectionManager.closeExpiredConnections();
                             // TODO constant
                             connectionManager.closeIdleConnections(30, TimeUnit.SECONDS);

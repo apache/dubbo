@@ -60,7 +60,7 @@
 
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-netty</artifactId>
+            <artifactId>resteasy-netty4</artifactId>
         </dependency>
 
         <dependency>

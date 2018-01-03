@@ -100,6 +100,14 @@ limitations under the License.
                     <groupId>org.apache.httpcomponents</groupId>
                     <artifactId>httpclient</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.apache.tomcat.embed</groupId>
+                    <artifactId>tomcat-embed-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.tomcat.embed</groupId>
+                    <artifactId>tomcat-embed-logging-juli</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -202,7 +210,7 @@ limitations under the License.
                 </exclusion>
                 <exclusion>
                     <groupId>org.jboss.resteasy</groupId>
-                    <artifactId>resteasy-netty</artifactId>
+                    <artifactId>resteasy-netty4</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.jboss.resteasy</groupId>
@@ -398,6 +406,7 @@ limitations under the License.
                                     <include>com.alibaba:dubbo-rpc-thrift</include>
                                     <include>com.alibaba:dubbo-rpc-memcached</include>
                                     <include>com.alibaba:dubbo-rpc-redis</include>
+                                    <include>com.alibaba:dubbo-rpc-rest</include>
                                     <include>com.alibaba:dubbo-filter-validation</include>
                                     <include>com.alibaba:dubbo-filter-cache</include>
                                     <include>com.alibaba:dubbo-cluster</include>
