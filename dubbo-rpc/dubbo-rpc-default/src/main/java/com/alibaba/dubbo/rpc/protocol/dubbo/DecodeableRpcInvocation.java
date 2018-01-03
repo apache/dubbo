@@ -95,40 +95,19 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         try {
             Object[] args;
             Class<?>[] pts;
-            int argNum = in.readInt();
-            if (argNum >= 0) {
-                if (argNum == 0) {
-                    pts = DubboCodec.EMPTY_CLASS_ARRAY;
-                    args = DubboCodec.EMPTY_OBJECT_ARRAY;
-                } else {
-                    args = new Object[argNum];
-                    pts = new Class[argNum];
-                    for (int i = 0; i < args.length; i++) {
-                        try {
-                            args[i] = in.readObject();
-                            pts[i] = args[i].getClass();
-                        } catch (Exception e) {
-                            if (log.isWarnEnabled()) {
-                                log.warn("Decode argument failed: " + e.getMessage(), e);
-                            }
-                        }
-                    }
-                }
+            String desc = in.readUTF();
+            if (desc.length() == 0) {
+                pts = DubboCodec.EMPTY_CLASS_ARRAY;
+                args = DubboCodec.EMPTY_OBJECT_ARRAY;
             } else {
-                String desc = in.readUTF();
-                if (desc.length() == 0) {
-                    pts = DubboCodec.EMPTY_CLASS_ARRAY;
-                    args = DubboCodec.EMPTY_OBJECT_ARRAY;
-                } else {
-                    pts = ReflectUtils.desc2classArray(desc);
-                    args = new Object[pts.length];
-                    for (int i = 0; i < args.length; i++) {
-                        try {
-                            args[i] = in.readObject(pts[i]);
-                        } catch (Exception e) {
-                            if (log.isWarnEnabled()) {
-                                log.warn("Decode argument failed: " + e.getMessage(), e);
-                            }
+                pts = ReflectUtils.desc2classArray(desc);
+                args = new Object[pts.length];
+                for (int i = 0; i < args.length; i++) {
+                    try {
+                        args[i] = in.readObject(pts[i]);
+                    } catch (Exception e) {
+                        if (log.isWarnEnabled()) {
+                            log.warn("Decode argument failed: " + e.getMessage(), e);
                         }
                     }
                 }
