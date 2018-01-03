@@ -1,12 +1,12 @@
 /**
  * Copyright 1999-2014 dangdang.com.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,6 +17,8 @@ package com.alibaba.dubbo.common.serialize.support.kryo;
 
 import com.alibaba.dubbo.common.serialize.Cleanable;
 import com.alibaba.dubbo.common.serialize.ObjectInput;
+import com.alibaba.dubbo.common.serialize.support.kryo.utils.KryoUtils;
+
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.KryoException;
 import com.esotericsoftware.kryo.io.Input;
@@ -30,11 +32,12 @@ import java.lang.reflect.Type;
  */
 public class KryoObjectInput implements ObjectInput, Cleanable {
 
-    private Kryo kryo = KryoFactory.getDefaultFactory().getKryo();
+    private Kryo kryo;
     private Input input;
 
     public KryoObjectInput(InputStream inputStream) {
         input = new Input(inputStream);
+        this.kryo = KryoUtils.get();
     }
 
     public boolean readBool() throws IOException {
@@ -109,9 +112,7 @@ public class KryoObjectInput implements ObjectInput, Cleanable {
     }
 
     public String readUTF() throws IOException {
-        // TODO
         try {
-//            return kryo.readObject(input, String.class);
             return input.readString();
         } catch (KryoException e) {
             throw new IOException(e);
@@ -119,8 +120,7 @@ public class KryoObjectInput implements ObjectInput, Cleanable {
     }
 
     public Object readObject() throws IOException, ClassNotFoundException {
-        // TODO
-//        throw new UnsupportedOperationException();
+        // TODO optimization
         try {
             return kryo.readClassAndObject(input);
         } catch (KryoException e) {
@@ -132,27 +132,17 @@ public class KryoObjectInput implements ObjectInput, Cleanable {
     @SuppressWarnings("unchecked")
     public <T> T readObject(Class<T> clazz) throws IOException, ClassNotFoundException {
         // TODO optimization
-//            try {
-//                return (T) kryo.readClassAndObject(input);
-//            } catch (KryoException e) {
-//                throw new IOException(e);
-//            }
         return (T) readObject();
     }
 
     @SuppressWarnings("unchecked")
     public <T> T readObject(Class<T> clazz, Type type) throws IOException, ClassNotFoundException {
-//            try {
-//                return readObject(clazz);
-//            } catch (KryoException e) {
-//                throw new IOException(e);
-//            }
         // TODO optimization
-        return (T) readObject(clazz);
+        return readObject(clazz);
     }
 
     public void cleanup() {
-        KryoFactory.getDefaultFactory().returnKryo(kryo);
+        KryoUtils.release(kryo);
         kryo = null;
     }
 }

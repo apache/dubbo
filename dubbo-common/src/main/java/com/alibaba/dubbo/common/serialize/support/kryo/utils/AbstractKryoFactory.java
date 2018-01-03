@@ -1,24 +1,35 @@
 /**
  * Copyright 1999-2014 dangdang.com.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.common.serialize.support.kryo;
+package com.alibaba.dubbo.common.serialize.support.kryo.utils;
 
 import com.alibaba.dubbo.common.serialize.support.SerializableClassRegistry;
+import com.alibaba.dubbo.common.serialize.support.kryo.CompatibleKryo;
+
 import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.pool.KryoFactory;
 import com.esotericsoftware.kryo.serializers.DefaultSerializers;
-import de.javakaffee.kryoserializers.*;
+import de.javakaffee.kryoserializers.ArraysAsListSerializer;
+import de.javakaffee.kryoserializers.BitSetSerializer;
+import de.javakaffee.kryoserializers.GregorianCalendarSerializer;
+import de.javakaffee.kryoserializers.JdkProxySerializer;
+import de.javakaffee.kryoserializers.RegexSerializer;
+import de.javakaffee.kryoserializers.SynchronizedCollectionsSerializer;
+import de.javakaffee.kryoserializers.URISerializer;
+import de.javakaffee.kryoserializers.UUIDSerializer;
+import de.javakaffee.kryoserializers.UnmodifiableCollectionsSerializer;
 
 import java.lang.reflect.InvocationHandler;
 import java.math.BigDecimal;
@@ -46,11 +57,7 @@ import java.util.regex.Pattern;
 /**
  * @author lishen
  */
-public abstract class KryoFactory {
-
-//    private static final KryoFactory factory = new PrototypeKryoFactory();
-//    private static final KryoFactory factory = new SingletonKryoFactory();
-    private static final KryoFactory factory = new PooledKryoFactory();
+public abstract class AbstractKryoFactory implements KryoFactory {
 
     private final Set<Class> registrations = new LinkedHashSet<Class>();
 
@@ -58,13 +65,8 @@ public abstract class KryoFactory {
 
     private volatile boolean kryoCreated;
 
-    protected KryoFactory() {
-        // TODO configurable
-//        Log.DEBUG();
-    }
+    public AbstractKryoFactory() {
 
-    public static KryoFactory getDefaultFactory() {
-        return factory;
     }
 
     /**
@@ -80,7 +82,7 @@ public abstract class KryoFactory {
         registrations.add(clazz);
     }
 
-    protected Kryo createKryo() {
+    public Kryo create() {
         if (!kryoCreated) {
             kryoCreated = true;
         }
@@ -140,17 +142,11 @@ public abstract class KryoFactory {
         return kryo;
     }
 
-    public void returnKryo(Kryo kryo) {
-        // do nothing by default
-    }
-
     public void setRegistrationRequired(boolean registrationRequired) {
         this.registrationRequired = registrationRequired;
     }
 
-    public void close() {
-        // do nothing by default
-    }
+    public abstract void returnKryo(Kryo kryo);
 
     public abstract Kryo getKryo();
 }

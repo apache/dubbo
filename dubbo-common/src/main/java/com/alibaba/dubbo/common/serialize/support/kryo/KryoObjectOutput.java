@@ -1,12 +1,12 @@
 /**
  * Copyright 1999-2014 dangdang.com.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,6 +17,8 @@ package com.alibaba.dubbo.common.serialize.support.kryo;
 
 import com.alibaba.dubbo.common.serialize.Cleanable;
 import com.alibaba.dubbo.common.serialize.ObjectOutput;
+import com.alibaba.dubbo.common.serialize.support.kryo.utils.KryoUtils;
+
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Output;
 
@@ -28,11 +30,12 @@ import java.io.OutputStream;
  */
 public class KryoObjectOutput implements ObjectOutput, Cleanable {
 
-    private Kryo kryo = KryoFactory.getDefaultFactory().getKryo();
     private Output output;
+    private Kryo kryo;
 
     public KryoObjectOutput(OutputStream outputStream) {
         output = new Output(outputStream);
+        this.kryo = KryoUtils.get();
     }
 
     public void writeBool(boolean v) throws IOException {
@@ -82,12 +85,11 @@ public class KryoObjectOutput implements ObjectOutput, Cleanable {
 
 
     public void writeUTF(String v) throws IOException {
-        // TODO
         output.writeString(v);
-//        kryo.writeObject(output, v);
     }
 
     public void writeObject(Object v) throws IOException {
+        // TODO carries class info every time.
         kryo.writeClassAndObject(output, v);
     }
 
@@ -96,7 +98,7 @@ public class KryoObjectOutput implements ObjectOutput, Cleanable {
     }
 
     public void cleanup() {
-        KryoFactory.getDefaultFactory().returnKryo(kryo);
+        KryoUtils.release(kryo);
         kryo = null;
     }
 }

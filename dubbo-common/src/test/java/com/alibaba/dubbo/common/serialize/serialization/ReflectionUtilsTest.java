@@ -1,6 +1,7 @@
 package com.alibaba.dubbo.common.serialize.serialization;
 
-import com.alibaba.dubbo.common.serialize.support.kryo.ReflectionUtils;
+import com.alibaba.dubbo.common.serialize.support.kryo.utils.ReflectionUtils;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;

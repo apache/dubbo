@@ -16,9 +16,10 @@
 package com.alibaba.dubbo.common.serialize.support.fst;
 
 import com.alibaba.dubbo.common.serialize.support.SerializableClassRegistry;
-import de.ruedigermoeller.serialization.FSTConfiguration;
-import de.ruedigermoeller.serialization.FSTObjectInput;
-import de.ruedigermoeller.serialization.FSTObjectOutput;
+
+import org.nustaq.serialization.FSTConfiguration;
+import org.nustaq.serialization.FSTObjectInput;
+import org.nustaq.serialization.FSTObjectOutput;
 
 import java.io.InputStream;
 import java.io.OutputStream;
