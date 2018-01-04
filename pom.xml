@@ -343,6 +343,12 @@ limitations under the License.
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-netty4</artifactId>
                 <version>${resteasy_version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-all</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
