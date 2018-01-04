@@ -25,6 +25,10 @@ import com.alibaba.dubbo.common.Node;
  * @see com.alibaba.dubbo.rpc.InvokerListener
  * @see com.alibaba.dubbo.rpc.protocol.AbstractInvoker
  */
+
+/**
+ * 一个可执行的对象，根据方法名称，参数得到响应的执行结果
+ */
 public interface Invoker<T> extends Node {
 
     /**

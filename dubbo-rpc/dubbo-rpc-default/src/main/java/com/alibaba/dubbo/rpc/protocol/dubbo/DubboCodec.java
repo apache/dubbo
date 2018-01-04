@@ -60,7 +60,8 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
     private static final Logger log = LoggerFactory.getLogger(DubboCodec.class);
 
     protected Object decodeBody(Channel channel, InputStream is, byte[] header) throws IOException {
-        byte flag = header[2], proto = (byte) (flag & SERIALIZATION_MASK);
+        byte flag = header[2],
+                proto = (byte) (flag & SERIALIZATION_MASK);
         Serialization s = CodecSupport.getSerialization(channel.getUrl(), proto);
         // get request id.
         long id = Bytes.bytes2long(header, 4);

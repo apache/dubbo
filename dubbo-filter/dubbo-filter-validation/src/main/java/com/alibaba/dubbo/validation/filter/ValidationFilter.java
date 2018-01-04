@@ -34,7 +34,7 @@ import com.alibaba.dubbo.validation.Validator;
 @Activate(group = {Constants.CONSUMER, Constants.PROVIDER}, value = Constants.VALIDATION_KEY, order = 10000)
 public class ValidationFilter implements Filter {
 
-    private Validation validation;
+    private  Validation validation;
 
     public void setValidation(Validation validation) {
         this.validation = validation;

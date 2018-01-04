@@ -26,6 +26,10 @@ import java.util.Map;
  * @see com.alibaba.dubbo.rpc.Invoker#invoke(Invocation)
  * @see com.alibaba.dubbo.rpc.RpcInvocation
  */
+
+/**
+ * 包含需要执行的方法，参数信息
+ */
 public interface Invocation {
 
     /**
