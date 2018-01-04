@@ -71,6 +71,12 @@ public class ApplicationConfig extends AbstractConfig {
     // directory for saving thread dump
     private String dumpDirectory;
 
+    private Boolean qosEnable = true;
+
+    private Integer qosPort = 22222;
+
+    private Boolean qosAcceptForeignIp = true;
+
     // customized parameters
     private Map<String, String> parameters;
 
@@ -208,6 +214,33 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setDumpDirectory(String dumpDirectory) {
         this.dumpDirectory = dumpDirectory;
+    }
+
+    @Parameter(key = "qos.enable")
+    public Boolean getQosEnable() {
+        return qosEnable;
+    }
+
+    public void setQosEnable(Boolean qosEnable) {
+        this.qosEnable = qosEnable;
+    }
+
+    @Parameter(key = "qos.port")
+    public Integer getQosPort() {
+        return qosPort;
+    }
+
+    public void setQosPort(Integer qosPort) {
+        this.qosPort = qosPort;
+    }
+
+    @Parameter(key = "qos.accept.foreign.ip")
+    public Boolean getQosAcceptForeignIp() {
+        return qosAcceptForeignIp;
+    }
+
+    public void setQosAcceptForeignIp(Boolean qosAcceptForeignIp) {
+        this.qosAcceptForeignIp = qosAcceptForeignIp;
     }
 
     public Map<String, String> getParameters() {
