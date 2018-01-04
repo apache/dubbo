@@ -16,10 +16,17 @@
  */
 package com.alibaba.dubbo.examples.loadbalance;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.alibaba.dubbo.config.ApplicationConfig;
 import com.alibaba.dubbo.config.ConsumerConfig;
+import com.alibaba.dubbo.config.MethodConfig;
 import com.alibaba.dubbo.config.ReferenceConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.examples.generic.api.IUserService;
@@ -41,15 +48,20 @@ public class LoadbalanceConsumer {
         String r = userservice.getString("hello not generic");
         System.out.println(r);
         
-        GenericService service = getService();
+        
+        Map<String, String> methodconfig = new HashMap<String, String>();
+        methodconfig.put("getString", "consistenthash");
+        GenericService service = getService(methodconfig);
         Object result = service.$invoke("getString", new String[] {"java.lang.String"}, new Object[] {"hello generic"});
         System.out.println(result);
         
+        result = service.$invoke("getString2", new String[] {"java.lang.String"}, new Object[] {"hello generic, 2"});
+        System.out.println(result);
         
-        System.in.read();
+        context.close();
     }
     
-    public static GenericService getService() throws Throwable {
+    public static GenericService getService(Map<String, String> methodConfig) throws Throwable {
     		ApplicationConfig application = new ApplicationConfig();
     		application.setName("loadbalance-consumer");
 
@@ -66,8 +78,15 @@ public class LoadbalanceConsumer {
     		reference.setRegistry(registry);
     		reference.setConsumer(consumer);
     		reference.setCluster(FailoverCluster.NAME);
-    		reference.setLoadbalance("consistenthash");
-
+    		
+    		List<MethodConfig> list = new ArrayList<MethodConfig>();
+    		for (Entry<String, String> entry : methodConfig.entrySet()) {
+    			MethodConfig mc = new MethodConfig();
+    			mc.setName(entry.getKey());
+    			mc.setLoadbalance(entry.getValue());
+    			list.add(mc);
+    		}
+    		reference.setMethods(list);
 
     		reference.setInterface(IUserService.class); // 弱类型接口名
     		reference.setTimeout(3000);

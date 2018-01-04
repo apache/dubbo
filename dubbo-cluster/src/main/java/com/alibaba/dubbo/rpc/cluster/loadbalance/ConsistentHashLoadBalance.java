@@ -20,6 +20,7 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
+import com.alibaba.dubbo.rpc.support.RpcUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
@@ -41,144 +42,112 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class ConsistentHashLoadBalance extends AbstractLoadBalance {
 
-    private final ConcurrentMap<String, ConsistentHashSelector<?>> selectors = new ConcurrentHashMap<String, ConsistentHashSelector<?>>();
+	private final ConcurrentMap<String, ConsistentHashSelector<?>> selectors = new ConcurrentHashMap<String, ConsistentHashSelector<?>>();
 
-    
-    @Override
-    protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
-    		String isGeneric = invokers.get(0).getUrl().getParameter("generic");
-    		// using the string compare here, because it's usually faster than Boolean.valueOf(str)
-    		if (isGeneric != null && isGeneric.equalsIgnoreCase("true")) {
-    			// dealGeneric
-    			return doGenericSelect(invokers, url, invocation);
-		} else {
-			// deal normal operation
-			return doNormalSelect(invokers, url, invocation);
-		}
-    }
-    
-    @SuppressWarnings("unchecked")
-    private <T> Invoker<T> doGenericSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
-    		// when using generic, the content of invocation.getArguments()[0] is real methodname
-    		String key = invokers.get(0).getUrl().getServiceKey() + "." + (String) invocation.getArguments()[0];
-        int identityHashCode = caculateInvokerHashCode(invokers);
-        ConsistentHashSelector<T> selector = (ConsistentHashSelector<T>) selectors.get(key);
-        if (selector == null || selector.identityHashCode != identityHashCode) {
-            selectors.put(key, new ConsistentHashSelector<T>(invokers, (String) invocation.getArguments()[0], identityHashCode, true));
-            selector = (ConsistentHashSelector<T>) selectors.get(key);
-        }
-        return selector.select(invokers, invocation);
-    }
-    
-    @SuppressWarnings("unchecked")
-    private <T> Invoker<T> doNormalSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
-		String key = invokers.get(0).getUrl().getServiceKey() + "." + invocation.getMethodName();
+
+	@Override
+	@SuppressWarnings("unchecked")
+	protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
+		String methodName = RpcUtils.getMethodName(invocation);
+		String key = invokers.get(0).getUrl().getServiceKey() + "." + methodName;
 		int identityHashCode = caculateInvokerHashCode(invokers);
 		ConsistentHashSelector<T> selector = (ConsistentHashSelector<T>) selectors.get(key);
 		if (selector == null || selector.identityHashCode != identityHashCode) {
-			selectors.put(key, new ConsistentHashSelector<T>(invokers, invocation.getMethodName(), identityHashCode, false));
+			selectors.put(key, new ConsistentHashSelector<T>(invokers, methodName, identityHashCode));
 			selector = (ConsistentHashSelector<T>) selectors.get(key);
 		}
 		return selector.select(invokers, invocation);
-    }
-    
-    /**
-     * Generate hashcode according to the invoker list.
-     * the value only changes when adding or reducing the invoker.
-     * 
-     * The method use System.identityHashCode(invokers) to generate
-     * hashcode in past.The result of method executed changes everytime,
-     * because the timestamp of invoker alse be solved.
-     * 
-     * Now if the providers are only restart but nothing to change, 
-     * the value also won't be changed;
-     * @param invokers
-     * @return the hashcode of invoker addresses
-     */
-    private <T> int caculateInvokerHashCode(List<Invoker<T>> invokers) {
-    		StringBuilder metakey = new StringBuilder();
-    		for (Invoker<T> obj : invokers) {
+	}
+
+	/**
+	 * Generate hashcode according to the invoker list.
+	 * the value only changes when adding or reducing the invoker.
+	 * 
+	 * The method use System.identityHashCode(invokers) to generate
+	 * hashcode in past.The result of method executed changes everytime,
+	 * because the timestamp of invoker alse be solved.
+	 * 
+	 * Now if the providers are only restart but nothing to change, 
+	 * the value also won't be changed;
+	 * @param invokers
+	 * @return the hashcode of invoker addresses
+	 */
+	private <T> int caculateInvokerHashCode(List<Invoker<T>> invokers) {
+		StringBuilder metakey = new StringBuilder();
+		for (Invoker<T> obj : invokers) {
 			metakey.append(obj.getUrl().getAddress());
 		}
-    		return metakey.toString().hashCode();
-    }
+		return metakey.toString().hashCode();
+	}
 
-    private static final class ConsistentHashSelector<T> {
+	private static final class ConsistentHashSelector<T> {
 
-        private final TreeMap<Long, String> virtualInvokers;
+		private final TreeMap<Long, String> virtualInvokers;
 
-        private final int replicaNumber;
+		private final int replicaNumber;
 
-        private final int identityHashCode;
+		private final int identityHashCode;
 
-        private final int[] argumentIndex;
-        
-        private boolean isGeneric = false;
-        
-        ConsistentHashSelector(List<Invoker<T>> invokers, String methodName, int identityHashCode, boolean isGeneric) {
-            this.virtualInvokers = new TreeMap<Long, String>();
-            this.identityHashCode = identityHashCode;
-            this.isGeneric = isGeneric;
-            URL url = invokers.get(0).getUrl();
-            this.replicaNumber = url.getMethodParameter(methodName, "hash.nodes", 160);
-            String[] index = Constants.COMMA_SPLIT_PATTERN.split(url.getMethodParameter(methodName, "hash.arguments", "0"));
-            argumentIndex = new int[index.length];
-            for (int i = 0; i < index.length; i++) {
-                argumentIndex[i] = Integer.parseInt(index[i]);
-            }
-            for (Invoker<T> invoker : invokers) {
-                String address = invoker.getUrl().getAddress();
-                for (int i = 0; i < replicaNumber / 4; i++) {
-                    byte[] digest = md5(address + i);
-                    for (int h = 0; h < 4; h++) {
-                        long m = hash(digest, h);
-                        // here not put the object reference into the map， only put the address
-                        virtualInvokers.put(m, address.intern());
-                    }
-                }
-            }
-        }
-        
-        public Invoker<T> select(List<Invoker<T>> invokers, Invocation invocation) {
-        		Object[] param;
-        		if (isGeneric) {
-        			param = (Object[]) invocation.getArguments()[2];
-        		}else {
-        			param = invocation.getArguments();
-        		}
-            String key = toKey(param);
-            byte[] digest = md5(key);
-            String invokerAddress = selectForKey(hash(digest, 0));
-            return selectInvoker(invokers, invokerAddress);
-        }
+		private final int[] argumentIndex;
 
-        private String toKey(Object[] args) {
-            StringBuilder buf = new StringBuilder();
-            for (int i : argumentIndex) {
-                if (i >= 0 && i < args.length) {
-                		// find a problem here, when args[i] is an array, 
-                		// this method is not stable. Because the value of args[i]
-                		// may be the memory address.
-                    buf.append(args[i]);
-                }
-            }
-            return buf.toString();
-        }
-        
-        private String selectForKey(long hash) {
-            Long key = hash;
-            if (!virtualInvokers.containsKey(key)) {
-                SortedMap<Long, String> tailMap = virtualInvokers.tailMap(key);
-                if (tailMap.isEmpty()) {
-                    key = virtualInvokers.firstKey();
-                } else {
-                    key = tailMap.firstKey();
-                }
-            }
-            return virtualInvokers.get(key);
-        }
-        
-        private Invoker<T> selectInvoker(List<Invoker<T>> invokers, String invokerAddress) {
+		ConsistentHashSelector(List<Invoker<T>> invokers, String methodName, int identityHashCode) {
+			this.virtualInvokers = new TreeMap<Long, String>();
+			this.identityHashCode = identityHashCode;
+			URL url = invokers.get(0).getUrl();
+			this.replicaNumber = url.getMethodParameter(methodName, "hash.nodes", 160);
+			String[] index = Constants.COMMA_SPLIT_PATTERN.split(url.getMethodParameter(methodName, "hash.arguments", "0"));
+			argumentIndex = new int[index.length];
+			for (int i = 0; i < index.length; i++) {
+				argumentIndex[i] = Integer.parseInt(index[i]);
+			}
+			for (Invoker<T> invoker : invokers) {
+				String address = invoker.getUrl().getAddress();
+				for (int i = 0; i < replicaNumber / 4; i++) {
+					byte[] digest = md5(address + i);
+					for (int h = 0; h < 4; h++) {
+						long m = hash(digest, h);
+						// here not put the object reference into the map， only put the address
+						virtualInvokers.put(m, address.intern());
+					}
+				}
+			}
+		}
+
+		public Invoker<T> select(List<Invoker<T>> invokers, Invocation invocation) {
+			Object[] param = RpcUtils.getArguments(invocation);
+			String key = toKey(param);
+			byte[] digest = md5(key);
+			String invokerAddress = selectForKey(hash(digest, 0));
+			return selectInvoker(invokers, invokerAddress);
+		}
+
+		private String toKey(Object[] args) {
+			StringBuilder buf = new StringBuilder();
+			for (int i : argumentIndex) {
+				if (i >= 0 && i < args.length) {
+					// find a problem here, when args[i] is an array, 
+					// this method is not stable. Because the value of args[i]
+					// may be the memory address.
+					buf.append(args[i]);
+				}
+			}
+			return buf.toString();
+		}
+
+		private String selectForKey(long hash) {
+			Long key = hash;
+			if (!virtualInvokers.containsKey(key)) {
+				SortedMap<Long, String> tailMap = virtualInvokers.tailMap(key);
+				if (tailMap.isEmpty()) {
+					key = virtualInvokers.firstKey();
+				} else {
+					key = tailMap.firstKey();
+				}
+			}
+			return virtualInvokers.get(key);
+		}
+
+		private Invoker<T> selectInvoker(List<Invoker<T>> invokers, String invokerAddress) {
 			for (Invoker<T> invoker : invokers) {
 				if (invoker.getUrl().getAddress().equalsIgnoreCase(invokerAddress)) {
 					return invoker;
@@ -188,32 +157,32 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
 			return null;
 		}
 
-        private long hash(byte[] digest, int number) {
-            return (((long) (digest[3 + number * 4] & 0xFF) << 24)
-                    | ((long) (digest[2 + number * 4] & 0xFF) << 16)
-                    | ((long) (digest[1 + number * 4] & 0xFF) << 8)
-                    | (digest[number * 4] & 0xFF))
-                    & 0xFFFFFFFFL;
-        }
+		private long hash(byte[] digest, int number) {
+			return (((long) (digest[3 + number * 4] & 0xFF) << 24)
+					| ((long) (digest[2 + number * 4] & 0xFF) << 16)
+					| ((long) (digest[1 + number * 4] & 0xFF) << 8)
+					| (digest[number * 4] & 0xFF))
+					& 0xFFFFFFFFL;
+		}
 
-        private byte[] md5(String value) {
-            MessageDigest md5;
-            try {
-                md5 = MessageDigest.getInstance("MD5");
-            } catch (NoSuchAlgorithmException e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
-            md5.reset();
-            byte[] bytes;
-            try {
-                bytes = value.getBytes("UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
-            md5.update(bytes);
-            return md5.digest();
-        }
+		private byte[] md5(String value) {
+			MessageDigest md5;
+			try {
+				md5 = MessageDigest.getInstance("MD5");
+			} catch (NoSuchAlgorithmException e) {
+				throw new IllegalStateException(e.getMessage(), e);
+			}
+			md5.reset();
+			byte[] bytes;
+			try {
+				bytes = value.getBytes("UTF-8");
+			} catch (UnsupportedEncodingException e) {
+				throw new IllegalStateException(e.getMessage(), e);
+			}
+			md5.update(bytes);
+			return md5.digest();
+		}
 
-    }
+	}
 
 }

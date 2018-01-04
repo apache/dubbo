@@ -27,4 +27,8 @@ public class UserServiceImpl implements IUserService {
     public String getString(String params) {
         return params;
     }
+    
+    public String getString2(String params) {
+        return params;
+    }
 }
