@@ -19,13 +19,13 @@ package com.alibaba.dubbo.common.serialize.support.fst;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.serialize.ObjectInput;
 import com.alibaba.dubbo.common.serialize.ObjectOutput;
-import com.alibaba.dubbo.common.serialize.OptimizedSerialization;
+import com.alibaba.dubbo.common.serialize.Serialization;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class FstSerialization implements OptimizedSerialization {
+public class FstSerialization implements Serialization {
 
     public byte getContentTypeId() {
         return 9;

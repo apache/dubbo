@@ -19,7 +19,7 @@ package com.alibaba.dubbo.common.serialize.support.kryo;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.serialize.ObjectInput;
 import com.alibaba.dubbo.common.serialize.ObjectOutput;
-import com.alibaba.dubbo.common.serialize.OptimizedSerialization;
+import com.alibaba.dubbo.common.serialize.Serialization;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,7 +29,7 @@ import java.io.OutputStream;
  * TODO for now kryo serialization doesn't deny classes that don't implement the serializable interface
  *
  */
-public class KryoSerialization implements OptimizedSerialization {
+public class KryoSerialization implements Serialization {
 
     public byte getContentTypeId() {
         return 8;
