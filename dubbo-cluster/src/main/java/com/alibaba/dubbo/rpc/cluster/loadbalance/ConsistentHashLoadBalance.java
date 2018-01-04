@@ -33,12 +33,11 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * ConsistentHashLoadBalance
- * Fixed by:  yunfei.gyf
+ * 
  * After fixed, the ConsistentHashLoadBalance will surpport to used in GenericService,
  * and it will reduce the times of rebuilding hash cycle when the provider restart 
  * but nothing to change
  * 
- * @author yunfei.gyf
  */
 public class ConsistentHashLoadBalance extends AbstractLoadBalance {
 
@@ -47,8 +46,8 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
 
 	@Override
 	@SuppressWarnings("unchecked")
-	protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
-		String methodName = RpcUtils.getMethodName(invocation);
+    protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
+	    String methodName = RpcUtils.getMethodName(invocation);
 		String key = invokers.get(0).getUrl().getServiceKey() + "." + methodName;
 		int identityHashCode = caculateInvokerHashCode(invokers);
 		ConsistentHashSelector<T> selector = (ConsistentHashSelector<T>) selectors.get(key);
