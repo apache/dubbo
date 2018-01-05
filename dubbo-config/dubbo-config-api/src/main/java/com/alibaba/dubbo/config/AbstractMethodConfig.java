@@ -53,7 +53,7 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
     protected String mock;
 
     // 合并器
-    protected String merger;
+    protected String merger;//?
 
     // 服务接口的失败mock实现类名
     protected String cache;

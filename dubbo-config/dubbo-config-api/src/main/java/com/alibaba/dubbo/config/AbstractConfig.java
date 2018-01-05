@@ -74,6 +74,7 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     static {
+        // addShutdownHook 应该是在应用停止的时候去销毁协议。具体看方法调用。
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             public void run() {
                 if (logger.isInfoEnabled()) {

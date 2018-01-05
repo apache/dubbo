@@ -444,7 +444,7 @@ public class ExtensionLoader<T> {
         Object instance = cachedAdaptiveInstance.get();
         if (instance == null) {
             if (createAdaptiveInstanceError == null) {
-                synchronized (cachedAdaptiveInstance) {
+                synchronized (cachedAdaptiveInstance) {// 为什么加锁？
                     instance = cachedAdaptiveInstance.get();
                     if (instance == null) {
                         try {
