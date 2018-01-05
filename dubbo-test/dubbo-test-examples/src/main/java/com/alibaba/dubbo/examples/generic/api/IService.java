@@ -19,7 +19,4 @@ package com.alibaba.dubbo.examples.generic.api;
 public interface IService<P, V> {
     V get(P params);
     
-    String getString(String ehco);
-    
-    String getString2(String ehco);
 }
