@@ -225,42 +225,42 @@ limitations under the License.
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-jdk-http</artifactId>
-            <version>3.0.19-Final</version>
+            <version>3.0.19.Final</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-jaxrs</artifactId>
-            <version>3.0.19-Final</version>
+            <version>3.0.19.Final</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-client</artifactId>
-            <version>3.0.19-Final</version>
+            <version>3.0.19.Final</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-netty4</artifactId>
-            <version>3.0.19-Final</version>
+            <version>3.0.19.Final</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-jackson-provider</artifactId>
-            <version>3.0.19-Final</version>
+            <version>3.0.19.Final</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-jaxb-provider</artifactId>
-            <version>3.0.19-Final</version>
+            <version>3.0.19.Final</version>
             <scope>provided</scope>
         </dependency>
 
