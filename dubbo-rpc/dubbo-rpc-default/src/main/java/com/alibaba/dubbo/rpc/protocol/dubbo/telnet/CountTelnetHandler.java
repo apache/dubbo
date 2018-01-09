@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,10 +15,6 @@
  * limitations under the License.
  */
 package com.alibaba.dubbo.rpc.protocol.dubbo.telnet;
-
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.Activate;
@@ -32,10 +29,12 @@ import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcStatus;
 import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * CountTelnetHandler
- * 
- * @author william.liangf
  */
 @Activate
 @Help(parameter = "[service] [method] [times]", summary = "Count the service.", detail = "Count the service.")
@@ -66,7 +65,7 @@ public class CountTelnetHandler implements TelnetHandler {
         } else {
             times = parts.length > 2 ? parts[2] : "1";
         }
-        if (! StringUtils.isInteger(times)) {
+        if (!StringUtils.isInteger(times)) {
             return "Illegal times " + times + ", must be integer.";
         }
         final int t = Integer.parseInt(times);
@@ -86,7 +85,7 @@ public class CountTelnetHandler implements TelnetHandler {
                 final String prompt = channel.getUrl().getParameter("prompt", "telnet");
                 Thread thread = new Thread(new Runnable() {
                     public void run() {
-                        for (int i = 0; i < t; i ++) {
+                        for (int i = 0; i < t; i++) {
                             String result = count(inv, mtd);
                             try {
                                 channel.send("\r\n" + result);
@@ -115,7 +114,7 @@ public class CountTelnetHandler implements TelnetHandler {
         }
         return buf.toString();
     }
-    
+
     private String count(Invoker<?> invoker, String method) {
         URL url = invoker.getUrl();
         List<List<String>> table = new ArrayList<List<String>>();

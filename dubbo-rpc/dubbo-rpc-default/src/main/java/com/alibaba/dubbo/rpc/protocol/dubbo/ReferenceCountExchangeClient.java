@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,10 +15,6 @@
  * limitations under the License.
  */
 package com.alibaba.dubbo.rpc.protocol.dubbo;
-
-import java.net.InetSocketAddress;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.Parameters;
@@ -28,30 +25,29 @@ import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
 import com.alibaba.dubbo.remoting.exchange.ExchangeHandler;
 import com.alibaba.dubbo.remoting.exchange.ResponseFuture;
 
+import java.net.InetSocketAddress;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * dubbo protocol support class.
- * 
- * @author chao.liuc
  */
 @SuppressWarnings("deprecation")
 final class ReferenceCountExchangeClient implements ExchangeClient {
 
-    private ExchangeClient client;
-    
     private final URL url;
-    
-//    private final ExchangeHandler handler;
-    
     private final AtomicInteger refenceCount = new AtomicInteger(0);
-    
+
+    //    private final ExchangeHandler handler;
     private final ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap;
-    
-    
+    private ExchangeClient client;
+
+
     public ReferenceCountExchangeClient(ExchangeClient client, ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap) {
         this.client = client;
         refenceCount.incrementAndGet();
         this.url = client.getUrl();
-        if (ghostClientMap == null){
+        if (ghostClientMap == null) {
             throw new IllegalStateException("ghostClientMap can not be null, url: " + url);
         }
         this.ghostClientMap = ghostClientMap;
@@ -124,16 +120,17 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
     public void removeAttribute(String key) {
         client.removeAttribute(key);
     }
-    /* 
-     * close方法将不再幂等,调用需要注意.
+
+    /**
+     * close() is not idempotent any longer
      */
     public void close() {
         close(0);
     }
 
     public void close(int timeout) {
-        if (refenceCount.decrementAndGet() <= 0){
-            if (timeout == 0){
+        if (refenceCount.decrementAndGet() <= 0) {
+            if (timeout == 0) {
                 client.close();
             } else {
                 client.close(timeout);
@@ -141,21 +138,25 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
             client = replaceWithLazyClient();
         }
     }
-    
-    //幽灵client,
-    private LazyConnectExchangeClient replaceWithLazyClient(){
-        //这个操作只为了防止程序bug错误关闭client做的防御措施，初始client必须为false状态
+
+    public void startClose() {
+        client.startClose();
+    }
+
+    // ghost client
+    private LazyConnectExchangeClient replaceWithLazyClient() {
+        // this is a defensive operation to avoid client is closed by accident, the initial state of the client is false
         URL lazyUrl = url.addParameter(Constants.LAZY_CONNECT_INITIAL_STATE_KEY, Boolean.FALSE)
                 .addParameter(Constants.RECONNECT_KEY, Boolean.FALSE)
                 .addParameter(Constants.SEND_RECONNECT_KEY, Boolean.TRUE.toString())
                 .addParameter("warning", Boolean.TRUE.toString())
                 .addParameter(LazyConnectExchangeClient.REQUEST_WITH_WARNING_KEY, true)
                 .addParameter("_client_memo", "referencecounthandler.replacewithlazyclient");
-        
+
         String key = url.getAddress();
-        //最差情况下只有一个幽灵连接
+        // in worst case there's only one ghost connection.
         LazyConnectExchangeClient gclient = ghostClientMap.get(key);
-        if (gclient == null || gclient.isClosed()){
+        if (gclient == null || gclient.isClosed()) {
             gclient = new LazyConnectExchangeClient(lazyUrl, client.getExchangeHandler());
             ghostClientMap.put(key, gclient);
         }
@@ -165,8 +166,8 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
     public boolean isClosed() {
         return client.isClosed();
     }
-    
-    public void incrementAndGetCount(){
+
+    public void incrementAndGetCount() {
         refenceCount.incrementAndGet();
     }
 }

@@ -1,11 +1,12 @@
 /*
- * Copyright 1999-2012 Alibaba Group.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,9 +22,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
-/**
- * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
- */
 public class DynamicChannelBuffer extends AbstractChannelBuffer {
 
     private final ChannelBufferFactory factory;
@@ -67,12 +65,12 @@ public class DynamicChannelBuffer extends AbstractChannelBuffer {
         buffer = newBuffer;
     }
 
-    
+
     public int capacity() {
         return buffer.capacity();
     }
 
-    
+
     public ChannelBuffer copy(int index, int length) {
         DynamicChannelBuffer copiedBuffer = new DynamicChannelBuffer(Math.max(length, 64), factory());
         copiedBuffer.buffer = buffer.copy(index, length);
@@ -80,67 +78,67 @@ public class DynamicChannelBuffer extends AbstractChannelBuffer {
         return copiedBuffer;
     }
 
-    
+
     public ChannelBufferFactory factory() {
         return factory;
     }
 
-    
+
     public byte getByte(int index) {
         return buffer.getByte(index);
     }
 
-    
+
     public void getBytes(int index, byte[] dst, int dstIndex, int length) {
         buffer.getBytes(index, dst, dstIndex, length);
     }
 
-    
+
     public void getBytes(int index, ByteBuffer dst) {
         buffer.getBytes(index, dst);
     }
 
-    
+
     public void getBytes(int index, ChannelBuffer dst, int dstIndex, int length) {
         buffer.getBytes(index, dst, dstIndex, length);
     }
 
-    
+
     public void getBytes(int index, OutputStream dst, int length) throws IOException {
         buffer.getBytes(index, dst, length);
     }
 
-    
+
     public boolean isDirect() {
         return buffer.isDirect();
     }
 
-    
+
     public void setByte(int index, int value) {
         buffer.setByte(index, value);
     }
 
-    
+
     public void setBytes(int index, byte[] src, int srcIndex, int length) {
         buffer.setBytes(index, src, srcIndex, length);
     }
 
-    
+
     public void setBytes(int index, ByteBuffer src) {
         buffer.setBytes(index, src);
     }
 
-    
+
     public void setBytes(int index, ChannelBuffer src, int srcIndex, int length) {
         buffer.setBytes(index, src, srcIndex, length);
     }
 
-    
+
     public int setBytes(int index, InputStream src, int length) throws IOException {
         return buffer.setBytes(index, src, length);
     }
 
-    
+
     public ByteBuffer toByteBuffer(int index, int length) {
         return buffer.toByteBuffer(index, length);
     }
@@ -175,17 +173,17 @@ public class DynamicChannelBuffer extends AbstractChannelBuffer {
         return super.writeBytes(in, length);
     }
 
-    
+
     public byte[] array() {
         return buffer.array();
     }
 
-    
+
     public boolean hasArray() {
         return buffer.hasArray();
     }
 
-    
+
     public int arrayOffset() {
         return buffer.arrayOffset();
     }

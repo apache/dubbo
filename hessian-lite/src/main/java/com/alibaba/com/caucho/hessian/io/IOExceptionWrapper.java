@@ -54,24 +54,21 @@ import java.io.IOException;
  * Exception wrapper for IO.
  */
 public class IOExceptionWrapper extends IOException {
-  private Throwable _cause;
-  
-  public IOExceptionWrapper(Throwable cause)
-  {
-    super(cause.toString());
+    private Throwable _cause;
 
-    _cause = cause;
-  }
-  
-  public IOExceptionWrapper(String msg, Throwable cause)
-  {
-    super(msg);
+    public IOExceptionWrapper(Throwable cause) {
+        super(cause.toString());
 
-    _cause = cause;
-  }
+        _cause = cause;
+    }
 
-  public Throwable getCause()
-  {
-    return _cause;
-  }
+    public IOExceptionWrapper(String msg, Throwable cause) {
+        super(msg);
+
+        _cause = cause;
+    }
+
+    public Throwable getCause() {
+        return _cause;
+    }
 }

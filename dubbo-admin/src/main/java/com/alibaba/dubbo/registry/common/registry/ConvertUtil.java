@@ -1,37 +1,37 @@
-/**
- * Project: dubbo.registry.common-2.2.0-SNAPSHOT
- * 
- * File Created at Mar 21, 2012
- * $Id: ConvertUtil.java 181192 2012-06-21 05:05:47Z tony.chenl $
- * 
- * Copyright 1999-2100 Alibaba.com Corporation Limited.
- * All rights reserved.
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * This software is the confidential and proprietary information of
- * Alibaba Company. ("Confidential Information").  You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the license agreement you entered into
- * with Alibaba.com.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.alibaba.dubbo.registry.common.registry;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.utils.StringUtils;
 
-/**
- * @author ding.lid
- *
- */
+import java.util.HashMap;
+import java.util.Map;
+
 public class ConvertUtil {
+    private ConvertUtil() {
+    }
+
     public static Map<String, Map<String, String>> convertRegister(Map<String, Map<String, String>> register) {
         Map<String, Map<String, String>> newRegister = new HashMap<String, Map<String, String>>();
         for (Map.Entry<String, Map<String, String>> entry : register.entrySet()) {
             String serviceName = entry.getKey();
             Map<String, String> serviceUrls = entry.getValue();
-            if (! serviceName.contains(":") && ! serviceName.contains("/")) {
+            if (!serviceName.contains(":") && !serviceName.contains("/")) {
                 for (Map.Entry<String, String> entry2 : serviceUrls.entrySet()) {
                     String serviceUrl = entry2.getKey();
                     String serviceQuery = entry2.getValue();
@@ -44,7 +44,7 @@ public class ConvertUtil {
                     if (group != null && group.length() > 0) {
                         name = group + "/" + name;
                     }
-                    if (version != null && version.length() > 0 && ! "0.0.0".equals(version)) {
+                    if (version != null && version.length() > 0 && !"0.0.0".equals(version)) {
                         name = name + ":" + version;
                     }
                     Map<String, String> newUrls = newRegister.get(name);
@@ -60,13 +60,13 @@ public class ConvertUtil {
         }
         return newRegister;
     }
-    
+
     public static Map<String, String> convertSubscribe(Map<String, String> subscribe) {
         Map<String, String> newSubscribe = new HashMap<String, String>();
         for (Map.Entry<String, String> entry : subscribe.entrySet()) {
             String serviceName = entry.getKey();
             String serviceQuery = entry.getValue();
-            if (! serviceName.contains(":") && ! serviceName.contains("/")) {
+            if (!serviceName.contains(":") && !serviceName.contains("/")) {
                 Map<String, String> params = StringUtils.parseQueryString(serviceQuery);
                 String group = params.get("group");
                 String version = params.get("version");
@@ -76,7 +76,7 @@ public class ConvertUtil {
                 if (group != null && group.length() > 0) {
                     name = group + "/" + name;
                 }
-                if (version != null && version.length() > 0 && ! "0.0.0".equals(version)) {
+                if (version != null && version.length() > 0 && !"0.0.0".equals(version)) {
                     name = name + ":" + version;
                 }
                 newSubscribe.put(name, StringUtils.toQueryString(params));
@@ -86,7 +86,7 @@ public class ConvertUtil {
         }
         return newSubscribe;
     }
-    
+
     public static Map<String, String> serviceName2Map(String serviceName) {
         String group = null;
         String version = null;
@@ -100,20 +100,18 @@ public class ConvertUtil {
             version = serviceName.substring(i + 1);
             serviceName = serviceName.substring(0, i);
         }
-        
+
         Map<String, String> ret = new HashMap<String, String>();
-        if(!StringUtils.isEmpty(serviceName)) {
+        if (!StringUtils.isEmpty(serviceName)) {
             ret.put(Constants.INTERFACE_KEY, serviceName);
         }
-        if(!StringUtils.isEmpty(version)) {
+        if (!StringUtils.isEmpty(version)) {
             ret.put(Constants.VERSION_KEY, version);
         }
-        if(!StringUtils.isEmpty(group)) {
+        if (!StringUtils.isEmpty(group)) {
             ret.put(Constants.GROUP_KEY, group);
         }
-        
+
         return ret;
     }
-    
-    private ConvertUtil() {}
 }

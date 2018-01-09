@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2012 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,18 +16,16 @@
  */
 package com.alibaba.dubbo.monitor.simple.pages;
 
-import java.util.List;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.container.page.Page;
 import com.alibaba.dubbo.container.page.PageHandler;
 import com.alibaba.dubbo.monitor.simple.RegistryContainer;
 import com.alibaba.dubbo.registry.NotifyListener;
 
+import java.util.List;
+
 /**
  * UnsubscribePageHandler
- * 
- * @author william.liangf
  */
 public class UnsubscribePageHandler implements PageHandler {
 
@@ -49,15 +48,17 @@ public class UnsubscribePageHandler implements PageHandler {
         }
         return new Page("<script type=\"text/javascript\">window.location.href=\"consumers.html?" + parameter + "\";</script>");
     }
-    
-    private static class NotifyListenerAdapter implements NotifyListener {
-        
-        public static final NotifyListener NOTIFY_LISTENER = new NotifyListenerAdapter();
-        
-        private NotifyListenerAdapter() {}
 
-        public void notify(List<URL> urls) {}
-        
+    private static class NotifyListenerAdapter implements NotifyListener {
+
+        public static final NotifyListener NOTIFY_LISTENER = new NotifyListenerAdapter();
+
+        private NotifyListenerAdapter() {
+        }
+
+        public void notify(List<URL> urls) {
+        }
+
     }
 
 }

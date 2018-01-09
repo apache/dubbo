@@ -1,56 +1,47 @@
-/**
- * Project: dubbo.registry-1.1.0-SNAPSHOT
- * 
- * File Created at 2010-5-14
- * 
- * Copyright 1999-2010 Alibaba.com Croporation Limited.
- * All rights reserved.
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * This software is the confidential and proprietary information of
- * Alibaba Company. ("Confidential Information").  You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the license agreement you entered into
- * with Alibaba.com.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.alibaba.dubbo.governance.web.home.module.screen;
 
-/*
- * Copyright 2011 Alibaba.com All right reserved. This software is the
- * confidential and proprietary information of Alibaba.com ("Confidential
- * Information"). You shall not disclose such Confidential Information and shall
- * use it only in accordance with the terms of the license agreement you entered
- * into with Alibaba.com.
- */
-import java.io.PrintWriter;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import com.alibaba.dubbo.governance.service.ProviderService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.alibaba.dubbo.governance.service.ProviderService;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.PrintWriter;
+import java.util.Map;
 
-/**
- * @author tony.chenl
- */
-public class Servicestatus{
+public class Servicestatus {
 //    @Autowired
 //    private RegistryCache registryCache;
-    
+
     @Autowired
     private HttpServletRequest request;
-    
+
     @Autowired
     private ProviderService providerDAO;
-    
+
     @Autowired
     private HttpServletResponse response;
 
-    public void execute(Map<String,Object> context) throws Exception {
+    public void execute(Map<String, Object> context) throws Exception {
         String uri = request.getRequestURI();
         String contextPath = request.getContextPath();
-        if (contextPath != null && ! "/".equals(contextPath)) {
+        if (contextPath != null && !"/".equals(contextPath)) {
             uri = uri.substring(contextPath.length());
         }
         if (uri.startsWith("/status/")) {

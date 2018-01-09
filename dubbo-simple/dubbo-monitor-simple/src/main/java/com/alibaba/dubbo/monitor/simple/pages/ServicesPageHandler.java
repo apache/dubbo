@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,10 +16,6 @@
  */
 package com.alibaba.dubbo.monitor.simple.pages;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.container.page.Menu;
@@ -26,14 +23,16 @@ import com.alibaba.dubbo.container.page.Page;
 import com.alibaba.dubbo.container.page.PageHandler;
 import com.alibaba.dubbo.monitor.simple.RegistryContainer;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 /**
  * ServicesPageHandler
- * 
- * @author william.liangf
  */
 @Menu(name = "Services", desc = "Show registered services.", order = 2000)
 public class ServicesPageHandler implements PageHandler {
-    
+
     public Page handle(URL url) {
         Set<String> services = RegistryContainer.getInstance().getServices();
         List<List<String>> rows = new ArrayList<List<String>>();
@@ -53,7 +52,7 @@ public class ServicesPageHandler implements PageHandler {
                     if (providerSize > 0) {
                         URL provider = providers.iterator().next();
                         row.add(provider.getParameter(Constants.APPLICATION_KEY, ""));
-                        row.add(provider.getParameter("owner", "") + (provider.hasParameter("organization") ?  " (" + provider.getParameter("organization") + ")" : ""));
+                        row.add(provider.getParameter("owner", "") + (provider.hasParameter("organization") ? " (" + provider.getParameter("organization") + ")" : ""));
                     } else {
                         row.add("");
                         row.add("");
@@ -67,7 +66,7 @@ public class ServicesPageHandler implements PageHandler {
             }
         }
         return new Page("Services", "Services (" + rows.size() + ")",
-                new String[] { "Service Name:", "Application", "Owner", "Providers(" + providerCount + ")", "Consumers(" + consumerCount + ")", "Statistics", "Charts" }, rows);
+                new String[]{"Service Name:", "Application", "Owner", "Providers(" + providerCount + ")", "Consumers(" + consumerCount + ")", "Statistics", "Charts"}, rows);
     }
 
 }

@@ -1,46 +1,45 @@
-/**
- * Project: dubbo.registry.server-1.1.0-SNAPSHOT
- * 
- * File Created at 2009-12-27
- * $Id: DatabaseStatusChecker.java 181192 2012-06-21 05:05:47Z tony.chenl $
- * 
- * Copyright 2008 Alibaba.com Croporation Limited.
- * All rights reserved.
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * This software is the confidential and proprietary information of
- * Alibaba Company. ("Confidential Information").  You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the license agreement you entered into
- * with Alibaba.com.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.alibaba.dubbo.registry.common.status;
-
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-
-import javax.sql.DataSource;
-
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.status.Status;
 import com.alibaba.dubbo.common.status.StatusChecker;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+
 /**
  * DatabaseStatus
- * 
- * @author william.liangf
+ *
  */
 public class DatabaseStatusChecker implements StatusChecker {
 
     private static final Logger logger = LoggerFactory.getLogger(DatabaseStatusChecker.class);
-    
+
     private int version;
-    
+
     private String message;
-    
+
     @Autowired
     private DataSource dataSource;
 
@@ -63,9 +62,9 @@ public class DatabaseStatusChecker implements StatusChecker {
                 }
                 if (message == null) {
                     message = metaData.getURL()
-                        + " (" + metaData.getDatabaseProductName() 
-                        + " " + metaData.getDatabaseProductVersion()
-                        + ", " + getIsolation(metaData.getDefaultTransactionIsolation()) + ")";
+                            + " (" + metaData.getDatabaseProductName()
+                            + " " + metaData.getDatabaseProductVersion()
+                            + ", " + getIsolation(metaData.getDefaultTransactionIsolation()) + ")";
                 }
                 if (version == 0) {
                     version = metaData.getDatabaseMajorVersion();
@@ -77,9 +76,9 @@ public class DatabaseStatusChecker implements StatusChecker {
             logger.error(e.getMessage(), e);
             ok = false;
         }
-        return new Status(! ok ? Status.Level.ERROR : (version < 5 ? Status.Level.WARN : Status.Level.OK), message);
+        return new Status(!ok ? Status.Level.ERROR : (version < 5 ? Status.Level.WARN : Status.Level.OK), message);
     }
-    
+
     private String getIsolation(int i) {
         if (i == Connection.TRANSACTION_READ_COMMITTED) {
             return "READ_COMMITTED";

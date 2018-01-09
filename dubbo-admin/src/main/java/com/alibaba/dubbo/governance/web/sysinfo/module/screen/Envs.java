@@ -1,19 +1,24 @@
-/**
- * Project: dubbo.registry.console-2.1.0-SNAPSHOT
- * 
- * File Created at Sep 13, 2011
- * $Id: Envs.java 185206 2012-07-09 03:06:37Z tony.chenl $
- * 
- * Copyright 1999-2100 Alibaba.com Corporation Limited.
- * All rights reserved.
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * This software is the confidential and proprietary information of
- * Alibaba Company. ("Confidential Information").  You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the license agreement you entered into
- * with Alibaba.com.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.alibaba.dubbo.governance.web.sysinfo.module.screen;
+
+import com.alibaba.dubbo.common.Version;
+import com.alibaba.dubbo.common.utils.NetUtils;
+import com.alibaba.dubbo.governance.web.common.module.screen.Restful;
 
 import java.lang.management.ManagementFactory;
 import java.text.SimpleDateFormat;
@@ -22,15 +27,13 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 
-import com.alibaba.dubbo.common.Version;
-import com.alibaba.dubbo.common.utils.NetUtils;
-import com.alibaba.dubbo.governance.web.common.module.screen.Restful;
-
-/**
- * @author ding.lid
- */
 public class Envs extends Restful {
-    
+
+    private static final long SECOND = 1000;
+    private static final long MINUTE = 60 * SECOND;
+    private static final long HOUR = 60 * MINUTE;
+    private static final long DAY = 24 * HOUR;
+
     public void index(Map<String, Object> context) throws Exception {
         Map<String, String> properties = new TreeMap<String, String>();
         StringBuilder msg = new StringBuilder();
@@ -46,20 +49,12 @@ public class Envs extends Restful {
                 + String.valueOf(Runtime.getRuntime().availableProcessors()) + " cores");
         properties.put("Locale", Locale.getDefault().toString() + "/"
                 + System.getProperty("file.encoding"));
-        properties.put("Uptime", formatUptime(ManagementFactory.getRuntimeMXBean().getUptime()) 
-                + " From " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS Z").format(new Date(ManagementFactory.getRuntimeMXBean().getStartTime())) 
+        properties.put("Uptime", formatUptime(ManagementFactory.getRuntimeMXBean().getUptime())
+                + " From " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS Z").format(new Date(ManagementFactory.getRuntimeMXBean().getStartTime()))
                 + " To " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS Z").format(new Date()));
         context.put("properties", properties);
     }
-    
-    private static final long SECOND = 1000;
-    
-    private static final long MINUTE = 60 * SECOND;
-    
-    private static final long HOUR = 60 * MINUTE;
-    
-    private static final long DAY = 24 * HOUR;
-    
+
     private String formatUptime(long uptime) {
         StringBuilder buf = new StringBuilder();
         if (uptime > DAY) {

@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,16 +15,6 @@
  * limitations under the License.
  */
 package com.alibaba.dubbo.rpc.protocol.hessian;
-
-import java.io.IOException;
-import java.net.SocketTimeoutException;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
@@ -33,16 +24,24 @@ import com.alibaba.dubbo.remoting.http.HttpServer;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.protocol.AbstractProxyProtocol;
+
 import com.caucho.hessian.HessianException;
 import com.caucho.hessian.client.HessianConnectionException;
 import com.caucho.hessian.client.HessianProxyFactory;
 import com.caucho.hessian.io.HessianMethodSerializationException;
 import com.caucho.hessian.server.HessianSkeleton;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.SocketTimeoutException;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * http rpc support.
- * 
- * @author qianlei
  */
 public class HessianProtocol extends AbstractProxyProtocol {
 
@@ -51,7 +50,7 @@ public class HessianProtocol extends AbstractProxyProtocol {
     private final Map<String, HessianSkeleton> skeletonMap = new ConcurrentHashMap<String, HessianSkeleton>();
 
     private HttpBinder httpBinder;
-    
+
     public HessianProtocol() {
         super(HessianException.class);
     }
@@ -64,28 +63,8 @@ public class HessianProtocol extends AbstractProxyProtocol {
         return 80;
     }
 
-    private class HessianHandler implements HttpHandler {
-        
-        public void handle(HttpServletRequest request, HttpServletResponse response)
-                throws IOException, ServletException {
-            String uri = request.getRequestURI();
-            HessianSkeleton skeleton = skeletonMap.get(uri);
-            if (! request.getMethod().equalsIgnoreCase("POST")) {
-                response.setStatus(500);
-            } else {
-                RpcContext.getContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
-                try {
-                    skeleton.invoke(request.getInputStream(), response.getOutputStream());
-                } catch (Throwable e) {
-                    throw new ServletException(e);
-                }
-            }
-        }
-        
-    }
-
     protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
-        String addr = url.getIp() + ":" + url.getPort();
+        String addr = getAddr(url);
         HttpServer server = serverMap.get(addr);
         if (server == null) {
             server = httpBinder.bind(url, new HessianHandler());
@@ -107,7 +86,7 @@ public class HessianProtocol extends AbstractProxyProtocol {
         String client = url.getParameter(Constants.CLIENT_KEY, Constants.DEFAULT_HTTP_CLIENT);
         if ("httpclient".equals(client)) {
             hessianProxyFactory.setConnectionFactory(new HttpClientConnectionFactory());
-        } else if (client != null && client.length() > 0 && ! Constants.DEFAULT_HTTP_CLIENT.equals(client)) {
+        } else if (client != null && client.length() > 0 && !Constants.DEFAULT_HTTP_CLIENT.equals(client)) {
             throw new IllegalStateException("Unsupported http protocol client=\"" + client + "\"!");
         }
         int timeout = url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
@@ -146,6 +125,26 @@ public class HessianProtocol extends AbstractProxyProtocol {
                 }
             }
         }
+    }
+
+    private class HessianHandler implements HttpHandler {
+
+        public void handle(HttpServletRequest request, HttpServletResponse response)
+                throws IOException, ServletException {
+            String uri = request.getRequestURI();
+            HessianSkeleton skeleton = skeletonMap.get(uri);
+            if (!request.getMethod().equalsIgnoreCase("POST")) {
+                response.setStatus(500);
+            } else {
+                RpcContext.getContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
+                try {
+                    skeleton.invoke(request.getInputStream(), response.getOutputStream());
+                } catch (Throwable e) {
+                    throw new ServletException(e);
+                }
+            }
+        }
+
     }
 
 }

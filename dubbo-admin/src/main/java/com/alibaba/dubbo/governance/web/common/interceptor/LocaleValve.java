@@ -1,51 +1,49 @@
-/**
- * Project: dubbo.registry.console-2.1.0-SNAPSHOT
- * 
- * File Created at Sep 13, 2011
- * $Id: LocaleValve.java 181192 2012-06-21 05:05:47Z tony.chenl $
- * 
- * Copyright 1999-2100 Alibaba.com Corporation Limited.
- * All rights reserved.
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * This software is the confidential and proprietary information of
- * Alibaba Company. ("Confidential Information").  You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the license agreement you entered into
- * with Alibaba.com.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.alibaba.dubbo.governance.web.common.interceptor;
-
-import static com.alibaba.citrus.turbine.util.TurbineUtil.getTurbineRunData;
-
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.citrus.service.pipeline.PipelineContext;
 import com.alibaba.citrus.service.pipeline.support.AbstractValve;
 import com.alibaba.citrus.turbine.TurbineRunData;
 import com.alibaba.dubbo.governance.web.common.i18n.LocaleUtil;
 
-/**
- * @author guanghui.shigh
- */
-public class LocaleValve extends AbstractValve {
-    
-    @Autowired
-    private HttpServletRequest       request;
+import org.springframework.beans.factory.annotation.Autowired;
 
-    //添加拦截器例外设置
+import javax.servlet.http.HttpServletRequest;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
+
+import static com.alibaba.citrus.turbine.util.TurbineUtil.getTurbineRunData;
+
+public class LocaleValve extends AbstractValve {
+
+    //Add exceptions for interceptors
     private final static Set<String> TARGET_WITHOUT_CHECK = new HashSet<String>();
+
     static {
         TARGET_WITHOUT_CHECK.add("/ok");
         TARGET_WITHOUT_CHECK.add("/error");
         TARGET_WITHOUT_CHECK.add("/login");
         TARGET_WITHOUT_CHECK.add("/logout");
     }
+
+    @Autowired
+    private HttpServletRequest request;
 
     private boolean ignoreTarget(String target) {
         return TARGET_WITHOUT_CHECK.contains(target);
@@ -62,7 +60,7 @@ public class LocaleValve extends AbstractValve {
             return;
         }
 
-        //默认是中文
+        // default chinese
         String[] temp = rundata.getCookies().getStrings("locale");
         String locale = null;
         if (temp != null) {
@@ -73,7 +71,7 @@ public class LocaleValve extends AbstractValve {
             }
         }
         if (locale == null || "".equals(locale)) {
-            locale = "zh";
+            locale = "en";
         }
 
         Locale newLocale = Locale.SIMPLIFIED_CHINESE;

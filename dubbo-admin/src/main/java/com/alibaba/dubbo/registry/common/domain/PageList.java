@@ -1,16 +1,18 @@
-/**
- * Project: dubbo.registry.server-1.1.0-SNAPSHOT
- * 
- * File Created at 2010-7-7
- * 
- * Copyright 1999-2010 Alibaba.com Croporation Limited.
- * All rights reserved.
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * This software is the confidential and proprietary information of
- * Alibaba Company. ("Confidential Information").  You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the license agreement you entered into
- * with Alibaba.com.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.alibaba.dubbo.registry.common.domain;
 
@@ -19,8 +21,7 @@ import java.util.List;
 
 /**
  * PageList
- * 
- * @author william.liangf
+ *
  */
 public class PageList<T> implements Serializable {
 
@@ -31,9 +32,9 @@ public class PageList<T> implements Serializable {
     private int limit;
 
     private int total;
-    
+
     private List<T> list;
-    
+
     public PageList() {
     }
 
@@ -75,25 +76,25 @@ public class PageList<T> implements Serializable {
     public void setList(List<T> list) {
         this.list = list;
     }
-    
-    public int getPageCount(){
+
+    public int getPageCount() {
 
         int lim = limit;
-        if(limit < 1){
+        if (limit < 1) {
             lim = 1;
         }
-        
+
         int page = total / lim;
-        if (page < 1){
+        if (page < 1) {
             return 1;
         }
-        
+
         int remain = total % lim;
-        
-        if(remain > 0){
+
+        if (remain > 0) {
             page += 1;
         }
-        
+
         return page;
     }
 

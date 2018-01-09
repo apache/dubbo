@@ -1,69 +1,68 @@
-/**
- * Project: dubbo.registry-1.1.0-SNAPSHOT
- * 
- * File Created at 2010-4-9
- * $Id: Provider.java 182846 2012-06-28 09:37:59Z tony.chenl $
- * 
- * Copyright 2008 Alibaba.com Croporation Limited.
- * All rights reserved.
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * This software is the confidential and proprietary information of
- * Alibaba Company. ("Confidential Information").  You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the license agreement you entered into
- * with Alibaba.com.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.alibaba.dubbo.registry.common.domain;
-
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.registry.common.registry.ConvertUtil;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Provider
- * 
- * @author william.liangf
- * @author tony.chenl
+ *
  */
 public class Provider extends Entity {
 
     private static final long serialVersionUID = 5981342400350878171L;
 
-    private String service;/* 提供者所提供的服务名称 */
-    
-    private String url; /* 提供者提供服务的地址 */
-    
-    private String parameters; /* 提供者提供服务的参数 */
-    
-    private String address; /* 提供者地址 */
+    private String service;/* The name of the service provided by the provider */
 
-    private String registry;/* 提供者连接的注册中心地址 */
-    
-    private boolean dynamic;          /* 是否为动态注册服务 */
-    
-    private boolean enabled;          /* 是否启用 */
+    private String url; /* Provider's address for service */
 
-    private int weight;          /* 权重 */
+    private String parameters; /* Provider provides service parameters */
 
-	private String application; /* 应用名 */
+    private String address; /* Provider address */
 
-    private String username;      /* 提供者用户名 */
-    
-    private Date expired;   /*过期时间*/
-    
-    private long alived;    /*存活时间，单位秒*/
+    private String registry;/* The provider's registry address */
+
+    private boolean dynamic;          /* provider was registered dynamically */
+
+    private boolean enabled;          /* provider enabled or not */
+
+    private int weight;          /* provider weight */
+
+    private String application; /* application name */
+
+    private String username;      /* operator */
+
+    private Date expired;   /* time to expire */
+
+    private long alived;    /* time to live in milliseconds */
 
     private Override override;
 
-	private List<Override> overrides;
-    
+    private List<Override> overrides;
+
     public Provider() {
     }
-    
+
     public Provider(Long id) {
         super(id);
     }
@@ -75,7 +74,7 @@ public class Provider extends Entity {
     public void setService(String service) {
         this.service = service;
     }
-    
+
     public String getUrl() {
         return url;
     }
@@ -124,32 +123,32 @@ public class Provider extends Entity {
         this.application = application;
     }
 
-	public boolean isDynamic() {
-		return dynamic;
-	}
+    public boolean isDynamic() {
+        return dynamic;
+    }
 
-	public void setDynamic(boolean dynamic) {
-		this.dynamic = dynamic;
-	}
+    public void setDynamic(boolean dynamic) {
+        this.dynamic = dynamic;
+    }
 
-	public boolean isEnabled() {
-		return enabled;
-	}
+    public boolean isEnabled() {
+        return enabled;
+    }
 
-	public void setEnabled(boolean enabled) {
-		this.enabled = enabled;
-	}
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
 
-    
+
     public Date getExpired() {
         return expired;
     }
 
-    
+
     public void setExpired(Date expired) {
         this.expired = expired;
     }
-    
+
     public long getAlived() {
         return alived;
     }
@@ -159,28 +158,28 @@ public class Provider extends Entity {
     }
 
     public int getWeight() {
-		return weight;
-	}
+        return weight;
+    }
 
-	public void setWeight(int weight) {
-		this.weight = weight;
-	}
+    public void setWeight(int weight) {
+        this.weight = weight;
+    }
 
     public Override getOverride() {
-		return override;
-	}
+        return override;
+    }
 
-	public void setOverride(Override override) {
-		this.override = override;
-	}
+    public void setOverride(Override override) {
+        this.override = override;
+    }
 
-	public List<Override> getOverrides() {
-		return overrides;
-	}
+    public List<Override> getOverrides() {
+        return overrides;
+    }
 
-	public void setOverrides(List<Override> overrides) {
-		this.overrides = overrides;
-	}
+    public void setOverrides(List<Override> overrides) {
+        this.overrides = overrides;
+    }
 
     public URL toUrl() {
         Map<String, String> serviceName2Map = ConvertUtil.serviceName2Map(getService());
@@ -190,27 +189,26 @@ public class Provider extends Entity {
         if(!serviceName2Map.containsKey(Constants.VERSION_KEY)) {
             throw new IllegalArgumentException("No version info");
         }*/
-    
+
         String u = getUrl();
         URL url = URL.valueOf(u + "?" + getParameters());
-        
+
         url = url.addParameters(serviceName2Map);
-        
+
         boolean dynamic = isDynamic();
-        if(!dynamic) {
+        if (!dynamic) {
             url = url.addParameter(Constants.DYNAMIC_KEY, false);
         }
         boolean enabled = isEnabled();
-        if(enabled != url.getParameter("enabled", true)) {
-            if(enabled) {
+        if (enabled != url.getParameter("enabled", true)) {
+            if (enabled) {
                 url = url.removeParameter("enabled");
-            }
-            else {
+            } else {
                 url = url.addParameter("enabled", false);
             }
         }
-        
+
         return url;
     }
-	
+
 }

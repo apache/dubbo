@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,26 +16,24 @@
  */
 package com.alibaba.dubbo.registry.zookeeper;
 
-import junit.framework.Assert;
+import com.alibaba.dubbo.common.URL;
 
+import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.alibaba.dubbo.common.URL;
-
 /**
  * ZookeeperRegistryTest
- * 
- * @author tony.chenl
+ *
  */
 public class ZookeeperRegistryTest {
 
-    String            service     = "com.alibaba.dubbo.test.injvmServie";
-    URL               registryUrl = URL.valueOf("zookeeper://239.255.255.255/");
-    URL               serviceUrl  = URL.valueOf("zookeeper://zookeeper/" + service
-                                                + "?notify=false&methods=test1,test2");
-    URL               consumerUrl = URL.valueOf("zookeeper://consumer/" + service + "?notify=false&methods=test1,test2");
+    String service = "com.alibaba.dubbo.test.injvmServie";
+    URL registryUrl = URL.valueOf("zookeeper://239.255.255.255/");
+    URL serviceUrl = URL.valueOf("zookeeper://zookeeper/" + service
+            + "?notify=false&methods=test1,test2");
+    URL consumerUrl = URL.valueOf("zookeeper://consumer/" + service + "?notify=false&methods=test1,test2");
     // ZookeeperRegistry registry    = new ZookeeperRegistry(registryUrl);
 
     /**
@@ -57,7 +56,7 @@ public class ZookeeperRegistryTest {
         URL errorUrl = URL.valueOf("zookeeper://zookeeper/");
         new ZookeeperRegistry(errorUrl);
     }*/
-    
+
     @Test
     public void testDefaultPort() {
         Assert.assertEquals("10.20.153.10:2181", ZookeeperRegistry.appendDefaultPort("10.20.153.10:0"));
@@ -65,7 +64,7 @@ public class ZookeeperRegistryTest {
     }
 
     /**
-     * Test method for {@link com.alibaba.dubbo.registry.support.injvm.InjvmRegistry#register(java.util.Map)}.
+     * Test method for {@link com.alibaba.dubbo.registry.zookeeper.ZookeeperRegistry#getRegistered()}.
      */
     @Test
     public void testRegister() {
@@ -85,7 +84,7 @@ public class ZookeeperRegistryTest {
 
     /**
      * Test method for
-     * {@link com.alibaba.dubbo.registry.support.injvm.InjvmRegistry#subscribe(java.util.Map, com.alibaba.dubbo.registry.support.NotifyListener)}
+     * {@link com.alibaba.dubbo.registry.zookeeper.ZookeeperRegistry#subscribe(URL, com.alibaba.dubbo.registry.NotifyListener)}
      * .
      */
     @Test

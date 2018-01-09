@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,6 +16,16 @@
  */
 package com.alibaba.dubbo.container.page;
 
+import com.alibaba.dubbo.common.Constants;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -25,21 +36,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.alibaba.dubbo.common.Constants;
-
 /**
  * ResourceServlet
- * 
- * @author william.liangf
  */
 public class ResourceFilter implements Filter {
 
@@ -67,7 +65,7 @@ public class ResourceFilter implements Filter {
 
     public void destroy() {
     }
-    
+
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
             throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) req;
@@ -79,25 +77,25 @@ public class ResourceFilter implements Filter {
         String context = request.getContextPath();
         if (uri.endsWith("/favicon.ico")) {
             uri = "/favicon.ico";
-        } else if (context != null && ! "/".equals(context)) {
+        } else if (context != null && !"/".equals(context)) {
             uri = uri.substring(context.length());
         }
-        if (! uri.startsWith("/")) {
+        if (!uri.startsWith("/")) {
             uri = "/" + uri;
         }
         long lastModified = getLastModified(uri);
         long since = request.getDateHeader("If-Modified-Since");
         if (since >= lastModified) {
-        	response.sendError(HttpServletResponse.SC_NOT_MODIFIED);
-        	return;
+            response.sendError(HttpServletResponse.SC_NOT_MODIFIED);
+            return;
         }
         byte[] data;
         InputStream input = getInputStream(uri);
-    	if (input == null) {
-    	    chain.doFilter(req, res);
+        if (input == null) {
+            chain.doFilter(req, res);
             return;
         }
-    	try {
+        try {
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             byte[] buffer = new byte[8192];
             int n = 0;
@@ -113,13 +111,13 @@ public class ResourceFilter implements Filter {
         output.write(data);
         output.flush();
     }
-    
+
     private boolean isFile(String path) {
         return path.startsWith("/") || path.indexOf(":") <= 1;
     }
-	
-	private long getLastModified(String uri) {
-	    for (String resource : resources) {
+
+    private long getLastModified(String uri) {
+        for (String resource : resources) {
             if (resource != null && resource.length() > 0) {
                 String path = resource + uri;
                 if (isFile(path)) {
@@ -131,9 +129,9 @@ public class ResourceFilter implements Filter {
             }
         }
         return start;
-	}
-	
-	private InputStream getInputStream(String uri) {
+    }
+
+    private InputStream getInputStream(String uri) {
         for (String resource : resources) {
             String path = resource + uri;
             try {
@@ -148,6 +146,6 @@ public class ResourceFilter implements Filter {
             }
         }
         return null;
-	}
+    }
 
 }

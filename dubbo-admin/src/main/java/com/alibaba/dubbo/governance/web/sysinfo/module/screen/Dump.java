@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2101 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,6 +16,16 @@
  */
 package com.alibaba.dubbo.governance.web.sysinfo.module.screen;
 
+import com.alibaba.dubbo.common.utils.StringUtils;
+import com.alibaba.dubbo.governance.service.ConsumerService;
+import com.alibaba.dubbo.governance.service.ProviderService;
+import com.alibaba.dubbo.governance.web.common.module.screen.Restful;
+import com.alibaba.dubbo.registry.common.domain.Consumer;
+import com.alibaba.dubbo.registry.common.domain.Provider;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -26,27 +37,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletResponse;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
-import com.alibaba.dubbo.common.utils.StringUtils;
-import com.alibaba.dubbo.governance.service.ConsumerService;
-import com.alibaba.dubbo.governance.service.ProviderService;
-import com.alibaba.dubbo.governance.web.common.module.screen.Restful;
-import com.alibaba.dubbo.registry.common.domain.Consumer;
-import com.alibaba.dubbo.registry.common.domain.Provider;
-
-/**
- * @author tony.chenl
- */
 public class Dump extends Restful {
-    
-    @Autowired
-    ProviderService         providerDAO;
 
     @Autowired
-    ConsumerService         consumerDAO;
+    ProviderService providerDAO;
+
+    @Autowired
+    ConsumerService consumerDAO;
 
     @Autowired
     HttpServletResponse response;
@@ -106,7 +103,7 @@ public class Dump extends Restful {
         writer.flush();
         response.setContentType("text/plain");
     }
-    
+
     public void versions(Map<String, Object> context) throws IOException {
         PrintWriter writer = response.getWriter();
         List<Provider> providers = providerDAO.findAll();
@@ -141,7 +138,7 @@ public class Dump extends Restful {
         writer.flush();
         response.setContentType("text/plain");
     }
-    
+
     private List<String> getNoProviders() {
         List<String> providerServices = providerDAO.findServices();
         List<String> consumerServices = consumerDAO.findServices();

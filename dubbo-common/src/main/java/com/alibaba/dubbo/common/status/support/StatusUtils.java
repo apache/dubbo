@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,18 +16,16 @@
  */
 package com.alibaba.dubbo.common.status.support;
 
-import java.util.Map;
-
 import com.alibaba.dubbo.common.status.Status;
 import com.alibaba.dubbo.common.status.Status.Level;
 
+import java.util.Map;
+
 /**
  * StatusManager
- * 
- * @author william.liangf
  */
 public class StatusUtils {
-    
+
     public static Status getSummaryStatus(Map<String, Status> statuses) {
         Level level = Level.OK;
         StringBuilder msg = new StringBuilder();
@@ -41,7 +40,7 @@ public class StatusUtils {
                 }
                 msg.append(key);
             } else if (Level.WARN.equals(l)) {
-                if(! Level.ERROR.equals(level)) {
+                if (!Level.ERROR.equals(level)) {
                     level = Level.WARN;
                 }
                 if (msg.length() > 0) {

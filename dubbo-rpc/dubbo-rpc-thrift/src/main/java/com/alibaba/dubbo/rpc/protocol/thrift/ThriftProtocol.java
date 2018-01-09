@@ -1,22 +1,20 @@
-/**
- * File Created at 2011-12-06
- * $Id$
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Copyright 2008 Alibaba.com Croporation Limited.
- * All rights reserved.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * This software is the confidential and proprietary information of
- * Alibaba Company. ("Confidential Information").  You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the license agreement you entered into
- * with Alibaba.com.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.alibaba.dubbo.rpc.protocol.thrift;
-
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
@@ -38,9 +36,11 @@ import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.protocol.AbstractProtocol;
 import com.alibaba.dubbo.rpc.protocol.dubbo.DubboExporter;
 
-/**
- * @author <a href="mailto:gang.lvg@alibaba-inc.com">gang.lvg</a>
- */
+import java.util.ArrayList;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 public class ThriftProtocol extends AbstractProtocol {
 
     public static final int DEFAULT_PORT = 40880;
@@ -54,48 +54,48 @@ public class ThriftProtocol extends AbstractProtocol {
     private ExchangeHandler handler = new ExchangeHandlerAdapter() {
 
         @Override
-        public Object reply( ExchangeChannel channel, Object msg ) throws RemotingException {
+        public Object reply(ExchangeChannel channel, Object msg) throws RemotingException {
 
-            if ( msg instanceof Invocation ) {
-                Invocation inv = ( Invocation ) msg;
+            if (msg instanceof Invocation) {
+                Invocation inv = (Invocation) msg;
                 String serviceName = inv.getAttachments().get(Constants.INTERFACE_KEY);
-                String serviceKey = serviceKey( channel.getLocalAddress().getPort(),
-                                                serviceName, null, null );
-                DubboExporter<?> exporter = (DubboExporter<?>) exporterMap.get( serviceKey );
+                String serviceKey = serviceKey(channel.getLocalAddress().getPort(),
+                        serviceName, null, null);
+                DubboExporter<?> exporter = (DubboExporter<?>) exporterMap.get(serviceKey);
                 if (exporter == null) {
                     throw new RemotingException(channel,
-                                                "Not found exported service: "
-                                                        + serviceKey
-                                                        + " in "
-                                                        + exporterMap.keySet()
-                                                        + ", may be version or group mismatch "
-                                                        + ", channel: consumer: "
-                                                        + channel.getRemoteAddress()
-                                                        + " --> provider: "
-                                                        + channel.getLocalAddress()
-                                                        + ", message:"+ msg);
+                            "Not found exported service: "
+                                    + serviceKey
+                                    + " in "
+                                    + exporterMap.keySet()
+                                    + ", may be version or group mismatch "
+                                    + ", channel: consumer: "
+                                    + channel.getRemoteAddress()
+                                    + " --> provider: "
+                                    + channel.getLocalAddress()
+                                    + ", message:" + msg);
                 }
 
                 RpcContext.getContext().setRemoteAddress(channel.getRemoteAddress());
-                return exporter.getInvoker().invoke( inv );
+                return exporter.getInvoker().invoke(inv);
 
             }
 
             throw new RemotingException(channel,
-                                        "Unsupported request: "
-                                                + (msg.getClass().getName() + ": " + msg)
-                                                + ", channel: consumer: "
-                                                + channel.getRemoteAddress()
-                                                + " --> provider: "
-                                                + channel.getLocalAddress());
+                    "Unsupported request: "
+                            + (msg.getClass().getName() + ": " + msg)
+                            + ", channel: consumer: "
+                            + channel.getRemoteAddress()
+                            + " --> provider: "
+                            + channel.getLocalAddress());
         }
 
         @Override
-        public void received( Channel channel, Object message ) throws RemotingException {
-            if ( message instanceof Invocation ) {
-                reply( ( ExchangeChannel ) channel, message );
+        public void received(Channel channel, Object message) throws RemotingException {
+            if (message instanceof Invocation) {
+                reply((ExchangeChannel) channel, message);
             } else {
-                super.received( channel, message );
+                super.received(channel, message);
             }
         }
 
@@ -105,15 +105,15 @@ public class ThriftProtocol extends AbstractProtocol {
         return DEFAULT_PORT;
     }
 
-    public <T> Exporter<T> export( Invoker<T> invoker ) throws RpcException {
+    public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
 
-        // 只能使用 thrift codec
+        // can use thrift codec only
         URL url = invoker.getUrl().addParameter(Constants.CODEC_KEY, ThriftCodec.NAME);
         // find server.
         String key = url.getAddress();
-        //client 也可以暴露一个只有server可以调用的服务。
-        boolean isServer = url.getParameter(Constants.IS_SERVER_KEY,true);
-        if (isServer && ! serverMap.containsKey(key)) {
+        // client can expose a service for server to invoke only.
+        boolean isServer = url.getParameter(Constants.IS_SERVER_KEY, true);
+        if (isServer && !serverMap.containsKey(key)) {
             serverMap.put(key, getServer(url));
         }
         // export service.
@@ -147,7 +147,7 @@ public class ThriftProtocol extends AbstractProtocol {
 
     } // ~ end of method destroy
 
-    public <T> Invoker<T> refer( Class<T> type, URL url ) throws RpcException {
+    public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
 
         ThriftInvoker<T> invoker = new ThriftInvoker<T>(type, url, getClients(url), invokers);
 
@@ -157,7 +157,7 @@ public class ThriftProtocol extends AbstractProtocol {
 
     }
 
-    private ExchangeClient[] getClients(URL url){
+    private ExchangeClient[] getClients(URL url) {
 
         int connections = url.getParameter(Constants.CONNECTIONS_KEY, 1);
 
@@ -171,15 +171,15 @@ public class ThriftProtocol extends AbstractProtocol {
 
     private ExchangeClient initClient(URL url) {
 
-        ExchangeClient client ;
+        ExchangeClient client;
 
-        url = url.addParameter( Constants.CODEC_KEY, ThriftCodec.NAME );
+        url = url.addParameter(Constants.CODEC_KEY, ThriftCodec.NAME);
 
         try {
-            client = Exchangers.connect( url );
-        } catch ( RemotingException e ) {
-            throw new RpcException( "Fail to create remoting client for service(" + url
-                                            + "): " + e.getMessage(), e );
+            client = Exchangers.connect(url);
+        } catch (RemotingException e) {
+            throw new RpcException("Fail to create remoting client for service(" + url
+                    + "): " + e.getMessage(), e);
         }
 
         return client;
@@ -187,11 +187,11 @@ public class ThriftProtocol extends AbstractProtocol {
     }
 
     private ExchangeServer getServer(URL url) {
-        //默认开启server关闭时发送readonly事件
+        // enable sending readonly event when server closes by default
         url = url.addParameterIfAbsent(Constants.CHANNEL_READONLYEVENT_SENT_KEY, Boolean.TRUE.toString());
         String str = url.getParameter(Constants.SERVER_KEY, Constants.DEFAULT_REMOTING_SERVER);
 
-        if (str != null && str.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(str))
+        if (str != null && str.length() > 0 && !ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(str))
             throw new RpcException("Unsupported server type: " + str + ", url: " + url);
 
         ExchangeServer server;

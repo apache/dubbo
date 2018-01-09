@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,87 +16,93 @@
  */
 package com.alibaba.dubbo.config;
 
-import java.util.Map;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.config.support.Parameter;
 import com.alibaba.dubbo.registry.support.AbstractRegistryFactory;
 
+import java.util.Map;
+
 /**
  * RegistryConfig
- * 
- * @author william.liangf
+ *
  * @export
  */
 public class RegistryConfig extends AbstractConfig {
 
-	private static final long serialVersionUID = 5508512956753757169L;
-	
-	public static final String NO_AVAILABLE = "N/A";
+    public static final String NO_AVAILABLE = "N/A";
+    private static final long serialVersionUID = 5508512956753757169L;
+    // register center address
+    private String address;
 
-    // 注册中心地址
-    private String            address;
-    
-	// 注册中心登录用户名
-    private String            username;
+    // username to login register center
+    private String username;
 
-    // 注册中心登录密码
-    private String            password;
+    // password to login register center
+    private String password;
 
-    // 注册中心缺省端口
-    private Integer           port;
-    
-    // 注册中心协议
-    private String            protocol;
+    // default port for register center
+    private Integer port;
 
-    // 客户端实现
-    private String            transporter;
-    
-    private String            server;
-    
-    private String            client;
+    // protocol for register center
+    private String protocol;
 
-    private String            cluster;
-    
-    private String            group;
+    // client impl
+    private String transporter;
 
-	private String            version;
+    private String server;
 
-    // 注册中心请求超时时间(毫秒)
-    private Integer           timeout;
+    private String client;
 
-    // 注册中心会话超时时间(毫秒)
-    private Integer           session;
-    
-    // 动态注册中心列表存储文件
-    private String            file;
-    
-    // 停止时等候完成通知时间
-    private Integer           wait;
-    
-    // 启动时检查注册中心是否存在
-    private Boolean           check;
+    private String cluster;
 
-    // 在该注册中心上注册是动态的还是静态的服务
-    private Boolean           dynamic;
-    
-    // 在该注册中心上服务是否暴露
-    private Boolean           register;
-    
-    // 在该注册中心上服务是否引用
-    private Boolean           subscribe;
+    private String group;
 
-    // 自定义参数
+    private String version;
+
+    // request timeout in milliseconds for register center
+    private Integer timeout;
+
+    // session timeout in milliseconds for register center
+    private Integer session;
+
+    // file for saving register center dynamic list
+    private String file;
+
+    // wait time before stop
+    private Integer wait;
+
+    // whether to check if register center is available when boot up
+    private Boolean check;
+
+    // whether to allow dynamic service to register on the register center
+    private Boolean dynamic;
+
+    // whether to export service on the register center
+    private Boolean register;
+
+    // whether allow to subscribe service on the register center
+    private Boolean subscribe;
+
+    // customized parameters
     private Map<String, String> parameters;
 
-    // 是否为缺省
-    private Boolean             isDefault;
-    
+    // if it's default
+    private Boolean isDefault;
+
     public RegistryConfig() {
     }
-    
+
     public RegistryConfig(String address) {
         setAddress(address);
+    }
+
+    public static void destroyAll() {
+        AbstractRegistryFactory.destroyAll();
+    }
+
+    @Deprecated
+    public static void closeAll() {
+        destroyAll();
     }
 
     public String getProtocol() {
@@ -143,9 +150,9 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     /**
-     * @deprecated
-     * @see com.alibaba.dubbo.config.ProviderConfig#getWait()
      * @return wait
+     * @see com.alibaba.dubbo.config.ProviderConfig#getWait()
+     * @deprecated
      */
     @Deprecated
     public Integer getWait() {
@@ -153,24 +160,24 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     /**
-     * @deprecated
-     * @see com.alibaba.dubbo.config.ProviderConfig#setWait(Integer)
      * @param wait
+     * @see com.alibaba.dubbo.config.ProviderConfig#setWait(Integer)
+     * @deprecated
      */
     @Deprecated
     public void setWait(Integer wait) {
         this.wait = wait;
-        if( wait!=null && wait>0)
+        if (wait != null && wait > 0)
             System.setProperty(Constants.SHUTDOWN_WAIT_KEY, String.valueOf(wait));
     }
-    
-    public Boolean isCheck() {
-		return check;
-	}
 
-	public void setCheck(Boolean check) {
-		this.check = check;
-	}
+    public Boolean isCheck() {
+        return check;
+    }
+
+    public void setCheck(Boolean check) {
+        this.check = check;
+    }
 
     public String getFile() {
         return file;
@@ -182,26 +189,26 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     /**
-     * @deprecated
-     * @see #getTransporter()
      * @return transport
+     * @see #getTransporter()
+     * @deprecated
      */
     @Deprecated
     @Parameter(excluded = true)
     public String getTransport() {
         return getTransporter();
     }
-    
+
     /**
-     * @deprecated
-     * @see #setTransporter(String)
      * @param transport
+     * @see #setTransporter(String)
+     * @deprecated
      */
     @Deprecated
     public void setTransport(String transport) {
         setTransporter(transport);
     }
-    
+
     public String getTransporter() {
         return transporter;
     }
@@ -213,11 +220,11 @@ public class RegistryConfig extends AbstractConfig {
         }*/
         this.transporter = transporter;
     }
-    
+
     public String getServer() {
         return server;
     }
-    
+
     public void setServer(String server) {
         checkName("server", server);
         /*if(server != null && server.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(server)){
@@ -225,11 +232,11 @@ public class RegistryConfig extends AbstractConfig {
         }*/
         this.server = server;
     }
-    
+
     public String getClient() {
         return client;
     }
-    
+
     public void setClient(String client) {
         checkName("client", client);
         /*if(client != null && client.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(client)){
@@ -238,13 +245,13 @@ public class RegistryConfig extends AbstractConfig {
         this.client = client;
     }
 
-	public Integer getTimeout() {
-		return timeout;
-	}
+    public Integer getTimeout() {
+        return timeout;
+    }
 
-	public void setTimeout(Integer timeout) {
-		this.timeout = timeout;
-	}
+    public void setTimeout(Integer timeout) {
+        this.timeout = timeout;
+    }
 
     public Integer getSession() {
         return session;
@@ -269,22 +276,22 @@ public class RegistryConfig extends AbstractConfig {
     public void setRegister(Boolean register) {
         this.register = register;
     }
-    
+
     public Boolean isSubscribe() {
         return subscribe;
     }
-    
+
     public void setSubscribe(Boolean subscribe) {
         this.subscribe = subscribe;
     }
 
     public String getCluster() {
-		return cluster;
-	}
+        return cluster;
+    }
 
-	public void setCluster(String cluster) {
-		this.cluster = cluster;
-	}
+    public void setCluster(String cluster) {
+        this.cluster = cluster;
+    }
 
     public String getGroup() {
         return group;
@@ -317,15 +324,6 @@ public class RegistryConfig extends AbstractConfig {
 
     public void setDefault(Boolean isDefault) {
         this.isDefault = isDefault;
-    }
-
-    public static void destroyAll() {
-        AbstractRegistryFactory.destroyAll();
-    }
-
-    @Deprecated
-    public static void closeAll() {
-        destroyAll();
     }
 
 }

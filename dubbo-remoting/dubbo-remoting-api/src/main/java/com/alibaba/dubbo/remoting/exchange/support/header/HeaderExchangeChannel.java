@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,8 +15,6 @@
  * limitations under the License.
  */
 package com.alibaba.dubbo.remoting.exchange.support.header;
-
-import java.net.InetSocketAddress;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
@@ -31,22 +30,22 @@ import com.alibaba.dubbo.remoting.exchange.Response;
 import com.alibaba.dubbo.remoting.exchange.ResponseFuture;
 import com.alibaba.dubbo.remoting.exchange.support.DefaultFuture;
 
+import java.net.InetSocketAddress;
+
 /**
  * ExchangeReceiver
- * 
- * @author william.liangf
  */
 final class HeaderExchangeChannel implements ExchangeChannel {
 
-    private static final Logger logger      = LoggerFactory.getLogger(HeaderExchangeChannel.class);
+    private static final Logger logger = LoggerFactory.getLogger(HeaderExchangeChannel.class);
 
     private static final String CHANNEL_KEY = HeaderExchangeChannel.class.getName() + ".CHANNEL";
 
-    private final Channel       channel;
+    private final Channel channel;
 
-    private volatile boolean    closed      = false;
+    private volatile boolean closed = false;
 
-    HeaderExchangeChannel(Channel channel){
+    HeaderExchangeChannel(Channel channel) {
         if (channel == null) {
             throw new IllegalArgumentException("channel == null");
         }
@@ -66,17 +65,17 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         }
         return ret;
     }
-    
+
     static void removeChannelIfDisconnected(Channel ch) {
-        if (ch != null && ! ch.isConnected()) {
+        if (ch != null && !ch.isConnected()) {
             ch.removeAttribute(CHANNEL_KEY);
         }
     }
-    
+
     public void send(Object message) throws RemotingException {
         send(message, getUrl().getParameter(Constants.SENT_KEY, false));
     }
-    
+
     public void send(Object message, boolean sent) throws RemotingException {
         if (closed) {
             throw new RemotingException(this.getLocalAddress(), null, "Failed to send message " + message + ", cause: The channel " + this + " is closed!");
@@ -108,9 +107,9 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         req.setTwoWay(true);
         req.setData(request);
         DefaultFuture future = new DefaultFuture(channel, req, timeout);
-        try{
+        try {
             channel.send(req);
-        }catch (RemotingException e) {
+        } catch (RemotingException e) {
             future.cancel();
             throw e;
         }
@@ -137,7 +136,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         closed = true;
         if (timeout > 0) {
             long start = System.currentTimeMillis();
-            while (DefaultFuture.hasFuture(HeaderExchangeChannel.this) 
+            while (DefaultFuture.hasFuture(channel)
                     && System.currentTimeMillis() - start < timeout) {
                 try {
                     Thread.sleep(10);
@@ -147,6 +146,11 @@ final class HeaderExchangeChannel implements ExchangeChannel {
             }
         }
         close();
+    }
+
+    @Override
+    public void startClose() {
+        channel.startClose();
     }
 
     public InetSocketAddress getLocalAddress() {
@@ -172,7 +176,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
     public ExchangeHandler getExchangeHandler() {
         return (ExchangeHandler) channel.getChannelHandler();
     }
-    
+
     public Object getAttribute(String key) {
         return channel.getAttribute(key);
     }

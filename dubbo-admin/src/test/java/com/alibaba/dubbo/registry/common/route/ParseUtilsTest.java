@@ -1,22 +1,22 @@
-/**
- * Project: dubbo.registry.server
- * 
- * File Created at Oct 19, 2010
- * $Id: ParseUtilsTest.java 181192 2012-06-21 05:05:47Z tony.chenl $
- * 
- * Copyright 1999-2100 Alibaba.com Corporation Limited.
- * All rights reserved.
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * This software is the confidential and proprietary information of
- * Alibaba Company. ("Confidential Information").  You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the license agreement you entered into
- * with Alibaba.com.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.alibaba.dubbo.registry.common.route;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.*;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,13 +27,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-import com.alibaba.dubbo.registry.common.route.ParseUtils;
-
-/**
- * @author william.liangf
- */
 public class ParseUtilsTest {
     @Test
     public void testInterpolateDot() throws Exception {
@@ -96,7 +93,7 @@ public class ParseUtilsTest {
         assertTrue(ParseUtils.isMatchGlobPattern(null, null));
         assertFalse(ParseUtils.isMatchGlobPattern("abc", null));
         assertFalse(ParseUtils.isMatchGlobPattern(null, "xxx"));
-        
+
         // empty string
         assertTrue(ParseUtils.isMatchGlobPattern("", ""));
         assertFalse(ParseUtils.isMatchGlobPattern("", "xxx"));
@@ -118,13 +115,13 @@ public class ParseUtilsTest {
         assertTrue(ParseUtils.isMatchGlobPattern("*abc123", "XXXabc123"));
         assertTrue(ParseUtils.isMatchGlobPattern("*abc123", "abc123abc123"));
         assertFalse(ParseUtils.isMatchGlobPattern("*abc123", "abc123abc333"));
-        
+
         assertTrue(ParseUtils.isMatchGlobPattern("abc123*", "abc123"));
         assertTrue(ParseUtils.isMatchGlobPattern("abc123*", "abc123YYY"));
         assertTrue(ParseUtils.isMatchGlobPattern("abc123*", "abc123abc123"));
         assertFalse(ParseUtils.isMatchGlobPattern("abc123*", "abc333abc123"));
-        
-        // 有两个星号，不支持，行为未定义
+
+        // It is not supported for two asterisks, undefined behavior
         assertFalse(ParseUtils.isMatchGlobPattern("*abc123*", "abc123abc123"));
         assertTrue(ParseUtils.isMatchGlobPattern("*abc123*", "*abc123abc123"));
         assertTrue(ParseUtils.isMatchGlobPattern("*abc123*", "*abc123XXX"));
@@ -134,19 +131,19 @@ public class ParseUtilsTest {
     public void testIsMatchGlobPatternsNeedInterpolate() throws Exception {
         Collection<String> patternsNeedInterpolate = new HashSet<String>();
         Map<String, String> interpolateParams = new HashMap<String, String>();
-        
+
         boolean match = ParseUtils.isMatchGlobPatternsNeedInterpolate(patternsNeedInterpolate, interpolateParams, "abc");
         assertFalse(match);
-        
+
         patternsNeedInterpolate.add("abc*$var1");
         patternsNeedInterpolate.add("123${var2}*");
-        
+
         interpolateParams.put("var1", "CAT");
         interpolateParams.put("var2", "DOG");
-        
+
         match = ParseUtils.isMatchGlobPatternsNeedInterpolate(patternsNeedInterpolate, interpolateParams, "abc");
         assertFalse(match);
-        
+
         match = ParseUtils.isMatchGlobPatternsNeedInterpolate(patternsNeedInterpolate, interpolateParams, "abcXXXCAT");
         assertTrue(match);
         match = ParseUtils.isMatchGlobPatternsNeedInterpolate(patternsNeedInterpolate, interpolateParams, "123DOGYYY");
@@ -186,7 +183,7 @@ public class ParseUtilsTest {
         assertFalse(ParseUtils.hasIntersection("Zhello*world", "hello*world"));
         assertFalse(ParseUtils.hasIntersection("hello*world", "hello*worldZ"));
     }
-    
+
     @Test
     public void testFilterByGlobPattern() throws Exception {
         Collection<String> values = new ArrayList<String>();
@@ -194,28 +191,28 @@ public class ParseUtilsTest {
         values.add("JQKxyz");
         values.add("abc123");
         values.add("abcLLL");
-        
+
         Set<String> filter = ParseUtils.filterByGlobPattern("abc*", values);
         Set<String> expected = new HashSet<String>();
         expected.add("abc123");
         expected.add("abcLLL");
-        
+
         assertEquals(expected, filter);
 
-        filter = ParseUtils.filterByGlobPattern((Collection<String>)null, values);
-        assertTrue(filter.isEmpty()); 
-        
+        filter = ParseUtils.filterByGlobPattern((Collection<String>) null, values);
+        assertTrue(filter.isEmpty());
+
         Collection<String> patterns = new ArrayList<String>();
         patterns.add("000000000");
         patterns.add("abc*");
         patterns.add("*xyz");
 
         filter = ParseUtils.filterByGlobPattern(patterns, values);
-        
+
         expected.add("JQKxyz");
         assertEquals(expected, filter);
     }
-    
+
     @Test
     public void testParseQueryNull() throws Exception {
         assertEquals(0, ParseUtils.parseQuery(null, null).size());
@@ -257,7 +254,7 @@ public class ParseUtilsTest {
 
     @Test
     public void testReplaceWeightNull() throws Exception {
-    	assertEquals("weight=1", ParseUtils.replaceParameter(null, "weight", "1"));
+        assertEquals("weight=1", ParseUtils.replaceParameter(null, "weight", "1"));
         assertEquals("weight=1", ParseUtils.replaceParameter("", "weight", "1"));
     }
 
@@ -276,29 +273,29 @@ public class ParseUtilsTest {
 
     @Test
     public void testReplaceMethods() throws Exception {
-    	assertEquals(
+        assertEquals(
                 "methods=aaa,bbb",
                 ParseUtils.replaceParameter(null, "methods", "aaa,bbb"));
-    	assertEquals(
+        assertEquals(
                 "methods=aaa,bbb",
                 ParseUtils.replaceParameter("", "methods", "aaa,bbb"));
-    	assertEquals(
+        assertEquals(
                 "version=1.0.0&application=morgan&weight=10&methods=aaa,bbb",
                 ParseUtils.replaceParameter("version=1.0.0&application=morgan&weight=10", "methods", "aaa,bbb"));
-    	assertEquals(
+        assertEquals(
                 "version=1.0.0&methods=ccc,ddd&application=morgan&weight=10",
                 ParseUtils.replaceParameter("version=1.0.0&methods=aaa,bbb&application=morgan&weight=10", "methods", "ccc,ddd"));
-    	assertEquals(
+        assertEquals(
                 "dubbo://172.22.3.91:20880/memberService?version=1.0.0&application=morgan&weight=10&methods=aaa,bbb",
                 ParseUtils.replaceParameter("dubbo://172.22.3.91:20880/memberService?version=1.0.0&application=morgan&weight=10", "methods", "aaa,bbb"));
-    	assertEquals(
+        assertEquals(
                 "dubbo://172.22.3.91:20880/memberService?version=1.0.0&methods=ccc,ddd&application=morgan&weight=10",
                 ParseUtils.replaceParameter("dubbo://172.22.3.91:20880/memberService?version=1.0.0&methods=aaa,bbb&application=morgan&weight=10", "methods", "ccc,ddd"));
-    	assertEquals(
+        assertEquals(
                 "dubbo://172.22.3.91:20880/memberService?version=1.0.0&methods=$ccc,$ddd&application=morgan&weight=10",
                 ParseUtils.replaceParameter("dubbo://172.22.3.91:20880/memberService?version=1.0.0&methods=$aaa,$bbb&application=morgan&weight=10", "methods", "$ccc,$ddd"));
     }
-    
+
     @Test
     public void test_appendParamToUri() throws Exception {
         String append = ParseUtils.appendParamToUri("dubbo://11.22.33.44/serviceName?k1=v1&k2=v2", "k3", "v3");

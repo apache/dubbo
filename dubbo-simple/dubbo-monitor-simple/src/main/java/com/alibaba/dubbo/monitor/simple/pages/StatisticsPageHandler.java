@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,6 +15,13 @@
  * limitations under the License.
  */
 package com.alibaba.dubbo.monitor.simple.pages;
+
+import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.utils.ConfigUtils;
+import com.alibaba.dubbo.container.page.Page;
+import com.alibaba.dubbo.container.page.PageHandler;
+import com.alibaba.dubbo.monitor.MonitorService;
+import com.alibaba.dubbo.monitor.simple.CountUtils;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -23,17 +31,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.container.page.Page;
-import com.alibaba.dubbo.container.page.PageHandler;
-import com.alibaba.dubbo.monitor.MonitorService;
-import com.alibaba.dubbo.monitor.simple.CountUtils;
-import com.alibaba.dubbo.monitor.simple.SimpleMonitorService;
-
 /**
  * StatisticsPageHandler
- * 
- * @author william.liangf
  */
 public class StatisticsPageHandler implements PageHandler {
 
@@ -48,7 +47,7 @@ public class StatisticsPageHandler implements PageHandler {
         }
         String expand = url.getParameter("expand");
         List<List<String>> rows = new ArrayList<List<String>>();
-        String directory = SimpleMonitorService.getInstance().getStatisticsDirectory();
+        String directory = ConfigUtils.getProperty("dubbo.statistics.directory");
         String filename = directory + "/" + date + "/" + service;
         File serviceDir = new File(filename);
         if (serviceDir.exists()) {
@@ -104,7 +103,7 @@ public class StatisticsPageHandler implements PageHandler {
             nav.append(expand);
         }
         nav.append("&date=' + this.value;}\" /> &gt; ");
-        if (! MonitorService.PROVIDER.equals(expand) && ! MonitorService.CONSUMER.equals(expand)) {
+        if (!MonitorService.PROVIDER.equals(expand) && !MonitorService.CONSUMER.equals(expand)) {
             nav.append("Summary");
         } else {
             nav.append("<a href=\"statistics.html?service=");
@@ -132,14 +131,14 @@ public class StatisticsPageHandler implements PageHandler {
             nav.append("&expand=consumer\">+Consumer</a>");
         }
         return new Page(nav.toString(), "Statistics (" + rows.size() + ")",
-                new String[] { "Method:", "Success", "Failure", "Avg Elapsed (ms)",
-                        "Max Elapsed (ms)", "Max Concurrent" }, rows);
+                new String[]{"Method:", "Success", "Failure", "Avg Elapsed (ms)",
+                        "Max Elapsed (ms)", "Max Concurrent"}, rows);
     }
-    
+
     private long[] newStatistics() {
         return new long[10];
     }
-    
+
     private void appendStatistics(File providerDir, long[] statistics) {
         statistics[0] += CountUtils.sum(new File(providerDir, MonitorService.CONSUMER + "." + MonitorService.SUCCESS));
         statistics[1] += CountUtils.sum(new File(providerDir, MonitorService.PROVIDER + "." + MonitorService.SUCCESS));
@@ -152,13 +151,13 @@ public class StatisticsPageHandler implements PageHandler {
         statistics[8] = Math.max(statistics[8], CountUtils.max(new File(providerDir, MonitorService.CONSUMER + "." + MonitorService.MAX_CONCURRENT)));
         statistics[9] = Math.max(statistics[9], CountUtils.max(new File(providerDir, MonitorService.PROVIDER + "." + MonitorService.MAX_CONCURRENT)));
     }
-    
+
     private List<String> toRow(String name, long[] statistics) {
         List<String> row = new ArrayList<String>();
         row.add(name);
         row.add(String.valueOf(statistics[0]) + " --&gt; " + String.valueOf(statistics[1]));
         row.add(String.valueOf(statistics[2]) + " --&gt; " + String.valueOf(statistics[3]));
-        row.add(String.valueOf(statistics[0] == 0 ? 0 : statistics[4] / statistics[0]) 
+        row.add(String.valueOf(statistics[0] == 0 ? 0 : statistics[4] / statistics[0])
                 + " --&gt; " + String.valueOf(statistics[1] == 0 ? 0 : statistics[5] / statistics[1]));
         row.add(String.valueOf(statistics[6]) + " --&gt; " + String.valueOf(statistics[7]));
         row.add(String.valueOf(statistics[8]) + " --&gt; " + String.valueOf(statistics[9]));

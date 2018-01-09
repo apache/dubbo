@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,22 +18,17 @@ package com.alibaba.dubbo.common.model.person;
 
 import java.io.Serializable;
 
-/**
- * 电话号码 
- * 
- * @author xk1430
- */
 public class Phone implements Serializable {
 
     private static final long serialVersionUID = 4399060521859707703L;
 
-    private String            country;
+    private String country;
 
-    private String            area;
+    private String area;
 
-    private String            number;
+    private String number;
 
-    private String            extensionNumber;
+    private String extensionNumber;
 
     public Phone() {
     }
@@ -44,36 +40,36 @@ public class Phone implements Serializable {
         this.extensionNumber = extensionNumber;
     }
 
-    public void setCountry(String country) {
-        this.country = country;
-    }
-
-    public void setArea(String area) {
-        this.area = area;
-    }
-
-    public void setNumber(String number) {
-        this.number = number;
-    }
-
-    public void setExtensionNumber(String extensionNumber) {
-        this.extensionNumber = extensionNumber;
-    }
-
     public String getCountry() {
         return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
     }
 
     public String getArea() {
         return area;
     }
 
+    public void setArea(String area) {
+        this.area = area;
+    }
+
     public String getNumber() {
         return number;
     }
 
+    public void setNumber(String number) {
+        this.number = number;
+    }
+
     public String getExtensionNumber() {
         return extensionNumber;
+    }
+
+    public void setExtensionNumber(String extensionNumber) {
+        this.extensionNumber = extensionNumber;
     }
 
     @Override
