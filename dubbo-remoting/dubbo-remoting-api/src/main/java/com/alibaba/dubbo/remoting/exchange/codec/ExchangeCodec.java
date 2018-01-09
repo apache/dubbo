@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -41,8 +42,8 @@ import java.io.InputStream;
 /**
  * ExchangeCodec.
  *
- * @author qianlei
- * @author william.liangf
+ *
+ *
  */
 public class ExchangeCodec extends TelnetCodec {
 
@@ -281,9 +282,9 @@ public class ExchangeCodec extends TelnetCodec {
             buffer.writeBytes(header); // write header.
             buffer.writerIndex(savedWriteIndex + HEADER_LENGTH + len);
         } catch (Throwable t) {
-            // 将buffer内容清空
+            // clear buffer
             buffer.writerIndex(savedWriteIndex);
-            // 发送失败信息给Consumer，否则Consumer只能等超时了
+            // send error message to Consumer, otherwise, Consumer will wait till timeout.
             if (!res.isEvent() && res.getStatus() != Response.BAD_RESPONSE) {
                 Response r = new Response(res.getId(), res.getVersion());
                 r.setStatus(Response.BAD_RESPONSE);
@@ -298,7 +299,7 @@ public class ExchangeCodec extends TelnetCodec {
                         logger.warn("Failed to send bad_response info back: " + t.getMessage() + ", cause: " + e.getMessage(), e);
                     }
                 } else {
-                    // FIXME 在Codec中打印出错日志？在IoHanndler的caught中统一处理？
+                    // FIXME log error message in Codec and handle in caught() of IoHanndler?
                     logger.warn("Fail to encode response: " + res + ", send bad_response info instead, cause: " + t.getMessage(), t);
                     try {
                         r.setErrorMessage("Failed to send response: " + res + ", cause: " + StringUtils.toString(t));
@@ -310,7 +311,7 @@ public class ExchangeCodec extends TelnetCodec {
                 }
             }
 
-            // 重新抛出收到的异常
+            // Rethrow exception
             if (t instanceof IOException) {
                 throw (IOException) t;
             } else if (t instanceof RuntimeException) {

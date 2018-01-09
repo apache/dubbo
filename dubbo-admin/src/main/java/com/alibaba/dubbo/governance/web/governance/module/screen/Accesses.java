@@ -1,9 +1,18 @@
 /*
- * Copyright 2011 Alibaba.com All right reserved. This software is the
- * confidential and proprietary information of Alibaba.com ("Confidential
- * Information"). You shall not disclose such Confidential Information and shall
- * use it only in accordance with the terms of the license agreement you entered
- * into with Alibaba.com.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.alibaba.dubbo.governance.web.governance.module.screen;
 
@@ -34,9 +43,6 @@ import java.util.regex.Pattern;
 /**
  * Providers. URI: /services/$service/accesses
  *
- * @author william.liangf
- * @author ding.lid
- * @author tony.chenl
  */
 public class Accesses extends Restful {
 
@@ -189,7 +195,6 @@ public class Accesses extends Restful {
     }
 
     /**
-     * 删除动作
      *
      * @throws ParseException
      */

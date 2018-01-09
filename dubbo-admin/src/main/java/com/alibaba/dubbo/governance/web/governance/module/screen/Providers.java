@@ -1,9 +1,18 @@
 /*
- * Copyright 2011 Alibaba.com All right reserved. This software is the
- * confidential and proprietary information of Alibaba.com ("Confidential
- * Information"). You shall not disclose such Confidential Information and shall
- * use it only in accordance with the terms of the license agreement you entered
- * into with Alibaba.com.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.alibaba.dubbo.governance.web.governance.module.screen;
 
@@ -31,35 +40,34 @@ import java.util.Set;
 /**
  * <p>Providers.</p>
  * URI: <br>
- * GET /providers 全部提供者列表<br>
- * GET /providers/add 新增提供者表单<br>
- * POST /providers 创建提供者<br>
- * GET /providers/$id 查看提供者详细<br>
- * GET /providers/$id/edit 编辑提供者表单<br>
- * POST /providers/$id 更新提供者<br>
- * GET /providers/$id/delete 删除提供者<br>
- * GET /providers/$id/tostatic 转为静态<br>
- * GET /providers/$id/todynamic 转为动态<br>
- * GET /providers/$id/enable 启用<br>
- * GET /providers/$id/disable 禁用<br>
- * GET /providers/$id/reconnect 重连<br>
- * GET /providers/$id/recover 恢复<br>
+ * GET /providers, show all providers<br>
+ * GET /providers/add, show web form for add a static provider<br>
+ * POST /provider/create, create a static provider, save form<br>
+ * GET /providers/$id, show provider details<br>
+ * GET /providers/$id/edit, web form for edit provider<br>
+ * POST /providers/$id, update provider, save form<br>
+ * GET /providers/$id/delete, delete a provider<br>
+ * GET /providers/$id/tostatic, transfer to static<br>
+ * GET /providers/$id/todynamic, transfer to dynamic<br>
+ * GET /providers/$id/enable, enable a provider<br>
+ * GET /providers/$id/disable, disable a provider<br>
+ * GET /providers/$id/reconnect, reconnect<br>
+ * GET /providers/$id/recover, recover<br>
  * <br>
- * GET /services/$service/providers 指定服务的提供者列表<br>
- * GET /services/$service/providers/add 新增提供者表单<br>
- * POST /services/$service/providers 创建提供者<br>
- * GET /services/$service/providers/$id 查看提供者详细<br>
- * GET /services/$service/providers/$id/edit 编辑提供者表单<br>
- * POST /services/$service/providers/$id 更新提供者<br>
- * GET /services/$service/providers/$id/delete 删除提供者<br>
- * GET /services/$service/providers/$id/tostatic 转为静态<br>
- * GET /services/$service/providers/$id/todynamic 转为动态<br>
- * GET /services/$service/providers/$id/enable 启用<br>
- * GET /services/$service/providers/$id/disable 禁用<br>
- * GET /services/$service/providers/$id/reconnect 重连<br>
- * GET /services/$service/providers/$id/recover 恢复<br>
+ * GET /services/$service/providers, show all provider of a specific service<br>
+ * GET /services/$service/providers/add, show web form for add a static provider<br>
+ * POST /services/$service/providers, save a static provider<br>
+ * GET /services/$service/providers/$id, show provider details<br>
+ * GET /services/$service/providers/$id/edit, show web form for edit provider<br>
+ * POST /services/$service/providers/$id, save changes of provider<br>
+ * GET /services/$service/providers/$id/delete, delete provider<br>
+ * GET /services/$service/providers/$id/tostatic, transfer to static<br>
+ * GET /services/$service/providers/$id/todynamic, transfer to dynamic<br>
+ * GET /services/$service/providers/$id/enable, enable<br>
+ * GET /services/$service/providers/$id/disable, diable<br>
+ * GET /services/$service/providers/$id/reconnect, reconnect<br>
+ * GET /services/$service/providers/$id/recover, recover<br>
  *
- * @author william.liangf
  */
 public class Providers extends Restful {
 
@@ -111,13 +119,13 @@ public class Providers extends Restful {
         context.put("providers", providers);
         context.put("serviceAppMap", getServiceAppMap(providers));
 
-        // 设置搜索结果到cookie中
+        // record search history to cookies
         setSearchHistroy(context, value);
     }
 
     /**
-     * @author WangXin
-     * 计算各个服务对应的应用列表，方便页面对"重复"的提示
+     *
+     * Calculate the application list corresponding to each service, to facilitate the "repeat" prompt on service page
      * @param providers app services
      */
     private Map<String, Set<String>> getServiceAppMap(List<Provider> providers) {
@@ -139,14 +147,14 @@ public class Providers extends Restful {
     }
 
     /**
-     * 设置search记录到cookie中，操作步骤：
-     * 检查加入的记录是否已经存在cookie中，如果存在，则更新列表次序；如果不存在，则插入到最前面
+     * Record search history to cookies, steps:
+     * Check whether the added record exists in the cookie, and if so, update the list order; if it does not exist, insert it to the front
      *
      * @param context
      * @param value
      */
     private void setSearchHistroy(Map<String, Object> context, String value) {
-        //分析已有的cookie
+        // Analyze existing cookies
         String separatorsB = "\\.\\.\\.\\.\\.\\.";
         String newCookiev = value;
         Cookie[] cookies = request.getCookies();
@@ -168,9 +176,9 @@ public class Providers extends Restful {
         }
 
         Cookie _cookie = new Cookie("HISTORY", newCookiev);
-        _cookie.setMaxAge(60 * 60 * 24 * 7); // 设置Cookie的存活时间为30分钟
+        _cookie.setMaxAge(60 * 60 * 24 * 7); // Set the cookie's lifetime to 30 minutes
         _cookie.setPath("/");
-        response.addCookie(_cookie); // 写入客户端硬盘
+        response.addCookie(_cookie); // Write to client hard disk
     }
 
     public void show(Long id, Map<String, Object> context) {
@@ -183,7 +191,7 @@ public class Providers extends Restful {
     }
 
     /**
-     * 装载新增服务页面，获取所有的服务名称
+     * Load new service page, get all the service name
      *
      * @param context
      */
@@ -227,7 +235,7 @@ public class Providers extends Restful {
                 }
             }
         }
-        provider.setDynamic(false); // 页面上添加的一定是静态的Provider
+        provider.setDynamic(false); // Provider add through web page must be static
         providerService.create(provider);
         return true;
     }

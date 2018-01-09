@@ -1,9 +1,18 @@
 /*
- * Copyright 2011 Alibaba.com All right reserved. This software is the
- * confidential and proprietary information of Alibaba.com ("Confidential
- * Information"). You shall not disclose such Confidential Information and shall
- * use it only in accordance with the terms of the license agreement you entered
- * into with Alibaba.com.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.alibaba.dubbo.governance.web.governance.module.screen;
 
@@ -36,7 +45,6 @@ import java.util.Set;
 /**
  * Consumers. URI: /services/$service/consumers
  *
- * @author william.liangf
  */
 public class Consumers extends Restful {
 
@@ -378,18 +386,18 @@ public class Consumers extends Restful {
                 }
             } else {
                 for (String consumerAddress : entry.getValue()) {
-                    if (matchPair.getUnmatches().size() > 0) { // 白名单优先
-                        matchPair.getMatches().remove(consumerAddress); // 去掉黑名单中相同数据
-                        if (allow) { // 如果允许访问
-                            matchPair.getUnmatches().add(consumerAddress); // 加入白名单
-                        } else { // 如果禁止访问
-                            matchPair.getUnmatches().remove(consumerAddress); // 从白名单中去除
+                    if (matchPair.getUnmatches().size() > 0) { // whitelist take effect
+                        matchPair.getMatches().remove(consumerAddress); // remove data in blacklist
+                        if (allow) { // if allowed
+                            matchPair.getUnmatches().add(consumerAddress); // add to whitelist
+                        } else { // if not allowed
+                            matchPair.getUnmatches().remove(consumerAddress); // remove from whitelist
                         }
-                    } else { // 黑名单生效
-                        if (allow) { // 如果允许访问
-                            matchPair.getMatches().remove(consumerAddress); // 从黑名单中去除
-                        } else { // 如果禁止访问
-                            matchPair.getMatches().add(consumerAddress); // 加入黑名单
+                    } else { // blacklist take effect
+                        if (allow) { // if allowed
+                            matchPair.getMatches().remove(consumerAddress); // remove from blacklist
+                        } else { // if not allowed
+                            matchPair.getMatches().add(consumerAddress); // add to blacklist
                         }
                     }
                 }

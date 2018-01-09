@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2012 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,8 +36,6 @@ import java.util.Set;
 
 /**
  * GenericServiceTest
- *
- * @author william.liangf
  */
 public class ValidationTest {
 
@@ -81,7 +80,7 @@ public class ValidationTest {
                     Assert.assertNotNull(violations);
                 }
 
-                //检查Save分组 save error
+                // verify save group, save error
                 try {
                     parameter = new ValidationParameter();
                     parameter.setName("liangfei");
@@ -96,7 +95,8 @@ public class ValidationTest {
                     Assert.assertNotNull(violations);
                 }
 
-                // relatedQuery error 不传id和email的值，触发Save和Update的检查异常
+                // relatedQuery error, no id and email is passed, will trigger validation exception for both Save
+                // and Update
                 try {
                     parameter = new ValidationParameter();
                     parameter.setName("liangfei");

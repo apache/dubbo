@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -43,7 +44,6 @@ import static org.junit.Assert.fail;
 /**
  * FailoverClusterInvokerTest
  *
- * @author liuchao
  */
 @SuppressWarnings("unchecked")
 public class FailoverClusterInvokerTest {
@@ -177,7 +177,8 @@ public class FailoverClusterInvokerTest {
     }
 
     /**
-     * 测试在调用重试过程中，directory列表变更，invoke重试时重新进行list选择
+     * When invokers in directory changes after a failed request but just before a retry effort,
+     * then we should reselect from the latest invokers before retry.
      */
     @Test
     public void testInvokerDestoryAndReList() {
@@ -195,7 +196,7 @@ public class FailoverClusterInvokerTest {
 
         Callable<Object> callable = new Callable<Object>() {
             public Object call() throws Exception {
-                //模拟invoker全部被destroy掉
+                //Simulation: all invokers are destroyed
                 for (Invoker<Demo> invoker : invokers) {
                     invoker.destroy();
                 }

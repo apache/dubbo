@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -43,16 +44,14 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
 /**
- * Dubbo使用的扩展点获取。<p>
+ * Load dubbo extensions
  * <ul>
- * <li>自动注入关联扩展点。</li>
- * <li>自动Wrap上扩展点的Wrap类。</li>
- * <li>缺省获得的的扩展点是一个Adaptive Instance。
+ * <li>auto inject dependency extension </li>
+ * <li>auto wrap extension in wrapper </li>
+ * <li>default extension is an adaptive instance</li>
  * </ul>
  *
- * @author william.liangf
- * @author ding.lid
- * @see <a href="http://java.sun.com/j2se/1.5.0/docs/guide/jar/jar.html#Service%20Provider">JDK5.0的自动发现机制实现</a>
+ * @see <a href="http://java.sun.com/j2se/1.5.0/docs/guide/jar/jar.html#Service%20Provider">Service Provider in Java 5</a>
  * @see com.alibaba.dubbo.common.extension.SPI
  * @see com.alibaba.dubbo.common.extension.Adaptive
  * @see com.alibaba.dubbo.common.extension.Activate
@@ -136,9 +135,7 @@ public class ExtensionLoader<T> {
     }
 
     /**
-     * This is equivalent to <pre>
-     *     getActivateExtension(url, key, null);
-     * </pre>
+     * This is equivalent to {@code getActivateExtension(url, key, null)}
      *
      * @param url url
      * @param key url parameter key which used to get extension point names
@@ -150,9 +147,7 @@ public class ExtensionLoader<T> {
     }
 
     /**
-     * This is equivalent to <pre>
-     *     getActivateExtension(url, values, null);
-     * </pre>
+     * This is equivalent to {@code getActivateExtension(url, values, null)}
      *
      * @param url    url
      * @param values extension point names
@@ -164,9 +159,7 @@ public class ExtensionLoader<T> {
     }
 
     /**
-     * This is equivalent to <pre>
-     *     getActivateExtension(url, url.getParameter(key).split(","), null);
-     * </pre>
+     * This is equivalent to {@code getActivateExtension(url, url.getParameter(key).split(","), null)}
      *
      * @param url   url
      * @param key   url parameter key which used to get extension point names
@@ -262,9 +255,10 @@ public class ExtensionLoader<T> {
     }
 
     /**
-     * 返回扩展点实例，如果没有指定的扩展点或是还没加载（即实例化）则返回<code>null</code>。注意：此方法不会触发扩展点的加载。
-     * <p/>
-     * 一般应该调用{@link #getExtension(String)}方法获得扩展，这个方法会触发扩展点加载。
+     * Get extension's instance. Return <code>null</code> if extension is not found or is not initialized. Pls. note
+     * that this method will not trigger extension load.
+     * <p>
+     * In order to trigger extension load, call {@link #getExtension(String)} instead.
      *
      * @see #getExtension(String)
      */
@@ -281,9 +275,9 @@ public class ExtensionLoader<T> {
     }
 
     /**
-     * 返回已经加载的扩展点的名字。
-     * <p/>
-     * 一般应该调用{@link #getSupportedExtensions()}方法获得扩展，这个方法会返回所有的扩展点。
+     * Return the list of extensions which are already loaded.
+     * <p>
+     * Usually {@link #getSupportedExtensions()} should be called in order to get all extensions.
      *
      * @see #getSupportedExtensions()
      */
@@ -292,10 +286,8 @@ public class ExtensionLoader<T> {
     }
 
     /**
-     * 返回指定名字的扩展。如果指定名字的扩展不存在，则抛异常 {@link IllegalStateException}.
-     *
-     * @param name
-     * @return
+     * Find the extension with the given name. If the specified name is not found, then {@link IllegalStateException}
+     * will be thrown.
      */
     @SuppressWarnings("unchecked")
     public T getExtension(String name) {
@@ -323,7 +315,7 @@ public class ExtensionLoader<T> {
     }
 
     /**
-     * 返回缺省的扩展，如果没有设置则返回<code>null</code>。
+     * Return default extension, return <code>null</code> if it's not configured.
      */
     public T getDefaultExtension() {
         getExtensionClasses();
@@ -350,7 +342,7 @@ public class ExtensionLoader<T> {
     }
 
     /**
-     * 返回缺省的扩展点名，如果没有设置缺省则返回<code>null</code>。
+     * Return default extension name, return <code>null</code> if not configured.
      */
     public String getDefaultExtensionName() {
         getExtensionClasses();
@@ -358,11 +350,11 @@ public class ExtensionLoader<T> {
     }
 
     /**
-     * 编程方式添加新扩展点。
+     * Register new extension via API
      *
-     * @param name  扩展点名
-     * @param clazz 扩展点类
-     * @throws IllegalStateException 要添加扩展点名已经存在。
+     * @param name  extension name
+     * @param clazz extension class
+     * @throws IllegalStateException when extension with the same name has already been registered.
      */
     public void addExtension(String name, Class<?> clazz) {
         getExtensionClasses(); // load classes
@@ -397,12 +389,12 @@ public class ExtensionLoader<T> {
     }
 
     /**
-     * 编程方式添加替换已有扩展点。
+     * Replace the existing extension via API
      *
-     * @param name  扩展点名
-     * @param clazz 扩展点类
-     * @throws IllegalStateException 要添加扩展点名已经存在。
-     * @deprecated 不推荐应用使用，一般只在测试时可以使用
+     * @param name  extension name
+     * @param clazz extension class
+     * @throws IllegalStateException when extension to be placed doesn't exist
+     * @deprecated not recommended any longer, and use only when test
      */
     @Deprecated
     public void replaceExtension(String name, Class<?> clazz) {
@@ -567,7 +559,7 @@ public class ExtensionLoader<T> {
         return classes;
     }
 
-    // 此方法已经getExtensionClasses方法同步过。
+    // synchronized in getExtensionClasses
     private Map<String, Class<?>> loadExtensionClasses() {
         final SPI defaultAnnotation = type.getAnnotation(SPI.class);
         if (defaultAnnotation != null) {
@@ -715,7 +707,7 @@ public class ExtensionLoader<T> {
         try {
             return injectExtension((T) getAdaptiveExtensionClass().newInstance());
         } catch (Exception e) {
-            throw new IllegalStateException("Can not create adaptive extenstion " + type + ", cause: " + e.getMessage(), e);
+            throw new IllegalStateException("Can not create adaptive extension " + type + ", cause: " + e.getMessage(), e);
         }
     }
 
@@ -744,7 +736,7 @@ public class ExtensionLoader<T> {
                 break;
             }
         }
-        // 完全没有Adaptive方法，则不需要生成Adaptive类
+        // no need to generate adaptive class since there's no adaptive method found.
         if (!hasAdaptiveAnnotation)
             throw new IllegalStateException("No adaptive method on extension " + type.getName() + ", refuse to create the adaptive class!");
 
@@ -771,7 +763,7 @@ public class ExtensionLoader<T> {
                         break;
                     }
                 }
-                // 有类型为URL的参数
+                // found parameter in URL type
                 if (urlTypeIndex != -1) {
                     // Null Point check
                     String s = String.format("\nif (arg%d == null) throw new IllegalArgumentException(\"url == null\");",
@@ -781,11 +773,11 @@ public class ExtensionLoader<T> {
                     s = String.format("\n%s url = arg%d;", URL.class.getName(), urlTypeIndex);
                     code.append(s);
                 }
-                // 参数没有URL类型
+                // did not find parameter in URL type
                 else {
                     String attribMethod = null;
 
-                    // 找到参数的URL属性
+                    // find URL getter method
                     LBL_PTS:
                     for (int i = 0; i < pts.length; ++i) {
                         Method[] ms = pts[i].getMethods();
@@ -803,7 +795,7 @@ public class ExtensionLoader<T> {
                         }
                     }
                     if (attribMethod == null) {
-                        throw new IllegalStateException("fail to create adative class for interface " + type.getName()
+                        throw new IllegalStateException("fail to create adaptive class for interface " + type.getName()
                                 + ": not found url parameter or url attribute in parameters of method " + method.getName());
                     }
 
@@ -820,7 +812,7 @@ public class ExtensionLoader<T> {
                 }
 
                 String[] value = adaptiveAnnotation.value();
-                // 没有设置Key，则使用“扩展点接口名的点分隔 作为Key
+                // value is not set, use the value generated from class name as the key
                 if (value.length == 0) {
                     char[] charArray = type.getSimpleName().toCharArray();
                     StringBuilder sb = new StringBuilder(128);

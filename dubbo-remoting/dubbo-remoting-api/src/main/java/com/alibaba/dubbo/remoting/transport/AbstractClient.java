@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -44,9 +45,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * AbstractClient
- *
- * @author qian.lei
- * @author chao.liuc
  */
 public abstract class AbstractClient extends AbstractEndpoint implements Client {
 
@@ -57,14 +55,14 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     private final Lock connectLock = new ReentrantLock();
     private final boolean send_reconnect;
     private final AtomicInteger reconnect_count = new AtomicInteger(0);
-    //重连的error日志是否已经被调用过.
+    // Reconnection error log has been called before?
     private final AtomicBoolean reconnect_error_log_flag = new AtomicBoolean(false);
-    //重连warning的间隔.(waring多少次之后，warning一次) //for test
+    // reconnect warning period. Reconnect warning interval (log warning after how many times) //for test
     private final int reconnect_warning_period;
     private final long shutdown_timeout;
     protected volatile ExecutorService executor;
     private volatile ScheduledFuture<?> reconnectExecutorFuture = null;
-    //the last successed connected time
+    // the last successed connected time
     private long lastConnectedTime = System.currentTimeMillis();
 
 
@@ -75,7 +73,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
 
         shutdown_timeout = url.getParameter(Constants.SHUTDOWN_TIMEOUT_KEY, Constants.DEFAULT_SHUTDOWN_TIMEOUT);
 
-        //默认重连间隔2s，1800表示1小时warning一次.
+        // The default reconnection interval is 2s, 1800 means warning interval is 1 hour.
         reconnect_warning_period = url.getParameter("reconnect.waring.period", 1800);
 
         try {
@@ -251,7 +249,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
             connect();
         }
         Channel channel = getChannel();
-        //TODO getChannel返回的状态是否包含null需要改进
+        //TODO Can the value returned by getChannel() be null? need improvement.
         if (channel == null || !channel.isConnected()) {
             throw new RemotingException(this, "message can not send, because channel is closed . url:" + getUrl());
         }
