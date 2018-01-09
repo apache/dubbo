@@ -5,7 +5,15 @@ jdk:
     - oraclejdk8
     - openjdk7
 
+before_install:
+  - mkdir -p $HOME/bin
+  - curl -fsSL https://testspace-client.s3.amazonaws.com/testspace-linux.tgz | tar -zxvf- -C $HOME/bin
+  - testspace config url $TS_ORG.testspace.com
+  
 script: "mvn cobertura:cobertura"
 
+after_script:
+  - testspace [${TRAVIS_JDK_VERSION}]**/target/surefire-reports/TEST-*.xml{.}
+ 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
