@@ -89,7 +89,7 @@ public class QosProtocolWrapper implements Protocol {
             server.start();
 
         } catch (Throwable throwable) {
-            throw new RpcException("fail to start qos server", throwable);
+            //throw new RpcException("fail to start qos server", throwable);
         }
     }
 }
