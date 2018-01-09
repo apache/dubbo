@@ -16,7 +16,7 @@
  */
 package com.alibaba.dubbo.qos.common;
 
-public interface Constants {
+public interface QosConstants {
 
     int DEFAULT_PORT = 22222;
 

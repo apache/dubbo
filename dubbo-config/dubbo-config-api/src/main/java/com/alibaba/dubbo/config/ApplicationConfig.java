@@ -71,11 +71,11 @@ public class ApplicationConfig extends AbstractConfig {
     // directory for saving thread dump
     private String dumpDirectory;
 
-    private Boolean qosEnable = true;
+    private Boolean qosEnable;
 
-    private Integer qosPort = 22222;
+    private Integer qosPort;
 
-    private Boolean qosAcceptForeignIp = true;
+    private Boolean qosAcceptForeignIp;
 
     // customized parameters
     private Map<String, String> parameters;
