@@ -7,7 +7,7 @@ import java.util.concurrent.CountDownLatch;
 
 public class SerializerFactoryTest {
 
-    private static final int THREADS = 10;
+    private static final int THREADS = 50;
 
     @Test
     public void getSerializer() throws Exception {
