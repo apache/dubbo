@@ -94,7 +94,7 @@ limitations under the License.
         <dependencies>
             <dependency>
                 <groupId>com.alibaba</groupId>
-                <artifactId>dubbo-dependencies</artifactId>
+                <artifactId>dubbo-dependencies-bom</artifactId>
                 <version>2.6.0</version>
                 <type>pom</type>
                 <scope>import</scope>
