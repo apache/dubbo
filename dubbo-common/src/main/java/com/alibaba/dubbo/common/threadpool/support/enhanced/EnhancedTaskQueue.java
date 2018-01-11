@@ -38,23 +38,6 @@ public class EnhancedTaskQueue<R extends Runnable> extends LinkedBlockingQueue<R
 
         //currentPoolThreadSize >= max
         return super.offer(runnable);
-
-//        int currentPoolThreadSize = executor.getPoolSize();
-//        //如果线程池里的线程数量已经到达最大,将任务添加到队列中
-//        if (currentPoolThreadSize == executor.getMaximumPoolSize()) {
-//            return super.offer(runnable);
-//        }
-//        //说明有空闲的线程,这个时候无需创建core线程之外的线程,而是把任务直接丢到队列里即可
-//        if (executor.getSubmittedTaskCount() < currentPoolThreadSize) {
-//            return super.offer(runnable);
-//        }
-//
-//        //如果线程池里的线程数量还没有到达最大,直接创建线程,而不是把任务丢到队列里面
-//        if (currentPoolThreadSize < executor.getMaximumPoolSize()) {
-//            return false;
-//        }
-//
-//        return super.offer(runnable);
     }
 
     /**
