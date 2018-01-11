@@ -58,7 +58,7 @@ public class MulticastExchangeGroup extends AbstractExchangeGroup {
                     while (true) {
                         try {
                             mutilcastSocket.receive(recv);
-                            MulticastExchangeGroup.this.receive(new String(recv.getData()).trim(), (InetSocketAddress) recv.getSocketAddress());
+                            MulticastExchangeGroup.this.receive(new String(recv.getData()).trim());
                         } catch (Exception e) {
                             logger.error(e.getMessage(), e);
                         }
@@ -93,7 +93,7 @@ public class MulticastExchangeGroup extends AbstractExchangeGroup {
         }
     }
 
-    private void receive(String msg, InetSocketAddress remoteAddress) throws RemotingException {
+    private void receive(String msg) throws RemotingException {
         if (msg.startsWith(JOIN)) {
             String url = msg.substring(JOIN.length()).trim();
             connect(URL.valueOf(url));

@@ -439,10 +439,10 @@ public class ProviderServiceImpl extends AbstractService implements ProviderServ
     }
 
     public Provider findByServiceAndAddress(String service, String address) {
-        return SyncUtils.url2Provider(findProviderUrl(service, address));
+        return SyncUtils.url2Provider(findProviderUrl(address));
     }
 
-    private Pair<Long, URL> findProviderUrl(String service, String address) {
+    private Pair<Long, URL> findProviderUrl(String address) {
         Map<String, String> filter = new HashMap<String, String>();
         filter.put(Constants.CATEGORY_KEY, Constants.PROVIDERS_CATEGORY);
         filter.put(SyncUtils.ADDRESS_FILTER_KEY, address);
