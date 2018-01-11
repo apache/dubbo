@@ -38,8 +38,6 @@
         <dependency>
             <groupId>org.apache.bsf</groupId>
             <artifactId>bsf-api</artifactId>
-            <scope>provided</scope>
-            <optional>true</optional>
         </dependency>
     </dependencies>
 </project>

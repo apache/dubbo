@@ -35,12 +35,4 @@ limitations under the License.
         <skip_maven_deploy>true</skip_maven_deploy>
     </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>3.8.1</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
 </project>

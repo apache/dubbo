@@ -52,6 +52,7 @@ limitations under the License.
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>hessian-lite</artifactId>
+            <version>3.2.1-fixed-2</version>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
@@ -77,6 +78,7 @@ limitations under the License.
         <dependency>
             <groupId>cglib</groupId>
             <artifactId>cglib-nodep</artifactId>
+            <version>${cglib_version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
