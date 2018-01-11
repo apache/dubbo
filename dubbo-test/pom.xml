@@ -20,7 +20,7 @@ limitations under the License.
     <parent>
         <groupId>com.alibaba</groupId>
         <artifactId>dubbo-parent</artifactId>
-        <version>2.6.0</version>
+        <version>2.6.1</version>
     </parent>
     <artifactId>dubbo-test</artifactId>
     <packaging>pom</packaging>
@@ -164,10 +164,6 @@ limitations under the License.
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>dubbo-container-spring</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>dubbo-container-jetty</artifactId>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
