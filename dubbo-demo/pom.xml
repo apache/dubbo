@@ -34,4 +34,17 @@ limitations under the License.
         <module>dubbo-demo-provider</module>
         <module>dubbo-demo-consumer</module>
     </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>dubbo-bom</artifactId>
+                <version>${project.parent.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
 </project>

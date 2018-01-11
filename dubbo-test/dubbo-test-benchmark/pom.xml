@@ -29,13 +29,7 @@ limitations under the License.
     <properties>
         <skip_maven_deploy>true</skip_maven_deploy>
     </properties>
-    <dependencies>
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>dubbo</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-    </dependencies>
+
     <build>
         <plugins>
             <plugin>
