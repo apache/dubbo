@@ -53,6 +53,8 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
     public static final byte RESPONSE_WITH_EXCEPTION = 0;
     public static final byte RESPONSE_VALUE = 1;
     public static final byte RESPONSE_NULL_VALUE = 2;
+    public static final byte RESPONSE_ATTACHMENTS_NO_EXIST = 3;
+    public static final byte RESPONSE_ATTACHMENTS_EXIST = 4;
     public static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
     public static final Class<?>[] EMPTY_CLASS_ARRAY = new Class<?>[0];
     private static final Logger log = LoggerFactory.getLogger(DubboCodec.class);
@@ -193,6 +195,13 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
         } else {
             out.writeByte(RESPONSE_WITH_EXCEPTION);
             out.writeObject(th);
+        }
+        if (result.getAttachments() != null
+        		&& result.getAttachments().size() > 0) {
+        	out.writeByte(RESPONSE_ATTACHMENTS_EXIST);
+        	out.writeObject(result.getAttachments());
+        } else {
+        	out.writeByte(RESPONSE_ATTACHMENTS_NO_EXIST);
         }
     }
 }

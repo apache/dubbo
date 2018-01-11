@@ -16,6 +16,12 @@
  */
 package com.alibaba.dubbo.rpc.protocol.dubbo;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.reflect.Type;
+import java.util.HashMap;
+
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.serialize.ObjectInput;
@@ -29,11 +35,6 @@ import com.alibaba.dubbo.remoting.transport.CodecSupport;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.support.RpcUtils;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.reflect.Type;
 
 public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable {
 
@@ -96,6 +97,24 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
                 break;
             default:
                 throw new IOException("Unknown result flag, expect '0' '1' '2', get " + flag);
+        }
+        byte attachmentFlag = in.readByte();
+        switch (attachmentFlag) {
+        	case DubboCodec.RESPONSE_ATTACHMENTS_NO_EXIST:
+        		break;
+        	case DubboCodec.RESPONSE_ATTACHMENTS_EXIST:
+        		try {
+        			HashMap<String, String> attachments = in.readObject(HashMap.class);
+        			if(attachments != null 
+        					&& attachments.size() > 0){
+        				this.getAttachments().putAll(attachments);
+        			}
+        		} catch (ClassNotFoundException e) {
+        			throw new IOException(StringUtils.toString("Read response data failed.", e));
+        		}
+        		break;
+        	default:
+        		throw new IOException("Unknown result attachments flag, expect '3' '4', get " + attachmentFlag);
         }
         return this;
     }
