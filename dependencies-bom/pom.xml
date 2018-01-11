@@ -8,11 +8,11 @@
         <groupId>org.sonatype.oss</groupId>
         <artifactId>oss-parent</artifactId>
         <version>7</version>
-        <relativePath/>
+        <relativePath />
     </parent>
 
     <groupId>com.alibaba</groupId>
-    <artifactId>dubbo-dependencies</artifactId>
+    <artifactId>dubbo-dependencies-bom</artifactId>
     <version>2.6.0</version>
     <packaging>pom</packaging>
 
