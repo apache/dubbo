@@ -121,12 +121,12 @@ limitations under the License.
             <version>${jmockit_version}</version>
             <scope>test</scope>
         </dependency>
-        <!--<dependency>-->
-        <!--<groupId>cglib</groupId>-->
-        <!--<artifactId>cglib-nodep</artifactId>-->
-        <!--<version>${cglib_version}</version>-->
-        <!--<scope>test</scope>-->
-        <!--</dependency>-->
+        <dependency>
+            <groupId>cglib</groupId>
+            <artifactId>cglib-nodep</artifactId>
+            <version>${cglib_version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <profiles>
@@ -206,9 +206,9 @@ limitations under the License.
                         <goals>
                             <goal>jar</goal>
                         </goals>
-                        <configuration>
-                            <additionalparam>-Xdoclint:none</additionalparam>
-                        </configuration>
+                        <!--<configuration>-->
+                        <!--<additionalparam>-Xdoclint:none</additionalparam>-->
+                        <!--</configuration>-->
                     </execution>
                 </executions>
                 <configuration>
@@ -351,24 +351,24 @@ limitations under the License.
                     <artifactId>maven-paxexam-plugin</artifactId>
                     <version>1.2.4</version>
                 </plugin>
-                <plugin>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.0.2</version>
-                    <executions>
-                        <execution>
-                            <id>default-jar</id>
-                            <configuration>
-                                <archive>
-                                    <manifest>
-                                        <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                                    </manifest>
-                                    <index>true</index>
-                                    <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
-                                </archive>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
+                <!--<plugin>-->
+                <!--<artifactId>maven-jar-plugin</artifactId>-->
+                <!--<version>3.0.2</version>-->
+                <!--<executions>-->
+                <!--<execution>-->
+                <!--<id>default-jar</id>-->
+                <!--<configuration>-->
+                <!--<archive>-->
+                <!--<manifest>-->
+                <!--<addDefaultImplementationEntries>true</addDefaultImplementationEntries>-->
+                <!--</manifest>-->
+                <!--<index>true</index>-->
+                <!--<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>-->
+                <!--</archive>-->
+                <!--</configuration>-->
+                <!--</execution>-->
+                <!--</executions>-->
+                <!--</plugin>-->
                 <plugin>
                     <artifactId>maven-dependency-plugin</artifactId>
                     <version>2.10</version>

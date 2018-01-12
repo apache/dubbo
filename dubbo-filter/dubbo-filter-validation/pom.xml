@@ -38,7 +38,6 @@ limitations under the License.
         <dependency>
             <groupId>javax.validation</groupId>
             <artifactId>validation-api</artifactId>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>
