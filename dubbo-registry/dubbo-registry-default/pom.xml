@@ -58,7 +58,6 @@
             <groupId>org.apache.bsf</groupId>
             <artifactId>bsf-api</artifactId>
             <scope>test</scope>
-            <optional>true</optional>
         </dependency>
     </dependencies>
 </project>

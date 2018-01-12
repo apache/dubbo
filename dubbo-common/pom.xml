@@ -39,7 +39,6 @@ limitations under the License.
         <dependency>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>log4j</groupId>
@@ -73,13 +72,6 @@ limitations under the License.
         <dependency>
             <groupId>org.jvnet.sorcerer</groupId>
             <artifactId>sorcerer-javac</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>cglib</groupId>
-            <artifactId>cglib-nodep</artifactId>
-            <version>${cglib_version}</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
