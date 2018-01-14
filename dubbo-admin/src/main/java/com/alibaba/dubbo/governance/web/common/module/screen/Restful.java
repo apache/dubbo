@@ -1,9 +1,18 @@
 /*
- * Copyright 2011 Alibaba.com All right reserved. This software is the
- * confidential and proprietary information of Alibaba.com ("Confidential
- * Information"). You shall not disclose such Confidential Information and shall
- * use it only in accordance with the terms of the license agreement you entered
- * into with Alibaba.com.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.alibaba.dubbo.governance.web.common.module.screen;
 
@@ -14,6 +23,7 @@ import com.alibaba.dubbo.governance.biz.common.i18n.MessageResourceService;
 import com.alibaba.dubbo.governance.web.common.pulltool.RootContextPath;
 import com.alibaba.dubbo.governance.web.util.WebConstants;
 import com.alibaba.dubbo.registry.common.domain.User;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.reflect.Array;
@@ -26,14 +36,13 @@ import java.util.regex.Pattern;
 /**
  * BaseScreen
  *
- * @author william.liangf
  */
 public abstract class Restful {
 
     protected static final Logger logger = LoggerFactory.getLogger(Restful.class);
 
     protected static final Pattern SPACE_SPLIT_PATTERN = Pattern.compile("\\s+");
-    //FIXME 把这些辅助方法提取出去
+    //FIXME, to extract these auxiliary methods
     protected String role = null;
     protected String operator = null;
     protected User currentUser = null;
@@ -93,7 +102,7 @@ public abstract class Restful {
         String contextPath = (String) context.get("request.contextPath");
         context.put("rootContextPath", new RootContextPath(contextPath));
 
-        // 分析Method
+        // Analyze Method
         if (method == null || method.length() == 0) {
             String id = (String) context.get("id");
             if (id == null || id.length() == 0) {
@@ -107,9 +116,9 @@ public abstract class Restful {
                 method = "create";
             }
         } else if ("show".equals(method)) {
-            if ("put".equalsIgnoreCase(httpMethod) || "post".equalsIgnoreCase(httpMethod)) { // 因表单不能提交PUT请求，用POST代替
+            if ("put".equalsIgnoreCase(httpMethod) || "post".equalsIgnoreCase(httpMethod)) { // Instead of submitting a PUT request with a form, use POST instead
                 method = "update";
-            } else if ("delete".equalsIgnoreCase(httpMethod)) { // 因表单不能提交DELETE请求，用参数代替
+            } else if ("delete".equalsIgnoreCase(httpMethod)) { // Instead of submitting a PUT request with a form, use POST instead
                 method = "delete";
             }
         }

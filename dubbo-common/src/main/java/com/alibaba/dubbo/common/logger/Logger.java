@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,154 +17,154 @@
 package com.alibaba.dubbo.common.logger;
 
 /**
- * 日志接口 <p/> 声明：引用自commons-logging
- *
- * @author william.liangf
+ * Logger interface
+ * <p>
+ * This interface is referred from commons-logging
  */
 public interface Logger {
 
     /**
-     * 输出跟踪信息
+     * Logs a message with trace log level.
      *
-     * @param msg 信息内容
+     * @param msg log this message
      */
     public void trace(String msg);
 
     /**
-     * 输出跟踪信息
+     * Logs an error with trace log level.
      *
-     * @param e 异常信息
+     * @param e log this cause
      */
     public void trace(Throwable e);
 
     /**
-     * 输出跟踪信息
+     * Logs an error with trace log level.
      *
-     * @param msg 信息内容
-     * @param e   异常信息
+     * @param msg log this message
+     * @param e   log this cause
      */
     public void trace(String msg, Throwable e);
 
     /**
-     * 输出调试信息
+     * Logs a message with debug log level.
      *
-     * @param msg 信息内容
+     * @param msg log this message
      */
     public void debug(String msg);
 
     /**
-     * 输出调试信息
+     * Logs an error with debug log level.
      *
-     * @param e 异常信息
+     * @param e log this cause
      */
     public void debug(Throwable e);
 
     /**
-     * 输出调试信息
+     * Logs an error with debug log level.
      *
-     * @param msg 信息内容
-     * @param e   异常信息
+     * @param msg log this message
+     * @param e   log this cause
      */
     public void debug(String msg, Throwable e);
 
     /**
-     * 输出普通信息
+     * Logs a message with info log level.
      *
-     * @param msg 信息内容
+     * @param msg log this message
      */
     public void info(String msg);
 
     /**
-     * 输出普通信息
+     * Logs an error with info log level.
      *
-     * @param e 异常信息
+     * @param e log this cause
      */
     public void info(Throwable e);
 
     /**
-     * 输出普通信息
+     * Logs an error with info log level.
      *
-     * @param msg 信息内容
-     * @param e   异常信息
+     * @param msg log this message
+     * @param e   log this cause
      */
     public void info(String msg, Throwable e);
 
     /**
-     * 输出警告信息
+     * Logs a message with warn log level.
      *
-     * @param msg 信息内容
+     * @param msg log this message
      */
     public void warn(String msg);
 
     /**
-     * 输出警告信息
+     * Logs a message with warn log level.
      *
-     * @param e 异常信息
+     * @param e log this message
      */
     public void warn(Throwable e);
 
     /**
-     * 输出警告信息
+     * Logs a message with warn log level.
      *
-     * @param msg 信息内容
-     * @param e   异常信息
+     * @param msg log this message
+     * @param e   log this cause
      */
     public void warn(String msg, Throwable e);
 
     /**
-     * 输出错误信息
+     * Logs a message with error log level.
      *
-     * @param msg 信息内容
+     * @param msg log this message
      */
     public void error(String msg);
 
     /**
-     * 输出错误信息
+     * Logs an error with error log level.
      *
-     * @param e 异常信息
+     * @param e log this cause
      */
     public void error(Throwable e);
 
     /**
-     * 输出错误信息
+     * Logs an error with error log level.
      *
-     * @param msg 信息内容
-     * @param e   异常信息
+     * @param msg log this message
+     * @param e   log this cause
      */
     public void error(String msg, Throwable e);
 
     /**
-     * 跟踪信息是否开启
+     * Is trace logging currently enabled?
      *
-     * @return 是否开启
+     * @return true if trace is enabled
      */
     public boolean isTraceEnabled();
 
     /**
-     * 调试信息是否开启
+     * Is debug logging currently enabled?
      *
-     * @return 是否开启
+     * @return true if debug is enabled
      */
     public boolean isDebugEnabled();
 
     /**
-     * 普通信息是否开启
+     * Is info logging currently enabled?
      *
-     * @return 是否开启
+     * @return true if info is enabled
      */
     public boolean isInfoEnabled();
 
     /**
-     * 警告信息是否开启
+     * Is warn logging currently enabled?
      *
-     * @return 是否开启
+     * @return true if warn is enabled
      */
     public boolean isWarnEnabled();
 
     /**
-     * 错误信息是否开启
+     * Is error logging currently enabled?
      *
-     * @return 是否开启
+     * @return true if error is enabled
      */
     public boolean isErrorEnabled();
 

@@ -1,17 +1,18 @@
-/**
- * Project: dubbo.registry.client-1.1.0-SNAPSHOT
- * <p>
- * File Created at 2010-4-22
- * $Id: RouteUtils.java 181192 2012-06-21 05:05:47Z tony.chenl $
- * <p>
- * Copyright 2008 Alibaba.com Croporation Limited.
- * All rights reserved.
- * <p>
- * This software is the confidential and proprietary information of
- * Alibaba Company. ("Confidential Information").  You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the license agreement you entered into
- * with Alibaba.com.
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.alibaba.dubbo.registry.common.route;
 
@@ -30,9 +31,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * RouteParser 路由规则解析。
+ * RouteParser route rule parse tool。
  *
- * @author ding.lid
  */
 public class RouteUtils {
 
@@ -99,16 +99,16 @@ public class RouteUtils {
     }
 
     /**
-     * @param serviceName 服务名，如{@code com.alibaba.morgan.MemberService}
-     * @param consumerAddress 消费者地址，如{@code 192.168.1.3:54333}
-     * @param consumerQueryUrl 订阅参数，如 <code>aplication=nasdaq&dubbo=2.0.3&methods=updateItems,validateNew&revision=1.7.0</code>
-     * @param serviceUrls 提供者
-     * @param routes 全部路由
-     * @param clusters 全部的集群
-     * @return 返回路由结果， Map<url-body, url-params>
+     * @param serviceName e.g. {@code com.alibaba.morgan.MemberService}
+     * @param consumerAddress e.g. {@code 192.168.1.3:54333}
+     * @param consumerQueryUrl metadata of subscribe url, e.g. <code>aplication=nasdaq&dubbo=2.0.3&methods=updateItems,validateNew&revision=1.7.0</code>
+     * @param serviceUrls providers
+     * @param routes all route rules
+     * @param clusters all clusters
+     * @return route result, Map<url-body, url-params>
      */
-    // FIXME clusters和routes的合并，可以在clusters或routes变化时预先做
-    // FIXME 从Util方法中分离出Cache的操作
+    // FIXME The combination of clusters and routes can be done in advance when clusters or routes changes
+    // FIXME Separating the operation of Cache from the Util method
     public static Map<String, String> route(String serviceName, String consumerAddress, String consumerQueryUrl, Map<String, String> serviceUrls,
                                             List<Route> routes, Map<String, List<String>> clusters, List<Route> routed) {
         if (serviceUrls == null || serviceUrls.size() == 0) {
@@ -150,19 +150,19 @@ public class RouteUtils {
 
         Map<String, Set<String>> url2Methods = new HashMap<String, Set<String>>();
 
-        // consumer可以通过consumer.methods Key指定需要的方法
+        // Consumer can specify the required methods through the consumer.methods Key
         String methodsString = consumerSample.get("consumer.methods");
         String[] methods = methodsString == null || methodsString.length() == 0 ? new String[]{Route.ALL_METHOD} : methodsString.split(ParseUtils.METHOD_SPLIT);
         for (String method : methods) {
             consumerSample.put("method", method);
             // NOTE: 
-            // <*方法>只配置 <no method key> 
-            // method1方法匹配 <no method key> 和 <method = method1>, 此时要把<no method key>的Route的优先级降低即可
+            // <*method>only configure <no method key>
+            // if method1 matches <no method key> and <method = method1>, we should reduce the priority of <no method key>.
             if (routes != null && routes.size() > 0) {
                 for (Route route : routes) {
                     if (isSerivceNameMatched(route.getService(), serviceName)) {
                         RouteRule rule = rules.get(route.getId());
-                        // 当满足when条件时
+                        // matches When Condition
                         if (rule != null && RouteRuleUtils.isMatchCondition(
                                 rule.getWhenCondition(), consumerSample, consumerSample)) {
                             if (routed != null && !routed.contains(route)) {
@@ -171,7 +171,7 @@ public class RouteUtils {
                             Map<String, RouteRule.MatchPair> then = rule.getThenCondition();
                             if (then != null) {
                                 Map<String, Map<String, String>> tmp = getUrlsMatchedCondition(then, consumerSample, url2ProviderSample);
-                                // 如果规则的结果是空，则该规则无效，使用所有Provider
+                                // If the result of the rule is empty, the rule is invalid and all Provider is used.
                                 if (route.isForce() || !tmp.isEmpty()) {
                                     url2ProviderSample = tmp;
                                 }
@@ -222,7 +222,7 @@ public class RouteUtils {
 
     static Map<String, String> appendMethodsToUrls(Map<String, String> serviceUrls,
                                                    Map<String, Set<String>> url2Methods) {
-        // 为URL上加上方法参数
+        // Add method parameters to URL
         Map<String, String> results = new HashMap<String, String>();
         for (Map.Entry<String, Set<String>> entry : url2Methods.entrySet()) {
             String url = entry.getKey();
@@ -246,10 +246,10 @@ public class RouteUtils {
             for (Route route : routes) {
                 if (isSerivceNameMatched(route.getService(), serviceName)) {
                     RouteRule rule = routeRuleMap.get(route.getId());
-                    // 当满足when条件时
+                    // if matches When Condition
                     if (rule != null && RouteRuleUtils.isMatchCondition(
                             rule.getWhenCondition(), consumerSample, consumerSample)) {
-                        return route; // 第一个满足即返回
+                        return route; // will return if the first condition matches
                     }
                 }
             }
@@ -258,7 +258,7 @@ public class RouteUtils {
     }
 
     /**
-     * 支持匹配的Service
+     * Check if a service name matches pattern
      *
      * @param servicePattern
      * @param serviceName
@@ -266,8 +266,8 @@ public class RouteUtils {
     static boolean isSerivceNameMatched(String servicePattern, String serviceName) {
         final int pip = servicePattern.indexOf('/');
         final int pi = serviceName.indexOf('/');
-        if (pip != -1) { // pattern有group
-            if (pi == -1) return false; // servicename无group
+        if (pip != -1) { // pattern has group
+            if (pi == -1) return false; // servicename doesn't have group
 
             String gp = servicePattern.substring(0, pip);
             servicePattern = servicePattern.substring(pip + 1);
@@ -280,7 +280,7 @@ public class RouteUtils {
 
         final int vip = servicePattern.lastIndexOf(':');
         final int vi = serviceName.lastIndexOf(':');
-        if (vip != -1) { // pattern有group
+        if (vip != -1) { // pattern has group
             if (vi == -1) return false;
 
             String vp = servicePattern.substring(vip + 1);

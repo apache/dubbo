@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,6 +17,7 @@
 package com.alibaba.dubbo.common;
 
 import com.alibaba.dubbo.common.utils.CollectionUtils;
+
 import org.junit.Test;
 
 import java.io.File;
@@ -32,10 +34,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-/**
- * @author ding.lid
- * @author william.liangf
- */
 public class URLTest {
 
     @Test
@@ -246,7 +244,7 @@ public class URLTest {
         assertEquals("noValue", url.getParameter("noValue"));
     }
 
-    // TODO 不希望空格？ 详见： DUBBO-502 URL类对特殊字符处理统一约定
+    // TODO Do not want to use spaces? See: DUBBO-502, URL class handles special conventions for special characters.
     @Test
     public void test_valueOf_spaceSafe() throws Exception {
         URL url = URL.valueOf("http://1.2.3.4:8080/path?key=value1 value2");
@@ -260,7 +258,7 @@ public class URLTest {
 
         assertTrue(url.hasParameter("k0"));
 
-        // 没有Value的Key，生成的Value值使用Key值！！ -_-!!!
+        // If a Key has no corresponding Value, then the Key also used as the Value.
         assertEquals("k0", url.getParameter("k0"));
     }
 

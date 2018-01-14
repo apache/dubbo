@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,9 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * ProformanceClient
- * 这个测试类会报线程池的异常，因为DefaultChannelHandler中关于线程池的判断产生并发问题（connected事件异步执行，判断已经过了，这时关闭了线程池，然后线程池执行，报错，此问题通过指定Constants.CHANNEL_HANDLER_KEY=connection即可.）
- *
- * @author william.liangf
+ * The test class will report abnormal thread pool, because the judgment on the thread pool concurrency problems produced in DefaultChannelHandler (connected event has been executed asynchronously, judgment, then closed the thread pool, thread pool and execution error, this problem can be specified through the Constants.CHANNEL_HANDLER_KEY=connection.)
  */
 public class PerformanceClientCloseTest extends TestCase {
 
@@ -38,7 +37,7 @@ public class PerformanceClientCloseTest extends TestCase {
 
     @Test
     public void testClient() throws Throwable {
-        // 读取参数
+        // read server info from property
         if (PerformanceUtils.getProperty("server", null) == null) {
             logger.warn("Please set -Dserver=127.0.0.1:9911");
             return;

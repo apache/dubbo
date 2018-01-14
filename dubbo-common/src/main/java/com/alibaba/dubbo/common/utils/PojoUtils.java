@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -53,9 +54,6 @@ import java.util.concurrent.ConcurrentSkipListMap;
  * </ul>
  * <p/>
  * Other type will be covert to a map which contains the attributes and value pair of object.
- *
- * @author william.liangf
- * @author ding.lid
  */
 public class PojoUtils {
 
@@ -172,7 +170,6 @@ public class PojoUtils {
             if (ReflectUtils.isPublicInstanceField(field)) {
                 try {
                     Object fieldValue = field.get(pojo);
-                    // public filed同时也有get/set方法，如果get/set存取的不是前面那个 public field 该如何处理
                     if (history.containsKey(pojo)) {
                         Object pojoGenerilizedValue = history.get(pojo);
                         if (pojoGenerilizedValue instanceof Map
@@ -380,7 +377,7 @@ public class PojoUtils {
                 }
             }
 
-            //对枚举的特殊处理
+            // special logic for enum
             if (type.isEnum()) {
                 Object name = ((Map<Object, Object>) pojo).get("name");
                 if (name != null) {
@@ -388,7 +385,7 @@ public class PojoUtils {
                 }
             }
             Map<Object, Object> map;
-            // 返回值类型不是方法签名类型的子集 并且 不是接口类型
+            // when return type is not the subclass of return type from the signature and not an interface
             if (!type.isInterface() && !type.isAssignableFrom(pojo.getClass())) {
                 try {
                     map = (Map<Object, Object>) type.newInstance();
@@ -489,15 +486,15 @@ public class PojoUtils {
     }
 
     /**
-     * 获取范型的类型
+     * Get parameterized type
      *
-     * @param genericType
-     * @param index
-     * @return List<Person>  返回Person.class ,Map<String,Person> index=0 返回String.class index=1 返回Person.class
+     * @param genericType generic type
+     * @param index       index of the target parameterized type
+     * @return Return Person.class for List<Person>, return Person.class for Map<String, Person> when index=0
      */
     private static Type getGenericClassByIndex(Type genericType, int index) {
         Type clazz = null;
-        //范型参数转换
+        // find parameterized type
         if (genericType instanceof ParameterizedType) {
             ParameterizedType t = (ParameterizedType) genericType;
             Type[] types = t.getActualTypeArguments();
@@ -564,7 +561,6 @@ public class PojoUtils {
             return CLASS_FIELD_CACHE.get(cls).get(fieldName);
         }
         try {
-            //原先只找public字段
             result = cls.getDeclaredField(fieldName);
             result.setAccessible(true);
         } catch (NoSuchFieldException e) {

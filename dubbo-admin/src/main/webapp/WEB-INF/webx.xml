@@ -18,37 +18,37 @@
         http://www.springframework.org/schema/beans http://localhost:8080/schema/www.springframework.org/schema/beans/spring-beans.xsd
         http://www.alibaba.com/schema/services/request-contexts/rewrite/handlers http://localhost:8080/schema/services-request-contexts-rewrite-handlers.xsd">
 
-    <!-- 支持${xxx}替换。 -->
+    <!-- support placeholder like ${xxx} -->
     <services:property-placeholder>
         <services:property key="component">common</services:property>
     </services:property-placeholder>
 
-    <!-- 共享配置。 -->
+    <!-- shared configuration -->
     <beans:import resource="common/webx-component-and-root.xml"/>
 
-    <!-- 异常管道。 -->
+    <!-- exception pipelene -->
     <beans:import resource="common/pipeline-exception.xml"/>
 
-    <!-- 资源装载。 -->
+    <!-- load resources -->
     <beans:import resource="common/resources.xml"/>
 
-    <!-- URI生成。 -->
+    <!-- URI generation -->
     <beans:import resource="common/uris.xml"/>
 
-    <!-- URI重定向。 -->
+    <!-- URI redirection -->
     <beans:import resource="common/rewrite.xml"/>
 
-    <!-- 应用资源 -->
+    <!-- application resources -->
     <beans:import resource="classpath:META-INF/spring/dubbo-admin.xml"/>
 
-    <!-- 综合设置。 -->
+    <!-- other settings -->
     <services:webx-configuration>
-        <!-- 默认将productionMode设为true，建议在jetty插件中设置-DproductionMode=false。 -->
+        <!-- default value of productionMode is true, we recommend set -DproductionMode=false in jetty plugin. -->
         <services:productionMode>true</services:productionMode>
         <services:components defaultComponent="home"/>
     </services:webx-configuration>
 
-    <!-- 设置request/response/session。 -->
+    <!-- configure request/response/session. -->
     <services:request-contexts xmlns="http://www.alibaba.com/schema/services/request-contexts">
         <rewrite>
             <rule pattern=".*\.htm">
@@ -82,10 +82,10 @@
         </session>
     </services:request-contexts>
 
-    <!-- 支持上传文件。 -->
+    <!-- file upload support -->
     <services:upload sizeMax="5M"/>
 
-    <!-- 将beans暴露给模板。这里定义的tools可被所有components之间共享。 -->
+    <!-- Expose the beans to the template. The tools defined here can be shared by all components. -->
     <services:pull xmlns="http://www.alibaba.com/schema/services/pull/factories">
         <utils/>
         <page-tool/>
@@ -99,7 +99,7 @@
 
     <services:form/>
 
-    <!-- 装载模块。 -->
+    <!-- load module -->
     <services:module-loader>
         <ml-factories:class-modules>
             <ml-factories:search-packages type="$1" packages="com.alibaba.dubbo.governance.web.common.module.*"/>

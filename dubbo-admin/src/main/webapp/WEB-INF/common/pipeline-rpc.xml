@@ -12,28 +12,26 @@
     <services:pipeline
             xmlns="http://www.alibaba.com/schema/services/pipeline/valves">
 
-        <!-- 初始化turbine rundata，并在pipelineContext中设置可能会用到的对象(如rundata、utils)，以便valve取得。 -->
+        <!-- Initialize the turbine rundata and set up objects that may be used in pipelineContext (such as rundata, utils) so that valve can be obtained.  -->
         <prepareForTurbine/>
 
-        <!-- 设置日志系统的上下文，支持把当前请求的详情打印在日志中。 -->
+        <!-- Set context of log system, so that we can record logs of current request. -->
         <setLoggingContext/>
 
-        <!-- 分析URL，取得target。 -->
+        <!-- URL is analyzed and target is obtained. -->
         <analyzeURL/>
 
-        <!-- 检查csrf token，防止csrf攻击和重复提交。假如request和session中的token不匹配，则出错，或显示expired页面。 -->
+        <!-- Check csrf token to avoid csrf attack and duplicate submit. If the token in request can not be matched with the token in session, then an error page or expired page is shown. -->
         <checkCsrfToken/>
 
-        <!-- 拦击器作用 -->
-        <valve
-                class="com.alibaba.dubbo.governance.web.common.interceptor.LocaleValve"/>
+        <!-- interceptor for I18N -->
+        <valve class="com.alibaba.dubbo.governance.web.common.interceptor.LocaleValve"/>
         <choose>
             <when>
                 <pl-conditions:path-condition name="^/status$|/favicon.ico"/>
             </when>
             <otherwise>
-                <valve
-                        class="com.alibaba.dubbo.governance.web.common.interceptor.AuthorizationValve"/>
+                <valve class="com.alibaba.dubbo.governance.web.common.interceptor.AuthorizationValve"/>
             </otherwise>
         </choose>
         <loop>
@@ -43,13 +41,13 @@
                     <valve class="com.alibaba.citrus.extension.rpc.integration.RPCServiceHandlerValve"/>
                 </when>
                 <when>
-                    <!-- 执行不带模板的screen，默认无layout。 -->
+                    <!-- The screen without the template is executed, and the default is not layout. -->
                     <pl-conditions:path-condition
                             name="/sysinfo/dump.htm|^/\w+$|^/status/.+$"/>
                     <performTemplateScreen/>
                 </when>
                 <when>
-                    <!-- 执行带模板的screen，默认有layout。 -->
+                    <!-- The screen with the template is executed, and the default is layout. -->
                     <pl-conditions:target-extension-condition
                             extension="null, vm, jsp"/>
                     <performAction/>
@@ -61,7 +59,7 @@
                 </otherwise>
             </choose>
 
-            <!-- 假如rundata.setRedirectTarget()被设置，则循环，否则退出循环。 -->
+            <!-- if rundata.setRedirectTarget() was set, then continue loop, if not, break. -->
             <breakUnlessTargetRedirected/>
         </loop>
 

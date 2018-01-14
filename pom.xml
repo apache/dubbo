@@ -1,40 +1,39 @@
 <!--
- - Copyright 1999-2011 Alibaba Group.
- -  
- - Licensed under the Apache License, Version 2.0 (the "License");
- - you may not use this file except in compliance with the License.
- - You may obtain a copy of the License at
- -  
- -	  http://www.apache.org/licenses/LICENSE-2.0
- -  
- - Unless required by applicable law or agreed to in writing, software
- - distributed under the License is distributed on an "AS IS" BASIS,
- - WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- - See the License for the specific language governing permissions and
- - limitations under the License.
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 -->
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.alibaba</groupId>
     <artifactId>dubbo-parent</artifactId>
-    <version>2.5.6</version>
+    <version>2.5.8</version>
     <packaging>pom</packaging>
     <name>${project.artifactId}</name>
     <description>The parent project of dubbo</description>
-    <url>http://code.alibabatech.com/wiki/display/dubbo</url>
+    <url>http://dubbo.io</url>
     <inceptionYear>2011</inceptionYear>
     <licenses>
         <license>
             <name>Apache 2</name>
             <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            <distribution>repo</distribution>
-            <comments>A business-friendly OSS license</comments>
         </license>
     </licenses>
     <organization>
-        <name>Alibaba</name>
-        <url>http://www.alibaba.com</url>
+        <name>The Dubbo Project</name>
+        <url>http://dubbo.io</url>
     </organization>
     <modules>
         <module>hessian-lite</module>
@@ -51,6 +50,7 @@
         <module>dubbo-simple</module>
         <module>dubbo-admin</module>
         <module>dubbo-demo</module>
+        <module>dubbo-plugin</module>
     </modules>
     <profiles>
         <profile>
@@ -84,6 +84,7 @@
         <spring_version>4.3.10.RELEASE</spring_version>
         <javassist_version>3.20.0-GA</javassist_version>
         <netty_version>3.2.5.Final</netty_version>
+        <netty4_version>4.0.35.Final</netty4_version>
         <mina_version>1.1.7</mina_version>
         <grizzly_version>2.1.4</grizzly_version>
         <httpclient_version>4.5.3</httpclient_version>
@@ -129,15 +130,6 @@
         <updateReleaseInfo>true</updateReleaseInfo>
         <project.build.sourceEncoding>${file_encoding}</project.build.sourceEncoding>
 
-        <!-- generate idea copyright -->
-        <copyright>Copyright 1999-2012 Alibaba Group.&#10; &#10;Licensed under the Apache License, Version 2.0 (the
-            &quot;License&quot;);&#10;you may not use this file except in compliance with the License.&#10;You may
-            obtain a copy of the License at&#10; &#10; http://www.apache.org/licenses/LICENSE-2.0&#10; &#10;Unless
-            required by applicable law or agreed to in writing, software&#10;distributed under the License is
-            distributed on an &quot;AS IS&quot; BASIS,&#10;WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
-            or implied.&#10;See the License for the specific language governing permissions and&#10;limitations under
-            the License.
-        </copyright>
         <profile.name>oss</profile.name>
 
         <!-- for maven compiler plugin -->
@@ -165,6 +157,11 @@
                 <groupId>org.jboss.netty</groupId>
                 <artifactId>netty</artifactId>
                 <version>${netty_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-all</artifactId>
+                <version>${netty4_version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.mina</groupId>
@@ -487,6 +484,18 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>cobertura-maven-plugin</artifactId>
+                <version>2.7</version>
+                <configuration>
+                    <formats>
+                        <format>html</format>
+                        <format>xml</format>
+                    </formats>
+                    <check />
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -509,76 +518,12 @@
     </mailingLists>
     <developers>
         <developer>
-            <name>QianXiao(Shawn)</name>
-            <id>shawn.qianx</id>
-            <email>shawn.qianx (AT) alibaba-inc.com</email>
-            <roles>
-                <role>Developer</role>
-            </roles>
-            <timezone>+8</timezone>
-        </developer>
-        <developer>
-            <name>LiangFei(William)</name>
-            <id>william.liangf</id>
-            <email>william.liangf (AT) alibaba-inc.com</email>
-            <roles>
-                <role>Developer</role>
-            </roles>
-            <timezone>+8</timezone>
-        </developer>
-        <developer>
-            <name>LiDing(Jerry)</name>
-            <id>ding.lid</id>
-            <email>ding.lid (AT) alibaba-inc.com</email>
-            <roles>
-                <role>Developer</role>
-            </roles>
-            <timezone>+8</timezone>
-        </developer>
-        <developer>
-            <name>LiuChao(Charles)</name>
-            <id>chao.liuc</id>
-            <email>chao.liuc (AT) alibaba-inc.com</email>
-            <roles>
-                <role>Developer</role>
-            </roles>
-            <timezone>+8</timezone>
-        </developer>
-        <developer>
-            <name>LiuHaoMin(Ludvik)</name>
-            <id>haoming.liuhm</id>
-            <email>haoming.liuhm (AT) alibaba-inc.com</email>
-            <roles>
-                <role>Developer</role>
-            </roles>
-            <timezone>+8</timezone>
-        </developer>
-        <developer>
-            <name>ChenLei(Tony)</name>
-            <id>tony.chenl</id>
-            <email>tony.chenl (AT) alibaba-inc.com</email>
-            <roles>
-                <role>Developer</role>
-            </roles>
-            <timezone>+8</timezone>
-        </developer>
-        <developer>
-            <name>LvGang(Kimi)</name>
-            <id>gang.lvg</id>
-            <email>gang.lvg (AT) alibaba-inc.com</email>
-            <roles>
-                <role>Developer</role>
-            </roles>
-            <timezone>+8</timezone>
-        </developer>
-        <developer>
-            <name>WuXiaoFei(Teaey)</name>
-            <id>xiaofei.wxf</id>
-            <email>xiaofei.wxf (AT) alibaba-inc.com</email>
-            <roles>
-                <role>Developer</role>
-            </roles>
-            <timezone>+8</timezone>
+            <id>dubbo.io</id>
+            <name>The Dubbo Project Contributors</name>
+            <email>dubbo@googlegroups.com</email>
+            <url>http://dubbo.io</url>
+            <organization>The Dubbo Project</organization>
+            <organizationUrl>http://dubbo.io</organizationUrl>
         </developer>
     </developers>
 </project>

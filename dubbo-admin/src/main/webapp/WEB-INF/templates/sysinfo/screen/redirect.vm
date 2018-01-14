@@ -4,7 +4,8 @@
         <tr height="42">
             <td></td>
             <td width="31"><img src="$rootContextPath.getURI("images/pop_close.png")"
-                                onclick="window.location.href = '$redirect';" style="cursor: pointer;" width="20"
+                                onclick="window.location.href = 'rootContextPath.getURI("$redirect")';" style="cursor:
+                pointer;" width="20"
                                 height="20"/></td>
         </tr>
         <tr height="120">
@@ -14,7 +15,8 @@
         </tr>
         <tr>
             <td align="right">#if(!$success)
-                <div class="btn_info" style="float: right; clear: left;"><a href="$redirect">$i18n.get("confirm")</a>
+                <div class="btn_info" style="float: right; clear: left;"><a
+                        href="rootContextPath.getURI("$redirect")">$i18n.get("confirm")</a>
                 </div>#end</td>
             <td></td>
         </tr>
@@ -25,7 +27,7 @@
                 #if($success)
                 sleep(this, 500);
                 this.NextStep = function () {
-                    window.location.href = '$redirect';
+                    window.location.href = 'rootContextPath.getURI("$redirect")';
                 }
                 #end
             function sleep(obj, iMinSecond) {

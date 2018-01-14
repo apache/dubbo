@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,10 +33,6 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * @author ding.lid
- * @author william.liangf
- */
 public class ConfigUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigUtils.class);
@@ -65,17 +62,17 @@ public class ConfigUtils {
     }
 
     /**
-     * 扩展点列表中插入缺省扩展点。
+     * Insert default extension into extension list.
      * <p>
-     * 扩展点列表支持<ul>
-     * <li>特殊值<code><strong>default</strong></code>，表示缺省扩展点插入的位置
-     * <li>特殊符号<code><strong>-</strong></code>，表示剔除。 <code>-foo1</code>，剔除添加缺省扩展点foo1。<code>-default</code>，剔除添加所有缺省扩展点。
+     * Extension list support<ul>
+     * <li>Special value <code><strong>default</strong></code>, means the location for default extensions.
+     * <li>Special symbol<code><strong>-</strong></code>, means remove. <code>-foo1</code> will remove default extension 'foo'; <code>-default</code> will remove all default extensions.
      * </ul>
      *
-     * @param type 扩展点类型
-     * @param cfg  扩展点名列表
-     * @param def  缺省的扩展点的列表
-     * @return 完成缺省的扩展点列表插入后的列表
+     * @param type Extension type
+     * @param cfg  Extension name list
+     * @param def  Default extension list
+     * @return result extension list
      */
     public static List<String> mergeValues(Class<?> type, String cfg, List<String> def) {
         List<String> defaults = new ArrayList<String>();
@@ -89,7 +86,7 @@ public class ConfigUtils {
 
         List<String> names = new ArrayList<String>();
 
-        // 加入初始值
+        // add initial values
         String[] configs = (cfg == null || cfg.trim().length() == 0) ? new String[0] : Constants.COMMA_SPLIT_PATTERN.split(cfg);
         for (String config : configs) {
             if (config != null && config.trim().length() > 0) {
@@ -97,9 +94,9 @@ public class ConfigUtils {
             }
         }
 
-        // 不包含 -default
+        // -default is not included
         if (!names.contains(Constants.REMOVE_VALUE_PREFIX + Constants.DEFAULT_KEY)) {
-            // 加入 插入缺省扩展点
+            // add default extension
             int i = names.indexOf(Constants.DEFAULT_KEY);
             if (i > 0) {
                 names.addAll(i, defaults);
@@ -111,7 +108,7 @@ public class ConfigUtils {
             names.remove(Constants.DEFAULT_KEY);
         }
 
-        // 合并-的配置项
+        // merge - configuration
         for (String name : new ArrayList<String>(names)) {
             if (name.startsWith(Constants.REMOVE_VALUE_PREFIX)) {
                 names.remove(name);
@@ -127,7 +124,7 @@ public class ConfigUtils {
         }
         Matcher matcher = VARIABLE_PATTERN.matcher(expression);
         StringBuffer sb = new StringBuffer();
-        while (matcher.find()) { // 逐个匹配
+        while (matcher.find()) {
             String key = matcher.group(1);
             String value = System.getProperty(key);
             if (value == null && params != null) {
@@ -187,10 +184,10 @@ public class ConfigUtils {
     }
 
     /**
-     *  系统环境变量 -> java命令参数-D
+     * System environment -> System properties
      *
-     * @param key
-     * @return
+     * @param key key
+     * @return value
      */
     public static String getSystemProperty(String key) {
         String value = System.getenv(key);
