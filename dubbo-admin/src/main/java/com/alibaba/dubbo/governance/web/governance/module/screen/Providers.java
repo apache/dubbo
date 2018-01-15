@@ -130,7 +130,7 @@ public class Providers extends Restful {
      */
     private Map<String, Set<String>> getServiceAppMap(List<Provider> providers) {
         Map<String, Set<String>> serviceAppMap = new HashMap<String, Set<String>>();
-        if (providers != null && providers.size() >= 0) {
+        if (providers != null && providers.size() > 0) {
             for (Provider provider : providers) {
                 Set<String> appSet;
                 String service = provider.getService();
