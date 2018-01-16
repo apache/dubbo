@@ -167,6 +167,15 @@ limitations under the License.
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>java8-doclint-disabled</id>
+            <activation>
+                <jdk>[1.8,)</jdk>
+            </activation>
+            <properties>
+                <javadoc.opts>-Xdoclint:none</javadoc.opts>
+            </properties>
+        </profile>
     </profiles>
 
     <build>
@@ -207,7 +216,7 @@ limitations under the License.
                             <goal>jar</goal>
                         </goals>
                         <configuration>
-                            <additionalparam>-Xdoclint:none</additionalparam>
+                            <additionalparam>${javadoc.opts}</additionalparam>
                         </configuration>
                     </execution>
                 </executions>
