@@ -77,7 +77,7 @@ public class TelnetCodec extends TransportCodec {
             }
         }
         try {
-            return Charset.forName("GBK");
+            return Charset.forName(Constants.DEFAULT_CHARSET);
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
         }
