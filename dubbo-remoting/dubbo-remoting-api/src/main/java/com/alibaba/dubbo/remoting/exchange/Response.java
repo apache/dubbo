@@ -69,7 +69,6 @@ public class Response {
      * internal server error.
      */
     public static final byte CLIENT_ERROR = 90;
-
     /**
      * server side threadpool exhausted and quick return.
      */
