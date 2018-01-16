@@ -206,9 +206,9 @@ limitations under the License.
                         <goals>
                             <goal>jar</goal>
                         </goals>
-                        <!--<configuration>-->
-                        <!--<additionalparam>-Xdoclint:none</additionalparam>-->
-                        <!--</configuration>-->
+                        <configuration>
+                            <additionalparam>-Xdoclint:none</additionalparam>
+                        </configuration>
                     </execution>
                 </executions>
                 <configuration>
