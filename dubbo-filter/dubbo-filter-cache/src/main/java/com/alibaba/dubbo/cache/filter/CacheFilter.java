@@ -22,12 +22,7 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
-import com.alibaba.dubbo.rpc.Filter;
-import com.alibaba.dubbo.rpc.Invocation;
-import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.Result;
-import com.alibaba.dubbo.rpc.RpcException;
-import com.alibaba.dubbo.rpc.RpcResult;
+import com.alibaba.dubbo.rpc.*;
 
 /**
  * CacheFilter
@@ -41,14 +36,15 @@ public class CacheFilter implements Filter {
         this.cacheFactory = cacheFactory;
     }
 
+    @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        if (cacheFactory != null && ConfigUtils.isNotEmpty(invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.CACHE_KEY))) {
+        if (null != cacheFactory && ConfigUtils.isNotEmpty(invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.CACHE_KEY))) {
             Cache cache = cacheFactory.getCache(invoker.getUrl().addParameter(Constants.METHOD_KEY, invocation.getMethodName()));
-            if (cache != null) {
+            if (null != cache) {
                 String key = StringUtils.toArgumentString(invocation.getArguments());
-                if (cache != null && key != null) {
+                if (StringUtils.isNotEmpty(key)) {
                     Object value = cache.get(key);
-                    if (value != null) {
+                    if (null != value) {
                         return new RpcResult(value);
                     }
                     Result result = invoker.invoke(invocation);
