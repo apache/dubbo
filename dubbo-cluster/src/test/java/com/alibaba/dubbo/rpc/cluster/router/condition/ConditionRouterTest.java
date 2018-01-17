@@ -98,7 +98,8 @@ public class ConditionRouterTest {
     @Test
     public void testRoute_matchFilter() {
         List<Invoker<String>> invokers = new ArrayList<Invoker<String>>();
-        Invoker<String> invoker1 = new MockInvoker<String>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService"));
+        Invoker<String> invoker1 = new MockInvoker<String>(URL.valueOf(
+                "dubbo://10.20.3.3:20880/com.foo.BarService?default.serialization=fastjson"));
         Invoker<String> invoker2 = new MockInvoker<String>(URL.valueOf("dubbo://" + NetUtils.getLocalHost()
                 + ":20880/com.foo.BarService"));
         Invoker<String> invoker3 = new MockInvoker<String>(URL.valueOf("dubbo://" + NetUtils.getLocalHost()
@@ -122,6 +123,9 @@ public class ConditionRouterTest {
         Router router5 = new ConditionRouterFactory().getRouter(getRouteUrl(
                 "host = " + NetUtils.getLocalHost() + " => " + " host != 10.20.3.3").addParameter(Constants.FORCE_KEY,
                 String.valueOf(true)));
+        Router router6 = new ConditionRouterFactory().getRouter(getRouteUrl(
+                "host = " + NetUtils.getLocalHost() + " => " + " serialization = fastjson").addParameter(
+                Constants.FORCE_KEY, String.valueOf(true)));
 
         List<Invoker<String>> fileredInvokers1 = router1.route(invokers,
                 URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
@@ -133,11 +137,14 @@ public class ConditionRouterTest {
                 URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
         List<Invoker<String>> fileredInvokers5 = router5.route(invokers,
                 URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
+        List<Invoker<String>> fileredInvokers6 = router6.route(invokers,
+                URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
         Assert.assertEquals(1, fileredInvokers1.size());
         Assert.assertEquals(0, fileredInvokers2.size());
         Assert.assertEquals(0, fileredInvokers3.size());
         Assert.assertEquals(1, fileredInvokers4.size());
         Assert.assertEquals(2, fileredInvokers5.size());
+        Assert.assertEquals(1, fileredInvokers6.size());
     }
 
     @Test
