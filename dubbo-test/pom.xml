@@ -182,5 +182,13 @@ limitations under the License.
             <artifactId>hessian-lite</artifactId>
             <version>3.2.1-fixed-2</version>
         </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-validator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.el</artifactId>
+        </dependency>
     </dependencies>
 </project>
