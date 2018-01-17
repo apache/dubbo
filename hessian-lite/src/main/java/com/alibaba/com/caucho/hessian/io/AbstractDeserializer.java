@@ -77,6 +77,9 @@ abstract public class AbstractDeserializer implements Deserializer {
 
     @Override
     public Object readList(AbstractHessianInput in, int length, Class<?> expectType) throws IOException {
+        if(expectType == null) {
+            return readList(in, length);
+        }
         throw new UnsupportedOperationException(String.valueOf(this));
     }
 
@@ -87,6 +90,9 @@ abstract public class AbstractDeserializer implements Deserializer {
 
     @Override
     public Object readLengthList(AbstractHessianInput in, int length, Class<?> expectType) throws IOException {
+        if(expectType == null){
+            return readLengthList(in , length);
+        }
         throw new UnsupportedOperationException(String.valueOf(this));
     }
 
@@ -104,6 +110,9 @@ abstract public class AbstractDeserializer implements Deserializer {
 
     @Override
     public Object readMap(AbstractHessianInput in, Class<?> expectKeyType, Class<?> expectValueType) throws IOException {
+        if(expectKeyType  == null && expectValueType == null){
+            return readMap(in);
+        }
         throw new UnsupportedOperationException(String.valueOf(this));
     }
 
