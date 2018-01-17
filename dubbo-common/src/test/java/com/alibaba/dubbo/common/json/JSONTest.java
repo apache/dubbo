@@ -19,11 +19,13 @@ package com.alibaba.dubbo.common.json;
 import junit.framework.Assert;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -32,6 +34,12 @@ import static org.junit.Assert.assertEquals;
 public class JSONTest {
     static byte[] DEFAULT_BYTES = {3, 12, 14, 41, 12, 2, 3, 12, 4, 67, 23};
     static int DEFAULT_$$ = 152;
+
+    @Test
+    public void testLocale() throws IOException {
+        // it will throw StackOverflowError, case from
+        JSON.json(Locale.US);
+    }
 
     @Test
     public void testException() throws Exception {
