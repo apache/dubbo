@@ -18,8 +18,10 @@ package com.alibaba.dubbo.rpc.protocol.dubbo;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
+import com.alibaba.dubbo.common.serialize.support.SerializableClassRegistry;
+import com.alibaba.dubbo.common.serialize.support.SerializationOptimizer;
+import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.remoting.Channel;
@@ -62,6 +64,7 @@ public class DubboProtocol extends AbstractProtocol {
     private final Map<String, ExchangeServer> serverMap = new ConcurrentHashMap<String, ExchangeServer>(); // <host:port,Exchanger>
     private final Map<String, ReferenceCountExchangeClient> referenceClientMap = new ConcurrentHashMap<String, ReferenceCountExchangeClient>(); // <host:port,Exchanger>
     private final ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap = new ConcurrentHashMap<String, LazyConnectExchangeClient>();
+    private final Set<String> optimizers = new ConcurrentHashSet<String>();
     //consumer side export a stub service for dispatching event
     //servicekey-stubmethods
     private final ConcurrentMap<String, String> stubServiceMethodsMap = new ConcurrentHashMap<String, String>();
@@ -236,7 +239,7 @@ public class DubboProtocol extends AbstractProtocol {
         }
 
         openServer(url);
-
+        optimizeSerialization(url);
         return exporter;
     }
 
@@ -283,7 +286,42 @@ public class DubboProtocol extends AbstractProtocol {
         return server;
     }
 
+    private void optimizeSerialization(URL url) throws RpcException {
+        String className = url.getParameter(Constants.OPTIMIZER_KEY, "");
+        if (StringUtils.isEmpty(className) || optimizers.contains(className)) {
+            return;
+        }
+        
+        logger.info("Optimizing the serialization process for Kryo, FST, etc...");
+        
+        try {
+            Class clazz = Thread.currentThread().getContextClassLoader().loadClass(className);
+            if (!SerializationOptimizer.class.isAssignableFrom(clazz)) {
+                throw new RpcException("The serialization optimizer " + className + " isn't an instance of " + SerializationOptimizer.class.getName());
+            }
+            
+            SerializationOptimizer optimizer = (SerializationOptimizer) clazz.newInstance();
+            
+            if (optimizer.getSerializableClasses() == null) {
+                return;
+            }
+            
+            for (Class c : optimizer.getSerializableClasses()) {
+                SerializableClassRegistry.registerClass(c);
+            }
+            
+            optimizers.add(className);
+        } catch (ClassNotFoundException e) {
+            throw new RpcException("Cannot find the serialization optimizer class: " + className, e);
+        } catch (InstantiationException e) {
+            throw new RpcException("Cannot instantiate the serialization optimizer class: " + className, e);
+        } catch (IllegalAccessException e) {
+            throw new RpcException("Cannot instantiate the serialization optimizer class: " + className, e);
+        }
+    }
+
     public <T> Invoker<T> refer(Class<T> serviceType, URL url) throws RpcException {
+        optimizeSerialization(url);
         // create rpc invoker.
         DubboInvoker<T> invoker = new DubboInvoker<T>(serviceType, url, getClients(url), invokers);
         invokers.add(invoker);
