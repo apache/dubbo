@@ -1,14 +1,19 @@
 package com.alibaba.dubbo.common.threadpool.support.enhanced;
 
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
+import com.alibaba.dubbo.common.threadpool.ThreadPool;
 import com.alibaba.dubbo.common.threadpool.support.AbortPolicyWithReport;
 import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class EnhancedThreadPoolTest {
+
+    private static final URL URL = new URL("dubbo", "localhost", 8080);
 
     /**
      * it print like this:
@@ -27,7 +32,7 @@ public class EnhancedThreadPoolTest {
      * thread number in current pool：10,  task number in task queue：2 executor size: 10
      * thread number in current pool：10,  task number in task queue：1 executor size: 10
      * thread number in current pool：10,  task number in task queue：0 executor size: 10
-     *
+     * <p>
      * we can see , when the core threads are in busy , the thread pool create thread (but thread nums always less than max) instead of put task into queue.
      */
     @Test
@@ -38,12 +43,11 @@ public class EnhancedThreadPoolTest {
         int threads = 10;
         //alive 1 second
         long alive = 1000;
-        URL url = new URL("dubbo", "localhost", 8080);
 
         //init queue and enhanced executor
         EnhancedTaskQueue<Runnable> enhancedTaskQueue = new EnhancedTaskQueue<Runnable>(queues);
         final EnhancedThreadPoolExecutor executor = new EnhancedThreadPoolExecutor(cores, threads, alive, TimeUnit.MILLISECONDS, enhancedTaskQueue,
-                new NamedThreadFactory(name, true), new AbortPolicyWithReport(name, url));
+                new NamedThreadFactory(name, true), new AbortPolicyWithReport(name, URL));
         enhancedTaskQueue.setExecutor(executor);
 
         for (int i = 0; i < 15; i++) {
@@ -63,6 +67,12 @@ public class EnhancedThreadPoolTest {
         Thread.sleep(5000);
         //cores theads are all alive
         Assert.assertTrue("more than cores threads alive!", executor.getPoolSize() == cores);
+    }
+
+    @Test
+    public void testSPI() {
+        ExecutorService executorService = (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class).getExtension("enhanced").getExecutor(URL);
+        Assert.assertTrue("test spi fail!", executorService.getClass().getSimpleName().equals("EnhancedThreadPoolExecutor"));
     }
 
 }
