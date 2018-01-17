@@ -35,7 +35,7 @@ public class RestConsumer {
         System.out.println("SUCCESS: registered user with id " + userService.registerUser(user).getId());
 
         RpcContext.getContext().setAttachment("clientName", "demo");
-        RpcContext.getContext().setAttachment("clientImpl", "dubbox");
+        RpcContext.getContext().setAttachment("clientImpl", "dubbo");
         System.out.println("SUCCESS: got user " + userService.getUser(1L));
         System.in.read();
     }
