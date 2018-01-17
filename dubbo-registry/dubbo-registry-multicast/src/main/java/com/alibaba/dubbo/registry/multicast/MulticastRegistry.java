@@ -49,7 +49,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * MulticastRegistry
- *
  */
 public class MulticastRegistry extends FailbackRegistry {
 
