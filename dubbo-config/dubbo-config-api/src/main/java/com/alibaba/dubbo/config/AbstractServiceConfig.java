@@ -198,14 +198,17 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
         this.executes = executes;
     }
 
+    @Override
     @Parameter(key = Constants.SERVICE_FILTER_KEY, append = true)
     public String getFilter() {
         return super.getFilter();
     }
 
+    @Override
     @Parameter(key = Constants.EXPORTER_LISTENER_KEY, append = true)
     public String getListener() {
-        return super.getListener();
+        checkMultiExtension(ExporterListener.class,"listener",listener);
+        return listener;
     }
 
     @Override
