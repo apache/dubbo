@@ -15,8 +15,7 @@
  * limitations under the License.
  */
 
-package com.alibaba.com.caucho.hessian.io;
-
+package com.alibaba.com.caucho.hessian.io.beans;
 public enum Type {
     High, Normal, Lower
 }
