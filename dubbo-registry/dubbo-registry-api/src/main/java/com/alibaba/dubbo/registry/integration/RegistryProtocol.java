@@ -43,6 +43,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.alibaba.dubbo.common.Constants.ACCEPT_FOREIGN_IP;
+import static com.alibaba.dubbo.common.Constants.QOS_ENABLE;
+import static com.alibaba.dubbo.common.Constants.QOS_PORT;
+
 /**
  * RegistryProtocol
  *
@@ -237,7 +241,10 @@ public class RegistryProtocol implements Protocol {
         final URL registedProviderUrl = providerUrl.removeParameters(getFilteredKeys(providerUrl))
                 .removeParameter(Constants.MONITOR_KEY)
                 .removeParameter(Constants.BIND_IP_KEY)
-                .removeParameter(Constants.BIND_PORT_KEY);
+                .removeParameter(Constants.BIND_PORT_KEY)
+                .removeParameter(QOS_ENABLE)
+                .removeParameter(QOS_PORT)
+                .removeParameter(ACCEPT_FOREIGN_IP);
         return registedProviderUrl;
     }
 

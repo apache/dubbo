@@ -1,0 +1,1 @@
+qos=com.alibaba.dubbo.qos.protocol.QosProtocolWrapper
