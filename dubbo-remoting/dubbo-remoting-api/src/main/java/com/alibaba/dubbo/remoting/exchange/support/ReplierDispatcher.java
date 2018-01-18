@@ -69,6 +69,7 @@ public class ReplierDispatcher implements Replier<Object> {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
+    @Override
     public Object reply(ExchangeChannel channel, Object request) throws RemotingException {
         return ((Replier) getReplier(request.getClass())).reply(channel, request);
     }

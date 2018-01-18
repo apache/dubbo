@@ -26,6 +26,7 @@ import com.alibaba.dubbo.registry.RegistryFactory;
  */
 public class RedisRegistryFactory implements RegistryFactory {
 
+    @Override
     public Registry getRegistry(URL url) {
         return new RedisRegistry(url);
     }

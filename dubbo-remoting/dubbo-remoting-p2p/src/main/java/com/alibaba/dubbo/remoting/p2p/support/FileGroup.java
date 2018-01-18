@@ -62,6 +62,7 @@ public class FileGroup extends AbstractGroup {
         }, 2000, 2000, TimeUnit.MILLISECONDS);
     }
 
+    @Override
     public void close() {
         super.close();
         try {
@@ -92,6 +93,7 @@ public class FileGroup extends AbstractGroup {
         }
     }
 
+    @Override
     public Peer join(URL url, ChannelHandler handler) throws RemotingException {
         Peer peer = super.join(url, handler);
         try {

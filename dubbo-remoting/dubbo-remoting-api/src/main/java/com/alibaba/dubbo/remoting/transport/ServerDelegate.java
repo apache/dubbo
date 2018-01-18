@@ -49,51 +49,63 @@ public class ServerDelegate implements Server {
         this.server = server;
     }
 
+    @Override
     public boolean isBound() {
         return server.isBound();
     }
 
+    @Override
     public void reset(URL url) {
         server.reset(url);
     }
 
+    @Override
     @Deprecated
     public void reset(com.alibaba.dubbo.common.Parameters parameters) {
         reset(getUrl().addParameters(parameters.getParameters()));
     }
 
+    @Override
     public Collection<Channel> getChannels() {
         return server.getChannels();
     }
 
+    @Override
     public Channel getChannel(InetSocketAddress remoteAddress) {
         return server.getChannel(remoteAddress);
     }
 
+    @Override
     public URL getUrl() {
         return server.getUrl();
     }
 
+    @Override
     public ChannelHandler getChannelHandler() {
         return server.getChannelHandler();
     }
 
+    @Override
     public InetSocketAddress getLocalAddress() {
         return server.getLocalAddress();
     }
 
+    @Override
     public void send(Object message) throws RemotingException {
         server.send(message);
     }
 
+    @Override
     public void send(Object message, boolean sent) throws RemotingException {
         server.send(message, sent);
     }
 
+    @Override
     public void close() {
         server.close();
     }
 
+    @Override
     public void close(int timeout) {
         server.close(timeout);
     }
@@ -103,6 +115,7 @@ public class ServerDelegate implements Server {
         server.startClose();
     }
 
+    @Override
     public boolean isClosed() {
         return server.isClosed();
     }

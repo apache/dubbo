@@ -35,6 +35,7 @@ public class HelpTelnetHandler implements TelnetHandler {
 
     private final ExtensionLoader<TelnetHandler> extensionLoader = ExtensionLoader.getExtensionLoader(TelnetHandler.class);
 
+    @Override
     public String telnet(Channel channel, String message) {
         if (message.length() > 0) {
             if (!extensionLoader.hasExtension(message)) {

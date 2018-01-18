@@ -80,6 +80,7 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
         }
     }
 
+    @Override
     public Registry getRegistry(URL url) {
         url = url.setPath(RegistryService.class.getName())
                 .addParameter(Constants.INTERFACE_KEY, RegistryService.class.getName())

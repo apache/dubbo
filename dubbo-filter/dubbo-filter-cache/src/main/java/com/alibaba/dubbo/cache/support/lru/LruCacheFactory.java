@@ -25,6 +25,7 @@ import com.alibaba.dubbo.common.URL;
  */
 public class LruCacheFactory extends AbstractCacheFactory {
 
+    @Override
     protected Cache createCache(URL url) {
         return new LruCache(url);
     }
