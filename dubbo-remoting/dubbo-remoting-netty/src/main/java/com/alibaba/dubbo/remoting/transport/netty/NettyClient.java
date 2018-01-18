@@ -81,6 +81,7 @@ public class NettyClient extends AbstractClient {
         });
     }
 
+    @Override
     protected void doConnect() throws Throwable {
         long start = System.currentTimeMillis();
         ChannelFuture future = bootstrap.connect(getConnectAddress());

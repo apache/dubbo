@@ -159,6 +159,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         registry.subscribe(url, this);
     }
 
+    @Override
     public void destroy() {
         if (isDestroyed()) {
             return;
@@ -179,6 +180,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         }
     }
 
+    @Override
     public synchronized void notify(List<URL> urls) {
         List<URL> invokerUrls = new ArrayList<URL>();
         List<URL> routerUrls = new ArrayList<URL>();
@@ -566,6 +568,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         }
     }
 
+    @Override
     public List<Invoker<T>> doList(Invocation invocation) {
         if (forbidden) {
             // 1. No service provider 2. Service providers are disabled
@@ -598,14 +601,17 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         return invokers == null ? new ArrayList<Invoker<T>>(0) : invokers;
     }
 
+    @Override
     public Class<T> getInterface() {
         return serviceType;
     }
 
+    @Override
     public URL getUrl() {
         return this.overrideDirectoryUrl;
     }
 
+    @Override
     public boolean isAvailable() {
         if (isDestroyed()) {
             return false;
@@ -646,6 +652,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             return comparator;
         }
 
+        @Override
         public int compare(Invoker<?> o1, Invoker<?> o2) {
             return o1.getUrl().toString().compareTo(o2.getUrl().toString());
         }

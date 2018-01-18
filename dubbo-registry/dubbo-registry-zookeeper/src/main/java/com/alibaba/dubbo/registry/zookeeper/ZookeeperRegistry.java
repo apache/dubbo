@@ -68,6 +68,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
         this.root = group;
         zkClient = zookeeperTransporter.connect(url);
         zkClient.addStateListener(new StateListener() {
+            @Override
             public void stateChanged(int state) {
                 if (state == RECONNECTED) {
                     try {
@@ -92,10 +93,12 @@ public class ZookeeperRegistry extends FailbackRegistry {
         return address;
     }
 
+    @Override
     public boolean isAvailable() {
         return zkClient.isConnected();
     }
 
+    @Override
     public void destroy() {
         super.destroy();
         try {
@@ -105,6 +108,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
         }
     }
 
+    @Override
     protected void doRegister(URL url) {
         try {
             zkClient.create(toUrlPath(url), url.getParameter(Constants.DYNAMIC_KEY, true));
@@ -113,6 +117,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
         }
     }
 
+    @Override
     protected void doUnregister(URL url) {
         try {
             zkClient.delete(toUrlPath(url));
@@ -121,6 +126,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
         }
     }
 
+    @Override
     protected void doSubscribe(final URL url, final NotifyListener listener) {
         try {
             if (Constants.ANY_VALUE.equals(url.getServiceInterface())) {
@@ -133,6 +139,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 ChildListener zkListener = listeners.get(listener);
                 if (zkListener == null) {
                     listeners.putIfAbsent(listener, new ChildListener() {
+                        @Override
                         public void childChanged(String parentPath, List<String> currentChilds) {
                             for (String child : currentChilds) {
                                 child = URL.decode(child);
@@ -167,6 +174,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                     ChildListener zkListener = listeners.get(listener);
                     if (zkListener == null) {
                         listeners.putIfAbsent(listener, new ChildListener() {
+                            @Override
                             public void childChanged(String parentPath, List<String> currentChilds) {
                                 ZookeeperRegistry.this.notify(url, listener, toUrlsWithEmpty(url, parentPath, currentChilds));
                             }
@@ -186,6 +194,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
         }
     }
 
+    @Override
     protected void doUnsubscribe(URL url, NotifyListener listener) {
         ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
         if (listeners != null) {
@@ -196,6 +205,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
         }
     }
 
+    @Override
     public List<URL> lookup(URL url) {
         if (url == null) {
             throw new IllegalArgumentException("lookup url == null");

@@ -74,6 +74,7 @@ public abstract class AbstractProtocol implements Protocol {
         return timeout;
     }
 
+    @Override
     public void destroy() {
         for (Invoker<?> invoker : invokers) {
             if (invoker != null) {

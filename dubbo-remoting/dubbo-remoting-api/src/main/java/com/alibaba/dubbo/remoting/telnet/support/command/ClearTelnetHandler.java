@@ -29,6 +29,7 @@ import com.alibaba.dubbo.remoting.telnet.support.Help;
 @Help(parameter = "[lines]", summary = "Clear screen.", detail = "Clear screen.")
 public class ClearTelnetHandler implements TelnetHandler {
 
+    @Override
     public String telnet(Channel channel, String message) {
         int lines = 100;
         if (message.length() > 0) {

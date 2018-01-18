@@ -136,6 +136,7 @@ public class TelnetCodec extends TransportCodec {
         return true;
     }
 
+    @Override
     public void encode(Channel channel, ChannelBuffer buffer, Object message) throws IOException {
         if (message instanceof String) {
             if (isClientSide(channel)) {
@@ -148,6 +149,7 @@ public class TelnetCodec extends TransportCodec {
         }
     }
 
+    @Override
     public Object decode(Channel channel, ChannelBuffer buffer) throws IOException {
         int readable = buffer.readableBytes();
         byte[] message = new byte[readable];

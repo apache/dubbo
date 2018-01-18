@@ -41,6 +41,7 @@ public class StatusTelnetHandler implements TelnetHandler {
 
     private final ExtensionLoader<StatusChecker> extensionLoader = ExtensionLoader.getExtensionLoader(StatusChecker.class);
 
+    @Override
     public String telnet(Channel channel, String message) {
         if (message.equals("-l")) {
             List<StatusChecker> checkers = extensionLoader.getActivateExtension(channel.getUrl(), "status");

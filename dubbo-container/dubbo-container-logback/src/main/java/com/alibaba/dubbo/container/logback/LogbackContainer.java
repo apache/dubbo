@@ -42,6 +42,7 @@ public class LogbackContainer implements Container {
 
     public static final String DEFAULT_LOGBACK_LEVEL = "ERROR";
 
+    @Override
     public void start() {
         String file = ConfigUtils.getProperty(LOGBACK_FILE);
         if (file != null && file.length() > 0) {
@@ -56,6 +57,7 @@ public class LogbackContainer implements Container {
         }
     }
 
+    @Override
     public void stop() {
     }
 

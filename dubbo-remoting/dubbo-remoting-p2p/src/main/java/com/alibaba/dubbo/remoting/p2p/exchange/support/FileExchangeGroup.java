@@ -65,6 +65,7 @@ public class FileExchangeGroup extends AbstractExchangeGroup {
         }, 2000, 2000, TimeUnit.MILLISECONDS);
     }
 
+    @Override
     public void close() {
         super.close();
         try {
