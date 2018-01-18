@@ -186,7 +186,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
         }
     }
 
-    protected void doUnsubscribe(URL url, NotifyListener listener) {
+    protected void doUnSubscribe(URL url, NotifyListener listener) {
         ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
         if (listeners != null) {
             ChildListener zkListener = listeners.get(listener);
@@ -234,16 +234,16 @@ public class ZookeeperRegistry extends FailbackRegistry {
     }
 
     private String[] toCategoriesPath(URL url) {
-        String[] categroies;
+        String[] categories;
         if (Constants.ANY_VALUE.equals(url.getParameter(Constants.CATEGORY_KEY))) {
-            categroies = new String[]{Constants.PROVIDERS_CATEGORY, Constants.CONSUMERS_CATEGORY,
+            categories = new String[]{Constants.PROVIDERS_CATEGORY, Constants.CONSUMERS_CATEGORY,
                     Constants.ROUTERS_CATEGORY, Constants.CONFIGURATORS_CATEGORY};
         } else {
-            categroies = url.getParameter(Constants.CATEGORY_KEY, new String[]{Constants.DEFAULT_CATEGORY});
+            categories = url.getParameter(Constants.CATEGORY_KEY, new String[]{Constants.DEFAULT_CATEGORY});
         }
-        String[] paths = new String[categroies.length];
-        for (int i = 0; i < categroies.length; i++) {
-            paths[i] = toServicePath(url) + Constants.PATH_SEPARATOR + categroies[i];
+        String[] paths = new String[categories.length];
+        for (int i = 0; i < categories.length; i++) {
+            paths[i] = toServicePath(url) + Constants.PATH_SEPARATOR + categories[i];
         }
         return paths;
     }

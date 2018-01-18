@@ -138,7 +138,7 @@ public class DubboRegistry extends FailbackRegistry {
         registryService.subscribe(url, listener);
     }
 
-    protected void doUnsubscribe(URL url, NotifyListener listener) {
+    protected void doUnSubscribe(URL url, NotifyListener listener) {
         registryService.unsubscribe(url, listener);
     }
 

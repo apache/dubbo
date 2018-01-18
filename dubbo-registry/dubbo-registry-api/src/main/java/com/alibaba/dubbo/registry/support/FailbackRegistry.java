@@ -235,7 +235,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         removeFailedSubscribed(url, listener);
         try {
             // Sending a canceling subscription request to the server side
-            doUnsubscribe(url, listener);
+            doUnSubscribe(url, listener);
         } catch (Exception e) {
             Throwable t = e;
 
@@ -403,7 +403,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
                         Set<NotifyListener> listeners = entry.getValue();
                         for (NotifyListener listener : listeners) {
                             try {
-                                doUnsubscribe(url, listener);
+                                doUnSubscribe(url, listener);
                                 listeners.remove(listener);
                             } catch (Throwable t) { // Ignore all the exceptions and wait for the next retry
                                 logger.warn("Failed to retry unsubscribe " + failed + ", waiting for again, cause: " + t.getMessage(), t);
@@ -477,6 +477,6 @@ public abstract class FailbackRegistry extends AbstractRegistry {
 
     protected abstract void doSubscribe(URL url, NotifyListener listener);
 
-    protected abstract void doUnsubscribe(URL url, NotifyListener listener);
+    protected abstract void doUnSubscribe(URL url, NotifyListener listener);
 
 }
