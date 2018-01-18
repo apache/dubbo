@@ -16,14 +16,11 @@
  */
 package com.alibaba.dubbo.qos.common;
 
-public interface Constants {
+public interface QosConstants {
 
     int DEFAULT_PORT = 22222;
-    // system property for specifying qos port
-    String QOS_PORT = "dubbo.qos.port";
+
     String BR_STR = "\r\n";
     String CLOSE = "close!";
 
-    // system property for whether to accept foreign IP to connect or not
-    String ACCEPT_FOREIGN_IP = "dubbo.qos.accept.foreign.ip";
 }

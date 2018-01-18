@@ -34,21 +34,24 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class QosProcessHandler extends ByteToMessageDecoder {
-    
+
     private ScheduledFuture<?> welcomeFuture;
-    
+
     private String welcome;
+    // true means to accept foreign IP
+    private boolean acceptForeignIp;
 
     public static String prompt = "dubbo>";
-    
-    public QosProcessHandler(String welcome){
+
+    public QosProcessHandler(String welcome, boolean acceptForeignIp) {
         this.welcome = welcome;
+        this.acceptForeignIp = acceptForeignIp;
     }
-    
+
     @Override
     public void channelActive(final ChannelHandlerContext ctx) throws Exception {
         welcomeFuture = ctx.executor().schedule(new Runnable() {
-            
+
             @Override
             public void run() {
                 if (welcome != null) {
@@ -56,21 +59,21 @@ public class QosProcessHandler extends ByteToMessageDecoder {
                     ctx.writeAndFlush(Unpooled.wrappedBuffer(prompt.getBytes()));
                 }
             }
-            
+
         }, 500, TimeUnit.MILLISECONDS);
     }
-    
+
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
         if (in.readableBytes() < 1) {
             return;
         }
-        
+
         // read one byte to guess protocol
         final int magic = in.getByte(in.readerIndex());
-        
+
         ChannelPipeline p = ctx.pipeline();
-        p.addLast(new LocalHostPermitHandler());
+        p.addLast(new LocalHostPermitHandler(acceptForeignIp));
         if (isHttp(magic)) {
             // no welcome output for http protocol
             if (welcomeFuture != null && welcomeFuture.isCancellable()) {
@@ -84,11 +87,12 @@ public class QosProcessHandler extends ByteToMessageDecoder {
             p.addLast(new LineBasedFrameDecoder(2048));
             p.addLast(new StringDecoder(CharsetUtil.UTF_8));
             p.addLast(new StringEncoder(CharsetUtil.UTF_8));
-            p.addLast(new IdleStateHandler(0,0,5 * 60));
+            p.addLast(new IdleStateHandler(0, 0, 5 * 60));
             p.addLast(new TelnetProcessHandler());
             p.remove(this);
         }
     }
+
     // G for GET, and P for POST
     private static boolean isHttp(int magic) {
         return magic == 'G' || magic == 'P';
