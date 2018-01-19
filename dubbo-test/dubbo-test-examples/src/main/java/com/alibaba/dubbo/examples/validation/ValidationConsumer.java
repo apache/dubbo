@@ -18,7 +18,6 @@ package com.alibaba.dubbo.examples.validation;
 
 import com.alibaba.dubbo.examples.validation.api.ValidationParameter;
 import com.alibaba.dubbo.examples.validation.api.ValidationService;
-import com.alibaba.dubbo.rpc.RpcException;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -54,8 +53,8 @@ public class ValidationConsumer {
             parameter = new ValidationParameter();
             validationService.save(parameter);
             System.err.println("Validation Save ERROR");
-        } catch (RpcException e) {
-            ConstraintViolationException ve = (ConstraintViolationException) e.getCause();
+        } catch (Exception e) {
+            ConstraintViolationException ve = (ConstraintViolationException) e;
             Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
             System.out.println(violations);
         }
@@ -68,8 +67,8 @@ public class ValidationConsumer {
         try {
             validationService.delete(0, "abc");
             System.err.println("Validation Delete ERROR");
-        } catch (RpcException e) {
-            ConstraintViolationException ve = (ConstraintViolationException) e.getCause();
+        } catch (Exception e) {
+            ConstraintViolationException ve = (ConstraintViolationException) e;
             Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
             System.out.println(violations);
         }
