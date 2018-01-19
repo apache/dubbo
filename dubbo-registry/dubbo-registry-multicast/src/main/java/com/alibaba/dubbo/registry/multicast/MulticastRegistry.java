@@ -389,13 +389,13 @@ public class MulticastRegistry extends FailbackRegistry {
                 urls.addAll(values);
             }
         }
-        if (urls == null || urls.size() == 0) {
+        if (urls.size() == 0) {
             List<URL> cacheUrls = getCacheUrls(url);
             if (cacheUrls != null && cacheUrls.size() > 0) {
                 urls.addAll(cacheUrls);
             }
         }
-        if (urls == null || urls.size() == 0) {
+        if (urls.size() == 0) {
             for (URL u : getRegistered()) {
                 if (UrlUtils.isMatch(url, u)) {
                     urls.add(u);

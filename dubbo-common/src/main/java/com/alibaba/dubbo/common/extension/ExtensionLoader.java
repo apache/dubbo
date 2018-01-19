@@ -330,7 +330,8 @@ public class ExtensionLoader<T> {
         if (name == null || name.length() == 0)
             throw new IllegalArgumentException("Extension name == null");
         try {
-            return getExtensionClass(name) != null;
+            this.getExtensionClass(name);
+            return true;
         } catch (Throwable t) {
             return false;
         }

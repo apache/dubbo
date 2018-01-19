@@ -97,7 +97,7 @@ public class DubboProtocol extends AbstractProtocol {
                 RpcContext.getContext().setRemoteAddress(channel.getRemoteAddress());
                 return invoker.invoke(inv);
             }
-            throw new RemotingException(channel, "Unsupported request: " + message == null ? null : (message.getClass().getName() + ": " + message) + ", channel: consumer: " + channel.getRemoteAddress() + " --> provider: " + channel.getLocalAddress());
+            throw new RemotingException(channel, message.getClass().getName() + ": " + message + ", channel: consumer: " + channel.getRemoteAddress() + " --> provider: " + channel.getLocalAddress());
         }
 
         @Override

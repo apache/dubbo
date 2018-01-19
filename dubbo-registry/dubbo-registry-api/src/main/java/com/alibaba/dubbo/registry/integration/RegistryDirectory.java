@@ -306,22 +306,20 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         if (urls == null || urls.size() < 1) {
             return routers;
         }
-        if (urls != null && urls.size() > 0) {
-            for (URL url : urls) {
-                if (Constants.EMPTY_PROTOCOL.equals(url.getProtocol())) {
-                    continue;
-                }
-                String routerType = url.getParameter(Constants.ROUTER_KEY);
-                if (routerType != null && routerType.length() > 0) {
-                    url = url.setProtocol(routerType);
-                }
-                try {
-                    Router router = routerFactory.getRouter(url);
-                    if (!routers.contains(router))
-                        routers.add(router);
-                } catch (Throwable t) {
-                    logger.error("convert router url to router error, url: " + url, t);
-                }
+        for (URL url : urls) {
+            if (Constants.EMPTY_PROTOCOL.equals(url.getProtocol())) {
+                continue;
+            }
+            String routerType = url.getParameter(Constants.ROUTER_KEY);
+            if (routerType != null && routerType.length() > 0) {
+                url = url.setProtocol(routerType);
+            }
+            try {
+                Router router = routerFactory.getRouter(url);
+                if (!routers.contains(router))
+                    routers.add(router);
+            } catch (Throwable t) {
+                logger.error("convert router url to router error, url: " + url, t);
             }
         }
         return routers;
