@@ -276,7 +276,7 @@ public class MulticastRegistry extends FailbackRegistry {
         }
     }
 
-    protected void doUnSubscribe(URL url, NotifyListener listener) {
+    protected void doUnsubscribe(URL url, NotifyListener listener) {
         if (!Constants.ANY_VALUE.equals(url.getServiceInterface())
                 && url.getParameter(Constants.REGISTER_KEY, true)) {
             unregister(url);

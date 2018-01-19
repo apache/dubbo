@@ -186,7 +186,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
         }
     }
 
-    protected void doUnSubscribe(URL url, NotifyListener listener) {
+    protected void doUnsubscribe(URL url, NotifyListener listener) {
         ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
         if (listeners != null) {
             ChildListener zkListener = listeners.get(listener);

@@ -228,11 +228,11 @@ public class FailbackRegistryTest {
         }
 
         @Override
-        protected void doUnSubscribe(URL url, NotifyListener listener) {
+        protected void doUnsubscribe(URL url, NotifyListener listener) {
             if (bad) {
                 throw new RuntimeException("can not invoke!");
             }
-            //System.out.println("do doUnSubscribe");
+            //System.out.println("do doUnsubscribe");
             latch.countDown();
         }
 

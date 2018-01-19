@@ -389,7 +389,7 @@ public class RedisRegistry extends FailbackRegistry {
     }
 
     @Override
-    public void doUnSubscribe(URL url, NotifyListener listener) {
+    public void doUnsubscribe(URL url, NotifyListener listener) {
     }
 
     private void doNotify(Jedis jedis, String key) {
