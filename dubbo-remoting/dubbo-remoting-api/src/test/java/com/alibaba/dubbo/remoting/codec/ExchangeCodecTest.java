@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -42,7 +43,7 @@ import java.util.HashMap;
 import static org.junit.Assert.fail;
 
 /**
- * @author chao.liuc
+ *
  *         byte 16
  *         0-1 magic code
  *         2 flag
@@ -171,14 +172,13 @@ public class ExchangeCodecTest extends TelnetCodecTest {
 
     @Test
     public void test_Decode_MigicCodec_Contain_ExchangeHeader() throws IOException {
-        //
         byte[] header = new byte[]{0, 0, MAGIC_HIGH, MAGIC_LOW, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
         Channel channel = getServerSideChannel(url);
         ChannelBuffer buffer = ChannelBuffers.wrappedBuffer(header);
         Object obj = codec.decode(channel, buffer);
         Assert.assertEquals(TelnetCodec.DecodeResult.NEED_MORE_INPUT, obj);
-        //如果telnet数据与request数据在同一个数据包中，不能因为telnet没有结尾字符而影响其他数据的接收.
+        //If the telnet data and request data are in the same data packet, we should guarantee that the receipt of request data won't be affected by the factor that telnet does not have an end characters.
         Assert.assertEquals(2, buffer.readerIndex());
     }
 
@@ -195,7 +195,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
         System.out.println(obj);
     }
 
-    @Test //status输入有问题，序列化时读取信息出错.
+    @Test //The status input has a problem, and the read information is wrong when the serialization is serialized.
     public void test_Decode_Return_Response_Error() throws IOException {
         byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, 2, 90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         String errorString = "encode request data error ";
@@ -341,7 +341,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
         byte[] data = new byte[encodeBuffer.writerIndex()];
         encodeBuffer.readBytes(data);
 
-        //encode resault check need decode 
+        //encode resault check need decode
         ChannelBuffer decodeBuffer = ChannelBuffers.wrappedBuffer(data);
         Response obj = (Response) codec.decode(channel, decodeBuffer);
 
@@ -349,7 +349,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
         Assert.assertEquals(response.getStatus(), obj.getStatus());
         Assert.assertEquals(response.isHeartbeat(), obj.isHeartbeat());
         Assert.assertEquals(person, obj.getResult());
-        // encode response verson ?? 
+        // encode response verson ??
 //        Assert.assertEquals(response.getVersion(), obj.getVersion());
 
     }
@@ -372,7 +372,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
         byte[] data = new byte[encodeBuffer.writerIndex()];
         encodeBuffer.readBytes(data);
 
-        //encode resault check need decode 
+        //encode resault check need decode
         ChannelBuffer decodeBuffer = ChannelBuffers.wrappedBuffer(data);
         Response obj = (Response) codec.decode(channel, decodeBuffer);
         Assert.assertEquals(response.getId(), obj.getId());
@@ -399,8 +399,8 @@ public class ExchangeCodecTest extends TelnetCodecTest {
         ByteArrayOutputStream out = new ByteArrayOutputStream(1024);
         out.write(bytes, 0, 12);
         /*
-         * 填充长度不能低于256，hessian每次默认会从流中读取256个byte.
-         * 参见 Hessian2Input.readBuffer
+         * The fill length can not be less than 256, because by default, hessian reads 256 bytes from the stream each time.
+         * Refer Hessian2Input.readBuffer for more details
          */
         int padding = 512;
         out.write(Bytes.int2bytes(len + padding));

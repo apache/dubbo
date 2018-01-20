@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -42,7 +43,7 @@ public class ExplicitCallbackTest {
     protected Invoker<IDemoService> reference = null;
     protected URL serviceURL = null;
     protected URL consumerUrl = null;
-    // ============================华丽的分割线================================================
+    // ============================A gorgeous line of segmentation================================================
     IDemoService demoProxy = null;
 
     @After
@@ -51,7 +52,7 @@ public class ExplicitCallbackTest {
     }
 
     public void exportService() {
-        //先export一个service,测试共享连接的问题
+        // export one service first, to test connection sharing
         serviceURL = serviceURL.addParameter("connections", 1);
         URL hellourl = serviceURL.setPath(IHelloService.class.getName());
         hello_exporter = ProtocolUtils.export(new HelloServiceImpl(), IHelloService.class, hellourl);
@@ -172,7 +173,8 @@ public class ExplicitCallbackTest {
     @Test(expected = RpcException.class)
     public void TestCallbackConsumerLimit() throws Exception {
         initOrResetUrl(1, 1000);
-        //api的方式 url 无法自动从服务端传递到客户端，需要手动制定
+        // URL cannot be transferred automatically from the server side to the client side by using API, instead,
+        // it needs manually specified.
         initOrResetService();
         final AtomicInteger count = new AtomicInteger(0);
         demoProxy.xxx(new IDemoCallback() {
@@ -196,7 +198,8 @@ public class ExplicitCallbackTest {
     @Test(expected = RpcException.class)
     public void TestCallbackProviderLimit() throws Exception {
         initOrResetUrl(1, 1000);
-        //api的方式 url 无法自动从服务端传递到客户端，需要手动制定
+        // URL cannot be transferred automatically from the server side to the client side by using API, instead,
+        // it needs manually specified.
         serviceURL = serviceURL.addParameter(Constants.CALLBACK_INSTANCES_LIMIT_KEY, 1 + "");
         initOrResetService();
         final AtomicInteger count = new AtomicInteger(0);
@@ -227,11 +230,11 @@ public class ExplicitCallbackTest {
             Assert.assertTrue(count.get() > last);
             last = count.get();
         }
-        //有一次同步调用callback
+        // has one sync callback
         Assert.assertEquals(runs + 1, count.get());
     }
 
-    @Ignore //使用不同进程启动
+    @Ignore("need start with separate process")
     @Test
     public void startProvider() throws Exception {
         exportService();
@@ -240,7 +243,6 @@ public class ExplicitCallbackTest {
         }
     }
 
-    // ============================华丽的分割线================================================
     interface IDemoCallback {
         String yyy(String msg);
     }

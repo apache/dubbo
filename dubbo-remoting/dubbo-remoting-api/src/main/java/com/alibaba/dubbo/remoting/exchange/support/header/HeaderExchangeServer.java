@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -42,8 +43,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * ExchangeServerImpl
- *
- * @author william.liangf
  */
 public class HeaderExchangeServer implements ExchangeServer {
 
@@ -54,9 +53,9 @@ public class HeaderExchangeServer implements ExchangeServer {
                     "dubbo-remoting-server-heartbeat",
                     true));
     private final Server server;
-    // 心跳定时器
+    // heartbeat timer
     private ScheduledFuture<?> heatbeatTimer;
-    // 心跳超时，毫秒。缺省0，不会执行心跳。
+    // heartbeat timeout (ms), default value is 0 , won't execute a heartbeat.
     private int heartbeat;
     private int heartbeatTimeout;
     private AtomicBoolean closed = new AtomicBoolean(false);

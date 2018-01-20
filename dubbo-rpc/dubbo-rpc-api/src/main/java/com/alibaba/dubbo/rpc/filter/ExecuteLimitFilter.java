@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,8 +30,6 @@ import java.util.concurrent.Semaphore;
 
 /**
  * ThreadLimitInvokerFilter
- *
- * @author william.liangf
  */
 @Activate(group = Constants.PROVIDER, value = Constants.EXECUTES_KEY)
 public class ExecuteLimitFilter implements Filter {
@@ -46,8 +45,7 @@ public class ExecuteLimitFilter implements Filter {
 //            if (count.getActive() >= max) {
             /**
              * http://manzhizhen.iteye.com/blog/2386408
-             * 通过信号量来做并发控制（即限制能使用的线程数量）
-             * 2017-08-21 yizhenqiang
+             * use semaphore for concurrency control (to limit thread number)
              */
             executesLimit = count.getSemaphore(max);
             if(executesLimit != null && !(acquireResult = executesLimit.tryAcquire())) {

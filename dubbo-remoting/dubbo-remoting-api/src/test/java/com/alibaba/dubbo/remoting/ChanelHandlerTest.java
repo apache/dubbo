@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,15 +30,13 @@ import org.junit.Test;
  * ChanelHandlerTest
  * <p>
  * mvn clean test -Dtest=*PerformanceClientTest -Dserver=10.20.153.187:9911
- *
- * @author william.liangf
  */
 public class ChanelHandlerTest extends TestCase {
 
     private static final Logger logger = LoggerFactory.getLogger(ChanelHandlerTest.class);
 
     public static ExchangeClient initClient(String url) {
-        // 创建客户端
+        // Create client and build connection
         ExchangeClient exchangeClient = null;
         PeformanceTestHandler handler = new PeformanceTestHandler(url);
         boolean run = true;
@@ -74,7 +73,7 @@ public class ChanelHandlerTest extends TestCase {
 
     @Test
     public void testClient() throws Throwable {
-        // 读取参数
+        // read server info from property
         if (PerformanceUtils.getProperty("server", null) == null) {
             logger.warn("Please set -Dserver=127.0.0.1:9911");
             return;

@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -44,7 +45,6 @@ import static org.junit.Assert.assertEquals;
 /**
  * RegistryProtocolTest
  *
- * @author tony.chenl
  */
 public class RegistryProtocolTest {
 
@@ -88,7 +88,7 @@ public class RegistryProtocolTest {
                 newRegistryUrl, new ExchangeClient[]{new MockedClient("10.20.20.20", 2222, true)});
         Exporter<DemoService> exporter = registryProtocol.export(invoker);
         Exporter<DemoService> exporter2 = registryProtocol.export(invoker);
-        //同一个invoker，多次export的exporter不同
+        //The same invoker, exporter that multiple exported are different
         Assert.assertNotSame(exporter, exporter2);
         exporter.unexport();
         exporter2.unexport();
@@ -120,8 +120,8 @@ public class RegistryProtocolTest {
 
 
     /**
-     * 服务名称不匹配，不能override invoker
-     * 服务名称匹配，服务版本号不匹配
+     * The name of the service does not match and can't override invoker
+     * Service name matching, service version number mismatch
      */
     @Test
     public void testNotifyOverride_notmatch() throws Exception {
@@ -140,7 +140,7 @@ public class RegistryProtocolTest {
     }
 
     /**
-     * 测试destory registry ，exporter是否能够正常被destroy掉
+     * Test destory registry, exporter can be normal by destroyed
      */
     @Test
     public void testDestoryRegistry() {

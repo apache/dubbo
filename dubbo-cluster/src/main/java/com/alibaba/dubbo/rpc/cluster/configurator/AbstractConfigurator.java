@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2012 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,7 +28,6 @@ import java.util.Set;
 /**
  * AbstractOverrideConfigurator
  *
- * @author william.liangf
  */
 public abstract class AbstractConfigurator implements Configurator {
 
@@ -53,17 +53,18 @@ public abstract class AbstractConfigurator implements Configurator {
                 || url == null || url.getHost() == null) {
             return url;
         }
-        if (configuratorUrl.getPort() != 0) {// override输入提供端地址，意图是控制提供者机器。可能在提供端生效 也可能在消费端生效
+        // If override url has port, means it is a provider address. We want to control a specific provider with this override url, it may take effect on the specific provider instance or on consumers holding this provider instance.
+        if (configuratorUrl.getPort() != 0) {
             if (url.getPort() == configuratorUrl.getPort()) {
                 return configureIfMatch(url.getHost(), url);
             }
-        } else {// 没有端口，override输入消费端地址 或者 0.0.0.0
-            // 1.如果是消费端地址，则意图是控制消费者机器，必定在消费端生效，提供端忽略；
-            // 2.如果是0.0.0.0可能是控制提供端，也可能是控制提供端
+        } else {// override url don't have a port, means the ip override url specify is a consumer address or 0.0.0.0
+            // 1.If it is a consumer ip address, the intention is to control a specific consumer instance, it must takes effect at the consumer side, any provider received this override url should ignore;
+            // 2.If the ip is 0.0.0.0, this override url can be used on consumer, and also can be used on provider
             if (url.getParameter(Constants.SIDE_KEY, Constants.PROVIDER).equals(Constants.CONSUMER)) {
-                return configureIfMatch(NetUtils.getLocalHost(), url);// NetUtils.getLocalHost是消费端注册到zk的消费者地址
+                return configureIfMatch(NetUtils.getLocalHost(), url);// NetUtils.getLocalHost is the ip address consumer registered to registry.
             } else if (url.getParameter(Constants.SIDE_KEY, Constants.CONSUMER).equals(Constants.PROVIDER)) {
-                return configureIfMatch(Constants.ANYHOST_VALUE, url);//控制所有提供端，地址必定是0.0.0.0，否则就要配端口从而执行上面的if分支了
+                return configureIfMatch(Constants.ANYHOST_VALUE, url);// take effect on all providers, so address must be 0.0.0.0, otherwise it won't flow to this if branch
             }
         }
         return url;
@@ -99,9 +100,9 @@ public abstract class AbstractConfigurator implements Configurator {
     }
 
     /**
-     * 根据priority、host依次排序
-     * priority值越大，优先级越高；
-     * priority相同，特定host优先级高于anyhost 0.0.0.0
+     * Sort by host, priority
+     * 1. the url with a specific host ip should have higher priority than 0.0.0.0
+     * 2. if two url has the same host, compare by priority value；
      *
      * @param o
      * @return
@@ -112,7 +113,7 @@ public abstract class AbstractConfigurator implements Configurator {
         }
 
         int ipCompare = getUrl().getHost().compareTo(o.getUrl().getHost());
-        if (ipCompare == 0) {//ip相同，根据priority排序
+        if (ipCompare == 0) {//host is the same, sort by priority
             int i = getUrl().getParameter(Constants.PRIORITY_KEY, 0),
                     j = o.getUrl().getParameter(Constants.PRIORITY_KEY, 0);
             if (i < j) {

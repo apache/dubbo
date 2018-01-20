@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -61,13 +62,13 @@ public class ConnectChannelHandlerTest extends WrappedChannelHandlerTest {
         Assert.assertEquals(taskCount, executor.getCompletedTaskCount());
     }
 
-    @Test //biz error 不抛出到线程异常上来.
+    @Test //biz error should not throw and affect biz thread.
     public void test_Connect_Biz_Error() throws RemotingException {
         handler = new ConnectionOrderedChannelHandler(new BizChannelHander(true), url);
         handler.connected(new MockedChannel());
     }
 
-    @Test //biz error 不抛出到线程异常上来.
+    @Test //biz error should not throw and affect biz thread.
     public void test_Disconnect_Biz_Error() throws RemotingException {
         handler = new ConnectionOrderedChannelHandler(new BizChannelHander(true), url);
         handler.disconnected(new MockedChannel());
@@ -112,7 +113,7 @@ public class ConnectChannelHandlerTest extends WrappedChannelHandlerTest {
     }
 
     /**
-     * 事件不通过线程池，直接在IO上执行
+     * Events do not pass through the thread pool and execute directly on the IO
      */
     @SuppressWarnings("deprecation")
     @Ignore("Heartbeat is processed in HeartbeatHandler not WrappedChannelHandler.")
