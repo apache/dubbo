@@ -35,9 +35,5 @@
             <artifactId>dubbo-rpc-api</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.bsf</groupId>
-            <artifactId>bsf-api</artifactId>
-        </dependency>
     </dependencies>
 </project>
