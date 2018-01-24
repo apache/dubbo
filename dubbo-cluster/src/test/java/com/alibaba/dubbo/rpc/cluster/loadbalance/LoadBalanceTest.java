@@ -33,6 +33,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -49,6 +50,7 @@ public class LoadBalanceTest {
     Invoker<LoadBalanceTest> invoker3;
     Invoker<LoadBalanceTest> invoker4;
     Invoker<LoadBalanceTest> invoker5;
+    List<Invocation> invocationList;
 
     /**
      * @throws java.lang.Exception
@@ -71,6 +73,14 @@ public class LoadBalanceTest {
         invoker3 = EasyMock.createMock(Invoker.class);
         invoker4 = EasyMock.createMock(Invoker.class);
         invoker5 = EasyMock.createMock(Invoker.class);
+        invocationList = new ArrayList<Invocation>();
+        for(int i=0; i<1000; i++){
+            Invocation  invocation1 = EasyMock.createMock(Invocation.class);
+            EasyMock.expect(invocation1.getMethodName()).andReturn("method1").anyTimes();
+            EasyMock.expect(invocation1.getArguments()).andReturn(new Object[]{randomString(3),randomString(5)}).anyTimes();
+            EasyMock.replay(invocation1);
+            invocationList.add(invocation1);
+        }
 
         URL url1 = URL.valueOf("test://127.0.0.1:1/DemoService");
         URL url2 = URL.valueOf("test://127.0.0.1:2/DemoService");
@@ -114,6 +124,18 @@ public class LoadBalanceTest {
         for (Invoker minvoker : counter.keySet()) {
             Long count = counter.get(minvoker).get();
             Assert.assertTrue("abs diff shoud < 1", Math.abs(count - runs / (0f + invokers.size())) < 1f);
+        }
+    }
+
+    @Test
+    public void testConsistentHashLoadBalance_select() {
+        Map<Invoker, AtomicLong> counter = getInvokeCounter(ConsistentHashLoadBalance.NAME, invocationList);
+
+        long runs = invocationList.size();
+        for (Invoker minvoker : counter.keySet()) {
+            Long count = counter.get(minvoker).get();
+            float ratio = count/(runs / (0f + invokers.size()));
+            Assert.assertTrue("invoker ratio must be gt 0.5 and lt 2",ratio>0.5 && ratio< 2);
         }
     }
 
@@ -169,6 +191,20 @@ public class LoadBalanceTest {
         return counter;
     }
 
+    public Map<Invoker, AtomicLong> getInvokeCounter(String loadbalanceName, List<Invocation> invocationList) {
+        Map<Invoker, AtomicLong> counter = new ConcurrentHashMap<Invoker, AtomicLong>();
+        LoadBalance lb = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(loadbalanceName);
+        for (Invoker invoker : invokers) {
+            counter.put(invoker, new AtomicLong(0));
+        }
+
+        for(Invocation invocation : invocationList){
+            Invoker sinvoker = lb.select(invokers, invokers.get(0).getUrl(), invocation);
+            counter.get(sinvoker).incrementAndGet();
+        }
+        return counter;
+    }
+
     @Test
     public void testLoadBalanceWarmup() {
         Assert.assertEquals(1,
@@ -201,4 +237,14 @@ public class LoadBalanceTest {
             .calculateWarmupWeight(20 * 60 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
     }
 
+    private static String randomString(int length) {
+        String str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        Random random = new Random();
+        StringBuffer buf = new StringBuffer();
+        for (int i = 0; i < length; i++) {
+            int num = random.nextInt(62);
+            buf.append(str.charAt(num));
+        }
+        return buf.toString();
+    }
 }
