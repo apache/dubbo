@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,44 +25,43 @@ import java.util.Map;
 /**
  * AbstractMethodConfig
  *
- * @author william.liangf
  * @export
  */
 public abstract class AbstractMethodConfig extends AbstractConfig {
 
     private static final long serialVersionUID = 1L;
 
-    // 远程调用超时时间(毫秒)
+    // timeout for remote invocation in milliseconds
     protected Integer timeout;
 
-    // 重试次数
+    // retry times
     protected Integer retries;
 
-    // 最大并发调用
+    // max concurrent invocations
     protected Integer actives;
 
-    // 负载均衡
+    // load balance
     protected String loadbalance;
 
-    // 是否异步
+    // whether to async
     protected Boolean async;
 
-    // 异步发送是否等待发送成功
+    // whether to ack async-sent
     protected Boolean sent;
 
-    // 服务接口的失败mock实现类名
+    // the name of mock class which gets called when a service fails to execute
     protected String mock;
 
-    // 合并器
+    // merger
     protected String merger;
 
-    // 服务接口的失败mock实现类名
+    // cache
     protected String cache;
 
-    // 服务接口的失败mock实现类名
+    // validation
     protected String validation;
 
-    // 自定义参数
+    // customized parameters
     protected Map<String, String> parameters;
 
     public Integer getTimeout() {

@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,8 +18,10 @@ package com.alibaba.dubbo.rpc.protocol.dubbo;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
+import com.alibaba.dubbo.common.serialize.support.SerializableClassRegistry;
+import com.alibaba.dubbo.common.serialize.support.SerializationOptimizer;
+import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.remoting.Channel;
@@ -50,10 +53,6 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * dubbo protocol support.
- *
- * @author qian.lei
- * @author william.liangf
- * @author chao.liuc
  */
 public class DubboProtocol extends AbstractProtocol {
 
@@ -65,6 +64,7 @@ public class DubboProtocol extends AbstractProtocol {
     private final Map<String, ExchangeServer> serverMap = new ConcurrentHashMap<String, ExchangeServer>(); // <host:port,Exchanger>
     private final Map<String, ReferenceCountExchangeClient> referenceClientMap = new ConcurrentHashMap<String, ReferenceCountExchangeClient>(); // <host:port,Exchanger>
     private final ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap = new ConcurrentHashMap<String, LazyConnectExchangeClient>();
+    private final Set<String> optimizers = new ConcurrentHashSet<String>();
     //consumer side export a stub service for dispatching event
     //servicekey-stubmethods
     private final ConcurrentMap<String, String> stubServiceMethodsMap = new ConcurrentHashMap<String, String>();
@@ -74,7 +74,7 @@ public class DubboProtocol extends AbstractProtocol {
             if (message instanceof Invocation) {
                 Invocation inv = (Invocation) message;
                 Invoker<?> invoker = getInvoker(channel, inv);
-                //如果是callback 需要处理高版本调用低版本的问题
+                // need to consider backward-compatibility if it's a callback
                 if (Boolean.TRUE.toString().equals(inv.getAttachments().get(IS_CALLBACK_SERVICE_INVOKE))) {
                     String methodsStr = invoker.getUrl().getParameters().get("methods");
                     boolean hasMethod = false;
@@ -186,7 +186,7 @@ public class DubboProtocol extends AbstractProtocol {
         boolean isStubServiceInvoke = false;
         int port = channel.getLocalAddress().getPort();
         String path = inv.getAttachments().get(Constants.PATH_KEY);
-        //如果是客户端的回调服务.
+        // if it's callback service on client side
         isStubServiceInvoke = Boolean.TRUE.toString().equals(inv.getAttachments().get(Constants.STUB_EVENT_KEY));
         if (isStubServiceInvoke) {
             port = channel.getRemoteAddress().getPort();
@@ -223,7 +223,7 @@ public class DubboProtocol extends AbstractProtocol {
         DubboExporter<T> exporter = new DubboExporter<T>(invoker, key, exporterMap);
         exporterMap.put(key, exporter);
 
-        //export an stub service for dispaching event
+        //export an stub service for dispatching event
         Boolean isStubSupportEvent = url.getParameter(Constants.STUB_EVENT_KEY, Constants.DEFAULT_STUB_EVENT);
         Boolean isCallbackservice = url.getParameter(Constants.IS_CALLBACK_SERVICE, false);
         if (isStubSupportEvent && !isCallbackservice) {
@@ -239,30 +239,30 @@ public class DubboProtocol extends AbstractProtocol {
         }
 
         openServer(url);
-
+        optimizeSerialization(url);
         return exporter;
     }
 
     private void openServer(URL url) {
         // find server.
         String key = url.getAddress();
-        //client 也可以暴露一个只有server可以调用的服务。
+        //client can export a service which's only for server to invoke
         boolean isServer = url.getParameter(Constants.IS_SERVER_KEY, true);
         if (isServer) {
             ExchangeServer server = serverMap.get(key);
             if (server == null) {
                 serverMap.put(key, createServer(url));
             } else {
-                //server支持reset,配合override功能使用
+                // server supports reset, use together with override
                 server.reset(url);
             }
         }
     }
 
     private ExchangeServer createServer(URL url) {
-        //默认开启server关闭时发送readonly事件
+        // send readonly event when server closes, it's enabled by default
         url = url.addParameterIfAbsent(Constants.CHANNEL_READONLYEVENT_SENT_KEY, Boolean.TRUE.toString());
-        //默认开启heartbeat
+        // enable heartbeat by default
         url = url.addParameterIfAbsent(Constants.HEARTBEAT_KEY, String.valueOf(Constants.DEFAULT_HEARTBEAT));
         String str = url.getParameter(Constants.SERVER_KEY, Constants.DEFAULT_REMOTING_SERVER);
 
@@ -286,7 +286,42 @@ public class DubboProtocol extends AbstractProtocol {
         return server;
     }
 
+    private void optimizeSerialization(URL url) throws RpcException {
+        String className = url.getParameter(Constants.OPTIMIZER_KEY, "");
+        if (StringUtils.isEmpty(className) || optimizers.contains(className)) {
+            return;
+        }
+        
+        logger.info("Optimizing the serialization process for Kryo, FST, etc...");
+        
+        try {
+            Class clazz = Thread.currentThread().getContextClassLoader().loadClass(className);
+            if (!SerializationOptimizer.class.isAssignableFrom(clazz)) {
+                throw new RpcException("The serialization optimizer " + className + " isn't an instance of " + SerializationOptimizer.class.getName());
+            }
+            
+            SerializationOptimizer optimizer = (SerializationOptimizer) clazz.newInstance();
+            
+            if (optimizer.getSerializableClasses() == null) {
+                return;
+            }
+            
+            for (Class c : optimizer.getSerializableClasses()) {
+                SerializableClassRegistry.registerClass(c);
+            }
+            
+            optimizers.add(className);
+        } catch (ClassNotFoundException e) {
+            throw new RpcException("Cannot find the serialization optimizer class: " + className, e);
+        } catch (InstantiationException e) {
+            throw new RpcException("Cannot instantiate the serialization optimizer class: " + className, e);
+        } catch (IllegalAccessException e) {
+            throw new RpcException("Cannot instantiate the serialization optimizer class: " + className, e);
+        }
+    }
+
     public <T> Invoker<T> refer(Class<T> serviceType, URL url) throws RpcException {
+        optimizeSerialization(url);
         // create rpc invoker.
         DubboInvoker<T> invoker = new DubboInvoker<T>(serviceType, url, getClients(url), invokers);
         invokers.add(invoker);
@@ -294,10 +329,10 @@ public class DubboProtocol extends AbstractProtocol {
     }
 
     private ExchangeClient[] getClients(URL url) {
-        //是否共享连接
+        // whether to share connection
         boolean service_share_connect = false;
         int connections = url.getParameter(Constants.CONNECTIONS_KEY, 0);
-        //如果connections不配置，则共享连接，否则每服务每连接
+        // if not configured, connection is shared, otherwise, one connection for one service
         if (connections == 0) {
             service_share_connect = true;
             connections = 1;
@@ -315,7 +350,7 @@ public class DubboProtocol extends AbstractProtocol {
     }
 
     /**
-     * 获取共享连接
+     * Get shared connection
      */
     private ExchangeClient getSharedClient(URL url) {
         String key = url.getAddress();
@@ -338,7 +373,7 @@ public class DubboProtocol extends AbstractProtocol {
     }
 
     /**
-     * 创建新连接.
+     * Create new connection
      */
     private ExchangeClient initClient(URL url) {
 
@@ -348,10 +383,10 @@ public class DubboProtocol extends AbstractProtocol {
         String version = url.getParameter(Constants.DUBBO_VERSION_KEY);
         boolean compatible = (version != null && version.startsWith("1.0."));
         url = url.addParameter(Constants.CODEC_KEY, DubboCodec.NAME);
-        //默认开启heartbeat
+        // enable heartbeat by default
         url = url.addParameterIfAbsent(Constants.HEARTBEAT_KEY, String.valueOf(Constants.DEFAULT_HEARTBEAT));
 
-        // BIO存在严重性能问题，暂时不允许使用
+        // BIO is not allowed since it has severe performance issue.
         if (str != null && str.length() > 0 && !ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(str)) {
             throw new RpcException("Unsupported client type: " + str + "," +
                     " supported client type is " + StringUtils.join(ExtensionLoader.getExtensionLoader(Transporter.class).getSupportedExtensions(), " "));
@@ -359,7 +394,7 @@ public class DubboProtocol extends AbstractProtocol {
 
         ExchangeClient client;
         try {
-            //设置连接应该是lazy的 
+            // connection should be lazy
             if (url.getParameter(Constants.LAZY_CONNECT_KEY, false)) {
                 client = new LazyConnectExchangeClient(url, requestHandler);
             } else {

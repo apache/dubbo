@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -397,19 +398,19 @@ public class UrlUtils {
             return false;
 
         int i = pattern.lastIndexOf('*');
-        // 没有找到星号
+        // doesn't find "*"
         if (i == -1) {
             return value.equals(pattern);
         }
-        // 星号在末尾
+        // "*" is at the end
         else if (i == pattern.length() - 1) {
             return value.startsWith(pattern.substring(0, i));
         }
-        // 星号的开头
+        // "*" is at the beginning
         else if (i == 0) {
             return value.endsWith(pattern.substring(i + 1));
         }
-        // 星号的字符串的中间
+        // "*" is in the middle
         else {
             String prefix = pattern.substring(0, i);
             String suffix = pattern.substring(i + 1);
@@ -427,7 +428,7 @@ public class UrlUtils {
     }
 
     /**
-     * 判断 value 是否匹配 pattern，pattern 支持 * 通配符.
+     * Check if the given value matches the given pattern. The pattern supports wildcard "*".
      *
      * @param pattern pattern
      * @param value   value

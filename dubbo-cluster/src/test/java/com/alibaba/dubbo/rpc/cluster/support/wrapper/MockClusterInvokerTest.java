@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.alibaba.dubbo.rpc.cluster.support.wrapper;
 
 import com.alibaba.dubbo.common.Constants;
@@ -34,7 +50,7 @@ public class MockClusterInvokerTest {
     }
 
     /**
-     * 测试mock策略是否正常-fail-mock
+     * Test if mock policy works fine: fail-mock
      */
     @Test
     public void testMockInvokerInvoke_normal() {
@@ -48,13 +64,13 @@ public class MockClusterInvokerTest {
         Invoker<IHelloService> mInvoker1 = protocol.refer(IHelloService.class, mockUrl);
         invokers.add(mInvoker1);
 
-        //方法配置了mock
+        //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething");
         Result ret = cluster.invoke(invocation);
         Assert.assertEquals("something", ret.getValue());
 
-        //如果没有配置mock，则直接返回null
+        // If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("sayHello");
         ret = cluster.invoke(invocation);
@@ -62,7 +78,7 @@ public class MockClusterInvokerTest {
     }
 
     /**
-     * 测试mock策略是否正常-fail-mock
+     * Test if mock policy works fine: fail-mock
      */
     @Test
     public void testMockInvokerInvoke_failmock() {
@@ -77,19 +93,19 @@ public class MockClusterInvokerTest {
         Invoker<IHelloService> mInvoker1 = protocol.refer(IHelloService.class, mockUrl);
         invokers.add(mInvoker1);
 
-        //方法配置了mock
+        //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething");
         Result ret = cluster.invoke(invocation);
         Assert.assertEquals("aa", ret.getValue());
 
-        //如果没有配置mock，则直接返回null
+        // If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("getSomething2");
         ret = cluster.invoke(invocation);
         Assert.assertEquals(null, ret.getValue());
 
-        //如果没有配置mock，则直接返回null
+        // If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("sayHello");
         ret = cluster.invoke(invocation);
@@ -98,7 +114,7 @@ public class MockClusterInvokerTest {
 
 
     /**
-     * 测试mock策略是否正常-force-mork
+     * Test if mock policy works fine: force-mock
      */
     @Test
     public void testMockInvokerInvoke_forcemock() {
@@ -113,19 +129,19 @@ public class MockClusterInvokerTest {
         Invoker<IHelloService> mInvoker1 = protocol.refer(IHelloService.class, mockUrl);
         invokers.add(mInvoker1);
 
-        //方法配置了mock
+        //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething");
         Result ret = cluster.invoke(invocation);
         Assert.assertEquals("aa", ret.getValue());
 
-        //如果没有配置mock，则直接返回null
+        // If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("getSomething2");
         ret = cluster.invoke(invocation);
         Assert.assertEquals(null, ret.getValue());
 
-        //如果没有配置mock，则直接返回null
+        // If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("sayHello");
         ret = cluster.invoke(invocation);
@@ -152,7 +168,7 @@ public class MockClusterInvokerTest {
     }
 
     /**
-     * 测试mock策略是否正常-fail-mock
+     * Test if mock policy works fine: fail-mock
      */
     @Test
     public void testMockInvokerFromOverride_Invoke_Fock_someMethods() {
@@ -160,25 +176,25 @@ public class MockClusterInvokerTest {
                 .addParameter("getSomething.mock", "fail:return x")
                 .addParameter("getSomething2.mock", "force:return y");
         Invoker<IHelloService> cluster = getClusterInvoker(url);
-        //方法配置了mock
+        //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething");
         Result ret = cluster.invoke(invocation);
         Assert.assertEquals("something", ret.getValue());
 
-        //如果没有配置mock，则直接返回null
+        // If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("getSomething2");
         ret = cluster.invoke(invocation);
         Assert.assertEquals("y", ret.getValue());
 
-        //如果没有配置mock，则直接返回null
+        // If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("getSomething3");
         ret = cluster.invoke(invocation);
         Assert.assertEquals("something3", ret.getValue());
 
-        //如果没有配置mock，则直接返回null
+        // If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("sayHello");
         ret = cluster.invoke(invocation);
@@ -186,7 +202,7 @@ public class MockClusterInvokerTest {
     }
 
     /**
-     * 测试mock策略是否正常-fail-mock
+     * Test if mock policy works fine: fail-mock
      */
     @Test
     public void testMockInvokerFromOverride_Invoke_Fock_WithOutDefault() {
@@ -195,19 +211,19 @@ public class MockClusterInvokerTest {
                 .addParameter("getSomething2.mock", "force:return y")
                 .addParameter("invoke_return_error", "true");
         Invoker<IHelloService> cluster = getClusterInvoker(url);
-        //方法配置了mock
+        //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething");
         Result ret = cluster.invoke(invocation);
         Assert.assertEquals("x", ret.getValue());
 
-        //如果没有配置mock，则直接返回null
+        // If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("getSomething2");
         ret = cluster.invoke(invocation);
         Assert.assertEquals("y", ret.getValue());
 
-        //如果没有配置mock，则直接返回null
+        // If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("getSomething3");
         try {
@@ -219,7 +235,7 @@ public class MockClusterInvokerTest {
     }
 
     /**
-     * 测试mock策略是否正常-fail-mock
+     * Test if mock policy works fine: fail-mock
      */
     @Test
     public void testMockInvokerFromOverride_Invoke_Fock_WithDefault() {
@@ -229,25 +245,25 @@ public class MockClusterInvokerTest {
                 .addParameter("getSomething2.mock", "force:return y")
                 .addParameter("invoke_return_error", "true");
         Invoker<IHelloService> cluster = getClusterInvoker(url);
-        //方法配置了mock
+        //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething");
         Result ret = cluster.invoke(invocation);
         Assert.assertEquals("x", ret.getValue());
 
-        //如果没有配置mock，则直接返回null
+        // If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("getSomething2");
         ret = cluster.invoke(invocation);
         Assert.assertEquals("y", ret.getValue());
 
-        //如果没有配置mock，则直接返回null
+        // If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("getSomething3");
         ret = cluster.invoke(invocation);
         Assert.assertEquals(null, ret.getValue());
 
-        //如果没有配置mock，则直接返回null
+        // If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("sayHello");
         ret = cluster.invoke(invocation);
@@ -255,7 +271,7 @@ public class MockClusterInvokerTest {
     }
 
     /**
-     * 测试mock策略是否正常-fail-mock
+     * Test if mock policy works fine: fail-mock
      */
     @Test
     public void testMockInvokerFromOverride_Invoke_Fock_WithFailDefault() {
@@ -265,25 +281,25 @@ public class MockClusterInvokerTest {
                 .addParameter("getSomething2.mock", "force:return y")
                 .addParameter("invoke_return_error", "true");
         Invoker<IHelloService> cluster = getClusterInvoker(url);
-        //方法配置了mock
+        //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething");
         Result ret = cluster.invoke(invocation);
         Assert.assertEquals("x", ret.getValue());
 
-        //如果没有配置mock，则直接返回null
+        // If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("getSomething2");
         ret = cluster.invoke(invocation);
         Assert.assertEquals("y", ret.getValue());
 
-        //如果没有配置mock，则直接返回null
+        // If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("getSomething3");
         ret = cluster.invoke(invocation);
         Assert.assertEquals("z", ret.getValue());
 
-        //如果没有配置mock，则直接返回null
+        //If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("sayHello");
         ret = cluster.invoke(invocation);
@@ -291,7 +307,7 @@ public class MockClusterInvokerTest {
     }
 
     /**
-     * 测试mock策略是否正常-fail-mock
+     * Test if mock policy works fine: fail-mock
      */
     @Test
     public void testMockInvokerFromOverride_Invoke_Fock_WithForceDefault() {
@@ -301,25 +317,25 @@ public class MockClusterInvokerTest {
                 .addParameter("getSomething2.mock", "force:return y")
                 .addParameter("invoke_return_error", "true");
         Invoker<IHelloService> cluster = getClusterInvoker(url);
-        //方法配置了mock
+        //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething");
         Result ret = cluster.invoke(invocation);
         Assert.assertEquals("x", ret.getValue());
 
-        //如果没有配置mock，则直接返回null
+        //If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("getSomething2");
         ret = cluster.invoke(invocation);
         Assert.assertEquals("y", ret.getValue());
 
-        //如果没有配置mock，则直接返回null
+        //If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("getSomething3");
         ret = cluster.invoke(invocation);
         Assert.assertEquals("z", ret.getValue());
 
-        //如果没有配置mock，则直接返回null
+        //If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("sayHello");
         ret = cluster.invoke(invocation);
@@ -327,7 +343,7 @@ public class MockClusterInvokerTest {
     }
 
     /**
-     * 测试mock策略是否正常-fail-mock
+     * Test if mock policy works fine: fail-mock
      */
     @Test
     public void testMockInvokerFromOverride_Invoke_Fock_Default() {
@@ -335,20 +351,19 @@ public class MockClusterInvokerTest {
                 .addParameter("mock", "fail:return x")
                 .addParameter("invoke_return_error", "true");
         Invoker<IHelloService> cluster = getClusterInvoker(url);
-        //方法配置了mock
+        //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething");
         Result ret = cluster.invoke(invocation);
         Assert.assertEquals("x", ret.getValue());
 
-        //如果没有配置mock，则直接返回null
+        //If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("getSomething2");
         ret = cluster.invoke(invocation);
         Assert.assertEquals("x", ret.getValue());
 
-        //如d
-        //如果没有配置mock，则直接返回null
+        //If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("sayHello");
         ret = cluster.invoke(invocation);
@@ -356,7 +371,7 @@ public class MockClusterInvokerTest {
     }
 
     /**
-     * 测试mock策略是否正常-fail-mock
+     * Test if mock policy works fine: fail-mock
      */
     @Test
     public void testMockInvokerFromOverride_Invoke_checkCompatible_return() {
@@ -364,13 +379,13 @@ public class MockClusterInvokerTest {
                 .addParameter("getSomething.mock", "return x")
                 .addParameter("invoke_return_error", "true");
         Invoker<IHelloService> cluster = getClusterInvoker(url);
-        //方法配置了mock
+        //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething");
         Result ret = cluster.invoke(invocation);
         Assert.assertEquals("x", ret.getValue());
 
-        //如果没有配置mock，则直接返回null
+        //If no mock was configured, return null directly
         invocation = new RpcInvocation();
         invocation.setMethodName("getSomething3");
         try {
@@ -382,7 +397,7 @@ public class MockClusterInvokerTest {
     }
 
     /**
-     * 测试mock策略是否正常-fail-mock
+     * Test if mock policy works fine: fail-mock
      */
     @Test
     public void testMockInvokerFromOverride_Invoke_checkCompatible_ImplMock() {
@@ -390,7 +405,7 @@ public class MockClusterInvokerTest {
                 .addParameter("mock", "true")
                 .addParameter("invoke_return_error", "true");
         Invoker<IHelloService> cluster = getClusterInvoker(url);
-        //方法配置了mock
+        //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething");
         Result ret = cluster.invoke(invocation);
@@ -398,7 +413,7 @@ public class MockClusterInvokerTest {
     }
 
     /**
-     * 测试mock策略是否正常-fail-mock
+     * Test if mock policy works fine: fail-mock
      */
     @Test
     public void testMockInvokerFromOverride_Invoke_checkCompatible_ImplMock2() {
@@ -406,7 +421,7 @@ public class MockClusterInvokerTest {
                 .addParameter("mock", "fail")
                 .addParameter("invoke_return_error", "true");
         Invoker<IHelloService> cluster = getClusterInvoker(url);
-        //方法配置了mock
+        //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething");
         Result ret = cluster.invoke(invocation);
@@ -414,14 +429,14 @@ public class MockClusterInvokerTest {
     }
 
     /**
-     * 测试mock策略是否正常-fail-mock
+     * Test if mock policy works fine: fail-mock
      */
     @Test
     public void testMockInvokerFromOverride_Invoke_checkCompatible_ImplMock3() {
         URL url = URL.valueOf("remote://1.2.3.4/" + IHelloService.class.getName())
                 .addParameter("mock", "force");
         Invoker<IHelloService> cluster = getClusterInvoker(url);
-        //方法配置了mock
+        //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething");
         Result ret = cluster.invoke(invocation);
@@ -434,7 +449,7 @@ public class MockClusterInvokerTest {
                 .addParameter("getSomething.mock", "force:return 1688")
                 .addParameter("invoke_return_error", "true");
         Invoker<IHelloService> cluster = getClusterInvoker(url);
-        //方法配置了mock
+        //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething");
         Result ret = cluster.invoke(invocation);
@@ -448,7 +463,7 @@ public class MockClusterInvokerTest {
                 .addParameter("getInt1.mock", "force:return 1688")
                 .addParameter("invoke_return_error", "true");
         Invoker<IHelloService> cluster = getClusterInvoker(url);
-        //方法配置了mock
+        //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getInt1");
         Result ret = cluster.invoke(invocation);
@@ -462,7 +477,7 @@ public class MockClusterInvokerTest {
                 .addParameter("getBoolean1.mock", "force:return true")
                 .addParameter("invoke_return_error", "true");
         Invoker<IHelloService> cluster = getClusterInvoker(url);
-        //方法配置了mock
+        //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getBoolean1");
         Result ret = cluster.invoke(invocation);
@@ -476,7 +491,7 @@ public class MockClusterInvokerTest {
                 .addParameter("getBoolean2.mock", "force:return true")
                 .addParameter("invoke_return_error", "true");
         Invoker<IHelloService> cluster = getClusterInvoker(url);
-        //方法配置了mock
+        //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getBoolean2");
         Result ret = cluster.invoke(invocation);
@@ -490,7 +505,7 @@ public class MockClusterInvokerTest {
                 .addParameter("getListString.mock", "force:return empty")
                 .addParameter("invoke_return_error", "true");
         Invoker<IHelloService> cluster = getClusterInvoker(url);
-        //方法配置了mock
+        //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getListString");
         Result ret = cluster.invoke(invocation);
@@ -504,7 +519,7 @@ public class MockClusterInvokerTest {
                 .addParameter("getListString.mock", "force:return [\"hi\",\"hi2\"]")
                 .addParameter("invoke_return_error", "true");
         Invoker<IHelloService> cluster = getClusterInvoker(url);
-        //方法配置了mock
+        //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getListString");
         Result ret = cluster.invoke(invocation);
@@ -520,7 +535,7 @@ public class MockClusterInvokerTest {
                 .addParameter("getUsers.mock", "force:return empty")
                 .addParameter("invoke_return_error", "true");
         Invoker<IHelloService> cluster = getClusterInvoker(url);
-        //方法配置了mock
+        //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getUsers");
         Result ret = cluster.invoke(invocation);
@@ -534,7 +549,7 @@ public class MockClusterInvokerTest {
                 .addParameter("getUsers.mock", "force:return [{id:1, name:\"hi1\"}, {id:2, name:\"hi2\"}]")
                 .addParameter("invoke_return_error", "true");
         Invoker<IHelloService> cluster = getClusterInvoker(url);
-        //方法配置了mock
+        //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getUsers");
         Result ret = cluster.invoke(invocation);
@@ -550,7 +565,7 @@ public class MockClusterInvokerTest {
                 .addParameter("getUsers.mock", "force:return [{id:x, name:\"hi1\"}]")
                 .addParameter("invoke_return_error", "true");
         Invoker<IHelloService> cluster = getClusterInvoker(url);
-        //方法配置了mock
+        //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getUsers");
         try {
@@ -565,7 +580,7 @@ public class MockClusterInvokerTest {
                 .addParameter("getBoolean2.mock", "force:throw ")
                 .addParameter("invoke_return_error", "true");
         Invoker<IHelloService> cluster = getClusterInvoker(url);
-        //方法配置了mock
+        //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getBoolean2");
         try {
@@ -582,7 +597,7 @@ public class MockClusterInvokerTest {
                 .addParameter("getBoolean2.mock", "force:throw com.alibaba.dubbo.rpc.cluster.support.wrapper.MyMockException")
                 .addParameter("invoke_return_error", "true");
         Invoker<IHelloService> cluster = getClusterInvoker(url);
-        //方法配置了mock
+        //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getBoolean2");
         try {
@@ -599,7 +614,7 @@ public class MockClusterInvokerTest {
                 .addParameter("getBoolean2.mock", "force:throw java.lang.RuntimeException2")
                 .addParameter("invoke_return_error", "true");
         Invoker<IHelloService> cluster = getClusterInvoker(url);
-        //方法配置了mock
+        //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getBoolean2");
         try {
@@ -616,7 +631,7 @@ public class MockClusterInvokerTest {
                 .addParameter("mock", "false")
                 .addParameter("invoke_return_error", "true");
         Invoker<IHelloService> cluster = getClusterInvoker(url);
-        //方法配置了mock
+        //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getBoolean2");
         try {
@@ -629,7 +644,7 @@ public class MockClusterInvokerTest {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private Invoker<IHelloService> getClusterInvoker(URL url) {
-        //javasssit方式对方法参数类型判断严格,如果invocation数据设置不全，调用会失败.
+        // As `javassist` have a strict restriction of argument types, request will fail if Invocation do not contains complete parameter type information
         final URL durl = url.addParameter("proxy", "jdk");
         invokers.clear();
         ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getExtension("jdk");

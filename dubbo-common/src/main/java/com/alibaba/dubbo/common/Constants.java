@@ -1,18 +1,20 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.alibaba.dubbo.common;
 
 import java.util.concurrent.ExecutorService;
@@ -20,8 +22,6 @@ import java.util.regex.Pattern;
 
 /**
  * Constants
- *
- * @author william.liangf
  */
 public class Constants {
 
@@ -117,6 +117,8 @@ public class Constants {
 
     public static final int DEFAULT_THREADS = 200;
 
+    public static final boolean DEFAULT_KEEP_ALIVE = true;
+
     public static final int DEFAULT_QUEUES = 0;
 
     public static final int DEFAULT_ALIVE = 60 * 1000;
@@ -132,6 +134,8 @@ public class Constants {
     public static final int DEFAULT_TIMEOUT = 1000;
 
     public static final int DEFAULT_CONNECT_TIMEOUT = 3000;
+
+//    public static final int DEFAULT_REGISTRY_CONNECT_TIMEOUT = 5000;
 
     public static final int DEFAULT_RETRIES = 2;
 
@@ -258,6 +262,12 @@ public class Constants {
     public static final String CODEC_KEY = "codec";
 
     public static final String SERIALIZATION_KEY = "serialization";
+
+    public static final String EXTENSION_KEY = "extension";
+
+    public static final String KEEP_ALIVE_KEY = "keepalive";
+
+    public static final String OPTIMIZER_KEY = "optimizer";
 
     public static final String EXCHANGER_KEY = "exchanger";
 
@@ -401,56 +411,63 @@ public class Constants {
     public static final String MERGER_KEY = "merger";
 
     /**
-     * 集群时是否排除非available的invoker
+     * To decide whether to exclude unavailable invoker from the cluster
      */
     public static final String CLUSTER_AVAILABLE_CHECK_KEY = "cluster.availablecheck";
 
     /**
+     * The default value of cluster.availablecheck
+     *
+     * @see #CLUSTER_AVAILABLE_CHECK_KEY
      */
     public static final boolean DEFAULT_CLUSTER_AVAILABLE_CHECK = true;
 
     /**
-     * 集群时是否启用sticky策略
+     * To decide whether to enable sticky strategy for cluster
      */
     public static final String CLUSTER_STICKY_KEY = "sticky";
 
     /**
-     * sticky默认值.
+     * The default value of sticky
+     *
+     * @see #CLUSTER_STICKY_KEY
      */
     public static final boolean DEFAULT_CLUSTER_STICKY = false;
 
     /**
-     * 创建client时，是否先要建立连接。
+     * To decide whether to make connection when the client is created
      */
     public static final String LAZY_CONNECT_KEY = "lazy";
 
     /**
-     * lazy连接的初始状态是连接状态还是非连接状态？
+     * The initial state for lazy connection
      */
     public static final String LAZY_CONNECT_INITIAL_STATE_KEY = "connect.lazy.initial.state";
 
     /**
-     * lazy连接的初始状态默认是连接状态.
+     * The default value of lazy connection's initial state: true
+     *
+     * @see #LAZY_CONNECT_INITIAL_STATE_KEY
      */
     public static final boolean DEFAULT_LAZY_CONNECT_INITIAL_STATE = true;
 
     /**
-     * 注册中心是否同步存储文件，默认异步
+     * To decide whether register center saves file synchronously, the default value is asynchronously
      */
     public static final String REGISTRY_FILESAVE_SYNC_KEY = "save.file";
 
     /**
-     * 注册中心失败事件重试事件
+     * Period of registry center's retry interval
      */
     public static final String REGISTRY_RETRY_PERIOD_KEY = "retry.period";
 
     /**
-     * 重试周期
+     * Default value for the period of retry interval in milliseconds: 5000
      */
     public static final int DEFAULT_REGISTRY_RETRY_PERIOD = 5 * 1000;
 
     /**
-     * 注册中心自动重连时间
+     * Reconnection period in milliseconds for register center
      */
     public static final String REGISTRY_RECONNECT_PERIOD_KEY = "reconnect.period";
 
@@ -461,12 +478,12 @@ public class Constants {
     public static final int DEFAULT_SESSION_TIMEOUT = 60 * 1000;
 
     /**
-     * 注册中心导出URL参数的KEY
+     * The key name for export URL in register center
      */
     public static final String EXPORT_KEY = "export";
 
     /**
-     * 注册中心引用URL参数的KEY
+     * The key name for reference URL in register center
      */
     public static final String REFER_KEY = "refer";
 
@@ -476,12 +493,14 @@ public class Constants {
     public static final String CALLBACK_SERVICE_KEY = "callback.service.instid";
 
     /**
-     * 每个客户端同一个接口 callback服务实例的限制
+     * The limit of callback service instances for one interface on every client
      */
     public static final String CALLBACK_INSTANCES_LIMIT_KEY = "callbacks";
 
     /**
-     * 每个客户端同一个接口 callback服务实例的限制
+     * The default limit number for callback service instances
+     *
+     * @see #CALLBACK_INSTANCES_LIMIT_KEY
      */
     public static final int DEFAULT_CALLBACK_INSTANCES = 1;
 
@@ -490,7 +509,7 @@ public class Constants {
     public static final String IS_CALLBACK_SERVICE = "is_callback_service";
 
     /**
-     * channel中callback的invokers
+     * Invokers in channel's callback
      */
     public static final String CHANNEL_CALLBACK_KEY = "channel.callback.invokers.key";
 
@@ -502,7 +521,7 @@ public class Constants {
     public static final String IS_SERVER_KEY = "isserver";
 
     /**
-     * 默认值毫秒，避免重新计算.
+     * Default timeout value in milliseconds for server shutdown
      */
     public static final int DEFAULT_SERVER_SHUTDOWN_TIMEOUT = 10000;
 
@@ -532,7 +551,9 @@ public class Constants {
 
     public static final String RUNTIME_KEY = "runtime";
 
-    // when ROUTER_KEY's value is set to ROUTER_TYPE_CLEAR, RegistryDirectory will clean all current routers
+    /**
+     * when ROUTER_KEY's value is set to ROUTER_TYPE_CLEAR, RegistryDirectory will clean all current routers
+     */
     public static final String ROUTER_TYPE_CLEAR = "clean";
 
     public static final String DEFAULT_SCRIPT_TYPE_KEY = "javascript";
@@ -543,7 +564,9 @@ public class Constants {
 
     public static final String STUB_EVENT_METHODS_KEY = "dubbo.stub.event.methods";
 
-    //invocation attachment属性中如果有此值，则选择mock invoker
+    /**
+     * When this attribute appears in invocation's attachment, mock invoker will be used
+     */
     public static final String INVOCATION_NEED_MOCK = "invocation.need.mock";
 
     public static final String LOCAL_PROTOCOL = "injvm";

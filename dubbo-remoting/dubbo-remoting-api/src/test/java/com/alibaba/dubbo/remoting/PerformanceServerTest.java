@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,8 +35,6 @@ import java.util.List;
  * PerformanceServer
  * <p>
  * mvn clean test -Dtest=*PerformanceServerTest -Dport=9911
- *
- * @author william.liangf
  */
 public class PerformanceServerTest extends TestCase {
 
@@ -70,7 +69,7 @@ public class PerformanceServerTest extends TestCase {
         final String channelHandler = PerformanceUtils.getProperty(Constants.DISPATCHER_KEY, ExecutionDispatcher.NAME);
 
 
-        // 启动服务器
+        // Start server
         ExchangeServer server = Exchangers.bind("exchange://0.0.0.0:" + port + "?transporter="
                 + transporter + "&serialization="
                 + serialization + "&threadpool=" + threadpool
@@ -97,7 +96,7 @@ public class PerformanceServerTest extends TestCase {
     }
 
     private static ExchangeServer statTelnetServer(int port) throws Exception {
-        // 启动服务器
+        // Start server
         ExchangeServer telnetserver = Exchangers.bind("exchange://0.0.0.0:" + port, new ExchangeHandlerAdapter() {
             public String telnet(Channel channel, String message) throws RemotingException {
                 if (message.equals("help")) {
@@ -142,7 +141,7 @@ public class PerformanceServerTest extends TestCase {
 
     @Test
     public void testServer() throws Exception {
-        // 读取参数
+        // Read port from property
         if (PerformanceUtils.getProperty("port", null) == null) {
             logger.warn("Please set -Dport=9911");
             return;

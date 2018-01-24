@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -68,7 +69,7 @@ public class ReferenceCountExchangeClientTest {
     }
 
     /**
-     * 测试共享连接
+     * test connection sharing
      */
     @Test
     public void test_share_connect() {
@@ -79,7 +80,7 @@ public class ReferenceCountExchangeClientTest {
     }
 
     /**
-     * 测试不共享连接
+     * test connection not sharing
      */
     @Test
     public void test_not_share_connect() {
@@ -90,7 +91,7 @@ public class ReferenceCountExchangeClientTest {
     }
 
     /**
-     * 测试invoker多次destory不会导致计数器多次减少
+     * test counter won't count down incorrectly when invoker is destroyed for multiple times
      */
     @Test
     public void test_multi_destory() {
@@ -107,7 +108,7 @@ public class ReferenceCountExchangeClientTest {
     }
 
     /**
-     * 测试计数器错误，调用成功
+     * Test against invocation still succeed even if counter has error
      */
     @Test
     public void test_counter_error() {
@@ -116,26 +117,27 @@ public class ReferenceCountExchangeClientTest {
         DubboAppender.clear();
 
         ReferenceCountExchangeClient client = getReferenceClient(helloServiceInvoker);
-        //close一次，计数器从2减少到1，不能warning
+        // close once, counter counts down from 2 to 1, no warning occurs
         client.close();
         Assert.assertEquals("hello", helloService.hello());
         Assert.assertEquals("should not warning message", 0, LogUtil.findMessage(errorMsg));
-        //计数器错误，调用正常
+        // counter is incorrect, invocation still succeeds
         client.close();
         Assert.assertEquals("hello", helloService.hello());
         Assert.assertEquals("should warning message", 1, LogUtil.findMessage(errorMsg));
 
-        //调用5千次输出一个错误
+        // output one error every 5000 invocations.
         Assert.assertEquals("hello", helloService.hello());
         Assert.assertEquals("should warning message", 1, LogUtil.findMessage(errorMsg));
 
         DubboAppender.doStop();
 
-        //重新调用一次后status已经是available.
+        // status switch to available once invoke again
         Assert.assertEquals("client status available", true, helloServiceInvoker.isAvailable());
 
         client.close();
-        //client已经被替换为lazyclient lazy client从referenceclientmap中获取，获取到的是上次的client（已经被调用过一次），所以close状态为false
+        // client has been replaced with lazy client. lazy client is fetched from referenceclientmap, and since it's
+        // been invoked once, it's close status is false
         Assert.assertEquals("client status close", false, client.isClosed());
         Assert.assertEquals("client status close", false, helloServiceInvoker.isAvailable());
         destoy();
