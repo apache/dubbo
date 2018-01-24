@@ -239,7 +239,6 @@ public class LoadBalanceTest {
     }
 
 
-    /** 产生一个随机的字符串*/
     public static String randomString(int length) {
         String str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         Random random = new Random();
