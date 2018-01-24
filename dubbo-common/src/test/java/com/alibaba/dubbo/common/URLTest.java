@@ -43,7 +43,7 @@ public class URLTest {
         assertNull(url.getUsername());
         assertNull(url.getPassword());
         assertNull(url.getHost());
-        assertEquals(12, url.getPort());
+        assertEquals(0, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(2, url.getParameters().size());
         assertEquals("1.0.0", url.getParameter("version"));
