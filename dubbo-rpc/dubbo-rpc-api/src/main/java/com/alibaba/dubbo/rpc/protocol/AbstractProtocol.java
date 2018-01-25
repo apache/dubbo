@@ -16,12 +16,10 @@
  */
 package com.alibaba.dubbo.rpc.protocol;
 
-import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
-import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
@@ -50,28 +48,6 @@ public abstract class AbstractProtocol implements Protocol {
 
     protected static String serviceKey(int port, String serviceName, String serviceVersion, String serviceGroup) {
         return ProtocolUtils.serviceKey(port, serviceName, serviceVersion, serviceGroup);
-    }
-
-    @SuppressWarnings("deprecation")
-    protected static int getServerShutdownTimeout() {
-        int timeout = Constants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
-        String value = ConfigUtils.getProperty(Constants.SHUTDOWN_WAIT_KEY);
-        if (value != null && value.length() > 0) {
-            try {
-                timeout = Integer.parseInt(value);
-            } catch (Exception e) {
-            }
-        } else {
-            value = ConfigUtils.getProperty(Constants.SHUTDOWN_WAIT_SECONDS_KEY);
-            if (value != null && value.length() > 0) {
-                try {
-                    timeout = Integer.parseInt(value) * 1000;
-                } catch (Exception e) {
-                }
-            }
-        }
-
-        return timeout;
     }
 
     public void destroy() {

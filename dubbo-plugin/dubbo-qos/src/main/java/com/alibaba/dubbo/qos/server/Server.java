@@ -18,8 +18,6 @@ package com.alibaba.dubbo.qos.server;
 
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
-import com.alibaba.dubbo.common.utils.ConfigUtils;
-import com.alibaba.dubbo.qos.common.Constants;
 import com.alibaba.dubbo.qos.server.handler.QosProcessHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
@@ -49,11 +47,9 @@ public class Server {
         return INSTANCE;
     }
 
-    private int port = Integer.parseInt(ConfigUtils.getProperty(Constants.QOS_PORT, Constants.DEFAULT_PORT + ""));
+    private int port;
 
-    public int getPort() {
-        return port;
-    }
+    private boolean acceptForeignIp = true;
 
     private EventLoopGroup boss;
 
@@ -74,6 +70,10 @@ public class Server {
         this.welcome = welcome;
     }
 
+    public int getPort() {
+        return port;
+    }
+
     /**
      * start server, bind port
      */
@@ -92,7 +92,7 @@ public class Server {
 
             @Override
             protected void initChannel(Channel ch) throws Exception {
-                ch.pipeline().addLast(new QosProcessHandler(welcome));
+                ch.pipeline().addLast(new QosProcessHandler(welcome, acceptForeignIp));
             }
         });
         try {
@@ -115,5 +115,21 @@ public class Server {
         if (worker != null) {
             worker.shutdownGracefully();
         }
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public boolean isAcceptForeignIp() {
+        return acceptForeignIp;
+    }
+
+    public void setAcceptForeignIp(boolean acceptForeignIp) {
+        this.acceptForeignIp = acceptForeignIp;
+    }
+
+    public String getWelcome() {
+        return welcome;
     }
 }

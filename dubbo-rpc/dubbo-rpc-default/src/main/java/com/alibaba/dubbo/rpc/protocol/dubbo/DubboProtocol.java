@@ -22,6 +22,7 @@ import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.serialize.support.SerializableClassRegistry;
 import com.alibaba.dubbo.common.serialize.support.SerializationOptimizer;
 import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
+import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.remoting.Channel;
@@ -291,25 +292,25 @@ public class DubboProtocol extends AbstractProtocol {
         if (StringUtils.isEmpty(className) || optimizers.contains(className)) {
             return;
         }
-        
+
         logger.info("Optimizing the serialization process for Kryo, FST, etc...");
-        
+
         try {
             Class clazz = Thread.currentThread().getContextClassLoader().loadClass(className);
             if (!SerializationOptimizer.class.isAssignableFrom(clazz)) {
                 throw new RpcException("The serialization optimizer " + className + " isn't an instance of " + SerializationOptimizer.class.getName());
             }
-            
+
             SerializationOptimizer optimizer = (SerializationOptimizer) clazz.newInstance();
-            
+
             if (optimizer.getSerializableClasses() == null) {
                 return;
             }
-            
+
             for (Class c : optimizer.getSerializableClasses()) {
                 SerializableClassRegistry.registerClass(c);
             }
-            
+
             optimizers.add(className);
         } catch (ClassNotFoundException e) {
             throw new RpcException("Cannot find the serialization optimizer class: " + className, e);
@@ -380,8 +381,6 @@ public class DubboProtocol extends AbstractProtocol {
         // client type setting.
         String str = url.getParameter(Constants.CLIENT_KEY, url.getParameter(Constants.SERVER_KEY, Constants.DEFAULT_REMOTING_CLIENT));
 
-        String version = url.getParameter(Constants.DUBBO_VERSION_KEY);
-        boolean compatible = (version != null && version.startsWith("1.0."));
         url = url.addParameter(Constants.CODEC_KEY, DubboCodec.NAME);
         // enable heartbeat by default
         url = url.addParameterIfAbsent(Constants.HEARTBEAT_KEY, String.valueOf(Constants.DEFAULT_HEARTBEAT));
@@ -414,7 +413,7 @@ public class DubboProtocol extends AbstractProtocol {
                     if (logger.isInfoEnabled()) {
                         logger.info("Close dubbo server: " + server.getLocalAddress());
                     }
-                    server.close(getServerShutdownTimeout());
+                    server.close(ConfigUtils.getServerShutdownTimeout());
                 } catch (Throwable t) {
                     logger.warn(t.getMessage(), t);
                 }
@@ -428,7 +427,7 @@ public class DubboProtocol extends AbstractProtocol {
                     if (logger.isInfoEnabled()) {
                         logger.info("Close dubbo connect: " + client.getLocalAddress() + "-->" + client.getRemoteAddress());
                     }
-                    client.close(getServerShutdownTimeout());
+                    client.close(ConfigUtils.getServerShutdownTimeout());
                 } catch (Throwable t) {
                     logger.warn(t.getMessage(), t);
                 }
@@ -442,7 +441,7 @@ public class DubboProtocol extends AbstractProtocol {
                     if (logger.isInfoEnabled()) {
                         logger.info("Close dubbo connect: " + client.getLocalAddress() + "-->" + client.getRemoteAddress());
                     }
-                    client.close(getServerShutdownTimeout());
+                    client.close(ConfigUtils.getServerShutdownTimeout());
                 } catch (Throwable t) {
                     logger.warn(t.getMessage(), t);
                 }
