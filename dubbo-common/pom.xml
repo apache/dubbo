@@ -69,9 +69,5 @@ limitations under the License.
             <groupId>de.ruedigermoeller</groupId>
             <artifactId>fst</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.jvnet.sorcerer</groupId>
-            <artifactId>sorcerer-javac</artifactId>
-        </dependency>
     </dependencies>
 </project>
