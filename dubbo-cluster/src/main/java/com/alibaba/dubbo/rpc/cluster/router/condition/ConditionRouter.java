@@ -204,6 +204,9 @@ public class ConditionRouter implements Router, Comparable<Router> {
                 sampleValue = invocation.getMethodName();
             } else {
                 sampleValue = sample.get(key);
+                if (sampleValue == null) {
+                    sampleValue = sample.get(Constants.DEFAULT_KEY_PREFIX + key);
+                }
             }
             if (sampleValue != null) {
                 if (!matchPair.getValue().isMatch(sampleValue, param)) {
