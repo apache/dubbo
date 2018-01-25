@@ -254,6 +254,11 @@ limitations under the License.
                             <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                         </manifest>
+                        <!-- TODO We need a more complete version check solution for compatibility on Consumer and Provider -->
+                        <manifestEntries>
+                            <Specification-Version>2.0.0</Specification-Version>
+                            <Implementation-Version>2.0.1</Implementation-Version>
+                        </manifestEntries>
                     </archive>
                 </configuration>
             </plugin>
