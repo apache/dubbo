@@ -619,6 +619,12 @@ public class Constants {
 
     public static final String REGISTER_IP_KEY = "register.ip";
 
+    public static final String QOS_ENABLE = "qos.enable";
+
+    public static final String QOS_PORT = "qos.port";
+
+    public static final String ACCEPT_FOREIGN_IP = "qos.accept.foreign.ip";
+
     /*
      * private Constants(){ }
      */

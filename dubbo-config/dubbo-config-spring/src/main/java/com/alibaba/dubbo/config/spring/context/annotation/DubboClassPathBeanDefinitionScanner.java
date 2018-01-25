@@ -16,6 +16,7 @@
  */
 package com.alibaba.dubbo.config.spring.context.annotation;
 
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
@@ -60,5 +61,8 @@ public class DubboClassPathBeanDefinitionScanner extends ClassPathBeanDefinition
         return super.doScan(basePackages);
     }
 
+    public boolean checkCandidate(String beanName, BeanDefinition beanDefinition) throws IllegalStateException {
+        return super.checkCandidate(beanName, beanDefinition);
+    }
 
 }
