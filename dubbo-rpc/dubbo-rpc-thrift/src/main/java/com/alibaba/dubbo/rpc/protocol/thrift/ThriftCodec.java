@@ -31,7 +31,7 @@ import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.protocol.thrift.io.RandomAccessByteArrayOutputStream;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TException;
@@ -55,7 +55,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Thrift framed protocol codec.
- *
+ * <p>
  * <pre>
  * |<-                                  message header                                  ->|<- message body ->|
  * +----------------+----------------------+------------------+---------------------------+------------------+
@@ -63,12 +63,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  * +----------------+----------------------+------------------+---------------------------+------------------+
  * |<-                                               message size                                          ->|
  * </pre>
- *
+ * <p>
  * <p>
  * <b>header fields in version 1</b>
  * <ol>
- *     <li>string - service name</li>
- *     <li>long   - dubbo request id</li>
+ * <li>string - service name</li>
+ * <li>long   - dubbo request id</li>
  * </ol>
  * </p>
  */
@@ -78,6 +78,7 @@ public class ThriftCodec implements Codec2 {
     public static final int MESSAGE_HEADER_LENGTH_INDEX = 6;
     public static final int MESSAGE_SHORTEST_LENGTH = 10;
     public static final String NAME = "thrift";
+    public static final String NATIVE_THRIFT_TYPE = "nativethrift";
     public static final String PARAMETER_CLASS_NAME_GENERATOR = "class.name.generator";
     public static final byte VERSION = (byte) 1;
     public static final short MAGIC = (short) 0xdabc;
@@ -115,6 +116,16 @@ public class ThriftCodec implements Codec2 {
 
     }
 
+    /**
+     * judge if native thrift or not
+     *
+     * @param channel
+     * @return
+     */
+    private boolean isNativeThrift(Channel channel) {
+        return Boolean.valueOf(channel.getUrl().getParameter(NATIVE_THRIFT_TYPE));
+    }
+
     public Object decode(Channel channel, ChannelBuffer buffer) throws IOException {
 
         int available = buffer.readableBytes();
@@ -128,40 +139,41 @@ public class ThriftCodec implements Codec2 {
             TIOStreamTransport transport = new TIOStreamTransport(new ChannelBufferInputStream(buffer));
 
             TBinaryProtocol protocol = new TBinaryProtocol(transport);
+            //the native thrift datagram have no these header info
+            boolean isNativeThrift = !isNativeThrift(channel);
+            if (isNativeThrift) {
+                short magic;
+                int messageLength;
 
-            short magic;
-            int messageLength;
+                try {
+                    //                protocol.readI32(); // skip the first message length
+                    byte[] bytes = new byte[4];
+                    transport.read(bytes, 0, 4);
+                    magic = protocol.readI16();
+                    messageLength = protocol.readI32();
 
-            try {
-//                protocol.readI32(); // skip the first message length
-                byte[] bytes = new byte[4];
-                transport.read(bytes, 0, 4);
-                magic = protocol.readI16();
-                messageLength = protocol.readI32();
+                } catch (TException e) {
+                    throw new IOException(e.getMessage(), e);
+                }
 
-            } catch (TException e) {
-                throw new IOException(e.getMessage(), e);
+                if (MAGIC != magic) {
+                    throw new IOException(new StringBuilder(32).append("Unknown magic code ")
+                            .append(magic)
+                            .toString());
+                }
+
+                if (available < messageLength) {
+                    return DecodeResult.NEED_MORE_INPUT;
+                }
             }
-
-            if (MAGIC != magic) {
-                throw new IOException(
-                        new StringBuilder(32)
-                                .append("Unknown magic code ")
-                                .append(magic)
-                                .toString());
-            }
-
-            if (available < messageLength) {
-                return DecodeResult.NEED_MORE_INPUT;
-            }
-
-            return decode(protocol);
+            String serviceInterface = channel.getUrl().getServiceInterface();
+            return decode(protocol, isNativeThrift, serviceInterface);
 
         }
 
     }
 
-    private Object decode(TProtocol protocol)
+    private Object decode(TProtocol protocol, Boolean isNativeThrift, String serviceInterface)
             throws IOException {
 
         // version
@@ -171,11 +183,17 @@ public class ThriftCodec implements Codec2 {
         TMessage message;
 
         try {
-            protocol.readI16();
-            protocol.readByte();
-            serviceName = protocol.readString();
-            id = protocol.readI64();
-            message = protocol.readMessageBegin();
+            if (isNativeThrift) {
+                serviceName = serviceInterface;
+                message = protocol.readMessageBegin();
+                id = message.seqid;//id error will cause client error
+            } else {
+                protocol.readI16();
+                protocol.readByte();
+                serviceName = protocol.readString();
+                id = protocol.readI64();
+                message = protocol.readMessageBegin();
+            }
         } catch (TException e) {
             throw new IOException(e.getMessage(), e);
         }
@@ -279,7 +297,7 @@ public class ThriftCodec implements Codec2 {
             TApplicationException exception;
 
             try {
-                exception = TApplicationException.read(protocol);
+                exception = TApplicationException.readFrom(protocol);
                 protocol.readMessageEnd();
             } catch (TException e) {
                 throw new IOException(e.getMessage(), e);
@@ -656,21 +674,23 @@ public class ThriftCodec implements Codec2 {
 
         byte[] bytes = new byte[4];
         try {
-            // magic
-            protocol.writeI16(MAGIC);
-            // message length
-            protocol.writeI32(Integer.MAX_VALUE);
-            // message header length
-            protocol.writeI16(Short.MAX_VALUE);
-            // version
-            protocol.writeByte(VERSION);
-            // service name
-            protocol.writeString(rd.serviceName);
-            // id
-            protocol.writeI64(response.getId());
-            protocol.getTransport().flush();
+            //native thrift ignore
+            if (!isNativeThrift(channel)) {
+                // magic
+                protocol.writeI16(MAGIC);
+                // message length
+                protocol.writeI32(Integer.MAX_VALUE);
+                // message header length
+                protocol.writeI16(Short.MAX_VALUE);
+                // version
+                protocol.writeByte(VERSION);
+                // service name
+                protocol.writeString(rd.serviceName);
+                // id
+                protocol.writeI64(response.getId());
+                protocol.getTransport().flush();
+            }
             headerLength = bos.size();
-
             // message
             protocol.writeMessageBegin(message);
             switch (message.type) {
@@ -684,22 +704,26 @@ public class ThriftCodec implements Codec2 {
             protocol.writeMessageEnd();
             protocol.getTransport().flush();
             int oldIndex = messageLength = bos.size();
-
             try {
-                TFramedTransport.encodeFrameSize(messageLength, bytes);
-                bos.setWriteIndex(MESSAGE_LENGTH_INDEX);
-                protocol.writeI32(messageLength);
-                bos.setWriteIndex(MESSAGE_HEADER_LENGTH_INDEX);
-                protocol.writeI16((short) (0xffff & headerLength));
+                //native thrift ignore
+                if (!isNativeThrift(channel)) {
+                    TFramedTransport.encodeFrameSize(messageLength, bytes);
+                    bos.setWriteIndex(MESSAGE_LENGTH_INDEX);
+                    protocol.writeI32(messageLength);
+                    bos.setWriteIndex(MESSAGE_HEADER_LENGTH_INDEX);
+                    protocol.writeI16((short) (0xffff & headerLength));
+                }
             } finally {
                 bos.setWriteIndex(oldIndex);
             }
-
         } catch (TException e) {
             throw new RpcException(RpcException.SERIALIZATION_EXCEPTION, e.getMessage(), e);
         }
 
-        buffer.writeBytes(bytes);
+        //native thrift ignore
+        if (!isNativeThrift(channel)) {
+            buffer.writeBytes(bytes);
+        }
         buffer.writeBytes(bos.toByteArray());
 
     }

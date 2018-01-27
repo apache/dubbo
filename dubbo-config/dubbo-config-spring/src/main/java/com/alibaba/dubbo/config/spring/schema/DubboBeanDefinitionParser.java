@@ -26,6 +26,7 @@ import com.alibaba.dubbo.config.*;
 import com.alibaba.dubbo.config.spring.ReferenceBean;
 import com.alibaba.dubbo.config.spring.ServiceBean;
 import com.alibaba.dubbo.rpc.Protocol;
+
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
@@ -115,6 +116,11 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                 classDefinition.setLazyInit(false);
                 parseProperties(element.getChildNodes(), classDefinition);
                 beanDefinition.getPropertyValues().addPropertyValue("ref", new BeanDefinitionHolder(classDefinition, id + "Impl"));
+            }
+            /**native thrift support*/
+            String isNativeThrift = element.getAttribute("nativethrift");
+            if (!StringUtils.isBlank(isNativeThrift)) {
+                beanDefinition.getPropertyValues().addPropertyValue("isNativeThrift", Boolean.valueOf(isNativeThrift));
             }
         } else if (ProviderConfig.class.equals(beanClass)) {
             parseNested(element, parserContext, ServiceBean.class, true, "service", "provider", id, beanDefinition);

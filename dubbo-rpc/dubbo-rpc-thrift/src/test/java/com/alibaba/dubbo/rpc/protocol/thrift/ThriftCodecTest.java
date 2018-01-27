@@ -372,7 +372,7 @@ public class ThriftCodecTest {
         Assert.assertEquals("echoString", message.name);
         Assert.assertEquals(TMessageType.EXCEPTION, message.type);
         Assert.assertEquals(ThriftCodec.getSeqId(), message.seqid);
-        TApplicationException exception = TApplicationException.read(protocol);
+        TApplicationException exception = TApplicationException.readFrom(protocol);
         protocol.readMessageEnd();
 
         Assert.assertEquals(exceptionMessage, exception.getMessage());

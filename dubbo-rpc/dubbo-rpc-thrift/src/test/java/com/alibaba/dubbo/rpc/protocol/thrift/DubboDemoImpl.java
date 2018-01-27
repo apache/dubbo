@@ -16,6 +16,7 @@
  */
 package com.alibaba.dubbo.rpc.protocol.thrift;
 
+import com.alibaba.dubbo.rpc.examples.DemoImpl;
 import com.alibaba.dubbo.rpc.gen.dubbo.$__DemoStub;
 import com.alibaba.dubbo.rpc.gen.dubbo.Demo;
 

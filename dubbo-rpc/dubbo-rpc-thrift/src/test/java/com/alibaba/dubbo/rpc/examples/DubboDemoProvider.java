@@ -14,24 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.protocol.thrift.examples;
-
-import com.alibaba.dubbo.rpc.gen.thrift.Demo;
+package com.alibaba.dubbo.rpc.examples;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-public class DubboDemoConsumer {
+public class DubboDemoProvider {
 
     public static void main(String[] args) throws Exception {
         ClassPathXmlApplicationContext context =
-                new ClassPathXmlApplicationContext("dubbo-demo-consumer.xml");
+                new ClassPathXmlApplicationContext("dubbo-demo-provider.xml");
         context.start();
-        Demo.Iface demo = (Demo.Iface) context.getBean("demoService");
-        System.out.println(demo.echoI32(32));
-        for (int i = 0; i < 10; i++) {
-            System.out.println(demo.echoI32(i + 1));
-        }
-        context.close();
+        System.out.println("context started");
+        System.in.read();
     }
 
 }
