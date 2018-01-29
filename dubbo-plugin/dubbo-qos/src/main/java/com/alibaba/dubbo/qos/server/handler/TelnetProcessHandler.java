@@ -24,7 +24,7 @@ import com.alibaba.dubbo.qos.command.CommandExecutor;
 import com.alibaba.dubbo.qos.command.DefaultCommandExecutor;
 import com.alibaba.dubbo.qos.command.NoSuchCommandException;
 import com.alibaba.dubbo.qos.command.decoder.TelnetCommandDecoder;
-import com.alibaba.dubbo.qos.common.Constants;
+import com.alibaba.dubbo.qos.common.QosConstants;
 
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -50,18 +50,18 @@ public class TelnetProcessHandler extends SimpleChannelInboundHandler<String> {
 
             try {
                 String result = commandExecutor.execute(commandContext);
-                if (StringUtils.equals(Constants.CLOSE, result)) {
+                if (StringUtils.equals(QosConstants.CLOSE, result)) {
                     ctx.writeAndFlush(getByeLabel()).addListener(ChannelFutureListener.CLOSE);
                 } else {
-                    ctx.writeAndFlush(result + Constants.BR_STR + QosProcessHandler.prompt);
+                    ctx.writeAndFlush(result + QosConstants.BR_STR + QosProcessHandler.prompt);
                 }
             } catch (NoSuchCommandException ex) {
                 ctx.writeAndFlush(msg + " :no such command");
-                ctx.writeAndFlush(Constants.BR_STR + QosProcessHandler.prompt);
+                ctx.writeAndFlush(QosConstants.BR_STR + QosProcessHandler.prompt);
                 log.error("can not found command " + commandContext, ex);
             } catch (Exception ex) {
                 ctx.writeAndFlush(msg + " :fail to execute commandContext by " + ex.getMessage());
-                ctx.writeAndFlush(Constants.BR_STR + QosProcessHandler.prompt);
+                ctx.writeAndFlush(QosConstants.BR_STR + QosProcessHandler.prompt);
                 log.error("execute commandContext got exception " + commandContext, ex);
             }
         }

@@ -28,4 +28,12 @@
 
     <dubbo:protocol name="dubbo" port="12345"/>
 
+    <!-- Annotation 注册 -->
+    <dubbo:annotation id="doubleServiceAnnotationBeanPostProcessor"
+                      package="com.alibaba.dubbo.config.spring.context.annotation.provider ,
+             com.alibaba.dubbo.config.spring.context.annotation.provider"/>
+
+    <dubbo:annotation id="emptyServiceAnnotationBeanPostProcessor"
+                      package="    "/>
+
 </beans>
