@@ -120,7 +120,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
             /**native thrift support*/
             String isNativeThrift = element.getAttribute("nativethrift");
             if (!StringUtils.isBlank(isNativeThrift)) {
-                beanDefinition.getPropertyValues().addPropertyValue("isNativeThrift", Boolean.valueOf(isNativeThrift));
+                beanDefinition.getPropertyValues().addPropertyValue("nativeThrift", Boolean.valueOf(isNativeThrift));
             }
         } else if (ProviderConfig.class.equals(beanClass)) {
             parseNested(element, parserContext, ServiceBean.class, true, "service", "provider", id, beanDefinition);

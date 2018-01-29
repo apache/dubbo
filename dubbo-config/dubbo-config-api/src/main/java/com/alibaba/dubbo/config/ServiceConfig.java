@@ -96,7 +96,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     private volatile String generic;
     //thrift原生协议的支持调用
-    private boolean isNativeThrift = false;
+    private boolean nativeThrift = false;
 
     public ServiceConfig() {
     }
@@ -810,11 +810,11 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     public boolean isNativeThrift() {
-        return isNativeThrift;
+        return nativeThrift;
     }
 
     public void setNativeThrift(boolean nativeThrift) {
-        isNativeThrift = nativeThrift;
+        this.nativeThrift = nativeThrift;
     }
 
     public List<URL> getExportedUrls() {

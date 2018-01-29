@@ -34,6 +34,6 @@ limitations under the License.
     <bean id="thriftDemoService" class="com.alibaba.dubbo.demo.provider.ThriftDemoImpl"/>
 
     <!-- declare the service interface to be exported -->
-    <dubbo:service protocol="thrift" interface="com.alibaba.dubbo.demo.ThriftDemoService$Iface" ref="thriftDemoService" timeout="1000000"/>
+    <dubbo:service protocol="thrift" nativethrift="true" interface="com.alibaba.dubbo.demo.ThriftDemoService$Iface" ref="thriftDemoService" timeout="1000000"/>
 
 </beans>
