@@ -16,6 +16,9 @@
  */
 package com.alibaba.dubbo.demo;
 
+/**
+ * common service
+ */
 public interface DemoService {
 
     String sayHello(String name);

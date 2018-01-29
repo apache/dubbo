@@ -16,22 +16,18 @@
  */
 package com.alibaba.dubbo.rpc.examples;
 
-import com.alibaba.dubbo.rpc.gen.thrift.Demo;
-
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-public class DubboDemoConsumer {
+public class DubboThriftDemoProvider {
 
     public static void main(String[] args) throws Exception {
-        ClassPathXmlApplicationContext context =
-                new ClassPathXmlApplicationContext("dubbo-demo-consumer.xml");
+        //Prevent to get IPV6 address,this way only work in debug mode
+        //But you can pass use -Djava.net.preferIPv4Stack=true,then it work well whether in debug mode or not
+        System.setProperty("java.net.preferIPv4Stack", "true");
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"dubbo-demo-provider.xml"});
         context.start();
-        Demo.Iface demo = (Demo.Iface) context.getBean("demoService");
-        System.out.println(demo.echoI32(32));
-        for (int i = 0; i < 10; i++) {
-            System.out.println(demo.echoI32(i + 1));
-        }
-        context.close();
+
+        System.in.read(); // press any key to exit
     }
 
 }
