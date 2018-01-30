@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,22 +15,6 @@
  * limitations under the License.
  */
 package com.alibaba.dubbo.config.spring;
-
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.beans.factory.BeanFactoryUtils;
-import org.springframework.beans.factory.BeanNameAware;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.context.support.AbstractApplicationContext;
 
 import com.alibaba.dubbo.config.ApplicationConfig;
 import com.alibaba.dubbo.config.ModuleConfig;
@@ -41,93 +26,119 @@ import com.alibaba.dubbo.config.ServiceConfig;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.dubbo.config.spring.extension.SpringExtensionFactory;
 
+import org.springframework.aop.support.AopUtils;
+import org.springframework.beans.factory.BeanFactoryUtils;
+import org.springframework.beans.factory.BeanNameAware;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.support.AbstractApplicationContext;
+
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 /**
  * ServiceFactoryBean
- * 
- * @author william.liangf
+ *
  * @export
  */
-public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean, DisposableBean, ApplicationContextAware, ApplicationListener, BeanNameAware {
+public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean, DisposableBean, ApplicationContextAware, ApplicationListener<ContextRefreshedEvent>, BeanNameAware {
 
-	private static final long serialVersionUID = 213195494150089726L;
+    private static final long serialVersionUID = 213195494150089726L;
 
     private static transient ApplicationContext SPRING_CONTEXT;
-    
-	private transient ApplicationContext applicationContext;
+
+    private final transient Service service;
+
+    private transient ApplicationContext applicationContext;
 
     private transient String beanName;
 
     private transient boolean supportedApplicationListener;
-    
-	public ServiceBean() {
+
+    public ServiceBean() {
         super();
+        this.service = null;
     }
 
     public ServiceBean(Service service) {
         super(service);
+        this.service = service;
     }
 
     public static ApplicationContext getSpringContext() {
-	    return SPRING_CONTEXT;
-	}
+        return SPRING_CONTEXT;
+    }
 
-	public void setApplicationContext(ApplicationContext applicationContext) {
-		this.applicationContext = applicationContext;
-		SpringExtensionFactory.addApplicationContext(applicationContext);
-		if (applicationContext != null) {
-		    SPRING_CONTEXT = applicationContext;
-		    try {
-	            Method method = applicationContext.getClass().getMethod("addApplicationListener", new Class<?>[]{ApplicationListener.class}); // 兼容Spring2.0.1
-	            method.invoke(applicationContext, new Object[] {this});
-	            supportedApplicationListener = true;
-	        } catch (Throwable t) {
+    public void setApplicationContext(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+        SpringExtensionFactory.addApplicationContext(applicationContext);
+        if (applicationContext != null) {
+            SPRING_CONTEXT = applicationContext;
+            try {
+                Method method = applicationContext.getClass().getMethod("addApplicationListener", new Class<?>[]{ApplicationListener.class}); // backward compatibility to spring 2.0.1
+                method.invoke(applicationContext, new Object[]{this});
+                supportedApplicationListener = true;
+            } catch (Throwable t) {
                 if (applicationContext instanceof AbstractApplicationContext) {
-    	            try {
-    	                Method method = AbstractApplicationContext.class.getDeclaredMethod("addListener", new Class<?>[]{ApplicationListener.class}); // 兼容Spring2.0.1
-                        if (! method.isAccessible()) {
+                    try {
+                        Method method = AbstractApplicationContext.class.getDeclaredMethod("addListener", new Class<?>[]{ApplicationListener.class}); // backward compatibility to spring 2.0.1
+                        if (!method.isAccessible()) {
                             method.setAccessible(true);
                         }
-    	                method.invoke(applicationContext, new Object[] {this});
+                        method.invoke(applicationContext, new Object[]{this});
                         supportedApplicationListener = true;
-    	            } catch (Throwable t2) {
-    	            }
-	            }
-	        }
-		}
-	}
+                    } catch (Throwable t2) {
+                    }
+                }
+            }
+        }
+    }
 
     public void setBeanName(String name) {
         this.beanName = name;
     }
 
-    public void onApplicationEvent(ApplicationEvent event) {
-        if (ContextRefreshedEvent.class.getName().equals(event.getClass().getName())) {
-        	if (isDelay() && ! isExported() && ! isUnexported()) {
-                if (logger.isInfoEnabled()) {
-                    logger.info("The service ready on spring started. service: " + getInterface());
-                }
-                export();
+    /**
+     * Gets associated {@link Service}
+     *
+     * @return associated {@link Service}
+     */
+    public Service getService() {
+        return service;
+    }
+
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        if (isDelay() && !isExported() && !isUnexported()) {
+            if (logger.isInfoEnabled()) {
+                logger.info("The service ready on spring started. service: " + getInterface());
             }
+            export();
         }
     }
-    
+
     private boolean isDelay() {
         Integer delay = getDelay();
         ProviderConfig provider = getProvider();
         if (delay == null && provider != null) {
             delay = provider.getDelay();
         }
-        return supportedApplicationListener && (delay == null || delay.intValue() == -1);
+        return supportedApplicationListener && (delay == null || delay == -1);
     }
 
-    @SuppressWarnings({ "unchecked", "deprecation" })
-	public void afterPropertiesSet() throws Exception {
+    @SuppressWarnings({"unchecked", "deprecation"})
+    public void afterPropertiesSet() throws Exception {
         if (getProvider() == null) {
-            Map<String, ProviderConfig> providerConfigMap = applicationContext == null ? null  : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ProviderConfig.class, false, false);
+            Map<String, ProviderConfig> providerConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ProviderConfig.class, false, false);
             if (providerConfigMap != null && providerConfigMap.size() > 0) {
-                Map<String, ProtocolConfig> protocolConfigMap = applicationContext == null ? null  : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ProtocolConfig.class, false, false);
+                Map<String, ProtocolConfig> protocolConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ProtocolConfig.class, false, false);
                 if ((protocolConfigMap == null || protocolConfigMap.size() == 0)
-                        && providerConfigMap.size() > 1) { // 兼容旧版本
+                        && providerConfigMap.size() > 1) { // backward compatibility
                     List<ProviderConfig> providerConfigs = new ArrayList<ProviderConfig>();
                     for (ProviderConfig config : providerConfigMap.values()) {
                         if (config.isDefault() != null && config.isDefault().booleanValue()) {
@@ -226,7 +237,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
         }
         if ((getProtocols() == null || getProtocols().size() == 0)
                 && (getProvider() == null || getProvider().getProtocols() == null || getProvider().getProtocols().size() == 0)) {
-            Map<String, ProtocolConfig> protocolConfigMap = applicationContext == null ? null  : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ProtocolConfig.class, false, false);
+            Map<String, ProtocolConfig> protocolConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ProtocolConfig.class, false, false);
             if (protocolConfigMap != null && protocolConfigMap.size() > 0) {
                 List<ProtocolConfig> protocolConfigs = new ArrayList<ProtocolConfig>();
                 for (ProtocolConfig config : protocolConfigMap.values()) {
@@ -240,19 +251,28 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             }
         }
         if (getPath() == null || getPath().length() == 0) {
-            if (beanName != null && beanName.length() > 0 
+            if (beanName != null && beanName.length() > 0
                     && getInterface() != null && getInterface().length() > 0
                     && beanName.startsWith(getInterface())) {
                 setPath(beanName);
             }
         }
-        if (! isDelay()) {
+        if (!isDelay()) {
             export();
         }
     }
 
     public void destroy() throws Exception {
-        unexport();
+        // This will only be called for singleton scope bean, and expected to be called by spring shutdown hook when BeanFactory/ApplicationContext destroys.
+        // We will guarantee dubbo related resources being released with dubbo shutdown hook.
+        //unexport();
     }
 
+    // merged from dubbox
+    protected Class getServiceClass(T ref) {
+        if (AopUtils.isAopProxy(ref)) {
+            return AopUtils.getTargetClass(ref);
+        }
+        return super.getServiceClass(ref);
+    }
 }

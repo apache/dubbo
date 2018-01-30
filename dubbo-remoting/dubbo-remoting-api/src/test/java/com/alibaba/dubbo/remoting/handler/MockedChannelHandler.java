@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,20 +16,16 @@
  */
 package com.alibaba.dubbo.remoting.handler;
 
-import java.util.Collections;
-import java.util.Set;
-
 import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;
 
-/**
- * @author chao.liuc
- *
- */
+import java.util.Collections;
+import java.util.Set;
+
 public class MockedChannelHandler implements ChannelHandler {
-//    ConcurrentMap<String, Channel> channels = new ConcurrentHashMap<String, Channel>();
+    //    ConcurrentMap<String, Channel> channels = new ConcurrentHashMap<String, Channel>();
     ConcurrentHashSet<Channel> channels = new ConcurrentHashSet<Channel>();
 
     public void connected(Channel channel) throws RemotingException {
@@ -50,9 +47,10 @@ public class MockedChannelHandler implements ChannelHandler {
 
     public void caught(Channel channel, Throwable exception) throws RemotingException {
         throw new RemotingException(channel, exception);
-        
+
     }
-    public Set<Channel> getChannels(){
+
+    public Set<Channel> getChannels() {
         return Collections.unmodifiableSet(channels);
     }
 }

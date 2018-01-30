@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,8 +16,14 @@
  */
 package com.alibaba.dubbo.registry.multicast;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.utils.NetUtils;
+import com.alibaba.dubbo.registry.NotifyListener;
+
+import junit.framework.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.net.MulticastSocket;
 import java.util.List;
@@ -24,29 +31,21 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
-import junit.framework.Assert;
-
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.utils.NetUtils;
-import com.alibaba.dubbo.registry.NotifyListener;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * MulticastRegistryTest
- * 
- * @author tony.chenl
+ *
  */
 public class MulticastRegistryTest {
 
-    String            service     = "com.alibaba.dubbo.test.injvmServie";
-    URL               registryUrl = URL.valueOf("multicast://239.255.255.255/");
-    URL               serviceUrl  = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + "/" + service
-                                                + "?methods=test1,test2");
-    URL               consumerUrl = URL.valueOf("subscribe://" + NetUtils.getLocalHost() + "/" + service + "?arg1=1&arg2=2");
-    MulticastRegistry registry    = new MulticastRegistry(registryUrl);
+    String service = "com.alibaba.dubbo.test.injvmServie";
+    URL registryUrl = URL.valueOf("multicast://239.255.255.255/");
+    URL serviceUrl = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + "/" + service
+            + "?methods=test1,test2");
+    URL consumerUrl = URL.valueOf("subscribe://" + NetUtils.getLocalHost() + "/" + service + "?arg1=1&arg2=2");
+    MulticastRegistry registry = new MulticastRegistry(registryUrl);
 
     /**
      * @throws java.lang.Exception
@@ -70,7 +69,7 @@ public class MulticastRegistryTest {
     }
 
     /**
-     * Test method for {@link com.alibaba.dubbo.registry.support.injvm.InjvmRegistry#register(java.util.Map)}.
+     * Test method for {@link com.alibaba.dubbo.registry.multicast.MulticastRegistry#getRegistered()}.
      */
     @Test
     public void testRegister() {
@@ -90,7 +89,7 @@ public class MulticastRegistryTest {
 
     /**
      * Test method for
-     * {@link com.alibaba.dubbo.registry.support.injvm.InjvmRegistry#subscribe(java.util.Map, com.alibaba.dubbo.registry.support.NotifyListener)}
+     * {@link com.alibaba.dubbo.registry.multicast.MulticastRegistry#subscribe(URL url, com.alibaba.dubbo.registry.NotifyListener)}
      * .
      */
     @Test

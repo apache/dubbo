@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,25 +16,23 @@
  */
 package com.alibaba.dubbo.rpc.protocol.dubbo.telnet;
 
-import static org.junit.Assert.assertEquals;
+import com.alibaba.dubbo.remoting.Channel;
+import com.alibaba.dubbo.remoting.RemotingException;
+import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
 
 import org.easymock.EasyMock;
 import org.junit.After;
 import org.junit.Test;
 
-import com.alibaba.dubbo.remoting.Channel;
-import com.alibaba.dubbo.remoting.RemotingException;
-import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
+import static org.junit.Assert.assertEquals;
 
 /**
  * CountTelnetHandlerTest.java
- * 
- * @author tony.chenl
  */
 public class CurrentTelnetHandlerTest {
 
     private static TelnetHandler count = new CurrentTelnetHandler();
-    private Channel              mockChannel;
+    private Channel mockChannel;
 
     @After
     public void after() {
@@ -57,7 +56,7 @@ public class CurrentTelnetHandlerTest {
         String result = count.telnet(mockChannel, "");
         assertEquals("/", result);
     }
-    
+
     @Test
     public void testMessageError() throws RemotingException {
         mockChannel = EasyMock.createMock(Channel.class);

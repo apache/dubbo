@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,16 +18,12 @@ package com.alibaba.dubbo.common.serialize.dubbo;
 
 import java.io.Serializable;
 
-public class SimpleDO implements Serializable
-{
+public class SimpleDO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     public int a, b, c;
-
-	float d = 1.2f, e = 12.56f;
-
-	String str1 = "124", str2;
-
-	public int str3;
+    public int str3;
+    float d = 1.2f, e = 12.56f;
+    String str1 = "124", str2;
 }

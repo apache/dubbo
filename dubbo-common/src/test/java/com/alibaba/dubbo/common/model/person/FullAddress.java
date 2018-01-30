@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,82 +18,23 @@ package com.alibaba.dubbo.common.model.person;
 
 import java.io.Serializable;
 
-/**
- * @author xk1430
- */
 public class FullAddress implements Serializable {
 
     private static final long serialVersionUID = 5163979984269419831L;
 
-    private String            countryId;
+    private String countryId;
 
-    private String            countryName;
+    private String countryName;
 
-    private String            provinceName;
+    private String provinceName;
 
-    private String            cityId;
+    private String cityId;
 
-    private String            cityName;
+    private String cityName;
 
-    private String            streetAddress;
+    private String streetAddress;
 
-    private String            zipCode;
-
-    public void setCountryId(String countryId) {
-        this.countryId = countryId;
-    }
-
-    public void setCountryName(String countryName) {
-        this.countryName = countryName;
-    }
-
-    public void setProvinceName(String provinceName) {
-        this.provinceName = provinceName;
-    }
-
-    public void setCityId(String cityId) {
-        this.cityId = cityId;
-    }
-
-    public void setCityName(String cityName) {
-        this.cityName = cityName;
-    }
-
-    public void setStreetAddress(String streetAddress) {
-        this.streetAddress = streetAddress;
-    }
-
-    public void setZipCode(String zipCode) {
-        this.zipCode = zipCode;
-    }
-
-    public String getCountryId() {
-        return countryId;
-    }
-
-    public String getCountryName() {
-        return countryName;
-    }
-
-    public String getProvinceName() {
-        return provinceName;
-    }
-
-    public String getCityId() {
-        return cityId;
-    }
-
-    public String getCityName() {
-        return cityName;
-    }
-
-    public String getStreetAddress() {
-        return streetAddress;
-    }
-
-    public String getZipCode() {
-        return zipCode;
-    }
+    private String zipCode;
 
     public FullAddress() {
     }
@@ -116,6 +58,62 @@ public class FullAddress implements Serializable {
         this.cityId = cityId;
         this.cityName = cityName;
         this.streetAddress = streetAddress;
+        this.zipCode = zipCode;
+    }
+
+    public String getCountryId() {
+        return countryId;
+    }
+
+    public void setCountryId(String countryId) {
+        this.countryId = countryId;
+    }
+
+    public String getCountryName() {
+        return countryName;
+    }
+
+    public void setCountryName(String countryName) {
+        this.countryName = countryName;
+    }
+
+    public String getProvinceName() {
+        return provinceName;
+    }
+
+    public void setProvinceName(String provinceName) {
+        this.provinceName = provinceName;
+    }
+
+    public String getCityId() {
+        return cityId;
+    }
+
+    public void setCityId(String cityId) {
+        this.cityId = cityId;
+    }
+
+    public String getCityName() {
+        return cityName;
+    }
+
+    public void setCityName(String cityName) {
+        this.cityName = cityName;
+    }
+
+    public String getStreetAddress() {
+        return streetAddress;
+    }
+
+    public void setStreetAddress(String streetAddress) {
+        this.streetAddress = streetAddress;
+    }
+
+    public String getZipCode() {
+        return zipCode;
+    }
+
+    public void setZipCode(String zipCode) {
         this.zipCode = zipCode;
     }
 

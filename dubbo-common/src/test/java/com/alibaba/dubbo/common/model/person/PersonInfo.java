@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,31 +19,28 @@ package com.alibaba.dubbo.common.model.person;
 import java.io.Serializable;
 import java.util.List;
 
-/**
- * @author tony.chenl
- */
 public class PersonInfo implements Serializable {
     private static final long serialVersionUID = 7443011149612231882L;
 
-    List<Phone>               phones;
+    List<Phone> phones;
 
-    Phone                     fax;
+    Phone fax;
 
-    FullAddress               fullAddress;
+    FullAddress fullAddress;
 
-    String                    mobileNo;
+    String mobileNo;
 
-    String                    name;
+    String name;
 
-    boolean                   male;
+    boolean male;
 
-    boolean                   female;
+    boolean female;
 
-    String                    department;
+    String department;
 
-    String                    jobTitle;
+    String jobTitle;
 
-    String                    homepageUrl;
+    String homepageUrl;
 
     public List<Phone> getPhones() {
         return phones;
@@ -68,60 +66,60 @@ public class PersonInfo implements Serializable {
         this.female = female;
     }
 
-    public void setFax(Phone fax) {
-        this.fax = fax;
-    }
-
-    public void setFullAddress(FullAddress fullAddress) {
-        this.fullAddress = fullAddress;
-    }
-
-    public void setMobileNo(String mobileNo) {
-        this.mobileNo = mobileNo;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+    public String getDepartment() {
+        return department;
     }
 
     public void setDepartment(String department) {
         this.department = department;
     }
 
-    public void setJobTitle(String jobTitle) {
-        this.jobTitle = jobTitle;
-    }
-
-    public void setHomepageUrl(String homepageUrl) {
-        this.homepageUrl = homepageUrl;
-    }
-
-    public String getDepartment() {
-        return department;
-    }
-
     public Phone getFax() {
         return fax;
+    }
+
+    public void setFax(Phone fax) {
+        this.fax = fax;
     }
 
     public FullAddress getFullAddress() {
         return fullAddress;
     }
 
+    public void setFullAddress(FullAddress fullAddress) {
+        this.fullAddress = fullAddress;
+    }
+
     public String getHomepageUrl() {
         return homepageUrl;
+    }
+
+    public void setHomepageUrl(String homepageUrl) {
+        this.homepageUrl = homepageUrl;
     }
 
     public String getJobTitle() {
         return jobTitle;
     }
 
+    public void setJobTitle(String jobTitle) {
+        this.jobTitle = jobTitle;
+    }
+
     public String getMobileNo() {
         return mobileNo;
     }
 
+    public void setMobileNo(String mobileNo) {
+        this.mobileNo = mobileNo;
+    }
+
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override

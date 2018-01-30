@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,8 +16,6 @@
  */
 package com.alibaba.dubbo.registry.dubbo;
 
-import java.net.InetSocketAddress;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;
@@ -24,15 +23,16 @@ import com.alibaba.dubbo.remoting.exchange.ExchangeChannel;
 import com.alibaba.dubbo.remoting.exchange.ExchangeHandler;
 import com.alibaba.dubbo.remoting.exchange.ResponseFuture;
 
+import java.net.InetSocketAddress;
+
 public class MockChannel implements ExchangeChannel {
 
+    public static boolean closed = false;
+    public static boolean closing = true;
     final InetSocketAddress localAddress;
-
     final InetSocketAddress remoteAddress;
 
-    public static boolean   closed = false;
-
-    public MockChannel(String localHostname, int localPort, String remoteHostName, int remotePort){
+    public MockChannel(String localHostname, int localPort, String remoteHostName, int remotePort) {
         localAddress = new InetSocketAddress(localHostname, localPort);
         remoteAddress = new InetSocketAddress(remoteHostName, remotePort);
         closed = false;
@@ -58,6 +58,11 @@ public class MockChannel implements ExchangeChannel {
     }
 
     public void close(int timeout) {
+    }
+
+    @Override
+    public void startClose() {
+        closing = true;
     }
 
     public URL getUrl() {
