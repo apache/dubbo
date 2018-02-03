@@ -54,7 +54,7 @@ public class CollectionUtils {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static <T> List<T> sort(List<T> list) {
-        if (list != null && list.size() > 0) {
+        if (list != null && !list.isEmpty()) {
             Collections.sort((List) list);
         }
         return list;
@@ -94,7 +94,7 @@ public class CollectionUtils {
             return null;
         }
         Map<String, String> map = new HashMap<String, String>();
-        if (list == null || list.size() == 0) {
+        if (list == null || list.isEmpty()) {
             return map;
         }
         for (String item : list) {
@@ -199,11 +199,11 @@ public class CollectionUtils {
     }
 
     public static boolean isEmpty(Collection<?> collection) {
-        return collection == null || collection.size() == 0;
+        return collection == null || collection.isEmpty();
     }
 
     public static boolean isNotEmpty(Collection<?> collection) {
-        return collection != null && collection.size() > 0;
+        return collection != null && !collection.isEmpty();
     }
 
 }

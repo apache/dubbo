@@ -42,7 +42,7 @@ public class ChannelHandlerDispatcher implements ChannelHandler {
     }
 
     public ChannelHandlerDispatcher(Collection<ChannelHandler> handlers) {
-        if (handlers != null && handlers.size() > 0) {
+        if (handlers != null && !handlers.isEmpty()) {
             this.channelHandlers.addAll(handlers);
         }
     }
