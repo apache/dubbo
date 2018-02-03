@@ -21,6 +21,7 @@ import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.dubbo.config.spring.ServiceBean;
 import com.alibaba.dubbo.config.spring.context.annotation.DubboClassPathBeanDefinitionScanner;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.config.*;
@@ -37,6 +38,7 @@ import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.util.*;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
 import static org.springframework.context.annotation.AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR;
@@ -61,6 +63,8 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
     private ResourceLoader resourceLoader;
 
     private ClassLoader classLoader;
+
+    private final AtomicBoolean scanned = new AtomicBoolean(false);
 
     public ServiceAnnotationBeanPostProcessor(String... packagesToScan) {
         this(Arrays.asList(packagesToScan));
@@ -97,46 +101,47 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
      * @param registry       {@link BeanDefinitionRegistry}
      */
     private void registerServiceBeans(Set<String> packagesToScan, BeanDefinitionRegistry registry) {
+        if (scanned.compareAndSet(false, true)) {
+            DubboClassPathBeanDefinitionScanner scanner =
+                    new DubboClassPathBeanDefinitionScanner(registry, environment, resourceLoader);
 
-        DubboClassPathBeanDefinitionScanner scanner =
-                new DubboClassPathBeanDefinitionScanner(registry, environment, resourceLoader);
+            BeanNameGenerator beanNameGenerator = resolveBeanNameGenerator(registry);
 
-        BeanNameGenerator beanNameGenerator = resolveBeanNameGenerator(registry);
+            scanner.setBeanNameGenerator(beanNameGenerator);
 
-        scanner.setBeanNameGenerator(beanNameGenerator);
+            scanner.addIncludeFilter(new AnnotationTypeFilter(Service.class));
 
-        scanner.addIncludeFilter(new AnnotationTypeFilter(Service.class));
+            for (String packageToScan : packagesToScan) {
 
-        for (String packageToScan : packagesToScan) {
+                // Registers @Service Bean first
+                scanner.scan(packageToScan);
 
-            // Registers @Service Bean first
-            scanner.scan(packageToScan);
+                // Finds all BeanDefinitionHolders of @Service whether @ComponentScan scans or not.
+                Set<BeanDefinitionHolder> beanDefinitionHolders =
+                        findServiceBeanDefinitionHolders(scanner, packageToScan, registry, beanNameGenerator);
 
-            // Finds all BeanDefinitionHolders of @Service whether @ComponentScan scans or not.
-            Set<BeanDefinitionHolder> beanDefinitionHolders =
-                    findServiceBeanDefinitionHolders(scanner, packageToScan, registry, beanNameGenerator);
+                if (!CollectionUtils.isEmpty(beanDefinitionHolders)) {
 
-            if (!CollectionUtils.isEmpty(beanDefinitionHolders)) {
+                    for (BeanDefinitionHolder beanDefinitionHolder : beanDefinitionHolders) {
+                        registerServiceBean(beanDefinitionHolder, registry, scanner);
+                    }
 
-                for (BeanDefinitionHolder beanDefinitionHolder : beanDefinitionHolders) {
-                    registerServiceBean(beanDefinitionHolder, registry, scanner);
-                }
+                    if (logger.isInfoEnabled()) {
+                        logger.info(beanDefinitionHolders.size() + " annotated Dubbo's @Service Components { " +
+                                beanDefinitionHolders +
+                                " } were scanned under package[" + packageToScan + "]");
+                    }
 
-                if (logger.isInfoEnabled()) {
-                    logger.info(beanDefinitionHolders.size() + " annotated Dubbo's @Service Components { " +
-                            beanDefinitionHolders +
-                            " } were scanned under package[" + packageToScan + "]");
-                }
+                } else {
 
-            } else {
+                    if (logger.isWarnEnabled()) {
+                        logger.warn("No Spring Bean annotating Dubbo's @Service was found under package["
+                                + packageToScan + "]");
+                    }
 
-                if (logger.isWarnEnabled()) {
-                    logger.warn("No Spring Bean annotating Dubbo's @Service was found under package["
-                            + packageToScan + "]");
                 }
 
             }
-
         }
 
     }
@@ -431,7 +436,11 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
 
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-
+        if (!scanned.get()) {
+            if (beanFactory instanceof BeanDefinitionRegistry) {
+                postProcessBeanDefinitionRegistry((BeanDefinitionRegistry) beanFactory);
+            }
+        }
     }
 
     @Override
