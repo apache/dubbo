@@ -17,6 +17,7 @@
 package com.alibaba.dubbo.config.spring.schema;
 
 import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.bytecode.NoSuchMethodException;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
@@ -202,7 +203,13 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                                     String throwMethod = value.substring(index + 1);
                                     reference = new RuntimeBeanReference(throwRef);
                                     beanDefinition.getPropertyValues().addPropertyValue("onthrowMethod", throwMethod);
-                                } else {
+                                } else if ("oninvoke".equals(property)) {
+                                    int index = value.lastIndexOf(".");
+                                    String throwRef = value.substring(0, index);
+                                    String throwMethod = value.substring(index + 1);
+                                    reference = new RuntimeBeanReference(throwRef);
+                                    beanDefinition.getPropertyValues().addPropertyValue("oninvokeMethod", throwMethod);
+                                }else {
                                     if ("ref".equals(property) && parserContext.getRegistry().containsBeanDefinition(value)) {
                                         BeanDefinition refBean = parserContext.getRegistry().getBeanDefinition(value);
                                         if (!refBean.isSingleton()) {
