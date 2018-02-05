@@ -183,7 +183,7 @@ limitations under the License.
             </activation>
             <properties>
                 <!-- Build args -->
-                <!-- if you run dubbo on java8,please use these vm args -->
+                <!-- if you run dubbo on java8+,please use these vm args -->
                 <argline>-server -Xms256m -Xmx512m -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=128m -Dfile.encoding=UTF-8
                     -Djava.net.preferIPv4Stack=true
                 </argline>
