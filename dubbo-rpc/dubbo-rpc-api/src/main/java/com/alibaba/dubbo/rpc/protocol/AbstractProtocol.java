@@ -16,6 +16,7 @@
  */
 package com.alibaba.dubbo.rpc.protocol;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
@@ -43,7 +44,9 @@ public abstract class AbstractProtocol implements Protocol {
     protected final Set<Invoker<?>> invokers = new ConcurrentHashSet<Invoker<?>>();
 
     protected static String serviceKey(URL url) {
-        return ProtocolUtils.serviceKey(url);
+        int port = url.getParameter(Constants.BIND_PORT_KEY, url.getPort());
+        return serviceKey(port, url.getPath(), url.getParameter(Constants.VERSION_KEY),
+                url.getParameter(Constants.GROUP_KEY));
     }
 
     protected static String serviceKey(int port, String serviceName, String serviceVersion, String serviceGroup) {
