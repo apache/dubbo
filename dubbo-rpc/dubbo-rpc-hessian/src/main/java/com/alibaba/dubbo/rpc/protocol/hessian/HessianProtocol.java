@@ -83,6 +83,7 @@ public class HessianProtocol extends AbstractProxyProtocol {
     @SuppressWarnings("unchecked")
     protected <T> T doRefer(Class<T> serviceType, URL url) throws RpcException {
         HessianProxyFactory hessianProxyFactory = new HessianProxyFactory();
+        hessianProxyFactory.setOverloadEnabled(true);
         String client = url.getParameter(Constants.CLIENT_KEY, Constants.DEFAULT_HTTP_CLIENT);
         if ("httpclient".equals(client)) {
             hessianProxyFactory.setConnectionFactory(new HttpClientConnectionFactory());
