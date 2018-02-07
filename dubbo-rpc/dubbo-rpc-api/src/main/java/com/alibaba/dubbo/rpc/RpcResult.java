@@ -95,10 +95,8 @@ public class RpcResult implements Result, Serializable {
         return attachments;
     }
 
-    public void setAttachments(Map<String, String> map) {
-        if (map != null && map.size() > 0) {
-            attachments.putAll(map);
-        }
+    public void setAttachments(Map<String, String> attachments) {
+        this.attachments = attachments == null ? new HashMap<String, String>() : attachments;
     }
 
     public String getAttachment(String key) {
