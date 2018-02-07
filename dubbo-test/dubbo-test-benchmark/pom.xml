@@ -20,7 +20,7 @@ limitations under the License.
     <parent>
         <groupId>com.alibaba</groupId>
         <artifactId>dubbo-test</artifactId>
-        <version>2.5.8</version>
+        <version>2.6.1</version>
     </parent>
     <artifactId>dubbo-test-benchmark</artifactId>
     <packaging>jar</packaging>
@@ -29,13 +29,7 @@ limitations under the License.
     <properties>
         <skip_maven_deploy>true</skip_maven_deploy>
     </properties>
-    <dependencies>
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>dubbo</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-    </dependencies>
+
     <build>
         <plugins>
             <plugin>

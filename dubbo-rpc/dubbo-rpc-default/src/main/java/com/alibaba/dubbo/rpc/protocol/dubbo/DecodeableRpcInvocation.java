@@ -19,6 +19,7 @@ package com.alibaba.dubbo.rpc.protocol.dubbo;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.serialize.Cleanable;
 import com.alibaba.dubbo.common.serialize.ObjectInput;
 import com.alibaba.dubbo.common.utils.Assert;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
@@ -131,6 +132,10 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
 
         } catch (ClassNotFoundException e) {
             throw new IOException(StringUtils.toString("Read invocation data failed.", e));
+        } finally {
+            if (in instanceof Cleanable) {
+                ((Cleanable) in).cleanup();
+            }
         }
         return this;
     }

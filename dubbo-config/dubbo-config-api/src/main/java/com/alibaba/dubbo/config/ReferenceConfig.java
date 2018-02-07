@@ -304,7 +304,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         appendParameters(map, module);
         appendParameters(map, consumer, Constants.DEFAULT_KEY);
         appendParameters(map, this);
-        String prifix = StringUtils.getServiceKey(map);
+        String prefix = StringUtils.getServiceKey(map);
         if (methods != null && methods.size() > 0) {
             for (MethodConfig method : methods) {
                 appendParameters(map, method, method.getName());
@@ -315,7 +315,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                         map.put(method.getName() + ".retries", "0");
                     }
                 }
-                appendAttributes(attributes, method, prifix + "." + method.getName());
+                appendAttributes(attributes, method, prefix + "." + method.getName());
                 checkAndConvertImplicitConfig(method, map, attributes);
             }
         }
@@ -473,7 +473,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             throw new IllegalStateException("The interface class " + interfaceClass + " is not a interface!");
         }
         this.interfaceClass = interfaceClass;
-        setInterface(interfaceClass == null ? (String) null : interfaceClass.getName());
+        setInterface(interfaceClass == null ? null : interfaceClass.getName());
     }
 
     public void setInterface(String interfaceName) {

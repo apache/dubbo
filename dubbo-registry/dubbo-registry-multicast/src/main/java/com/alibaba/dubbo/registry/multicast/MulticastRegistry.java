@@ -49,7 +49,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * MulticastRegistry
- *
  */
 public class MulticastRegistry extends FailbackRegistry {
 
@@ -337,6 +336,13 @@ public class MulticastRegistry extends FailbackRegistry {
                 Set<URL> urls = received.get(key);
                 if (urls != null) {
                     urls.remove(url);
+                }
+                if (urls == null || urls.isEmpty()){
+                    if (urls == null){
+                        urls = new ConcurrentHashSet<URL>();
+                    }
+                    URL empty = url.setProtocol(Constants.EMPTY_PROTOCOL);
+                    urls.add(empty);
                 }
                 List<URL> list = toList(urls);
                 for (NotifyListener listener : entry.getValue()) {

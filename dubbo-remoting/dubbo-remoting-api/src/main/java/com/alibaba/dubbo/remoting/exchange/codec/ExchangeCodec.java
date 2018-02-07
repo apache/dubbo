@@ -20,6 +20,7 @@ import com.alibaba.dubbo.common.io.Bytes;
 import com.alibaba.dubbo.common.io.StreamUtils;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.serialize.Cleanable;
 import com.alibaba.dubbo.common.serialize.ObjectInput;
 import com.alibaba.dubbo.common.serialize.ObjectOutput;
 import com.alibaba.dubbo.common.serialize.Serialization;
@@ -230,6 +231,9 @@ public class ExchangeCodec extends TelnetCodec {
             encodeRequestData(channel, out, req.getData());
         }
         out.flushBuffer();
+        if (out instanceof Cleanable) {
+            ((Cleanable) out).cleanup();
+        }
         bos.flush();
         bos.close();
         int len = bos.writtenBytes();
@@ -271,6 +275,9 @@ public class ExchangeCodec extends TelnetCodec {
                 }
             } else out.writeUTF(res.getErrorMessage());
             out.flushBuffer();
+            if (out instanceof Cleanable) {
+                ((Cleanable) out).cleanup();
+            }
             bos.flush();
             bos.close();
 

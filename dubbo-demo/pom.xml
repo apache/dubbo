@@ -20,7 +20,7 @@ limitations under the License.
     <parent>
         <groupId>com.alibaba</groupId>
         <artifactId>dubbo-parent</artifactId>
-        <version>2.5.8</version>
+        <version>2.6.1</version>
     </parent>
     <artifactId>dubbo-demo</artifactId>
     <packaging>pom</packaging>
@@ -34,4 +34,17 @@ limitations under the License.
         <module>dubbo-demo-provider</module>
         <module>dubbo-demo-consumer</module>
     </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>dubbo-bom</artifactId>
+                <version>${project.parent.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
 </project>

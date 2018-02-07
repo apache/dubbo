@@ -20,14 +20,14 @@ limitations under the License.
     <parent>
         <groupId>com.alibaba</groupId>
         <artifactId>dubbo-demo</artifactId>
-        <version>2.5.8</version>
+        <version>2.6.1</version>
     </parent>
     <artifactId>dubbo-demo-consumer</artifactId>
     <packaging>jar</packaging>
     <name>${project.artifactId}</name>
     <description>The demo consumer module of dubbo project</description>
     <properties>
-        <skip_maven_deploy>false</skip_maven_deploy>
+        <skip_maven_deploy>true</skip_maven_deploy>
     </properties>
     <dependencies>
         <dependency>
@@ -37,38 +37,27 @@ limitations under the License.
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
-            <artifactId>dubbo</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.101tec</groupId>
-            <artifactId>zkclient</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.curator</groupId>
-            <artifactId>curator-framework</artifactId>
+            <artifactId>dubbo-config-spring</artifactId>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
-            <artifactId>fastjson</artifactId>
+            <artifactId>dubbo-registry-zookeeper</artifactId>
         </dependency>
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-registry-multicast</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-cluster</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.4</version>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-rpc-default</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
-            <version>4.0.35.Final</version>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-remoting-netty</artifactId>
         </dependency>
     </dependencies>
 </project>

@@ -46,17 +46,15 @@ public class CacheFilter implements Filter {
             Cache cache = cacheFactory.getCache(invoker.getUrl().addParameter(Constants.METHOD_KEY, invocation.getMethodName()));
             if (cache != null) {
                 String key = StringUtils.toArgumentString(invocation.getArguments());
-                if (cache != null && key != null) {
-                    Object value = cache.get(key);
-                    if (value != null) {
-                        return new RpcResult(value);
-                    }
-                    Result result = invoker.invoke(invocation);
-                    if (!result.hasException()) {
-                        cache.put(key, result.getValue());
-                    }
-                    return result;
+                Object value = cache.get(key);
+                if (value != null) {
+                    return new RpcResult(value);
                 }
+                Result result = invoker.invoke(invocation);
+                if (!result.hasException()) {
+                    cache.put(key, result.getValue());
+                }
+                return result;
             }
         }
         return invoker.invoke(invocation);

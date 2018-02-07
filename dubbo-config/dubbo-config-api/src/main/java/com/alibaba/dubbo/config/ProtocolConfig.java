@@ -20,6 +20,7 @@ import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.serialize.Serialization;
 import com.alibaba.dubbo.common.status.StatusChecker;
 import com.alibaba.dubbo.common.threadpool.ThreadPool;
+import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.config.support.Parameter;
 import com.alibaba.dubbo.registry.support.AbstractRegistryFactory;
 import com.alibaba.dubbo.remoting.Codec;
@@ -120,6 +121,16 @@ public class ProtocolConfig extends AbstractConfig {
     private Boolean register;
 
     // parameters
+    // 是否长连接
+    // TODO add this to provider config
+    private Boolean keepAlive;
+
+    // TODO add this to provider config
+    private String optimizer;
+
+    private String extension;
+
+    // parameters
     private Map<String, String> parameters;
 
     // if it's default
@@ -145,6 +156,14 @@ public class ProtocolConfig extends AbstractConfig {
             return;
         }
         AbstractRegistryFactory.destroyAll();
+
+        // Wait for registry notification
+        try {
+            Thread.sleep(ConfigUtils.getServerShutdownTimeout());
+        } catch (InterruptedException e) {
+            logger.warn("Interrupted unexpectedly when waiting for registry notification during shutdown process!");
+        }
+
         ExtensionLoader<Protocol> loader = ExtensionLoader.getExtensionLoader(Protocol.class);
         for (String protocolName : loader.getLoadedExtensions()) {
             try {
@@ -441,6 +460,30 @@ public class ProtocolConfig extends AbstractConfig {
 
     public void setDefault(Boolean isDefault) {
         this.isDefault = isDefault;
+    }
+
+    public Boolean getKeepAlive() {
+        return keepAlive;
+    }
+
+    public void setKeepAlive(Boolean keepAlive) {
+        this.keepAlive = keepAlive;
+    }
+
+    public String getOptimizer() {
+        return optimizer;
+    }
+
+    public void setOptimizer(String optimizer) {
+        this.optimizer = optimizer;
+    }
+
+    public String getExtension() {
+        return extension;
+    }
+
+    public void setExtension(String extension) {
+        this.extension = extension;
     }
 
     public void destory() {

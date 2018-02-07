@@ -16,14 +16,24 @@ limitations under the License.
 -->
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>7</version>
+    </parent>
+
     <groupId>com.alibaba</groupId>
     <artifactId>dubbo-parent</artifactId>
-    <version>2.5.8</version>
+    <version>2.6.1</version>
     <packaging>pom</packaging>
+
     <name>${project.artifactId}</name>
-    <description>The parent project of dubbo</description>
+    <description>Dubbo is a high-performance, java based RPC framework open-sourced by Alibaba</description>
     <url>http://dubbo.io</url>
+
     <inceptionYear>2011</inceptionYear>
     <licenses>
         <license>
@@ -31,10 +41,37 @@ limitations under the License.
             <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
     </licenses>
-    <organization>
-        <name>The Dubbo Project</name>
-        <url>http://dubbo.io</url>
-    </organization>
+
+    <properties>
+        <!-- Test libs -->
+        <junit_version>4.12</junit_version>
+        <easymock_version>3.4</easymock_version>
+        <jmockit_version>1.33</jmockit_version>
+        <cglib_version>2.2</cglib_version>
+        <!-- Build args -->
+        <argline>-server -Xms256m -Xmx512m -XX:PermSize=64m -XX:MaxPermSize=128m -Dfile.encoding=UTF-8
+            -Djava.net.preferIPv4Stack=true
+        </argline>
+        <skip_maven_deploy>false</skip_maven_deploy>
+        <updateReleaseInfo>true</updateReleaseInfo>
+        <project.build.sourceEncoding>${file_encoding}</project.build.sourceEncoding>
+
+        <profile.name>oss</profile.name>
+        <!-- for maven compiler plugin -->
+        <java_source_version>1.6</java_source_version>
+        <java_target_version>1.6</java_target_version>
+        <file_encoding>UTF-8</file_encoding>
+        <!-- Maven plugins -->
+        <maven_jar_version>3.0.2</maven_jar_version>
+        <maven_surefire_version>2.19.1</maven_surefire_version>
+        <maven_deploy_version>2.8.2</maven_deploy_version>
+        <maven_compiler_version>3.6.0</maven_compiler_version>
+        <maven_source_version>3.0.1</maven_source_version>
+        <maven_cobertura_version>2.7</maven_cobertura_version>
+        <maven_javadoc_version>2.10.4</maven_javadoc_version>
+        <maven_jetty_version>6.1.26</maven_jetty_version>
+    </properties>
+
     <modules>
         <module>hessian-lite</module>
         <module>dubbo-common</module>
@@ -46,13 +83,65 @@ limitations under the License.
         <module>dubbo-registry</module>
         <module>dubbo-monitor</module>
         <module>dubbo-config</module>
-        <module>dubbo</module>
-        <module>dubbo-simple</module>
-        <module>dubbo-admin</module>
         <module>dubbo-demo</module>
         <module>dubbo-plugin</module>
+        <module>dependencies-bom</module>
+        <module>bom</module>
+        <module>all</module>
     </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>dubbo-dependencies-bom</artifactId>
+                <version>2.6.1</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit_version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.easymock</groupId>
+            <artifactId>easymock</artifactId>
+            <version>${easymock_version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jmockit</groupId>
+            <artifactId>jmockit</artifactId>
+            <version>${jmockit_version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>cglib</groupId>
+            <artifactId>cglib-nodep</artifactId>
+            <version>${cglib_version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
     <profiles>
+        <profile>
+            <id>java6</id>
+            <properties>
+                <maven_jar_version>3.0.2</maven_jar_version>
+                <maven_surefire_version>2.19.1</maven_surefire_version>
+                <maven_deploy_version>2.7</maven_deploy_version>
+                <maven_compiler_version>3.1</maven_compiler_version>
+                <maven_source_version>3.0.1</maven_source_version>
+                <maven_cobertura_version>2.7</maven_cobertura_version>
+                <maven_javadoc_version>2.10.1</maven_javadoc_version>
+            </properties>
+        </profile>
         <profile>
             <id>test</id>
             <activation>
@@ -78,302 +167,34 @@ limitations under the License.
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>java8-doclint-disabled</id>
+            <activation>
+                <jdk>[1.8,)</jdk>
+            </activation>
+            <properties>
+                <javadoc.opts>-Xdoclint:none</javadoc.opts>
+            </properties>
+        </profile>
     </profiles>
-    <properties>
-        <!-- Common libs -->
-        <spring_version>4.3.10.RELEASE</spring_version>
-        <javassist_version>3.20.0-GA</javassist_version>
-        <netty_version>3.2.5.Final</netty_version>
-        <netty4_version>4.0.35.Final</netty4_version>
-        <mina_version>1.1.7</mina_version>
-        <grizzly_version>2.1.4</grizzly_version>
-        <httpclient_version>4.5.3</httpclient_version>
-        <hessian_lite_version>3.2.1-fixed-2</hessian_lite_version>
-        <xstream_version>1.4.1</xstream_version>
-        <fastjson_version>1.2.31</fastjson_version>
-        <bsf_version>3.1</bsf_version>
-        <sorcerer_version>0.8</sorcerer_version>
-        <zookeeper_version>3.4.9</zookeeper_version>
-        <zkclient_version>0.2</zkclient_version>
-        <curator_version>2.12.0</curator_version>
-        <jedis_version>2.9.0</jedis_version>
-        <xmemcached_version>1.3.6</xmemcached_version>
-        <cxf_version>3.0.14</cxf_version>
-        <thrift_version>0.8.0</thrift_version>
-        <jfreechart_version>1.0.13</jfreechart_version>
-        <hessian_version>4.0.38</hessian_version>
-        <servlet_version>2.5</servlet_version>
-        <jetty_version>6.1.26</jetty_version>
-        <validation_version>1.1.0.Final</validation_version>
-        <hibernate_validator_version>5.4.1.Final</hibernate_validator_version>
-        <jel_version>3.0.1-b08</jel_version>
-        <jcache_version>1.0.0</jcache_version>
-        <sca_version>2.0-M5.1</sca_version>
-        <guice_version>3.0</guice_version>
-        <cglib_version>2.2</cglib_version>
-        <webx_version>3.1.6</webx_version>
-        <velocity_version>1.7</velocity_version>
-        <!-- Log libs -->
-        <slf4j_version>1.7.25</slf4j_version>
-        <jcl_version>1.2</jcl_version>
-        <log4j_version>1.2.16</log4j_version>
-        <logback_version>1.2.2</logback_version>
-        <!-- Test libs -->
-        <junit_version>4.12</junit_version>
-        <easymock_version>3.4</easymock_version>
-        <jmockit_version>1.33</jmockit_version>
-        <!-- Build args -->
-        <argline>-server -Xms64m -Xmx256m -XX:PermSize=64m -XX:MaxPermSize=128m -Dfile.encoding=UTF-8
-            -Djava.net.preferIPv4Stack=true
-        </argline>
-        <skip_maven_deploy>false</skip_maven_deploy>
-        <updateReleaseInfo>true</updateReleaseInfo>
-        <project.build.sourceEncoding>${file_encoding}</project.build.sourceEncoding>
 
-        <profile.name>oss</profile.name>
-
-        <!-- for maven compiler plugin -->
-        <java_source_version>1.6</java_source_version>
-        <java_target_version>1.6</java_target_version>
-        <file_encoding>UTF-8</file_encoding>
-
-    </properties>
-    <dependencyManagement>
-        <dependencies>
-            <!-- Common libs -->
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-framework-bom</artifactId>
-                <version>${spring_version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.javassist</groupId>
-                <artifactId>javassist</artifactId>
-                <version>${javassist_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.netty</groupId>
-                <artifactId>netty</artifactId>
-                <version>${netty_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-all</artifactId>
-                <version>${netty4_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.mina</groupId>
-                <artifactId>mina-core</artifactId>
-                <version>${mina_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.grizzly</groupId>
-                <artifactId>grizzly-core</artifactId>
-                <version>${grizzly_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpclient</artifactId>
-                <version>${httpclient_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.alibaba</groupId>
-                <artifactId>hessian-lite</artifactId>
-                <version>${hessian_lite_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.alibaba</groupId>
-                <artifactId>fastjson</artifactId>
-                <version>${fastjson_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.thoughtworks.xstream</groupId>
-                <artifactId>xstream</artifactId>
-                <version>${xstream_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.bsf</groupId>
-                <artifactId>bsf-api</artifactId>
-                <version>${bsf_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jvnet.sorcerer</groupId>
-                <artifactId>sorcerer-javac</artifactId>
-                <version>${sorcerer_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.zookeeper</groupId>
-                <artifactId>zookeeper</artifactId>
-                <version>${zookeeper_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.101tec</groupId>
-                <artifactId>zkclient</artifactId>
-                <version>${zkclient_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.curator</groupId>
-                <artifactId>curator-framework</artifactId>
-                <version>${curator_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>redis.clients</groupId>
-                <artifactId>jedis</artifactId>
-                <version>${jedis_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.googlecode.xmemcached</groupId>
-                <artifactId>xmemcached</artifactId>
-                <version>${xmemcached_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-rt-frontend-simple</artifactId>
-                <version>${cxf_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-rt-transports-http</artifactId>
-                <version>${cxf_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.thrift</groupId>
-                <artifactId>libthrift</artifactId>
-                <version>${thrift_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>jfree</groupId>
-                <artifactId>jfreechart</artifactId>
-                <version>${jfreechart_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.caucho</groupId>
-                <artifactId>hessian</artifactId>
-                <version>${hessian_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>javax.servlet</groupId>
-                <artifactId>servlet-api</artifactId>
-                <version>${servlet_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.mortbay.jetty</groupId>
-                <artifactId>jetty</artifactId>
-                <version>${jetty_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>javax.validation</groupId>
-                <artifactId>validation-api</artifactId>
-                <version>${validation_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-validator</artifactId>
-                <version>${hibernate_validator_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish</groupId>
-                <artifactId>javax.el</artifactId>
-                <version>${jel_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>javax.cache</groupId>
-                <artifactId>cache-api</artifactId>
-                <version>${jcache_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.tuscany.sca</groupId>
-                <artifactId>tuscany-sca-api</artifactId>
-                <version>${sca_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.google.inject</groupId>
-                <artifactId>guice</artifactId>
-                <version>${guice_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.alibaba.citrus</groupId>
-                <artifactId>citrus-webx-all</artifactId>
-                <version>${webx_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.velocity</groupId>
-                <artifactId>velocity</artifactId>
-                <version>${velocity_version}</version>
-            </dependency>
-            <!-- Log libs -->
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>${slf4j_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-log4j12</artifactId>
-                <version>${slf4j_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>commons-logging</groupId>
-                <artifactId>commons-logging</artifactId>
-                <version>${jcl_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>log4j</groupId>
-                <artifactId>log4j</artifactId>
-                <version>${log4j_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>ch.qos.logback</groupId>
-                <artifactId>logback-classic</artifactId>
-                <version>${logback_version}</version>
-            </dependency>
-            <!-- Test libs -->
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>${junit_version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.easymock</groupId>
-                <artifactId>easymock</artifactId>
-                <version>${easymock_version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.jmockit</groupId>
-                <artifactId>jmockit</artifactId>
-                <version>1.33</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>cglib</groupId>
-                <artifactId>cglib-nodep</artifactId>
-                <version>${cglib_version}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-    <dependencies>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.easymock</groupId>
-            <artifactId>easymock</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jmockit</groupId>
-            <artifactId>jmockit</artifactId>
-        </dependency>
-    </dependencies>
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>${maven_source_version}</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
+                <version>${maven_jar_version}</version>
                 <configuration>
                     <archive>
                         <addMavenDescriptor>true</addMavenDescriptor>
@@ -386,8 +207,34 @@ limitations under the License.
                 </configuration>
             </plugin>
             <plugin>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>${maven_javadoc_version}</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadoc</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <additionalparam>${javadoc.opts}</additionalparam>
+                        </configuration>
+                    </execution>
+                </executions>
+                <configuration>
+                    <show>public</show>
+                    <charset>UTF-8</charset>
+                    <encoding>UTF-8</encoding>
+                    <docencoding>UTF-8</docencoding>
+                    <excludePackageNames>com.alibaba.com.*</excludePackageNames>
+                    <links>
+                        <link>http://docs.oracle.com/javase/6/docs/api</link>
+                    </links>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven_surefire_version}</version>
                 <configuration>
                     <useSystemClassLoader>true</useSystemClassLoader>
                     <forkMode>once</forkMode>
@@ -458,6 +305,7 @@ limitations under the License.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
+                <version>${maven_deploy_version}</version>
                 <configuration>
                     <skip>${skip_maven_deploy}</skip>
                 </configuration>
@@ -465,6 +313,7 @@ limitations under the License.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven_compiler_version}</version>
                 <configuration>
                     <fork>true</fork>
                     <source>${java_source_version}</source>
@@ -473,47 +322,132 @@ limitations under the License.
                 </configuration>
             </plugin>
             <plugin>
-                <artifactId>maven-source-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>cobertura-maven-plugin</artifactId>
-                <version>2.7</version>
+                <version>${maven_cobertura_version}</version>
                 <configuration>
                     <formats>
                         <format>html</format>
                         <format>xml</format>
                     </formats>
-                    <check />
+                    <check/>
                 </configuration>
             </plugin>
         </plugins>
+
+        <pluginManagement>
+            <plugins>
+                <!-- keep surefire and failsafe in sync -->
+                <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.19.1</version>
+                </plugin>
+                <!-- keep surefire and failsafe in sync -->
+                <plugin>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>2.19.1</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-clean-plugin</artifactId>
+                    <version>3.0.0</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>3.0.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.ops4j.pax.exam</groupId>
+                    <artifactId>maven-paxexam-plugin</artifactId>
+                    <version>1.2.4</version>
+                </plugin>
+                <!--<plugin>-->
+                <!--<artifactId>maven-jar-plugin</artifactId>-->
+                <!--<version>3.0.2</version>-->
+                <!--<executions>-->
+                <!--<execution>-->
+                <!--<id>default-jar</id>-->
+                <!--<configuration>-->
+                <!--<archive>-->
+                <!--<manifest>-->
+                <!--<addDefaultImplementationEntries>true</addDefaultImplementationEntries>-->
+                <!--</manifest>-->
+                <!--<index>true</index>-->
+                <!--<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>-->
+                <!--</archive>-->
+                <!--</configuration>-->
+                <!--</execution>-->
+                <!--</executions>-->
+                <!--</plugin>-->
+                <plugin>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>2.10</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>2.6</version>
+                </plugin>
+                <plugin>
+                    <!-- Do NOT upgrade -->
+                    <artifactId>maven-jxr-plugin</artifactId>
+                    <version>2.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>build-helper-maven-plugin</artifactId>
+                    <version>1.10</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.fusesource.hawtjni</groupId>
+                    <artifactId>maven-hawtjni-plugin</artifactId>
+                    <version>1.14</version>
+                </plugin>
+                <plugin>
+                    <groupId>kr.motd.maven</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>1.0.0.Final</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>2.4.3</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.mortbay.jetty</groupId>
+                    <artifactId>maven-jetty-plugin</artifactId>
+                    <version>${maven_jetty_version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
+    <organization>
+        <name>The Dubbo Project</name>
+        <url>http://dubbo.io</url>
+    </organization>
+
     <issueManagement>
-        <system>github</system>
+        <system>Github Issues</system>
         <url>https://github.com/alibaba/dubbo/issues</url>
     </issueManagement>
     <scm>
-        <url>https://github.com/alibaba/dubbo</url>
-        <connection>https://github.com/alibaba/dubbo.git</connection>
+        <url>https://github.com/alibaba/dubbo/tree/master</url>
+        <connection>scm:git:git://github.com/alibaba/dubbo.git</connection>
+        <developerConnection>scm:git:git@github.com:alibaba/dubbo.git</developerConnection>
     </scm>
     <mailingLists>
         <mailingList>
             <name>Dubbo User Mailling List</name>
-            <subscribe>dubbo-subscribe AT googlegroups DOT com</subscribe>
-            <unsubscribe>dubbo-unsubscribe AT googlegroups DOT com</unsubscribe>
-            <post>dubbo AT googlegroups DOT com</post>
+            <subscribe>dubbo+subscribe@googlegroups.com</subscribe>
+            <unsubscribe>dubbo+unsubscribe@googlegroups.com</unsubscribe>
+            <post>dubbo@googlegroups.com</post>
             <archive>http://groups.google.com/group/dubbo</archive>
+        </mailingList>
+        <mailingList>
+            <name>Dubbo Developer Mailling List</name>
+            <subscribe>dubbo-developers+subscribe@googlegroups.com</subscribe>
+            <unsubscribe>dubbo-developers+unsubscribe@googlegroups.com</unsubscribe>
+            <post>dubbo-developers@googlegroups.com</post>
+            <archive>http://groups.google.com/group/dubbo-developers</archive>
         </mailingList>
     </mailingLists>
     <developers>

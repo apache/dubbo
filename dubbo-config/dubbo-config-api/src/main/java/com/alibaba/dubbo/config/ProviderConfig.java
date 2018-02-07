@@ -67,9 +67,6 @@ public class ProviderConfig extends AbstractServiceConfig {
     // protocol codec
     private String codec;
 
-    // serialization
-    private String serialization;
-
     // charset
     private String charset;
 
@@ -214,14 +211,6 @@ public class ProviderConfig extends AbstractServiceConfig {
 
     public void setCodec(String codec) {
         this.codec = codec;
-    }
-
-    public String getSerialization() {
-        return serialization;
-    }
-
-    public void setSerialization(String serialization) {
-        this.serialization = serialization;
     }
 
     public String getCharset() {
