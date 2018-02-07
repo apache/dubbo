@@ -12,6 +12,7 @@ SERVER_PORT=`sed '/dubbo.protocol.port/!d;s/.*=//' conf/dubbo.properties | tr -d
 LOGS_FILE=`sed '/dubbo.log4j.file/!d;s/.*=//' conf/dubbo.properties | tr -d '\r'`
 VM_ARGS_PERM_SIZE='PermSize'
 VM_ARGS_METASPACE_SIZE='MetaspaceSize'
+JAVA_8_VERSION="180"
 
 if [ -z "$SERVER_HOST" ]; then
     SERVER_HOST='127.0.0.1'
@@ -61,9 +62,9 @@ if [ "$1" = "jmx" ]; then
 fi
 JAVA_MEM_OPTS=""
 #set jvm args by different java version
-JAVA_VERSION=`java -version 2>&1 | awk -F[\"\.] -v OFS=. 'NR==1{print $3}'`
+JAVA_VERSION=`java -fullversion 2>&1 | awk -F[\"\.] '{print $2$3$4}' |awk -F"_" '{print $1}'`
 VM_ARGS=${VM_ARGS_PERM_SIZE}
-if [ "${JAVA_VERSION}" -ge "8" ]; then
+if [ "${JAVA_VERSION}" -ge ${JAVA_8_VERSION} ]; then
     VM_ARGS=${VM_ARGS_METASPACE_SIZE}
 fi
 
