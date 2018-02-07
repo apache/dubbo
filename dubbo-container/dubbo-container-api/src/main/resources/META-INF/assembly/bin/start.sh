@@ -64,6 +64,12 @@ JAVA_MEM_OPTS=""
 # set jvm args by different java version
 JAVA_VERSION=`java -fullversion 2>&1 | awk -F[\"\.] '{print $2$3$4}' |awk -F"_" '{print $1}'`
 VM_ARGS=${VM_ARGS_PERM_SIZE}
+# if you use dubbo in java 9
+TEMP_VERSION=$(echo ${JAVA_VERSION} | grep "+")
+if [[ "$TEMP_VERSION" != "" ]]; then
+        JAVA_VERSION=$(echo ${JAVA_VERSION} | awk -F"+" '{print $1}')
+fi
+# compare java version
 if [ "${JAVA_VERSION}" -ge ${JAVA_8_VERSION} ]; then
     VM_ARGS=${VM_ARGS_METASPACE_SIZE}
 fi
