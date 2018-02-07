@@ -176,6 +176,19 @@ limitations under the License.
                 <javadoc.opts>-Xdoclint:none</javadoc.opts>
             </properties>
         </profile>
+        <profile>
+            <id>java8-vm-args</id>
+            <activation>
+                <jdk>[1.8,)</jdk>
+            </activation>
+            <properties>
+                <!-- Build args -->
+                <!-- if you run dubbo on java8+,please use these vm args -->
+                <argline>-server -Xms256m -Xmx512m -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=128m -Dfile.encoding=UTF-8
+                    -Djava.net.preferIPv4Stack=true
+                </argline>
+            </properties>
+        </profile>
     </profiles>
 
     <build>
