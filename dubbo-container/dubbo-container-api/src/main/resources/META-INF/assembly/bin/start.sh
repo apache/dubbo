@@ -61,7 +61,7 @@ if [ "$1" = "jmx" ]; then
     JAVA_JMX_OPTS=" -Dcom.sun.management.jmxremote.port=1099 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false "
 fi
 JAVA_MEM_OPTS=""
-#set jvm args by different java version
+# set jvm args by different java version
 JAVA_VERSION=`java -fullversion 2>&1 | awk -F[\"\.] '{print $2$3$4}' |awk -F"_" '{print $1}'`
 VM_ARGS=${VM_ARGS_PERM_SIZE}
 if [ "${JAVA_VERSION}" -ge ${JAVA_8_VERSION} ]; then
