@@ -305,7 +305,7 @@ public class RegistryProtocol implements Protocol {
                         + "," + Constants.ROUTERS_CATEGORY));
 
         Invoker invoker = cluster.join(directory);
-        ProviderConsumerRegTable.registerConsuemr(invoker, url, subscribeUrl, directory);
+        ProviderConsumerRegTable.registerConsumer(invoker, url, subscribeUrl, directory);
         return invoker;
     }
 
