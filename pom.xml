@@ -68,7 +68,7 @@ limitations under the License.
         <maven_compiler_version>3.6.0</maven_compiler_version>
         <maven_source_version>3.0.1</maven_source_version>
         <maven_cobertura_version>2.7</maven_cobertura_version>
-        <maven_javadoc_version>2.10.4</maven_javadoc_version>
+        <maven_javadoc_version>3.0.0</maven_javadoc_version>
         <maven_jetty_version>6.1.26</maven_jetty_version>
     </properties>
 
