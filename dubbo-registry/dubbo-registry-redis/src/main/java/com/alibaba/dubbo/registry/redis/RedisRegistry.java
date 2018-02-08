@@ -194,7 +194,7 @@ public class RedisRegistry extends FailbackRegistry {
     // The monitoring center is responsible for deleting outdated dirty data
     private void clean(Jedis jedis) {
         Set<String> keys = jedis.keys(root + Constants.ANY_VALUE);
-        if (keys != null && keys.size() > 0) {
+        if (keys != null && !keys.isEmpty()) {
             for (String key : keys) {
                 Map<String, String> values = jedis.hgetAll(key);
                 if (values != null && values.size() > 0) {
@@ -352,7 +352,7 @@ public class RedisRegistry extends FailbackRegistry {
                     if (service.endsWith(Constants.ANY_VALUE)) {
                         admin = true;
                         Set<String> keys = jedis.keys(service);
-                        if (keys != null && keys.size() > 0) {
+                        if (keys != null && !keys.isEmpty()) {
                             Map<String, Set<String>> serviceKeys = new HashMap<String, Set<String>>();
                             for (String key : keys) {
                                 String serviceKey = toServicePath(key);
@@ -399,8 +399,8 @@ public class RedisRegistry extends FailbackRegistry {
     }
 
     private void doNotify(Jedis jedis, Collection<String> keys, URL url, Collection<NotifyListener> listeners) {
-        if (keys == null || keys.size() == 0
-                || listeners == null || listeners.size() == 0) {
+        if (keys == null || keys.isEmpty()
+                || listeners == null || listeners.isEmpty()) {
             return;
         }
         long now = System.currentTimeMillis();
@@ -442,7 +442,7 @@ public class RedisRegistry extends FailbackRegistry {
                 logger.info("redis notify: " + key + " = " + urls);
             }
         }
-        if (result == null || result.size() == 0) {
+        if (result == null || result.isEmpty()) {
             return;
         }
         for (NotifyListener listener : listeners) {
@@ -584,7 +584,7 @@ public class RedisRegistry extends FailbackRegistry {
                                             if (!first) {
                                                 first = false;
                                                 Set<String> keys = jedis.keys(service);
-                                                if (keys != null && keys.size() > 0) {
+                                                if (keys != null && !keys.isEmpty()) {
                                                     for (String s : keys) {
                                                         doNotify(jedis, s);
                                                     }
