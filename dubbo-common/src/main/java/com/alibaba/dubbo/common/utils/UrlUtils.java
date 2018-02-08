@@ -303,7 +303,7 @@ public class UrlUtils {
 
     //compatible for dubbo-2.0.0
     public static List<String> revertForbid(List<String> forbid, Set<URL> subscribed) {
-        if (forbid != null && forbid.size() > 0) {
+        if (forbid != null && !forbid.isEmpty()) {
             List<String> newForbid = new ArrayList<String>();
             for (String serviceName : forbid) {
                 if (!serviceName.contains(":") && !serviceName.contains("/")) {

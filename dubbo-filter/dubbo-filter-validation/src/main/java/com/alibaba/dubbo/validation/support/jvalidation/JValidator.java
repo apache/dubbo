@@ -265,7 +265,7 @@ public class JValidator implements Validator {
             validate(violations, arg, classgroups);
         }
 
-        if (violations.size() > 0) {
+        if (!violations.isEmpty()) {
             logger.error("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + violations);
             throw new ConstraintViolationException("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + violations, violations);
         }

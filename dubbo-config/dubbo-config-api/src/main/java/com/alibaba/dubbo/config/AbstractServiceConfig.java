@@ -167,7 +167,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     }
 
     public ProtocolConfig getProtocol() {
-        return protocols == null || protocols.size() == 0 ? null : protocols.get(0);
+        return protocols == null || protocols.isEmpty() ? null : protocols.get(0);
     }
 
     public void setProtocol(ProtocolConfig protocol) {
