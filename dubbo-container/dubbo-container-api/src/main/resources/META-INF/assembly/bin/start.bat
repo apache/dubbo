@@ -11,8 +11,7 @@ cd ..\bin
 @REM set jvm args by different java version
 for /f tokens^=2-4^ delims^=.-_+^" %%j in ('java -fullversion 2^>^&1') do set "JAVA_VERSION=%%j%%k%%l"
 set VM_ARGS=%VM_ARGS_PERM_SIZE%
-if %JAVA_VERSION% GEQ %JAVA_8_VERSION% set VM_ARGS=%VM_ARGS_METASPACE_SIZE%
-
+if "%JAVA_VERSION%" GEQ %JAVA_8_VERSION% set VM_ARGS=%VM_ARGS_METASPACE_SIZE%
 if ""%1"" == ""debug"" goto debug
 if ""%1"" == ""jmx"" goto jmx
 
