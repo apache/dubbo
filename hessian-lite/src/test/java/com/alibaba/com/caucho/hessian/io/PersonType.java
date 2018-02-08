@@ -1,8 +1,8 @@
 package com.alibaba.com.caucho.hessian.io;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * @author jason.shang
@@ -27,21 +27,32 @@ public class PersonType implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
-        PersonType type = (PersonType) o;
-        return age == type.age &&
-            Double.compare(type.money, money) == 0 &&
-            p1 == type.p1 &&
-            p2 == type.p2 &&
-            Objects.equals(name, type.name) &&
-            Objects.equals(p3, type.p3);
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        PersonType that = (PersonType) o;
+
+        if (age != that.age) return false;
+        if (Double.compare(that.money, money) != 0) return false;
+        if (p1 != that.p1) return false;
+        if (p2 != that.p2) return false;
+        if (!name.equals(that.name)) return false;
+        if (!p3.equals(that.p3)) return false;
+
+        return true;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, age, money, p1, p2, p3);
+        int result;
+        long temp;
+        result = name.hashCode();
+        result = 31 * result + age;
+        temp = Double.doubleToLongBits(money);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        result = 31 * result + (int) p1;
+        result = 31 * result + (int) p2;
+        result = 31 * result + p3.hashCode();
+        return result;
     }
 }
