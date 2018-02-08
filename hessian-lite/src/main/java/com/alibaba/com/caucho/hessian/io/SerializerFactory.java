@@ -491,16 +491,24 @@ public class SerializerFactory extends AbstractSerializerFactory {
      */
     public Object readMap(AbstractHessianInput in, String type)
             throws HessianProtocolException, IOException {
+        return readMap(in, type, null, null);
+    }
+
+    /**
+     * Reads the object as a map.
+     */
+    public Object readMap(AbstractHessianInput in, String type, Class<?> expectKeyType, Class<?> expectValueType)
+        throws HessianProtocolException, IOException {
         Deserializer deserializer = getDeserializer(type);
 
         if (deserializer != null)
             return deserializer.readMap(in);
         else if (_hashMapDeserializer != null)
-            return _hashMapDeserializer.readMap(in);
+            return _hashMapDeserializer.readMap(in, expectKeyType, expectValueType);
         else {
             _hashMapDeserializer = new MapDeserializer(HashMap.class);
 
-            return _hashMapDeserializer.readMap(in);
+            return _hashMapDeserializer.readMap(in, expectKeyType, expectValueType);
         }
     }
 
