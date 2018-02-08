@@ -44,7 +44,7 @@ public class ListenerInvokerWrapper<T> implements Invoker<T> {
         }
         this.invoker = invoker;
         this.listeners = listeners;
-        if (listeners != null && listeners.size() > 0) {
+        if (listeners != null && !listeners.isEmpty()) {
             for (InvokerListener listener : listeners) {
                 if (listener != null) {
                     try {
@@ -82,7 +82,7 @@ public class ListenerInvokerWrapper<T> implements Invoker<T> {
         try {
             invoker.destroy();
         } finally {
-            if (listeners != null && listeners.size() > 0) {
+            if (listeners != null && !listeners.isEmpty()) {
                 for (InvokerListener listener : listeners) {
                     if (listener != null) {
                         try {
