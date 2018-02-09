@@ -157,7 +157,6 @@ public class ExtensionLoader<T> {
     public List<T> getActivateExtension(URL url, String[] values) {
         return getActivateExtension(url, values, null);
     }
-
     /**
      * This is equivalent to {@code getActivateExtension(url, url.getParameter(key).split(","), null)}
      *
@@ -670,8 +669,10 @@ public class ExtensionLoader<T> {
                             if (cachedClasses.get() == null) {
                                 cachedClasses.set(new HashMap<String, Class<?>>());
                             }
-                            Class<?> c = cachedClasses.get().putIfAbsent(n, clazz);
-                            if (c != null) {
+                            Class<?> c = cachedClasses.get().get(n);
+                            if (c == null) {
+                                cachedClasses.get().put(n, clazz);
+                            } else if (c != clazz) {
                                 throw new IllegalStateException("Duplicate extension " + type.getName() + " name " + n + " on " + c.getName() + " and " + clazz.getName());
                             }
                         }
