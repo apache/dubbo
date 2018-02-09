@@ -409,4 +409,5 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
     public BeanDefinition parse(Element element, ParserContext parserContext) {
         return parse(element, parserContext, beanClass, required);
     }
+
 }
