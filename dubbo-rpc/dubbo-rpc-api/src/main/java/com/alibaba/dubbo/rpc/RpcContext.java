@@ -610,51 +610,24 @@ public class RpcContext {
     @SuppressWarnings("unchecked")
     public <T> Future<T> asyncCall(Callable<T> callable) {
         try {
-            try {
-                setAttachment(Constants.ASYNC_KEY, Boolean.TRUE.toString());
-                final T o = callable.call();
-                //local invoke will return directly
-                if (o != null) {
-                    FutureTask<T> f = new FutureTask<T>(new Callable<T>() {
-                        public T call() throws Exception {
-                            return o;
-                        }
-                    });
-                    f.run();
-                    return f;
-                } else {
-
-                }
-            } catch (Exception e) {
-                throw new RpcException(e);
-            } finally {
-                removeAttachment(Constants.ASYNC_KEY);
+            setAttachment(Constants.ASYNC_KEY, Boolean.TRUE.toString());
+            final T o = callable.call();
+            //local invoke will return directly
+            if (o != null) {
+                FutureTask<T> f = new FutureTask<T>(new Callable<T>() {
+                    public T call() throws Exception {
+                        return o;
+                    }
+                });
+                f.run();
+                return f;
             }
-        } catch (final RpcException e) {
-            return new Future<T>() {
-                public boolean cancel(boolean mayInterruptIfRunning) {
-                    return false;
-                }
-
-                public boolean isCancelled() {
-                    return false;
-                }
-
-                public boolean isDone() {
-                    return true;
-                }
-
-                public T get() throws InterruptedException, ExecutionException {
-                    throw new ExecutionException(e.getCause());
-                }
-
-                public T get(long timeout, TimeUnit unit)
-                        throws InterruptedException, ExecutionException,
-                        TimeoutException {
-                    return get();
-                }
-            };
+        } catch (Exception e) {
+            throw new RpcException(e);
+        } finally {
+            removeAttachment(Constants.ASYNC_KEY);
         }
+
         return ((Future<T>) getContext().getFuture());
     }
 
