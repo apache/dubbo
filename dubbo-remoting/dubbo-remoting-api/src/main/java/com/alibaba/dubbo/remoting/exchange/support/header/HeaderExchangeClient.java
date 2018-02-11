@@ -66,7 +66,7 @@ public class HeaderExchangeClient implements ExchangeClient {
             throw new IllegalStateException("heartbeatTimeout < heartbeatInterval * 2");
         }
         if (needHeartbeat) {
-            startHeatbeatTimer();
+            startHeartbeatTimer();
         }
     }
 
@@ -160,7 +160,7 @@ public class HeaderExchangeClient implements ExchangeClient {
         return channel.hasAttribute(key);
     }
 
-    private void startHeatbeatTimer() {
+    private void startHeartbeatTimer() {
         stopHeartbeatTimer();
         if (heartbeat > 0) {
             heartbeatTimer = scheduled.scheduleWithFixedDelay(
