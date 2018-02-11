@@ -51,7 +51,7 @@ import static org.springframework.util.ClassUtils.resolveClassName;
  * @since 2.5.8
  */
 public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistryPostProcessor, EnvironmentAware,
-                                                                   ResourceLoaderAware, BeanClassLoaderAware {
+        ResourceLoaderAware, BeanClassLoaderAware {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -129,15 +129,15 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
 
                 if (logger.isInfoEnabled()) {
                     logger.info(beanDefinitionHolders.size() + " annotated Dubbo's @Service Components { " +
-                                        beanDefinitionHolders +
-                                        " } were scanned under package[" + packageToScan + "]");
+                            beanDefinitionHolders +
+                            " } were scanned under package[" + packageToScan + "]");
                 }
 
             } else {
 
                 if (logger.isWarnEnabled()) {
                     logger.warn("No Spring Bean annotating Dubbo's @Service was found under package["
-                                        + packageToScan + "]");
+                            + packageToScan + "]");
                 }
 
             }
@@ -172,10 +172,10 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
             if (logger.isInfoEnabled()) {
 
                 logger.info("BeanNameGenerator bean can't be found in BeanFactory with name ["
-                                    + CONFIGURATION_BEAN_NAME_GENERATOR + "]");
+                        + CONFIGURATION_BEAN_NAME_GENERATOR + "]");
                 logger.info("BeanNameGenerator will be a instance of " +
-                                    AnnotationBeanNameGenerator.class.getName() +
-                                    " , it maybe a potential problem on bean name generation.");
+                        AnnotationBeanNameGenerator.class.getName() +
+                        " , it maybe a potential problem on bean name generation.");
             }
 
             beanNameGenerator = new AnnotationBeanNameGenerator();
@@ -226,7 +226,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
      * @see BeanDefinition
      */
     private void registerServiceBean(BeanDefinitionHolder beanDefinitionHolder, BeanDefinitionRegistry registry,
-            DubboClassPathBeanDefinitionScanner scanner) {
+                                     DubboClassPathBeanDefinitionScanner scanner) {
 
         Class<?> beanClass = resolveClass(beanDefinitionHolder);
 
@@ -247,15 +247,15 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
 
             if (logger.isInfoEnabled()) {
                 logger.warn("The BeanDefinition[" + serviceBeanDefinition +
-                                    "] of ServiceBean has been registered with name : " + beanName);
+                        "] of ServiceBean has been registered with name : " + beanName);
             }
 
         } else {
 
             if (logger.isWarnEnabled()) {
                 logger.warn("The Duplicated BeanDefinition[" + serviceBeanDefinition +
-                                    "] of ServiceBean[ bean name : " + beanName +
-                                    "] was be found , Did @DubboComponentScan scan to same package in many times?");
+                        "] of ServiceBean[ bean name : " + beanName +
+                        "] was be found , Did @DubboComponentScan scan to same package in many times?");
             }
 
         }
@@ -341,13 +341,13 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
     }
 
     private AbstractBeanDefinition buildServiceBeanDefinition(Service service, Class<?> interfaceClass,
-            String annotatedServiceBeanName) {
+                                                              String annotatedServiceBeanName) {
 
         BeanDefinitionBuilder builder = rootBeanDefinition(ServiceBean.class)
-                                                .addConstructorArgValue(service)
-                                                // References "ref" property to annotated-@Service Bean
-                                                .addPropertyReference("ref", annotatedServiceBeanName)
-                                                .addPropertyValue("interfaceClass", interfaceClass);
+                .addConstructorArgValue(service)
+                // References "ref" property to annotated-@Service Bean
+                .addPropertyReference("ref", annotatedServiceBeanName)
+                .addPropertyValue("interfaceClass", interfaceClass);
 
         /**
          * Add {@link com.alibaba.dubbo.config.ProviderConfig} Bean reference
