@@ -17,11 +17,22 @@
 package com.alibaba.dubbo.registry.zookeeper;
 
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
+import com.alibaba.dubbo.common.utils.NetUtils;
+import com.alibaba.dubbo.registry.NotifyListener;
+import com.alibaba.dubbo.registry.RegistryFactory;
 
 import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * ZookeeperRegistryTest
@@ -29,11 +40,11 @@ import org.junit.Test;
  */
 public class ZookeeperRegistryTest {
 
-    String service = "com.alibaba.dubbo.test.injvmServie";
-    URL registryUrl = URL.valueOf("zookeeper://239.255.255.255/");
-    URL serviceUrl = URL.valueOf("zookeeper://zookeeper/" + service
-            + "?notify=false&methods=test1,test2");
-    URL consumerUrl = URL.valueOf("zookeeper://consumer/" + service + "?notify=false&methods=test1,test2");
+//    String service = "com.alibaba.dubbo.test.injvmServie";
+//    URL registryUrl = URL.valueOf("zookeeper://239.255.255.255/");
+//    URL serviceUrl = URL.valueOf("zookeeper://zookeeper/" + service
+//            + "?notify=false&methods=test1,test2");
+//    URL consumerUrl = URL.valueOf("zookeeper://consumer/" + service + "?notify=false&methods=test1,test2");
     // ZookeeperRegistry registry    = new ZookeeperRegistry(registryUrl);
 
     /**
@@ -105,4 +116,46 @@ public class ZookeeperRegistryTest {
 
     }
 
+    @Test
+    @Ignore public void test_unsubscribe() throws InterruptedException {
+
+        registry.unregister(serviceUrl);
+
+        Assert.assertTrue(registry.getRegistered().size() == 0);
+        Assert.assertTrue(registry.getSubscribed().size() == 0);
+
+        final CountDownLatch notNotified = new CountDownLatch(2);
+
+        final AtomicReference<URL> notifiedUrl = new AtomicReference<URL>();
+
+        NotifyListener listener = new NotifyListener() {
+            public void notify(List<URL> urls) {
+                if(urls != null) {
+                    for(Iterator<URL> iterator = urls.iterator(); iterator.hasNext();) {
+                        URL url = iterator.next();
+                        if(!url.getProtocol().equals("empty")){
+                            notifiedUrl.set(url);
+                            notNotified.countDown();
+                        }
+                    }
+                }
+            }
+        };
+        registry.subscribe(consumerUrl, listener);
+        registry.unsubscribe(consumerUrl, listener);
+
+        registry.register(serviceUrl);
+
+        Assert.assertFalse(notNotified.await(2, TimeUnit.SECONDS));
+        // expect nothing happen
+        Assert.assertTrue(notifiedUrl.get() == null);
+    }
+
+    String service = "com.alibaba.dubbo.internal.test.DemoServie";
+    URL serviceUrl = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + "/" + service + "?methods=test1,test2");
+    URL consumerUrl = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":2018" + "/" + service + "?methods=test1,test2");
+    // should change zookeeper address if not equals 192.168.47.102:2181
+    URL registryUrl = URL.valueOf("zookeeper://192.168.47.102:2181/com.alibaba.dubbo.registry.RegistryService");
+    RegistryFactory registryFactory = ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
+    ZookeeperRegistry registry = (ZookeeperRegistry) registryFactory.getRegistry(registryUrl);
 }

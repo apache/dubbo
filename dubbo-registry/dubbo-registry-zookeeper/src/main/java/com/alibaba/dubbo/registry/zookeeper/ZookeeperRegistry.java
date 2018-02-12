@@ -191,7 +191,10 @@ public class ZookeeperRegistry extends FailbackRegistry {
         if (listeners != null) {
             ChildListener zkListener = listeners.get(listener);
             if (zkListener != null) {
-                zkClient.removeChildListener(toUrlPath(url), zkListener);
+                // maybe url has many subscribe path
+                for(String path : toUnsubscribedPath(url)){
+                    zkClient.removeChildListener(path, zkListener);
+                }
             }
         }
     }
@@ -254,6 +257,23 @@ public class ZookeeperRegistry extends FailbackRegistry {
 
     private String toUrlPath(URL url) {
         return toCategoryPath(url) + Constants.PATH_SEPARATOR + URL.encode(url.toFullString());
+    }
+
+    protected List<String> toUnsubscribedPath(URL url){
+        List<String> categories = new ArrayList<String>();
+        if(Constants.ANY_VALUE.equals(url.getServiceInterface())) {
+            String group = url.getParameter(Constants.GROUP_KEY, DEFAULT_ROOT);
+            if (!group.startsWith(Constants.PATH_SEPARATOR)) {
+                group = Constants.PATH_SEPARATOR + group;
+            }
+            categories.add(group);
+            return categories;
+        }else{
+            for (String path : toCategoriesPath(url)) {
+                categories.add(path);
+            }
+        }
+        return categories;
     }
 
     private List<URL> toUrlsWithoutEmpty(URL consumer, List<String> providers) {
