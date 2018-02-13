@@ -17,6 +17,7 @@
 
 package com.alibaba.dubbo.remoting.exchange.support.header;
 
+import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.remoting.Channel;
@@ -56,7 +57,7 @@ final class HeartBeatTask implements Runnable {
                     if ((lastRead != null && now - lastRead > heartbeat)
                             || (lastWrite != null && now - lastWrite > heartbeat)) {
                         Request req = new Request();
-                        req.setVersion("2.0.0");
+                        req.setVersion(Version.getVersion());
                         req.setTwoWay(true);
                         req.setEvent(Request.HEARTBEAT_EVENT);
                         channel.send(req);

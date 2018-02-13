@@ -23,7 +23,9 @@ import com.alibaba.dubbo.common.utils.ClassHelper;
 import java.net.URL;
 import java.security.CodeSource;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -31,9 +33,11 @@ import java.util.Set;
  */
 public final class Version {
 
-    private static final String DEFAULT_DUBBO_VERSION = "2.0.0";
+    private static final String DEFAULT_DUBBO_VERSION = "2.0.2";
+    private static final int LOWEST_VERSION_FOR_RESPONSE_ATTATCHMENT = 202; // 2.0.2
     private static final Logger logger = LoggerFactory.getLogger(Version.class);
     private static final String VERSION = getVersion(Version.class, DEFAULT_DUBBO_VERSION);
+    private static final Map<String, Integer> VERSION2INT = new HashMap<String, Integer>();
 
     static {
         // check if there's duplicated jar
@@ -47,6 +51,31 @@ public final class Version {
         return VERSION;
     }
 
+    public static boolean isSupportResponseAttatchment(String version) {
+        if (version == null || version.length() == 0) {
+            return false;
+        }
+        return getIntVersion(version) >= LOWEST_VERSION_FOR_RESPONSE_ATTATCHMENT;
+    }
+
+    public static int getIntVersion(String version) {
+        Integer v = VERSION2INT.get(version);
+        if (v == null) {
+            v = parseInt(version);
+            VERSION2INT.put(version, v);
+        }
+        return v;
+    }
+
+    private static int parseInt(String version) {
+        int v = 0;
+        String[] vArr = version.split("\\.");
+        int len = vArr.length;
+        for (int i = 1; i <= len; i++) {
+            v += Integer.parseInt(vArr[len - i]) * Math.pow(10, i - 1);
+        }
+        return v;
+    }
 
     private static boolean hasResource(String path) {
         try {
