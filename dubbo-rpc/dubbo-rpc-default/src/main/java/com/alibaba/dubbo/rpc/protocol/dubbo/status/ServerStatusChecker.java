@@ -32,7 +32,7 @@ public class ServerStatusChecker implements StatusChecker {
 
     public Status check() {
         Collection<ExchangeServer> servers = DubboProtocol.getDubboProtocol().getServers();
-        if (servers == null || servers.size() == 0) {
+        if (servers == null || servers.isEmpty()) {
             return new Status(Status.Level.UNKNOWN);
         }
         Status.Level level = Status.Level.OK;

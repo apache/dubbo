@@ -53,7 +53,7 @@ public class HelpTelnetHandler implements TelnetHandler {
         } else {
             List<List<String>> table = new ArrayList<List<String>>();
             List<TelnetHandler> handlers = extensionLoader.getActivateExtension(channel.getUrl(), "telnet");
-            if (handlers != null && handlers.size() > 0) {
+            if (handlers != null && !handlers.isEmpty()) {
                 for (TelnetHandler handler : handlers) {
                     Help help = handler.getClass().getAnnotation(Help.class);
                     List<String> row = new ArrayList<String>();
