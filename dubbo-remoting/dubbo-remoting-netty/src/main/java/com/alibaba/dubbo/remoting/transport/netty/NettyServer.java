@@ -104,7 +104,7 @@ public class NettyServer extends AbstractServer implements Server {
         }
         try {
             Collection<com.alibaba.dubbo.remoting.Channel> channels = getChannels();
-            if (channels != null && channels.size() > 0) {
+            if (channels != null && !channels.isEmpty()) {
                 for (com.alibaba.dubbo.remoting.Channel channel : channels) {
                     try {
                         channel.close();

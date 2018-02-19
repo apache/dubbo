@@ -79,11 +79,11 @@ public class TraceFilter implements Filter {
         if (tracers.size() > 0) {
             String key = invoker.getInterface().getName() + "." + invocation.getMethodName();
             Set<Channel> channels = tracers.get(key);
-            if (channels == null || channels.size() == 0) {
+            if (channels == null || channels.isEmpty()) {
                 key = invoker.getInterface().getName();
                 channels = tracers.get(key);
             }
-            if (channels != null && channels.size() > 0) {
+            if (channels != null && !channels.isEmpty()) {
                 for (Channel channel : new ArrayList<Channel>(channels)) {
                     if (channel.isConnected()) {
                         try {

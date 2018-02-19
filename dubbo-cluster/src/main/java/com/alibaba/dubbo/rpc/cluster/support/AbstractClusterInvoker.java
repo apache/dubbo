@@ -99,7 +99,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
      * @throws RpcExceptione
      */
     protected Invoker<T> select(LoadBalance loadbalance, Invocation invocation, List<Invoker<T>> invokers, List<Invoker<T>> selected) throws RpcException {
-        if (invokers == null || invokers.size() == 0)
+        if (invokers == null || invokers.isEmpty())
             return null;
         String methodName = invocation == null ? "" : invocation.getMethodName();
 
@@ -125,12 +125,12 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
     }
 
     private Invoker<T> doselect(LoadBalance loadbalance, Invocation invocation, List<Invoker<T>> invokers, List<Invoker<T>> selected) throws RpcException {
-        if (invokers == null || invokers.size() == 0)
+        if (invokers == null || invokers.isEmpty())
             return null;
         if (invokers.size() == 1)
             return invokers.get(0);
         // If we only have two invokers, use round-robin instead.
-        if (invokers.size() == 2 && selected != null && selected.size() > 0) {
+        if (invokers.size() == 2 && selected != null && !selected.isEmpty()) {
             return selected.get(0) == invokers.get(0) ? invokers.get(1) : invokers.get(0);
         }
         Invoker<T> invoker = loadbalance.select(invokers, getUrl(), invocation);
@@ -185,7 +185,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
                     }
                 }
             }
-            if (reselectInvokers.size() > 0) {
+            if (!reselectInvokers.isEmpty()) {
                 return loadbalance.select(reselectInvokers, getUrl(), invocation);
             }
         } else { // do not check invoker.isAvailable()
@@ -194,7 +194,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
                     reselectInvokers.add(invoker);
                 }
             }
-            if (reselectInvokers.size() > 0) {
+            if (!reselectInvokers.isEmpty()) {
                 return loadbalance.select(reselectInvokers, getUrl(), invocation);
             }
         }
@@ -208,7 +208,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
                     }
                 }
             }
-            if (reselectInvokers.size() > 0) {
+            if (!reselectInvokers.isEmpty()) {
                 return loadbalance.select(reselectInvokers, getUrl(), invocation);
             }
         }
@@ -222,7 +222,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         LoadBalance loadbalance;
 
         List<Invoker<T>> invokers = list(invocation);
-        if (invokers != null && invokers.size() > 0) {
+        if (invokers != null && !invokers.isEmpty()) {
             loadbalance = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(invokers.get(0).getUrl()
                     .getMethodParameter(invocation.getMethodName(), Constants.LOADBALANCE_KEY, Constants.DEFAULT_LOADBALANCE));
         } else {
@@ -247,7 +247,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
     }
 
     protected void checkInvokers(List<Invoker<T>> invokers, Invocation invocation) {
-        if (invokers == null || invokers.size() == 0) {
+        if (invokers == null || invokers.isEmpty()) {
             throw new RpcException("Failed to invoke the method "
                     + invocation.getMethodName() + " in the service " + getInterface().getName()
                     + ". No provider available for the service " + directory.getUrl().getServiceKey()
