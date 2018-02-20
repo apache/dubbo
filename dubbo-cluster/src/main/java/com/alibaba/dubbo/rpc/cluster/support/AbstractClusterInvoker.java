@@ -96,7 +96,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
      * @param invokers invoker candidates
      * @param selected  exclude selected invokers or not
      * @return
-     * @throws RpcExceptione
+     * @throws RpcException
      */
     protected Invoker<T> select(LoadBalance loadbalance, Invocation invocation, List<Invoker<T>> invokers, List<Invoker<T>> selected) throws RpcException {
         if (invokers == null || invokers.isEmpty())
@@ -153,7 +153,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
                     }
                 }
             } catch (Throwable t) {
-                logger.error("clustor relselect fail reason is :" + t.getMessage() + " if can not slove ,you can set cluster.availablecheck=false in url", t);
+                logger.error("cluster reselect fail reason is :" + t.getMessage() + " if can not solve, you can set cluster.availablecheck=false in url", t);
             }
         }
         return invoker;
@@ -226,7 +226,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
             loadbalance = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(invokers.get(0).getUrl()
                     .getMethodParameter(invocation.getMethodName(), Constants.LOADBALANCE_KEY, Constants.DEFAULT_LOADBALANCE));
         } else {
-            loadbalance = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(Constants.DEFAULT_LOADBALANCE);
+            loadbalance = null;
         }
         RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
         return doInvoke(invocation, invokers, loadbalance);
