@@ -140,8 +140,8 @@ public class ThriftCodec implements Codec2 {
 
             TBinaryProtocol protocol = new TBinaryProtocol(transport);
             //the native thrift datagram have no these header info
-            boolean isNativeThrift = !isNativeThrift(channel);
-            if (isNativeThrift) {
+            boolean isNotNativeThrift = !isNativeThrift(channel);
+            if (isNotNativeThrift) {
                 short magic;
                 int messageLength;
 
@@ -167,7 +167,7 @@ public class ThriftCodec implements Codec2 {
                 }
             }
             String serviceInterface = channel.getUrl().getServiceInterface();
-            return decode(protocol, isNativeThrift, serviceInterface);
+            return decode(protocol, isNotNativeThrift, serviceInterface);
 
         }
 
