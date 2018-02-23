@@ -48,7 +48,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     protected Boolean export;
 
     // weight
-    protected Integer weight;
+    protected Integer weight; // TODO 芋艿
 
     // document center
     protected String document;
@@ -57,21 +57,21 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     protected Boolean dynamic;
 
     // whether to use token
-    protected String token;
+    protected String token; // TODO 芋艿
 
     // access log
-    protected String accesslog;
-    protected List<ProtocolConfig> protocols;
+    protected String accesslog; // TODO 芋艿
+    protected List<ProtocolConfig> protocols; // TODO 芋艿
     // max allowed execute times
-    private Integer executes;
+    private Integer executes; // TODO 芋艿
     // whether to register
     private Boolean register;
 
     // warm up period
-    private Integer warmup;
+    private Integer warmup; // TODO 芋艿
 
     // serialization
-    private String serialization;
+    private String serialization; // TODO 芋艿
 
     public String getVersion() {
         return version;

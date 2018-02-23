@@ -40,20 +40,20 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     protected Boolean init;
 
     // whether to use generic interface
-    protected String generic;
+    protected String generic; // TODO 芋艿
 
     // whether to find reference's instance from the current JVM
-    protected Boolean injvm;
+    protected Boolean injvm; // TODO 芋艿
 
     // lazy create connection
     protected Boolean lazy;
 
-    protected String reconnect;
+    protected String reconnect; // TODO 芋艿
 
     protected Boolean sticky;
 
     // whether to support event in stub. //TODO solve merge problem
-    protected Boolean stubevent;//= Constants.DEFAULT_STUB_EVENT;
+    protected Boolean stubevent;//= Constants.DEFAULT_STUB_EVENT; // TODO 芋艿
 
     // version
     protected String version;

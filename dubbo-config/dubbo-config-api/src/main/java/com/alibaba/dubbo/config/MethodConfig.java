@@ -24,6 +24,9 @@ import java.util.List;
 /**
  * MethodConfig
  *
+ * 方法级配置。
+ * 属性参见：http://dubbo.io/books/dubbo-user-book/references/xml/dubbo-method.html 。
+ *
  * @export
  */
 public class MethodConfig extends AbstractMethodConfig {
@@ -34,43 +37,43 @@ public class MethodConfig extends AbstractMethodConfig {
     private String name;
 
     // stat
-    private Integer stat;
+    private Integer stat; // TODO 芋艿
 
     // whether to retry
     private Boolean retry;
 
     // if it's reliable
-    private Boolean reliable;
+    private Boolean reliable; // TODO 芋艿
 
     // thread limits for method invocations
-    private Integer executes;
+    private Integer executes; // TODO 芋艿
 
     // if it's deprecated
     private Boolean deprecated;
 
     // whether to enable sticky
-    private Boolean sticky;
+    private Boolean sticky; // TODO 芋艿
 
     // whether need to return
-    private Boolean isReturn;
+    private Boolean isReturn; // TODO 芋艿
 
     // callback instance when async-call is invoked
-    private Object oninvoke;
+    private Object oninvoke; // TODO 芋艿
 
     // callback method when async-call is invoked
-    private String oninvokeMethod;
+    private String oninvokeMethod; // TODO 芋艿
 
     // callback instance when async-call is returned
-    private Object onreturn;
+    private Object onreturn; // TODO 芋艿
 
     // callback method when async-call is returned
-    private String onreturnMethod;
+    private String onreturnMethod; // TODO 芋艿
 
     // callback instance when async-call has exception thrown
-    private Object onthrow;
+    private Object onthrow; // TODO 芋艿
 
     // callback method when async-call has exception thrown
-    private String onthrowMethod;
+    private String onthrowMethod; // TODO 芋艿
 
     private List<ArgumentConfig> arguments;
 

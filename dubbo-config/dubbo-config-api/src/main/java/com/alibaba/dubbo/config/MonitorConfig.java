@@ -23,6 +23,9 @@ import java.util.Map;
 /**
  * MonitorConfig
  *
+ * 监控中心配置。
+ * 属性参见 http://dubbo.io/books/dubbo-user-book/references/xml/dubbo-monitor.html
+ *
  * @export
  */
 public class MonitorConfig extends AbstractConfig {

@@ -30,6 +30,11 @@ import java.util.Arrays;
 /**
  * ProviderConfig
  *
+ * 服务提供者缺省值配置。
+ * 参数详见：http://dubbo.io/books/dubbo-user-book/references/xml/dubbo-provider.html
+ *
+ * 同时该标签为 <dubbo:service> 和 <dubbo:protocol> 标签的缺省值设置。
+ *
  * @export
  * @see com.alibaba.dubbo.config.ProtocolConfig
  * @see com.alibaba.dubbo.config.ServiceConfig
@@ -53,19 +58,19 @@ public class ProviderConfig extends AbstractServiceConfig {
     private String threadpool;
 
     // thread pool size (fixed size)
-    private Integer threads;
+    private Integer threads; // TODO 芋艿
 
     // IO thread pool size (fixed size)
-    private Integer iothreads;
+    private Integer iothreads; // TODO 芋艿
 
     // thread pool queue length
-    private Integer queues;
+    private Integer queues; // TODO 芋艿
 
     // max acceptable connections
-    private Integer accepts;
+    private Integer accepts; // TODO 芋艿
 
     // protocol codec
-    private String codec;
+    private String codec; // TODO 芋艿
 
     // charset
     private String charset;
@@ -77,28 +82,28 @@ public class ProviderConfig extends AbstractServiceConfig {
     private Integer buffer;
 
     // transporter
-    private String transporter;
+    private String transporter; // TODO 芋艿
 
     // how information gets exchanged
-    private String exchanger;
+    private String exchanger; // TODO 芋艿
 
     // thread dispatching mode
-    private String dispatcher;
+    private String dispatcher; // TODO 芋艿
 
     // networker
-    private String networker;
+    private String networker; // TODO 芋艿
 
     // server impl
-    private String server;
+    private String server; // TODO 芋艿
 
     // client impl
-    private String client;
+    private String client; // TODO 芋艿
 
     // supported telnet commands, separated with comma.
     private String telnet;
 
     // command line prompt
-    private String prompt;
+    private String prompt; // TODO 芋艿
 
     // status check
     private String status;

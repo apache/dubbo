@@ -69,24 +69,26 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     private static final Cluster cluster = ExtensionLoader.getExtensionLoader(Cluster.class).getAdaptiveExtension();
 
     private static final ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-    private final List<URL> urls = new ArrayList<URL>();
+
+    private final List<URL> urls = new ArrayList<URL>(); // TODO 芋艿
     // interface name
     private String interfaceName;
     private Class<?> interfaceClass;
     // client type
     private String client;
     // url for peer-to-peer invocation
-    private String url;
+    private String url; // TODO 芋艿
     // method configs
-    private List<MethodConfig> methods;
+    private List<MethodConfig> methods; // TODO 芋艿
     // default config
     private ConsumerConfig consumer;
     private String protocol;
     // interface proxy reference
-    private transient volatile T ref;
-    private transient volatile Invoker<?> invoker;
+    private transient volatile T ref; // TODO 芋艿
+    private transient volatile Invoker<?> invoker; // TODO 芋艿
     private transient volatile boolean initialized;
     private transient volatile boolean destroyed;
+
     @SuppressWarnings("unused")
     private final Object finalizerGuardian = new Object() {
         @Override

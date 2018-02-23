@@ -44,6 +44,8 @@ import java.util.Map;
 /**
  * AbstractDefaultConfig
  *
+ *
+ *
  * @export
  */
 public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
@@ -51,16 +53,16 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     private static final long serialVersionUID = -1559314110797223229L;
 
     // local impl class name for the service interface
-    protected String local;
+    protected String local; // TODO 芋艿
 
     // local stub class name for the service interface
-    protected String stub;
+    protected String stub; // TODO 芋艿
 
     // service monitor
     protected MonitorConfig monitor;
 
     // proxy type
-    protected String proxy;
+    protected String proxy; // TODO 芋艿
 
     // cluster type
     protected String cluster;
@@ -79,7 +81,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected Integer connections;
 
     // layer
-    protected String layer;
+    protected String layer; // TODO 芋艿
 
     // application info
     protected ApplicationConfig application;
@@ -91,10 +93,10 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected List<RegistryConfig> registries;
 
     // connection events
-    protected String onconnect;
+    protected String onconnect; // TODO 芋艿
 
     // disconnection events
-    protected String ondisconnect;
+    protected String ondisconnect; // TODO 芋艿
 
     // callback limits
     private Integer callbacks;

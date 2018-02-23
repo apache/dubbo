@@ -19,6 +19,9 @@ package com.alibaba.dubbo.config;
 /**
  * ConsumerConfig
  *
+ * 服务消费者缺省值配置。
+ * 参数详见：http://dubbo.io/books/dubbo-user-book/references/xml/dubbo-consumer.html
+ *
  * @export
  */
 public class ConsumerConfig extends AbstractReferenceConfig {
@@ -29,7 +32,7 @@ public class ConsumerConfig extends AbstractReferenceConfig {
     private Boolean isDefault;
 
     // networking framework client uses: netty, mina, etc.
-    private String client;
+    private String client; // TODO 芋艿
 
     @Override
     public void setTimeout(Integer timeout) {

@@ -65,6 +65,9 @@ import static com.alibaba.dubbo.common.utils.NetUtils.isInvalidPort;
 /**
  * ServiceConfig
  *
+ * 服务提供者暴露服务配置。
+ * 参数详细：http://dubbo.io/books/dubbo-user-book/references/xml/dubbo-service.html
+ *
  * @export
  */
 public class ServiceConfig<T> extends AbstractServiceConfig {
@@ -78,8 +81,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private static final Map<String, Integer> RANDOM_PORT_MAP = new HashMap<String, Integer>();
 
     private static final ScheduledExecutorService delayExportExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboServiceDelayExporter", true));
-    private final List<URL> urls = new ArrayList<URL>();
-    private final List<Exporter<?>> exporters = new ArrayList<Exporter<?>>();
+
+    private final List<URL> urls = new ArrayList<URL>(); // TODO 芋艿
+    private final List<Exporter<?>> exporters = new ArrayList<Exporter<?>>(); // TODO 芋艿
     // interface type
     private String interfaceName;
     private Class<?> interfaceClass;
@@ -89,12 +93,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private String path;
     // method configuration
     private List<MethodConfig> methods;
-    private ProviderConfig provider;
-    private transient volatile boolean exported;
+    private ProviderConfig provider; // TODO 芋艿
+    private transient volatile boolean exported; // TODO 芋艿
 
-    private transient volatile boolean unexported;
+    private transient volatile boolean unexported; // TODO 芋艿
 
-    private volatile String generic;
+    private volatile String generic; // TODO 芋艿
 
     public ServiceConfig() {
     }

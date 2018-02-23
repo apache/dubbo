@@ -24,6 +24,9 @@ import java.util.List;
 /**
  * ModuleConfig
  *
+ * 模块信息配置。
+ * 参数详见：http://dubbo.io/books/dubbo-user-book/references/xml/dubbo-module.html
+ *
  * @export
  */
 public class ModuleConfig extends AbstractConfig {

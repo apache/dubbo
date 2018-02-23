@@ -24,6 +24,10 @@ import java.util.Map;
 
 /**
  * AbstractMethodConfig
+ * TODO 需要改下
+ * 方法级配置的抽象类。
+ * 属性参见：http://dubbo.io/books/dubbo-user-book/references/xml/dubbo-method.html 。
+ *  ps：更多属性，在实现类里。
  *
  * @export
  */
