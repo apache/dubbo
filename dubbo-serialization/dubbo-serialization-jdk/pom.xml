@@ -39,7 +39,7 @@ limitations under the License.
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>hessian-lite</artifactId>
-            <version>3.2.1-fixed-2</version>
+            <version>3.2.2</version>
         </dependency>
     </dependencies>
 </project>
