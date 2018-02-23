@@ -86,6 +86,26 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
+    
+    //skykong1981
+    public void createPersistent(String path, String data) {
+		try {
+			client.create().forPath(path, data.getBytes());
+		} catch (NodeExistsException e) {
+		} catch (Exception e) {
+			throw new IllegalStateException(e.getMessage(), e);
+		}
+	}
+
+	public void createEphemeral(String path, String data) {
+		try {
+			client.create().withMode(CreateMode.EPHEMERAL).forPath(path, data.getBytes());
+		} catch (NodeExistsException e) {
+		} catch (Exception e) {
+			throw new IllegalStateException(e.getMessage(), e);
+		}
+	}
+    //skykong1981
 
     public void delete(String path) {
         try {
@@ -105,6 +125,22 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
+    
+    //skykong1981
+    public String get(String path) {
+		try {
+			byte []buf = client.getData().forPath(path);
+			if (buf != null && buf.length > 0) {
+				return new String(buf);
+			} else {
+				return null;
+			}
+		} catch (NoNodeException e) {
+			return null;
+		} catch (Exception e) {
+			throw new IllegalStateException(e.getMessage(), e);
+		}
+	}
 
     public boolean checkExists(String path) {
         try {

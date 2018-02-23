@@ -22,11 +22,17 @@ import java.util.List;
 
 public interface ZookeeperClient {
 
-    void create(String path, boolean ephemeral);
+	void create(String path, boolean ephemeral);
+	
+	//skykong1981
+	void create(String path, String data, boolean ephemeral);
 
     void delete(String path);
 
     List<String> getChildren(String path);
+    
+    //skykong1981
+  	String get(String path);
 
     List<String> addChildListener(String path, ChildListener listener);
 

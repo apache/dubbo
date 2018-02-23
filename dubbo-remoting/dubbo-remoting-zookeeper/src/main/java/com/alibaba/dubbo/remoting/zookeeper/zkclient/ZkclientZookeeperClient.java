@@ -69,6 +69,20 @@ public class ZkclientZookeeperClient extends AbstractZookeeperClient<IZkChildLis
         } catch (ZkNodeExistsException e) {
         }
     }
+    
+    public void createPersistent(String path, String data) {
+		try {
+			client.createPersistent(path, data);
+		} catch (ZkNodeExistsException e) {
+		}
+	}
+
+	public void createEphemeral(String path, String data) {
+		try {
+			client.createEphemeral(path, data);
+		} catch (ZkNodeExistsException e) {
+		}
+	}
 
     public void delete(String path) {
         try {
@@ -84,6 +98,15 @@ public class ZkclientZookeeperClient extends AbstractZookeeperClient<IZkChildLis
             return null;
         }
     }
+    
+    //skykong1981
+    public String get(String path) {
+		try {
+			return client.get(path);
+        } catch (ZkNoNodeException e) {
+            return null;
+        }
+	}
 
     public boolean checkExists(String path) {
         try {

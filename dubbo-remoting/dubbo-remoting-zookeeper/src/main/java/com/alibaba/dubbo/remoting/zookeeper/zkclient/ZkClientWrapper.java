@@ -103,6 +103,18 @@ public class ZkClientWrapper {
         Assert.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
         client.createEphemeral(path);
     }
+    
+    //skykong1981
+    public void createPersistent(String path, String data) {
+        Assert.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
+        client.createPersistent(path, data);
+    }
+
+    public void createEphemeral(String path, String data) {
+        Assert.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
+        client.createEphemeral(path, data);
+    }
+    //skykong1981
 
     public void delete(String path) {
         Assert.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
@@ -112,6 +124,12 @@ public class ZkClientWrapper {
     public List<String> getChildren(String path) {
         Assert.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
         return client.getChildren(path);
+    }
+    
+    //skykong1981
+    public String get(String path) {
+    	Assert.notNull(client, new IllegalStateException("Zookeeper is not connected yet!"));
+    	return client.readData(path, true);
     }
 
     public boolean exists(String path) {
