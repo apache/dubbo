@@ -94,6 +94,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private transient volatile boolean unexported;
 
     private volatile String generic;
+    
+    private CacheConfig cacheConfig;//skykong1981
 
     public ServiceConfig() {
     }
@@ -189,6 +191,11 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     @Parameter(excluded = true)
     public boolean isUnexported() {
         return unexported;
+    }
+    
+    //skykong1981
+    public void setCacheConfig(CacheConfig cacheConfig) {
+    	this.cacheConfig = cacheConfig;
     }
 
     public synchronized void export() {
@@ -467,7 +474,14 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
         String host = this.findConfigedHosts(protocolConfig, registryURLs, map);
         Integer port = this.findConfigedPorts(protocolConfig, name, map);
-        URL url = new URL(name, host, port, (contextPath == null || contextPath.length() == 0 ? "" : contextPath + "/") + path, map);
+        //URL url = new URL(name, host, port, (contextPath == null || contextPath.length() == 0 ? "" : contextPath + "/") + path, map);
+        //skykong1981
+        String cacheData = null;
+        if (cacheConfig != null) {
+        	cacheData = cacheConfig.toUTFString();
+        }
+        URL url = new URL(name, host, port, (contextPath == null || contextPath.length() == 0 ? "" : contextPath + "/") + path, map, cacheData);
+        //skykong1981
 
         if (ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
                 .hasExtension(url.getProtocol())) {
@@ -498,7 +512,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                         if (logger.isInfoEnabled()) {
                             logger.info("Register dubbo service " + interfaceClass.getName() + " url " + url + " to registry " + registryURL);
                         }
-                        Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString()));
+                        //Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString()));
+                        //skykong1981
+                        registryURL = registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString());
+                        registryURL.setData(url.getData());
+                        Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL);
+                        
                         DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
 
                         Exporter<?> exporter = protocol.export(wrapperInvoker);
