@@ -364,6 +364,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 continue;
             }
             URL url = mergeUrl(providerUrl);
+            url.setData(providerUrl.getData());//skykong1981
 
             String key = url.toFullString(); // The parameter urls are sorted
             if (keys.contains(key)) { // Repeated url

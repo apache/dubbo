@@ -242,12 +242,14 @@ public class RegistryProtocol implements Protocol {
      * @return
      */
     private URL getProviderUrl(final Invoker<?> origininvoker) {
+    	URL originURL = origininvoker.getUrl();//skykong1981
         String export = origininvoker.getUrl().getParameterAndDecoded(Constants.EXPORT_KEY);
         if (export == null || export.length() == 0) {
             throw new IllegalArgumentException("The registry export url is null! registry: " + origininvoker.getUrl());
         }
 
         URL providerUrl = URL.valueOf(export);
+        providerUrl.setData(originURL.getData());//skykong1981
         return providerUrl;
     }
 
