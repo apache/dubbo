@@ -14,13 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.common.serialize.serialization;
+package com.alibaba.dubbo.common.serialize.kryo.utils;
 
+public abstract class ReflectionUtils {
 
-import com.alibaba.dubbo.common.serialize.java.CompactedJavaSerialization;
-
-public class CompactedJavaSerializationTest extends AbstractSerializationPersionFailTest {
-    {
-        serialization = new CompactedJavaSerialization();
+    public static boolean checkZeroArgConstructor(Class clazz) {
+        try {
+            clazz.getDeclaredConstructor();
+            return true;
+        } catch (NoSuchMethodException e) {
+            return false;
+        }
     }
 }

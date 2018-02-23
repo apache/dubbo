@@ -18,7 +18,7 @@ package com.alibaba.dubbo.common.serialize.serialization;
 
 import com.alibaba.dubbo.common.serialize.ObjectInput;
 import com.alibaba.dubbo.common.serialize.ObjectOutput;
-import com.alibaba.dubbo.serialize.hessian2.Hessian2Serialization;
+import com.alibaba.dubbo.common.serialize.hessian2.Hessian2Serialization;
 
 import org.junit.Ignore;
 import org.junit.Test;

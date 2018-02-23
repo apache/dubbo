@@ -14,34 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.common.serialize.serialization;
+package com.alibaba.dubbo.common.serialize.java;
 
-import com.alibaba.dubbo.common.serialize.kryo.utils.ReflectionUtils;
+import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.serialize.ObjectInput;
+import com.alibaba.dubbo.common.serialize.ObjectOutput;
+import com.alibaba.dubbo.common.serialize.Serialization;
 
-import org.junit.Test;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+public class CompactedJavaSerialization implements Serialization {
 
-
-public class ReflectionUtilsTest {
-
-    @Test
-    public void test() {
-        assertTrue(ReflectionUtils.checkZeroArgConstructor(String.class));
-        assertTrue(ReflectionUtils.checkZeroArgConstructor(Bar.class));
-        assertFalse(ReflectionUtils.checkZeroArgConstructor(Foo.class));
+    public byte getContentTypeId() {
+        return 4;
     }
 
-    static class Foo {
-        public Foo(int i) {
-
-        }
+    public String getContentType() {
+        return "x-application/compactedjava";
     }
 
-    static class Bar {
-        private Bar() {
-
-        }
+    public ObjectOutput serialize(URL url, OutputStream out) throws IOException {
+        return new JavaObjectOutput(out, true);
     }
+
+    public ObjectInput deserialize(URL url, InputStream is) throws IOException {
+        return new JavaObjectInput(is, true);
+    }
+
 }
