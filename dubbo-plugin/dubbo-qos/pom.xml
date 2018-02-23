@@ -30,7 +30,7 @@ limitations under the License.
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <skip_maven_deploy>true</skip_maven_deploy>
+        <skip_maven_deploy>false</skip_maven_deploy>
     </properties>
 
     <dependencies>
