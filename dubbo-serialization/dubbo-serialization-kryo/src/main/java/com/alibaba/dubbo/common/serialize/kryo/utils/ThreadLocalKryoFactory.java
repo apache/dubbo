@@ -14,13 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.common.serialize.serialization;
+package com.alibaba.dubbo.common.serialize.kryo.utils;
 
+import com.esotericsoftware.kryo.Kryo;
 
-import com.alibaba.dubbo.common.serialize.java.CompactedJavaSerialization;
+public class ThreadLocalKryoFactory extends AbstractKryoFactory {
 
-public class CompactedJavaSerializationTest extends AbstractSerializationPersionFailTest {
-    {
-        serialization = new CompactedJavaSerialization();
+    private final ThreadLocal<Kryo> holder = new ThreadLocal<Kryo>() {
+        @Override
+        protected Kryo initialValue() {
+            return create();
+        }
+    };
+
+    @Override
+    public void returnKryo(Kryo kryo) {
+        // do nothing
+    }
+
+    public Kryo getKryo() {
+        return holder.get();
     }
 }

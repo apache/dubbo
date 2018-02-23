@@ -16,7 +16,7 @@
  */
 package com.alibaba.dubbo.common.serialize.serialization;
 
-import com.alibaba.dubbo.serialize.kryo.KryoSerialization;
+import com.alibaba.dubbo.common.serialize.kryo.KryoSerialization;
 
 public class KyroSerializationTest extends AbstractSerializationTest {
 

@@ -19,7 +19,7 @@ package com.alibaba.dubbo.common.serialize.serialization;
 import com.alibaba.dubbo.common.model.media.MediaContent;
 import com.alibaba.dubbo.common.serialize.ObjectInput;
 import com.alibaba.dubbo.common.serialize.ObjectOutput;
-import com.alibaba.dubbo.serialize.fastjson.FastJsonSerialization;
+import com.alibaba.dubbo.common.serialize.fastjson.FastJsonSerialization;
 import com.alibaba.fastjson.JSONException;
 
 import org.junit.Ignore;

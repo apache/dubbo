@@ -14,13 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.common.serialize.serialization;
+package com.alibaba.dubbo.common.serialize.kryo.utils;
 
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.pool.KryoPool;
 
-import com.alibaba.dubbo.common.serialize.java.CompactedJavaSerialization;
+public class PooledKryoFactory extends AbstractKryoFactory {
 
-public class CompactedJavaSerializationTest extends AbstractSerializationPersionFailTest {
-    {
-        serialization = new CompactedJavaSerialization();
+    private KryoPool pool;
+
+    public PooledKryoFactory() {
+        // Build pool with SoftReferences enabled (optional)
+        pool = new KryoPool.Builder(this).softReferences().build();
+    }
+
+    @Override
+    public Kryo getKryo() {
+        return pool.borrow();
+    }
+
+    @Override
+    public void returnKryo(Kryo kryo) {
+        pool.release(kryo);
     }
 }
