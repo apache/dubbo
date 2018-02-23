@@ -38,7 +38,7 @@
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
-            <artifactId>dubbo-rpc-default</artifactId>
+            <artifactId>dubbo-rpc-dubbo</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>
