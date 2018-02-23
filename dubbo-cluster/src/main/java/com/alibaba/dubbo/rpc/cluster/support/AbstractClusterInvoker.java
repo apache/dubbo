@@ -88,8 +88,11 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
     /**
      * Select a invoker using loadbalance policy.</br>
-     * a)Firstly, select an invoker using loadbalance. If this invoker is in previously selected list, or, if this invoker is unavailable, then continue step b (reselect), otherwise return the first selected invoker</br>
-     * b)Reslection, the validation rule for reselection: selected > available. This rule guarantees that the selected invoker has the minimum chance to be one in the previously selected list, and also guarantees this invoker is available.
+     * a)Firstly, select an invoker using loadbalance. If this invoker is in previously selected list, or, 
+     * if this invoker is unavailable, then continue step b (reselect), otherwise return the first selected invoker</br>
+     * b)Reslection, the validation rule for reselection: selected > available. This rule guarantees that
+     * the selected invoker has the minimum chance to be one in the previously selected list, and also 
+     * guarantees this invoker is available.
      *
      * @param loadbalance load balance policy
      * @param invocation
@@ -109,14 +112,14 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
             if (stickyInvoker != null && !invokers.contains(stickyInvoker)) {
                 stickyInvoker = null;
             }
-            //ignore cucurrent problem
+            //ignore concurrency problem
             if (sticky && stickyInvoker != null && (selected == null || !selected.contains(stickyInvoker))) {
                 if (availablecheck && stickyInvoker.isAvailable()) {
                     return stickyInvoker;
                 }
             }
         }
-        Invoker<T> invoker = doselect(loadbalance, invocation, invokers, selected);
+        Invoker<T> invoker = doSelect(loadbalance, invocation, invokers, selected);
 
         if (sticky) {
             stickyInvoker = invoker;
@@ -124,7 +127,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         return invoker;
     }
 
-    private Invoker<T> doselect(LoadBalance loadbalance, Invocation invocation, List<Invoker<T>> invokers, List<Invoker<T>> selected) throws RpcException {
+    private Invoker<T> doSelect(LoadBalance loadbalance, Invocation invocation, List<Invoker<T>> invokers, List<Invoker<T>> selected) throws RpcException {
         if (invokers == null || invokers.isEmpty())
             return null;
         if (invokers.size() == 1)
@@ -132,6 +135,9 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         // If we only have two invokers, use round-robin instead.
         if (invokers.size() == 2 && selected != null && !selected.isEmpty()) {
             return selected.get(0) == invokers.get(0) ? invokers.get(1) : invokers.get(0);
+        }
+        if (loadbalance == null) {
+            loadbalance = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(Constants.DEFAULT_LOADBALANCE);
         }
         Invoker<T> invoker = loadbalance.select(invokers, getUrl(), invocation);
 
@@ -216,17 +222,12 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
     }
 
     public Result invoke(final Invocation invocation) throws RpcException {
-
         checkWhetherDestroyed();
-
-        LoadBalance loadbalance;
-
+        LoadBalance loadbalance = null;
         List<Invoker<T>> invokers = list(invocation);
         if (invokers != null && !invokers.isEmpty()) {
             loadbalance = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(invokers.get(0).getUrl()
                     .getMethodParameter(invocation.getMethodName(), Constants.LOADBALANCE_KEY, Constants.DEFAULT_LOADBALANCE));
-        } else {
-            loadbalance = null;
         }
         RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
         return doInvoke(invocation, invokers, loadbalance);
