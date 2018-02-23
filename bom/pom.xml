@@ -150,7 +150,7 @@
             </dependency>
             <dependency>
                 <groupId>com.alibaba</groupId>
-                <artifactId>dubbo-rpc-default</artifactId>
+                <artifactId>dubbo-rpc-dubbo</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
