@@ -16,16 +16,15 @@
  */
 package com.alibaba.dubbo.config.spring.schema;
 
-import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.extension.ExtensionLoader;
-import com.alibaba.dubbo.common.logger.Logger;
-import com.alibaba.dubbo.common.logger.LoggerFactory;
-import com.alibaba.dubbo.common.utils.ReflectUtils;
-import com.alibaba.dubbo.common.utils.StringUtils;
-import com.alibaba.dubbo.config.*;
-import com.alibaba.dubbo.config.spring.ReferenceBean;
-import com.alibaba.dubbo.config.spring.ServiceBean;
-import com.alibaba.dubbo.rpc.Protocol;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
+
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
@@ -41,12 +40,24 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.regex.Pattern;
+import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.ReflectUtils;
+import com.alibaba.dubbo.common.utils.StringUtils;
+import com.alibaba.dubbo.config.ArgumentConfig;
+import com.alibaba.dubbo.config.BufferConfig;
+import com.alibaba.dubbo.config.ConsumerConfig;
+import com.alibaba.dubbo.config.MethodConfig;
+import com.alibaba.dubbo.config.ProtocolConfig;
+import com.alibaba.dubbo.config.ProviderConfig;
+import com.alibaba.dubbo.config.RegistryConfig;
+import com.alibaba.dubbo.config.spring.CacheBean;
+import com.alibaba.dubbo.config.spring.CacheServerBean;
+import com.alibaba.dubbo.config.spring.ReferenceBean;
+import com.alibaba.dubbo.config.spring.ServiceBean;
+import com.alibaba.dubbo.rpc.Protocol;
 
 /**
  * AbstractBeanDefinitionParser
@@ -120,6 +131,29 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
             parseNested(element, parserContext, ServiceBean.class, true, "service", "provider", id, beanDefinition);
         } else if (ConsumerConfig.class.equals(beanClass)) {
             parseNested(element, parserContext, ReferenceBean.class, false, "reference", "consumer", id, beanDefinition);
+        } else if (CacheServerBean.class.equals(beanClass)) {//Laocoon
+        	parseNested(element, parserContext, CacheServerBean.class, false, "cacheServer", "", id, beanDefinition);
+        } else if (CacheBean.class.equals(beanClass)) {//Laocoon
+        	String server = element.getAttribute("server");
+        	String service = element.getAttribute("service");
+        	beanDefinition.getPropertyValues().addPropertyValue("server", server);
+        	beanDefinition.getPropertyValues().addPropertyValue("service", service);
+        	NodeList nodeList = element.getElementsByTagName("dubbo:buffer");
+        	List<BufferConfig> list = new ArrayList<BufferConfig>();
+        	for (int i=0; i<nodeList.getLength(); i++) {
+        		Element ele = (Element)nodeList.item(i);
+        		BufferConfig buffer = new BufferConfig();
+        		buffer.setKey(ele.getAttribute("key"));
+        		buffer.setMethod(ele.getAttribute("method"));
+        		buffer.setCommand(ele.getAttribute("command"));
+        		String timeout = ele.getAttribute("timeout");
+        		if (timeout == null || timeout.equals("")) {
+        			timeout = "0";
+        		}
+        		buffer.setTimeout(Integer.parseInt(timeout));
+        		list.add(buffer);
+        	}
+        	beanDefinition.getPropertyValues().addPropertyValue("bufferList", list);
         }
         Set<String> props = new HashSet<String>();
         ManagedMap parameters = null;
