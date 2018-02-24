@@ -117,7 +117,7 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
             }
         }
 
-        if (resultList.size() == 0) {
+        if (resultList.isEmpty()) {
             return new RpcResult((Object) null);
         } else if (resultList.size() == 1) {
             return resultList.iterator().next();

@@ -13,6 +13,8 @@ We are now collecting dubbo user info in order to help us to improve dubbo bette
 ## Links
 
 * [Side projects](http://github.com/dubbo)
+    * [Dubbo Spring Boot](https://github.com/dubbo/dubbo-spring-boot-project) - Spring Boot Project for Dubbo.
+    * [Dubbo ops](https://github.com/dubbo/dubbo-ops) - The reference implementation for dubbo ops.
 * [Gitter channel](https://gitter.im/alibaba/dubbo)
 * [Mailing list](https://groups.google.com/forum/#!forum/dubbo)
 * [Dubbo user manual](http://dubbo.io/books/dubbo-user-book/)

@@ -95,6 +95,11 @@ public class RpcResult implements Result, Serializable {
         return attachments;
     }
 
+    /**
+     * Append all items from the map into the attachment, if map is empty then nothing happens
+     *
+     * @param map contains all key-value pairs to append
+     */
     public void setAttachments(Map<String, String> map) {
         if (map != null && map.size() > 0) {
             attachments.putAll(map);

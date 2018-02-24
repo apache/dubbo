@@ -71,6 +71,12 @@ public class ApplicationConfig extends AbstractConfig {
     // directory for saving thread dump
     private String dumpDirectory;
 
+    private Boolean qosEnable;
+
+    private Integer qosPort;
+
+    private Boolean qosAcceptForeignIp;
+
     // customized parameters
     private Map<String, String> parameters;
 
@@ -145,7 +151,7 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public RegistryConfig getRegistry() {
-        return registries == null || registries.size() == 0 ? null : registries.get(0);
+        return registries == null || registries.isEmpty() ? null : registries.get(0);
     }
 
     public void setRegistry(RegistryConfig registry) {
@@ -201,13 +207,40 @@ public class ApplicationConfig extends AbstractConfig {
         this.isDefault = isDefault;
     }
 
-    @Parameter(key = "dump.directory")
+    @Parameter(key = Constants.DUMP_DIRECTORY)
     public String getDumpDirectory() {
         return dumpDirectory;
     }
 
     public void setDumpDirectory(String dumpDirectory) {
         this.dumpDirectory = dumpDirectory;
+    }
+
+    @Parameter(key = Constants.QOS_ENABLE)
+    public Boolean getQosEnable() {
+        return qosEnable;
+    }
+
+    public void setQosEnable(Boolean qosEnable) {
+        this.qosEnable = qosEnable;
+    }
+
+    @Parameter(key = Constants.QOS_PORT)
+    public Integer getQosPort() {
+        return qosPort;
+    }
+
+    public void setQosPort(Integer qosPort) {
+        this.qosPort = qosPort;
+    }
+
+    @Parameter(key = Constants.ACCEPT_FOREIGN_IP)
+    public Boolean getQosAcceptForeignIp() {
+        return qosAcceptForeignIp;
+    }
+
+    public void setQosAcceptForeignIp(Boolean qosAcceptForeignIp) {
+        this.qosAcceptForeignIp = qosAcceptForeignIp;
     }
 
     public Map<String, String> getParameters() {

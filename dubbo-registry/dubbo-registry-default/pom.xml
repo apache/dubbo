@@ -54,10 +54,5 @@
             <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.apache.bsf</groupId>
-            <artifactId>bsf-api</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 </project>

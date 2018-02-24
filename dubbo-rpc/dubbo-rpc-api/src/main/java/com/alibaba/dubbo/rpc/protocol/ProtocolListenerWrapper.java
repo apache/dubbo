@@ -35,18 +35,6 @@ import java.util.Collections;
  * ListenerProtocol
  */
 public class ProtocolListenerWrapper implements Protocol {
-    static {
-        try {
-            Class serverClass = Protocol.class.getClassLoader().loadClass("com.alibaba.dubbo.qos.server.Server");
-            Method serverGetInstanceMethod = serverClass.getMethod("getInstance");
-            Object serverInstance = serverGetInstanceMethod.invoke(null);
-            Method startMethod = serverClass.getMethod("start");
-            startMethod.invoke(serverInstance);
-        }catch (Throwable throwable){
-
-        }
-
-    }
 
     private final Protocol protocol;
 
