@@ -395,13 +395,13 @@ public class MulticastRegistry extends FailbackRegistry {
                 urls.addAll(values);
             }
         }
-        if (urls == null || urls.isEmpty()) {
+        if (urls.isEmpty()) {
             List<URL> cacheUrls = getCacheUrls(url);
             if (cacheUrls != null && !cacheUrls.isEmpty()) {
                 urls.addAll(cacheUrls);
             }
         }
-        if (urls == null || urls.isEmpty()) {
+        if (urls.isEmpty()) {
             for (URL u : getRegistered()) {
                 if (UrlUtils.isMatch(url, u)) {
                     urls.add(u);

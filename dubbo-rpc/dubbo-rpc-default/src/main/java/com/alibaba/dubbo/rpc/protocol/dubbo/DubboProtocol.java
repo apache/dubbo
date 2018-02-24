@@ -91,9 +91,9 @@ public class DubboProtocol extends AbstractProtocol {
                         }
                     }
                     if (!hasMethod) {
-                        logger.warn(new IllegalStateException("The methodName " + inv.getMethodName() 
+                        logger.warn(new IllegalStateException("The methodName " + inv.getMethodName()
                                 + " not found in callback service interface ,invoke will be ignored."
-                                + " please update the api interface. url is:" 
+                                + " please update the api interface. url is:"
                                 + invoker.getUrl()) + " ,invocation is :" + inv);
                         return null;
                     }
@@ -101,8 +101,8 @@ public class DubboProtocol extends AbstractProtocol {
                 RpcContext.getContext().setRemoteAddress(channel.getRemoteAddress());
                 return invoker.invoke(inv);
             }
-            throw new RemotingException(channel, "Unsupported request: " 
-                    + (message == null ? null : (message.getClass().getName() + ": " + message)) 
+            throw new RemotingException(channel, "Unsupported request: "
+                    + (message == null ? null : (message.getClass().getName() + ": " + message))
                     + ", channel: consumer: " + channel.getRemoteAddress() + " --> provider: " + channel.getLocalAddress());
         }
 

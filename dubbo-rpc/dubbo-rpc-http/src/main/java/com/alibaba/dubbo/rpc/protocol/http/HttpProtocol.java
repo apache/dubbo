@@ -109,7 +109,7 @@ public class HttpProtocol extends AbstractProxyProtocol {
             HttpComponentsHttpInvokerRequestExecutor httpInvokerRequestExecutor = new HttpComponentsHttpInvokerRequestExecutor();
             httpInvokerRequestExecutor.setReadTimeout(url.getParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT));
             httpProxyFactoryBean.setHttpInvokerRequestExecutor(httpInvokerRequestExecutor);
-        } else if (client != null && client.length() > 0) {
+        } else {
             throw new IllegalStateException("Unsupported http protocol client " + client + ", only supported: simple, commons");
         }
         httpProxyFactoryBean.afterPropertiesSet();
