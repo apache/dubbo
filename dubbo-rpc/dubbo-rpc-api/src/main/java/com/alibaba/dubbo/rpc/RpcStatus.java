@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,6 +16,7 @@
  */
 package com.alibaba.dubbo.rpc;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,7 +28,6 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * URL statistics. (API, Cached, ThreadSafe)
  *
- * @author william.liangf
  * @see com.alibaba.dubbo.rpc.filter.ActiveLimitFilter
  * @see com.alibaba.dubbo.rpc.filter.ExecuteLimitFilter
  * @see com.alibaba.dubbo.rpc.cluster.loadbalance.LeastActiveLoadBalance
@@ -47,8 +48,7 @@ public class RpcStatus {
     private final AtomicLong succeededMaxElapsed = new AtomicLong();
 
     /**
-     * 用来实现executes属性的并发限制（即控制能使用的线程数）
-     * 2017-08-21 yizhenqiang
+     * Semaphore used to control concurrency limit set by `executes`
      */
     private volatile Semaphore executesLimit;
     private volatile int executesPermits;
@@ -313,10 +313,10 @@ public class RpcStatus {
     }
 
     /**
-     * 获取限制线程数的信号量，信号量的许可数就是executes设置的值
-     * 2017-08-21 yizhenqiang
-     * @param maxThreadNum executes设置的值
-     * @return
+     * Get the semaphore for thread number. Semaphore's permits is decided by {@link Constants#EXECUTES_KEY}
+     *
+     * @param maxThreadNum value of {@link Constants#EXECUTES_KEY}
+     * @return thread number semaphore
      */
     public Semaphore getSemaphore(int maxThreadNum) {
         if(maxThreadNum <= 0) {

@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,7 +18,6 @@ package com.alibaba.dubbo.config.spring.schema;
 
 import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.config.*;
-import com.alibaba.dubbo.config.spring.AnnotationBean;
 import com.alibaba.dubbo.config.spring.ReferenceBean;
 import com.alibaba.dubbo.config.spring.ServiceBean;
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
@@ -25,7 +25,6 @@ import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
 /**
  * DubboNamespaceHandler
  *
- * @author william.liangf
  * @export
  */
 public class DubboNamespaceHandler extends NamespaceHandlerSupport {
@@ -44,7 +43,7 @@ public class DubboNamespaceHandler extends NamespaceHandlerSupport {
         registerBeanDefinitionParser("protocol", new DubboBeanDefinitionParser(ProtocolConfig.class, true));
         registerBeanDefinitionParser("service", new DubboBeanDefinitionParser(ServiceBean.class, true));
         registerBeanDefinitionParser("reference", new DubboBeanDefinitionParser(ReferenceBean.class, false));
-        registerBeanDefinitionParser("annotation", new DubboBeanDefinitionParser(AnnotationBean.class, true));
+        registerBeanDefinitionParser("annotation", new AnnotationBeanDefinitionParser());
     }
 
 }

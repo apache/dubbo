@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.alibaba.dubbo.qos.command.decoder;
 
 import com.alibaba.dubbo.qos.command.CommandContext;
@@ -14,10 +30,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * @author qinliujie
- * @date 2017/11/17
- */
 public class HttpCommandDecoder {
     public static CommandContext decode(HttpRequest request) {
         CommandContext commandContext = null;
@@ -28,9 +40,7 @@ public class HttpCommandDecoder {
             if (array.length == 2) {
                 String name = array[1];
 
-                // Get请求和Post请求分开处理
-                // Get看url的Path
-                // Post看请求正文
+                // process GET request and POST request separately. Check url for GET, and check body for POST
                 if (request.getMethod() == HttpMethod.GET) {
                     if (queryStringDecoder.parameters().isEmpty()) {
                         commandContext = CommandContextFactory.newInstance(name);

@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.alibaba.dubbo.config.spring.context.annotation;
 
 import com.alibaba.dubbo.config.*;
@@ -6,7 +22,6 @@ import org.springframework.context.annotation.Configuration;
 /**
  * Dubbo {@link AbstractConfig Config} {@link Configuration}
  *
- * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @see Configuration
  * @see EnableDubboConfigBindings
  * @see EnableDubboConfigBinding
@@ -33,7 +48,7 @@ public class DubboConfigConfiguration {
             @EnableDubboConfigBinding(prefix = "dubbo.provider", type = ProviderConfig.class),
             @EnableDubboConfigBinding(prefix = "dubbo.consumer", type = ConsumerConfig.class)
     })
-    static class Single {
+    public static class Single {
 
     }
 
@@ -41,15 +56,15 @@ public class DubboConfigConfiguration {
      * Multiple Dubbo {@link AbstractConfig Config} Bean Binding
      */
     @EnableDubboConfigBindings({
-            @EnableDubboConfigBinding(prefix = "dubbo.application", type = ApplicationConfig.class, multiple = true),
-            @EnableDubboConfigBinding(prefix = "dubbo.module", type = ModuleConfig.class, multiple = true),
-            @EnableDubboConfigBinding(prefix = "dubbo.registry", type = RegistryConfig.class, multiple = true),
-            @EnableDubboConfigBinding(prefix = "dubbo.protocol", type = ProtocolConfig.class, multiple = true),
-            @EnableDubboConfigBinding(prefix = "dubbo.monitor", type = MonitorConfig.class, multiple = true),
-            @EnableDubboConfigBinding(prefix = "dubbo.provider", type = ProviderConfig.class, multiple = true),
-            @EnableDubboConfigBinding(prefix = "dubbo.consumer", type = ConsumerConfig.class, multiple = true)
+            @EnableDubboConfigBinding(prefix = "dubbo.applications", type = ApplicationConfig.class, multiple = true),
+            @EnableDubboConfigBinding(prefix = "dubbo.modules", type = ModuleConfig.class, multiple = true),
+            @EnableDubboConfigBinding(prefix = "dubbo.registries", type = RegistryConfig.class, multiple = true),
+            @EnableDubboConfigBinding(prefix = "dubbo.protocols", type = ProtocolConfig.class, multiple = true),
+            @EnableDubboConfigBinding(prefix = "dubbo.monitors", type = MonitorConfig.class, multiple = true),
+            @EnableDubboConfigBinding(prefix = "dubbo.providers", type = ProviderConfig.class, multiple = true),
+            @EnableDubboConfigBinding(prefix = "dubbo.consumers", type = ConsumerConfig.class, multiple = true)
     })
-    static class Multiple {
+    public static class Multiple {
 
     }
 }

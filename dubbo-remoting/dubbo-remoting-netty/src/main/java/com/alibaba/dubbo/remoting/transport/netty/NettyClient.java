@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,15 +41,12 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * NettyClient.
- *
- * @author qian.lei
- * @author william.liangf
  */
 public class NettyClient extends AbstractClient {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyClient.class);
 
-    // 因ChannelFactory的关闭有DirectMemory泄露，采用静态化规避
+    // ChannelFactory's closure has a DirectMemory leak, using static to avoid
     // https://issues.jboss.org/browse/NETTY-424
     private static final ChannelFactory channelFactory = new NioClientSocketChannelFactory(Executors.newCachedThreadPool(new NamedThreadFactory("NettyClientBoss", true)),
             Executors.newCachedThreadPool(new NamedThreadFactory("NettyClientWorker", true)),
@@ -93,7 +91,7 @@ public class NettyClient extends AbstractClient {
                 Channel newChannel = future.getChannel();
                 newChannel.setInterestOps(Channel.OP_READ_WRITE);
                 try {
-                    // 关闭旧的连接
+                    // Close old channel
                     Channel oldChannel = NettyClient.this.channel; // copy reference
                     if (oldChannel != null) {
                         try {

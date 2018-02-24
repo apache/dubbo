@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.alibaba.dubbo.qos.textui;
 
 import org.apache.commons.lang3.StringUtils;
@@ -15,18 +31,17 @@ import static org.apache.commons.lang3.StringUtils.length;
 import static org.apache.commons.lang3.StringUtils.repeat;
 
 /**
- * 表格组件
- * Created by oldmanpushcart@gmail.com on 15/5/7.
+ * Table
  */
 public class TTable implements TComponent {
 
-    // 各个列的定义
+    // column definition
     private final ColumnDefine[] columnDefineArray;
 
-    // 边框
+    // border
     private final Border border = new Border();
 
-    // 内边距
+    // padding
     private int padding;
 
     public TTable(ColumnDefine[] columnDefineArray) {
@@ -59,23 +74,23 @@ public class TTable implements TComponent {
             final boolean isFirstRow = rowIndex == 0;
             final boolean isLastRow = rowIndex == rowCount - 1;
 
-            // 打印首分隔行
+            // print first separation line
             if (isFirstRow
                     && border.has(Border.BORDER_OUTER_TOP)) {
                 tableSB.append(drawSeparationLine(widthCacheArray)).append("\n");
             }
 
-            // 打印内部分割行
+            // print inner separation lines
             if (!isFirstRow
                     && border.has(Border.BORDER_INNER_H)) {
                 tableSB.append(drawSeparationLine(widthCacheArray)).append("\n");
             }
 
-            // 绘一行
+            // draw one line
             tableSB.append(drawRow(widthCacheArray, rowIndex));
 
 
-            // 打印结尾分隔行
+            // print ending separation line
             if (isLastRow
                     && border.has(Border.BORDER_OUTER_BOTTOM)) {
                 tableSB.append(drawSeparationLine(widthCacheArray)).append("\n");
@@ -189,8 +204,8 @@ public class TTable implements TComponent {
         }
     }
 
-    /*
-     * 获取表格行数
+    /**
+     * get row count
      */
     private int getRowCount() {
         int rowCount = 0;
@@ -200,8 +215,8 @@ public class TTable implements TComponent {
         return rowCount;
     }
 
-    /*
-     * 定位最后一个列
+    /**
+     * position to last column
      */
     private int indexLastCol(final int[] widthCacheArray) {
         for (int colIndex = widthCacheArray.length - 1; colIndex >= 0; colIndex--) {
@@ -214,8 +229,8 @@ public class TTable implements TComponent {
         return 0;
     }
 
-    /*
-     * 打印分隔行
+    /**
+     * draw separation line
      */
     private String drawSeparationLine(final int[] widthCacheArray) {
         final StringBuilder separationLineSB = new StringBuilder();
@@ -253,9 +268,7 @@ public class TTable implements TComponent {
     }
 
     /**
-     * 添加数据行
-     *
-     * @param columnDataArray 数据数组
+     * Add a row
      */
     public TTable addRow(Object... columnDataArray) {
 
@@ -276,41 +289,41 @@ public class TTable implements TComponent {
 
 
     /**
-     * 对齐方向
+     * alignment
      */
     public enum Align {
 
         /**
-         * 左对齐
+         * left-alignment
          */
         LEFT,
 
         /**
-         * 右对齐
+         * right-alignment
          */
         RIGHT,
 
         /**
-         * 居中对齐
+         * middle-alignment
          */
         MIDDLE
     }
 
     /**
-     * 列定义
+     * column definition
      */
     public static class ColumnDefine {
 
-        // 列宽度
+        // column width
         private final int width;
 
-        // 是否自动宽度
+        // whether to auto resize
         private final boolean isAutoResize;
 
-        // 对齐方式
+        // alignment
         private final Align align;
 
-        // 数据行集合
+        // data rows
         private final List<String> rows = new ArrayList<String>();
 
         public ColumnDefine(int width, boolean isAutoResize, Align align) {
@@ -336,18 +349,18 @@ public class TTable implements TComponent {
         }
 
         /**
-         * 获取当前列的宽度
+         * get current width
          *
-         * @return 宽度
+         * @return width
          */
         public int getWidth() {
 
-            // 如果是固定宽度，则直接返回预设定的宽度
+            // if not auto resize, return preset width
             if (!isAutoResize) {
                 return width;
             }
 
-            // 如果是自动扩展宽度，则需要根据计算当前列的所有字符串最大可视宽度
+            // if it's auto resize, then calculate the possible max width
             int maxWidth = 0;
             for (String data : rows) {
                 maxWidth = max(width(data), maxWidth);
@@ -357,9 +370,9 @@ public class TTable implements TComponent {
         }
 
         /**
-         * 获取当前列的行数
+         * get rows for the current column
          *
-         * @return 当前列的行数
+         * @return current column's rows
          */
         public int getRowCount() {
             return rows.size();
@@ -368,9 +381,9 @@ public class TTable implements TComponent {
     }
 
     /**
-     * 设置内边距大小
+     * set padding
      *
-     * @param padding 内边距
+     * @param padding padding
      */
     public TTable padding(int padding) {
         this.padding = padding;
@@ -378,9 +391,9 @@ public class TTable implements TComponent {
     }
 
     /**
-     * 获取表格列总数
+     * get column count
      *
-     * @return 表格列总数
+     * @return column count
      */
     public int getColumnCount() {
         return columnDefineArray.length;
@@ -388,23 +401,22 @@ public class TTable implements TComponent {
 
 
     /**
-     * 替换TAB制表符<br/>
-     * 替换为4个空格
+     * replace tab to four spaces
      *
-     * @param string 原始字符串
-     * @return 替换后的字符串
+     * @param string the original string
+     * @return the replaced string
      */
     private static String replaceTab(String string) {
         return StringUtils.replace(string, "\t", "    ");
     }
 
     /**
-     * 获取一个字符串的可视宽度<br/>
-     * 什么叫一个字符串的可视宽度呢？很简单，因为字符串有换行行为，所以一个字符串的宽度不能简单的根据字符串的长度来判断<br/>
-     * 例如："abc\n1234"，这个字符串的可视宽度为4
+     * visible width for the given string.
      *
-     * @param string 字符串
-     * @return 字符串可视宽度
+     * for example: "abc\n1234"'s width is 4.
+     *
+     * @param string the given string
+     * @return visible width
      */
     private static int width(String string) {
         int maxWidth = 0;
@@ -420,72 +432,71 @@ public class TTable implements TComponent {
     }
 
     /**
-     * 获取表格边框设置
+     * get border
      *
-     * @return 表格边框
+     * @return table border
      */
     public Border getBorder() {
         return border;
     }
 
     /**
-     * 边框样式设置
+     * border style
      */
     public class Border {
 
         private int borders = BORDER_OUTER | BORDER_INNER;
 
         /**
-         * 外部上边框
+         * border outer top
          */
         public static final int BORDER_OUTER_TOP = 1 << 0;
 
         /**
-         * 外部右边框
+         * border outer right
          */
         public static final int BORDER_OUTER_RIGHT = 1 << 1;
 
         /**
-         * 外部下边框
+         * border outer bottom
          */
         public static final int BORDER_OUTER_BOTTOM = 1 << 2;
 
         /**
-         * 外部左边框
+         * border outer left
          */
         public static final int BORDER_OUTER_LEFT = 1 << 3;
 
         /**
-         * 内边框：水平
+         * inner border: horizon
          */
         public static final int BORDER_INNER_H = 1 << 4;
 
         /**
-         * 内边框：垂直
+         * inner border: vertical
          */
         public static final int BORDER_INNER_V = 1 << 5;
 
         /**
-         * 外边框
+         * outer border
          */
         public static final int BORDER_OUTER = BORDER_OUTER_TOP | BORDER_OUTER_BOTTOM | BORDER_OUTER_LEFT | BORDER_OUTER_RIGHT;
 
         /**
-         * 内边框
+         * inner border
          */
         public static final int BORDER_INNER = BORDER_INNER_H | BORDER_INNER_V;
 
         /**
-         * 无边框
+         * no border
          */
         public static final int BORDER_NON = 0;
 
         /**
-         * 是否包含指定边框类型<br/>
-         * 只要当前边框策略命中其中之一即认为命中
+         * whether has one of the specified border styles
          *
-         * @param borderArray 目标边框数组
-         * @return 当前边框策略是否拥有指定的边框
+         * @param borderArray border styles
+         * @return whether has one of the specified border styles
          */
         public boolean has(int... borderArray) {
             if (null == borderArray) {
@@ -500,18 +511,18 @@ public class TTable implements TComponent {
         }
 
         /**
-         * 获取表格边框设置
+         * get border style
          *
-         * @return 边框位
+         * @return border style
          */
         public int get() {
             return borders;
         }
 
         /**
-         * 设置表格边框
+         * set border style
          *
-         * @param border 边框位
+         * @param border border style
          * @return this
          */
         public Border set(int border) {

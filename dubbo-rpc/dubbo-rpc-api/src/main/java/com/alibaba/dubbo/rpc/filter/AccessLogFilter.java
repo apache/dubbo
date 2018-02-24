@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -45,10 +46,11 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 记录Service的Access Log。
+ * Record access log for the service.
  * <p>
- * 使用的Logger key是<code><b>dubbo.accesslog</b></code>。
- * 如果想要配置Access Log只出现在指定的Appender中，可以在Log4j中注意配置上additivity。配置示例:
+ * Logger key is <code><b>dubbo.accesslog</b></code>.
+ * In order to configure access log appear in the specified appender only, additivity need to be configured in log4j's
+ * config file, for example:
  * <code>
  * <pre>
  * &lt;logger name="<b>dubbo.accesslog</b>" <font color="red">additivity="false"</font>&gt;
@@ -56,8 +58,6 @@ import java.util.concurrent.TimeUnit;
  *    &lt;appender-ref ref="foo" /&gt;
  * &lt;/logger&gt;
  * </pre></code>
- *
- * @author ding.lid
  */
 @Activate(group = Constants.PROVIDER, value = Constants.ACCESS_LOG_KEY)
 public class AccessLogFilter implements Filter {

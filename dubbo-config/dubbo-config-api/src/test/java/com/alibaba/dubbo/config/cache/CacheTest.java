@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2012 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,8 +28,6 @@ import org.junit.Test;
 
 /**
  * CacheTest
- *
- * @author william.liangf
  */
 public class CacheTest extends TestCase {
 
@@ -48,7 +47,8 @@ public class CacheTest extends TestCase {
             reference.setUrl("dubbo://127.0.0.1:29582?scope=remote&cache=true");
             CacheService cacheService = reference.get();
             try {
-                // 测试缓存生效，多次调用返回同样的结果。(服务器端自增长返回值)
+                // verify cache, same result is returned for multiple invocations (in fact, the return value increases
+                // on every invocation on the server side)
                 String fix = null;
                 for (int i = 0; i < 3; i++) {
                     String result = cacheService.findCache("0");
@@ -57,7 +57,7 @@ public class CacheTest extends TestCase {
                     Thread.sleep(100);
                 }
 
-                // LRU的缺省cache.size为1000，执行1001次，应有溢出
+                // default cache.size is 1000 for LRU, should have cache expired if invoke more than 1001 times
                 for (int n = 0; n < 1001; n++) {
                     String pre = null;
                     for (int i = 0; i < 10; i++) {
@@ -67,7 +67,7 @@ public class CacheTest extends TestCase {
                     }
                 }
 
-                // 测试LRU有移除最开始的一个缓存项
+                // verify if the first cache item is expired in LRU cache
                 String result = cacheService.findCache("0");
                 Assert.assertFalse(fix == null || fix.equals(result));
             } finally {
