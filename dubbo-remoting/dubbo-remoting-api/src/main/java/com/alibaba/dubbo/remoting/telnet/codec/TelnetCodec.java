@@ -267,7 +267,7 @@ public class TelnetCodec extends TransportCodec {
             }
         }
         String result = toString(message, getCharset(channel));
-        if (result != null && result.trim().length() > 0) {
+        if (result.trim().length() > 0) {
             if (history == null) {
                 history = new LinkedList<String>();
                 channel.setAttribute(HISTORY_LIST_KEY, history);
