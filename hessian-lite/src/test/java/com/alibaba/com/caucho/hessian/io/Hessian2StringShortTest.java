@@ -1,5 +1,9 @@
 package com.alibaba.com.caucho.hessian.io;
 
+import com.alibaba.com.caucho.hessian.io.base.SerializeTestBase;
+import com.alibaba.com.caucho.hessian.io.beans.Hessian2StringShortType;
+import com.alibaba.com.caucho.hessian.io.beans.PersonType;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -7,6 +11,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static junit.framework.TestCase.assertEquals;
@@ -15,7 +21,7 @@ import static junit.framework.TestCase.assertTrue;
 /**
  * @author jason.shang@hotmail.com
  */
-public class Hessian2StringShortTest {
+public class Hessian2StringShortTest extends SerializeTestBase {
 
     @Test
     public void serialize_string_short_map_then_deserialize() throws Exception {
@@ -26,16 +32,7 @@ public class Hessian2StringShortTest {
         stringShortMap.put("last", (short)60);
         stringShort.stringShortMap = stringShortMap;
 
-        ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        Hessian2Output out = new Hessian2Output(bout);
-
-        out.writeObject(stringShort);
-        out.flush();
-
-        ByteArrayInputStream bin = new ByteArrayInputStream(bout.toByteArray());
-        Hessian2Input input = new Hessian2Input(bin);
-
-        Hessian2StringShortType deserialize = (Hessian2StringShortType) input.readObject();
+        Hessian2StringShortType deserialize = baseHession2Serialize(stringShort);
         assertTrue(deserialize.stringShortMap != null);
         assertTrue(deserialize.stringShortMap.size() == 2);
         assertTrue(deserialize.stringShortMap.get("last") instanceof Short);
@@ -52,16 +49,7 @@ public class Hessian2StringShortTest {
         stringByteMap.put("last", (byte)60);
         stringShort.stringByteMap = stringByteMap;
 
-        ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        Hessian2Output out = new Hessian2Output(bout);
-
-        out.writeObject(stringShort);
-        out.flush();
-
-        ByteArrayInputStream bin = new ByteArrayInputStream(bout.toByteArray());
-        Hessian2Input input = new Hessian2Input(bin);
-
-        Hessian2StringShortType deserialize = (Hessian2StringShortType) input.readObject();
+        Hessian2StringShortType deserialize = baseHession2Serialize(stringShort);
         assertTrue(deserialize.stringByteMap != null);
         assertTrue(deserialize.stringByteMap.size() == 2);
         assertTrue(deserialize.stringByteMap.get("last") instanceof Byte);
@@ -92,6 +80,7 @@ public class Hessian2StringShortTest {
         assertEquals(Short.valueOf((short)60), deserialize.get("last"));
     }
 
+    @Ignore
     @Test
     public void serialize_string_person_map_then_deserialize() throws Exception {
 
@@ -145,8 +134,7 @@ public class Hessian2StringShortTest {
 
         ByteArrayInputStream bin = new ByteArrayInputStream(bout.toByteArray());
         Hessian2Input input = new Hessian2Input(bin);
-        List deserialize = (List) input.readObject(ArrayList.class, Short.class);
-//        List deserialize = (List) input.readObject();
+        List<Short> deserialize = (List) input.readObject(ArrayList.class, Short.class);
         assertTrue(deserialize != null);
         assertTrue(deserialize.size() == 2);
         assertTrue(deserialize.get(1) instanceof Short);
