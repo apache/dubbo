@@ -260,18 +260,14 @@ public class TelnetCodec extends TransportCodec {
             String value = history.get(index);
             if (value != null) {
                 byte[] b1 = value.getBytes();
-                if (message != null && message.length > 0) {
-                    byte[] b2 = new byte[b1.length + message.length];
-                    System.arraycopy(b1, 0, b2, 0, b1.length);
-                    System.arraycopy(message, 0, b2, b1.length, message.length);
-                    message = b2;
-                } else {
-                    message = b1;
-                }
+                byte[] b2 = new byte[b1.length + message.length];
+                System.arraycopy(b1, 0, b2, 0, b1.length);
+                System.arraycopy(message, 0, b2, b1.length, message.length);
+                message = b2;
             }
         }
         String result = toString(message, getCharset(channel));
-        if (result != null && result.trim().length() > 0) {
+        if (result.trim().length() > 0) {
             if (history == null) {
                 history = new LinkedList<String>();
                 channel.setAttribute(HISTORY_LIST_KEY, history);

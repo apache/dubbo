@@ -137,7 +137,7 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
 
     public String getEnumPropertyName() {
         if (isEnumType()) {
-            Object result = getProperty(ENUM_PROPERTY_NAME).toString();
+            Object result = getProperty(ENUM_PROPERTY_NAME);
             return result == null ? null : result.toString();
         }
         throw new IllegalStateException("The instance is not a enum wrapper");

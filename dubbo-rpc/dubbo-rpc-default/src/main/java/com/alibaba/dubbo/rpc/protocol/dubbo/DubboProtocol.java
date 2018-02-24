@@ -91,14 +91,19 @@ public class DubboProtocol extends AbstractProtocol {
                         }
                     }
                     if (!hasMethod) {
-                        logger.warn(new IllegalStateException("The methodName " + inv.getMethodName() + " not found in callback service interface ,invoke will be ignored. please update the api interface. url is:" + invoker.getUrl()) + " ,invocation is :" + inv);
+                        logger.warn(new IllegalStateException("The methodName " + inv.getMethodName()
+                                + " not found in callback service interface ,invoke will be ignored."
+                                + " please update the api interface. url is:"
+                                + invoker.getUrl()) + " ,invocation is :" + inv);
                         return null;
                     }
                 }
                 RpcContext.getContext().setRemoteAddress(channel.getRemoteAddress());
                 return invoker.invoke(inv);
             }
-            throw new RemotingException(channel, "Unsupported request: " + message == null ? null : (message.getClass().getName() + ": " + message) + ", channel: consumer: " + channel.getRemoteAddress() + " --> provider: " + channel.getLocalAddress());
+            throw new RemotingException(channel, "Unsupported request: "
+                    + (message == null ? null : (message.getClass().getName() + ": " + message))
+                    + ", channel: consumer: " + channel.getRemoteAddress() + " --> provider: " + channel.getLocalAddress());
         }
 
         @Override
@@ -118,7 +123,7 @@ public class DubboProtocol extends AbstractProtocol {
         @Override
         public void disconnected(Channel channel) throws RemotingException {
             if (logger.isInfoEnabled()) {
-                logger.info("disconected from " + channel.getRemoteAddress() + ",url:" + channel.getUrl());
+                logger.info("disconnected from " + channel.getRemoteAddress() + ",url:" + channel.getUrl());
             }
             invoke(channel, Constants.ON_DISCONNECT_KEY);
         }
