@@ -624,6 +624,14 @@ public class Constants {
     public static final String QOS_PORT = "qos.port";
 
     public static final String ACCEPT_FOREIGN_IP = "qos.accept.foreign.ip";
+    
+    public static final String HESSIAN2_REQUEST_KEY = "hessian2.request";
+
+    public static final boolean DEFAULT_HESSIAN2_REQUEST = false;
+
+    public static final String HESSIAN_OVERLOAD_METHOD_KEY = "hessian.overload.method";
+
+    public static final boolean DEFAULT_HESSIAN_OVERLOAD_METHOD = false;
 
     /*
      * private Constants(){ }
