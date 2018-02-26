@@ -59,8 +59,7 @@ public class PropertySourcesUtilsTest {
         expected.put(KEY_AGE, "31");
 
         result = PropertySourcesUtils.getSubProperties(propertySources, KEY_PREFIX);
-        Assert.assertTrue(expected.get(KEY_NAME).equals(result.get(KEY_NAME)));
-        Assert.assertTrue(expected.get(KEY_AGE).equals(result.get(KEY_AGE)));
+        Assert.assertEquals(expected, result);
 
         result = PropertySourcesUtils.getSubProperties(propertySources, "");
 
