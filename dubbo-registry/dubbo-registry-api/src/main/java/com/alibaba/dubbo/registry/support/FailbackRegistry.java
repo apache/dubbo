@@ -34,7 +34,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * FailbackRegistry. (SPI, Prototype, ThreadSafe)
@@ -57,8 +56,6 @@ public abstract class FailbackRegistry extends AbstractRegistry {
     private final ConcurrentMap<URL, Set<NotifyListener>> failedUnsubscribed = new ConcurrentHashMap<URL, Set<NotifyListener>>();
 
     private final ConcurrentMap<URL, Map<NotifyListener, List<URL>>> failedNotified = new ConcurrentHashMap<URL, Map<NotifyListener, List<URL>>>();
-
-    private AtomicBoolean destroyed = new AtomicBoolean(false);
 
     public FailbackRegistry(URL url) {
         super(url);
@@ -125,9 +122,6 @@ public abstract class FailbackRegistry extends AbstractRegistry {
 
     @Override
     public void register(URL url) {
-        if (destroyed.get()){
-            return;
-        }
         super.register(url);
         failedRegistered.remove(url);
         failedUnregistered.remove(url);
@@ -158,9 +152,6 @@ public abstract class FailbackRegistry extends AbstractRegistry {
 
     @Override
     public void unregister(URL url) {
-        if (destroyed.get()){
-            return;
-        }
         super.unregister(url);
         failedRegistered.remove(url);
         failedUnregistered.remove(url);
@@ -191,9 +182,6 @@ public abstract class FailbackRegistry extends AbstractRegistry {
 
     @Override
     public void subscribe(URL url, NotifyListener listener) {
-        if (destroyed.get()){
-            return;
-        }
         super.subscribe(url, listener);
         removeFailedSubscribed(url, listener);
         try {
@@ -203,7 +191,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             Throwable t = e;
 
             List<URL> urls = getCacheUrls(url);
-            if (urls != null && urls.size() > 0) {
+            if (urls != null && !urls.isEmpty()) {
                 notify(url, listener, urls);
                 logger.error("Failed to subscribe " + url + ", Using cached list: " + urls + " from cache file: " + getUrl().getParameter(Constants.FILE_KEY, System.getProperty("user.home") + "/dubbo-registry-" + url.getHost() + ".cache") + ", cause: " + t.getMessage(), t);
             } else {
@@ -228,9 +216,6 @@ public abstract class FailbackRegistry extends AbstractRegistry {
 
     @Override
     public void unsubscribe(URL url, NotifyListener listener) {
-        if (destroyed.get()){
-            return;
-        }
         super.unsubscribe(url, listener);
         removeFailedSubscribed(url, listener);
         try {
@@ -339,7 +324,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         }
         if (!failedUnregistered.isEmpty()) {
             Set<URL> failed = new HashSet<URL>(failedUnregistered);
-            if (failed.size() > 0) {
+            if (!failed.isEmpty()) {
                 if (logger.isInfoEnabled()) {
                     logger.info("Retry unregister " + failed);
                 }
@@ -389,7 +374,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         if (!failedUnsubscribed.isEmpty()) {
             Map<URL, Set<NotifyListener>> failed = new HashMap<URL, Set<NotifyListener>>(failedUnsubscribed);
             for (Map.Entry<URL, Set<NotifyListener>> entry : new HashMap<URL, Set<NotifyListener>>(failed).entrySet()) {
-                if (entry.getValue() == null || entry.getValue().size() == 0) {
+                if (entry.getValue() == null || entry.getValue().isEmpty()) {
                     failed.remove(entry.getKey());
                 }
             }
@@ -448,9 +433,6 @@ public abstract class FailbackRegistry extends AbstractRegistry {
 
     @Override
     public void destroy() {
-        if (!canDestroy()){
-            return;
-        }
         super.destroy();
         try {
             retryFuture.cancel(true);
@@ -458,16 +440,6 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             logger.warn(t.getMessage(), t);
         }
     }
-
-    // TODO: 2017/8/30 to abstract this method
-    protected boolean canDestroy(){
-        if (destroyed.compareAndSet(false, true)) {
-            return true;
-        }else{
-            return false;
-        }
-    }
-
 
     // ==== Template method ====
 

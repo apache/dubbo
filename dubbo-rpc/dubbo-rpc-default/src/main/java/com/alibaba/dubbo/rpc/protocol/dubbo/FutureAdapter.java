@@ -67,7 +67,7 @@ public class FutureAdapter<V> implements Future<V> {
 
     @SuppressWarnings("unchecked")
     public V get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        int timeoutInMillis = (int) unit.convert(timeout, TimeUnit.MILLISECONDS);
+        int timeoutInMillis = (int) TimeUnit.MILLISECONDS.convert(timeout, unit);
         try {
             return (V) (((Result) future.get(timeoutInMillis)).recreate());
         } catch (com.alibaba.dubbo.remoting.TimeoutException e) {

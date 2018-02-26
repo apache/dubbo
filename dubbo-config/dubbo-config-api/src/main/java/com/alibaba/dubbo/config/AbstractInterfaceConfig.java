@@ -104,7 +104,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     protected void checkRegistry() {
         // for backward compatibility
-        if (registries == null || registries.size() == 0) {
+        if (registries == null || registries.isEmpty()) {
             String address = ConfigUtils.getProperty("dubbo.registry.address");
             if (address != null && address.length() > 0) {
                 registries = new ArrayList<RegistryConfig>();
@@ -116,7 +116,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 }
             }
         }
-        if ((registries == null || registries.size() == 0)) {
+        if ((registries == null || registries.isEmpty())) {
             throw new IllegalStateException((getClass().getSimpleName().startsWith("Reference")
                     ? "No such any registry to refer service in consumer "
                     : "No such any registry to export service in provider ")
@@ -159,7 +159,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected List<URL> loadRegistries(boolean provider) {
         checkRegistry();
         List<URL> registryList = new ArrayList<URL>();
-        if (registries != null && registries.size() > 0) {
+        if (registries != null && !registries.isEmpty()) {
             for (RegistryConfig config : registries) {
                 String address = config.getAddress();
                 if (address == null || address.length() == 0) {
@@ -257,7 +257,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             throw new IllegalStateException("The interface class " + interfaceClass + " is not a interface!");
         }
         // check if methods exist in the interface
-        if (methods != null && methods.size() > 0) {
+        if (methods != null && !methods.isEmpty()) {
             for (MethodConfig methodBean : methods) {
                 String methodName = methodBean.getName();
                 if (methodName == null || methodName.length() == 0) {
@@ -444,7 +444,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public RegistryConfig getRegistry() {
-        return registries == null || registries.size() == 0 ? null : registries.get(0);
+        return registries == null || registries.isEmpty() ? null : registries.get(0);
     }
 
     public void setRegistry(RegistryConfig registry) {

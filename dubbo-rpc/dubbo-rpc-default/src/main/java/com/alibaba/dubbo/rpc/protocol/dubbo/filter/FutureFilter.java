@@ -107,7 +107,7 @@ public class FutureFilter implements Filter {
         if (onInvokeMethod == null || onInvokeInst == null) {
             throw new IllegalStateException("service:" + invoker.getUrl().getServiceKey() + " has a onreturn callback config , but no such " + (onInvokeMethod == null ? "method" : "instance") + " found. url:" + invoker.getUrl());
         }
-        if (onInvokeMethod != null && !onInvokeMethod.isAccessible()) {
+        if (!onInvokeMethod.isAccessible()) {
             onInvokeMethod.setAccessible(true);
         }
 
@@ -133,7 +133,7 @@ public class FutureFilter implements Filter {
         if (onReturnMethod == null || onReturnInst == null) {
             throw new IllegalStateException("service:" + invoker.getUrl().getServiceKey() + " has a onreturn callback config , but no such " + (onReturnMethod == null ? "method" : "instance") + " found. url:" + invoker.getUrl());
         }
-        if (onReturnMethod != null && !onReturnMethod.isAccessible()) {
+        if (!onReturnMethod.isAccessible()) {
             onReturnMethod.setAccessible(true);
         }
 
@@ -173,7 +173,7 @@ public class FutureFilter implements Filter {
         if (onthrowMethod == null || onthrowInst == null) {
             throw new IllegalStateException("service:" + invoker.getUrl().getServiceKey() + " has a onthrow callback config , but no such " + (onthrowMethod == null ? "method" : "instance") + " found. url:" + invoker.getUrl());
         }
-        if (onthrowMethod != null && !onthrowMethod.isAccessible()) {
+        if (!onthrowMethod.isAccessible()) {
             onthrowMethod.setAccessible(true);
         }
         Class<?>[] rParaTypes = onthrowMethod.getParameterTypes();
