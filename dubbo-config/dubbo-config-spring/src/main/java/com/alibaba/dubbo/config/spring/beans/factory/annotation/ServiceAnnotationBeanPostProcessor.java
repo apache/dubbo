@@ -76,7 +76,6 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
 
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
-
         Set<String> resolvedPackagesToScan = resolvePackagesToScan(packagesToScan);
 
         if (!CollectionUtils.isEmpty(resolvedPackagesToScan)) {
@@ -86,9 +85,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
                 logger.warn("packagesToScan is empty , ServiceBean registry will be ignored!");
             }
         }
-
     }
-
 
     /**
      * Registers Beans whose classes was annotated {@link Service}

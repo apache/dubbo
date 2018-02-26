@@ -53,8 +53,18 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
     // whether to ack async-sent
     protected Boolean sent;
 
-    // the name of mock class which gets called when a service fails to execute
-    protected String mock;
+    /**
+     * the name of mock class which gets called when a service fails to execute
+     * 服务接口调用失败 Mock 实现类名。
+     *
+     * 该 Mock 类必须有一个无参构造函数。
+     * 与 Stub 的区别在于，Stub 总是被执行，而Mock只在出现非业务异常(比如超时，网络异常等)时执行，Stub 在远程调用之前执行，Mock 在远程调用后执行。
+     *
+     * 设为 true，表示使用缺省Mock类名，即：接口名 + Mock 后缀
+     *
+     * 参见文档 <a href="本地伪装">http://dubbo.io/books/dubbo-user-book/demos/local-mock.html</>
+     */
+    protected String mock; // TODO 芋艿
 
     // merger
     protected String merger;

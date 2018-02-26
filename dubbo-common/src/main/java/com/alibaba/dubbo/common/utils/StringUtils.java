@@ -349,13 +349,25 @@ public final class StringUtils {
         return parseKeyValuePair(qs, "\\&");
     }
 
+    /**
+     * 获得服务键
+     *
+     * 格式为 ${group}/${interface}:${version}
+     * 例如，com.alibaba.dubbo.demo.DemoService
+     *
+     * @param ps 参数集合 {@link com.alibaba.dubbo.common.URL#parameter}
+     * @return 服务键
+     */
     public static String getServiceKey(Map<String, String> ps) {
         StringBuilder buf = new StringBuilder();
+        // group
         String group = ps.get(Constants.GROUP_KEY);
         if (group != null && group.length() > 0) {
             buf.append(group).append("/");
         }
+        // interface
         buf.append(ps.get(Constants.INTERFACE_KEY));
+        // version
         String version = ps.get(Constants.VERSION_KEY);
         if (version != null && version.length() > 0) {
             buf.append(":").append(version);

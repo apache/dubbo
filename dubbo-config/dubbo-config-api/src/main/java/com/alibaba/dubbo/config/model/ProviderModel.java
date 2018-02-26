@@ -77,7 +77,7 @@ public class ProviderModel {
     }
 
     private void initMethod() {
-        Method[] methodsToExport = null;
+        Method[] methodsToExport;
         methodsToExport = metadata.getInterfaceClass().getMethods();
 
         for (Method method : methodsToExport) {

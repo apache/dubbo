@@ -24,7 +24,7 @@ limitations under the License.
     <!-- provider's application name, used for tracing dependency relationship -->
     <dubbo:application name="demo-provider"/>
 
-    <dubbo:provider delay="-1" retries="0"/>
+    <dubbo:provider delay="-1" retries="0" filter="demoFilter" />
 
     <!-- use multicast registry center to export service -->
     <!--<dubbo:registry address="multicast://224.5.6.7:1234"/>-->
@@ -37,6 +37,12 @@ limitations under the License.
     <bean id="demoService" class="com.alibaba.dubbo.demo.provider.DemoServiceImpl"/>
 
     <!-- declare the service interface to be exported -->
-    <dubbo:service interface="com.alibaba.dubbo.demo.DemoService" ref="demoService"/>
+    <!--<dubbo:service interface="com.alibaba.dubbo.demo.DemoService" ref="demoService"/>-->
+    <dubbo:service interface="com.alibaba.dubbo.demo.DemoService" ref="demoService">
+        <!--<dubbo:method name="sayHello" retries="100">-->
+            <!--&lt;!&ndash;<dubbo:argument index="0" callback="true" />&ndash;&gt;-->
+            <!--<dubbo:argument type="com.demo.CallbackListener" callback="true" />-->
+        <!--</dubbo:method>-->
+    </dubbo:service>
 
 </beans>
