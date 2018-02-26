@@ -283,7 +283,7 @@ public class ImplicitCallBackTest {
             Person ret = demoProxy.get(requestId);
             Assert.assertEquals(null, ret);
             Future<Person> pFuture = RpcContext.getContext().getFuture();
-            ret = pFuture.get(1000, TimeUnit.MICROSECONDS);
+            ret = pFuture.get(1000 * 1000, TimeUnit.MICROSECONDS);
             Assert.assertEquals(requestId, ret.getId());
         } finally {
             destroyService();
