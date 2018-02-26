@@ -1,7 +1,6 @@
-package com.alibaba.com.caucho.hessian.io;
+package com.alibaba.com.caucho.hessian.io.beans;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.List;
 
 /**
