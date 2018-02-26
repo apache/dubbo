@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static junit.framework.TestCase.assertEquals;
@@ -80,7 +79,6 @@ public class Hessian2StringShortTest extends SerializeTestBase {
         assertEquals(Short.valueOf((short)60), deserialize.get("last"));
     }
 
-    @Ignore
     @Test
     public void serialize_string_person_map_then_deserialize() throws Exception {
 
