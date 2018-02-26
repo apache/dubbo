@@ -44,20 +44,23 @@ public class PropertySourcesUtilsTest {
 
         propertySources.addFirst(propertySource);
 
-        Map<String, String> result = PropertySourcesUtils.getSubProperties(propertySources, "user");
+        String KEY_PREFIX = "user";
+        String KEY_NAME = "name";
+        String KEY_AGE = "age";
+        Map<String, String> result = PropertySourcesUtils.getSubProperties(propertySources, KEY_PREFIX);
 
         Assert.assertEquals(Collections.emptyMap(), result);
 
-        source.put("user.name", "Mercy");
-        source.put("user.age", "31");
+        source.put(KEY_PREFIX + "." + KEY_NAME, "Mercy");
+        source.put(KEY_PREFIX + "." + KEY_AGE, 31);
 
         Map<String, Object> expected = new HashMap<String, Object>();
-        expected.put("name", "Mercy");
-        expected.put("age", "31");
+        expected.put(KEY_NAME, "Mercy");
+        expected.put(KEY_AGE, "31");
 
-        result = PropertySourcesUtils.getSubProperties(propertySources, "user");
-
-        Assert.assertEquals(expected, result);
+        result = PropertySourcesUtils.getSubProperties(propertySources, KEY_PREFIX);
+        Assert.assertTrue(expected.get(KEY_NAME).equals(result.get(KEY_NAME)));
+        Assert.assertTrue(expected.get(KEY_AGE).equals(result.get(KEY_AGE)));
 
         result = PropertySourcesUtils.getSubProperties(propertySources, "");
 
