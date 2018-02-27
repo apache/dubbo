@@ -68,6 +68,7 @@ public class IOExceptionWrapper extends IOException {
         _cause = cause;
     }
 
+    @Override
     public Throwable getCause() {
         return _cause;
     }

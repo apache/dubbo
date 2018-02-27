@@ -187,6 +187,7 @@ public class JSONObject implements JSONNode {
      * @param jc json converter.
      * @param jb json builder.
      */
+    @Override
     public void writeJSON(JSONConverter jc, JSONWriter jb, boolean writeClass) throws IOException {
         String key;
         Object value;

@@ -40,34 +40,42 @@ public abstract class Wrapper {
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
     private static final String[] OBJECT_METHODS = new String[]{"getClass", "hashCode", "toString", "equals"};
     private static final Wrapper OBJECT_WRAPPER = new Wrapper() {
+        @Override
         public String[] getMethodNames() {
             return OBJECT_METHODS;
         }
 
+        @Override
         public String[] getDeclaredMethodNames() {
             return OBJECT_METHODS;
         }
 
+        @Override
         public String[] getPropertyNames() {
             return EMPTY_STRING_ARRAY;
         }
 
+        @Override
         public Class<?> getPropertyType(String pn) {
             return null;
         }
 
+        @Override
         public Object getPropertyValue(Object instance, String pn) throws NoSuchPropertyException {
             throw new NoSuchPropertyException("Property [" + pn + "] not found.");
         }
 
+        @Override
         public void setPropertyValue(Object instance, String pn, Object pv) throws NoSuchPropertyException {
             throw new NoSuchPropertyException("Property [" + pn + "] not found.");
         }
 
+        @Override
         public boolean hasProperty(String name) {
             return false;
         }
 
+        @Override
         public Object invokeMethod(Object instance, String mn, Class<?>[] types, Object[] args) throws NoSuchMethodException {
             if ("getClass".equals(mn)) return instance.getClass();
             if ("hashCode".equals(mn)) return instance.hashCode();

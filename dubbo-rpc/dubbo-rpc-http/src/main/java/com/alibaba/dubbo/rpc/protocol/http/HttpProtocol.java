@@ -61,10 +61,12 @@ public class HttpProtocol extends AbstractProxyProtocol {
         this.httpBinder = httpBinder;
     }
 
+    @Override
     public int getDefaultPort() {
         return DEFAULT_PORT;
     }
 
+    @Override
     protected <T> Runnable doExport(final T impl, Class<T> type, URL url) throws RpcException {
         String addr = getAddr(url);
         HttpServer server = serverMap.get(addr);
@@ -83,12 +85,14 @@ public class HttpProtocol extends AbstractProxyProtocol {
         final String path = url.getAbsolutePath();
         skeletonMap.put(path, httpServiceExporter);
         return new Runnable() {
+            @Override
             public void run() {
                 skeletonMap.remove(path);
             }
         };
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     protected <T> T doRefer(final Class<T> serviceType, final URL url) throws RpcException {
         final HttpInvokerProxyFactoryBean httpProxyFactoryBean = new HttpInvokerProxyFactoryBean();
@@ -97,6 +101,7 @@ public class HttpProtocol extends AbstractProxyProtocol {
         String client = url.getParameter(Constants.CLIENT_KEY);
         if (client == null || client.length() == 0 || "simple".equals(client)) {
             SimpleHttpInvokerRequestExecutor httpInvokerRequestExecutor = new SimpleHttpInvokerRequestExecutor() {
+                @Override
                 protected void prepareConnection(HttpURLConnection con,
                                                  int contentLength) throws IOException {
                     super.prepareConnection(con, contentLength);
@@ -116,6 +121,7 @@ public class HttpProtocol extends AbstractProxyProtocol {
         return (T) httpProxyFactoryBean.getObject();
     }
 
+    @Override
     protected int getErrorCode(Throwable e) {
         if (e instanceof RemoteAccessException) {
             e = e.getCause();
@@ -135,6 +141,7 @@ public class HttpProtocol extends AbstractProxyProtocol {
 
     private class InternalHandler implements HttpHandler {
 
+        @Override
         public void handle(HttpServletRequest request, HttpServletResponse response)
                 throws IOException, ServletException {
             String uri = request.getRequestURI();

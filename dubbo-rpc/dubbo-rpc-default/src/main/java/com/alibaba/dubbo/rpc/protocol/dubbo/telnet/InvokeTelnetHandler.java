@@ -86,6 +86,7 @@ public class InvokeTelnetHandler implements TelnetHandler {
         return true;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public String telnet(Channel channel, String message) {
         if (message == null || message.length() == 0) {

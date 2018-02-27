@@ -27,6 +27,7 @@ public class MessageOnlyDispatcher implements Dispatcher {
 
     public static final String NAME = "message";
 
+    @Override
     public ChannelHandler dispatch(ChannelHandler handler, URL url) {
         return new MessageOnlyChannelHandler(handler, url);
     }

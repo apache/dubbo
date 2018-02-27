@@ -50,6 +50,7 @@ public class GenericDataInput implements DataInput, GenericDataFlags {
         mBuffer = new byte[buffSize];
     }
 
+    @Override
     public boolean readBool() throws IOException {
         byte b = read0();
 
@@ -63,6 +64,7 @@ public class GenericDataInput implements DataInput, GenericDataFlags {
         }
     }
 
+    @Override
     public byte readByte() throws IOException {
         byte b = read0();
 
@@ -138,26 +140,32 @@ public class GenericDataInput implements DataInput, GenericDataFlags {
         }
     }
 
+    @Override
     public short readShort() throws IOException {
         return (short) readVarint32();
     }
 
+    @Override
     public int readInt() throws IOException {
         return readVarint32();
     }
 
+    @Override
     public long readLong() throws IOException {
         return readVarint64();
     }
 
+    @Override
     public float readFloat() throws IOException {
         return Float.intBitsToFloat(readVarint32());
     }
 
+    @Override
     public double readDouble() throws IOException {
         return Double.longBitsToDouble(readVarint64());
     }
 
+    @Override
     public String readUTF() throws IOException {
         byte b = read0();
 
@@ -189,6 +197,7 @@ public class GenericDataInput implements DataInput, GenericDataFlags {
         }
     }
 
+    @Override
     public byte[] readBytes() throws IOException {
         byte b = read0();
 
@@ -415,7 +424,7 @@ public class GenericDataInput implements DataInput, GenericDataFlags {
                         (((long) b4 & 0xff) << 24) |
                         (((long) b5 & 0xff) << 32);
                 if (b5 < 0)
-                    return ret | 0xffffff0000000000l;
+                    return ret | 0xffffff0000000000L;
                 return ret;
             }
             case VARINT48: {
@@ -427,7 +436,7 @@ public class GenericDataInput implements DataInput, GenericDataFlags {
                         (((long) b5 & 0xff) << 32) |
                         (((long) b6 & 0xff) << 40);
                 if (b6 < 0)
-                    return ret | 0xffff000000000000l;
+                    return ret | 0xffff000000000000L;
                 return ret;
             }
             case VARINT56: {
@@ -440,7 +449,7 @@ public class GenericDataInput implements DataInput, GenericDataFlags {
                         (((long) b6 & 0xff) << 40) |
                         (((long) b7 & 0xff) << 48);
                 if (b7 < 0)
-                    return ret | 0xff00000000000000l;
+                    return ret | 0xff00000000000000L;
                 return ret;
             }
             case VARINT64: {

@@ -39,11 +39,13 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public abstract class Proxy {
     public static final InvocationHandler RETURN_NULL_INVOKER = new InvocationHandler() {
+        @Override
         public Object invoke(Object proxy, Method method, Object[] args) {
             return null;
         }
     };
     public static final InvocationHandler THROW_UNSUPPORTED_INVOKER = new InvocationHandler() {
+        @Override
         public Object invoke(Object proxy, Method method, Object[] args) {
             throw new UnsupportedOperationException("Method [" + ReflectUtils.getName(method) + "] unimplemented.");
         }

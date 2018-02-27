@@ -25,6 +25,7 @@ public class PrototypeKryoFactory extends AbstractKryoFactory {
         // do nothing
     }
 
+    @Override
     public Kryo getKryo() {
         return create();
     }

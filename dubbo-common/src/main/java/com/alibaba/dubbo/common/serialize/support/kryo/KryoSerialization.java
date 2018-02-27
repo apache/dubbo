@@ -31,18 +31,22 @@ import java.io.OutputStream;
  */
 public class KryoSerialization implements Serialization {
 
+    @Override
     public byte getContentTypeId() {
         return 8;
     }
 
+    @Override
     public String getContentType() {
         return "x-application/kryo";
     }
 
+    @Override
     public ObjectOutput serialize(URL url, OutputStream out) throws IOException {
         return new KryoObjectOutput(out);
     }
 
+    @Override
     public ObjectInput deserialize(URL url, InputStream is) throws IOException {
         return new KryoObjectInput(is);
     }

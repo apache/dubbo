@@ -34,6 +34,7 @@ import java.util.Collection;
 @Help(parameter = "[-l] [port]", summary = "Print server ports and connections.", detail = "Print server ports and connections.")
 public class PortTelnetHandler implements TelnetHandler {
 
+    @Override
     public String telnet(Channel channel, String message) {
         StringBuilder buf = new StringBuilder();
         String port = null;

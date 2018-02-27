@@ -41,23 +41,28 @@ public class DubboResourceFactory implements ResourceFactory {
 //        return propertyInjector;
 //    }
 
+    @Override
     public Object createResource(HttpRequest request, HttpResponse response,
                                  ResteasyProviderFactory factory) {
         return resourceInstance;
     }
 
+    @Override
     public Class<?> getScannableClass() {
         return scannableClass;
     }
 
+    @Override
     public void registered(ResteasyProviderFactory factory) {
 //        this.propertyInjector = factory.getInjectorFactory().createPropertyInjector(getScannableClass(), factory);
     }
 
+    @Override
     public void requestFinished(HttpRequest request, HttpResponse response,
                                 Object resource) {
     }
 
+    @Override
     public void unregistered() {
     }
 

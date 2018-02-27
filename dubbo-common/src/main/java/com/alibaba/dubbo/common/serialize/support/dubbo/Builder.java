@@ -110,18 +110,21 @@ public abstract class Builder<T> implements GenericDataFlags {
     private static final int MAX_FIELD_CONFIG_FILE_SIZE = 16 * 1024;
 
     private static final Comparator<String> FNC = new Comparator<String>() {
+        @Override
         public int compare(String n1, String n2) {
             return compareFieldName(n1, n2);
         }
     };
 
     private static final Comparator<Field> FC = new Comparator<Field>() {
+        @Override
         public int compare(Field f1, Field f2) {
             return compareFieldName(f1.getName(), f2.getName());
         }
     };
 
     private static final Comparator<Constructor> CC = new Comparator<Constructor>() {
+        @Override
         public int compare(Constructor o1, Constructor o2) {
             return o1.getParameterTypes().length - o2.getParameterTypes().length;
         }
@@ -133,12 +136,14 @@ public abstract class Builder<T> implements GenericDataFlags {
     private static final Map<String, Integer> mDescMap = new ConcurrentHashMap<String, Integer>();
 
     public static ClassDescriptorMapper DEFAULT_CLASS_DESCRIPTOR_MAPPER = new ClassDescriptorMapper() {
+        @Override
         public String getDescriptor(int index) {
             if (index < 0 || index >= mDescList.size())
                 return null;
             return mDescList.get(index);
         }
 
+        @Override
         public int getDescriptorIndex(String desc) {
             Integer ret = mDescMap.get(desc);
             return ret == null ? -1 : ret.intValue();
@@ -1367,8 +1372,10 @@ public abstract class Builder<T> implements GenericDataFlags {
     }
 
     public static abstract class AbstractObjectBuilder<T> extends Builder<T> {
+        @Override
         abstract public Class<T> getType();
 
+        @Override
         public void writeTo(T obj, GenericObjectOutput out) throws IOException {
             if (obj == null) {
                 out.write0(OBJECT_NULL);
@@ -1385,6 +1392,7 @@ public abstract class Builder<T> implements GenericDataFlags {
             }
         }
 
+        @Override
         public T parseFrom(GenericObjectInput in) throws IOException {
             byte b = in.read0();
             switch (b) {

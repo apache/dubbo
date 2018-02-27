@@ -75,10 +75,12 @@ public class RestProtocol extends AbstractProxyProtocol {
         serverFactory.setHttpBinder(httpBinder);
     }
 
+    @Override
     public int getDefaultPort() {
         return DEFAULT_PORT;
     }
 
+    @Override
     protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
         String addr = getAddr(url);
         Class implClass = ServiceClassHolder.getInstance().popServiceClass();
@@ -116,6 +118,7 @@ public class RestProtocol extends AbstractProxyProtocol {
 
         final RestServer s = server;
         return new Runnable() {
+            @Override
             public void run() {
                 // TODO due to dubbo's current architecture,
                 // it will be called from registry protocol in the shutdown process and won't appear in logs
@@ -124,6 +127,7 @@ public class RestProtocol extends AbstractProxyProtocol {
         };
     }
 
+    @Override
     protected <T> T doRefer(Class<T> serviceType, URL url) throws RpcException {
         if (connectionMonitor == null) {
             connectionMonitor = new ConnectionMonitor();
@@ -148,6 +152,7 @@ public class RestProtocol extends AbstractProxyProtocol {
 
         CloseableHttpClient httpClient = HttpClientBuilder.create()
                 .setKeepAliveStrategy(new ConnectionKeepAliveStrategy() {
+                    @Override
                     public long getKeepAliveDuration(HttpResponse response, HttpContext context) {
                         HeaderElementIterator it = new BasicHeaderElementIterator(response.headerIterator(HTTP.CONN_KEEP_ALIVE));
                         while (it.hasNext()) {
@@ -187,11 +192,13 @@ public class RestProtocol extends AbstractProxyProtocol {
         return target.proxy(serviceType);
     }
 
+    @Override
     protected int getErrorCode(Throwable e) {
         // TODO
         return super.getErrorCode(e);
     }
 
+    @Override
     public void destroy() {
         super.destroy();
 
@@ -237,6 +244,7 @@ public class RestProtocol extends AbstractProxyProtocol {
             connectionManagers.add(connectionManager);
         }
 
+        @Override
         public void run() {
             try {
                 while (!shutdown) {

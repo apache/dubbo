@@ -202,6 +202,7 @@ public class BeanSerializer extends AbstractSerializer {
         return null;
     }
 
+    @Override
     public void writeObject(Object obj, AbstractHessianOutput out)
             throws IOException {
         if (out.addRef(obj))
@@ -301,6 +302,7 @@ public class BeanSerializer extends AbstractSerializer {
     }
 
     static class MethodNameCmp implements Comparator<Method> {
+        @Override
         public int compare(Method a, Method b) {
             return a.getName().compareTo(b.getName());
         }

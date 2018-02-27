@@ -56,10 +56,12 @@ import java.util.HashMap;
  */
 public class AbstractMapDeserializer extends AbstractDeserializer {
 
+    @Override
     public Class getType() {
         return HashMap.class;
     }
 
+    @Override
     public Object readObject(AbstractHessianInput in)
             throws IOException {
         Object obj = in.readObject();

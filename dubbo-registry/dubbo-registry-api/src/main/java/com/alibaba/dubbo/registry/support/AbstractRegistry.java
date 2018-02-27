@@ -103,6 +103,7 @@ public abstract class AbstractRegistry implements Registry {
         return urls;
     }
 
+    @Override
     public URL getUrl() {
         return registryUrl;
     }
@@ -230,6 +231,7 @@ public abstract class AbstractRegistry implements Registry {
         return null;
     }
 
+    @Override
     public List<URL> lookup(URL url) {
         List<URL> result = new ArrayList<URL>();
         Map<String, List<URL>> notifiedUrls = getNotified().get(url);
@@ -244,6 +246,7 @@ public abstract class AbstractRegistry implements Registry {
         } else {
             final AtomicReference<List<URL>> reference = new AtomicReference<List<URL>>();
             NotifyListener listener = new NotifyListener() {
+                @Override
                 public void notify(List<URL> urls) {
                     reference.set(urls);
                 }
@@ -261,6 +264,7 @@ public abstract class AbstractRegistry implements Registry {
         return result;
     }
 
+    @Override
     public void register(URL url) {
         if (url == null) {
             throw new IllegalArgumentException("register url == null");
@@ -271,6 +275,7 @@ public abstract class AbstractRegistry implements Registry {
         registered.add(url);
     }
 
+    @Override
     public void unregister(URL url) {
         if (url == null) {
             throw new IllegalArgumentException("unregister url == null");
@@ -281,6 +286,7 @@ public abstract class AbstractRegistry implements Registry {
         registered.remove(url);
     }
 
+    @Override
     public void subscribe(URL url, NotifyListener listener) {
         if (url == null) {
             throw new IllegalArgumentException("subscribe url == null");
@@ -299,6 +305,7 @@ public abstract class AbstractRegistry implements Registry {
         listeners.add(listener);
     }
 
+    @Override
     public void unsubscribe(URL url, NotifyListener listener) {
         if (url == null) {
             throw new IllegalArgumentException("unsubscribe url == null");
@@ -438,6 +445,7 @@ public abstract class AbstractRegistry implements Registry {
         }
     }
 
+    @Override
     public void destroy() {
         if (logger.isInfoEnabled()) {
             logger.info("Destroy registry:" + getUrl());
@@ -475,6 +483,7 @@ public abstract class AbstractRegistry implements Registry {
         }
     }
 
+    @Override
     public String toString() {
         return getUrl().toString();
     }
@@ -486,6 +495,7 @@ public abstract class AbstractRegistry implements Registry {
             this.version = version;
         }
 
+        @Override
         public void run() {
             doSaveProperties(version);
         }

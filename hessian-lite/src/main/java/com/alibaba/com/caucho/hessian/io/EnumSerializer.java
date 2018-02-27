@@ -69,6 +69,7 @@ public class EnumSerializer extends AbstractSerializer {
         }
     }
 
+    @Override
     public void writeObject(Object obj, AbstractHessianOutput out)
             throws IOException {
         if (out.addRef(obj))

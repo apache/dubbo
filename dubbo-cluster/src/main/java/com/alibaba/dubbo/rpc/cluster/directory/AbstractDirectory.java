@@ -66,6 +66,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         setRouters(routers);
     }
 
+    @Override
     public List<Invoker<T>> list(Invocation invocation) throws RpcException {
         if (destroyed) {
             throw new RpcException("Directory already destroyed .url: " + getUrl());
@@ -86,6 +87,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         return invokers;
     }
 
+    @Override
     public URL getUrl() {
         return url;
     }
@@ -121,6 +123,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         return destroyed;
     }
 
+    @Override
     public void destroy() {
         destroyed = true;
     }

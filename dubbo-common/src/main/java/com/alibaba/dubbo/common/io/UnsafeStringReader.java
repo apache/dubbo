@@ -61,6 +61,7 @@ public class UnsafeStringReader extends Reader {
         return n;
     }
 
+    @Override
     public long skip(long ns) throws IOException {
         ensureOpen();
         if (mPosition >= mLimit)
@@ -72,6 +73,7 @@ public class UnsafeStringReader extends Reader {
         return n;
     }
 
+    @Override
     public boolean ready() throws IOException {
         ensureOpen();
         return true;
@@ -82,6 +84,7 @@ public class UnsafeStringReader extends Reader {
         return true;
     }
 
+    @Override
     public void mark(int readAheadLimit) throws IOException {
         if (readAheadLimit < 0)
             throw new IllegalArgumentException("Read-ahead limit < 0");
@@ -90,6 +93,7 @@ public class UnsafeStringReader extends Reader {
         mMark = mPosition;
     }
 
+    @Override
     public void reset() throws IOException {
         ensureOpen();
         mPosition = mMark;

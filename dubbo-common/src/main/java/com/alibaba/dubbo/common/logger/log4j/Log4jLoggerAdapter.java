@@ -87,26 +87,32 @@ public class Log4jLoggerAdapter implements LoggerAdapter {
         return Level.OFF;
     }
 
+    @Override
     public Logger getLogger(Class<?> key) {
         return new Log4jLogger(LogManager.getLogger(key));
     }
 
+    @Override
     public Logger getLogger(String key) {
         return new Log4jLogger(LogManager.getLogger(key));
     }
 
+    @Override
     public Level getLevel() {
         return fromLog4jLevel(LogManager.getRootLogger().getLevel());
     }
 
+    @Override
     public void setLevel(Level level) {
         LogManager.getRootLogger().setLevel(toLog4jLevel(level));
     }
 
+    @Override
     public File getFile() {
         return file;
     }
 
+    @Override
     public void setFile(File file) {
 
     }

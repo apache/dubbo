@@ -1080,6 +1080,7 @@ public final class URL implements Serializable {
         return map;
     }
 
+    @Override
     public String toString() {
         if (string != null) {
             return string;

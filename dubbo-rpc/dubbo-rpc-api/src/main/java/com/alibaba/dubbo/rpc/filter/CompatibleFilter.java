@@ -38,6 +38,7 @@ public class CompatibleFilter implements Filter {
 
     private static Logger logger = LoggerFactory.getLogger(CompatibleFilter.class);
 
+    @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         Result result = invoker.invoke(invocation);
         if (!invocation.getMethodName().startsWith("$") && !result.hasException()) {

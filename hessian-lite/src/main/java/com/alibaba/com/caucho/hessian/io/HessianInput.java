@@ -130,6 +130,7 @@ public class HessianInput extends AbstractHessianInput {
     /**
      * Sets the serializer factory.
      */
+    @Override
     public void setSerializerFactory(SerializerFactory factory) {
         _serializerFactory = factory;
     }
@@ -137,6 +138,7 @@ public class HessianInput extends AbstractHessianInput {
     /**
      * Initialize the hessian stream with the underlying input stream.
      */
+    @Override
     public void init(InputStream is) {
         _is = is;
         _method = null;
@@ -153,6 +155,7 @@ public class HessianInput extends AbstractHessianInput {
     /**
      * Returns the calls method
      */
+    @Override
     public String getMethod() {
         return _method;
     }
@@ -171,6 +174,7 @@ public class HessianInput extends AbstractHessianInput {
      * c major minor
      * </pre>
      */
+    @Override
     public int readCall()
             throws IOException {
         int tag = read();
@@ -187,6 +191,7 @@ public class HessianInput extends AbstractHessianInput {
     /**
      * For backward compatibility with HessianSkeleton
      */
+    @Override
     public void skipOptionalCall()
             throws IOException {
         int tag = read();
@@ -207,6 +212,7 @@ public class HessianInput extends AbstractHessianInput {
      * m b16 b8 method
      * </pre>
      */
+    @Override
     public String readMethod()
             throws IOException {
         int tag = read();
@@ -238,6 +244,7 @@ public class HessianInput extends AbstractHessianInput {
      * m b16 b8 method
      * </pre>
      */
+    @Override
     public void startCall()
             throws IOException {
         readCall();
@@ -258,6 +265,7 @@ public class HessianInput extends AbstractHessianInput {
      * z
      * </pre>
      */
+    @Override
     public void completeCall()
             throws IOException {
         int tag = read();
@@ -271,6 +279,7 @@ public class HessianInput extends AbstractHessianInput {
      * Reads a reply as an object.
      * If the reply has a fault, throws the exception.
      */
+    @Override
     public Object readReply(Class expectedClass)
             throws Throwable {
         int tag = read();
@@ -304,6 +313,7 @@ public class HessianInput extends AbstractHessianInput {
      * r
      * </pre>
      */
+    @Override
     public void startReply()
             throws Throwable {
         int tag = read();
@@ -360,6 +370,7 @@ public class HessianInput extends AbstractHessianInput {
      * z
      * </pre>
      */
+    @Override
     public void completeReply()
             throws IOException {
         int tag = read();
@@ -392,6 +403,7 @@ public class HessianInput extends AbstractHessianInput {
      * H b16 b8 value
      * </pre>
      */
+    @Override
     public String readHeader()
             throws IOException {
         int tag = read();
@@ -420,6 +432,7 @@ public class HessianInput extends AbstractHessianInput {
      * N
      * </pre>
      */
+    @Override
     public void readNull()
             throws IOException {
         int tag = read();
@@ -456,6 +469,7 @@ public class HessianInput extends AbstractHessianInput {
      * F
      * </pre>
      */
+    @Override
     public boolean readBoolean()
             throws IOException {
         int tag = read();
@@ -498,6 +512,7 @@ public class HessianInput extends AbstractHessianInput {
      * I b32 b24 b16 b8
      * </pre>
      */
+    @Override
     public int readInt()
             throws IOException {
         int tag = read();
@@ -526,6 +541,7 @@ public class HessianInput extends AbstractHessianInput {
      * L b64 b56 b48 b40 b32 b24 b16 b8
      * </pre>
      */
+    @Override
     public long readLong()
             throws IOException {
         int tag = read();
@@ -566,6 +582,7 @@ public class HessianInput extends AbstractHessianInput {
      * D b64 b56 b48 b40 b32 b24 b16 b8
      * </pre>
      */
+    @Override
     public double readDouble()
             throws IOException {
         int tag = read();
@@ -594,6 +611,7 @@ public class HessianInput extends AbstractHessianInput {
      * T b64 b56 b48 b40 b32 b24 b16 b8
      * </pre>
      */
+    @Override
     public long readUTCDate()
             throws IOException {
         int tag = read();
@@ -743,6 +761,7 @@ public class HessianInput extends AbstractHessianInput {
      * S b16 b8 string value
      * </pre>
      */
+    @Override
     public String readString()
             throws IOException {
         int tag = read();
@@ -785,6 +804,7 @@ public class HessianInput extends AbstractHessianInput {
      * S b16 b8 string value
      * </pre>
      */
+    @Override
     public org.w3c.dom.Node readNode()
             throws IOException {
         int tag = read();
@@ -814,6 +834,7 @@ public class HessianInput extends AbstractHessianInput {
      * B b16 b8 data value
      * </pre>
      */
+    @Override
     public byte[] readBytes()
             throws IOException {
         int tag = read();
@@ -975,6 +996,7 @@ public class HessianInput extends AbstractHessianInput {
     /**
      * Reads an object from the input stream with an expected type.
      */
+    @Override
     public Object readObject(Class cl)
             throws IOException {
         if (cl == null || cl == Object.class)
@@ -1048,6 +1070,7 @@ public class HessianInput extends AbstractHessianInput {
      * Reads an arbitrary object from the input stream when the type
      * is unknown.
      */
+    @Override
     public Object readObject()
             throws IOException {
         int tag = read();
@@ -1144,6 +1167,7 @@ public class HessianInput extends AbstractHessianInput {
     /**
      * Reads a remote object.
      */
+    @Override
     public Object readRemote()
             throws IOException {
         String type = readType();
@@ -1155,6 +1179,7 @@ public class HessianInput extends AbstractHessianInput {
     /**
      * Reads a reference.
      */
+    @Override
     public Object readRef()
             throws IOException {
         return _refs.get(parseInt());
@@ -1163,6 +1188,7 @@ public class HessianInput extends AbstractHessianInput {
     /**
      * Reads the start of a list.
      */
+    @Override
     public int readListStart()
             throws IOException {
         return read();
@@ -1171,6 +1197,7 @@ public class HessianInput extends AbstractHessianInput {
     /**
      * Reads the start of a list.
      */
+    @Override
     public int readMapStart()
             throws IOException {
         return read();
@@ -1179,6 +1206,7 @@ public class HessianInput extends AbstractHessianInput {
     /**
      * Returns true if this is the end of a list or a map.
      */
+    @Override
     public boolean isEnd()
             throws IOException {
         int code = read();
@@ -1191,6 +1219,7 @@ public class HessianInput extends AbstractHessianInput {
     /**
      * Reads the end byte.
      */
+    @Override
     public void readEnd()
             throws IOException {
         int code = read();
@@ -1202,6 +1231,7 @@ public class HessianInput extends AbstractHessianInput {
     /**
      * Reads the end byte.
      */
+    @Override
     public void readMapEnd()
             throws IOException {
         int code = read();
@@ -1213,6 +1243,7 @@ public class HessianInput extends AbstractHessianInput {
     /**
      * Reads the end byte.
      */
+    @Override
     public void readListEnd()
             throws IOException {
         int code = read();
@@ -1224,6 +1255,7 @@ public class HessianInput extends AbstractHessianInput {
     /**
      * Adds a list/map reference.
      */
+    @Override
     public int addRef(Object ref) {
         if (_refs == null)
             _refs = new ArrayList();
@@ -1236,6 +1268,7 @@ public class HessianInput extends AbstractHessianInput {
     /**
      * Adds a list/map reference.
      */
+    @Override
     public void setRef(int i, Object ref) {
         _refs.set(i, ref);
     }
@@ -1243,6 +1276,7 @@ public class HessianInput extends AbstractHessianInput {
     /**
      * Resets the references for streaming.
      */
+    @Override
     public void resetReferences() {
         if (_refs != null)
             _refs.clear();
@@ -1268,6 +1302,7 @@ public class HessianInput extends AbstractHessianInput {
      * t b16 b8
      * </pre>
      */
+    @Override
     public String readType()
             throws IOException {
         int code = read();
@@ -1295,6 +1330,7 @@ public class HessianInput extends AbstractHessianInput {
      * l b32 b24 b16 b8
      * </pre>
      */
+    @Override
     public int readLength()
             throws IOException {
         int code = read();
@@ -1486,6 +1522,7 @@ public class HessianInput extends AbstractHessianInput {
     /**
      * Reads bytes based on an input stream.
      */
+    @Override
     public InputStream readInputStream()
             throws IOException {
         int tag = read();
@@ -1507,6 +1544,7 @@ public class HessianInput extends AbstractHessianInput {
         return new InputStream() {
             boolean _isClosed = false;
 
+            @Override
             public int read()
                     throws IOException {
                 if (_isClosed || _is == null)
@@ -1519,6 +1557,7 @@ public class HessianInput extends AbstractHessianInput {
                 return ch;
             }
 
+            @Override
             public int read(byte[] buffer, int offset, int length)
                     throws IOException {
                 if (_isClosed || _is == null)
@@ -1531,6 +1570,7 @@ public class HessianInput extends AbstractHessianInput {
                 return len;
             }
 
+            @Override
             public void close()
                     throws IOException {
                 while (read() >= 0) {
@@ -1600,10 +1640,12 @@ public class HessianInput extends AbstractHessianInput {
         return ch;
     }
 
+    @Override
     public void close() {
         _is = null;
     }
 
+    @Override
     public Reader getReader() {
         return null;
     }

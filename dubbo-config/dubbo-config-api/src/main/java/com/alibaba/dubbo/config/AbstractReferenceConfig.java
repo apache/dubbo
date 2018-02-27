@@ -114,11 +114,13 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         this.injvm = injvm;
     }
 
+    @Override
     @Parameter(key = Constants.REFERENCE_FILTER_KEY, append = true)
     public String getFilter() {
         return super.getFilter();
     }
 
+    @Override
     @Parameter(key = Constants.INVOKER_LISTENER_KEY, append = true)
     public String getListener() {
         return super.getListener();

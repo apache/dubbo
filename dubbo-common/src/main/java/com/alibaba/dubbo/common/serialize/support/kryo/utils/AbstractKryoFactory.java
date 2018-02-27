@@ -80,6 +80,7 @@ public abstract class AbstractKryoFactory implements KryoFactory {
         registrations.add(clazz);
     }
 
+    @Override
     public Kryo create() {
         if (!kryoCreated) {
             kryoCreated = true;

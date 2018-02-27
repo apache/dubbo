@@ -49,10 +49,12 @@ public class GenericDataOutput implements DataOutput, GenericDataFlags {
         mBuffer = new byte[buffSize];
     }
 
+    @Override
     public void writeBool(boolean v) throws IOException {
         write0(v ? VARINT_1 : VARINT_0);
     }
 
+    @Override
     public void writeByte(byte v) throws IOException {
         switch (v) {
             case 0:
@@ -157,26 +159,32 @@ public class GenericDataOutput implements DataOutput, GenericDataFlags {
         }
     }
 
+    @Override
     public void writeShort(short v) throws IOException {
         writeVarint32(v);
     }
 
+    @Override
     public void writeInt(int v) throws IOException {
         writeVarint32(v);
     }
 
+    @Override
     public void writeLong(long v) throws IOException {
         writeVarint64(v);
     }
 
+    @Override
     public void writeFloat(float v) throws IOException {
         writeVarint32(Float.floatToRawIntBits(v));
     }
 
+    @Override
     public void writeDouble(double v) throws IOException {
         writeVarint64(Double.doubleToRawLongBits(v));
     }
 
+    @Override
     public void writeUTF(String v) throws IOException {
         if (v == null) {
             write0(OBJECT_NULL);
@@ -227,6 +235,7 @@ public class GenericDataOutput implements DataOutput, GenericDataFlags {
         }
     }
 
+    @Override
     public void writeBytes(byte[] b) throws IOException {
         if (b == null)
             write0(OBJECT_NULL);
@@ -234,6 +243,7 @@ public class GenericDataOutput implements DataOutput, GenericDataFlags {
             writeBytes(b, 0, b.length);
     }
 
+    @Override
     public void writeBytes(byte[] b, int off, int len) throws IOException {
         if (len == 0) {
             write0(OBJECT_DUMMY);
@@ -244,6 +254,7 @@ public class GenericDataOutput implements DataOutput, GenericDataFlags {
         }
     }
 
+    @Override
     public void flushBuffer() throws IOException {
         if (mPosition > 0) {
             mOutput.write(mBuffer, 0, mPosition);

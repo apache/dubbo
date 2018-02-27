@@ -64,14 +64,17 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         this.availablecheck = url.getParameter(Constants.CLUSTER_AVAILABLE_CHECK_KEY, Constants.DEFAULT_CLUSTER_AVAILABLE_CHECK);
     }
 
+    @Override
     public Class<T> getInterface() {
         return directory.getInterface();
     }
 
+    @Override
     public URL getUrl() {
         return directory.getUrl();
     }
 
+    @Override
     public boolean isAvailable() {
         Invoker<T> invoker = stickyInvoker;
         if (invoker != null) {
@@ -80,6 +83,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         return directory.isAvailable();
     }
 
+    @Override
     public void destroy() {
         if (destroyed.compareAndSet(false, true)) {
             directory.destroy();
@@ -221,6 +225,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         return null;
     }
 
+    @Override
     public Result invoke(final Invocation invocation) throws RpcException {
         checkWhetherDestroyed();
         LoadBalance loadbalance = null;

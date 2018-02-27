@@ -51,6 +51,7 @@ public class UserRestServiceImpl implements UserRestService {
         this.userService = userService;
     }
 
+    @Override
     @GET
     @Path("{id : \\d+}")
     public User getUser(@PathParam("id") Long id/*, @Context HttpServletRequest request*/) {
@@ -66,6 +67,7 @@ public class UserRestServiceImpl implements UserRestService {
         return userService.getUser(id);
     }
 
+    @Override
     @POST
     @Path("register")
     public RegistrationResult registerUser(User user) {

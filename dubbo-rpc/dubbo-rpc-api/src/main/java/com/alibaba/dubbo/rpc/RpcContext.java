@@ -616,6 +616,7 @@ public class RpcContext {
                 //local invoke will return directly
                 if (o != null) {
                     FutureTask<T> f = new FutureTask<T>(new Callable<T>() {
+                        @Override
                         public T call() throws Exception {
                             return o;
                         }
@@ -632,22 +633,27 @@ public class RpcContext {
             }
         } catch (final RpcException e) {
             return new Future<T>() {
+                @Override
                 public boolean cancel(boolean mayInterruptIfRunning) {
                     return false;
                 }
 
+                @Override
                 public boolean isCancelled() {
                     return false;
                 }
 
+                @Override
                 public boolean isDone() {
                     return true;
                 }
 
+                @Override
                 public T get() throws InterruptedException, ExecutionException {
                     throw new ExecutionException(e.getCause());
                 }
 
+                @Override
                 public T get(long timeout, TimeUnit unit)
                         throws InterruptedException, ExecutionException,
                         TimeoutException {

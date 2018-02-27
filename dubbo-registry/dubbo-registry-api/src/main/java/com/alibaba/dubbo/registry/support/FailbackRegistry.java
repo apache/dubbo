@@ -61,6 +61,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         super(url);
         int retryPeriod = url.getParameter(Constants.REGISTRY_RETRY_PERIOD_KEY, Constants.DEFAULT_REGISTRY_RETRY_PERIOD);
         this.retryFuture = retryExecutor.scheduleWithFixedDelay(new Runnable() {
+            @Override
             public void run() {
                 // Check and connect to the registry
                 try {

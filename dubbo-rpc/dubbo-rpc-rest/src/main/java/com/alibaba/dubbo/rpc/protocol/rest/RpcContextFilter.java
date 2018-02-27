@@ -39,6 +39,7 @@ public class RpcContextFilter implements ContainerRequestFilter, ClientRequestFi
     // currently we use a single header to hold the attachments so that the total attachment size limit is about 8k
     private static final int MAX_HEADER_SIZE = 8 * 1024;
 
+    @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
         HttpServletRequest request = ResteasyProviderFactory.getContextData(HttpServletRequest.class);
         RpcContext.getContext().setRequest(request);
@@ -65,6 +66,7 @@ public class RpcContextFilter implements ContainerRequestFilter, ClientRequestFi
         }
     }
 
+    @Override
     public void filter(ClientRequestContext requestContext) throws IOException {
         int size = 0;
         for (Map.Entry<String, String> entry : RpcContext.getContext().getAttachments().entrySet()) {

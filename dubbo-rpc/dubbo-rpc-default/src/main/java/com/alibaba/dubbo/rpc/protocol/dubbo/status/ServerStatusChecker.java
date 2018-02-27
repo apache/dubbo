@@ -30,6 +30,7 @@ import java.util.Collection;
 @Activate
 public class ServerStatusChecker implements StatusChecker {
 
+    @Override
     public Status check() {
         Collection<ExchangeServer> servers = DubboProtocol.getDubboProtocol().getServers();
         if (servers == null || servers.isEmpty()) {
