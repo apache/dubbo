@@ -129,28 +129,23 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
                 throw new RpcException("Can not merge result because missing method [ " + merger + " ] in class [ " + 
                         returnType.getClass().getName() + " ]");
             }
-            if (method != null) {
-                if (!Modifier.isPublic(method.getModifiers())) {
-                    method.setAccessible(true);
-                }
-                result = resultList.remove(0).getValue();
-                try {
-                    if (method.getReturnType() != void.class
-                            && method.getReturnType().isAssignableFrom(result.getClass())) {
-                        for (Result r : resultList) {
-                            result = method.invoke(result, r.getValue());
-                        }
-                    } else {
-                        for (Result r : resultList) {
-                            method.invoke(result, r.getValue());
-                        }
+            if (!Modifier.isPublic(method.getModifiers())) {
+                method.setAccessible(true);
+            }
+            result = resultList.remove(0).getValue();
+            try {
+                if (method.getReturnType() != void.class
+                        && method.getReturnType().isAssignableFrom(result.getClass())) {
+                    for (Result r : resultList) {
+                        result = method.invoke(result, r.getValue());
                     }
-                } catch (Exception e) {
-                    throw new RpcException("Can not merge result: " + e.getMessage(), e);
+                } else {
+                    for (Result r : resultList) {
+                        method.invoke(result, r.getValue());
+                    }
                 }
-            } else {
-                throw new RpcException("Can not merge result because missing method [ " + merger + " ] in class [ " +
-                                returnType.getClass().getName() + " ]");
+            } catch (Exception e) {
+                throw new RpcException("Can not merge result: " + e.getMessage(), e);
             }
         } else {
             Merger resultMerger;
