@@ -34,4 +34,15 @@ public abstract class AbstractCacheFactory implements CacheFactory {
 
     public Cache getCache(URL url, Invocation invocation) {
         url = url.addParameter(Constants.METHOD_KEY, invocation.getMethodName());
-        String key = url.
+        String key = url.toFullString();
+        Cache cache = caches.get(key);
+        if (cache == null) {
+            caches.put(key, createCache(url));
+            cache = caches.get(key);
+        }
+        return cache;
+    }
+
+    protected abstract Cache createCache(URL url);
+
+}
