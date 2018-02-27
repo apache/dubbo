@@ -97,30 +97,37 @@ public class AtomicPositiveInteger extends Number {
         return indexUpdater.weakCompareAndSet(this, expect, update);
     }
 
+    @Override
     public byte byteValue() {
         return (byte) get();
     }
 
+    @Override
     public short shortValue() {
         return (short) get();
     }
 
+    @Override
     public int intValue() {
         return get();
     }
 
+    @Override
     public long longValue() {
         return (long) get();
     }
 
+    @Override
     public float floatValue() {
         return (float) get();
     }
 
+    @Override
     public double doubleValue() {
         return (double) get();
     }
 
+    @Override
     public String toString() {
         return Integer.toString(get());
     }
