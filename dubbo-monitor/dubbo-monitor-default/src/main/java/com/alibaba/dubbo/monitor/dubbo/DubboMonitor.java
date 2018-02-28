@@ -16,6 +16,7 @@
  */
 package com.alibaba.dubbo.monitor.dubbo;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
@@ -92,6 +93,7 @@ public class DubboMonitor implements Monitor {
             long maxOutput = numbers[7];
             long maxElapsed = numbers[8];
             long maxConcurrent = numbers[9];
+            String version = getUrl().getParameter(Constants.DEFAULT_PROTOCOL);
 
             // send statistics data
             URL url = statistics.getUrl()
@@ -105,7 +107,8 @@ public class DubboMonitor implements Monitor {
                             MonitorService.MAX_INPUT, String.valueOf(maxInput),
                             MonitorService.MAX_OUTPUT, String.valueOf(maxOutput),
                             MonitorService.MAX_ELAPSED, String.valueOf(maxElapsed),
-                            MonitorService.MAX_CONCURRENT, String.valueOf(maxConcurrent)
+                            MonitorService.MAX_CONCURRENT, String.valueOf(maxConcurrent),
+                            Constants.DEFAULT_PROTOCOL, version
                     );
             monitorService.collect(url);
 
