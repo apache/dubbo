@@ -63,8 +63,14 @@ public class LocaleHandle implements java.io.Serializable, HessianHandle {
     private Object readResolve() {
         String s = this.value;
 
-        if (s == null)
+        if (s == null) {
             return null;
+        }
+
+        Locale locale = deJavaLocale(this.value);
+        if (locale != null) {
+            return locale;
+        }
 
         int len = s.length();
         char ch = ' ';
@@ -113,5 +119,31 @@ public class LocaleHandle implements java.io.Serializable, HessianHandle {
             return new Locale(language, country);
         else
             return new Locale(language);
+    }
+
+    /** see {@link Locale#toString()}, but ignore extends */
+    private Locale deJavaLocale(String value) {
+        if (value.length() == 0) {
+            return new Locale("");
+        }
+
+        int extStart = value.indexOf("_#");
+        if (extStart != -1) value = value.substring(0, extStart);
+
+        int pos1 = value.indexOf('_');
+        if (pos1 == -1) { // It is not java;
+            return null;
+        }
+
+        String lang = value.substring(0, pos1++), country, var;
+        int pos2 = value.indexOf('_', pos1);
+        if (pos2 == -1) {
+            country = value.substring(pos1);
+            var = "";
+        } else {
+            country = value.substring(pos1, pos2);
+            var = value.substring(pos2 + 1);
+        }
+        return new Locale(lang, country, var);
     }
 }
