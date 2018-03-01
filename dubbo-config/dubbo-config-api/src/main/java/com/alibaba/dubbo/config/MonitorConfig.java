@@ -36,11 +36,11 @@ public class MonitorConfig extends AbstractConfig {
 
     private String address;
 
-    private String username;
+    private String username; // TODO 芋艿
 
-    private String password;
+    private String password; // TODO 芋艿
 
-    private String group;
+    private String group; // TODO 芋艿
 
     private String version;
 

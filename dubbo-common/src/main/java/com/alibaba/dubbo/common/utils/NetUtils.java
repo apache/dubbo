@@ -52,6 +52,11 @@ public class NetUtils {
     private static final Map<String, String> hostNameCache = new LRUCache<String, String>(1000);
     private static volatile InetAddress LOCAL_ADDRESS = null;
 
+    /**
+     * 随机端口，从 30000 + 开始
+     *
+     * @return 端口
+     */
     public static int getRandomPort() {
         return RND_PORT_START + RANDOM.nextInt(RND_PORT_RANGE);
     }
@@ -63,6 +68,7 @@ public class NetUtils {
             ss.bind(null);
             return ss.getLocalPort();
         } catch (IOException e) {
+            // 发生异常，随机获得端口
             return getRandomPort();
         } finally {
             if (ss != null) {
@@ -74,10 +80,18 @@ public class NetUtils {
         }
     }
 
+    /**
+     * 获得本地可用端口
+     *
+     * @param port 目标开始端口
+     * @return 成功的本地可用端口
+     */
     public static int getAvailablePort(int port) {
+        // 获得一个本地端口。
         if (port <= 0) {
             return getAvailablePort();
         }
+        // 从 port 开始，顺序使用端口，直到成功
         for (int i = port; i < MAX_PORT; i++) {
             ServerSocket ss = null;
             try {
@@ -115,6 +129,14 @@ public class NetUtils {
         return "0.0.0.0".equals(host);
     }
 
+    /**
+     * 判断是否为非法的本地 Host
+     *
+     * 空 || localhost || 0.0.0.0 || 127.x.x.x
+     *
+     * @param host host
+     * @return 是否
+     */
     public static boolean isInvalidLocalHost(String host) {
         return host == null
                 || host.length() == 0

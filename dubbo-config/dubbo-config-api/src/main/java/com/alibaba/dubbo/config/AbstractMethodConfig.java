@@ -42,16 +42,16 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
     protected Integer retries;
 
     // max concurrent invocations
-    protected Integer actives;
+    protected Integer actives; // TODO 芋艿
 
     // load balance
     protected String loadbalance;
 
     // whether to async
-    protected Boolean async;
+    protected Boolean async; // TODO 芋艿
 
     // whether to ack async-sent
-    protected Boolean sent;
+    protected Boolean sent; // TODO 芋艿
 
     /**
      * the name of mock class which gets called when a service fails to execute
@@ -67,13 +67,13 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
     protected String mock; // TODO 芋艿
 
     // merger
-    protected String merger;
+    protected String merger; // TODO 芋艿
 
     // cache
-    protected String cache;
+    protected String cache; // TODO 芋艿
 
     // validation
-    protected String validation;
+    protected String validation; // TODO 芋艿
 
     // customized parameters
     protected Map<String, String> parameters;

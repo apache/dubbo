@@ -25,6 +25,9 @@ import java.util.Map;
 /**
  * RegistryConfig
  *
+ * 注册中心配置。
+ * 属性参见 http://dubbo.io/books/dubbo-user-book/references/xml/dubbo-registry.html
+ *
  * @export
  */
 public class RegistryConfig extends AbstractConfig {
@@ -45,20 +48,20 @@ public class RegistryConfig extends AbstractConfig {
     private Integer port;
 
     // protocol for register center
-    private String protocol;
+    private String protocol; // TODO 芋艿
 
     // client impl
-    private String transporter;
+    private String transporter; // TODO 芋艿
 
-    private String server;
+    private String server; // TODO 芋艿
 
-    private String client;
+    private String client; // TODO 芋艿
 
-    private String cluster;
+    private String cluster; // TODO 芋艿
 
-    private String group;
+    private String group; // TODO 芋艿
 
-    private String version;
+    private String version; // TODO 芋艿
 
     // request timeout in milliseconds for register center
     private Integer timeout;

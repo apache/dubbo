@@ -44,7 +44,7 @@ import java.util.Map;
 /**
  * AbstractDefaultConfig
  *
- *
+ * 抽象接口配置类
  *
  * @export
  */
@@ -117,7 +117,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     private Integer callbacks;
 
     // the scope for referring/exporting a service, if it's local, it means searching in current JVM only.
-    private String scope;
+    private String scope; // TODO 芋艿
 
     /**
      * 校验 RegistryConfig 配置数组。
@@ -186,7 +186,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
     }
 
-    protected List<URL> loadRegistries(boolean provider) {
+    protected List<URL> loadRegistries(boolean provider) { // 【TODO 8004】loadRegistries
         checkRegistry();
         List<URL> registryList = new ArrayList<URL>();
         if (registries != null && !registries.isEmpty()) {
@@ -232,7 +232,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         return registryList;
     }
 
-    protected URL loadMonitor(URL registryURL) {
+    protected URL loadMonitor(URL registryURL) { // 【TODO 8004】loadMonitor
         if (monitor == null) {
             String monitorAddress = ConfigUtils.getProperty("dubbo.monitor.address");
             String monitorProtocol = ConfigUtils.getProperty("dubbo.monitor.protocol");

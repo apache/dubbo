@@ -26,6 +26,8 @@ import java.util.List;
 /**
  * AbstractServiceConfig
  *
+ * 抽象服务配置类
+ *
  * @export
  */
 public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
@@ -54,14 +56,14 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     protected String document;
 
     // whether to register as a dynamic service or not on register center
-    protected Boolean dynamic;
+    protected Boolean dynamic; // TODO 芋艿
 
     // whether to use token
     protected String token; // TODO 芋艿
 
     // access log
     protected String accesslog; // TODO 芋艿
-    protected List<ProtocolConfig> protocols; // TODO 芋艿
+    protected List<ProtocolConfig> protocols;
     // max allowed execute times
     private Integer executes; // TODO 芋艿
     // whether to register

@@ -109,7 +109,7 @@ public class ProviderConfig extends AbstractServiceConfig {
     private String status;
 
     // wait time when stop
-    private Integer wait;
+    private Integer wait; // TODO 芋艿
 
     // if it's default
     private Boolean isDefault;

@@ -56,6 +56,13 @@ public final class Version {
         }
     }
 
+    /**
+     * 获得类对应的版本号
+     *
+     * @param cls 类
+     * @param defaultVersion 默认版本号
+     * @return 版本号
+     */
     public static String getVersion(Class<?> cls, String defaultVersion) {
         try {
             // find version info from MANIFEST.MF first

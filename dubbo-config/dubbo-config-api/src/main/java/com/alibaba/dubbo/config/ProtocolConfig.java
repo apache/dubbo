@@ -70,13 +70,13 @@ public class ProtocolConfig extends AbstractConfig {
     private Integer queues;
 
     // max acceptable connections
-    private Integer accepts;
+    private Integer accepts; // TODO 芋艿，
 
     // protocol codec
-    private String codec;
+    private String codec; // TODO 芋艿，
 
     // serialization
-    private String serialization;
+    private String serialization; // TODO 芋艿，
 
     // charset
     private String charset;
@@ -88,37 +88,37 @@ public class ProtocolConfig extends AbstractConfig {
     private Integer buffer;
 
     // heartbeat interval
-    private Integer heartbeat;
+    private Integer heartbeat; // TODO 芋艿，
 
     // access log
-    private String accesslog;
+    private String accesslog; // TODO 芋艿，
 
     // transfort
-    private String transporter;
+    private String transporter; // TODO 芋艿，
 
     // how information is exchanged
-    private String exchanger;
+    private String exchanger; // TODO 芋艿，
 
     // thread dispatch mode
-    private String dispatcher;
+    private String dispatcher; // TODO 芋艿，
 
     // networker
-    private String networker;
+    private String networker; // TODO ，芋艿
 
     // sever impl
-    private String server;
+    private String server; // TODO ，芋艿
 
     // client impl
-    private String client;
+    private String client; // TODO ，芋艿
 
     // supported telnet commands, separated with comma.
-    private String telnet;
+    private String telnet; // TODO ，芋艿
 
     // command line prompt
-    private String prompt;
+    private String prompt; // TODO ，芋艿
 
     // status check
-    private String status;
+    private String status; // TODO ，芋艿
 
     // whether to register
     private Boolean register;
@@ -126,12 +126,12 @@ public class ProtocolConfig extends AbstractConfig {
     // parameters
     // 是否长连接
     // TODO add this to provider config
-    private Boolean keepAlive;
+    private Boolean keepAlive; // TODO ，芋艿
 
     // TODO add this to provider config
-    private String optimizer;
+    private String optimizer; // TODO ，芋艿
 
-    private String extension;
+    private String extension; // TODO ，芋艿
 
     // parameters
     private Map<String, String> parameters;

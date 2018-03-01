@@ -179,6 +179,7 @@ public class Constants {
 
     public static final String DEPRECATED_KEY = "deprecated";
 
+    // TODO 【芋艿】anyhost 是什么
     public static final String ANYHOST_KEY = "anyhost";
 
     public static final String ANYHOST_VALUE = "0.0.0.0";
