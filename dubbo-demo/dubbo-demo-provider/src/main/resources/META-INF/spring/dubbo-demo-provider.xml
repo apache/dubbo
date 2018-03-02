@@ -31,18 +31,26 @@ limitations under the License.
     <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
 
     <!-- use dubbo protocol to export service on port 20880 -->
-    <dubbo:protocol name="dubbo" port="20880"/>
+    <dubbo:protocol id="pa" name="dubbo" port="20880"/>
+    <dubbo:protocol id="pb" name="dubbo" port="20881"/>
 
     <!-- service implementation, as same as regular local bean -->
     <bean id="demoService" class="com.alibaba.dubbo.demo.provider.DemoServiceImpl"/>
 
     <!-- declare the service interface to be exported -->
     <!--<dubbo:service interface="com.alibaba.dubbo.demo.DemoService" ref="demoService"/>-->
-    <dubbo:service interface="com.alibaba.dubbo.demo.DemoService" ref="demoService">
+    <dubbo:service id="sa" interface="com.alibaba.dubbo.demo.DemoService" ref="demoService">
         <!--<dubbo:method name="sayHello" retries="100">-->
             <!--&lt;!&ndash;<dubbo:argument index="0" callback="true" />&ndash;&gt;-->
             <!--<dubbo:argument type="com.demo.CallbackListener" callback="true" />-->
         <!--</dubbo:method>-->
     </dubbo:service>
+
+    <!--<dubbo:service id="sb" interface="com.alibaba.dubbo.demo.DemoService" ref="demoService">-->
+        <!--&lt;!&ndash;<dubbo:method name="sayHello" retries="100">&ndash;&gt;-->
+        <!--&lt;!&ndash;&lt;!&ndash;<dubbo:argument index="0" callback="true" />&ndash;&gt;&ndash;&gt;-->
+        <!--&lt;!&ndash;<dubbo:argument type="com.demo.CallbackListener" callback="true" />&ndash;&gt;-->
+        <!--&lt;!&ndash;</dubbo:method>&ndash;&gt;-->
+    <!--</dubbo:service>-->
 
 </beans>

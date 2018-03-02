@@ -24,6 +24,8 @@ import com.alibaba.dubbo.rpc.support.ProtocolUtils;
 /**
  * AbstractConsumerConfig
  *
+ * 服务消费者缺省值配置
+ *
  * @export
  * @see com.alibaba.dubbo.config.ReferenceConfig
  */

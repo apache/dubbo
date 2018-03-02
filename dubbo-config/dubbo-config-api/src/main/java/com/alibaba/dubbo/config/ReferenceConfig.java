@@ -88,12 +88,14 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     private String protocol;
     // interface proxy reference
     /**
-     *
+     * Service 对象
      */
-    private transient volatile T ref; // TODO 芋艿
+    private transient volatile T ref;
     private transient volatile Invoker<?> invoker; // TODO 芋艿
     /**
+     * 是否已经初始化应用服务，参见 {@link #init()} 方法。
      *
+     * 非配置。
      */
     private transient volatile boolean initialized;
     /**
