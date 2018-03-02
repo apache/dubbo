@@ -94,7 +94,7 @@ public class CollectionUtils {
             return null;
         }
         Map<String, String> map = new HashMap<String, String>();
-        if (list == null || list.isEmpty()) {
+        if (list.isEmpty()) {
             return map;
         }
         for (String item : list) {
@@ -113,7 +113,7 @@ public class CollectionUtils {
             return null;
         }
         List<String> list = new ArrayList<String>();
-        if (map == null || map.size() == 0) {
+        if (map.size() == 0) {
             return list;
         }
         for (Map.Entry<String, String> entry : map.entrySet()) {

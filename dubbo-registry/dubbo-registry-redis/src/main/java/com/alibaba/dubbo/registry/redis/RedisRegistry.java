@@ -183,7 +183,7 @@ public class RedisRegistry extends FailbackRegistry {
                         break;//  If the server side has synchronized data, just write a single machine
                     }
                 } finally {
-                    jedisPool.returnResource(jedis);
+                    jedis.close();
                 }
             } catch (Throwable t) {
                 logger.warn("Failed to write provider heartbeat to redis registry. registry: " + entry.getKey() + ", cause: " + t.getMessage(), t);
@@ -230,7 +230,7 @@ public class RedisRegistry extends FailbackRegistry {
                         return true; // At least one single machine is available.
                     }
                 } finally {
-                    jedisPool.returnResource(jedis);
+                    jedis.close();
                 }
             } catch (Throwable t) {
             }
@@ -282,7 +282,7 @@ public class RedisRegistry extends FailbackRegistry {
                         break; //  If the server side has synchronized data, just write a single machine
                     }
                 } finally {
-                    jedisPool.returnResource(jedis);
+                    jedis.close();
                 }
             } catch (Throwable t) {
                 exception = new RpcException("Failed to register service to redis registry. registry: " + entry.getKey() + ", service: " + url + ", cause: " + t.getMessage(), t);
@@ -315,7 +315,7 @@ public class RedisRegistry extends FailbackRegistry {
                         break; //  If the server side has synchronized data, just write a single machine
                     }
                 } finally {
-                    jedisPool.returnResource(jedis);
+                    jedis.close();
                 }
             } catch (Throwable t) {
                 exception = new RpcException("Failed to unregister service to redis registry. registry: " + entry.getKey() + ", service: " + url + ", cause: " + t.getMessage(), t);
@@ -373,7 +373,7 @@ public class RedisRegistry extends FailbackRegistry {
                     success = true;
                     break; // Just read one server's data
                 } finally {
-                    jedisPool.returnResource(jedis);
+                    jedis.close();
                 }
             } catch (Throwable t) { // Try the next server
                 exception = new RpcException("Failed to subscribe service from redis registry. registry: " + entry.getKey() + ", service: " + url + ", cause: " + t.getMessage(), t);
@@ -498,7 +498,7 @@ public class RedisRegistry extends FailbackRegistry {
                     try {
                         doNotify(jedis, key);
                     } finally {
-                        jedisPool.returnResource(jedis);
+                        jedis.close();
                     }
                 } catch (Throwable t) { // TODO Notification failure does not restore mechanism guarantee
                     logger.error(t.getMessage(), t);
@@ -602,7 +602,7 @@ public class RedisRegistry extends FailbackRegistry {
                                         }
                                         break;
                                     } finally {
-                                        jedisPool.returnBrokenResource(jedis);
+                                        jedis.close();
                                     }
                                 } catch (Throwable t) { // Retry another server
                                     logger.warn("Failed to subscribe service from redis registry. registry: " + entry.getKey() + ", cause: " + t.getMessage(), t);
