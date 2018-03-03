@@ -109,7 +109,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
             // 设置 Bean 的 `id` 属性值
             beanDefinition.getPropertyValues().addPropertyValue("id", id);
         }
-        System.out.println("id:" + id);
+//        System.out.println("id:" + id);
         // 处理 `<dubbo:protocol` /> 的特殊情况
         if (ProtocolConfig.class.equals(beanClass)) {
             // 需要满足第 220 至 233 行。
@@ -345,7 +345,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                 if (node instanceof Element) {
                     if (tag.equals(node.getNodeName())
                             || tag.equals(node.getLocalName())) { // 这三行，判断是否为指定要解析的子元素
-                        // TODO 芋艿，default 是干锤子的
+                        // 【TODO 8008】 芋艿，default 是干锤子的
                         if (first) {
                             first = false;
                             String isDefault = element.getAttribute("default");
