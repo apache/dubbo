@@ -24,9 +24,16 @@ import java.util.Date;
 
 public class DemoServiceImpl implements DemoService {
 
+    private DemoDAO demoDAO;
+
     public String sayHello(String name) {
         System.out.println("[" + new SimpleDateFormat("HH:mm:ss").format(new Date()) + "] Hello " + name + ", request from consumer: " + RpcContext.getContext().getRemoteAddress());
         return "Hello " + name + ", response form provider: " + RpcContext.getContext().getLocalAddress();
+    }
+
+    public DemoServiceImpl setDemoDAO(DemoDAO demoDAO) {
+        this.demoDAO = demoDAO;
+        return this;
     }
 
 }
