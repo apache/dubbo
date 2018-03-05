@@ -58,6 +58,7 @@ public class ThrowableSerializer extends JavaSerializer {
         super(cl, loader);
     }
 
+    @Override
     public void writeObject(Object obj, AbstractHessianOutput out)
             throws IOException {
         Throwable e = (Throwable) obj;

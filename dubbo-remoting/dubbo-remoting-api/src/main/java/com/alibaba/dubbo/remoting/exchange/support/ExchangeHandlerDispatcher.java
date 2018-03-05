@@ -80,31 +80,38 @@ public class ExchangeHandlerDispatcher implements ExchangeHandler {
         return this;
     }
 
+    @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public Object reply(ExchangeChannel channel, Object request) throws RemotingException {
         return ((Replier) replierDispatcher).reply(channel, request);
     }
 
+    @Override
     public void connected(Channel channel) {
         handlerDispatcher.connected(channel);
     }
 
+    @Override
     public void disconnected(Channel channel) {
         handlerDispatcher.disconnected(channel);
     }
 
+    @Override
     public void sent(Channel channel, Object message) {
         handlerDispatcher.sent(channel, message);
     }
 
+    @Override
     public void received(Channel channel, Object message) {
         handlerDispatcher.received(channel, message);
     }
 
+    @Override
     public void caught(Channel channel, Throwable exception) {
         handlerDispatcher.caught(channel, exception);
     }
 
+    @Override
     public String telnet(Channel channel, String message) throws RemotingException {
         return telnetHandler.telnet(channel, message);
     }

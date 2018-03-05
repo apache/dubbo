@@ -27,10 +27,12 @@ import java.io.IOException;
 @Priority(Priorities.USER)
 public class TraceFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
+    @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
         System.out.println("Request filter invoked: " + requestContext.getUriInfo().getAbsolutePath());
     }
 
+    @Override
     public void filter(ContainerRequestContext containerRequestContext, ContainerResponseContext containerResponseContext) throws IOException {
         System.out.println("Response filter invoked.");
 

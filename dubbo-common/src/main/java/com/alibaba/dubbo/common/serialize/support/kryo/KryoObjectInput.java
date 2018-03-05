@@ -38,6 +38,7 @@ public class KryoObjectInput implements ObjectInput, Cleanable {
         this.kryo = KryoUtils.get();
     }
 
+    @Override
     public boolean readBool() throws IOException {
         try {
             return input.readBoolean();
@@ -46,6 +47,7 @@ public class KryoObjectInput implements ObjectInput, Cleanable {
         }
     }
 
+    @Override
     public byte readByte() throws IOException {
         try {
             return input.readByte();
@@ -54,6 +56,7 @@ public class KryoObjectInput implements ObjectInput, Cleanable {
         }
     }
 
+    @Override
     public short readShort() throws IOException {
         try {
             return input.readShort();
@@ -62,6 +65,7 @@ public class KryoObjectInput implements ObjectInput, Cleanable {
         }
     }
 
+    @Override
     public int readInt() throws IOException {
         try {
             return input.readInt();
@@ -70,6 +74,7 @@ public class KryoObjectInput implements ObjectInput, Cleanable {
         }
     }
 
+    @Override
     public long readLong() throws IOException {
         try {
             return input.readLong();
@@ -78,6 +83,7 @@ public class KryoObjectInput implements ObjectInput, Cleanable {
         }
     }
 
+    @Override
     public float readFloat() throws IOException {
         try {
             return input.readFloat();
@@ -86,6 +92,7 @@ public class KryoObjectInput implements ObjectInput, Cleanable {
         }
     }
 
+    @Override
     public double readDouble() throws IOException {
         try {
             return input.readDouble();
@@ -94,6 +101,7 @@ public class KryoObjectInput implements ObjectInput, Cleanable {
         }
     }
 
+    @Override
     public byte[] readBytes() throws IOException {
         try {
             int len = input.readInt();
@@ -109,6 +117,7 @@ public class KryoObjectInput implements ObjectInput, Cleanable {
         }
     }
 
+    @Override
     public String readUTF() throws IOException {
         try {
             return input.readString();
@@ -117,6 +126,7 @@ public class KryoObjectInput implements ObjectInput, Cleanable {
         }
     }
 
+    @Override
     public Object readObject() throws IOException, ClassNotFoundException {
         // TODO optimization
         try {
@@ -127,18 +137,21 @@ public class KryoObjectInput implements ObjectInput, Cleanable {
     }
 
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T readObject(Class<T> clazz) throws IOException, ClassNotFoundException {
         // TODO optimization
         return (T) readObject();
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T readObject(Class<T> clazz, Type type) throws IOException, ClassNotFoundException {
         // TODO optimization
         return readObject(clazz);
     }
 
+    @Override
     public void cleanup() {
         KryoUtils.release(kryo);
         kryo = null;

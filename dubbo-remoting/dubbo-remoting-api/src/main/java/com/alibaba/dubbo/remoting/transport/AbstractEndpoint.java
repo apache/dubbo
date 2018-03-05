@@ -57,6 +57,7 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
         }
     }
 
+    @Override
     public void reset(URL url) {
         if (isClosed()) {
             throw new IllegalStateException("Failed to reset parameters "

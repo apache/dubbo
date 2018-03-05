@@ -83,6 +83,7 @@ final public class MockInvoker<T> implements Invoker<T> {
         return value;
     }
 
+    @Override
     public Result invoke(Invocation invocation) throws RpcException {
         String mock = getUrl().getParameter(invocation.getMethodName() + "." + Constants.MOCK_KEY);
         if (invocation instanceof RpcInvocation) {
@@ -201,18 +202,22 @@ final public class MockInvoker<T> implements Invoker<T> {
         return mock;
     }
 
+    @Override
     public URL getUrl() {
         return this.url;
     }
 
+    @Override
     public boolean isAvailable() {
         return true;
     }
 
+    @Override
     public void destroy() {
         //do nothing
     }
 
+    @Override
     public Class<T> getInterface() {
         //FIXME
         return null;

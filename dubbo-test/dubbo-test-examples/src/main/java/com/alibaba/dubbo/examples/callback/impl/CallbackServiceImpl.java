@@ -33,6 +33,7 @@ public class CallbackServiceImpl implements CallbackService {
 
     public CallbackServiceImpl() {
         Thread t = new Thread(new Runnable() {
+            @Override
             public void run() {
                 while (true) {
                     try {
@@ -54,6 +55,7 @@ public class CallbackServiceImpl implements CallbackService {
         t.start();
     }
 
+    @Override
     public void addListener(String key, CallbackListener listener) {
         listeners.put(key, listener);
         listener.changed(getChanged(key)); // send notification for change

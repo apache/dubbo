@@ -24,6 +24,7 @@ public class ArrayMerger implements Merger<Object[]> {
 
     public static final ArrayMerger INSTANCE = new ArrayMerger();
 
+    @Override
     public Object[] merge(Object[]... others) {
         if (others.length == 0) {
             return null;

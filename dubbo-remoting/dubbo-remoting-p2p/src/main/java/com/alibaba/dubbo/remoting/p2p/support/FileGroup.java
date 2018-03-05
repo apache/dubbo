@@ -51,6 +51,7 @@ public class FileGroup extends AbstractGroup {
         String path = url.getAbsolutePath();
         file = new File(path);
         checkModifiedFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
+            @Override
             public void run() {
                 // Check the file change
                 try {
@@ -62,6 +63,7 @@ public class FileGroup extends AbstractGroup {
         }, 2000, 2000, TimeUnit.MILLISECONDS);
     }
 
+    @Override
     public void close() {
         super.close();
         try {
@@ -92,6 +94,7 @@ public class FileGroup extends AbstractGroup {
         }
     }
 
+    @Override
     public Peer join(URL url, ChannelHandler handler) throws RemotingException {
         Peer peer = super.join(url, handler);
         try {

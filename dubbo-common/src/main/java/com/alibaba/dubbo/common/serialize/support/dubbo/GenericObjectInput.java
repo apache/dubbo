@@ -54,6 +54,7 @@ public class GenericObjectInput extends GenericDataInput implements ObjectInput 
         mMapper = mapper;
     }
 
+    @Override
     public Object readObject() throws IOException {
         String desc;
         byte b = read0();
@@ -85,11 +86,13 @@ public class GenericObjectInput extends GenericDataInput implements ObjectInput 
         }
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T readObject(Class<T> cls) throws IOException, ClassNotFoundException {
         return (T) readObject();
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T readObject(Class<T> cls, Type type) throws IOException, ClassNotFoundException {
         return (T) readObject();

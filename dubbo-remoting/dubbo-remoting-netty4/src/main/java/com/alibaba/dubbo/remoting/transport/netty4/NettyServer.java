@@ -142,6 +142,7 @@ public class NettyServer extends AbstractServer implements Server {
         }
     }
 
+    @Override
     public Collection<Channel> getChannels() {
         Collection<Channel> chs = new HashSet<Channel>();
         for (Channel channel : this.channels.values()) {
@@ -154,10 +155,12 @@ public class NettyServer extends AbstractServer implements Server {
         return chs;
     }
 
+    @Override
     public Channel getChannel(InetSocketAddress remoteAddress) {
         return channels.get(NetUtils.toAddressString(remoteAddress));
     }
 
+    @Override
     public boolean isBound() {
         return channel.isActive();
     }

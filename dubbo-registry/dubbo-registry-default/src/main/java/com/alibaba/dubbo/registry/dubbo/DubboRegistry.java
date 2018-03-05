@@ -66,6 +66,7 @@ public class DubboRegistry extends FailbackRegistry {
         // Start reconnection timer
         int reconnectPeriod = registryInvoker.getUrl().getParameter(Constants.REGISTRY_RECONNECT_PERIOD_KEY, RECONNECT_PERIOD_DEFAULT);
         reconnectFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
+            @Override
             public void run() {
                 // Check and connect to the registry
                 try {
@@ -107,12 +108,14 @@ public class DubboRegistry extends FailbackRegistry {
         }
     }
 
+    @Override
     public boolean isAvailable() {
         if (registryInvoker == null)
             return false;
         return registryInvoker.isAvailable();
     }
 
+    @Override
     public void destroy() {
         super.destroy();
         try {
@@ -126,22 +129,27 @@ public class DubboRegistry extends FailbackRegistry {
         registryInvoker.destroy();
     }
 
+    @Override
     protected void doRegister(URL url) {
         registryService.register(url);
     }
 
+    @Override
     protected void doUnregister(URL url) {
         registryService.unregister(url);
     }
 
+    @Override
     protected void doSubscribe(URL url, NotifyListener listener) {
         registryService.subscribe(url, listener);
     }
 
+    @Override
     protected void doUnsubscribe(URL url, NotifyListener listener) {
         registryService.unsubscribe(url, listener);
     }
 
+    @Override
     public List<URL> lookup(URL url) {
         return registryService.lookup(url);
     }

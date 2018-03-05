@@ -64,6 +64,7 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 if (retryFuture == null) {
                     retryFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
 
+                        @Override
                         public void run() {
                             // collect retry statistics
                             try {
@@ -96,6 +97,7 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
         }
     }
 
+    @Override
     protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
         try {
             checkInvokers(invokers, invocation);

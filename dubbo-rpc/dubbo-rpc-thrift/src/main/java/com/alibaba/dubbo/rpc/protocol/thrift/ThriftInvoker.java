@@ -111,6 +111,7 @@ public class ThriftInvoker<T> extends AbstractInvoker<T> {
         return false;
     }
 
+    @Override
     public void destroy() {
         // in order to avoid closing a client multiple times, a counter is used in case of connection per jvm, every
         // time when client.close() is called, counter counts down once, and when counter reaches zero, client will be

@@ -52,6 +52,7 @@ class InjvmInvoker<T> extends AbstractInvoker<T> {
         }
     }
 
+    @Override
     public Result doInvoke(Invocation invocation) throws Throwable {
         Exporter<?> exporter = InjvmProtocol.getExporter(exporterMap, getUrl());
         if (exporter == null) {

@@ -28,6 +28,7 @@ import com.alibaba.dubbo.remoting.telnet.support.Help;
 @Help(parameter = "", summary = "Print working default service.", detail = "Print working default service.")
 public class CurrentTelnetHandler implements TelnetHandler {
 
+    @Override
     public String telnet(Channel channel, String message) {
         if (message.length() > 0) {
             return "Unsupported parameter " + message + " for pwd.";

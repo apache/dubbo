@@ -21,6 +21,7 @@ import com.alibaba.dubbo.rpc.cluster.Merger;
 
 public class IntArrayMerger implements Merger<int[]> {
 
+    @Override
     public int[] merge(int[]... items) {
         int totalLen = 0;
         for (int[] item : items) {

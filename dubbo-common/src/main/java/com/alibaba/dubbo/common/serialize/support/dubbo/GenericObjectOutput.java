@@ -56,6 +56,7 @@ public class GenericObjectOutput extends GenericDataOutput implements ObjectOutp
         this.isAllowNonSerializable = isAllowNonSerializable;
     }
 
+    @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public void writeObject(Object obj) throws IOException {
         if (obj == null) {

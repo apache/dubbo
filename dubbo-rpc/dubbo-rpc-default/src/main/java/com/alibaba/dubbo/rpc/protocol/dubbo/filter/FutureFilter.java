@@ -44,6 +44,7 @@ public class FutureFilter implements Filter {
 
     protected static final Logger logger = LoggerFactory.getLogger(FutureFilter.class);
 
+    @Override
     public Result invoke(final Invoker<?> invoker, final Invocation invocation) throws RpcException {
         final boolean isAsync = RpcUtils.isAsync(invoker.getUrl(), invocation);
 
@@ -72,6 +73,7 @@ public class FutureFilter implements Filter {
         if (f instanceof FutureAdapter) {
             ResponseFuture future = ((FutureAdapter<?>) f).getFuture();
             future.setCallback(new ResponseCallback() {
+                @Override
                 public void done(Object rpcResult) {
                     if (rpcResult == null) {
                         logger.error(new IllegalStateException("invalid result value : null, expected " + Result.class.getName()));
@@ -90,6 +92,7 @@ public class FutureFilter implements Filter {
                     }
                 }
 
+                @Override
                 public void caught(Throwable exception) {
                     fireThrowCallback(invoker, invocation, exception);
                 }

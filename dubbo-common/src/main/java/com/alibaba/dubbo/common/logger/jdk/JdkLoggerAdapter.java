@@ -94,26 +94,32 @@ public class JdkLoggerAdapter implements LoggerAdapter {
         return Level.OFF;
     }
 
+    @Override
     public Logger getLogger(Class<?> key) {
         return new JdkLogger(java.util.logging.Logger.getLogger(key == null ? "" : key.getName()));
     }
 
+    @Override
     public Logger getLogger(String key) {
         return new JdkLogger(java.util.logging.Logger.getLogger(key));
     }
 
+    @Override
     public Level getLevel() {
         return fromJdkLevel(java.util.logging.Logger.getLogger(GLOBAL_LOGGER_NAME).getLevel());
     }
 
+    @Override
     public void setLevel(Level level) {
         java.util.logging.Logger.getLogger(GLOBAL_LOGGER_NAME).setLevel(toJdkLevel(level));
     }
 
+    @Override
     public File getFile() {
         return file;
     }
 
+    @Override
     public void setFile(File file) {
 
     }

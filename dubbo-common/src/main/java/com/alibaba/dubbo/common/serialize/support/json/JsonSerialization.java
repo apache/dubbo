@@ -31,18 +31,22 @@ import java.io.OutputStream;
 @Deprecated
 public class JsonSerialization implements Serialization {
 
+    @Override
     public byte getContentTypeId() {
         return 5;
     }
 
+    @Override
     public String getContentType() {
         return "text/json";
     }
 
+    @Override
     public ObjectOutput serialize(URL url, OutputStream output) throws IOException {
         return new JsonObjectOutput(output, url.getParameter("with.class", true));
     }
 
+    @Override
     public ObjectInput deserialize(URL url, InputStream input) throws IOException {
         return new JsonObjectInput(input);
     }
