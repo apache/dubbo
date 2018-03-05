@@ -21,11 +21,15 @@ import com.alibaba.dubbo.cache.CacheFactory;
 import com.alibaba.dubbo.cache.support.threadlocal.ThreadLocalCache;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
-import com.alibaba.dubbo.config.*;
+import com.alibaba.dubbo.config.ApplicationConfig;
+import com.alibaba.dubbo.config.MethodConfig;
+import com.alibaba.dubbo.config.ProtocolConfig;
+import com.alibaba.dubbo.config.ReferenceConfig;
+import com.alibaba.dubbo.config.RegistryConfig;
+import com.alibaba.dubbo.config.ServiceConfig;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import junit.framework.TestCase;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -63,7 +67,7 @@ public class CacheTest extends TestCase {
                 String fix = null;
                 for (int i = 0; i < 3; i++) {
                     String result = cacheService.findCache("0");
-                    Assert.assertTrue(fix == null || fix.equals(result));
+                    assertTrue(fix == null || fix.equals(result));
                     fix = result;
                     Thread.sleep(100);
                 }
@@ -74,14 +78,14 @@ public class CacheTest extends TestCase {
                         String pre = null;
                         for (int i = 0; i < 10; i++) {
                             String result = cacheService.findCache(String.valueOf(n));
-                            Assert.assertTrue(pre == null || pre.equals(result));
+                            assertTrue(pre == null || pre.equals(result));
                             pre = result;
                         }
                     }
 
                     // verify if the first cache item is expired in LRU cache
                     String result = cacheService.findCache("0");
-                    Assert.assertFalse(fix == null || fix.equals(result));
+                    assertFalse(fix == null || fix.equals(result));
                 }
             } finally {
                 reference.destroy();
@@ -99,7 +103,7 @@ public class CacheTest extends TestCase {
 
     @Test
     public void testCacheProvider() throws Exception {
-        CacheFactory cacheFactory = (CacheFactory) ExtensionLoader.getExtensionLoader(CacheFactory.class).getAdaptiveExtension();
+        CacheFactory cacheFactory = ExtensionLoader.getExtensionLoader(CacheFactory.class).getAdaptiveExtension();
 
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put("findCache.cache", "threadlocal");
@@ -108,7 +112,7 @@ public class CacheTest extends TestCase {
         Invocation invocation = new RpcInvocation("findCache", new Class[]{String.class}, new String[]{"0"}, null, null);
 
         Cache cache = cacheFactory.getCache(url, invocation);
-        Assert.assertTrue(cache instanceof ThreadLocalCache);
+        assertTrue(cache instanceof ThreadLocalCache);
     }
 
 }
