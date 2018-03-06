@@ -25,7 +25,7 @@ import com.alibaba.dubbo.common.extension.SPI;
  */
 @SPI
 public interface Ext2 {
-    // 方法参数的属性是URL！
+    // one of the properties of an argument is an instance of URL.
     @Adaptive
     String echo(UrlHolder holder, String s);
 

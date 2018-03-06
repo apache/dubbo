@@ -66,7 +66,7 @@ public class ConfigUtilsTest {
     }
 
     /**
-     * 测试点1：用户配置-default，会删除所有默认参数
+     * Test Point 1: The user configures -default, which will delete all the default parameters
      */
     @Test
     public void testMergeValuesDelete() {

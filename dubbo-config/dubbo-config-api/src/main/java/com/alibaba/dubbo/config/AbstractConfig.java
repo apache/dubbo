@@ -60,7 +60,7 @@ public abstract class AbstractConfig implements Serializable {
 
     private static final Pattern PATTERN_KEY = Pattern.compile("[*,\\-._0-9a-zA-Z]+");
     private static final Map<String, String> legacyProperties = new HashMap<String, String>();
-    private static final String[] SUFFIXS = new String[]{"Config", "Bean"};
+    private static final String[] SUFFIXES = new String[]{"Config", "Bean"};
 
     static {
         legacyProperties.put("dubbo.protocol.name", "dubbo.service.protocol");
@@ -166,7 +166,7 @@ public abstract class AbstractConfig implements Serializable {
 
     private static String getTagName(Class<?> cls) {
         String tag = cls.getSimpleName();
-        for (String suffix : SUFFIXS) {
+        for (String suffix : SUFFIXES) {
             if (tag.endsWith(suffix)) {
                 tag = tag.substring(0, tag.length() - suffix.length());
                 break;
@@ -268,7 +268,7 @@ public abstract class AbstractConfig implements Serializable {
                     if (parameter == null || !parameter.attribute())
                         continue;
                     String key;
-                    if (parameter != null && parameter.key() != null && parameter.key().length() > 0) {
+                    if (parameter.key() != null && parameter.key().length() > 0) {
                         key = parameter.key();
                     } else {
                         int i = name.startsWith("get") ? 3 : 2;

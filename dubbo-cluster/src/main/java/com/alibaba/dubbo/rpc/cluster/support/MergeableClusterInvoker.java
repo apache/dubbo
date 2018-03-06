@@ -46,8 +46,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-/**
- */
 @SuppressWarnings("unchecked")
 public class MergeableClusterInvoker<T> implements Invoker<T> {
 
@@ -119,7 +117,7 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
             }
         }
 
-        if (resultList.size() == 0) {
+        if (resultList.isEmpty()) {
             return new RpcResult((Object) null);
         } else if (resultList.size() == 1) {
             return resultList.iterator().next();
@@ -143,38 +141,27 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
                         .append(" ]")
                         .toString());
             }
-            if (method != null) {
-                if (!Modifier.isPublic(method.getModifiers())) {
-                    method.setAccessible(true);
-                }
-                result = resultList.remove(0).getValue();
-                try {
-                    if (method.getReturnType() != void.class
-                            && method.getReturnType().isAssignableFrom(result.getClass())) {
-                        for (Result r : resultList) {
-                            result = method.invoke(result, r.getValue());
-                        }
-                    } else {
-                        for (Result r : resultList) {
-                            method.invoke(result, r.getValue());
-                        }
+            if (!Modifier.isPublic(method.getModifiers())) {
+                method.setAccessible(true);
+            }
+            result = resultList.remove(0).getValue();
+            try {
+                if (method.getReturnType() != void.class
+                        && method.getReturnType().isAssignableFrom(result.getClass())) {
+                    for (Result r : resultList) {
+                        result = method.invoke(result, r.getValue());
                     }
-                } catch (Exception e) {
-                    throw new RpcException(
-                            new StringBuilder(32)
-                                    .append("Can not merge result: ")
-                                    .append(e.getMessage()).toString(),
-                            e);
+                } else {
+                    for (Result r : resultList) {
+                        method.invoke(result, r.getValue());
+                    }
                 }
-            } else {
+            } catch (Exception e) {
                 throw new RpcException(
                         new StringBuilder(32)
-                                .append("Can not merge result because missing method [ ")
-                                .append(merger)
-                                .append(" ] in class [ ")
-                                .append(returnType.getClass().getName())
-                                .append(" ]")
-                                .toString());
+                                .append("Can not merge result: ")
+                                .append(e.getMessage()).toString(),
+                        e);
             }
         } else {
             Merger resultMerger;

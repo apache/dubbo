@@ -79,8 +79,8 @@ public class NettyClient extends AbstractClient {
             protected void initChannel(Channel ch) throws Exception {
                 NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyClient.this);
                 ch.pipeline()//.addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
-                        .addLast("decoder", adapter.getDecoder())//
-                        .addLast("encoder", adapter.getEncoder())//
+                        .addLast("decoder", adapter.getDecoder())
+                        .addLast("encoder", adapter.getEncoder())
                         .addLast("handler", nettyClientHandler);
             }
         });

@@ -413,7 +413,7 @@ public final class JavaBeanSerializeUtil {
     }
 
     /**
-     * 把 Class.forName 的返回值转换为 Class.
+     * Transform the Class.forName String to Class Object.
      *
      * @param name Class.getName()
      * @return Class

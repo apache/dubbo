@@ -61,7 +61,7 @@ public class GrizzlyCodecAdapter extends BaseFilter {
         Connection<?> connection = context.getConnection();
         GrizzlyChannel channel = GrizzlyChannel.getOrAddChannel(connection, url, handler);
         try {
-            ChannelBuffer channelBuffer = ChannelBuffers.dynamicBuffer(1024); // 不需要关闭
+            ChannelBuffer channelBuffer = ChannelBuffers.dynamicBuffer(1024); // Do not need to close
 
             Object msg = context.getMessage();
             codec.encode(channel, channelBuffer, msg);

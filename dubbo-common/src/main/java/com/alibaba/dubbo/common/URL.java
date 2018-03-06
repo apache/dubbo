@@ -78,8 +78,10 @@ public final class URL implements Serializable {
 
     private final String password;
 
+    // by default, host to registry
     private final String host;
 
+    // by default, port to registry
     private final int port;
 
     private final String path;
@@ -116,7 +118,7 @@ public final class URL implements Serializable {
         this(protocol, null, null, host, port, null, (Map<String, String>) null);
     }
 
-    public URL(String protocol, String host, int port, String[] pairs) { // 变长参数...与下面的path参数冲突，改为数组
+    public URL(String protocol, String host, int port, String[] pairs) { // varargs ... confilict with the following path argument, use array instead.
         this(protocol, null, null, host, port, null, CollectionUtils.toStringMap(pairs));
     }
 
@@ -1021,7 +1023,7 @@ public final class URL implements Serializable {
     }
 
     public URL removeParameters(Collection<String> keys) {
-        if (keys == null || keys.size() == 0) {
+        if (keys == null || keys.isEmpty()) {
             return this;
         }
         return removeParameters(keys.toArray(new String[0]));

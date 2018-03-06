@@ -432,7 +432,6 @@ public class TTable implements TComponent {
     }
 
     /**
-     * 获取表格边框设置
      * get border
      *
      * @return table border

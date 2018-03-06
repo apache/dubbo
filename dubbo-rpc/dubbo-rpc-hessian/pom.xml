@@ -20,7 +20,7 @@ limitations under the License.
     <parent>
         <groupId>com.alibaba</groupId>
         <artifactId>dubbo-rpc</artifactId>
-        <version>2.5.8</version>
+        <version>2.6.1</version>
     </parent>
     <artifactId>dubbo-rpc-hessian</artifactId>
     <packaging>jar</packaging>
@@ -47,8 +47,6 @@ limitations under the License.
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <scope>provided</scope>
-            <optional>true</optional>
         </dependency>
     </dependencies>
 </project>

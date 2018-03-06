@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ - Copyright 1999-2011 Alibaba Group.
+ -  
+ - Licensed under the Apache License, Version 2.0 (the "License");
+ - you may not use this file except in compliance with the License.
+ - You may obtain a copy of the License at
+ -  
+ -      http://www.apache.org/licenses/LICENSE-2.0
+ -  
+ - Unless required by applicable law or agreed to in writing, software
+ - distributed under the License is distributed on an "AS IS" BASIS,
+ - WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ - See the License for the specific language governing permissions and
+ - limitations under the License.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+	http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:component-scan base-package="com.alibaba.dubbo.examples.rest"/>
+
+    <dubbo:application name="rest-provider" owner="programmer" organization="dubbo"/>
+
+    <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
+
+    <!-- use netty server -->
+    <!--<dubbo:protocol name="rest" port="8888" keepalive="true" server="netty" iothreads="5" threads="100" contextpath="services"/>-->
+
+    <!-- use tomcat server -->
+    <dubbo:protocol name="rest" port="8888" threads="500" contextpath="services" server="tomcat" accepts="500"
+                    extension="com.alibaba.dubbo.examples.rest.api.extension.TraceInterceptor,
+                    com.alibaba.dubbo.examples.rest.api.extension.TraceFilter,
+                    com.alibaba.dubbo.examples.rest.api.extension.ClientTraceFilter,
+                    com.alibaba.dubbo.examples.rest.api.extension.DynamicTraceBinding,
+                    com.alibaba.dubbo.examples.rest.api.extension.CustomExceptionMapper,
+                    com.alibaba.dubbo.rpc.protocol.rest.support.LoggingFilter"/>
+
+    <dubbo:protocol name="dubbo" port="20880" threads="200"/>
+
+    <!-- use the external tomcat or other server with the servlet approach; the port and contextpath must be exactly the same as those in external server -->
+    <!--<dubbo:protocol name="rest" port="8888" contextpath="services" server="servlet"/>-->
+
+    <!-- we add the group property since there's another annotation-configured service impl: com.alibaba.dubbo.demo.user.facade.AnnotationDrivenUserRestServiceImpl -->
+    <dubbo:service interface="com.alibaba.dubbo.examples.rest.api.UserService" ref="userService" protocol="dubbo"
+                   group="xmlConfig"/>
+
+    <dubbo:service interface="com.alibaba.dubbo.examples.rest.api.facade.UserRestService" ref="userRestService"
+                   protocol="rest" validation="true"/>
+    <dubbo:service interface="com.alibaba.dubbo.examples.rest.api.facade.AnotherUserRestService"
+                   ref="anotherUserRestService" protocol="rest,dubbo" timeout="2000" connections="100"
+                   validation="true"/>
+
+</beans>

@@ -20,7 +20,7 @@
     <parent>
         <groupId>com.alibaba</groupId>
         <artifactId>dubbo-parent</artifactId>
-        <version>2.5.8</version>
+        <version>2.6.1</version>
     </parent>
     <artifactId>dubbo-cluster</artifactId>
     <packaging>jar</packaging>
@@ -34,12 +34,6 @@
             <groupId>com.alibaba</groupId>
             <artifactId>dubbo-rpc-api</artifactId>
             <version>${project.parent.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.bsf</groupId>
-            <artifactId>bsf-api</artifactId>
-            <scope>provided</scope>
-            <optional>true</optional>
         </dependency>
     </dependencies>
 </project>

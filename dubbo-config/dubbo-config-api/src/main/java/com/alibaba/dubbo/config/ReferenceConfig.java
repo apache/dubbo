@@ -148,7 +148,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     }
 
     public URL toUrl() {
-        return urls == null || urls.size() == 0 ? null : urls.iterator().next();
+        return urls == null || urls.isEmpty() ? null : urls.iterator().next();
     }
 
     public List<URL> toUrls() {
@@ -304,8 +304,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         appendParameters(map, module);
         appendParameters(map, consumer, Constants.DEFAULT_KEY);
         appendParameters(map, this);
-        String prifix = StringUtils.getServiceKey(map);
-        if (methods != null && methods.size() > 0) {
+        String prefix = StringUtils.getServiceKey(map);
+        if (methods != null && !methods.isEmpty()) {
             for (MethodConfig method : methods) {
                 appendParameters(map, method, method.getName());
                 String retryKey = method.getName() + ".retry";
@@ -315,12 +315,11 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                         map.put(method.getName() + ".retries", "0");
                     }
                 }
-                appendAttributes(attributes, method, prifix + "." + method.getName());
+                appendAttributes(attributes, method, prefix + "." + method.getName());
                 checkAndConvertImplicitConfig(method, map, attributes);
             }
         }
 
-        //
         String hostToRegistry = ConfigUtils.getSystemProperty(Constants.DUBBO_IP_TO_REGISTRY);
         if (hostToRegistry == null || hostToRegistry.length() == 0) {
             hostToRegistry = NetUtils.getLocalHost();
@@ -329,7 +328,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         }
         map.put(Constants.REGISTER_IP_KEY, hostToRegistry);
 
-        //attributes通过系统context进行存储.
+        //attributes are stored by system context.
         StaticContext.getSystemContext().putAll(attributes);
         ref = createProxy(map);
         ConsumerModel consumerModel = new ConsumerModel(getUniqueServiceName(), this, ref, interfaceClass.getMethods());
@@ -341,7 +340,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         URL tmpUrl = new URL("temp", "localhost", 0, map);
         final boolean isJvmRefer;
         if (isInjvm() == null) {
-            if (url != null && url.length() > 0) { //指定URL的情况下，不做本地引用
+            if (url != null && url.length() > 0) { // if a url is specified, don't do local reference
                 isJvmRefer = false;
             } else if (InjvmProtocol.getInjvmProtocol().isInjvmRefer(tmpUrl)) {
                 // by default, reference local service if there is
@@ -377,7 +376,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 }
             } else { // assemble URL from register center's configuration
                 List<URL> us = loadRegistries(false);
-                if (us != null && us.size() > 0) {
+                if (us != null && !us.isEmpty()) {
                     for (URL u : us) {
                         URL monitorUrl = loadMonitor(u);
                         if (monitorUrl != null) {
@@ -386,7 +385,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                         urls.add(u.addParameterAndEncoded(Constants.REFER_KEY, StringUtils.toQueryString(map)));
                     }
                 }
-                if (urls == null || urls.size() == 0) {
+                if (urls == null || urls.isEmpty()) {
                     throw new IllegalStateException("No such any registry to reference " + interfaceName + " on the consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() + ", please config <dubbo:registry address=\"...\" /> to your spring config.");
                 }
             }
@@ -474,7 +473,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             throw new IllegalStateException("The interface class " + interfaceClass + " is not a interface!");
         }
         this.interfaceClass = interfaceClass;
-        setInterface(interfaceClass == null ? (String) null : interfaceClass.getName());
+        setInterface(interfaceClass == null ? null : interfaceClass.getName());
     }
 
     public void setInterface(String interfaceName) {

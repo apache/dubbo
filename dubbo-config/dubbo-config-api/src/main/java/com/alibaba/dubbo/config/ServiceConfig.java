@@ -34,6 +34,7 @@ import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.ProxyFactory;
+import com.alibaba.dubbo.rpc.ServiceClassHolder;
 import com.alibaba.dubbo.rpc.cluster.ConfiguratorFactory;
 import com.alibaba.dubbo.rpc.service.GenericService;
 import com.alibaba.dubbo.rpc.support.ProtocolUtils;
@@ -104,7 +105,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     @Deprecated
     private static final List<ProtocolConfig> convertProviderToProtocol(List<ProviderConfig> providers) {
-        if (providers == null || providers.size() == 0) {
+        if (providers == null || providers.isEmpty()) {
             return null;
         }
         List<ProtocolConfig> protocols = new ArrayList<ProtocolConfig>(providers.size());
@@ -116,7 +117,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     @Deprecated
     private static final List<ProviderConfig> convertProtocolToProvider(List<ProtocolConfig> protocols) {
-        if (protocols == null || protocols.size() == 0) {
+        if (protocols == null || protocols.isEmpty()) {
             return null;
         }
         List<ProviderConfig> providers = new ArrayList<ProviderConfig>(protocols.size());
@@ -174,7 +175,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     public URL toUrl() {
-        return urls == null || urls.size() == 0 ? null : urls.iterator().next();
+        return urls == null || urls.isEmpty() ? null : urls.iterator().next();
     }
 
     public List<URL> toUrls() {
@@ -336,7 +337,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (unexported) {
             return;
         }
-        if (exporters != null && exporters.size() > 0) {
+        if (exporters != null && !exporters.isEmpty()) {
             for (Exporter<?> exporter : exporters) {
                 try {
                     exporter.unexport();
@@ -375,7 +376,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         appendParameters(map, provider, Constants.DEFAULT_KEY);
         appendParameters(map, protocolConfig);
         appendParameters(map, this);
-        if (methods != null && methods.size() > 0) {
+        if (methods != null && !methods.isEmpty()) {
             for (MethodConfig method : methods) {
                 appendParameters(map, method, method.getName());
                 String retryKey = method.getName() + ".retry";
@@ -386,7 +387,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                     }
                 }
                 List<ArgumentConfig> arguments = method.getArguments();
-                if (arguments != null && arguments.size() > 0) {
+                if (arguments != null && !arguments.isEmpty()) {
                     for (ArgumentConfig argument : arguments) {
                         // convert argument type
                         if (argument.getType() != null && argument.getType().length() > 0) {
@@ -488,7 +489,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 if (logger.isInfoEnabled()) {
                     logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
                 }
-                if (registryURLs != null && registryURLs.size() > 0) {
+                if (registryURLs != null && !registryURLs.isEmpty()) {
                     for (URL registryURL : registryURLs) {
                         url = url.addParameterIfAbsent("dynamic", registryURL.getParameter("dynamic"));
                         URL monitorUrl = loadMonitor(registryURL);
@@ -523,6 +524,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                     .setProtocol(Constants.LOCAL_PROTOCOL)
                     .setHost(LOCALHOST)
                     .setPort(0);
+            ServiceClassHolder.getInstance().pushServiceClass(getServiceClass(ref));
             Exporter<?> exporter = protocol.export(
                     proxyFactory.getInvoker(ref, (Class) interfaceClass, local));
             exporters.add(exporter);
@@ -530,6 +532,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
     }
 
+    protected Class getServiceClass(T ref) {
+        return ref.getClass();
+    }
 
     /**
      * Register & bind IP address for service provider, can be configured separately.
@@ -563,7 +568,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                     logger.warn(e.getMessage(), e);
                 }
                 if (isInvalidLocalHost(hostToBind)) {
-                    if (registryURLs != null && registryURLs.size() > 0) {
+                    if (registryURLs != null && !registryURLs.isEmpty()) {
                         for (URL registryURL : registryURLs) {
                             try {
                                 Socket socket = new Socket();
@@ -688,12 +693,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     private void checkProtocol() {
-        if ((protocols == null || protocols.size() == 0)
+        if ((protocols == null || protocols.isEmpty())
                 && provider != null) {
             setProtocols(provider.getProtocols());
         }
         // backward compatibility
-        if (protocols == null || protocols.size() == 0) {
+        if (protocols == null || protocols.isEmpty()) {
             setProtocol(new ProtocolConfig());
         }
         for (ProtocolConfig protocolConfig : protocols) {
