@@ -28,7 +28,7 @@
     <name>${project.artifactId}</name>
     <description>The default registry module of dubbo project</description>
     <properties>
-        <skip_maven_deploy>true</skip_maven_deploy>
+        <skip_maven_deploy>false</skip_maven_deploy>
     </properties>
     <dependencies>
         <dependency>
@@ -38,7 +38,7 @@
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
-            <artifactId>dubbo-rpc-default</artifactId>
+            <artifactId>dubbo-rpc-dubbo</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>
