@@ -27,7 +27,7 @@ limitations under the License.
     <name>${project.artifactId}</name>
     <description>The config api module of dubbo project</description>
     <properties>
-        <skip_maven_deploy>true</skip_maven_deploy>
+        <skip_maven_deploy>false</skip_maven_deploy>
     </properties>
     <dependencies>
         <dependency>
@@ -43,6 +43,11 @@ limitations under the License.
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>dubbo-remoting-api</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-rpc-injvm</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
@@ -69,7 +74,7 @@ limitations under the License.
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
-            <artifactId>dubbo-rpc-default</artifactId>
+            <artifactId>dubbo-rpc-dubbo</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>
@@ -78,11 +83,6 @@ limitations under the License.
             <artifactId>dubbo-rpc-rmi</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>dubbo-rpc-injvm</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
