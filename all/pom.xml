@@ -389,7 +389,7 @@ limitations under the License.
                         </goals>
                         <configuration>
                             <createSourcesJar>true</createSourcesJar>
-                            <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
+                            <promoteTransitiveDependencies>false</promoteTransitiveDependencies>
                             <artifactSet>
                                 <includes>
                                     <include>com.alibaba:hessian-lite</include>

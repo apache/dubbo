@@ -14,9 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.com.caucho.hessian.io;
+package com.alibaba.com.caucho.hessian.io.beans;
 
 import java.io.Serializable;
+import java.util.Map;
 
-public class TestClass implements Serializable {
+/**
+ *
+ * test short serialize & deserialize model
+ *
+ */
+public class Hessian2StringShortType implements Serializable {
+
+    public Map<String, Short> stringShortMap;
+
+    public Map<String, Byte> stringByteMap;
+
+    public Map<String, PersonType> stringPersonTypeMap;
+
+    public Hessian2StringShortType(){
+
+    }
 }
