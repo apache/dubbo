@@ -48,6 +48,7 @@ public class ContextFilter implements Filter {
             attachments.remove(Constants.ASYNC_KEY);// Remove async property to avoid being passed to the following invoke chain.
         }
         RpcContext.getContext()
+                .isConsumer(false)
                 .setInvoker(invoker)
                 .setInvocation(invocation)
 //                .setAttachments(attachments)  // merged from dubbox

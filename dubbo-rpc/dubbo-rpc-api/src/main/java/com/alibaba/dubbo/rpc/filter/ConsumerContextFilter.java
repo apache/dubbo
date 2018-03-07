@@ -35,6 +35,7 @@ public class ConsumerContextFilter implements Filter {
 
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         RpcContext.getContext()
+                .isConsumer(true)
                 .setInvoker(invoker)
                 .setInvocation(invocation)
                 .setLocalAddress(NetUtils.getLocalHost(), 0)
