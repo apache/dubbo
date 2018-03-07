@@ -20,6 +20,8 @@ import com.alibaba.dubbo.common.extension.SPI;
 
 /**
  * Filter. (SPI, Singleton, ThreadSafe)
+ *
+ * 过滤器
  */
 @SPI
 public interface Filter {

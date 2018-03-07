@@ -21,6 +21,10 @@ import com.alibaba.dubbo.common.Node;
 /**
  * Invoker. (API/SPI, Prototype, ThreadSafe)
  *
+ * Invoker 是实体域，它是 Dubbo 的核心模型，其它模型都向它靠扰，或转换成它。
+ * 它代表一个可执行体，可向它发起 invoke 调用。
+ * 它有可能是一个本地的实现，也可能是一个远程的实现，也可能一个集群实现。
+ *
  * @see com.alibaba.dubbo.rpc.Protocol#refer(Class, com.alibaba.dubbo.common.URL)
  * @see com.alibaba.dubbo.rpc.InvokerListener
  * @see com.alibaba.dubbo.rpc.protocol.AbstractInvoker

@@ -1228,6 +1228,14 @@ public final class URL implements Serializable {
         return new InetSocketAddress(host, port);
     }
 
+    /**
+     * 获得 Service 键
+     *
+     * 格式为 格式为 ${group}/${interface}:${version}
+     * 和 {@link StringUtils#getServiceKey(Map)} 一致
+     *
+     * @return 键
+     */
     public String getServiceKey() {
         String inf = getServiceInterface();
         if (inf == null) return null;
