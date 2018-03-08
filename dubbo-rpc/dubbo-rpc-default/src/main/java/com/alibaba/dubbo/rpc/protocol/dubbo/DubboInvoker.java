@@ -100,7 +100,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
             	if (cacheService != null && cacheService.isConnected()) {
             		Map<String, DubboBuffer> bufferMap = dubboCache.getBufferMap();
             		DubboBuffer buffer = bufferMap.get(methodName);
-            		if (buffer != null) {//该方法需配置缓存
+            		if (buffer != null) {//configed cache in this function
                 		String command = buffer.getCommand();
                 		if (command.equals("get")) {
                 			String key = buffer.getKey();
