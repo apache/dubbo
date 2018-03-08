@@ -21,6 +21,9 @@ package com.alibaba.dubbo.common.utils;
  */
 public class Holder<T> {
 
+    /**
+     * 值
+     */
     private volatile T value;
 
     public void set(T value) {

@@ -33,7 +33,7 @@ limitations under the License.
     <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
 
 
-    <!--<bean id="demoDAO" class="com.alibaba.dubbo.demo.provider.DemoDAO" />-->
+    <bean id="demoDAO" class="com.alibaba.dubbo.demo.provider.DemoDAO" />
 
     <!-- service implementation, as same as regular local bean -->
     <bean id="demoService" class="com.alibaba.dubbo.demo.provider.DemoServiceImpl"/>

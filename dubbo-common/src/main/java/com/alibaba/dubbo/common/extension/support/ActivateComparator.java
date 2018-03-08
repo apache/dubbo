@@ -27,9 +27,13 @@ import java.util.Comparator;
  */
 public class ActivateComparator implements Comparator<Object> {
 
+    /**
+     * 单例
+     */
     public static final Comparator<Object> COMPARATOR = new ActivateComparator();
 
     public int compare(Object o1, Object o2) {
+        // 基本排序
         if (o1 == null && o2 == null) {
             return 0;
         }
@@ -42,13 +46,16 @@ public class ActivateComparator implements Comparator<Object> {
         if (o1.equals(o2)) {
             return 0;
         }
+
         Activate a1 = o1.getClass().getAnnotation(Activate.class);
         Activate a2 = o2.getClass().getAnnotation(Activate.class);
-        if ((a1.before().length > 0 || a1.after().length > 0
-                || a2.before().length > 0 || a2.after().length > 0)
-                && o1.getClass().getInterfaces().length > 0
-                && o1.getClass().getInterfaces()[0].isAnnotationPresent(SPI.class)) {
+
+        // 使用注解的 `after` 和 `before` 属性，排序
+        if ((a1.before().length > 0 || a1.after().length > 0 || a2.before().length > 0 || a2.after().length > 0) // (a1 或 a2) 存在 (`after` 或 `before`) 属性。
+                && o1.getClass().getInterfaces().length > 0 && o1.getClass().getInterfaces()[0].isAnnotationPresent(SPI.class)) { // 实现的接口，有 @SPI 注解。
+            // 获得拓展加载器
             ExtensionLoader<?> extensionLoader = ExtensionLoader.getExtensionLoader(o1.getClass().getInterfaces()[0]);
+            // 以 a1 的视角，进行一次比较
             if (a1.before().length > 0 || a1.after().length > 0) {
                 String n2 = extensionLoader.getExtensionName(o2.getClass());
                 for (String before : a1.before()) {
@@ -62,6 +69,7 @@ public class ActivateComparator implements Comparator<Object> {
                     }
                 }
             }
+            // 以 a2 的视角，进行一次比较。
             if (a2.before().length > 0 || a2.after().length > 0) {
                 String n1 = extensionLoader.getExtensionName(o1.getClass());
                 for (String before : a2.before()) {
@@ -76,6 +84,8 @@ public class ActivateComparator implements Comparator<Object> {
                 }
             }
         }
+
+        // 使用注解的 `order` 属性，排序。
         int n1 = a1 == null ? 0 : a1.order();
         int n2 = a2 == null ? 0 : a2.order();
         // never return 0 even if n1 equals n2, otherwise, o1 and o2 will override each other in collection like HashSet

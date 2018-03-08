@@ -27,6 +27,9 @@ import java.util.Set;
  */
 public class SpringExtensionFactory implements ExtensionFactory {
 
+    /**
+     * Spring Context 集合
+     */
     private static final Set<ApplicationContext> contexts = new ConcurrentHashSet<ApplicationContext>();
 
     public static void addApplicationContext(ApplicationContext context) {
@@ -37,6 +40,7 @@ public class SpringExtensionFactory implements ExtensionFactory {
         contexts.remove(context);
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T getExtension(Class<T> type, String name) {
         for (ApplicationContext context : contexts) {
