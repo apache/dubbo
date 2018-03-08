@@ -177,17 +177,25 @@ public class NetUtils {
     public static InetAddress getLocalAddress() {
         if (LOCAL_ADDRESS != null)
             return LOCAL_ADDRESS;
-        InetAddress localAddress = getLocalAddress0();
+        InetAddress localAddress = getLocalAddress0(false);
+        LOCAL_ADDRESS = localAddress;
+        return localAddress;
+    }
+
+    public static InetAddress getLocalAddress(boolean isLog) {
+        if (LOCAL_ADDRESS != null)
+            return LOCAL_ADDRESS;
+        InetAddress localAddress = getLocalAddress0(isLog);
         LOCAL_ADDRESS = localAddress;
         return localAddress;
     }
 
     public static String getLogHost() {
-        InetAddress address = getLocalAddress();
+        InetAddress address = getLocalAddress(true);
         return address == null ? LOCALHOST : address.getHostAddress();
     }
 
-    private static InetAddress getLocalAddress0() {
+    private static InetAddress getLocalAddress0(boolean isLog) {
         InetAddress localAddress = null;
         try {
             localAddress = InetAddress.getLocalHost();
@@ -195,7 +203,7 @@ public class NetUtils {
                 return localAddress;
             }
         } catch (Throwable e) {
-            logger.warn("Failed to retriving ip address, " + e.getMessage(), e);
+            warn(isLog,"Failed to retriving ip address, " + e.getMessage(), e);
         }
         try {
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
@@ -212,19 +220,19 @@ public class NetUtils {
                                         return address;
                                     }
                                 } catch (Throwable e) {
-                                    logger.warn("Failed to retriving ip address, " + e.getMessage(), e);
+                                    warn(isLog,"Failed to retriving ip address, " + e.getMessage(), e);
                                 }
                             }
                         }
                     } catch (Throwable e) {
-                        logger.warn("Failed to retriving ip address, " + e.getMessage(), e);
+                        warn(isLog,"Failed to retriving ip address, " + e.getMessage(), e);
                     }
                 }
             }
         } catch (Throwable e) {
-            logger.warn("Failed to retriving ip address, " + e.getMessage(), e);
+            warn(isLog,"Failed to retriving ip address, " + e.getMessage(), e);
         }
-        logger.error("Could not get local host ip address, will use 127.0.0.1 instead.");
+        error(isLog,"Could not get local host ip address, will use 127.0.0.1 instead.");
         return localAddress;
     }
 
@@ -288,6 +296,22 @@ public class NetUtils {
             sb.append('/');
         sb.append(path);
         return sb.toString();
+    }
+
+    private static void warn(boolean isLog, String message,Throwable e){
+        if(isLog){
+            System.out.println(message + ":" + e.getMessage());
+        }else{
+            logger.warn(message, e);
+        }
+    }
+
+    private static void error(boolean isLog, String message){
+        if(isLog){
+            System.out.println(message);
+        }else{
+            logger.error(message);
+        }
     }
 
 }
