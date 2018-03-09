@@ -27,11 +27,11 @@ limitations under the License.
     <name>${project.artifactId}</name>
     <description>The rpc module of dubbo project</description>
     <properties>
-        <skip_maven_deploy>true</skip_maven_deploy>
+        <skip_maven_deploy>false</skip_maven_deploy>
     </properties>
     <modules>
         <module>dubbo-rpc-api</module>
-        <module>dubbo-rpc-default</module>
+        <module>dubbo-rpc-dubbo</module>
         <module>dubbo-rpc-injvm</module>
         <module>dubbo-rpc-rmi</module>
         <module>dubbo-rpc-hessian</module>

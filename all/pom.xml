@@ -132,7 +132,7 @@ limitations under the License.
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
-            <artifactId>dubbo-rpc-default</artifactId>
+            <artifactId>dubbo-rpc-dubbo</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
             <optional>true</optional>
@@ -279,8 +279,50 @@ limitations under the License.
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-serialization-api</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-serialization-fastjson</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-serialization-fst</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-serialization-hessian2</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-serialization-jdk</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-serialization-kryo</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
             <artifactId>hessian-lite</artifactId>
-            <version>3.2.1-fixed-2</version>
+            <version>3.2.2</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
@@ -347,7 +389,7 @@ limitations under the License.
                         </goals>
                         <configuration>
                             <createSourcesJar>true</createSourcesJar>
-                            <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
+                            <promoteTransitiveDependencies>false</promoteTransitiveDependencies>
                             <artifactSet>
                                 <includes>
                                     <include>com.alibaba:hessian-lite</include>
@@ -361,7 +403,7 @@ limitations under the License.
                                     <include>com.alibaba:dubbo-remoting-http</include>
                                     <include>com.alibaba:dubbo-remoting-zookeeper</include>
                                     <include>com.alibaba:dubbo-rpc-api</include>
-                                    <include>com.alibaba:dubbo-rpc-default</include>
+                                    <include>com.alibaba:dubbo-rpc-dubbo</include>
                                     <include>com.alibaba:dubbo-rpc-injvm</include>
                                     <include>com.alibaba:dubbo-rpc-rmi</include>
                                     <include>com.alibaba:dubbo-rpc-hessian</include>
@@ -388,6 +430,12 @@ limitations under the License.
                                     <include>com.alibaba:dubbo-container-log4j</include>
                                     <include>com.alibaba:dubbo-container-logback</include>
                                     <include>com.alibaba:dubbo-qos</include>
+                                    <include>com.alibaba:dubbo-serialization-api</include>
+                                    <include>com.alibaba:dubbo-serialization-fastjson</include>
+                                    <include>com.alibaba:dubbo-serialization-hessian2</include>
+                                    <include>com.alibaba:dubbo-serialization-fst</include>
+                                    <include>com.alibaba:dubbo-serialization-kryo</include>
+                                    <include>com.alibaba:dubbo-serialization-jdk</include>
                                 </includes>
                             </artifactSet>
                             <transformers>
