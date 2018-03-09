@@ -1,3 +1,4 @@
 file=com.alibaba.dubbo.rpc.cluster.router.file.FileRouterFactory
 script=com.alibaba.dubbo.rpc.cluster.router.script.ScriptRouterFactory
 condition=com.alibaba.dubbo.rpc.cluster.router.condition.ConditionRouterFactory
+unit=com.alibaba.dubbo.rpc.cluster.router.unit.UnitRouterFactory

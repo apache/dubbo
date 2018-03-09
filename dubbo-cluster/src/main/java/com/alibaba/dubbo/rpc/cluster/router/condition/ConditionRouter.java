@@ -45,12 +45,14 @@ import java.util.regex.Pattern;
 public class ConditionRouter implements Router, Comparable<Router> {
 
     private static final Logger logger = LoggerFactory.getLogger(ConditionRouter.class);
+
     private static Pattern ROUTE_PATTERN = Pattern.compile("([&!=,]*)\\s*([^&!=,\\s]+)");
-    private final URL url;
-    private final int priority;
-    private final boolean force;
-    private final Map<String, MatchPair> whenCondition;
-    private final Map<String, MatchPair> thenCondition;
+
+    protected final URL url;
+    protected final int priority;
+    protected final boolean force;
+    protected final Map<String, MatchPair> whenCondition;
+    protected final Map<String, MatchPair> thenCondition;
 
     public ConditionRouter(URL url) {
         this.url = url;
@@ -75,7 +77,7 @@ public class ConditionRouter implements Router, Comparable<Router> {
         }
     }
 
-    private static Map<String, MatchPair> parseRule(String rule)
+    public static Map<String, MatchPair> parseRule(String rule)
             throws ParseException {
         Map<String, MatchPair> condition = new HashMap<String, MatchPair>();
         if (StringUtils.isBlank(rule)) {
@@ -185,15 +187,15 @@ public class ConditionRouter implements Router, Comparable<Router> {
         return this.priority == c.priority ? url.toFullString().compareTo(c.url.toFullString()) : (this.priority > c.priority ? 1 : -1);
     }
 
-    boolean matchWhen(URL url, Invocation invocation) {
+    public boolean matchWhen(URL url, Invocation invocation) {
         return whenCondition == null || whenCondition.isEmpty() || matchCondition(whenCondition, url, null, invocation);
     }
 
-    private boolean matchThen(URL url, URL param) {
+    public boolean matchThen(URL url, URL param) {
         return !(thenCondition == null || thenCondition.isEmpty()) && matchCondition(thenCondition, url, param, null);
     }
 
-    private boolean matchCondition(Map<String, MatchPair> condition, URL url, URL param, Invocation invocation) {
+    public boolean matchCondition(Map<String, MatchPair> condition, URL url, URL param, Invocation invocation) {
         Map<String, String> sample = url.toMap();
         boolean result = false;
         for (Map.Entry<String, MatchPair> matchPair : condition.entrySet()) {
@@ -226,11 +228,11 @@ public class ConditionRouter implements Router, Comparable<Router> {
         return result;
     }
 
-    private static final class MatchPair {
+    public static final class MatchPair {
         final Set<String> matches = new HashSet<String>();
         final Set<String> mismatches = new HashSet<String>();
 
-        private boolean isMatch(String value, URL param) {
+        public boolean isMatch(String value, URL param) {
             if (!matches.isEmpty() && mismatches.isEmpty()) {
                 for (String match : matches) {
                     if (UrlUtils.isMatchGlobPattern(match, value, param)) {

@@ -633,6 +633,13 @@ public class Constants {
 
     public static final boolean DEFAULT_HESSIAN_OVERLOAD_METHOD = false;
 
+
+    public static final String HOST_KEY = "host";
+
+    public static final String UNIT_KEY = "unit";
+
+    public static final String DEFAULT_UNIT = "global";
+
     /*
      * private Constants(){ }
      */
