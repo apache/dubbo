@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,22 +38,21 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * DubboRegistry
  *
- * @author william.liangf
  */
 public class DubboRegistry extends FailbackRegistry {
 
     private final static Logger logger = LoggerFactory.getLogger(DubboRegistry.class);
 
-    // 重连检测周期3秒(单位毫秒)
+    // Reconnecting detection cycle: 3 seconds (unit:millisecond)
     private static final int RECONNECT_PERIOD_DEFAULT = 3 * 1000;
 
-    // 定时任务执行器
+    // Scheduled executor service
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1, new NamedThreadFactory("DubboRegistryReconnectTimer", true));
 
-    // 重连定时器，定时检查连接是否可用，不可用时，无限次重连
+    // Reconnection timer, regular check connection is available. If unavailable, unlimited reconnection.
     private final ScheduledFuture<?> reconnectFuture;
 
-    // 客户端获取过程锁，锁定客户端实例的创建过程，防止重复的客户端
+    // The lock for client acquisition process, lock the creation process of the client instance to prevent repeated clients
     private final ReentrantLock clientLock = new ReentrantLock();
 
     private final Invoker<RegistryService> registryInvoker;
@@ -63,14 +63,14 @@ public class DubboRegistry extends FailbackRegistry {
         super(registryInvoker.getUrl());
         this.registryInvoker = registryInvoker;
         this.registryService = registryService;
-        // 启动重连定时器
+        // Start reconnection timer
         int reconnectPeriod = registryInvoker.getUrl().getParameter(Constants.REGISTRY_RECONNECT_PERIOD_KEY, RECONNECT_PERIOD_DEFAULT);
         reconnectFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
             public void run() {
-                // 检测并连接注册中心
+                // Check and connect to the registry
                 try {
                     connect();
-                } catch (Throwable t) { // 防御性容错
+                } catch (Throwable t) { // Defensive fault tolerance
                     logger.error("Unexpected error occur at reconnect, cause: " + t.getMessage(), t);
                 }
             }
@@ -79,7 +79,7 @@ public class DubboRegistry extends FailbackRegistry {
 
     protected final void connect() {
         try {
-            // 检查是否已连接
+            // Check whether or not it is connected
             if (isAvailable()) {
                 return;
             }
@@ -88,7 +88,7 @@ public class DubboRegistry extends FailbackRegistry {
             }
             clientLock.lock();
             try {
-                // 双重检查是否已连接
+                // Double check whether or not it is connected
                 if (isAvailable()) {
                     return;
                 }
@@ -96,7 +96,7 @@ public class DubboRegistry extends FailbackRegistry {
             } finally {
                 clientLock.unlock();
             }
-        } catch (Throwable t) { // 忽略所有异常，等待下次重试
+        } catch (Throwable t) { // Ignore all the exceptions and wait for the next retry
             if (getUrl().getParameter(Constants.CHECK_KEY, true)) {
                 if (t instanceof RuntimeException) {
                     throw (RuntimeException) t;
@@ -116,7 +116,7 @@ public class DubboRegistry extends FailbackRegistry {
     public void destroy() {
         super.destroy();
         try {
-            // 取消重连定时器
+            // Cancel the reconnection timer
             if (!reconnectFuture.isCancelled()) {
                 reconnectFuture.cancel(true);
             }

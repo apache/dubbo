@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2012 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,7 +25,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
-import java.util.SortedMap;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -32,7 +33,6 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * ConsistentHashLoadBalance
  *
- * @author william.liangf
  */
 public class ConsistentHashLoadBalance extends AbstractLoadBalance {
 
@@ -100,18 +100,11 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
         }
 
         private Invoker<T> selectForKey(long hash) {
-            Invoker<T> invoker;
-            Long key = hash;
-            if (!virtualInvokers.containsKey(key)) {
-                SortedMap<Long, Invoker<T>> tailMap = virtualInvokers.tailMap(key);
-                if (tailMap.isEmpty()) {
-                    key = virtualInvokers.firstKey();
-                } else {
-                    key = tailMap.firstKey();
-                }
-            }
-            invoker = virtualInvokers.get(key);
-            return invoker;
+            Map.Entry<Long, Invoker<T>> entry = virtualInvokers.tailMap(hash, true).firstEntry();
+        	if (entry == null) {
+        		entry = virtualInvokers.firstEntry();
+        	}
+        	return entry.getValue();
         }
 
         private long hash(byte[] digest, int number) {

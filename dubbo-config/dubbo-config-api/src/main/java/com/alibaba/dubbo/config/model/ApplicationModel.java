@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.alibaba.dubbo.config.model;
 
 import com.alibaba.dubbo.common.logger.Logger;
@@ -12,22 +28,17 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-/**
- * @author qinliujie
- * @date 2017/11/22
- */
-
-//TODO 需要调整项目结构，才能使用后面的方法
+// TODO need to adjust project structure in order to fully utilize the methods introduced here.
 public class ApplicationModel {
 
     protected static final Logger logger = LoggerFactory.getLogger(ApplicationModel.class);
 
     /**
-     * 全限定名到提供的服务
+     * full qualified class name -> provided service
      */
     private static final ConcurrentMap<String, ProviderModel> providedServices = new ConcurrentHashMap<String, ProviderModel>();
     /**
-     * 全限定名到订阅的服务
+     * full qualified class name -> subscribe service
      */
     private static final ConcurrentMap<String, ConsumerModel> consumedServices = new ConcurrentHashMap<String, ConsumerModel>();
 
@@ -49,7 +60,7 @@ public class ApplicationModel {
         return new ArrayList<ProviderModel>(providedServices.values());
     }
 
-    public static boolean initConsumerModele(String serviceName, ConsumerModel consumerModel) {
+    public static boolean initConsumerModel(String serviceName, ConsumerModel consumerModel) {
         if (consumedServices.putIfAbsent(serviceName, consumerModel) != null) {
             logger.warn("Already register the same consumer:" + serviceName);
             return false;

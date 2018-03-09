@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2012 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,9 +30,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * RpcUtils
- *
- * @author william.liangf
- * @author chao.liuc
  */
 public class RpcUtils {
 
@@ -86,7 +84,7 @@ public class RpcUtils {
     }
 
     /**
-     * 幂等操作:异步操作默认添加invocation id
+     * Idempotent operation: invocation id will be added in async operation by default
      *
      * @param url
      * @param inv
@@ -100,13 +98,11 @@ public class RpcUtils {
     private static boolean isAttachInvocationId(URL url, Invocation invocation) {
         String value = url.getMethodParameter(invocation.getMethodName(), Constants.AUTO_ATTACH_INVOCATIONID_KEY);
         if (value == null) {
-            //异步操作默认添加invocationid
+            // add invocationid in async operation by default
             return isAsync(url, invocation);
         } else if (Boolean.TRUE.toString().equalsIgnoreCase(value)) {
-            //设置为添加，则一定添加
             return true;
         } else {
-            //value为false时，不添加
             return false;
         }
     }
@@ -151,7 +147,6 @@ public class RpcUtils {
 
     public static boolean isAsync(URL url, Invocation inv) {
         boolean isAsync;
-        //如果Java代码中设置优先.
         if (Boolean.TRUE.toString().equals(inv.getAttachment(Constants.ASYNC_KEY))) {
             isAsync = true;
         } else {
@@ -162,7 +157,6 @@ public class RpcUtils {
 
     public static boolean isOneway(URL url, Invocation inv) {
         boolean isOneway;
-        //如果Java代码中设置优先.
         if (Boolean.FALSE.toString().equals(inv.getAttachment(Constants.RETURN_KEY))) {
             isOneway = true;
         } else {

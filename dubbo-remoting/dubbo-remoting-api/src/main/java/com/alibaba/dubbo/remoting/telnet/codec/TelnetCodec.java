@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,10 +35,6 @@ import java.util.List;
 
 /**
  * TelnetCodec
- *
- * @author heyman
- * @author william.liangf
- * @author chao.liuc
  */
 public class TelnetCodec extends TransportCodec {
 
@@ -80,7 +77,7 @@ public class TelnetCodec extends TransportCodec {
             }
         }
         try {
-            return Charset.forName("GBK");
+            return Charset.forName(Constants.DEFAULT_CHARSET);
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
         }
@@ -192,7 +189,7 @@ public class TelnetCodec extends TransportCodec {
         boolean down = endsWith(message, DOWN);
         if (up || down) {
             LinkedList<String> history = (LinkedList<String>) channel.getAttribute(HISTORY_LIST_KEY);
-            if (history == null || history.size() == 0) {
+            if (history == null || history.isEmpty()) {
                 return DecodeResult.NEED_MORE_INPUT;
             }
             Integer index = (Integer) channel.getAttribute(HISTORY_INDEX_KEY);
@@ -259,27 +256,23 @@ public class TelnetCodec extends TransportCodec {
         LinkedList<String> history = (LinkedList<String>) channel.getAttribute(HISTORY_LIST_KEY);
         Integer index = (Integer) channel.getAttribute(HISTORY_INDEX_KEY);
         channel.removeAttribute(HISTORY_INDEX_KEY);
-        if (history != null && history.size() > 0 && index != null && index >= 0 && index < history.size()) {
+        if (history != null && !history.isEmpty() && index != null && index >= 0 && index < history.size()) {
             String value = history.get(index);
             if (value != null) {
                 byte[] b1 = value.getBytes();
-                if (message != null && message.length > 0) {
-                    byte[] b2 = new byte[b1.length + message.length];
-                    System.arraycopy(b1, 0, b2, 0, b1.length);
-                    System.arraycopy(message, 0, b2, b1.length, message.length);
-                    message = b2;
-                } else {
-                    message = b1;
-                }
+                byte[] b2 = new byte[b1.length + message.length];
+                System.arraycopy(b1, 0, b2, 0, b1.length);
+                System.arraycopy(message, 0, b2, b1.length, message.length);
+                message = b2;
             }
         }
         String result = toString(message, getCharset(channel));
-        if (result != null && result.trim().length() > 0) {
+        if (result.trim().length() > 0) {
             if (history == null) {
                 history = new LinkedList<String>();
                 channel.setAttribute(HISTORY_LIST_KEY, history);
             }
-            if (history.size() == 0) {
+            if (history.isEmpty()) {
                 history.addLast(result);
             } else if (!result.equals(history.getLast())) {
                 history.remove(result);
