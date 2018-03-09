@@ -61,9 +61,6 @@ public class ClusterUtils {
             map.remove(Constants.TRANSPORTER_KEY);
             map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.TRANSPORTER_KEY);
         }
-
-        String unitParameter = null, defaultUnitParameter = null;
-
         if (localMap != null && localMap.size() > 0) {
             map.putAll(localMap);
         }

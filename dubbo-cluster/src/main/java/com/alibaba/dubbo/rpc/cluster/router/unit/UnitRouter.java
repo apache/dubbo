@@ -78,11 +78,11 @@ public class UnitRouter extends ConditionRouter implements Router {
     }
 
     @Override
-    public boolean matchCondition(Map<String, MatchPair> condition, URL url, URL param, Invocation invocation) {
+    public boolean matchCondition(Map<String, ConditionRouter.MatchPair> condition, URL url, URL param, Invocation invocation) {
 
         Map<String, String> sample = url.toMap();
         boolean matched = false;
-        for (Map.Entry<String, MatchPair> matchPair : condition.entrySet()) {
+        for (Map.Entry<String, ConditionRouter.MatchPair> matchPair : condition.entrySet()) {
             String key = matchPair.getKey();
             String sampleValue ;
 
@@ -98,9 +98,7 @@ public class UnitRouter extends ConditionRouter implements Router {
 
                 if(providerCondition) {
                     String serviceMethod = sample.get(key);
-                    // service should contains current invoking method.
-                    matched = serviceMethod != null
-                                && serviceMethod.indexOf(sampleValue) >= 0;
+                    matched = strictMatch(serviceMethod, sampleValue);
 
                     if(matched) continue;
 
@@ -121,4 +119,17 @@ public class UnitRouter extends ConditionRouter implements Router {
         return matched;
     }
 
+    private boolean strictMatch(String serviceMethod, String invokedMethod){
+
+        if(serviceMethod == null) return false;
+
+        if(serviceMethod.indexOf(Constants.COMMA_SEPARATOR) >= 0) {
+            String[] methods = serviceMethod.split(Constants.COMMA_SEPARATOR);
+            for(String method : methods) {
+                if(method.equals(invokedMethod)) return true;
+            }
+        }
+
+        return serviceMethod.equals(invokedMethod);
+    }
 }
