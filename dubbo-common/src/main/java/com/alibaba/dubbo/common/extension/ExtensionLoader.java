@@ -276,14 +276,20 @@ public class ExtensionLoader<T> {
     /**
      * This is equivalent to {@code getActivateExtension(url, url.getParameter(key).split(","), null)}
      *
+     * 获得符合自动激活条件的拓展对象数组
+     *
      * @param url   url
      * @param key   url parameter key which used to get extension point names
+     *              Dubbo URL 参数名
      * @param group group
+     *              过滤分组名
      * @return extension list which are activated.
      * @see #getActivateExtension(com.alibaba.dubbo.common.URL, String[], String)
      */
     public List<T> getActivateExtension(URL url, String key, String group) {
+        // 从 Dubbo URL 获得参数值
         String value = url.getParameter(key);
+        // 获得符合自动激活条件的拓展对象数组
         return getActivateExtension(url, value == null || value.length() == 0 ? null : Constants.COMMA_SPLIT_PATTERN.split(value), group);
     }
 
@@ -301,48 +307,66 @@ public class ExtensionLoader<T> {
     public List<T> getActivateExtension(URL url, String[] values, String group) {
         List<T> exts = new ArrayList<T>();
         List<String> names = values == null ? new ArrayList<String>(0) : Arrays.asList(values);
+        // 处理自动激活的拓展对象们
+        // 判断不存在配置 `"-name"` 。例如，<dubbo:service filter="-default" /> ，代表移除所有默认过滤器。
         if (!names.contains(Constants.REMOVE_VALUE_PREFIX + Constants.DEFAULT_KEY)) {
+            // 获得拓展实现类数组
             getExtensionClasses();
+            // 循环
             for (Map.Entry<String, Activate> entry : cachedActivates.entrySet()) {
                 String name = entry.getKey();
                 Activate activate = entry.getValue();
-                if (isMatchGroup(group, activate.group())) {
+                if (isMatchGroup(group, activate.group())) { // 匹配分组
+                    // 获得拓展对象
                     T ext = getExtension(name);
-                    if (!names.contains(name)
-                            && !names.contains(Constants.REMOVE_VALUE_PREFIX + name)
-                            && isActive(activate, url)) {
+                    if (!names.contains(name) // 不包含在自定义配置里。如果包含，会在下面的代码处理。
+                            && !names.contains(Constants.REMOVE_VALUE_PREFIX + name) // 判断是否配置移除。例如 <dubbo:service filter="-monitor" />，则 MonitorFilter 会被移除
+                            && isActive(activate, url)) { // 判断是否激活
                         exts.add(ext);
                     }
                 }
             }
+            // 排序
             Collections.sort(exts, ActivateComparator.COMPARATOR);
         }
+        // 处理自定义配置的拓展对象们。例如在 <dubbo:service filter="demo" /> ，代表需要加入 DemoFilter （这个是笔者自定义的）。
         List<T> usrs = new ArrayList<T>();
         for (int i = 0; i < names.size(); i++) {
             String name = names.get(i);
-            if (!name.startsWith(Constants.REMOVE_VALUE_PREFIX)
-                    && !names.contains(Constants.REMOVE_VALUE_PREFIX + name)) {
+            if (!name.startsWith(Constants.REMOVE_VALUE_PREFIX) && !names.contains(Constants.REMOVE_VALUE_PREFIX + name)) { // 判断非移除的
+                // 将配置的自定义在自动激活的拓展对象们前面。例如，<dubbo:service filter="demo,default,demo2" /> ，则 DemoFilter 就会放在默认的过滤器前面。ps：这里只是举个例子，实际配置 `default` 配置在 filter 属性中会报错。
                 if (Constants.DEFAULT_KEY.equals(name)) {
                     if (!usrs.isEmpty()) {
                         exts.addAll(0, usrs);
                         usrs.clear();
                     }
                 } else {
+                    // 获得拓展对象
                     T ext = getExtension(name);
                     usrs.add(ext);
                 }
             }
         }
+        // 添加到结果集
         if (!usrs.isEmpty()) {
             exts.addAll(usrs);
         }
         return exts;
     }
 
+    /**
+     * 匹配分组
+     *
+     * @param group 过滤的分组条件。若为空，无需过滤
+     * @param groups 配置的分组
+     * @return 是否匹配
+     */
     private boolean isMatchGroup(String group, String[] groups) {
+        // 为空，无需过滤
         if (group == null || group.length() == 0) {
             return true;
         }
+        // 匹配
         if (groups != null && groups.length > 0) {
             for (String g : groups) {
                 if (group.equals(g)) {
@@ -353,6 +377,13 @@ public class ExtensionLoader<T> {
         return false;
     }
 
+    /**
+     * 是否激活，通过 Dubbo URL 中是否存在参数名为 `@Activate.value` ，并且参数值非空。
+     *
+     * @param activate 自动激活注解
+     * @param url Dubbo URL
+     * @return 是否
+     */
     private boolean isActive(Activate activate, URL url) {
         String[] keys = activate.value();
         if (keys.length == 0) {

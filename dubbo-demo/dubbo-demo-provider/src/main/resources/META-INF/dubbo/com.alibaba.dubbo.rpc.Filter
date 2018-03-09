@@ -1,1 +1,1 @@
-demoFilter=com.alibaba.dubbo.demo.provider.filter.DemoFilter
+demo=com.alibaba.dubbo.demo.provider.filter.DemoFilter
