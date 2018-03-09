@@ -334,7 +334,7 @@ public class ExtensionLoader<T> {
         for (int i = 0; i < names.size(); i++) {
             String name = names.get(i);
             if (!name.startsWith(Constants.REMOVE_VALUE_PREFIX) && !names.contains(Constants.REMOVE_VALUE_PREFIX + name)) { // 判断非移除的
-                // 将配置的自定义在自动激活的拓展对象们前面。例如，<dubbo:service filter="demo,default,demo2" /> ，则 DemoFilter 就会放在默认的过滤器前面。ps：这里只是举个例子，实际配置 `default` 配置在 filter 属性中会报错。
+                // 将配置的自定义在自动激活的拓展对象们前面。例如，<dubbo:service filter="demo,default,demo2" /> ，则 DemoFilter 就会放在默认的过滤器前面。
                 if (Constants.DEFAULT_KEY.equals(name)) {
                     if (!usrs.isEmpty()) {
                         exts.addAll(0, usrs);

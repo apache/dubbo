@@ -27,15 +27,30 @@ import java.util.Set;
 
 public class UrlUtils {
 
+    /**
+     * 解析单个 URL ，将 `defaults` 里的参数，合并到 `address` 中。
+     *
+     * 合并的逻辑如下：
+     *
+     * 我们可以把 `address` 认为是 url ；`defaults` 认为是 defaultURL 。
+     * 若 url 有不存在的属性时，从 defaultURL 获得对应的属性，设置到 url 中。
+     *
+     * @param address 地址
+     * @param defaults 默认参数集合
+     * @return URL
+     */
     public static URL parseURL(String address, Map<String, String> defaults) {
         if (address == null || address.length() == 0) {
             return null;
         }
+        // 以 Zookeeper 注册中心，配置集群的例子如下：
+        // 第一种，<dubbo:registry address="zookeeper://10.20.153.10:2181?backup=10.20.153.11:2181,10.20.153.12:2181"/>
+        // 第二种，<dubbo:registry protocol="zookeeper" address="10.20.153.10:2181,10.20.153.11:2181,10.20.153.12:2181"/>
         String url;
-        if (address.indexOf("://") >= 0) {
+        if (address.contains("://")) { // 第一种
             url = address;
-        } else {
-            String[] addresses = Constants.COMMA_SPLIT_PATTERN.split(address);
+        } else { // 第二种
+            String[] addresses = Constants.COMMA_SPLIT_PATTERN.split(address); // 按照 逗号 拆分
             url = addresses[0];
             if (addresses.length > 1) {
                 StringBuilder backup = new StringBuilder();
@@ -48,8 +63,10 @@ public class UrlUtils {
                 url += "?" + Constants.BACKUP_KEY + "=" + backup.toString();
             }
         }
+        // 从 `defaults` 中，获得 "protocol" "username" "password" "host" "port" "path" 到 `defaultXXX` 属性种。
+        // 因为，在 Dubbo URL 中，这几个是独立的属性，不在 `Dubbo.parameters` 属性中。
         String defaultProtocol = defaults == null ? null : defaults.get("protocol");
-        if (defaultProtocol == null || defaultProtocol.length() == 0) {
+        if (defaultProtocol == null || defaultProtocol.length() == 0) { // 如果地址没有协议缺省为 dubbo
             defaultProtocol = "dubbo";
         }
         String defaultUsername = defaults == null ? null : defaults.get("username");
@@ -57,7 +74,7 @@ public class UrlUtils {
         int defaultPort = StringUtils.parseInteger(defaults == null ? null : defaults.get("port"));
         String defaultPath = defaults == null ? null : defaults.get("path");
         Map<String, String> defaultParameters = defaults == null ? null : new HashMap<String, String>(defaults);
-        if (defaultParameters != null) {
+        if (defaultParameters != null) { // 需要移除，因为这几个是独立属性。
             defaultParameters.remove("protocol");
             defaultParameters.remove("username");
             defaultParameters.remove("password");
@@ -65,8 +82,10 @@ public class UrlUtils {
             defaultParameters.remove("port");
             defaultParameters.remove("path");
         }
+        // 创建 Dubbo URL 。
         URL u = URL.valueOf(url);
-        boolean changed = false;
+        // 若 `u` 的属性存在非空的情况下，从 `defaultXXX` 属性，赋值到 `u` 的属性中。
+        boolean changed = false; // 是否改变，即从 `defaultXXX` 属性，赋值到 `u` 的属性中。
         String protocol = u.getProtocol();
         String username = u.getUsername();
         String password = u.getPassword();
@@ -74,7 +93,7 @@ public class UrlUtils {
         int port = u.getPort();
         String path = u.getPath();
         Map<String, String> parameters = new HashMap<String, String>(u.getParameters());
-        if ((protocol == null || protocol.length() == 0) && defaultProtocol != null && defaultProtocol.length() > 0) {
+        if ((protocol == null || protocol.length() == 0) && defaultProtocol.length() > 0) {
             changed = true;
             protocol = defaultProtocol;
         }
@@ -94,7 +113,7 @@ public class UrlUtils {
             if (defaultPort > 0) {
                 changed = true;
                 port = defaultPort;
-            } else {
+            } else { // 如果地址没有端口缺省为9090。FROM http://dubbo.io/books/dubbo-user-book/references/xml/dubbo-registry.html 文档。
                 changed = true;
                 port = 9090;
             }
@@ -118,13 +137,27 @@ public class UrlUtils {
                 }
             }
         }
+        // 若改变，创建新的 Dubbo URL 。
         if (changed) {
             u = new URL(protocol, username, password, host, port, path, parameters);
         }
         return u;
     }
 
+    /**
+     * 解析多个 URL ，将 `defaults` 里的参数，合并到 `address` 中。
+     *
+     * 合并的逻辑如下：
+     *
+     * 我们可以把 `address` 认为是 url ；`defaults` 认为是 defaultURL 。
+     * 若 url 有不存在的属性时，从 defaultURL 获得对应的属性，设置到 url 中。
+     *
+     * @param address 地址
+     * @param defaults 默认参数集合
+     * @return URL
+     */
     public static List<URL> parseURLs(String address, Map<String, String> defaults) {
+        // 拆分注册中心地址，按照逗号或者分号。
         if (address == null || address.length() == 0) {
             return null;
         }
@@ -134,11 +167,13 @@ public class UrlUtils {
         }
         List<URL> registries = new ArrayList<URL>();
         for (String addr : addresses) {
+            // 解析 URL ，将 `defaults` 里的参数，合并到 `addr` 中。
             registries.add(parseURL(addr, defaults));
         }
         return registries;
     }
 
+    // 芋艿，可无视；测试类使用
     public static Map<String, Map<String, String>> convertRegister(Map<String, Map<String, String>> register) {
         Map<String, Map<String, String>> newRegister = new HashMap<String, Map<String, String>>();
         for (Map.Entry<String, Map<String, String>> entry : register.entrySet()) {
@@ -174,6 +209,7 @@ public class UrlUtils {
         return newRegister;
     }
 
+    // 芋艿，可无视；测试类使用
     public static Map<String, String> convertSubscribe(Map<String, String> subscribe) {
         Map<String, String> newSubscribe = new HashMap<String, String>();
         for (Map.Entry<String, String> entry : subscribe.entrySet()) {
@@ -200,6 +236,7 @@ public class UrlUtils {
         return newSubscribe;
     }
 
+    // 芋艿，可无视；测试类使用
     public static Map<String, Map<String, String>> revertRegister(Map<String, Map<String, String>> register) {
         Map<String, Map<String, String>> newRegister = new HashMap<String, Map<String, String>>();
         for (Map.Entry<String, Map<String, String>> entry : register.entrySet()) {
@@ -235,6 +272,7 @@ public class UrlUtils {
         return newRegister;
     }
 
+    // 芋艿，可无视；测试类使用
     public static Map<String, String> revertSubscribe(Map<String, String> subscribe) {
         Map<String, String> newSubscribe = new HashMap<String, String>();
         for (Map.Entry<String, String> entry : subscribe.entrySet()) {
@@ -261,6 +299,7 @@ public class UrlUtils {
         return newSubscribe;
     }
 
+    // 芋艿，可无视；测试类使用
     public static Map<String, Map<String, String>> revertNotify(Map<String, Map<String, String>> notify) {
         if (notify != null && notify.size() > 0) {
             Map<String, Map<String, String>> newNotify = new HashMap<String, Map<String, String>>();
@@ -301,6 +340,7 @@ public class UrlUtils {
         return notify;
     }
 
+    // 芋艿，可无视；测试类使用
     //compatible for dubbo-2.0.0
     public static List<String> revertForbid(List<String> forbid, Set<URL> subscribed) {
         if (forbid != null && !forbid.isEmpty()) {
@@ -322,6 +362,7 @@ public class UrlUtils {
         return forbid;
     }
 
+    // 芋艿，可无视；未调用
     public static URL getEmptyUrl(String service, String category) {
         String group = null;
         String version = null;

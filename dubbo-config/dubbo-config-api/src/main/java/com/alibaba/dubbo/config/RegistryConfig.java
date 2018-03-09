@@ -118,7 +118,7 @@ public class RegistryConfig extends AbstractConfig {
         this.protocol = protocol;
     }
 
-    @Parameter(excluded = true)
+    @Parameter(excluded = true) // 排除
     public String getAddress() {
         return address;
     }

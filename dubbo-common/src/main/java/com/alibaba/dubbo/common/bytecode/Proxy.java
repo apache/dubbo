@@ -36,7 +36,6 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * Proxy.
  */
-
 public abstract class Proxy {
     public static final InvocationHandler RETURN_NULL_INVOKER = new InvocationHandler() {
         public Object invoke(Object proxy, Method method, Object[] args) {
