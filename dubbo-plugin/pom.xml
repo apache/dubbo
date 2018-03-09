@@ -32,7 +32,7 @@ limitations under the License.
         <module>dubbo-qos</module>
     </modules>
     <properties>
-        <skip_maven_deploy>true</skip_maven_deploy>
+        <skip_maven_deploy>false</skip_maven_deploy>
     </properties>
 
 </project>

@@ -1,1 +1,1 @@
-fst=com.alibaba.dubbo.serialize.fst.FstSerialization
+fst=com.alibaba.dubbo.common.serialize.fst.FstSerialization

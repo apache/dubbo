@@ -32,7 +32,7 @@ import com.alibaba.dubbo.common.model.person.Phone;
 import com.alibaba.dubbo.common.serialize.ObjectInput;
 import com.alibaba.dubbo.common.serialize.ObjectOutput;
 import com.alibaba.dubbo.common.serialize.Serialization;
-import com.alibaba.dubbo.serialize.fst.FstSerialization;
+import com.alibaba.dubbo.common.serialize.fst.FstSerialization;
 
 import org.junit.Test;
 

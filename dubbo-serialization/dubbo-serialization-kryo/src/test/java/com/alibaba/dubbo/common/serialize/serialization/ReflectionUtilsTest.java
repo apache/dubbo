@@ -16,7 +16,7 @@
  */
 package com.alibaba.dubbo.common.serialize.serialization;
 
-import com.alibaba.dubbo.serialize.kryo.utils.ReflectionUtils;
+import com.alibaba.dubbo.common.serialize.kryo.utils.ReflectionUtils;
 
 import org.junit.Test;
 

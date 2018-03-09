@@ -148,7 +148,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 }
                 zkClient.create(root, false);
                 List<String> services = zkClient.addChildListener(root, zkListener);
-                if (services != null && services.size() > 0) {
+                if (services != null && !services.isEmpty()) {
                     for (String service : services) {
                         service = URL.decode(service);
                         anyServices.add(service);
@@ -258,7 +258,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
 
     private List<URL> toUrlsWithoutEmpty(URL consumer, List<String> providers) {
         List<URL> urls = new ArrayList<URL>();
-        if (providers != null && providers.size() > 0) {
+        if (providers != null && !providers.isEmpty()) {
             for (String provider : providers) {
                 provider = URL.decode(provider);
                 if (provider.contains("://")) {

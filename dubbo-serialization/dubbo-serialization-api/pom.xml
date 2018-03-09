@@ -28,7 +28,7 @@ limitations under the License.
     <name>${project.artifactId}</name>
     <description>The common module of dubbo project</description>
     <properties>
-        <skip_maven_deploy>true</skip_maven_deploy>
+        <skip_maven_deploy>false</skip_maven_deploy>
     </properties>
     <dependencies>
         <dependency>
@@ -39,7 +39,7 @@ limitations under the License.
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>hessian-lite</artifactId>
-            <version>3.2.1-fixed-2</version>
+            <version>3.2.2</version>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
