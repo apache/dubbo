@@ -130,7 +130,13 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         }
         Map<String, String> context = RpcContext.getContext().getAttachments();
         if (context != null) {
-            invocation.addAttachmentsIfAbsent(context);
+            /**
+             * 这里不应该使用invocation.addAttachmentsIfAbsent(context);，
+             * 因为当dubbo内置的重试机制来触发该调用时，通过在Filter中通过{@link RpcContext#setAttachment(String, String)}
+             * 来更新RpcContext的attachment将不再生效，这在大多数情况下是错误（比如通过Filter来往RpcContext输出traceId和spanId等信息）。
+             * yizhenqiang 20180310
+             */
+            invocation.addAttachments(context);
         }
         if (getUrl().getMethodParameter(invocation.getMethodName(), Constants.ASYNC_KEY, false)) {
             invocation.setAttachment(Constants.ASYNC_KEY, Boolean.TRUE.toString());
