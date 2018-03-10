@@ -17,6 +17,7 @@ We are now collecting dubbo user info in order to help us to improve dubbo bette
     * [Dubbo ops](https://github.com/dubbo/dubbo-ops) - The reference implementation for dubbo ops(dubbo-admin,dubbo-monitor-simple,dubbo-registry-simple,etc.).
 * [Developer Mailing list](https://github.com/alibaba/dubbo/issues/1393) - Any questions or suggestions? Subscribe to (dev@dubbo.incubator.apache.org) to discuss with us.
 * [Gitter channel](https://gitter.im/alibaba/dubbo) - Online chat room with Dubbo developers.
-* [Dubbo user manual](http://dubbo.io/books/dubbo-user-book/) - Describe how to use Dubbo and all features of Dubbo concretely.
-* [Dubbo developer guide](http://dubbo.io/books/dubbo-dev-book/) - Detailly introduce the design principal, extension mechanisms, code conventions, version control and building project, etc.
-* [Dubbo admin manual](http://dubbo.io/books/dubbo-admin-book/) - Describe how to use Dubbo registry and admin-console.
+* [Dubbo user manual(English)](http://dubbo.io/books/dubbo-user-book-en/) or [Dubbo用户手册(中文)](http://dubbo.io/books/dubbo-user-book/) - Describe how to use Dubbo and all features of Dubbo concretely.
+* [Dubbo developer guide(English)](http://dubbo.io/books/dubbo-dev-book-en/) or [Dubbo开发手册(中文)](http://dubbo.io/books/dubbo-dev-book/) - Detailly introduce the design principal, extension mechanisms, code conventions, version control and building project, etc.
+* [Dubbo admin manual(English)](http://dubbo.io/books/dubbo-admin-book-en/) or [Dubbo管理手册(中文)](http://dubbo.io/books/dubbo-admin-book/) - Describe how to use Dubbo registry and admin-console.
+
