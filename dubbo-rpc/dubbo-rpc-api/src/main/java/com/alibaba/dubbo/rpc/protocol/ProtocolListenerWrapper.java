@@ -19,20 +19,17 @@ package com.alibaba.dubbo.rpc.protocol;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
-import com.alibaba.dubbo.rpc.Exporter;
-import com.alibaba.dubbo.rpc.ExporterListener;
-import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.InvokerListener;
-import com.alibaba.dubbo.rpc.Protocol;
-import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.*;
 import com.alibaba.dubbo.rpc.listener.ListenerExporterWrapper;
 import com.alibaba.dubbo.rpc.listener.ListenerInvokerWrapper;
 
-import java.lang.reflect.Method;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * ListenerProtocol
+ *
+ * 用于给 Exporter 增加监听器。
  */
 public class ProtocolListenerWrapper implements Protocol {
 
@@ -50,12 +47,16 @@ public class ProtocolListenerWrapper implements Protocol {
     }
 
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
+        // 注册中心
         if (Constants.REGISTRY_PROTOCOL.equals(invoker.getUrl().getProtocol())) {
             return protocol.export(invoker);
         }
-        return new ListenerExporterWrapper<T>(protocol.export(invoker),
-                Collections.unmodifiableList(ExtensionLoader.getExtensionLoader(ExporterListener.class)
-                        .getActivateExtension(invoker.getUrl(), Constants.EXPORTER_LISTENER_KEY)));
+        // 暴露服务，创建 Exporter 对象
+        Exporter<T> exporter = protocol.export(invoker);
+        // 获得 ExporterListener 数组
+        List<ExporterListener> listeners = Collections.unmodifiableList(ExtensionLoader.getExtensionLoader(ExporterListener.class).getActivateExtension(invoker.getUrl(), Constants.EXPORTER_LISTENER_KEY));
+        // 创建带 ExporterListener 的 Exporter 对象
+        return new ListenerExporterWrapper<T>(exporter, listeners);
     }
 
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
