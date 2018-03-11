@@ -89,7 +89,7 @@ public class DefaultFuture implements ResponseFuture {
                     logger.error("Exception when process the timeout invocation of remoting.", e);
                 }
             }
-        }, this.timeout, TimeUnit.MICROSECONDS);
+        }, this.timeout, TimeUnit.MILLISECONDS);
         CHANNELS.put(id, channel);
     }
 
