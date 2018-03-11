@@ -156,7 +156,7 @@ public class Constants {
 
     public static final String LOADBALANCE_KEY = "loadbalance";
 
-    // key for router type, for e.g., "script"/"file",  corresponding to ScriptRouterFactory.NAME, FileRouterFactory.NAME 
+    // key for router type, for e.g., "script"/"file",  corresponding to ScriptRouterFactory.NAME, FileRouterFactory.NAME
     public static final String ROUTER_KEY = "router";
 
     public static final String CLUSTER_KEY = "cluster";
@@ -624,7 +624,7 @@ public class Constants {
     public static final String QOS_PORT = "qos.port";
 
     public static final String ACCEPT_FOREIGN_IP = "qos.accept.foreign.ip";
-    
+
     public static final String HESSIAN2_REQUEST_KEY = "hessian2.request";
 
     public static final boolean DEFAULT_HESSIAN2_REQUEST = false;

@@ -55,7 +55,6 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -2074,8 +2073,8 @@ public class Hessian2Input
                 boolean keyValuePair = expectedTypes != null && expectedTypes.length == 2;
                 // fix deserialize of short type
                 return reader.readMap(this
-                            , keyValuePair ? expectedTypes[0] : null
-                            , keyValuePair ? expectedTypes[1] : null);
+                        , keyValuePair ? expectedTypes[0] : null
+                        , keyValuePair ? expectedTypes[1] : null);
             }
 
             case 'M': {
@@ -2195,7 +2194,7 @@ public class Hessian2Input
                 boolean valueType = expectedTypes != null && expectedTypes.length == 1;
 
                 // fix deserialize of short type
-                Object v = reader.readList(this, -1,  valueType ? expectedTypes[0] : null);
+                Object v = reader.readList(this, -1, valueType ? expectedTypes[0] : null);
 
                 return v;
             }
@@ -2373,7 +2372,7 @@ public class Hessian2Input
             case 0xd6:
             case 0xd7:
                 return Integer.valueOf(((tag - BC_INT_SHORT_ZERO) << 16)
-                    + 256 * read() + read());
+                        + 256 * read() + read());
 
             case 'I':
                 return Integer.valueOf(parseInt());
@@ -2689,8 +2688,8 @@ public class Hessian2Input
                 reader = findSerializerFactory().getDeserializer(Map.class);
 
                 return reader.readMap(this
-                    , keyValuePair ? expectedTypes.get(0) : null
-                    , keyValuePair ? expectedTypes.get(1) : null);
+                        , keyValuePair ? expectedTypes.get(0) : null
+                        , keyValuePair ? expectedTypes.get(1) : null);
             }
 
             case 'M': {

@@ -85,7 +85,7 @@ public class CollectionDeserializer extends AbstractListDeserializer {
         Deserializer deserializer = null;
 
         SerializerFactory factory = findSerializerFactory(in);
-        if(expectType != null){
+        if (expectType != null) {
             deserializer = factory.getDeserializer(expectType.getName());
         }
 
@@ -111,7 +111,7 @@ public class CollectionDeserializer extends AbstractListDeserializer {
         Deserializer deserializer = null;
 
         SerializerFactory factory = findSerializerFactory(in);
-        if(expectType != null){
+        if (expectType != null) {
             deserializer = factory.getDeserializer(expectType.getName());
         }
 

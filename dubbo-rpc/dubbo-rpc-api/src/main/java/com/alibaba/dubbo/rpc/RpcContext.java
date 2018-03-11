@@ -51,6 +51,12 @@ public class RpcContext {
             return new RpcContext();
         }
     };
+    private static final ThreadLocal<RpcContext> SERVER_LOCAL = new ThreadLocal<RpcContext>() {
+        @Override
+        protected RpcContext initialValue() {
+            return new RpcContext();
+        }
+    };
     private final Map<String, String> attachments = new HashMap<String, String>();
     private final Map<String, Object> values = new HashMap<String, Object>();
     private Future<?> future;
@@ -81,6 +87,24 @@ public class RpcContext {
     private Object response;
 
     protected RpcContext() {
+    }
+
+    /**
+     * get server side context.
+     *
+     * @return server context
+     */
+    public static RpcContext getServerContext() {
+        return SERVER_LOCAL.get();
+    }
+
+    /**
+     * remove server side context.
+     *
+     * @see com.alibaba.dubbo.rpc.filter.ContextFilter
+     */
+    public static void removeServerContext() {
+        SERVER_LOCAL.remove();
     }
 
     /**

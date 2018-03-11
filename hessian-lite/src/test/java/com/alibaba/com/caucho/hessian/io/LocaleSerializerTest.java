@@ -1,6 +1,7 @@
 package com.alibaba.com.caucho.hessian.io;
 
 import com.alibaba.com.caucho.hessian.io.base.SerializeTestBase;
+
 import junit.framework.TestCase;
 import org.junit.Test;
 
