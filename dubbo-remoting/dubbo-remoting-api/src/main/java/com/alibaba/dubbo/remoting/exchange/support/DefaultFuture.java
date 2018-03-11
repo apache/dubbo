@@ -17,6 +17,10 @@
 package com.alibaba.dubbo.remoting.exchange.support;
 
 import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.utils.Timer;
+import com.alibaba.dubbo.common.utils.HashedWheelTimer;
+import com.alibaba.dubbo.common.utils.TimerTask;
+import com.alibaba.dubbo.common.utils.Timeout;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.remoting.Channel;
@@ -47,17 +51,15 @@ public class DefaultFuture implements ResponseFuture {
 
     private static final Map<Long, DefaultFuture> FUTURES = new ConcurrentHashMap<Long, DefaultFuture>();
 
-    static {
-        Thread th = new Thread(new RemotingInvocationTimeoutScan(), "DubboResponseTimeoutScanTimer");
-        th.setDaemon(true);
-        th.start();
-    }
+    private static final HashedWheelTimer timer= new HashedWheelTimer();
+
 
     // invoke id.
     private final long id;
     private final Channel channel;
     private final Request request;
     private final int timeout;
+    private final Timeout delay;
     private final Lock lock = new ReentrantLock();
     private final Condition done = lock.newCondition();
     private final long start = System.currentTimeMillis();
@@ -72,6 +74,22 @@ public class DefaultFuture implements ResponseFuture {
         this.timeout = timeout > 0 ? timeout : channel.getUrl().getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
         // put into waiting map.
         FUTURES.put(id, this);
+        this.delay = timer.newTimeout(new TimerTask() {
+            @Override
+            public void run(Timeout timeout) throws Exception {
+                try {
+                    // create exception response.
+                    Response timeoutResponse = new Response(getId());
+                    // set timeout status.
+                    timeoutResponse.setStatus(isSent() ? Response.SERVER_TIMEOUT : Response.CLIENT_TIMEOUT);
+                    timeoutResponse.setErrorMessage(getTimeoutMessage());
+                    // handle response.
+                    DefaultFuture.received(getChannel(), timeoutResponse);
+                } catch (Exception e) {
+                    logger.error("Exception when process the timeout invocation of remoting.", e);
+                }
+            }
+        }, this.timeout, TimeUnit.MICROSECONDS);
         CHANNELS.put(id, channel);
     }
 
@@ -83,6 +101,8 @@ public class DefaultFuture implements ResponseFuture {
         return CHANNELS.containsValue(channel);
     }
 
+    public static long pendingTimeout() { return timer.pendingTimeouts();}
+
     public static void sent(Channel channel, Request request) {
         DefaultFuture future = FUTURES.get(request.getId());
         if (future != null) {
@@ -93,6 +113,7 @@ public class DefaultFuture implements ResponseFuture {
     public static void received(Channel channel, Response response) {
         try {
             DefaultFuture future = FUTURES.remove(response.getId());
+            future.delay.cancel();
             if (future != null) {
                 future.doReceived(response);
             } else {
@@ -133,7 +154,7 @@ public class DefaultFuture implements ResponseFuture {
                 lock.unlock();
             }
             if (!isDone()) {
-                throw new TimeoutException(sent > 0, channel, getTimeoutMessage(false));
+                throw new TimeoutException(sent > 0, channel, getTimeoutMessage());
             }
         }
         return returnFromResponse();
@@ -144,6 +165,7 @@ public class DefaultFuture implements ResponseFuture {
         errorResult.setErrorMessage("request future has been canceled.");
         response = errorResult;
         FUTURES.remove(id);
+        delay.cancel();
         CHANNELS.remove(id);
     }
 
@@ -265,10 +287,10 @@ public class DefaultFuture implements ResponseFuture {
         }
     }
 
-    private String getTimeoutMessage(boolean scan) {
+    private String getTimeoutMessage() {
         long nowTimestamp = System.currentTimeMillis();
         return (sent > 0 ? "Waiting server-side response timeout" : "Sending request timeout in client-side")
-                + (scan ? " by scan timer" : "") + ". start time: "
+                + ". start time: "
                 + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(start))) + ", end time: "
                 + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date())) + ","
                 + (sent > 0 ? " client elapsed: " + (sent - start)
@@ -277,33 +299,4 @@ public class DefaultFuture implements ResponseFuture {
                 + timeout + " ms, request: " + request + ", channel: " + channel.getLocalAddress()
                 + " -> " + channel.getRemoteAddress();
     }
-
-    private static class RemotingInvocationTimeoutScan implements Runnable {
-
-        @Override
-        public void run() {
-            while (true) {
-                try {
-                    for (DefaultFuture future : FUTURES.values()) {
-                        if (future == null || future.isDone()) {
-                            continue;
-                        }
-                        if (System.currentTimeMillis() - future.getStartTimestamp() > future.getTimeout()) {
-                            // create exception response.
-                            Response timeoutResponse = new Response(future.getId());
-                            // set timeout status.
-                            timeoutResponse.setStatus(future.isSent() ? Response.SERVER_TIMEOUT : Response.CLIENT_TIMEOUT);
-                            timeoutResponse.setErrorMessage(future.getTimeoutMessage(true));
-                            // handle response.
-                            DefaultFuture.received(future.getChannel(), timeoutResponse);
-                        }
-                    }
-                    Thread.sleep(30);
-                } catch (Throwable e) {
-                    logger.error("Exception when scan the timeout invocation of remoting.", e);
-                }
-            }
-        }
-    }
-
 }
