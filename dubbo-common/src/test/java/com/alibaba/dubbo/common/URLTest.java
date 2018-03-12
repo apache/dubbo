@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,24 +16,24 @@
  */
 package com.alibaba.dubbo.common;
 
-import static org.hamcrest.CoreMatchers.anyOf;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.*;
+import com.alibaba.dubbo.common.utils.CollectionUtils;
+
+import org.junit.Test;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import com.alibaba.dubbo.common.utils.CollectionUtils;
-
-/**
- * @author ding.lid
- * @author william.liangf
- */
 public class URLTest {
 
     @Test
@@ -243,7 +244,7 @@ public class URLTest {
         assertEquals("noValue", url.getParameter("noValue"));
     }
 
-    // TODO 不希望空格？ 详见： DUBBO-502 URL类对特殊字符处理统一约定
+    // TODO Do not want to use spaces? See: DUBBO-502, URL class handles special conventions for special characters.
     @Test
     public void test_valueOf_spaceSafe() throws Exception {
         URL url = URL.valueOf("http://1.2.3.4:8080/path?key=value1 value2");
@@ -257,7 +258,7 @@ public class URLTest {
 
         assertTrue(url.hasParameter("k0"));
 
-        // 没有Value的Key，生成的Value值使用Key值！！ -_-!!!
+        // If a Key has no corresponding Value, then the Key also used as the Value.
         assertEquals("k0", url.getParameter("k0"));
     }
 
@@ -279,7 +280,7 @@ public class URLTest {
 
     @Test
     public void test_getAbsolutePath() throws Exception {
-        URL url = new URL("p1", "1.2.2.2",  33);
+        URL url = new URL("p1", "1.2.2.2", 33);
         assertEquals(null, url.getAbsolutePath());
 
         url = new URL("file", null, 90, "/home/user1/route.js");
@@ -304,7 +305,7 @@ public class URLTest {
         assertThat(url1.toString(), anyOf(
                 equalTo("dubbo://10.20.130.230:20880/context/path?version=1.0.0&application=morgan"),
                 equalTo("dubbo://10.20.130.230:20880/context/path?application=morgan&version=1.0.0"))
-                );
+        );
     }
 
     @Test
@@ -313,7 +314,7 @@ public class URLTest {
         assertThat(url1.toFullString(), anyOf(
                 equalTo("dubbo://admin:hello1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan"),
                 equalTo("dubbo://admin:hello1234@10.20.130.230:20880/context/path?application=morgan&version=1.0.0"))
-                );
+        );
     }
 
     @Test
@@ -568,7 +569,7 @@ public class URLTest {
     @Test
     public void test_windowAbsolutePathBeginWithSlashIsValid() throws Exception {
         final String osProperty = System.getProperties().getProperty("os.name");
-        if(!osProperty.toLowerCase().contains("windows")) return;
+        if (!osProperty.toLowerCase().contains("windows")) return;
 
         System.out.println("Test Windows valid path string.");
 
@@ -593,7 +594,7 @@ public class URLTest {
         assertEquals("admin:hello1234", url.getUserInfo());
         assertEquals("10.20.130.230", url.getHost());
         assertEquals(20880, url.getPort());
-        assertEquals("/context/path", url.getPath()); 
+        assertEquals("/context/path", url.getPath());
         assertEquals("version=1.0.0&application=morgan", url.getQuery());
         assertEquals("anchor1", url.getRef());
 
@@ -623,4 +624,17 @@ public class URLTest {
         assertTrue(url.isLocalHost());
     }
 
+    @Test
+    public void test_Path() throws Exception {
+        URL url = new URL("dubbo", "localhost", 20880, "////path");
+        assertEquals("path", url.getPath());
+    }
+
+    @Test
+    public void testAddParameters() throws Exception {
+        URL url = URL.valueOf("dubbo://127.0.0.1:20880");
+        Map<String, String> parameters = new HashMap<String, String>();
+        parameters.put("version", null);
+        url.addParameters(parameters);
+    }
 }

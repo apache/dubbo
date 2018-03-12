@@ -1,0 +1,13 @@
+language: java
+sudo: false # faster builds
+
+jdk:
+    - oraclejdk8
+    - openjdk7
+
+script:
+    - mvn clean package
+    - mvn cobertura:cobertura
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

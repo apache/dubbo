@@ -1,11 +1,12 @@
 /*
- * Copyright 1999-2012 Alibaba Group.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,17 +16,13 @@
  */
 package com.alibaba.dubbo.config;
 
-import org.junit.Test;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.config.api.DemoService;
 import com.alibaba.dubbo.config.provider.impl.DemoServiceImpl;
 
 import junit.framework.Assert;
+import org.junit.Test;
 
-/**
- * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
- */
 public class ReferenceConfigTest {
 
     @Test
@@ -57,7 +54,7 @@ public class ReferenceConfigTest {
             demoService.export();
             rc.get();
             Assert.assertTrue(!Constants.LOCAL_PROTOCOL.equalsIgnoreCase(
-                rc.getInvoker().getUrl().getProtocol()));
+                    rc.getInvoker().getUrl().getProtocol()));
         } finally {
             demoService.unexport();
         }

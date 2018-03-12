@@ -1,10 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.alibaba.dubbo.remoting.transport.codec;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
-import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.io.Bytes;
 import com.alibaba.dubbo.common.io.StreamUtils;
 import com.alibaba.dubbo.common.io.UnsafeByteArrayInputStream;
@@ -23,31 +34,24 @@ import com.alibaba.dubbo.remoting.exchange.Response;
 import com.alibaba.dubbo.remoting.exchange.support.DefaultFuture;
 import com.alibaba.dubbo.remoting.transport.CodecSupport;
 
-/**
- * @author <a href="mailto:gang.lvg@taobao.com">kimi</a>
- */
-final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Codec {
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
-    private static final Logger logger = LoggerFactory.getLogger(DeprecatedExchangeCodec.class);
+final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Codec {
 
     // header length.
     protected static final int HEADER_LENGTH = 16;
-
     // magic header.
     protected static final short MAGIC = (short) 0xdabb;
-
     protected static final byte MAGIC_HIGH = Bytes.short2bytes(MAGIC)[0];
-
     protected static final byte MAGIC_LOW = Bytes.short2bytes(MAGIC)[1];
-
     // message flag.
     protected static final byte FLAG_REQUEST = (byte) 0x80;
-
     protected static final byte FLAG_TWOWAY = (byte) 0x40;
-
     protected static final byte FLAG_EVENT = (byte) 0x20;
-
     protected static final int SERIALIZATION_MASK = 0x1f;
+    private static final Logger logger = LoggerFactory.getLogger(DeprecatedExchangeCodec.class);
 
     public Short getMagicCode() {
         return MAGIC;
@@ -73,7 +77,7 @@ final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Cod
     protected Object decode(Channel channel, InputStream is, int readable, byte[] header) throws IOException {
         // check magic number.
         if (readable > 0 && header[0] != MAGIC_HIGH
-            || readable > 1 && header[1] != MAGIC_LOW) {
+                || readable > 1 && header[1] != MAGIC_LOW) {
             int length = header.length;
             if (header.length < readable) {
                 header = Bytes.copyOf(header, readable);
@@ -267,10 +271,10 @@ final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Cod
             os.write(header); // write header.
             os.write(data); // write data.
         } catch (Throwable t) {
-            // 发送失败信息给Consumer，否则Consumer只能等超时了
+            // send error message to Consumer, otherwise, Consumer will wait until timeout.
             if (!res.isEvent() && res.getStatus() != Response.BAD_RESPONSE) {
                 try {
-                    // FIXME 在Codec中打印出错日志？在IoHanndler的caught中统一处理？
+                    // FIXME log error info in Codec and put all error handle logic in IoHanndler?
                     logger.warn("Fail to encode response: " + res + ", send bad_response info instead, cause: " + t.getMessage(), t);
 
                     Response r = new Response(res.getId(), res.getVersion());
@@ -284,7 +288,7 @@ final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Cod
                 }
             }
 
-            // 重新抛出收到的异常
+            // Rethrow exception
             if (t instanceof IOException) {
                 throw (IOException) t;
             } else if (t instanceof RuntimeException) {
