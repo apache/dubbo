@@ -62,6 +62,11 @@ public class DubboProtocol extends AbstractProtocol {
     public static final int DEFAULT_PORT = 20880;
     private static final String IS_CALLBACK_SERVICE_INVOKE = "_isCallBackServiceInvoke";
     private static DubboProtocol INSTANCE;
+    /**
+     * 通信服务器集合
+     *
+     * key: 服务器地址。格式为：host:port
+     */
     private final Map<String, ExchangeServer> serverMap = new ConcurrentHashMap<String, ExchangeServer>(); // <host:port,Exchanger>
     private final Map<String, ReferenceCountExchangeClient> referenceClientMap = new ConcurrentHashMap<String, ReferenceCountExchangeClient>(); // <host:port,Exchanger>
     private final ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap = new ConcurrentHashMap<String, LazyConnectExchangeClient>();
@@ -79,7 +84,7 @@ public class DubboProtocol extends AbstractProtocol {
                 if (Boolean.TRUE.toString().equals(inv.getAttachments().get(IS_CALLBACK_SERVICE_INVOKE))) {
                     String methodsStr = invoker.getUrl().getParameters().get("methods");
                     boolean hasMethod = false;
-                    if (methodsStr == null || methodsStr.indexOf(",") == -1) {
+                    if (methodsStr == null || !methodsStr.contains(",")) {
                         hasMethod = inv.getMethodName().equals(methodsStr);
                     } else {
                         String[] methods = methodsStr.split(",");
@@ -219,11 +224,13 @@ public class DubboProtocol extends AbstractProtocol {
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
         URL url = invoker.getUrl();
 
+        // 创建 DubboExporter 对象，并添加到 `exporterMap` 。
         // export service.
         String key = serviceKey(url);
         DubboExporter<T> exporter = new DubboExporter<T>(invoker, key, exporterMap);
         exporterMap.put(key, exporter);
 
+        // TODO 【8005 sub】
         //export an stub service for dispatching event
         Boolean isStubSupportEvent = url.getParameter(Constants.STUB_EVENT_KEY, Constants.DEFAULT_STUB_EVENT);
         Boolean isCallbackservice = url.getParameter(Constants.IS_CALLBACK_SERVICE, false);
@@ -239,28 +246,37 @@ public class DubboProtocol extends AbstractProtocol {
             }
         }
 
+        // 启动服务器
         openServer(url);
+
+        // TODO 【8013 】kryo fst
         optimizeSerialization(url);
         return exporter;
     }
 
+    /**
+     * 启动服务器
+     *
+     * @param url URL
+     */
     private void openServer(URL url) {
         // find server.
         String key = url.getAddress();
+        //client 也可以暴露一个只有server可以调用的服务。
         //client can export a service which's only for server to invoke
-        boolean isServer = url.getParameter(Constants.IS_SERVER_KEY, true);
+        boolean isServer = url.getParameter(Constants.IS_SERVER_KEY, true); // isserver
         if (isServer) {
             ExchangeServer server = serverMap.get(key);
             if (server == null) {
                 serverMap.put(key, createServer(url));
             } else {
                 // server supports reset, use together with override
-                server.reset(url);
+                server.reset(url); // 【TODO 8016】通信服务器
             }
         }
     }
 
-    private ExchangeServer createServer(URL url) {
+    private ExchangeServer createServer(URL url) { // 【TODO 8016】通信服务器
         // send readonly event when server closes, it's enabled by default
         url = url.addParameterIfAbsent(Constants.CHANNEL_READONLYEVENT_SENT_KEY, Boolean.TRUE.toString());
         // enable heartbeat by default
