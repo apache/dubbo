@@ -61,12 +61,14 @@ public class SpringExtensionFactory implements ExtensionFactory {
             try {
                 return context.getBean(type);
             } catch (Exception e) {
-                logger.warn("Error when get spring extension(bean) for type:" + type.getName(), e);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Error when get spring extension(bean) for type:" + type.getName(), e);
+                }
             }
         }
 
-        if (logger.isInfoEnabled()) {
-            logger.info("No spring extension(bean) named:" + name + ", type:" + type.getName() + " found, stop get bean.");
+        if (logger.isDebugEnabled()) {
+            logger.debug("No spring extension(bean) named:" + name + ", type:" + type.getName() + " found, stop get bean.");
         }
         return null;
     }
