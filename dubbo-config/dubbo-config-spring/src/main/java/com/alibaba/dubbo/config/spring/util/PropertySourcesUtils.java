@@ -52,9 +52,7 @@ public abstract class PropertySourcesUtils {
                     if (name.startsWith(normalizedPrefix)) {
                         String subName = name.substring(normalizedPrefix.length());
                         Object value = source.getProperty(name);
-                        if (value instanceof String) {
-                            subProperties.put(subName, String.valueOf(value));
-                        }
+                        subProperties.put(subName, String.valueOf(value));
                     }
                 }
             }

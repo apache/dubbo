@@ -55,16 +55,11 @@ public class DecodeHandler extends AbstractChannelHandlerDelegate {
             try {
                 ((Decodeable) message).decode();
                 if (log.isDebugEnabled()) {
-                    log.debug(new StringBuilder(32).append("Decode decodeable message ")
-                            .append(message.getClass().getName()).toString());
+                    log.debug("Decode decodeable message " + message.getClass().getName());
                 }
             } catch (Throwable e) {
                 if (log.isWarnEnabled()) {
-                    log.warn(
-                            new StringBuilder(32)
-                                    .append("Call Decodeable.decode failed: ")
-                                    .append(e.getMessage()).toString(),
-                            e);
+                    log.warn("Call Decodeable.decode failed: " + e.getMessage(), e);
                 }
             } // ~ end of catch
         } // ~ end of if

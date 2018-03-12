@@ -50,6 +50,7 @@ package com.alibaba.com.caucho.hessian.io;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedMap;
@@ -92,6 +93,17 @@ public class MapDeserializer extends AbstractMapDeserializer {
 
     public Object readMap(AbstractHessianInput in)
             throws IOException {
+        return readMap(in, null, null);
+    }
+
+    /**
+     *  support generic type of map, fix the type of short serialization <p>
+     *  eg: Map<String, Short> serialize & deserialize
+     *
+     *  @author jason.shang@hotmail.com
+     */
+    @Override
+    public Object readMap(AbstractHessianInput in, Class<?> expectKeyType, Class<?> expectValueType) throws IOException {
         Map map;
 
         if (_type == null)
@@ -110,13 +122,28 @@ public class MapDeserializer extends AbstractMapDeserializer {
 
         in.addRef(map);
 
-        while (!in.isEnd()) {
-            map.put(in.readObject(), in.readObject());
-        }
+        doReadMap(in, map, expectKeyType, expectValueType);
 
         in.readEnd();
 
         return map;
+    }
+
+    protected void doReadMap(AbstractHessianInput in, Map map, Class<?> keyType, Class<?> valueType) throws IOException {
+        Deserializer keyDeserializer = null, valueDeserializer = null;
+
+        SerializerFactory factory = findSerializerFactory(in);
+        if(keyType != null){
+            keyDeserializer = factory.getDeserializer(keyType.getName());
+        }
+        if(valueType != null){
+            valueDeserializer = factory.getDeserializer(valueType.getName());
+        }
+
+        while (!in.isEnd()) {
+            map.put(keyDeserializer != null ? keyDeserializer.readObject(in) : in.readObject(),
+                    valueDeserializer != null? valueDeserializer.readObject(in) : in.readObject());
+        }
     }
 
     @Override
