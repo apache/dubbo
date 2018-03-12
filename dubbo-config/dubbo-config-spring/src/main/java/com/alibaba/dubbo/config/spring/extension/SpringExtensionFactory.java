@@ -17,7 +17,10 @@
 package com.alibaba.dubbo.config.spring.extension;
 
 import com.alibaba.dubbo.common.extension.ExtensionFactory;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
+
 import org.springframework.context.ApplicationContext;
 
 import java.util.Set;
@@ -26,6 +29,8 @@ import java.util.Set;
  * SpringExtensionFactory
  */
 public class SpringExtensionFactory implements ExtensionFactory {
+
+    private static final Logger logger = LoggerFactory.getLogger(SpringExtensionFactory.class);
 
     private static final Set<ApplicationContext> contexts = new ConcurrentHashSet<ApplicationContext>();
 
@@ -46,6 +51,22 @@ public class SpringExtensionFactory implements ExtensionFactory {
                     return (T) bean;
                 }
             }
+        }
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("No spring extension(bean) named:" + name + ", type:" + type.getName() + " found. Will try to get bean by type only.");
+        }
+
+        for (ApplicationContext context : contexts) {
+            try {
+                return context.getBean(type);
+            } catch (Exception e) {
+                logger.warn("Error when get spring extension(bean) for type:" + type.getName(), e);
+            }
+        }
+
+        if (logger.isInfoEnabled()) {
+            logger.info("No spring extension(bean) named:" + name + ", type:" + type.getName() + " found, stop get bean.");
         }
         return null;
     }
