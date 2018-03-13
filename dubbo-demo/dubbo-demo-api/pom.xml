@@ -20,13 +20,13 @@ limitations under the License.
     <parent>
         <groupId>com.alibaba</groupId>
         <artifactId>dubbo-demo</artifactId>
-        <version>2.6.1</version>
+        <version>2.5.10</version>
     </parent>
     <artifactId>dubbo-demo-api</artifactId>
     <packaging>jar</packaging>
     <name>${project.artifactId}</name>
     <description>The demo module of dubbo project</description>
     <properties>
-        <skip_maven_deploy>false</skip_maven_deploy>
+        <skip_maven_deploy>true</skip_maven_deploy>
     </properties>
 </project>

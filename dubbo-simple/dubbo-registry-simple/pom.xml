@@ -19,15 +19,15 @@ limitations under the License.
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.alibaba</groupId>
-        <artifactId>dubbo-test</artifactId>
+        <artifactId>dubbo-simple</artifactId>
         <version>2.5.10</version>
     </parent>
-    <artifactId>dubbo-test-benchmark</artifactId>
+    <artifactId>dubbo-registry-simple</artifactId>
     <packaging>jar</packaging>
     <name>${project.artifactId}</name>
-    <description>The performance benchmark kit test module of dubbo project</description>
+    <description>The simple registry module of dubbo project</description>
     <properties>
-        <skip_maven_deploy>true</skip_maven_deploy>
+        <skip_maven_deploy>false</skip_maven_deploy>
     </properties>
     <dependencies>
         <dependency>
@@ -35,54 +35,48 @@ limitations under the License.
             <artifactId>dubbo</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.mortbay.jetty</groupId>
+            <artifactId>jetty</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
+                <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>package-exclude-resources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
+                        <id>unpack</id>
                         <phase>package</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
                         <configuration>
-                            <excludes>
-                                <exclude>dubbo.properties</exclude>
-                                <exclude>ProviderSample.xml</exclude>
-                            </excludes>
-                            <classifier>assemble</classifier>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>com.alibaba</groupId>
+                                    <artifactId>dubbo</artifactId>
+                                    <version>${project.parent.version}</version>
+                                    <outputDirectory>${project.build.directory}/dubbo</outputDirectory>
+                                    <includes>META-INF/assembly/**</includes>
+                                </artifactItem>
+                            </artifactItems>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
-                    <encoding>UTF-8</encoding>
-                </configuration>
-            </plugin>
-            <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.2.1</version>
+                <configuration>
+                    <descriptor>src/main/assembly/assembly.xml</descriptor>
+                </configuration>
                 <executions>
                     <execution>
-                        <id>assembly</id>
+                        <id>make-assembly</id>
                         <phase>package</phase>
                         <goals>
                             <goal>single</goal>
                         </goals>
-                        <configuration>
-                            <descriptors>
-                                <descriptor>${basedir}/src/assembly/release.xml</descriptor>
-                            </descriptors>
-                            <appendAssemblyId>false</appendAssemblyId>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>

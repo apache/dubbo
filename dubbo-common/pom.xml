@@ -21,14 +21,14 @@ limitations under the License.
     <parent>
         <groupId>com.alibaba</groupId>
         <artifactId>dubbo-parent</artifactId>
-        <version>2.6.1</version>
+        <version>2.5.10</version>
     </parent>
     <artifactId>dubbo-common</artifactId>
     <packaging>jar</packaging>
     <name>${project.artifactId}</name>
     <description>The common module of dubbo project</description>
     <properties>
-        <skip_maven_deploy>false</skip_maven_deploy>
+        <skip_maven_deploy>true</skip_maven_deploy>
     </properties>
     <dependencies>
         <dependency>
@@ -39,6 +39,7 @@ limitations under the License.
         <dependency>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>log4j</groupId>
@@ -51,23 +52,20 @@ limitations under the License.
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>hessian-lite</artifactId>
-            <version>3.2.2</version>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.esotericsoftware</groupId>
-            <artifactId>kryo</artifactId>
+            <groupId>org.jvnet.sorcerer</groupId>
+            <artifactId>sorcerer-javac</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>de.javakaffee</groupId>
-            <artifactId>kryo-serializers</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>de.ruedigermoeller</groupId>
-            <artifactId>fst</artifactId>
+            <groupId>cglib</groupId>
+            <artifactId>cglib-nodep</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
