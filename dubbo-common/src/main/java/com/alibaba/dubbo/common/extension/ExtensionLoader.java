@@ -206,7 +206,7 @@ public class ExtensionLoader<T> {
             if (!name.startsWith(Constants.REMOVE_VALUE_PREFIX)
                     && !names.contains(Constants.REMOVE_VALUE_PREFIX + name)) {
                 if (Constants.DEFAULT_KEY.equals(name)) {
-                    if (!usrs.isEmpty()) {
+                    if (usrs.size() > 0) {
                         exts.addAll(0, usrs);
                         usrs.clear();
                     }
@@ -216,7 +216,7 @@ public class ExtensionLoader<T> {
                 }
             }
         }
-        if (!usrs.isEmpty()) {
+        if (usrs.size() > 0) {
             exts.addAll(usrs);
         }
         return exts;
@@ -330,8 +330,7 @@ public class ExtensionLoader<T> {
         if (name == null || name.length() == 0)
             throw new IllegalArgumentException("Extension name == null");
         try {
-            this.getExtensionClass(name);
-            return true;
+            return getExtensionClass(name) != null;
         } catch (Throwable t) {
             return false;
         }
@@ -496,7 +495,7 @@ public class ExtensionLoader<T> {
             }
             injectExtension(instance);
             Set<Class<?>> wrapperClasses = cachedWrapperClasses;
-            if (wrapperClasses != null && !wrapperClasses.isEmpty()) {
+            if (wrapperClasses != null && wrapperClasses.size() > 0) {
                 for (Class<?> wrapperClass : wrapperClasses) {
                     instance = injectExtension((T) wrapperClass.getConstructor(type).newInstance(instance));
                 }

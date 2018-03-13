@@ -1,0 +1,20 @@
+<div class="ico_btn">
+</div>
+<br/>
+<table cellpadding="0" cellspacing="0" class="list list_dubbo" id="table_o">
+    <tr>
+        <th>$i18n.get("versions"): <input type="text" onkeyup="searchTable('table_o', 0, this.value);"
+                                          onclick="searchTable('table_o', 0, this.value);"/>&nbsp;<img
+                src="$rootContextPath.getURI("images/ico_search.png")" width="12" height="12"/></th>
+        <th>$i18n.get("applications")</th>
+    </tr>
+    #foreach($version in $versions.entrySet())
+        <tr>
+            <td>
+                <a href="version/$version.key/versions/show">$version.key</a>
+            </td>
+            <td>$version.value.size()</td>
+        </tr>
+    #end
+</table>
+<div class="page">$i18n.get("page.total")$versions.size()$i18n.get("page.records")</div>

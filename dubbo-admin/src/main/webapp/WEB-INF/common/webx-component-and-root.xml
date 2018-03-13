@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans:beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:services="http://www.alibaba.com/schema/services"
+             xmlns:dr-factories="http://www.alibaba.com/schema/services/data-resolver/factories"
+             xmlns:vm-plugins="http://www.alibaba.com/schema/services/template/engines/velocity/plugins"
+             xmlns:beans="http://www.springframework.org/schema/beans"
+             xsi:schemaLocation="http://www.alibaba.com/schema/services http://localhost:8080/schema/services.xsd
+        http://www.alibaba.com/schema/services/data-resolver/factories http://localhost:8080/schema/services-data-resolver-factories.xsd
+        http://www.alibaba.com/schema/services/mapping-rules http://localhost:8080/schema/services-mapping-rules.xsd
+        http://www.alibaba.com/schema/services/template/engines http://localhost:8080/schema/services-template-engines.xsd
+
+        http://www.alibaba.com/schema/services/template/engines/velocity/plugins http://localhost:8080/schema/services-template-engines-velocity-plugins.xsd
+        http://www.springframework.org/schema/beans http://localhost:8080/schema/www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- This file can be used by webx.xml and webx-*.xml. -->
+    <!-- NOTE: This file requires property-placeholder variables: ${component}。 -->
+
+    <!-- Template render service. -->
+    <services:template
+            xmlns="http://www.alibaba.com/schema/services/template/engines"
+            searchExtensions="true">
+        <velocity-engine templateEncoding="utf-8"
+                         strictReference="false" path="/templates/${component}">
+            <global-macros>
+                <name>global/*.vm</name>
+            </global-macros>
+            <plugins>
+                <!-- <vm-plugins:fasttext-support /> -->
+                <vm-plugins:renderable-support/>
+                <!-- <vm-plugins:escape-support defaultEscape="html">
+                    <vm-plugins:noescape>
+                        <vm-plugins:if-matches pattern="^control\." />
+                        <vm-plugins:if-matches pattern="^screen_placeholder" />
+                        <vm-plugins:if-matches pattern="^stringEscapeUtil\.escape" />
+                        <vm-plugins:if-matches pattern="^csrfToken\.(get)?hiddenField" />
+                    </vm-plugins:noescape>
+                </vm-plugins:escape-support> -->
+            </plugins>
+        </velocity-engine>
+        <!-- <freemarker-engine templateEncoding="GBK" path="/${component}/templates"
+            /> <jsp-engine path="/templates/${component}" /> -->
+    </services:template>
+
+    <!--  Name lookup rules. -->
+    <services:mapping-rules
+            xmlns="http://www.alibaba.com/schema/services/mapping-rules">
+
+        <!-- External target name => Internal target name -->
+        <extension-rule id="extension.input">
+            <!-- default suffix -->
+            <mapping extension="" to=""/>
+
+            <!-- JSP -->
+            <mapping extension="jhtml" to=""/>
+            <mapping extension="jsp" to=""/>
+            <mapping extension="php" to=""/>
+
+            <!-- Velocity -->
+            <mapping extension="htm" to=""/>
+            <mapping extension="vhtml" to=""/>
+            <mapping extension="vm" to=""/>
+        </extension-rule>
+
+        <!-- Internal target name => External target name -->
+        <extension-rule id="extension.output">
+            <!-- default suffix -->
+            <mapping extension="" to="htm"/>
+
+            <!-- JSP -->
+            <mapping extension="jhtml" to="jhtml"/>
+            <mapping extension="jsp" to="jhtml"/>
+            <mapping extension="php" to="jhtml"/>
+
+            <!-- Velocity -->
+            <mapping extension="htm" to="htm"/>
+            <mapping extension="vhtml" to="htm"/>
+            <mapping extension="vm" to="htm"/>
+        </extension-rule>
+
+        <!-- Target name => Action module name -->
+        <direct-module-rule id="action"/>
+
+        <!-- Target name => Screen module name (*.do) -->
+        <direct-module-rule id="screen.notemplate"/>
+
+        <!-- Target name => Screen module name (*.jsp, *.vm) -->
+        <fallback-module-rule id="screen" moduleType="screen"/>
+
+        <!-- Target name => Screen template name -->
+        <direct-template-rule id="screen.template"
+                              templatePrefix="screen"/>
+
+        <!-- Target name => Layout template name -->
+        <fallback-template-rule id="layout.template"
+                                templatePrefix="layout"/>
+
+        <!-- Target name => Control module name (setControl method) -->
+        <direct-module-rule id="control.notemplate"/>
+
+        <!-- Target name => Control module name (setTemplate method) -->
+        <fallback-module-rule id="control" moduleType="control"/>
+
+        <!-- Target name => Control template name -->
+        <direct-template-rule id="control.template"
+                              templatePrefix="control"/>
+
+    </services:mapping-rules>
+
+    <!-- Support parameter injection. -->
+    <services:data-resolver
+            xmlns="http://www.alibaba.com/schema/services/data-resolver/factories">
+        <turbine-rundata-resolver/>
+        <parameter-resolver/>
+        <form-resolver/>
+        <dr-factories:factory
+                class="com.alibaba.dubbo.governance.web.common.resolver.MapDataResolverFactory"/>
+    </services:data-resolver>
+
+</beans:beans>

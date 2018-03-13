@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Webx Sub Context Configuration.  -->
+<beans:beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:services="http://www.alibaba.com/schema/services"
+             xmlns:ml-factories="http://www.alibaba.com/schema/services/module-loader/factories"
+             xmlns:beans="http://www.springframework.org/schema/beans"
+             xsi:schemaLocation="http://www.alibaba.com/schema/services http://localhost:8080/schema/services.xsd
+
+        http://www.alibaba.com/schema/services/module-loader/factories http://localhost:8080/schema/services-module-loader-factories.xsd
+        http://www.springframework.org/schema/beans http://localhost:8080/schema/www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- support placeholder like ${xxx} -->
+    <services:property-placeholder>
+        <services:property key="component">personal</services:property>
+    </services:property-placeholder>
+
+    <!-- shared configuration -->
+    <beans:import resource="common/webx-component-and-root.xml"/>
+    <beans:import resource="common/webx-component.xml"/>
+
+    <!-- execute pipeline -->
+    <beans:import resource="common/pipeline.xml"/>
+
+    <!-- load module -->
+    <services:module-loader>
+        <ml-factories:class-modules>
+            <ml-factories:search-packages type="$1" packages="com.alibaba.dubbo.governance.web.personal.module.*"/>
+        </ml-factories:class-modules>
+    </services:module-loader>
+
+</beans:beans>

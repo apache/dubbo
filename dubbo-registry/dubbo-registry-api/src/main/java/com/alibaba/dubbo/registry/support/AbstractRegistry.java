@@ -95,7 +95,7 @@ public abstract class AbstractRegistry implements Registry {
     }
 
     protected static List<URL> filterEmpty(URL url, List<URL> urls) {
-        if (urls == null || urls.isEmpty()) {
+        if (urls == null || urls.size() == 0) {
             List<URL> result = new ArrayList<URL>(1);
             result.add(url.setProtocol(Constants.EMPTY_PROTOCOL));
             return result;
@@ -250,7 +250,7 @@ public abstract class AbstractRegistry implements Registry {
             };
             subscribe(url, listener); // Subscribe logic guarantees the first notify to return
             List<URL> urls = reference.get();
-            if (urls != null && !urls.isEmpty()) {
+            if (urls != null && urls.size() > 0) {
                 for (URL u : urls) {
                     if (!Constants.EMPTY_PROTOCOL.equals(u.getProtocol())) {
                         result.add(u);
@@ -371,7 +371,7 @@ public abstract class AbstractRegistry implements Registry {
         if (listener == null) {
             throw new IllegalArgumentException("notify listener == null");
         }
-        if ((urls == null || urls.isEmpty())
+        if ((urls == null || urls.size() == 0)
                 && !Constants.ANY_VALUE.equals(url.getServiceInterface())) {
             logger.warn("Ignore empty notify urls for subscribe url " + url);
             return;

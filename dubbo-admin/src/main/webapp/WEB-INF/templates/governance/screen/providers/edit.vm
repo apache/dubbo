@@ -1,0 +1,89 @@
+<div class="ico_btn">
+    <a href="../../providers"><img src="$rootContextPath.getURI("images/ico_back.png")" width="12" height="12"/><span
+            class="ico_font">$i18n.get("back")</span></a>
+    <span class="ico_line">|</span>
+    <a href="../$provider.id"><img src="$rootContextPath.getURI("images/ico_show.png")" width="12" height="12"/><span
+            class="ico_font">$i18n.get("show")</span></a>
+    #if($currentUser.hasServicePrivilege($provider.service))
+        <span class="ico_line">|</span>
+        <a href="../$provider.id/add"><img src="$rootContextPath.getURI("images/ico_add.png")" width="12"
+                                           height="12"/><span class="ico_font">$i18n.get("copy")</span></a>
+        <span class="ico_line">|</span>
+        <a href="#" onclick="showConfirm('$i18n.get(
+            "confirm.weight.doubling")', '$provider.url', '../$provider.id/doubling'); return false;"><img
+                src="$rootContextPath.getURI("images/ico_up.png")" width="12" height="12"/><span
+                class="ico_font">$i18n.get("weight.doubling")</span></a>
+        <span class="ico_line">|</span>
+        <a href="#" onclick="showConfirm('$i18n.get(
+            "confirm.weight.halving")', '$provider.url', '../$provider.id/halving'); return false;"><img
+                src="$rootContextPath.getURI("images/ico_down.png")" width="12" height="12"/><span
+                class="ico_font">$i18n.get("weight.halving")</span></a>
+        <span class="ico_line">|</span>
+        #if($tool.isProviderEnabled($provider))
+            <a href="#" onclick="showConfirm('$i18n.get(
+                "confirm.disable")', '$provider.url', '../$provider.id/disable'); return false;"><img
+                    src="$rootContextPath.getURI("images/ico_disable.png")" width="12" height="12"/><span
+                    class="ico_font">$i18n.get("disable")</span></a>
+        #else
+            <a href="#" onclick="showConfirm('$i18n.get(
+                "confirm.enable")', '$provider.url', '../$provider.id/enable'); return false;"><img
+                    src="$rootContextPath.getURI("images/ico_enable.png")" width="12" height="12"/><span
+                    class="ico_font">$i18n.get("enable")</span></a>
+        #end
+        #if(! $provider.dynamic)
+            <span class="ico_line">|</span>
+            <a href="#" onclick="showConfirm('$i18n.get(
+                "confirm.delete")', '$provider.url', '../$provider.id/delete'); return false;"><img
+                    src="$rootContextPath.getURI("images/ico_delete.png")" width="12" height="12"/><span
+                    class="ico_font">$i18n.get("delete")</span></a>
+        #end
+    #end
+</div>
+<br/>
+<form id="providerForm" action="../$provider.id" method="POST">
+    <table cellpadding="0" cellspacing="0" class="info">
+        #if(! $service)
+            <tr>
+                <th style="width: 100px;">$i18n.get("service"):</th>
+                <td style="width: 300px;"><input type="hidden" name="service"
+                                                 value="$provider.service"/>$provider.service</td>
+            </tr>
+        #end
+        <tr>
+            <th style="width: 100px;">$i18n.get("url"):</th>
+            <td>
+                <input type="hidden" name="url" value="$provider.url"/>
+                #if($provider.dynamic)
+                    ${provider.url}?$!provider.parameters
+                #else
+                    ${provider.url}?<input type="text" name="parameters" value="$!provider.parameters"
+                                           class="setting_input" style="width: 400px;"/>
+                #end
+            </td>
+        </tr>
+        #if($provider.dynamic)
+            <tr>
+                <th>$i18n.get("overrides"):</th>
+                <td><input type="text" name="parameters" value="$!provider.override.params" class="setting_input"
+                           style="width: 400px;"/> <font color="blue">$i18n.get("dynamic.parameters.tip")</font></td>
+            </tr>
+        #end
+        <tr>
+            <th>$i18n.get("type"):</th>
+            <td>#if($provider.dynamic)<font color="green">$i18n.get("dynamic")</font>#else<font color="blue">$i18n.get(
+                "static")</font>#end</td>
+        </tr>
+        <tr>
+            <th>$i18n.get("status"):</th>
+            <td>#if($provider.enabled)<font color="green">$i18n.get("enabled")</font>#else<font color="red">$i18n.get(
+                "disabled")</font>#end</td>
+        </tr>
+        <tr>
+            <th>
+                <div class="btn"><a href="#" onclick="document.getElementById('providerForm').submit();">$i18n.get(
+                    "save")</a></div>
+            </th>
+            <td></td>
+        </tr>
+    </table>
+</form>

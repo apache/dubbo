@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<web-app version="2.4" xmlns="http://java.sun.com/xml/ns/j2ee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+
+    <!-- Webx Logging Settings -->
+    <context-param>
+        <param-name>loggingRoot</param-name>
+        <param-value>$dubbo_governance_webx_loggingRoot</param-value>
+    </context-param>
+    <context-param>
+        <param-name>loggingLevel</param-name>
+        <param-value>$dubbo_governance_webx_loggingLevel</param-value>
+    </context-param>
+    <context-param>
+        <param-name>loggingCharset</param-name>
+        <param-value>UTF-8</param-value>
+    </context-param>
+
+    <!-- BUC Settings -->
+    <context-param>
+        <param-name>APP_NAME</param-name>
+        <param-value>dubbo</param-value>
+    </context-param>
+
+    <!-- Draoon App Name -->
+    <context-param>
+        <param-name>APP_NUM</param-name>
+        <param-value>$dubbo_governance_dragoon_app_name</param-value>
+    </context-param>
+
+    <context-param>
+        <param-name>USER_COOKIE_HANDLER</param-name>
+        <!-- 用户可扩展的userCookieHandler -->
+        <param-value>com.alibaba.dubbo.governance.web.common.interceptor.BucCookieHandler</param-value>
+    </context-param>
+
+    <context-param>
+        <param-name>SSO_LOGIN_URL</param-name><!-- sso login page url -->
+        <param-value>http://login.alibaba-inc.com/ssoLogin.htm</param-value>
+    </context-param>
+    <context-param>
+        <param-name>SSO_LOGOUT_URL</param-name><!-- sso logout page url -->
+        <param-value>http://login.alibaba-inc.com/ssoLogout.htm</param-value>
+    </context-param>
+    <context-param>
+        <param-name>SSO_TOKEN_API</param-name><!-- sso server token api -->
+        <param-value>http://login.alibaba-inc.com/rpc/sso/renewToken.json</param-value>
+    </context-param>
+    <context-param>
+        <param-name>EXCLUSIONS</param-name><!-- url that excluded -->
+        <param-value>
+            /sendBucSSOToken,/bucSSOLogout,/login.htm,/logout.htm,/images*,/css*,/js*,/reg,/lookup,/unreg,/unregister,/unregisterall,/status,/status/*,/register,/disable,*.ico,/rpc/*,/sysinfo/dump/*
+        </param-value>
+    </context-param>
+
+    <!-- BUC -->
+    <filter>
+        <filter-name>ssoFilter</filter-name><!-- buc sso filter -->
+        <filter-class>com.alibaba.buc.sso.client.filter.SSOFilter</filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>ssoFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <servlet>
+        <servlet-name>BucSSOTokenHandlerServlet</servlet-name>
+        <!-- 写token入cookie的servlet -->
+        <servlet-class>com.alibaba.buc.sso.client.servlet.SSOTokenHandlerServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet>
+        <servlet-name>BucSSOLogoutServlet</servlet-name>
+        <!-- sso logout的servlet -->
+        <servlet-class>com.alibaba.buc.sso.client.servlet.SSOLogoutServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <!-- dragoon -->
+    <listener>
+        <listener-class>com.alibaba.dragoon.patrol.web.PatrolServletContextListener</listener-class>
+    </listener>
+    <listener>
+        <listener-class>com.alibaba.dragoon.client.DragoonClientServletContextListener</listener-class>
+    </listener>
+
+    <!-- Logger -->
+    <listener>
+        <listener-class>com.alibaba.citrus.logconfig.LogConfiguratorListener</listener-class>
+    </listener>
+
+    <!-- Loading /WEB-INF/webx.xml, /WEB-INF/webx-*.xml -->
+    <listener>
+        <listener-class>com.alibaba.citrus.webx.context.WebxContextLoaderListener</listener-class>
+    </listener>
+
+    <filter>
+        <filter-name>mdc</filter-name>
+        <filter-class>com.alibaba.citrus.webx.servlet.SetLoggingContextFilter</filter-class>
+    </filter>
+
+    <filter>
+        <filter-name>webx</filter-name>
+        <filter-class>com.alibaba.citrus.webx.servlet.WebxFrameworkFilter</filter-class>
+        <init-param>
+            <param-name>excludes</param-name>
+            <param-value>*.css, *.js, *.jpg, *.gif, *.png, *.jpeg,/sendBucSSOToken,/bucSSOLogout</param-value>
+        </init-param>
+    </filter>
+
+    <servlet-mapping>
+        <servlet-name>BucSSOTokenHandlerServlet</servlet-name>
+        <url-pattern>/sendBucSSOToken</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>BucSSOLogoutServlet</servlet-name>
+        <url-pattern>/bucSSOLogout</url-pattern>
+    </servlet-mapping>
+
+    <filter-mapping>
+        <filter-name>mdc</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <filter-mapping>
+        <filter-name>webx</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <welcome-file-list>
+        <welcome-file>index.html</welcome-file>
+        <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
+
+</web-app>

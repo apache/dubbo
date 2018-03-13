@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+    <agreements id="101" service_name="com.alibaba.Service1" consumer_application="app1" invocation_quantity="1000000"
+                tps="5000"
+                response_time="10" availability="0.91" username="root" gmt_create="2011-01-01 01:01:01"
+                gmt_modified="2011-01-01 01:01:01"/>
+    <agreements id="102" service_name="com.alibaba.Service2" consumer_application="app2" invocation_quantity="2000000"
+                tps="25000"
+                response_time="20" availability="0.92" username="root" gmt_create="2011-01-01 02:01:01"
+                gmt_modified="2011-01-01 02:01:01"/>
+    <agreements id="103" service_name="com.alibaba.Service3" consumer_application="app1" invocation_quantity="3000000"
+                tps="35000"
+                response_time="30" availability="0.93" username="root" gmt_create="2011-01-01 03:01:01"
+                gmt_modified="2011-01-01 03:01:01"/>
+
+    <agreements id="201" service_name="com.alibaba.xxx.Service1" consumer_application="app3" invocation_quantity="1000"
+                tps="5"
+                response_time="50" availability="0.99" username="root" gmt_create="2011-01-02 01:01:01"
+                gmt_modified="2011-01-02 01:01:01"/>
+</dataset>

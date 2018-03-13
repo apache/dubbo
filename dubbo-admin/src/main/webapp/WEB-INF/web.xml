@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.4"
+         xmlns="http://java.sun.com/xml/ns/j2ee"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee  http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+
+    <!-- Webx Logging Settings -->
+    <context-param>
+        <param-name>loggingLevel</param-name>
+        <param-value>INFO</param-value>
+    </context-param>
+    <context-param>
+        <param-name>loggingCharset</param-name>
+        <param-value>UTF-8</param-value>
+    </context-param>
+
+    <!-- Logger -->
+    <listener>
+        <listener-class>com.alibaba.citrus.logconfig.LogConfiguratorListener</listener-class>
+    </listener>
+
+    <!-- Loading /WEB-INF/webx.xml, /WEB-INF/webx-*.xml -->
+    <listener>
+        <listener-class>com.alibaba.citrus.webx.context.WebxContextLoaderListener</listener-class>
+    </listener>
+
+    <filter>
+        <filter-name>mdc</filter-name>
+        <filter-class>com.alibaba.citrus.webx.servlet.SetLoggingContextFilter</filter-class>
+    </filter>
+
+    <!--
+    <filter>
+        <filter-name>welcomeFilter</filter-name>
+        <filter-class>org.mortbay.servlet.WelcomeFilter</filter-class>
+    </filter>
+    -->
+
+    <filter>
+        <filter-name>webx</filter-name>
+        <filter-class>com.alibaba.citrus.webx.servlet.WebxFrameworkFilter</filter-class>
+        <init-param>
+            <param-name>excludes</param-name>
+            <param-value>*.css, *.js, *.jpg, *.gif, *.png, *.jpeg,/sendBucSSOToken,/bucSSOLogout</param-value>
+        </init-param>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>mdc</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <filter-mapping>
+        <filter-name>webx</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+</web-app>

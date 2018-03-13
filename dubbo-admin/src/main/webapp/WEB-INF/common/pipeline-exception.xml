@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans:beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:services="http://www.alibaba.com/schema/services"
+             xmlns:beans="http://www.springframework.org/schema/beans"
+             xsi:schemaLocation="http://www.alibaba.com/schema/services http://localhost:8080/schema/services.xsd
+
+        http://www.alibaba.com/schema/services/pipeline/valves http://localhost:8080/schema/services-pipeline-valves.xsd
+        http://www.springframework.org/schema/beans http://localhost:8080/schema/www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <services:pipeline id="exceptionPipeline"
+                       xmlns="http://www.alibaba.com/schema/services/pipeline/valves">
+
+        <!-- Initialize the turbine rundata and set up objects that may be used in pipelineContext (such as rundata, utils) so that valve can be obtained. -->
+        <prepareForTurbine/>
+
+        <!-- According to the exception, select the appropriate error page and statusCode. -->
+        <handleException defaultPage="error_other.vm">
+            <on-exception
+                    type="com.alibaba.citrus.service.template.TemplateNotFoundException"
+                    statusCode="404" page="error_404.vm"/>
+            <on-exception
+                    type="com.alibaba.citrus.service.moduleloader.ModuleNotFoundException"
+                    statusCode="404" page="error_404.vm"/>
+        </handleException>
+
+        <performTemplateScreen/>
+        <renderTemplate/>
+
+    </services:pipeline>
+
+</beans:beans>

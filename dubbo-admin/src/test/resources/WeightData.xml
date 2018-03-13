@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+    <weights id="101" provider_address="3.3.3.101" service_name="hello.HelloService1"
+             weight="11" username="user1"/>
+    <weights id="102" provider_address="3.3.3.102" service_name="hello.HelloService2"
+             weight="12" username="user2"/>
+    <weights id="103" provider_address="3.3.3.103" service_name="hello.HelloService3"
+             weight="13" username="user3"/>
+</dataset>

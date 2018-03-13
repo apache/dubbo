@@ -85,7 +85,7 @@ final class NettyChannel extends AbstractChannel {
     }
 
     public boolean isConnected() {
-        return !isClosed() && channel.isActive();
+        return channel.isActive();
     }
 
     public void send(Object message, boolean sent) throws RemotingException {

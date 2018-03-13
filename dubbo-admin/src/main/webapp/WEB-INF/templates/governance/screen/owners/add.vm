@@ -1,0 +1,56 @@
+<div class="ico_btn">
+    <a href="../owners"><img src="$rootContextPath.getURI("images/ico_back.png")" width="12" height="12"/><span
+            class="ico_font">$i18n.get("back")</span></a>
+</div>
+<br/>
+<form id="df" action="../owners" method="POST">
+    <table cellpadding="0" cellspacing="0" class="info">
+        <tr>
+            <th style="width: 150px;">$i18n.get("service")&nbsp;&nbsp;<font color='red'>*</font></th>
+            <td>
+                #if($service)
+                    <input type="hidden" id="serviceName" name="service" value="$service"/>$service
+                #else
+                    <input id="serviceName" name="service" rows="5" cols="40" maxlength="200">
+                    #if ($serviceList && $serviceList.size() > 0)
+                        <select id="selectService" name="selectService" onchange="fnSetService(this)">
+                            <option value="">$i18n.get("Choose")</option>
+                            #foreach ($s in $serviceList)
+                                <option value="$s">$tool.getSimpleName($s)</option>
+                            #end
+                        </select>
+                    #end
+                #end
+            </td>
+        </tr>
+        <tr>
+            <th style="width: 150px;">$i18n.get("Username")&nbsp;&nbsp;<font color='red'>*</font></th>
+            <td><input type="text" id="username" name="username" style="ime-mode:disabled" value="$operator"
+                       maxlength="100"/></td>
+        </tr>
+        <tr>
+            <th>
+                <div class="btn"><a href="#" onclick="if(check()){document.getElementById('df').submit();}">$i18n.get(
+                    "save")</a></div>
+            </th>
+            <td></td>
+        </tr>
+    </table>
+</form>
+<script language="javascript">
+    function check() {
+        var username = byId('username').value.trim();
+        if (username == '') {
+            showAlert("$i18n.get("PleaseInput")$i18n.get("Username")", 'username');
+            return false;
+        }
+        return true;
+    }
+
+    function fnSetService(obj) {
+        if (obj.value != '') {
+            byId('serviceName').value = obj.value;
+        }
+    }
+
+</script>

@@ -1,0 +1,6 @@
+dubbo=com.alibaba.dubbo.common.serialize.support.dubbo.DubboSerialization
+hessian2=com.alibaba.dubbo.common.serialize.support.hessian.Hessian2Serialization
+java=com.alibaba.dubbo.common.serialize.support.java.JavaSerialization
+compactedjava=com.alibaba.dubbo.common.serialize.support.java.CompactedJavaSerialization
+fastjson=com.alibaba.dubbo.common.serialize.support.json.FastJsonSerialization
+nativejava=com.alibaba.dubbo.common.serialize.support.nativejava.NativeJavaSerialization

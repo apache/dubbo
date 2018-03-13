@@ -36,7 +36,7 @@ public abstract class AbstractLoadBalance implements LoadBalance {
     }
 
     public <T> Invoker<T> select(List<Invoker<T>> invokers, URL url, Invocation invocation) {
-        if (invokers == null || invokers.isEmpty())
+        if (invokers == null || invokers.size() == 0)
             return null;
         if (invokers.size() == 1)
             return invokers.get(0);

@@ -210,7 +210,7 @@ public class MulticastRegistry extends FailbackRegistry {
         } else if (msg.startsWith(Constants.SUBSCRIBE)) {
             URL url = URL.valueOf(msg.substring(Constants.SUBSCRIBE.length()).trim());
             Set<URL> urls = getRegistered();
-            if (urls != null && !urls.isEmpty()) {
+            if (urls != null && urls.size() > 0) {
                 for (URL u : urls) {
                     if (UrlUtils.isMatch(url, u)) {
                         String host = remoteAddress != null && remoteAddress.getAddress() != null
@@ -359,7 +359,7 @@ public class MulticastRegistry extends FailbackRegistry {
 
     private List<URL> toList(Set<URL> urls) {
         List<URL> list = new ArrayList<URL>();
-        if (urls != null && !urls.isEmpty()) {
+        if (urls != null && urls.size() > 0) {
             for (URL url : urls) {
                 list.add(url);
             }
@@ -395,13 +395,13 @@ public class MulticastRegistry extends FailbackRegistry {
                 urls.addAll(values);
             }
         }
-        if (urls.isEmpty()) {
+        if (urls == null || urls.size() == 0) {
             List<URL> cacheUrls = getCacheUrls(url);
-            if (cacheUrls != null && !cacheUrls.isEmpty()) {
+            if (cacheUrls != null && cacheUrls.size() > 0) {
                 urls.addAll(cacheUrls);
             }
         }
-        if (urls.isEmpty()) {
+        if (urls == null || urls.size() == 0) {
             for (URL u : getRegistered()) {
                 if (UrlUtils.isMatch(url, u)) {
                     urls.add(u);

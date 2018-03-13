@@ -154,7 +154,7 @@ public class HeaderExchangeServer implements ExchangeServer {
     public Collection<ExchangeChannel> getExchangeChannels() {
         Collection<ExchangeChannel> exchangeChannels = new ArrayList<ExchangeChannel>();
         Collection<Channel> channels = server.getChannels();
-        if (channels != null && !channels.isEmpty()) {
+        if (channels != null && channels.size() > 0) {
             for (Channel channel : channels) {
                 exchangeChannels.add(HeaderExchangeChannel.getOrAddChannel(channel));
             }

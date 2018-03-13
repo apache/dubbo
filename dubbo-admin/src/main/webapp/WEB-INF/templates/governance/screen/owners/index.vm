@@ -1,0 +1,40 @@
+<div class="ico_btn">
+    #if($currentUser.role != "G")
+        <a href="owners/add"><img src="$rootContextPath.getURI("images/ico_add.png")" width="12" height="12"/><span
+                class="ico_font">$i18n.get("add")</span></a>
+    #end
+</div>
+<br/>
+<table cellpadding="0" cellspacing="0" class="list list_dubbo" id="table_o">
+    <tr>
+        <th>$i18n.get("username"): <input type="text" onkeyup="searchTable('table_o', 1, this.value);"
+                                          onclick="searchTable('table_o', 1, this.value);"/>&nbsp;<img
+                src="$rootContextPath.getURI("images/ico_search.png")" width="12" height="12"/></th>
+        #if(! $service)
+            <th>$i18n.get("service"): <input type="text" onkeyup="searchTable('table_o', 2, this.value);"
+                                             onclick="searchTable('table_o', 2, this.value);"/>&nbsp;<img
+                    src="$rootContextPath.getURI("images/ico_search.png")" width="12" height="12"/></th>
+        #end
+        #if($currentUser.role != "G")
+            <th>$i18n.get("operation")</th>#end
+    </tr>
+    #foreach($owner in $owners)
+        <tr>
+            <td>$owner.username</td>
+            #if(! $service)
+                <td><a href="services/$owner.service/owners">$owner.service</a></td>
+            #end
+            #if($currentUser.role != "G")
+                <td>
+                    #if($currentUser.hasServicePrivilege($owner.service))
+                        <a href="#" onclick="showConfirm('$i18n.get(
+                            "confirm.delete")', '$owner.username', 'owners/0/delete?username=$owner.username#if(! $service)&service=$owner.service#end'); return false;"><img
+                                src="$rootContextPath.getURI("images/ico_delete.png")" width="12" height="12"/><span
+                                class="ico_font">$i18n.get("delete")</span></a>
+                    #end
+                </td>
+            #end
+        </tr>
+    #end
+</table>
+<div class="page">$i18n.get("page.total")$owners.size()$i18n.get("page.records") </div>

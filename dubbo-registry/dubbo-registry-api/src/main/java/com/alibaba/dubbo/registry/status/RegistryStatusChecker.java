@@ -33,7 +33,7 @@ public class RegistryStatusChecker implements StatusChecker {
 
     public Status check() {
         Collection<Registry> regsitries = AbstractRegistryFactory.getRegistries();
-        if (regsitries == null || regsitries.isEmpty()) {
+        if (regsitries == null || regsitries.size() == 0) {
             return new Status(Status.Level.UNKNOWN);
         }
         Status.Level level = Status.Level.OK;

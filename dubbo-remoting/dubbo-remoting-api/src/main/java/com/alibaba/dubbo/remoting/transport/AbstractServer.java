@@ -196,7 +196,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
     @Override
     public void disconnected(Channel ch) throws RemotingException {
         Collection<Channel> channels = getChannels();
-        if (channels.isEmpty()) {
+        if (channels.size() == 0) {
             logger.warn("All clients has discontected from " + ch.getLocalAddress() + ". You can graceful shutdown now.");
         }
         super.disconnected(ch);

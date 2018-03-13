@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans:beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:services="http://www.alibaba.com/schema/services"
+             xmlns:res-loaders="http://www.alibaba.com/schema/services/resource-loading/loaders"
+             xmlns:beans="http://www.springframework.org/schema/beans"
+             xsi:schemaLocation="http://www.alibaba.com/schema/services http://localhost:8080/schema/services.xsd
+
+        http://www.alibaba.com/schema/services/resource-loading/loaders http://localhost:8080/schema/services-resource-loading-loaders.xsd
+        http://www.springframework.org/schema/beans http://localhost:8080/schema/www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <services:resource-loading xmlns="http://www.alibaba.com/schema/services">
+
+        <resource-alias pattern="/" name="/webroot"/>
+
+        <!-- 子模块模板目录：/*/templates -->
+        <!-- 全局模板目录： /*/templates/global -->
+        <resource-alias pattern="/*/templates/global" name="/webroot/common/templates"/>
+
+        <!-- 配置文件根目录：/conf -->
+        <resource-alias pattern="/conf" name="/webroot/WEB-INF"/>
+
+        <!-- 内部资源 -->
+        <resource pattern="/webroot" internal="true">
+            <res-loaders:webapp-loader/>
+        </resource>
+        <resource pattern="/classpath" internal="true">
+            <res-loaders:classpath-loader/>
+        </resource>
+
+        <resource-alias pattern="/templates" name="/webroot/WEB-INF/templates"/>
+    </services:resource-loading>
+
+    <beans:bean xmlns="http://www.springframework.org/schema/beans"
+                id="messageSource"
+                class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+        <beans:property name="basenames">
+            <beans:list>
+                <beans:value>/WEB-INF/i18n/message</beans:value>
+            </beans:list>
+        </beans:property>
+        <beans:property name="cacheSeconds" value="3"/>
+        <beans:property name="fallbackToSystemLocale" value="false"/>
+        <beans:property name="defaultEncoding" value="GBK"/>
+    </beans:bean>
+</beans:beans>

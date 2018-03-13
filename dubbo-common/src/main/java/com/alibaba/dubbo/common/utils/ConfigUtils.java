@@ -244,7 +244,7 @@ public class ConfigUtils {
             logger.warn("Fail to load " + fileName + " file: " + t.getMessage(), t);
         }
 
-        if (list.isEmpty()) {
+        if (list.size() == 0) {
             if (!optional) {
                 logger.warn("No " + fileName + " found on the class path.");
             }

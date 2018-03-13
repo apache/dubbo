@@ -1,3 +1,0 @@
-java=com.alibaba.dubbo.common.serialize.java.JavaSerialization
-compactedjava=com.alibaba.dubbo.common.serialize.java.CompactedJavaSerialization
-nativejava=com.alibaba.dubbo.common.serialize.nativejava.NativeJavaSerialization

@@ -1,0 +1,4 @@
+[#foreach($application in $applications)
+    #if ($velocityCount > 1),#end
+"$application"
+#end]

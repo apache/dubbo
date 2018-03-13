@@ -1,0 +1,23 @@
+<div class="ico_btn">
+    <a href="../versions"><img src="$rootContextPath.getURI("images/ico_back.png")" width="12" height="12"/><span
+            class="ico_font">$i18n.get("back")</span></a>
+</div>
+<br/>
+<table cellpadding="0" cellspacing="0" class="list list_dubbo" id="table_o">
+    <tr>
+        <th>$i18n.get("applications"): <input type="text" onkeyup="searchTable('table_o', 0, this.value);"
+                                              onclick="searchTable('table_o', 0, this.value);"/>&nbsp;<img
+                src="$rootContextPath.getURI("images/ico_search.png")" width="12" height="12"/></th>
+    </tr>
+    #foreach($application in $applications)
+        <tr>
+            <td>
+                #if($application) $application
+                #else
+                <无应用名>
+                #end
+            </td>
+        </tr>
+    #end
+</table>
+<div class="page">$i18n.get("page.total")$applications.size()$i18n.get("page.records")</div>

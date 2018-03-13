@@ -1,0 +1,67 @@
+<div class="ico_btn">
+    #if($currentUser.role != "G")
+        <a href="loadbalances/add"><img src="$rootContextPath.getURI("images/ico_add.png")" width="9" height="9"/><span
+                class="ico_font">$i18n.get("add")</span></a>
+        <span class="ico_line">|</span>
+        <a href="#" onclick="if(! hasCheckbox('ids')) { showAlert('$i18n.get(
+            "empty.list")'); } else if(! hasChecked('ids')) { showAlert('$i18n.get(
+            "please.select")'); } else { showConfirm('$i18n.get(
+            "confirm.batch.delete")', 'loadbalances/' + getChecked('ids') + '/delete'); } return false;"><img
+                src="$rootContextPath.getURI("images/ico_delete.png")" width="12" height="12"/><span
+                class="ico_font">$i18n.get("batch.delete")</span></a>
+    #end
+</div>
+<br/>
+<table cellpadding="0" cellspacing="0" class="list list_dubbo" id="table_o">
+    <tr>
+        <th width="20"><input type="checkbox" onclick="checkAll('table_o', 'ids', this.checked)"/></th>
+        <th>$i18n.get("service.method"): <input type="text" onkeyup="searchTable('table_o', 1, this.value);"
+                                                onclick="searchTable('table_o', 1, this.value);"/>&nbsp;<img
+                src="$rootContextPath.getURI("images/ico_search.png")" width="12" height="12"/></th>
+        #if(! $service)
+            <th>$i18n.get("service"): <input type="text" onkeyup="searchTable('table_o', 2, this.value);"
+                                             onclick="searchTable('table_o', 2, this.value);"/>&nbsp;<img
+                    src="$rootContextPath.getURI("images/ico_search.png")" width="12" height="12"/></th>
+            <th width="190">$i18n.get("loadBalanceStrategy"): <select onchange="searchTable('table_o', 3, this.value);"
+                                                                      onclick="searchTable('table_o', 3, this.value);">
+                <option value="">$i18n.get("all")</option>
+                <option value="$i18n.get("random")">$i18n.get("random")</option>
+                <option value="$i18n.get("roundrobin")">$i18n.get("roundrobin")</option>
+                <option value="$i18n.get("leastactive")">$i18n.get("leastactive")</option>
+            </select></th>
+        #else
+            <th width="190">$i18n.get("loadBalanceStrategy"): <select onchange="searchTable('table_o', 2, this.value);"
+                                                                      onclick="searchTable('table_o', 2, this.value);">
+                <option value="">$i18n.get("all")</option>
+                <option value="$i18n.get("random")">$i18n.get("random")</option>
+                <option value="$i18n.get("roundrobin")">$i18n.get("roundrobin")</option>
+                <option value="$i18n.get("leastactive")">$i18n.get("leastactive")</option>
+            </select></th>
+        #end
+        #if($currentUser.role != "G")
+            <th width="130">$i18n.get("operation")</th>#end
+    </tr>
+    #foreach($loadbalance in $loadbalances)
+        <tr>
+            <td><input type="checkbox" name="ids" value="$loadbalance.id"/></td>
+            <td>$loadbalance.method</td>
+            #if(! $service)
+                <td><a href="services/$loadbalance.service/loadbalances">$loadbalance.service</a></td>
+            #end
+            <td>$i18n.get($loadbalance.strategy)</td>
+            #if($currentUser.role != "G")
+                <td>
+                    <a href="loadbalances/$loadbalance.id/edit"><img
+                            src="$rootContextPath.getURI("images/ico_edit.png")" width="12" height="12"/><span
+                            class="ico_font">$i18n.get("edit")</span></a>
+                    <span class="ico_line">|</span>
+                    <a href="#" onclick="showConfirm('$i18n.get(
+                        "confirm.delete")', '$loadbalance.service', 'loadbalances/$loadbalance.id/delete'); return false;">
+                        <img src="$rootContextPath.getURI("images/ico_delete.png")" width="12" height="12"/>
+                        <span class="ico_font">$i18n.get("delete")</span></a>
+                </td>
+            #end
+        </tr>
+    #end
+</table>
+<div class="page">$i18n.get("page.total")$loadbalances.size()$i18n.get("page.records") </div>

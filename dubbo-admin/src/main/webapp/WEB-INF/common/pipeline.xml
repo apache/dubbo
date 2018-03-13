@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans:beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:services="http://www.alibaba.com/schema/services"
+             xmlns:pl-conditions="http://www.alibaba.com/schema/services/pipeline/conditions"
+             xmlns:beans="http://www.springframework.org/schema/beans"
+             xsi:schemaLocation="
+        http://www.alibaba.com/schema/services http://localhost:8080/schema/services.xsd
+        http://www.alibaba.com/schema/services/pipeline/conditions http://localhost:8080/schema/services-pipeline-conditions.xsd
+        http://www.alibaba.com/schema/services/pipeline/valves http://localhost:8080/schema/services-pipeline-valves.xsd
+        http://www.springframework.org/schema/beans http://localhost:8080/schema/www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <services:pipeline
+            xmlns="http://www.alibaba.com/schema/services/pipeline/valves">
+
+        <!-- Initialize the turbine rundata and set up objects that may be used in pipelineContext (such as rundata, utils) so that valve can be obtained. -->
+        <prepareForTurbine/>
+
+        <!-- Set context of log system, so that we can record logs of current request. -->
+        <setLoggingContext/>
+
+        <!-- URL is analyzed and target is obtained. -->
+        <analyzeURL/>
+
+        <!-- Check csrf token to avoid csrf attack and duplicate submit. If the token in request can not be matched with the token in session, then an error page or expired page is shown. -->
+        <checkCsrfToken/>
+
+        <!-- interceptor for I18N -->
+        <valve class="com.alibaba.dubbo.governance.web.common.interceptor.LocaleValve"/>
+        <choose>
+            <when>
+                <pl-conditions:path-condition name="^/servicestatus/.+|^/status$|/favicon.ico|/sysinfo/dump.htm"/>
+            </when>
+            <otherwise>
+                <valve class="com.alibaba.dubbo.governance.web.common.interceptor.AuthorizationValve"/>
+            </otherwise>
+        </choose>
+
+        <loop>
+            <choose>
+                <when>
+                    <!-- The screen without the template is executed, and the default is not layout. -->
+                    <pl-conditions:path-condition
+                            name="/sysinfo/dump.htm|^/\w+$|^/status/.+$"/>
+                    <performTemplateScreen/>
+                </when>
+                <when>
+                    <!-- The screen with the template is executed, and the default is layout. -->
+                    <pl-conditions:target-extension-condition
+                            extension="null, vm, jsp, html"/>
+                    <performAction/>
+                    <performTemplateScreen/>
+                    <renderTemplate/>
+                </when>
+                <otherwise>
+                    <exit/>
+                </otherwise>
+            </choose>
+
+            <!-- If rundata.setRedirectTarget () is set, then loop, or else out of the loop. -->
+            <breakUnlessTargetRedirected/>
+        </loop>
+
+    </services:pipeline>
+
+</beans:beans>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+    <consumers id="1" service_name="MyService1" consumer_address="10.16.26.1" registry_address="10.20.153.10:9010"
+               query_url="version=1.0.0#findPerson"
+               application="test1" username="china" statistics="key1=1&amp;key2=2"
+               statistics_date="2010-01-01 00:01:00.0"/>
+    <consumers id="2" service_name="MyService2" consumer_address="10.16.26.2" registry_address="10.20.153.10:9010"
+               query_url="version=1.0.0"
+               application="test" username="china" statistics="key3=3" statistics_date="2010-03-01 00:01:00.0"/>
+    <consumers id="3" service_name="MyService3" consumer_address="10.16.26.3" registry_address="10.20.153.10:9010"
+               query_url="version=1.0.0"
+               application="test3" username="china" statistics="key4=4" statistics_date="2010-04-01 00:01:00.0"/>
+</dataset>

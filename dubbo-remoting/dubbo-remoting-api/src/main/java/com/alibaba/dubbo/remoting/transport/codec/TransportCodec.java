@@ -16,7 +16,6 @@
  */
 package com.alibaba.dubbo.remoting.transport.codec;
 
-import com.alibaba.dubbo.common.serialize.Cleanable;
 import com.alibaba.dubbo.common.serialize.ObjectInput;
 import com.alibaba.dubbo.common.serialize.ObjectOutput;
 import com.alibaba.dubbo.common.utils.StringUtils;
@@ -40,19 +39,11 @@ public class TransportCodec extends AbstractCodec {
         ObjectOutput objectOutput = getSerialization(channel).serialize(channel.getUrl(), output);
         encodeData(channel, objectOutput, message);
         objectOutput.flushBuffer();
-        if (objectOutput instanceof Cleanable) {
-            ((Cleanable) objectOutput).cleanup();
-        }
     }
 
     public Object decode(Channel channel, ChannelBuffer buffer) throws IOException {
         InputStream input = new ChannelBufferInputStream(buffer);
-        ObjectInput objectInput = getSerialization(channel).deserialize(channel.getUrl(), input);
-        Object object = decodeData(channel, objectInput);
-        if (objectInput instanceof Cleanable) {
-            ((Cleanable) objectInput).cleanup();
-        }
-        return object;
+        return decodeData(channel, getSerialization(channel).deserialize(channel.getUrl(), input));
     }
 
     protected void encodeData(Channel channel, ObjectOutput output, Object message) throws IOException {

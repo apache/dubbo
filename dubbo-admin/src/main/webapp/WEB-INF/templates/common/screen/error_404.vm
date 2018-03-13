@@ -1,0 +1,138 @@
+#set($title = "Not Found")
+<div>
+    <STYLE type=text/css>
+        A:link {
+            COLOR: #555555;
+            TEXT-DECORATION: none
+        }
+
+        A:visited {
+            COLOR: #555555;
+            TEXT-DECORATION: none
+        }
+
+        A:active {
+            COLOR: #555555;
+            TEXT-DECORATION: none
+        }
+
+        A:hover {
+            COLOR: #6f9822;
+            TEXT-DECORATION: none
+        }
+
+        .text {
+            FONT-SIZE: 12px;
+            COLOR: #555555;
+            FONT-FAMILY: "";
+            TEXT-DECORATION: none
+        }
+
+        .STYLE1 {
+            font-size: 13px
+        }
+
+        .STYLE2 {
+            font-size: 12px
+        }
+
+        .STYLE3 {
+            font-size: 11px
+        }
+    </STYLE>
+    <br/><br/>
+    <TABLE height="100%" cellSpacing=0 cellPadding=0 width="100%" align=center border=0>
+        <TR>
+            <TD vAlign="center" align="middle">
+                <TABLE cellSpacing=0 cellPadding=0 width=500 align=center border=0>
+                    <TR>
+                        <TD width=17 height=17>
+                            <IMG height=17 src="$rootContextPath.getURI("images/co_01.gif")" width=17/>
+                        </TD>
+                        <TD width=316 background="$rootContextPath.getURI("images/bg01.gif")"></TD>
+                        <TD width=17 height=17>
+                            <IMG height=17 src="$rootContextPath.getURI("images/co_02.gif")" width=17/>
+                        </TD>
+                    </TR>
+                    <TR>
+                        <TD background="$rootContextPath.getURI("images/bg02.gif")"></TD>
+                        <TD>
+                            <TABLE class=text cellSpacing=0 cellPadding=10 width="100%" align=center border=0>
+                                <TR>
+                                    <TD>
+                                        <TABLE cellSpacing=0 cellPadding=0 width="100%" border=0>
+                                            <TR>
+                                                <TD width=20>　</TD>
+                                                <TD>
+                                                    <IMG height=66 src="$rootContextPath.getURI("images/404error.gif")"
+                                                         width=400/>
+                                                </TD>
+                                            </TR>
+                                        </TABLE>
+                                    </TD>
+                                </TR>
+                                <TR>
+                                    <TD>
+                                        <TABLE cellSpacing=0 cellPadding=0 width="100%" border=0>
+                                            <TR>
+                                                <TD background="$rootContextPath.getURI("images/dot_01.gif")"
+                                                    height=1></TD>
+                                            </TR>
+                                            </TBODY></TABLE>
+                                        <BR/>
+                                        <TABLE class=text cellSpacing=0 cellPadding=0 width="100%" border=0>
+                                            <TR>
+                                                <TD width=20>　</TD>
+                                                <TD>
+                                                    <P>
+                                                        <STRONG>
+                                                            <FONT color=#ba1c1c>HTTP40 ERROR</FONT></STRONG>:
+                                                        <BR/>
+                                                        <BR/>
+                                                        Failed to find the page you want to access, please make sure you
+                                                        are accessing the correct URL. <BR/>
+                                                        <BR/>
+                                                        Please try the following: </P>
+                                                    <P>·Dubbo2.1 has been upgraded, and if you have add the Dubbo URL
+                                                        link to your favourite collections, please click back to the
+                                                        home page to jump<BR/><BR/>
+                                                        ·click <A href="/">
+                                                            <font color="#BA1C1C">Home</font></A> link, and try other
+                                                        links.<BR/>
+                                                    </P>
+                                                    <BR/>
+                                                    <P align="right">If you have made this mistake many times when you
+                                                        are browsing this station, please contact the Dubbo
+                                                        team&nbsp;</P>
+                                                </TD>
+                                            </TR>
+                                        </TABLE>
+                                    </TD>
+                                </TR>
+                            </TABLE>
+                        </TD>
+                        <TD background="$rootContextPath.getURI("images/bg03.gif")"></TD>
+                    </TR>
+                    <TR>
+                        <TD width=17 height=17>
+                            <IMG height=17 src="$rootContextPath.getURI("images/co_03.gif")" width=17/>
+                        </TD>
+                        <TD background="$rootContextPath.getURI("images/bg04.gif")" height=17></TD>
+                        <TD width=17 height=17>
+                            <IMG height=17 src="$rootContextPath.getURI("images/co_04.gif")" width=17/>
+                        </TD>
+                    </TR>
+                </TABLE>
+                <TABLE class=text cellSpacing=0 cellPadding=0 width=500 align=center border=0>
+                    <TR>
+                        <TD></TD>
+                    </TR>
+                    <TR>
+                        <TD align="middle"></TD>
+                    </TR>
+                </TABLE>
+            </TD>
+        </TR>
+        </TBODY>
+    </TABLE>
+</div>

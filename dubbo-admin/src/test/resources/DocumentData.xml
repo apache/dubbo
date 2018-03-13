@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+    <documents id="1" service_name="service1" title="test" type="I" username="xx" content="my test"/>
+</dataset>

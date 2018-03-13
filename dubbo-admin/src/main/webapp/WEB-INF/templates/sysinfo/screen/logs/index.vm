@@ -1,0 +1,40 @@
+<div class="ico_btn">
+    #if($currentUser.role == "R")
+        <select id="logLevel" name="logLevel" onchange="changeLevel(this.value);">
+            <option value="ALL" #if($level == "ALL")selected="selected"#end>ALL</option>
+            <option value="TRACE" #if($level == "TRACE")selected="selected"#end>TRACE</option>
+            <option value="DEBUG" #if($level == "DEBUG")selected="selected"#end>DEBUG</option>
+            <option value="INFO" #if($level == "INFO")selected="selected"#end>INFO</option>
+            <option value="WARN" #if($level == "WARN")selected="selected"#end>WARN</option>
+            <option value="ERROR" #if($level == "ERROR")selected="selected"#end>ERROR</option>
+            <option value="OFF" #if($level == "OFF")selected="selected"#end>OFF</option>
+        </select>
+        <a href="#" onclick="showConfirm('$i18n.get(
+            "logs.confirmChangeLogLevel")', '/sysinfo/logs/change?level=' + document.getElementById('logLevel').value);">
+            <img src="$rootContextPath.getURI("images/ico_enable.png")" width="12" height="12"/><span
+                class="ico_font">$i18n.get("change.log.level")</span>
+        </a>
+    #end
+</div>
+<br/>
+<table cellpadding="0" cellspacing="0" class="list list_dubbo" id="table_o">
+    <tr>
+        <th>
+            $i18n.get("logs.file"): $name ($i18n.get("logs.size"): $size / $i18n.get(
+            "logs.modify"): $modified) $i18n.get("logs.level"): $level
+            : <input type="text" onkeyup="searchTable('table_o', 0, this.value);"
+                     onclick="searchTable('table_o', 0, this.value);"/>&nbsp;<img
+                src="$rootContextPath.getURI("images/ico_search.png")" width="12" height="12"/>
+        </th>
+    </tr>
+    <tr>
+        <td id="logContent">$tool.unescape($!content.replaceAll("\n", "</td></tr><tr><td>"))</td>
+    </tr>
+    <tr>
+        #if($paginatorBar)
+            <th style="text-align: right;">
+                $tool.unescape($!paginatorBar)
+            </th>
+        #end
+    </tr>
+</table>

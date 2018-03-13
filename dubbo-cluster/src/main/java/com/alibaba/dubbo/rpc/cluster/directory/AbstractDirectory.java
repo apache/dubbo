@@ -72,7 +72,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         }
         List<Invoker<T>> invokers = doList(invocation);
         List<Router> localRouters = this.routers; // local reference
-        if (localRouters != null && !localRouters.isEmpty()) {
+        if (localRouters != null && localRouters.size() > 0) {
             for (Router router : localRouters) {
                 try {
                     if (router.getUrl() == null || router.getUrl().getParameter(Constants.RUNTIME_KEY, false)) {

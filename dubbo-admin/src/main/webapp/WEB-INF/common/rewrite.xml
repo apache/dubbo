@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="GB18030" ?>
+<beans:beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:beans="http://www.springframework.org/schema/beans"
+             xmlns:request-contexts="http://www.alibaba.com/schema/services/request-contexts"
+             xsi:schemaLocation="http://www.springframework.org/schema/beans http://localhost:8080/schema/www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.alibaba.com/schema/services/request-contexts http://localhost:8080/services-request-contexts.xsd ">
+
+
+    <request-contexts:rewrite id="restfulRewrite" xmlns="http://www.alibaba.com/schema/services/request-contexts">
+    </request-contexts:rewrite>
+</beans:beans>
+ 

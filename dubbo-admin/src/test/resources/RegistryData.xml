@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+    <registries id="1" registry_address="10.20.11.22:9090" console_url="http://10.20.11.22:8080/"
+                gmt_expired="2030-10-19" connections="10"/>
+    <registries id="2" registry_address="11.20.11.22:9090" console_url="http://11.20.11.22:8080/"
+                gmt_expired="2030-10-19" connections="10"/>
+    <registries id="3" registry_address="12.20.11.22:9090" console_url="http://12.20.11.22:8080/"
+                gmt_expired="2000-10-19" connections="10"/>
+</dataset>

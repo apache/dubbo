@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans:beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:services="http://www.alibaba.com/schema/services"
+             xmlns:beans="http://www.springframework.org/schema/beans"
+             xsi:schemaLocation="
+        http://www.alibaba.com/schema/services http://localhost:8080/schema/services.xsd
+        http://www.alibaba.com/schema/services/pull/factories http://localhost:8080/schema/services-pull-factories.xsd
+        http://www.springframework.org/schema/beans http://localhost:8080/schema/www.springframework.org/schema/beans/spring-beans.xsd
+    ">
+
+    <!-- This file should only be referenced by webx-*.xml. -->
+    <!-- NOTE: This file requires property-placeholder variables: ${component}。 -->
+
+    <!-- other configuration -->
+    <services:webx-configuration/>
+
+    <!-- Expose the beans to the template. -->
+    <services:pull xmlns="http://www.alibaba.com/schema/services/pull/factories">
+        <utils/>
+        <rundata-tool/>
+        <csrfToken/>
+        <control-tool exportAll="true"/>
+        <uris-tool/>
+        <form-tool/>
+        <page-tool/>
+    </services:pull>
+
+</beans:beans>

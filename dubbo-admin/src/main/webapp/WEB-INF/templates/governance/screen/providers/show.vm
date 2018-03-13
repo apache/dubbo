@@ -1,0 +1,111 @@
+<div class="ico_btn">
+    <a href="../providers"><img src="$rootContextPath.getURI("images/ico_back.png")" width="12" height="12"/><span
+            class="ico_font">$i18n.get("back")</span></a>
+    #if($currentUser.hasServicePrivilege($provider.service))
+        <span class="ico_line">|</span>
+        <a href="$provider.id/edit"><img src="$rootContextPath.getURI("images/ico_edit.png")" width="12"
+                                         height="12"/><span class="ico_font">$i18n.get("edit")</span></a>
+        <span class="ico_line">|</span>
+        <a href="$provider.id/add"><img src="$rootContextPath.getURI("images/ico_add.png")" width="12"
+                                        height="12"/><span class="ico_font">$i18n.get("copy")</span></a>
+        <span class="ico_line">|</span>
+        <a href="#" onclick="showConfirm('$i18n.get(
+            "confirm.weight.doubling")', '$provider.url', '$provider.id/doubling'); return false;"><img
+                src="$rootContextPath.getURI("images/ico_up.png")" width="12" height="12"/><span
+                class="ico_font">$i18n.get("weight.doubling")</span></a>
+        <span class="ico_line">|</span>
+        <a href="#" onclick="showConfirm('$i18n.get(
+            "confirm.weight.halving")', '$provider.url', '$provider.id/halving'); return false;"><img
+                src="$rootContextPath.getURI("images/ico_down.png")" width="12" height="12"/><span
+                class="ico_font">$i18n.get("weight.halving")</span></a>
+        <span class="ico_line">|</span>
+        #if($tool.isProviderEnabled($provider))
+            <a href="#" onclick="showConfirm('$i18n.get(
+                "confirm.disable")', '$provider.url', '$provider.id/disable'); return false;"><img
+                    src="$rootContextPath.getURI("images/ico_disable.png")" width="12" height="12"/><span
+                    class="ico_font">$i18n.get("disable")</span></a>
+        #else
+            <a href="#" onclick="showConfirm('$i18n.get(
+                "confirm.enable")', '$provider.url', '$provider.id/enable'); return false;"><img
+                    src="$rootContextPath.getURI("images/ico_enable.png")" width="12" height="12"/><span
+                    class="ico_font">$i18n.get("enable")</span></a>
+        #end
+        #if(! $provider.dynamic)
+            <span class="ico_line">|</span>
+            <a href="#" onclick="showConfirm('$i18n.get(
+                "confirm.delete")', '$provider.url', '$provider.id/delete'); return false;"><img
+                    src="$rootContextPath.getURI("images/ico_delete.png")" width="12" height="12"/><span
+                    class="ico_font">$i18n.get("delete")</span></a>
+        #end
+    #end
+</div>
+<br/>
+<table cellpadding="0" cellspacing="0" class="info">
+    #if(! $service)
+        <tr>
+            <th style="width: 100px;">$i18n.get("service"):</th>
+            <td>$!provider.service</td>
+        </tr>
+    #end
+    <tr>
+        <th style="width: 100px;">$i18n.get("url"):</th>
+        <td>$!provider.url?$!provider.parameters</td>
+    </tr>
+    #if($provider.dynamic)
+        <tr>
+            <th>$i18n.get("overrides"):</th>
+            <td>$!provider.override.params</td>
+        </tr>
+    #end
+    <tr>
+        <th>$i18n.get("host"):</th>
+        <td>$tool.getHostPrefix($!provider.address)$!provider.address</td>
+    </tr>
+    #foreach($entry in $tool.toParameterMap($!provider.parameters).entrySet())
+        <tr>
+            <th>$i18n.get($entry.key):</th>
+            <td>#if($entry.key == "timestamp") $tool.formatTimestamp($entry.value)
+                ($entry.value) #else $entry.value #end</td>
+        </tr>
+    #end
+    <tr>
+        <th>$i18n.get("type"):</th>
+        <td>#if($provider.dynamic)<font color="green">$i18n.get("dynamic")</font>#else<font color="blue">$i18n.get(
+            "static")</font>#end</td>
+    </tr>
+    <tr>
+        <th>$i18n.get("status"):</th>
+        <td>#if($provider.enabled)<font color="green">$i18n.get("enabled")</font>#else<font color="red">$i18n.get(
+            "disabled")</font>#end</td>
+    </tr>
+    <tr>
+        <th>$i18n.get("check"):</th>
+        <td>
+            #set($errorLevel = "ok")
+            #set($errorMessage = "")
+
+            #if($provider.address.startsWith("127.") || $provider.address.startsWith(
+                "localhost:") || $provider.address.startsWith("0.0.0.0:"))
+                #if ($errorLevel != "error") #set($errorLevel = "warn") #end
+                #set($errorMessage =
+                    "$errorMessage<br>$i18n.get('warn'): $i18n.get('CheckProviderLocalAddress', $provider.address)")
+            #end
+
+            #if ($errorLevel == "warn")
+                <a href="#"
+                   onclick="showAlert('<font color=orange>$i18n.get("warn")</font>', '$errorMessage'); return false;">
+                    <img src="$rootContextPath.getURI("images/ico_warn.png")" width="12" height="12"/>
+                    <font color="orange"><u>$i18n.get("warn")</u></font>
+                </a>
+            #elseif ($errorLevel == "error")
+                <a href="#"
+                   onclick="showAlert('<font color=red>$i18n.get("error")</font>', '$errorMessage'); return false;">
+                    <img src="$rootContextPath.getURI("images/ico_error.png")" width="12" height="12"/>
+                    <font color="red"><u>$i18n.get("error")</u></font>
+                </a>
+            #else
+                <font color="green">$i18n.get("ok")</font>
+            #end
+        </td>
+    </tr>
+</table>
