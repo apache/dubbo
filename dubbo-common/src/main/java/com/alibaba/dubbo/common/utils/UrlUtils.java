@@ -459,13 +459,20 @@ public class UrlUtils {
         }
     }
 
+    /**
+     * 判断服务键是否匹配
+     *
+     * @param pattern 匹配 URL
+     * @param value 被匹配 URL
+     * @return 是否
+     */
     public static boolean isServiceKeyMatch(URL pattern, URL value) {
-        return pattern.getParameter(Constants.INTERFACE_KEY).equals(
-                value.getParameter(Constants.INTERFACE_KEY))
-                && isItemMatch(pattern.getParameter(Constants.GROUP_KEY),
-                value.getParameter(Constants.GROUP_KEY))
-                && isItemMatch(pattern.getParameter(Constants.VERSION_KEY),
-                value.getParameter(Constants.VERSION_KEY));
+                // interface
+        return pattern.getParameter(Constants.INTERFACE_KEY).equals(value.getParameter(Constants.INTERFACE_KEY))
+                // group
+                && isItemMatch(pattern.getParameter(Constants.GROUP_KEY), value.getParameter(Constants.GROUP_KEY))
+                // version
+                && isItemMatch(pattern.getParameter(Constants.VERSION_KEY), value.getParameter(Constants.VERSION_KEY));
     }
 
     /**
