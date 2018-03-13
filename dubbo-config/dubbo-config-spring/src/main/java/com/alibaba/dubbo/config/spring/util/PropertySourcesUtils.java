@@ -35,16 +35,16 @@ public abstract class PropertySourcesUtils {
     /**
      * Get Sub {@link Properties}
      *
-     * @param propertySources {@link PropertySources}
+     * @param propertySources {@link PropertySource} Iterable
      * @param prefix          the prefix of property name
-     * @return Map<String, String>
+     * @return Map<String                                                                                                                                                                                                                                                               ,                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               String>
      * @see Properties
      */
-    public static Map<String, String> getSubProperties(PropertySources propertySources, String prefix) {
+    public static Map<String, String> getSubProperties(Iterable<PropertySource<?>> propertySources, String prefix) {
 
         Map<String, String> subProperties = new LinkedHashMap<String, String>();
 
-        String normalizedPrefix = prefix.endsWith(".") ? prefix : prefix + ".";
+        String normalizedPrefix = normalizePrefix(prefix);
 
         for (PropertySource<?> source : propertySources) {
             if (source instanceof EnumerablePropertySource) {
@@ -60,6 +60,16 @@ public abstract class PropertySourcesUtils {
 
         return subProperties;
 
+    }
+
+    /**
+     * Normalize the prefix
+     *
+     * @param prefix the prefix
+     * @return the prefix
+     */
+    public static String normalizePrefix(String prefix) {
+        return prefix.endsWith(".") ? prefix : prefix + ".";
     }
 
 }
