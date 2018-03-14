@@ -109,9 +109,12 @@ public class ProtocolFilterWrapper implements Protocol {
     }
 
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
+        // 注册中心
         if (Constants.REGISTRY_PROTOCOL.equals(url.getProtocol())) {
             return protocol.refer(type, url);
         }
+        // 引用服务，返回 Invoker 对象
+        // 给改 Invoker 对象，包装成带有 Filter 过滤链的 Invoker 对象
         return buildInvokerChain(protocol.refer(type, url), Constants.REFERENCE_FILTER_KEY, Constants.CONSUMER);
     }
 

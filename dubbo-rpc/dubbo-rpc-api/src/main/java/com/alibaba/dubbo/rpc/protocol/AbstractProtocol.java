@@ -50,10 +50,25 @@ public abstract class AbstractProtocol implements Protocol {
     //TODO SOFEREFENCE
     protected final Set<Invoker<?>> invokers = new ConcurrentHashSet<Invoker<?>>();
 
+    /**
+     * 服务键
+     *
+     * @param url URL
+     * @return 服务键字符串
+     */
     protected static String serviceKey(URL url) {
         return ProtocolUtils.serviceKey(url);
     }
 
+    /**
+     * 服务键
+     *
+     * @param port 端口
+     * @param serviceName 服务名
+     * @param serviceVersion 服务版本
+     * @param serviceGroup 服务分组
+     * @return 服务键
+     */
     protected static String serviceKey(int port, String serviceName, String serviceVersion, String serviceGroup) {
         return ProtocolUtils.serviceKey(port, serviceName, serviceVersion, serviceGroup);
     }

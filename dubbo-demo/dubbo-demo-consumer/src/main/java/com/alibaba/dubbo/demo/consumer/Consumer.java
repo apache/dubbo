@@ -16,7 +16,9 @@
  */
 package com.alibaba.dubbo.demo.consumer;
 
+import com.alibaba.dubbo.demo.Cat;
 import com.alibaba.dubbo.demo.DemoService;
+import com.alibaba.dubbo.demo.Dog;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class Consumer {
@@ -32,8 +34,11 @@ public class Consumer {
         while (true) {
             try {
                 Thread.sleep(1000);
-                String hello = demoService.sayHello("world"); // call remote method
-                System.out.println(hello); // get result
+//                String hello = demoService.sayHello("world"); // call remote method
+//                System.out.println(hello); // get result
+
+                demoService.bye(new Cat().setName("小猫"));
+                demoService.bye(new Dog().setAge(10));
 
             } catch (Throwable throwable) {
                 throwable.printStackTrace();

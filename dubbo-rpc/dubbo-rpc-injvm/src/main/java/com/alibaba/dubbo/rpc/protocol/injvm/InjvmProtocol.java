@@ -135,7 +135,7 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
         } else if (getExporter(exporterMap, url) != null) {
             // by default, go through local reference if there's the service exposed locally
             isJvmRefer = true;
-        // 默认，本地引用
+        // 默认，远程引用
         } else {
             isJvmRefer = false;
         }

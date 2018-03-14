@@ -233,7 +233,6 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
     }
 
     protected void checkWhetherDestroyed() {
-
         if (destroyed.get()) {
             throw new RpcException("Rpc cluster invoker for " + getInterface() + " on consumer " + NetUtils.getLocalHost()
                     + " use dubbo version " + Version.getVersion()

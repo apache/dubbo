@@ -19,16 +19,34 @@ package com.alibaba.dubbo.rpc.support;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 
+/**
+ * 协议工具类
+ */
 public class ProtocolUtils {
 
     private ProtocolUtils() {
     }
 
+    /**
+     * 服务键
+     *
+     * @param url URL
+     * @return 服务键字符串
+     */
     public static String serviceKey(URL url) {
         return serviceKey(url.getPort(), url.getPath(), url.getParameter(Constants.VERSION_KEY),
                 url.getParameter(Constants.GROUP_KEY));
     }
 
+    /**
+     * 服务键
+     *
+     * @param port 端口
+     * @param serviceName 服务名
+     * @param serviceVersion 服务版本
+     * @param serviceGroup 服务分组
+     * @return 服务键
+     */
     public static String serviceKey(int port, String serviceName, String serviceVersion, String serviceGroup) {
         StringBuilder buf = new StringBuilder();
         if (serviceGroup != null && serviceGroup.length() > 0) {

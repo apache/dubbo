@@ -44,8 +44,13 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     // whether to use generic interface
     protected String generic; // TODO 芋艿
 
+    /**
+     * 是否 JVM 本地调用。
+     *
+     * 参见 {@link #isInjvm()} 方法，目前该属性不建议使用（废弃），使用 {@link #scope} 属性。
+     */
     // whether to find reference's instance from the current JVM
-    protected Boolean injvm; // TODO 芋艿
+    protected Boolean injvm;
 
     // lazy create connection
     protected Boolean lazy;
