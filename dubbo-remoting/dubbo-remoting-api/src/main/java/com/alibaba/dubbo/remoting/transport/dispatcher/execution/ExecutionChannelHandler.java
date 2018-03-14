@@ -37,7 +37,7 @@ public class ExecutionChannelHandler extends WrappedChannelHandler {
 
     @Override
     public void received(Channel channel, Object message) throws RemotingException {
-        if (message instanceof Request && !((Request) message).isHeartbeat()) {
+        if (message instanceof Request) {
             try {
                 executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
             } catch (Throwable t) {
