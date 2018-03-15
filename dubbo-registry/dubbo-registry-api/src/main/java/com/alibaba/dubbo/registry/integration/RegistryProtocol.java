@@ -75,6 +75,9 @@ public class RegistryProtocol implements Protocol {
     // 用于解决rmi重复暴露端口冲突的问题，已经暴露过的服务不再重新暴露
     // providerurl <--> exporter
     private final Map<String, ExporterChangeableWrapper<?>> bounds = new ConcurrentHashMap<String, ExporterChangeableWrapper<?>>();
+    /**
+     * Cluster 自适应拓展实现类对象
+     */
     private Cluster cluster;
     /**
      * Protocol 自适应拓展实现类，通过 Dubbo SPI 自动注入。
@@ -314,21 +317,28 @@ public class RegistryProtocol implements Protocol {
 
     @SuppressWarnings("unchecked")
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
+        // 获得真实的注册中心的 URL
         url = url.setProtocol(url.getParameter(Constants.REGISTRY_KEY, Constants.DEFAULT_REGISTRY)).removeParameter(Constants.REGISTRY_KEY);
+        // 获得注册中心
         Registry registry = registryFactory.getRegistry(url);
+        // TODO 芋艿
         if (RegistryService.class.equals(type)) {
             return proxyFactory.getInvoker((T) registry, type, url);
         }
 
+        // 获得服务引用配置参数集合
         // group="a,b" or group="*"
         Map<String, String> qs = StringUtils.parseQueryString(url.getParameterAndDecoded(Constants.REFER_KEY));
         String group = qs.get(Constants.GROUP_KEY);
+        // 分组聚合，参见文档 http://dubbo.io/books/dubbo-user-book/demos/group-merger.html
         if (group != null && group.length() > 0) {
             if ((Constants.COMMA_SPLIT_PATTERN.split(group)).length > 1
                     || "*".equals(group)) {
+                // 执行服务引用
                 return doRefer(getMergeableCluster(), registry, type, url);
             }
         }
+        // 执行服务引用
         return doRefer(cluster, registry, type, url);
     }
 
@@ -336,24 +346,40 @@ public class RegistryProtocol implements Protocol {
         return ExtensionLoader.getExtensionLoader(Cluster.class).getExtension("mergeable");
     }
 
+    /**
+     * 执行服务引用，返回 Invoker 对象
+     *
+     * @param cluster Cluster 对象
+     * @param registry 注册中心对象
+     * @param type 服务接口类型
+     * @param url 注册中心 URL
+     * @param <T> 泛型
+     * @return Invoker 对象
+     */
     private <T> Invoker<T> doRefer(Cluster cluster, Registry registry, Class<T> type, URL url) {
+        // 创建 RegistryDirectory 对象，并设置注册中心
         RegistryDirectory<T> directory = new RegistryDirectory<T>(type, url);
         directory.setRegistry(registry);
         directory.setProtocol(protocol);
+        // 创建订阅 URL
         // all attributes of REFER_KEY
-        Map<String, String> parameters = new HashMap<String, String>(directory.getUrl().getParameters());
+        Map<String, String> parameters = new HashMap<String, String>(directory.getUrl().getParameters()); // 服务引用配置集合
         URL subscribeUrl = new URL(Constants.CONSUMER_PROTOCOL, parameters.remove(Constants.REGISTER_IP_KEY), 0, type.getName(), parameters);
+        // 向注册中心注册自己（服务消费者） 【TODO 8014】注册中心
         if (!Constants.ANY_VALUE.equals(url.getServiceInterface())
                 && url.getParameter(Constants.REGISTER_KEY, true)) {
             registry.register(subscribeUrl.addParameters(Constants.CATEGORY_KEY, Constants.CONSUMERS_CATEGORY,
                     Constants.CHECK_KEY, String.valueOf(false)));
         }
+        // 向注册中心订阅服务提供者 【TODO 8014】注册中心
         directory.subscribe(subscribeUrl.addParameter(Constants.CATEGORY_KEY,
                 Constants.PROVIDERS_CATEGORY
                         + "," + Constants.CONFIGURATORS_CATEGORY
                         + "," + Constants.ROUTERS_CATEGORY));
 
+        // 创建 Invoker 对象，【TODO 8015】集群容错
         Invoker invoker = cluster.join(directory);
+        // 【TODO 8014】注册中心
         ProviderConsumerRegTable.registerConsuemr(invoker, url, subscribeUrl, directory);
         return invoker;
     }

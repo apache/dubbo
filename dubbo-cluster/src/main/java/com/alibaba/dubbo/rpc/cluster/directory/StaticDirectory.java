@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * StaticDirectory
  *
- * 静态目录
+ * 静态 Directory 实现类
  */
 public class StaticDirectory<T> extends AbstractDirectory<T> {
 

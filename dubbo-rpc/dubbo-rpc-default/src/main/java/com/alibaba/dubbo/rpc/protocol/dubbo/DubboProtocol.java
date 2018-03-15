@@ -68,6 +68,11 @@ public class DubboProtocol extends AbstractProtocol {
      * key: 服务器地址。格式为：host:port
      */
     private final Map<String, ExchangeServer> serverMap = new ConcurrentHashMap<String, ExchangeServer>(); // <host:port,Exchanger>
+    /**
+     * 通信客户端集合
+     *
+     * key: 服务器地址。格式为：host:port
+     */
     private final Map<String, ReferenceCountExchangeClient> referenceClientMap = new ConcurrentHashMap<String, ReferenceCountExchangeClient>(); // <host:port,Exchanger>
     private final ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap = new ConcurrentHashMap<String, LazyConnectExchangeClient>();
     private final Set<String> optimizers = new ConcurrentHashSet<String>();
@@ -338,28 +343,40 @@ public class DubboProtocol extends AbstractProtocol {
     }
 
     public <T> Invoker<T> refer(Class<T> serviceType, URL url) throws RpcException {
+        // TODO 【8013 】kryo fst
         optimizeSerialization(url);
+        // 获得远程通信客户端数组
+        // 创建 DubboInvoker 对象
         // create rpc invoker.
         DubboInvoker<T> invoker = new DubboInvoker<T>(serviceType, url, getClients(url), invokers);
+        // 添加到 `invokers`
         invokers.add(invoker);
         return invoker;
     }
 
+    /**
+     * 获得连接服务提供者的远程通信客户端数组
+     *
+     * @param url 服务提供者 URL
+     * @return 远程通信客户端
+     */
     private ExchangeClient[] getClients(URL url) {
+        // 是否共享连接
         // whether to share connection
         boolean service_share_connect = false;
         int connections = url.getParameter(Constants.CONNECTIONS_KEY, 0);
         // if not configured, connection is shared, otherwise, one connection for one service
-        if (connections == 0) {
+        if (connections == 0) { // 未配置时，默认共享
             service_share_connect = true;
             connections = 1;
         }
 
+        // 创建连接服务提供者的 ExchangeClient 对象数组 【TODO 8016】
         ExchangeClient[] clients = new ExchangeClient[connections];
         for (int i = 0; i < clients.length; i++) {
-            if (service_share_connect) {
+            if (service_share_connect) { // 共享
                 clients[i] = getSharedClient(url);
-            } else {
+            } else { // 不共享
                 clients[i] = initClient(url);
             }
         }

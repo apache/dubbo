@@ -36,6 +36,7 @@ import java.util.List;
 /**
  * Abstract implementation of Directory: Invoker list returned from this Directory's list method have been filtered by Routers
  *
+ * Directory 抽象实现类， TODO 芋艿，优化注释 增加router的Directory
  */
 public abstract class AbstractDirectory<T> implements Directory<T> {
 

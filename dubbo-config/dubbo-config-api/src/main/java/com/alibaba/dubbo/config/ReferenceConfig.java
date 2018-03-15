@@ -94,7 +94,10 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     // client type
     private String client;
     /**
-     * 直连服务提供者地址
+     * 直连服务地址
+     *
+     * 1. 可以是注册中心，也可以是服务提供者
+     * 2. 可配置多个，使用 ; 分隔
      */
     // url for peer-to-peer invocation
     private String url;
@@ -416,6 +419,12 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         ApplicationModel.initConsumerModel(getUniqueServiceName(), consumerModel);
     }
 
+    /**
+     * 创建 Service 代理对象
+     *
+     * @param map 集合
+     * @return 代理对象
+     */
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
     private T createProxy(Map<String, String> map) {
         URL tmpUrl = new URL("temp", "localhost", 0, map);
@@ -481,7 +490,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                     for (URL u : us) {
                         // 加载监控中心 URL
                         URL monitorUrl = loadMonitor(u);
-                        // 注册中心，带上监控中心的配置参数
+                        // 服务引用配置对象 `map`，带上监控中心的 URL
                         if (monitorUrl != null) {
                             map.put(Constants.MONITOR_KEY, URL.encode(monitorUrl.toFullString()));
                         }
@@ -496,24 +505,29 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
             // 单 `urls` 时，引用服务，返回 Invoker 对象
             if (urls.size() == 1) {
+                // 引用服务
                 invoker = refprotocol.refer(interfaceClass, urls.get(0));
             } else {
                 // 循环 `urls` ，引用服务，返回 Invoker 对象
                 List<Invoker<?>> invokers = new ArrayList<Invoker<?>>();
                 URL registryURL = null;
                 for (URL url : urls) {
+                    // 引用服务
                     invokers.add(refprotocol.refer(interfaceClass, url));
+                    // 使用最后一个注册中心的 URL
                     if (Constants.REGISTRY_PROTOCOL.equals(url.getProtocol())) {
                         registryURL = url; // use last registry url
                     }
                 }
+                // 有注册中心
                 if (registryURL != null) { // registry url is available
                     // 对有注册中心的 Cluster 只用 AvailableCluster
                     // use AvailableCluster only when register's cluster is available
                     URL u = registryURL.addParameter(Constants.CLUSTER_KEY, AvailableCluster.NAME);
                     // TODO 芋艿
                     invoker = cluster.join(new StaticDirectory(u, invokers));
-                } else { // not a registry url // 不是 注册中心的URL
+                // 无注册中心
+                } else { // not a registry url
                     // TODO 芋艿
                     invoker = cluster.join(new StaticDirectory(invokers));
                 }

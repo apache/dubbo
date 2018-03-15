@@ -41,8 +41,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
-    private static final Logger logger = LoggerFactory
-            .getLogger(AbstractClusterInvoker.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractClusterInvoker.class);
+
     protected final Directory<T> directory;
 
     protected final boolean availablecheck;

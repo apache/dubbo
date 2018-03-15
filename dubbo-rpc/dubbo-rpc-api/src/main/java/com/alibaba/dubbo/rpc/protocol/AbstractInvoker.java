@@ -85,6 +85,13 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         this.attachment = attachment == null ? null : Collections.unmodifiableMap(attachment);
     }
 
+    /**
+     * 将指向参数的值添加到 {@link #attachment} 中
+     *
+     * @param url URL 对象
+     * @param keys 指定参数集合
+     * @return 集合
+     */
     private static Map<String, String> convertAttachment(URL url, String[] keys) {
         if (keys == null || keys.length == 0) {
             return null;
