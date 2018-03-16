@@ -23,6 +23,8 @@ import java.util.List;
 /**
  * RegistryService. (SPI, Prototype, ThreadSafe)
  *
+ * 注册中心服务接口
+ *
  * @see com.alibaba.dubbo.registry.Registry
  * @see com.alibaba.dubbo.registry.RegistryFactory#getRegistry(URL)
  */
