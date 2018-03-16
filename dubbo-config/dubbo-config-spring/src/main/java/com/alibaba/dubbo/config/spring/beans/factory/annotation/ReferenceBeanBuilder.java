@@ -21,9 +21,7 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.spring.ReferenceBean;
 import com.alibaba.dubbo.config.spring.convert.converter.StringArrayToMapConverter;
 import com.alibaba.dubbo.config.spring.convert.converter.StringArrayToStringConverter;
-import org.springframework.beans.MutablePropertyValues;
 import org.springframework.context.ApplicationContext;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.util.Assert;
@@ -31,11 +29,8 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.DataBinder;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import static com.alibaba.dubbo.config.spring.util.BeanFactoryUtils.getOptionalBean;
-import static org.springframework.core.annotation.AnnotationUtils.getAnnotationAttributes;
+import static com.alibaba.dubbo.config.spring.util.ObjectUtils.of;
 
 /**
  * {@link ReferenceBean} Builder
@@ -101,9 +96,10 @@ class ReferenceBeanBuilder extends AbstractAnnotationConfigBeanBuilder<Reference
         // Set ConversionService
         dataBinder.setConversionService(getConversionService());
         // Ignore those fields
-        dataBinder.setDisallowedFields("application", "module", "consumer", "monitor", "registry");
+        String[] ignoreAttributeNames = of("application", "module", "consumer", "monitor", "registry");
+//        dataBinder.setDisallowedFields(ignoreAttributeNames);
         // Bind annotation attributes
-        dataBinder.bind(new AnnotationPropertyValuesAdapter(reference, applicationContext.getEnvironment()));
+        dataBinder.bind(new AnnotationPropertyValuesAdapter(reference, applicationContext.getEnvironment(), ignoreAttributeNames));
     }
 
     private ConversionService getConversionService() {

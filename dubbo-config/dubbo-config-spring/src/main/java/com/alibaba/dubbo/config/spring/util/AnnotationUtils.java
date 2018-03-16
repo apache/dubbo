@@ -17,15 +17,18 @@
 package com.alibaba.dubbo.config.spring.util;
 
 import org.springframework.core.env.PropertyResolver;
-import org.springframework.util.ObjectUtils;
 
 import java.lang.annotation.Annotation;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import static java.lang.String.valueOf;
 import static org.springframework.core.annotation.AnnotationUtils.getAnnotationAttributes;
 import static org.springframework.core.annotation.AnnotationUtils.getDefaultValue;
+import static org.springframework.util.CollectionUtils.arrayToList;
+import static org.springframework.util.ObjectUtils.nullSafeEquals;
 import static org.springframework.util.StringUtils.trimAllWhitespace;
 
 /**
@@ -45,7 +48,9 @@ public class AnnotationUtils {
      * @return non-null
      */
     public static Map<String, Object> getAttributes(Annotation annotation, PropertyResolver propertyResolver,
-                                                    boolean ignoreDefaultValue) {
+                                                    boolean ignoreDefaultValue, String... ignoreAttributeNames) {
+
+        Set<String> ignoreAttributeNamesSet = new HashSet<String>(arrayToList(ignoreAttributeNames));
 
         Map<String, Object> attributes = getAnnotationAttributes(annotation);
 
@@ -58,7 +63,13 @@ public class AnnotationUtils {
             String attributeName = entry.getKey();
             Object attributeValue = entry.getValue();
 
-            if (ignoreDefaultValue && ObjectUtils.nullSafeEquals(attributeValue, getDefaultValue(annotation, attributeName))) {
+            // ignore default attribute value
+            if (ignoreDefaultValue && nullSafeEquals(attributeValue, getDefaultValue(annotation, attributeName))) {
+                continue;
+            }
+
+            // ignore attribute name
+            if (ignoreAttributeNamesSet.contains(attributeName)) {
                 continue;
             }
 

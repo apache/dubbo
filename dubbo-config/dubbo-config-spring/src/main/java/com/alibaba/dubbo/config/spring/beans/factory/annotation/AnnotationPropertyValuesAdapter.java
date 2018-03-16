@@ -20,17 +20,10 @@ import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.PropertyValues;
 import org.springframework.core.env.PropertyResolver;
-import org.springframework.util.StringUtils;
 
 import java.lang.annotation.Annotation;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 import static com.alibaba.dubbo.config.spring.util.AnnotationUtils.getAttributes;
-import static java.lang.String.valueOf;
-import static org.springframework.core.annotation.AnnotationUtils.getAnnotationAttributes;
-import static org.springframework.core.annotation.AnnotationUtils.getDefaultValue;
-import static org.springframework.util.StringUtils.trimAllWhitespace;
 
 /**
  * {@link Annotation} {@link PropertyValues} Adapter
@@ -49,27 +42,19 @@ class AnnotationPropertyValuesAdapter implements PropertyValues {
 
     private final PropertyValues delegate;
 
-    public AnnotationPropertyValuesAdapter(Annotation annotation, PropertyResolver propertyResolver, boolean ignoreDefaultValue) {
+    public AnnotationPropertyValuesAdapter(Annotation annotation, PropertyResolver propertyResolver, boolean ignoreDefaultValue, String... ignoreAttributeNames) {
         this.annotation = annotation;
         this.propertyResolver = propertyResolver;
         this.ignoreDefaultValue = ignoreDefaultValue;
-        this.delegate = adapt(annotation, ignoreDefaultValue);
+        this.delegate = adapt(annotation, ignoreDefaultValue, ignoreAttributeNames);
     }
 
-    public AnnotationPropertyValuesAdapter(Annotation annotation, PropertyResolver propertyResolver) {
-        this(annotation, propertyResolver, true);
+    public AnnotationPropertyValuesAdapter(Annotation annotation, PropertyResolver propertyResolver, String... ignoreAttributeNames) {
+        this(annotation, propertyResolver, true, ignoreAttributeNames);
     }
 
-    public AnnotationPropertyValuesAdapter(Annotation annotation, boolean ignoreDefaultValue) {
-        this(annotation, null, ignoreDefaultValue);
-    }
-
-    public AnnotationPropertyValuesAdapter(Annotation annotation) {
-        this(annotation, true);
-    }
-
-    private PropertyValues adapt(Annotation annotation, boolean ignoreDefaultValue) {
-        return new MutablePropertyValues(getAttributes(annotation, propertyResolver, ignoreDefaultValue));
+    private PropertyValues adapt(Annotation annotation, boolean ignoreDefaultValue, String... ignoreAttributeNames) {
+        return new MutablePropertyValues(getAttributes(annotation, propertyResolver, ignoreDefaultValue, ignoreAttributeNames));
     }
 
     public Annotation getAnnotation() {

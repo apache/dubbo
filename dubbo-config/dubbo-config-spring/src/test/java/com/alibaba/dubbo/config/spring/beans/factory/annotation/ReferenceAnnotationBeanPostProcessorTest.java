@@ -21,23 +21,17 @@ import com.alibaba.dubbo.config.spring.ReferenceBean;
 import com.alibaba.dubbo.config.spring.api.DemoService;
 import com.alibaba.dubbo.config.spring.context.annotation.DubboComponentScan;
 import org.junit.*;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.InjectionMetadata;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ImportResource;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Collection;
 import java.util.Map;
 
 import static com.alibaba.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor.BEAN_NAME;
-import static com.alibaba.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessorTest.PROVIDER_LOCATION;
 
 /**
  * {@link ReferenceAnnotationBeanPostProcessor} Test
@@ -46,12 +40,13 @@ import static com.alibaba.dubbo.config.spring.beans.factory.annotation.Reference
  */
 public class ReferenceAnnotationBeanPostProcessorTest {
 
-    static final String PROVIDER_LOCATION = "META-INF/spring/dubbo-provider.xml";
-
     private ConfigurableApplicationContext providerApplicationContext;
 
     @BeforeClass
     public static void prepare() {
+        System.setProperty("provider.version", "1.2");
+        System.setProperty("package1", "com.alibaba.dubbo.config.spring.annotation.provider");
+        System.setProperty("packagesToScan", "${package1}");
         System.setProperty("consumer.version", "1.2");
         System.setProperty("consumer.url", "dubbo://127.0.0.1:12345");
     }
@@ -59,7 +54,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
     @Before
     public void init() {
         // Starts Provider
-        providerApplicationContext = new ClassPathXmlApplicationContext(PROVIDER_LOCATION);
+        providerApplicationContext = new AnnotationConfigApplicationContext(ServiceAnnotationBeanPostProcessorTest.TestConfiguration.class);
     }
 
     @After
