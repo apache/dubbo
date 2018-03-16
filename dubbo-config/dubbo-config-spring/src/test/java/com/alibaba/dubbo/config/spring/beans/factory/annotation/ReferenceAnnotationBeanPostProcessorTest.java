@@ -24,12 +24,14 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.InjectionMetadata;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.Collection;
+import java.util.Map;
 
 import static com.alibaba.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor.BEAN_NAME;
 
@@ -92,6 +94,66 @@ public class ReferenceAnnotationBeanPostProcessorTest {
         Assert.assertEquals(referenceBean.get(), testBean.getDemoServiceFromAncestor());
         Assert.assertEquals(referenceBean.get(), testBean.getDemoServiceFromParent());
         Assert.assertEquals(referenceBean.get(), testBean.getDemoService());
+
+    }
+
+    @Test
+    public void testGetInjectedFieldReferenceBeanMap() {
+
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestBean.class);
+
+        ReferenceAnnotationBeanPostProcessor beanPostProcessor = context.getBean(BEAN_NAME,
+                ReferenceAnnotationBeanPostProcessor.class);
+
+
+        Map<InjectionMetadata.InjectedElement, ReferenceBean<?>> referenceBeanMap =
+                beanPostProcessor.getInjectedFieldReferenceBeanMap();
+
+        Assert.assertEquals(1, referenceBeanMap.size());
+
+        for (Map.Entry<InjectionMetadata.InjectedElement, ReferenceBean<?>> entry : referenceBeanMap.entrySet()) {
+
+            InjectionMetadata.InjectedElement injectedElement = entry.getKey();
+
+            Assert.assertEquals("com.alibaba.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor$ReferenceFieldElement",
+                    injectedElement.getClass().getName());
+
+            ReferenceBean<?> referenceBean = entry.getValue();
+
+            Assert.assertEquals("1.2", referenceBean.getVersion());
+            Assert.assertEquals("dubbo://127.0.0.1:12345", referenceBean.getUrl());
+
+        }
+
+    }
+
+    @Test
+    public void testGetInjectedMethodReferenceBeanMap() {
+
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestBean.class);
+
+        ReferenceAnnotationBeanPostProcessor beanPostProcessor = context.getBean(BEAN_NAME,
+                ReferenceAnnotationBeanPostProcessor.class);
+
+
+        Map<InjectionMetadata.InjectedElement, ReferenceBean<?>> referenceBeanMap =
+                beanPostProcessor.getInjectedMethodReferenceBeanMap();
+
+        Assert.assertEquals(2, referenceBeanMap.size());
+
+        for (Map.Entry<InjectionMetadata.InjectedElement, ReferenceBean<?>> entry : referenceBeanMap.entrySet()) {
+
+            InjectionMetadata.InjectedElement injectedElement = entry.getKey();
+
+            Assert.assertEquals("com.alibaba.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor$ReferenceMethodElement",
+                    injectedElement.getClass().getName());
+
+            ReferenceBean<?> referenceBean = entry.getValue();
+
+            Assert.assertEquals("1.2", referenceBean.getVersion());
+            Assert.assertEquals("dubbo://127.0.0.1:12345", referenceBean.getUrl());
+
+        }
 
     }
 
