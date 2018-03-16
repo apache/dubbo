@@ -33,6 +33,7 @@ import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.PriorityOrdered;
+import org.springframework.core.env.Environment;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
@@ -266,6 +267,7 @@ public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBean
 
     /**
      * {@link Reference} {@link InjectionMetadata} implementation
+     *
      * @since 2.5.11
      */
     private static class ReferenceInjectionMetadata extends InjectionMetadata {
@@ -393,11 +395,17 @@ public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBean
      * @param beanClass {@link Class}
      * @return
      */
-    private static String generateReferenceBeanCacheKey(Reference reference, Class<?> beanClass) {
+    private String generateReferenceBeanCacheKey(Reference reference, Class<?> beanClass) {
 
         String interfaceName = resolveInterfaceName(reference, beanClass);
 
-        String key = reference.group() + "/" + interfaceName + ":" + reference.version();
+        String key = reference.url() + "/" + interfaceName +
+                "/" + reference.version() +
+                "/" + reference.group();
+
+        Environment environment = applicationContext.getEnvironment();
+
+        key = environment.resolvePlaceholders(key);
 
         return key;
 

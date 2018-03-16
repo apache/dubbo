@@ -20,20 +20,24 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.spring.ReferenceBean;
 import com.alibaba.dubbo.config.spring.api.DemoService;
 import com.alibaba.dubbo.config.spring.context.annotation.DubboComponentScan;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.InjectionMetadata;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Collection;
 import java.util.Map;
 
 import static com.alibaba.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor.BEAN_NAME;
+import static com.alibaba.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessorTest.PROVIDER_LOCATION;
 
 /**
  * {@link ReferenceAnnotationBeanPostProcessor} Test
@@ -42,12 +46,26 @@ import static com.alibaba.dubbo.config.spring.beans.factory.annotation.Reference
  */
 public class ReferenceAnnotationBeanPostProcessorTest {
 
-    private static final String PROVIDER_LOCATION = "META-INF/spring/dubbo-provider.xml";
+    static final String PROVIDER_LOCATION = "META-INF/spring/dubbo-provider.xml";
+
+    private ConfigurableApplicationContext providerApplicationContext;
+
+    @BeforeClass
+    public static void prepare() {
+        System.setProperty("consumer.version", "1.2");
+        System.setProperty("consumer.url", "dubbo://127.0.0.1:12345");
+    }
 
     @Before
-    public void before() {
+    public void init() {
         // Starts Provider
-        new ClassPathXmlApplicationContext(PROVIDER_LOCATION);
+        providerApplicationContext = new ClassPathXmlApplicationContext(PROVIDER_LOCATION);
+    }
+
+    @After
+    public void destroy() {
+        // Shutdowns Provider
+        providerApplicationContext.close();
     }
 
     @Test
@@ -183,7 +201,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
 
     private static class ParentBean extends AncestorBean {
 
-        @Reference(version = "1.2", url = "dubbo://127.0.0.1:12345")
+        @Reference(version = "${consumer.version}", url = "${consumer.url}")
         private DemoService demoServiceFromParent;
 
         public DemoService getDemoServiceFromParent() {
@@ -195,7 +213,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
 
     @ImportResource("META-INF/spring/dubbo-annotation-consumer.xml")
     @DubboComponentScan(basePackageClasses = ReferenceAnnotationBeanPostProcessorTest.class)
-    private static class TestBean extends ParentBean {
+    static class TestBean extends ParentBean {
 
         private DemoService demoService;
 
