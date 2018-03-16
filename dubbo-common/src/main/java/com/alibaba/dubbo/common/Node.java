@@ -18,11 +18,15 @@ package com.alibaba.dubbo.common;
 
 /**
  * Node. (API/SPI, Prototype, ThreadSafe)
+ *
+ * 节点
  */
 public interface Node {
 
     /**
      * get url.
+     *
+     * 获得 URL
      *
      * @return url.
      */
@@ -31,11 +35,15 @@ public interface Node {
     /**
      * is available.
      *
+     * 是否可用
+     *
      * @return available.
      */
     boolean isAvailable();
 
     /**
+     * 销毁
+     *
      * destroy.
      */
     void destroy();
