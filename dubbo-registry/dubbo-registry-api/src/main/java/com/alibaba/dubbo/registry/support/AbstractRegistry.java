@@ -477,7 +477,7 @@ public abstract class AbstractRegistry implements Registry {
     /**
      * 通知监听器，URL 变化结果。
      *
-     * 数据流向 `urls` => {@link #notified}
+     * 数据流向 `urls` => {@link #notified} => {@link #properties} => {@link #file}
      *
      * @param url 消费者 URL
      * @param listener 监听器
