@@ -192,7 +192,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      * @param provider 是否是服务提供者
      * @return URL 数组
      */
-    protected List<URL> loadRegistries(boolean provider) { // 【TODO 8004】loadRegistries
+    protected List<URL> loadRegistries(boolean provider) {
         // 校验 RegistryConfig 配置数组。
         checkRegistry();
         // 创建 注册中心 URL 数组

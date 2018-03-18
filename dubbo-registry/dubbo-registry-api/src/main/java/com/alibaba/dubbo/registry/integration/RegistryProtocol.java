@@ -153,7 +153,7 @@ public class RegistryProtocol implements Protocol {
         // 获得注册中心 URL
         URL registryUrl = getRegistryUrl(originInvoker);
 
-        // 获得注册中心对象 【TODO 8014】注册中心
+        // 获得注册中心对象
         // registry provider
         final Registry registry = getRegistry(originInvoker);
 
@@ -163,13 +163,13 @@ public class RegistryProtocol implements Protocol {
         //to judge to delay publish whether or not
         boolean register = registedProviderUrl.getParameter("register", true);
 
-        // 【TODO 8014】注册中心
+        // 向注册中心订阅服务消费者
         ProviderConsumerRegTable.registerProvider(originInvoker, registryUrl, registedProviderUrl);
 
-        // 【TODO 8014】注册中心
+        // 向注册中心注册服务提供者（自己）
         if (register) {
             register(registryUrl, registedProviderUrl);
-            ProviderConsumerRegTable.getProviderWrapper(originInvoker).setReg(true);
+            ProviderConsumerRegTable.getProviderWrapper(originInvoker).setReg(true); // // 标记向本地注册表的注册服务提供者，已经注册
         }
 
         // 【TODO 8015】配置规则
@@ -365,13 +365,13 @@ public class RegistryProtocol implements Protocol {
         // all attributes of REFER_KEY
         Map<String, String> parameters = new HashMap<String, String>(directory.getUrl().getParameters()); // 服务引用配置集合
         URL subscribeUrl = new URL(Constants.CONSUMER_PROTOCOL, parameters.remove(Constants.REGISTER_IP_KEY), 0, type.getName(), parameters);
-        // 向注册中心注册自己（服务消费者） 【TODO 8014】注册中心
+        // 向注册中心注册自己（服务消费者）
         if (!Constants.ANY_VALUE.equals(url.getServiceInterface())
                 && url.getParameter(Constants.REGISTER_KEY, true)) {
             registry.register(subscribeUrl.addParameters(Constants.CATEGORY_KEY, Constants.CONSUMERS_CATEGORY,
                     Constants.CHECK_KEY, String.valueOf(false)));
         }
-        // 向注册中心订阅服务提供者 【TODO 8014】注册中心
+        // 向注册中心订阅服务提供者
         directory.subscribe(subscribeUrl.addParameter(Constants.CATEGORY_KEY,
                 Constants.PROVIDERS_CATEGORY
                         + "," + Constants.CONFIGURATORS_CATEGORY
@@ -379,8 +379,8 @@ public class RegistryProtocol implements Protocol {
 
         // 创建 Invoker 对象，【TODO 8015】集群容错
         Invoker invoker = cluster.join(directory);
-        // 【TODO 8014】注册中心
-        ProviderConsumerRegTable.registerConsuemr(invoker, url, subscribeUrl, directory);
+        // 向本地注册表，注册消费者
+        ProviderConsumerRegTable.registerConsumer(invoker, url, subscribeUrl, directory);
         return invoker;
     }
 

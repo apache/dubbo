@@ -32,7 +32,7 @@ limitations under the License.
     <!--<dubbo:registry address="multicast://224.5.6.7:1234"/>-->
     <!--<dubbo:registry address="zookeeper://127.0.0.1:2181"/>-->
     <!--<dubbo:registry address="zookeeper://127.0.0.1:2181||10.20.153.11:2181,10.20.153.12:2181"/>-->
-    <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
+    <dubbo:registry address="zookeeper://127.0.0.1:2181"  />
 
 
     <bean id="demoDAO" class="com.alibaba.dubbo.demo.provider.DemoDAO" />
