@@ -36,22 +36,30 @@ import org.apache.zookeeper.WatchedEvent;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * 基于 Curator 的 Zookeeper 客户端实现类
+ */
 public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatcher> {
 
+    /**
+     * client 对象
+     */
     private final CuratorFramework client;
 
     public CuratorZookeeperClient(URL url) {
         super(url);
         try {
+            // 创建 client 对象
             CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
-                    .connectString(url.getBackupAddress())
-                    .retryPolicy(new RetryNTimes(1, 1000))
-                    .connectionTimeoutMs(5000);
+                    .connectString(url.getBackupAddress()) // 连接地址
+                    .retryPolicy(new RetryNTimes(1, 1000)) // 重试策略，1 次，间隔 1000 ms
+                    .connectionTimeoutMs(5000); // 连接超时时间
             String authority = url.getAuthority();
             if (authority != null && authority.length() > 0) {
                 builder = builder.authorization("digest", authority.getBytes());
             }
             client = builder.build();
+            // 添加连接监听器
             client.getConnectionStateListenable().addListener(new ConnectionStateListener() {
                 public void stateChanged(CuratorFramework client, ConnectionState state) {
                     if (state == ConnectionState.LOST) {
@@ -63,6 +71,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
                     }
                 }
             });
+            // 启动 client
             client.start();
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -72,7 +81,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
     public void createPersistent(String path) {
         try {
             client.create().forPath(path);
-        } catch (NodeExistsException e) {
+        } catch (NodeExistsException e) { // 忽略异常
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -81,12 +90,13 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
     public void createEphemeral(String path) {
         try {
             client.create().withMode(CreateMode.EPHEMERAL).forPath(path);
-        } catch (NodeExistsException e) {
+        } catch (NodeExistsException e) { // 忽略异常
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
 
+    @Override
     public void delete(String path) {
         try {
             client.delete().forPath(path);
@@ -96,6 +106,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
         }
     }
 
+    @Override
     public List<String> getChildren(String path) {
         try {
             return client.getChildren().forPath(path);
@@ -111,10 +122,12 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
             if (client.checkExists().forPath(path) != null) {
                 return true;
             }
-        } catch (Exception e) {
+        } catch (Exception e) { // 忽略异常
         }
         return false;
     }
+
+    @Override
     public boolean isConnected() {
         return client.getZookeeperClient().isConnected();
     }
@@ -153,6 +166,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
             this.listener = null;
         }
 
+        @Override
         public void process(WatchedEvent event) throws Exception {
             if (listener != null) {
                 String path = event.getPath() == null ? "" : event.getPath();
@@ -161,8 +175,8 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
                         // if client connect or disconnect to server, zookeeper will queue
                         // watched event(Watcher.Event.EventType.None, .., path = null).
                         StringUtils.isNotEmpty(path)
-                                ? client.getChildren().usingWatcher(this).forPath(path)
-                                : Collections.<String>emptyList());
+                                ? client.getChildren().usingWatcher(this).forPath(path) // 重新发起连接，并传入最新的子节点列表
+                                : Collections.<String>emptyList()); //
             }
         }
     }

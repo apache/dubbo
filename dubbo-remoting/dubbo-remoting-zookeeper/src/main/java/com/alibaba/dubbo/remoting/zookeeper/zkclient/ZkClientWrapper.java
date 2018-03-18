@@ -20,7 +20,6 @@ import com.alibaba.dubbo.common.concurrent.ListenableFutureTask;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.Assert;
-
 import org.I0Itec.zkclient.IZkChildListener;
 import org.I0Itec.zkclient.IZkStateListener;
 import org.I0Itec.zkclient.ZkClient;
@@ -35,14 +34,18 @@ import java.util.concurrent.TimeUnit;
  * Zkclient wrapper class that can monitor the state of the connection automatically after the connection is out of time
  * It is also consistent with the use of curator
  *
+ * 连接超时后，能自动监听连接状态的zkclient包装类
+ * 也为和curator在使用上总体保持一致
+ *
  * @date 2017/10/29
  */
 public class ZkClientWrapper {
-    Logger logger = LoggerFactory.getLogger(ZkClientWrapper.class);
+
+    private Logger logger = LoggerFactory.getLogger(ZkClientWrapper.class);
 
     private long timeout;
     private ZkClient client;
-    private volatile KeeperState state;
+    private volatile KeeperState state; // 多余
     private ListenableFutureTask<ZkClient> listenableFutureTask;
     private volatile boolean started = false;
 
@@ -52,17 +55,21 @@ public class ZkClientWrapper {
         listenableFutureTask = ListenableFutureTask.create(new Callable<ZkClient>() {
             @Override
             public ZkClient call() throws Exception {
-                return new ZkClient(serverAddr, Integer.MAX_VALUE);
+                return new ZkClient(serverAddr, Integer.MAX_VALUE); // 连接超时设置为无限，在 {@link #start()} 方法中，通过 listenableFutureTask ，实现超时。
             }
         });
     }
 
+    /**
+     * 启动 Zookeeper 客户端
+     */
     public void start() {
         if (!started) {
             Thread connectThread = new Thread(listenableFutureTask);
             connectThread.setName("DubboZkclientConnector");
             connectThread.setDaemon(true);
             connectThread.start();
+            // 连接。若超时，打印错误日志，不会抛出异常。
             try {
                 client = listenableFutureTask.get(timeout, TimeUnit.MILLISECONDS);
             } catch (Throwable t) {
@@ -74,7 +81,13 @@ public class ZkClientWrapper {
         }
     }
 
+    /**
+     * 添加状态监听器
+     *
+     * @param listener 监听器
+     */
     public void addListener(final IZkStateListener listener) {
+        // 向 listenableFutureTask 添加监听器。在 listenableFutureTask 执行完成后，在回调方法中，向 client 注册 IZkStateListener 状态监听器。
         listenableFutureTask.addListener(new Runnable() {
             @Override
             public void run() {

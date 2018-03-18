@@ -37,7 +37,9 @@ public class ZkclientZookeeperClient extends AbstractZookeeperClient<IZkChildLis
 
     public ZkclientZookeeperClient(URL url) {
         super(url);
+        // 创建 client 对象
         client = new ZkClientWrapper(url.getBackupAddress(), 30000);
+        // 添加连接监听器
         client.addListener(new IZkStateListener() {
             public void handleStateChanged(KeeperState state) throws Exception {
                 ZkclientZookeeperClient.this.state = state;
@@ -52,6 +54,7 @@ public class ZkclientZookeeperClient extends AbstractZookeeperClient<IZkChildLis
                 stateChanged(StateListener.RECONNECTED);
             }
         });
+        // 启动 client
         client.start();
     }
 
