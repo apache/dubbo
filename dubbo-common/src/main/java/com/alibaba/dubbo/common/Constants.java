@@ -37,6 +37,15 @@ public class Constants {
 
     public static final String UNSUBSCRIBE = "unsubscribe";
 
+    /**
+     * 分类
+     *
+     * 目前有
+     * 1. {@link #PROVIDERS_CATEGORY} 服务提供者
+     * 2. {@link #CONSUMERS_CATEGORY} 服务消费者
+     * 3. {@link #ROUTERS_CATEGORY} 路由规则 http://dubbo.io/books/dubbo-user-book/demos/routing-rule.html
+     * 3. {@link #CONFIGURATORS_CATEGORY} 配置规则 http://dubbo.io/books/dubbo-user-book/demos/config-rule.html
+     */
     public static final String CATEGORY_KEY = "category";
 
     public static final String PROVIDERS_CATEGORY = "providers";
@@ -57,6 +66,13 @@ public class Constants {
 
     public static final String CACHE_KEY = "cache";
 
+    /**
+     * `url.parameters.dynamic`
+     *
+     * 是否动态数据
+     *
+     * 若为 false ，该数据为持久数据，当注册方退出时，数据依然保存在注册中心。
+     */
     public static final String DYNAMIC_KEY = "dynamic";
 
     public static final String DUBBO_PROPERTIES_KEY = "dubbo.properties.file";
@@ -355,6 +371,9 @@ public class Constants {
     public static final Pattern COMMA_SPLIT_PATTERN = Pattern
             .compile("\\s*[,]+\\s*");
 
+    /**
+     * 路径分隔符
+     */
     public final static String PATH_SEPARATOR = "/";
 
     public static final String REGISTRY_SEPARATOR = "|";

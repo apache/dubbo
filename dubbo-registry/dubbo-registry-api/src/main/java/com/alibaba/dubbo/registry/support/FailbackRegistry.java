@@ -74,6 +74,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
      * 失败通知通知的 URL 集合
      */
     private final ConcurrentMap<URL, Map<NotifyListener, List<URL>>> failedNotified = new ConcurrentHashMap<URL, Map<NotifyListener, List<URL>>>();
+
     /**
      * 是否销毁
      */
