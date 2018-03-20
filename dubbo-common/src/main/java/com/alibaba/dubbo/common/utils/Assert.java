@@ -34,4 +34,15 @@ public abstract class Assert {
         }
     }
 
+    public static void notEmpty(String string, String message) {
+        if (StringUtils.isEmpty(string)) {
+            throw new IllegalArgumentException(message);
+        }
+    }
+
+    public static void notBlank(String string, String message) {
+        if (StringUtils.isBlank(string)) {
+            throw new IllegalArgumentException(message);
+        }
+    }
 }

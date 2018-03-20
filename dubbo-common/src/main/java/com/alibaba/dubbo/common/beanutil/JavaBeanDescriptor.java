@@ -22,6 +22,9 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import static com.alibaba.dubbo.common.utils.Assert.notBlank;
+import static com.alibaba.dubbo.common.utils.Assert.notNull;
+
 public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entry<Object, Object>> {
 
     public static final int TYPE_CLASS = 1;
@@ -65,7 +68,7 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
     }
 
     public JavaBeanDescriptor(String className, int type) {
-        notEmpty(className, "class name is empty");
+        notBlank(className, "class name is empty");
         if (!isValidType(type)) {
             throw new IllegalArgumentException(
                     new StringBuilder(16).append("type [ ")
@@ -194,21 +197,5 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
 
     private boolean isValidType(int type) {
         return TYPE_MIN <= type && type <= TYPE_MAX;
-    }
-
-    private void notNull(Object obj, String message) {
-        if (obj == null) {
-            throw new IllegalArgumentException(message);
-        }
-    }
-
-    private void notEmpty(String string, String message) {
-        if (isEmpty(string)) {
-            throw new IllegalArgumentException(message);
-        }
-    }
-
-    private boolean isEmpty(String string) {
-        return string == null || "".equals(string.trim());
     }
 }
