@@ -50,11 +50,11 @@ limitations under the License.
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
-            <artifactId>dubbo-cluster</artifactId>
+            <artifactId>dubbo-rpc-dubbo</artifactId>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
-            <artifactId>dubbo-rpc-default</artifactId>
+            <artifactId>dubbo-remoting-netty</artifactId>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
@@ -62,7 +62,7 @@ limitations under the License.
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
-            <artifactId>dubbo-remoting-netty</artifactId>
+            <artifactId>dubbo-serialization-hessian2</artifactId>
         </dependency>
     </dependencies>
 </project>

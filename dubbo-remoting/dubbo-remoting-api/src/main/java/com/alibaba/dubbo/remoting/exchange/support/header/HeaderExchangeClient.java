@@ -49,8 +49,8 @@ public class HeaderExchangeClient implements ExchangeClient {
     private final ExchangeChannel channel;
     // heartbeat timer
     private ScheduledFuture<?> heartbeatTimer;
+    // heartbeat(ms), default value is 0 , won't execute a heartbeat.
     private int heartbeat;
-    // heartbeat timeout (ms), default value is 0 , won't execute a heartbeat.
     private int heartbeatTimeout;
 
     public HeaderExchangeClient(Client client, boolean needHeartbeat) {
@@ -66,7 +66,7 @@ public class HeaderExchangeClient implements ExchangeClient {
             throw new IllegalStateException("heartbeatTimeout < heartbeatInterval * 2");
         }
         if (needHeartbeat) {
-            startHeatbeatTimer();
+            startHeartbeatTimer();
         }
     }
 
@@ -160,7 +160,7 @@ public class HeaderExchangeClient implements ExchangeClient {
         return channel.hasAttribute(key);
     }
 
-    private void startHeatbeatTimer() {
+    private void startHeartbeatTimer() {
         stopHeartbeatTimer();
         if (heartbeat > 0) {
             heartbeatTimer = scheduled.scheduleWithFixedDelay(
