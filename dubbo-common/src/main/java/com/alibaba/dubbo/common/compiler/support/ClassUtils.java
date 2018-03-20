@@ -31,6 +31,8 @@ import java.util.Map;
 
 /**
  * ClassUtils. (Tool, Static, ThreadSafe)
+ *
+ * 类工具类
  */
 public class ClassUtils {
 

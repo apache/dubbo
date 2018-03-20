@@ -499,6 +499,7 @@ public abstract class AbstractRegistry implements Registry {
             logger.info("Notify urls for subscribe url " + url + ", urls: " + urls);
         }
         // 将 `urls` 按照 `url.parameter.category` 分类，添加到集合
+        // 注意，特殊情况，使用 curator 连接 Zookeeper 时，若是服务消费者，连接断开，会出现 category=providers,configurations,routes
         Map<String, List<URL>> result = new HashMap<String, List<URL>>();
         for (URL u : urls) {
             if (UrlUtils.isMatch(url, u)) {
@@ -533,8 +534,6 @@ public abstract class AbstractRegistry implements Registry {
             listener.notify(categoryList);
         }
     }
-
-    // TODO 芋艿，这里会出现，providers,consumers,configurations,routes ???
 
     /**
      * 保存单个消费者 URL 对应，在 `notified` 的数据，到文件。

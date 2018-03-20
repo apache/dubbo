@@ -76,6 +76,10 @@ public class ClassHelper {
         return forName(name, caller.getClassLoader());
     }
 
+    /**
+     * @param caller 调用类
+     * @return 调用类的类加载器
+     */
     public static ClassLoader getCallerClassLoader(Class<?> caller) {
         return caller.getClassLoader();
     }
