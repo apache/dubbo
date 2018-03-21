@@ -61,10 +61,12 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
         SpringExtensionFactory.addApplicationContext(applicationContext);
     }
 
+    @Override
     public Object getObject() throws Exception {
         return get();
     }
 
+    @Override
     public Class<?> getObjectType() {
         return getInterfaceClass();
     }
@@ -74,6 +76,7 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
         return true;
     }
 
+    @Override
     @SuppressWarnings({"unchecked"})
     public void afterPropertiesSet() throws Exception {
         if (getConsumer() == null) {
@@ -168,7 +171,7 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
         if (b == null && getConsumer() != null) {
             b = getConsumer().isInit();
         }
-        if (b != null && b.booleanValue()) {
+        if (b != null && b) {
             getObject();
         }
     }

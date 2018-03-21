@@ -50,7 +50,7 @@ public class AdaptiveCompiler implements Compiler {
         } else {
             compiler = loader.getDefaultExtension();
         }
-        //
+        // 编译类
         return compiler.compile(code, classLoader);
     }
 

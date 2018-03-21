@@ -55,6 +55,11 @@ import java.util.Set;
  */
 public class JdkCompiler extends AbstractCompiler {
 
+    /**
+     * 获得系统的 Java 编译器
+     *
+     * 笔者的理解是，javac
+     */
     private final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
     private final DiagnosticCollector<JavaFileObject> diagnosticCollector = new DiagnosticCollector<JavaFileObject>();
@@ -62,15 +67,19 @@ public class JdkCompiler extends AbstractCompiler {
     private final ClassLoaderImpl classLoader;
 
     private final JavaFileManagerImpl javaFileManager;
-
+    /**
+     * 编译选项
+     */
     private volatile List<String> options;
 
     public JdkCompiler() {
+        // 设置编译选项，Dubbo 基于 JDK 1.6 的版本
         options = new ArrayList<String>();
         options.add("-source");
         options.add("1.6");
         options.add("-target");
         options.add("1.6");
+        // TODO
         StandardJavaFileManager manager = compiler.getStandardFileManager(diagnosticCollector, null, null);
         final ClassLoader loader = Thread.currentThread().getContextClassLoader();
         if (loader instanceof URLClassLoader
@@ -86,33 +95,50 @@ public class JdkCompiler extends AbstractCompiler {
                 throw new IllegalStateException(e.getMessage(), e);
             }
         }
+        // TODO
         classLoader = AccessController.doPrivileged(new PrivilegedAction<ClassLoaderImpl>() {
             public ClassLoaderImpl run() {
                 return new ClassLoaderImpl(loader);
             }
         });
+        // TODO
         javaFileManager = new JavaFileManagerImpl(manager, classLoader);
     }
 
     @Override
     public Class<?> doCompile(String name, String sourceCode) throws Throwable {
+        // 获得包名、类名
         int i = name.lastIndexOf('.');
         String packageName = i < 0 ? "" : name.substring(0, i);
         String className = i < 0 ? name : name.substring(i + 1);
+        // 创建 JavaFileObjectImpl 对象
         JavaFileObjectImpl javaFileObject = new JavaFileObjectImpl(className, sourceCode);
+        // TODO
         javaFileManager.putFileForInput(StandardLocation.SOURCE_PATH, packageName,
                 className + ClassUtils.JAVA_EXTENSION, javaFileObject);
+        // 编译
         Boolean result = compiler.getTask(null, javaFileManager, diagnosticCollector, options,
                 null, Arrays.asList(javaFileObject)).call();
+        // 编译失败，抛出异常
         if (result == null || !result) {
             throw new IllegalStateException("Compilation failed. class: " + name + ", diagnostics: " + diagnosticCollector);
         }
+        // 编译成功，类加载
         return classLoader.loadClass(name);
     }
 
+    /**
+     * 用 JavaFileObjectImpl 替换 JDK 默认的 SimpleJavaFileObject，以便在接收到编译器生成的 byte[] 内容时，不写入 class 文件，而是直接保存在内存中。
+     */
     private static final class JavaFileObjectImpl extends SimpleJavaFileObject {
 
+        /**
+         * Java 源代码
+         */
         private final CharSequence source;
+        /**
+         * Java 源代码转成的二进制输出流
+         */
         private ByteArrayOutputStream bytecode;
 
         public JavaFileObjectImpl(final String baseName, final CharSequence source) {
@@ -153,6 +179,9 @@ public class JdkCompiler extends AbstractCompiler {
         }
     }
 
+    /**
+     *
+     */
     private static final class JavaFileManagerImpl extends ForwardingJavaFileManager<JavaFileManager> {
 
         private final ClassLoaderImpl classLoader;
@@ -181,8 +210,7 @@ public class JdkCompiler extends AbstractCompiler {
         }
 
         @Override
-        public JavaFileObject getJavaFileForOutput(Location location, String qualifiedName, Kind kind, FileObject outputFile)
-                throws IOException {
+        public JavaFileObject getJavaFileForOutput(Location location, String qualifiedName, Kind kind, FileObject outputFile) {
             JavaFileObject file = new JavaFileObjectImpl(qualifiedName, kind);
             classLoader.add(qualifiedName, file);
             return file;
