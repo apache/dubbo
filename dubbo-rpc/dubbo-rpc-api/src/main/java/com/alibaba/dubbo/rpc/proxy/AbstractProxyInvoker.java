@@ -27,13 +27,22 @@ import java.lang.reflect.InvocationTargetException;
 
 /**
  * InvokerWrapper
+ *
+ * 代理 Invoker 对象的抽象类
  */
 public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
 
+    /**
+     * 代理的对象，一般是 Service 实现对象
+     */
     private final T proxy;
-
+    /**
+     * 接口类型，一般是 Service 接口
+     */
     private final Class<T> type;
-
+    /**
+     * URL 对象，一般是暴露服务的 URL 对象
+     */
     private final URL url;
 
     public AbstractProxyInvoker(T proxy, Class<T> type, URL url) {
@@ -43,7 +52,7 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
         if (type == null) {
             throw new IllegalArgumentException("interface == null");
         }
-        if (!type.isInstance(proxy)) {
+        if (!type.isInstance(proxy)) { //
             throw new IllegalArgumentException(proxy.getClass().getName() + " not implement interface " + type);
         }
         this.proxy = proxy;
@@ -76,6 +85,16 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
         }
     }
 
+    /**
+     * 执行调用
+     *
+     * @param proxy 代理的对象
+     * @param methodName 方法名
+     * @param parameterTypes 方法参数类型数组
+     * @param arguments 方法参数数组
+     * @return 调用结果
+     * @throws Throwable 发生异常
+     */
     protected abstract Object doInvoke(T proxy, String methodName, Class<?>[] parameterTypes, Object[] arguments) throws Throwable;
 
     @Override

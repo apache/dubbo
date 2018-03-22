@@ -34,7 +34,7 @@ public interface ProxyFactory {
      *
      * 创建 Proxy ，在引用服务调用。
      *
-     * @param invoker
+     * @param invoker Invoker 对象
      * @return proxy
      */
     @Adaptive({Constants.PROXY_KEY})

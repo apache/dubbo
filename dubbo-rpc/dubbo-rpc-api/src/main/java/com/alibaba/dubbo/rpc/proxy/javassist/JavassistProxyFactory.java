@@ -26,6 +26,8 @@ import com.alibaba.dubbo.rpc.proxy.InvokerInvocationHandler;
 
 /**
  * JavassistRpcProxyFactory
+ *
+ * 基于 Javassist 代理工厂实现类
  */
 public class JavassistProxyFactory extends AbstractProxyFactory {
 
