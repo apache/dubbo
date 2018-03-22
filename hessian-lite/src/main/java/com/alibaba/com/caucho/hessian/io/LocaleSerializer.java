@@ -68,7 +68,7 @@ public class LocaleSerializer extends AbstractSerializer {
         else {
             Locale locale = (Locale) obj;
 
-            out.writeObject(new LocaleHandle(locale.toString()));
+            out.writeObject(new LocaleHandle(locale.getLanguage(), locale.getCountry(), locale.getVariant()));
         }
     }
 }

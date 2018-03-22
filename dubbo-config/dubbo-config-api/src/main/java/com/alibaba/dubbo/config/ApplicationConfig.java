@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,50 +29,55 @@ import java.util.Map;
 /**
  * ApplicationConfig
  *
- * @author william.liangf
  * @export
  */
 public class ApplicationConfig extends AbstractConfig {
 
     private static final long serialVersionUID = 5508512956753757169L;
 
-    // 应用名称
+    // application name
     private String name;
 
-    // 模块版本
+    // module version
     private String version;
 
-    // 应用负责人
+    // application owner
     private String owner;
 
-    // 组织名(BU或部门)
+    // application's organization (BU)
     private String organization;
 
-    // 分层
+    // architecture layer
     private String architecture;
 
-    // 环境，如：dev/test/run
+    // environment, e.g. dev, test or production
     private String environment;
 
-    // Java代码编译器
+    // Java compiler
     private String compiler;
 
-    // 日志输出方式
+    // logger
     private String logger;
 
-    // 注册中心
+    // registry centers
     private List<RegistryConfig> registries;
 
-    // 服务监控
+    // monitor center
     private MonitorConfig monitor;
 
-    // 是否为缺省
+    // is default or not
     private Boolean isDefault;
 
-    // thread stack存储路径
+    // directory for saving thread dump
     private String dumpDirectory;
 
-    // 自定义参数
+    private Boolean qosEnable;
+
+    private Integer qosPort;
+
+    private Boolean qosAcceptForeignIp;
+
+    // customized parameters
     private Map<String, String> parameters;
 
     public ApplicationConfig() {
@@ -145,7 +151,7 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public RegistryConfig getRegistry() {
-        return registries == null || registries.size() == 0 ? null : registries.get(0);
+        return registries == null || registries.isEmpty() ? null : registries.get(0);
     }
 
     public void setRegistry(RegistryConfig registry) {
@@ -201,13 +207,40 @@ public class ApplicationConfig extends AbstractConfig {
         this.isDefault = isDefault;
     }
 
-    @Parameter(key = "dump.directory")
+    @Parameter(key = Constants.DUMP_DIRECTORY)
     public String getDumpDirectory() {
         return dumpDirectory;
     }
 
     public void setDumpDirectory(String dumpDirectory) {
         this.dumpDirectory = dumpDirectory;
+    }
+
+    @Parameter(key = Constants.QOS_ENABLE)
+    public Boolean getQosEnable() {
+        return qosEnable;
+    }
+
+    public void setQosEnable(Boolean qosEnable) {
+        this.qosEnable = qosEnable;
+    }
+
+    @Parameter(key = Constants.QOS_PORT)
+    public Integer getQosPort() {
+        return qosPort;
+    }
+
+    public void setQosPort(Integer qosPort) {
+        this.qosPort = qosPort;
+    }
+
+    @Parameter(key = Constants.ACCEPT_FOREIGN_IP)
+    public Boolean getQosAcceptForeignIp() {
+        return qosAcceptForeignIp;
+    }
+
+    public void setQosAcceptForeignIp(Boolean qosAcceptForeignIp) {
+        this.qosAcceptForeignIp = qosAcceptForeignIp;
     }
 
     public Map<String, String> getParameters() {

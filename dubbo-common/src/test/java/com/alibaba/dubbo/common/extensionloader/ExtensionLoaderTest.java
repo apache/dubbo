@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -43,6 +44,8 @@ import com.alibaba.dubbo.common.extensionloader.ext8_add.impl.AddExt1_ManualAdd2
 import com.alibaba.dubbo.common.extensionloader.ext8_add.impl.AddExt2_ManualAdaptive;
 import com.alibaba.dubbo.common.extensionloader.ext8_add.impl.AddExt3_ManualAdaptive;
 import com.alibaba.dubbo.common.extensionloader.ext8_add.impl.AddExt4_ManualAdaptive;
+import com.alibaba.dubbo.common.extensionloader.ext9_empty.Ext9Empty;
+import com.alibaba.dubbo.common.extensionloader.ext9_empty.impl.Ext9EmptyImpl;
 
 import junit.framework.Assert;
 import org.junit.Test;
@@ -62,9 +65,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.matchers.JUnitMatchers.containsString;
 
-/**
- * @author ding.lid
- */
 public class ExtensionLoaderTest {
     @Test
     public void test_getExtensionLoader_Null() throws Exception {
@@ -240,6 +240,16 @@ public class ExtensionLoaderTest {
 
         assertThat(ext, instanceOf(AddExt1_ManualAdd1.class));
         assertEquals("Manual1", ExtensionLoader.getExtensionLoader(AddExt1.class).getExtensionName(AddExt1_ManualAdd1.class));
+    }
+
+    @Test
+    public void test_AddExtension_NoExtend() throws Exception {
+//        ExtensionLoader.getExtensionLoader(Ext9Empty.class).getSupportedExtensions();
+        ExtensionLoader.getExtensionLoader(Ext9Empty.class).addExtension("ext9", Ext9EmptyImpl.class);
+        Ext9Empty ext = ExtensionLoader.getExtensionLoader(Ext9Empty.class).getExtension("ext9");
+
+        assertThat(ext, instanceOf(Ext9Empty.class));
+        assertEquals("ext9", ExtensionLoader.getExtensionLoader(Ext9Empty.class).getExtensionName(Ext9EmptyImpl.class));
     }
 
     @Test

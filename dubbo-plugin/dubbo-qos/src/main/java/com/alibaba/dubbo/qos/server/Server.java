@@ -1,11 +1,24 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.alibaba.dubbo.qos.server;
 
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
-import com.alibaba.dubbo.common.utils.ConfigUtils;
-import com.alibaba.dubbo.qos.common.Constants;
 import com.alibaba.dubbo.qos.server.handler.QosProcessHandler;
-
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -18,15 +31,12 @@ import io.netty.util.concurrent.DefaultThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * <pre>
- * 该Server监听指定的端口，能够提供telnet以及HTTP的访问
- *
- * 通过静态方法创建Server
- * 负责启动Server，绑定监听端口
- * 关闭Server
- * </pre>
- *
- * @author weipeng2k 2015年8月27日 上午11:29:27
+ * A server serves for both telnet access and http access
+ * <ul>
+ * <li>static initialize server</li>
+ * <li>start server and bind port</li>
+ * <li>close server</li>
+ * </ul>
  */
 public class Server {
 
@@ -37,11 +47,9 @@ public class Server {
         return INSTANCE;
     }
 
-    private int port = Integer.parseInt(ConfigUtils.getProperty(Constants.QOS_PORT, Constants.DEFAULT_PORT + ""));
+    private int port;
 
-    public int getPort() {
-        return port;
-    }
+    private boolean acceptForeignIp = true;
 
     private EventLoopGroup boss;
 
@@ -56,16 +64,18 @@ public class Server {
     private AtomicBoolean hasStarted = new AtomicBoolean();
 
     /**
-     * 设置telnet提供的welcome信息
-     *
-     * @param welcome
+     * welcome message
      */
     public void setWelcome(String welcome) {
         this.welcome = welcome;
     }
 
+    public int getPort() {
+        return port;
+    }
+
     /**
-     * 启动server，绑定端口
+     * start server, bind port
      */
     public void start() throws Throwable {
         if (!hasStarted.compareAndSet(false, true)) {
@@ -82,7 +92,7 @@ public class Server {
 
             @Override
             protected void initChannel(Channel ch) throws Exception {
-                ch.pipeline().addLast(new QosProcessHandler(welcome));
+                ch.pipeline().addLast(new QosProcessHandler(welcome, acceptForeignIp));
             }
         });
         try {
@@ -95,7 +105,7 @@ public class Server {
     }
 
     /**
-     * 关闭server
+     * close server
      */
     public void stop() {
         logger.info("qos-server stopped.");
@@ -105,5 +115,21 @@ public class Server {
         if (worker != null) {
             worker.shutdownGracefully();
         }
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public boolean isAcceptForeignIp() {
+        return acceptForeignIp;
+    }
+
+    public void setAcceptForeignIp(boolean acceptForeignIp) {
+        this.acceptForeignIp = acceptForeignIp;
+    }
+
+    public String getWelcome() {
+        return welcome;
     }
 }

@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -97,7 +98,8 @@ public class ConditionRouterTest {
     @Test
     public void testRoute_matchFilter() {
         List<Invoker<String>> invokers = new ArrayList<Invoker<String>>();
-        Invoker<String> invoker1 = new MockInvoker<String>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService"));
+        Invoker<String> invoker1 = new MockInvoker<String>(URL.valueOf(
+                "dubbo://10.20.3.3:20880/com.foo.BarService?default.serialization=fastjson"));
         Invoker<String> invoker2 = new MockInvoker<String>(URL.valueOf("dubbo://" + NetUtils.getLocalHost()
                 + ":20880/com.foo.BarService"));
         Invoker<String> invoker3 = new MockInvoker<String>(URL.valueOf("dubbo://" + NetUtils.getLocalHost()
@@ -121,6 +123,9 @@ public class ConditionRouterTest {
         Router router5 = new ConditionRouterFactory().getRouter(getRouteUrl(
                 "host = " + NetUtils.getLocalHost() + " => " + " host != 10.20.3.3").addParameter(Constants.FORCE_KEY,
                 String.valueOf(true)));
+        Router router6 = new ConditionRouterFactory().getRouter(getRouteUrl(
+                "host = " + NetUtils.getLocalHost() + " => " + " serialization = fastjson").addParameter(
+                Constants.FORCE_KEY, String.valueOf(true)));
 
         List<Invoker<String>> fileredInvokers1 = router1.route(invokers,
                 URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
@@ -132,26 +137,29 @@ public class ConditionRouterTest {
                 URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
         List<Invoker<String>> fileredInvokers5 = router5.route(invokers,
                 URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
+        List<Invoker<String>> fileredInvokers6 = router6.route(invokers,
+                URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
         Assert.assertEquals(1, fileredInvokers1.size());
         Assert.assertEquals(0, fileredInvokers2.size());
         Assert.assertEquals(0, fileredInvokers3.size());
         Assert.assertEquals(1, fileredInvokers4.size());
         Assert.assertEquals(2, fileredInvokers5.size());
+        Assert.assertEquals(1, fileredInvokers6.size());
     }
 
     @Test
     public void testRoute_methodRoute() {
         Invocation invocation = new RpcInvocation("getFoo", new Class<?>[0], new Object[0]);
-        // 有多个方法时，没法匹配
+        // More than one methods, mismatch
         Router router = new ConditionRouterFactory().getRouter(getRouteUrl("methods=getFoo => host = 1.2.3.4"));
         boolean matchWhen = ((ConditionRouter) router).matchWhen(
                 URL.valueOf("consumer://1.1.1.1/com.foo.BarService?methods=setFoo,getFoo,findFoo"), invocation);
         Assert.assertEquals(true, matchWhen);
-        // 只有一个方法时，可以匹配
+        // Exactly one method, match
         matchWhen = ((ConditionRouter) router).matchWhen(
                 URL.valueOf("consumer://1.1.1.1/com.foo.BarService?methods=getFoo"), invocation);
         Assert.assertEquals(true, matchWhen);
-        // 方法和其他参数一起，测试无影响
+        // Method routing and Other condition routing can work together
         Router router2 = new ConditionRouterFactory()
                 .getRouter(getRouteUrl("methods=getFoo & host!=1.1.1.1 => host = 1.2.3.4"));
         matchWhen = ((ConditionRouter) router2).matchWhen(
@@ -163,7 +171,7 @@ public class ConditionRouterTest {
         matchWhen = ((ConditionRouter) router3).matchWhen(
                 URL.valueOf("consumer://1.1.1.1/com.foo.BarService?methods=getFoo"), invocation);
         Assert.assertEquals(true, matchWhen);
-        // filter过滤条件测试
+        // Test filter condition
         List<Invoker<String>> invokers = new ArrayList<Invoker<String>>();
         Invoker<String> invoker1 = new MockInvoker<String>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService"));
         Invoker<String> invoker2 = new MockInvoker<String>(URL.valueOf("dubbo://" + NetUtils.getLocalHost()
@@ -187,7 +195,7 @@ public class ConditionRouterTest {
         List<Invoker<String>> fileredInvokers2 = router5.route(invokers,
                 URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), invocation);
         Assert.assertEquals(3, fileredInvokers2.size());
-        // 调用不存在的方法时
+        // Request a non-exists method
     }
 
     @Test

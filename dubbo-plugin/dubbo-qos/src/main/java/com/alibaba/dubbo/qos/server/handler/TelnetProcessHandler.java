@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.alibaba.dubbo.qos.server.handler;
 
 
@@ -8,7 +24,7 @@ import com.alibaba.dubbo.qos.command.CommandExecutor;
 import com.alibaba.dubbo.qos.command.DefaultCommandExecutor;
 import com.alibaba.dubbo.qos.command.NoSuchCommandException;
 import com.alibaba.dubbo.qos.command.decoder.TelnetCommandDecoder;
-import com.alibaba.dubbo.qos.common.Constants;
+import com.alibaba.dubbo.qos.common.QosConstants;
 
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -16,12 +32,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * <pre>
- * 接受telnet协议，其实就是用户提交的内容，使用\r\n结尾，当然已经被netty过滤了\r\n了。
- * 经过了StringDecoder相关的Decode过程
- * </pre>
- *
- * @author weipeng2k
+ * Telnet process handler
  */
 public class TelnetProcessHandler extends SimpleChannelInboundHandler<String> {
 
@@ -39,18 +50,18 @@ public class TelnetProcessHandler extends SimpleChannelInboundHandler<String> {
 
             try {
                 String result = commandExecutor.execute(commandContext);
-                if (StringUtils.equals(Constants.CLOSE, result)) {
+                if (StringUtils.equals(QosConstants.CLOSE, result)) {
                     ctx.writeAndFlush(getByeLabel()).addListener(ChannelFutureListener.CLOSE);
                 } else {
-                    ctx.writeAndFlush(result + Constants.BR_STR + QosProcessHandler.prompt);
+                    ctx.writeAndFlush(result + QosConstants.BR_STR + QosProcessHandler.prompt);
                 }
             } catch (NoSuchCommandException ex) {
                 ctx.writeAndFlush(msg + " :no such command");
-                ctx.writeAndFlush(Constants.BR_STR + QosProcessHandler.prompt);
+                ctx.writeAndFlush(QosConstants.BR_STR + QosProcessHandler.prompt);
                 log.error("can not found command " + commandContext, ex);
             } catch (Exception ex) {
                 ctx.writeAndFlush(msg + " :fail to execute commandContext by " + ex.getMessage());
-                ctx.writeAndFlush(Constants.BR_STR + QosProcessHandler.prompt);
+                ctx.writeAndFlush(QosConstants.BR_STR + QosProcessHandler.prompt);
                 log.error("execute commandContext got exception " + commandContext, ex);
             }
         }
