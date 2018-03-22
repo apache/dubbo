@@ -45,18 +45,55 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * ClassGenerator
+ *
+ * 类生成器，基于 Javassist 实现。
  */
 public final class ClassGenerator {
+
     private static final AtomicLong CLASS_NAME_COUNTER = new AtomicLong(0);
     private static final String SIMPLE_NAME_TAG = "<init>";
     private static final Map<ClassLoader, ClassPool> POOL_MAP = new ConcurrentHashMap<ClassLoader, ClassPool>(); //ClassLoader - ClassPool
+
+    /**
+     * CtClass hash 集合
+     * key：类名
+     */
     private ClassPool mPool;
+    /**
+     * CtClass 对象
+     *
+     * 使用 {@link #mPool} 生成
+     */
     private CtClass mCtc;
-    private String mClassName, mSuperClass;
+    /**
+     * 生成类的类名
+     */
+    private String mClassName;
+    /**
+     * 生成类的父类
+     */
+    private String mSuperClass;
+    /**
+     * 生成类的接口集合
+     */
     private Set<String> mInterfaces;
-    private List<String> mFields, mConstructors, mMethods;
+    /**
+     * 生成类的属性集合
+     */
+    private List<String> mFields;
+    /**
+     * 生成类的非空构造方法代码集合
+     */
+    private List<String> mConstructors;
+    /**
+     * 生成类的方法代码集合
+     */
+    private List<String> mMethods;
     private Map<String, Method> mCopyMethods; // <method desc,method instance>
     private Map<String, Constructor<?>> mCopyConstructors; // <constructor desc,constructor instance>
+    /**
+     * 默认空构造方法
+     */
     private boolean mDefaultConstructor = false;
 
     private ClassGenerator() {
@@ -211,6 +248,7 @@ public final class ClassGenerator {
     }
 
     public ClassGenerator addConstructor(int mod, Class<?>[] pts, Class<?>[] ets, String body) {
+        // 构造方法代码
         StringBuilder sb = new StringBuilder();
         sb.append(modifier(mod)).append(' ').append(SIMPLE_NAME_TAG);
         sb.append('(');
@@ -230,6 +268,7 @@ public final class ClassGenerator {
             }
         }
         sb.append('{').append(body).append('}');
+        //
         return addConstructor(sb.toString());
     }
 
@@ -256,22 +295,30 @@ public final class ClassGenerator {
     }
 
     public Class<?> toClass(ClassLoader loader, ProtectionDomain pd) {
+        // mCtc 非空时，进行释放；下面会进行创建 mCtc
         if (mCtc != null)
             mCtc.detach();
         long id = CLASS_NAME_COUNTER.getAndIncrement();
         try {
             CtClass ctcs = mSuperClass == null ? null : mPool.get(mSuperClass);
+            // 类名
             if (mClassName == null)
                 mClassName = (mSuperClass == null || javassist.Modifier.isPublic(ctcs.getModifiers())
                         ? ClassGenerator.class.getName() : mSuperClass + "$sc") + id;
+            // 创建 mCtc
             mCtc = mPool.makeClass(mClassName);
+            // 继承类
             if (mSuperClass != null)
                 mCtc.setSuperclass(ctcs);
+            // add dynamic class tag.
             mCtc.addInterface(mPool.get(DC.class.getName())); // add dynamic class tag.
+            // 实现接口集合
             if (mInterfaces != null)
                 for (String cl : mInterfaces) mCtc.addInterface(mPool.get(cl));
+            // 属性集合
             if (mFields != null)
                 for (String code : mFields) mCtc.addField(CtField.make(code, mCtc));
+            // 方法集合
             if (mMethods != null) {
                 for (String code : mMethods) {
                     if (code.charAt(0) == ':')
@@ -280,8 +327,10 @@ public final class ClassGenerator {
                         mCtc.addMethod(CtNewMethod.make(code, mCtc));
                 }
             }
+            // 空参数构造方法
             if (mDefaultConstructor)
                 mCtc.addConstructor(CtNewConstructor.defaultConstructor(mCtc));
+            // 带参数构造方法
             if (mConstructors != null) {
                 for (String code : mConstructors) {
                     if (code.charAt(0) == ':') {
@@ -294,6 +343,7 @@ public final class ClassGenerator {
             }
 //            mCtc.debugWriteFile("/Users/yunai/test/" + mCtc.getSimpleName().replaceAll(".", "/") + ".class");
             mCtc.debugWriteFile("/Users/yunai/test/" + mCtc.getSimpleName() + ".class");
+            // 生成
             return mCtc.toClass(loader, pd);
         } catch (RuntimeException e) {
             throw e;
@@ -304,6 +354,9 @@ public final class ClassGenerator {
         }
     }
 
+    /**
+     * 释放
+     */
     public void release() {
         if (mCtc != null) mCtc.detach();
         if (mInterfaces != null) mInterfaces.clear();
@@ -326,6 +379,9 @@ public final class ClassGenerator {
         return getCtClass(c.getDeclaringClass()).getConstructor(ReflectUtils.getDesc(c));
     }
 
+    /**
+     * 动态编译接口，用于标记类是通过 {@link #ClassGenerator} 生成的
+     */
     public static interface DC {
     } // dynamic class tag interface.
 }
