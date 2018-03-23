@@ -25,6 +25,11 @@ import java.util.Date;
 
 public class DemoServiceImpl implements DemoService {
 
+    /**
+     * 测试属性，{@link com.alibaba.dubbo.common.bytecode.Wrapper}
+     */
+    public String test01;
+
     private DemoDAO demoDAO;
 
     public String sayHello(String name) {
@@ -38,9 +43,13 @@ public class DemoServiceImpl implements DemoService {
         System.out.println(o.getClass());
     }
 
-    public DemoServiceImpl setDemoDAO(DemoDAO demoDAO) {
+//    public DemoServiceImpl setDemoDAO(DemoDAO demoDAO) {
+//        this.demoDAO = demoDAO;
+//        return this;
+//    }
+
+    public void setDemoDAO(DemoDAO demoDAO) {
         this.demoDAO = demoDAO;
-        return this;
     }
 
 }

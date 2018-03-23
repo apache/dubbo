@@ -32,39 +32,55 @@ import java.util.regex.Matcher;
  * Wrapper.
  */
 public abstract class Wrapper {
+
+    /**
+     * Wrapper 对象缓存
+     * key ：Wrapper 类。
+     * value ：Proxy 对象
+     */
     private static final Map<Class<?>, Wrapper> WRAPPER_MAP = new ConcurrentHashMap<Class<?>, Wrapper>(); //class wrapper map
+
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
     private static final String[] OBJECT_METHODS = new String[]{"getClass", "hashCode", "toString", "equals"};
 
     private static final Wrapper OBJECT_WRAPPER = new Wrapper() {
+
+        @Override
         public String[] getMethodNames() {
             return OBJECT_METHODS;
         }
 
+        @Override
         public String[] getDeclaredMethodNames() {
             return OBJECT_METHODS;
         }
 
+        @Override
         public String[] getPropertyNames() {
             return EMPTY_STRING_ARRAY;
         }
 
+        @Override
         public Class<?> getPropertyType(String pn) {
             return null;
         }
 
+        @Override
         public Object getPropertyValue(Object instance, String pn) throws NoSuchPropertyException {
             throw new NoSuchPropertyException("Property [" + pn + "] not found.");
         }
 
+        @Override
         public void setPropertyValue(Object instance, String pn, Object pv) throws NoSuchPropertyException {
             throw new NoSuchPropertyException("Property [" + pn + "] not found.");
         }
 
+        @Override
         public boolean hasProperty(String name) {
             return false;
         }
 
+        @Override
         public Object invokeMethod(Object instance, String mn, Class<?>[] types, Object[] args) throws NoSuchMethodException {
             if ("getClass".equals(mn)) return instance.getClass();
             if ("hashCode".equals(mn)) return instance.hashCode();
@@ -75,23 +91,34 @@ public abstract class Wrapper {
             }
             throw new NoSuchMethodException("Method [" + mn + "] not found.");
         }
+
     };
+
+    /**
+     * Wrapper Class 计数，用于生成 Wrapper 类名自增。
+     */
     private static AtomicLong WRAPPER_CLASS_COUNTER = new AtomicLong(0);
 
     /**
      * get wrapper.
      *
-     * @param c Class instance.
-     * @return Wrapper instance(not null).
+     * 根据指定类，获得 Wrapper 对象
+     *
+     * @param c Class instance. 指定类
+     * @return Wrapper instance(not null). Wrapper 对象
      */
     public static Wrapper getWrapper(Class<?> c) {
+        // 判断是否继承 ClassGenerator.DC.class ，如果是，拿到父类，避免重复包装
         while (ClassGenerator.isDynamicClass(c)) // can not wrapper on dynamic class.
             c = c.getSuperclass();
 
+        // 指定类为 Object.class
         if (c == Object.class)
             return OBJECT_WRAPPER;
 
+        // 从缓存中获得 Wrapper 对象
         Wrapper ret = WRAPPER_MAP.get(c);
+        // 创建 Wrapper 对象，并添加到缓存
         if (ret == null) {
             ret = makeWrapper(c);
             WRAPPER_MAP.put(c, ret);
@@ -130,7 +157,7 @@ public abstract class Wrapper {
         // 定义的方法名数组
         List<String> dmns = new ArrayList<String>(); // declaring method names.
 
-        // 循环属性，添加每个属性的设置和获得分别到 `#setPropertyValue(o, n, v)` 和 `#getPropertyValue(o, n)` 的代码
+        // 循环 public 属性，添加每个属性的设置和获得分别到 `#setPropertyValue(o, n, v)` 和 `#getPropertyValue(o, n)` 的代码
         // get all public field.
         for (Field f : c.getFields()) {
             String fn = f.getName();
@@ -206,23 +233,27 @@ public abstract class Wrapper {
         // 添加 `#invokeMethod(o, n, p, v)` 的未匹配到方法的代码
         c3.append(" throw new " + NoSuchMethodException.class.getName() + "(\"Not found method \\\"\"+$2+\"\\\" in class " + c.getName() + ".\"); }");
 
+        // 循环 setting/getting 方法，添加每个属性的设置和获得分别到 `#setPropertyValue(o, n, v)` 和 `#getPropertyValue(o, n)` 的代码
         // deal with get/set method.
         Matcher matcher;
         for (Map.Entry<String, Method> entry : ms.entrySet()) {
             String md = entry.getKey();
-            Method method = (Method) entry.getValue();
+            Method method = entry.getValue();
             if ((matcher = ReflectUtils.GETTER_METHOD_DESC_PATTERN.matcher(md)).matches()) {
                 String pn = propertyName(matcher.group(1));
                 c2.append(" if( $2.equals(\"").append(pn).append("\") ){ return ($w)w.").append(method.getName()).append("(); }");
+                // 添加到 `pts` 中
                 pts.put(pn, method.getReturnType());
             } else if ((matcher = ReflectUtils.IS_HAS_CAN_METHOD_DESC_PATTERN.matcher(md)).matches()) {
                 String pn = propertyName(matcher.group(1));
                 c2.append(" if( $2.equals(\"").append(pn).append("\") ){ return ($w)w.").append(method.getName()).append("(); }");
+                // 添加到 `pts` 中
                 pts.put(pn, method.getReturnType());
-            } else if ((matcher = ReflectUtils.SETTER_METHOD_DESC_PATTERN.matcher(md)).matches()) {
+            } else if ((matcher = ReflectUtils.SETTER_METHOD_DESC_PATTERN.matcher(md)).matches()) { // 不支持 public T setName(String name) { this.name = name; return this;} 这种返回 this 的形式。
                 Class<?> pt = method.getParameterTypes()[0];
                 String pn = propertyName(matcher.group(1));
                 c1.append(" if( $2.equals(\"").append(pn).append("\") ){ w.").append(method.getName()).append("(").append(arg(pt, "$3")).append("); return; }");
+                // 添加到 `pts` 中
                 pts.put(pn, pt);
             }
         }
@@ -231,17 +262,24 @@ public abstract class Wrapper {
 
         // make class
         long id = WRAPPER_CLASS_COUNTER.getAndIncrement();
+        // 创建 ClassGenerator 对象
         ClassGenerator cc = ClassGenerator.newInstance(cl);
+        // 设置类名
         cc.setClassName((Modifier.isPublic(c.getModifiers()) ? Wrapper.class.getName() : c.getName() + "$sw") + id);
+        // 设置父类为 Wrapper.class
         cc.setSuperClass(Wrapper.class);
 
         // 添加构造方法，参数 空
         cc.addDefaultConstructor();
-        //
+        // 添加静态属性 `pns` 的代码
         cc.addField("public static String[] pns;"); // property name array.
+        // 添加静态属性 `pts` 的代码
         cc.addField("public static " + Map.class.getName() + " pts;"); // property type map.
+        // 添加静态属性 `pts` 的代码
         cc.addField("public static String[] mns;"); // all method name array.
+        // 添加静态属性 `dmns` 的代码
         cc.addField("public static String[] dmns;"); // declared method name array.
+        // 添加静态属性 `mts` 的代码。TODO 芋艿
         for (int i = 0, len = ms.size(); i < len; i++)
             cc.addField("public static Class[] mts" + i + ";");
 

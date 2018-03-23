@@ -227,8 +227,8 @@ public abstract class Proxy {
             // create Proxy class.
             // 创建 Proxy 代码生成器
             String fcn = Proxy.class.getName() + id;
-            // 设置类名
             ccm = ClassGenerator.newInstance(cl);
+            // 设置类名
             ccm.setClassName(fcn);
             // 添加构造方法，参数 空
             ccm.addDefaultConstructor();
