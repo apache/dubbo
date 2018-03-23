@@ -23,15 +23,7 @@ import com.alibaba.fastjson.JSON;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-//abstract class SommPropertyTest {
-//
-//    public String name;
-//
-//}
-
-public class DemoServiceImpl
-//        extends SommPropertyTest
-        implements DemoService {
+public class DemoServiceImpl implements DemoService {
 
     public String sayHello(String name) {
         System.out.println("[" + new SimpleDateFormat("HH:mm:ss").format(new Date()) + "] Hello " + name + ", request from consumer: " + RpcContext.getContext().getRemoteAddress());

@@ -43,11 +43,6 @@ public class DemoServiceImpl implements DemoService {
         System.out.println(o.getClass());
     }
 
-//    public DemoServiceImpl setDemoDAO(DemoDAO demoDAO) {
-//        this.demoDAO = demoDAO;
-//        return this;
-//    }
-
     public void setDemoDAO(DemoDAO demoDAO) {
         this.demoDAO = demoDAO;
     }
