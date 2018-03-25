@@ -43,6 +43,20 @@ import java.lang.reflect.Method;
  * <li>Wrap the exception not introduced in API package into RuntimeException. Framework will serialize the outer exception but stringnize its cause in order to avoid of possible serialization problem on client side</li>
  * </ol>
  */
+/**
+ * ExceptionInvokerFilter
+ * <p>
+ * 功能：
+ * <ol>
+ * <li>不期望的异常打ERROR日志（Provider端）<br>
+ * 不期望的日志即是，没有的接口上声明的Unchecked异常。
+ * <li>异常不在API包中，则Wrap一层RuntimeException。<br>
+ * RPC对于第一层异常会直接序列化传输(Cause异常会String化)，避免异常在Client出不能反序列化问题。
+ * </ol>
+ *
+ * @author william.liangf
+ * @author ding.lid
+ */
 @Activate(group = Constants.PROVIDER)
 public class ExceptionFilter implements Filter {
 

@@ -24,7 +24,14 @@ import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
 
 public class DelegateProviderMetaDataInvoker<T> implements Invoker {
+
+    /**
+     * Invoker 对象
+     */
     protected final Invoker<T> invoker;
+    /**
+     * 服务提供者配置
+     */
     private ServiceConfig metadata;
 
     public DelegateProviderMetaDataInvoker(Invoker<T> invoker,ServiceConfig metadata) {
@@ -44,6 +51,7 @@ public class DelegateProviderMetaDataInvoker<T> implements Invoker {
         return invoker.isAvailable();
     }
 
+    @Override
     public Result invoke(Invocation invocation) throws RpcException {
         return invoker.invoke(invocation);
     }

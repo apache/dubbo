@@ -43,6 +43,17 @@ import java.util.concurrent.TimeoutException;
  * @export
  * @see com.alibaba.dubbo.rpc.filter.ContextFilter
  */
+/**
+ * Thread local context. (API, ThreadLocal, ThreadSafe)
+ *
+ * 注意：RpcContext是一个临时状态记录器，当接收到RPC请求，或发起RPC请求时，RpcContext的状态都会变化。
+ * 比如：A调B，B再调C，则B机器上，在B调C之前，RpcContext记录的是A调B的信息，在B调C之后，RpcContext记录的是B调C的信息。
+ *
+ * @see com.alibaba.dubbo.rpc.filter.ContextFilter
+ * @author qian.lei
+ * @author william.liangf
+ * @export
+ */
 public class RpcContext {
 
     private static final ThreadLocal<RpcContext> LOCAL = new ThreadLocal<RpcContext>() {
@@ -51,6 +62,7 @@ public class RpcContext {
             return new RpcContext();
         }
     };
+
     private final Map<String, String> attachments = new HashMap<String, String>();
     private final Map<String, Object> values = new HashMap<String, Object>();
     private Future<?> future;
@@ -64,9 +76,13 @@ public class RpcContext {
     private Class<?>[] parameterTypes;
 
     private Object[] arguments;
-
+    /**
+     * 服务消费者地址
+     */
     private InetSocketAddress localAddress;
-
+    /**
+     * 服务提供者地址
+     */
     private InetSocketAddress remoteAddress;
     @Deprecated
     private List<Invoker<?>> invokers;

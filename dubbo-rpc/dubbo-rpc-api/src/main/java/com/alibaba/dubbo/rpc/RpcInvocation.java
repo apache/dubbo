@@ -60,22 +60,29 @@ public class RpcInvocation implements Invocation, Serializable {
                 invocation.getInvoker());
         if (invoker != null) {
             URL url = invoker.getUrl();
+            // path
             setAttachment(Constants.PATH_KEY, url.getPath());
+            // interface
             if (url.hasParameter(Constants.INTERFACE_KEY)) {
                 setAttachment(Constants.INTERFACE_KEY, url.getParameter(Constants.INTERFACE_KEY));
             }
+            // group
             if (url.hasParameter(Constants.GROUP_KEY)) {
                 setAttachment(Constants.GROUP_KEY, url.getParameter(Constants.GROUP_KEY));
             }
+            // version
             if (url.hasParameter(Constants.VERSION_KEY)) {
                 setAttachment(Constants.VERSION_KEY, url.getParameter(Constants.VERSION_KEY, "0.0.0"));
             }
+            // timeout
             if (url.hasParameter(Constants.TIMEOUT_KEY)) {
                 setAttachment(Constants.TIMEOUT_KEY, url.getParameter(Constants.TIMEOUT_KEY));
             }
+            // token
             if (url.hasParameter(Constants.TOKEN_KEY)) {
                 setAttachment(Constants.TOKEN_KEY, url.getParameter(Constants.TOKEN_KEY));
             }
+            // application
             if (url.hasParameter(Constants.APPLICATION_KEY)) {
                 setAttachment(Constants.APPLICATION_KEY, url.getParameter(Constants.APPLICATION_KEY));
             }

@@ -71,10 +71,12 @@ public class ListenerInvokerWrapper<T> implements Invoker<T> {
         return invoker.getUrl();
     }
 
+    @Override
     public boolean isAvailable() {
         return invoker.isAvailable();
     }
 
+    @Override
     public Result invoke(Invocation invocation) throws RpcException {
         return invoker.invoke(invocation);
     }
