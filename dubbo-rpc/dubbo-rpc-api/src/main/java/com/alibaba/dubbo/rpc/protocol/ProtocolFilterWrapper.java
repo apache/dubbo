@@ -92,6 +92,10 @@ public class ProtocolFilterWrapper implements Protocol {
                 };
             }
         }
+        System.out.println("group:" + group);
+        for (Filter filter : filters) {
+            System.out.println(filter.getClass());
+        }
         return last;
     }
 
