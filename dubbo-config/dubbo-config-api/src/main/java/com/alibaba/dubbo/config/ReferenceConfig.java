@@ -21,10 +21,7 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.common.bytecode.Wrapper;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
-import com.alibaba.dubbo.common.utils.ConfigUtils;
-import com.alibaba.dubbo.common.utils.NetUtils;
-import com.alibaba.dubbo.common.utils.ReflectUtils;
-import com.alibaba.dubbo.common.utils.StringUtils;
+import com.alibaba.dubbo.common.utils.*;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.model.ApplicationModel;
 import com.alibaba.dubbo.config.model.ConsumerModel;
@@ -44,7 +41,9 @@ import com.alibaba.dubbo.rpc.support.ProtocolUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -112,6 +111,46 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
     public ReferenceConfig(Reference reference) {
         appendAnnotation(Reference.class, reference);
+    }
+
+
+    /**
+     * 新增构造函数，支持RefConf配置实体类
+     * @param referenceConf
+     */
+    public ReferenceConfig(RefConf referenceConf) {
+        Field[] fields = referenceConf.getClass().getFields();
+        for (Field field : fields) {
+            if (field.getType() != void.class
+                    && ! Modifier.isStatic(field.getModifiers())) {
+                try {
+                    String property = field.getName();
+                    if ("interfaceClass".equals(property) || "interfaceName".equals(property)) {
+                        property = "interface";
+                    }
+                    String setter = "set" + property.substring(0, 1).toUpperCase() + property.substring(1);
+                    Object value = field.get(referenceConf);
+                    if (value != null && ! (value instanceof Class && ((Class) value).getName().equals("void")) ) {
+                        Class<?> parameterType = ReflectUtils.getBoxedClass(field.getType());
+                        if ("filter".equals(property) || "listener".equals(property)) {
+                            parameterType = String.class;
+                            value = StringUtils.join((String[]) value, ",");
+                        } else if ("parameters".equals(property)) {
+                            parameterType = Map.class;
+                            value = CollectionUtils.toStringMap((String[]) value);
+                        }
+                        try {
+                            Method setterMethod = getClass().getMethod(setter, new Class<?>[] { parameterType });
+                            setterMethod.invoke(this, new Object[] { value });
+                        } catch (NoSuchMethodException e) {
+                            // ignore
+                        }
+                    }
+                } catch (Throwable e) {
+                    logger.error(e.getMessage(), e);
+                }
+            }
+        }
     }
 
     private static void checkAndConvertImplicitConfig(MethodConfig method, Map<String, String> map, Map<Object, Object> attributes) {
@@ -183,7 +222,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     }
 
     private void init() {
-        if (initialized) {
+        //附加判断 ref !=null ： 防止ReferenceConfig动态创建时可能无效问题
+        if (initialized && ref!=null) {
             return;
         }
         initialized = true;
