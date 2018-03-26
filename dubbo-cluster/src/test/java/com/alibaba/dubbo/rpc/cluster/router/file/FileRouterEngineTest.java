@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,19 +16,7 @@
  */
 package com.alibaba.dubbo.rpc.cluster.router.file;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import javax.script.ScriptEngineManager;
-
-import junit.framework.Assert;
-
-import org.easymock.EasyMock;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.rpc.Invocation;
@@ -42,25 +31,31 @@ import com.alibaba.dubbo.rpc.cluster.RouterFactory;
 import com.alibaba.dubbo.rpc.cluster.directory.StaticDirectory;
 import com.alibaba.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 
-/**
- * @author chao.liuc
- */
+import junit.framework.Assert;
+import org.easymock.EasyMock;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import javax.script.ScriptEngineManager;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 @SuppressWarnings("unchecked")
 public class FileRouterEngineTest {
+    private static boolean isScriptUnsupported = new ScriptEngineManager().getEngineByName("javascript") == null;
     List<Invoker<FileRouterEngineTest>> invokers = new ArrayList<Invoker<FileRouterEngineTest>>();
-
-    Invoker<FileRouterEngineTest>       invoker1 = EasyMock.createMock(Invoker.class);
-    Invoker<FileRouterEngineTest>       invoker2 = EasyMock.createMock(Invoker.class);
-    Invocation                          invocation;
-    Directory<FileRouterEngineTest>     dic;
-    Result                              result   = new RpcResult();
+    Invoker<FileRouterEngineTest> invoker1 = EasyMock.createMock(Invoker.class);
+    Invoker<FileRouterEngineTest> invoker2 = EasyMock.createMock(Invoker.class);
+    Invocation invocation;
+    Directory<FileRouterEngineTest> dic;
+    Result result = new RpcResult();
     private RouterFactory routerFactory = ExtensionLoader.getExtensionLoader(RouterFactory.class).getAdaptiveExtension();
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
     }
-    
-    private static boolean isScriptUnsupported = new ScriptEngineManager().getEngineByName("javascript") == null;
 
     @Before
     public void setUp() throws Exception {
@@ -136,12 +131,13 @@ public class FileRouterEngineTest {
     private URL initUrl(String filename) {
         filename = getClass().getClassLoader().getResource(getClass().getPackage().getName().replace('.', '/') + "/" + filename).toString();
         URL url = URL.valueOf(filename);
+        url = url.addParameter(Constants.RUNTIME_KEY, true);
         return url;
     }
 
     private void initInvocation(String methodName) {
         invocation = new RpcInvocation();
-        ((RpcInvocation)invocation).setMethodName(methodName);
+        ((RpcInvocation) invocation).setMethodName(methodName);
     }
 
     private void initInvokers(URL url) {
