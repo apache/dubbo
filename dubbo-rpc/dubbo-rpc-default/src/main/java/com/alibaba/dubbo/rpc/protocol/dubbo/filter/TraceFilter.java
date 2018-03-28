@@ -90,9 +90,9 @@ public class TraceFilter implements Filter {
                             int max = 1;
                             Integer m = (Integer) channel.getAttribute(TRACE_MAX);
                             if (m != null) {
-                                max = (int) m;
+                                max = m;
                             }
-                            int count = 0;
+                            int count;
                             AtomicInteger c = (AtomicInteger) channel.getAttribute(TRACE_COUNT);
                             if (c == null) {
                                 c = new AtomicInteger();

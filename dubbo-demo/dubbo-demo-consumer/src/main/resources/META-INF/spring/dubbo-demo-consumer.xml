@@ -21,13 +21,21 @@ limitations under the License.
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
        http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
 
-    <dubbo:application name="demo-injvm"/>
+    <!-- consumer's application name, used for tracing dependency relationship (not a matching criterion),
+    don't set it same as provider -->
+    <dubbo:application name="demo-consumer" />
 
-    <dubbo:registry address="N/A"/>
+    <!-- use multicast registry center to discover service -->
+    <!--<dubbo:registry address="multicast://224.5.6.7:1234"/>-->
+    <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
 
-    <dubbo:reference id="demoService" interface="com.alibaba.dubbo.demo.DemoService" protocol="injvm" />
+    <!-- generate proxy for the remote service, then demoService can be used in the same way as the
+    local regular interface -->
+    <dubbo:reference id="demoService" check="false" interface="com.alibaba.dubbo.demo.DemoService" client="netty4" >
+        <!--<dubbo:method name="sayHello" />-->
 
-    <bean id="demoServiceImpl" class="com.alibaba.dubbo.demo.consumer.DemoServiceImpl"/>
-    <dubbo:service interface="com.alibaba.dubbo.demo.DemoService" ref="demoServiceImpl" protocol="injvm" />
+        <!--url="registry://127.0.0.1:2181?registry=zookeeper;127.0.0.1:2181;127.0.0.1:27018"-->
+
+    </dubbo:reference>
 
 </beans>

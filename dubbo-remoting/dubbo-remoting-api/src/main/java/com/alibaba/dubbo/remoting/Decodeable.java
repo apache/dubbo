@@ -17,8 +17,16 @@
 
 package com.alibaba.dubbo.remoting;
 
+/**
+ * 可解码的接口
+ */
 public interface Decodeable {
 
-    public void decode() throws Exception;
+    /**
+     * 解码
+     *
+     * @throws Exception 发生异常
+     */
+    void decode() throws Exception;
 
 }

@@ -24,6 +24,8 @@ import com.alibaba.dubbo.remoting.transport.ChannelHandlerDispatcher;
 
 /**
  * Transporter facade. (API, Static, ThreadSafe)
+ *
+ * Transporter 门面类，参见 Facade 设计模式。
  */
 public class Transporters {
 
@@ -47,12 +49,14 @@ public class Transporters {
         if (handlers == null || handlers.length == 0) {
             throw new IllegalArgumentException("handlers == null");
         }
+        // 创建 handler
         ChannelHandler handler;
         if (handlers.length == 1) {
             handler = handlers[0];
         } else {
             handler = new ChannelHandlerDispatcher(handlers);
         }
+        // 创建 Server 对象
         return getTransporter().bind(url, handler);
     }
 
@@ -64,6 +68,7 @@ public class Transporters {
         if (url == null) {
             throw new IllegalArgumentException("url == null");
         }
+        // 创建 handler
         ChannelHandler handler;
         if (handlers == null || handlers.length == 0) {
             handler = new ChannelHandlerAdapter();
@@ -72,6 +77,7 @@ public class Transporters {
         } else {
             handler = new ChannelHandlerDispatcher(handlers);
         }
+        // 创建 Client 对象
         return getTransporter().connect(url, handler);
     }
 

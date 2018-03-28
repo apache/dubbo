@@ -23,6 +23,7 @@ import java.net.InetSocketAddress;
 /**
  * Endpoint. (API/SPI, Prototype, ThreadSafe)
  *
+ * Endpoint 接口
  *
  * @see com.alibaba.dubbo.remoting.Channel
  * @see com.alibaba.dubbo.remoting.Client
@@ -40,6 +41,8 @@ public interface Endpoint {
     /**
      * get channel handler.
      *
+     * 获得通道处理器
+     *
      * @return channel handler
      */
     ChannelHandler getChannelHandler();
@@ -54,7 +57,7 @@ public interface Endpoint {
     /**
      * send message.
      *
-     * @param message
+     * @param message 消息
      * @throws RemotingException
      */
     void send(Object message) throws RemotingException;
@@ -62,7 +65,7 @@ public interface Endpoint {
     /**
      * send message.
      *
-     * @param message
+     * @param message 消息
      * @param sent    already sent to socket?
      */
     void send(Object message, boolean sent) throws RemotingException;

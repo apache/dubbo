@@ -32,7 +32,7 @@ public interface InvokerListener {
      *
      * 当服务引用完成
      *
-     * @param invoker
+     * @param invoker Invoker 对象
      * @throws RpcException
      * @see com.alibaba.dubbo.rpc.Protocol#refer(Class, URL)
      */
@@ -43,7 +43,7 @@ public interface InvokerListener {
      *
      * 当服务销毁引用完成
      *
-     * @param invoker
+     * @param invoker Invoker 对象
      * @see com.alibaba.dubbo.rpc.Invoker#destroy()
      */
     void destroyed(Invoker<?> invoker);

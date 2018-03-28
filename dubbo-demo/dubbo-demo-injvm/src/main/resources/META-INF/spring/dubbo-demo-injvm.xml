@@ -25,9 +25,11 @@ limitations under the License.
 
     <dubbo:registry address="N/A"/>
 
-    <dubbo:reference id="demoService" interface="com.alibaba.dubbo.demo.DemoService" protocol="injvm" />
+    <dubbo:reference id="demoService" interface="com.alibaba.dubbo.demo.DemoService" protocol="injvm">
+        <dubbo:parameter key="deprecated" value="true" />
+    </dubbo:reference>
 
     <bean id="demoServiceImpl" class="com.alibaba.dubbo.demo.consumer.DemoServiceImpl"/>
-    <dubbo:service interface="com.alibaba.dubbo.demo.DemoService" ref="demoServiceImpl" protocol="injvm" />
+    <dubbo:service interface="com.alibaba.dubbo.demo.DemoService" ref="demoServiceImpl" protocol="injvm"  />
 
 </beans>

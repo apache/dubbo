@@ -23,9 +23,14 @@ import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 
+/**
+ * JVM 工具类
+ */
 public class JVMUtil {
+
     public static void jstack(OutputStream stream) throws Exception {
         ThreadMXBean threadMxBean = ManagementFactory.getThreadMXBean();
+        // 循环每个线程
         for (ThreadInfo threadInfo : threadMxBean.dumpAllThreads(true, true)) {
             stream.write(getThreadDumpString(threadInfo).getBytes());
         }
@@ -55,7 +60,7 @@ public class JVMUtil {
         MonitorInfo[] lockedMonitors = threadInfo.getLockedMonitors();
         for (; i < stackTrace.length && i < 32; i++) {
             StackTraceElement ste = stackTrace[i];
-            sb.append("\tat " + ste.toString());
+            sb.append("\tat ").append(ste.toString());
             sb.append('\n');
             if (i == 0 && threadInfo.getLockInfo() != null) {
                 Thread.State ts = threadInfo.getThreadState();
@@ -100,4 +105,5 @@ public class JVMUtil {
         sb.append('\n');
         return sb.toString();
     }
+
 }

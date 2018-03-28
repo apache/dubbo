@@ -18,13 +18,17 @@ package com.alibaba.dubbo.common;
 
 /**
  * Resetable.
+ *
+ * 可重置接口
  */
 public interface Resetable {
 
     /**
      * reset.
      *
-     * @param url
+     * 重置
+     *
+     * @param url URL
      */
     void reset(URL url);
 

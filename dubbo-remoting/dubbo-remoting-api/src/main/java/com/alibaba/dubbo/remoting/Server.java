@@ -26,12 +26,15 @@ import java.util.Collection;
  * <p>
  * <a href="http://en.wikipedia.org/wiki/Client%E2%80%93server_model">Client/Server</a>
  *
+ * Server 接口
+ *
  * @see com.alibaba.dubbo.remoting.Transporter#bind(com.alibaba.dubbo.common.URL, ChannelHandler)
  */
 public interface Server extends Endpoint, Resetable {
 
     /**
      * is bound.
+     * 是否绑定本地端口，提供服务。即，是否启动成功，可连接，接收消息等。
      *
      * @return bound
      */
@@ -39,6 +42,7 @@ public interface Server extends Endpoint, Resetable {
 
     /**
      * get channels.
+     * 获得连接上服务器的通道们（客户端）
      *
      * @return channels
      */

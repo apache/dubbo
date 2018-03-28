@@ -22,13 +22,13 @@ import com.alibaba.dubbo.rpc.RpcException;
 
 /**
  * InvokerListenerAdapter
+ *
+ * InvokerListener 适配器抽象类
  */
 public abstract class InvokerListenerAdapter implements InvokerListener {
 
-    public void referred(Invoker<?> invoker) throws RpcException {
-    }
+    public void referred(Invoker<?> invoker) throws RpcException { }
 
-    public void destroyed(Invoker<?> invoker) {
-    }
+    public void destroyed(Invoker<?> invoker) { }
 
 }

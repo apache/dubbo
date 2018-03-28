@@ -57,15 +57,22 @@ public class ProtocolConfig extends AbstractConfig {
     // context path
     private String contextpath;
 
+    /**
+     * 线程池名 {@link ThreadPool}
+     */
     // thread pool
     private String threadpool;
-
+    /**
+     * 线程数 {@link com.alibaba.dubbo.common.threadpool.support.fixed.FixedThreadPool}
+     */
     // thread pool size (fixed size)
     private Integer threads;
 
     // IO thread pool size (fixed size)
     private Integer iothreads;
-
+    /**
+     * 队列数
+     */
     // thread pool's queue length
     private Integer queues;
 
