@@ -28,10 +28,13 @@ import java.util.Collection;
 /**
  * ServerDelegate
  *
- *
+ * 服务器委托者
  */
 public class ServerDelegate implements Server {
 
+    /**
+     * 服务器
+     */
     private transient Server server;
 
     public ServerDelegate() {
