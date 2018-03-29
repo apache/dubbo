@@ -22,22 +22,19 @@ import com.alibaba.dubbo.remoting.RemotingException;
 
 /**
  * ChannelHandlerAdapter.
+ *
+ * 通道处理器适配器，每个方法为空实现。
  */
 public class ChannelHandlerAdapter implements ChannelHandler {
 
-    public void connected(Channel channel) throws RemotingException {
-    }
+    @Override public void connected(Channel channel) throws RemotingException { }
 
-    public void disconnected(Channel channel) throws RemotingException {
-    }
+    @Override public void disconnected(Channel channel) throws RemotingException { }
 
-    public void sent(Channel channel, Object message) throws RemotingException {
-    }
+    @Override public void sent(Channel channel, Object message) { }
 
-    public void received(Channel channel, Object message) throws RemotingException {
-    }
+    @Override public void received(Channel channel, Object message) throws RemotingException { }
 
-    public void caught(Channel channel, Throwable exception) throws RemotingException {
-    }
+    @Override public void caught(Channel channel, Throwable exception) throws RemotingException { }
 
 }
