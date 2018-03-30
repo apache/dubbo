@@ -23,6 +23,7 @@ import java.io.InputStream;
  * UnsafeByteArrayInputStrem.
  */
 public class UnsafeByteArrayInputStream extends InputStream {
+
     protected byte mData[];
 
     protected int mPosition, mLimit, mMark = 0;

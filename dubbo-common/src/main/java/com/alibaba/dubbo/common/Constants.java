@@ -272,8 +272,13 @@ public class Constants {
 
     public static final String RETRIES_KEY = "retries";
 
+    /**
+     * Telnet 提示键
+     */
     public static final String PROMPT_KEY = "prompt";
-
+    /**
+     * Telnet 提示值【默认】
+     */
     public static final String DEFAULT_PROMPT = "dubbo>";
 
     public static final String CODEC_KEY = "codec";
