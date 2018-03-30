@@ -191,7 +191,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             Throwable t = e;
 
             List<URL> urls = getCacheUrls(url);
-            if (urls != null && urls.size() > 0) {
+            if (urls != null && !urls.isEmpty()) {
                 notify(url, listener, urls);
                 logger.error("Failed to subscribe " + url + ", Using cached list: " + urls + " from cache file: " + getUrl().getParameter(Constants.FILE_KEY, System.getProperty("user.home") + "/dubbo-registry-" + url.getHost() + ".cache") + ", cause: " + t.getMessage(), t);
             } else {
@@ -324,7 +324,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         }
         if (!failedUnregistered.isEmpty()) {
             Set<URL> failed = new HashSet<URL>(failedUnregistered);
-            if (failed.size() > 0) {
+            if (!failed.isEmpty()) {
                 if (logger.isInfoEnabled()) {
                     logger.info("Retry unregister " + failed);
                 }
@@ -374,7 +374,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         if (!failedUnsubscribed.isEmpty()) {
             Map<URL, Set<NotifyListener>> failed = new HashMap<URL, Set<NotifyListener>>(failedUnsubscribed);
             for (Map.Entry<URL, Set<NotifyListener>> entry : new HashMap<URL, Set<NotifyListener>>(failed).entrySet()) {
-                if (entry.getValue() == null || entry.getValue().size() == 0) {
+                if (entry.getValue() == null || entry.getValue().isEmpty()) {
                     failed.remove(entry.getKey());
                 }
             }

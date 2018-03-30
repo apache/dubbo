@@ -73,7 +73,7 @@ public class ProviderConsumerRegTable {
         return null;
     }
 
-    public static void registerConsuemr(Invoker invoker, URL registryUrl, URL consumerUrl, RegistryDirectory registryDirectory) {
+    public static void registerConsumer(Invoker invoker, URL registryUrl, URL consumerUrl, RegistryDirectory registryDirectory) {
         ConsumerInvokerWrapper wrapperInvoker = new ConsumerInvokerWrapper(invoker, registryUrl, consumerUrl, registryDirectory);
         String serviceUniqueName = consumerUrl.getServiceKey();
         Set<ConsumerInvokerWrapper> invokers = consumerInvokers.get(serviceUniqueName);

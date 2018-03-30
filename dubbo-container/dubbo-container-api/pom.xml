@@ -20,24 +20,20 @@ limitations under the License.
     <parent>
         <groupId>com.alibaba</groupId>
         <artifactId>dubbo-container</artifactId>
-        <version>2.5.10</version>
+        <version>2.6.1</version>
     </parent>
     <artifactId>dubbo-container-api</artifactId>
     <packaging>jar</packaging>
     <name>${project.artifactId}</name>
     <description>The container module of dubbo project</description>
     <properties>
-        <skip_maven_deploy>true</skip_maven_deploy>
+        <skip_maven_deploy>false</skip_maven_deploy>
     </properties>
     <dependencies>
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>dubbo-common</artifactId>
             <version>${project.parent.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mortbay.jetty</groupId>
-            <artifactId>jetty</artifactId>
         </dependency>
     </dependencies>
     <build>

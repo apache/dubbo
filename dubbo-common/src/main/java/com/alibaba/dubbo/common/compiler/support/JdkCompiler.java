@@ -67,6 +67,8 @@ public class JdkCompiler extends AbstractCompiler {
 
     public JdkCompiler() {
         options = new ArrayList<String>();
+        options.add("-source");
+        options.add("1.6");
         options.add("-target");
         options.add("1.6");
         StandardJavaFileManager manager = compiler.getStandardFileManager(diagnosticCollector, null, null);
@@ -101,8 +103,8 @@ public class JdkCompiler extends AbstractCompiler {
         javaFileManager.putFileForInput(StandardLocation.SOURCE_PATH, packageName,
                 className + ClassUtils.JAVA_EXTENSION, javaFileObject);
         Boolean result = compiler.getTask(null, javaFileManager, diagnosticCollector, options,
-                null, Arrays.asList(new JavaFileObject[]{javaFileObject})).call();
-        if (result == null || !result.booleanValue()) {
+                null, Arrays.asList(javaFileObject)).call();
+        if (result == null || !result) {
             throw new IllegalStateException("Compilation failed. class: " + name + ", diagnostics: " + diagnosticCollector);
         }
         return classLoader.loadClass(name);

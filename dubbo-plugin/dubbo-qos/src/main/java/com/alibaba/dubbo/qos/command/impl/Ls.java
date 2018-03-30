@@ -37,13 +37,13 @@ public class Ls implements BaseCommand {
     @Override
     public String execute(CommandContext commandContext, String[] args) {
         StringBuilder result = new StringBuilder();
-        result.append(listProvier());
+        result.append(listProvider());
         result.append(listConsumer());
 
         return result.toString();
     }
 
-    public String listProvier() {
+    public String listProvider() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("As Provider side:\n");
         Collection<ProviderModel> ProviderModelList = ApplicationModel.allProviderModels();
