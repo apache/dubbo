@@ -71,6 +71,7 @@ public class ConnectionOrderedChannelHandler extends WrappedChannelHandler {
         }
     }
 
+    @SuppressWarnings("Duplicates")
     public void received(Channel channel, Object message) throws RemotingException {
         ExecutorService cexecutor = executor;
         if (cexecutor == null || cexecutor.isShutdown()) {

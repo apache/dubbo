@@ -32,23 +32,39 @@ import com.alibaba.dubbo.remoting.transport.ChannelHandlerDelegate;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * 包装的 WrappedChannelHandler 实现类
+ */
 public class WrappedChannelHandler implements ChannelHandlerDelegate {
 
     protected static final Logger logger = LoggerFactory.getLogger(WrappedChannelHandler.class);
 
+    /**
+     * 共享线程池
+     */
     protected static final ExecutorService SHARED_EXECUTOR = Executors.newCachedThreadPool(new NamedThreadFactory("DubboSharedHandler", true));
 
+    /**
+     * 线程池
+     */
     protected final ExecutorService executor;
-
+    /**
+     * 通道处理器
+     */
     protected final ChannelHandler handler;
-
+    /**
+     * URL
+     */
     protected final URL url;
 
     public WrappedChannelHandler(ChannelHandler handler, URL url) {
         this.handler = handler;
         this.url = url;
+
+        // 创建线程池
         executor = (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);
 
+        // 添加线程池到 DataStore 中
         String componentKey = Constants.EXECUTOR_SERVICE_COMPONENT_KEY;
         if (Constants.CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(Constants.SIDE_KEY))) {
             componentKey = Constants.CONSUMER_SIDE;
@@ -67,22 +83,27 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
         }
     }
 
+    @Override
     public void connected(Channel channel) throws RemotingException {
         handler.connected(channel);
     }
 
+    @Override
     public void disconnected(Channel channel) throws RemotingException {
         handler.disconnected(channel);
     }
 
+    @Override
     public void sent(Channel channel, Object message) throws RemotingException {
         handler.sent(channel, message);
     }
 
+    @Override
     public void received(Channel channel, Object message) throws RemotingException {
         handler.received(channel, message);
     }
 
+    @Override
     public void caught(Channel channel, Throwable exception) throws RemotingException {
         handler.caught(channel, exception);
     }
@@ -91,6 +112,7 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
         return executor;
     }
 
+    @Override
     public ChannelHandler getHandler() {
         if (handler instanceof ChannelHandlerDelegate) {
             return ((ChannelHandlerDelegate) handler).getHandler();

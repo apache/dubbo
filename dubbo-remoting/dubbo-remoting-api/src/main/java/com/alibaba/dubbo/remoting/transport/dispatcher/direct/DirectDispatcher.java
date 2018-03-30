@@ -22,6 +22,7 @@ import com.alibaba.dubbo.remoting.Dispatcher;
 
 /**
  * Direct dispatcher
+ *
  */
 public class DirectDispatcher implements Dispatcher {
 

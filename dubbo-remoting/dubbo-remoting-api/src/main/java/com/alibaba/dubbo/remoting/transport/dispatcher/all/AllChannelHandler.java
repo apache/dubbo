@@ -30,12 +30,16 @@ import com.alibaba.dubbo.remoting.transport.dispatcher.WrappedChannelHandler;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
+/**
+ * `all` 所有消息都派发到线程池，包括请求，响应，连接事件，断开事件，心跳等。
+ */
 public class AllChannelHandler extends WrappedChannelHandler {
 
     public AllChannelHandler(ChannelHandler handler, URL url) {
         super(handler, url);
     }
 
+    @Override
     public void connected(Channel channel) throws RemotingException {
         ExecutorService cexecutor = getExecutorService();
         try {
@@ -54,6 +58,7 @@ public class AllChannelHandler extends WrappedChannelHandler {
         }
     }
 
+    @SuppressWarnings("Duplicates")
     public void received(Channel channel, Object message) throws RemotingException {
         ExecutorService cexecutor = getExecutorService();
         try {

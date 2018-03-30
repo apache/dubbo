@@ -21,7 +21,11 @@ import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 
+/**
+ * 通道事件 Runnable
+ */
 public class ChannelEventRunnable implements Runnable {
+
     private static final Logger logger = LoggerFactory.getLogger(ChannelEventRunnable.class);
 
     private final ChannelHandler handler;
@@ -50,6 +54,7 @@ public class ChannelEventRunnable implements Runnable {
         this.exception = exception;
     }
 
+    @Override
     public void run() {
         switch (state) {
             case CONNECTED:
@@ -98,7 +103,7 @@ public class ChannelEventRunnable implements Runnable {
     /**
      * ChannelState
      *
-     *
+     * 通道事件类型
      */
     public enum ChannelState {
 

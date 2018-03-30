@@ -24,8 +24,14 @@ import com.alibaba.dubbo.remoting.Dispatcher;
 import com.alibaba.dubbo.remoting.exchange.support.header.HeartbeatHandler;
 import com.alibaba.dubbo.remoting.transport.MultiMessageHandler;
 
+/**
+ * 通道处理器工厂
+ */
 public class ChannelHandlers {
 
+    /**
+     * 单例
+     */
     private static ChannelHandlers INSTANCE = new ChannelHandlers();
 
     protected ChannelHandlers() {
@@ -39,12 +45,16 @@ public class ChannelHandlers {
         return INSTANCE;
     }
 
-    static void setTestingChannelHandlers(ChannelHandlers instance) {
+    static void setTestingChannelHandlers(ChannelHandlers instance) { // for testing
         INSTANCE = instance;
     }
 
     protected ChannelHandler wrapInternal(ChannelHandler handler, URL url) {
-        return new MultiMessageHandler(new HeartbeatHandler(ExtensionLoader.getExtensionLoader(Dispatcher.class)
-                .getAdaptiveExtension().dispatch(handler, url)));
+        return new MultiMessageHandler(
+                new HeartbeatHandler(
+                        ExtensionLoader.getExtensionLoader(Dispatcher.class).getAdaptiveExtension().dispatch(handler, url)
+                )
+        );
     }
+
 }

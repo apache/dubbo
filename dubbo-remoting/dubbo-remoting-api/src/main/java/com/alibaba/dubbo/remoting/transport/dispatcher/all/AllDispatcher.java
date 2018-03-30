@@ -22,6 +22,7 @@ import com.alibaba.dubbo.remoting.Dispatcher;
 
 /**
  * default thread pool configure
+ *
  */
 public class AllDispatcher implements Dispatcher {
 

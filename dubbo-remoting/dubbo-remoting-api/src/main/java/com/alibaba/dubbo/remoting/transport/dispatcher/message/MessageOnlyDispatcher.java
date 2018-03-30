@@ -22,6 +22,7 @@ import com.alibaba.dubbo.remoting.Dispatcher;
 
 /**
  * Only message receive uses the thread pool.
+ *
  */
 public class MessageOnlyDispatcher implements Dispatcher {
 

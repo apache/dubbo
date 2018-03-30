@@ -35,14 +35,15 @@ public class ExecutionChannelHandler extends WrappedChannelHandler {
         super(handler, url);
     }
 
-    public void connected(Channel channel) throws RemotingException {
+    public void connected(Channel channel) {
         executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.CONNECTED));
     }
 
-    public void disconnected(Channel channel) throws RemotingException {
+    public void disconnected(Channel channel) {
         executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.DISCONNECTED));
     }
 
+    @SuppressWarnings("Duplicates")
     public void received(Channel channel, Object message) throws RemotingException {
     	try {
             executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
