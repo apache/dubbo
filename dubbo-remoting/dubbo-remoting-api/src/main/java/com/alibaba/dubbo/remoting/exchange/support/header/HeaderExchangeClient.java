@@ -39,18 +39,38 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * DefaultMessageClient
+ *
+ * 基于消息头部( Header )的信息交换客户端实现类
  */
 public class HeaderExchangeClient implements ExchangeClient {
 
     private static final Logger logger = LoggerFactory.getLogger(HeaderExchangeClient.class);
 
+    /**
+     * 定时器线程池
+     */
     private static final ScheduledThreadPoolExecutor scheduled = new ScheduledThreadPoolExecutor(2, new NamedThreadFactory("dubbo-remoting-client-heartbeat", true));
+    /**
+     * 客户端
+     */
     private final Client client;
+    /**
+     * 信息交换通道
+     */
     private final ExchangeChannel channel;
     // heartbeat timer
+    /**
+     * 心跳定时器
+     */
     private ScheduledFuture<?> heartbeatTimer;
+    /**
+     * 是否心跳
+     */
     private int heartbeat;
     // heartbeat timeout (ms), default value is 0 , won't execute a heartbeat.
+    /**
+     * 心跳间隔，单位：毫秒
+     */
     private int heartbeatTimeout;
 
     public HeaderExchangeClient(Client client, boolean needHeartbeat) {
@@ -58,62 +78,77 @@ public class HeaderExchangeClient implements ExchangeClient {
             throw new IllegalArgumentException("client == null");
         }
         this.client = client;
+        // 创建 HeaderExchangeChannel 对象
         this.channel = new HeaderExchangeChannel(client);
+        // 读取心跳相关配置
         String dubbo = client.getUrl().getParameter(Constants.DUBBO_VERSION_KEY);
         this.heartbeat = client.getUrl().getParameter(Constants.HEARTBEAT_KEY, dubbo != null && dubbo.startsWith("1.0.") ? Constants.DEFAULT_HEARTBEAT : 0);
         this.heartbeatTimeout = client.getUrl().getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartbeat * 3);
-        if (heartbeatTimeout < heartbeat * 2) {
+        if (heartbeatTimeout < heartbeat * 2) { // 避免间隔太短
             throw new IllegalStateException("heartbeatTimeout < heartbeatInterval * 2");
         }
+        // 发起心跳定时器
         if (needHeartbeat) {
             startHeatbeatTimer();
         }
     }
 
+    @Override
     public ResponseFuture request(Object request) throws RemotingException {
         return channel.request(request);
     }
 
+    @Override
     public URL getUrl() {
         return channel.getUrl();
     }
 
+    @Override
     public InetSocketAddress getRemoteAddress() {
         return channel.getRemoteAddress();
     }
 
+    @Override
     public ResponseFuture request(Object request, int timeout) throws RemotingException {
         return channel.request(request, timeout);
     }
 
+    @Override
     public ChannelHandler getChannelHandler() {
         return channel.getChannelHandler();
     }
 
+    @Override
     public boolean isConnected() {
         return channel.isConnected();
     }
 
+    @Override
     public InetSocketAddress getLocalAddress() {
         return channel.getLocalAddress();
     }
 
+    @Override
     public ExchangeHandler getExchangeHandler() {
         return channel.getExchangeHandler();
     }
 
+    @Override
     public void send(Object message) throws RemotingException {
         channel.send(message);
     }
 
+    @Override
     public void send(Object message, boolean sent) throws RemotingException {
         channel.send(message, sent);
     }
 
+    @Override
     public boolean isClosed() {
         return channel.isClosed();
     }
 
+    @Override
     public void close() {
         doClose();
         channel.close();
@@ -131,6 +166,7 @@ public class HeaderExchangeClient implements ExchangeClient {
         channel.startClose();
     }
 
+    @Override
     public void reset(URL url) {
         client.reset(url);
     }
@@ -140,28 +176,35 @@ public class HeaderExchangeClient implements ExchangeClient {
         reset(getUrl().addParameters(parameters.getParameters()));
     }
 
+    @Override
     public void reconnect() throws RemotingException {
         client.reconnect();
     }
 
+    @Override
     public Object getAttribute(String key) {
         return channel.getAttribute(key);
     }
 
+    @Override
     public void setAttribute(String key, Object value) {
         channel.setAttribute(key, value);
     }
 
+    @Override
     public void removeAttribute(String key) {
         channel.removeAttribute(key);
     }
 
+    @Override
     public boolean hasAttribute(String key) {
         return channel.hasAttribute(key);
     }
 
     private void startHeatbeatTimer() {
+        // 停止原有定时任务
         stopHeartbeatTimer();
+        // 发起新的定时任务
         if (heartbeat > 0) {
             heartbeatTimer = scheduled.scheduleWithFixedDelay(
                     new HeartBeatTask(new HeartBeatTask.ChannelProvider() {
