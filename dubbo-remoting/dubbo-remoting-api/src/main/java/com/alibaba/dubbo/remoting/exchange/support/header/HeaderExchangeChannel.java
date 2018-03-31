@@ -34,15 +34,25 @@ import java.net.InetSocketAddress;
 
 /**
  * ExchangeReceiver
+ *
+ * 基于消息头部( Header )的信息交换通道实现类
  */
 final class HeaderExchangeChannel implements ExchangeChannel {
 
     private static final Logger logger = LoggerFactory.getLogger(HeaderExchangeChannel.class);
 
+    /**
+     * 通道键
+     */
     private static final String CHANNEL_KEY = HeaderExchangeChannel.class.getName() + ".CHANNEL";
 
+    /**
+     * 通道
+     */
     private final Channel channel;
-
+    /**
+     * 是否关闭
+     */
     private volatile boolean closed = false;
 
     HeaderExchangeChannel(Channel channel) {
@@ -52,6 +62,12 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         this.channel = channel;
     }
 
+    /**
+     * 创建 HeaderExchangeChannel 对象
+     *
+     * @param ch 通道
+     * @return HeaderExchangeChannel 对象
+     */
     static HeaderExchangeChannel getOrAddChannel(Channel ch) {
         if (ch == null) {
             return null;
@@ -59,23 +75,30 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         HeaderExchangeChannel ret = (HeaderExchangeChannel) ch.getAttribute(CHANNEL_KEY);
         if (ret == null) {
             ret = new HeaderExchangeChannel(ch);
-            if (ch.isConnected()) {
+            if (ch.isConnected()) { // 已连接
                 ch.setAttribute(CHANNEL_KEY, ret);
             }
         }
         return ret;
     }
 
+    /**
+     * 移除 HeaderExchangeChannel 对象
+     *
+     * @param ch 通道
+     */
     static void removeChannelIfDisconnected(Channel ch) {
-        if (ch != null && !ch.isConnected()) {
+        if (ch != null && !ch.isConnected()) { // 未连接
             ch.removeAttribute(CHANNEL_KEY);
         }
     }
 
+    @Override
     public void send(Object message) throws RemotingException {
         send(message, getUrl().getParameter(Constants.SENT_KEY, false));
     }
 
+    @Override
     public void send(Object message, boolean sent) throws RemotingException {
         if (closed) {
             throw new RemotingException(this.getLocalAddress(), null, "Failed to send message " + message + ", cause: The channel " + this + " is closed!");
@@ -93,33 +116,40 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         }
     }
 
+    @Override
     public ResponseFuture request(Object request) throws RemotingException {
         return request(request, channel.getUrl().getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
     }
 
+    @Override
     public ResponseFuture request(Object request, int timeout) throws RemotingException {
         if (closed) {
             throw new RemotingException(this.getLocalAddress(), null, "Failed to send request " + request + ", cause: The channel " + this + " is closed!");
         }
-        // create request.
+        // create request. 创建请求
         Request req = new Request();
         req.setVersion("2.0.0");
-        req.setTwoWay(true);
+        req.setTwoWay(true); // 需要响应
         req.setData(request);
+        // 创建 DefaultFuture 对象
         DefaultFuture future = new DefaultFuture(channel, req, timeout);
         try {
+            // 发送请求
             channel.send(req);
-        } catch (RemotingException e) {
+        } catch (RemotingException e) { // 发生异常，取消 DefaultFuture
             future.cancel();
             throw e;
         }
+        // 返回 DefaultFuture 对象
         return future;
     }
 
+    @Override
     public boolean isClosed() {
         return closed;
     }
 
+    @Override
     public void close() {
         try {
             channel.close();
@@ -129,15 +159,16 @@ final class HeaderExchangeChannel implements ExchangeChannel {
     }
 
     // graceful close
+    @Override
     public void close(int timeout) {
         if (closed) {
             return;
         }
         closed = true;
+        // 等待请求完成
         if (timeout > 0) {
             long start = System.currentTimeMillis();
-            while (DefaultFuture.hasFuture(channel)
-                    && System.currentTimeMillis() - start < timeout) {
+            while (DefaultFuture.hasFuture(channel) && System.currentTimeMillis() - start < timeout) {
                 try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
@@ -145,6 +176,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
                 }
             }
         }
+        // 关闭通道
         close();
     }
 
@@ -153,42 +185,52 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         channel.startClose();
     }
 
+    @Override
     public InetSocketAddress getLocalAddress() {
         return channel.getLocalAddress();
     }
 
+    @Override
     public InetSocketAddress getRemoteAddress() {
         return channel.getRemoteAddress();
     }
 
+    @Override
     public URL getUrl() {
         return channel.getUrl();
     }
 
+    @Override
     public boolean isConnected() {
         return channel.isConnected();
     }
 
+    @Override
     public ChannelHandler getChannelHandler() {
         return channel.getChannelHandler();
     }
 
+    @Override
     public ExchangeHandler getExchangeHandler() {
         return (ExchangeHandler) channel.getChannelHandler();
     }
 
+    @Override
     public Object getAttribute(String key) {
         return channel.getAttribute(key);
     }
 
+    @Override
     public void setAttribute(String key, Object value) {
         channel.setAttribute(key, value);
     }
 
+    @Override
     public void removeAttribute(String key) {
         channel.removeAttribute(key);
     }
 
+    @Override
     public boolean hasAttribute(String key) {
         return channel.hasAttribute(key);
     }
@@ -197,7 +239,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((channel == null) ? 0 : channel.hashCode());
+        result = prime * result + channel.hashCode();
         return result;
     }
 
@@ -207,10 +249,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
         HeaderExchangeChannel other = (HeaderExchangeChannel) obj;
-        if (channel == null) {
-            if (other.channel != null) return false;
-        } else if (!channel.equals(other.channel)) return false;
-        return true;
+        return channel.equals(other.channel);
     }
 
     @Override
