@@ -24,11 +24,20 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * ReplierDispatcher
+ *
+ * 回复者调度器实现类
  */
 public class ReplierDispatcher implements Replier<Object> {
 
+    /**
+     * 默认回复者
+     */
     private final Replier<?> defaultReplier;
-
+    /**
+     * 回复者集合
+     *
+     * key：类
+     */
     private final Map<Class<?>, Replier<?>> repliers = new ConcurrentHashMap<Class<?>, Replier<?>>();
 
     public ReplierDispatcher() {
@@ -68,6 +77,7 @@ public class ReplierDispatcher implements Replier<Object> {
         throw new IllegalStateException("Replier not found, Unsupported message object: " + type);
     }
 
+    @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public Object reply(ExchangeChannel channel, Object request) throws RemotingException {
         return ((Replier) getReplier(request.getClass())).reply(channel, request);

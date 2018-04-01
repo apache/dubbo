@@ -28,6 +28,8 @@ import com.alibaba.dubbo.remoting.exchange.support.header.HeaderExchanger;
  * <p>
  * <a href="http://en.wikipedia.org/wiki/Message_Exchange_Pattern">Message Exchange Pattern</a>
  * <a href="http://en.wikipedia.org/wiki/Request-response">Request-Response</a>
+ *
+ * 数据交换者接口
  */
 @SPI(HeaderExchanger.NAME)
 public interface Exchanger {
@@ -35,9 +37,11 @@ public interface Exchanger {
     /**
      * bind.
      *
-     * @param url
-     * @param handler
-     * @return message server
+     * 绑定一个服务器
+     *
+     * @param url server url
+     * @param handler 数据交换处理器
+     * @return message server 服务器
      */
     @Adaptive({Constants.EXCHANGER_KEY})
     ExchangeServer bind(URL url, ExchangeHandler handler) throws RemotingException;
@@ -45,9 +49,11 @@ public interface Exchanger {
     /**
      * connect.
      *
-     * @param url
-     * @param handler
-     * @return message channel
+     * 连接一个服务器，即创建一个客户端
+     *
+     * @param url server url 服务器地址
+     * @param handler 数据交换处理器
+     * @return message channel 客户端
      */
     @Adaptive({Constants.EXCHANGER_KEY})
     ExchangeClient connect(URL url, ExchangeHandler handler) throws RemotingException;
