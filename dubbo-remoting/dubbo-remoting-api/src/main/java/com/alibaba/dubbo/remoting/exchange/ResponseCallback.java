@@ -18,20 +18,24 @@ package com.alibaba.dubbo.remoting.exchange;
 
 /**
  * Callback
+ *
+ * 响应回调
  */
 public interface ResponseCallback {
 
     /**
      * done.
+     * 处理执行完成
      *
-     * @param response
+     * @param response 结果
      */
     void done(Object response);
 
     /**
      * caught exception.
+     * 处理发生异常
      *
-     * @param exception
+     * @param exception 异常
      */
     void caught(Throwable exception);
 
