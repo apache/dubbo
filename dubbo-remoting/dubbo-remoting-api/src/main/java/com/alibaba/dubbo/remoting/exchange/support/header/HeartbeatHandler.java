@@ -27,6 +27,9 @@ import com.alibaba.dubbo.remoting.exchange.Request;
 import com.alibaba.dubbo.remoting.exchange.Response;
 import com.alibaba.dubbo.remoting.transport.AbstractChannelHandlerDelegate;
 
+/**
+ * 心跳处理器，处理心跳事件
+ */
 public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
 
     private static final Logger logger = LoggerFactory.getLogger(HeartbeatHandler.class);
@@ -39,25 +42,37 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
         super(handler);
     }
 
+    @Override
     public void connected(Channel channel) throws RemotingException {
+        // 设置最后的读和写时间
         setReadTimestamp(channel);
         setWriteTimestamp(channel);
+        // 提交给装饰的 `handler`，继续处理
         handler.connected(channel);
     }
 
+    @Override
     public void disconnected(Channel channel) throws RemotingException {
+        // 清除最后的读和写时间
         clearReadTimestamp(channel);
         clearWriteTimestamp(channel);
+        // 提交给装饰的 `handler`，继续处理
         handler.disconnected(channel);
     }
 
+    @Override
     public void sent(Channel channel, Object message) throws RemotingException {
+        // 设置最后的写时间
         setWriteTimestamp(channel);
+        // 提交给装饰的 `handler`，继续处理
         handler.sent(channel, message);
     }
 
+    @Override
     public void received(Channel channel, Object message) throws RemotingException {
+        // 设置最后的读时间
         setReadTimestamp(channel);
+        // 如果是心跳事件请求，返回心跳事件的响应
         if (isHeartbeatRequest(message)) {
             Request req = (Request) message;
             if (req.isTwoWay()) {
@@ -75,16 +90,14 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
             }
             return;
         }
+        // 如果是心跳事件响应，返回
         if (isHeartbeatResponse(message)) {
             if (logger.isDebugEnabled()) {
-                logger.debug(
-                        new StringBuilder(32)
-                                .append("Receive heartbeat response in thread ")
-                                .append(Thread.currentThread().getName())
-                                .toString());
+                logger.debug(new StringBuilder(32).append("Receive heartbeat response in thread ").append(Thread.currentThread().getName()).toString());
             }
             return;
         }
+        // 提交给装饰的 `handler`，继续处理
         handler.received(channel, message);
     }
 
@@ -111,4 +124,5 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
     private boolean isHeartbeatResponse(Object message) {
         return message instanceof Response && ((Response) message).isHeartbeat();
     }
+
 }
