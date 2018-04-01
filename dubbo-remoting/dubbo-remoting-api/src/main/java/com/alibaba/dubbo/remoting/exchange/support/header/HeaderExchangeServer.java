@@ -43,33 +43,52 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * ExchangeServerImpl
+ *
+ * 基于消息头部( Header )的信息交换服务器实现类
  */
 public class HeaderExchangeServer implements ExchangeServer {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final ScheduledExecutorService scheduled = Executors.newScheduledThreadPool(1,
-            new NamedThreadFactory(
-                    "dubbo-remoting-server-heartbeat",
-                    true));
+    /**
+     * 定时器线程池
+     */
+    private final ScheduledExecutorService scheduled = Executors.newScheduledThreadPool(1, new NamedThreadFactory("dubbo-remoting-server-heartbeat", true));
+    /**
+     * 服务器
+     */
     private final Server server;
     // heartbeat timer
+    /**
+     * 心跳定时器
+     */
     private ScheduledFuture<?> heatbeatTimer;
+    /**
+     * 是否心跳
+     */
     // heartbeat timeout (ms), default value is 0 , won't execute a heartbeat.
     private int heartbeat;
+    /**
+     * 心跳间隔，单位：毫秒
+     */
     private int heartbeatTimeout;
+    /**
+     * 是否关闭
+     */
     private AtomicBoolean closed = new AtomicBoolean(false);
 
     public HeaderExchangeServer(Server server) {
         if (server == null) {
             throw new IllegalArgumentException("server == null");
         }
+        // 读取心跳相关配置
         this.server = server;
         this.heartbeat = server.getUrl().getParameter(Constants.HEARTBEAT_KEY, 0);
         this.heartbeatTimeout = server.getUrl().getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartbeat * 3);
         if (heartbeatTimeout < heartbeat * 2) {
             throw new IllegalStateException("heartbeatTimeout < heartbeatInterval * 2");
         }
+        // 发起心跳定时器
         startHeatbeatTimer();
     }
 
@@ -77,6 +96,7 @@ public class HeaderExchangeServer implements ExchangeServer {
         return server;
     }
 
+    @Override
     public boolean isClosed() {
         return server.isClosed();
     }
@@ -91,21 +111,25 @@ public class HeaderExchangeServer implements ExchangeServer {
         return false;
     }
 
+    @Override
     public void close() {
         doClose();
         server.close();
     }
 
+    @Override
     public void close(final int timeout) {
+        // 关闭
         startClose();
         if (timeout > 0) {
             final long max = (long) timeout;
             final long start = System.currentTimeMillis();
+            // 发送 READONLY 事件给所有 Client ，表示 Server 不可读了。
             if (getUrl().getParameter(Constants.CHANNEL_SEND_READONLYEVENT_KEY, true)) {
                 sendChannelReadOnlyEvent();
             }
-            while (HeaderExchangeServer.this.isRunning()
-                    && System.currentTimeMillis() - start < max) {
+            // 等待请求完成
+            while (HeaderExchangeServer.this.isRunning() && System.currentTimeMillis() - start < max) {
                 try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
@@ -113,7 +137,9 @@ public class HeaderExchangeServer implements ExchangeServer {
                 }
             }
         }
+        // 关闭心跳定时器
         doClose();
+        // 关闭服务器
         server.close(timeout);
     }
 
@@ -122,12 +148,17 @@ public class HeaderExchangeServer implements ExchangeServer {
         server.startClose();
     }
 
+    /**
+     * 广播客户端，READONLY_EVENT 事件
+     */
     private void sendChannelReadOnlyEvent() {
+        // 创建 READONLY_EVENT 请求
         Request request = new Request();
         request.setEvent(Request.READONLY_EVENT);
-        request.setTwoWay(false);
+        request.setTwoWay(false); // 无需响应
         request.setVersion(Version.getVersion());
 
+        // 发送给所有 Client
         Collection<Channel> channels = getChannels();
         for (Channel channel : channels) {
             try {
@@ -151,6 +182,7 @@ public class HeaderExchangeServer implements ExchangeServer {
         }
     }
 
+    @Override
     public Collection<ExchangeChannel> getExchangeChannels() {
         Collection<ExchangeChannel> exchangeChannels = new ArrayList<ExchangeChannel>();
         Collection<Channel> channels = server.getChannels();
@@ -162,37 +194,46 @@ public class HeaderExchangeServer implements ExchangeServer {
         return exchangeChannels;
     }
 
+    @Override
     public ExchangeChannel getExchangeChannel(InetSocketAddress remoteAddress) {
         Channel channel = server.getChannel(remoteAddress);
         return HeaderExchangeChannel.getOrAddChannel(channel);
     }
 
+    @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public Collection<Channel> getChannels() {
         return (Collection) getExchangeChannels();
     }
 
+    @Override
     public Channel getChannel(InetSocketAddress remoteAddress) {
         return getExchangeChannel(remoteAddress);
     }
 
+    @Override
     public boolean isBound() {
         return server.isBound();
     }
 
+    @Override
     public InetSocketAddress getLocalAddress() {
         return server.getLocalAddress();
     }
 
+    @Override
     public URL getUrl() {
         return server.getUrl();
     }
 
+    @Override
     public ChannelHandler getChannelHandler() {
         return server.getChannelHandler();
     }
 
+    @Override
     public void reset(URL url) {
+        // 重置服务器
         server.reset(url);
         try {
             if (url.hasParameter(Constants.HEARTBEAT_KEY)
@@ -202,6 +243,7 @@ public class HeaderExchangeServer implements ExchangeServer {
                 if (t < h * 2) {
                     throw new IllegalStateException("heartbeatTimeout < heartbeatInterval * 2");
                 }
+                // 重置定时任务
                 if (h != heartbeat || t != heartbeatTimeout) {
                     heartbeat = h;
                     heartbeatTimeout = t;
@@ -218,6 +260,7 @@ public class HeaderExchangeServer implements ExchangeServer {
         reset(getUrl().addParameters(parameters.getParameters()));
     }
 
+    @Override
     public void send(Object message) throws RemotingException {
         if (closed.get()) {
             throw new RemotingException(this.getLocalAddress(), null, "Failed to send message " + message + ", cause: The server " + getLocalAddress() + " is closed!");
@@ -225,6 +268,7 @@ public class HeaderExchangeServer implements ExchangeServer {
         server.send(message);
     }
 
+    @Override
     public void send(Object message, boolean sent) throws RemotingException {
         if (closed.get()) {
             throw new RemotingException(this.getLocalAddress(), null, "Failed to send message " + message + ", cause: The server " + getLocalAddress() + " is closed!");
@@ -233,13 +277,14 @@ public class HeaderExchangeServer implements ExchangeServer {
     }
 
     private void startHeatbeatTimer() {
+        // 停止原有定时任务
         stopHeartbeatTimer();
+        // 发起新的定时任务
         if (heartbeat > 0) {
             heatbeatTimer = scheduled.scheduleWithFixedDelay(
                     new HeartBeatTask(new HeartBeatTask.ChannelProvider() {
                         public Collection<Channel> getChannels() {
-                            return Collections.unmodifiableCollection(
-                                    HeaderExchangeServer.this.getChannels());
+                            return Collections.unmodifiableCollection(HeaderExchangeServer.this.getChannels());
                         }
                     }, heartbeat, heartbeatTimeout),
                     heartbeat, heartbeat, TimeUnit.MILLISECONDS);
