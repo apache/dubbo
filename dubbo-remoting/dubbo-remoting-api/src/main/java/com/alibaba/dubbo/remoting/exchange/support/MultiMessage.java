@@ -26,9 +26,14 @@ import java.util.List;
 
 /**
  * @see com.alibaba.dubbo.remoting.transport.MultiMessageHandler
+ *
+ * 多消息
  */
 public final class MultiMessage implements Iterable {
 
+    /**
+     * 消息数组
+     */
     private final List messages = new ArrayList();
 
     private MultiMessage() {
