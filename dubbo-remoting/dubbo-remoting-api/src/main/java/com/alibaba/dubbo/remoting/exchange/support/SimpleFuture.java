@@ -23,6 +23,7 @@ import com.alibaba.dubbo.remoting.exchange.ResponseFuture;
 /**
  * SimpleFuture
  */
+@Deprecated // add by 芋艿，并未使用
 public class SimpleFuture implements ResponseFuture {
 
     private final Object value;
