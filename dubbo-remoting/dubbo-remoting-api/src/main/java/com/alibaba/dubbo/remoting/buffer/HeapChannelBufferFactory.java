@@ -19,6 +19,9 @@ package com.alibaba.dubbo.remoting.buffer;
 
 import java.nio.ByteBuffer;
 
+/**
+ * HeapChannelBuffer 工厂
+ */
 public class HeapChannelBufferFactory implements ChannelBufferFactory {
 
     private static final HeapChannelBufferFactory INSTANCE = new HeapChannelBufferFactory();
@@ -40,11 +43,14 @@ public class HeapChannelBufferFactory implements ChannelBufferFactory {
     }
 
     public ChannelBuffer getBuffer(ByteBuffer nioBuffer) {
+        // 传入的非 DirectByteBuffer ，直接包装出 HeapChannelBuffer 对象
         if (nioBuffer.hasArray()) {
             return ChannelBuffers.wrappedBuffer(nioBuffer);
         }
 
+        // 创建 HeapChannelBuffer 对象
         ChannelBuffer buf = getBuffer(nioBuffer.remaining());
+        // 写入数据
         int pos = nioBuffer.position();
         buf.writeBytes(nioBuffer);
         nioBuffer.position(pos);

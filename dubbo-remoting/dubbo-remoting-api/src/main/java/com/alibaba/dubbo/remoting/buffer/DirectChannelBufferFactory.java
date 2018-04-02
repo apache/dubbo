@@ -19,6 +19,9 @@ package com.alibaba.dubbo.remoting.buffer;
 
 import java.nio.ByteBuffer;
 
+/**
+ * DirectChannelBuffer 工厂
+ */
 public class DirectChannelBufferFactory implements ChannelBufferFactory {
 
     private static final DirectChannelBufferFactory INSTANCE = new DirectChannelBufferFactory();
@@ -55,21 +58,32 @@ public class DirectChannelBufferFactory implements ChannelBufferFactory {
             throw new IndexOutOfBoundsException("length: " + length);
         }
 
+        // 创建 ByteBufferBackedChannelBuffer 对象
         ChannelBuffer buf = getBuffer(length);
+        // 写入数据
         buf.writeBytes(array, offset, length);
         return buf;
     }
 
     public ChannelBuffer getBuffer(ByteBuffer nioBuffer) {
+        // 直接创建 ByteBufferBackedChannelBuffer 对象
         if (!nioBuffer.isReadOnly() && nioBuffer.isDirect()) {
             return ChannelBuffers.wrappedBuffer(nioBuffer);
         }
 
+        // 创建 ByteBufferBackedChannelBuffer 对象
         ChannelBuffer buf = getBuffer(nioBuffer.remaining());
+        // 写入数据
         int pos = nioBuffer.position();
         buf.writeBytes(nioBuffer);
         nioBuffer.position(pos);
         return buf;
     }
+
+//    public static void main(String[] args) {
+//        ByteBuffer nioBuffer = ByteBuffer.allocateDirect(100);
+//        nioBuffer.putInt(10);
+//        System.out.println(INSTANCE.getBuffer(nioBuffer));
+//    }
 
 }
