@@ -199,6 +199,7 @@ import java.nio.ByteBuffer;
  * Please refer to {@link ChannelBufferInputStream} and {@link
  * ChannelBufferOutputStream}.
  *
+ * 通道 Buffer 接口
  *
  */
 public interface ChannelBuffer extends Comparable<ChannelBuffer> {
@@ -274,7 +275,7 @@ public interface ChannelBuffer extends Comparable<ChannelBuffer> {
      * method also returns {@code false} for {@code null} and an object which is
      * not an instance of {@link ChannelBuffer} type.
      */
-    public boolean equals(Object o);
+    boolean equals(Object o);
 
     /**
      * Returns the factory which creates a {@link ChannelBuffer} whose type and
