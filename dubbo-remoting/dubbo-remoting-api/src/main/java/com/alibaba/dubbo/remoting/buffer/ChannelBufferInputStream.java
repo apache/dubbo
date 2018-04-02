@@ -17,13 +17,21 @@
 
 package com.alibaba.dubbo.remoting.buffer;
 
-import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * 通道 Buffer 输入流
+ */
 public class ChannelBufferInputStream extends InputStream {
 
     private final ChannelBuffer buffer;
+    /**
+     * 开始位置
+     */
     private final int startIndex;
+    /**
+     * 结束位置
+     */
     private final int endIndex;
 
     public ChannelBufferInputStream(ChannelBuffer buffer) {
@@ -52,7 +60,7 @@ public class ChannelBufferInputStream extends InputStream {
     }
 
     @Override
-    public int available() throws IOException {
+    public int available() {
         return endIndex - buffer.readerIndex();
     }
 
@@ -67,7 +75,7 @@ public class ChannelBufferInputStream extends InputStream {
     }
 
     @Override
-    public int read() throws IOException {
+    public int read() {
         if (!buffer.readable()) {
             return -1;
         }
@@ -75,7 +83,7 @@ public class ChannelBufferInputStream extends InputStream {
     }
 
     @Override
-    public int read(byte[] b, int off, int len) throws IOException {
+    public int read(byte[] b, int off, int len) {
         int available = available();
         if (available == 0) {
             return -1;
@@ -87,12 +95,12 @@ public class ChannelBufferInputStream extends InputStream {
     }
 
     @Override
-    public void reset() throws IOException {
+    public void reset() {
         buffer.resetReaderIndex();
     }
 
     @Override
-    public long skip(long n) throws IOException {
+    public long skip(long n) {
         if (n > Integer.MAX_VALUE) {
             return skipBytes(Integer.MAX_VALUE);
         } else {
@@ -100,7 +108,7 @@ public class ChannelBufferInputStream extends InputStream {
         }
     }
 
-    private int skipBytes(int n) throws IOException {
+    private int skipBytes(int n) {
         int nBytes = Math.min(available(), n);
         buffer.skipBytes(nBytes);
         return nBytes;

@@ -17,12 +17,17 @@
 
 package com.alibaba.dubbo.remoting.buffer;
 
-import java.io.IOException;
 import java.io.OutputStream;
 
+/**
+ * 通道 Buffer 输出流
+ */
 public class ChannelBufferOutputStream extends OutputStream {
 
     private final ChannelBuffer buffer;
+    /**
+     * 开始位置
+     */
     private final int startIndex;
 
     public ChannelBufferOutputStream(ChannelBuffer buffer) {
@@ -38,25 +43,25 @@ public class ChannelBufferOutputStream extends OutputStream {
     }
 
     @Override
-    public void write(byte[] b, int off, int len) throws IOException {
+    public void write(byte[] b, int off, int len) {
         if (len == 0) {
             return;
         }
-
         buffer.writeBytes(b, off, len);
     }
 
     @Override
-    public void write(byte[] b) throws IOException {
+    public void write(byte[] b) {
         buffer.writeBytes(b);
     }
 
     @Override
-    public void write(int b) throws IOException {
+    public void write(int b) {
         buffer.writeByte((byte) b);
     }
 
     public ChannelBuffer buffer() {
         return buffer;
     }
+
 }
