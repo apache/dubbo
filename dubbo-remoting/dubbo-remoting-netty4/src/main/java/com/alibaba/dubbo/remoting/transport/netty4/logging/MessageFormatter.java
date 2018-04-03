@@ -85,6 +85,8 @@ import java.util.Map;
  * See also {@link #format(String, Object)},
  * {@link #format(String, Object, Object)} and
  * {@link #arrayFormat(String, Object[])} methods for more details.
+ *
+ * 从 {@link io.netty.util.internal.logging.MessageFormatter} 复制
  */
 final class MessageFormatter {
     static final char DELIM_START = '{';

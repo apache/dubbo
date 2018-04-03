@@ -19,13 +19,24 @@ package com.alibaba.dubbo.remoting.transport.netty4.logging;
 
 /**
  * Holds the results of formatting done by {@link MessageFormatter}.
+ *
+ * 从 {@link io.netty.util.internal.logging.MessageFormatter} 复制
  */
 class FormattingTuple {
 
     static final FormattingTuple NULL = new FormattingTuple(null);
 
+    /**
+     * 消息
+     */
     private final String message;
+    /**
+     * 异常
+     */
     private final Throwable throwable;
+    /**
+     * 参数数组
+     */
     private final Object[] argArray;
 
     FormattingTuple(String message) {

@@ -32,6 +32,11 @@ public class Consumer {
         while (true) {
             try {
                 Thread.sleep(1000);
+//                try {
+//                    demoService.sayHello(gen(1024000));
+//                } catch (Exception e) {
+//                }
+
                 String hello = demoService.sayHello("world"); // call remote method
                 System.out.println(hello); // get result
 
@@ -45,5 +50,13 @@ public class Consumer {
 
         }
 
+    }
+
+    private static String gen(int len) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < len; i++) {
+            sb.append("s");
+        }
+        return sb.toString();
     }
 }

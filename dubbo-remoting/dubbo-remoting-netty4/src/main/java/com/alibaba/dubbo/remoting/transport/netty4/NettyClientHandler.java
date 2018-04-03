@@ -29,8 +29,13 @@ import io.netty.channel.ChannelPromise;
 @io.netty.channel.ChannelHandler.Sharable
 public class NettyClientHandler extends ChannelDuplexHandler {
 
+    /**
+     * Dubbo URL
+     */
     private final URL url;
-
+    /**
+     * Dubbo ChannelHandler
+     */
     private final ChannelHandler handler;
 
     public NettyClientHandler(URL url, ChannelHandler handler) {
@@ -44,14 +49,13 @@ public class NettyClientHandler extends ChannelDuplexHandler {
         this.handler = handler;
     }
 
-
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+    public void channelActive(ChannelHandlerContext ctx) {
         ctx.fireChannelActive();
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    public void channelInactive(ChannelHandlerContext ctx) {
         ctx.fireChannelInactive();
     }
 
@@ -76,7 +80,6 @@ public class NettyClientHandler extends ChannelDuplexHandler {
         }
     }
 
-
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         super.write(ctx, msg, promise);
@@ -98,4 +101,5 @@ public class NettyClientHandler extends ChannelDuplexHandler {
             NettyChannel.removeChannelIfDisconnected(ctx.channel());
         }
     }
+
 }

@@ -58,17 +58,19 @@ final class MinaCodecAdapter implements ProtocolCodecFactory {
         this.bufferSize = b >= Constants.MIN_BUFFER_SIZE && b <= Constants.MAX_BUFFER_SIZE ? b : Constants.DEFAULT_BUFFER_SIZE;
     }
 
+    @Override
     public ProtocolEncoder getEncoder() {
         return encoder;
     }
 
+    @Override
     public ProtocolDecoder getDecoder() {
         return decoder;
     }
 
     private class InternalEncoder implements ProtocolEncoder {
 
-        public void dispose(IoSession session) throws Exception {
+        public void dispose(IoSession session) {
         }
 
         public void encode(IoSession session, Object msg, ProtocolEncoderOutput out) throws Exception {

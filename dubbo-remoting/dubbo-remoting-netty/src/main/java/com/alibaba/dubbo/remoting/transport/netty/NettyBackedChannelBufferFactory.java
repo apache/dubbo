@@ -34,20 +34,24 @@ public class NettyBackedChannelBufferFactory implements ChannelBufferFactory {
         return INSTANCE;
     }
 
-
+    @Override
     public ChannelBuffer getBuffer(int capacity) {
-        return new NettyBackedChannelBuffer(ChannelBuffers.dynamicBuffer(capacity));
+        return new NettyBackedChannelBuffer(ChannelBuffers.dynamicBuffer(capacity)); // ChannelBuffers 为 `org.jboss.netty.buffer` 包下
     }
 
-
+    @Override
     public ChannelBuffer getBuffer(byte[] array, int offset, int length) {
-        org.jboss.netty.buffer.ChannelBuffer buffer = ChannelBuffers.dynamicBuffer(length);
+        // 创建 Netty3 ChannelBuffer 对象
+        org.jboss.netty.buffer.ChannelBuffer buffer = ChannelBuffers.dynamicBuffer(length); // ChannelBuffers 为 `org.jboss.netty.buffer` 包下
+        // 写入数据
         buffer.writeBytes(array, offset, length);
+        // 创建 NettyBackedChannelBuffer 对象
         return new NettyBackedChannelBuffer(buffer);
     }
 
-
+    @Override
     public ChannelBuffer getBuffer(ByteBuffer nioBuffer) {
-        return new NettyBackedChannelBuffer(ChannelBuffers.wrappedBuffer(nioBuffer));
+        return new NettyBackedChannelBuffer(ChannelBuffers.wrappedBuffer(nioBuffer)); // ChannelBuffers 为 `org.jboss.netty.buffer` 包下
     }
+
 }

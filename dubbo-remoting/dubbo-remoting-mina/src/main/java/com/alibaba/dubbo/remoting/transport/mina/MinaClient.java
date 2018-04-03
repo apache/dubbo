@@ -64,7 +64,7 @@ public class MinaClient extends AbstractClient {
     }
 
     @Override
-    protected void doOpen() throws Throwable {
+    protected void doOpen() {
         connectorKey = getUrl().toFullString();
         SocketConnector c = connectors.get(connectorKey);
         if (c != null) {
@@ -148,7 +148,7 @@ public class MinaClient extends AbstractClient {
     }
 
     @Override
-    protected void doDisConnect() throws Throwable {
+    protected void doDisConnect() {
         try {
             MinaChannel.removeChannelIfDisconnectd(session);
         } catch (Throwable t) {

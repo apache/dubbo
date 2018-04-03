@@ -19,7 +19,7 @@ package com.alibaba.dubbo.demo.consumer;
 import com.alibaba.dubbo.demo.DemoService;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-public class Consumer {
+public class InjvmConsumer {
 
     public static void main(String[] args) {
         //Prevent to get IPV6 address,this way only work in debug mode

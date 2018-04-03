@@ -31,11 +31,12 @@ limitations under the License.
 
     <!-- generate proxy for the remote service, then demoService can be used in the same way as the
     local regular interface -->
-    <dubbo:reference id="demoService" check="false" interface="com.alibaba.dubbo.demo.DemoService" client="netty4" >
+    <dubbo:reference id="demoService" check="false" interface="com.alibaba.dubbo.demo.DemoService" client="netty4" timeout="1000"  >
         <!--<dubbo:method name="sayHello" />-->
 
         <!--url="registry://127.0.0.1:2181?registry=zookeeper;127.0.0.1:2181;127.0.0.1:27018"-->
-
+        
+        <dubbo:parameter key="payload" value="1000" />
     </dubbo:reference>
 
 </beans>

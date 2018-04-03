@@ -38,10 +38,17 @@ import java.util.concurrent.ConcurrentHashMap;
 @Sharable
 public class NettyHandler extends SimpleChannelHandler {
 
+    /**
+     * Dubbo Channel 集合
+     */
     private final Map<String, Channel> channels = new ConcurrentHashMap<String, Channel>(); // <ip:port, channel>
-
+    /**
+     * URL
+     */
     private final URL url;
-
+    /**
+     * Dubbo ChannelHandler
+     */
     private final ChannelHandler handler;
 
     public NettyHandler(URL url, ChannelHandler handler) {
@@ -61,13 +68,17 @@ public class NettyHandler extends SimpleChannelHandler {
 
     @Override
     public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+        // 创建 NettyChannel 对象
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.getChannel(), url, handler);
         try {
+            // 添加到 `channels` 中
             if (channel != null) {
                 channels.put(NetUtils.toAddressString((InetSocketAddress) ctx.getChannel().getRemoteAddress()), channel);
             }
+            // 提交给 `handler` 处理器。
             handler.connected(channel);
         } finally {
+            // 移除 NettyChannel 对象，若已断开
             NettyChannel.removeChannelIfDisconnected(ctx.getChannel());
         }
     }
