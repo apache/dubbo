@@ -52,7 +52,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * <li>192.168.1.3:20880<br>
  * for this case, url protocol = null, url host = 192.168.1.3, port = 20880, url path = null
  * <li>file:///home/user1/router.js?type=script<br>
- * for this case, url protocol = null, url host = null, url path = home/user1/router.js
+ * for this case, url protocol = file, url host = null, url path = home/user1/router.js
  * <li>file://home/user1/router.js?type=script<br>
  * for this case, url protocol = file, url host = home, url path = user1/router.js
  * <li>file:///D:/1/router.js?type=script<br>
@@ -1023,7 +1023,7 @@ public final class URL implements Serializable {
     }
 
     public URL removeParameters(Collection<String> keys) {
-        if (keys == null || keys.size() == 0) {
+        if (keys == null || keys.isEmpty()) {
             return this;
         }
         return removeParameters(keys.toArray(new String[0]));

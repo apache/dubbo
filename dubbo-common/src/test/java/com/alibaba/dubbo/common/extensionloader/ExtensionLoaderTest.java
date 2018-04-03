@@ -44,6 +44,8 @@ import com.alibaba.dubbo.common.extensionloader.ext8_add.impl.AddExt1_ManualAdd2
 import com.alibaba.dubbo.common.extensionloader.ext8_add.impl.AddExt2_ManualAdaptive;
 import com.alibaba.dubbo.common.extensionloader.ext8_add.impl.AddExt3_ManualAdaptive;
 import com.alibaba.dubbo.common.extensionloader.ext8_add.impl.AddExt4_ManualAdaptive;
+import com.alibaba.dubbo.common.extensionloader.ext9_empty.Ext9Empty;
+import com.alibaba.dubbo.common.extensionloader.ext9_empty.impl.Ext9EmptyImpl;
 
 import junit.framework.Assert;
 import org.junit.Test;
@@ -238,6 +240,16 @@ public class ExtensionLoaderTest {
 
         assertThat(ext, instanceOf(AddExt1_ManualAdd1.class));
         assertEquals("Manual1", ExtensionLoader.getExtensionLoader(AddExt1.class).getExtensionName(AddExt1_ManualAdd1.class));
+    }
+
+    @Test
+    public void test_AddExtension_NoExtend() throws Exception {
+//        ExtensionLoader.getExtensionLoader(Ext9Empty.class).getSupportedExtensions();
+        ExtensionLoader.getExtensionLoader(Ext9Empty.class).addExtension("ext9", Ext9EmptyImpl.class);
+        Ext9Empty ext = ExtensionLoader.getExtensionLoader(Ext9Empty.class).getExtension("ext9");
+
+        assertThat(ext, instanceOf(Ext9Empty.class));
+        assertEquals("ext9", ExtensionLoader.getExtensionLoader(Ext9Empty.class).getExtensionName(Ext9EmptyImpl.class));
     }
 
     @Test

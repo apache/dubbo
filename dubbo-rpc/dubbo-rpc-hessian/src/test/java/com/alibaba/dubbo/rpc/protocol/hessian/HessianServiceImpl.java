@@ -27,6 +27,15 @@ public class HessianServiceImpl implements HessianService {
         called = true;
         return "Hello, " + name;
     }
+    
+    public String sayHello(String name, int times) {
+        called = true;
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < times; i++) {
+            sb.append("Hello, " + name + ". ");
+        }
+        return sb.toString();
+    }
 
     public boolean isCalled() {
         return called;
