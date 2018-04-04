@@ -107,7 +107,7 @@ public class MinaClient extends AbstractClient {
                                     }
                                     oldSession.close();
                                 } finally {
-                                    MinaChannel.removeChannelIfDisconnectd(oldSession);
+                                    MinaChannel.removeChannelIfDisconnected(oldSession);
                                 }
                             }
                         } finally {
@@ -119,7 +119,7 @@ public class MinaClient extends AbstractClient {
                                     newSession.close();
                                 } finally {
                                     MinaClient.this.session = null;
-                                    MinaChannel.removeChannelIfDisconnectd(newSession);
+                                    MinaChannel.removeChannelIfDisconnected(newSession);
                                 }
                             } else {
                                 MinaClient.this.session = newSession;
@@ -150,7 +150,7 @@ public class MinaClient extends AbstractClient {
     @Override
     protected void doDisConnect() throws Throwable {
         try {
-            MinaChannel.removeChannelIfDisconnectd(session);
+            MinaChannel.removeChannelIfDisconnected(session);
         } catch (Throwable t) {
             logger.warn(t.getMessage());
         }
