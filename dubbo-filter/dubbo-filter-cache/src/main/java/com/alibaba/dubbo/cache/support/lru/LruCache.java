@@ -34,10 +34,12 @@ public class LruCache implements Cache {
         this.store = new LRUCache<Object, Object>(max);
     }
 
+    @Override
     public void put(Object key, Object value) {
         store.put(key, value);
     }
 
+    @Override
     public Object get(Object key) {
         return store.get(key);
     }

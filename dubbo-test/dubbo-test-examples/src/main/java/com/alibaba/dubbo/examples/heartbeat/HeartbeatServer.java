@@ -50,6 +50,7 @@ public class HeartbeatServer {
 
         Thread serverThread = new Thread(new Runnable() {
 
+            @Override
             public void run() {
                 try {
                     exchangeServer = new HeaderExchangeServer(

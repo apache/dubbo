@@ -61,6 +61,7 @@ public class DubboMonitor implements Monitor {
         this.monitorInterval = monitorInvoker.getUrl().getPositiveParameter("interval", 60000);
         // collect timer for collecting statistics data
         sendFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
+            @Override
             public void run() {
                 // collect data
                 try {
@@ -133,6 +134,7 @@ public class DubboMonitor implements Monitor {
         }
     }
 
+    @Override
     public void collect(URL url) {
         // data to collect from url
         int success = url.getParameter(MonitorService.SUCCESS, 0);
@@ -179,18 +181,22 @@ public class DubboMonitor implements Monitor {
         } while (!reference.compareAndSet(current, update));
     }
 
+    @Override
     public List<URL> lookup(URL query) {
         return monitorService.lookup(query);
     }
 
+    @Override
     public URL getUrl() {
         return monitorInvoker.getUrl();
     }
 
+    @Override
     public boolean isAvailable() {
         return monitorInvoker.isAvailable();
     }
 
+    @Override
     public void destroy() {
         try {
             sendFuture.cancel(true);

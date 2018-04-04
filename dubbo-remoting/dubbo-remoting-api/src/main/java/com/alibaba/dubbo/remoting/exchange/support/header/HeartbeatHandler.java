@@ -39,23 +39,27 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
         super(handler);
     }
 
+    @Override
     public void connected(Channel channel) throws RemotingException {
         setReadTimestamp(channel);
         setWriteTimestamp(channel);
         handler.connected(channel);
     }
 
+    @Override
     public void disconnected(Channel channel) throws RemotingException {
         clearReadTimestamp(channel);
         clearWriteTimestamp(channel);
         handler.disconnected(channel);
     }
 
+    @Override
     public void sent(Channel channel, Object message) throws RemotingException {
         setWriteTimestamp(channel);
         handler.sent(channel, message);
     }
 
+    @Override
     public void received(Channel channel, Object message) throws RemotingException {
         setReadTimestamp(channel);
         if (isHeartbeatRequest(message)) {

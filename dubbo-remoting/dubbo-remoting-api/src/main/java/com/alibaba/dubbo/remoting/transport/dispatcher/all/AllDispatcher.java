@@ -27,6 +27,7 @@ public class AllDispatcher implements Dispatcher {
 
     public static final String NAME = "all";
 
+    @Override
     public ChannelHandler dispatch(ChannelHandler handler, URL url) {
         return new AllChannelHandler(handler, url);
     }

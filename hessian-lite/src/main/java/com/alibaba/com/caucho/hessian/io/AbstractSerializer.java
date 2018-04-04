@@ -58,6 +58,7 @@ abstract public class AbstractSerializer implements Serializer {
     protected static final Logger log
             = Logger.getLogger(AbstractSerializer.class.getName());
 
+    @Override
     abstract public void writeObject(Object obj, AbstractHessianOutput out)
             throws IOException;
 }

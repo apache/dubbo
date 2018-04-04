@@ -28,6 +28,7 @@ public class DefaultTPSLimiter implements TPSLimiter {
     private final ConcurrentMap<String, StatItem> stats
             = new ConcurrentHashMap<String, StatItem>();
 
+    @Override
     public boolean isAllowable(URL url, Invocation invocation) {
         int rate = url.getParameter(Constants.TPS_LIMIT_RATE_KEY, -1);
         long interval = url.getParameter(Constants.TPS_LIMIT_INTERVAL_KEY,

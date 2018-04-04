@@ -31,18 +31,22 @@ public class SimpleFuture implements ResponseFuture {
         this.value = value;
     }
 
+    @Override
     public Object get() throws RemotingException {
         return value;
     }
 
+    @Override
     public Object get(int timeoutInMillis) throws RemotingException {
         return value;
     }
 
+    @Override
     public void setCallback(ResponseCallback callback) {
         callback.done(value);
     }
 
+    @Override
     public boolean isDone() {
         return true;
     }

@@ -96,6 +96,7 @@ public class ThriftCodec implements Codec2 {
         return THRIFT_SEQ_ID.get();
     }
 
+    @Override
     public void encode(Channel channel, ChannelBuffer buffer, Object message)
             throws IOException {
 
@@ -115,6 +116,7 @@ public class ThriftCodec implements Codec2 {
 
     }
 
+    @Override
     public Object decode(Channel channel, ChannelBuffer buffer) throws IOException {
 
         int available = buffer.readableBytes();

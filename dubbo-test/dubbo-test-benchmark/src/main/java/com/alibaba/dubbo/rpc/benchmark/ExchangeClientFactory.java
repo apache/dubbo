@@ -56,6 +56,7 @@ public class ExchangeClientFactory {
             FutureTask<List<ExchangeClient>> task = new FutureTask<List<ExchangeClient>>(
                     new Callable<List<ExchangeClient>>() {
 
+                        @Override
                         public List<ExchangeClient> call()
                                 throws Exception {
                             List<ExchangeClient> clients = new ArrayList<ExchangeClient>(

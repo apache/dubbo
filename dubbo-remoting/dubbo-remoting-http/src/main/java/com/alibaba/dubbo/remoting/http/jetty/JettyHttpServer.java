@@ -90,6 +90,7 @@ public class JettyHttpServer extends AbstractHttpServer {
         }
     }
 
+    @Override
     public void close() {
         super.close();
 

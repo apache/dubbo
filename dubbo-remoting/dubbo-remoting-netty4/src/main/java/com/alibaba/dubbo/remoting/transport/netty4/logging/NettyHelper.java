@@ -48,16 +48,19 @@ public class NettyHelper {
             this.logger = logger;
         }
 
+        @Override
         public boolean isTraceEnabled() {
             return logger.isTraceEnabled();
         }
 
+        @Override
         public void trace(String msg) {
             if (isTraceEnabled()) {
                 logger.trace(msg);
             }
         }
 
+        @Override
         public void trace(String format, Object arg) {
             if (isTraceEnabled()) {
                 FormattingTuple ft = MessageFormatter.format(format, arg);
@@ -66,6 +69,7 @@ public class NettyHelper {
 
         }
 
+        @Override
         public void trace(String format, Object argA, Object argB) {
             if (isTraceEnabled()) {
                 FormattingTuple ft = MessageFormatter.format(format, argA, argB);
@@ -73,6 +77,7 @@ public class NettyHelper {
             }
         }
 
+        @Override
         public void trace(String format, Object... arguments) {
             if (isTraceEnabled()) {
                 FormattingTuple ft = MessageFormatter.arrayFormat(format, arguments);
@@ -80,22 +85,26 @@ public class NettyHelper {
             }
         }
 
+        @Override
         public void trace(String msg, Throwable t) {
             if (isTraceEnabled()) {
                 logger.trace(msg, t);
             }
         }
 
+        @Override
         public boolean isDebugEnabled() {
             return logger.isDebugEnabled();
         }
 
+        @Override
         public void debug(String msg) {
             if (isDebugEnabled()) {
                 logger.debug(msg);
             }
         }
 
+        @Override
         public void debug(String format, Object arg) {
             if (isDebugEnabled()) {
                 FormattingTuple ft = MessageFormatter.format(format, arg);
@@ -103,6 +112,7 @@ public class NettyHelper {
             }
         }
 
+        @Override
         public void debug(String format, Object argA, Object argB) {
             if (isDebugEnabled()) {
                 FormattingTuple ft = MessageFormatter.format(format, argA, argB);
@@ -110,6 +120,7 @@ public class NettyHelper {
             }
         }
 
+        @Override
         public void debug(String format, Object... arguments) {
             if (isDebugEnabled()) {
                 FormattingTuple ft = MessageFormatter.arrayFormat(format, arguments);
@@ -117,22 +128,26 @@ public class NettyHelper {
             }
         }
 
+        @Override
         public void debug(String msg, Throwable t) {
             if (isDebugEnabled()) {
                 logger.debug(msg, t);
             }
         }
 
+        @Override
         public boolean isInfoEnabled() {
             return logger.isInfoEnabled();
         }
 
+        @Override
         public void info(String msg) {
             if (isInfoEnabled()) {
                 logger.info(msg);
             }
         }
 
+        @Override
         public void info(String format, Object arg) {
             if (isInfoEnabled()) {
                 FormattingTuple ft = MessageFormatter.format(format, arg);
@@ -140,6 +155,7 @@ public class NettyHelper {
             }
         }
 
+        @Override
         public void info(String format, Object argA, Object argB) {
             if (isInfoEnabled()) {
                 FormattingTuple ft = MessageFormatter.format(format, argA, argB);
@@ -147,6 +163,7 @@ public class NettyHelper {
             }
         }
 
+        @Override
         public void info(String format, Object... arguments) {
             if (isInfoEnabled()) {
                 FormattingTuple ft = MessageFormatter.arrayFormat(format, arguments);
@@ -154,22 +171,26 @@ public class NettyHelper {
             }
         }
 
+        @Override
         public void info(String msg, Throwable t) {
             if (isInfoEnabled()) {
                 logger.info(msg, t);
             }
         }
 
+        @Override
         public boolean isWarnEnabled() {
             return false;
         }
 
+        @Override
         public void warn(String msg) {
             if (isWarnEnabled()) {
                 logger.warn(msg);
             }
         }
 
+        @Override
         public void warn(String format, Object arg) {
             if (isWarnEnabled()) {
                 FormattingTuple ft = MessageFormatter.format(format, arg);
@@ -177,6 +198,7 @@ public class NettyHelper {
             }
         }
 
+        @Override
         public void warn(String format, Object... arguments) {
             if (isWarnEnabled()) {
                 FormattingTuple ft = MessageFormatter.arrayFormat(format, arguments);
@@ -184,6 +206,7 @@ public class NettyHelper {
             }
         }
 
+        @Override
         public void warn(String format, Object argA, Object argB) {
             if (isWarnEnabled()) {
                 FormattingTuple ft = MessageFormatter.format(format, argA, argB);
@@ -191,22 +214,26 @@ public class NettyHelper {
             }
         }
 
+        @Override
         public void warn(String msg, Throwable t) {
             if (isWarnEnabled()) {
                 logger.warn(msg, t);
             }
         }
 
+        @Override
         public boolean isErrorEnabled() {
             return logger.isErrorEnabled();
         }
 
+        @Override
         public void error(String msg) {
             if (isErrorEnabled()) {
                 logger.error(msg);
             }
         }
 
+        @Override
         public void error(String format, Object arg) {
             if (isErrorEnabled()) {
                 FormattingTuple ft = MessageFormatter.format(format, arg);
@@ -214,6 +241,7 @@ public class NettyHelper {
             }
         }
 
+        @Override
         public void error(String format, Object argA, Object argB) {
             if (isErrorEnabled()) {
                 FormattingTuple ft = MessageFormatter.format(format, argA, argB);
@@ -221,6 +249,7 @@ public class NettyHelper {
             }
         }
 
+        @Override
         public void error(String format, Object... arguments) {
             if (isErrorEnabled()) {
                 FormattingTuple ft = MessageFormatter.arrayFormat(format, arguments);
@@ -228,6 +257,7 @@ public class NettyHelper {
             }
         }
 
+        @Override
         public void error(String msg, Throwable t) {
             if (isErrorEnabled()) {
                 logger.error(msg, t);

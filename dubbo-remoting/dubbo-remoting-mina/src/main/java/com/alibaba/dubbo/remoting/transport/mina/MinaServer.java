@@ -79,6 +79,7 @@ public class MinaServer extends AbstractServer {
         }
     }
 
+    @Override
     public Collection<Channel> getChannels() {
         Set<IoSession> sessions = acceptor.getManagedSessions(getBindAddress());
         Collection<Channel> channels = new HashSet<Channel>();
@@ -90,6 +91,7 @@ public class MinaServer extends AbstractServer {
         return channels;
     }
 
+    @Override
     public Channel getChannel(InetSocketAddress remoteAddress) {
         Set<IoSession> sessions = acceptor.getManagedSessions(getBindAddress());
         for (IoSession session : sessions) {
@@ -100,6 +102,7 @@ public class MinaServer extends AbstractServer {
         return null;
     }
 
+    @Override
     public boolean isBound() {
         return acceptor.isManaged(getBindAddress());
     }

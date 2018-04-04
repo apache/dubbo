@@ -173,10 +173,12 @@ public class JavaDeserializer extends AbstractMapDeserializer {
             throw new HessianFieldException(fieldName + ": " + field.getType().getName() + " cannot be assigned from null", e);
     }
 
+    @Override
     public Class getType() {
         return _type;
     }
 
+    @Override
     public Object readMap(AbstractHessianInput in)
         throws IOException {
         try {
@@ -192,6 +194,7 @@ public class JavaDeserializer extends AbstractMapDeserializer {
         }
     }
 
+    @Override
     public Object readObject(AbstractHessianInput in, String[] fieldNames)
         throws IOException {
         try {
@@ -396,6 +399,7 @@ public class JavaDeserializer extends AbstractMapDeserializer {
             _field = field;
         }
 
+        @Override
         void deserialize(AbstractHessianInput in, Object obj)
             throws IOException {
             Object value = null;
@@ -417,6 +421,7 @@ public class JavaDeserializer extends AbstractMapDeserializer {
             _field = field;
         }
 
+        @Override
         void deserialize(AbstractHessianInput in, Object obj)
             throws IOException {
             boolean value = false;
@@ -438,6 +443,7 @@ public class JavaDeserializer extends AbstractMapDeserializer {
             _field = field;
         }
 
+        @Override
         void deserialize(AbstractHessianInput in, Object obj)
             throws IOException {
             int value = 0;
@@ -459,6 +465,7 @@ public class JavaDeserializer extends AbstractMapDeserializer {
             _field = field;
         }
 
+        @Override
         void deserialize(AbstractHessianInput in, Object obj)
             throws IOException {
             int value = 0;
@@ -480,6 +487,7 @@ public class JavaDeserializer extends AbstractMapDeserializer {
             _field = field;
         }
 
+        @Override
         void deserialize(AbstractHessianInput in, Object obj)
             throws IOException {
             Object value = null;
@@ -506,6 +514,7 @@ public class JavaDeserializer extends AbstractMapDeserializer {
             _field = field;
         }
 
+        @Override
         void deserialize(AbstractHessianInput in, Object obj)
             throws IOException {
             Object value = null;
@@ -531,6 +540,7 @@ public class JavaDeserializer extends AbstractMapDeserializer {
             _field = field;
         }
 
+        @Override
         void deserialize(AbstractHessianInput in, Object obj)
             throws IOException {
             int value = 0;
@@ -552,6 +562,7 @@ public class JavaDeserializer extends AbstractMapDeserializer {
             _field = field;
         }
 
+        @Override
         void deserialize(AbstractHessianInput in, Object obj)
             throws IOException {
             long value = 0;
@@ -573,6 +584,7 @@ public class JavaDeserializer extends AbstractMapDeserializer {
             _field = field;
         }
 
+        @Override
         void deserialize(AbstractHessianInput in, Object obj)
             throws IOException {
             double value = 0;
@@ -594,6 +606,7 @@ public class JavaDeserializer extends AbstractMapDeserializer {
             _field = field;
         }
 
+        @Override
         void deserialize(AbstractHessianInput in, Object obj)
             throws IOException {
             double value = 0;
@@ -615,6 +628,7 @@ public class JavaDeserializer extends AbstractMapDeserializer {
             _field = field;
         }
 
+        @Override
         void deserialize(AbstractHessianInput in, Object obj)
             throws IOException {
             String value = null;
@@ -636,6 +650,7 @@ public class JavaDeserializer extends AbstractMapDeserializer {
             _field = field;
         }
 
+        @Override
         void deserialize(AbstractHessianInput in, Object obj)
             throws IOException {
             java.sql.Date value = null;
@@ -659,6 +674,7 @@ public class JavaDeserializer extends AbstractMapDeserializer {
             _field = field;
         }
 
+        @Override
         void deserialize(AbstractHessianInput in, Object obj)
             throws IOException {
             java.sql.Timestamp value = null;
@@ -682,6 +698,7 @@ public class JavaDeserializer extends AbstractMapDeserializer {
             _field = field;
         }
 
+        @Override
         void deserialize(AbstractHessianInput in, Object obj)
             throws IOException {
             java.sql.Time value = null;

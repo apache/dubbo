@@ -83,6 +83,7 @@ public class ExtSerializerFactory extends AbstractSerializerFactory {
      * @param cl the class of the object that needs to be serialized.
      * @return a serializer object for the serialization.
      */
+    @Override
     public Serializer getSerializer(Class cl)
             throws HessianProtocolException {
         return (Serializer) _serializerMap.get(cl);
@@ -94,6 +95,7 @@ public class ExtSerializerFactory extends AbstractSerializerFactory {
      * @param cl the class of the object that needs to be deserialized.
      * @return a deserializer object for the serialization.
      */
+    @Override
     public Deserializer getDeserializer(Class cl)
             throws HessianProtocolException {
         return (Deserializer) _deserializerMap.get(cl);

@@ -98,6 +98,7 @@ public class SimpleProcessorBenchmarkClientRunnable implements ClientRunnable {
         }
     }
 
+    @Override
     public void run() {
         try {
             barrier.await();
@@ -159,6 +160,7 @@ public class SimpleProcessorBenchmarkClientRunnable implements ClientRunnable {
         }
     }
 
+    @Override
     public List<long[]> getResults() {
         List<long[]> results = new ArrayList<long[]>();
         results.add(responseSpreads);
