@@ -54,17 +54,37 @@ import java.util.Locale;
  * Handle for a locale object.
  */
 public class LocaleHandle implements java.io.Serializable, HessianHandle {
-    private String language;
-    private String country;
-    private String variant;
+    private String value;
 
-    public LocaleHandle(String language, String country, String variant) {
-        this.language = language;
-        this.country = country;
-        this.variant = variant;
+    public LocaleHandle(String locale) {
+        this.value = locale;
     }
 
     private Object readResolve() {
+        if (value == null) {
+            return null;
+        }
+
+        if (value.length() == 0) {
+            return new Locale("");
+        }
+
+        int extStart = value.indexOf("_#");
+        if (extStart != -1) value = value.substring(0, extStart);
+
+        String language = value, country = "", variant = "";
+        int pos1 = value.indexOf('_');
+        if (pos1 != -1) {
+            language = value.substring(0, pos1++);
+
+            int pos2 = value.indexOf('_', pos1);
+            if (pos2 == -1) {
+                country = value.substring(pos1);
+            } else {
+                country = value.substring(pos1, pos2);
+                variant = value.substring(pos2 + 1);
+            }
+        }
         return new Locale(language, country, variant);
     }
 }
