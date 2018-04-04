@@ -186,10 +186,10 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         if (initialized) {
             return;
         }
-        initialized = true;
         if (interfaceName == null || interfaceName.length() == 0) {
             throw new IllegalStateException("<dubbo:reference interface=\"\" /> interface not allow null!");
         }
+        initialized = true;
         // get consumer's global configuration
         checkDefault();
         appendProperties(this);

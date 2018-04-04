@@ -245,6 +245,8 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
 
         Service service = findAnnotation(beanClass, Service.class);
 
+        if(service == null) return;
+
         Class<?> interfaceClass = resolveServiceInterfaceClass(beanClass, service);
 
         String annotatedServiceBeanName = beanDefinitionHolder.getBeanName();

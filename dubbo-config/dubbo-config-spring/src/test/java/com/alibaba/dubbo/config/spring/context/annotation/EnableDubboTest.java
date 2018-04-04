@@ -130,7 +130,6 @@ public class EnableDubboTest {
     }
 
     @EnableDubbo(scanBasePackages = "com.alibaba.dubbo.config.spring.context.annotation.provider")
-    @ComponentScan(basePackages = "com.alibaba.dubbo.config.spring.context.annotation.provider")
     @PropertySource("META-INF/dubbb-provider.properties")
     @EnableTransactionManagement
     public static class TestProviderConfiguration {
