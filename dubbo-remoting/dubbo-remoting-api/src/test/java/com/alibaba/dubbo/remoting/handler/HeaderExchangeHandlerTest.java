@@ -44,6 +44,7 @@ public class HeaderExchangeHandlerTest {
         request.setData(requestdata);
 
         ExchangeHandler exhandler = new MockedExchangeHandler() {
+            @Override
             public void received(Channel channel, Object message) throws RemotingException {
                 Assert.assertEquals(requestdata, message);
             }
@@ -78,6 +79,7 @@ public class HeaderExchangeHandlerTest {
                 return request;
             }
 
+            @Override
             public void received(Channel channel, Object message) throws RemotingException {
                 Assert.fail();
             }

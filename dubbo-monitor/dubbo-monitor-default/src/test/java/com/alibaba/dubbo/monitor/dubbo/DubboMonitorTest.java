@@ -41,6 +41,7 @@ import java.util.List;
 public class DubboMonitorTest {
 
     private final Invoker<MonitorService> monitorInvoker = new Invoker<MonitorService>() {
+        @Override
         public Class<MonitorService> getInterface() {
             return MonitorService.class;
         }
@@ -49,6 +50,7 @@ public class DubboMonitorTest {
             return URL.valueOf("dubbo://127.0.0.1:7070?interval=20");
         }
 
+        @Override
         public boolean isAvailable() {
             return false;
         }
@@ -57,6 +59,7 @@ public class DubboMonitorTest {
             return null;
         }
 
+        @Override
         public void destroy() {
         }
     };
