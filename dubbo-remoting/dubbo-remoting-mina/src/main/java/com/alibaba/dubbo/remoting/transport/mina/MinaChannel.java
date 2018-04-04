@@ -66,7 +66,7 @@ final class MinaChannel extends AbstractChannel {
         return ret;
     }
 
-    static void removeChannelIfDisconnectd(IoSession session) {
+    static void removeChannelIfDisconnected(IoSession session) {
         if (session != null && !session.isConnected()) {
             session.removeAttribute(CHANNEL_KEY);
         }
@@ -112,7 +112,7 @@ final class MinaChannel extends AbstractChannel {
             logger.warn(e.getMessage(), e);
         }
         try {
-            removeChannelIfDisconnectd(session);
+            removeChannelIfDisconnected(session);
         } catch (Exception e) {
             logger.warn(e.getMessage(), e);
         }
