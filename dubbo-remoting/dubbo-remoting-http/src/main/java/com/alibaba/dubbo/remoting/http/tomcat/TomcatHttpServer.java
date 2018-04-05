@@ -48,13 +48,11 @@ public class TomcatHttpServer extends AbstractHttpServer {
         tomcat = new Tomcat();
         tomcat.setBaseDir(baseDir);
         tomcat.setPort(url.getPort());
-        tomcat.getConnector().setProperty(
-                "maxThreads", String.valueOf(url.getParameter(Constants.THREADS_KEY, Constants.DEFAULT_THREADS)));
+        tomcat.getConnector().setProperty("maxThreads", String.valueOf(url.getParameter(Constants.THREADS_KEY, Constants.DEFAULT_THREADS)));
 //        tomcat.getConnector().setProperty(
 //                "minSpareThreads", String.valueOf(url.getParameter(Constants.THREADS_KEY, Constants.DEFAULT_THREADS)));
 
-        tomcat.getConnector().setProperty(
-                "maxConnections", String.valueOf(url.getParameter(Constants.ACCEPTS_KEY, -1)));
+        tomcat.getConnector().setProperty("maxConnections", String.valueOf(url.getParameter(Constants.ACCEPTS_KEY, -1)));
 
         tomcat.getConnector().setProperty("URIEncoding", "UTF-8");
         tomcat.getConnector().setProperty("connectionTimeout", "60000");
