@@ -51,7 +51,7 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
     }
 
     @Override
-    protected Result doInvoke(Invocation invocation) throws Throwable {
+    protected Result doInvoke(Invocation invocation) {
         RpcInvocation inv = (RpcInvocation) invocation;
         // use interface's name as service path to export if it's not found on client side
         inv.setAttachment(Constants.PATH_KEY, getInterface().getName());
@@ -90,7 +90,13 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
 
     public static class ChannelWrapper extends ClientDelegate {
 
+        /**
+         * 通道
+         */
         private final Channel channel;
+        /**
+         * URL
+         */
         private final URL url;
 
         ChannelWrapper(Channel channel) {
@@ -98,62 +104,76 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
             this.url = channel.getUrl().addParameter("codec", DubboCodec.NAME);
         }
 
+        @Override
         public URL getUrl() {
             return url;
         }
 
+        @Override
         public ChannelHandler getChannelHandler() {
             return channel.getChannelHandler();
         }
 
+        @Override
         public InetSocketAddress getLocalAddress() {
             return channel.getLocalAddress();
         }
 
+        @Override
         public void close() {
             channel.close();
         }
 
+        @Override
         public boolean isClosed() {
             return channel == null || channel.isClosed();
         }
 
+        @Override
         public void reset(URL url) {
             throw new RpcException("ChannelInvoker can not reset.");
         }
 
+        @Override
         public InetSocketAddress getRemoteAddress() {
             return channel.getLocalAddress();
         }
 
+        @Override
         public boolean isConnected() {
             return channel != null && channel.isConnected();
         }
 
+        @Override
         public boolean hasAttribute(String key) {
             return channel.hasAttribute(key);
         }
 
+        @Override
         public Object getAttribute(String key) {
             return channel.getAttribute(key);
         }
 
+        @Override
         public void setAttribute(String key, Object value) {
             channel.setAttribute(key, value);
         }
 
+        @Override
         public void removeAttribute(String key) {
             channel.removeAttribute(key);
         }
 
+        @Override
         public void reconnect() throws RemotingException {
-
         }
 
+        @Override
         public void send(Object message) throws RemotingException {
             channel.send(message);
         }
 
+        @Override
         public void send(Object message, boolean sent) throws RemotingException {
             channel.send(message, sent);
         }

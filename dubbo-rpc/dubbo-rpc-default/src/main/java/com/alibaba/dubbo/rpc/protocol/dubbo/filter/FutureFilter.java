@@ -190,7 +190,7 @@ public class FutureFilter implements Filter {
         Object[] params;
         Class<?>[] rParaTypes = onReturnMethod.getParameterTypes();
         if (rParaTypes.length > 1) {
-            if (rParaTypes.length == 2 && rParaTypes[1].isAssignableFrom(Object[].class)) {
+            if (rParaTypes.length == 2 && rParaTypes[1].isAssignableFrom(Object[].class)) { // TODO 芋艿，泛化调用
                 params = new Object[2];
                 params[0] = result;
                 params[1] = args;

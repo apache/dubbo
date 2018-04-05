@@ -136,18 +136,18 @@ class CallbackServiceCodec {
         String invokerCacheKey = getServerSideCallbackInvokerCacheKey(channel, clazz.getName(), instid);
         String proxyCacheKey = getServerSideCallbackServiceCacheKey(channel, clazz.getName(), instid);
         proxy = channel.getAttribute(proxyCacheKey);
-        String countkey = getServerSideCountKey(channel, clazz.getName());
+        String countKey = getServerSideCountKey(channel, clazz.getName());
         if (isRefer) {
             if (proxy == null) {
-                URL referurl = URL.valueOf("callback://" + url.getAddress() + "/" + clazz.getName() + "?" + Constants.INTERFACE_KEY + "=" + clazz.getName());
-                referurl = referurl.addParametersIfAbsent(url.getParameters()).removeParameter(Constants.METHODS_KEY);
-                if (!isInstancesOverLimit(channel, referurl, clazz.getName(), instid, true)) {
+                URL referURL = URL.valueOf("callback://" + url.getAddress() + "/" + clazz.getName() + "?" + Constants.INTERFACE_KEY + "=" + clazz.getName());
+                referURL = referURL.addParametersIfAbsent(url.getParameters()).removeParameter(Constants.METHODS_KEY);
+                if (!isInstancesOverLimit(channel, referURL, clazz.getName(), instid, true)) {
                     @SuppressWarnings("rawtypes")
-                    Invoker<?> invoker = new ChannelWrappedInvoker(clazz, channel, referurl, String.valueOf(instid));
+                    Invoker<?> invoker = new ChannelWrappedInvoker(clazz, channel, referURL, String.valueOf(instid));
                     proxy = proxyFactory.getProxy(invoker);
                     channel.setAttribute(proxyCacheKey, proxy);
                     channel.setAttribute(invokerCacheKey, invoker);
-                    increaseInstanceCount(channel, countkey);
+                    increaseInstanceCount(channel, countKey);
 
                     //convert error fail fast .
                     //ignore concurrent problem. 
@@ -175,7 +175,7 @@ class CallbackServiceCodec {
                 // cancel refer, directly remove from the map
                 channel.removeAttribute(proxyCacheKey);
                 channel.removeAttribute(invokerCacheKey);
-                decreaseInstanceCount(channel, countkey);
+                decreaseInstanceCount(channel, countKey);
             }
         }
         return proxy;
@@ -245,10 +245,10 @@ class CallbackServiceCodec {
     public static Object encodeInvocationArgument(Channel channel, RpcInvocation inv, int paraIndex) throws IOException {
         // get URL directly
         URL url = inv.getInvoker() == null ? null : inv.getInvoker().getUrl();
-        byte callbackstatus = isCallBack(url, inv.getMethodName(), paraIndex);
+        byte callbackStatus = isCallBack(url, inv.getMethodName(), paraIndex);
         Object[] args = inv.getArguments();
         Class<?>[] pts = inv.getParameterTypes();
-        switch (callbackstatus) {
+        switch (callbackStatus) {
             case CallbackServiceCodec.CALLBACK_NONE:
                 return args[paraIndex];
             case CallbackServiceCodec.CALLBACK_CREATE:
@@ -265,7 +265,7 @@ class CallbackServiceCodec {
     public static Object decodeInvocationArgument(Channel channel, RpcInvocation inv, Class<?>[] pts, int paraIndex, Object inObject) throws IOException {
         // if it's a callback, create proxy on client side, callback interface on client side can be invoked through channel
         // need get URL from channel and env when decode
-        URL url = null;
+        URL url;
         try {
             url = DubboProtocol.getDubboProtocol().getInvoker(channel, inv).getUrl();
         } catch (RemotingException e) {
@@ -274,8 +274,8 @@ class CallbackServiceCodec {
             }
             return inObject;
         }
-        byte callbackstatus = isCallBack(url, inv.getMethodName(), paraIndex);
-        switch (callbackstatus) {
+        byte callbackStatus = isCallBack(url, inv.getMethodName(), paraIndex);
+        switch (callbackStatus) {
             case CallbackServiceCodec.CALLBACK_NONE:
                 return inObject;
             case CallbackServiceCodec.CALLBACK_CREATE:
