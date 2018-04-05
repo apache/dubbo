@@ -146,23 +146,13 @@ public class RpcUtils {
     }
 
     public static boolean isAsync(URL url, Invocation inv) {
-        boolean isAsync;
-        if (Boolean.TRUE.toString().equals(inv.getAttachment(Constants.ASYNC_KEY))) {
-            isAsync = true;
-        } else {
-            isAsync = url.getMethodParameter(getMethodName(inv), Constants.ASYNC_KEY, false);
-        }
-        return isAsync;
+        return Boolean.TRUE.toString().equals(inv.getAttachment(Constants.ASYNC_KEY))
+                || url.getMethodParameter(getMethodName(inv), Constants.ASYNC_KEY, false);
     }
 
     public static boolean isOneway(URL url, Invocation inv) {
-        boolean isOneway;
-        if (Boolean.FALSE.toString().equals(inv.getAttachment(Constants.RETURN_KEY))) {
-            isOneway = true;
-        } else {
-            isOneway = !url.getMethodParameter(getMethodName(inv), Constants.RETURN_KEY, true);
-        }
-        return isOneway;
+        return Boolean.FALSE.toString().equals(inv.getAttachment(Constants.RETURN_KEY))
+                || !url.getMethodParameter(getMethodName(inv), Constants.RETURN_KEY, true);
     }
 
 }

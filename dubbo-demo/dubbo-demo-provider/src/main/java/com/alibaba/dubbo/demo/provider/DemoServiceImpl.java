@@ -16,7 +16,9 @@
  */
 package com.alibaba.dubbo.demo.provider;
 
+import com.alibaba.dubbo.demo.Cat;
 import com.alibaba.dubbo.demo.DemoService;
+import com.alibaba.dubbo.demo.ParamCallback;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.fastjson.JSON;
 
@@ -41,6 +43,31 @@ public class DemoServiceImpl implements DemoService {
     public void bye(Object o) {
         System.out.println(JSON.toJSONString(o));
         System.out.println(o.getClass());
+    }
+
+    @Override
+    public void callbackParam(String msg, ParamCallback callback) {
+        callback.doSome(new Cat().setName("miao"));
+    }
+
+    @Override
+    public String say01(String msg) {
+        return msg;
+    }
+
+    @Override
+    public String[] say02() {
+        return new String[0];
+    }
+
+    @Override
+    public void say03() {
+
+    }
+
+    @Override
+    public Void say04() {
+        return null;
     }
 
     public void setDemoDAO(DemoDAO demoDAO) {

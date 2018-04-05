@@ -46,7 +46,9 @@ public class RpcInvocation implements Invocation, Serializable {
      * 方法参数数组
      */
     private Object[] arguments;
-
+    /**
+     * 隐式参数集合
+     */
     private Map<String, String> attachments;
 
     private transient Invoker<?> invoker; // TODO 芋艿，transient

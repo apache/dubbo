@@ -21,6 +21,8 @@ limitations under the License.
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
        http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
 
+    <bean id="callbackDemo" class="com.alibaba.dubbo.demo.consumer.callback.CallbackImpl" />
+
     <!-- consumer's application name, used for tracing dependency relationship (not a matching criterion),
     don't set it same as provider -->
     <dubbo:application name="demo-consumer" />
@@ -31,12 +33,16 @@ limitations under the License.
 
     <!-- generate proxy for the remote service, then demoService can be used in the same way as the
     local regular interface -->
-    <dubbo:reference id="demoService" check="false" interface="com.alibaba.dubbo.demo.DemoService" client="netty4" timeout="1000"  >
+    <dubbo:reference id="demoService" check="false" interface="com.alibaba.dubbo.demo.DemoService" client="netty4" timeout="100000" callbacks="1000" >
         <!--<dubbo:method name="sayHello" />-->
 
         <!--url="registry://127.0.0.1:2181?registry=zookeeper;127.0.0.1:2181;127.0.0.1:27018"-->
         
         <dubbo:parameter key="payload" value="1000" />
+        
+        <dubbo:method name="sayHello" async="true" onreturn="callbackDemo.done" />
+        
     </dubbo:reference>
+
 
 </beans>

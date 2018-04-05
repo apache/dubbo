@@ -37,8 +37,24 @@ public class Consumer {
 //                } catch (Exception e) {
 //                }
 
-                String hello = demoService.sayHello("world"); // call remote method
-                System.out.println(hello); // get result
+//                String hello = demoService.sayHello("world"); // call remote method
+//                System.out.println(hello); // get result
+
+
+                demoService.say01(null);
+                demoService.say01("hahha");
+                demoService.say02();
+                demoService.say03();
+                demoService.say04();
+
+                // 参数回调
+                // https://dubbo.gitbooks.io/dubbo-user-book/demos/callback-parameter.html
+//                demoService.callbackParam("shuaiqi", new ParamCallback() {
+//                    @Override
+//                    public void doSome(Cat msg) {
+//                        System.out.println("回调biubiu：" + msg);
+//                    }
+//                });
 
 //                demoService.bye(new Cat().setName("小猫"));
 //                demoService.bye(new Dog().setAge(10));
