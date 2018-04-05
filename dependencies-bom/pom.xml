@@ -320,6 +320,13 @@
                 <artifactId>commons-lang3</artifactId>
                 <version>${commons_lang3_version}</version>
             </dependency>
+            <!-- Test lib -->
+            <dependency>
+                <groupId>org.apache.curator</groupId>
+                <artifactId>curator-test</artifactId>
+                <version>${curator_version}</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
