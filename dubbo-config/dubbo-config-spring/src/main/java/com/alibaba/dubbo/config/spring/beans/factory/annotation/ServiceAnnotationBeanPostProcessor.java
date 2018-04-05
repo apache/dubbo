@@ -35,15 +35,22 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.beans.factory.support.ManagedList;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ConfigurationClassPostProcessor;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
+import org.springframework.stereotype.Repository;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
@@ -52,8 +59,11 @@ import org.springframework.util.StringUtils;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
@@ -68,7 +78,7 @@ import static org.springframework.util.ClassUtils.resolveClassName;
  * @since 2.5.8
  */
 public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistryPostProcessor, EnvironmentAware,
-        ResourceLoaderAware, BeanClassLoaderAware {
+        ResourceLoaderAware, BeanClassLoaderAware, ApplicationContextAware {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -79,6 +89,8 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
     private ResourceLoader resourceLoader;
 
     private ClassLoader classLoader;
+
+    private ApplicationContext applicationContext;
 
     public ServiceAnnotationBeanPostProcessor(String... packagesToScan) {
         this(Arrays.asList(packagesToScan));
@@ -105,6 +117,47 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
             }
         }
 
+        /**
+         * The solution to consumers early references to unexposed services.
+         */
+        deferConfiguationBeans();
+
+    }
+
+    private void deferConfiguationBeans() {
+
+        Map<String, BeanDefinition> beanDefinitionMap = new HashMap<String, BeanDefinition>();
+        String[] beanNames = applicationContext.getBeanDefinitionNames();
+
+        if(applicationContext instanceof GenericApplicationContext){
+            GenericApplicationContext context = (GenericApplicationContext) applicationContext;
+
+            for(String name : applicationContext.getBeanDefinitionNames()) {
+                BeanDefinition beanDefinition = context.getBeanDefinition(name);
+                AbstractBeanDefinition bean =
+                        beanDefinition instanceof AbstractBeanDefinition
+                                ? (AbstractBeanDefinition) beanDefinition : null;
+                try{
+                    if(bean == null) continue;
+                    Class<?> beanClass = bean.hasBeanClass() ? bean.getBeanClass() : bean.resolveBeanClass(classLoader);
+                    if(beanClass != null && beanClass.isAnnotationPresent(Configuration.class)) {
+                        beanDefinitionMap.put(name, bean);
+                    }
+                }catch (ClassNotFoundException e) {
+                    // we don't care.
+                }
+            }
+
+            /**
+             *  Configuration beans be delayed to final execution.
+             */
+            Iterator<Map.Entry<String, BeanDefinition>> iterator = beanDefinitionMap.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry<String, BeanDefinition> bean = iterator.next();
+                context.removeBeanDefinition(bean.getKey());
+                context.registerBeanDefinition(bean.getKey(), bean.getValue());
+            }
+        }
     }
 
 
@@ -122,6 +175,10 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
         BeanNameGenerator beanNameGenerator = resolveBeanNameGenerator(registry);
 
         scanner.setBeanNameGenerator(beanNameGenerator);
+
+        scanner.addExcludeFilter(new AnnotationTypeFilter(Component.class, false));
+        scanner.addExcludeFilter(new AnnotationTypeFilter(Controller.class, false));
+        scanner.addExcludeFilter(new AnnotationTypeFilter(Repository.class, false));
 
         scanner.addIncludeFilter(new AnnotationTypeFilter(Service.class));
 
@@ -469,4 +526,8 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
         this.classLoader = classLoader;
     }
 
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
 }
