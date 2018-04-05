@@ -110,7 +110,12 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
         Set<String> resolvedPackagesToScan = resolvePackagesToScan(packagesToScan);
 
         if (!CollectionUtils.isEmpty(resolvedPackagesToScan)) {
+
+            // register @Service
             registerServiceBeans(resolvedPackagesToScan, registry);
+
+            // register @Component
+            registerComponentBeans(resolvedPackagesToScan, registry);
         } else {
             if (logger.isWarnEnabled()) {
                 logger.warn("packagesToScan is empty , ServiceBean registry will be ignored!");
@@ -121,6 +126,35 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
          * The solution to consumers early references to unexposed services.
          */
         deferConfiguationBeans();
+
+    }
+
+    /**
+     * Registers Beans whose classes was annotated {@link Component}
+     *
+     * @param packagesToScan The base packages to scan
+     * @param registry       {@link BeanDefinitionRegistry}
+     */
+    private void registerComponentBeans(Set<String> packagesToScan, BeanDefinitionRegistry registry) {
+
+        DubboClassPathBeanDefinitionScanner scanner =
+                new DubboClassPathBeanDefinitionScanner(registry, environment, resourceLoader);
+
+        BeanNameGenerator beanNameGenerator = resolveBeanNameGenerator(registry);
+
+        scanner.setBeanNameGenerator(beanNameGenerator);
+
+        scanner.addExcludeFilter(new AnnotationTypeFilter(Controller.class, false));
+        scanner.addExcludeFilter(new AnnotationTypeFilter(Repository.class, false));
+        scanner.addExcludeFilter(new AnnotationTypeFilter(org.springframework.stereotype.Service .class, false));
+        scanner.addExcludeFilter(new AnnotationTypeFilter(Service.class, false));
+
+        for (String packageToScan : packagesToScan) {
+
+            // Registers @Component Bean
+            scanner.scan(packageToScan);
+
+        }
 
     }
 
