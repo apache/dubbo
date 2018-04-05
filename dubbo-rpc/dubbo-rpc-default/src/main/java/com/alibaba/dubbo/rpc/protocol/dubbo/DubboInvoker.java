@@ -78,31 +78,41 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
     }
 
     @Override
-    protected Result doInvoke(final Invocation invocation) throws Throwable {
+    protected Result doInvoke(final Invocation invocation) {
         RpcInvocation inv = (RpcInvocation) invocation;
+        // 获得方法名
         final String methodName = RpcUtils.getMethodName(invocation);
+        // 获得 `path`( 服务名 )，`version`
         inv.setAttachment(Constants.PATH_KEY, getUrl().getPath());
         inv.setAttachment(Constants.VERSION_KEY, version);
 
+        // 获得 ExchangeClient 对象
         ExchangeClient currentClient;
         if (clients.length == 1) {
             currentClient = clients[0];
         } else {
             currentClient = clients[index.getAndIncrement() % clients.length];
         }
+        // 远程调用
         try {
+            // 获得是否异步调用
             boolean isAsync = RpcUtils.isAsync(getUrl(), invocation);
+            // 获得是否单向调用
             boolean isOneway = RpcUtils.isOneway(getUrl(), invocation);
+            // 获得超时时间
             int timeout = getUrl().getMethodParameter(methodName, Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+            // 单向调用
             if (isOneway) {
                 boolean isSent = getUrl().getMethodParameter(methodName, Constants.SENT_KEY, false);
                 currentClient.send(inv, isSent);
                 RpcContext.getContext().setFuture(null);
                 return new RpcResult();
+            // 异步调用
             } else if (isAsync) {
                 ResponseFuture future = currentClient.request(inv, timeout);
                 RpcContext.getContext().setFuture(new FutureAdapter<Object>(future));
                 return new RpcResult();
+            // 同步调用
             } else {
                 RpcContext.getContext().setFuture(null);
                 return (Result) currentClient.request(inv, timeout).get();
@@ -119,7 +129,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         if (!super.isAvailable())
             return false;
         for (ExchangeClient client : clients) {
-            if (client.isConnected() && !client.hasAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY)) {
+            if (client.isConnected() && !client.hasAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY)) { // 只读判断
                 //cannot write == not Available ?
                 return true;
             }
@@ -127,6 +137,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         return false;
     }
 
+    @Override
     public void destroy() {
         // in order to avoid closing a client multiple times, a counter is used in case of connection per jvm, every
         // time when client.close() is called, counter counts down once, and when counter reaches zero, client will be

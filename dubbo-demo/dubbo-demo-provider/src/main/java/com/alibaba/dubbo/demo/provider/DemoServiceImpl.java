@@ -74,4 +74,12 @@ public class DemoServiceImpl implements DemoService {
         this.demoDAO = demoDAO;
     }
 
+    public void onconnect() {
+        System.out.println("连接成功");
+    }
+
+    public void ondisconnect() {
+        System.out.println("连接断开");
+    }
+
 }

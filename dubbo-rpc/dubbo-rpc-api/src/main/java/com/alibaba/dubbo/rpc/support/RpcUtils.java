@@ -107,13 +107,21 @@ public class RpcUtils {
         }
     }
 
+    /**
+     * 获得方法名
+     *
+     * @param invocation Invocation 对象
+     * @return 方法名
+     */
     public static String getMethodName(Invocation invocation) {
+        // 泛化调用，第一个参数为方法名
         if (Constants.$INVOKE.equals(invocation.getMethodName())
                 && invocation.getArguments() != null
                 && invocation.getArguments().length > 0
                 && invocation.getArguments()[0] instanceof String) {
             return (String) invocation.getArguments()[0];
         }
+        // 普通调用，直接获得
         return invocation.getMethodName();
     }
 
@@ -145,13 +153,27 @@ public class RpcUtils {
         return invocation.getParameterTypes();
     }
 
+    /**
+     * 获得是否异步。服务引用或方法，任一配置 `async = true` ，即为异步。
+     *
+     * @param url URL
+     * @param inv Invocation 对象
+     * @return 是否异步
+     */
     public static boolean isAsync(URL url, Invocation inv) {
-        return Boolean.TRUE.toString().equals(inv.getAttachment(Constants.ASYNC_KEY))
+        return Boolean.TRUE.toString().equals(inv.getAttachment(Constants.ASYNC_KEY)) // RpcContext#asyncCall(Callable) 方法，可以设置
                 || url.getMethodParameter(getMethodName(inv), Constants.ASYNC_KEY, false);
     }
 
+    /**
+     * 获得是否单向。方法配置 `return = true` ，即为单向。
+     *
+     * @param url URL
+     * @param inv Invocation 对象
+     * @return 是否单向
+     */
     public static boolean isOneway(URL url, Invocation inv) {
-        return Boolean.FALSE.toString().equals(inv.getAttachment(Constants.RETURN_KEY))
+        return Boolean.FALSE.toString().equals(inv.getAttachment(Constants.RETURN_KEY)) // RpcContext#asyncCall(Runnable) 方法，可以设置
                 || !url.getMethodParameter(getMethodName(inv), Constants.RETURN_KEY, true);
     }
 
