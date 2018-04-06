@@ -21,6 +21,9 @@ import com.alibaba.dubbo.common.URL;
 
 import java.net.InetSocketAddress;
 
+/**
+ * HTTP 服务器接口
+ */
 public interface HttpServer extends Resetable {
 
     /**

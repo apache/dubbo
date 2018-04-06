@@ -24,13 +24,22 @@ import java.net.InetSocketAddress;
 
 /**
  * AbstractHttpServer
+ *
+ * HTTP 服务器抽象类
  */
 public abstract class AbstractHttpServer implements HttpServer {
 
+    /**
+     * URL 对象
+     */
     private final URL url;
-
+    /**
+     * 处理器
+     */
     private final HttpHandler handler;
-
+    /**
+     * 是否关闭
+     */
     private volatile boolean closed;
 
     public AbstractHttpServer(URL url, HttpHandler handler) {
@@ -44,33 +53,41 @@ public abstract class AbstractHttpServer implements HttpServer {
         this.handler = handler;
     }
 
+    @Override
     public HttpHandler getHttpHandler() {
         return handler;
     }
 
+    @Override
     public URL getUrl() {
         return url;
     }
 
+    @Override
     public void reset(URL url) {
     }
 
+    @Override
     public boolean isBound() {
         return true;
     }
 
+    @Override
     public InetSocketAddress getLocalAddress() {
         return url.toInetSocketAddress();
     }
 
+    @Override
     public void close() {
         closed = true;
     }
 
+    @Override
     public void close(int timeout) {
         close();
     }
 
+    @Override
     public boolean isClosed() {
         return closed;
     }

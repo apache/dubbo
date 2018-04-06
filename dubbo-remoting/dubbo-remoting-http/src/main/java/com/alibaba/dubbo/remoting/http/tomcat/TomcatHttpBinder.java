@@ -21,6 +21,9 @@ import com.alibaba.dubbo.remoting.http.HttpBinder;
 import com.alibaba.dubbo.remoting.http.HttpHandler;
 import com.alibaba.dubbo.remoting.http.HttpServer;
 
+/**
+ * TomcatHttpServer 绑定器实现类
+ */
 public class TomcatHttpBinder implements HttpBinder {
 
     @Override
