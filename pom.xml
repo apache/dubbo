@@ -70,6 +70,7 @@ limitations under the License.
         <maven_cobertura_version>2.7</maven_cobertura_version>
         <maven_javadoc_version>3.0.0</maven_javadoc_version>
         <maven_jetty_version>6.1.26</maven_jetty_version>
+        <maven_checkstyle_version>3.0.0</maven_checkstyle_version>
     </properties>
 
     <modules>
@@ -180,6 +181,38 @@ limitations under the License.
                     -Djava.net.preferIPv4Stack=true
                 </argline>
             </properties>
+        </profile>
+        <profile>
+            <id>checkstyle</id>
+            <activation>
+                <jdk>[1.8,)</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-checkstyle-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>checkstyle-validation</id>
+                                <phase>validate</phase>
+                                <configuration>
+                                    <configLocation>codestyle/checkstyle.xml</configLocation>
+                                    <suppressionsLocation>codestyle/checkstyle-suppressions.xml</suppressionsLocation>
+                                    <headerLocation>codestyle/checkstyle-header.txt</headerLocation>
+                                    <linkXRef>false</linkXRef>
+                                    <encoding>UTF-8</encoding>
+                                    <consoleOutput>true</consoleOutput>
+                                    <failOnViolation>true</failOnViolation>
+                                </configuration>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
         <profile>
             <id>release</id>
@@ -438,6 +471,18 @@ limitations under the License.
                     <groupId>org.mortbay.jetty</groupId>
                     <artifactId>maven-jetty-plugin</artifactId>
                     <version>${maven_jetty_version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-checkstyle-plugin</artifactId>
+                    <version>${maven_checkstyle_version}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.puppycrawl.tools</groupId>
+                            <artifactId>checkstyle</artifactId>
+                            <version>8.9</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
             </plugins>
         </pluginManagement>
