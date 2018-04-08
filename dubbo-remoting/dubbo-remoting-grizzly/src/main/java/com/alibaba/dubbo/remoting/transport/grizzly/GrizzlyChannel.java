@@ -75,7 +75,7 @@ final class GrizzlyChannel extends AbstractChannel {
         return ret;
     }
 
-    static void removeChannelIfDisconnectd(Connection<?> connection) {
+    static void removeChannelIfDisconnected(Connection<?> connection) {
         if (connection != null && !connection.isOpen()) {
             ATTRIBUTE.remove(connection);
         }
@@ -124,7 +124,7 @@ final class GrizzlyChannel extends AbstractChannel {
             logger.warn(e.getMessage(), e);
         }
         try {
-            removeChannelIfDisconnectd(connection);
+            removeChannelIfDisconnected(connection);
         } catch (Exception e) {
             logger.warn(e.getMessage(), e);
         }

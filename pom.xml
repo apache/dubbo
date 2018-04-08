@@ -1,19 +1,19 @@
 <!--
-Licensed to the Apache Software Foundation (ASF) under one or more
-contributor license agreements.  See the NOTICE file distributed with
-this work for additional information regarding copyright ownership.
-The ASF licenses this file to You under the Apache License, Version 2.0
-(the "License"); you may not use this file except in compliance with
-the License.  You may obtain a copy of the License at
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
 
-     http://www.apache.org/licenses/LICENSE-2.0
+      http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
--->
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  -->
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
@@ -31,16 +31,60 @@ limitations under the License.
     <packaging>pom</packaging>
 
     <name>${project.artifactId}</name>
-    <description>Dubbo is a high-performance, java based RPC framework open-sourced by Alibaba</description>
-    <url>http://dubbo.io</url>
-
+    <description>The parent project of dubbo</description>
+    <url>https://github.com/apache/incubator-dubbo</url>
     <inceptionYear>2011</inceptionYear>
     <licenses>
         <license>
-            <name>Apache 2</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+            <distribution>repo</distribution>
         </license>
     </licenses>
+
+    <scm>
+        <url>https://github.com/apache/incubator-dubbo</url>
+        <connection>scm:git:https://github.com/apache/incubator-dubbo.git</connection>
+        <developerConnection>scm:git:https://github.com/apache/incubator-dubbo.git</developerConnection>
+    </scm>
+    <mailingLists>
+        <mailingList>
+            <name>Development List</name>
+            <subscribe>dev-subscribe@dubbo.apache.org</subscribe>
+            <unsubscribe>dev-unsubscribe@dubbo.apache.org</unsubscribe>
+            <post>dev@dubbo.apache.org</post>
+        </mailingList>
+        <mailingList>
+            <name>Commits List</name>
+            <subscribe>commits-subscribe@dubbo.apache.org</subscribe>
+            <unsubscribe>commits-unsubscribe@dubbo.apache.org</unsubscribe>
+            <post>commits@dubbo.apache.org</post>
+        </mailingList>
+        <mailingList>
+            <name>Issues List</name>
+            <subscribe>issues-subscribe@dubbo.apache.org</subscribe>
+            <unsubscribe>issues-unsubscribe@dubbo.apache.org</unsubscribe>
+            <post>issues@dubbo.apache.org</post>
+        </mailingList>
+    </mailingLists>
+    <developers>
+        <developer>
+            <id>dubbo.io</id>
+            <name>The Dubbo Project Contributors</name>
+            <email>dev-subscribe@dubbo.apache.org</email>
+            <url>http://dubbo.apache.org/</url>
+        </developer>
+    </developers>
+
+    <organization>
+        <name>The Apache Software Foundation</name>
+        <url>http://www.apache.org/</url>
+    </organization>
+
+    <issueManagement>
+        <system>Github Issues</system>
+        <url>https://github.com/apache/incubator-dubbo/issues</url>
+    </issueManagement>
 
     <properties>
         <!-- Test libs -->
@@ -70,6 +114,7 @@ limitations under the License.
         <maven_cobertura_version>2.7</maven_cobertura_version>
         <maven_javadoc_version>3.0.0</maven_javadoc_version>
         <maven_jetty_version>6.1.26</maven_jetty_version>
+        <maven_checkstyle_version>3.0.0</maven_checkstyle_version>
     </properties>
 
     <modules>
@@ -85,6 +130,7 @@ limitations under the License.
         <module>dubbo-config</module>
         <module>dubbo-demo</module>
         <module>dubbo-plugin</module>
+        <module>dubbo-serialization</module>
         <module>dependencies-bom</module>
         <module>bom</module>
         <module>all</module>
@@ -180,6 +226,81 @@ limitations under the License.
                 </argline>
             </properties>
         </profile>
+        <profile>
+            <id>checkstyle</id>
+            <activation>
+                <jdk>[1.8,)</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-checkstyle-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>checkstyle-validation</id>
+                                <phase>validate</phase>
+                                <configuration>
+                                    <configLocation>codestyle/checkstyle.xml</configLocation>
+                                    <suppressionsLocation>codestyle/checkstyle-suppressions.xml</suppressionsLocation>
+                                    <headerLocation>codestyle/checkstyle-header.txt</headerLocation>
+                                    <linkXRef>false</linkXRef>
+                                    <encoding>UTF-8</encoding>
+                                    <consoleOutput>true</consoleOutput>
+                                    <failOnViolation>true</failOnViolation>
+                                </configuration>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>${maven_javadoc_version}</version>
+                        <executions>
+                            <execution>
+                                <id>attach-javadoc</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <configuration>
+                                    <doclint>none</doclint>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <show>public</show>
+                            <charset>UTF-8</charset>
+                            <encoding>UTF-8</encoding>
+                            <docencoding>UTF-8</docencoding>
+                            <links>
+                                <link>http://docs.oracle.com/javase/7/docs/api</link>
+                            </links>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
     <build>
@@ -208,31 +329,6 @@ limitations under the License.
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                         </manifest>
                     </archive>
-                </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>${maven_javadoc_version}</version>
-                <executions>
-                    <execution>
-                        <id>attach-javadoc</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <doclint>none</doclint>
-                        </configuration>
-                    </execution>
-                </executions>
-                <configuration>
-                    <show>public</show>
-                    <charset>UTF-8</charset>
-                    <encoding>UTF-8</encoding>
-                    <docencoding>UTF-8</docencoding>
-                    <excludePackageNames>com.alibaba.com.*</excludePackageNames>
-                    <links>
-                        <link>http://docs.oracle.com/javase/6/docs/api</link>
-                    </links>
                 </configuration>
             </plugin>
             <plugin>
@@ -420,48 +516,19 @@ limitations under the License.
                     <artifactId>maven-jetty-plugin</artifactId>
                     <version>${maven_jetty_version}</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-checkstyle-plugin</artifactId>
+                    <version>${maven_checkstyle_version}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.puppycrawl.tools</groupId>
+                            <artifactId>checkstyle</artifactId>
+                            <version>8.9</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
-
-    <organization>
-        <name>The Dubbo Project</name>
-        <url>http://dubbo.io</url>
-    </organization>
-
-    <issueManagement>
-        <system>Github Issues</system>
-        <url>https://github.com/alibaba/dubbo/issues</url>
-    </issueManagement>
-    <scm>
-        <url>https://github.com/alibaba/dubbo/tree/master</url>
-        <connection>scm:git:git://github.com/alibaba/dubbo.git</connection>
-        <developerConnection>scm:git:git@github.com:alibaba/dubbo.git</developerConnection>
-    </scm>
-    <mailingLists>
-        <mailingList>
-            <name>Dubbo User Mailling List</name>
-            <subscribe>dubbo+subscribe@googlegroups.com</subscribe>
-            <unsubscribe>dubbo+unsubscribe@googlegroups.com</unsubscribe>
-            <post>dubbo@googlegroups.com</post>
-            <archive>http://groups.google.com/group/dubbo</archive>
-        </mailingList>
-        <mailingList>
-            <name>Dubbo Developer Mailling List</name>
-            <subscribe>dubbo-developers+subscribe@googlegroups.com</subscribe>
-            <unsubscribe>dubbo-developers+unsubscribe@googlegroups.com</unsubscribe>
-            <post>dubbo-developers@googlegroups.com</post>
-            <archive>http://groups.google.com/group/dubbo-developers</archive>
-        </mailingList>
-    </mailingLists>
-    <developers>
-        <developer>
-            <id>dubbo.io</id>
-            <name>The Dubbo Project Contributors</name>
-            <email>dubbo@googlegroups.com</email>
-            <url>http://dubbo.io</url>
-            <organization>The Dubbo Project</organization>
-            <organizationUrl>http://dubbo.io</organizationUrl>
-        </developer>
-    </developers>
 </project>

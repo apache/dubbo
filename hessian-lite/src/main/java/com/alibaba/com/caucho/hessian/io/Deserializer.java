@@ -53,7 +53,6 @@ import java.io.IOException;
 /**
  * Deserializing an object.
  *
- * @author jason.shang@hotmail.com
  */
 public interface Deserializer {
     public Class getType();

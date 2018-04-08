@@ -16,7 +16,7 @@
  */
 package com.alibaba.dubbo.common.utils;
 
-import com.alibaba.dubbo.common.serialize.Serialization;
+import com.alibaba.dubbo.common.threadpool.ThreadPool;
 
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -41,27 +41,27 @@ public class ConfigUtilsTest {
 
     @Test
     public void testMergeValues() {
-        List<String> merged = ConfigUtils.mergeValues(Serialization.class, "aaa,bbb,default.cunstom",
-                toArray("dubbo", "default.hessian2", "fastjson"));
-        Assert.assertEquals(toArray("dubbo", "fastjson", "aaa", "bbb", "default.cunstom"), merged);
+        List<String> merged = ConfigUtils.mergeValues(ThreadPool.class, "aaa,bbb,default.cunstom",
+                toArray("fixed", "default.limited", "cached"));
+        Assert.assertEquals(toArray("fixed", "cached", "aaa", "bbb", "default.cunstom"), merged);
     }
 
     @Test
     public void testMergeValues_addDefault() {
-        List<String> merged = ConfigUtils.mergeValues(Serialization.class, "aaa,bbb,default,zzz",
-                toArray("dubbo", "default.hessian2", "fastjson"));
-        Assert.assertEquals(toArray("aaa", "bbb", "dubbo", "fastjson", "zzz"), merged);
+        List<String> merged = ConfigUtils.mergeValues(ThreadPool.class, "aaa,bbb,default,zzz",
+                toArray("fixed", "default.limited", "cached"));
+        Assert.assertEquals(toArray("aaa", "bbb", "fixed", "cached", "zzz"), merged);
     }
 
     @Test
     public void testMergeValuesDeleteDefault() {
-        List<String> merged = ConfigUtils.mergeValues(Serialization.class, "-default", toArray("dubbo", "default.hessian2", "json"));
+        List<String> merged = ConfigUtils.mergeValues(ThreadPool.class, "-default", toArray("fixed", "default.limited", "cached"));
         Assert.assertEquals(toArray(), merged);
     }
 
     @Test
     public void testMergeValuesDeleteDefault_2() {
-        List<String> merged = ConfigUtils.mergeValues(Serialization.class, "-default,aaa", toArray("dubbo", "default.hessian2", "json"));
+        List<String> merged = ConfigUtils.mergeValues(ThreadPool.class, "-default,aaa", toArray("fixed", "default.limited", "cached"));
         Assert.assertEquals(toArray("aaa"), merged);
     }
 
@@ -70,8 +70,8 @@ public class ConfigUtilsTest {
      */
     @Test
     public void testMergeValuesDelete() {
-        List<String> merged = ConfigUtils.mergeValues(Serialization.class, "-dubbo,aaa", toArray("dubbo", "default.hessian2", "fastjson"));
-        Assert.assertEquals(toArray("fastjson", "aaa"), merged);
+        List<String> merged = ConfigUtils.mergeValues(ThreadPool.class, "-fixed,aaa", toArray("fixed", "default.limited", "cached"));
+        Assert.assertEquals(toArray("cached", "aaa"), merged);
     }
 
     @Test

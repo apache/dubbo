@@ -61,57 +61,30 @@ public class LocaleHandle implements java.io.Serializable, HessianHandle {
     }
 
     private Object readResolve() {
-        String s = this.value;
-
-        if (s == null)
+        if (value == null) {
             return null;
-
-        int len = s.length();
-        char ch = ' ';
-
-        int i = 0;
-        for (;
-             i < len && ('a' <= (ch = s.charAt(i)) && ch <= 'z'
-                     || 'A' <= ch && ch <= 'Z'
-                     || '0' <= ch && ch <= '9');
-             i++) {
         }
 
-        String language = s.substring(0, i);
-        String country = null;
-        String var = null;
+        if (value.length() == 0) {
+            return new Locale("");
+        }
 
-        if (ch == '-' || ch == '_') {
-            int head = ++i;
+        int extStart = value.indexOf("_#");
+        if (extStart != -1) value = value.substring(0, extStart);
 
-            for (;
-                 i < len && ('a' <= (ch = s.charAt(i)) && ch <= 'z'
-                         || 'A' <= ch && ch <= 'Z'
-                         || '0' <= ch && ch <= '9');
-                 i++) {
+        String language = value, country = "", variant = "";
+        int pos1 = value.indexOf('_');
+        if (pos1 != -1) {
+            language = value.substring(0, pos1++);
+
+            int pos2 = value.indexOf('_', pos1);
+            if (pos2 == -1) {
+                country = value.substring(pos1);
+            } else {
+                country = value.substring(pos1, pos2);
+                variant = value.substring(pos2 + 1);
             }
-
-            country = s.substring(head, i);
         }
-
-        if (ch == '-' || ch == '_') {
-            int head = ++i;
-
-            for (;
-                 i < len && ('a' <= (ch = s.charAt(i)) && ch <= 'z'
-                         || 'A' <= ch && ch <= 'Z'
-                         || '0' <= ch && ch <= '9');
-                 i++) {
-            }
-
-            var = s.substring(head, i);
-        }
-
-        if (var != null)
-            return new Locale(language, country, var);
-        else if (country != null)
-            return new Locale(language, country);
-        else
-            return new Locale(language);
+        return new Locale(language, country, variant);
     }
 }
