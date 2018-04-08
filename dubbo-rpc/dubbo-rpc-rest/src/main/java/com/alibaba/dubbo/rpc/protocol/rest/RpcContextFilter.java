@@ -79,11 +79,8 @@ public class RpcContextFilter implements ContainerRequestFilter, ClientRequestFi
                 throw new IllegalArgumentException("The attachments of " + RpcContext.class.getSimpleName() + " is too big");
             }
 
-            StringBuilder attachments = new StringBuilder();
-            attachments.append(entry.getKey());
-            attachments.append("=");
-            attachments.append(entry.getValue());
-            requestContext.getHeaders().add(DUBBO_ATTACHMENT_HEADER, attachments.toString());
+            String attachments = entry.getKey() + "=" + entry.getValue();
+            requestContext.getHeaders().add(DUBBO_ATTACHMENT_HEADER, attachments);
         }
     }
 }
