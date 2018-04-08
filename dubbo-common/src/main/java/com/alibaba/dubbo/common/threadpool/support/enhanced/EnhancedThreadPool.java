@@ -6,7 +6,8 @@ import com.alibaba.dubbo.common.threadpool.ThreadPool;
 import com.alibaba.dubbo.common.threadpool.support.AbortPolicyWithReport;
 import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 
-import java.util.concurrent.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * enhanced thread pool.
