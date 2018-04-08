@@ -6,8 +6,8 @@ jdk:
     - openjdk7
 
 script:
-    - mvn clean package
-    - mvn cobertura:cobertura
+    - travis_wait 30 mvn clean package
+    - travis_wait 30 mvn cobertura:cobertura
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
