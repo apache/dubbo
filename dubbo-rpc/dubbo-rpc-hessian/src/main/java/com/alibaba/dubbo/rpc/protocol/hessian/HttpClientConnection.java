@@ -34,6 +34,9 @@ import java.net.URL;
  */
 public class HttpClientConnection implements HessianConnection {
 
+    /**
+     * Apache HttpClient
+     */
     private final HttpClient httpClient;
 
     private final ByteArrayOutputStream output;
@@ -48,35 +51,43 @@ public class HttpClientConnection implements HessianConnection {
         this.request = new HttpPost(url.toString());
     }
 
+    @Override
     public void addHeader(String key, String value) {
         request.addHeader(new BasicHeader(key, value));
     }
 
+    @Override
     public OutputStream getOutputStream() throws IOException {
         return output;
     }
 
+    @Override
     public void sendRequest() throws IOException {
         request.setEntity(new ByteArrayEntity(output.toByteArray()));
         this.response = httpClient.execute(request);
     }
 
+    @Override
     public int getStatusCode() {
         return response == null || response.getStatusLine() == null ? 0 : response.getStatusLine().getStatusCode();
     }
 
+    @Override
     public String getStatusMessage() {
         return response == null || response.getStatusLine() == null ? null : response.getStatusLine().getReasonPhrase();
     }
 
+    @Override
     public String getContentEncoding() {
         return (response == null || response.getEntity() == null || response.getEntity().getContentEncoding() == null) ? null : response.getEntity().getContentEncoding().getValue();
     }
 
+    @Override
     public InputStream getInputStream() throws IOException {
         return response == null || response.getEntity() == null ? null : response.getEntity().getContent();
     }
 
+    @Override
     public void close() throws IOException {
         HttpPost request = this.request;
         if (request != null) {
@@ -84,6 +95,7 @@ public class HttpClientConnection implements HessianConnection {
         }
     }
 
+    @Override
     public void destroy() throws IOException {
     }
 

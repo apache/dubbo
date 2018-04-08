@@ -65,16 +65,27 @@ public class RpcContext {
 
     private final Map<String, String> attachments = new HashMap<String, String>();
     private final Map<String, Object> values = new HashMap<String, Object>();
+    /**
+     * 异步调用 Future
+     */
     private Future<?> future;
 
     private List<URL> urls;
-
+    /**
+     * URL 对象
+     */
     private URL url;
-
+    /**
+     * 方法名
+     */
     private String methodName;
-
+    /**
+     * 参数类型数组
+     */
     private Class<?>[] parameterTypes;
-
+    /**
+     * 参数值数组
+     */
     private Object[] arguments;
     /**
      * 服务消费者地址

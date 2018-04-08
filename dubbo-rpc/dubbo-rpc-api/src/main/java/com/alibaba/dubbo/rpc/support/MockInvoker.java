@@ -54,7 +54,7 @@ final public class MockInvoker<T> implements Invoker<T> {
     }
 
     public static Object parseMockValue(String mock, Type[] returnTypes) throws Exception {
-        Object value = null;
+        Object value;
         if ("empty".equals(mock)) {
             value = ReflectUtils.getEmptyObject(returnTypes != null && returnTypes.length > 0 ? (Class<?>) returnTypes[0] : null);
         } else if ("null".equals(mock)) {

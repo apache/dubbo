@@ -49,12 +49,15 @@ public class MemcachedProtocol extends AbstractProtocol {
         return DEFAULT_PORT;
     }
 
+    @Override
     public <T> Exporter<T> export(final Invoker<T> invoker) throws RpcException {
         throw new UnsupportedOperationException("Unsupported export memcached service. url: " + invoker.getUrl());
     }
 
+    @Override
     public <T> Invoker<T> refer(final Class<T> type, final URL url) throws RpcException {
         try {
+            // 创建 MemcachedClient 对象
             String address = url.getAddress();
             String backup = url.getParameter(Constants.BACKUP_KEY);
             if (backup != null && backup.length() > 0) {
@@ -62,30 +65,38 @@ public class MemcachedProtocol extends AbstractProtocol {
             }
             MemcachedClientBuilder builder = new XMemcachedClientBuilder(AddrUtil.getAddresses(address));
             final MemcachedClient memcachedClient = builder.build();
+
+            // 处理方法名的映射
             final int expiry = url.getParameter("expiry", 0);
             final String get = url.getParameter("get", "get");
             final String set = url.getParameter("set", Map.class.equals(type) ? "put" : "set");
             final String delete = url.getParameter("delete", Map.class.equals(type) ? "remove" : "delete");
             return new AbstractInvoker<T>(type, url) {
+
+                @Override
                 protected Result doInvoke(Invocation invocation) throws Throwable {
                     try {
+                        // Memcached get 指令
                         if (get.equals(invocation.getMethodName())) {
                             if (invocation.getArguments().length != 1) {
                                 throw new IllegalArgumentException("The memcached get method arguments mismatch, must only one arguments. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url);
                             }
                             return new RpcResult(memcachedClient.get(String.valueOf(invocation.getArguments()[0])));
+                        // Memcached set 指令
                         } else if (set.equals(invocation.getMethodName())) {
                             if (invocation.getArguments().length != 2) {
                                 throw new IllegalArgumentException("The memcached set method arguments mismatch, must be two arguments. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url);
                             }
                             memcachedClient.set(String.valueOf(invocation.getArguments()[0]), expiry, invocation.getArguments()[1]);
                             return new RpcResult();
+                        // Memcached delele 指令
                         } else if (delete.equals(invocation.getMethodName())) {
                             if (invocation.getArguments().length != 1) {
                                 throw new IllegalArgumentException("The memcached delete method arguments mismatch, must only one arguments. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url);
                             }
                             memcachedClient.delete(String.valueOf(invocation.getArguments()[0]));
                             return new RpcResult();
+                        // 不支持的指令，抛出异常
                         } else {
                             throw new UnsupportedOperationException("Unsupported method " + invocation.getMethodName() + " in memcached service.");
                         }
@@ -100,14 +111,18 @@ public class MemcachedProtocol extends AbstractProtocol {
                     }
                 }
 
+                @Override
                 public void destroy() {
+                    // 标记销毁
                     super.destroy();
+                    // 关闭 MemcachedClient
                     try {
                         memcachedClient.shutdown();
                     } catch (Throwable e) {
                         logger.warn(e.getMessage(), e);
                     }
                 }
+
             };
         } catch (Throwable t) {
             throw new RpcException("Failed to refer memcached service. interface: " + type.getName() + ", url: " + url + ", cause: " + t.getMessage(), t);

@@ -23,7 +23,6 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.HttpConnectionParams;
 
-import java.io.IOException;
 import java.net.URL;
 
 /**
@@ -31,15 +30,20 @@ import java.net.URL;
  */
 public class HttpClientConnectionFactory implements HessianConnectionFactory {
 
+    /**
+     * Apache HttpClient
+     */
     private final HttpClient httpClient = new DefaultHttpClient();
 
+    @Override
     public void setHessianProxyFactory(HessianProxyFactory factory) {
         HttpConnectionParams.setConnectionTimeout(httpClient.getParams(), (int) factory.getConnectTimeout());
         HttpConnectionParams.setSoTimeout(httpClient.getParams(), (int) factory.getReadTimeout());
     }
 
-    public HessianConnection open(URL url) throws IOException {
-        return new HttpClientConnection(httpClient, url);
+    @Override
+    public HessianConnection open(URL url) {
+        return new HttpClientConnection(httpClient, url); // HttpClientConnection
     }
 
 }
