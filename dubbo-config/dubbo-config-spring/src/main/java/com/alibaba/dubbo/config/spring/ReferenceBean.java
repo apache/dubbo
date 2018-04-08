@@ -16,12 +16,7 @@
  */
 package com.alibaba.dubbo.config.spring;
 
-import com.alibaba.dubbo.config.ApplicationConfig;
-import com.alibaba.dubbo.config.ConsumerConfig;
-import com.alibaba.dubbo.config.ModuleConfig;
-import com.alibaba.dubbo.config.MonitorConfig;
-import com.alibaba.dubbo.config.ReferenceConfig;
-import com.alibaba.dubbo.config.RegistryConfig;
+import com.alibaba.dubbo.config.*;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.spring.extension.SpringExtensionFactory;
 import com.alibaba.dubbo.config.support.Parameter;
@@ -55,6 +50,16 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
     public ReferenceBean(Reference reference) {
         super(reference);
     }
+
+    /**
+     * 增加构造函数，支持 RefConf 配置
+     * @param reference
+     */
+    public ReferenceBean(RefConf reference) {
+        super(reference);
+    }
+
+
 
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;

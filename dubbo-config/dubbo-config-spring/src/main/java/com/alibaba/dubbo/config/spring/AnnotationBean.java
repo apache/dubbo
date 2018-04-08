@@ -43,6 +43,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -105,6 +106,14 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
                 // spring 2.0
             }
         }
+
+
+        //
+        if(!beanFactory.containsBean(DynamicReferenceService.class.getName())) {
+            //注册服务bean
+            beanFactory.registerSingleton(DynamicReferenceService.class.getName(), new DynamicReferenceService(this));
+        }
+
     }
 
     public void destroy() throws Exception {
@@ -238,50 +247,78 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
     }
 
     private Object refer(Reference reference, Class<?> referenceClass) { //method.getParameterTypes()[0]
+        RefConf refConf=new RefConf();
+
+        //将注解类reference上的属性复制到refConf
+        for(Field field:refConf.getClass().getFields()){
+            for(Method method:reference.getClass().getMethods()){
+                if(method.getName().equals(field.getName())){
+                    try {
+                        field.set(refConf,method.invoke(reference));
+                    } catch (IllegalAccessException e) {
+                        logger.error("error @Reference or RefConf definition");
+                    } catch (InvocationTargetException e) {
+                        logger.error("error @Reference or RefConf definition");
+                    }
+                }
+            }
+        }
+
+        return referNew(refConf,referenceClass);
+    }
+
+    /**
+     * refer 方法的公开版，将注解参数Reference换为 RefConf 类
+     * @param reference
+     * @param referenceClass
+     * @return
+     */
+    public Object referNew(RefConf reference, Class<?> referenceClass) { //method.getParameterTypes()[0]
         String interfaceName;
-        if (!"".equals(reference.interfaceName())) {
-            interfaceName = reference.interfaceName();
-        } else if (!void.class.equals(reference.interfaceClass())) {
-            interfaceName = reference.interfaceClass().getName();
+
+        if (! "".equals( reference.interfaceName)) {
+            interfaceName =  reference.interfaceName;
+        } else if (! void.class.equals( reference.interfaceClass)) {
+            interfaceName =  reference.interfaceClass.getName();
         } else if (referenceClass.isInterface()) {
             interfaceName = referenceClass.getName();
         } else {
             throw new IllegalStateException("The @Reference undefined interfaceClass or interfaceName, and the property type " + referenceClass.getName() + " is not a interface.");
         }
-        String key = reference.group() + "/" + interfaceName + ":" + reference.version();
+        String key =  reference.group + "/" + interfaceName + ":" +  reference.version;
         ReferenceBean<?> referenceConfig = referenceConfigs.get(key);
         if (referenceConfig == null) {
             referenceConfig = new ReferenceBean<Object>(reference);
-            if (void.class.equals(reference.interfaceClass())
-                    && "".equals(reference.interfaceName())
+            if (void.class.equals( reference.interfaceClass)
+                    && "".equals( reference.interfaceName)
                     && referenceClass.isInterface()) {
                 referenceConfig.setInterface(referenceClass);
             }
             if (applicationContext != null) {
                 referenceConfig.setApplicationContext(applicationContext);
-                if (reference.registry() != null && reference.registry().length > 0) {
+                if ( reference.registry != null &&  reference.registry.length > 0) {
                     List<RegistryConfig> registryConfigs = new ArrayList<RegistryConfig>();
-                    for (String registryId : reference.registry()) {
+                    for (String registryId :  reference.registry) {
                         if (registryId != null && registryId.length() > 0) {
-                            registryConfigs.add((RegistryConfig) applicationContext.getBean(registryId, RegistryConfig.class));
+                            registryConfigs.add((RegistryConfig)applicationContext.getBean(registryId, RegistryConfig.class));
                         }
                     }
                     referenceConfig.setRegistries(registryConfigs);
                 }
-                if (reference.consumer() != null && reference.consumer().length() > 0) {
-                    referenceConfig.setConsumer((ConsumerConfig) applicationContext.getBean(reference.consumer(), ConsumerConfig.class));
+                if ( reference.consumer != null &&  reference.consumer.length() > 0) {
+                    referenceConfig.setConsumer((ConsumerConfig)applicationContext.getBean( reference.consumer, ConsumerConfig.class));
                 }
-                if (reference.monitor() != null && reference.monitor().length() > 0) {
-                    referenceConfig.setMonitor((MonitorConfig) applicationContext.getBean(reference.monitor(), MonitorConfig.class));
+                if ( reference.monitor != null &&  reference.monitor.length() > 0) {
+                    referenceConfig.setMonitor((MonitorConfig)applicationContext.getBean( reference.monitor, MonitorConfig.class));
                 }
-                if (reference.application() != null && reference.application().length() > 0) {
-                    referenceConfig.setApplication((ApplicationConfig) applicationContext.getBean(reference.application(), ApplicationConfig.class));
+                if ( reference.application != null &&  reference.application.length() > 0) {
+                    referenceConfig.setApplication((ApplicationConfig)applicationContext.getBean( reference.application, ApplicationConfig.class));
                 }
-                if (reference.module() != null && reference.module().length() > 0) {
-                    referenceConfig.setModule((ModuleConfig) applicationContext.getBean(reference.module(), ModuleConfig.class));
+                if ( reference.module != null &&  reference.module.length() > 0) {
+                    referenceConfig.setModule((ModuleConfig)applicationContext.getBean( reference.module, ModuleConfig.class));
                 }
-                if (reference.consumer() != null && reference.consumer().length() > 0) {
-                    referenceConfig.setConsumer((ConsumerConfig) applicationContext.getBean(reference.consumer(), ConsumerConfig.class));
+                if ( reference.consumer != null &&  reference.consumer.length() > 0) {
+                    referenceConfig.setConsumer((ConsumerConfig)applicationContext.getBean( reference.consumer, ConsumerConfig.class));
                 }
                 try {
                     referenceConfig.afterPropertiesSet();
