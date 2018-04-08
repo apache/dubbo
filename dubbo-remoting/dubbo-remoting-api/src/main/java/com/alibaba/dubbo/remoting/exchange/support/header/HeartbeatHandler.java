@@ -77,11 +77,7 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
         }
         if (isHeartbeatResponse(message)) {
             if (logger.isDebugEnabled()) {
-                logger.debug(
-                        new StringBuilder(32)
-                                .append("Receive heartbeat response in thread ")
-                                .append(Thread.currentThread().getName())
-                                .toString());
+                logger.debug("Receive heartbeat response in thread " + Thread.currentThread().getName());
             }
             return;
         }
