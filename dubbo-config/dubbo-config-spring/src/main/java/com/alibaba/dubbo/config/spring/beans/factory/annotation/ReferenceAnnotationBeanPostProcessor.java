@@ -18,6 +18,7 @@ package com.alibaba.dubbo.config.spring.beans.factory.annotation;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.spring.ReferenceBean;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeanUtils;
@@ -32,6 +33,8 @@ import org.springframework.beans.factory.support.MergedBeanDefinitionPostProcess
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.PriorityOrdered;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
@@ -42,8 +45,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -60,7 +65,7 @@ import static org.springframework.core.annotation.AnnotationUtils.getAnnotation;
  */
 public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBeanPostProcessorAdapter
         implements MergedBeanDefinitionPostProcessor, PriorityOrdered, ApplicationContextAware, BeanClassLoaderAware,
-        DisposableBean {
+        DisposableBean, ApplicationListener<ContextRefreshedEvent> {
 
     /**
      * The bean name of {@link ReferenceAnnotationBeanPostProcessor}
@@ -76,24 +81,18 @@ public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBean
     private final ConcurrentMap<String, InjectionMetadata> injectionMetadataCache =
             new ConcurrentHashMap<String, InjectionMetadata>(256);
 
+    private final ConcurrentMap<String, MetadataHolder> injectionMetadataHolderCache =
+            new ConcurrentHashMap<String, MetadataHolder>(256);
+
     private final ConcurrentMap<String, ReferenceBean<?>> referenceBeansCache =
             new ConcurrentHashMap<String, ReferenceBean<?>>();
 
     @Override
     public PropertyValues postProcessPropertyValues(
             PropertyValues pvs, PropertyDescriptor[] pds, Object bean, String beanName) throws BeanCreationException {
-
-        InjectionMetadata metadata = findReferenceMetadata(beanName, bean.getClass(), pvs);
-        try {
-            metadata.inject(bean, beanName, pvs);
-        } catch (BeanCreationException ex) {
-            throw ex;
-        } catch (Throwable ex) {
-            throw new BeanCreationException(beanName, "Injection of @Reference dependencies failed", ex);
-        }
+        injectionMetadataHolderCache.put(beanName, new MetadataHolder(bean, beanName, pvs));
         return pvs;
     }
-
 
     /**
      * Finds {@link InjectionMetadata.InjectedElement} Metadata from annotated {@link Reference @Reference} fields
@@ -259,6 +258,25 @@ public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBean
         this.classLoader = classLoader;
     }
 
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        Iterator<Map.Entry<String, MetadataHolder>> iterator = injectionMetadataHolderCache.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<String, MetadataHolder> entry = iterator.next();
+            String beanName = entry.getKey();
+            InjectionMetadata injectionMetadata = injectionMetadataCache.get(beanName);
+            if(injectionMetadata != null) {
+                MetadataHolder holder = entry.getValue();
+                try {
+                    injectionMetadata.inject(holder.bean, holder.beanName, holder.pvs);
+                } catch (BeanCreationException ex) {
+                    throw ex;
+                } catch (Throwable ex) {
+                    throw new BeanCreationException(beanName, "Injection of @Reference dependencies failed", ex);
+                }
+            }
+        }
+    }
 
     /**
      * Gets all beans of {@link ReferenceBean}
@@ -347,8 +365,6 @@ public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBean
             referenceBeansCache.putIfAbsent(referenceBeanCacheKey, referenceBean);
 
         }
-
-
         return referenceBean.get();
     }
 
@@ -390,4 +406,18 @@ public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBean
 
     }
 
+    static class MetadataHolder {
+
+        volatile Object bean;
+        volatile Class<?> beanClass;
+        volatile PropertyValues pvs;
+        volatile String beanName;
+
+        public MetadataHolder(Object bean, String beanName, PropertyValues pvs) {
+            this.bean = bean;
+            this.beanClass = bean.getClass();
+            this.beanName = beanName;
+            this.pvs = pvs;
+        }
+    }
 }

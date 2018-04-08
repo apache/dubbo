@@ -164,7 +164,7 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
-    private static String getTagName(Class<?> cls) {
+    protected static String getTagName(Class<?> cls) {
         String tag = cls.getSimpleName();
         for (String suffix : SUFFIXES) {
             if (tag.endsWith(suffix)) {
@@ -288,7 +288,7 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
-    private static boolean isPrimitive(Class<?> type) {
+    protected static boolean isPrimitive(Class<?> type) {
         return type.isPrimitive()
                 || type == String.class
                 || type == Character.class

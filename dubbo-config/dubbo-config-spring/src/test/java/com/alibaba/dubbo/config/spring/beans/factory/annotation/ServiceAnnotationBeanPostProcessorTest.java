@@ -18,6 +18,8 @@ package com.alibaba.dubbo.config.spring.beans.factory.annotation;
 
 import com.alibaba.dubbo.config.spring.ServiceBean;
 import com.alibaba.dubbo.config.spring.api.HelloService;
+import com.alibaba.dubbo.config.spring.context.annotation.DubboComponentScan;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -77,6 +79,7 @@ public class ServiceAnnotationBeanPostProcessorTest {
     @ImportResource("META-INF/spring/dubbo-annotation-provider.xml")
     @PropertySource("META-INF/default.properties")
     @ComponentScan("com.alibaba.dubbo.config.spring.context.annotation.provider")
+//    @DubboComponentScan("com.alibaba.dubbo.config.spring.context.annotation.provider")
     public static class TestConfiguration {
 
         @Bean

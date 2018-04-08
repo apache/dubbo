@@ -25,6 +25,7 @@ import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.config.ServiceConfig;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.dubbo.config.spring.extension.SpringExtensionFactory;
+import com.alibaba.dubbo.config.support.Parameter;
 
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.BeanFactoryUtils;
@@ -36,6 +37,8 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.core.PriorityOrdered;
+import org.springframework.core.annotation.Order;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -47,7 +50,7 @@ import java.util.Map;
  *
  * @export
  */
-public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean, DisposableBean, ApplicationContextAware, ApplicationListener<ContextRefreshedEvent>, BeanNameAware {
+public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean, DisposableBean, ApplicationContextAware, ApplicationListener<ContextRefreshedEvent>, BeanNameAware, PriorityOrdered {
 
     private static final long serialVersionUID = 213195494150089726L;
 
@@ -274,5 +277,14 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             return AopUtils.getTargetClass(ref);
         }
         return super.getServiceClass(ref);
+    }
+
+    /**
+     *  Support for annotations to delay refer.
+     */
+    @Parameter(excluded = true)
+    @Override
+    public int getOrder() {
+        return 0;
     }
 }
