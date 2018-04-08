@@ -24,7 +24,11 @@ import com.alibaba.dubbo.config.spring.beans.factory.annotation.DubboConfigBindi
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.PropertySources;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * Enables Spring's annotation-driven {@link AbstractConfig Dubbo Config} from {@link PropertySources properties}.
