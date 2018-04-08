@@ -71,9 +71,7 @@ public class MergeableClusterInvokerTest {
     private Menu firstMenu = new Menu(firstMenuMap);
     private Menu secondMenu = new Menu(secondMenuMap);
 
-    private URL url = URL.valueOf(new StringBuilder(32)
-            .append("test://test/")
-            .append(MenuService.class.getName()).toString());
+    private URL url = URL.valueOf("test://test/" + MenuService.class.getName());
 
     static void merge(Map<String, List<String>> first, Map<String, List<String>> second) {
         for (Map.Entry<String, List<String>> entry : second.entrySet()) {
