@@ -413,7 +413,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
 
         List<RuntimeBeanReference> protocolRuntimeBeanReferences = toRuntimeBeanReferences(protocolConfigBeanNames);
 
-        if (!registryRuntimeBeanReferences.isEmpty()) {
+        if (!protocolRuntimeBeanReferences.isEmpty()) {
             builder.addPropertyValue("protocols", protocolRuntimeBeanReferences);
         }
 
