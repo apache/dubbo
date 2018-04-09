@@ -57,6 +57,9 @@ public class EagerThreadPoolExecutor extends ThreadPoolExecutor {
 
     @Override
     public void execute(Runnable command) {
+        if (command == null) {
+            throw new NullPointerException();
+        }
         // do not increment in method beforeExecute!
         submittedTaskCount.incrementAndGet();
         try {
