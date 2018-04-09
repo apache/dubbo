@@ -76,6 +76,9 @@ public class EagerThreadPoolExecutor extends ThreadPoolExecutor {
                 submittedTaskCount.decrementAndGet();
                 throw new RejectedExecutionException(x);
             }
+        } catch (Throwable t) {
+            // decrease any way
+            submittedTaskCount.decrementAndGet();
         }
     }
 }
