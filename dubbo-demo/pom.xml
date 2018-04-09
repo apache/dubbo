@@ -36,6 +36,7 @@ limitations under the License.
         <module>dubbo-demo-injvm</module>
         <module>dubbo-http-demo-provider</module>
         <module>dubbo-http-demo-consumer</module>
+        <module>dubbo-rest-demo-provider</module>
     </modules>
 
     <dependencyManagement>

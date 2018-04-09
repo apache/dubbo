@@ -45,4 +45,5 @@ public class ViolationReport implements Serializable {
         }
         constraintViolations.add(constraintViolation);
     }
+
 }

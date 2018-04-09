@@ -678,7 +678,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                     .setProtocol(Constants.LOCAL_PROTOCOL) // injvm
                     .setHost(LOCALHOST) // 本地
                     .setPort(0); // 端口=0
-            // 【TODO 8012】芋艿，rest protocol
+            // 添加服务的真实类名，例如 DemoServiceImpl ，仅用于 RestProtocol 中。
             ServiceClassHolder.getInstance().pushServiceClass(getServiceClass(ref));
             // 使用 ProxyFactory 创建 Invoker 对象
             // 使用 Protocol 暴露 Invoker 对象

@@ -14,39 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc;
+package com.alibaba.dubbo.demo.provider;
 
-/**
- * TODO this is just a workaround for rest protocol, and now we just ensure it works in the most common dubbo usages
- *
- * Service 实现类的 Holder
- */
-public class ServiceClassHolder {
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-    /**
-     * 单例
-     */
-    private static final ServiceClassHolder INSTANCE = new ServiceClassHolder();
-    /**
-     * holder
-     */
-    private final ThreadLocal<Class> holder  = new ThreadLocal<Class>();
+public class RestProvider {
 
-    public static ServiceClassHolder getInstance() {
-        return INSTANCE;
-    }
+    public static void main(String[] args) throws Exception {
+        //Prevent to get IPV6 address,this way only work in debug mode
+        //But you can pass use -Djava.net.preferIPv4Stack=true,then it work well whether in debug mode or not
+        System.setProperty("java.net.preferIPv4Stack", "true");
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"META-INF/spring/dubbo-demo-provider.xml"});
+        context.start();
 
-    private ServiceClassHolder() {
-    }
-
-    public Class popServiceClass() {
-        Class clazz = holder.get();
-        holder.remove();
-        return clazz;
-    }
-
-    public void pushServiceClass(Class clazz) {
-        holder.set(clazz);
+        System.in.read(); // press any key to exit
     }
 
 }

@@ -14,39 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc;
+package com.alibaba.dubbo.demo.provider;
 
-/**
- * TODO this is just a workaround for rest protocol, and now we just ensure it works in the most common dubbo usages
- *
- * Service 实现类的 Holder
- */
-public class ServiceClassHolder {
+import com.alibaba.dubbo.demo.HttpDemoService;
 
-    /**
-     * 单例
-     */
-    private static final ServiceClassHolder INSTANCE = new ServiceClassHolder();
-    /**
-     * holder
-     */
-    private final ThreadLocal<Class> holder  = new ThreadLocal<Class>();
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
 
-    public static ServiceClassHolder getInstance() {
-        return INSTANCE;
-    }
+@Path("demo")
+public class DemoServiceImpl implements HttpDemoService {
 
-    private ServiceClassHolder() {
-    }
-
-    public Class popServiceClass() {
-        Class clazz = holder.get();
-        holder.remove();
-        return clazz;
-    }
-
-    public void pushServiceClass(Class clazz) {
-        holder.set(clazz);
+    @GET
+    @Path("hello")
+    @Override
+    public String hello(@QueryParam("msg") String msg) {
+        return "response:" + msg;
     }
 
 }
