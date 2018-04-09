@@ -47,6 +47,7 @@ public class TaskQueue<R extends Runnable> extends LinkedBlockingQueue<Runnable>
         if (executor == null) {
             throw new RejectedExecutionException("The task queue does not have executor!");
         }
+
         int currentPoolThreadSize = executor.getPoolSize();
         // have free worker. put task into queue to let the worker deal with task.
         if (executor.getSubmittedTaskCount() < currentPoolThreadSize) {
