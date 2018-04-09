@@ -18,6 +18,8 @@ package com.alibaba.dubbo.rpc.cluster.loadbalance;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
+import com.alibaba.dubbo.flowcontrol.CircuitBreakerManager;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.cluster.LoadBalance;
@@ -40,7 +42,14 @@ public abstract class AbstractLoadBalance implements LoadBalance {
             return null;
         if (invokers.size() == 1)
             return invokers.get(0);
-        return doSelect(invokers, url, invocation);
+
+        if(haveOutSleepWindowInvoker(invokers,invocation)){
+            Invoker invoker = ((CircuitRandomLoadBalance)(ExtensionLoader.getExtensionLoader(LoadBalance.class).
+                    getExtension(CircuitRandomLoadBalance.NAME))).doSelect(invokers, url, invocation);
+            return invoker;
+        }else {
+            return  doSelect(invokers, url, invocation);
+        }
     }
 
     protected abstract <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation);
@@ -59,5 +68,15 @@ public abstract class AbstractLoadBalance implements LoadBalance {
         }
         return weight;
     }
-
+    private <T> boolean haveOutSleepWindowInvoker(List<Invoker<T>> invokers,Invocation invocation){
+        int i=0;
+        while(i<invokers.size()){
+            Invoker invoker = invokers.get(i++);
+            CircuitBreakerManager circuitBreakerManager = ExtensionLoader.getExtensionLoader(CircuitBreakerManager.class).getAdaptiveExtension();
+            if(circuitBreakerManager.isSwitchLoadBalance(invoker,invocation)){
+                return true;
+            }
+        }
+        return false;
+    }
 }

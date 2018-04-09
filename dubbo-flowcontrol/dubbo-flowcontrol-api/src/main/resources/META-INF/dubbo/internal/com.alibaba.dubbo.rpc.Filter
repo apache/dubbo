@@ -1,0 +1,1 @@
+circuitbreakerFilter=com.alibaba.dubbo.flowcontrol.filter.CircuitBreakerFilter

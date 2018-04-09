@@ -134,6 +134,7 @@
         <module>dependencies-bom</module>
         <module>bom</module>
         <module>all</module>
+        <module>dubbo-flowcontrol</module>
     </modules>
 
     <dependencyManagement>
