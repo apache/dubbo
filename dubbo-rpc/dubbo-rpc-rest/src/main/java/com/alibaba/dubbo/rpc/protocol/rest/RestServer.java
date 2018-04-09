@@ -18,16 +18,37 @@ package com.alibaba.dubbo.rpc.protocol.rest;
 
 import com.alibaba.dubbo.common.URL;
 
+/**
+ * Rest Server 接口
+ */
 public interface RestServer {
 
+    /**
+     * 启动服务器
+     *
+     * @param url URL 对象
+     */
     void start(URL url);
 
     /**
-     * @param resourceDef it could be either resource interface or resource impl
+     * 停止服务器
+     */
+    void stop();
+
+    /**
+     * 部署服务
+     *
+     * @param resourceDef 服务类
+     * @param resourceInstance 服务对象
+     * @param contextPath ContextPath
      */
     void deploy(Class resourceDef, Object resourceInstance, String contextPath);
 
+    /**
+     * 取消服务
+     *
+     * @param resourceDef 服务类
+     */
     void undeploy(Class resourceDef);
 
-    void stop();
 }

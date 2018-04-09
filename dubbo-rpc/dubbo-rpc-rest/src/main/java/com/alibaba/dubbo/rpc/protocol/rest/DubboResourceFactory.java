@@ -24,10 +24,17 @@ import org.jboss.resteasy.spi.ResteasyProviderFactory;
 /**
  * We don't support propertyInjector here since the resource impl should be singleton in dubbo
  *
+ * Dubbo 资源工厂
  */
 public class DubboResourceFactory implements ResourceFactory {
 
+    /**
+     * Service 对象
+     */
     private Object resourceInstance;
+    /**
+     * `@Path` 注解的服务类
+     */
     private Class scannableClass;
 //    private PropertyInjector propertyInjector;
 //    private String context = null;
@@ -41,23 +48,28 @@ public class DubboResourceFactory implements ResourceFactory {
 //        return propertyInjector;
 //    }
 
+    @Override
     public Object createResource(HttpRequest request, HttpResponse response,
                                  ResteasyProviderFactory factory) {
         return resourceInstance;
     }
 
+    @Override
     public Class<?> getScannableClass() {
         return scannableClass;
     }
 
+    @Override
     public void registered(ResteasyProviderFactory factory) {
 //        this.propertyInjector = factory.getInjectorFactory().createPropertyInjector(getScannableClass(), factory);
     }
 
+    @Override
     public void requestFinished(HttpRequest request, HttpResponse response,
                                 Object resource) {
     }
 
+    @Override
     public void unregistered() {
     }
 
