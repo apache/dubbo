@@ -1,21 +1,5 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+package com.alibaba.dubbo.common.threadpool.support.eager;
 
-package com.alibaba.dubbo.common.threadpool.support.enhanced;
 
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
@@ -28,13 +12,12 @@ import org.junit.Test;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
-
-public class EnhancedThreadPoolTest {
+public class EagerThreadPoolExecutorTest {
 
     private static final URL URL = new URL("dubbo", "localhost", 8080);
 
     /**
-     * it print like this:
+     * It print like this:
      * thread number in current pool：1,  task number in task queue：0 executor size: 1
      * thread number in current pool：2,  task number in task queue：0 executor size: 2
      * thread number in current pool：3,  task number in task queue：0 executor size: 3
@@ -51,29 +34,40 @@ public class EnhancedThreadPoolTest {
      * thread number in current pool：10,  task number in task queue：1 executor size: 10
      * thread number in current pool：10,  task number in task queue：0 executor size: 10
      * <p>
-     * we can see , when the core threads are in busy , the thread pool create thread (but thread nums always less than max) instead of put task into queue.
+     * We can see , when the core threads are in busy,
+     * the thread pool create thread (but thread nums always less than max) instead of put task into queue.
      */
     @Test
-    public void testEnhancedThreadPool() throws Exception {
-        String name = "enhanced-tf";
+    public void testEagerThreadPool() throws Exception {
+        String name = "eager-tf";
         int queues = 5;
         int cores = 5;
         int threads = 10;
-        //alive 1 second
+        // alive 1 second
         long alive = 1000;
 
-        //init queue and enhanced executor
-        EnhancedTaskQueue<Runnable> enhancedTaskQueue = new EnhancedTaskQueue<Runnable>(queues);
-        final EnhancedThreadPoolExecutor executor = new EnhancedThreadPoolExecutor(cores, threads, alive, TimeUnit.MILLISECONDS, enhancedTaskQueue,
-                new NamedThreadFactory(name, true), new AbortPolicyWithReport(name, URL));
-        enhancedTaskQueue.setExecutor(executor);
+        //init queue and executor
+        TaskQueue<Runnable> taskQueue = new TaskQueue<Runnable>(queues);
+        final EagerThreadPoolExecutor executor = new EagerThreadPoolExecutor(cores,
+                threads,
+                alive,
+                TimeUnit.MILLISECONDS,
+                taskQueue,
+                new NamedThreadFactory(name, true),
+                new AbortPolicyWithReport(name, URL));
+        taskQueue.setExecutor(executor);
 
         for (int i = 0; i < 15; i++) {
             Thread.sleep(50);
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    System.out.println("thread number in current pool：" + executor.getPoolSize() + ",  task number in task queue：" + executor.getQueue().size() + " executor size: " + executor.getPoolSize());
+                    System.out.println("thread number in current pool："
+                            + executor.getPoolSize()
+                            + ",  task number in task queue："
+                            + executor.getQueue().size()
+                            + " executor size: "
+                            + executor.getPoolSize());
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
@@ -83,13 +77,17 @@ public class EnhancedThreadPoolTest {
             });
         }
         Thread.sleep(5000);
-        //cores theads are all alive
+        // cores theads are all alive.
         Assert.assertTrue("more than cores threads alive!", executor.getPoolSize() == cores);
     }
 
     @Test
     public void testSPI() {
-        ExecutorService executorService = (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class).getExtension("enhanced").getExecutor(URL);
-        Assert.assertTrue("test spi fail!", executorService.getClass().getSimpleName().equals("EnhancedThreadPoolExecutor"));
+        ExecutorService executorService = (ExecutorService) ExtensionLoader
+                .getExtensionLoader(ThreadPool.class)
+                .getExtension("eager")
+                .getExecutor(URL);
+        Assert.assertTrue("test spi fail!",
+                executorService.getClass().getSimpleName().equals("EagerThreadPoolExecutor"));
     }
 }

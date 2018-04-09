@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.alibaba.dubbo.common.threadpool.support.enhanced;
+package com.alibaba.dubbo.common.threadpool.support.eager;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
@@ -27,10 +27,11 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
 /**
- * enhanced thread pool.
- * When the core threads are all in busy , create new thread instead of putting task into blocking queue .
+ * EagerThreadPool
+ * When the core threads are all in busy,
+ * create new thread instead of putting task into blocking queue.
  */
-public class EnhancedThreadPool implements ThreadPool {
+public class EagerThreadPool implements ThreadPool {
 
     @Override
     public Executor getExecutor(URL url) {
@@ -40,11 +41,16 @@ public class EnhancedThreadPool implements ThreadPool {
         int queues = url.getParameter(Constants.QUEUES_KEY, Constants.DEFAULT_QUEUES);
         int alive = url.getParameter(Constants.ALIVE_KEY, Constants.DEFAULT_ALIVE);
 
-        //init queue and enhanced executor
-        EnhancedTaskQueue<Runnable> enhancedTaskQueue = new EnhancedTaskQueue<Runnable>(queues <= 0 ? 1 : queues);
-        EnhancedThreadPoolExecutor executor = new EnhancedThreadPoolExecutor(cores, threads, alive, TimeUnit.MILLISECONDS, enhancedTaskQueue,
-                new NamedThreadFactory(name, true), new AbortPolicyWithReport(name, url));
-        enhancedTaskQueue.setExecutor(executor);
+        // init queue and executor
+        TaskQueue<Runnable> taskQueue = new TaskQueue<Runnable>(queues <= 0 ? 1 : queues);
+        EagerThreadPoolExecutor executor = new EagerThreadPoolExecutor(cores,
+                threads,
+                alive,
+                TimeUnit.MILLISECONDS,
+                taskQueue,
+                new NamedThreadFactory(name, true),
+                new AbortPolicyWithReport(name, url));
+        taskQueue.setExecutor(executor);
         return executor;
     }
 }

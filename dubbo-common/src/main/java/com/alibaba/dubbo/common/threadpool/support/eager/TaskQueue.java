@@ -15,35 +15,40 @@
  * limitations under the License.
  */
 
-package com.alibaba.dubbo.common.threadpool.support.enhanced;
+package com.alibaba.dubbo.common.threadpool.support.eager;
 
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /**
- * enhanced task queue in the enhanced thread pool
+ * TaskQueue in the EagerThreadPoolExecutor
+ * It offer a task if the executor's submittedTaskCount less than currentPoolThreadSize
+ * or the currentPoolThreadSize more than executor's maximumPoolSize.
+ * That can make the executor create new worker
+ * when the task num is bigger than corePoolSize but less than maximumPoolSize.
  */
-public class EnhancedTaskQueue<R extends Runnable> extends LinkedBlockingQueue<Runnable> {
+public class TaskQueue<R extends Runnable> extends LinkedBlockingQueue<Runnable> {
 
     private static final long serialVersionUID = -2635853580887179627L;
 
-    private EnhancedThreadPoolExecutor executor;
+    private EagerThreadPoolExecutor executor;
 
-    public EnhancedTaskQueue(int capacity) {
+    public TaskQueue(int capacity) {
         super(capacity);
     }
 
-    public void setExecutor(EnhancedThreadPoolExecutor exec) {
+    public void setExecutor(EagerThreadPoolExecutor exec) {
         executor = exec;
     }
 
     @Override
     public boolean offer(Runnable runnable) {
         if (executor == null) {
-            throw new RejectedExecutionException("enhanced queue does not have executor !");
+            throw new RejectedExecutionException("The task queue does not have executor!");
         }
         int currentPoolThreadSize = executor.getPoolSize();
-        //have free worker. put task into queue to let the worker deal with task.
+        // have free worker. put task into queue to let the worker deal with task.
         if (executor.getSubmittedTaskCount() < currentPoolThreadSize) {
             return super.offer(runnable);
         }
@@ -53,7 +58,7 @@ public class EnhancedTaskQueue<R extends Runnable> extends LinkedBlockingQueue<R
             return false;
         }
 
-        //currentPoolThreadSize >= max
+        // currentPoolThreadSize >= max
         return super.offer(runnable);
     }
 
@@ -64,10 +69,10 @@ public class EnhancedTaskQueue<R extends Runnable> extends LinkedBlockingQueue<R
      * @return offer success or not
      * @throws RejectedExecutionException if executor is terminated.
      */
-    public boolean retryOffer(Runnable o) {
+    public boolean retryOffer(Runnable o, long timeout, TimeUnit unit) throws InterruptedException {
         if (executor.isShutdown()) {
-            throw new RejectedExecutionException("Executor is shutdown !");
+            throw new RejectedExecutionException("Executor is shutdown!");
         }
-        return super.offer(o);
+        return super.offer(o, timeout, unit);
     }
 }

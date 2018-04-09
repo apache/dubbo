@@ -15,24 +15,27 @@
  * limitations under the License.
  */
 
-package com.alibaba.dubbo.common.threadpool.support.enhanced;
+package com.alibaba.dubbo.common.threadpool.support.eager;
 
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Enhanced thread pool
+ * EagerThreadPoolExecutor
  */
-public class EnhancedThreadPoolExecutor extends ThreadPoolExecutor {
+public class EagerThreadPoolExecutor extends ThreadPoolExecutor {
 
-    //task count
+    /**
+     * task count
+     */
     private final AtomicInteger submittedTaskCount = new AtomicInteger(0);
 
-    public EnhancedThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, EnhancedTaskQueue<Runnable> workQueue, ThreadFactory threadFactory, RejectedExecutionHandler handler) {
+    public EagerThreadPoolExecutor(int corePoolSize,
+                                   int maximumPoolSize,
+                                   long keepAliveTime,
+                                   TimeUnit unit, TaskQueue<Runnable> workQueue,
+                                   ThreadFactory threadFactory,
+                                   RejectedExecutionHandler handler) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory, handler);
     }
 
@@ -50,16 +53,21 @@ public class EnhancedThreadPoolExecutor extends ThreadPoolExecutor {
 
     @Override
     public void execute(Runnable command) {
-        //do not increment in method beforeExecute!
+        // do not increment in method beforeExecute!
         submittedTaskCount.incrementAndGet();
         try {
             super.execute(command);
         } catch (RejectedExecutionException rx) {
-            //retry to offer the task into queue .
-            final EnhancedTaskQueue queue = (EnhancedTaskQueue<Runnable>) super.getQueue();
-            if (!queue.retryOffer(command)) {
+            // retry to offer the task into queue.
+            final TaskQueue queue = (TaskQueue) super.getQueue();
+            try {
+                if (!queue.retryOffer(command, 0, TimeUnit.MILLISECONDS)) {
+                    submittedTaskCount.decrementAndGet();
+                    throw new RejectedExecutionException("Queue capacity is full.");
+                }
+            } catch (InterruptedException x) {
                 submittedTaskCount.decrementAndGet();
-                throw new RejectedExecutionException();
+                throw new RejectedExecutionException(x);
             }
         }
     }
