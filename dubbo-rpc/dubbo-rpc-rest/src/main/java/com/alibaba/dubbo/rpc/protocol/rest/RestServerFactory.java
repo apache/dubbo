@@ -33,7 +33,7 @@ public class RestServerFactory {
 
     public RestServer createServer(String name) {
         // TODO move names to Constants
-        if ("servlet".equalsIgnoreCase(name) || "jetty".equalsIgnoreCase(name) || "tomcat".equalsIgnoreCase(name)) {
+        if ("servlet".equalsIgnoreCase(name) || "jetty".equalsIgnoreCase(name) || "tomcat".equalsIgnoreCase(name)) { // `dubbo-remoting-http`
             return new DubboHttpServer(httpBinder);
         } else if ("netty".equalsIgnoreCase(name)) {
             return new NettyServer();
@@ -41,4 +41,5 @@ public class RestServerFactory {
             throw new IllegalArgumentException("Unrecognized server name: " + name);
         }
     }
+
 }

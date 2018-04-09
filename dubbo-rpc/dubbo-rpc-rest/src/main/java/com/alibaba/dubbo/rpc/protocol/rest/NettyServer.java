@@ -30,31 +30,38 @@ import java.util.Map;
 /**
  * Netty server can't support @Context injection of servlet objects since it's not a servlet container
  *
+ * 基于 Netty 的 HTTP 服务器实现类
  */
 public class NettyServer extends BaseRestServer {
 
     private final NettyJaxrsServer server = new NettyJaxrsServer();
 
+    @Override
     protected void doStart(URL url) {
+        // 设置 NettyJaxrsServer 的属性
         String bindIp = url.getParameter(Constants.BIND_IP_KEY, url.getHost());
         if (!url.isAnyHost() && NetUtils.isValidLocalHost(bindIp)) {
-            server.setHostname(bindIp);
+            server.setHostname(bindIp); // Hostname
         }
-        server.setPort(url.getParameter(Constants.BIND_PORT_KEY, url.getPort()));
+        server.setPort(url.getParameter(Constants.BIND_PORT_KEY, url.getPort())); // Port
         Map<ChannelOption, Object> channelOption = new HashMap<ChannelOption, Object>();
-        channelOption.put(ChannelOption.SO_KEEPALIVE, url.getParameter(Constants.KEEP_ALIVE_KEY, Constants.DEFAULT_KEEP_ALIVE));
+        channelOption.put(ChannelOption.SO_KEEPALIVE, url.getParameter(Constants.KEEP_ALIVE_KEY, Constants.DEFAULT_KEEP_ALIVE)); // Keep-Alive
         server.setChildChannelOptions(channelOption);
-        server.setExecutorThreadCount(url.getParameter(Constants.THREADS_KEY, Constants.DEFAULT_THREADS));
-        server.setIoWorkerCount(url.getParameter(Constants.IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS));
-        server.setMaxRequestSize(url.getParameter(Constants.PAYLOAD_KEY, Constants.DEFAULT_PAYLOAD));
+        server.setExecutorThreadCount(url.getParameter(Constants.THREADS_KEY, Constants.DEFAULT_THREADS)); // 执行线程数
+        server.setIoWorkerCount(url.getParameter(Constants.IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS)); // IO 线程数
+        server.setMaxRequestSize(url.getParameter(Constants.PAYLOAD_KEY, Constants.DEFAULT_PAYLOAD)); // 请求最大长度
+        // 启动 NettyJaxrsServer
         server.start();
     }
 
+    @Override
     public void stop() {
         server.stop();
     }
 
+    @Override
     protected ResteasyDeployment getDeployment() {
         return server.getDeployment();
     }
+
 }
