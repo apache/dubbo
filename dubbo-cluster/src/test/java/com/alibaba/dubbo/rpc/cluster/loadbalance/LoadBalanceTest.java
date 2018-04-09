@@ -65,7 +65,7 @@ public class LoadBalanceTest {
 
         invocation = EasyMock.createMock(Invocation.class);
         EasyMock.expect(invocation.getMethodName()).andReturn("method1").anyTimes();
-
+        EasyMock.expect(invocation.getArguments()).andReturn(new Object[]{"1","2"}).anyTimes();
         invoker1 = EasyMock.createMock(Invoker.class);
         invoker2 = EasyMock.createMock(Invoker.class);
         invoker3 = EasyMock.createMock(Invoker.class);
