@@ -1,5 +1,3 @@
-
-package com.alibaba.dubbo.governance.web.common.pulltool;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -16,6 +14,7 @@ package com.alibaba.dubbo.governance.web.common.pulltool;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.alibaba.dubbo.governance.web.common.pulltool;
 import org.apache.commons.lang.StringUtils;
 
 import java.text.DateFormat;
