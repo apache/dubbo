@@ -119,6 +119,38 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>checkstyle</id>
+            <activation>
+                <jdk>[1.8,)</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-checkstyle-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>checkstyle-validation</id>
+                                <phase>validate</phase>
+                                <configuration>
+                                    <configLocation>codestyle/checkstyle.xml</configLocation>
+                                    <suppressionsLocation>codestyle/checkstyle-suppressions.xml</suppressionsLocation>
+                                    <headerLocation>codestyle/checkstyle-header.txt</headerLocation>
+                                    <linkXRef>false</linkXRef>
+                                    <encoding>UTF-8</encoding>
+                                    <consoleOutput>true</consoleOutput>
+                                    <failOnViolation>true</failOnViolation>
+                                </configuration>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
     <properties>
         <!-- Common libs -->
@@ -131,7 +163,7 @@
         <httpclient_version>4.5.3</httpclient_version>
         <hessian_lite_version>3.2.1-fixed-2</hessian_lite_version>
         <xstream_version>1.4.1</xstream_version>
-        <fastjson_version>1.2.31</fastjson_version>
+        <fastjson_version>1.2.46</fastjson_version>
         <bsf_version>3.1</bsf_version>
         <sorcerer_version>0.8</sorcerer_version>
         <zookeeper_version>3.4.9</zookeeper_version>
@@ -177,7 +209,8 @@
         <java_source_version>1.6</java_source_version>
         <java_target_version>1.6</java_target_version>
         <file_encoding>UTF-8</file_encoding>
-
+        <maven_checkstyle_version>3.0.0</maven_checkstyle_version>
+        <maven_jacoco_version>0.8.1</maven_jacoco_version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -437,7 +470,7 @@
                 <configuration>
                     <useSystemClassLoader>true</useSystemClassLoader>
                     <forkMode>once</forkMode>
-                    <argLine>${argline}</argLine>
+                    <argLine>${argline} ${jacocoArgLine}</argLine>
                     <systemProperties>
                         <!-- common shared -->
                         <property>
@@ -531,16 +564,39 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>cobertura-maven-plugin</artifactId>
-                <version>2.7</version>
-                <configuration>
-                    <formats>
-                        <format>html</format>
-                        <format>xml</format>
-                    </formats>
-                    <check />
-                </configuration>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>${maven_checkstyle_version}</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.puppycrawl.tools</groupId>
+                        <artifactId>checkstyle</artifactId>
+                        <version>8.9</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${maven_jacoco_version}</version>
+                <executions>
+                    <execution>
+                        <id>jacoco-initialize</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <propertyName>jacocoArgLine</propertyName>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>jacoco-site</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
