@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,23 +16,21 @@
  */
 package com.alibaba.dubbo.remoting.transport.mina;
 
-import org.apache.mina.common.IoHandlerAdapter;
-import org.apache.mina.common.IoSession;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 
+import org.apache.mina.common.IoHandlerAdapter;
+import org.apache.mina.common.IoSession;
+
 /**
  * MinaHandler
- * 
- * @author william.liangf
  */
 public class MinaHandler extends IoHandlerAdapter {
 
     private final URL url;
-    
+
     private final ChannelHandler handler;
-    
+
     public MinaHandler(URL url, ChannelHandler handler) {
         if (url == null) {
             throw new IllegalArgumentException("url == null");
@@ -49,7 +48,7 @@ public class MinaHandler extends IoHandlerAdapter {
         try {
             handler.connected(channel);
         } finally {
-            MinaChannel.removeChannelIfDisconnectd(session);
+            MinaChannel.removeChannelIfDisconnected(session);
         }
     }
 
@@ -59,7 +58,7 @@ public class MinaHandler extends IoHandlerAdapter {
         try {
             handler.disconnected(channel);
         } finally {
-            MinaChannel.removeChannelIfDisconnectd(session);
+            MinaChannel.removeChannelIfDisconnected(session);
         }
     }
 
@@ -69,7 +68,7 @@ public class MinaHandler extends IoHandlerAdapter {
         try {
             handler.received(channel, message);
         } finally {
-            MinaChannel.removeChannelIfDisconnectd(session);
+            MinaChannel.removeChannelIfDisconnected(session);
         }
     }
 
@@ -79,7 +78,7 @@ public class MinaHandler extends IoHandlerAdapter {
         try {
             handler.sent(channel, message);
         } finally {
-            MinaChannel.removeChannelIfDisconnectd(session);
+            MinaChannel.removeChannelIfDisconnected(session);
         }
     }
 
@@ -89,7 +88,7 @@ public class MinaHandler extends IoHandlerAdapter {
         try {
             handler.caught(channel, cause);
         } finally {
-            MinaChannel.removeChannelIfDisconnectd(session);
+            MinaChannel.removeChannelIfDisconnected(session);
         }
     }
 

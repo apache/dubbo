@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,28 +22,27 @@ import java.util.Map;
 
 /**
  * RPC Result.
- * 
+ *
  * @serial Don't change the class name and properties.
- * @author qianlei
  */
 public class RpcResult implements Result, Serializable {
 
-    private static final long        serialVersionUID = -6925924956850004727L;
+    private static final long serialVersionUID = -6925924956850004727L;
 
-    private Object                   result;
+    private Object result;
 
-    private Throwable                exception;
+    private Throwable exception;
 
-    private Map<String, String>      attachments = new HashMap<String, String>();
+    private Map<String, String> attachments = new HashMap<String, String>();
 
-    public RpcResult(){
+    public RpcResult() {
     }
 
-    public RpcResult(Object result){
+    public RpcResult(Object result) {
         this.result = result;
     }
 
-    public RpcResult(Throwable exception){
+    public RpcResult(Throwable exception) {
         this.exception = exception;
     }
 
@@ -54,8 +54,8 @@ public class RpcResult implements Result, Serializable {
     }
 
     /**
-     * @deprecated Replace to getValue()
      * @see com.alibaba.dubbo.rpc.RpcResult#getValue()
+     * @deprecated Replace to getValue()
      */
     @Deprecated
     public Object getResult() {
@@ -63,8 +63,8 @@ public class RpcResult implements Result, Serializable {
     }
 
     /**
+     * @see com.alibaba.dubbo.rpc.RpcResult#setValue(Object)
      * @deprecated Replace to setValue()
-     * @see com.alibaba.dubbo.rpc.RpcResult#setValue()
      */
     @Deprecated
     public void setResult(Object result) {
@@ -95,6 +95,17 @@ public class RpcResult implements Result, Serializable {
         return attachments;
     }
 
+    /**
+     * Append all items from the map into the attachment, if map is empty then nothing happens
+     *
+     * @param map contains all key-value pairs to append
+     */
+    public void setAttachments(Map<String, String> map) {
+        if (map != null && map.size() > 0) {
+            attachments.putAll(map);
+        }
+    }
+
     public String getAttachment(String key) {
         return attachments.get(key);
     }
@@ -105,12 +116,6 @@ public class RpcResult implements Result, Serializable {
             result = defaultValue;
         }
         return result;
-    }
-
-    public void setAttachments(Map<String, String> map) {
-        if (map != null && map.size() > 0) {
-            attachments.putAll(map);
-        }
     }
 
     public void setAttachment(String key, String value) {

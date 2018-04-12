@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,47 +20,40 @@ import java.io.Serializable;
 
 /**
  * RpcMessage.
- * 
- * @author qian.lei
  */
 
-public class RpcMessage implements Serializable
-{
-	private static final long serialVersionUID = -5148079121106659095L;
+public class RpcMessage implements Serializable {
+    private static final long serialVersionUID = -5148079121106659095L;
 
-	private String mClassName;
+    private String mClassName;
 
-	private String mMethodDesc;
+    private String mMethodDesc;
 
-	private Class<?>[] mParameterTypes;
+    private Class<?>[] mParameterTypes;
 
-	private Object[] mArguments;
+    private Object[] mArguments;
 
-	public RpcMessage(String cn, String desc, Class<?>[] parameterTypes,Object[] args)
-	{
-		mClassName = cn;
-		mMethodDesc = desc;
-		mParameterTypes = parameterTypes;
-		mArguments = args;
-	}
+    public RpcMessage(String cn, String desc, Class<?>[] parameterTypes, Object[] args) {
+        mClassName = cn;
+        mMethodDesc = desc;
+        mParameterTypes = parameterTypes;
+        mArguments = args;
+    }
 
-	public String getClassName()
-	{
-		return mClassName;
-	}
+    public String getClassName() {
+        return mClassName;
+    }
 
-	public String getMethodDesc()
-	{
-		return mMethodDesc;
-	}
+    public String getMethodDesc() {
+        return mMethodDesc;
+    }
 
-	public Class<?>[] getParameterTypes() {
-		return mParameterTypes;
-	}
+    public Class<?>[] getParameterTypes() {
+        return mParameterTypes;
+    }
 
-	public Object[] getArguments()
-	{
-		return mArguments;
-	}
+    public Object[] getArguments() {
+        return mArguments;
+    }
 
 }
