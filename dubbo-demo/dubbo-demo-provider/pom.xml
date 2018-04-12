@@ -64,5 +64,9 @@ limitations under the License.
             <groupId>com.alibaba</groupId>
             <artifactId>dubbo-remoting-netty4</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-registry-redis</artifactId>
+        </dependency>
     </dependencies>
 </project>

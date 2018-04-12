@@ -33,6 +33,7 @@ import java.lang.reflect.Type;
 
 /**
  * CompatibleFilter
+ *
  */
 public class CompatibleFilter implements Filter {
 

@@ -31,6 +31,7 @@ import java.util.Set;
 
 /**
  * DeprecatedInvokerFilter
+ *
  */
 @Activate(group = Constants.CONSUMER, value = Constants.DEPRECATED_KEY)
 public class DeprecatedFilter implements Filter {

@@ -75,6 +75,7 @@ public class DubboRegistryFactory extends AbstractRegistryFactory {
         this.cluster = cluster;
     }
 
+    @Override
     public Registry createRegistry(URL url) {
         url = getRegistryURL(url);
         List<URL> urls = new ArrayList<URL>();
@@ -96,4 +97,5 @@ public class DubboRegistryFactory extends AbstractRegistryFactory {
         directory.subscribe(new URL(Constants.CONSUMER_PROTOCOL, NetUtils.getLocalHost(), 0, RegistryService.class.getName(), url.getParameters()));
         return registry;
     }
+
 }

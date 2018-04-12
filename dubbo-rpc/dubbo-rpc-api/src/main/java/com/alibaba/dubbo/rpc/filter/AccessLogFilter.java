@@ -102,6 +102,7 @@ public class AccessLogFilter implements Filter {
         }
     }
 
+    @SuppressWarnings("Duplicates")
     public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {
         try {
             String accesslog = invoker.getUrl().getParameter(Constants.ACCESS_LOG_KEY);

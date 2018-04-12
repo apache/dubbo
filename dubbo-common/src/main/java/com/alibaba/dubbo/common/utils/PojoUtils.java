@@ -322,7 +322,7 @@ public class PojoUtils {
                 }
                 return dest;
             } else {
-                Class<?> ctype = (type != null && type.isArray() ? type.getComponentType() : pojo.getClass().getComponentType());
+                Class<?> ctype = type.isArray() ? type.getComponentType() : pojo.getClass().getComponentType();
                 int len = Array.getLength(pojo);
                 Object dest = Array.newInstance(ctype, len);
                 history.put(pojo, dest);

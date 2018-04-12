@@ -63,6 +63,12 @@ public class ProtocolUtils {
         return buf.toString();
     }
 
+    /**
+     * 是否泛化的配置项
+     *
+     * @param generic 泛化
+     * @return 是否
+     */
     public static boolean isGeneric(String generic) {
         return generic != null
                 && !"".equals(generic)

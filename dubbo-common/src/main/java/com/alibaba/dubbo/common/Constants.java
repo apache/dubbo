@@ -624,10 +624,17 @@ public class Constants {
 
     public static final String EXECUTOR_SERVICE_COMPONENT_KEY = ExecutorService.class.getName();
 
+    /**
+     * 泛化 - 序列化方式 - POJO<=>byte[] ，使用 {@link com.alibaba.dubbo.common.serialize.support.nativejava.NativeJavaSerialization}
+     */
     public static final String GENERIC_SERIALIZATION_NATIVE_JAVA = "nativejava";
-
+    /**
+     * 泛化 - 序列化方式 - POJO<=>Map ，使用 {@link com.alibaba.dubbo.common.utils.PojoUtils}
+     */
     public static final String GENERIC_SERIALIZATION_DEFAULT = "true";
-
+    /**
+     * 泛化 - 序列化方式 - POJO<=>byte[] ，使用 {@link com.alibaba.dubbo.common.serialize.support.nativejava.NativeJavaSerialization}
+     */
     public static final String GENERIC_SERIALIZATION_BEAN = "bean";
 
     public static final String DUBBO_IP_TO_REGISTRY = "DUBBO_IP_TO_REGISTRY";

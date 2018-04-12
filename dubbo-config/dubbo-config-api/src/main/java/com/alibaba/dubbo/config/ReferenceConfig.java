@@ -253,7 +253,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             setGeneric(getConsumer().getGeneric());
         }
         // 泛化接口的实现
-        if (ProtocolUtils.isGeneric(getGeneric())) { // 【TODO 8002】芋艿，不只 true / false ，还有 bean 、 nativejava
+        if (ProtocolUtils.isGeneric(getGeneric())) {
             interfaceClass = GenericService.class;
         // 普通接口的实现
         } else {

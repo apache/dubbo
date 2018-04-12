@@ -104,7 +104,7 @@ public abstract class AbstractRegistry implements Registry {
     /**
      * 订阅 URL 的监听器集合
      *
-     * key：消费者的 URL ，例如消费者的 URL
+     * key：订阅者的 URL ，例如消费者的 URL
      */
     private final ConcurrentMap<URL, Set<NotifyListener>> subscribed = new ConcurrentHashMap<URL, Set<NotifyListener>>();
     /**

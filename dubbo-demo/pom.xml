@@ -37,6 +37,10 @@ limitations under the License.
         <module>dubbo-http-demo-provider</module>
         <module>dubbo-http-demo-consumer</module>
         <module>dubbo-rest-demo-provider</module>
+        <module>dubbo-generic-reference-demo-consumer</module>
+        <module>dubbo-generic-reference-demo-provider</module>
+        <module>dubbo-generic-service-demo-provider</module>
+        <module>dubbo-generic-service-demo-consumer</module>
     </modules>
 
     <dependencyManagement>

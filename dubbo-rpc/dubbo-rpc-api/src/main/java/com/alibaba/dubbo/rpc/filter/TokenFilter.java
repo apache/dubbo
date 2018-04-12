@@ -30,6 +30,7 @@ import java.util.Map;
 
 /**
  * TokenInvokerFilter
+ *
  */
 @Activate(group = Constants.PROVIDER, value = Constants.TOKEN_KEY)
 public class TokenFilter implements Filter {
