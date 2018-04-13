@@ -32,6 +32,8 @@ import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
  * DubboNamespaceHandler
  *
  * @export
+ *
+ * 利用spring的XSD拓展解析xml，自定义xml命名空间——lk
  */
 public class DubboNamespaceHandler extends NamespaceHandlerSupport {
 
