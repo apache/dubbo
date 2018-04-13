@@ -50,8 +50,12 @@ public class RpcInvocation implements Invocation, Serializable {
      * 隐式参数集合
      */
     private Map<String, String> attachments;
-
-    private transient Invoker<?> invoker; // TODO 芋艿，transient
+    /**
+     * Invoker 对象
+     *
+     * 不序列化
+     */
+    private transient Invoker<?> invoker;
 
     public RpcInvocation() {
     }
@@ -120,6 +124,7 @@ public class RpcInvocation implements Invocation, Serializable {
         this.invoker = invoker;
     }
 
+    @Override
     public Invoker<?> getInvoker() {
         return invoker;
     }

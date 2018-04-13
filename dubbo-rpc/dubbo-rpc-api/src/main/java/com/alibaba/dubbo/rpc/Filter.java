@@ -39,7 +39,7 @@ public interface Filter {
      * @param invoker    service
      * @param invocation invocation.
      * @return invoke result.
-     * @throws RpcException
+     * @throws RpcException 发生 RpcException 异常
      * @see com.alibaba.dubbo.rpc.Invoker#invoke(Invocation)
      */
     Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException;
