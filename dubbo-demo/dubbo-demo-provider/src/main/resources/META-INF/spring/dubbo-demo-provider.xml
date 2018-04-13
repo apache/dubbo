@@ -30,9 +30,11 @@
     <!-- use dubbo protocol to export service on port 20880 -->
     <dubbo:protocol name="dubbo" port="20880"/>
 
+    <!--spring接口管理-->
     <!-- service implementation, as same as regular local bean -->
     <bean id="demoService" class="com.alibaba.dubbo.demo.provider.DemoServiceImpl"/>
 
+    <!--暴露服务-->
     <!-- declare the service interface to be exported -->
     <dubbo:service interface="com.alibaba.dubbo.demo.DemoService" ref="demoService"/>
 
