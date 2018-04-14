@@ -84,7 +84,13 @@ public class HeaderExchangeServer implements ExchangeServer {
     private boolean isRunning() {
         Collection<Channel> channels = getChannels();
         for (Channel channel : channels) {
-            if (DefaultFuture.hasFuture(channel)) {
+
+			/**
+			 * 	If there are any client connections,
+			 * 	our server should be running.
+			 */
+
+            if (channel.isConnected()) {
                 return true;
             }
         }
