@@ -34,6 +34,7 @@ import java.lang.reflect.Type;
 /**
  * CompatibleFilter
  *
+ * 兼容性 Filter
  */
 public class CompatibleFilter implements Filter {
 
