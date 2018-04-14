@@ -93,13 +93,12 @@ public class DubboInvokerAvilableTest {
             System.setProperty(Constants.SHUTDOWN_WAIT_KEY, "2000");
             protocol.destroy();
         }finally {
-            System.getProperties().remove(Constants.SHUTDOWN_WAIT_KEY, "2000");
+            System.getProperties().remove(Constants.SHUTDOWN_WAIT_KEY);
         }
 
         long waitTime = System.currentTimeMillis() - start;
 
         Assert.assertTrue(waitTime >= 2000);
-
         Assert.assertEquals(false, invoker.isAvailable());
     }
 

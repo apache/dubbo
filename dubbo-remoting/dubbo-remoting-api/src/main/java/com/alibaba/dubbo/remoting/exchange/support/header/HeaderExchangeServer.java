@@ -86,8 +86,8 @@ public class HeaderExchangeServer implements ExchangeServer {
         for (Channel channel : channels) {
 
 			/**
-			 * 	If there are any client connections,
-			 * 	our server should be running.
+			 *  If there are any client connections,
+			 *  our server should be running.
 			 */
 
             if (channel.isConnected()) {
