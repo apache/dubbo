@@ -137,6 +137,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         return getInterface() + " -> " + (getUrl() == null ? "" : getUrl().toString());
     }
 
+    @Override
     public Result invoke(Invocation inv) throws RpcException {
         if (destroyed.get()) {
             throw new RpcException("Rpc invoker for service " + this + " on consumer " + NetUtils.getLocalHost()
@@ -150,7 +151,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         if (attachment != null && attachment.size() > 0) {
             invocation.addAttachmentsIfAbsent(attachment);
         }
-        // 添加自定义的隐士传参
+        // 添加自定义的隐式参数
         Map<String, String> context = RpcContext.getContext().getAttachments();
         if (context != null) {
             invocation.addAttachmentsIfAbsent(context);

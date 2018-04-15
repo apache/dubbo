@@ -39,6 +39,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 final public class MockInvoker<T> implements Invoker<T> {
+
     private final static ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
     private final static Map<String, Invoker<?>> mocks = new ConcurrentHashMap<String, Invoker<?>>();
     private final static Map<String, Throwable> throwables = new ConcurrentHashMap<String, Throwable>();
@@ -83,6 +84,7 @@ final public class MockInvoker<T> implements Invoker<T> {
         return value;
     }
 
+    @Override
     public Result invoke(Invocation invocation) throws RpcException {
         String mock = getUrl().getParameter(invocation.getMethodName() + "." + Constants.MOCK_KEY);
         if (invocation instanceof RpcInvocation) {
@@ -217,4 +219,5 @@ final public class MockInvoker<T> implements Invoker<T> {
         //FIXME
         return null;
     }
+
 }

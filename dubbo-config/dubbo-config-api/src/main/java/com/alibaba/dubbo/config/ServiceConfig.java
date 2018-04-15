@@ -411,7 +411,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (path == null || path.length() == 0) {
             path = interfaceName;
         }
-        // 暴露
+        // 暴露服务
         doExportUrls();
         // TODO 芋艿，等待 qos
         ProviderModel providerModel = new ProviderModel(getUniqueServiceName(), this, ref);
@@ -568,7 +568,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 map.put("revision", revision); // 修订本
             }
 
-            String[] methods = Wrapper.getWrapper(interfaceClass).getMethodNames(); // 【TODO 8003】Wrapper
+            String[] methods = Wrapper.getWrapper(interfaceClass).getMethodNames(); // 获得方法数组
             if (methods.length == 0) {
                 logger.warn("NO method found in service interface " + interfaceClass.getName());
                 map.put("methods", Constants.ANY_VALUE);
@@ -578,7 +578,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
         // token ，参见《令牌校验》https://dubbo.gitbooks.io/dubbo-user-book/demos/token-authorization.html
         if (!ConfigUtils.isEmpty(token)) {
-            if (ConfigUtils.isDefault(token)) {
+            if (ConfigUtils.isDefault(token)) { // true || default 时，UUID 随机生成
                 map.put("token", UUID.randomUUID().toString());
             } else {
                 map.put("token", token);

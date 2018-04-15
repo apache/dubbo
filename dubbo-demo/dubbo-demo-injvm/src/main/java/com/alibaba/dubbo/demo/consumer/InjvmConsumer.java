@@ -32,7 +32,7 @@ public class InjvmConsumer {
         while (true) {
             try {
                 Thread.sleep(1000);
-                String hello = demoService.sayHello("world"); // call remote method
+                String hello = demoService.say01("RuntimeException"); // call remote method
                 System.out.println(hello); // get result
 
 //                demoService.bye(new Cat().setName("小猫"));

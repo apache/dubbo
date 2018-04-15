@@ -362,7 +362,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 map.put("revision", revision);
             }
 
-            String[] methods = Wrapper.getWrapper(interfaceClass).getMethodNames(); // 【TODO 8003】Wrapper
+            String[] methods = Wrapper.getWrapper(interfaceClass).getMethodNames(); // 获得方法数组
             if (methods.length == 0) {
                 logger.warn("NO method found in service interface " + interfaceClass.getName());
                 map.put("methods", Constants.ANY_VALUE);

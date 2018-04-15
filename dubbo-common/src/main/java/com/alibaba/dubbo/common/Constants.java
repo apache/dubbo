@@ -608,10 +608,19 @@ public class Constants {
 
     public static final String RELIABLE_PROTOCOL = "napoli";
 
+    /**
+     * TPS 限制 - 大小配置项
+     *
+     * TpsLimitFilter
+     */
     public static final String TPS_LIMIT_RATE_KEY = "tps";
-
+    /**
+     * TPS 限制 - 周期配置项
+     */
     public static final String TPS_LIMIT_INTERVAL_KEY = "tps.interval";
-
+    /**
+     * TPS 限制 - 周期默认值
+     */
     public static final long DEFAULT_TPS_LIMIT_INTERVAL = 60 * 1000;
 
     public static final String DECODE_IN_IO_THREAD_KEY = "decode.in.io";

@@ -25,6 +25,7 @@ import com.alibaba.dubbo.rpc.RpcException;
 /**
  * DelegateInvoker
  */
+@Deprecated // add by 芋艿，并未使用
 public abstract class DelegateInvoker<T> implements Invoker<T> {
 
     protected final Invoker<T> invoker;

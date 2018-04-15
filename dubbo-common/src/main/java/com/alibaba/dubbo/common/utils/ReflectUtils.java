@@ -209,17 +209,21 @@ public final class ReflectUtils {
     }
 
     public static String getCodeBase(Class<?> cls) {
-        if (cls == null)
+        if (cls == null) {
             return null;
+        }
         ProtectionDomain domain = cls.getProtectionDomain();
-        if (domain == null)
+        if (domain == null) {
             return null;
+        }
         CodeSource source = domain.getCodeSource();
-        if (source == null)
+        if (source == null) {
             return null;
+        }
         URL location = source.getLocation();
-        if (location == null)
+        if (location == null) {
             return null;
+        }
         return location.getFile();
     }
 

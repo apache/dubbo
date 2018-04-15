@@ -41,11 +41,11 @@ public class Consumer {
 //                System.out.println(hello); // get result
 
 
-                demoService.say01(null);
-                demoService.say01("hahha");
-                demoService.say02();
-                demoService.say03();
-                demoService.say04();
+//                demoService.say01(null);
+                demoService.say01("TestException");
+//                demoService.say02();
+//                demoService.say03();
+//                demoService.say04();
 
                 // 参数回调
                 // https://dubbo.gitbooks.io/dubbo-user-book/demos/callback-parameter.html

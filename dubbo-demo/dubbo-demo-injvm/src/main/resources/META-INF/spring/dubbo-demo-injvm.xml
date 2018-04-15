@@ -30,6 +30,13 @@ limitations under the License.
     </dubbo:reference>
 
     <bean id="demoServiceImpl" class="com.alibaba.dubbo.demo.consumer.DemoServiceImpl"/>
-    <dubbo:service interface="com.alibaba.dubbo.demo.DemoService" ref="demoServiceImpl" protocol="injvm"  />
+
+    <dubbo:service interface="com.alibaba.dubbo.demo.DemoService" ref="demoServiceImpl" protocol="injvm" >
+        <dubbo:parameter key="tps" value="100" />
+    </dubbo:service>
+
+    <dubbo:provider>
+
+    </dubbo:provider>
 
 </beans>

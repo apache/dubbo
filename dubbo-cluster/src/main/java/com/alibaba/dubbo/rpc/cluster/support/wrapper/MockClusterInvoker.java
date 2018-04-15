@@ -94,7 +94,7 @@ public class MockClusterInvoker<T> implements Invoker<T> {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private Result doMockInvoke(Invocation invocation, RpcException e) {
-        Result result = null;
+        Result result;
         Invoker<T> minvoker;
 
         List<Invoker<T>> mockInvokers = selectMockInvoker(invocation);

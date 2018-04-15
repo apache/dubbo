@@ -31,11 +31,14 @@ final public class MockProtocol extends AbstractProtocol {
         return 0;
     }
 
+    @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
         return new MockInvoker<T>(url);
     }
+
 }

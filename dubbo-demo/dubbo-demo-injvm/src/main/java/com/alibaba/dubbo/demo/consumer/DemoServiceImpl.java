@@ -17,6 +17,8 @@
 package com.alibaba.dubbo.demo.consumer;
 
 import com.alibaba.dubbo.demo.DemoService;
+import com.alibaba.dubbo.demo.ParamCallback;
+import com.alibaba.dubbo.demo.TestException;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.fastjson.JSON;
 
@@ -34,6 +36,37 @@ public class DemoServiceImpl implements DemoService {
     public void bye(Object o) {
         System.out.println(JSON.toJSONString(o));
         System.out.println(o.getClass());
+    }
+
+    @Override
+    public void callbackParam(String msg, ParamCallback callback) {
+
+    }
+
+    @Override
+    public String say01(String msg) {
+        if ("RuntimeException".equalsIgnoreCase(msg)) {
+            throw new RuntimeException("123");
+        }
+        if ("TestException".equalsIgnoreCase(msg)) {
+            throw new TestException();
+        }
+        return null;
+    }
+
+    @Override
+    public String[] say02() {
+        return new String[0];
+    }
+
+    @Override
+    public void say03() {
+
+    }
+
+    @Override
+    public Void say04() {
+        return null;
     }
 
 //    public String getTest01() {
