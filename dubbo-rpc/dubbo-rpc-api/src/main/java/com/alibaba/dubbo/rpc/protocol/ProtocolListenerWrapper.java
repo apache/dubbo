@@ -28,7 +28,6 @@ import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.listener.ListenerExporterWrapper;
 import com.alibaba.dubbo.rpc.listener.ListenerInvokerWrapper;
 
-import java.lang.reflect.Method;
 import java.util.Collections;
 
 /**

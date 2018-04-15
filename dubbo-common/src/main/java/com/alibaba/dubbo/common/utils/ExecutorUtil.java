@@ -118,7 +118,7 @@ public class ExecutorUtil {
      */
     public static URL setThreadName(URL url, String defaultName) {
         String name = url.getParameter(Constants.THREAD_NAME_KEY, defaultName);
-        name = new StringBuilder(32).append(name).append("-").append(url.getAddress()).toString();
+        name = name + "-" + url.getAddress();
         url = url.addParameter(Constants.THREAD_NAME_KEY, name);
         return url;
     }
