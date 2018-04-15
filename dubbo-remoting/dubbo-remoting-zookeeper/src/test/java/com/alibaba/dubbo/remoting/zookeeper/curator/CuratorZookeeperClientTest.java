@@ -17,47 +17,39 @@
 package com.alibaba.dubbo.remoting.zookeeper.curator;
 
 import com.alibaba.dubbo.common.URL;
-
+import com.alibaba.dubbo.common.utils.NetUtils;
+import org.apache.curator.test.TestingServer;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-/**
- * @date 2017/10/16
- */
+import static org.hamcrest.core.Is.is;
+
 @Ignore
 public class CuratorZookeeperClientTest {
+    private TestingServer zkServer;
+    private int zkServerPort;
+
+    @Before
+    public void setUp() throws Exception {
+        zkServerPort = NetUtils.getAvailablePort();
+        zkServer = new TestingServer(this.zkServerPort, true);
+    }
 
     @Test
     public void testCheckExists() {
-        CuratorZookeeperClient curatorClient = new CuratorZookeeperClient(URL.valueOf("zookeeper://127.0.0.1:2181/com.alibaba.dubbo.registry.RegistryService"));
+        CuratorZookeeperClient curatorClient = new CuratorZookeeperClient(URL.valueOf("zookeeper://127.0.0.1:" + this.zkServerPort + "/com.alibaba.dubbo.registry.RegistryService"));
         String path = "/dubbo/com.alibaba.dubbo.demo.DemoService/providers";
         curatorClient.create(path, false);
-        Assert.assertTrue(curatorClient.checkExists(path));
-        Assert.assertFalse(curatorClient.checkExists(path + "/noneexits"));
+        Assert.assertThat(curatorClient.checkExists(path), is(true));
+        Assert.assertThat(curatorClient.checkExists(path + "/noneexits"), is(false));
     }
 
-    /**
-     * create checkExists performance test
-     */
-    @Test
-    public void testCreate() {
-        CuratorZookeeperClient curatorClient = new CuratorZookeeperClient(URL.valueOf("zookeeper://127.0.0.1:2181/com.alibaba.dubbo.registry.RegistryService"));
-        String path = "/dubbo/com.alibaba.dubbo.demo.DemoService/providers";
-        curatorClient.create(path, false);
 
-        // Repeated execution of create 100 times
-        long startTime = System.nanoTime();
-        for (int i = 0; i < 100; i++) {
-            curatorClient.create(path, true);
-        }
-        System.out.println("create cost: " + (System.nanoTime() - startTime) / 1000 / 1000);
-
-        //The time of the 100 judgment
-        startTime = System.nanoTime();
-        for (int i = 0; i < 100; i++) {
-            curatorClient.checkExists(path);
-        }
-        System.out.println("judge cost: " + (System.nanoTime() - startTime) / 1000 / 1000);
+    @After
+    public void tearDown() throws Exception {
+        zkServer.stop();
     }
 }

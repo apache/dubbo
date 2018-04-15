@@ -182,11 +182,6 @@ public class NetUtils {
         return localAddress;
     }
 
-    public static String getLogHost() {
-        InetAddress address = getLocalAddress();
-        return address == null ? LOCALHOST : address.getHostAddress();
-    }
-
     private static InetAddress getLocalAddress0() {
         InetAddress localAddress = null;
         try {

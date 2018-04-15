@@ -70,6 +70,9 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     // warm up period
     private Integer warmup;
 
+    // serialization
+    private String serialization;
+
     public String getVersion() {
         return version;
     }
@@ -164,7 +167,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     }
 
     public ProtocolConfig getProtocol() {
-        return protocols == null || protocols.size() == 0 ? null : protocols.get(0);
+        return protocols == null || protocols.isEmpty() ? null : protocols.get(0);
     }
 
     public void setProtocol(ProtocolConfig protocol) {
@@ -226,4 +229,13 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     public void setWarmup(Integer warmup) {
         this.warmup = warmup;
     }
+
+    public String getSerialization() {
+        return serialization;
+    }
+
+    public void setSerialization(String serialization) {
+        this.serialization = serialization;
+    }
+
 }

@@ -99,25 +99,18 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
             try {
                 Result r = future.get(timeout, TimeUnit.MILLISECONDS);
                 if (r.hasException()) {
-                    log.error(new StringBuilder(32).append("Invoke ")
-                                    .append(getGroupDescFromServiceKey(entry.getKey()))
-                                    .append(" failed: ")
-                                    .append(r.getException().getMessage()).toString(),
+                    log.error("Invoke " + getGroupDescFromServiceKey(entry.getKey()) + 
+                                    " failed: " + r.getException().getMessage(), 
                             r.getException());
                 } else {
                     resultList.add(r);
                 }
             } catch (Exception e) {
-                throw new RpcException(new StringBuilder(32)
-                        .append("Failed to invoke service ")
-                        .append(entry.getKey())
-                        .append(": ")
-                        .append(e.getMessage()).toString(),
-                        e);
+                throw new RpcException("Failed to invoke service " + entry.getKey() + ": " + e.getMessage(), e);
             }
         }
 
-        if (resultList.size() == 0) {
+        if (resultList.isEmpty()) {
             return new RpcResult((Object) null);
         } else if (resultList.size() == 1) {
             return resultList.iterator().next();
@@ -133,46 +126,26 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
             try {
                 method = returnType.getMethod(merger, returnType);
             } catch (NoSuchMethodException e) {
-                throw new RpcException(new StringBuilder(32)
-                        .append("Can not merge result because missing method [ ")
-                        .append(merger)
-                        .append(" ] in class [ ")
-                        .append(returnType.getClass().getName())
-                        .append(" ]")
-                        .toString());
+                throw new RpcException("Can not merge result because missing method [ " + merger + " ] in class [ " + 
+                        returnType.getClass().getName() + " ]");
             }
-            if (method != null) {
-                if (!Modifier.isPublic(method.getModifiers())) {
-                    method.setAccessible(true);
-                }
-                result = resultList.remove(0).getValue();
-                try {
-                    if (method.getReturnType() != void.class
-                            && method.getReturnType().isAssignableFrom(result.getClass())) {
-                        for (Result r : resultList) {
-                            result = method.invoke(result, r.getValue());
-                        }
-                    } else {
-                        for (Result r : resultList) {
-                            method.invoke(result, r.getValue());
-                        }
+            if (!Modifier.isPublic(method.getModifiers())) {
+                method.setAccessible(true);
+            }
+            result = resultList.remove(0).getValue();
+            try {
+                if (method.getReturnType() != void.class
+                        && method.getReturnType().isAssignableFrom(result.getClass())) {
+                    for (Result r : resultList) {
+                        result = method.invoke(result, r.getValue());
                     }
-                } catch (Exception e) {
-                    throw new RpcException(
-                            new StringBuilder(32)
-                                    .append("Can not merge result: ")
-                                    .append(e.getMessage()).toString(),
-                            e);
+                } else {
+                    for (Result r : resultList) {
+                        method.invoke(result, r.getValue());
+                    }
                 }
-            } else {
-                throw new RpcException(
-                        new StringBuilder(32)
-                                .append("Can not merge result because missing method [ ")
-                                .append(merger)
-                                .append(" ] in class [ ")
-                                .append(returnType.getClass().getName())
-                                .append(" ]")
-                                .toString());
+            } catch (Exception e) {
+                throw new RpcException("Can not merge result: " + e.getMessage(), e);
             }
         } else {
             Merger resultMerger;
@@ -214,8 +187,7 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
     private String getGroupDescFromServiceKey(String key) {
         int index = key.indexOf("/");
         if (index > 0) {
-            return new StringBuilder(32).append("group [ ")
-                    .append(key.substring(0, index)).append(" ]").toString();
+            return "group [ " + key.substring(0, index) + " ]";
         }
         return key;
     }

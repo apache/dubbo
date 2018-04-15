@@ -1,0 +1,2 @@
+adaptive=com.alibaba.dubbo.common.extensionloader.adaptive.impl.HasAdaptiveExt_ManualAdaptive
+impl1=com.alibaba.dubbo.common.extensionloader.adaptive.impl.HasAdaptiveExtImpl1

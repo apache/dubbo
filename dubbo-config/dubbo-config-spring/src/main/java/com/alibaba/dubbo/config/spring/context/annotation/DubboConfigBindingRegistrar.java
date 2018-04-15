@@ -30,6 +30,8 @@ import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
+import org.springframework.core.env.MapPropertySource;
+import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySources;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.Assert;
@@ -40,6 +42,8 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+
+import java.util.TreeMap;
 
 import static com.alibaba.dubbo.config.spring.util.PropertySourcesUtils.getSubProperties;
 import static com.alibaba.dubbo.config.spring.util.PropertySourcesUtils.normalizePrefix;

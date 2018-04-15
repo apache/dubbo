@@ -40,7 +40,7 @@ public class DefaultTPSLimiter implements TPSLimiter {
                         new StatItem(serviceKey, rate, interval));
                 statItem = stats.get(serviceKey);
             }
-            return statItem.isAllowable(url, invocation);
+            return statItem.isAllowable();
         } else {
             StatItem statItem = stats.get(serviceKey);
             if (statItem != null) {
