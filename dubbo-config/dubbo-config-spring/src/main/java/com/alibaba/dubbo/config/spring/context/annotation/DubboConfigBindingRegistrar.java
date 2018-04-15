@@ -20,8 +20,6 @@ import com.alibaba.dubbo.config.AbstractConfig;
 import com.alibaba.dubbo.config.spring.beans.factory.annotation.DubboConfigBindingBeanPostProcessor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.MutablePropertyValues;
-import org.springframework.beans.PropertyValues;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -32,9 +30,6 @@ import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
-import org.springframework.core.env.MapPropertySource;
-import org.springframework.core.env.MutablePropertySources;
-import org.springframework.core.env.PropertySources;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -44,9 +39,9 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import static com.alibaba.dubbo.config.spring.util.PropertySourcesUtils.getSubProperties;
+import static com.alibaba.dubbo.config.spring.util.PropertySourcesUtils.normalizePrefix;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
 import static org.springframework.beans.factory.support.BeanDefinitionReaderUtils.registerWithGeneratedName;
 
@@ -90,9 +85,7 @@ public class DubboConfigBindingRegistrar implements ImportBeanDefinitionRegistra
                                           boolean multiple,
                                           BeanDefinitionRegistry registry) {
 
-        PropertySources propertySources = environment.getPropertySources();
-
-        Map<String, String> properties = getSubProperties(propertySources, prefix);
+        Map<String, String> properties = getSubProperties(environment.getPropertySources(), prefix);
 
         if (CollectionUtils.isEmpty(properties)) {
             if (log.isDebugEnabled()) {
@@ -102,16 +95,14 @@ public class DubboConfigBindingRegistrar implements ImportBeanDefinitionRegistra
             return;
         }
 
-        Set<String> beanNames = multiple ? resolveMultipleBeanNames(prefix, properties) :
-                Collections.singleton(resolveSingleBeanName(configClass, properties, registry));
+        Set<String> beanNames = multiple ? resolveMultipleBeanNames(properties) :
+                Collections.singleton(resolveSingleBeanName(properties, configClass, registry));
 
         for (String beanName : beanNames) {
 
             registerDubboConfigBean(beanName, configClass, registry);
 
-            MutablePropertyValues propertyValues = resolveBeanPropertyValues(beanName, multiple, properties);
-
-            registerDubboConfigBindingBeanPostProcessor(beanName, propertyValues, registry);
+            registerDubboConfigBindingBeanPostProcessor(prefix, beanName, multiple, registry);
 
         }
 
@@ -133,14 +124,16 @@ public class DubboConfigBindingRegistrar implements ImportBeanDefinitionRegistra
 
     }
 
-    private void registerDubboConfigBindingBeanPostProcessor(String beanName, PropertyValues propertyValues,
+    private void registerDubboConfigBindingBeanPostProcessor(String prefix, String beanName, boolean multiple,
                                                              BeanDefinitionRegistry registry) {
 
         Class<?> processorClass = DubboConfigBindingBeanPostProcessor.class;
 
         BeanDefinitionBuilder builder = rootBeanDefinition(processorClass);
 
-        builder.addConstructorArgValue(beanName).addConstructorArgValue(propertyValues);
+        String actualPrefix = multiple ? normalizePrefix(prefix) + beanName : prefix;
+
+        builder.addConstructorArgValue(actualPrefix).addConstructorArgValue(beanName);
 
         AbstractBeanDefinition beanDefinition = builder.getBeanDefinition();
 
@@ -155,36 +148,6 @@ public class DubboConfigBindingRegistrar implements ImportBeanDefinitionRegistra
 
     }
 
-    private MutablePropertyValues resolveBeanPropertyValues(String beanName, boolean multiple,
-                                                            Map<String, String> properties) {
-
-        MutablePropertyValues propertyValues = new MutablePropertyValues();
-
-        if (multiple) { // For Multiple Beans
-
-            MutablePropertySources propertySources = new MutablePropertySources();
-            propertySources.addFirst(new MapPropertySource(beanName, new TreeMap<String, Object>(properties)));
-
-            Map<String, String> subProperties = getSubProperties(propertySources, beanName);
-
-            propertyValues.addPropertyValues(subProperties);
-
-
-        } else { // For Single Bean
-
-            for (Map.Entry<String, String> entry : properties.entrySet()) {
-                String propertyName = entry.getKey();
-                if (!propertyName.contains(".")) { // ignore property name with "."
-                    propertyValues.addPropertyValue(propertyName, entry.getValue());
-                }
-            }
-
-        }
-
-        return propertyValues;
-
-    }
-
     @Override
     public void setEnvironment(Environment environment) {
 
@@ -194,7 +157,7 @@ public class DubboConfigBindingRegistrar implements ImportBeanDefinitionRegistra
 
     }
 
-    private Set<String> resolveMultipleBeanNames(String prefix, Map<String, String> properties) {
+    private Set<String> resolveMultipleBeanNames(Map<String, String> properties) {
 
         Set<String> beanNames = new LinkedHashSet<String>();
 
@@ -215,7 +178,7 @@ public class DubboConfigBindingRegistrar implements ImportBeanDefinitionRegistra
 
     }
 
-    private String resolveSingleBeanName(Class<? extends AbstractConfig> configClass, Map<String, String> properties,
+    private String resolveSingleBeanName(Map<String, String> properties, Class<? extends AbstractConfig> configClass,
                                          BeanDefinitionRegistry registry) {
 
         String beanName = properties.get("id");
