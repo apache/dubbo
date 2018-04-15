@@ -20,14 +20,36 @@ import java.util.LinkedHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+/**
+ * LRUCache
+ *
+ * 基于最近最少使用原则删除多余缓存，保持最热的数据被缓存。
+ *
+ * @param <K>
+ * @param <V>
+ */
 public class LRUCache<K, V> extends LinkedHashMap<K, V> {
 
     private static final long serialVersionUID = -5167631809472116969L;
 
+    /**
+     * 和 {@link java.util.HashMap#DEFAULT_LOAD_FACTOR} 一致。
+     */
     private static final float DEFAULT_LOAD_FACTOR = 0.75f;
-
+    /**
+     * 默认最大容量
+     */
     private static final int DEFAULT_MAX_CAPACITY = 1000;
+
+    /**
+     * 锁。
+     *
+     * 避免并发读写，导致死锁。参见《疫苗：JAVA HashMap 的死循环》https://coolshell.cn/articles/9606.html
+     */
     private final Lock lock = new ReentrantLock();
+    /**
+     * 最大容量
+     */
     private volatile int maxCapacity;
 
     public LRUCache() {
@@ -35,10 +57,13 @@ public class LRUCache<K, V> extends LinkedHashMap<K, V> {
     }
 
     public LRUCache(int maxCapacity) {
-        super(16, DEFAULT_LOAD_FACTOR, true);
+        super(16, DEFAULT_LOAD_FACTOR, true); // 最后一个参数，按访问顺序(调用get方法)的链表
         this.maxCapacity = maxCapacity;
     }
 
+//  根据链表中元素的顺序可以分为：按插入顺序的链表，和按访问顺序(调用get方法)的链表。
+//  默认是按插入顺序排序，如果指定按访问顺序排序，那么调用get方法后，会将这次访问的元素移至链表尾部，不断访问可以形成按访问顺序排序的链表。
+//  可以重写removeEldestEntry 方法返回 true 值，指定插入元素时移除最老的元素。
     @Override
     protected boolean removeEldestEntry(java.util.Map.Entry<K, V> eldest) {
         return size() > maxCapacity;

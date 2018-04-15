@@ -420,17 +420,27 @@ public final class StringUtils {
         return buf == null ? camelName : buf.toString();
     }
 
+    /**
+     * 将参数数组，拼接成字符串。
+     *
+     * 1. 使用逗号分隔
+     * 2. 使用 JSON 格式化对象
+     *
+     * @param args 参数数组
+     * @return 字符串
+     */
     public static String toArgumentString(Object[] args) {
         StringBuilder buf = new StringBuilder();
         for (Object arg : args) {
             if (buf.length() > 0) {
-                buf.append(Constants.COMMA_SEPARATOR);
+                buf.append(Constants.COMMA_SEPARATOR); // 分隔
             }
+            // 拼接参数
             if (arg == null || ReflectUtils.isPrimitives(arg.getClass())) {
                 buf.append(arg);
             } else {
                 try {
-                    buf.append(JSON.toJSONString(arg));
+                    buf.append(JSON.toJSONString(arg)); // 使用 JSON 格式化对象
                 } catch (Exception e) {
                     logger.warn(e.getMessage(), e);
                     buf.append(arg);
@@ -439,4 +449,5 @@ public final class StringUtils {
         }
         return buf.toString();
     }
+
 }
