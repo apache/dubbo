@@ -22,23 +22,14 @@ import com.alibaba.dubbo.config.spring.context.annotation.DubboConfigBindingRegi
 import com.alibaba.dubbo.config.spring.context.annotation.EnableDubboConfigBinding;
 import com.alibaba.dubbo.config.spring.context.properties.DefaultDubboConfigBinder;
 import com.alibaba.dubbo.config.spring.context.properties.DubboConfigBinder;
-import com.alibaba.dubbo.config.spring.util.BeanFactoryUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.PropertyValues;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.EnvironmentAware;
 import org.springframework.core.env.Environment;
-import org.springframework.validation.DataBinder;
-
-import java.util.Arrays;
 
 /**
  * Dubbo Config Binding {@link BeanPostProcessor}
