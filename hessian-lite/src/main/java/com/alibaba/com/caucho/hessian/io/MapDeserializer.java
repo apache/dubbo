@@ -100,7 +100,6 @@ public class MapDeserializer extends AbstractMapDeserializer {
      *  support generic type of map, fix the type of short serialization <p>
      *  eg: Map<String, Short> serialize & deserialize
      *
-     *  @author jason.shang@hotmail.com
      */
     @Override
     public Object readMap(AbstractHessianInput in, Class<?> expectKeyType, Class<?> expectValueType) throws IOException {

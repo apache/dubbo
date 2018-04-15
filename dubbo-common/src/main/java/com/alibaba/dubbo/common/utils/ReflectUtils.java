@@ -910,6 +910,9 @@ public final class ReflectUtils {
                 while (cls != null && cls != Object.class) {
                     Field[] fields = cls.getDeclaredFields();
                     for (Field field : fields) {
+                        if (field.isSynthetic()) {
+                            continue;
+                        }
                         Object property = getEmptyObject(field.getType(), emptyInstances, level + 1);
                         if (property != null) {
                             try {
