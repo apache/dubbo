@@ -22,10 +22,18 @@ import com.alibaba.dubbo.common.extension.SPI;
 
 /**
  * CacheFactory
+ *
+ * 缓存工厂接口
  */
 @SPI("lru")
 public interface CacheFactory {
 
+    /**
+     * 获得缓存对象
+     *
+     * @param url URL 对象
+     * @return 缓存对象
+     */
     @Adaptive("cache")
     Cache getCache(URL url);
 

@@ -24,24 +24,30 @@ import java.util.Map;
 
 /**
  * ThreadLocalCache
+ *
+ * 当前线程缓存，比如一个页面渲染，用到很多 portal，每个 portal 都要去查用户信息，通过线程缓存，可以减少这种多余访问。
  */
 public class ThreadLocalCache implements Cache {
 
-    private final ThreadLocal<Map<Object, Object>> store;
+    private final ThreadLocal<Map<Object, Object>> store; // 线程变量
 
     public ThreadLocalCache(URL url) {
         this.store = new ThreadLocal<Map<Object, Object>>() {
+
             @Override
             protected Map<Object, Object> initialValue() {
                 return new HashMap<Object, Object>();
             }
+
         };
     }
 
+    @Override
     public void put(Object key, Object value) {
         store.get().put(key, value);
     }
 
+    @Override
     public Object get(Object key) {
         return store.get().get(key);
     }
