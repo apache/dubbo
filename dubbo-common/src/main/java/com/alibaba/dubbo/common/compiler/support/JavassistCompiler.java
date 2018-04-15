@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,13 +15,6 @@
  * limitations under the License.
  */
 package com.alibaba.dubbo.common.compiler.support;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import com.alibaba.dubbo.common.utils.ClassHelper;
 
@@ -31,10 +25,15 @@ import javassist.CtNewConstructor;
 import javassist.CtNewMethod;
 import javassist.LoaderClassPath;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * JavassistCompiler. (SPI, Singleton, ThreadSafe)
- * 
- * @author william.liangf
  */
 public class JavassistCompiler extends AbstractCompiler {
 
@@ -43,7 +42,7 @@ public class JavassistCompiler extends AbstractCompiler {
     private static final Pattern EXTENDS_PATTERN = Pattern.compile("\\s+extends\\s+([\\w\\.]+)[^\\{]*\\{\n");
 
     private static final Pattern IMPLEMENTS_PATTERN = Pattern.compile("\\s+implements\\s+([\\w\\.]+)\\s*\\{\n");
-    
+
     private static final Pattern METHODS_PATTERN = Pattern.compile("\n(private|public|protected)\\s+");
 
     private static final Pattern FIELD_PATTERN = Pattern.compile("[^\n]+=[^\n]+;");
@@ -66,10 +65,10 @@ public class JavassistCompiler extends AbstractCompiler {
             } else {
                 int pi = pkg.lastIndexOf('.');
                 if (pi > 0) {
-	                String pkgName = pkg.substring(0, pi);
-	                pool.importPackage(pkgName);
-	                importPackages.add(pkgName);
-	                fullNames.put(pkg.substring(pi + 1), pkg);
+                    String pkgName = pkg.substring(0, pi);
+                    pool.importPackage(pkgName);
+                    importPackages.add(pkgName);
+                    fullNames.put(pkg.substring(pi + 1), pkg);
                 }
             }
         }

@@ -49,52 +49,43 @@
 package com.alibaba.com.caucho.hessian.io;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
 
 /**
  * Serializing an object for known object types.
  */
 public class ObjectDeserializer extends AbstractDeserializer {
-  private Class _cl;
+    private Class _cl;
 
-  public ObjectDeserializer(Class cl)
-  {
-    _cl = cl;
-  }
+    public ObjectDeserializer(Class cl) {
+        _cl = cl;
+    }
 
-  public Class getType()
-  {
-    return _cl;
-  }
-  
-  public Object readObject(AbstractHessianInput in)
-    throws IOException
-  {
-    return in.readObject();
-  }
-  
-  public Object readObject(AbstractHessianInput in, String []fieldNames)
-    throws IOException
-  {
-    throw new UnsupportedOperationException(String.valueOf(this));
-  }
-  
-  public Object readList(AbstractHessianInput in, int length)
-    throws IOException
-  {
-    throw new UnsupportedOperationException(String.valueOf(this));
-  }
-  
-  public Object readLengthList(AbstractHessianInput in, int length)
-    throws IOException
-  {
-    throw new UnsupportedOperationException(String.valueOf(this));
-  }
+    public Class getType() {
+        return _cl;
+    }
 
-  @Override
-  public String toString()
-  {
-    return getClass().getSimpleName() + "[" + _cl + "]";
-  }
+    public Object readObject(AbstractHessianInput in)
+            throws IOException {
+        return in.readObject();
+    }
+
+    public Object readObject(AbstractHessianInput in, String[] fieldNames)
+            throws IOException {
+        throw new UnsupportedOperationException(String.valueOf(this));
+    }
+
+    public Object readList(AbstractHessianInput in, int length)
+            throws IOException {
+        throw new UnsupportedOperationException(String.valueOf(this));
+    }
+
+    public Object readLengthList(AbstractHessianInput in, int length)
+            throws IOException {
+        throw new UnsupportedOperationException(String.valueOf(this));
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[" + _cl + "]";
+    }
 }
