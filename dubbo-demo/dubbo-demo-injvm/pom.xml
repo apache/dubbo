@@ -59,5 +59,9 @@ limitations under the License.
             <groupId>com.alibaba</groupId>
             <artifactId>dubbo-remoting-netty</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-filter-validation</artifactId>
+        </dependency>
     </dependencies>
 </project>

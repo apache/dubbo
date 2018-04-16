@@ -32,9 +32,23 @@ import java.lang.annotation.Target;
  * It means both Save group and Update group are needed to check when method relatedQuery is invoked.
  * </p>
  */
+/**
+ * 方法分组验证注解
+ * <p>使用场景：当调用某个方法时，需要检查多个分组，可以在接口方法上加上该注解</p><br>
+ * 用法:<pre>   @MethodValidated({Save.class, Update.class})
+ *  void relatedQuery(ValidationParameter parameter);</pre>
+ *  在接口方法上增加注解,表示relatedQuery这个方法需要同时检查Save和Update这两个分组
+ *
+ * @author: zhangyinyue
+ */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface MethodValidated {
+
+    /**
+     * @return 分组集合
+     */
     Class<?>[] value() default {};
+
 }

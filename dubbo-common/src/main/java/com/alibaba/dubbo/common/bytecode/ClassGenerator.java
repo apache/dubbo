@@ -342,7 +342,7 @@ public final class ClassGenerator {
                 }
             }
 //            mCtc.debugWriteFile("/Users/yunai/test/" + mCtc.getSimpleName().replaceAll(".", "/") + ".class");
-            mCtc.debugWriteFile("/Users/yunai/test/" + mCtc.getSimpleName() + ".class");
+//            mCtc.debugWriteFile("/Users/yunai/test/" + mCtc.getSimpleName() + ".class");
             // 生成
             return mCtc.toClass(loader, pd);
         } catch (RuntimeException e) {

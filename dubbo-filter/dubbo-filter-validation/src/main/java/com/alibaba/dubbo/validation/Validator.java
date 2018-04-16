@@ -18,9 +18,19 @@ package com.alibaba.dubbo.validation;
 
 /**
  * Validator
+ *
+ * 验证器接口
  */
 public interface Validator {
 
+    /**
+     * 方法参数验证
+     *
+     * @param methodName 方法名
+     * @param parameterTypes 参数类型数组
+     * @param arguments 参数值数组
+     * @throws Exception 当发生异常时
+     */
     void validate(String methodName, Class<?>[] parameterTypes, Object[] arguments) throws Exception;
 
 }

@@ -19,10 +19,12 @@ package com.alibaba.dubbo.demo.consumer;
 import com.alibaba.dubbo.demo.DemoService;
 import com.alibaba.dubbo.demo.ParamCallback;
 import com.alibaba.dubbo.demo.TestException;
+import com.alibaba.dubbo.demo.entity.User;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.fastjson.JSON;
 
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
 
 public class DemoServiceImpl implements DemoService {
@@ -67,6 +69,36 @@ public class DemoServiceImpl implements DemoService {
     @Override
     public Void say04() {
         return null;
+    }
+
+    @Override
+    public void save(User user) {
+        System.out.println("save");
+    }
+
+    @Override
+    public void update(User user) {
+        System.out.println("update");
+    }
+
+    @Override
+    public void delete(User user, Boolean vip) {
+        System.out.println("delete");
+    }
+
+    @Override
+    public void saves(Collection<User> users) {
+        System.out.println("saves");
+    }
+
+    @Override
+    public void saves(User[] users) {
+        System.out.println("saves[]");
+    }
+
+    @Override
+    public void demo(String name, String password, User users) {
+
     }
 
 //    public String getTest01() {

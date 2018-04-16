@@ -30,21 +30,31 @@ import com.alibaba.dubbo.validation.Validator;
 
 /**
  * ValidationFilter
+ *
+ * 参数验证过滤器实现类
  */
 @Activate(group = {Constants.CONSUMER, Constants.PROVIDER}, value = Constants.VALIDATION_KEY, order = 10000)
 public class ValidationFilter implements Filter {
 
+    /**
+     * Validation$Adaptive 对象
+     *
+     * 通过 Dubbo SPI 机制，调用 {@link #setValidation(Validation)} 方法，进行注入
+     */
     private Validation validation;
 
     public void setValidation(Validation validation) {
         this.validation = validation;
     }
 
+    @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        if (validation != null && !invocation.getMethodName().startsWith("$")
-                && ConfigUtils.isNotEmpty(invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.VALIDATION_KEY))) {
+        if (validation != null && !invocation.getMethodName().startsWith("$") // 非泛化调用和回音调用等方法
+                && ConfigUtils.isNotEmpty(invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.VALIDATION_KEY))) { // 方法开启 Cache 功能
             try {
+                // 获得 Validator 对象
                 Validator validator = validation.getValidator(invoker.getUrl());
+                // 使用 Validator ，验证方法参数。若不合法，抛出异常。
                 if (validator != null) {
                     validator.validate(invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());
                 }
@@ -54,6 +64,7 @@ public class ValidationFilter implements Filter {
                 return new RpcResult(t);
             }
         }
+        // 服务调用
         return invoker.invoke(invocation);
     }
 

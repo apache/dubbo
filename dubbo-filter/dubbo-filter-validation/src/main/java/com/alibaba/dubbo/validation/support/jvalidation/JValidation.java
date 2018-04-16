@@ -22,6 +22,8 @@ import com.alibaba.dubbo.validation.support.AbstractValidation;
 
 /**
  * JValidation
+ *
+ * JValidator 工厂实现类
  */
 public class JValidation extends AbstractValidation {
 

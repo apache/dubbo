@@ -17,7 +17,11 @@
 package com.alibaba.dubbo.demo.consumer;
 
 import com.alibaba.dubbo.demo.DemoService;
+import com.alibaba.dubbo.demo.entity.User;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class InjvmConsumer {
 
@@ -29,20 +33,70 @@ public class InjvmConsumer {
         context.start();
         DemoService demoService = (DemoService) context.getBean("demoService"); // get remote service proxy
 
-        while (true) {
-            try {
-                Thread.sleep(1000);
-                String hello = demoService.say01("RuntimeException"); // call remote method
-                System.out.println(hello); // get result
+//        while (true) {
+//            try {
+//                Thread.sleep(1000);
+//
+//
+//
+//                String hello = demoService.sayHello("RuntimeException"); // call remote method
+//                System.out.println(hello); // get result
+//
+////                demoService.bye(new Cat().setName("小猫"));
+////                demoService.bye(new Dog().setAge(10));
+//
+//            } catch (Throwable throwable) {
+//                throwable.printStackTrace();
+//            }
+//
+//
+//        }
 
-//                demoService.bye(new Cat().setName("小猫"));
-//                demoService.bye(new Dog().setAge(10));
+//        try {
+//            List<User> users = new ArrayList<User>();
+//            users.add(new User());
+//            demoService.saves(users);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
 
-            } catch (Throwable throwable) {
-                throwable.printStackTrace();
-            }
+        try {
+            demoService.demo(null, null, null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            List<User> users = new ArrayList<User>();
+            users.add(new User());
+            demoService.saves(users.toArray(new User[0]));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
 
+        try {
+            User updateUser = new User();
+            demoService.delete(updateUser, null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+//            User saveUser = new User().setUsername("123");
+            User saveUser = new User();
+            demoService.save(saveUser);
+            demoService.save(saveUser);
+            demoService.save(saveUser);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            User updateUser = new User().setUsername("123");
+            demoService.update(updateUser);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
     }
