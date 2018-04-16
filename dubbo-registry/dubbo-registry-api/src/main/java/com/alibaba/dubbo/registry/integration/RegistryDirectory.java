@@ -74,7 +74,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     private final boolean multiGroup;
     private Protocol protocol; // Initialization at the time of injection, the assertion is not null
     private Registry registry; // Initialization at the time of injection, the assertion is not null
-    private volatile boolean forbidden = false;
+    private volatile boolean forbidden = false; //判断是否有提供者，没有的话会在list方法中报错
 
     private volatile URL overrideDirectoryUrl; // Initialization at construction time, assertion not null, and always assign non null value
 
@@ -179,6 +179,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         }
     }
 
+    //notify 被触发的时候进行对urls的处理
     public synchronized void notify(List<URL> urls) {
         List<URL> invokerUrls = new ArrayList<URL>();
         List<URL> routerUrls = new ArrayList<URL>();
@@ -227,18 +228,24 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * 2.If the incoming invoker list is not empty, it means that it is the latest invoker list
      * 3.If the list of incoming invokerUrl is empty, It means that the rule is only a override rule or a route rule, which needs to be re-contrasted to decide whether to re-reference.
      *
+     * invokerURL列表转换为调用程序映射。转换的规则如下:
+     * 1。如果URL转换为调用程序,它不再是re-referenced和直接从缓存中获得,并注意任何参数的变化将re-referenced URL。
+     * 2。如果传入的调用程序列表不是空的,这意味着它是最新的列表调用程序
+     * 3。如果传入invokerUrl列表是空的,这意味着规则只是一个覆盖规则或路由规则,这需要re-contrasted决定是否re-reference。*
+     *
      * @param invokerUrls this parameter can't be null
      */
     // TODO: 2017/8/31 FIXME The thread pool should be used to refresh the address, otherwise the task may be accumulated.
     private void refreshInvoker(List<URL> invokerUrls) {
         if (invokerUrls != null && invokerUrls.size() == 1 && invokerUrls.get(0) != null
                 && Constants.EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
-            this.forbidden = true; // Forbid to access
+            this.forbidden = true; // Forbid to access 禁止访问
             this.methodInvokerMap = null; // Set the method invoker map to null
             destroyAllInvokers(); // Close all invokers
         } else {
-            this.forbidden = false; // Allow to access
+            this.forbidden = false; // Allow to access 允许访问
             Map<String, Invoker<T>> oldUrlInvokerMap = this.urlInvokerMap; // local reference
+            //和cachedInvokerUrls 合并
             if (invokerUrls.isEmpty() && this.cachedInvokerUrls != null) {
                 invokerUrls.addAll(this.cachedInvokerUrls);
             } else {
@@ -248,7 +255,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             if (invokerUrls.isEmpty()) {
                 return;
             }
-            Map<String, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls);// Translate url list to Invoker map
+            Map<String, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls);// Translate url list to Invoker map 将urlList 转换为Invoker
             Map<String, List<Invoker<T>>> newMethodInvokerMap = toMethodInvokers(newUrlInvokerMap); // Change method name to map Invoker Map
             // state change
             // If the calculation is wrong, it is not processed.
@@ -382,7 +389,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                         enabled = url.getParameter(Constants.ENABLED_KEY, true);
                     }
                     if (enabled) {
-                        invoker = new InvokerDelegate<T>(protocol.refer(serviceType, url), url, providerUrl);
+                        invoker = new InvokerDelegate<T>(protocol.refer(serviceType, url), url, providerUrl); //TODO protocol.refer 查看
                     }
                 } catch (Throwable t) {
                     logger.error("Failed to refer invoker for interface:" + serviceType + ",url:(" + url + ")" + t.getMessage(), t);
@@ -400,12 +407,12 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     /**
      * Merge url parameters. the order is: override > -D >Consumer > Provider
-     *
+     * TODO
      * @param providerUrl
      * @return
      */
     private URL mergeUrl(URL providerUrl) {
-        providerUrl = ClusterUtils.mergeUrl(providerUrl, queryMap); // Merge the consumer side parameters
+        providerUrl = ClusterUtils.mergeUrl(providerUrl, queryMap); // Merge the consumer side parameters  对parameters进行修改合并
 
         List<Configurator> localConfigurators = this.configurators; // local reference
         if (localConfigurators != null && !localConfigurators.isEmpty()) {
@@ -438,6 +445,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         return providerUrl;
     }
 
+    //TODO ConditionRouter查看
     private List<Invoker<T>> route(List<Invoker<T>> invokers, String method) {
         Invocation invocation = new RpcInvocation(method, new Class<?>[0], new Object[0]);
         List<Router> routers = getRouters();
@@ -491,6 +499,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 if (methodInvokers == null || methodInvokers.isEmpty()) {
                     methodInvokers = newInvokersList;
                 }
+                //路由
                 newMethodInvokerMap.put(method, route(methodInvokers, method));
             }
         }
@@ -500,7 +509,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             Collections.sort(methodInvokers, InvokerComparator.getComparator());
             newMethodInvokerMap.put(method, Collections.unmodifiableList(methodInvokers));
         }
-        return Collections.unmodifiableMap(newMethodInvokerMap);
+        return Collections.unmodifiableMap(newMethodInvokerMap); //返回一个不可修改的map类！
     }
 
     /**
@@ -565,7 +574,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             }
         }
     }
-
+    //获取可以调用的Invoker列表
     public List<Invoker<T>> doList(Invocation invocation) {
         if (forbidden) {
             // 1. No service provider 2. Service providers are disabled
@@ -574,10 +583,11 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                         + " use dubbo version " + Version.getVersion() + ", please check status of providers(disabled, not registered or in blacklist).");
         }
         List<Invoker<T>> invokers = null;
-        Map<String, List<Invoker<T>>> localMethodInvokerMap = this.methodInvokerMap; // local reference
+        Map<String, List<Invoker<T>>> localMethodInvokerMap = this.methodInvokerMap; // local reference TODO
         if (localMethodInvokerMap != null && localMethodInvokerMap.size() > 0) {
             String methodName = RpcUtils.getMethodName(invocation);
             Object[] args = RpcUtils.getArguments(invocation);
+            //根据 方法和参数 来获取最优的 方法
             if (args != null && args.length > 0 && args[0] != null
                     && (args[0] instanceof String || args[0].getClass().isEnum())) {
                 invokers = localMethodInvokerMap.get(methodName + "." + args[0]); // The routing can be enumerated according to the first parameter

@@ -25,7 +25,8 @@ import java.util.Random;
 
 /**
  * random load balance.
- *
+ * 根据权重  随机分配
+ * 算法简单，值得借鉴
  */
 public class RandomLoadBalance extends AbstractLoadBalance {
 

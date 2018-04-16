@@ -72,11 +72,11 @@ public class LoadBalanceTest {
         invoker4 = EasyMock.createMock(Invoker.class);
         invoker5 = EasyMock.createMock(Invoker.class);
 
-        URL url1 = URL.valueOf("test://127.0.0.1:1/DemoService");
-        URL url2 = URL.valueOf("test://127.0.0.1:2/DemoService");
-        URL url3 = URL.valueOf("test://127.0.0.1:3/DemoService");
-        URL url4 = URL.valueOf("test://127.0.0.1:4/DemoService");
-        URL url5 = URL.valueOf("test://127.0.0.1:5/DemoService");
+        URL url1 = URL.valueOf("test://127.0.0.1:1/DemoService?weight=100");
+        URL url2 = URL.valueOf("test://127.0.0.1:2/DemoService?weight=200");
+        URL url3 = URL.valueOf("test://127.0.0.1:3/DemoService?weight=300");
+        URL url4 = URL.valueOf("test://127.0.0.1:4/DemoService?weight=400");
+        URL url5 = URL.valueOf("test://127.0.0.1:5/DemoService?weight=500");
 
         EasyMock.expect(invoker1.isAvailable()).andReturn(true).anyTimes();
         EasyMock.expect(invoker1.getInterface()).andReturn(LoadBalanceTest.class).anyTimes();
@@ -117,6 +117,10 @@ public class LoadBalanceTest {
         }
     }
 
+    /**
+     * RandomLoadBalance 进行test lkj
+     * 进行1000次轮训
+     */
     @Test
     public void testRandomLoadBalance_select() {
         int runs = 1000;

@@ -30,6 +30,7 @@ import java.util.List;
  * LoadBalance. (SPI, Singleton, ThreadSafe)
  * <p>
  * <a href="http://en.wikipedia.org/wiki/Load_balancing_(computing)">Load-Balancing</a>
+ * 四种均衡负载
  *
  * @see com.alibaba.dubbo.rpc.cluster.Cluster#join(Directory)
  */

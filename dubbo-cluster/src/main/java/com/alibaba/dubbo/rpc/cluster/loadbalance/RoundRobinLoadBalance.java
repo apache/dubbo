@@ -29,7 +29,12 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * Round robin load balance.
- *
+ * <p>
+ * 先求出最大权值和最小的权值
+ * 若是都是一样的，就是直接轮询
+ * 若是不一样，在"权重的范围"内轮训
+ * 比如100，200，300，400，500，先根据顺序轮训，直达第400次数，每个机器运行了100次，剩下0，100，200，300，400
+ * 后来会从剩下的机器里轮训知道mod=0
  */
 public class RoundRobinLoadBalance extends AbstractLoadBalance {
 
@@ -44,7 +49,7 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
         int minWeight = Integer.MAX_VALUE; // The minimum weight
         final LinkedHashMap<Invoker<T>, IntegerWrapper> invokerToWeightMap = new LinkedHashMap<Invoker<T>, IntegerWrapper>();
         int weightSum = 0;
-        for (int i = 0; i < length; i++) {
+        for (int i = 0; i < length; i++) { //获取最大值和最小值
             int weight = getWeight(invokers.get(i), invocation);
             maxWeight = Math.max(maxWeight, weight); // Choose the maximum weight
             minWeight = Math.min(minWeight, weight); // Choose the minimum weight
