@@ -26,7 +26,8 @@ import java.util.List;
 
 /**
  * StaticDirectory
- *
+ * 静态的Directory ，不太常用， 只有在创建的时候，set invokers。
+ * 与RegistryDirectory 相互对应
  */
 public class StaticDirectory<T> extends AbstractDirectory<T> {
 
