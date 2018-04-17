@@ -570,6 +570,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 if (isInvalidLocalHost(hostToBind)) {
                     if (registryURLs != null && !registryURLs.isEmpty()) {
                         for (URL registryURL : registryURLs) {
+                            if (Constants.MULTICAST.equalsIgnoreCase(registryURL.getParameter("registry"))) {
+                                // skip multicast registry since we cannot connect to it via Socket
+                                continue;
+                            }
                             try {
                                 Socket socket = new Socket();
                                 try {
