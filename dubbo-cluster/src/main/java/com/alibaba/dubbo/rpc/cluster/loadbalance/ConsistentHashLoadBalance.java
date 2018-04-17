@@ -51,6 +51,10 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
         return selector.select(invocation);
     }
 
+    /**
+     * hash.arguments:表示使用第几个参数 比如 0，1 argumentIndex[i]=[0,1]
+     *
+     */
     private static final class ConsistentHashSelector<T> {
 
         private final TreeMap<Long, Invoker<T>> virtualInvokers;
@@ -62,7 +66,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
         private final int[] argumentIndex;
 
         ConsistentHashSelector(List<Invoker<T>> invokers, String methodName, int identityHashCode) {
-            this.virtualInvokers = new TreeMap<Long, Invoker<T>>();
+            this.virtualInvokers = new TreeMap<Long, Invoker<T>>(); //虚拟节点
             this.identityHashCode = identityHashCode;
             URL url = invokers.get(0).getUrl();
             this.replicaNumber = url.getMethodParameter(methodName, "hash.nodes", 160);
@@ -72,9 +76,11 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
                 argumentIndex[i] = Integer.parseInt(index[i]);
             }
             for (Invoker<T> invoker : invokers) {
+                //产生虚拟节点每个invoker会产生replicaNumber个虚拟节点
                 String address = invoker.getUrl().getAddress();
                 for (int i = 0; i < replicaNumber / 4; i++) {
                     byte[] digest = md5(address + i);
+                    //分成四部分保存在虚拟节点中
                     for (int h = 0; h < 4; h++) {
                         long m = hash(digest, h);
                         virtualInvokers.put(m, invoker);
@@ -101,7 +107,8 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
 
         private Invoker<T> selectForKey(long hash) {
             Map.Entry<Long, Invoker<T>> entry = virtualInvokers.tailMap(hash, true).firstEntry();
-        	if (entry == null) {
+        	//变为环形结构
+            if (entry == null) {
         		entry = virtualInvokers.firstEntry();
         	}
         	return entry.getValue();
