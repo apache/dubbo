@@ -33,6 +33,11 @@ import java.lang.reflect.Type;
  */
 public class FastJsonObjectInput implements ObjectInput {
 
+    /**
+     * BufferedReader
+     *
+     * {@link #readLine()}
+     */
     private final BufferedReader reader;
 
     public FastJsonObjectInput(InputStream in) {
@@ -43,6 +48,7 @@ public class FastJsonObjectInput implements ObjectInput {
         this.reader = new BufferedReader(reader);
     }
 
+    @Override
     public boolean readBool() throws IOException {
         try {
             return readObject(boolean.class);
@@ -51,6 +57,7 @@ public class FastJsonObjectInput implements ObjectInput {
         }
     }
 
+    @Override
     public byte readByte() throws IOException {
         try {
             return readObject(byte.class);
@@ -59,6 +66,7 @@ public class FastJsonObjectInput implements ObjectInput {
         }
     }
 
+    @Override
     public short readShort() throws IOException {
         try {
             return readObject(short.class);
@@ -67,6 +75,7 @@ public class FastJsonObjectInput implements ObjectInput {
         }
     }
 
+    @Override
     public int readInt() throws IOException {
         try {
             return readObject(int.class);
@@ -75,6 +84,7 @@ public class FastJsonObjectInput implements ObjectInput {
         }
     }
 
+    @Override
     public long readLong() throws IOException {
         try {
             return readObject(long.class);
@@ -83,6 +93,7 @@ public class FastJsonObjectInput implements ObjectInput {
         }
     }
 
+    @Override
     public float readFloat() throws IOException {
         try {
             return readObject(float.class);
@@ -91,6 +102,7 @@ public class FastJsonObjectInput implements ObjectInput {
         }
     }
 
+    @Override
     public double readDouble() throws IOException {
         try {
             return readObject(double.class);
@@ -99,6 +111,7 @@ public class FastJsonObjectInput implements ObjectInput {
         }
     }
 
+    @Override
     public String readUTF() throws IOException {
         try {
             return readObject(String.class);
@@ -107,15 +120,18 @@ public class FastJsonObjectInput implements ObjectInput {
         }
     }
 
+    @Override
     public byte[] readBytes() throws IOException {
         return readLine().getBytes();
     }
 
+    @Override
     public Object readObject() throws IOException, ClassNotFoundException {
         String json = readLine();
         return JSON.parse(json);
     }
 
+    @Override
     public <T> T readObject(Class<T> cls) throws IOException, ClassNotFoundException {
         String json = readLine();
         return JSON.parseObject(json, cls);
@@ -127,6 +143,13 @@ public class FastJsonObjectInput implements ObjectInput {
         return (T) PojoUtils.realize(value, cls, type);
     }
 
+    /**
+     * 读取一行字符串
+     *
+     * @return 字符串
+     * @throws IOException 当 IO 发生异常
+     * @throws EOFException 当读取到空行
+     */
     private String readLine() throws IOException, EOFException {
         String line = reader.readLine();
         if (line == null || line.trim().length() == 0) throw new EOFException();

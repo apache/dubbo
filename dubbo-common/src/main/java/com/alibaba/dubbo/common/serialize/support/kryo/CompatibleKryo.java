@@ -24,6 +24,9 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.serializers.JavaSerializer;
 
+/**
+ * 兼容空构造方法的 Kryo 实现类
+ */
 public class CompatibleKryo extends Kryo {
 
     private static final Logger logger = LoggerFactory.getLogger(CompatibleKryo.class);
@@ -33,13 +36,15 @@ public class CompatibleKryo extends Kryo {
         if (type == null) {
             throw new IllegalArgumentException("type cannot be null.");
         }
-
+        // 空构造方法时，使用 JavaSerializer ，Java 原生序列化实现
         if (!type.isArray() && !type.isEnum() && !ReflectionUtils.checkZeroArgConstructor(type)) {
             if (logger.isWarnEnabled()) {
                 logger.warn(type + " has no zero-arg constructor and this will affect the serialization performance");
             }
             return new JavaSerializer();
         }
+        // 使用 Kryo 默认序列化实现
         return super.getDefaultSerializer(type);
     }
+
 }

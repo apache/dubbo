@@ -289,6 +289,11 @@ public class Constants {
 
     public static final String KEEP_ALIVE_KEY = "keepalive";
 
+    /**
+     * 序列化优化器，配置项
+     *
+     * {@link com.alibaba.dubbo.common.serialize.support.SerializationOptimizer}
+     */
     public static final String OPTIMIZER_KEY = "optimizer";
 
     public static final String EXCHANGER_KEY = "exchanger";

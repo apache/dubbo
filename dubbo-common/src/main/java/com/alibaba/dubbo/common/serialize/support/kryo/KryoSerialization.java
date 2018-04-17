@@ -28,22 +28,28 @@ import java.io.OutputStream;
 /**
  * TODO for now kryo serialization doesn't deny classes that don't implement the serializable interface
  *
+ * Kryo 序列化实现类
  */
 public class KryoSerialization implements Serialization {
 
+    @Override
     public byte getContentTypeId() {
         return 8;
     }
 
+    @Override
     public String getContentType() {
         return "x-application/kryo";
     }
 
+    @Override
     public ObjectOutput serialize(URL url, OutputStream out) throws IOException {
         return new KryoObjectOutput(out);
     }
 
+    @Override
     public ObjectInput deserialize(URL url, InputStream is) throws IOException {
         return new KryoObjectInput(is);
     }
+
 }

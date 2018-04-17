@@ -19,6 +19,9 @@ package com.alibaba.dubbo.common.serialize.support;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+/**
+ * 序列化优化类的注册表
+ */
 public abstract class SerializableClassRegistry {
 
     private static final Set<Class> registrations = new LinkedHashSet<Class>();
@@ -33,4 +36,5 @@ public abstract class SerializableClassRegistry {
     public static Set<Class> getRegisteredClasses() {
         return registrations;
     }
+
 }

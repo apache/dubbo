@@ -25,6 +25,7 @@ import java.io.OutputStream;
  * Compacted java object output stream.
  */
 public class CompactedObjectOutputStream extends ObjectOutputStream {
+
     public CompactedObjectOutputStream(OutputStream out) throws IOException {
         super(out);
     }
@@ -40,4 +41,5 @@ public class CompactedObjectOutputStream extends ObjectOutputStream {
             writeUTF(desc.getName());
         }
     }
+
 }

@@ -26,23 +26,31 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+/**
+ * 原生 Java 序列化实现类
+ */
 public class NativeJavaSerialization implements Serialization {
 
     public static final String NAME = "nativejava";
 
+    @Override
     public byte getContentTypeId() {
         return 7;
     }
 
+    @Override
     public String getContentType() {
         return "x-application/nativejava";
     }
 
+    @Override
     public ObjectOutput serialize(URL url, OutputStream output) throws IOException {
         return new NativeJavaObjectOutput(output);
     }
 
+    @Override
     public ObjectInput deserialize(URL url, InputStream input) throws IOException {
         return new NativeJavaObjectInput(input);
     }
+
 }

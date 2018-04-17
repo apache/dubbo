@@ -32,6 +32,11 @@ import java.io.Writer;
  */
 public class FastJsonObjectOutput implements ObjectOutput {
 
+    /**
+     * PrintWriter 对象
+     *
+     * {@link }
+     */
     private final PrintWriter writer;
 
     public FastJsonObjectOutput(OutputStream out) {
@@ -42,57 +47,71 @@ public class FastJsonObjectOutput implements ObjectOutput {
         this.writer = new PrintWriter(writer);
     }
 
+    @Override
     public void writeBool(boolean v) throws IOException {
         writeObject(v);
     }
 
+    @Override
     public void writeByte(byte v) throws IOException {
         writeObject(v);
     }
 
+    @Override
     public void writeShort(short v) throws IOException {
         writeObject(v);
     }
 
+    @Override
     public void writeInt(int v) throws IOException {
         writeObject(v);
     }
 
+    @Override
     public void writeLong(long v) throws IOException {
         writeObject(v);
     }
 
+    @Override
     public void writeFloat(float v) throws IOException {
         writeObject(v);
     }
 
+    @Override
     public void writeDouble(double v) throws IOException {
         writeObject(v);
     }
 
+    @Override
     public void writeUTF(String v) throws IOException {
         writeObject(v);
     }
 
+    @Override
     public void writeBytes(byte[] b) throws IOException {
-        writer.println(new String(b));
+        writer.println(new String(b)); // 转成字符串
     }
 
+    @Override
     public void writeBytes(byte[] b, int off, int len) throws IOException {
-        writer.println(new String(b, off, len));
+        writer.println(new String(b, off, len)); // 转成字符串
     }
 
+    @Override
     public void writeObject(Object obj) throws IOException {
         SerializeWriter out = new SerializeWriter();
+        // 序列化，写入对象
         JSONSerializer serializer = new JSONSerializer(out);
-        serializer.config(SerializerFeature.WriteEnumUsingToString, true);
+        serializer.config(SerializerFeature.WriteEnumUsingToString, true); // 枚举转字符串
         serializer.write(obj);
+        // 写到，输出流
         out.writeTo(writer);
         out.close(); // for reuse SerializeWriter buf
-        writer.println();
+        writer.println(); // 换行
         writer.flush();
     }
 
+    @Override
     public void flushBuffer() throws IOException {
         writer.flush();
     }

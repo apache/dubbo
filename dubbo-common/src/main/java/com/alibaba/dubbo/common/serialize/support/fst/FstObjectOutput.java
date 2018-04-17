@@ -17,13 +17,14 @@
 package com.alibaba.dubbo.common.serialize.support.fst;
 
 import com.alibaba.dubbo.common.serialize.ObjectOutput;
-
 import org.nustaq.serialization.FSTObjectOutput;
 
 import java.io.IOException;
 import java.io.OutputStream;
 
-
+/**
+ * FST 对象输出实现类
+ */
 public class FstObjectOutput implements ObjectOutput {
 
     private FSTObjectOutput output;
@@ -32,42 +33,53 @@ public class FstObjectOutput implements ObjectOutput {
         output = FstFactory.getDefaultFactory().getObjectOutput(outputStream);
     }
 
+    @Override
     public void writeBool(boolean v) throws IOException {
         output.writeBoolean(v);
     }
 
+    @Override
     public void writeByte(byte v) throws IOException {
         output.writeByte(v);
     }
 
+    @Override
     public void writeShort(short v) throws IOException {
         output.writeShort(v);
     }
 
+    @Override
     public void writeInt(int v) throws IOException {
         output.writeInt(v);
     }
 
+    @Override
     public void writeLong(long v) throws IOException {
         output.writeLong(v);
     }
 
+    @Override
     public void writeFloat(float v) throws IOException {
         output.writeFloat(v);
     }
 
+    @Override
     public void writeDouble(double v) throws IOException {
         output.writeDouble(v);
     }
 
+    @Override
     public void writeBytes(byte[] v) throws IOException {
+        // 空，写入 -1
         if (v == null) {
             output.writeInt(-1);
+        // 有数组
         } else {
             writeBytes(v, 0, v.length);
         }
     }
 
+    @Override
     public void writeBytes(byte[] v, int off, int len) throws IOException {
         if (v == null) {
             output.writeInt(-1);
@@ -77,16 +89,19 @@ public class FstObjectOutput implements ObjectOutput {
         }
     }
 
-
+    @Override
     public void writeUTF(String v) throws IOException {
         output.writeUTF(v);
     }
 
+    @Override
     public void writeObject(Object v) throws IOException {
         output.writeObject(v);
     }
 
+    @Override
     public void flushBuffer() throws IOException {
         output.flush();
     }
+    
 }

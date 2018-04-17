@@ -25,18 +25,27 @@ import org.nustaq.serialization.FSTObjectOutput;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+/**
+ * Fst 工厂类
+ */
 public class FstFactory {
 
+    /**
+     * 单例
+     */
     private static final FstFactory factory = new FstFactory();
 
+    /**
+     * 配置对象
+     */
     private final FSTConfiguration conf = FSTConfiguration.createDefaultConfiguration();
-
 
     public static FstFactory getDefaultFactory() {
         return factory;
     }
 
     public FstFactory() {
+        // 注册
         for (Class clazz : SerializableClassRegistry.getRegisteredClasses()) {
             conf.registerClass(clazz);
         }
@@ -49,4 +58,5 @@ public class FstFactory {
     public FSTObjectInput getObjectInput(InputStream inputStream) {
         return conf.getObjectInput(inputStream);
     }
+
 }

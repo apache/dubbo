@@ -18,8 +18,16 @@ package com.alibaba.dubbo.common.serialize.support.hessian;
 
 import com.alibaba.com.caucho.hessian.io.SerializerFactory;
 
+/**
+ * Hessian2SerializerFactory
+ *
+ * 实现单例、获得类加载器，两个方法。
+ */
 public class Hessian2SerializerFactory extends SerializerFactory {
 
+    /**
+     * 单例
+     */
     public static final SerializerFactory SERIALIZER_FACTORY = new Hessian2SerializerFactory();
 
     private Hessian2SerializerFactory() {

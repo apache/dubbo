@@ -19,6 +19,7 @@ package com.alibaba.dubbo.common.serialize.support.kryo.utils;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.pool.KryoPool;
 
+@Deprecated // add by 芋艿
 public class PooledKryoFactory extends AbstractKryoFactory {
 
     private KryoPool pool;
@@ -37,4 +38,5 @@ public class PooledKryoFactory extends AbstractKryoFactory {
     public void returnKryo(Kryo kryo) {
         pool.release(kryo);
     }
+
 }

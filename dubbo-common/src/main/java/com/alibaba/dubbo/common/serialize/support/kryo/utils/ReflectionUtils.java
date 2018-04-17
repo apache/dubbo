@@ -16,8 +16,17 @@
  */
 package com.alibaba.dubbo.common.serialize.support.kryo.utils;
 
+/**
+ * Kryo 反射工具类
+ */
 public abstract class ReflectionUtils {
 
+    /**
+     * 判断类是否有空构造方法
+     *
+     * @param clazz 类
+     * @return 是否
+     */
     public static boolean checkZeroArgConstructor(Class clazz) {
         try {
             clazz.getDeclaredConstructor();
@@ -26,4 +35,5 @@ public abstract class ReflectionUtils {
             return false;
         }
     }
+
 }

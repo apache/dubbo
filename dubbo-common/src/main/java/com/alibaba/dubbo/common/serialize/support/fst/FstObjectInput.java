@@ -17,14 +17,15 @@
 package com.alibaba.dubbo.common.serialize.support.fst;
 
 import com.alibaba.dubbo.common.serialize.ObjectInput;
-
 import org.nustaq.serialization.FSTObjectInput;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 
-
+/**
+ * FST 对象输入实现类
+ */
 public class FstObjectInput implements ObjectInput {
 
     private FSTObjectInput input;
@@ -33,63 +34,78 @@ public class FstObjectInput implements ObjectInput {
         input = FstFactory.getDefaultFactory().getObjectInput(inputStream);
     }
 
+    @Override
     public boolean readBool() throws IOException {
-            return input.readBoolean();
+        return input.readBoolean();
     }
 
+    @Override
     public byte readByte() throws IOException {
-            return input.readByte();
+        return input.readByte();
     }
 
+    @Override
     public short readShort() throws IOException {
-            return input.readShort();
+        return input.readShort();
     }
 
+    @Override
     public int readInt() throws IOException {
-            return input.readInt();
+        return input.readInt();
     }
 
+    @Override
     public long readLong() throws IOException {
-            return input.readLong();
+        return input.readLong();
     }
 
+    @Override
     public float readFloat() throws IOException {
-            return input.readFloat();
+        return input.readFloat();
     }
 
+    @Override
     public double readDouble() throws IOException {
-            return input.readDouble();
+        return input.readDouble();
     }
 
+    @Override
     public byte[] readBytes() throws IOException {
-            int len = input.readInt();
-            if (len < 0) {
-                return null;
-            } else if (len == 0) {
-                return new byte[]{};
-            } else {
-                byte[] b = new byte[len];
-                input.readFully(b);
-                return b;
-            }
+        int len = input.readInt();
+        // 数组为空
+        if (len < 0) {
+            return null;
+        // 数组为零
+        } else if (len == 0) {
+            return new byte[]{};
+        // 数组 > 0
+        } else {
+            byte[] b = new byte[len];
+            input.readFully(b);
+            return b;
+        }
     }
 
+    @Override
     public String readUTF() throws IOException {
-            return input.readUTF();
+        return input.readUTF();
     }
 
+    @Override
     public Object readObject() throws IOException, ClassNotFoundException {
-            return input.readObject();
+        return input.readObject();
     }
 
-
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T readObject(Class<T> clazz) throws IOException, ClassNotFoundException {
         return (T) readObject();
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T readObject(Class<T> clazz, Type type) throws IOException, ClassNotFoundException {
         return (T) readObject();
     }
+
 }

@@ -18,6 +18,7 @@ package com.alibaba.dubbo.common.serialize.support.kryo.utils;
 
 import com.esotericsoftware.kryo.Kryo;
 
+@Deprecated // add by 芋艿，并未使用
 public class PrototypeKryoFactory extends AbstractKryoFactory {
 
     @Override
@@ -28,4 +29,5 @@ public class PrototypeKryoFactory extends AbstractKryoFactory {
     public Kryo getKryo() {
         return create();
     }
+
 }

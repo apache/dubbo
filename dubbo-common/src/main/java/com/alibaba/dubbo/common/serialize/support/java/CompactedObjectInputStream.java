@@ -29,6 +29,7 @@ import java.io.StreamCorruptedException;
  * Compacted java object input stream.
  */
 public class CompactedObjectInputStream extends ObjectInputStream {
+
     private ClassLoader mClassLoader;
 
     public CompactedObjectInputStream(InputStream in) throws IOException {
@@ -59,4 +60,5 @@ public class CompactedObjectInputStream extends ObjectInputStream {
     private Class<?> loadClass(String className) throws ClassNotFoundException {
         return mClassLoader.loadClass(className);
     }
+
 }

@@ -18,13 +18,18 @@ package com.alibaba.dubbo.common.serialize.support.kryo.utils;
 
 import com.esotericsoftware.kryo.Kryo;
 
+/**
+ * 基于 ThreadLocal 的 Kryo 工厂实现类
+ */
 public class ThreadLocalKryoFactory extends AbstractKryoFactory {
 
     private final ThreadLocal<Kryo> holder = new ThreadLocal<Kryo>() {
+
         @Override
         protected Kryo initialValue() {
-            return create();
+            return create(); // 创建 Kryo
         }
+
     };
 
     @Override
@@ -32,7 +37,9 @@ public class ThreadLocalKryoFactory extends AbstractKryoFactory {
         // do nothing
     }
 
+    @Override
     public Kryo getKryo() {
         return holder.get();
     }
+
 }

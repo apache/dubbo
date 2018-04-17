@@ -24,6 +24,7 @@ import com.esotericsoftware.kryo.Kryo;
  * @since 2.6.0
  */
 public class KryoUtils {
+
     private static AbstractKryoFactory kryoFactory = new ThreadLocalKryoFactory();
 
     public static Kryo get() {
@@ -41,4 +42,5 @@ public class KryoUtils {
     public static void setRegistrationRequired(boolean registrationRequired) {
         kryoFactory.setRegistrationRequired(registrationRequired);
     }
+
 }

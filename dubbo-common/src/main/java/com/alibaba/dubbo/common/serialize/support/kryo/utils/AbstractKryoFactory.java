@@ -37,61 +37,60 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.UUID;
-import java.util.Vector;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
+/**
+ * Kryo 工厂抽象类
+ */
 public abstract class AbstractKryoFactory implements KryoFactory {
 
+    /**
+     * 需要注册的类的集合
+     */
     private final Set<Class> registrations = new LinkedHashSet<Class>();
 
+    /**
+     * 是否开启注册行为
+     */
     private boolean registrationRequired;
-
+    /**
+     * Kryo 是否已经创建
+     */
     private volatile boolean kryoCreated;
 
     public AbstractKryoFactory() {
-
     }
 
     /**
      * only supposed to be called at startup time
      *
-     *  later may consider adding support for custom serializer, custom id, etc
+     * later may consider adding support for custom serializer, custom id, etc
      */
     public void registerClass(Class clazz) {
-
         if (kryoCreated) {
             throw new IllegalStateException("Can't register class after creating kryo instance");
         }
         registrations.add(clazz);
     }
 
+    @Override
     public Kryo create() {
+        // 标记已创建
         if (!kryoCreated) {
             kryoCreated = true;
         }
 
+        // 创建 CompatibleKryo 对象
         Kryo kryo = new CompatibleKryo();
 
         // TODO
 //        kryo.setReferences(false);
         kryo.setRegistrationRequired(registrationRequired);
 
-        kryo.register(Arrays.asList("").getClass(), new ArraysAsListSerializer());
+        // 注册常用类
+        kryo.register(Collections.singletonList("").getClass(), new ArraysAsListSerializer());
         kryo.register(GregorianCalendar.class, new GregorianCalendarSerializer());
         kryo.register(InvocationHandler.class, new JdkProxySerializer());
         kryo.register(BigDecimal.class, new DefaultSerializers.BigDecimalSerializer());
@@ -103,6 +102,7 @@ public abstract class AbstractKryoFactory implements KryoFactory {
         UnmodifiableCollectionsSerializer.registerSerializers(kryo);
         SynchronizedCollectionsSerializer.registerSerializers(kryo);
 
+        // 注册常用数据结构
         // now just added some very common classes
         // TODO optimization
         kryo.register(HashMap.class);
@@ -129,10 +129,12 @@ public abstract class AbstractKryoFactory implements KryoFactory {
         kryo.register(float[].class);
         kryo.register(double[].class);
 
+        // `registrations` 的注册
         for (Class clazz : registrations) {
             kryo.register(clazz);
         }
 
+        // SerializableClassRegistry 的注册
         for (Class clazz : SerializableClassRegistry.getRegisteredClasses()) {
             kryo.register(clazz);
         }
@@ -144,7 +146,18 @@ public abstract class AbstractKryoFactory implements KryoFactory {
         this.registrationRequired = registrationRequired;
     }
 
+    /**
+     * 返还 Kryo 对象
+     *
+     * @param kryo Kyro
+     */
     public abstract void returnKryo(Kryo kryo);
 
+    /**
+     * 获得 Kryo 对象
+     *
+     * @return Kryo 对象
+     */
     public abstract Kryo getKryo();
+
 }

@@ -25,21 +25,29 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+/**
+ * FST 序列化实现类
+ */
 public class FstSerialization implements Serialization {
 
+    @Override
     public byte getContentTypeId() {
         return 9;
     }
 
+    @Override
     public String getContentType() {
         return "x-application/fst";
     }
 
+    @Override
     public ObjectOutput serialize(URL url, OutputStream out) throws IOException {
         return new FstObjectOutput(out);
     }
 
+    @Override
     public ObjectInput deserialize(URL url, InputStream is) throws IOException {
         return new FstObjectInput(is);
     }
+
 }

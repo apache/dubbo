@@ -26,6 +26,7 @@ import java.io.OutputStream;
  * Java Object output.
  */
 public class JavaObjectOutput extends NativeJavaObjectOutput {
+
     public JavaObjectOutput(OutputStream os) throws IOException {
         super(new ObjectOutputStream(os));
     }
@@ -34,25 +35,29 @@ public class JavaObjectOutput extends NativeJavaObjectOutput {
         super(compact ? new CompactedObjectOutputStream(os) : new ObjectOutputStream(os));
     }
 
+    @Override
     public void writeUTF(String v) throws IOException {
-        if (v == null) {
+        if (v == null) { // 空字符串
             getObjectOutputStream().writeInt(-1);
         } else {
-            getObjectOutputStream().writeInt(v.length());
-            getObjectOutputStream().writeUTF(v);
+            getObjectOutputStream().writeInt(v.length()); // 长度
+            getObjectOutputStream().writeUTF(v); // 字符串
         }
     }
 
+    @Override
     public void writeObject(Object obj) throws IOException {
-        if (obj == null) {
-            getObjectOutputStream().writeByte(0);
+        if (obj == null) { // 空
+            getObjectOutputStream().writeByte(0); // 空
         } else {
-            getObjectOutputStream().writeByte(1);
-            getObjectOutputStream().writeObject(obj);
+            getObjectOutputStream().writeByte(1); // 非空
+            getObjectOutputStream().writeObject(obj); // 对象
         }
     }
 
+    @Override
     public void flushBuffer() throws IOException {
         getObjectOutputStream().flush();
     }
+
 }
