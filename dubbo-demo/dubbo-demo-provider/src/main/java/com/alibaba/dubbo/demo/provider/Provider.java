@@ -16,18 +16,25 @@
  */
 package com.alibaba.dubbo.demo.provider;
 
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import com.alibaba.dubbo.container.Main;
+import com.alibaba.dubbo.container.spring.SpringContainer;
 
 public class Provider {
 
     public static void main(String[] args) throws Exception {
-        //Prevent to get IPV6 address,this way only work in debug mode
-        //But you can pass use -Djava.net.preferIPv4Stack=true,then it work well whether in debug mode or not
-        System.setProperty("java.net.preferIPv4Stack", "true");
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"META-INF/spring/dubbo-demo-provider.xml"});
-        context.start();
 
-        System.in.read(); // press any key to exit
+        // Prevent to get IPV6 address,this way only work in debug mode
+        // But you can pass use -Djava.net.preferIPv4Stack=true,then it work well whether in debug mode or not
+        System.setProperty("java.net.preferIPv4Stack", "true");
+
+        // Enable shutdown gracefully feature
+        System.setProperty(Main.SHUTDOWN_HOOK_KEY, "true");
+
+        // Search provider definition path
+        System.setProperty(SpringContainer.SPRING_CONFIG, "META-INF/spring/dubbo-demo-provider.xml");
+
+        // Export service
+        Main.main(args);
     }
 
 }
