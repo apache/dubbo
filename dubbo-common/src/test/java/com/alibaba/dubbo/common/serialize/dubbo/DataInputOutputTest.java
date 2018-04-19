@@ -51,6 +51,10 @@ public class DataInputOutputTest extends TestCase {
     }
 
     private void writeTest(DataOutput out) throws IOException {
+
+//        out.writeInt(-622);
+//        out.writeLong(-622L);
+
         out.writeShort((short) 'a');
         out.writeShort((short) -1);
         out.writeShort((short) 1234);
@@ -87,6 +91,7 @@ public class DataInputOutputTest extends TestCase {
 
     private void readTest(DataInput in) throws IOException {
         assertEquals(in.readShort(), 'a');
+
         assertEquals(in.readShort(), -1);
         assertEquals(in.readShort(), 1234);
         assertEquals(in.readInt(), 0x22);

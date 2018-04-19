@@ -28,12 +28,22 @@ import java.util.List;
 
 /**
  * Generic Object Input.
+ *
+ * Dubbo 对象输入实现类
  */
 public class GenericObjectInput extends GenericDataInput implements ObjectInput {
+
+    /**
+     * {@link #skipAny()} 空对象
+     */
     private static Object SKIPPED_OBJECT = new Object();
-
+    /**
+     * 类描述匹配器
+     */
     private ClassDescriptorMapper mMapper;
-
+    /**
+     * 循环引用数组
+     */
     private List<Object> mRefs = new ArrayList<Object>();
 
     public GenericObjectInput(InputStream is) {
@@ -54,58 +64,82 @@ public class GenericObjectInput extends GenericDataInput implements ObjectInput 
         mMapper = mapper;
     }
 
+    @Override
     public Object readObject() throws IOException {
         String desc;
+        // 读取字节
         byte b = read0();
-
         switch (b) {
-            case OBJECT_NULL:
+            case OBJECT_NULL: // NULL
                 return null;
-            case OBJECT_DUMMY:
+            case OBJECT_DUMMY: // 空对象
                 return new Object();
-            case OBJECT_DESC: {
+            case OBJECT_DESC: { // 类描述
                 desc = readUTF();
                 break;
             }
-            case OBJECT_DESC_ID: {
+            case OBJECT_DESC_ID: { // 类描述编号
+                // 读取类描述编号
                 int index = readUInt();
+                // 获得类描述
                 desc = mMapper.getDescriptor(index);
-                if (desc == null)
+                if (desc == null) {
                     throw new IOException("Can not find desc id: " + index);
+                }
                 break;
             }
             default:
                 throw new IOException("Flag error, expect OBJECT_NULL|OBJECT_DUMMY|OBJECT_DESC|OBJECT_DESC_ID, get " + b);
         }
         try {
+            // 获得类
             Class<?> c = ReflectUtils.desc2class(desc);
+            // 获得类对应的序列化 Builder
+            // 反序列化成对象返回
             return Builder.register(c).parseFrom(this);
         } catch (ClassNotFoundException e) {
             throw new IOException("Read object failed, class not found. " + StringUtils.toString(e));
         }
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T readObject(Class<T> cls) throws IOException, ClassNotFoundException {
         return (T) readObject();
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T readObject(Class<T> cls, Type type) throws IOException, ClassNotFoundException {
         return (T) readObject();
     }
 
+    /**
+     * 添加循环引用
+     *
+     * @param obj 对象
+     */
     public void addRef(Object obj) {
         mRefs.add(obj);
     }
 
+    /**
+     * 获得循环引用
+     *
+     * @param index 引用编号
+     * @return 对象
+     * @throws IOException 当发生 IO 异常时
+     */
     public Object getRef(int index) throws IOException {
-        if (index < 0 || index >= mRefs.size())
+        if (index < 0 || index >= mRefs.size()) {
             return null;
-
+        }
+        // 获得对象
         Object ret = mRefs.get(index);
-        if (ret == SKIPPED_OBJECT)
+        // 在 skyAny() 设置
+        if (ret == SKIPPED_OBJECT) {
             throw new IOException("Ref skipped-object.");
+        }
         return ret;
     }
 
@@ -274,4 +308,5 @@ public class GenericObjectInput extends GenericDataInput implements ObjectInput 
                 throw new IOException("Flag error, get " + b);
         }
     }
+
 }

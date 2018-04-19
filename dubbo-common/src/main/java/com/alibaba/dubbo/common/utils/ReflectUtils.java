@@ -331,6 +331,8 @@ public final class ReflectUtils {
     }
 
     /**
+     * 获得类描述
+     *
      * get class desc.
      * boolean[].class => "[Z"
      * Object.class => "Ljava/lang/Object;"
@@ -341,12 +343,12 @@ public final class ReflectUtils {
      */
     public static String getDesc(Class<?> c) {
         StringBuilder ret = new StringBuilder();
-
+        // Array
         while (c.isArray()) {
             ret.append('[');
             c = c.getComponentType();
         }
-
+        // 基本类型
         if (c.isPrimitive()) {
             String t = c.getName();
             if ("void".equals(t)) ret.append(JVM_VOID);
@@ -358,6 +360,7 @@ public final class ReflectUtils {
             else if ("int".equals(t)) ret.append(JVM_INT);
             else if ("long".equals(t)) ret.append(JVM_LONG);
             else if ("short".equals(t)) ret.append(JVM_SHORT);
+        // 类
         } else {
             ret.append('L');
             ret.append(c.getName().replace('.', '/'));
@@ -689,6 +692,8 @@ public final class ReflectUtils {
     }
 
     /**
+     * 获得类
+     *
      * desc to class.
      * "[Z" => boolean[].class
      * "[[Ljava/util/Map;" => java.util.Map[][].class
@@ -700,6 +705,7 @@ public final class ReflectUtils {
      */
     private static Class<?> desc2class(ClassLoader cl, String desc) throws ClassNotFoundException {
         switch (desc.charAt(0)) {
+            // 基本类型
             case JVM_VOID:
                 return void.class;
             case JVM_BOOLEAN:
@@ -718,18 +724,20 @@ public final class ReflectUtils {
                 return long.class;
             case JVM_SHORT:
                 return short.class;
+            // 类
             case 'L':
                 desc = desc.substring(1, desc.length() - 1).replace('/', '.'); // "Ljava/lang/Object;" ==> "java.lang.Object"
                 break;
+            // Array
             case '[':
                 desc = desc.replace('/', '.');  // "[[Ljava/lang/Object;" ==> "[[Ljava.lang.Object;"
                 break;
             default:
                 throw new ClassNotFoundException("Class not found: " + desc);
         }
-
-        if (cl == null)
+        if (cl == null) {
             cl = ClassHelper.getClassLoader();
+        }
         Class<?> clazz = DESC_CLASS_CACHE.get(desc);
         if (clazz == null) {
             clazz = Class.forName(desc, true, cl);

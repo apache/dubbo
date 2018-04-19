@@ -16,9 +16,15 @@
  */
 package com.alibaba.dubbo.common.serialize.support.dubbo;
 
+/**
+ * 类描述匹配器接口
+ */
 public interface ClassDescriptorMapper {
+
     /**
      * get Class-Descriptor by index.
+     *
+     * 根据类描述编号，获得类描述
      *
      * @param index index.
      * @return string.
@@ -28,8 +34,11 @@ public interface ClassDescriptorMapper {
     /**
      * get Class-Descriptor index
      *
+     * 根据类描述，获得类描述编号
+     *
      * @param desc Class-Descriptor
      * @return index.
      */
     int getDescriptorIndex(String desc);
+
 }
