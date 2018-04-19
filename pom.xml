@@ -228,7 +228,7 @@
         <profile>
             <id>checkstyle</id>
             <activation>
-                <jdk>[1.8,)</jdk>
+                <jdk>[1.7,)</jdk>
             </activation>
             <build>
                 <plugins>
