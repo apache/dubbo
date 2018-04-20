@@ -633,6 +633,30 @@ public class Constants {
 
     public static final boolean DEFAULT_HESSIAN_OVERLOAD_METHOD = false;
 
+
+
+    public static final String  CIRCUIT_BREAKER                    = "circuit";
+
+    public static final String  DEFAULT_CIRCUIT_BREAKER                    = "dfire";
+
+    public static final String   CIRCUIT_BREAKER_SWITCH   = "circuit.breaker.switch";
+    public static final boolean   CIRCUIT_BREAKER_SWITCH_DEFAULT   = false;
+    public static final String CIRCUIT_BREAKER_REQUEST_VOLUME_THRESHOLD="circuitBreakerRequestVolumeThreshold";
+    public static final int CIRCUIT_BREAKER_REQUEST_VOLUME_THRESHOLD_DEFAULT =20;
+    public static final String CIRCUIT_BREAKER_SLEEP_WINDOWIN_MILLISECONDS ="circuitBreakerSleepWindowInMilliseconds";
+    public static final int CIRCUIT_BREAKER_SLEEP_WINDOWIN_MILLISECONDS_DEFAULT =60000;
+    public static final String CIRCUIT_BREAKER_ERROR_THRESHOLD_PERCENTAGE ="circuitBreakerErrorThresholdPercentage";
+    public static final int CIRCUIT_BREAKER_ERROR_THRESHOLD_PERCENTAGE_DEFAULT =80;
+    /*bucket数量*/
+    public static final String CIRCUIT_BREAKER_ROLLING_STATISTICAL_WINDOWBUCKETS="circuitBreakerRollingStatisticalWindowBuckets";
+    public static final String CIRCUIT_BREAKER_ROLLING_STATISTICAL_WINDOWBUCKETS_DEFAULT="15";
+    public static final String  CRICUIT_BREAKER_OPEN_WEIGHT_KEY                         = "circuitBreakerOpenWeight";
+
+    public static final String  CRICUIT_BREAKER_CLOSE_WEIGHT_KEY                         = "circuitBreakerCloseWeight";
+    public static final int     CB_OPEN_DEFAULT_WEIGHT                     = 1;
+
+    public static final int     CB_CLOSE_DEFAULT_WEIGHT                     = 100;
+
     /*
      * private Constants(){ }
      */

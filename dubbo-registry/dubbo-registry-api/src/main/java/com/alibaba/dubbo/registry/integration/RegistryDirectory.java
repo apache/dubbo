@@ -24,6 +24,7 @@ import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
+import com.alibaba.dubbo.flowcontrol.CircuitBreakerUtils;
 import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.Registry;
 import com.alibaba.dubbo.rpc.Invocation;
@@ -216,6 +217,18 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             for (Configurator configurator : localConfigurators) {
                 this.overrideDirectoryUrl = configurator.configure(overrideDirectoryUrl);
             }
+        }
+
+        URL consumerUrlOverride=getConsumerUrl();
+        // consumerUrl 合并参数   addCircuitBreaker
+        if (localConfigurators != null && localConfigurators.size() > 0) {
+            for (Configurator configurator : localConfigurators) {
+                consumerUrlOverride = configurator.configure(consumerUrlOverride);
+            }
+        }
+
+        if(consumerUrlOverride!=null&&!consumerUrlOverride.equals(getConsumerUrl())){
+            CircuitBreakerUtils.mergeUrl(consumerUrlOverride,this.queryMap);
         }
         // providers
         refreshInvoker(invokerUrls);

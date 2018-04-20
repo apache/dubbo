@@ -1,0 +1,33 @@
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.alibaba</groupId>
+    <artifactId>dubbo-parent</artifactId>
+    <version>2.6.1</version>
+  </parent>
+  <artifactId>dubbo-flowcontrol</artifactId>
+  <name>${project.artifactId}</name>
+  <packaging>pom</packaging>
+  <url>http://maven.apache.org</url>
+  <modules>
+    <module>dubbo-flowcontrol-default</module>
+    <module>dubbo-flowcontrol-api</module>
+  </modules>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.alibaba</groupId>
+      <artifactId>dubbo-common</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.alibaba</groupId>
+      <artifactId>fastjson</artifactId>
+    </dependency>
+  </dependencies>
+</project>
