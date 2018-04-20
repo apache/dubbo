@@ -25,11 +25,21 @@ import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcResult;
+import com.alibaba.dubbo.validation.CustomConstraintViolation;
+import com.alibaba.dubbo.validation.CustomConstraintViolationException;
 import com.alibaba.dubbo.validation.Validation;
 import com.alibaba.dubbo.validation.Validator;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * ValidationFilter
+ * Use custom constraint violation exception to wrap the message and property path
+ *
+ * @author stefli
  */
 @Activate(group = {Constants.CONSUMER, Constants.PROVIDER}, value = Constants.VALIDATION_KEY, order = 10000)
 public class ValidationFilter implements Filter {
@@ -46,14 +56,21 @@ public class ValidationFilter implements Filter {
             try {
                 Validator validator = validation.getValidator(invoker.getUrl());
                 if (validator != null) {
-                    validator.validate(invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());
+                    validator.validate(invocation.getMethodName(), invocation.getParameterTypes(),
+                            invocation.getArguments());
                 }
-            } catch (RpcException e) {
-                throw e;
-            } catch (Throwable t) {
-                return new RpcResult(t);
+            } catch (ConstraintViolationException e) {
+                Set<ConstraintViolation<?>> set = new HashSet<ConstraintViolation<?>>();
+                for (ConstraintViolation<?> v : e.getConstraintViolations()) {
+                    set.add(new CustomConstraintViolation<String>(v.getMessage(), v.getPropertyPath()));
+                }
+
+                return new RpcResult(new RpcException(new CustomConstraintViolationException(set)));
+            } catch (Exception e) {
+                return new RpcResult(new RpcException(e));
             }
         }
+
         return invoker.invoke(invocation);
     }
 
