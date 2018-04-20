@@ -63,5 +63,9 @@ limitations under the License.
             <groupId>com.alibaba</groupId>
             <artifactId>dubbo-filter-validation</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-container-spring</artifactId>
+        </dependency>
     </dependencies>
 </project>

@@ -31,40 +31,60 @@ import org.slf4j.LoggerFactory;
 
 /**
  * LogbackContainer. (SPI, Singleton, ThreadSafe)
+ *
+ * Logback 容器实现类
+ *
+ * 自动适配 logback 的配置。
+ *
+ * http://webinglin.github.io/2015/06/04/Logback-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/
  */
 public class LogbackContainer implements Container {
 
+    /**
+     * 日志文件路径配置 KEY
+     */
     public static final String LOGBACK_FILE = "dubbo.logback.file";
 
-    public static final String LOGBACK_LEVEL = "dubbo.logback.level";
-
+    /**
+     * 日志保留天数配置 KEY
+     */
     public static final String LOGBACK_MAX_HISTORY = "dubbo.logback.maxhistory";
 
+    /**
+     * 日志级别配置 KEY
+     */
+    public static final String LOGBACK_LEVEL = "dubbo.logback.level";
+    /**
+     * 默认日志级别 - ERROR
+     */
     public static final String DEFAULT_LOGBACK_LEVEL = "ERROR";
 
+    @Override
     public void start() {
+        // 获得 logback 配置的日志文件路径
         String file = ConfigUtils.getProperty(LOGBACK_FILE);
         if (file != null && file.length() > 0) {
+            // 获得日志级别
             String level = ConfigUtils.getProperty(LOGBACK_LEVEL);
             if (level == null || level.length() == 0) {
                 level = DEFAULT_LOGBACK_LEVEL;
             }
+            // 获得日志保留天数。若为零，则无限天数
             // maxHistory=0 Infinite history
             int maxHistory = StringUtils.parseInteger(ConfigUtils.getProperty(LOGBACK_MAX_HISTORY));
-
+            // 初始化 logback
             doInitializer(file, level, maxHistory);
         }
-    }
-
-    public void stop() {
     }
 
     /**
      * Initializer logback
      *
-     * @param file
-     * @param level
-     * @param maxHistory
+     * 初始化 logback
+     *
+     * @param file 日志文件路径
+     * @param level 日志级别
+     * @param maxHistory 日志保留天数
      */
     private void doInitializer(String file, String level, int maxHistory) {
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
@@ -99,6 +119,10 @@ public class LogbackContainer implements Container {
         rootLogger.addAppender(fileAppender);
         rootLogger.setLevel(Level.toLevel(level));
         rootLogger.setAdditive(false);
+    }
+
+    @Override
+    public void stop() {
     }
 
 }
