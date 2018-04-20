@@ -143,10 +143,13 @@ public class ConfigUtils {
         if (PROPERTIES == null) {
             synchronized (ConfigUtils.class) {
                 if (PROPERTIES == null) {
+                    // 优先，从 JVM 启动参数，获得配置文件的地址
                     String path = System.getProperty(Constants.DUBBO_PROPERTIES_KEY);
                     if (path == null || path.length() == 0) {
+                        // 【找不到】其次，从系统环境变量，获得配置文件的地址
                         path = System.getenv(Constants.DUBBO_PROPERTIES_KEY);
                         if (path == null || path.length() == 0) {
+                            // 【找不到】默认，使用 classpath 下的 `dubbo.properties` 配置文件
                             path = Constants.DEFAULT_DUBBO_PROPERTIES;
                         }
                     }
@@ -175,10 +178,12 @@ public class ConfigUtils {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static String getProperty(String key, String defaultValue) {
+        // 优先，从 JVM 启动参数获得
         String value = System.getProperty(key);
         if (value != null && value.length() > 0) {
             return value;
         }
+        // 【找不到】从配置文件加载对应配置
         Properties properties = getProperties();
         return replaceProperty(properties.getProperty(key, defaultValue), (Map) properties);
     }
