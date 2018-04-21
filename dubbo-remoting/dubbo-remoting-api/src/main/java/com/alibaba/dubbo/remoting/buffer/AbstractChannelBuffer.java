@@ -32,10 +32,12 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer {
 
     private int markedWriterIndex;
 
+    @Override
     public int readerIndex() {
         return readerIndex;
     }
 
+    @Override
     public void readerIndex(int readerIndex) {
         if (readerIndex < 0 || readerIndex > writerIndex) {
             throw new IndexOutOfBoundsException();
@@ -43,10 +45,12 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer {
         this.readerIndex = readerIndex;
     }
 
+    @Override
     public int writerIndex() {
         return writerIndex;
     }
 
+    @Override
     public void writerIndex(int writerIndex) {
         if (writerIndex < readerIndex || writerIndex > capacity()) {
             throw new IndexOutOfBoundsException();
@@ -54,6 +58,7 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer {
         this.writerIndex = writerIndex;
     }
 
+    @Override
     public void setIndex(int readerIndex, int writerIndex) {
         if (readerIndex < 0 || readerIndex > writerIndex || writerIndex > capacity()) {
             throw new IndexOutOfBoundsException();
@@ -62,42 +67,52 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer {
         this.writerIndex = writerIndex;
     }
 
+    @Override
     public void clear() {
         readerIndex = writerIndex = 0;
     }
 
+    @Override
     public boolean readable() {
         return readableBytes() > 0;
     }
 
+    @Override
     public boolean writable() {
         return writableBytes() > 0;
     }
 
+    @Override
     public int readableBytes() {
         return writerIndex - readerIndex;
     }
 
+    @Override
     public int writableBytes() {
         return capacity() - writerIndex;
     }
 
+    @Override
     public void markReaderIndex() {
         markedReaderIndex = readerIndex;
     }
 
+    @Override
     public void resetReaderIndex() {
         readerIndex(markedReaderIndex);
     }
 
+    @Override
     public void markWriterIndex() {
         markedWriterIndex = writerIndex;
     }
 
+    @Override
     public void resetWriterIndex() {
         writerIndex = markedWriterIndex;
     }
 
+    @Override
     public void discardReadBytes() {
         if (readerIndex == 0) {
             return;
@@ -109,20 +124,24 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer {
         readerIndex = 0;
     }
 
+    @Override
     public void ensureWritableBytes(int writableBytes) {
         if (writableBytes > writableBytes()) {
             throw new IndexOutOfBoundsException();
         }
     }
 
+    @Override
     public void getBytes(int index, byte[] dst) {
         getBytes(index, dst, 0, dst.length);
     }
 
+    @Override
     public void getBytes(int index, ChannelBuffer dst) {
         getBytes(index, dst, dst.writableBytes());
     }
 
+    @Override
     public void getBytes(int index, ChannelBuffer dst, int length) {
         if (length > dst.writableBytes()) {
             throw new IndexOutOfBoundsException();
@@ -131,14 +150,17 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer {
         dst.writerIndex(dst.writerIndex() + length);
     }
 
+    @Override
     public void setBytes(int index, byte[] src) {
         setBytes(index, src, 0, src.length);
     }
 
+    @Override
     public void setBytes(int index, ChannelBuffer src) {
         setBytes(index, src, src.readableBytes());
     }
 
+    @Override
     public void setBytes(int index, ChannelBuffer src, int length) {
         if (length > src.readableBytes()) {
             throw new IndexOutOfBoundsException();
@@ -147,6 +169,7 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer {
         src.readerIndex(src.readerIndex() + length);
     }
 
+    @Override
     public byte readByte() {
         if (readerIndex == writerIndex) {
             throw new IndexOutOfBoundsException();
@@ -154,6 +177,7 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer {
         return getByte(readerIndex++);
     }
 
+    @Override
     public ChannelBuffer readBytes(int length) {
         checkReadableBytes(length);
         if (length == 0) {
@@ -165,20 +189,24 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer {
         return buf;
     }
 
+    @Override
     public void readBytes(byte[] dst, int dstIndex, int length) {
         checkReadableBytes(length);
         getBytes(readerIndex, dst, dstIndex, length);
         readerIndex += length;
     }
 
+    @Override
     public void readBytes(byte[] dst) {
         readBytes(dst, 0, dst.length);
     }
 
+    @Override
     public void readBytes(ChannelBuffer dst) {
         readBytes(dst, dst.writableBytes());
     }
 
+    @Override
     public void readBytes(ChannelBuffer dst, int length) {
         if (length > dst.writableBytes()) {
             throw new IndexOutOfBoundsException();
@@ -187,12 +215,14 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer {
         dst.writerIndex(dst.writerIndex() + length);
     }
 
+    @Override
     public void readBytes(ChannelBuffer dst, int dstIndex, int length) {
         checkReadableBytes(length);
         getBytes(readerIndex, dst, dstIndex, length);
         readerIndex += length;
     }
 
+    @Override
     public void readBytes(ByteBuffer dst) {
         int length = dst.remaining();
         checkReadableBytes(length);
@@ -200,12 +230,14 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer {
         readerIndex += length;
     }
 
+    @Override
     public void readBytes(OutputStream out, int length) throws IOException {
         checkReadableBytes(length);
         getBytes(readerIndex, out, length);
         readerIndex += length;
     }
 
+    @Override
     public void skipBytes(int length) {
         int newReaderIndex = readerIndex + length;
         if (newReaderIndex > writerIndex) {
@@ -214,23 +246,28 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer {
         readerIndex = newReaderIndex;
     }
 
+    @Override
     public void writeByte(int value) {
         setByte(writerIndex++, value);
     }
 
+    @Override
     public void writeBytes(byte[] src, int srcIndex, int length) {
         setBytes(writerIndex, src, srcIndex, length);
         writerIndex += length;
     }
 
+    @Override
     public void writeBytes(byte[] src) {
         writeBytes(src, 0, src.length);
     }
 
+    @Override
     public void writeBytes(ChannelBuffer src) {
         writeBytes(src, src.readableBytes());
     }
 
+    @Override
     public void writeBytes(ChannelBuffer src, int length) {
         if (length > src.readableBytes()) {
             throw new IndexOutOfBoundsException();
@@ -239,17 +276,20 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer {
         src.readerIndex(src.readerIndex() + length);
     }
 
+    @Override
     public void writeBytes(ChannelBuffer src, int srcIndex, int length) {
         setBytes(writerIndex, src, srcIndex, length);
         writerIndex += length;
     }
 
+    @Override
     public void writeBytes(ByteBuffer src) {
         int length = src.remaining();
         setBytes(writerIndex, src);
         writerIndex += length;
     }
 
+    @Override
     public int writeBytes(InputStream in, int length) throws IOException {
         int writtenBytes = setBytes(writerIndex, in, length);
         if (writtenBytes > 0) {
@@ -258,10 +298,12 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer {
         return writtenBytes;
     }
 
+    @Override
     public ChannelBuffer copy() {
         return copy(readerIndex, readableBytes());
     }
 
+    @Override
     public ByteBuffer toByteBuffer() {
         return toByteBuffer(readerIndex, readableBytes());
     }
@@ -272,6 +314,7 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer {
                 && ChannelBuffers.equals(this, (ChannelBuffer) o);
     }
 
+    @Override
     public int compareTo(ChannelBuffer that) {
         return ChannelBuffers.compare(this, that);
     }

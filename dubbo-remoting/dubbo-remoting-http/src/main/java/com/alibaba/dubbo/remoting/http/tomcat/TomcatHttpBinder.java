@@ -23,6 +23,7 @@ import com.alibaba.dubbo.remoting.http.HttpServer;
 
 public class TomcatHttpBinder implements HttpBinder {
 
+    @Override
     public HttpServer bind(URL url, HttpHandler handler) {
         return new TomcatHttpServer(url, handler);
     }

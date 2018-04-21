@@ -182,6 +182,7 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
         return properties.containsKey(propertyName);
     }
 
+    @Override
     public Iterator<Map.Entry<Object, Object>> iterator() {
         return properties.entrySet().iterator();
     }

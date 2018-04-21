@@ -41,10 +41,12 @@ public class UnsafeByteArrayInputStream extends InputStream {
         mLimit = Math.min(offset + length, buf.length);
     }
 
+    @Override
     public int read() {
         return (mPosition < mLimit) ? (mData[mPosition++] & 0xff) : -1;
     }
 
+    @Override
     public int read(byte b[], int off, int len) {
         if (b == null)
             throw new NullPointerException();
@@ -61,6 +63,7 @@ public class UnsafeByteArrayInputStream extends InputStream {
         return len;
     }
 
+    @Override
     public long skip(long len) {
         if (mPosition + len > mLimit)
             len = mLimit - mPosition;
@@ -70,22 +73,27 @@ public class UnsafeByteArrayInputStream extends InputStream {
         return len;
     }
 
+    @Override
     public int available() {
         return mLimit - mPosition;
     }
 
+    @Override
     public boolean markSupported() {
         return true;
     }
 
+    @Override
     public void mark(int readAheadLimit) {
         mMark = mPosition;
     }
 
+    @Override
     public void reset() {
         mPosition = mMark;
     }
 
+    @Override
     public void close() throws IOException {
     }
 

@@ -233,6 +233,7 @@ public class JValidator implements Validator {
         return memberValue;
     }
 
+    @Override
     public void validate(String methodName, Class<?>[] parameterTypes, Object[] arguments) throws Exception {
         List<Class<?>> groups = new ArrayList<Class<?>>();
         String methodClassName = clazz.getName() + "$" + toUpperMethoName(methodName);

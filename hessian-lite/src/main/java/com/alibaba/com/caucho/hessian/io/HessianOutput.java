@@ -98,6 +98,7 @@ public class HessianOutput extends AbstractHessianOutput {
     /**
      * Initializes the output
      */
+    @Override
     public void init(OutputStream os) {
         this.os = os;
 
@@ -117,6 +118,7 @@ public class HessianOutput extends AbstractHessianOutput {
     /**
      * Writes a complete method call.
      */
+    @Override
     public void call(String method, Object[] args)
             throws IOException {
         int length = args != null ? args.length : 0;
@@ -141,6 +143,7 @@ public class HessianOutput extends AbstractHessianOutput {
      *
      * @param method the method name to call.
      */
+    @Override
     public void startCall(String method, int length)
             throws IOException {
         os.write('c');
@@ -164,6 +167,7 @@ public class HessianOutput extends AbstractHessianOutput {
      *
      * @param method the method name to call.
      */
+    @Override
     public void startCall()
             throws IOException {
         os.write('c');
@@ -180,6 +184,7 @@ public class HessianOutput extends AbstractHessianOutput {
      *
      * @param method the method name to call.
      */
+    @Override
     public void writeMethod(String method)
             throws IOException {
         os.write('m');
@@ -196,6 +201,7 @@ public class HessianOutput extends AbstractHessianOutput {
      * z
      * </pre></code>
      */
+    @Override
     public void completeCall()
             throws IOException {
         os.write('z');
@@ -210,6 +216,7 @@ public class HessianOutput extends AbstractHessianOutput {
      * r
      * </pre>
      */
+    @Override
     public void startReply()
             throws IOException {
         os.write('r');
@@ -226,6 +233,7 @@ public class HessianOutput extends AbstractHessianOutput {
      * z
      * </pre>
      */
+    @Override
     public void completeReply()
             throws IOException {
         os.write('z');
@@ -238,6 +246,7 @@ public class HessianOutput extends AbstractHessianOutput {
      * H b16 b8 foo <em>value</em>
      * </pre></code>
      */
+    @Override
     public void writeHeader(String name)
             throws IOException {
         int len = name.length();
@@ -270,6 +279,7 @@ public class HessianOutput extends AbstractHessianOutput {
      *
      * @param code the fault code, a three digit
      */
+    @Override
     public void writeFault(String code, String message, Object detail)
             throws IOException {
         os.write('f');
@@ -289,6 +299,7 @@ public class HessianOutput extends AbstractHessianOutput {
     /**
      * Writes any object to the output stream.
      */
+    @Override
     public void writeObject(Object object)
             throws IOException {
         if (object == null) {
@@ -314,6 +325,7 @@ public class HessianOutput extends AbstractHessianOutput {
      * l b32 b24 b16 b8
      * </pre></code>
      */
+    @Override
     public boolean writeListBegin(int length, String type)
             throws IOException {
         os.write('V');
@@ -337,6 +349,7 @@ public class HessianOutput extends AbstractHessianOutput {
     /**
      * Writes the tail of the list to the stream.
      */
+    @Override
     public void writeListEnd()
             throws IOException {
         os.write('z');
@@ -351,6 +364,7 @@ public class HessianOutput extends AbstractHessianOutput {
      * Mt b16 b8 (<key> <value>)z
      * </pre></code>
      */
+    @Override
     public void writeMapBegin(String type)
             throws IOException {
         os.write('M');
@@ -361,6 +375,7 @@ public class HessianOutput extends AbstractHessianOutput {
     /**
      * Writes the tail of the map to the stream.
      */
+    @Override
     public void writeMapEnd()
             throws IOException {
         os.write('z');
@@ -394,6 +409,7 @@ public class HessianOutput extends AbstractHessianOutput {
      *
      * @param value the boolean value to write.
      */
+    @Override
     public void writeBoolean(boolean value)
             throws IOException {
         if (value)
@@ -412,6 +428,7 @@ public class HessianOutput extends AbstractHessianOutput {
      *
      * @param value the integer value to write.
      */
+    @Override
     public void writeInt(int value)
             throws IOException {
         os.write('I');
@@ -431,6 +448,7 @@ public class HessianOutput extends AbstractHessianOutput {
      *
      * @param value the long value to write.
      */
+    @Override
     public void writeLong(long value)
             throws IOException {
         os.write('L');
@@ -454,6 +472,7 @@ public class HessianOutput extends AbstractHessianOutput {
      *
      * @param value the double value to write.
      */
+    @Override
     public void writeDouble(double value)
             throws IOException {
         long bits = Double.doubleToLongBits(value);
@@ -478,6 +497,7 @@ public class HessianOutput extends AbstractHessianOutput {
      *
      * @param time the date in milliseconds from the epoch in UTC
      */
+    @Override
     public void writeUTCDate(long time)
             throws IOException {
         os.write('d');
@@ -501,6 +521,7 @@ public class HessianOutput extends AbstractHessianOutput {
      *
      * @param value the string value to write.
      */
+    @Override
     public void writeNull()
             throws IOException {
         os.write('N');
@@ -522,6 +543,7 @@ public class HessianOutput extends AbstractHessianOutput {
      *
      * @param value the string value to write.
      */
+    @Override
     public void writeString(String value)
             throws IOException {
         if (value == null) {
@@ -573,6 +595,7 @@ public class HessianOutput extends AbstractHessianOutput {
      *
      * @param value the string value to write.
      */
+    @Override
     public void writeString(char[] buffer, int offset, int length)
             throws IOException {
         if (buffer == null) {
@@ -621,6 +644,7 @@ public class HessianOutput extends AbstractHessianOutput {
      *
      * @param value the string value to write.
      */
+    @Override
     public void writeBytes(byte[] buffer)
             throws IOException {
         if (buffer == null)
@@ -645,6 +669,7 @@ public class HessianOutput extends AbstractHessianOutput {
      *
      * @param value the string value to write.
      */
+    @Override
     public void writeBytes(byte[] buffer, int offset, int length)
             throws IOException {
         if (buffer == null) {
@@ -676,6 +701,7 @@ public class HessianOutput extends AbstractHessianOutput {
      * <code><pre>
      * </pre></code>
      */
+    @Override
     public void writeByteBufferStart()
             throws IOException {
     }
@@ -687,6 +713,7 @@ public class HessianOutput extends AbstractHessianOutput {
      * b b16 b18 bytes
      * </pre></code>
      */
+    @Override
     public void writeByteBufferPart(byte[] buffer, int offset, int length)
             throws IOException {
         while (length > 0) {
@@ -713,6 +740,7 @@ public class HessianOutput extends AbstractHessianOutput {
      * b b16 b18 bytes
      * </pre></code>
      */
+    @Override
     public void writeByteBufferEnd(byte[] buffer, int offset, int length)
             throws IOException {
         writeBytes(buffer, offset, length);
@@ -727,6 +755,7 @@ public class HessianOutput extends AbstractHessianOutput {
      *
      * @param value the integer value to write.
      */
+    @Override
     public void writeRef(int value)
             throws IOException {
         os.write('R');
@@ -753,6 +782,7 @@ public class HessianOutput extends AbstractHessianOutput {
      *
      * @return true if we're writing a ref.
      */
+    @Override
     public boolean addRef(Object object)
             throws IOException {
         if (_refs == null)
@@ -775,6 +805,7 @@ public class HessianOutput extends AbstractHessianOutput {
     /**
      * Resets the references for streaming.
      */
+    @Override
     public void resetReferences() {
         if (_refs != null)
             _refs.clear();
@@ -783,6 +814,7 @@ public class HessianOutput extends AbstractHessianOutput {
     /**
      * Removes a reference.
      */
+    @Override
     public boolean removeRef(Object obj)
             throws IOException {
         if (_refs != null) {
@@ -796,6 +828,7 @@ public class HessianOutput extends AbstractHessianOutput {
     /**
      * Replaces a reference from one object to another.
      */
+    @Override
     public boolean replaceRef(Object oldRef, Object newRef)
             throws IOException {
         Integer value = (Integer) _refs.remove(oldRef);
@@ -882,12 +915,14 @@ public class HessianOutput extends AbstractHessianOutput {
         }
     }
 
+    @Override
     public void flush()
             throws IOException {
         if (this.os != null)
             this.os.flush();
     }
 
+    @Override
     public void close()
             throws IOException {
         if (this.os != null)

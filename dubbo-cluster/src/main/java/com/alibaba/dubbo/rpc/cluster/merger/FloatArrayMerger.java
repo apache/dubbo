@@ -21,6 +21,7 @@ import com.alibaba.dubbo.rpc.cluster.Merger;
 
 public class FloatArrayMerger implements Merger<float[]> {
 
+    @Override
     public float[] merge(float[]... items) {
         int total = 0;
         for (float[] array : items) {

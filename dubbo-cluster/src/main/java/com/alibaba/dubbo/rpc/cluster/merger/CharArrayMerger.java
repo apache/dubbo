@@ -21,6 +21,7 @@ import com.alibaba.dubbo.rpc.cluster.Merger;
 
 public class CharArrayMerger implements Merger<char[]> {
 
+    @Override
     public char[] merge(char[]... items) {
         int total = 0;
         for (char[] array : items) {

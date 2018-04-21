@@ -102,6 +102,7 @@ public class AccessLogFilter implements Filter {
         }
     }
 
+    @Override
     public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {
         try {
             String accesslog = invoker.getUrl().getParameter(Constants.ACCESS_LOG_KEY);
@@ -155,6 +156,7 @@ public class AccessLogFilter implements Filter {
     }
 
     private class LogTask implements Runnable {
+        @Override
         public void run() {
             try {
                 if (logQueue != null && logQueue.size() > 0) {

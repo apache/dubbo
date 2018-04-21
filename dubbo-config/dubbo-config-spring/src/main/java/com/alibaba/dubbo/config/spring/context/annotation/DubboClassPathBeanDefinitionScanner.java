@@ -57,10 +57,12 @@ public class DubboClassPathBeanDefinitionScanner extends ClassPathBeanDefinition
 
     }
 
+    @Override
     public Set<BeanDefinitionHolder> doScan(String... basePackages) {
         return super.doScan(basePackages);
     }
 
+    @Override
     public boolean checkCandidate(String beanName, BeanDefinition beanDefinition) throws IllegalStateException {
         return super.checkCandidate(beanName, beanDefinition);
     }

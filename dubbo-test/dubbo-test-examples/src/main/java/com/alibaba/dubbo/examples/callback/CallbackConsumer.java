@@ -32,6 +32,7 @@ public class CallbackConsumer {
         context.start();
         CallbackService callbackService = (CallbackService) context.getBean("callbackService");
         callbackService.addListener("foo.bar", new CallbackListener() {
+            @Override
             public void changed(String msg) {
                 System.out.println("callback1:" + msg);
             }

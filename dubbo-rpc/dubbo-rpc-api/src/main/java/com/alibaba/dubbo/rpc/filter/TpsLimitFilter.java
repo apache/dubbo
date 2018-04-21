@@ -35,6 +35,7 @@ public class TpsLimitFilter implements Filter {
 
     private final TPSLimiter tpsLimiter = new DefaultTPSLimiter();
 
+    @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
 
         if (!tpsLimiter.isAllowable(invoker.getUrl(), invocation)) {

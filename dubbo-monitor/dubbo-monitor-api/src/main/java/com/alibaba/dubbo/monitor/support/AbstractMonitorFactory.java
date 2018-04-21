@@ -60,6 +60,7 @@ public abstract class AbstractMonitorFactory implements MonitorFactory {
         return Collections.unmodifiableCollection(MONITORS.values());
     }
 
+    @Override
     public Monitor getMonitor(URL url) {
         url = url.setPath(MonitorService.class.getName()).addParameter(Constants.INTERFACE_KEY, MonitorService.class.getName());
         String key = url.toServiceStringWithoutResolving();

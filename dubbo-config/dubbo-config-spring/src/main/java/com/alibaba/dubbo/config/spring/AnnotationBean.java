@@ -78,10 +78,12 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
                 : Constants.COMMA_SPLIT_PATTERN.split(annotationPackage);
     }
 
+    @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
 
+    @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory)
             throws BeansException {
         if (annotationPackage == null || annotationPackage.length() == 0) {
@@ -107,6 +109,7 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
         }
     }
 
+    @Override
     public void destroy() throws Exception {
         for (ServiceConfig<?> serviceConfig : serviceConfigs) {
             try {
@@ -124,6 +127,7 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
         }
     }
 
+    @Override
     public Object postProcessAfterInitialization(Object bean, String beanName)
             throws BeansException {
         if (!isMatchPackage(bean)) {
@@ -192,6 +196,7 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
         return bean;
     }
 
+    @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName)
             throws BeansException {
         if (!isMatchPackage(bean)) {

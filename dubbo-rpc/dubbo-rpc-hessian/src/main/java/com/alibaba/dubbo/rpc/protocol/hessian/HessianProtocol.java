@@ -59,10 +59,12 @@ public class HessianProtocol extends AbstractProxyProtocol {
         this.httpBinder = httpBinder;
     }
 
+    @Override
     public int getDefaultPort() {
         return 80;
     }
 
+    @Override
     protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
         String addr = getAddr(url);
         HttpServer server = serverMap.get(addr);
@@ -74,12 +76,14 @@ public class HessianProtocol extends AbstractProxyProtocol {
         HessianSkeleton skeleton = new HessianSkeleton(impl, type);
         skeletonMap.put(path, skeleton);
         return new Runnable() {
+            @Override
             public void run() {
                 skeletonMap.remove(path);
             }
         };
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     protected <T> T doRefer(Class<T> serviceType, URL url) throws RpcException {
         HessianProxyFactory hessianProxyFactory = new HessianProxyFactory();
@@ -99,6 +103,7 @@ public class HessianProtocol extends AbstractProxyProtocol {
         return (T) hessianProxyFactory.create(serviceType, url.setProtocol("http").toJavaURL(), Thread.currentThread().getContextClassLoader());
     }
 
+    @Override
     protected int getErrorCode(Throwable e) {
         if (e instanceof HessianConnectionException) {
             if (e.getCause() != null) {
@@ -114,6 +119,7 @@ public class HessianProtocol extends AbstractProxyProtocol {
         return super.getErrorCode(e);
     }
 
+    @Override
     public void destroy() {
         super.destroy();
         for (String key : new ArrayList<String>(serverMap.keySet())) {
@@ -133,6 +139,7 @@ public class HessianProtocol extends AbstractProxyProtocol {
 
     private class HessianHandler implements HttpHandler {
 
+        @Override
         public void handle(HttpServletRequest request, HttpServletResponse response)
                 throws IOException, ServletException {
             String uri = request.getRequestURI();
