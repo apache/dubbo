@@ -1,5 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.alibaba.dubbo.common.threadpool.support.eager;
-
 
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
@@ -49,12 +64,12 @@ public class EagerThreadPoolExecutorTest {
         //init queue and executor
         TaskQueue<Runnable> taskQueue = new TaskQueue<Runnable>(queues);
         final EagerThreadPoolExecutor executor = new EagerThreadPoolExecutor(cores,
-                threads,
-                alive,
-                TimeUnit.MILLISECONDS,
-                taskQueue,
-                new NamedThreadFactory(name, true),
-                new AbortPolicyWithReport(name, URL));
+                                                                             threads,
+                                                                             alive,
+                                                                             TimeUnit.MILLISECONDS,
+                                                                             taskQueue,
+                                                                             new NamedThreadFactory(name, true),
+                                                                             new AbortPolicyWithReport(name, URL));
         taskQueue.setExecutor(executor);
 
         for (int i = 0; i < 15; i++) {
@@ -62,12 +77,8 @@ public class EagerThreadPoolExecutorTest {
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    System.out.println("thread number in current pool："
-                            + executor.getPoolSize()
-                            + ",  task number in task queue："
-                            + executor.getQueue().size()
-                            + " executor size: "
-                            + executor.getPoolSize());
+                    System.out.println("thread number in current pool：" + executor.getPoolSize() + ",  task number in task queue：" + executor.getQueue()
+                                                                                                                                             .size() + " executor size: " + executor.getPoolSize());
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
@@ -83,11 +94,12 @@ public class EagerThreadPoolExecutorTest {
 
     @Test
     public void testSPI() {
-        ExecutorService executorService = (ExecutorService) ExtensionLoader
-                .getExtensionLoader(ThreadPool.class)
-                .getExtension("eager")
-                .getExecutor(URL);
+        ExecutorService executorService = (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class)
+                                                                           .getExtension("eager")
+                                                                           .getExecutor(URL);
         Assert.assertTrue("test spi fail!",
-                executorService.getClass().getSimpleName().equals("EagerThreadPoolExecutor"));
+                          executorService.getClass()
+                                         .getSimpleName()
+                                         .equals("EagerThreadPoolExecutor"));
     }
 }
