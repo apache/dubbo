@@ -34,6 +34,7 @@ import java.util.Map;
 @Activate(group = Constants.PROVIDER, value = Constants.TOKEN_KEY)
 public class TokenFilter implements Filter {
 
+    @Override
     public Result invoke(Invoker<?> invoker, Invocation inv)
             throws RpcException {
         String token = invoker.getUrl().getParameter(Constants.TOKEN_KEY);

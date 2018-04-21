@@ -28,6 +28,7 @@ public class MockRegistryFactory implements RegistryFactory {
     /* 
      * @see com.alibaba.dubbo.registry.RegistryFactory#getRegistry(com.alibaba.dubbo.common.URL)
      */
+    @Override
     public Registry getRegistry(URL url) {
 
         return new MockRegistry();

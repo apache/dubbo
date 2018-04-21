@@ -35,6 +35,7 @@ public class NettyServer extends BaseRestServer {
 
     private final NettyJaxrsServer server = new NettyJaxrsServer();
 
+    @Override
     protected void doStart(URL url) {
         String bindIp = url.getParameter(Constants.BIND_IP_KEY, url.getHost());
         if (!url.isAnyHost() && NetUtils.isValidLocalHost(bindIp)) {
@@ -50,10 +51,12 @@ public class NettyServer extends BaseRestServer {
         server.start();
     }
 
+    @Override
     public void stop() {
         server.stop();
     }
 
+    @Override
     protected ResteasyDeployment getDeployment() {
         return server.getDeployment();
     }

@@ -71,7 +71,7 @@
 
     <properties>
         <!-- Common libs -->
-        <spring_version>4.3.10.RELEASE</spring_version>
+        <spring_version>4.3.16.RELEASE</spring_version>
         <javassist_version>3.20.0-GA</javassist_version>
         <netty_version>3.2.5.Final</netty_version>
         <netty4_version>4.0.35.Final</netty4_version>
@@ -106,6 +106,7 @@
         <log4j_version>1.2.16</log4j_version>
         <logback_version>1.2.2</logback_version>
         <commons_lang3_version>3.4</commons_lang3_version>
+        <embedded_redis_version>0.6</embedded_redis_version>
     </properties>
 
     <dependencyManagement>
@@ -325,6 +326,12 @@
                 <groupId>org.apache.curator</groupId>
                 <artifactId>curator-test</artifactId>
                 <version>${curator_version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.github.kstyrc</groupId>
+                <artifactId>embedded-redis</artifactId>
+                <version>${embedded_redis_version}</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>

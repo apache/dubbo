@@ -25,10 +25,12 @@ public class TelnetServer {
 
     public static void main(String[] args) throws Exception {
         Transporters.bind("telnet://0.0.0.0:23", new ChannelHandlerAdapter() {
+            @Override
             public void connected(Channel channel) throws RemotingException {
                 channel.send("telnet> ");
             }
 
+            @Override
             public void received(Channel channel, Object message) throws RemotingException {
                 channel.send("Echo: " + message + "\r\n");
                 channel.send("telnet> ");

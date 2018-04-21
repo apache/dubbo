@@ -93,6 +93,7 @@ public class MinaClient extends AbstractClient {
         final AtomicReference<Throwable> exception = new AtomicReference<Throwable>();
         final CountDownLatch finish = new CountDownLatch(1); // resolve future.awaitUninterruptibly() dead lock
         future.addListener(new IoFutureListener() {
+            @Override
             public void operationComplete(IoFuture future) {
                 try {
                     if (future.isReady()) {
