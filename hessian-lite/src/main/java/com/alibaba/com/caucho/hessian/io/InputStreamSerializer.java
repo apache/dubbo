@@ -58,6 +58,7 @@ public class InputStreamSerializer extends AbstractSerializer {
     public InputStreamSerializer() {
     }
 
+    @Override
     public void writeObject(Object obj, AbstractHessianOutput out)
             throws IOException {
         InputStream is = (InputStream) obj;

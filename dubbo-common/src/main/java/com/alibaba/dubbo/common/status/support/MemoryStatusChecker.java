@@ -26,6 +26,7 @@ import com.alibaba.dubbo.common.status.StatusChecker;
 @Activate
 public class MemoryStatusChecker implements StatusChecker {
 
+    @Override
     public Status check() {
         Runtime runtime = Runtime.getRuntime();
         long freeMemory = runtime.freeMemory();

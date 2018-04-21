@@ -34,6 +34,7 @@ import java.lang.reflect.Method;
 @Help(parameter = "[-l] [service]", summary = "List services and methods.", detail = "List services and methods.")
 public class ListTelnetHandler implements TelnetHandler {
 
+    @Override
     public String telnet(Channel channel, String message) {
         StringBuilder buf = new StringBuilder();
         String service = null;

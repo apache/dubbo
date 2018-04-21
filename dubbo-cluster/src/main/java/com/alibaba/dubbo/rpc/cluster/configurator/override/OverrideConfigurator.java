@@ -29,6 +29,7 @@ public class OverrideConfigurator extends AbstractConfigurator {
         super(url);
     }
 
+    @Override
     public URL doConfigure(URL currentUrl, URL configUrl) {
         return currentUrl.addParameters(configUrl.getParameters());
     }

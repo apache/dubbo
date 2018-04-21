@@ -41,6 +41,7 @@ public class RandomAccessByteArrayOutputStream extends OutputStream {
         buffer = new byte[size];
     }
 
+    @Override
     public void write(int b) {
 
         int newcount = count + 1;
@@ -50,6 +51,7 @@ public class RandomAccessByteArrayOutputStream extends OutputStream {
         count = newcount;
     }
 
+    @Override
     public void write(byte b[], int off, int len) {
 
         if ((off < 0) || (off > b.length) || (len < 0) || ((off + len) > b.length) || ((off + len) < 0))
@@ -92,6 +94,7 @@ public class RandomAccessByteArrayOutputStream extends OutputStream {
         out.write(buffer, 0, count);
     }
 
+    @Override
     public String toString() {
 
         return new String(buffer, 0, count);
@@ -102,6 +105,7 @@ public class RandomAccessByteArrayOutputStream extends OutputStream {
         return new String(buffer, 0, count, charset);
     }
 
+    @Override
     public void close() throws IOException {
     }
 

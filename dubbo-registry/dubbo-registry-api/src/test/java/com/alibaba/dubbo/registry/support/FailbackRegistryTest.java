@@ -64,6 +64,7 @@ public class FailbackRegistryTest {
         final CountDownLatch latch = new CountDownLatch(3);//All of them are called 3 times. Successful attempts to reduce the failure of 1. subscribe register will not be done again
 
         NotifyListener listner = new NotifyListener() {
+            @Override
             public void notify(List<URL> urls) {
                 notified.set(Boolean.TRUE);
             }
@@ -121,6 +122,7 @@ public class FailbackRegistryTest {
         final CountDownLatch latch = new CountDownLatch(1);//All of them are called 4 times. A successful attempt to lose 1. subscribe will not be done
 
         NotifyListener listner = new NotifyListener() {
+            @Override
             public void notify(List<URL> urls) {
                 notified.set(Boolean.TRUE);
             }
@@ -155,6 +157,7 @@ public class FailbackRegistryTest {
         final AtomicInteger count = new AtomicInteger(0);
 
         NotifyListener listner = new NotifyListener() {
+            @Override
             public void notify(List<URL> urls) {
                 count.incrementAndGet();
                 //The exception is thrown for the first time to see if the back will be called again to incrementAndGet
@@ -246,6 +249,7 @@ public class FailbackRegistryTest {
             latch.countDown();
         }
 
+        @Override
         public boolean isAvailable() {
             return true;
         }

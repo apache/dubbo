@@ -140,6 +140,7 @@ public class X509Encryption extends HessianEnvelope {
         _secureRandom = random;
     }
 
+    @Override
     public Hessian2Output wrap(Hessian2Output out)
             throws IOException {
         if (_cert == null)
@@ -154,6 +155,7 @@ public class X509Encryption extends HessianEnvelope {
         return filterOut;
     }
 
+    @Override
     public Hessian2Input unwrap(Hessian2Input in)
             throws IOException {
         if (_privateKey == null)
@@ -173,6 +175,7 @@ public class X509Encryption extends HessianEnvelope {
         return unwrapHeaders(in);
     }
 
+    @Override
     public Hessian2Input unwrapHeaders(Hessian2Input in)
             throws IOException {
         if (_privateKey == null)
@@ -258,16 +261,19 @@ public class X509Encryption extends HessianEnvelope {
             }
         }
 
+        @Override
         public void write(int ch)
                 throws IOException {
             _cipherOut.write(ch);
         }
 
+        @Override
         public void write(byte[] buffer, int offset, int length)
                 throws IOException {
             _cipherOut.write(buffer, offset, length);
         }
 
+        @Override
         public void close()
                 throws IOException {
             Hessian2Output out = _out;
@@ -337,16 +343,19 @@ public class X509Encryption extends HessianEnvelope {
             }
         }
 
+        @Override
         public int read()
                 throws IOException {
             return _cipherIn.read();
         }
 
+        @Override
         public int read(byte[] buffer, int offset, int length)
                 throws IOException {
             return _cipherIn.read(buffer, offset, length);
         }
 
+        @Override
         public void close()
                 throws IOException {
             Hessian2Input in = _in;

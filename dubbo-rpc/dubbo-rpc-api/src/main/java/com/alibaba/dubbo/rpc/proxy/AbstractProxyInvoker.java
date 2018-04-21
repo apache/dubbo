@@ -51,21 +51,26 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
         this.url = url;
     }
 
+    @Override
     public Class<T> getInterface() {
         return type;
     }
 
+    @Override
     public URL getUrl() {
         return url;
     }
 
+    @Override
     public boolean isAvailable() {
         return true;
     }
 
+    @Override
     public void destroy() {
     }
 
+    @Override
     public Result invoke(Invocation invocation) throws RpcException {
         try {
             return new RpcResult(doInvoke(proxy, invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments()));

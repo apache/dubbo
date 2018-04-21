@@ -101,6 +101,7 @@ public class MulticastRegistryTest {
         final AtomicReference<URL> args = new AtomicReference<URL>();
         registry.subscribe(consumerUrl, new NotifyListener() {
 
+            @Override
             public void notify(List<URL> urls) {
                 // FIXME assertEquals(MulticastRegistry.this.service, service);
                 args.set(urls.get(0));

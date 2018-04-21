@@ -44,33 +44,41 @@ public abstract class AbstractHttpServer implements HttpServer {
         this.handler = handler;
     }
 
+    @Override
     public HttpHandler getHttpHandler() {
         return handler;
     }
 
+    @Override
     public URL getUrl() {
         return url;
     }
 
+    @Override
     public void reset(URL url) {
     }
 
+    @Override
     public boolean isBound() {
         return true;
     }
 
+    @Override
     public InetSocketAddress getLocalAddress() {
         return url.toInetSocketAddress();
     }
 
+    @Override
     public void close() {
         closed = true;
     }
 
+    @Override
     public void close(int timeout) {
         close();
     }
 
+    @Override
     public boolean isClosed() {
         return closed;
     }
