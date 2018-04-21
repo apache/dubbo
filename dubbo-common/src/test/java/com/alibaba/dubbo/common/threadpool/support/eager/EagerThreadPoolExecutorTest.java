@@ -21,6 +21,7 @@ import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.threadpool.ThreadPool;
 import com.alibaba.dubbo.common.threadpool.support.AbortPolicyWithReport;
 import com.alibaba.dubbo.common.utils.NamedThreadFactory;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -64,12 +65,12 @@ public class EagerThreadPoolExecutorTest {
         //init queue and executor
         TaskQueue<Runnable> taskQueue = new TaskQueue<Runnable>(queues);
         final EagerThreadPoolExecutor executor = new EagerThreadPoolExecutor(cores,
-                                                                             threads,
-                                                                             alive,
-                                                                             TimeUnit.MILLISECONDS,
-                                                                             taskQueue,
-                                                                             new NamedThreadFactory(name, true),
-                                                                             new AbortPolicyWithReport(name, URL));
+                threads,
+                alive,
+                TimeUnit.MILLISECONDS,
+                taskQueue,
+                new NamedThreadFactory(name, true),
+                new AbortPolicyWithReport(name, URL));
         taskQueue.setExecutor(executor);
 
         for (int i = 0; i < 15; i++) {
@@ -78,7 +79,7 @@ public class EagerThreadPoolExecutorTest {
                 @Override
                 public void run() {
                     System.out.println("thread number in current pool：" + executor.getPoolSize() + ",  task number in task queue：" + executor.getQueue()
-                                                                                                                                             .size() + " executor size: " + executor.getPoolSize());
+                            .size() + " executor size: " + executor.getPoolSize());
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
@@ -95,11 +96,11 @@ public class EagerThreadPoolExecutorTest {
     @Test
     public void testSPI() {
         ExecutorService executorService = (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class)
-                                                                           .getExtension("eager")
-                                                                           .getExecutor(URL);
+                .getExtension("eager")
+                .getExecutor(URL);
         Assert.assertTrue("test spi fail!",
-                          executorService.getClass()
-                                         .getSimpleName()
-                                         .equals("EagerThreadPoolExecutor"));
+                executorService.getClass()
+                        .getSimpleName()
+                        .equals("EagerThreadPoolExecutor"));
     }
 }
