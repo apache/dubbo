@@ -18,7 +18,6 @@ package com.alibaba.dubbo.rpc.cluster.loadbalance;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.cluster.LoadBalance;
@@ -33,7 +32,7 @@ public abstract class AbstractLoadBalance implements LoadBalance {
 
     static int calculateWarmupWeight(int uptime, int warmup, int weight, int warmupweight) {
         if (warmupweight > 0) {
-            return (warmupweight > weight) ? weight : warmupweight;
+            return warmupweight > weight ? weight : warmupweight;
         }
 
         int ww = (int) ((float) uptime / ((float) warmup / (float) weight));
