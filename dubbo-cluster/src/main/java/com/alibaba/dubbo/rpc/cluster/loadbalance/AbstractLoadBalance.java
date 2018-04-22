@@ -18,6 +18,7 @@ package com.alibaba.dubbo.rpc.cluster.loadbalance;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.cluster.LoadBalance;
@@ -30,7 +31,11 @@ import java.util.List;
  */
 public abstract class AbstractLoadBalance implements LoadBalance {
 
-    static int calculateWarmupWeight(int uptime, int warmup, int weight) {
+    static int calculateWarmupWeight(int uptime, int warmup, int weight, int warmupweight) {
+        if (warmupweight > 0) {
+            return (warmupweight > weight) ? weight : warmupweight;
+        }
+
         int ww = (int) ((float) uptime / ((float) warmup / (float) weight));
         return ww < 1 ? 1 : (ww > weight ? weight : ww);
     }
@@ -53,8 +58,9 @@ public abstract class AbstractLoadBalance implements LoadBalance {
             if (timestamp > 0L) {
                 int uptime = (int) (System.currentTimeMillis() - timestamp);
                 int warmup = invoker.getUrl().getParameter(Constants.WARMUP_KEY, Constants.DEFAULT_WARMUP);
+                int warmupweight = invoker.getUrl().getParameter(Constants.WARMUP_WEIGHT_KEY, Constants.DEFAULT_WARMUP_WEIGHT);
                 if (uptime > 0 && uptime < warmup) {
-                    weight = calculateWarmupWeight(uptime, warmup, weight);
+                    weight = calculateWarmupWeight(uptime, warmup, weight, warmupweight);
                 }
             }
         }
