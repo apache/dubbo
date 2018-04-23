@@ -27,6 +27,13 @@ import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.validation.Validation;
 import com.alibaba.dubbo.validation.Validator;
+import com.alibaba.dubbo.validation.support.jsr303.DubboConstraintViolation;
+import com.alibaba.dubbo.validation.support.jsr303.DubboConstraintViolationException;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * ValidationFilter
@@ -49,6 +56,12 @@ public class ValidationFilter implements Filter {
                 if (validator != null) {
                     validator.validate(invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());
                 }
+            } catch (ConstraintViolationException e) {
+                Set<ConstraintViolation<String>> set = new HashSet<ConstraintViolation<String>>();
+                for (ConstraintViolation<?> v : e.getConstraintViolations()) {
+                    set.add(new DubboConstraintViolation<String>(v.getMessage(), v.getPropertyPath()));
+                }
+                return new RpcResult(new RpcException(new DubboConstraintViolationException(set)));
             } catch (RpcException e) {
                 throw e;
             } catch (Throwable t) {
