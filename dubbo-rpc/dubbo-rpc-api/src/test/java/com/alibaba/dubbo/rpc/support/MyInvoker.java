@@ -43,6 +43,7 @@ public class MyInvoker<T> implements Invoker<T> {
         this.hasException = hasException;
     }
 
+    @Override
     public Class<T> getInterface() {
         return type;
     }
@@ -51,6 +52,7 @@ public class MyInvoker<T> implements Invoker<T> {
         return url;
     }
 
+    @Override
     public boolean isAvailable() {
         return false;
     }
@@ -67,6 +69,7 @@ public class MyInvoker<T> implements Invoker<T> {
 
     }
 
+    @Override
     public void destroy() {
     }
 

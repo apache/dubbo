@@ -51,6 +51,7 @@ public class AnnotationBeanDefinitionParser extends AbstractSingleBeanDefinition
      * @param parserContext
      * @param builder
      */
+    @Override
     protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 
         String packageToScan = element.getAttribute("package");
@@ -66,6 +67,7 @@ public class AnnotationBeanDefinitionParser extends AbstractSingleBeanDefinition
 
     }
 
+    @Override
     protected boolean shouldGenerateIdAsFallback() {
         return true;
     }
@@ -83,6 +85,7 @@ public class AnnotationBeanDefinitionParser extends AbstractSingleBeanDefinition
 
     }
 
+    @Override
     protected Class<?> getBeanClass(Element element) {
         return ServiceAnnotationBeanPostProcessor.class;
     }

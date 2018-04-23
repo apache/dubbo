@@ -91,6 +91,7 @@ public class Hessian2StreamingInput {
             _is = is;
         }
 
+        @Override
         public int read()
                 throws IOException {
             InputStream is = _is;
@@ -117,6 +118,7 @@ public class Hessian2StreamingInput {
             return is.read();
         }
 
+        @Override
         public int read(byte[] buffer, int offset, int length)
                 throws IOException {
             InputStream is = _is;

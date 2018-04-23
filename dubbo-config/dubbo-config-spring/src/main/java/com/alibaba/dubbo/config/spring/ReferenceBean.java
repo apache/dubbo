@@ -55,24 +55,29 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
         super(reference);
     }
 
+    @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
         SpringExtensionFactory.addApplicationContext(applicationContext);
     }
 
+    @Override
     public Object getObject() throws Exception {
         return get();
     }
 
+    @Override
     public Class<?> getObjectType() {
         return getInterfaceClass();
     }
 
+    @Override
     @Parameter(excluded = true)
     public boolean isSingleton() {
         return true;
     }
 
+    @Override
     @SuppressWarnings({"unchecked"})
     public void afterPropertiesSet() throws Exception {
         if (getConsumer() == null) {

@@ -65,10 +65,12 @@ public class JCache implements com.alibaba.dubbo.cache.Cache {
         this.store = cache;
     }
 
+    @Override
     public void put(Object key, Object value) {
         store.put(key, value);
     }
 
+    @Override
     public Object get(Object key) {
         return store.get(key);
     }

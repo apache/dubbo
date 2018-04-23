@@ -135,6 +135,7 @@ public class X509Signature extends HessianEnvelope {
         _secureRandom = random;
     }
 
+    @Override
     public Hessian2Output wrap(Hessian2Output out)
             throws IOException {
         if (_privateKey == null)
@@ -152,6 +153,7 @@ public class X509Signature extends HessianEnvelope {
         return filterOut;
     }
 
+    @Override
     public Hessian2Input unwrap(Hessian2Input in)
             throws IOException {
         if (_cert == null)
@@ -168,6 +170,7 @@ public class X509Signature extends HessianEnvelope {
         return unwrapHeaders(in);
     }
 
+    @Override
     public Hessian2Input unwrapHeaders(Hessian2Input in)
             throws IOException {
         if (_cert == null)
@@ -237,18 +240,21 @@ public class X509Signature extends HessianEnvelope {
             }
         }
 
+        @Override
         public void write(int ch)
                 throws IOException {
             _bodyOut.write(ch);
             _mac.update((byte) ch);
         }
 
+        @Override
         public void write(byte[] buffer, int offset, int length)
                 throws IOException {
             _bodyOut.write(buffer, offset, length);
             _mac.update(buffer, offset, length);
         }
 
+        @Override
         public void close()
                 throws IOException {
             Hessian2Output out = _out;
@@ -321,6 +327,7 @@ public class X509Signature extends HessianEnvelope {
             }
         }
 
+        @Override
         public int read()
                 throws IOException {
             int ch = _bodyIn.read();
@@ -333,6 +340,7 @@ public class X509Signature extends HessianEnvelope {
             return ch;
         }
 
+        @Override
         public int read(byte[] buffer, int offset, int length)
                 throws IOException {
             int len = _bodyIn.read(buffer, offset, length);
@@ -345,6 +353,7 @@ public class X509Signature extends HessianEnvelope {
             return len;
         }
 
+        @Override
         public void close()
                 throws IOException {
             Hessian2Input in = _in;

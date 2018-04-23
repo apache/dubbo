@@ -407,6 +407,7 @@ public class AbstractClusterInvokerTest {
         List<Invoker<DemoService>> invokers = new ArrayList<Invoker<DemoService>>();
         invokers.add(new Invoker<DemoService>() {
 
+            @Override
             public Class<DemoService> getInterface() {
                 return DemoService.class;
             }
@@ -415,6 +416,7 @@ public class AbstractClusterInvokerTest {
                 return URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":20880/" + DemoService.class.getName());
             }
 
+            @Override
             public boolean isAvailable() {
                 return false;
             }
@@ -423,6 +425,7 @@ public class AbstractClusterInvokerTest {
                 throw new RpcException(RpcException.TIMEOUT_EXCEPTION, "test timeout");
             }
 
+            @Override
             public void destroy() {
             }
         });

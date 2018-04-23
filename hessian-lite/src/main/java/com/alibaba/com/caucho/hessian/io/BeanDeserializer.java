@@ -116,10 +116,12 @@ public class BeanDeserializer extends AbstractMapDeserializer {
             throw new UnsupportedOperationException();
     }
 
+    @Override
     public Class getType() {
         return _type;
     }
 
+    @Override
     public Object readMap(AbstractHessianInput in)
             throws IOException {
         try {

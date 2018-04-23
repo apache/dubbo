@@ -54,6 +54,7 @@ public class FileExchangeGroup extends AbstractExchangeGroup {
             throw new IllegalStateException("The group file not exists. file: " + path);
         }
         checkModifiedFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
+            @Override
             public void run() {
                 // check the file change
                 try {
@@ -65,6 +66,7 @@ public class FileExchangeGroup extends AbstractExchangeGroup {
         }, 2000, 2000, TimeUnit.MILLISECONDS);
     }
 
+    @Override
     public void close() {
         super.close();
         try {

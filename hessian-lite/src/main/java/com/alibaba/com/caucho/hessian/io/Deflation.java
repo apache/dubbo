@@ -58,6 +58,7 @@ public class Deflation extends HessianEnvelope {
     public Deflation() {
     }
 
+    @Override
     public Hessian2Output wrap(Hessian2Output out)
             throws IOException {
         OutputStream os = new DeflateOutputStream(out);
@@ -69,6 +70,7 @@ public class Deflation extends HessianEnvelope {
         return filterOut;
     }
 
+    @Override
     public Hessian2Input unwrap(Hessian2Input in)
             throws IOException {
         int version = in.readEnvelope();
@@ -82,6 +84,7 @@ public class Deflation extends HessianEnvelope {
         return unwrapHeaders(in);
     }
 
+    @Override
     public Hessian2Input unwrapHeaders(Hessian2Input in)
             throws IOException {
         InputStream is = new DeflateInputStream(in);
@@ -111,16 +114,19 @@ public class Deflation extends HessianEnvelope {
             _deflateOut = new DeflaterOutputStream(_bodyOut);
         }
 
+        @Override
         public void write(int ch)
                 throws IOException {
             _deflateOut.write(ch);
         }
 
+        @Override
         public void write(byte[] buffer, int offset, int length)
                 throws IOException {
             _deflateOut.write(buffer, offset, length);
         }
 
+        @Override
         public void close()
                 throws IOException {
             Hessian2Output out = _out;
@@ -159,16 +165,19 @@ public class Deflation extends HessianEnvelope {
             _inflateIn = new InflaterInputStream(_bodyIn);
         }
 
+        @Override
         public int read()
                 throws IOException {
             return _inflateIn.read();
         }
 
+        @Override
         public int read(byte[] buffer, int offset, int length)
                 throws IOException {
             return _inflateIn.read(buffer, offset, length);
         }
 
+        @Override
         public void close()
                 throws IOException {
             Hessian2Input in = _in;

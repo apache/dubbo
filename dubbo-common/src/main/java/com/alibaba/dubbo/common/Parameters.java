@@ -247,10 +247,12 @@ public class Parameters {
         return value != null && value.length() > 0;
     }
 
+    @Override
     public boolean equals(Object o) {
         return parameters.equals(o);
     }
 
+    @Override
     public int hashCode() {
         return parameters.hashCode();
     }

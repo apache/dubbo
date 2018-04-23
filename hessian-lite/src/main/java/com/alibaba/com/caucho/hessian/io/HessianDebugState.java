@@ -782,6 +782,7 @@ public class HessianDebugState implements Hessian2Constants {
     }
 
     class InitialState extends State {
+        @Override
         State next(int ch) {
             println();
 
@@ -795,6 +796,7 @@ public class HessianDebugState implements Hessian2Constants {
     }
 
     class Top2State extends State {
+        @Override
         State next(int ch) {
             println();
 
@@ -836,6 +838,7 @@ public class HessianDebugState implements Hessian2Constants {
             _length = length;
         }
 
+        @Override
         State next(int ch) {
             _value = 256 * _value + (ch & 0xff);
 
@@ -875,6 +878,7 @@ public class HessianDebugState implements Hessian2Constants {
             _length = length;
         }
 
+        @Override
         State next(int ch) {
             _value = 256 * _value + (ch & 0xff);
 
@@ -904,6 +908,7 @@ public class HessianDebugState implements Hessian2Constants {
             _length = length;
         }
 
+        @Override
         State next(int ch) {
             if (_isFirst)
                 _value = (byte) ch;
@@ -987,6 +992,7 @@ public class HessianDebugState implements Hessian2Constants {
         }
 
 
+        @Override
         State next(int ch) {
             _value = 256 * _value + (ch & 0xff);
 
@@ -1018,6 +1024,7 @@ public class HessianDebugState implements Hessian2Constants {
             super(next);
         }
 
+        @Override
         State next(int ch) {
             _value = 256 * _value + (ch & 0xff);
 
@@ -1044,6 +1051,7 @@ public class HessianDebugState implements Hessian2Constants {
             super(next);
         }
 
+        @Override
         State next(int ch) {
             _value = 256 * _value + (ch & 0xff);
 
@@ -1103,6 +1111,7 @@ public class HessianDebugState implements Hessian2Constants {
             _lengthIndex = 1;
         }
 
+        @Override
         State next(int ch) {
             if (_lengthIndex < 2) {
                 _length = 256 * _length + (ch & 0xff);
@@ -1224,6 +1233,7 @@ public class HessianDebugState implements Hessian2Constants {
             _lengthIndex = 1;
         }
 
+        @Override
         State next(int ch) {
             if (_lengthIndex < 2) {
                 _length = 256 * _length + (ch & 0xff);
@@ -1353,6 +1363,7 @@ public class HessianDebugState implements Hessian2Constants {
                 return _valueDepth;
         }
 
+        @Override
         State next(int ch) {
             switch (_state) {
                 case TYPE:
@@ -1455,6 +1466,7 @@ public class HessianDebugState implements Hessian2Constants {
                 return _next.depth() + 2;
         }
 
+        @Override
         State next(int ch) {
             switch (_state) {
                 case TYPE:
@@ -1545,6 +1557,7 @@ public class HessianDebugState implements Hessian2Constants {
                 return _fieldDepth;
         }
 
+        @Override
         State next(int ch) {
             switch (_state) {
                 case TYPE:
@@ -1638,6 +1651,7 @@ public class HessianDebugState implements Hessian2Constants {
                 return _next.depth() + 2;
         }
 
+        @Override
         State next(int ch) {
             switch (_state) {
                 case TYPE:
@@ -1768,6 +1782,7 @@ public class HessianDebugState implements Hessian2Constants {
                 return _next.depth() + 2;
         }
 
+        @Override
         State next(int ch) {
             switch (_state) {
                 case TYPE:
@@ -1807,10 +1822,12 @@ public class HessianDebugState implements Hessian2Constants {
             super(next);
         }
 
+        @Override
         int depth() {
             return _next.depth() + 2;
         }
 
+        @Override
         State next(int ch) {
             switch (_state) {
                 case MAJOR:
@@ -1845,10 +1862,12 @@ public class HessianDebugState implements Hessian2Constants {
             super(next);
         }
 
+        @Override
         int depth() {
             return _next.depth() + 2;
         }
 
+        @Override
         State next(int ch) {
             switch (_state) {
                 case MAJOR:
@@ -1911,6 +1930,7 @@ public class HessianDebugState implements Hessian2Constants {
             super(next);
         }
 
+        @Override
         int depth() {
             return _next.depth() + 5;
         }
@@ -1982,10 +2002,12 @@ public class HessianDebugState implements Hessian2Constants {
             _next = next;
         }
 
+        @Override
         int depth() {
             return _next.depth() + 2;
         }
 
+        @Override
         State next(int ch) {
             switch (_state) {
                 case MAJOR:
@@ -2040,6 +2062,7 @@ public class HessianDebugState implements Hessian2Constants {
             println(-2, "Reply");
         }
 
+        @Override
         int depth() {
             return _next.depth() + 2;
         }
@@ -2057,6 +2080,7 @@ public class HessianDebugState implements Hessian2Constants {
             println(-2, "Fault");
         }
 
+        @Override
         int depth() {
             return _next.depth() + 2;
         }
@@ -2072,14 +2096,17 @@ public class HessianDebugState implements Hessian2Constants {
             super(next);
         }
 
+        @Override
         boolean isShift(Object object) {
             return _next.isShift(object);
         }
 
+        @Override
         State shift(Object object) {
             return _next.shift(object);
         }
 
+        @Override
         State next(int ch) {
             return nextObject(ch);
         }
@@ -2098,6 +2125,7 @@ public class HessianDebugState implements Hessian2Constants {
             super(next);
         }
 
+        @Override
         State next(int ch) {
             switch (_state) {
                 case TYPE:
@@ -2138,6 +2166,7 @@ public class HessianDebugState implements Hessian2Constants {
             _childState = new InitialState();
         }
 
+        @Override
         State next(int ch) {
             if (_digit < 2) {
                 _length = 256 * _length + ch;

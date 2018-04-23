@@ -32,6 +32,7 @@ public class ChangeTelnetHandler implements TelnetHandler {
 
     public static final String SERVICE_KEY = "telnet.service";
 
+    @Override
     public String telnet(Channel channel, String message) {
         if (message == null || message.length() == 0) {
             return "Please input service name, eg: \r\ncd XxxService\r\ncd com.xxx.XxxService";

@@ -61,6 +61,7 @@ public class LocaleSerializer extends AbstractSerializer {
         return SERIALIZER;
     }
 
+    @Override
     public void writeObject(Object obj, AbstractHessianOutput out)
             throws IOException {
         if (obj == null)

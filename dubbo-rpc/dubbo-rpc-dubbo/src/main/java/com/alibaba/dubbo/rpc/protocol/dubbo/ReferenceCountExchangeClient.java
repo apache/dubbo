@@ -53,70 +53,87 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
         this.ghostClientMap = ghostClientMap;
     }
 
+    @Override
     public void reset(URL url) {
         client.reset(url);
     }
 
+    @Override
     public ResponseFuture request(Object request) throws RemotingException {
         return client.request(request);
     }
 
+    @Override
     public URL getUrl() {
         return client.getUrl();
     }
 
+    @Override
     public InetSocketAddress getRemoteAddress() {
         return client.getRemoteAddress();
     }
 
+    @Override
     public ChannelHandler getChannelHandler() {
         return client.getChannelHandler();
     }
 
+    @Override
     public ResponseFuture request(Object request, int timeout) throws RemotingException {
         return client.request(request, timeout);
     }
 
+    @Override
     public boolean isConnected() {
         return client.isConnected();
     }
 
+    @Override
     public void reconnect() throws RemotingException {
         client.reconnect();
     }
 
+    @Override
     public InetSocketAddress getLocalAddress() {
         return client.getLocalAddress();
     }
 
+    @Override
     public boolean hasAttribute(String key) {
         return client.hasAttribute(key);
     }
 
+    @Override
     public void reset(Parameters parameters) {
         client.reset(parameters);
     }
 
+    @Override
     public void send(Object message) throws RemotingException {
         client.send(message);
     }
 
+    @Override
     public ExchangeHandler getExchangeHandler() {
         return client.getExchangeHandler();
     }
 
+    @Override
     public Object getAttribute(String key) {
         return client.getAttribute(key);
     }
 
+    @Override
     public void send(Object message, boolean sent) throws RemotingException {
         client.send(message, sent);
     }
 
+    @Override
     public void setAttribute(String key, Object value) {
         client.setAttribute(key, value);
     }
 
+    @Override
     public void removeAttribute(String key) {
         client.removeAttribute(key);
     }
@@ -124,10 +141,12 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
     /**
      * close() is not idempotent any longer
      */
+    @Override
     public void close() {
         close(0);
     }
 
+    @Override
     public void close(int timeout) {
         if (refenceCount.decrementAndGet() <= 0) {
             if (timeout == 0) {
@@ -139,6 +158,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
         }
     }
 
+    @Override
     public void startClose() {
         client.startClose();
     }
@@ -163,6 +183,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
         return gclient;
     }
 
+    @Override
     public boolean isClosed() {
         return client.isClosed();
     }

@@ -67,10 +67,12 @@ public class StringValueDeserializer extends AbstractDeserializer {
         }
     }
 
+    @Override
     public Class getType() {
         return _cl;
     }
 
+    @Override
     public Object readMap(AbstractHessianInput in)
             throws IOException {
         String value = null;
@@ -93,6 +95,7 @@ public class StringValueDeserializer extends AbstractDeserializer {
         return object;
     }
 
+    @Override
     public Object readObject(AbstractHessianInput in, String[] fieldNames)
             throws IOException {
         String value = null;

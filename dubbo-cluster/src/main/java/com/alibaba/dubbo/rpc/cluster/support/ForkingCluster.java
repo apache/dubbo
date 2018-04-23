@@ -29,6 +29,7 @@ public class ForkingCluster implements Cluster {
 
     public final static String NAME = "forking";
 
+    @Override
     public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
         return new ForkingClusterInvoker<T>(directory);
     }

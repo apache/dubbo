@@ -37,6 +37,7 @@ public class JavaObjectInput extends NativeJavaObjectInput {
         super(compacted ? new CompactedObjectInputStream(is) : new ObjectInputStream(is));
     }
 
+    @Override
     public byte[] readBytes() throws IOException {
         int len = getObjectInputStream().readInt();
         if (len < 0)
@@ -51,6 +52,7 @@ public class JavaObjectInput extends NativeJavaObjectInput {
         return b;
     }
 
+    @Override
     public String readUTF() throws IOException {
         int len = getObjectInputStream().readInt();
         if (len < 0)
@@ -59,6 +61,7 @@ public class JavaObjectInput extends NativeJavaObjectInput {
         return getObjectInputStream().readUTF();
     }
 
+    @Override
     public Object readObject() throws IOException, ClassNotFoundException {
         byte b = getObjectInputStream().readByte();
         if (b == 0)
@@ -67,12 +70,14 @@ public class JavaObjectInput extends NativeJavaObjectInput {
         return getObjectInputStream().readObject();
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T readObject(Class<T> cls) throws IOException,
             ClassNotFoundException {
         return (T) readObject();
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T readObject(Class<T> cls, Type type) throws IOException, ClassNotFoundException {
         return (T) readObject();

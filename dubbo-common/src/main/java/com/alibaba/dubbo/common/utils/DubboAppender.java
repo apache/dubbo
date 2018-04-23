@@ -40,6 +40,7 @@ public class DubboAppender extends ConsoleAppender {
         logList.clear();
     }
 
+    @Override
     public void append(LoggingEvent event) {
         super.append(event);
         if (available) {

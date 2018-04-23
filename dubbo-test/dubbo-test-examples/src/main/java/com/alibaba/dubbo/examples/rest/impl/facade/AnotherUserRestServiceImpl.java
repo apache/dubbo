@@ -35,12 +35,14 @@ public class AnotherUserRestServiceImpl implements AnotherUserRestService {
         this.userService = userService;
     }
 
+    @Override
     public User getUser(Long id) {
         System.out.println("Client name is " + RpcContext.getContext().getAttachment("clientName"));
         System.out.println("Client impl is " + RpcContext.getContext().getAttachment("clientImpl"));
         return userService.getUser(id);
     }
 
+    @Override
     public RegistrationResult registerUser(User user) {
         return new RegistrationResult(userService.registerUser(user));
     }

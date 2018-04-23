@@ -42,6 +42,7 @@ public class MultiServiceProcessor implements TProcessor {
     public MultiServiceProcessor() {
     }
 
+    @Override
     public boolean process(TProtocol in, TProtocol out) throws TException {
 
         short magic = in.readI16();
