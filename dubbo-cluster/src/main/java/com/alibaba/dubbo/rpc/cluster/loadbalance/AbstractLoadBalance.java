@@ -31,6 +31,7 @@ import java.util.List;
 public abstract class AbstractLoadBalance implements LoadBalance {
 
     static int calculateWarmupWeight(int uptime, int warmup, int weight, int warmupweight) {
+        // zero (default) means not use
         if (warmupweight > 0) {
             return warmupweight > weight ? weight : warmupweight;
         }
