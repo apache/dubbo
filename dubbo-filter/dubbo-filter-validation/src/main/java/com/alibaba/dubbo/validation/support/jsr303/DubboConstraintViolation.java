@@ -22,8 +22,7 @@ import javax.validation.metadata.ConstraintDescriptor;
 import java.io.Serializable;
 
 /**
- * @author ningyu
- * @date 2018-04-23 15:47
+ * DubboConstraintViolation
  */
 public class DubboConstraintViolation<T> implements ConstraintViolation<T>, Serializable {
 
@@ -58,7 +57,7 @@ public class DubboConstraintViolation<T> implements ConstraintViolation<T>, Seri
 
     @Override
     public String getMessageTemplate() {
-        return null;
+        return message;
     }
 
     @Override
