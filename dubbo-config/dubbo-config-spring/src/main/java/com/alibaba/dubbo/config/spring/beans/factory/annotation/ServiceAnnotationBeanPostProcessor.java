@@ -71,6 +71,8 @@ import static org.springframework.util.ClassUtils.resolveClassName;
 public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistryPostProcessor, EnvironmentAware,
         ResourceLoaderAware, BeanClassLoaderAware {
 
+    private static final String SEPARATOR = ":";
+
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final Set<String> packagesToScan;
@@ -254,7 +256,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
                 buildServiceBeanDefinition(service, interfaceClass, annotatedServiceBeanName);
 
         // ServiceBean Bean name
-        String beanName = generateServiceBeanName(interfaceClass, annotatedServiceBeanName);
+        String beanName = generateServiceBeanName(service, interfaceClass, annotatedServiceBeanName);
 
         if (scanner.checkCandidate(beanName, serviceBeanDefinition)) { // check duplicated candidate bean
             registry.registerBeanDefinition(beanName, serviceBeanDefinition);
@@ -279,14 +281,35 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
     /**
      * Generates the bean name of {@link ServiceBean}
      *
+     * @param service
      * @param interfaceClass           the class of interface annotated {@link Service}
      * @param annotatedServiceBeanName the bean name of annotated {@link Service}
      * @return ServiceBean@interfaceClassName#annotatedServiceBeanName
      * @since 2.5.9
      */
-    private String generateServiceBeanName(Class<?> interfaceClass, String annotatedServiceBeanName) {
+    private String generateServiceBeanName(Service service, Class<?> interfaceClass, String annotatedServiceBeanName) {
 
-        return "ServiceBean@" + interfaceClass.getName() + "#" + annotatedServiceBeanName;
+        StringBuilder beanNameBuilder = new StringBuilder(ServiceBean.class.getSimpleName());
+
+        beanNameBuilder.append(SEPARATOR).append(annotatedServiceBeanName);
+
+        String interfaceClassName = interfaceClass.getName();
+
+        beanNameBuilder.append(SEPARATOR).append(interfaceClassName);
+
+        String version = service.version();
+
+        if (StringUtils.hasText(version)) {
+            beanNameBuilder.append(SEPARATOR).append(version);
+        }
+
+        String group = service.group();
+
+        if (StringUtils.hasText(group)) {
+            beanNameBuilder.append(SEPARATOR).append(group);
+        }
+
+        return beanNameBuilder.toString();
 
     }
 
