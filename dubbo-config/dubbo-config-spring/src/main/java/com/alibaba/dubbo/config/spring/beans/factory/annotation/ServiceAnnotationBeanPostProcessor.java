@@ -21,8 +21,8 @@ import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.dubbo.config.spring.ServiceBean;
 import com.alibaba.dubbo.config.spring.context.annotation.DubboClassPathBeanDefinitionScanner;
-
 import org.springframework.beans.BeansException;
+import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
@@ -56,6 +56,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import static com.alibaba.dubbo.config.spring.util.ObjectUtils.of;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
 import static org.springframework.context.annotation.AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR;
 import static org.springframework.core.annotation.AnnotationUtils.findAnnotation;
@@ -356,11 +357,20 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
     private AbstractBeanDefinition buildServiceBeanDefinition(Service service, Class<?> interfaceClass,
                                                               String annotatedServiceBeanName) {
 
-        BeanDefinitionBuilder builder = rootBeanDefinition(ServiceBean.class)
-                .addConstructorArgValue(service)
-                // References "ref" property to annotated-@Service Bean
-                .addPropertyReference("ref", annotatedServiceBeanName)
-                .addPropertyValue("interface", interfaceClass.getName());
+        BeanDefinitionBuilder builder = rootBeanDefinition(ServiceBean.class);
+
+        AbstractBeanDefinition beanDefinition = builder.getBeanDefinition();
+
+        MutablePropertyValues propertyValues = beanDefinition.getPropertyValues();
+
+        String[] ignoreAttributeNames = of("provider", "monitor", "application", "module", "registry", "protocol", "interface");
+
+        propertyValues.addPropertyValues(new AnnotationPropertyValuesAdapter(service, environment, ignoreAttributeNames));
+
+        // References "ref" property to annotated-@Service Bean
+        addPropertyReference(builder, "ref", annotatedServiceBeanName);
+        // Set interface
+        builder.addPropertyValue("interface", interfaceClass.getName());
 
         /**
          * Add {@link com.alibaba.dubbo.config.ProviderConfig} Bean reference
