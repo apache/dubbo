@@ -23,6 +23,7 @@ import java.util.Map;
 
 public class MapMerger implements Merger<Map<?, ?>> {
 
+    @Override
     public Map<?, ?> merge(Map<?, ?>... items) {
         if (items.length == 0) {
             return null;

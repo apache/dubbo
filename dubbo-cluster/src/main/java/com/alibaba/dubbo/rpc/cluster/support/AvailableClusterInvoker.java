@@ -35,6 +35,7 @@ public class AvailableClusterInvoker<T> extends AbstractClusterInvoker<T> {
         super(directory);
     }
 
+    @Override
     public Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
         for (Invoker<T> invoker : invokers) {
             if (invoker.isAvailable()) {

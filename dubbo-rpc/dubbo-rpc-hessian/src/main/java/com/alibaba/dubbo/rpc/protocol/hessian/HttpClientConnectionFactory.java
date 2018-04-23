@@ -33,11 +33,13 @@ public class HttpClientConnectionFactory implements HessianConnectionFactory {
 
     private final HttpClient httpClient = new DefaultHttpClient();
 
+    @Override
     public void setHessianProxyFactory(HessianProxyFactory factory) {
         HttpConnectionParams.setConnectionTimeout(httpClient.getParams(), (int) factory.getConnectTimeout());
         HttpConnectionParams.setSoTimeout(httpClient.getParams(), (int) factory.getReadTimeout());
     }
 
+    @Override
     public HessianConnection open(URL url) throws IOException {
         return new HttpClientConnection(httpClient, url);
     }

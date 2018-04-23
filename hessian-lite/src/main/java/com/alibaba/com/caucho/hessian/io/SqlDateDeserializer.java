@@ -64,10 +64,12 @@ public class SqlDateDeserializer extends AbstractDeserializer {
         _constructor = cl.getConstructor(new Class[]{long.class});
     }
 
+    @Override
     public Class getType() {
         return _cl;
     }
 
+    @Override
     public Object readMap(AbstractHessianInput in)
             throws IOException {
         int ref = in.addRef(null);
@@ -92,6 +94,7 @@ public class SqlDateDeserializer extends AbstractDeserializer {
         return value;
     }
 
+    @Override
     public Object readObject(AbstractHessianInput in, String[] fieldNames)
             throws IOException {
         int ref = in.addRef(null);

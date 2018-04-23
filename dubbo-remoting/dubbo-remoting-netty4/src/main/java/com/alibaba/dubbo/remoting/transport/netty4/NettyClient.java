@@ -76,6 +76,7 @@ public class NettyClient extends AbstractClient {
 
         bootstrap.handler(new ChannelInitializer() {
 
+            @Override
             protected void initChannel(Channel ch) throws Exception {
                 NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyClient.this);
                 ch.pipeline()//.addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
@@ -86,6 +87,7 @@ public class NettyClient extends AbstractClient {
         });
     }
 
+    @Override
     protected void doConnect() throws Throwable {
         long start = System.currentTimeMillis();
         ChannelFuture future = bootstrap.connect(getConnectAddress());

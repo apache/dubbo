@@ -23,6 +23,7 @@ import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
 
 public class LogFilter implements Filter {
+    @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         System.out.println(invocation.getMethodName() + "is invoked");
         return invoker.invoke(invocation);

@@ -106,12 +106,15 @@ public class ClientReconnectTest {
     }
 
     static class HandlerAdapter extends ExchangeHandlerAdapter {
+        @Override
         public void connected(Channel channel) throws RemotingException {
         }
 
+        @Override
         public void disconnected(Channel channel) throws RemotingException {
         }
 
+        @Override
         public void caught(Channel channel, Throwable exception) throws RemotingException {
         }
     }

@@ -34,9 +34,11 @@ public class AvailableCluster implements Cluster {
 
     public static final String NAME = "available";
 
+    @Override
     public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
 
         return new AbstractClusterInvoker<T>(directory) {
+            @Override
             public Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
                 for (Invoker<T> invoker : invokers) {
                     if (invoker.isAvailable()) {
