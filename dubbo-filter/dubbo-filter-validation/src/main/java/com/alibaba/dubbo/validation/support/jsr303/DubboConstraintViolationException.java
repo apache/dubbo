@@ -21,8 +21,7 @@ import javax.validation.ConstraintViolationException;
 import java.util.Set;
 
 /**
- * @author ningyu
- * @date 2018-04-23 15:47
+ * DubboConstraintViolationException
  */
 public class DubboConstraintViolationException extends ConstraintViolationException {
     private static final long serialVersionUID = -8570552769314565659L;
