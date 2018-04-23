@@ -33,6 +33,7 @@ import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.PriorityOrdered;
+import org.springframework.core.env.Environment;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
@@ -41,9 +42,12 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -73,8 +77,8 @@ public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBean
 
     private ClassLoader classLoader;
 
-    private final ConcurrentMap<String, InjectionMetadata> injectionMetadataCache =
-            new ConcurrentHashMap<String, InjectionMetadata>(256);
+    private final ConcurrentMap<String, ReferenceInjectionMetadata> injectionMetadataCache =
+            new ConcurrentHashMap<String, ReferenceInjectionMetadata>(256);
 
     private final ConcurrentMap<String, ReferenceBean<?>> referenceBeansCache =
             new ConcurrentHashMap<String, ReferenceBean<?>>();
@@ -101,9 +105,9 @@ public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBean
      * @param beanClass The {@link Class} of Bean
      * @return non-null {@link List}
      */
-    private List<InjectionMetadata.InjectedElement> findFieldReferenceMetadata(final Class<?> beanClass) {
+    private List<ReferenceFieldElement> findFieldReferenceMetadata(final Class<?> beanClass) {
 
-        final List<InjectionMetadata.InjectedElement> elements = new LinkedList<InjectionMetadata.InjectedElement>();
+        final List<ReferenceFieldElement> elements = new LinkedList<ReferenceFieldElement>();
 
         ReflectionUtils.doWithFields(beanClass, new ReflectionUtils.FieldCallback() {
             @Override
@@ -136,9 +140,9 @@ public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBean
      * @param beanClass The {@link Class} of Bean
      * @return non-null {@link List}
      */
-    private List<InjectionMetadata.InjectedElement> findMethodReferenceMetadata(final Class<?> beanClass) {
+    private List<ReferenceMethodElement> findMethodReferenceMetadata(final Class<?> beanClass) {
 
-        final List<InjectionMetadata.InjectedElement> elements = new LinkedList<InjectionMetadata.InjectedElement>();
+        final List<ReferenceMethodElement> elements = new LinkedList<ReferenceMethodElement>();
 
         ReflectionUtils.doWithMethods(beanClass, new ReflectionUtils.MethodCallback() {
             @Override
@@ -180,15 +184,10 @@ public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBean
      * @param beanClass
      * @return
      */
-    private InjectionMetadata buildReferenceMetadata(final Class<?> beanClass) {
-
-        final List<InjectionMetadata.InjectedElement> elements = new LinkedList<InjectionMetadata.InjectedElement>();
-
-        elements.addAll(findFieldReferenceMetadata(beanClass));
-
-        elements.addAll(findMethodReferenceMetadata(beanClass));
-
-        return new InjectionMetadata(beanClass, elements);
+    private ReferenceInjectionMetadata buildReferenceMetadata(final Class<?> beanClass) {
+        Collection<ReferenceFieldElement> fieldElements = findFieldReferenceMetadata(beanClass);
+        Collection<ReferenceMethodElement> methodElements = findMethodReferenceMetadata(beanClass);
+        return new ReferenceInjectionMetadata(beanClass, fieldElements, methodElements);
 
     }
 
@@ -196,7 +195,7 @@ public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBean
         // Fall back to class name as cache key, for backwards compatibility with custom callers.
         String cacheKey = (StringUtils.hasLength(beanName) ? beanName : clazz.getName());
         // Quick check on the concurrent map first, with minimal locking.
-        InjectionMetadata metadata = this.injectionMetadataCache.get(cacheKey);
+        ReferenceInjectionMetadata metadata = this.injectionMetadataCache.get(cacheKey);
         if (InjectionMetadata.needsRefresh(metadata, clazz)) {
             synchronized (this.injectionMetadataCache) {
                 metadata = this.injectionMetadataCache.get(cacheKey);
@@ -270,6 +269,43 @@ public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBean
         return this.referenceBeansCache.values();
     }
 
+
+    /**
+     * {@link Reference} {@link InjectionMetadata} implementation
+     *
+     * @since 2.5.11
+     */
+    private static class ReferenceInjectionMetadata extends InjectionMetadata {
+
+        private final Collection<ReferenceFieldElement> fieldElements;
+
+        private final Collection<ReferenceMethodElement> methodElements;
+
+
+        public ReferenceInjectionMetadata(Class<?> targetClass, Collection<ReferenceFieldElement> fieldElements,
+                                          Collection<ReferenceMethodElement> methodElements) {
+            super(targetClass, combine(fieldElements, methodElements));
+            this.fieldElements = fieldElements;
+            this.methodElements = methodElements;
+        }
+
+        private static <T> Collection<T> combine(Collection<? extends T>... elements) {
+            List<T> allElements = new ArrayList<T>();
+            for (Collection<? extends T> e : elements) {
+                allElements.addAll(e);
+            }
+            return allElements;
+        }
+
+        public Collection<ReferenceFieldElement> getFieldElements() {
+            return fieldElements;
+        }
+
+        public Collection<ReferenceMethodElement> getMethodElements() {
+            return methodElements;
+        }
+    }
+
     /**
      * {@link Reference} {@link Method} {@link InjectionMetadata.InjectedElement}
      */
@@ -278,6 +314,8 @@ public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBean
         private final Method method;
 
         private final Reference reference;
+
+        private volatile ReferenceBean<?> referenceBean;
 
         protected ReferenceMethodElement(Method method, PropertyDescriptor pd, Reference reference) {
             super(method, pd);
@@ -290,11 +328,11 @@ public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBean
 
             Class<?> referenceClass = pd.getPropertyType();
 
-            Object referenceBean = buildReferenceBean(reference, referenceClass);
+            referenceBean = buildReferenceBean(reference, referenceClass);
 
             ReflectionUtils.makeAccessible(method);
 
-            method.invoke(bean, referenceBean);
+            method.invoke(bean, referenceBean.getObject());
 
         }
 
@@ -309,6 +347,8 @@ public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBean
 
         private final Reference reference;
 
+        private volatile ReferenceBean<?> referenceBean;
+
         protected ReferenceFieldElement(Field field, Reference reference) {
             super(field, null);
             this.field = field;
@@ -320,17 +360,17 @@ public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBean
 
             Class<?> referenceClass = field.getType();
 
-            Object referenceBean = buildReferenceBean(reference, referenceClass);
+            referenceBean = buildReferenceBean(reference, referenceClass);
 
             ReflectionUtils.makeAccessible(field);
 
-            field.set(bean, referenceBean);
+            field.set(bean, referenceBean.getObject());
 
         }
 
     }
 
-    private Object buildReferenceBean(Reference reference, Class<?> referenceClass) throws Exception {
+    private ReferenceBean<?> buildReferenceBean(Reference reference, Class<?> referenceClass) throws Exception {
 
         String referenceBeanCacheKey = generateReferenceBeanCacheKey(reference, referenceClass);
 
@@ -348,8 +388,8 @@ public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBean
 
         }
 
+        return referenceBean;
 
-        return referenceBean.get();
     }
 
 
@@ -360,11 +400,17 @@ public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBean
      * @param beanClass {@link Class}
      * @return
      */
-    private static String generateReferenceBeanCacheKey(Reference reference, Class<?> beanClass) {
+    private String generateReferenceBeanCacheKey(Reference reference, Class<?> beanClass) {
 
         String interfaceName = resolveInterfaceName(reference, beanClass);
 
-        String key = reference.group() + "/" + interfaceName + ":" + reference.version();
+        String key = reference.url() + "/" + interfaceName +
+                "/" + reference.version() +
+                "/" + reference.group();
+
+        Environment environment = applicationContext.getEnvironment();
+
+        key = environment.resolvePlaceholders(key);
 
         return key;
 
@@ -389,5 +435,71 @@ public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBean
         return interfaceName;
 
     }
+
+
+    /**
+     * Get {@link ReferenceBean} {@link Map} in injected field.
+     *
+     * @return non-null {@link Map}
+     * @since 2.5.11
+     */
+    public Map<InjectionMetadata.InjectedElement, ReferenceBean<?>> getInjectedFieldReferenceBeanMap() {
+
+        Map<InjectionMetadata.InjectedElement, ReferenceBean<?>> injectedElementReferenceBeanMap =
+                new LinkedHashMap<InjectionMetadata.InjectedElement, ReferenceBean<?>>();
+
+        for (ReferenceInjectionMetadata metadata : injectionMetadataCache.values()) {
+
+            Collection<ReferenceFieldElement> fieldElements = metadata.getFieldElements();
+
+            for (ReferenceFieldElement fieldElement : fieldElements) {
+
+                injectedElementReferenceBeanMap.put(fieldElement, fieldElement.referenceBean);
+
+            }
+
+        }
+
+        return injectedElementReferenceBeanMap;
+
+    }
+
+    /**
+     * Get {@link ReferenceBean} {@link Map} in injected method.
+     *
+     * @return non-null {@link Map}
+     * @since 2.5.11
+     */
+    public Map<InjectionMetadata.InjectedElement, ReferenceBean<?>> getInjectedMethodReferenceBeanMap() {
+
+        Map<InjectionMetadata.InjectedElement, ReferenceBean<?>> injectedElementReferenceBeanMap =
+                new LinkedHashMap<InjectionMetadata.InjectedElement, ReferenceBean<?>>();
+
+        for (ReferenceInjectionMetadata metadata : injectionMetadataCache.values()) {
+
+            Collection<ReferenceMethodElement> methodElements = metadata.getMethodElements();
+
+            for (ReferenceMethodElement methodElement : methodElements) {
+
+                injectedElementReferenceBeanMap.put(methodElement, methodElement.referenceBean);
+
+            }
+
+        }
+
+        return injectedElementReferenceBeanMap;
+
+    }
+
+    private <T> T getFieldValue(Object object, String fieldName, Class<T> fieldType) {
+
+        Field field = ReflectionUtils.findField(object.getClass(), fieldName, fieldType);
+
+        ReflectionUtils.makeAccessible(field);
+
+        return (T) ReflectionUtils.getField(field, object);
+
+    }
+
 
 }
