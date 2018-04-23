@@ -19,12 +19,18 @@ package com.alibaba.dubbo.config.spring.beans.factory.annotation;
 import com.alibaba.dubbo.config.ConsumerConfig;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.spring.ReferenceBean;
+import com.alibaba.dubbo.config.spring.convert.converter.StringArrayToMapConverter;
+import com.alibaba.dubbo.config.spring.convert.converter.StringArrayToStringConverter;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.validation.DataBinder;
 
 import static com.alibaba.dubbo.config.spring.util.BeanFactoryUtils.getOptionalBean;
+import static com.alibaba.dubbo.config.spring.util.ObjectUtils.of;
 
 /**
  * {@link ReferenceBean} Builder
@@ -80,13 +86,29 @@ class ReferenceBeanBuilder extends AbstractAnnotationConfigBeanBuilder<Reference
 
     @Override
     protected ReferenceBean doBuild() {
-        return new ReferenceBean<Object>(annotation);
+        return new ReferenceBean<Object>();
     }
 
     @Override
-    protected void preConfigureBean(Reference annotation, ReferenceBean bean) {
+    protected void preConfigureBean(Reference reference, ReferenceBean referenceBean) {
         Assert.notNull(interfaceClass, "The interface class must set first!");
+        DataBinder dataBinder = new DataBinder(referenceBean);
+        // Set ConversionService
+        dataBinder.setConversionService(getConversionService());
+        // Ignore those fields
+        String[] ignoreAttributeNames = of("application", "module", "consumer", "monitor", "registry");
+//        dataBinder.setDisallowedFields(ignoreAttributeNames);
+        // Bind annotation attributes
+        dataBinder.bind(new AnnotationPropertyValuesAdapter(reference, applicationContext.getEnvironment(), ignoreAttributeNames));
     }
+
+    private ConversionService getConversionService() {
+        DefaultConversionService conversionService = new DefaultConversionService();
+        conversionService.addConverter(new StringArrayToStringConverter());
+        conversionService.addConverter(new StringArrayToMapConverter());
+        return conversionService;
+    }
+
 
     @Override
     protected String resolveModuleConfigBeanName(Reference annotation) {
