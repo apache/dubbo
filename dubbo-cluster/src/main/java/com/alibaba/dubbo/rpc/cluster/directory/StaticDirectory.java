@@ -135,10 +135,12 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
         return Collections.unmodifiableMap(newMethodInvokerMap);
     }
 
+    @Override
     public Class<T> getInterface() {
         return invokers.get(0).getInterface();
     }
 
+    @Override
     public boolean isAvailable() {
         if (isDestroyed()) {
             return false;
@@ -151,6 +153,7 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
         return false;
     }
 
+    @Override
     public void destroy() {
         if (isDestroyed()) {
             return;

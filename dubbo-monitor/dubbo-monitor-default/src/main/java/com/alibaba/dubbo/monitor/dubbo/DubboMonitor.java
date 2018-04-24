@@ -16,6 +16,7 @@
  */
 package com.alibaba.dubbo.monitor.dubbo;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
@@ -61,6 +62,7 @@ public class DubboMonitor implements Monitor {
         this.monitorInterval = monitorInvoker.getUrl().getPositiveParameter("interval", 60000);
         // collect timer for collecting statistics data
         sendFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
+            @Override
             public void run() {
                 // collect data
                 try {
@@ -73,9 +75,7 @@ public class DubboMonitor implements Monitor {
     }
 
     public void send() {
-        if (logger.isInfoEnabled()) {
-            logger.info("Send statistics to monitor " + getUrl());
-        }
+        logger.debug("Send statistics to monitor " + getUrl());
         String timestamp = String.valueOf(System.currentTimeMillis());
         for (Map.Entry<Statistics, AtomicReference<long[]>> entry : statisticsMap.entrySet()) {
             // get statistics data
@@ -92,6 +92,7 @@ public class DubboMonitor implements Monitor {
             long maxOutput = numbers[7];
             long maxElapsed = numbers[8];
             long maxConcurrent = numbers[9];
+            String version = getUrl().getParameter(Constants.DEFAULT_PROTOCOL);
 
             // send statistics data
             URL url = statistics.getUrl()
@@ -105,7 +106,8 @@ public class DubboMonitor implements Monitor {
                             MonitorService.MAX_INPUT, String.valueOf(maxInput),
                             MonitorService.MAX_OUTPUT, String.valueOf(maxOutput),
                             MonitorService.MAX_ELAPSED, String.valueOf(maxElapsed),
-                            MonitorService.MAX_CONCURRENT, String.valueOf(maxConcurrent)
+                            MonitorService.MAX_CONCURRENT, String.valueOf(maxConcurrent),
+                            Constants.DEFAULT_PROTOCOL, version
                     );
             monitorService.collect(url);
 
@@ -133,6 +135,7 @@ public class DubboMonitor implements Monitor {
         }
     }
 
+    @Override
     public void collect(URL url) {
         // data to collect from url
         int success = url.getParameter(MonitorService.SUCCESS, 0);
@@ -179,18 +182,22 @@ public class DubboMonitor implements Monitor {
         } while (!reference.compareAndSet(current, update));
     }
 
+    @Override
     public List<URL> lookup(URL query) {
         return monitorService.lookup(query);
     }
 
+    @Override
     public URL getUrl() {
         return monitorInvoker.getUrl();
     }
 
+    @Override
     public boolean isAvailable() {
         return monitorInvoker.isAvailable();
     }
 
+    @Override
     public void destroy() {
         try {
             sendFuture.cancel(true);

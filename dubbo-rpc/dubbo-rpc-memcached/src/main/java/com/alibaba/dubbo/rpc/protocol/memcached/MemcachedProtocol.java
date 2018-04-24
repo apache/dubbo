@@ -45,14 +45,17 @@ public class MemcachedProtocol extends AbstractProtocol {
 
     public static final int DEFAULT_PORT = 11211;
 
+    @Override
     public int getDefaultPort() {
         return DEFAULT_PORT;
     }
 
+    @Override
     public <T> Exporter<T> export(final Invoker<T> invoker) throws RpcException {
         throw new UnsupportedOperationException("Unsupported export memcached service. url: " + invoker.getUrl());
     }
 
+    @Override
     public <T> Invoker<T> refer(final Class<T> type, final URL url) throws RpcException {
         try {
             String address = url.getAddress();
@@ -67,6 +70,7 @@ public class MemcachedProtocol extends AbstractProtocol {
             final String set = url.getParameter("set", Map.class.equals(type) ? "put" : "set");
             final String delete = url.getParameter("delete", Map.class.equals(type) ? "remove" : "delete");
             return new AbstractInvoker<T>(type, url) {
+                @Override
                 protected Result doInvoke(Invocation invocation) throws Throwable {
                     try {
                         if (get.equals(invocation.getMethodName())) {
@@ -100,6 +104,7 @@ public class MemcachedProtocol extends AbstractProtocol {
                     }
                 }
 
+                @Override
                 public void destroy() {
                     super.destroy();
                     try {

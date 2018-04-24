@@ -54,10 +54,12 @@ import java.io.IOException;
  * Deserializing an object.
  */
 abstract public class AbstractDeserializer implements Deserializer {
+    @Override
     public Class getType() {
         return Object.class;
     }
 
+    @Override
     public Object readObject(AbstractHessianInput in)
             throws IOException {
         Object obj = in.readObject();
@@ -70,6 +72,7 @@ abstract public class AbstractDeserializer implements Deserializer {
             throw error(className + ": unexpected null value");
     }
 
+    @Override
     public Object readList(AbstractHessianInput in, int length)
             throws IOException {
         throw new UnsupportedOperationException(String.valueOf(this));
@@ -83,6 +86,7 @@ abstract public class AbstractDeserializer implements Deserializer {
         throw new UnsupportedOperationException(String.valueOf(this));
     }
 
+    @Override
     public Object readLengthList(AbstractHessianInput in, int length)
             throws IOException {
         throw new UnsupportedOperationException(String.valueOf(this));
@@ -96,6 +100,7 @@ abstract public class AbstractDeserializer implements Deserializer {
         throw new UnsupportedOperationException(String.valueOf(this));
     }
 
+    @Override
     public Object readMap(AbstractHessianInput in)
             throws IOException {
         Object obj = in.readObject();
@@ -116,6 +121,7 @@ abstract public class AbstractDeserializer implements Deserializer {
         throw new UnsupportedOperationException(String.valueOf(this));
     }
 
+    @Override
     public Object readObject(AbstractHessianInput in, String[] fieldNames)
             throws IOException {
         throw new UnsupportedOperationException(String.valueOf(this));

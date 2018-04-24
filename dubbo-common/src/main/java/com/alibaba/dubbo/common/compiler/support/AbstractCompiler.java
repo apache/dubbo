@@ -31,6 +31,7 @@ public abstract class AbstractCompiler implements Compiler {
 
     private static final Pattern CLASS_PATTERN = Pattern.compile("class\\s+([$_a-zA-Z][$_a-zA-Z0-9]*)\\s+");
 
+    @Override
     public Class<?> compile(String code, ClassLoader classLoader) {
         code = code.trim();
         Matcher matcher = PACKAGE_PATTERN.matcher(code);

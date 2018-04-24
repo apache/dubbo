@@ -48,6 +48,7 @@ public class DubboHttpServer extends BaseRestServer {
         this.httpBinder = httpBinder;
     }
 
+    @Override
     protected void doStart(URL url) {
         // TODO jetty will by default enable keepAlive so the xml config has no effect now
         httpServer = httpBinder.bind(url, new RestHandler());
@@ -70,16 +71,19 @@ public class DubboHttpServer extends BaseRestServer {
         }
     }
 
+    @Override
     public void stop() {
         httpServer.close();
     }
 
+    @Override
     protected ResteasyDeployment getDeployment() {
         return deployment;
     }
 
     private class RestHandler implements HttpHandler {
 
+        @Override
         public void handle(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
             RpcContext.getContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
             dispatcher.service(request, response);
@@ -94,24 +98,30 @@ public class DubboHttpServer extends BaseRestServer {
             this.servletContext = servletContext;
         }
 
+        @Override
         public String getServletName() {
             return "DispatcherServlet";
         }
 
+        @Override
         public ServletContext getServletContext() {
             return servletContext;
         }
 
+        @Override
         public String getInitParameter(String s) {
             return null;
         }
 
+        @Override
         public Enumeration getInitParameterNames() {
             return new Enumeration() {
+                @Override
                 public boolean hasMoreElements() {
                     return false;
                 }
 
+                @Override
                 public Object nextElement() {
                     return null;
                 }

@@ -50,30 +50,37 @@ public class MockRegistry implements Registry {
         return url;
     }
 
+    @Override
     public boolean isAvailable() {
         return true;
     }
 
+    @Override
     public void destroy() {
 
     }
 
+    @Override
     public void register(URL url) {
         registered.add(url);
     }
 
+    @Override
     public void unregister(URL url) {
         registered.remove(url);
     }
 
+    @Override
     public void subscribe(URL url, NotifyListener listener) {
         subscribered.add(url);
     }
 
+    @Override
     public void unsubscribe(URL url, NotifyListener listener) {
         subscribered.remove(url);
     }
 
+    @Override
     public List<URL> lookup(URL url) {
         return null;
     }

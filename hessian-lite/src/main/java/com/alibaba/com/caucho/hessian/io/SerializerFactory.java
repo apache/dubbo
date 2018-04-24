@@ -404,6 +404,7 @@ public class SerializerFactory extends AbstractSerializerFactory {
      * @param cl the class of the object that needs to be deserialized.
      * @return a deserializer object for the serialization.
      */
+    @Override
     public Deserializer getDeserializer(Class cl)
             throws HessianProtocolException {
         Deserializer deserializer;

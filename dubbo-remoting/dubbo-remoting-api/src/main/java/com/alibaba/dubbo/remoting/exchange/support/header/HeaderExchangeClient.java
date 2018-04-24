@@ -49,8 +49,8 @@ public class HeaderExchangeClient implements ExchangeClient {
     private final ExchangeChannel channel;
     // heartbeat timer
     private ScheduledFuture<?> heartbeatTimer;
+    // heartbeat(ms), default value is 0 , won't execute a heartbeat.
     private int heartbeat;
-    // heartbeat timeout (ms), default value is 0 , won't execute a heartbeat.
     private int heartbeatTimeout;
 
     public HeaderExchangeClient(Client client, boolean needHeartbeat) {
@@ -66,59 +66,72 @@ public class HeaderExchangeClient implements ExchangeClient {
             throw new IllegalStateException("heartbeatTimeout < heartbeatInterval * 2");
         }
         if (needHeartbeat) {
-            startHeatbeatTimer();
+            startHeartbeatTimer();
         }
     }
 
+    @Override
     public ResponseFuture request(Object request) throws RemotingException {
         return channel.request(request);
     }
 
+    @Override
     public URL getUrl() {
         return channel.getUrl();
     }
 
+    @Override
     public InetSocketAddress getRemoteAddress() {
         return channel.getRemoteAddress();
     }
 
+    @Override
     public ResponseFuture request(Object request, int timeout) throws RemotingException {
         return channel.request(request, timeout);
     }
 
+    @Override
     public ChannelHandler getChannelHandler() {
         return channel.getChannelHandler();
     }
 
+    @Override
     public boolean isConnected() {
         return channel.isConnected();
     }
 
+    @Override
     public InetSocketAddress getLocalAddress() {
         return channel.getLocalAddress();
     }
 
+    @Override
     public ExchangeHandler getExchangeHandler() {
         return channel.getExchangeHandler();
     }
 
+    @Override
     public void send(Object message) throws RemotingException {
         channel.send(message);
     }
 
+    @Override
     public void send(Object message, boolean sent) throws RemotingException {
         channel.send(message, sent);
     }
 
+    @Override
     public boolean isClosed() {
         return channel.isClosed();
     }
 
+    @Override
     public void close() {
         doClose();
         channel.close();
     }
 
+    @Override
     public void close(int timeout) {
         // Mark the client into the closure process
         startClose();
@@ -131,40 +144,48 @@ public class HeaderExchangeClient implements ExchangeClient {
         channel.startClose();
     }
 
+    @Override
     public void reset(URL url) {
         client.reset(url);
     }
 
+    @Override
     @Deprecated
     public void reset(com.alibaba.dubbo.common.Parameters parameters) {
         reset(getUrl().addParameters(parameters.getParameters()));
     }
 
+    @Override
     public void reconnect() throws RemotingException {
         client.reconnect();
     }
 
+    @Override
     public Object getAttribute(String key) {
         return channel.getAttribute(key);
     }
 
+    @Override
     public void setAttribute(String key, Object value) {
         channel.setAttribute(key, value);
     }
 
+    @Override
     public void removeAttribute(String key) {
         channel.removeAttribute(key);
     }
 
+    @Override
     public boolean hasAttribute(String key) {
         return channel.hasAttribute(key);
     }
 
-    private void startHeatbeatTimer() {
+    private void startHeartbeatTimer() {
         stopHeartbeatTimer();
         if (heartbeat > 0) {
             heartbeatTimer = scheduled.scheduleWithFixedDelay(
                     new HeartBeatTask(new HeartBeatTask.ChannelProvider() {
+                        @Override
                         public Collection<Channel> getChannels() {
                             return Collections.<Channel>singletonList(HeaderExchangeClient.this);
                         }

@@ -35,14 +35,17 @@ public class ExecutionChannelHandler extends WrappedChannelHandler {
         super(handler, url);
     }
 
+    @Override
     public void connected(Channel channel) throws RemotingException {
         executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.CONNECTED));
     }
 
+    @Override
     public void disconnected(Channel channel) throws RemotingException {
         executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.DISCONNECTED));
     }
 
+    @Override
     public void received(Channel channel, Object message) throws RemotingException {
     	try {
             executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
@@ -65,6 +68,7 @@ public class ExecutionChannelHandler extends WrappedChannelHandler {
         }
     }
 
+    @Override
     public void caught(Channel channel, Throwable exception) throws RemotingException {
         executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.CAUGHT, exception));
     }

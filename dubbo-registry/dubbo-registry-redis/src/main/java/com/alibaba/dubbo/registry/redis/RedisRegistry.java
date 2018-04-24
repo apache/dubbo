@@ -152,6 +152,7 @@ public class RedisRegistry extends FailbackRegistry {
 
         this.expirePeriod = url.getParameter(Constants.SESSION_TIMEOUT_KEY, Constants.DEFAULT_SESSION_TIMEOUT);
         this.expireFuture = expireExecutor.scheduleWithFixedDelay(new Runnable() {
+            @Override
             public void run() {
                 try {
                     deferExpired(); // Extend the expiration time
@@ -221,6 +222,7 @@ public class RedisRegistry extends FailbackRegistry {
         }
     }
 
+    @Override
     public boolean isAvailable() {
         for (JedisPool jedisPool : jedisPools.values()) {
             try {

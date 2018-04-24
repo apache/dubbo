@@ -111,22 +111,27 @@ public class HeartbeatHandlerTest {
             return request;
         }
 
+        @Override
         public void connected(Channel channel) throws RemotingException {
             ++connectCount;
         }
 
+        @Override
         public void disconnected(Channel channel) throws RemotingException {
             ++disconnectCount;
         }
 
+        @Override
         public void sent(Channel channel, Object message) throws RemotingException {
 
         }
 
+        @Override
         public void received(Channel channel, Object message) throws RemotingException {
             logger.error(this.getClass().getSimpleName() + message.toString());
         }
 
+        @Override
         public void caught(Channel channel, Throwable exception) throws RemotingException {
             exception.printStackTrace();
         }

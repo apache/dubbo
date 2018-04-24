@@ -144,6 +144,7 @@ public class ConditionRouter implements Router, Comparable<Router> {
         return condition;
     }
 
+    @Override
     public <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation)
             throws RpcException {
         if (invokers == null || invokers.isEmpty()) {
@@ -175,10 +176,12 @@ public class ConditionRouter implements Router, Comparable<Router> {
         return invokers;
     }
 
+    @Override
     public URL getUrl() {
         return url;
     }
 
+    @Override
     public int compareTo(Router o) {
         if (o == null || o.getClass() != ConditionRouter.class) {
             return 1;

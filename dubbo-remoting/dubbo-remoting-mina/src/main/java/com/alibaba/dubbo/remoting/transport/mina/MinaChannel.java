@@ -66,24 +66,28 @@ final class MinaChannel extends AbstractChannel {
         return ret;
     }
 
-    static void removeChannelIfDisconnectd(IoSession session) {
+    static void removeChannelIfDisconnected(IoSession session) {
         if (session != null && !session.isConnected()) {
             session.removeAttribute(CHANNEL_KEY);
         }
     }
 
+    @Override
     public InetSocketAddress getLocalAddress() {
         return (InetSocketAddress) session.getLocalAddress();
     }
 
+    @Override
     public InetSocketAddress getRemoteAddress() {
         return (InetSocketAddress) session.getRemoteAddress();
     }
 
+    @Override
     public boolean isConnected() {
         return session.isConnected();
     }
 
+    @Override
     public void send(Object message, boolean sent) throws RemotingException {
         super.send(message, sent);
 
@@ -105,6 +109,7 @@ final class MinaChannel extends AbstractChannel {
         }
     }
 
+    @Override
     public void close() {
         try {
             super.close();
@@ -112,7 +117,7 @@ final class MinaChannel extends AbstractChannel {
             logger.warn(e.getMessage(), e);
         }
         try {
-            removeChannelIfDisconnectd(session);
+            removeChannelIfDisconnected(session);
         } catch (Exception e) {
             logger.warn(e.getMessage(), e);
         }
@@ -126,18 +131,22 @@ final class MinaChannel extends AbstractChannel {
         }
     }
 
+    @Override
     public boolean hasAttribute(String key) {
         return session.containsAttribute(key);
     }
 
+    @Override
     public Object getAttribute(String key) {
         return session.getAttribute(key);
     }
 
+    @Override
     public void setAttribute(String key, Object value) {
         session.setAttribute(key, value);
     }
 
+    @Override
     public void removeAttribute(String key) {
         session.removeAttribute(key);
     }

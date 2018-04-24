@@ -26,6 +26,7 @@ import javax.ws.rs.ext.ExceptionMapper;
 
 public class RpcExceptionMapper implements ExceptionMapper<RpcException> {
 
+    @Override
     public Response toResponse(RpcException e) {
         // TODO do more sophisticated exception handling and output
         if (e.getCause() instanceof ConstraintViolationException) {

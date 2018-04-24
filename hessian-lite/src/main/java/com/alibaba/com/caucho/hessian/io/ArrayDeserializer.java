@@ -73,6 +73,7 @@ public class ArrayDeserializer extends AbstractListDeserializer {
             _type = Object[].class;
     }
 
+    @Override
     public Class getType() {
         return _type;
     }
@@ -80,6 +81,7 @@ public class ArrayDeserializer extends AbstractListDeserializer {
     /**
      * Reads the array.
      */
+    @Override
     public Object readList(AbstractHessianInput in, int length)
             throws IOException {
         if (length >= 0) {
@@ -124,6 +126,7 @@ public class ArrayDeserializer extends AbstractListDeserializer {
     /**
      * Reads the array.
      */
+    @Override
     public Object readLengthList(AbstractHessianInput in, int length)
             throws IOException {
         Object[] data = createArray(length);
@@ -148,6 +151,7 @@ public class ArrayDeserializer extends AbstractListDeserializer {
             return new Object[length];
     }
 
+    @Override
     public String toString() {
         return "ArrayDeserializer[" + _componentType + "]";
     }

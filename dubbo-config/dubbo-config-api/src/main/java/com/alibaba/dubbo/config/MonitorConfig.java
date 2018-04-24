@@ -41,6 +41,8 @@ public class MonitorConfig extends AbstractConfig {
 
     private String version;
 
+    private String interval;
+
     // customized parameters
     private Map<String, String> parameters;
 
@@ -121,6 +123,14 @@ public class MonitorConfig extends AbstractConfig {
 
     public void setDefault(Boolean isDefault) {
         this.isDefault = isDefault;
+    }
+
+    public void setInterval(String interval){
+        this.interval = interval;
+    }
+
+    public String getInterval(){
+        return interval;
     }
 
 }

@@ -39,23 +39,27 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
         super(handler);
     }
 
+    @Override
     public void connected(Channel channel) throws RemotingException {
         setReadTimestamp(channel);
         setWriteTimestamp(channel);
         handler.connected(channel);
     }
 
+    @Override
     public void disconnected(Channel channel) throws RemotingException {
         clearReadTimestamp(channel);
         clearWriteTimestamp(channel);
         handler.disconnected(channel);
     }
 
+    @Override
     public void sent(Channel channel, Object message) throws RemotingException {
         setWriteTimestamp(channel);
         handler.sent(channel, message);
     }
 
+    @Override
     public void received(Channel channel, Object message) throws RemotingException {
         setReadTimestamp(channel);
         if (isHeartbeatRequest(message)) {
@@ -77,11 +81,7 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
         }
         if (isHeartbeatResponse(message)) {
             if (logger.isDebugEnabled()) {
-                logger.debug(
-                        new StringBuilder(32)
-                                .append("Receive heartbeat response in thread ")
-                                .append(Thread.currentThread().getName())
-                                .toString());
+                logger.debug("Receive heartbeat response in thread " + Thread.currentThread().getName());
             }
             return;
         }
