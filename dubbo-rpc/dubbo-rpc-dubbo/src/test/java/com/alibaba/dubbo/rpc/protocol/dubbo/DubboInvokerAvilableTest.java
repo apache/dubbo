@@ -20,7 +20,10 @@ package com.alibaba.dubbo.rpc.protocol.dubbo;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
+import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
+import com.alibaba.dubbo.remoting.exchange.support.header.HeaderExchangeServer;
+import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.ProxyFactory;
 import com.alibaba.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
@@ -76,6 +79,30 @@ public class DubboInvokerAvilableTest {
     }
 
     @Test
+    public void test_normal_channel_close_wait_gracefully() throws Exception {
+
+        URL url = URL.valueOf("dubbo://127.0.0.1:20883/hi?scope=true&lazy=false");
+        Exporter<IDemoService> exporter = ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, url);
+        Exporter<IDemoService> exporter0 = ProtocolUtils.export(new DemoServiceImpl0(), IDemoService.class, url);
+
+        DubboInvoker<?> invoker = (DubboInvoker<?>) protocol.refer(IDemoService.class, url);
+
+        long start = System.currentTimeMillis();
+
+        try{
+            System.setProperty(Constants.SHUTDOWN_WAIT_KEY, "2000");
+            protocol.destroy();
+        }finally {
+            System.getProperties().remove(Constants.SHUTDOWN_WAIT_KEY);
+        }
+
+        long waitTime = System.currentTimeMillis() - start;
+
+        Assert.assertTrue(waitTime >= 2000);
+        Assert.assertEquals(false, invoker.isAvailable());
+    }
+
+    @Test
     public void test_NoInvokers() throws Exception {
         URL url = URL.valueOf("dubbo://127.0.0.1:20883/hi?connections=1");
         ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, url);
@@ -125,6 +152,12 @@ public class DubboInvokerAvilableTest {
     }
 
     public class DemoServiceImpl implements IDemoService {
+        public String get() {
+            return "ok";
+        }
+    }
+
+    public class DemoServiceImpl0 implements IDemoService {
         public String get() {
             return "ok";
         }
