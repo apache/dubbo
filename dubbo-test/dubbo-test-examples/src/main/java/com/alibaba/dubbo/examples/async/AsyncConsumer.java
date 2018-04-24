@@ -37,6 +37,7 @@ public class AsyncConsumer {
         final AsyncService asyncService = (AsyncService) context.getBean("asyncService");
 
         Future<String> f = RpcContext.getContext().asyncCall(new Callable<String>() {
+            @Override
             public String call() throws Exception {
                 return asyncService.sayHello("async call request");
             }
@@ -45,6 +46,7 @@ public class AsyncConsumer {
         System.out.println("async call ret :" + f.get());
 
         RpcContext.getContext().asyncCall(new Runnable() {
+            @Override
             public void run() {
                 asyncService.sayHello("oneway call request1");
                 asyncService.sayHello("oneway call request2");

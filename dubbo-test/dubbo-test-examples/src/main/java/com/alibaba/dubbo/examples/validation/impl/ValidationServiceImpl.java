@@ -24,12 +24,15 @@ import com.alibaba.dubbo.examples.validation.api.ValidationService;
  */
 public class ValidationServiceImpl implements ValidationService {
 
+    @Override
     public void save(ValidationParameter parameter) {
     }
 
+    @Override
     public void update(ValidationParameter parameter) {
     }
 
+    @Override
     public void delete(long id, String operator) {
     }
 

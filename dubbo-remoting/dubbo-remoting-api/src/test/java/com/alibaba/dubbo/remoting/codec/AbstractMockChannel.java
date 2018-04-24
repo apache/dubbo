@@ -53,18 +53,22 @@ public class AbstractMockChannel implements Channel {
         this.handler = handler;
     }
 
+    @Override
     public URL getUrl() {
         return remoteUrl;
     }
 
+    @Override
     public ChannelHandler getChannelHandler() {
         return handler;
     }
 
+    @Override
     public InetSocketAddress getLocalAddress() {
         return localAddress;
     }
 
+    @Override
     public void send(Object message) throws RemotingException {
         if (remoteUrl.getParameter(ERROR_WHEN_SEND, Boolean.FALSE)) {
             receivedMessage = null;
@@ -74,14 +78,17 @@ public class AbstractMockChannel implements Channel {
         }
     }
 
+    @Override
     public void send(Object message, boolean sent) throws RemotingException {
         send(message);
     }
 
+    @Override
     public void close() {
         close(0);
     }
 
+    @Override
     public void close(int timeout) {
         isClosed = true;
     }
@@ -91,30 +98,37 @@ public class AbstractMockChannel implements Channel {
         closing = true;
     }
 
+    @Override
     public boolean isClosed() {
         return isClosed;
     }
 
+    @Override
     public InetSocketAddress getRemoteAddress() {
         return remoteAddress;
     }
 
+    @Override
     public boolean isConnected() {
         return isClosed;
     }
 
+    @Override
     public boolean hasAttribute(String key) {
         return attributes.containsKey(key);
     }
 
+    @Override
     public Object getAttribute(String key) {
         return attributes.get(key);
     }
 
+    @Override
     public void setAttribute(String key, Object value) {
         attributes.put(key, value);
     }
 
+    @Override
     public void removeAttribute(String key) {
         attributes.remove(key);
     }

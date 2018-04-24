@@ -33,6 +33,7 @@ import java.util.List;
  */
 public class MockInvokersSelector implements Router {
 
+    @Override
     public <T> List<Invoker<T>> route(final List<Invoker<T>> invokers,
                                       URL url, final Invocation invocation) throws RpcException {
         if (invocation.getAttachments() == null) {
@@ -86,10 +87,12 @@ public class MockInvokersSelector implements Router {
         return hasMockProvider;
     }
 
+    @Override
     public URL getUrl() {
         return null;
     }
 
+    @Override
     public int compareTo(Router o) {
         return 1;
     }

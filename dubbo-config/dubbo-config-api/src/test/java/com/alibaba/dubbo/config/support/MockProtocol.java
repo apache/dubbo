@@ -29,6 +29,7 @@ public class MockProtocol implements Protocol {
     /* (non-Javadoc)
      * @see com.alibaba.dubbo.rpc.Protocol#getDefaultPort()
      */
+    @Override
     public int getDefaultPort() {
 
         return 0;
@@ -49,6 +50,7 @@ public class MockProtocol implements Protocol {
         final URL u = url;
 
         return new Invoker<T>() {
+            @Override
             public Class<T> getInterface() {
                 return null;
             }
@@ -57,6 +59,7 @@ public class MockProtocol implements Protocol {
                 return u;
             }
 
+            @Override
             public boolean isAvailable() {
                 return true;
             }
@@ -65,6 +68,7 @@ public class MockProtocol implements Protocol {
                 return null;
             }
 
+            @Override
             public void destroy() {
 
             }
@@ -74,6 +78,7 @@ public class MockProtocol implements Protocol {
     /* (non-Javadoc)
      * @see com.alibaba.dubbo.rpc.Protocol#destroy()
      */
+    @Override
     public void destroy() {
 
     }

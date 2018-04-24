@@ -87,6 +87,7 @@ public class BasicSerializer extends AbstractSerializer {
         this.code = code;
     }
 
+    @Override
     public void writeObject(Object obj, AbstractHessianOutput out)
             throws IOException {
         switch (code) {

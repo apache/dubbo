@@ -87,6 +87,7 @@ public abstract class AbstractClientRunnable implements ClientRunnable {
         }
     }
 
+    @Override
     public void run() {
         try {
             barrier.await();
@@ -148,6 +149,7 @@ public abstract class AbstractClientRunnable implements ClientRunnable {
 
     public abstract Object invoke(ServiceFactory<?> serviceFactory);
 
+    @Override
     public List<long[]> getResults() {
         List<long[]> results = new ArrayList<long[]>();
         results.add(responseSpreads);

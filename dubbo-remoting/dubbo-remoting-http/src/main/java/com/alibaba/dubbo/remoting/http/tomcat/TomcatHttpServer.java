@@ -74,6 +74,7 @@ public class TomcatHttpServer extends AbstractHttpServer {
         }
     }
 
+    @Override
     public void close() {
         super.close();
 

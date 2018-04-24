@@ -40,10 +40,12 @@ public class AbstractMonitorFactoryTest {
                     return url;
                 }
 
+                @Override
                 public boolean isAvailable() {
                     return true;
                 }
 
+                @Override
                 public void destroy() {
                 }
 

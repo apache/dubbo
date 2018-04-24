@@ -53,6 +53,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
             }
             client = builder.build();
             client.getConnectionStateListenable().addListener(new ConnectionStateListener() {
+                @Override
                 public void stateChanged(CuratorFramework client, ConnectionState state) {
                     if (state == ConnectionState.LOST) {
                         CuratorZookeeperClient.this.stateChanged(StateListener.DISCONNECTED);
@@ -69,6 +70,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
         }
     }
 
+    @Override
     public void createPersistent(String path) {
         try {
             client.create().forPath(path);
@@ -78,6 +80,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
         }
     }
 
+    @Override
     public void createEphemeral(String path) {
         try {
             client.create().withMode(CreateMode.EPHEMERAL).forPath(path);
@@ -87,6 +90,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
         }
     }
 
+    @Override
     public void delete(String path) {
         try {
             client.delete().forPath(path);
@@ -96,6 +100,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
         }
     }
 
+    @Override
     public List<String> getChildren(String path) {
         try {
             return client.getChildren().forPath(path);
@@ -106,6 +111,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
         }
     }
 
+    @Override
     public boolean checkExists(String path) {
         try {
             if (client.checkExists().forPath(path) != null) {
@@ -115,18 +121,22 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
         }
         return false;
     }
+    @Override
     public boolean isConnected() {
         return client.getZookeeperClient().isConnected();
     }
 
+    @Override
     public void doClose() {
         client.close();
     }
 
+    @Override
     public CuratorWatcher createTargetChildListener(String path, ChildListener listener) {
         return new CuratorWatcherImpl(listener);
     }
 
+    @Override
     public List<String> addTargetChildListener(String path, CuratorWatcher listener) {
         try {
             return client.getChildren().usingWatcher(listener).forPath(path);
@@ -137,6 +147,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
         }
     }
 
+    @Override
     public void removeTargetChildListener(String path, CuratorWatcher listener) {
         ((CuratorWatcherImpl) listener).unwatch();
     }
@@ -153,6 +164,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
             this.listener = null;
         }
 
+        @Override
         public void process(WatchedEvent event) throws Exception {
             if (listener != null) {
                 String path = event.getPath() == null ? "" : event.getPath();
