@@ -17,86 +17,104 @@
 package com.alibaba.dubbo.registry.redis;
 
 import com.alibaba.dubbo.common.URL;
-
+import com.alibaba.dubbo.common.utils.NetUtils;
+import com.alibaba.dubbo.registry.NotifyListener;
+import com.alibaba.dubbo.registry.Registry;
+import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
+import redis.embedded.RedisServer;
 
-/**
- * RedisRegistryTest
- *
- */
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static com.alibaba.dubbo.common.Constants.BACKUP_KEY;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+
 public class RedisRegistryTest {
 
-    String service = "com.alibaba.dubbo.test.injvmServie";
-    URL registryUrl = URL.valueOf("redis://239.255.255.255/");
-    URL registryUrlWithPasswd = URL.valueOf("zookeeper://239.255.255.255?password=123456");
-    URL serviceUrl = URL.valueOf("redis://redis/" + service
-            + "?notify=false&methods=test1,test2");
-    URL consumerUrl = URL.valueOf("redis://consumer/" + service + "?notify=false&methods=test1,test2");
-    // RedisRegistry registry    = new RedisRegistry(registryUrl);
-    // RedisRegistry registryWithPasswd  = new RedisRegistry(registryUrlWithPasswd);
+    private String service = "com.alibaba.dubbo.test.injvmServie";
+    private URL serviceUrl = URL.valueOf("redis://redis/" + service + "?notify=false&methods=test1,test2");
+    private RedisServer redisServer;
+    private RedisRegistry redisRegistry;
+    private URL registryUrl;
 
-    /**
-     * @throws java.lang.Exception
-     */
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
-    }
-
-    /**
-     * @throws java.lang.Exception
-     */
     @Before
     public void setUp() throws Exception {
-        //registry.register(serviceUrl);
+        int redisPort = NetUtils.getAvailablePort();
+        this.redisServer = new RedisServer(redisPort);
+        this.redisServer.start();
+        this.registryUrl = URL.valueOf("redis://localhost:" + redisPort);
+
+        redisRegistry = (RedisRegistry) new RedisRegistryFactory().createRegistry(registryUrl);
     }
 
-    /**
-     * Test method for {@link com.alibaba.dubbo.registry.redis.RedisRegistry#getRegistered()}.
-     */
+    @After
+    public void tearDown() throws Exception {
+        this.redisServer.stop();
+    }
+
     @Test
     public void testRegister() {
-        /*List<URL> registered = null;
-        // clear first
-        registered = registry.getRegistered(service);
+        Set<URL> registered = null;
 
         for (int i = 0; i < 2; i++) {
-            registry.register(service, serviceUrl);
-            registered = registry.getRegistered(service);
-            assertTrue(registered.contains(serviceUrl));
+            redisRegistry.register(serviceUrl);
+            registered = redisRegistry.getRegistered();
+            assertThat(registered.contains(serviceUrl), is(true));
         }
-        // confirm only 1 regist success;
-        registered = registry.getRegistered(service);
-        assertEquals(1, registered.size());*/
+
+        registered = redisRegistry.getRegistered();
+        assertThat(registered.size(), is(1));
     }
 
-    /**
-     * Test method for
-     * {@link com.alibaba.dubbo.registry.redis.RedisRegistry#subscribe(URL, com.alibaba.dubbo.registry.NotifyListener)}
-     * .
-     */
-    @Test
-    public void testSubscribe() {
-        /*final String subscribearg = "arg1=1&arg2=2";
-        // verify lisener.
-        final AtomicReference<Map<String, String>> args = new AtomicReference<Map<String, String>>();
-        registry.subscribe(service, new URL("dubbo", NetUtils.getLocalHost(), 0, StringUtils.parseQueryString(subscribearg)), new NotifyListener() {
+    @Test(expected = IllegalStateException.class)
+    public void testAnyHost() {
+        URL errorUrl = URL.valueOf("multicast://0.0.0.0/");
+        new RedisRegistryFactory().createRegistry(errorUrl);
+    }
 
+
+    @Test
+    public void testSubscribeAndUnsubscribe() {
+        NotifyListener listener = new NotifyListener() {
+            @Override
             public void notify(List<URL> urls) {
-                // FIXME assertEquals(RedisRegistry.this.service, service);
-                args.set(urls.get(0).getParameters());
-            }
-        });
-        assertEquals(serviceUrl.toParameterString(), StringUtils.toQueryString(args.get()));
-        Map<String, String> arg = registry.getSubscribed(service);
-        assertEquals(subscribearg, StringUtils.toQueryString(arg));*/
 
+            }
+        };
+        redisRegistry.subscribe(serviceUrl, listener);
+
+        Map<URL, Set<NotifyListener>> subscribed = redisRegistry.getSubscribed();
+        assertThat(subscribed.size(), is(1));
+        assertThat(subscribed.get(serviceUrl).size(), is(1));
+
+        redisRegistry.unsubscribe(serviceUrl, listener);
+        subscribed = redisRegistry.getSubscribed();
+        assertThat(subscribed.get(serviceUrl).size(), is(0));
     }
 
     @Test
-    public void testRedisPasswd() {
-        // Assert.assertNotNull(registryWithPasswd);
+    public void testAvailable() {
+        redisRegistry.register(serviceUrl);
+        assertThat(redisRegistry.isAvailable(), is(true));
+
+        redisRegistry.destroy();
+        assertThat(redisRegistry.isAvailable(), is(false));
     }
 
+    @Test
+    public void testAvailableWithBackup() {
+        URL url = URL.valueOf("redis://redisOne:8880").addParameter(BACKUP_KEY, "redisTwo:8881");
+        Registry registry = new RedisRegistryFactory().createRegistry(url);
+
+        assertThat(registry.isAvailable(), is(false));
+
+        url = URL.valueOf(this.registryUrl.toFullString()).addParameter(BACKUP_KEY, "redisTwo:8881");
+        registry = new RedisRegistryFactory().createRegistry(url);
+
+        assertThat(registry.isAvailable(), is(true));
+    }
 }

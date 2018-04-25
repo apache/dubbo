@@ -116,7 +116,7 @@ public class ConfigUtilsTest {
         expected.put("fixed", "com.alibaba.dubbo.common.threadpool.support.fixed.FixedThreadPool");
         expected.put("cached", "com.alibaba.dubbo.common.threadpool.support.cached.CachedThreadPool");
         expected.put("limited", "com.alibaba.dubbo.common.threadpool.support.limited.LimitedThreadPool");
-        expected.put("enhanced", "com.alibaba.dubbo.common.threadpool.support.enhanced.EnhancedThreadPool");
+        expected.put("eager", "com.alibaba.dubbo.common.threadpool.support.eager.EagerThreadPool");
 
         Assert.assertEquals(expected, p);
     }

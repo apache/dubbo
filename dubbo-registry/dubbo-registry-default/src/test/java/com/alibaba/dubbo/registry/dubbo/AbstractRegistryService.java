@@ -55,6 +55,7 @@ public abstract class AbstractRegistryService implements RegistryService {
     // Map<serviceName, List<notificationListener>>
     private final ConcurrentMap<String, List<NotifyListener>> notifyListeners = new ConcurrentHashMap<String, List<NotifyListener>>();
 
+    @Override
     public void register(URL url) {
         if (logger.isInfoEnabled()) {
             logger.info("Register service: " + url.getServiceKey() + ",url:" + url);
@@ -62,6 +63,7 @@ public abstract class AbstractRegistryService implements RegistryService {
         register(url.getServiceKey(), url);
     }
 
+    @Override
     public void unregister(URL url) {
         if (logger.isInfoEnabled()) {
             logger.info("Unregister service: " + url.getServiceKey() + ",url:" + url);
@@ -69,6 +71,7 @@ public abstract class AbstractRegistryService implements RegistryService {
         unregister(url.getServiceKey(), url);
     }
 
+    @Override
     public void subscribe(URL url, NotifyListener listener) {
         if (logger.isInfoEnabled()) {
             logger.info("Subscribe service: " + url.getServiceKey() + ",url:" + url);
@@ -76,6 +79,7 @@ public abstract class AbstractRegistryService implements RegistryService {
         subscribe(url.getServiceKey(), url, listener);
     }
 
+    @Override
     public void unsubscribe(URL url, NotifyListener listener) {
         if (logger.isInfoEnabled()) {
             logger.info("Unsubscribe service: " + url.getServiceKey() + ",url:" + url);
@@ -83,6 +87,7 @@ public abstract class AbstractRegistryService implements RegistryService {
         unsubscribe(url.getServiceKey(), url, listener);
     }
 
+    @Override
     public List<URL> lookup(URL url) {
         return getRegistered(url.getServiceKey());
     }
