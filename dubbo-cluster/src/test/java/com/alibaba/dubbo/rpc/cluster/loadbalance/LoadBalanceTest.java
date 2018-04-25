@@ -25,7 +25,6 @@ import com.alibaba.dubbo.rpc.RpcStatus;
 import com.alibaba.dubbo.rpc.cluster.LoadBalance;
 
 import junit.framework.Assert;
-import org.easymock.EasyMock;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -35,6 +34,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 
 /**
  * RoundRobinLoadBalanceTest
@@ -63,14 +65,14 @@ public class LoadBalanceTest {
     @Before
     public void setUp() throws Exception {
 
-        invocation = EasyMock.createMock(Invocation.class);
-        EasyMock.expect(invocation.getMethodName()).andReturn("method1").anyTimes();
+        invocation = mock(Invocation.class);
+        given(invocation.getMethodName()).willReturn("method1");
 
-        invoker1 = EasyMock.createMock(Invoker.class);
-        invoker2 = EasyMock.createMock(Invoker.class);
-        invoker3 = EasyMock.createMock(Invoker.class);
-        invoker4 = EasyMock.createMock(Invoker.class);
-        invoker5 = EasyMock.createMock(Invoker.class);
+        invoker1 = mock(Invoker.class);
+        invoker2 = mock(Invoker.class);
+        invoker3 = mock(Invoker.class);
+        invoker4 = mock(Invoker.class);
+        invoker5 = mock(Invoker.class);
 
         URL url1 = URL.valueOf("test://127.0.0.1:1/DemoService");
         URL url2 = URL.valueOf("test://127.0.0.1:2/DemoService");
@@ -78,27 +80,25 @@ public class LoadBalanceTest {
         URL url4 = URL.valueOf("test://127.0.0.1:4/DemoService");
         URL url5 = URL.valueOf("test://127.0.0.1:5/DemoService");
 
-        EasyMock.expect(invoker1.isAvailable()).andReturn(true).anyTimes();
-        EasyMock.expect(invoker1.getInterface()).andReturn(LoadBalanceTest.class).anyTimes();
-        EasyMock.expect(invoker1.getUrl()).andReturn(url1).anyTimes();
+        given(invoker1.isAvailable()).willReturn(true);
+        given(invoker1.getInterface()).willReturn(LoadBalanceTest.class);
+        given(invoker1.getUrl()).willReturn(url1);
 
-        EasyMock.expect(invoker2.isAvailable()).andReturn(true).anyTimes();
-        EasyMock.expect(invoker2.getInterface()).andReturn(LoadBalanceTest.class).anyTimes();
-        EasyMock.expect(invoker2.getUrl()).andReturn(url2).anyTimes();
+        given(invoker2.isAvailable()).willReturn(true);
+        given(invoker2.getInterface()).willReturn(LoadBalanceTest.class);
+        given(invoker2.getUrl()).willReturn(url2);
 
-        EasyMock.expect(invoker3.isAvailable()).andReturn(true).anyTimes();
-        EasyMock.expect(invoker3.getInterface()).andReturn(LoadBalanceTest.class).anyTimes();
-        EasyMock.expect(invoker3.getUrl()).andReturn(url3).anyTimes();
+        given(invoker3.isAvailable()).willReturn(true);
+        given(invoker3.getInterface()).willReturn(LoadBalanceTest.class);
+        given(invoker3.getUrl()).willReturn(url3);
 
-        EasyMock.expect(invoker4.isAvailable()).andReturn(true).anyTimes();
-        EasyMock.expect(invoker4.getInterface()).andReturn(LoadBalanceTest.class).anyTimes();
-        EasyMock.expect(invoker4.getUrl()).andReturn(url4).anyTimes();
+        given(invoker4.isAvailable()).willReturn(true);
+        given(invoker4.getInterface()).willReturn(LoadBalanceTest.class);
+        given(invoker4.getUrl()).willReturn(url4);
 
-        EasyMock.expect(invoker5.isAvailable()).andReturn(true).anyTimes();
-        EasyMock.expect(invoker5.getInterface()).andReturn(LoadBalanceTest.class).anyTimes();
-        EasyMock.expect(invoker5.getUrl()).andReturn(url5).anyTimes();
-
-        EasyMock.replay(invocation, invoker1, invoker2, invoker3, invoker4, invoker5);
+        given(invoker5.isAvailable()).willReturn(true);
+        given(invoker5.getInterface()).willReturn(LoadBalanceTest.class);
+        given(invoker5.getUrl()).willReturn(url5);
 
         invokers.add(invoker1);
         invokers.add(invoker2);

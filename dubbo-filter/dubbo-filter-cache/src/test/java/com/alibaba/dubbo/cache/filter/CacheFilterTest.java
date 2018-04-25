@@ -22,17 +22,19 @@ import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
 
-import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+
 public class CacheFilterTest {
     private static RpcInvocation invocation;
     static CacheFilter cacheFilter = new CacheFilter();
-    static Invoker<?> invoker = EasyMock.createMock(Invoker.class);
-    static Invoker<?> invoker1 = EasyMock.createMock(Invoker.class);
-    static Invoker<?> invoker2 = EasyMock.createMock(Invoker.class);
+    static Invoker<?> invoker = mock(Invoker.class);
+    static Invoker<?> invoker1 = mock(Invoker.class);
+    static Invoker<?> invoker2 = mock(Invoker.class);
 
     @BeforeClass
     public static void setUp() {
@@ -41,17 +43,14 @@ public class CacheFilterTest {
 
         URL url = URL.valueOf("test://test:11/test?cache=lru");
 
-        EasyMock.expect(invoker.invoke(invocation)).andReturn(new RpcResult(new String("value"))).anyTimes();
-        EasyMock.expect(invoker.getUrl()).andReturn(url).anyTimes();
-        EasyMock.replay(invoker);
+        given(invoker.invoke(invocation)).willReturn(new RpcResult(new String("value")));
+        given(invoker.getUrl()).willReturn(url);
 
-        EasyMock.expect(invoker1.invoke(invocation)).andReturn(new RpcResult(new String("value1"))).anyTimes();
-        EasyMock.expect(invoker1.getUrl()).andReturn(url).anyTimes();
-        EasyMock.replay(invoker1);
+        given(invoker1.invoke(invocation)).willReturn(new RpcResult(new String("value1")));
+        given(invoker1.getUrl()).willReturn(url);
 
-        EasyMock.expect(invoker2.invoke(invocation)).andReturn(new RpcResult(new String("value2"))).anyTimes();
-        EasyMock.expect(invoker2.getUrl()).andReturn(url).anyTimes();
-        EasyMock.replay(invoker2);
+        given(invoker2.invoke(invocation)).willReturn(new RpcResult(new String("value2")));
+        given(invoker2.getUrl()).willReturn(url);
     }
 
     @Test

@@ -191,13 +191,6 @@ cache-api:
   * HOMEPAGE:
     * https://github.com/jsr107/jsr107spec
 
-easymock
-
-  * LICENSE:
-    * http://www.apache.org/licenses/LICENSE-2.0 (Apache License 2.0)
-  * HOMEPAGE:
-    * http://easymock.org
-
 cglib-nodep
 
   * LICENSE:
@@ -218,13 +211,6 @@ fst
     * http://www.apache.org/licenses/LICENSE-2.0 (Apache License 2.0)
   * HOMEPAGE:
     * http://ruedigermoeller.github.io/fast-serialization
-
-jmockit
-
-  * LICENSE:
-    * https://opensource.org/licenses/MIT (MIT)
-  * HOMEPAGE:
-    * http://www.jmockit.org
 
 jedis
 
