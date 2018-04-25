@@ -259,7 +259,7 @@ The Apache Software License, Version 1.1
 For the com.alibaba.dubbo.common.concurrent package:
 
 This product bundles and repackages the following code in Google Guava 16.0.1, which is available under a
-"Apache License 2.0" license. For details, see http://apache.org/licenses/LICENSE-2.0.txt.
+"Apache License 2.0" license. For details, see https://github.com/google/guava/blob/v16.0.1/COPYING.
 
  * com.google.common.util.concurrent.ExecutionList
  * com.google.common.util.concurrent.ListenableFuture
