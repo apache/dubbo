@@ -212,12 +212,19 @@ fst
   * HOMEPAGE:
     * http://ruedigermoeller.github.io/fast-serialization
 
+mockito
+
+  * LICENSE:
+    * https://opensource.org/licenses/MIT (MIT)
+  * HOMEPAGE:
+    * http://site.mockito.org
+
 jedis
 
   * LICENSE:
     * https://opensource.org/licenses/MIT (MIT)
   * HOMEPAGE:
-    * http://www.jmockit.org
+    * https://github.com/xetorthio/jedis
 
 javax.servlet-api:
 
