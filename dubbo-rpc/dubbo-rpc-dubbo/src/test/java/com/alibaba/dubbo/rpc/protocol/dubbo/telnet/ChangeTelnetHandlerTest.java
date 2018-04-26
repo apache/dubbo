@@ -25,13 +25,15 @@ import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
 import com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService;
 import com.alibaba.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
-import org.easymock.EasyMock;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 
 /**
  * ChangeTelnetHandlerTest.java
@@ -50,26 +52,29 @@ public class ChangeTelnetHandlerTest {
     @SuppressWarnings("unchecked")
     @Before
     public void setUp() {
-        mockChannel = EasyMock.createMock(Channel.class);
-        mockInvoker = EasyMock.createMock(Invoker.class);
-        EasyMock.expect(mockChannel.getAttribute("telnet.service")).andReturn("com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService").anyTimes();
+        mockChannel = mock(Channel.class);
+        mockInvoker = mock(Invoker.class);
+        given(mockChannel.getAttribute("telnet.service")).willReturn("com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService");
         mockChannel.setAttribute("telnet.service", "DemoService");
-        EasyMock.expectLastCall().anyTimes();
+        givenLastCall();
         mockChannel.setAttribute("telnet.service", "com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService");
-        EasyMock.expectLastCall().anyTimes();
+        givenLastCall();
         mockChannel.setAttribute("telnet.service", "demo");
-        EasyMock.expectLastCall().anyTimes();
+        givenLastCall();
         mockChannel.removeAttribute("telnet.service");
-        EasyMock.expectLastCall().anyTimes();
-        EasyMock.expect(mockInvoker.getInterface()).andReturn(DemoService.class).anyTimes();
-        EasyMock.expect(mockInvoker.getUrl()).andReturn(URL.valueOf("dubbo://127.0.0.1:20883/demo")).anyTimes();
-        EasyMock.replay(mockChannel, mockInvoker);
+        givenLastCall();
+        given(mockInvoker.getInterface()).willReturn(DemoService.class);
+        given(mockInvoker.getUrl()).willReturn(URL.valueOf("dubbo://127.0.0.1:20883/demo"));
+    }
+
+    private void givenLastCall() {
+
     }
 
     @After
     public void after() {
         ProtocolUtils.closeAll();
-        EasyMock.reset(mockChannel, mockInvoker);
+        reset(mockChannel, mockInvoker);
     }
 
     @Test
