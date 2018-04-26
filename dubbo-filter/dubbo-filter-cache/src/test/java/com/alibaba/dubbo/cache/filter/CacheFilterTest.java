@@ -16,15 +16,17 @@
  */
 package com.alibaba.dubbo.cache.filter;
 
+import com.alibaba.dubbo.cache.support.expiry.ExpiryCache;
 import com.alibaba.dubbo.cache.support.lru.LruCacheFactory;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
-
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.util.concurrent.TimeUnit;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -75,5 +77,19 @@ public class CacheFilterTest {
         RpcResult rpcResult1 = (RpcResult) cacheFilter.invoke(invoker1, invocation);
         RpcResult rpcResult2 = (RpcResult) cacheFilter.invoke(invoker2, invocation);
         Assert.assertEquals(rpcResult1.getValue(), rpcResult2.getValue());
+    }
+
+    @Test
+    public void test_Expire_Map() {
+        URL url = URL.valueOf("test://test:11/test?cache=expiry&cache.seconds=3&cache.interval=1");
+        ExpiryCache expiryCache = new ExpiryCache(url);
+        expiryCache.put("first", new Object());
+        System.out.println(expiryCache.get("first"));
+        try {
+            TimeUnit.SECONDS.sleep(4);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println(expiryCache.get("first"));
     }
 }
