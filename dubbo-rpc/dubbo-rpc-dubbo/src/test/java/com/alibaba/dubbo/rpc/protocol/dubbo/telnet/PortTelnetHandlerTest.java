@@ -26,13 +26,14 @@ import com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol;
 import com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService;
 import com.alibaba.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
-import org.easymock.EasyMock;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 
 /**
  * PortTelnetHandlerTest.java
@@ -45,16 +46,15 @@ public class PortTelnetHandlerTest {
     @SuppressWarnings("unchecked")
     @Before
     public void before() {
-        mockInvoker = EasyMock.createMock(Invoker.class);
-        EasyMock.expect(mockInvoker.getInterface()).andReturn(DemoService.class).anyTimes();
-        EasyMock.expect(mockInvoker.getUrl()).andReturn(URL.valueOf("dubbo://127.0.0.1:20887/demo")).anyTimes();
-        EasyMock.replay(mockInvoker);
+        mockInvoker = mock(Invoker.class);
+        given(mockInvoker.getInterface()).willReturn(DemoService.class);
+        given(mockInvoker.getUrl()).willReturn(URL.valueOf("dubbo://127.0.0.1:20887/demo"));
+
         DubboProtocol.getDubboProtocol().export(mockInvoker);
     }
 
     @After
     public void after() {
-        EasyMock.reset(mockInvoker);
         ProtocolUtils.closeAll();
     }
 
@@ -75,7 +75,6 @@ public class PortTelnetHandlerTest {
         System.out.printf("Client 2 Address %s %n", client2Addr);
         assertTrue(result.contains(String.valueOf(client1.getLocalAddress().getPort())));
         assertTrue(result.contains(String.valueOf(client2.getLocalAddress().getPort())));
-
     }
 
     @Test
