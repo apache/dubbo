@@ -23,9 +23,15 @@ import com.alibaba.dubbo.common.utils.NetUtils;
 public class FailsafeLogger implements Logger {
 
     private Logger logger;
+    private boolean append = true;
 
     public FailsafeLogger(Logger logger) {
         this.logger = logger;
+    }
+
+    public FailsafeLogger(Logger logger, boolean append) {
+        this.logger = logger;
+        this.append = append;
     }
 
     public Logger getLogger() {
@@ -37,7 +43,8 @@ public class FailsafeLogger implements Logger {
     }
 
     private String appendContextMessage(String msg) {
-        return " [DUBBO] " + msg + ", dubbo version: " + Version.getVersion() + ", current host: " + NetUtils.getLocalHost();
+        return append ? " [DUBBO] " + msg + ", dubbo version: " + Version.getVersion() + ", current host: " +
+                NetUtils.getLocalHost() : msg;
     }
 
     @Override
