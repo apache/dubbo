@@ -35,7 +35,7 @@ public class NettyHelper {
 
         @Override
         public InternalLogger newInstance(String name) {
-            return new DubboLogger(LoggerFactory.getLogger(name));
+            return new DubboLogger(LoggerFactory.getLogger(name, name.startsWith("com.alibaba.dubbo.")));
         }
     }
 

@@ -119,6 +119,15 @@ public class LoggerFactory {
         return logger;
     }
 
+    public static Logger getLogger(String key, boolean appendContext) {
+        FailsafeLogger logger = LOGGERS.get(key);
+        if (logger == null) {
+            LOGGERS.putIfAbsent(key, new FailsafeLogger(LOGGER_ADAPTER.getLogger(key), appendContext));
+            logger = LOGGERS.get(key);
+        }
+        return logger;
+    }
+
     /**
      * Get logging level
      *
