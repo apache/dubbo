@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.remoting.zookeeper.curator;
+package com.alibaba.dubbo.remoting.zookeeper.zkclient;
 
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
-import org.apache.curator.framework.api.CuratorWatcher;
+import com.alibaba.dubbo.remoting.zookeeper.StateListener;
+import org.I0Itec.zkclient.IZkChildListener;
 import org.apache.curator.test.TestingServer;
-import org.apache.zookeeper.WatchedEvent;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,55 +31,69 @@ import java.util.concurrent.CountDownLatch;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
-public class CuratorZookeeperClientTest {
+public class ZkclientZookeeperClientTest {
     private TestingServer zkServer;
-    private CuratorZookeeperClient curatorClient;
+    private ZkclientZookeeperClient zkclientZookeeperClient;
 
     @Before
     public void setUp() throws Exception {
         int zkServerPort = NetUtils.getAvailablePort();
         zkServer = new TestingServer(zkServerPort, true);
-        curatorClient = new CuratorZookeeperClient(URL.valueOf("zookeeper://127.0.0.1:" +
+        zkclientZookeeperClient = new ZkclientZookeeperClient(URL.valueOf("zookeeper://127.0.0.1:" +
                 zkServerPort + "/com.alibaba.dubbo.registry.RegistryService"));
     }
 
     @Test
     public void testCheckExists() {
         String path = "/dubbo/com.alibaba.dubbo.demo.DemoService/providers";
-        curatorClient.create(path, false);
-        assertThat(curatorClient.checkExists(path), is(true));
-        assertThat(curatorClient.checkExists(path + "/noneexits"), is(false));
+        zkclientZookeeperClient.create(path, false);
+        assertThat(zkclientZookeeperClient.checkExists(path), is(true));
+        assertThat(zkclientZookeeperClient.checkExists(path + "/noneexits"), is(false));
     }
 
     @Test
-    public void testChildrenPath() {
+    public void testDeletePath() {
         String path = "/dubbo/com.alibaba.dubbo.demo.DemoService/providers";
-        curatorClient.create(path, false);
-        curatorClient.create(path + "/provider1", false);
-        curatorClient.create(path + "/provider2", false);
+        zkclientZookeeperClient.create(path, false);
+        assertThat(zkclientZookeeperClient.checkExists(path), is(true));
 
-        List<String> children = curatorClient.getChildren(path);
-        assertThat(children.size(), is(2));
+        zkclientZookeeperClient.delete(path);
+        assertThat(zkclientZookeeperClient.checkExists(path), is(false));
+    }
+
+    @Test
+    public void testConnectState() throws Exception {
+        assertThat(zkclientZookeeperClient.isConnected(), is(true));
+        final CountDownLatch stopLatch = new CountDownLatch(1);
+        zkclientZookeeperClient.addStateListener(new StateListener() {
+            @Override
+            public void stateChanged(int connected) {
+                stopLatch.countDown();
+            }
+        });
+        zkServer.stop();
+        stopLatch.await();
+        assertThat(zkclientZookeeperClient.isConnected(), is(false));
     }
 
     @Test
     public void testChildrenListener() throws InterruptedException {
         String path = "/dubbo/com.alibaba.dubbo.demo.DemoService/providers";
-        curatorClient.create(path, false);
+        zkclientZookeeperClient.create(path, false);
         final CountDownLatch countDownLatch = new CountDownLatch(1);
-        curatorClient.addTargetChildListener(path, new CuratorWatcher() {
+        zkclientZookeeperClient.addTargetChildListener(path, new IZkChildListener() {
             @Override
-            public void process(WatchedEvent watchedEvent) throws Exception {
+            public void handleChildChange(String s, List<String> list) throws Exception {
                 countDownLatch.countDown();
             }
         });
-        curatorClient.createPersistent(path + "/provider1");
+        zkclientZookeeperClient.createPersistent(path + "/provider1");
         countDownLatch.await();
     }
 
     @After
     public void tearDown() throws Exception {
-        curatorClient.close();
+        zkclientZookeeperClient.close();
         zkServer.stop();
     }
 }
