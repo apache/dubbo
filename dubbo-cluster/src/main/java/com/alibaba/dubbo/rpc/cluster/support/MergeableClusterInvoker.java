@@ -57,6 +57,7 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
         this.directory = directory;
     }
 
+    @Override
     @SuppressWarnings("rawtypes")
     public Result invoke(final Invocation invocation) throws RpcException {
         List<Invoker<T>> invokers = directory.list(invocation);
@@ -82,6 +83,7 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
         Map<String, Future<Result>> results = new HashMap<String, Future<Result>>();
         for (final Invoker<T> invoker : invokers) {
             Future<Result> future = executor.submit(new Callable<Result>() {
+                @Override
                 public Result call() throws Exception {
                     return invoker.invoke(new RpcInvocation(invocation, invoker));
                 }
@@ -168,18 +170,22 @@ public class MergeableClusterInvoker<T> implements Invoker<T> {
         return new RpcResult(result);
     }
 
+    @Override
     public Class<T> getInterface() {
         return directory.getInterface();
     }
 
+    @Override
     public URL getUrl() {
         return directory.getUrl();
     }
 
+    @Override
     public boolean isAvailable() {
         return directory.isAvailable();
     }
 
+    @Override
     public void destroy() {
         directory.destroy();
     }

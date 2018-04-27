@@ -24,6 +24,7 @@ import javax.ws.rs.ext.ExceptionMapper;
 
 public class CustomExceptionMapper implements ExceptionMapper<NotFoundException> {
 
+    @Override
     public Response toResponse(NotFoundException e) {
         System.out.println("Exception mapper successfully got an exception: " + e + ":" + e.getMessage());
         System.out.println("Client IP is " + RpcContext.getContext().getRemoteAddressString());

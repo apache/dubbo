@@ -89,6 +89,7 @@ public class HessianDebugInputStream extends InputStream {
     /**
      * Reads a character.
      */
+    @Override
     public int read()
             throws IOException {
         int ch;
@@ -109,6 +110,7 @@ public class HessianDebugInputStream extends InputStream {
     /**
      * closes the stream.
      */
+    @Override
     public void close()
             throws IOException {
         InputStream is = _is;
@@ -138,6 +140,7 @@ public class HessianDebugInputStream extends InputStream {
                 _sb.append((char) ch);
         }
 
+        @Override
         public void write(char[] buffer, int offset, int length) {
             for (int i = 0; i < length; i++) {
                 char ch = buffer[offset + i];
@@ -150,9 +153,11 @@ public class HessianDebugInputStream extends InputStream {
             }
         }
 
+        @Override
         public void flush() {
         }
 
+        @Override
         public void close() {
         }
     }

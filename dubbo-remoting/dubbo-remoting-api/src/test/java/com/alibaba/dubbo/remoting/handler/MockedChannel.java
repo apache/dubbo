@@ -37,31 +37,38 @@ public class MockedChannel implements Channel {
     }
 
 
+    @Override
     public URL getUrl() {
         return url;
     }
 
+    @Override
     public ChannelHandler getChannelHandler() {
 
         return this.handler;
     }
 
+    @Override
     public InetSocketAddress getLocalAddress() {
 
         return null;
     }
 
+    @Override
     public void send(Object message) throws RemotingException {
     }
 
+    @Override
     public void send(Object message, boolean sent) throws RemotingException {
         this.send(message);
     }
 
+    @Override
     public void close() {
         isClosed = true;
     }
 
+    @Override
     public void close(int timeout) {
         this.close();
     }
@@ -71,30 +78,37 @@ public class MockedChannel implements Channel {
         closing = true;
     }
 
+    @Override
     public boolean isClosed() {
         return isClosed;
     }
 
+    @Override
     public InetSocketAddress getRemoteAddress() {
         return null;
     }
 
+    @Override
     public boolean isConnected() {
         return false;
     }
 
+    @Override
     public boolean hasAttribute(String key) {
         return map.containsKey(key);
     }
 
+    @Override
     public Object getAttribute(String key) {
         return map.get(key);
     }
 
+    @Override
     public void setAttribute(String key, Object value) {
         map.put(key, value);
     }
 
+    @Override
     public void removeAttribute(String key) {
         map.remove(key);
     }

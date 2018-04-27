@@ -207,6 +207,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
         if (delay != null && delay > 0) {
             delayExportExecutor.schedule(new Runnable() {
+                @Override
                 public void run() {
                     doExport();
                 }
@@ -433,8 +434,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
 
         if (ProtocolUtils.isGeneric(generic)) {
-            map.put("generic", generic);
-            map.put("methods", Constants.ANY_VALUE);
+            map.put(Constants.GENERIC_KEY, generic);
+            map.put(Constants.METHODS_KEY, Constants.ANY_VALUE);
         } else {
             String revision = Version.getVersion(interfaceClass, version);
             if (revision != null && revision.length() > 0) {
@@ -444,19 +445,19 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             String[] methods = Wrapper.getWrapper(interfaceClass).getMethodNames();
             if (methods.length == 0) {
                 logger.warn("NO method found in service interface " + interfaceClass.getName());
-                map.put("methods", Constants.ANY_VALUE);
+                map.put(Constants.METHODS_KEY, Constants.ANY_VALUE);
             } else {
-                map.put("methods", StringUtils.join(new HashSet<String>(Arrays.asList(methods)), ","));
+                map.put(Constants.METHODS_KEY, StringUtils.join(new HashSet<String>(Arrays.asList(methods)), ","));
             }
         }
         if (!ConfigUtils.isEmpty(token)) {
             if (ConfigUtils.isDefault(token)) {
-                map.put("token", UUID.randomUUID().toString());
+                map.put(Constants.TOKEN_KEY, UUID.randomUUID().toString());
             } else {
-                map.put("token", token);
+                map.put(Constants.TOKEN_KEY, token);
             }
         }
-        if ("injvm".equals(protocolConfig.getName())) {
+        if (Constants.LOCAL_PROTOCOL.equals(protocolConfig.getName())) {
             protocolConfig.setRegister(false);
             map.put("notify", "false");
         }
@@ -570,6 +571,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 if (isInvalidLocalHost(hostToBind)) {
                     if (registryURLs != null && !registryURLs.isEmpty()) {
                         for (URL registryURL : registryURLs) {
+                            if (Constants.MULTICAST.equalsIgnoreCase(registryURL.getParameter("registry"))) {
+                                // skip multicast registry since we cannot connect to it via Socket
+                                continue;
+                            }
                             try {
                                 Socket socket = new Socket();
                                 try {
@@ -703,7 +708,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
         for (ProtocolConfig protocolConfig : protocols) {
             if (StringUtils.isEmpty(protocolConfig.getName())) {
-                protocolConfig.setName("dubbo");
+                protocolConfig.setName(Constants.DUBBO_VERSION_KEY);
             }
             appendProperties(protocolConfig);
         }
@@ -769,7 +774,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     public void setPath(String path) {
-        checkPathName("path", path);
+        checkPathName(Constants.PATH_KEY, path);
         this.path = path;
     }
 

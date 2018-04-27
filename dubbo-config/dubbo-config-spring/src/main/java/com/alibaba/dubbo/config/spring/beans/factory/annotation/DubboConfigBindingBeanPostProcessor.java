@@ -17,16 +17,19 @@
 package com.alibaba.dubbo.config.spring.beans.factory.annotation;
 
 import com.alibaba.dubbo.common.utils.Assert;
+import com.alibaba.dubbo.config.AbstractConfig;
 import com.alibaba.dubbo.config.spring.context.annotation.DubboConfigBindingRegistrar;
 import com.alibaba.dubbo.config.spring.context.annotation.EnableDubboConfigBinding;
+import com.alibaba.dubbo.config.spring.context.properties.DefaultDubboConfigBinder;
+import com.alibaba.dubbo.config.spring.context.properties.DubboConfigBinder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.PropertyValues;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.validation.DataBinder;
-
-import java.util.Arrays;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.env.Environment;
 
 /**
  * Dubbo Config Binding {@link BeanPostProcessor}
@@ -35,43 +38,52 @@ import java.util.Arrays;
  * @see DubboConfigBindingRegistrar
  * @since 2.5.8
  */
-public class DubboConfigBindingBeanPostProcessor implements BeanPostProcessor {
+
+public class DubboConfigBindingBeanPostProcessor implements BeanPostProcessor, ApplicationContextAware, InitializingBean {
 
     private final Log log = LogFactory.getLog(getClass());
+
+    /**
+     * The prefix of Configuration Properties
+     */
+    private final String prefix;
 
     /**
      * Binding Bean Name
      */
     private final String beanName;
 
-    /**
-     * Binding {@link PropertyValues}
-     */
-    private final PropertyValues propertyValues;
+    private DubboConfigBinder dubboConfigBinder;
 
+    private ApplicationContext applicationContext;
+
+    private boolean ignoreUnknownFields = true;
+
+    private boolean ignoreInvalidFields = true;
 
     /**
-     * @param beanName       Binding Bean Name
-     * @param propertyValues {@link PropertyValues}
+     * @param prefix   the prefix of Configuration Properties
+     * @param beanName the binding Bean Name
      */
-    public DubboConfigBindingBeanPostProcessor(String beanName, PropertyValues propertyValues) {
+    public DubboConfigBindingBeanPostProcessor(String prefix, String beanName) {
+        Assert.notNull(prefix, "The prefix of Configuration Properties must not be null");
         Assert.notNull(beanName, "The name of bean must not be null");
-        Assert.notNull(propertyValues, "The PropertyValues of bean must not be null");
+        this.prefix = prefix;
         this.beanName = beanName;
-        this.propertyValues = propertyValues;
     }
 
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 
-        if (beanName.equals(this.beanName)) {
-            DataBinder dataBinder = new DataBinder(bean);
-            // TODO ignore invalid fields by annotation attribute
-            dataBinder.setIgnoreInvalidFields(true);
-            dataBinder.bind(propertyValues);
+        if (beanName.equals(this.beanName) && bean instanceof AbstractConfig) {
+
+            AbstractConfig dubboConfig = (AbstractConfig) bean;
+
+            dubboConfigBinder.bind(prefix, dubboConfig);
+
             if (log.isInfoEnabled()) {
-                log.info("The properties of bean [name : " + beanName + "] have been binding by values : "
-                        + Arrays.asList(propertyValues.getPropertyValues()));
+                log.info("The properties of bean [name : " + beanName + "] have been binding by prefix of " +
+                        "configuration properties : " + prefix);
             }
         }
 
@@ -79,10 +91,70 @@ public class DubboConfigBindingBeanPostProcessor implements BeanPostProcessor {
 
     }
 
+    public boolean isIgnoreUnknownFields() {
+        return ignoreUnknownFields;
+    }
+
+    public void setIgnoreUnknownFields(boolean ignoreUnknownFields) {
+        this.ignoreUnknownFields = ignoreUnknownFields;
+    }
+
+    public boolean isIgnoreInvalidFields() {
+        return ignoreInvalidFields;
+    }
+
+    public void setIgnoreInvalidFields(boolean ignoreInvalidFields) {
+        this.ignoreInvalidFields = ignoreInvalidFields;
+    }
+
+    public DubboConfigBinder getDubboConfigBinder() {
+        return dubboConfigBinder;
+    }
+
+    public void setDubboConfigBinder(DubboConfigBinder dubboConfigBinder) {
+        this.dubboConfigBinder = dubboConfigBinder;
+    }
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         return bean;
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+
+        if (dubboConfigBinder == null) {
+            try {
+                dubboConfigBinder = applicationContext.getBean(DubboConfigBinder.class);
+            } catch (BeansException ignored) {
+                if (log.isDebugEnabled()) {
+                    log.debug("DubboConfigBinder Bean can't be found in ApplicationContext.");
+                }
+                // Use Default implementation
+                dubboConfigBinder = createDubboConfigBinder(applicationContext.getEnvironment());
+            }
+        }
+
+        dubboConfigBinder.setIgnoreUnknownFields(ignoreUnknownFields);
+        dubboConfigBinder.setIgnoreInvalidFields(ignoreInvalidFields);
+
+    }
+
+    /**
+     * Create {@link DubboConfigBinder} instance.
+     *
+     * @param environment
+     * @return {@link DefaultDubboConfigBinder}
+     */
+    protected DubboConfigBinder createDubboConfigBinder(Environment environment) {
+        DefaultDubboConfigBinder defaultDubboConfigBinder = new DefaultDubboConfigBinder();
+        defaultDubboConfigBinder.setEnvironment(environment);
+        return defaultDubboConfigBinder;
     }
 
 }

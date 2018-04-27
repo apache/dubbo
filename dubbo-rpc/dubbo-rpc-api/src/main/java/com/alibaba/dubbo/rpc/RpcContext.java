@@ -154,22 +154,7 @@ public class RpcContext {
      * @return provider side.
      */
     public boolean isProviderSide() {
-        URL url = getUrl();
-        if (url == null) {
-            return false;
-        }
-        InetSocketAddress address = getRemoteAddress();
-        if (address == null) {
-            return false;
-        }
-        String host;
-        if (address.getAddress() == null) {
-            host = address.getHostName();
-        } else {
-            host = address.getAddress().getHostAddress();
-        }
-        return url.getPort() != address.getPort() ||
-                !NetUtils.filterLocalHost(url.getIp()).equals(NetUtils.filterLocalHost(host));
+        return !isConsumerSide();
     }
 
     /**
@@ -178,22 +163,7 @@ public class RpcContext {
      * @return consumer side.
      */
     public boolean isConsumerSide() {
-        URL url = getUrl();
-        if (url == null) {
-            return false;
-        }
-        InetSocketAddress address = getRemoteAddress();
-        if (address == null) {
-            return false;
-        }
-        String host;
-        if (address.getAddress() == null) {
-            host = address.getHostName();
-        } else {
-            host = address.getAddress().getHostAddress();
-        }
-        return url.getPort() == address.getPort() &&
-                NetUtils.filterLocalHost(url.getIp()).equals(NetUtils.filterLocalHost(host));
+        return getUrl().getParameter(Constants.SIDE_KEY, Constants.PROVIDER_SIDE).equals(Constants.CONSUMER_SIDE);
     }
 
     /**
@@ -616,6 +586,7 @@ public class RpcContext {
                 //local invoke will return directly
                 if (o != null) {
                     FutureTask<T> f = new FutureTask<T>(new Callable<T>() {
+                        @Override
                         public T call() throws Exception {
                             return o;
                         }
@@ -632,22 +603,27 @@ public class RpcContext {
             }
         } catch (final RpcException e) {
             return new Future<T>() {
+                @Override
                 public boolean cancel(boolean mayInterruptIfRunning) {
                     return false;
                 }
 
+                @Override
                 public boolean isCancelled() {
                     return false;
                 }
 
+                @Override
                 public boolean isDone() {
                     return true;
                 }
 
+                @Override
                 public T get() throws InterruptedException, ExecutionException {
                     throw new ExecutionException(e.getCause());
                 }
 
+                @Override
                 public T get(long timeout, TimeUnit unit)
                         throws InterruptedException, ExecutionException,
                         TimeoutException {

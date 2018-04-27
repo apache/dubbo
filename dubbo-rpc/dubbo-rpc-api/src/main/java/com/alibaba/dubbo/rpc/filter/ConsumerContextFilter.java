@@ -33,6 +33,7 @@ import com.alibaba.dubbo.rpc.RpcInvocation;
 @Activate(group = Constants.CONSUMER, order = -10000)
 public class ConsumerContextFilter implements Filter {
 
+    @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         RpcContext.getContext()
                 .setInvoker(invoker)

@@ -23,6 +23,7 @@ package com.alibaba.dubbo.rpc.benchmark;
 public class DemoServiceImpl implements DemoService {
     ResponseObject responseObject = new ResponseObject(100);
 
+    @Override
     public Object sendRequest(Object request) {
         return request;
     }

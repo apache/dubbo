@@ -72,10 +72,12 @@ public class WebServiceProtocol extends AbstractProxyProtocol {
         this.httpBinder = httpBinder;
     }
 
+    @Override
     public int getDefaultPort() {
         return DEFAULT_PORT;
     }
 
+    @Override
     protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
         String addr = getAddr(url);
         HttpServer httpServer = serverMap.get(addr);
@@ -91,12 +93,14 @@ public class WebServiceProtocol extends AbstractProxyProtocol {
         serverFactoryBean.setDestinationFactory(transportFactory);
         serverFactoryBean.create();
         return new Runnable() {
+            @Override
             public void run() {
                 serverFactoryBean.destroy();
             }
         };
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     protected <T> T doRefer(final Class<T> serviceType, final URL url) throws RpcException {
         ClientProxyFactoryBean proxyFactoryBean = new ClientProxyFactoryBean();
@@ -113,6 +117,7 @@ public class WebServiceProtocol extends AbstractProxyProtocol {
         return ref;
     }
 
+    @Override
     protected int getErrorCode(Throwable e) {
         if (e instanceof Fault) {
             e = e.getCause();
@@ -129,6 +134,7 @@ public class WebServiceProtocol extends AbstractProxyProtocol {
 
         private volatile ServletController servletController;
 
+        @Override
         public void handle(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
             if (servletController == null) {
                 HttpServlet httpServlet = DispatcherServlet.getInstance();

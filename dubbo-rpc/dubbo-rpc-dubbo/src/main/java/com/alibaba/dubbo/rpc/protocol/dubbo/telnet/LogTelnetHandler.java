@@ -41,6 +41,7 @@ public class LogTelnetHandler implements TelnetHandler {
 
     public static final String SERVICE_KEY = "telnet.log";
 
+    @Override
     public String telnet(Channel channel, String message) {
         long size = 0;
         File file = LoggerFactory.getFile();

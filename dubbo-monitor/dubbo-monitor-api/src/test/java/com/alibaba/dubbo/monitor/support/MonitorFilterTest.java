@@ -47,6 +47,7 @@ public class MonitorFilterTest {
     private volatile Invocation lastInvocation;
 
     private final Invoker<MonitorService> serviceInvoker = new Invoker<MonitorService>() {
+        @Override
         public Class<MonitorService> getInterface() {
             return MonitorService.class;
         }
@@ -59,6 +60,7 @@ public class MonitorFilterTest {
             }
         }
 
+        @Override
         public boolean isAvailable() {
             return false;
         }
@@ -68,21 +70,25 @@ public class MonitorFilterTest {
             return null;
         }
 
+        @Override
         public void destroy() {
         }
     };
 
     private MonitorFactory monitorFactory = new MonitorFactory() {
+        @Override
         public Monitor getMonitor(final URL url) {
             return new Monitor() {
                 public URL getUrl() {
                     return url;
                 }
 
+                @Override
                 public boolean isAvailable() {
                     return true;
                 }
 
+                @Override
                 public void destroy() {
                 }
 

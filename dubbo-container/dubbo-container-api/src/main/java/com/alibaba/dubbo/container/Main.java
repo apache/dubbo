@@ -62,6 +62,7 @@ public class Main {
 
             if ("true".equals(System.getProperty(SHUTDOWN_HOOK_KEY))) {
                 Runtime.getRuntime().addShutdownHook(new Thread() {
+                    @Override
                     public void run() {
                         for (Container container : containers) {
                             try {
