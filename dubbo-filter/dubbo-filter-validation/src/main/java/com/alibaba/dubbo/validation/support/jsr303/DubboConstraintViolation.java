@@ -30,13 +30,9 @@ public class DubboConstraintViolation<T> implements ConstraintViolation<T>, Seri
 
     private static final long serialVersionUID = 885686998063132138L;
     private String interpolatedMessage;
-    private T rootBean;
     private Object value;
     private Path propertyPath;
-    private Object leafBeanInstance;
-    private ConstraintDescriptor<?> constraintDescriptor;
     private String messageTemplate;
-    private Class<T> rootBeanClass;
     private Object[] executableParameters;
     private Object executableReturnValue;
     private int hashCode;
@@ -45,27 +41,20 @@ public class DubboConstraintViolation<T> implements ConstraintViolation<T>, Seri
     }
 
     public DubboConstraintViolation(ConstraintViolation<T> violation) {
-        this(violation.getMessageTemplate(), violation.getMessage(), violation.getRootBeanClass(), violation
-                        .getRootBean(), violation.getLeafBean(), violation.getInvalidValue(), violation.getPropertyPath(),
+        this(violation.getMessageTemplate(), violation.getMessage(), violation.getInvalidValue(), violation.getPropertyPath(),
                 violation.getExecutableParameters(), violation.getExecutableReturnValue());
     }
 
     public DubboConstraintViolation(String messageTemplate,
                                     String interpolatedMessage,
-                                    Class<T> rootBeanClass,
-                                    T rootBean,
-                                    Object leafBeanInstance,
                                     Object value,
                                     Path propertyPath,
                                     Object[] executableParameters,
                                     Object executableReturnValue) {
         this.messageTemplate = messageTemplate;
         this.interpolatedMessage = interpolatedMessage;
-        this.rootBean = rootBean;
         this.value = value;
         this.propertyPath = propertyPath;
-        this.leafBeanInstance = leafBeanInstance;
-        this.rootBeanClass = rootBeanClass;
         this.executableParameters = executableParameters;
         this.executableReturnValue = executableReturnValue;
         // pre-calculate hash code, the class is immutable and hashCode is needed often
@@ -84,17 +73,17 @@ public class DubboConstraintViolation<T> implements ConstraintViolation<T>, Seri
 
     @Override
     public final T getRootBean() {
-        return rootBean;
+        return null;
     }
 
     @Override
     public final Class<T> getRootBeanClass() {
-        return rootBeanClass;
+        return null;
     }
 
     @Override
     public final Object getLeafBean() {
-        return leafBeanInstance;
+        return null;
     }
 
     @Override
@@ -109,7 +98,7 @@ public class DubboConstraintViolation<T> implements ConstraintViolation<T>, Seri
 
     @Override
     public final ConstraintDescriptor<?> getConstraintDescriptor() {
-        return this.constraintDescriptor;
+        return null;
     }
 
     @Override
@@ -152,19 +141,7 @@ public class DubboConstraintViolation<T> implements ConstraintViolation<T>, Seri
         if ( propertyPath != null ? !propertyPath.equals( that.propertyPath ) : that.propertyPath != null ) {
             return false;
         }
-        if ( rootBean != null ? !rootBean.equals( that.rootBean ) : that.rootBean != null ) {
-            return false;
-        }
-        if ( leafBeanInstance != null ? !leafBeanInstance.equals( that.leafBeanInstance ) : that.leafBeanInstance != null ) {
-            return false;
-        }
-        if ( constraintDescriptor != null ? !constraintDescriptor.equals( that.constraintDescriptor ) : that.constraintDescriptor != null ) {
-            return false;
-        }
         if ( messageTemplate != null ? !messageTemplate.equals( that.messageTemplate ) : that.messageTemplate != null ) {
-            return false;
-        }
-        if ( rootBeanClass != null ? !rootBeanClass.equals( that.rootBeanClass ) : that.rootBeanClass != null ) {
             return false;
         }
         if ( value != null ? !value.equals( that.value ) : that.value != null ) {
@@ -185,8 +162,8 @@ public class DubboConstraintViolation<T> implements ConstraintViolation<T>, Seri
         sb.append( "DubboConstraintViolation" );
         sb.append( "{interpolatedMessage='" ).append( interpolatedMessage ).append( '\'' );
         sb.append( ", propertyPath=" ).append( propertyPath );
-        sb.append( ", rootBeanClass=" ).append( rootBeanClass );
         sb.append( ", messageTemplate='" ).append( messageTemplate ).append( '\'' );
+        sb.append( ", value='" ).append( value ).append( '\'' );
         sb.append( '}' );
         return sb.toString();
     }
@@ -195,14 +172,9 @@ public class DubboConstraintViolation<T> implements ConstraintViolation<T>, Seri
     private int createHashCode() {
         int result = interpolatedMessage != null ? interpolatedMessage.hashCode() : 0;
         result = 31 * result + ( propertyPath != null ? propertyPath.hashCode() : 0 );
-        result = 31 * result + ( rootBean != null ? rootBean.hashCode() : 0 );
-        result = 31 * result + ( leafBeanInstance != null ? leafBeanInstance.hashCode() : 0 );
         result = 31 * result + ( value != null ? value.hashCode() : 0 );
-        result = 31 * result + ( constraintDescriptor != null ? constraintDescriptor.hashCode() : 0 );
         result = 31 * result + ( messageTemplate != null ? messageTemplate.hashCode() : 0 );
-        result = 31 * result + ( rootBeanClass != null ? rootBeanClass.hashCode() : 0 );
         return result;
     }
-
 }
 
