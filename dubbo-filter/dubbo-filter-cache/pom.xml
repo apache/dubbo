@@ -28,7 +28,6 @@
     <description>The cache module of dubbo project</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
-        <hazelcast_version>3.9-EA</hazelcast_version>
     </properties>
     <dependencies>
         <dependency>
@@ -43,6 +42,7 @@
         <dependency>
             <groupId>com.hazelcast</groupId>
             <artifactId>hazelcast</artifactId>
+            <scope>test</scope>
             <version>${hazelcast_version}</version>
         </dependency>
     </dependencies>
