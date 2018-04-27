@@ -16,45 +16,71 @@
  */
 package com.alibaba.dubbo.cache.filter;
 
+import com.alibaba.dubbo.cache.CacheFactory;
+import com.alibaba.dubbo.cache.support.jcache.JCacheFactory;
 import com.alibaba.dubbo.cache.support.lru.LruCacheFactory;
+import com.alibaba.dubbo.cache.support.threadlocal.ThreadLocalCacheFactory;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
-
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import java.util.Arrays;
+import java.util.List;
+
+import static org.junit.runners.Parameterized.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
+@RunWith(Parameterized.class)
 public class CacheFilterTest {
-    private static RpcInvocation invocation;
-    static CacheFilter cacheFilter = new CacheFilter();
-    static Invoker<?> invoker = mock(Invoker.class);
-    static Invoker<?> invoker1 = mock(Invoker.class);
-    static Invoker<?> invoker2 = mock(Invoker.class);
+    private RpcInvocation invocation;
+    private CacheFilter cacheFilter = new CacheFilter();
+    private Invoker<?> invoker = mock(Invoker.class);
+    private Invoker<?> invoker1 = mock(Invoker.class);
+    private Invoker<?> invoker2 = mock(Invoker.class);
+    private String cacheType;
+    private CacheFactory cacheFactory;
 
-    @BeforeClass
-    public static void setUp() {
+    public CacheFilterTest(String cacheType, CacheFactory cacheFactory) {
+        this.cacheType = cacheType;
+        this.cacheFactory = cacheFactory;
+    }
+
+    @Parameters
+    public static List<Object[]> cacheFactories() {
+        return Arrays.asList(new Object[][]{
+                {"lru", new LruCacheFactory()},
+                {"jcache", new JCacheFactory()},
+                {"threadlocal", new ThreadLocalCacheFactory()}
+        });
+    }
+
+    @Before
+    public void setUp() throws Exception {
         invocation = new RpcInvocation();
-        cacheFilter.setCacheFactory(new LruCacheFactory());
+        cacheFilter.setCacheFactory(this.cacheFactory);
 
-        URL url = URL.valueOf("test://test:11/test?cache=lru");
+        URL url = URL.valueOf("test://test:11/test?cache=" + this.cacheType);
 
-        given(invoker.invoke(invocation)).willReturn(new RpcResult(new String("value")));
+        given(invoker.invoke(invocation)).willReturn(new RpcResult("value"));
         given(invoker.getUrl()).willReturn(url);
 
-        given(invoker1.invoke(invocation)).willReturn(new RpcResult(new String("value1")));
+        given(invoker1.invoke(invocation)).willReturn(new RpcResult("value1"));
         given(invoker1.getUrl()).willReturn(url);
 
-        given(invoker2.invoke(invocation)).willReturn(new RpcResult(new String("value2")));
+        given(invoker2.invoke(invocation)).willReturn(new RpcResult("value2"));
         given(invoker2.getUrl()).willReturn(url);
+
     }
 
     @Test
-    public void test_No_Arg_Method() {
+    public void testNonArgsMethod() {
         invocation.setMethodName("echo");
         invocation.setParameterTypes(new Class<?>[]{});
         invocation.setArguments(new Object[]{});
@@ -66,7 +92,7 @@ public class CacheFilterTest {
     }
 
     @Test
-    public void test_Args_Method() {
+    public void testMethodWithArgs() {
         invocation.setMethodName("echo1");
         invocation.setParameterTypes(new Class<?>[]{String.class});
         invocation.setArguments(new Object[]{"arg1"});
