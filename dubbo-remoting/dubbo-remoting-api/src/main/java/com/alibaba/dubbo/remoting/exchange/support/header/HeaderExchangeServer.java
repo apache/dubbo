@@ -92,6 +92,7 @@ public class HeaderExchangeServer implements ExchangeServer {
     }
 
     public void close() {
+        startClose();
         doClose();
         server.close();
     }
