@@ -23,6 +23,9 @@ import javax.validation.Path;
 import javax.validation.ValidationException;
 import javax.validation.metadata.ConstraintDescriptor;
 
+/**
+ * DubboConstraintViolation
+ */
 public class DubboConstraintViolation<T> implements ConstraintViolation<T>, Serializable {
 
     private static final long serialVersionUID = 885686998063132138L;

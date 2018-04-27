@@ -66,7 +66,8 @@ public class ValidationFilter implements Filter {
                         set.add(new DubboConstraintViolation(v));
                     }
                 }
-                return new RpcResult(new ConstraintViolationException(e.getMessage(), set));} catch (RpcException e) {
+                return new RpcResult(new ConstraintViolationException(e.getMessage(), set));}
+            catch (RpcException e) {
                 throw e;
             } catch (Throwable t) {
                 return new RpcResult(t);
