@@ -65,6 +65,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * for this case, url protocol = null, url host = home, url path = user1/router.js
  * </ul>
  *
+ * 标准的URL 的
+ *  protocol://username:password@host:port/path?key=value&key=value
+ *
  * @see java.net.URL
  * @see java.net.URI
  */
@@ -937,6 +940,13 @@ public final class URL implements Serializable {
         return new URL(protocol, username, password, host, port, path, map);
     }
 
+    /**
+     * Url 里如果有这个属性 reutrn
+     * 如果没有
+     * @param key
+     * @param value
+     * @return
+     */
     public URL addParameterIfAbsent(String key, String value) {
         if (key == null || key.length() == 0
                 || value == null || value.length() == 0) {

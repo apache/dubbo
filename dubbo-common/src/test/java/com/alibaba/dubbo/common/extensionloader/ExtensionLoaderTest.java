@@ -77,6 +77,10 @@ public class ExtensionLoaderTest {
         }
     }
 
+    /**
+     * 一定要是接口
+     * @throws Exception
+     */
     @Test
     public void test_getExtensionLoader_NotInterface() throws Exception {
         try {
@@ -124,6 +128,7 @@ public class ExtensionLoaderTest {
         assertTrue(ExtensionLoader.getExtensionLoader(SimpleExt.class).getExtension("impl1") instanceof SimpleExtImpl1);
         assertTrue(ExtensionLoader.getExtensionLoader(SimpleExt.class).getExtension("impl2") instanceof SimpleExtImpl2);
     }
+
 
     @Test
     public void test_getExtension_WithWrapper() throws Exception {
@@ -408,9 +413,16 @@ public class ExtensionLoaderTest {
         Assert.assertTrue(list.get(0).getClass() == OrderActivateExtImpl1.class);
         Assert.assertTrue(list.get(1).getClass() == ActivateExt1Impl1.class);
 
-        url = URL.valueOf("test://localhost/test?ext=default,order1");
+        //url = URL.valueOf("test://localhost/test?ext=order2,default,order1");
+        //list = ExtensionLoader.getExtensionLoader(ActivateExt1.class)
+        //        .getActivateExtension(url, "ext", "default_group");
+        //Assert.assertEquals(2, list.size());
+        //Assert.assertTrue(list.get(0).getClass() == ActivateExt1Impl1.class);
+        //Assert.assertTrue(list.get(1).getClass() == OrderActivateExtImpl1.class);
+
+        url = URL.valueOf("test://localhost/test?ext=activateext1impl1,default,value");
         list = ExtensionLoader.getExtensionLoader(ActivateExt1.class)
-                .getActivateExtension(url, "ext", "default_group");
+                .getActivateExtension(url, "ext", "order");
         Assert.assertEquals(2, list.size());
         Assert.assertTrue(list.get(0).getClass() == ActivateExt1Impl1.class);
         Assert.assertTrue(list.get(1).getClass() == OrderActivateExtImpl1.class);

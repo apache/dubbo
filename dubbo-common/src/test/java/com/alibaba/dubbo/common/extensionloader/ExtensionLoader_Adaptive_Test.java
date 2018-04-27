@@ -46,13 +46,28 @@ import static org.junit.matchers.JUnitMatchers.containsString;
 
 public class ExtensionLoader_Adaptive_Test {
 
+    /**
+     * 若配置文件中的类继承了adapt注解，则先使用第一个自适应加载器
+     *
+     * @throws Exception
+     */
     @Test
     public void test_useAdaptiveClass() throws Exception {
         ExtensionLoader<HasAdaptiveExt> loader = ExtensionLoader.getExtensionLoader(HasAdaptiveExt.class);
         HasAdaptiveExt ext = loader.getAdaptiveExtension();
         assertTrue(ext instanceof HasAdaptiveExt_ManualAdaptive);
+
+        //查看第二次的缓存情况，都是 ExtensionLoader.getExtensionLoader 获取 同一个类
+        ExtensionLoader<HasAdaptiveExt> loader2 = ExtensionLoader.getExtensionLoader(HasAdaptiveExt.class);
+        HasAdaptiveExt ext2 = loader2.getAdaptiveExtension();
+        assertTrue(ext2 instanceof HasAdaptiveExt_ManualAdaptive);
     }
 
+    /**
+     * 根据map的key来自适应使用的类
+     *
+     * @throws Exception
+     */
     @Test
     public void test_getAdaptiveExtension_defaultAdaptiveKey() throws Exception {
         {
@@ -99,7 +114,7 @@ public class ExtensionLoader_Adaptive_Test {
 
         {
             String echo = ext.echo(URL.valueOf("1.2.3.4:20880"), "s");
-            assertEquals("Ext3Impl1-echo", echo); // default value
+            assertEquals("Ext3Impl1-echo", echo); // default value 默认使用注解上的
 
             Map<String, String> map = new HashMap<String, String>();
             URL url = new URL("impl3", "1.2.3.4", 1010, "path1", map);
@@ -129,6 +144,11 @@ public class ExtensionLoader_Adaptive_Test {
         }
     }
 
+    /**
+     * url为空的时候 会抛出异常
+     *
+     * @throws Exception
+     */
     @Test
     public void test_getAdaptiveExtension_UrlNpe() throws Exception {
         SimpleExt ext = ExtensionLoader.getExtensionLoader(SimpleExt.class).getAdaptiveExtension();
@@ -141,6 +161,10 @@ public class ExtensionLoader_Adaptive_Test {
         }
     }
 
+    /**
+     * 没有@adapt的方法 会抛出异常
+     * @throws Exception
+     */
     @Test
     public void test_getAdaptiveExtension_ExceptionWhenNoAdaptiveMethodOnInterface() throws Exception {
         try {
@@ -191,6 +215,10 @@ public class ExtensionLoader_Adaptive_Test {
         }
     }
 
+    /**
+     * 若方法里面的参数没有URL,看参数里面有没有获取URL的方法
+     * @throws Exception
+     */
     @Test
     public void test_urlHolder_getAdaptiveExtension() throws Exception {
         Ext2 ext = ExtensionLoader.getExtensionLoader(Ext2.class).getAdaptiveExtension();
@@ -206,6 +234,10 @@ public class ExtensionLoader_Adaptive_Test {
         assertEquals("Ext2Impl1-echo", echo);
     }
 
+    /**
+     * 当没有默认值和设置了没有的类型的时候抛出异常
+     * @throws Exception
+     */
     @Test
     public void test_urlHolder_getAdaptiveExtension_noExtension() throws Exception {
         Ext2 ext = ExtensionLoader.getExtensionLoader(Ext2.class).getAdaptiveExtension();
