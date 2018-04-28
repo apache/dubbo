@@ -43,6 +43,7 @@ public class JCacheFactoryTest extends AbstractCacheFactoryTest {
         Invocation invocation = new RpcInvocation();
         Cache cache = cacheFactory.getCache(url, invocation);
         cache.put("testKey", "testValue");
+        Thread.sleep(10);
         assertNull(cache.get("testKey"));
     }
 
