@@ -101,15 +101,6 @@ public class RegistryConfig extends AbstractConfig {
         setProtocol(protocol);
     }
 
-    public static void destroyAll() {
-        AbstractRegistryFactory.destroyAll();
-    }
-
-    @Deprecated
-    public static void closeAll() {
-        destroyAll();
-    }
-
     public String getProtocol() {
         return protocol;
     }
