@@ -96,6 +96,11 @@ public class RegistryConfig extends AbstractConfig {
         setAddress(address);
     }
 
+    public RegistryConfig(String address, String protocol) {
+        setAddress(address);
+        setProtocol(protocol);
+    }
+
     public static void destroyAll() {
         AbstractRegistryFactory.destroyAll();
     }
