@@ -17,11 +17,17 @@
 package com.alibaba.dubbo.config;
 
 import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.extension.SPI;
 import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.config.support.Parameter;
 import junit.framework.TestCase;
 import org.junit.Test;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -148,6 +154,122 @@ public class AbstractConfigTest {
         TestCase.assertFalse(parameters.containsKey("flag"));
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void checkExtension() throws Exception {
+        AbstractConfig.checkExtension(Greeting.class, "hello", "world");
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void checkMultiExtension1() throws Exception {
+        AbstractConfig.checkMultiExtension(Greeting.class, "hello", "default,world");
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void checkMultiExtension2() throws Exception {
+        AbstractConfig.checkMultiExtension(Greeting.class, "hello", "default,-world");
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void checkLength() throws Exception {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i <= 200; i++) {
+            builder.append("a");
+        }
+        AbstractConfig.checkLength("hello", builder.toString());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void checkPathLength() throws Exception {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i <= 200; i++) {
+            builder.append("a");
+        }
+        AbstractConfig.checkPathLength("hello", builder.toString());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void checkName() throws Exception {
+        AbstractConfig.checkName("hello", "world%");
+    }
+
+    @Test
+    public void checkNameHasSymbol() throws Exception {
+        try {
+            AbstractConfig.checkNameHasSymbol("hello", ":*,/-0123abcdABCD");
+        } catch (Exception e) {
+            TestCase.fail("the value should be legal.");
+        }
+    }
+
+    @Test
+    public void checkKey() throws Exception {
+        try {
+            AbstractConfig.checkKey("hello", "*,-0123abcdABCD");
+        } catch (Exception e) {
+            TestCase.fail("the value should be legal.");
+        }
+    }
+
+    @Test
+    public void checkMultiName() throws Exception {
+        try {
+            AbstractConfig.checkMultiName("hello", ",-._0123abcdABCD");
+        } catch (Exception e) {
+            TestCase.fail("the value should be legal.");
+        }
+    }
+
+    @Test
+    public void checkPathName() throws Exception {
+        try {
+            AbstractConfig.checkPathName("hello", "/-$._0123abcdABCD");
+        } catch (Exception e) {
+            TestCase.fail("the value should be legal.");
+        }
+    }
+
+    @Test
+    public void checkMethodName() throws Exception {
+        try {
+            AbstractConfig.checkMethodName("hello", "abcdABCD0123abcd");
+        } catch (Exception e) {
+            TestCase.fail("the value should be legal.");
+        }
+
+        try {
+            AbstractConfig.checkMethodName("hello", "0a");
+            TestCase.fail("the value should be illegal.");
+        } catch (Exception e) {
+            // ignore
+        }
+    }
+
+    @Test
+    public void checkParameterName() throws Exception {
+        Map<String, String> parameters = Collections.singletonMap("hello", ":*,/-._0123abcdABCD");
+        try {
+            AbstractConfig.checkParameterName(parameters);
+        } catch (Exception e) {
+            TestCase.fail("the value should be legal.");
+        }
+    }
+
+    @Test
+    @Config(interfaceClass = Greeting.class, filter = {"f1, f2"}, listener = {"l1, l2"},
+            parameters = {"k1", "v1", "k2", "v2"})
+    public void appendAnnotation() throws Exception {
+        Config config = getClass().getMethod("appendAnnotation").getAnnotation(Config.class);
+        AnnotationConfig annotationConfig = new AnnotationConfig();
+        annotationConfig.appendAnnotation(Config.class, config);
+        TestCase.assertSame(Greeting.class, annotationConfig.getInterface());
+        TestCase.assertEquals("f1, f2", annotationConfig.getFilter());
+        TestCase.assertEquals("l1, l2", annotationConfig.getListener());
+        TestCase.assertEquals(2, annotationConfig.getParameters().size());
+        TestCase.assertEquals("v1", annotationConfig.getParameters().get("k1"));
+        TestCase.assertEquals("v2", annotationConfig.getParameters().get("k2"));
+        TestCase.assertEquals("<dubbo:annotation filter=\"f1, f2\" listener=\"l1, l2\" />",
+                annotationConfig.toString());
+    }
 
     private static class PropertiesConfig extends AbstractConfig {
         private char c;
@@ -335,5 +457,63 @@ public class AbstractConfigTest {
         public void setFlag(byte flag) {
             this.flag = flag;
         }
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE})
+    public @interface Config {
+        Class<?> interfaceClass() default void.class;
+
+        String interfaceName() default "";
+
+        String[] filter() default {};
+
+        String[] listener() default {};
+
+        String[] parameters() default {};
+    }
+
+    private static class AnnotationConfig extends AbstractConfig {
+        private Class interfaceClass;
+        private String filter;
+        private String listener;
+        private Map<String, String> parameters;
+
+        public Class getInterface() {
+            return interfaceClass;
+        }
+
+        public void setInterface(Class interfaceName) {
+            this.interfaceClass = interfaceName;
+        }
+
+        public String getFilter() {
+            return filter;
+        }
+
+        public void setFilter(String filter) {
+            this.filter = filter;
+        }
+
+        public String getListener() {
+            return listener;
+        }
+
+        public void setListener(String listener) {
+            this.listener = listener;
+        }
+
+        public Map<String, String> getParameters() {
+            return parameters;
+        }
+
+        public void setParameters(Map<String, String> parameters) {
+            this.parameters = parameters;
+        }
+    }
+
+    @SPI
+    private interface Greeting {
+
     }
 }
