@@ -29,6 +29,10 @@ import com.alibaba.dubbo.remoting.transport.dispatcher.WrappedChannelHandler;
 
 import java.util.concurrent.RejectedExecutionException;
 
+/**
+ * Only request message will be dispatched to thread pool. Other messages like response, connect, disconnect,
+ * heartbeat will be directly executed by I/O thread.
+ */
 public class ExecutionChannelHandler extends WrappedChannelHandler {
 
     public ExecutionChannelHandler(ChannelHandler handler, URL url) {
@@ -41,13 +45,14 @@ public class ExecutionChannelHandler extends WrappedChannelHandler {
             try {
                 executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
             } catch (Throwable t) {
-                //TODO A temporary solution to the problem that the exception information can not be sent to the opposite end after the thread pool is full. Need a refactoring
-                //fix The thread pool is full, refuses to call, does not return, and causes the consumer to wait for time out
+                // FIXME: when the thread pool is full, SERVER_THREADPOOL_EXHAUSTED_ERROR cannot return properly,
+                // therefore the consumer side has to wait until gets timeout. This is a temporary solution to prevent
+                // this scenario from happening, but a better solution should be considered later.
                 if (t instanceof RejectedExecutionException) {
                     Request request = (Request) message;
                     if (request.isTwoWay()) {
                         String msg = "Server side(" + url.getIp() + "," + url.getPort()
-                            + ") threadpool is exhausted ,detail msg:" + t.getMessage();
+                                + ") thread pool is exhausted, detail msg:" + t.getMessage();
                         Response response = new Response(request.getId(), request.getVersion());
                         response.setStatus(Response.SERVER_THREADPOOL_EXHAUSTED_ERROR);
                         response.setErrorMessage(msg);
@@ -55,7 +60,7 @@ public class ExecutionChannelHandler extends WrappedChannelHandler {
                         return;
                     }
                 }
-                throw new ExecutionException(message, channel, getClass() + " error when process received event .", t);
+                throw new ExecutionException(message, channel, getClass() + " error when process received event.", t);
             }
         } else {
             handler.received(channel, message);
