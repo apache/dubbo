@@ -17,7 +17,6 @@
 package com.alibaba.dubbo.config;
 
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.extension.SPI;
 import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.config.support.Parameter;
 import junit.framework.TestCase;
@@ -510,10 +509,5 @@ public class AbstractConfigTest {
         public void setParameters(Map<String, String> parameters) {
             this.parameters = parameters;
         }
-    }
-
-    @SPI
-    private interface Greeting {
-
     }
 }
