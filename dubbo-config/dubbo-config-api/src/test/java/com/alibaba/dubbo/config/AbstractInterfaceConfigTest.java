@@ -231,6 +231,148 @@ public class AbstractInterfaceConfigTest {
         interfaceConfig.checkStubAndMock(Greeting.class);
     }
 
+    @Test
+    public void testLocal() throws Exception {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.setLocal((Boolean) null);
+        TestCase.assertNull(interfaceConfig.getLocal());
+        interfaceConfig.setLocal(true);
+        TestCase.assertEquals("true", interfaceConfig.getLocal());
+        interfaceConfig.setLocal("GreetingMock");
+        TestCase.assertEquals("GreetingMock", interfaceConfig.getLocal());
+    }
+
+    @Test
+    public void testStub() throws Exception {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.setStub((Boolean) null);
+        TestCase.assertNull(interfaceConfig.getStub());
+        interfaceConfig.setStub(true);
+        TestCase.assertEquals("true", interfaceConfig.getStub());
+        interfaceConfig.setStub("GreetingMock");
+        TestCase.assertEquals("GreetingMock", interfaceConfig.getStub());
+    }
+
+    @Test
+    public void testCluster() throws Exception {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.setCluster("mockcluster");
+        TestCase.assertEquals("mockcluster", interfaceConfig.getCluster());
+    }
+
+    @Test
+    public void testProxy() throws Exception {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.setProxy("mockproxyfactory");
+        TestCase.assertEquals("mockproxyfactory", interfaceConfig.getProxy());
+    }
+
+    @Test
+    public void testConnections() throws Exception {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.setConnections(1);
+        TestCase.assertEquals(1, interfaceConfig.getConnections().intValue());
+    }
+
+    @Test
+    public void testFilter() throws Exception {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.setFilter("mockfilter");
+        TestCase.assertEquals("mockfilter", interfaceConfig.getFilter());
+    }
+
+    @Test
+    public void testListener() throws Exception {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.setListener("mockinvokerlistener");
+        TestCase.assertEquals("mockinvokerlistener", interfaceConfig.getListener());
+    }
+
+    @Test
+    public void testLayer() throws Exception {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.setLayer("layer");
+        TestCase.assertEquals("layer", interfaceConfig.getLayer());
+    }
+
+    @Test
+    public void testApplication() throws Exception {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        ApplicationConfig applicationConfig = new ApplicationConfig();
+        interfaceConfig.setApplication(applicationConfig);
+        TestCase.assertSame(applicationConfig, interfaceConfig.getApplication());
+    }
+
+    @Test
+    public void testModule() throws Exception {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        ModuleConfig moduleConfig = new ModuleConfig();
+        interfaceConfig.setModule(moduleConfig);
+        TestCase.assertSame(moduleConfig, interfaceConfig.getModule());
+    }
+
+    @Test
+    public void testRegistry() throws Exception {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        RegistryConfig registryConfig = new RegistryConfig();
+        interfaceConfig.setRegistry(registryConfig);
+        TestCase.assertSame(registryConfig, interfaceConfig.getRegistry());
+    }
+
+    @Test
+    public void testRegistries() throws Exception {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        RegistryConfig registryConfig = new RegistryConfig();
+        interfaceConfig.setRegistries(Collections.singletonList(registryConfig));
+        TestCase.assertEquals(1, interfaceConfig.getRegistries().size());
+        TestCase.assertSame(registryConfig, interfaceConfig.getRegistries().get(0));
+    }
+
+    @Test
+    public void testMonitor() throws Exception {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.setMonitor("monitor-addr");
+        TestCase.assertEquals("monitor-addr", interfaceConfig.getMonitor().getAddress());
+        MonitorConfig monitorConfig = new MonitorConfig();
+        interfaceConfig.setMonitor(monitorConfig);
+        TestCase.assertSame(monitorConfig, interfaceConfig.getMonitor());
+    }
+
+    @Test
+    public void testOwner() throws Exception {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.setOwner("owner");
+        TestCase.assertEquals("owner", interfaceConfig.getOwner());
+    }
+
+    @Test
+    public void testCallbacks() throws Exception {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.setCallbacks(2);
+        TestCase.assertEquals(2, interfaceConfig.getCallbacks().intValue());
+    }
+
+    @Test
+    public void testOnconnect() throws Exception {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.setOnconnect("onConnect");
+        TestCase.assertEquals("onConnect", interfaceConfig.getOnconnect());
+    }
+
+    @Test
+    public void testOndisconnect() throws Exception {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.setOndisconnect("onDisconnect");
+        TestCase.assertEquals("onDisconnect", interfaceConfig.getOndisconnect());
+    }
+
+    @Test
+    public void testScope() throws Exception {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.setScope("scope");
+        TestCase.assertEquals("scope", interfaceConfig.getScope());
+    }
+
     private void writeDubboProperties(String key, String value) {
         OutputStream os = null;
         try {
@@ -250,9 +392,7 @@ public class AbstractInterfaceConfigTest {
         }
     }
 
-
     private static class InterfaceConfig extends AbstractInterfaceConfig {
 
     }
-
 }
