@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -73,6 +74,7 @@ public class AbstractInterfaceConfigTest {
     @Test
     public void checkApplication1() throws Exception {
         try {
+            ConfigUtils.setProperties(null);
             writeDubboProperties(Constants.SHUTDOWN_WAIT_KEY, "100");
             System.setProperty("dubbo.application.name", "demo");
             InterfaceConfig interfaceConfig = new InterfaceConfig();
@@ -89,6 +91,7 @@ public class AbstractInterfaceConfigTest {
             interfaceConfig.checkApplication();
             TestCase.assertEquals("1000", System.getProperty(Constants.SHUTDOWN_WAIT_SECONDS_KEY));
         } finally {
+            ConfigUtils.setProperties(null);
             System.clearProperty("dubbo.application.name");
             System.clearProperty(Constants.SHUTDOWN_WAIT_KEY);
             System.clearProperty(Constants.SHUTDOWN_WAIT_SECONDS_KEY);
@@ -130,6 +133,41 @@ public class AbstractInterfaceConfigTest {
         TestCase.assertNotNull(url.getParameter("timestamp"));
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void checkInterfaceAndMethods1() throws Exception {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.checkInterfaceAndMethods(null, null);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void checkInterfaceAndMethods2() throws Exception {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.checkInterfaceAndMethods(AbstractInterfaceConfigTest.class, null);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void checkInterfaceAndMethod3() throws Exception {
+        MethodConfig methodConfig = new MethodConfig();
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.checkInterfaceAndMethods(Greeting.class, Collections.singletonList(methodConfig));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void checkInterfaceAndMethod4() throws Exception {
+        MethodConfig methodConfig = new MethodConfig();
+        methodConfig.setName("nihao");
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.checkInterfaceAndMethods(Greeting.class, Collections.singletonList(methodConfig));
+    }
+
+    @Test
+    public void checkInterfaceAndMethod5() throws Exception {
+        MethodConfig methodConfig = new MethodConfig();
+        methodConfig.setName("hello");
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.checkInterfaceAndMethods(Greeting.class, Collections.singletonList(methodConfig));
+    }
+
     private void writeDubboProperties(String key, String value) {
         OutputStream os = null;
         try {
@@ -152,5 +190,9 @@ public class AbstractInterfaceConfigTest {
 
     private static class InterfaceConfig extends AbstractInterfaceConfig {
 
+    }
+
+    private interface Greeting {
+        String hello();
     }
 }
