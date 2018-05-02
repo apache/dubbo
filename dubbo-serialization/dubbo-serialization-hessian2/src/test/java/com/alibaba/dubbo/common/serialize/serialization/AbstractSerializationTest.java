@@ -64,7 +64,7 @@ import static org.junit.Assert.fail;
 public abstract class AbstractSerializationTest {
     static Random random = new Random();
     Serialization serialization;
-    URL url = new URL("protocl", "1.1.1.1", 1234);
+    URL url = new URL("protocol", "1.1.1.1", 1234);
     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
     // ================ Primitive Type ================ 
