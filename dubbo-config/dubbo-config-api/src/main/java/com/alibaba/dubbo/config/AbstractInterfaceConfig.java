@@ -360,7 +360,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setStub(Boolean stub) {
-        if (local == null) {
+        if (stub == null) {
             setStub((String) null);
         } else {
             setStub(String.valueOf(stub));

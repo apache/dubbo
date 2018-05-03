@@ -158,9 +158,7 @@ public class ConfigUtils {
     }
 
     public static void setProperties(Properties properties) {
-        if (properties != null) {
-            PROPERTIES = properties;
-        }
+        PROPERTIES = properties;
     }
 
     public static void addProperties(Properties properties) {
