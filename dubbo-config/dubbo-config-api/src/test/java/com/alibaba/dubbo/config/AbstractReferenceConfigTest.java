@@ -15,9 +15,7 @@
  * limitations under the License.
  */
 
-package com.alibaba.dubbo.config.com.alibaba.dubbo.config;
-
-import com.alibaba.dubbo.config.AbstractReferenceConfig;
+package com.alibaba.dubbo.config;
 
 public class AbstractReferenceConfigTest {
 
