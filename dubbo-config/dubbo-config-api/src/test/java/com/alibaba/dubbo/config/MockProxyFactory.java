@@ -14,37 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.common.serialize.fastjson;
+package com.alibaba.dubbo.config;
 
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.serialize.ObjectInput;
-import com.alibaba.dubbo.common.serialize.ObjectOutput;
-import com.alibaba.dubbo.common.serialize.Serialization;
+import com.alibaba.dubbo.rpc.Invoker;
+import com.alibaba.dubbo.rpc.ProxyFactory;
+import com.alibaba.dubbo.rpc.RpcException;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
-public class FastJsonSerialization implements Serialization {
-
+public class MockProxyFactory implements ProxyFactory {
     @Override
-    public byte getContentTypeId() {
-        return 6;
+    public <T> T getProxy(Invoker<T> invoker) throws RpcException {
+        return null;
     }
 
     @Override
-    public String getContentType() {
-        return "text/json";
+    public <T> Invoker<T> getInvoker(T proxy, Class<T> type, URL url) throws RpcException {
+        return null;
     }
-
-    @Override
-    public ObjectOutput serialize(URL url, OutputStream output) throws IOException {
-        return new FastJsonObjectOutput(output);
-    }
-
-    @Override
-    public ObjectInput deserialize(URL url, InputStream input) throws IOException {
-        return new FastJsonObjectInput(input);
-    }
-
 }
