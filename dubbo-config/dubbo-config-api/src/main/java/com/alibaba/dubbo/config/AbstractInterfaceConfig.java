@@ -410,11 +410,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     @Parameter(key = Constants.INVOKER_LISTENER_KEY, append = true)
     public String getListener() {
-        checkMultiExtension(InvokerListener.class, "listener", listener);
         return listener;
     }
 
     public void setListener(String listener) {
+        checkMultiExtension(InvokerListener.class, "listener", listener);
         this.listener = listener;
     }
 
