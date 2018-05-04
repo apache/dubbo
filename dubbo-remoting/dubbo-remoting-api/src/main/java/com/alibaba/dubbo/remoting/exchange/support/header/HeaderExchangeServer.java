@@ -98,6 +98,7 @@ public class HeaderExchangeServer implements ExchangeServer {
 
     @Override
     public void close() {
+        startClose();
         doClose();
         server.close();
     }
