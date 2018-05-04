@@ -144,6 +144,9 @@ public class MulticastRegistry extends FailbackRegistry {
         return false;
     }
 
+    /**
+     * Remove the expired providers, only when "clean" parameter is true.
+     */
     private void clean() {
         if (admin) {
             for (Set<URL> providers : new HashSet<Set<URL>>(received.values())) {
@@ -298,6 +301,9 @@ public class MulticastRegistry extends FailbackRegistry {
         }
     }
 
+    /**
+     * Remove the expired providers(if clean is true), leave the multicast group and close the multicast socket.
+     */
     @Override
     public void destroy() {
         super.destroy();

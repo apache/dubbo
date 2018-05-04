@@ -54,7 +54,7 @@ public interface RegistryService {
     void unregister(URL url);
 
     /**
-     * Subscrib to eligible registered data and automatically push when the registered data is changed.
+     * Subscribe to eligible registered data and automatically push when the registered data is changed.
      * <p>
      * Subscribing need to support contracts:<br>
      * 1. When the URL sets the check=false parameter. When the registration fails, the exception is not thrown and retried in the background. <br>
