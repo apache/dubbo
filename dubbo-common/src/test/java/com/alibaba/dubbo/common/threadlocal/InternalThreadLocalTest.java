@@ -104,7 +104,7 @@ public class InternalThreadLocalTest {
         final ThreadLocal<String>[] caches1 = new ThreadLocal[PERFORMANCE_THREAD_COUNT];
         final Thread mainThread = Thread.currentThread();
         for (int i = 0; i < PERFORMANCE_THREAD_COUNT; i++) {
-            caches1[i] = new ThreadLocal<>();
+            caches1[i] = new ThreadLocal<String>();
         }
         Thread t1 = new Thread(new Runnable() {
             @Override
@@ -139,7 +139,7 @@ public class InternalThreadLocalTest {
         final InternalThreadLocal<String>[] caches = new InternalThreadLocal[PERFORMANCE_THREAD_COUNT];
         final Thread mainThread = Thread.currentThread();
         for (int i = 0; i < PERFORMANCE_THREAD_COUNT; i++) {
-            caches[i] = new InternalThreadLocal<>();
+            caches[i] = new InternalThreadLocal<String>();
         }
         Thread t = new InternalThread(new Runnable() {
             @Override
