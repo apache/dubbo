@@ -16,46 +16,71 @@
  */
 package com.alibaba.dubbo.cache.filter;
 
+import com.alibaba.dubbo.cache.CacheFactory;
+import com.alibaba.dubbo.cache.support.jcache.JCacheFactory;
 import com.alibaba.dubbo.cache.support.lru.LruCacheFactory;
+import com.alibaba.dubbo.cache.support.threadlocal.ThreadLocalCacheFactory;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
-
-import org.easymock.EasyMock;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import java.util.Arrays;
+import java.util.List;
+
+import static org.junit.runners.Parameterized.*;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+
+@RunWith(Parameterized.class)
 public class CacheFilterTest {
-    private static RpcInvocation invocation;
-    static CacheFilter cacheFilter = new CacheFilter();
-    static Invoker<?> invoker = EasyMock.createMock(Invoker.class);
-    static Invoker<?> invoker1 = EasyMock.createMock(Invoker.class);
-    static Invoker<?> invoker2 = EasyMock.createMock(Invoker.class);
+    private RpcInvocation invocation;
+    private CacheFilter cacheFilter = new CacheFilter();
+    private Invoker<?> invoker = mock(Invoker.class);
+    private Invoker<?> invoker1 = mock(Invoker.class);
+    private Invoker<?> invoker2 = mock(Invoker.class);
+    private String cacheType;
+    private CacheFactory cacheFactory;
 
-    @BeforeClass
-    public static void setUp() {
+    public CacheFilterTest(String cacheType, CacheFactory cacheFactory) {
+        this.cacheType = cacheType;
+        this.cacheFactory = cacheFactory;
+    }
+
+    @Parameters
+    public static List<Object[]> cacheFactories() {
+        return Arrays.asList(new Object[][]{
+                {"lru", new LruCacheFactory()},
+                {"jcache", new JCacheFactory()},
+                {"threadlocal", new ThreadLocalCacheFactory()}
+        });
+    }
+
+    @Before
+    public void setUp() throws Exception {
         invocation = new RpcInvocation();
-        cacheFilter.setCacheFactory(new LruCacheFactory());
+        cacheFilter.setCacheFactory(this.cacheFactory);
 
-        URL url = URL.valueOf("test://test:11/test?cache=lru");
+        URL url = URL.valueOf("test://test:11/test?cache=" + this.cacheType);
 
-        EasyMock.expect(invoker.invoke(invocation)).andReturn(new RpcResult(new String("value"))).anyTimes();
-        EasyMock.expect(invoker.getUrl()).andReturn(url).anyTimes();
-        EasyMock.replay(invoker);
+        given(invoker.invoke(invocation)).willReturn(new RpcResult("value"));
+        given(invoker.getUrl()).willReturn(url);
 
-        EasyMock.expect(invoker1.invoke(invocation)).andReturn(new RpcResult(new String("value1"))).anyTimes();
-        EasyMock.expect(invoker1.getUrl()).andReturn(url).anyTimes();
-        EasyMock.replay(invoker1);
+        given(invoker1.invoke(invocation)).willReturn(new RpcResult("value1"));
+        given(invoker1.getUrl()).willReturn(url);
 
-        EasyMock.expect(invoker2.invoke(invocation)).andReturn(new RpcResult(new String("value2"))).anyTimes();
-        EasyMock.expect(invoker2.getUrl()).andReturn(url).anyTimes();
-        EasyMock.replay(invoker2);
+        given(invoker2.invoke(invocation)).willReturn(new RpcResult("value2"));
+        given(invoker2.getUrl()).willReturn(url);
+
     }
 
     @Test
-    public void test_No_Arg_Method() {
+    public void testNonArgsMethod() {
         invocation.setMethodName("echo");
         invocation.setParameterTypes(new Class<?>[]{});
         invocation.setArguments(new Object[]{});
@@ -67,7 +92,7 @@ public class CacheFilterTest {
     }
 
     @Test
-    public void test_Args_Method() {
+    public void testMethodWithArgs() {
         invocation.setMethodName("echo1");
         invocation.setParameterTypes(new Class<?>[]{String.class});
         invocation.setArguments(new Object[]{"arg1"});

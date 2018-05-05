@@ -39,5 +39,11 @@
             <groupId>javax.cache</groupId>
             <artifactId>cache-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast</artifactId>
+            <scope>test</scope>
+            <version>${hazelcast_version}</version>
+        </dependency>
     </dependencies>
 </project>

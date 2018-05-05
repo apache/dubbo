@@ -119,7 +119,7 @@ public class Hessian2Input
     private Reader _chunkReader;
     private InputStream _chunkInputStream;
     private Throwable _replyFault;
-    private StringBuffer _sbuf = new StringBuffer();
+    private StringBuilder _sbuf = new StringBuilder();
     // true if this is the last chunk
     private boolean _isLastChunk;
     // the chunk length
@@ -2493,11 +2493,9 @@ public class Hessian2Input
                 _isLastChunk = tag == 'S';
                 _chunkLength = (read() << 8) + read();
 
-                int data;
                 _sbuf.setLength(0);
 
-                while ((data = parseChar()) >= 0)
-                    _sbuf.append((char) data);
+                parseString(_sbuf);
 
                 return _sbuf.toString();
             }
@@ -2538,11 +2536,9 @@ public class Hessian2Input
                 _isLastChunk = true;
                 _chunkLength = tag - 0x00;
 
-                int data;
                 _sbuf.setLength(0);
 
-                while ((data = parseChar()) >= 0)
-                    _sbuf.append((char) data);
+                parseString(_sbuf);
 
                 return _sbuf.toString();
             }
@@ -2556,9 +2552,7 @@ public class Hessian2Input
 
                 _sbuf.setLength(0);
 
-                int ch;
-                while ((ch = parseChar()) >= 0)
-                    _sbuf.append((char) ch);
+                parseString(_sbuf);
 
                 return _sbuf.toString();
             }
@@ -2769,6 +2763,23 @@ public class Hessian2Input
                     throw new EOFException("readObject: unexpected end of file");
                 else
                     throw error("readObject: unknown code " + codeName(tag));
+        }
+    }
+
+    private void parseString(StringBuilder sbuf)
+            throws IOException {
+        while (true) {
+            if (_chunkLength <= 0) {
+                if (!parseChunkLength())
+                    return;
+            }
+
+            int length = _chunkLength;
+            _chunkLength = 0;
+
+            while (length-- > 0) {
+                sbuf.append((char) parseUTF8Char());
+            }
         }
     }
 
@@ -3157,80 +3168,86 @@ public class Hessian2Input
         throw new UnsupportedOperationException();
     }
 
+    private boolean parseChunkLength()
+            throws IOException {
+        if (_isLastChunk)
+            return false;
+
+        int code = _offset < _length ? (_buffer[_offset++] & 0xff) : read();
+
+        switch (code) {
+            case BC_STRING_CHUNK:
+                _isLastChunk = false;
+
+                _chunkLength = (read() << 8) + read();
+                break;
+
+            case 'S':
+                _isLastChunk = true;
+
+                _chunkLength = (read() << 8) + read();
+                break;
+
+            case 0x00:
+            case 0x01:
+            case 0x02:
+            case 0x03:
+            case 0x04:
+            case 0x05:
+            case 0x06:
+            case 0x07:
+            case 0x08:
+            case 0x09:
+            case 0x0a:
+            case 0x0b:
+            case 0x0c:
+            case 0x0d:
+            case 0x0e:
+            case 0x0f:
+
+            case 0x10:
+            case 0x11:
+            case 0x12:
+            case 0x13:
+            case 0x14:
+            case 0x15:
+            case 0x16:
+            case 0x17:
+            case 0x18:
+            case 0x19:
+            case 0x1a:
+            case 0x1b:
+            case 0x1c:
+            case 0x1d:
+            case 0x1e:
+            case 0x1f:
+                _isLastChunk = true;
+                _chunkLength = code - 0x00;
+                break;
+
+            case 0x30:
+            case 0x31:
+            case 0x32:
+            case 0x33:
+                _isLastChunk = true;
+                _chunkLength = (code - 0x30) * 256 + read();
+                break;
+
+            default:
+                throw expect("string", code);
+        }
+
+        return true;
+    }
+
     /**
      * Reads a character from the underlying stream.
      */
     private int parseChar()
             throws IOException {
         while (_chunkLength <= 0) {
-            if (_isLastChunk)
+            if (!parseChunkLength())
                 return -1;
-
-            int code = _offset < _length ? (_buffer[_offset++] & 0xff) : read();
-
-            switch (code) {
-                case BC_STRING_CHUNK:
-                    _isLastChunk = false;
-
-                    _chunkLength = (read() << 8) + read();
-                    break;
-
-                case 'S':
-                    _isLastChunk = true;
-
-                    _chunkLength = (read() << 8) + read();
-                    break;
-
-                case 0x00:
-                case 0x01:
-                case 0x02:
-                case 0x03:
-                case 0x04:
-                case 0x05:
-                case 0x06:
-                case 0x07:
-                case 0x08:
-                case 0x09:
-                case 0x0a:
-                case 0x0b:
-                case 0x0c:
-                case 0x0d:
-                case 0x0e:
-                case 0x0f:
-
-                case 0x10:
-                case 0x11:
-                case 0x12:
-                case 0x13:
-                case 0x14:
-                case 0x15:
-                case 0x16:
-                case 0x17:
-                case 0x18:
-                case 0x19:
-                case 0x1a:
-                case 0x1b:
-                case 0x1c:
-                case 0x1d:
-                case 0x1e:
-                case 0x1f:
-                    _isLastChunk = true;
-                    _chunkLength = code - 0x00;
-                    break;
-
-                // qian.lei 2010-7-21
-                case 0x30:
-                case 0x31:
-                case 0x32:
-                case 0x33:
-                    _isLastChunk = true;
-                    _chunkLength = ((code - 0x30) << 8) + read();
-                    break;
-
-                default:
-                    throw expect("string", code);
-            }
-
         }
 
         _chunkLength--;
