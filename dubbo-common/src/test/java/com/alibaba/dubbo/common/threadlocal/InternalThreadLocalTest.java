@@ -36,7 +36,7 @@ public class InternalThreadLocalTest {
 
     @Test
     public void testInternalThreadLocal() throws InterruptedException {
-        AtomicInteger index = new AtomicInteger(0);
+        final AtomicInteger index = new AtomicInteger(0);
 
         final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>() {
 
@@ -49,12 +49,13 @@ public class InternalThreadLocalTest {
         };
 
         for (int i = 0; i < THREADS; i++) {
-            new Thread(new Runnable() {
+            Thread t = new Thread(new Runnable() {
                 @Override
                 public void run() {
                     internalThreadLocal.get();
                 }
-            }).start();
+            });
+            t.start();
         }
 
         Thread.sleep(2000);
@@ -75,7 +76,7 @@ public class InternalThreadLocalTest {
         final Integer testVal2 = 20;
         final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>();
         final CountDownLatch countDownLatch = new CountDownLatch(2);
-        new Thread(new Runnable() {
+        Thread t1 = new Thread(new Runnable() {
             @Override
             public void run() {
 
@@ -84,9 +85,10 @@ public class InternalThreadLocalTest {
                         Objects.equals(testVal1, internalThreadLocal.get()));
                 countDownLatch.countDown();
             }
-        }).start();
+        });
+        t1.start();
 
-        new Thread(new Runnable() {
+        Thread t2 = new Thread(new Runnable() {
             @Override
             public void run() {
                 internalThreadLocal.set(testVal2);
@@ -94,7 +96,8 @@ public class InternalThreadLocalTest {
                         Objects.equals(testVal2, internalThreadLocal.get()));
                 countDownLatch.countDown();
             }
-        }).start();
+        });
+        t2.start();
         countDownLatch.await();
     }
 
