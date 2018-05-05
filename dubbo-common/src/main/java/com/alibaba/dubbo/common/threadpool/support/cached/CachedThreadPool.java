@@ -22,7 +22,11 @@ import com.alibaba.dubbo.common.threadlocal.NamedInternalThreadFactory;
 import com.alibaba.dubbo.common.threadpool.ThreadPool;
 import com.alibaba.dubbo.common.threadpool.support.AbortPolicyWithReport;
 
-import java.util.concurrent.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This thread pool is self-tuned. Thread will be recycled after idle for one minute, and new thread will be created for
