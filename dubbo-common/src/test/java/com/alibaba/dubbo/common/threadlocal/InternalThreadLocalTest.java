@@ -32,6 +32,8 @@ public class InternalThreadLocalTest {
 
     private static final int PERFORMANCE_THREAD_COUNT = 1000;
 
+    private static final int GET_COUNT = 1000000;
+
     @Test
     public void testInternalThreadLocal() throws InterruptedException {
         AtomicInteger index = new AtomicInteger(0);
@@ -63,7 +65,8 @@ public class InternalThreadLocalTest {
         final Integer testVal = 10;
         final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>();
         internalThreadLocal.set(testVal);
-        Assert.assertTrue("set is not equals get", Objects.equals(testVal, internalThreadLocal.get()));
+        Assert.assertTrue("set is not equals get",
+                Objects.equals(testVal, internalThreadLocal.get()));
     }
 
     @Test
@@ -77,7 +80,8 @@ public class InternalThreadLocalTest {
             public void run() {
 
                 internalThreadLocal.set(testVal1);
-                Assert.assertTrue("set is not equals get", Objects.equals(testVal1, internalThreadLocal.get()));
+                Assert.assertTrue("set is not equals get",
+                        Objects.equals(testVal1, internalThreadLocal.get()));
                 countDownLatch.countDown();
             }
         }).start();
@@ -86,7 +90,8 @@ public class InternalThreadLocalTest {
             @Override
             public void run() {
                 internalThreadLocal.set(testVal2);
-                Assert.assertTrue("set is not equals get", Objects.equals(testVal2, internalThreadLocal.get()));
+                Assert.assertTrue("set is not equals get",
+                        Objects.equals(testVal2, internalThreadLocal.get()));
                 countDownLatch.countDown();
             }
         }).start();
@@ -114,7 +119,7 @@ public class InternalThreadLocalTest {
                 }
                 long start = System.nanoTime();
                 for (int i = 0; i < PERFORMANCE_THREAD_COUNT; i++) {
-                    for (int j = 0; j < 1000000; j++) {
+                    for (int j = 0; j < GET_COUNT; j++) {
                         caches1[i].get();
                     }
                 }
@@ -149,7 +154,7 @@ public class InternalThreadLocalTest {
                 }
                 long start = System.nanoTime();
                 for (int i = 0; i < PERFORMANCE_THREAD_COUNT; i++) {
-                    for (int j = 0; j < 1000000; j++) {
+                    for (int j = 0; j < GET_COUNT; j++) {
                         caches[i].get();
                     }
                 }
