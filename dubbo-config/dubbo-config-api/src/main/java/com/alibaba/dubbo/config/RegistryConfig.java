@@ -18,7 +18,6 @@ package com.alibaba.dubbo.config;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.config.support.Parameter;
-import com.alibaba.dubbo.registry.support.AbstractRegistryFactory;
 
 import java.util.Map;
 

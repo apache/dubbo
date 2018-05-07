@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -57,9 +58,14 @@ public abstract class FailbackRegistry extends AbstractRegistry {
 
     private final ConcurrentMap<URL, Map<NotifyListener, List<URL>>> failedNotified = new ConcurrentHashMap<URL, Map<NotifyListener, List<URL>>>();
 
+    /**
+     * The time in milliseconds the retryExecutor will wait
+     */
+    private final int retryPeriod;
+
     public FailbackRegistry(URL url) {
         super(url);
-        int retryPeriod = url.getParameter(Constants.REGISTRY_RETRY_PERIOD_KEY, Constants.DEFAULT_REGISTRY_RETRY_PERIOD);
+        this.retryPeriod = url.getParameter(Constants.REGISTRY_RETRY_PERIOD_KEY, Constants.DEFAULT_REGISTRY_RETRY_PERIOD);
         this.retryFuture = retryExecutor.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
@@ -439,6 +445,32 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             retryFuture.cancel(true);
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
+        }
+        shutdownExecutorService(retryExecutor, retryPeriod);
+    }
+
+    /**
+     * Use the shutdown pattern from:
+     *  https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html
+     * @param pool the ExecutorService to be shutdown
+     * @param timeoutInMillis the timeout before terminication
+     */
+    protected void shutdownExecutorService(ExecutorService pool, int timeoutInMillis) {
+        // Disable new tasks from being submitted
+        pool.shutdown();
+        try {
+            // Wait a while for existing tasks to terminate
+            if (!pool.awaitTermination(timeoutInMillis, TimeUnit.MILLISECONDS)) {
+                pool.shutdownNow(); // Cancel currently executing tasks
+                // Wait a while for tasks to respond to being cancelled
+                if (!pool.awaitTermination(timeoutInMillis, TimeUnit.MILLISECONDS))
+                    logger.warn("ExecutorService did not terminate: " + pool.toString());
+            }
+        } catch (InterruptedException ie) {
+            // (Re-)Cancel if current thread also interrupted
+            pool.shutdownNow();
+            // Preserve interrupt status
+            Thread.currentThread().interrupt();
         }
     }
 

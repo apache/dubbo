@@ -47,7 +47,7 @@ public class DubboRegistry extends FailbackRegistry {
     private static final int RECONNECT_PERIOD_DEFAULT = 3 * 1000;
 
     // Scheduled executor service
-    private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1, new NamedThreadFactory("DubboRegistryReconnectTimer", true));
+    private final ScheduledExecutorService reconnectTimer = Executors.newScheduledThreadPool(1, new NamedThreadFactory("DubboRegistryReconnectTimer", true));
 
     // Reconnection timer, regular check connection is available. If unavailable, unlimited reconnection.
     private final ScheduledFuture<?> reconnectFuture;
@@ -59,13 +59,18 @@ public class DubboRegistry extends FailbackRegistry {
 
     private final RegistryService registryService;
 
+    /**
+     * The time in milliseconds the reconnectTimer will wait
+     */
+    private final int reconnectPeriod;
+
     public DubboRegistry(Invoker<RegistryService> registryInvoker, RegistryService registryService) {
         super(registryInvoker.getUrl());
         this.registryInvoker = registryInvoker;
         this.registryService = registryService;
         // Start reconnection timer
-        int reconnectPeriod = registryInvoker.getUrl().getParameter(Constants.REGISTRY_RECONNECT_PERIOD_KEY, RECONNECT_PERIOD_DEFAULT);
-        reconnectFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
+        this.reconnectPeriod = registryInvoker.getUrl().getParameter(Constants.REGISTRY_RECONNECT_PERIOD_KEY, RECONNECT_PERIOD_DEFAULT);
+        reconnectFuture = reconnectTimer.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
                 // Check and connect to the registry
@@ -127,6 +132,7 @@ public class DubboRegistry extends FailbackRegistry {
             logger.warn("Failed to cancel reconnect timer", t);
         }
         registryInvoker.destroy();
+        shutdownExecutorService(reconnectTimer, reconnectPeriod);
     }
 
     @Override
