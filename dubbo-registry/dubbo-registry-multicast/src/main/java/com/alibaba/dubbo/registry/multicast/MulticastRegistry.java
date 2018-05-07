@@ -314,6 +314,7 @@ public class MulticastRegistry extends FailbackRegistry {
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
         }
+        shutdownExecutorService(cleanExecutor, cleanPeriod);
     }
 
     protected void registered(URL url) {

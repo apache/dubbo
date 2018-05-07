@@ -263,6 +263,7 @@ public class RedisRegistry extends FailbackRegistry {
                 logger.warn("Failed to destroy the redis registry client. registry: " + entry.getKey() + ", cause: " + t.getMessage(), t);
             }
         }
+        shutdownExecutorService(expireExecutor, expirePeriod);
     }
 
     @Override
