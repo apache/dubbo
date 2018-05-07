@@ -136,10 +136,6 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
             return null;
         if (invokers.size() == 1)
             return invokers.get(0);
-        // If we only have two invokers, use round-robin instead.
-        if (invokers.size() == 2 && selected != null && !selected.isEmpty()) {
-            return selected.get(0) == invokers.get(0) ? invokers.get(1) : invokers.get(0);
-        }
         if (loadbalance == null) {
             loadbalance = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(Constants.DEFAULT_LOADBALANCE);
         }
