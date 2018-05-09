@@ -24,6 +24,7 @@ import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -167,6 +168,15 @@ public class JSONTest {
         assertEquals(test[2].getClass(), Bean.class);
         test = JSON.parse("[1.2, 2]", new Class<?>[]{int.class, int.class});
         assertEquals(test[0], 1);
+    }
+
+    @Test
+    public void testLocale() throws Exception{
+        Locale us = Locale.US;
+        String usString = JSON.json(us);
+        assertEquals("\"en_US\"", usString);
+        Locale usObj = JSON.parse(usString, Locale.class);
+        assertEquals(us, usObj);
     }
 
     public static class Bean1 {
