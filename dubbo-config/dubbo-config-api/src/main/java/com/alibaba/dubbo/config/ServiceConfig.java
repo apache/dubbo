@@ -175,7 +175,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     public URL toUrl() {
-        return urls == null || urls.isEmpty() ? null : urls.iterator().next();
+        return urls.isEmpty() ? null : urls.iterator().next();
     }
 
     public List<URL> toUrls() {
