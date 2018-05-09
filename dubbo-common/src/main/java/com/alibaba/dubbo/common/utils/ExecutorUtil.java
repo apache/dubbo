@@ -43,19 +43,27 @@ public class ExecutorUtil {
         return false;
     }
 
+    /**
+     * Use the shutdown pattern from:
+     *  https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html
+     * @param executor the Executor to shutdown
+     * @param timeout the timeout in milliseconds before termination
+     */
     public static void gracefulShutdown(Executor executor, int timeout) {
         if (!(executor instanceof ExecutorService) || isTerminated(executor)) {
             return;
         }
         final ExecutorService es = (ExecutorService) executor;
         try {
-            es.shutdown(); // Disable new tasks from being submitted
+            // Disable new tasks from being submitted
+            es.shutdown();
         } catch (SecurityException ex2) {
             return;
         } catch (NullPointerException ex2) {
             return;
         }
         try {
+            // Wait a while for existing tasks to terminate
             if (!es.awaitTermination(timeout, TimeUnit.MILLISECONDS)) {
                 es.shutdownNow();
             }

@@ -21,6 +21,7 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.ExecutorUtil;
 import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.registry.NotifyListener;
@@ -132,7 +133,7 @@ public class DubboRegistry extends FailbackRegistry {
             logger.warn("Failed to cancel reconnect timer", t);
         }
         registryInvoker.destroy();
-        shutdownExecutorService(reconnectTimer, reconnectPeriod);
+        ExecutorUtil.gracefulShutdown(reconnectTimer, reconnectPeriod);
     }
 
     @Override
