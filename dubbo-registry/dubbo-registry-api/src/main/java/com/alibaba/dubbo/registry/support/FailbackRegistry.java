@@ -19,6 +19,7 @@ package com.alibaba.dubbo.registry.support;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
+import com.alibaba.dubbo.common.utils.ExecutorUtil;
 import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 import com.alibaba.dubbo.registry.NotifyListener;
 
@@ -29,7 +30,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -446,32 +446,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
         }
-        shutdownExecutorService(retryExecutor, retryPeriod);
-    }
-
-    /**
-     * Use the shutdown pattern from:
-     *  https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html
-     * @param pool the ExecutorService to be shutdown
-     * @param timeoutInMillis the timeout before terminication
-     */
-    protected void shutdownExecutorService(ExecutorService pool, int timeoutInMillis) {
-        // Disable new tasks from being submitted
-        pool.shutdown();
-        try {
-            // Wait a while for existing tasks to terminate
-            if (!pool.awaitTermination(timeoutInMillis, TimeUnit.MILLISECONDS)) {
-                pool.shutdownNow(); // Cancel currently executing tasks
-                // Wait a while for tasks to respond to being cancelled
-                if (!pool.awaitTermination(timeoutInMillis, TimeUnit.MILLISECONDS))
-                    logger.warn("ExecutorService did not terminate: " + pool.toString());
-            }
-        } catch (InterruptedException ie) {
-            // (Re-)Cancel if current thread also interrupted
-            pool.shutdownNow();
-            // Preserve interrupt status
-            Thread.currentThread().interrupt();
-        }
+        ExecutorUtil.gracefulShutdown(retryExecutor, retryPeriod);
     }
 
     // ==== Template method ====
