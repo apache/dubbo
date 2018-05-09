@@ -20,12 +20,19 @@ import org.springframework.web.context.AbstractContextLoaderInitializer;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.XmlWebApplicationContext;
 
-
+/**
+ * An initializer to register {@link DubboApplicationListener}
+ * to the ApplicationContext seamlessly.
+ */
 public class DubboWebApplicationInitializer extends AbstractContextLoaderInitializer {
 
+    /**
+     * This method won't be triggered if running on spring-boot.
+     * It only works when running under a servlet container.
+     * @return a WebApplicationContext with DubboApplicationListener registered.
+     */
     @Override
     protected WebApplicationContext createRootApplicationContext() {
-        // TODO need to verify under spring-boot
         XmlWebApplicationContext webApplicationContext = new XmlWebApplicationContext();
         webApplicationContext.addApplicationListener(new DubboApplicationListener());
         return webApplicationContext;
