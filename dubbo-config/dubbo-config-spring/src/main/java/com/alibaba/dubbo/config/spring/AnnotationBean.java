@@ -152,7 +152,6 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
             }
             if (applicationContext != null) {
                 serviceConfig.setApplicationContext(applicationContext);
-	            service.registry();
 	            if (service.registry().length > 0) {
                     List<RegistryConfig> registryConfigs = new ArrayList<RegistryConfig>();
                     for (String registryId : service.registry()) {
@@ -162,27 +161,21 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
                     }
                     serviceConfig.setRegistries(registryConfigs);
                 }
-	            service.provider();
 	            if (service.provider().length() > 0) {
                     serviceConfig.setProvider(applicationContext.getBean(service.provider(), ProviderConfig.class));
                 }
-	            service.monitor();
 	            if (service.monitor().length() > 0) {
                     serviceConfig.setMonitor(applicationContext.getBean(service.monitor(), MonitorConfig.class));
                 }
-	            service.application();
 	            if (service.application().length() > 0) {
                     serviceConfig.setApplication(applicationContext.getBean(service.application(), ApplicationConfig.class));
                 }
-	            service.module();
 	            if (service.module().length() > 0) {
                     serviceConfig.setModule(applicationContext.getBean(service.module(), ModuleConfig.class));
                 }
-	            service.provider();
 	            if (service.provider().length() > 0) {
                     serviceConfig.setProvider(applicationContext.getBean(service.provider(), ProviderConfig.class));
                 }
-	            service.protocol();
 	            if (service.protocol().length > 0) {
                     List<ProtocolConfig> protocolConfigs = new ArrayList<ProtocolConfig>();
                     for (String protocolId : service.protocol()) {
@@ -284,22 +277,19 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
                     }
                     referenceConfig.setRegistries(registryConfigs);
                 }
-	            reference.consumer();
 	            if (reference.consumer().length() > 0) {
                     referenceConfig.setConsumer(applicationContext.getBean(reference.consumer(), ConsumerConfig.class));
                 }
-	            reference.monitor();
 	            if (reference.monitor().length() > 0) {
                     referenceConfig.setMonitor(applicationContext.getBean(reference.monitor(), MonitorConfig.class));
                 }
-	            reference.application();
 	            if (reference.application().length() > 0) {
                     referenceConfig.setApplication(applicationContext.getBean(reference.application(), ApplicationConfig.class));
                 }
-                if (reference.module() != null && reference.module().length() > 0) {
+                if (reference.module().length() > 0) {
                     referenceConfig.setModule(applicationContext.getBean(reference.module(), ModuleConfig.class));
                 }
-                if (reference.consumer() != null && reference.consumer().length() > 0) {
+                if (reference.consumer().length() > 0) {
                     referenceConfig.setConsumer(applicationContext.getBean(reference.consumer(), ConsumerConfig.class));
                 }
                 try {
