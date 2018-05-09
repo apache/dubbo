@@ -153,7 +153,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
                     int index = invokers.indexOf(invoker);
                     try {
                         //Avoid collision
-                        invoker = index < invokers.size() - 1 ? invokers.get(index + 1) : invoker;
+                        invoker = index < invokers.size() - 1 ? invokers.get(index + 1) : invokers.get(0);
                     } catch (Exception e) {
                         logger.warn(e.getMessage() + " may because invokers list dynamic change, ignore.", e);
                     }

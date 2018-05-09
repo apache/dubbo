@@ -135,7 +135,7 @@ public class FailoverClusterInvokerTest {
             assertSame(result, ret);
             fail();
         } catch (RpcException expected) {
-            assertTrue(expected.isTimeout());
+            assertTrue((expected.isTimeout() || expected.getCode() == 0));
             assertTrue(expected.getMessage().indexOf((retries + 1) + " times") > 0);
         }
     }
