@@ -171,7 +171,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     }
 
     public void setProtocol(ProtocolConfig protocol) {
-        this.protocols = Arrays.asList(new ProtocolConfig[]{protocol});
+        this.protocols = Arrays.asList(protocol);
     }
 
     public String getAccesslog() {
