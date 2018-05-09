@@ -26,8 +26,6 @@ import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.cluster.Directory;
 
 import junit.framework.Assert;
-import org.easymock.EasyMock;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -35,17 +33,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 
-/**
- * FailbackClusterInvokerTest
- *
- */
 @SuppressWarnings("unchecked")
 public class FailbackClusterInvokerTest {
 
     List<Invoker<FailbackClusterInvokerTest>> invokers = new ArrayList<Invoker<FailbackClusterInvokerTest>>();
     URL url = URL.valueOf("test://test:11/test");
-    Invoker<FailbackClusterInvokerTest> invoker = EasyMock.createMock(Invoker.class);
+    Invoker<FailbackClusterInvokerTest> invoker = mock(Invoker.class);
     RpcInvocation invocation = new RpcInvocation();
     Directory<FailbackClusterInvokerTest> dic;
     Result result = new RpcResult();
@@ -57,37 +53,26 @@ public class FailbackClusterInvokerTest {
     @Before
     public void setUp() throws Exception {
 
-        dic = EasyMock.createMock(Directory.class);
-        EasyMock.expect(dic.getUrl()).andReturn(url).anyTimes();
-        EasyMock.expect(dic.list(invocation)).andReturn(invokers).anyTimes();
-        EasyMock.expect(dic.getInterface()).andReturn(FailbackClusterInvokerTest.class).anyTimes();
+        dic = mock(Directory.class);
+        given(dic.getUrl()).willReturn(url);
+        given(dic.list(invocation)).willReturn(invokers);
+        given(dic.getInterface()).willReturn(FailbackClusterInvokerTest.class);
 
         invocation.setMethodName("method1");
-        EasyMock.replay(dic);
 
         invokers.add(invoker);
     }
 
-    @After
-    public void tearDown() {
-        EasyMock.verify(invoker, dic);
-
-    }
-
     private void resetInvokerToException() {
-        EasyMock.reset(invoker);
-        EasyMock.expect(invoker.invoke(invocation)).andThrow(new RuntimeException()).anyTimes();
-        EasyMock.expect(invoker.getUrl()).andReturn(url).anyTimes();
-        EasyMock.expect(invoker.getInterface()).andReturn(FailbackClusterInvokerTest.class).anyTimes();
-        EasyMock.replay(invoker);
+        given(invoker.invoke(invocation)).willThrow(new RuntimeException());
+        given(invoker.getUrl()).willReturn(url);
+        given(invoker.getInterface()).willReturn(FailbackClusterInvokerTest.class);
     }
 
     private void resetInvokerToNoException() {
-        EasyMock.reset(invoker);
-        EasyMock.expect(invoker.invoke(invocation)).andReturn(result).anyTimes();
-        EasyMock.expect(invoker.getUrl()).andReturn(url).anyTimes();
-        EasyMock.expect(invoker.getInterface()).andReturn(FailbackClusterInvokerTest.class).anyTimes();
-        EasyMock.replay(invoker);
+        given(invoker.invoke(invocation)).willReturn(result);
+        given(invoker.getUrl()).willReturn(url);
+        given(invoker.getInterface()).willReturn(FailbackClusterInvokerTest.class);
     }
 
     @Test
@@ -112,14 +97,13 @@ public class FailbackClusterInvokerTest {
 
     @Test()
     public void testNoInvoke() {
-        dic = EasyMock.createMock(Directory.class);
+        dic = mock(Directory.class);
 
-        EasyMock.expect(dic.getUrl()).andReturn(url).anyTimes();
-        EasyMock.expect(dic.list(invocation)).andReturn(null).anyTimes();
-        EasyMock.expect(dic.getInterface()).andReturn(FailbackClusterInvokerTest.class).anyTimes();
+        given(dic.getUrl()).willReturn(url);
+        given(dic.list(invocation)).willReturn(null);
+        given(dic.getInterface()).willReturn(FailbackClusterInvokerTest.class);
 
         invocation.setMethodName("method1");
-        EasyMock.replay(dic);
 
         invokers.add(invoker);
 

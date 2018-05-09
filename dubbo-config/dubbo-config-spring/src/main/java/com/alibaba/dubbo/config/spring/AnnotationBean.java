@@ -111,13 +111,18 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
 
     @Override
     public void destroy() throws Exception {
-        for (ServiceConfig<?> serviceConfig : serviceConfigs) {
-            try {
-                serviceConfig.unexport();
-            } catch (Throwable e) {
-                logger.error(e.getMessage(), e);
-            }
-        }
+
+        //  This will only be called for singleton scope bean, and expected to be called by spring shutdown hook when BeanFactory/ApplicationContext destroys.
+        //  We will guarantee dubbo related resources being released with dubbo shutdown hook.
+
+        //  for (ServiceConfig<?> serviceConfig : serviceConfigs) {
+        //      try {
+        //          serviceConfig.unexport();
+        //      } catch (Throwable e) {
+        //          logger.error(e.getMessage(), e);
+        //      }
+        //  }
+
         for (ReferenceConfig<?> referenceConfig : referenceConfigs.values()) {
             try {
                 referenceConfig.destroy();
