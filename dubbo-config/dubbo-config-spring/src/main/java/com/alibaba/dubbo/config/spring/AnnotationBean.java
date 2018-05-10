@@ -33,6 +33,7 @@ import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.config.ServiceConfig;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
@@ -75,7 +76,7 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
     public void setPackage(String annotationPackage) {
         this.annotationPackage = annotationPackage;
         this.annotationPackages = (annotationPackage == null || annotationPackage.length() == 0) ? null
-                : Constants.COMMA_SPLIT_PATTERN.split(annotationPackage);
+            : Constants.COMMA_SPLIT_PATTERN.split(annotationPackage);
     }
 
     @Override
@@ -85,27 +86,27 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
 
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory)
-            throws BeansException {
+        throws BeansException {
         if (annotationPackage == null || annotationPackage.length() == 0) {
             return;
         }
-	    if (beanFactory instanceof BeanDefinitionRegistry) {
-		    try {
-			    // init scanner
-			    Class<?> scannerClass = ReflectUtils.forName("org.springframework.context.annotation.ClassPathBeanDefinitionScanner");
-			    Object scanner = scannerClass.getConstructor(new Class<?>[]{BeanDefinitionRegistry.class, boolean.class}).newInstance(new Object[]{(BeanDefinitionRegistry) beanFactory, true});
-			    // add filter
-			    Class<?> filterClass = ReflectUtils.forName("org.springframework.core.type.filter.AnnotationTypeFilter");
-			    Object filter = filterClass.getConstructor(Class.class).newInstance(Service.class);
-			    Method addIncludeFilter = scannerClass.getMethod("addIncludeFilter", ReflectUtils.forName("org.springframework.core.type.filter.TypeFilter"));
-			    addIncludeFilter.invoke(scanner, filter);
-			    // scan packages
-			    String[] packages = Constants.COMMA_SPLIT_PATTERN.split(annotationPackage);
-			    Method scan = scannerClass.getMethod("scan", new Class<?>[]{String[].class});
-			    scan.invoke(scanner, new Object[]{packages});
-		    } catch (Throwable e) {
-			    // spring 2.0
-		    }
+        if (beanFactory instanceof BeanDefinitionRegistry) {
+            try {
+                // init scanner
+                Class<?> scannerClass = ReflectUtils.forName("org.springframework.context.annotation.ClassPathBeanDefinitionScanner");
+                Object scanner = scannerClass.getConstructor(new Class<?>[]{BeanDefinitionRegistry.class, boolean.class}).newInstance(new Object[]{(BeanDefinitionRegistry) beanFactory, true});
+                // add filter
+                Class<?> filterClass = ReflectUtils.forName("org.springframework.core.type.filter.AnnotationTypeFilter");
+                Object filter = filterClass.getConstructor(Class.class).newInstance(Service.class);
+                Method addIncludeFilter = scannerClass.getMethod("addIncludeFilter", ReflectUtils.forName("org.springframework.core.type.filter.TypeFilter"));
+                addIncludeFilter.invoke(scanner, filter);
+                // scan packages
+                String[] packages = Constants.COMMA_SPLIT_PATTERN.split(annotationPackage);
+                Method scan = scannerClass.getMethod("scan", new Class<?>[]{String[].class});
+                scan.invoke(scanner, new Object[]{packages});
+            } catch (Throwable e) {
+                // spring 2.0
+            }
         }
     }
 
@@ -134,7 +135,7 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName)
-            throws BeansException {
+        throws BeansException {
         if (!isMatchPackage(bean)) {
             return bean;
         }
@@ -143,7 +144,7 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
             ServiceBean<Object> serviceConfig = new ServiceBean<Object>(service);
             serviceConfig.setRef(bean);
             if (void.class.equals(service.interfaceClass())
-                    && "".equals(service.interfaceName())) {
+                && "".equals(service.interfaceName())) {
                 if (bean.getClass().getInterfaces().length > 0) {
                     serviceConfig.setInterface(bean.getClass().getInterfaces()[0]);
                 } else {
@@ -152,7 +153,7 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
             }
             if (applicationContext != null) {
                 serviceConfig.setApplicationContext(applicationContext);
-	            if (service.registry().length > 0) {
+                if (service.registry().length > 0) {
                     List<RegistryConfig> registryConfigs = new ArrayList<RegistryConfig>();
                     for (String registryId : service.registry()) {
                         if (registryId != null && registryId.length() > 0) {
@@ -161,22 +162,22 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
                     }
                     serviceConfig.setRegistries(registryConfigs);
                 }
-	            if (service.provider().length() > 0) {
+                if (service.provider().length() > 0) {
                     serviceConfig.setProvider(applicationContext.getBean(service.provider(), ProviderConfig.class));
                 }
-	            if (service.monitor().length() > 0) {
+                if (service.monitor().length() > 0) {
                     serviceConfig.setMonitor(applicationContext.getBean(service.monitor(), MonitorConfig.class));
                 }
-	            if (service.application().length() > 0) {
+                if (service.application().length() > 0) {
                     serviceConfig.setApplication(applicationContext.getBean(service.application(), ApplicationConfig.class));
                 }
-	            if (service.module().length() > 0) {
+                if (service.module().length() > 0) {
                     serviceConfig.setModule(applicationContext.getBean(service.module(), ModuleConfig.class));
                 }
-	            if (service.provider().length() > 0) {
+                if (service.provider().length() > 0) {
                     serviceConfig.setProvider(applicationContext.getBean(service.provider(), ProviderConfig.class));
                 }
-	            if (service.protocol().length > 0) {
+                if (service.protocol().length > 0) {
                     List<ProtocolConfig> protocolConfigs = new ArrayList<ProtocolConfig>();
                     for (String protocolId : service.protocol()) {
                         if (protocolId != null && protocolId.length() > 0) {
@@ -201,7 +202,7 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
 
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName)
-            throws BeansException {
+        throws BeansException {
         if (!isMatchPackage(bean)) {
             return bean;
         }
@@ -209,9 +210,9 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
         for (Method method : methods) {
             String name = method.getName();
             if (name.length() > 3 && name.startsWith("set")
-                    && method.getParameterTypes().length == 1
-                    && Modifier.isPublic(method.getModifiers())
-                    && !Modifier.isStatic(method.getModifiers())) {
+                && method.getParameterTypes().length == 1
+                && Modifier.isPublic(method.getModifiers())
+                && !Modifier.isStatic(method.getModifiers())) {
                 try {
                     Reference reference = method.getAnnotation(Reference.class);
                     if (reference != null) {
@@ -261,14 +262,14 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
         if (referenceConfig == null) {
             referenceConfig = new ReferenceBean<Object>(reference);
             if (void.class.equals(reference.interfaceClass())
-                    && "".equals(reference.interfaceName())
-                    && referenceClass.isInterface()) {
+                && "".equals(reference.interfaceName())
+                && referenceClass.isInterface()) {
                 referenceConfig.setInterface(referenceClass);
             }
             if (applicationContext != null) {
                 referenceConfig.setApplicationContext(applicationContext);
-	            reference.registry();
-	            if (reference.registry().length > 0) {
+                reference.registry();
+                if (reference.registry().length > 0) {
                     List<RegistryConfig> registryConfigs = new ArrayList<RegistryConfig>();
                     for (String registryId : reference.registry()) {
                         if (registryId != null && registryId.length() > 0) {
@@ -277,13 +278,13 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
                     }
                     referenceConfig.setRegistries(registryConfigs);
                 }
-	            if (reference.consumer().length() > 0) {
+                if (reference.consumer().length() > 0) {
                     referenceConfig.setConsumer(applicationContext.getBean(reference.consumer(), ConsumerConfig.class));
                 }
-	            if (reference.monitor().length() > 0) {
+                if (reference.monitor().length() > 0) {
                     referenceConfig.setMonitor(applicationContext.getBean(reference.monitor(), MonitorConfig.class));
                 }
-	            if (reference.application().length() > 0) {
+                if (reference.application().length() > 0) {
                     referenceConfig.setApplication(applicationContext.getBean(reference.application(), ApplicationConfig.class));
                 }
                 if (reference.module().length() > 0) {
