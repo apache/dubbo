@@ -67,12 +67,36 @@ import java.util.logging.Logger;
 public class JavaDeserializer extends AbstractMapDeserializer {
     private static final Logger log
         = Logger.getLogger(JavaDeserializer.class.getName());
+    private static Object reflectionFactory;
+    private static Method newConstructorForSerializationMethod;
+    private static Constructor<Object> objConstructor;
+    static {
+        try {
+            objConstructor = Object.class.getConstructor(new Class<?>[0]);
+
+            Class<?> factoryClass = Class.forName("sun.reflect.ReflectionFactory");
+            Method getReflectionFactory = factoryClass.getDeclaredMethod("getReflectionFactory");
+            if (!getReflectionFactory.isAccessible()) getReflectionFactory.setAccessible(true);
+            reflectionFactory = getReflectionFactory.invoke(factoryClass);
+
+            newConstructorForSerializationMethod = factoryClass.getDeclaredMethod(
+                    "newConstructorForSerialization", Class.class, Constructor.class);
+            if (!newConstructorForSerializationMethod.isAccessible()) {
+                newConstructorForSerializationMethod.setAccessible(true);
+            }
+        } catch (Throwable e) {
+            log.finest("Compatible constructor not supported for this JVM: "
+                    + System.getProperty("java.vm.name"));
+        }
+    }
 
     private Class _type;
     private HashMap _fieldMap;
     private Method _readResolve;
     private Constructor _constructor;
     private Object[] _constructorArgs;
+    private boolean compatibleConstructNPE = newConstructorForSerializationMethod != null;
+    private Constructor<?> compatibleConstructor;
 
     public JavaDeserializer(Class cl) {
         _type = cl;
@@ -308,13 +332,39 @@ public class JavaDeserializer extends AbstractMapDeserializer {
     protected Object instantiate()
         throws Exception {
         try {
-            if (_constructor != null)
-                return _constructor.newInstance(_constructorArgs);
-            else
-                return _type.newInstance();
+            return _constructor == null ? _type.newInstance() : construct();
         } catch (Exception e) {
             throw new HessianProtocolException("'" + _type.getName() + "' could not be instantiated", e);
         }
+    }
+
+    protected Object construct() throws Exception {
+        if (compatibleConstructor != null) return compatibleConstructor.newInstance();
+
+        InvocationTargetException ex;
+        try {
+            return _constructor.newInstance(_constructorArgs);
+        } catch (InvocationTargetException e) {
+            if (compatibleConstructNPE && e.getTargetException() instanceof NullPointerException) {
+                ex = e;
+            } else {
+                throw e;
+            }
+        }
+
+        Constructor<?> ctor;
+        try {
+            ctor = (Constructor<?>) newConstructorForSerializationMethod.invoke(reflectionFactory, _type,
+                    objConstructor);
+            if (!ctor.isAccessible()) ctor.setAccessible(true);
+            Object obj = ctor.newInstance();
+            compatibleConstructor = ctor;
+            return obj;
+        } catch (Throwable t) {
+            log.finest(_type + " compatible construct for NullPointerException fail: " + t);
+        }
+        compatibleConstructNPE = false;
+        throw ex;
     }
 
     /**
