@@ -135,7 +135,6 @@
         <module>dependencies-bom</module>
         <module>bom</module>
         <module>all</module>
-        <module>distribution</module>
     </modules>
 
     <dependencyManagement>
