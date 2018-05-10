@@ -17,7 +17,6 @@
 
 package com.alibaba.dubbo.config;
 
-import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.rpc.Protocol;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -32,15 +31,6 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 public class ProtocolConfigTest {
-    @Test
-    public void testDestroyAll() throws Exception {
-        Protocol protocol = Mockito.mock(Protocol.class);
-        MockProtocol2.delegate = protocol;
-        ExtensionLoader<Protocol> loader = ExtensionLoader.getExtensionLoader(Protocol.class);
-        loader.getExtension("mockprotocol2");
-        ProtocolConfig.destroyAll();
-        Mockito.verify(protocol).destroy();
-    }
 
     @Test
     public void testDestroy() throws Exception {
