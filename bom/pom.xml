@@ -12,10 +12,9 @@
     <!--<relativePath>../pom.xml</relativePath>-->
     <!--</parent>-->
     <parent>
-        <groupId>org.apache</groupId>
-        <artifactId>apache</artifactId>
-        <version>18</version>
-        <relativePath/>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>7</version>
     </parent>
 
     <groupId>com.alibaba</groupId>
