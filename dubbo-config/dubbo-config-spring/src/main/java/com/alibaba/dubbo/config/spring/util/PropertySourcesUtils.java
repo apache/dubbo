@@ -51,8 +51,10 @@ public abstract class PropertySourcesUtils {
                 for (String name : ((EnumerablePropertySource<?>) source).getPropertyNames()) {
                     if (name.startsWith(normalizedPrefix)) {
                         String subName = name.substring(normalizedPrefix.length());
-                        Object value = source.getProperty(name);
-                        subProperties.put(subName, String.valueOf(value));
+                        if (!subProperties.containsKey(subName)) {
+                            Object value = source.getProperty(name);
+                            subProperties.put(subName, String.valueOf(value));
+                        }
                     }
                 }
             }

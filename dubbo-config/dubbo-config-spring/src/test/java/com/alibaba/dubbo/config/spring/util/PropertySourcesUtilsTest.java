@@ -55,8 +55,18 @@ public class PropertySourcesUtilsTest {
         source.put(KEY_PREFIX + "." + KEY_AGE, 31);
 
         Map<String, Object> expected = new HashMap<String, Object>();
-        expected.put(KEY_NAME, "Mercy");
+        expected.put(KEY_NAME, "mercyblitz");
         expected.put(KEY_AGE, "31");
+
+
+        Map<String, Object> source2 = new HashMap<String, Object>();
+
+        source2.put("user.name", "mercyblitz");
+
+        MapPropertySource propertySource2 = new MapPropertySource("test2", source2);
+
+        propertySources.addFirst(propertySource2);
+
 
         result = PropertySourcesUtils.getSubProperties(propertySources, KEY_PREFIX);
         Assert.assertEquals(expected, result);
