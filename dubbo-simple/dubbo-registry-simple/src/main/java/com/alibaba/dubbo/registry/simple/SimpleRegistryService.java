@@ -57,7 +57,7 @@ public class SimpleRegistryService extends AbstractRegistry {
         List<URL> urls = new ArrayList<URL>();
         for (URL u : getRegistered()) {
             if (UrlUtils.isMatch(url, u)) {
-                urls.add(u);
+            	urls.add(u.clearParameters());
             }
         }
         return urls;
