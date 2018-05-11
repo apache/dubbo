@@ -25,7 +25,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * fix hession serialize bug:
+ * fix hessian serialize bug:
  * the filed of parent class will cover the filed of sub class
  *
  */
@@ -38,7 +38,7 @@ public class HessianJavaSerializeTest extends SerializeTestBase {
         baseUser.setUserId(1);
         baseUser.setUserName("tom");
 
-        BaseUser serializedUser = baseHessionSerialize(baseUser);
+        BaseUser serializedUser = baseHessianSerialize(baseUser);
         Assert.assertEquals("tom", serializedUser.getUserName());
     }
 
@@ -49,7 +49,7 @@ public class HessianJavaSerializeTest extends SerializeTestBase {
         subUser.setUserId(1);
         subUser.setUserName("tom");
 
-        SubUser serializedUser = baseHessionSerialize(subUser);
+        SubUser serializedUser = baseHessianSerialize(subUser);
         Assert.assertEquals("tom", serializedUser.getUserName());
 
     }
@@ -60,7 +60,7 @@ public class HessianJavaSerializeTest extends SerializeTestBase {
         grandsonUser.setUserId(1);
         grandsonUser.setUserName("tom");
 
-        GrandsonUser serializedUser = baseHessionSerialize(grandsonUser);
+        GrandsonUser serializedUser = baseHessianSerialize(grandsonUser);
         Assert.assertEquals("tom", serializedUser.getUserName());
     }
 
