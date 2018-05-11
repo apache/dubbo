@@ -18,24 +18,14 @@
 package com.alibaba.dubbo.config;
 
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.remoting.ChannelHandler;
-import com.alibaba.dubbo.remoting.Client;
-import com.alibaba.dubbo.remoting.RemotingException;
-import com.alibaba.dubbo.remoting.Server;
-import com.alibaba.dubbo.remoting.Transporter;
-import org.mockito.Mockito;
+import com.alibaba.dubbo.registry.Registry;
+import com.alibaba.dubbo.registry.RegistryFactory;
 
-public class MockTransporter implements Transporter {
-    private Server server = Mockito.mock(Server.class);
-    private Client client = Mockito.mock(Client.class);
+public class MockRegistryFactory implements RegistryFactory {
+    public static Registry registry;
 
     @Override
-    public Server bind(URL url, ChannelHandler handler) throws RemotingException {
-        return server;
-    }
-
-    @Override
-    public Client connect(URL url, ChannelHandler handler) throws RemotingException {
-        return client;
+    public Registry getRegistry(URL url) {
+        return registry;
     }
 }
