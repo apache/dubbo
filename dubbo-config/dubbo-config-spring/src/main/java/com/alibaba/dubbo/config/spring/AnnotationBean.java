@@ -268,7 +268,6 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
             }
             if (applicationContext != null) {
                 referenceConfig.setApplicationContext(applicationContext);
-                reference.registry();
                 if (reference.registry().length > 0) {
                     List<RegistryConfig> registryConfigs = new ArrayList<RegistryConfig>();
                     for (String registryId : reference.registry()) {
