@@ -665,12 +665,7 @@ public class ExtensionLoader<T> {
             if (name == null || name.length() == 0) {
                 name = findAnnotationName(clazz);
                 if (name == null || name.length() == 0) {
-                    if (clazz.getSimpleName().length() > type.getSimpleName().length()
-                            && clazz.getSimpleName().endsWith(type.getSimpleName())) {
-                        name = clazz.getSimpleName().substring(0, clazz.getSimpleName().length() - type.getSimpleName().length()).toLowerCase();
-                    } else {
-                        throw new IllegalStateException("No such extension name for the class " + clazz.getName() + " in the config " + resourceURL);
-                    }
+                    throw new IllegalStateException("No such extension name for the class " + clazz.getName() + " in the config " + resourceURL);
                 }
             }
             String[] names = NAME_SEPARATOR.split(name);
