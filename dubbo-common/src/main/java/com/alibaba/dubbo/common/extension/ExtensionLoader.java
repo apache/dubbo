@@ -664,7 +664,7 @@ public class ExtensionLoader<T> {
             clazz.getConstructor();
             if (name == null || name.length() == 0) {
                 name = findAnnotationName(clazz);
-                if (name == null || name.length() == 0) {
+                if (name.length() == 0) {
                     throw new IllegalStateException("No such extension name for the class " + clazz.getName() + " in the config " + resourceURL);
                 }
             }
