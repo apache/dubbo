@@ -25,10 +25,12 @@ import java.io.IOException;
 
 public class ClientTraceFilter implements ClientRequestFilter, ClientResponseFilter {
 
+    @Override
     public void filter(ClientRequestContext requestContext) throws IOException {
         System.out.println("Client request filter invoked");
     }
 
+    @Override
     public void filter(ClientRequestContext clientRequestContext, ClientResponseContext clientResponseContext) throws IOException {
         System.out.println("Client response filter invoked");
     }

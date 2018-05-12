@@ -54,6 +54,7 @@ public class MonitorFilter implements Filter {
     }
 
     // intercepting invocation
+    @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         if (invoker.getUrl().hasParameter(Constants.MONITOR_KEY)) {
             RpcContext context = RpcContext.getContext(); // provider must fetch context before invoke() gets called
@@ -84,6 +85,8 @@ public class MonitorFilter implements Filter {
             String application = invoker.getUrl().getParameter(Constants.APPLICATION_KEY);
             String service = invoker.getInterface().getName(); // service name
             String method = RpcUtils.getMethodName(invocation); // method name
+            String group = invoker.getUrl().getParameter(Constants.GROUP_KEY);
+            String version = invoker.getUrl().getParameter(Constants.VERSION_KEY);
             URL url = invoker.getUrl().getUrlParameter(Constants.MONITOR_KEY);
             Monitor monitor = monitorFactory.getMonitor(url);
             if (monitor == null) {
@@ -121,7 +124,9 @@ public class MonitorFilter implements Filter {
                     MonitorService.ELAPSED, String.valueOf(elapsed),
                     MonitorService.CONCURRENT, String.valueOf(concurrent),
                     Constants.INPUT_KEY, input,
-                    Constants.OUTPUT_KEY, output));
+                    Constants.OUTPUT_KEY, output,
+                    Constants.GROUP_KEY, group,
+                    Constants.VERSION_KEY, version));
         } catch (Throwable t) {
             logger.error("Failed to monitor count service " + invoker.getUrl() + ", cause: " + t.getMessage(), t);
         }

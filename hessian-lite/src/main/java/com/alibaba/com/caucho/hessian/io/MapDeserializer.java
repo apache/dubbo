@@ -84,6 +84,7 @@ public class MapDeserializer extends AbstractMapDeserializer {
         }
     }
 
+    @Override
     public Class getType() {
         if (_type != null)
             return _type;
@@ -91,6 +92,7 @@ public class MapDeserializer extends AbstractMapDeserializer {
             return HashMap.class;
     }
 
+    @Override
     public Object readMap(AbstractHessianInput in)
             throws IOException {
         return readMap(in, null, null);
@@ -100,7 +102,6 @@ public class MapDeserializer extends AbstractMapDeserializer {
      *  support generic type of map, fix the type of short serialization <p>
      *  eg: Map<String, Short> serialize & deserialize
      *
-     *  @author jason.shang@hotmail.com
      */
     @Override
     public Object readMap(AbstractHessianInput in, Class<?> expectKeyType, Class<?> expectValueType) throws IOException {

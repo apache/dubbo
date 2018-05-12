@@ -21,11 +21,15 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 
-import junit.framework.Assert;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
 
 public class RpcUtilsTest {
 
@@ -43,9 +47,9 @@ public class RpcUtilsTest {
         long id1 = RpcUtils.getInvocationId(inv);
         RpcUtils.attachInvocationIdIfAsync(url, inv);
         long id2 = RpcUtils.getInvocationId(inv);
-        Assert.assertTrue(id1 == id2); // verify if it's idempotent
-        Assert.assertTrue(id1 >= 0);
-        Assert.assertEquals("bb", attachments.get("aa"));
+        assertTrue(id1 == id2); // verify if it's idempotent
+        assertTrue(id1 >= 0);
+        assertEquals("bb", attachments.get("aa"));
     }
 
     /**
@@ -57,7 +61,7 @@ public class RpcUtilsTest {
         URL url = URL.valueOf("dubbo://localhost/");
         Invocation inv = new RpcInvocation("test", new Class[]{}, new String[]{});
         RpcUtils.attachInvocationIdIfAsync(url, inv);
-        Assert.assertNull(RpcUtils.getInvocationId(inv));
+        assertNull(RpcUtils.getInvocationId(inv));
     }
 
     /**
@@ -69,7 +73,7 @@ public class RpcUtilsTest {
         URL url = URL.valueOf("dubbo://localhost/?test.async=true");
         Invocation inv = new RpcInvocation("test", new Class[]{}, new String[]{});
         RpcUtils.attachInvocationIdIfAsync(url, inv);
-        Assert.assertTrue(RpcUtils.getInvocationId(inv) >= 0l);
+        assertTrue(RpcUtils.getInvocationId(inv) >= 0l);
     }
 
     /**
@@ -81,7 +85,7 @@ public class RpcUtilsTest {
         URL url = URL.valueOf("dubbo://localhost/?test.async=true&" + Constants.AUTO_ATTACH_INVOCATIONID_KEY + "=false");
         Invocation inv = new RpcInvocation("test", new Class[]{}, new String[]{});
         RpcUtils.attachInvocationIdIfAsync(url, inv);
-        Assert.assertNull(RpcUtils.getInvocationId(inv));
+        assertNull(RpcUtils.getInvocationId(inv));
     }
 
     /**
@@ -93,6 +97,6 @@ public class RpcUtilsTest {
         URL url = URL.valueOf("dubbo://localhost/?" + Constants.AUTO_ATTACH_INVOCATIONID_KEY + "=true");
         Invocation inv = new RpcInvocation("test", new Class[]{}, new String[]{});
         RpcUtils.attachInvocationIdIfAsync(url, inv);
-        Assert.assertNotNull(RpcUtils.getInvocationId(inv));
+        assertNotNull(RpcUtils.getInvocationId(inv));
     }
 }

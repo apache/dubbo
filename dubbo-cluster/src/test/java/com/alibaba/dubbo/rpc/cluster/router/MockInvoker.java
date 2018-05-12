@@ -38,6 +38,7 @@ public class MockInvoker<T> implements Invoker<T> {
         this.available = available;
     }
 
+    @Override
     public Class<T> getInterface() {
         return null;
     }
@@ -46,6 +47,7 @@ public class MockInvoker<T> implements Invoker<T> {
         return url;
     }
 
+    @Override
     public boolean isAvailable() {
         return available;
     }
@@ -54,6 +56,7 @@ public class MockInvoker<T> implements Invoker<T> {
         return null;
     }
 
+    @Override
     public void destroy() {
     }
 }

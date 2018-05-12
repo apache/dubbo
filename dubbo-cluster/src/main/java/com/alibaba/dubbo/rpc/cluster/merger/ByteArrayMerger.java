@@ -21,6 +21,7 @@ import com.alibaba.dubbo.rpc.cluster.Merger;
 
 public class ByteArrayMerger implements Merger<byte[]> {
 
+    @Override
     public byte[] merge(byte[]... items) {
         int total = 0;
         for (byte[] array : items) {

@@ -75,6 +75,7 @@ public abstract class AbstractConfig implements Serializable {
 
     static {
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override
             public void run() {
                 if (logger.isInfoEnabled()) {
                     logger.info("Run shutdown hook now.");
@@ -213,11 +214,11 @@ public abstract class AbstractConfig implements Serializable {
                             str = URL.encode(str);
                         }
                         if (parameter != null && parameter.append()) {
-                            String pre = (String) parameters.get(Constants.DEFAULT_KEY + "." + key);
+                            String pre = parameters.get(Constants.DEFAULT_KEY + "." + key);
                             if (pre != null && pre.length() > 0) {
                                 str = pre + "," + str;
                             }
-                            pre = (String) parameters.get(key);
+                            pre = parameters.get(key);
                             if (pre != null && pre.length() > 0) {
                                 str = pre + "," + str;
                             }
@@ -386,7 +387,6 @@ public abstract class AbstractConfig implements Serializable {
             return;
         }
         for (Map.Entry<String, String> entry : parameters.entrySet()) {
-            //change by tony.chenl parameter value maybe has colon.for example napoli address
             checkNameHasSymbol(entry.getKey(), entry.getValue());
         }
     }
@@ -401,7 +401,8 @@ public abstract class AbstractConfig implements Serializable {
         if (pattern != null) {
             Matcher matcher = pattern.matcher(value);
             if (!matcher.matches()) {
-                throw new IllegalStateException("Invalid " + property + "=\"" + value + "\" contain illegal charactor, only digit, letter, '-', '_' and '.' is legal.");
+                throw new IllegalStateException("Invalid " + property + "=\"" + value + "\" contains illegal " +
+                        "character, only digit, letter, '-', '_' or '.' is legal.");
             }
         }
     }

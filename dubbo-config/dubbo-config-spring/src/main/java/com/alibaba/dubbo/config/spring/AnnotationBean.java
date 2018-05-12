@@ -21,7 +21,16 @@ import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
-import com.alibaba.dubbo.config.*;
+import com.alibaba.dubbo.config.AbstractConfig;
+import com.alibaba.dubbo.config.ApplicationConfig;
+import com.alibaba.dubbo.config.ConsumerConfig;
+import com.alibaba.dubbo.config.ModuleConfig;
+import com.alibaba.dubbo.config.MonitorConfig;
+import com.alibaba.dubbo.config.ProtocolConfig;
+import com.alibaba.dubbo.config.ProviderConfig;
+import com.alibaba.dubbo.config.ReferenceConfig;
+import com.alibaba.dubbo.config.RegistryConfig;
+import com.alibaba.dubbo.config.ServiceConfig;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import org.springframework.beans.BeansException;
@@ -69,10 +78,12 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
                 : Constants.COMMA_SPLIT_PATTERN.split(annotationPackage);
     }
 
+    @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
 
+    @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory)
             throws BeansException {
         if (annotationPackage == null || annotationPackage.length() == 0) {
@@ -98,14 +109,20 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
         }
     }
 
+    @Override
     public void destroy() throws Exception {
-        for (ServiceConfig<?> serviceConfig : serviceConfigs) {
-            try {
-                serviceConfig.unexport();
-            } catch (Throwable e) {
-                logger.error(e.getMessage(), e);
-            }
-        }
+
+        //  This will only be called for singleton scope bean, and expected to be called by spring shutdown hook when BeanFactory/ApplicationContext destroys.
+        //  We will guarantee dubbo related resources being released with dubbo shutdown hook.
+
+        //  for (ServiceConfig<?> serviceConfig : serviceConfigs) {
+        //      try {
+        //          serviceConfig.unexport();
+        //      } catch (Throwable e) {
+        //          logger.error(e.getMessage(), e);
+        //      }
+        //  }
+
         for (ReferenceConfig<?> referenceConfig : referenceConfigs.values()) {
             try {
                 referenceConfig.destroy();
@@ -115,6 +132,7 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
         }
     }
 
+    @Override
     public Object postProcessAfterInitialization(Object bean, String beanName)
             throws BeansException {
         if (!isMatchPackage(bean)) {
@@ -183,6 +201,7 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
         return bean;
     }
 
+    @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName)
             throws BeansException {
         if (!isMatchPackage(bean)) {

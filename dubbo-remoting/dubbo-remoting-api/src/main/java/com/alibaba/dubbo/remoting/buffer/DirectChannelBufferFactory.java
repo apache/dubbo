@@ -31,6 +31,7 @@ public class DirectChannelBufferFactory implements ChannelBufferFactory {
         return INSTANCE;
     }
 
+    @Override
     public ChannelBuffer getBuffer(int capacity) {
         if (capacity < 0) {
             throw new IllegalArgumentException("capacity: " + capacity);
@@ -41,6 +42,7 @@ public class DirectChannelBufferFactory implements ChannelBufferFactory {
         return ChannelBuffers.directBuffer(capacity);
     }
 
+    @Override
     public ChannelBuffer getBuffer(byte[] array, int offset, int length) {
         if (array == null) {
             throw new NullPointerException("array");
@@ -60,6 +62,7 @@ public class DirectChannelBufferFactory implements ChannelBufferFactory {
         return buf;
     }
 
+    @Override
     public ChannelBuffer getBuffer(ByteBuffer nioBuffer) {
         if (!nioBuffer.isReadOnly() && nioBuffer.isDirect()) {
             return ChannelBuffers.wrappedBuffer(nioBuffer);

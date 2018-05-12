@@ -69,10 +69,12 @@ public class MockedClient implements ExchangeClient {
     public void open() {
     }
 
+    @Override
     public void close() {
         this.closed = true;
     }
 
+    @Override
     public void send(Object msg) throws RemotingException {
         this.sent = msg;
     }
@@ -117,6 +119,7 @@ public class MockedClient implements ExchangeClient {
         //this.listener = null;
     }
 
+    @Override
     public boolean isConnected() {
         return connected;
     }
@@ -140,6 +143,7 @@ public class MockedClient implements ExchangeClient {
         return invoked;
     }
 
+    @Override
     public InetSocketAddress getRemoteAddress() {
         return address;
     }
@@ -148,6 +152,7 @@ public class MockedClient implements ExchangeClient {
         return "mocked";
     }
 
+    @Override
     public InetSocketAddress getLocalAddress() {
         return null;
     }
@@ -159,6 +164,7 @@ public class MockedClient implements ExchangeClient {
     public void setTimeout(int timeout) {
     }
 
+    @Override
     public void close(int timeout) {
         close();
     }
@@ -200,6 +206,7 @@ public class MockedClient implements ExchangeClient {
     public void setThreadCount(int threadCount) {
     }
 
+    @Override
     public URL getUrl() {
         return null;
     }
@@ -208,6 +215,7 @@ public class MockedClient implements ExchangeClient {
         return null;
     }
 
+    @Override
     public ChannelHandler getChannelHandler() {
         return null;
     }
@@ -223,25 +231,31 @@ public class MockedClient implements ExchangeClient {
         return null;
     }
 
+    @Override
     public void reconnect() throws RemotingException {
     }
 
+    @Override
     public Object getAttribute(String key) {
         return null;
     }
 
+    @Override
     public void setAttribute(String key, Object value) {
 
     }
 
+    @Override
     public boolean hasAttribute(String key) {
         return false;
     }
 
+    @Override
     public boolean isClosed() {
         return closed;
     }
 
+    @Override
     public void removeAttribute(String key) {
 
     }
@@ -260,9 +274,11 @@ public class MockedClient implements ExchangeClient {
         this.received = received;
     }
 
+    @Override
     public void send(Object message, boolean sent) throws RemotingException {
     }
 
+    @Override
     public void reset(URL url) {
     }
 

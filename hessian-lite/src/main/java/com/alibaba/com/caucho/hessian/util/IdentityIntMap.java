@@ -219,6 +219,7 @@ public class IdentityIntMap {
         }
     }
 
+    @Override
     public String toString() {
         StringBuffer sbuf = new StringBuffer();
 

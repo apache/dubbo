@@ -37,6 +37,7 @@ public class SpringExtensionFactory implements ExtensionFactory {
         contexts.remove(context);
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T getExtension(Class<T> type, String name) {
         for (ApplicationContext context : contexts) {

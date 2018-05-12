@@ -24,6 +24,7 @@ import org.jboss.resteasy.spi.ResteasyDeployment;
 
 public abstract class BaseRestServer implements RestServer {
 
+    @Override
     public void start(URL url) {
         getDeployment().getMediaTypeMappings().put("json", "application/json");
         getDeployment().getMediaTypeMappings().put("xml", "text/xml");
@@ -37,6 +38,7 @@ public abstract class BaseRestServer implements RestServer {
         doStart(url);
     }
 
+    @Override
     public void deploy(Class resourceDef, Object resourceInstance, String contextPath) {
         if (StringUtils.isEmpty(contextPath)) {
             getDeployment().getRegistry().addResourceFactory(new DubboResourceFactory(resourceInstance, resourceDef));
@@ -45,6 +47,7 @@ public abstract class BaseRestServer implements RestServer {
         }
     }
 
+    @Override
     public void undeploy(Class resourceDef) {
         getDeployment().getRegistry().removeRegistrations(resourceDef);
     }

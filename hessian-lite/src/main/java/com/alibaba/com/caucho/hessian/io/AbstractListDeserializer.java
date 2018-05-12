@@ -54,6 +54,7 @@ import java.io.IOException;
  * Deserializing a JDK 1.2 Collection.
  */
 public class AbstractListDeserializer extends AbstractDeserializer {
+    @Override
     public Object readObject(AbstractHessianInput in)
             throws IOException {
         Object obj = in.readObject();

@@ -67,9 +67,7 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
     public JavaBeanDescriptor(String className, int type) {
         notEmpty(className, "class name is empty");
         if (!isValidType(type)) {
-            throw new IllegalArgumentException(
-                    new StringBuilder(16).append("type [ ")
-                            .append(type).append(" ] is unsupported").toString());
+            throw new IllegalArgumentException("type [ " + type + " ] is unsupported");
         }
 
         this.className = className;
@@ -184,6 +182,7 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
         return properties.containsKey(propertyName);
     }
 
+    @Override
     public Iterator<Map.Entry<Object, Object>> iterator() {
         return properties.entrySet().iterator();
     }

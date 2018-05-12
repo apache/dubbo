@@ -39,6 +39,7 @@ public class RpcContextFilter implements ContainerRequestFilter, ClientRequestFi
     // currently we use a single header to hold the attachments so that the total attachment size limit is about 8k
     private static final int MAX_HEADER_SIZE = 8 * 1024;
 
+    @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
         HttpServletRequest request = ResteasyProviderFactory.getContextData(HttpServletRequest.class);
         RpcContext.getContext().setRequest(request);
@@ -65,6 +66,7 @@ public class RpcContextFilter implements ContainerRequestFilter, ClientRequestFi
         }
     }
 
+    @Override
     public void filter(ClientRequestContext requestContext) throws IOException {
         int size = 0;
         for (Map.Entry<String, String> entry : RpcContext.getContext().getAttachments().entrySet()) {
@@ -79,11 +81,8 @@ public class RpcContextFilter implements ContainerRequestFilter, ClientRequestFi
                 throw new IllegalArgumentException("The attachments of " + RpcContext.class.getSimpleName() + " is too big");
             }
 
-            StringBuilder attachments = new StringBuilder();
-            attachments.append(entry.getKey());
-            attachments.append("=");
-            attachments.append(entry.getValue());
-            requestContext.getHeaders().add(DUBBO_ATTACHMENT_HEADER, attachments.toString());
+            String attachments = entry.getKey() + "=" + entry.getValue();
+            requestContext.getHeaders().add(DUBBO_ATTACHMENT_HEADER, attachments);
         }
     }
 }

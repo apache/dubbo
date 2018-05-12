@@ -2,8 +2,8 @@
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
             xmlns:beans="http://www.springframework.org/schema/beans"
             xmlns:tool="http://www.springframework.org/schema/tool"
-            xmlns="http://code.alibabatech.com/schema/dubbo"
-            targetNamespace="http://code.alibabatech.com/schema/dubbo">
+            xmlns="http://dubbo.apache.org/schema/dubbo"
+            targetNamespace="http://dubbo.apache.org/schema/dubbo">
 
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
     <xsd:import namespace="http://www.springframework.org/schema/beans"/>
@@ -572,6 +572,11 @@
         <xsd:attribute name="version" type="xsd:string" use="optional">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The monitor version. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="interval" type="xsd:string" use="optional">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The monitor interval. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="default" type="xsd:string" use="optional">

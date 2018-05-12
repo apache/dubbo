@@ -52,22 +52,27 @@ public class LoggingFilter implements ContainerRequestFilter, ClientRequestFilte
 
     private static final Logger logger = LoggerFactory.getLogger(LoggingFilter.class);
 
+    @Override
     public void filter(ClientRequestContext context) throws IOException {
         logHttpHeaders(context.getStringHeaders());
     }
 
+    @Override
     public void filter(ClientRequestContext requestContext, ClientResponseContext responseContext) throws IOException {
         logHttpHeaders(responseContext.getHeaders());
     }
 
+    @Override
     public void filter(ContainerRequestContext context) throws IOException {
         logHttpHeaders(context.getHeaders());
     }
 
+    @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
         logHttpHeaders(responseContext.getStringHeaders());
     }
 
+    @Override
     public Object aroundReadFrom(ReaderInterceptorContext context) throws IOException, WebApplicationException {
         byte[] buffer = IOUtils.toByteArray(context.getInputStream());
         logger.info("The contents of request body is: \n" + new String(buffer, "UTF-8") + "\n");
@@ -75,6 +80,7 @@ public class LoggingFilter implements ContainerRequestFilter, ClientRequestFilte
         return context.proceed();
     }
 
+    @Override
     public void aroundWriteTo(WriterInterceptorContext context) throws IOException, WebApplicationException {
         OutputStreamWrapper wrapper = new OutputStreamWrapper(context.getOutputStream());
         context.setOutputStream(wrapper);

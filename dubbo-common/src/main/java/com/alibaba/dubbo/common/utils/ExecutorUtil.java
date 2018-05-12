@@ -34,9 +34,9 @@ public class ExecutorUtil {
             new LinkedBlockingQueue<Runnable>(100),
             new NamedThreadFactory("Close-ExecutorService-Timer", true));
 
-    public static boolean isShutdown(Executor executor) {
+    public static boolean isTerminated(Executor executor) {
         if (executor instanceof ExecutorService) {
-            if (((ExecutorService) executor).isShutdown()) {
+            if (((ExecutorService) executor).isTerminated()) {
                 return true;
             }
         }
@@ -44,7 +44,7 @@ public class ExecutorUtil {
     }
 
     public static void gracefulShutdown(Executor executor, int timeout) {
-        if (!(executor instanceof ExecutorService) || isShutdown(executor)) {
+        if (!(executor instanceof ExecutorService) || isTerminated(executor)) {
             return;
         }
         final ExecutorService es = (ExecutorService) executor;
@@ -63,13 +63,13 @@ public class ExecutorUtil {
             es.shutdownNow();
             Thread.currentThread().interrupt();
         }
-        if (!isShutdown(es)) {
+        if (!isTerminated(es)) {
             newThreadToCloseExecutor(es);
         }
     }
 
     public static void shutdownNow(Executor executor, final int timeout) {
-        if (!(executor instanceof ExecutorService) || isShutdown(executor)) {
+        if (!(executor instanceof ExecutorService) || isTerminated(executor)) {
             return;
         }
         final ExecutorService es = (ExecutorService) executor;
@@ -85,14 +85,15 @@ public class ExecutorUtil {
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
-        if (!isShutdown(es)) {
+        if (!isTerminated(es)) {
             newThreadToCloseExecutor(es);
         }
     }
 
     private static void newThreadToCloseExecutor(final ExecutorService es) {
-        if (!isShutdown(es)) {
+        if (!isTerminated(es)) {
             shutdownExecutor.execute(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         for (int i = 0; i < 1000; i++) {
@@ -118,7 +119,7 @@ public class ExecutorUtil {
      */
     public static URL setThreadName(URL url, String defaultName) {
         String name = url.getParameter(Constants.THREAD_NAME_KEY, defaultName);
-        name = new StringBuilder(32).append(name).append("-").append(url.getAddress()).toString();
+        name = name + "-" + url.getAddress();
         url = url.addParameter(Constants.THREAD_NAME_KEY, name);
         return url;
     }

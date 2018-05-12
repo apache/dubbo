@@ -45,6 +45,7 @@ public class MockRegistry implements Registry {
     /* 
      * @see com.alibaba.dubbo.common.Node#isAvailable()
      */
+    @Override
     public boolean isAvailable() {
         return true;
     }
@@ -52,6 +53,7 @@ public class MockRegistry implements Registry {
     /* 
      * @see com.alibaba.dubbo.common.Node#destroy()
      */
+    @Override
     public void destroy() {
 
     }
@@ -59,6 +61,7 @@ public class MockRegistry implements Registry {
     /* 
      * @see com.alibaba.dubbo.registry.RegistryService#register(com.alibaba.dubbo.common.URL)
      */
+    @Override
     public void register(URL url) {
 
     }
@@ -66,6 +69,7 @@ public class MockRegistry implements Registry {
     /* 
      * @see com.alibaba.dubbo.registry.RegistryService#unregister(com.alibaba.dubbo.common.URL)
      */
+    @Override
     public void unregister(URL url) {
 
     }
@@ -73,6 +77,7 @@ public class MockRegistry implements Registry {
     /* 
      * @see com.alibaba.dubbo.registry.RegistryService#subscribe(com.alibaba.dubbo.common.URL, com.alibaba.dubbo.registry.NotifyListener)
      */
+    @Override
     public void subscribe(URL url, NotifyListener listener) {
         this.subscribedUrl = url;
         List<URL> urls = new ArrayList<URL>();
@@ -87,6 +92,7 @@ public class MockRegistry implements Registry {
     /* 
      * @see com.alibaba.dubbo.registry.RegistryService#unsubscribe(com.alibaba.dubbo.common.URL, com.alibaba.dubbo.registry.NotifyListener)
      */
+    @Override
     public void unsubscribe(URL url, NotifyListener listener) {
 
     }
@@ -94,6 +100,7 @@ public class MockRegistry implements Registry {
     /* 
      * @see com.alibaba.dubbo.registry.RegistryService#lookup(com.alibaba.dubbo.common.URL)
      */
+    @Override
     public List<URL> lookup(URL url) {
         return null;
     }

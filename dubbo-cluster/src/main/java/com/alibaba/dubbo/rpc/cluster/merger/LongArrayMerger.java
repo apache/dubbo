@@ -21,6 +21,7 @@ import com.alibaba.dubbo.rpc.cluster.Merger;
 
 public class LongArrayMerger implements Merger<long[]> {
 
+    @Override
     public long[] merge(long[]... items) {
         int total = 0;
         for (long[] array : items) {

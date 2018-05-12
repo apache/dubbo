@@ -32,6 +32,7 @@ public abstract class AbstractCacheFactory implements CacheFactory {
 
     private final ConcurrentMap<String, Cache> caches = new ConcurrentHashMap<String, Cache>();
 
+    @Override
     public Cache getCache(URL url, Invocation invocation) {
         url = url.addParameter(Constants.METHOD_KEY, invocation.getMethodName());
         String key = url.toFullString();

@@ -44,10 +44,12 @@ public class RmiProtocol extends AbstractProxyProtocol {
         super(RemoteAccessException.class, RemoteException.class);
     }
 
+    @Override
     public int getDefaultPort() {
         return DEFAULT_PORT;
     }
 
+    @Override
     protected <T> Runnable doExport(final T impl, Class<T> type, URL url) throws RpcException {
         final RmiServiceExporter rmiServiceExporter = new RmiServiceExporter();
         rmiServiceExporter.setRegistryPort(url.getPort());
@@ -60,6 +62,7 @@ public class RmiProtocol extends AbstractProxyProtocol {
             throw new RpcException(e.getMessage(), e);
         }
         return new Runnable() {
+            @Override
             public void run() {
                 try {
                     rmiServiceExporter.destroy();
@@ -70,6 +73,7 @@ public class RmiProtocol extends AbstractProxyProtocol {
         };
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     protected <T> T doRefer(final Class<T> serviceType, final URL url) throws RpcException {
         final RmiProxyFactoryBean rmiProxyFactoryBean = new RmiProxyFactoryBean();
@@ -77,6 +81,7 @@ public class RmiProtocol extends AbstractProxyProtocol {
         if (url.getParameter(Constants.DUBBO_VERSION_KEY, Version.getVersion()).equals(Version.getVersion())) {
             // Check dubbo version on provider, this feature only support
             rmiProxyFactoryBean.setRemoteInvocationFactory(new RemoteInvocationFactory() {
+                @Override
                 public RemoteInvocation createRemoteInvocation(MethodInvocation methodInvocation) {
                     return new RmiRemoteInvocation(methodInvocation);
                 }
@@ -91,6 +96,7 @@ public class RmiProtocol extends AbstractProxyProtocol {
         return (T) rmiProxyFactoryBean.getObject();
     }
 
+    @Override
     protected int getErrorCode(Throwable e) {
         if (e instanceof RemoteAccessException) {
             e = e.getCause();

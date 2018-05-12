@@ -60,6 +60,7 @@ public class BeanSerializerFactory extends SerializerFactory {
      * @param cl the class of the object that needs to be serialized.
      * @return a serializer object for the serialization.
      */
+    @Override
     protected Serializer getDefaultSerializer(Class cl) {
         return new BeanSerializer(cl, getClassLoader());
     }
@@ -72,6 +73,7 @@ public class BeanSerializerFactory extends SerializerFactory {
      * @param cl the class of the object that needs to be serialized.
      * @return a serializer object for the serialization.
      */
+    @Override
     protected Deserializer getDefaultDeserializer(Class cl) {
         return new BeanDeserializer(cl);
     }

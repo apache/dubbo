@@ -29,11 +29,7 @@ import com.alibaba.dubbo.remoting.exchange.support.header.HeaderExchangeServer;
 
 public class HeartbeatServer {
 
-    private static final URL clientUrl = URL.valueOf(
-            new StringBuilder(32)
-                    .append("netty://")
-                    .append(NetUtils.getLocalHost())
-                    .append(":9999").toString())
+    private static final URL clientUrl = URL.valueOf("netty://" + NetUtils.getLocalHost() + ":9999")
             .addParameter(Constants.CODEC_KEY, "exchange");
 
     private static final ExchangeHandler handler = new ExchangeHandlerAdapter() {
@@ -50,6 +46,7 @@ public class HeartbeatServer {
 
         Thread serverThread = new Thread(new Runnable() {
 
+            @Override
             public void run() {
                 try {
                     exchangeServer = new HeaderExchangeServer(

@@ -20,10 +20,12 @@ public class ThriftClassNameGenerator implements ClassNameGenerator {
 
     public static final String NAME = "thrift";
 
+    @Override
     public String generateArgsClassName(String serviceName, String methodName) {
         return ThriftUtils.generateMethodArgsClassNameThrift(serviceName, methodName);
     }
 
+    @Override
     public String generateResultClassName(String serviceName, String methodName) {
         return ThriftUtils.generateMethodResultClassNameThrift(serviceName, methodName);
     }

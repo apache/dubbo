@@ -37,6 +37,7 @@ public class ScriptRouterFactory implements RouterFactory {
 
     public static final String NAME = "script";
 
+    @Override
     public Router getRouter(URL url) {
         return new ScriptRouter(url);
     }

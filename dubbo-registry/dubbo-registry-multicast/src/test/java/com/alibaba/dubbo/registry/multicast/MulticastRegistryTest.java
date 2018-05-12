@@ -19,10 +19,8 @@ package com.alibaba.dubbo.registry.multicast;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.registry.NotifyListener;
-
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.net.MulticastSocket;
@@ -31,28 +29,20 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
-/**
- * MulticastRegistryTest
- *
- */
 public class MulticastRegistryTest {
 
-    String service = "com.alibaba.dubbo.test.injvmServie";
-    URL registryUrl = URL.valueOf("multicast://239.255.255.255/");
-    URL serviceUrl = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + "/" + service
+    private String service = "com.alibaba.dubbo.test.injvmServie";
+    private URL registryUrl = URL.valueOf("multicast://239.255.255.255/");
+    private URL serviceUrl = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + "/" + service
             + "?methods=test1,test2");
-    URL consumerUrl = URL.valueOf("subscribe://" + NetUtils.getLocalHost() + "/" + service + "?arg1=1&arg2=2");
-    MulticastRegistry registry = new MulticastRegistry(registryUrl);
-
-    /**
-     * @throws java.lang.Exception
-     */
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
-    }
+    private URL adminUrl = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + "/*");
+    private URL consumerUrl = URL.valueOf("subscribe://" + NetUtils.getLocalHost() + "/" + service + "?arg1=1&arg2=2");
+    private MulticastRegistry registry = new MulticastRegistry(registryUrl);
 
     /**
      * @throws java.lang.Exception
@@ -63,9 +53,22 @@ public class MulticastRegistryTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testUrlerror() {
+    public void testUrlError() {
         URL errorUrl = URL.valueOf("multicast://mullticast/");
         new MulticastRegistry(errorUrl);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testAnyHost() {
+        URL errorUrl = URL.valueOf("multicast://0.0.0.0/");
+        new MulticastRegistry(errorUrl);
+    }
+
+    @Test
+    public void testGetCustomPort() {
+        URL customPortUrl = URL.valueOf("multicast://239.255.255.255:4321/");
+        MulticastRegistry multicastRegistry = new MulticastRegistry(customPortUrl);
+        assertThat(multicastRegistry.getUrl().getPort(), is(4321));
     }
 
     /**
@@ -98,6 +101,7 @@ public class MulticastRegistryTest {
         final AtomicReference<URL> args = new AtomicReference<URL>();
         registry.subscribe(consumerUrl, new NotifyListener() {
 
+            @Override
             public void notify(List<URL> urls) {
                 // FIXME assertEquals(MulticastRegistry.this.service, service);
                 args.set(urls.get(0));

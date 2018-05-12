@@ -55,6 +55,7 @@ import java.util.Date;
  * Serializing a sql date object.
  */
 public class SqlDateSerializer extends AbstractSerializer {
+    @Override
     public void writeObject(Object obj, AbstractHessianOutput out)
             throws IOException {
         if (obj == null)
