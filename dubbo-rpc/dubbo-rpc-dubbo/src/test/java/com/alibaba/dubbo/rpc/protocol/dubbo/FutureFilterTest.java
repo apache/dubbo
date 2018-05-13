@@ -27,11 +27,12 @@ import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.protocol.dubbo.filter.FutureFilter;
 import com.alibaba.dubbo.rpc.protocol.dubbo.support.DemoService;
 
-import org.easymock.EasyMock;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 
 /**
  * EventFilterTest.java
@@ -39,7 +40,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class FutureFilterTest {
     private static RpcInvocation invocation;
-    Filter eventFilter = new FutureFilter();
+    private Filter eventFilter = new FutureFilter();
 
     @BeforeClass
     public static void setUp() {
@@ -52,15 +53,15 @@ public class FutureFilterTest {
     @Test
     public void testSyncCallback() {
         @SuppressWarnings("unchecked")
-        Invoker<DemoService> invoker = EasyMock.createMock(Invoker.class);
-        EasyMock.expect(invoker.isAvailable()).andReturn(true).anyTimes();
-        EasyMock.expect(invoker.getInterface()).andReturn(DemoService.class).anyTimes();
+        Invoker<DemoService> invoker = mock(Invoker.class);
+        given(invoker.isAvailable()).willReturn(true);
+        given(invoker.getInterface()).willReturn(DemoService.class);
         RpcResult result = new RpcResult();
         result.setValue("High");
-        EasyMock.expect(invoker.invoke(invocation)).andReturn(result).anyTimes();
+        given(invoker.invoke(invocation)).willReturn(result);
         URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1");
-        EasyMock.expect(invoker.getUrl()).andReturn(url).anyTimes();
-        EasyMock.replay(invoker);
+        given(invoker.getUrl()).willReturn(url);
+
         Result filterResult = eventFilter.invoke(invoker, invocation);
         assertEquals("High", filterResult.getValue());
     }
@@ -68,15 +69,15 @@ public class FutureFilterTest {
     @Test(expected = RuntimeException.class)
     public void testSyncCallbackHasException() throws RpcException, Throwable {
         @SuppressWarnings("unchecked")
-        Invoker<DemoService> invoker = EasyMock.createMock(Invoker.class);
-        EasyMock.expect(invoker.isAvailable()).andReturn(true).anyTimes();
-        EasyMock.expect(invoker.getInterface()).andReturn(DemoService.class).anyTimes();
+        Invoker<DemoService> invoker = mock(Invoker.class);
+        given(invoker.isAvailable()).willReturn(true);
+        given(invoker.getInterface()).willReturn(DemoService.class);
         RpcResult result = new RpcResult();
         result.setException(new RuntimeException());
-        EasyMock.expect(invoker.invoke(invocation)).andReturn(result).anyTimes();
+        given(invoker.invoke(invocation)).willReturn(result);
         URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1&" + Constants.ON_THROW_METHOD_KEY + "=echo");
-        EasyMock.expect(invoker.getUrl()).andReturn(url).anyTimes();
-        EasyMock.replay(invoker);
+        given(invoker.getUrl()).willReturn(url);
+
         eventFilter.invoke(invoker, invocation).recreate();
     }
 }

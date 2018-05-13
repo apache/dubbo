@@ -1,1 +1,2 @@
 mockprotocol=com.alibaba.dubbo.config.support.MockProtocol
+mockprotocol2=com.alibaba.dubbo.config.MockProtocol2

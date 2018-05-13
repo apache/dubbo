@@ -1,0 +1,1 @@
+mockloadbalance=com.alibaba.dubbo.config.MockLoadBalance

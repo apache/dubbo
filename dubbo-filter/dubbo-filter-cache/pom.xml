@@ -20,7 +20,7 @@
     <parent>
         <groupId>com.alibaba</groupId>
         <artifactId>dubbo-filter</artifactId>
-        <version>2.6.1</version>
+        <version>2.6.2-SNAPSHOT</version>
     </parent>
     <artifactId>dubbo-filter-cache</artifactId>
     <packaging>jar</packaging>
@@ -38,6 +38,12 @@
         <dependency>
             <groupId>javax.cache</groupId>
             <artifactId>cache-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast</artifactId>
+            <scope>test</scope>
+            <version>${hazelcast_version}</version>
         </dependency>
     </dependencies>
 </project>
