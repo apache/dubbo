@@ -17,6 +17,8 @@
 package com.alibaba.dubbo.config.spring.schema;
 
 import com.alibaba.dubbo.config.ApplicationConfig;
+import com.alibaba.dubbo.config.ModuleConfig;
+import com.alibaba.dubbo.config.MonitorConfig;
 import com.alibaba.dubbo.config.ProtocolConfig;
 import com.alibaba.dubbo.config.ProviderConfig;
 import com.alibaba.dubbo.config.spring.ConfigTest;
@@ -91,6 +93,15 @@ public class DubboNamespaceHandlerTest {
         assertThat(serviceBean.getParameters().get("service-paramA"), is("service-paramA"));
     }
 
+
+    @Test
+    public void testDelayFixedTime() {
+        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/delay-fixed-time.xml");
+        ctx.start();
+
+        assertThat(ctx.getBean(ServiceBean.class).getDelay(), is(300));
+    }
+
     @Test
     public void testTimeoutConfig() {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/provider-nested-service.xml");
@@ -99,6 +110,35 @@ public class DubboNamespaceHandlerTest {
         Map<String, ProviderConfig> providerConfigMap = ctx.getBeansOfType(ProviderConfig.class);
 
         assertThat(providerConfigMap.get("com.alibaba.dubbo.config.ProviderConfig").getTimeout(), is(2000));
+    }
+
+    @Test
+    public void testMonitor() {
+        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/provider-with-monitor.xml");
+        ctx.start();
+
+        assertThat(ctx.getBean(MonitorConfig.class), not(nullValue()));
+    }
+
+    @Test(expected = BeanCreationException.class)
+    public void testMultiMonitor() {
+        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/multi-monitor.xml");
+        ctx.start();
+    }
+
+    @Test(expected = BeanCreationException.class)
+    public void testMultiProviderConfig() {
+        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/provider-multi.xml");
+        ctx.start();
+    }
+
+    @Test
+    public void testModuleInfo() {
+        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/provider-with-module.xml");
+        ctx.start();
+
+        ModuleConfig moduleConfig = ctx.getBean(ModuleConfig.class);
+        assertThat(moduleConfig.getName(), is("test-module"));
     }
 
     @Test(expected = BeanCreationException.class)
