@@ -143,7 +143,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             throw new IllegalStateException(
                     "No such application config! Please add <dubbo:application name=\"...\" /> to your spring config.");
         }
-        appendProperties(application);
+        appendProperties(application); //从全局中获取application的属性
 
         String wait = ConfigUtils.getProperty(Constants.SHUTDOWN_WAIT_KEY);
         if (wait != null && wait.trim().length() > 0) {
@@ -155,9 +155,18 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             }
         }
     }
-    //TODO 待看
+
+    /**
+     * 1.对Registry Config进行校验
+     * 2.对地址进行获取
+     * 3.application和RegistryConfig 的值进行获取
+     * 4.产生url，多个地址可以产生多个URL
+     *
+     * @param provider
+     * @return
+     */
     protected List<URL> loadRegistries(boolean provider) {
-        checkRegistry();
+        checkRegistry(); //同别的Config稍微不一样
         List<URL> registryList = new ArrayList<URL>();
         if (registries != null && !registries.isEmpty()) {
             for (RegistryConfig config : registries) {
@@ -165,7 +174,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 if (address == null || address.length() == 0) {
                     address = Constants.ANYHOST_VALUE;
                 }
-                String sysaddress = System.getProperty("dubbo.registry.address");
+                String sysaddress = System.getProperty("dubbo.registry.address"); //优先JVM环境中有 使用JVM环境中的配置
                 if (sysaddress != null && sysaddress.length() > 0) {
                     address = sysaddress;
                 }
@@ -187,10 +196,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                             map.put("protocol", "dubbo");
                         }
                     }
-                    List<URL> urls = UrlUtils.parseURLs(address, map);
+                    List<URL> urls = UrlUtils.parseURLs(address, map); //把map组装成url，多个地址会产生多个url
                     for (URL url : urls) {
                         url = url.addParameter(Constants.REGISTRY_KEY, url.getProtocol());
                         url = url.setProtocol(Constants.REGISTRY_PROTOCOL);
+                        //查询provide 的register 值 ，若没有或者设置了为false 这添加到registryList里，在远程里不进行暴露
                         if ((provider && url.getParameter(Constants.REGISTER_KEY, true))
                                 || (!provider && url.getParameter(Constants.SUBSCRIBE_KEY, true))) {
                             registryList.add(url);
@@ -201,7 +211,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
         return registryList;
     }
-
+    //TODO 监视器部分
     protected URL loadMonitor(URL registryURL) {
         if (monitor == null) {
             String monitorAddress = ConfigUtils.getProperty("dubbo.monitor.address");
@@ -277,7 +287,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             }
         }
     }
-
+    //TODO 本地存根 mock数据 检查
     protected void checkStubAndMock(Class<?> interfaceClass) {
         if (ConfigUtils.isNotEmpty(local)) {
             Class<?> localClass = ConfigUtils.isDefault(local) ? ReflectUtils.forName(interfaceClass.getName() + "Local") : ReflectUtils.forName(local);

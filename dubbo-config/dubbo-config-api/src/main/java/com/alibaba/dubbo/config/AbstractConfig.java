@@ -84,6 +84,7 @@ public abstract class AbstractConfig implements Serializable {
         }, "DubboShutdownHook"));
     }
 
+    //id 属性
     protected String id;
 
     private static String convertLegacyValue(String key, String value) {
@@ -97,6 +98,17 @@ public abstract class AbstractConfig implements Serializable {
         return value;
     }
 
+    /**
+     * 有先后顺序
+     * 从 系统配置文件 JVM环境中
+     *    xml配置文件中
+     *    dubbo.pro 默认配置文件
+     *    legacyProperties 中获取对应的属性  TODO legacyProperties从哪里来？
+     *    如果有Id先会获取有Id的属性配置  属性名为  prefix + id + "." + property
+     *    没有获取到value再依次执行别面
+     *
+     * @param config
+     */
     protected static void appendProperties(AbstractConfig config) {
         if (config == null) {
             return;
@@ -109,7 +121,8 @@ public abstract class AbstractConfig implements Serializable {
                 if (name.length() > 3 && name.startsWith("set") && Modifier.isPublic(method.getModifiers())
                         && method.getParameterTypes().length == 1 && isPrimitive(method.getParameterTypes()[0])) {
                     String property = StringUtils.camelToSplitName(name.substring(3, 4).toLowerCase() + name.substring(4), ".");
-
+                    //region 先从运行环境中获取，JVM运行参数，
+                    //若是有id，或key 为前缀 dubbo.TagName.id.property
                     String value = null;
                     if (config.getId() != null && config.getId().length() > 0) {
                         String pn = prefix + config.getId() + "." + property;
@@ -125,6 +138,7 @@ public abstract class AbstractConfig implements Serializable {
                             logger.info("Use System Property " + pn + " to config dubbo");
                         }
                     }
+                    //endregion
                     if (value == null || value.length() == 0) {
                         Method getter;
                         try {
@@ -137,6 +151,8 @@ public abstract class AbstractConfig implements Serializable {
                             }
                         }
                         if (getter != null) {
+                            //2.看类中是否有属性值，
+                            // 没有再从配置文件中拿
                             if (getter.invoke(config, new Object[0]) == null) {
                                 if (config.getId() != null && config.getId().length() > 0) {
                                     value = ConfigUtils.getProperty(prefix + config.getId() + "." + property);
@@ -180,6 +196,13 @@ public abstract class AbstractConfig implements Serializable {
         appendParameters(parameters, config, null);
     }
 
+    /**
+     * 将不同对象的属性放到map中， 如果有Parameter 注解的时候用Parameter的属性
+     *
+     * @param parameters
+     * @param config
+     * @param prefix 前缀  + "."+ name TODO  getParameters 标签特殊处理
+     */
     @SuppressWarnings("unchecked")
     protected static void appendParameters(Map<String, String> parameters, Object config, String prefix) {
         if (config == null) {
@@ -189,6 +212,7 @@ public abstract class AbstractConfig implements Serializable {
         for (Method method : methods) {
             try {
                 String name = method.getName();
+                //判断是方法的是get或者是is ，Modifiers是方法的修饰词
                 if ((name.startsWith("get") || name.startsWith("is"))
                         && !"getClass".equals(name)
                         && Modifier.isPublic(method.getModifiers())
@@ -198,6 +222,7 @@ public abstract class AbstractConfig implements Serializable {
                     if (method.getReturnType() == Object.class || parameter != null && parameter.excluded()) {
                         continue;
                     }
+                    //获取属性名
                     int i = name.startsWith("get") ? 3 : 2;
                     String prop = StringUtils.camelToSplitName(name.substring(i, i + 1).toLowerCase() + name.substring(i + 1), ".");
                     String key;
@@ -206,6 +231,7 @@ public abstract class AbstractConfig implements Serializable {
                     } else {
                         key = prop;
                     }
+                    //利用反射直接调用获取属性
                     Object value = method.invoke(config, new Object[0]);
                     String str = String.valueOf(value).trim();
                     if (value != null && str.length() > 0) {

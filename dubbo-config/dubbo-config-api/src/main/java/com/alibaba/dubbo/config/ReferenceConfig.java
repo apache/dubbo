@@ -75,7 +75,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     private Class<?> interfaceClass;
     // client type
     private String client;
-    // url for peer-to-peer invocation
+    // url for peer-to-peer invocation 用来作为端对端
     private String url;
     // method configs
     private List<MethodConfig> methods;
@@ -190,9 +190,9 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         if (interfaceName == null || interfaceName.length() == 0) {
             throw new IllegalStateException("<dubbo:reference interface=\"\" /> interface not allow null!");
         }
-        // get consumer's global configuration
+        // get consumer's global configuration 获取全局的consumer参数
         checkDefault();
-        appendProperties(this);
+        appendProperties(this); //获取当前的reference 全局的参数
         if (getGeneric() == null && getConsumer() != null) {
             setGeneric(getConsumer().getGeneric());
         }
@@ -207,11 +207,14 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             }
             checkInterfaceAndMethods(interfaceClass, methods);
         }
-        String resolve = System.getProperty(interfaceName);
+        //region 直连校验参数获取
+        String resolve = System.getProperty(interfaceName); //获取直连
         String resolveFile = null;
         if (resolve == null || resolve.length() == 0) {
+            //从系统获取参数 -Ddubbo.resolve.file=/Users/lkj41110/IdeaProjects/finance-supply-chain/finance-supply-admin/config/user/properties/dubboDirectly.properties
             resolveFile = System.getProperty("dubbo.resolve.file");
             if (resolveFile == null || resolveFile.length() == 0) {
+                //从user。
                 File userResolveFile = new File(new File(System.getProperty("user.home")), "dubbo-resolve.properties");
                 if (userResolveFile.exists()) {
                     resolveFile = userResolveFile.getAbsolutePath();
@@ -222,6 +225,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 FileInputStream fis = null;
                 try {
                     fis = new FileInputStream(new File(resolveFile));
+
                     properties.load(fis);
                 } catch (IOException e) {
                     throw new IllegalStateException("Unload " + resolveFile + ", cause: " + e.getMessage(), e);
@@ -245,6 +249,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 }
             }
         }
+        //endregion
         if (consumer != null) {
             if (application == null) {
                 application = consumer.getApplication();
@@ -359,6 +364,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 logger.info("Using injvm service " + interfaceClass.getName());
             }
         } else {
+            //点对点的时候
+            //dubbo://127.0.0.1:20881/com.alibaba.dubbo.demo.DemoService?application=demo-consumer&check=false&dubbo=2.0.0&interface=com.alibaba.dubbo.demo.DemoService&methods=sayHello&pid=74402&qos.port=33333&register.ip=172.17.6.57&side=consumer&timestamp=1525848844057
             if (url != null && url.length() > 0) { // user specified URL, could be peer-to-peer address, or register center's address.
                 String[] us = Constants.SEMICOLON_SPLIT_PATTERN.split(url);
                 if (us != null && us.length > 0) {
@@ -389,7 +396,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                     throw new IllegalStateException("No such any registry to reference " + interfaceName + " on the consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() + ", please config <dubbo:registry address=\"...\" /> to your spring config.");
                 }
             }
-
+            //TODO 为什么有时候两个有时候有一个
             if (urls.size() == 1) {
                 invoker = refprotocol.refer(interfaceClass, urls.get(0));
             } else {

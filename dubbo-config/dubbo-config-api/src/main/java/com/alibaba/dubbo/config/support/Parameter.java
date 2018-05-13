@@ -24,6 +24,7 @@ import java.lang.annotation.Target;
 
 /**
  * Parameter
+ * 当在从config 取数据的时候获取的属性
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
@@ -36,10 +37,19 @@ public @interface Parameter {
 
     boolean excluded() default false;
 
+    /**
+     * URL.encode() 是否进行URL编码
+     *
+     * @return
+     */
     boolean escaped() default false;
 
     boolean attribute() default false;
 
+    /**
+     * 使用了这个属性是否累加
+     * @return
+     */
     boolean append() default false;
 
 }
