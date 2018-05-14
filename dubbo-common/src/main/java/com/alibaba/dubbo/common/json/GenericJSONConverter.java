@@ -28,6 +28,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -358,6 +359,24 @@ public class GenericJSONConverter implements JSONConverter {
             }
         };
         GlobalDecoderMap.put(Date.class, d);
+
+        d = new Decoder() {
+            @Override
+            public Object decode(Object jv) throws IOException {
+                if (jv instanceof String) {
+                    String[] items = ((String)jv).split("_");
+                    if(items.length == 1){
+                        return new Locale(items[0]);
+                    }
+                    if(items.length == 2){
+                        return new Locale(items[0], items[1]);
+                    }
+                    return new Locale(items[0], items[1], items[2]);
+                }
+                return (Locale)null;
+            }
+        };
+        GlobalDecoderMap.put(Locale.class, d);
     }
 
     @Override
@@ -407,6 +426,8 @@ public class GenericJSONConverter implements JSONConverter {
                     writeValue(item, jb, writeClass);
             }
             jb.arrayEnd();
+        } else if(obj instanceof Locale) {
+            jb.valueString(obj.toString());
         } else {
             jb.objectBegin();
 
