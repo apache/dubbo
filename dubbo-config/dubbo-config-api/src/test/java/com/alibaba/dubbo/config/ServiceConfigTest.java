@@ -20,6 +20,7 @@ package com.alibaba.dubbo.config;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.config.api.DemoService;
+import com.alibaba.dubbo.config.api.Greeting;
 import com.alibaba.dubbo.config.provider.impl.DemoServiceImpl;
 import com.alibaba.dubbo.config.mock.MockProtocol2;
 import com.alibaba.dubbo.config.mock.MockRegistryFactory2;

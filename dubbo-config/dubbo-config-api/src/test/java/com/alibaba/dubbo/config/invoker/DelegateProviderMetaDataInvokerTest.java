@@ -17,8 +17,7 @@
 
 package com.alibaba.dubbo.config.invoker;
 
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.config.Greeting;
+import com.alibaba.dubbo.config.api.Greeting;
 import com.alibaba.dubbo.config.ServiceConfig;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
