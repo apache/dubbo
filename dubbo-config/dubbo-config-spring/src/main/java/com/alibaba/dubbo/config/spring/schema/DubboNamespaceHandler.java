@@ -16,11 +16,20 @@
  */
 package com.alibaba.dubbo.config.spring.schema;
 
+import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
+
 import com.alibaba.dubbo.common.Version;
-import com.alibaba.dubbo.config.*;
+import com.alibaba.dubbo.config.ApplicationConfig;
+import com.alibaba.dubbo.config.ConsumerConfig;
+import com.alibaba.dubbo.config.ModuleConfig;
+import com.alibaba.dubbo.config.MonitorConfig;
+import com.alibaba.dubbo.config.ProtocolConfig;
+import com.alibaba.dubbo.config.ProviderConfig;
+import com.alibaba.dubbo.config.RegistryConfig;
+import com.alibaba.dubbo.config.spring.CacheBean;
+import com.alibaba.dubbo.config.spring.CacheServerBean;
 import com.alibaba.dubbo.config.spring.ReferenceBean;
 import com.alibaba.dubbo.config.spring.ServiceBean;
-import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
 
 /**
  * DubboNamespaceHandler
@@ -44,6 +53,10 @@ public class DubboNamespaceHandler extends NamespaceHandlerSupport {
         registerBeanDefinitionParser("service", new DubboBeanDefinitionParser(ServiceBean.class, true));
         registerBeanDefinitionParser("reference", new DubboBeanDefinitionParser(ReferenceBean.class, false));
         registerBeanDefinitionParser("annotation", new AnnotationBeanDefinitionParser());
+        
+        //Laocoon
+        registerBeanDefinitionParser("cacheServer", new DubboBeanDefinitionParser(CacheServerBean.class, true));
+        registerBeanDefinitionParser("cache", new DubboBeanDefinitionParser(CacheBean.class, true));
     }
 
 }

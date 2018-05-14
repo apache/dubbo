@@ -107,7 +107,14 @@ public class ZookeeperRegistry extends FailbackRegistry {
 
     protected void doRegister(URL url) {
         try {
-            zkClient.create(toUrlPath(url), url.getParameter(Constants.DYNAMIC_KEY, true));
+            //zkClient.create(toUrlPath(url), url.getParameter(Constants.DYNAMIC_KEY, true));
+            
+            String data = url.getData();//skykong
+        	if (data == null || data.equals("")) {
+        		zkClient.create(toUrlPath(url), url.getParameter(Constants.DYNAMIC_KEY, true));
+        	} else {
+        		zkClient.create(toUrlPath(url), data, url.getParameter(Constants.DYNAMIC_KEY, true));
+        	}
         } catch (Throwable e) {
             throw new RpcException("Failed to register " + url + " to zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
         }
@@ -168,15 +175,29 @@ public class ZookeeperRegistry extends FailbackRegistry {
                     if (zkListener == null) {
                         listeners.putIfAbsent(listener, new ChildListener() {
                             public void childChanged(String parentPath, List<String> currentChilds) {
-                                ZookeeperRegistry.this.notify(url, listener, toUrlsWithEmpty(url, parentPath, currentChilds));
+                                //ZookeeperRegistry.this.notify(url, listener, toUrlsWithEmpty(url, parentPath, currentChilds));
+                            	//skykong1981
+                            	List<String> childData = new ArrayList<String>();
+                                for (String child : currentChilds) {
+                                	childData.add(zkClient.get(parentPath + "/" + child));
+                                }
+                                ZookeeperRegistry.this.notify(url, listener, toUrlsWithEmpty(url, parentPath, currentChilds, childData));
+                                //skykong1981
                             }
                         });
                         zkListener = listeners.get(listener);
                     }
                     zkClient.create(path, false);
                     List<String> children = zkClient.addChildListener(path, zkListener);
+                    //skykong1981
+                    List<String> childData = new ArrayList<String>();
+                    for (String child : children) {
+                    	childData.add(zkClient.get(path + "/" + child));
+                    }
+                    //skykong1981
                     if (children != null) {
-                        urls.addAll(toUrlsWithEmpty(url, path, children));
+                        //urls.addAll(toUrlsWithEmpty(url, path, children));
+                    	urls.addAll(toUrlsWithEmpty(url, path, children, childData));
                     }
                 }
                 notify(url, listener, urls);
@@ -206,6 +227,12 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 List<String> children = zkClient.getChildren(path);
                 if (children != null) {
                     providers.addAll(children);
+                    //skykong1981
+                    for (String cpath : children) {
+                    	String data = zkClient.get(cpath);
+                    	url.setData(data);
+                    }
+                    //skykong1981
                 }
             }
             return toUrlsWithoutEmpty(url, providers);
@@ -272,13 +299,30 @@ public class ZookeeperRegistry extends FailbackRegistry {
         return urls;
     }
 
-    private List<URL> toUrlsWithEmpty(URL consumer, String path, List<String> providers) {
+    /*private List<URL> toUrlsWithEmpty(URL consumer, String path, List<String> providers) {
         List<URL> urls = toUrlsWithoutEmpty(consumer, providers);
         if (urls == null || urls.isEmpty()) {
             int i = path.lastIndexOf('/');
             String category = i < 0 ? path : path.substring(i + 1);
             URL empty = consumer.setProtocol(Constants.EMPTY_PROTOCOL).addParameter(Constants.CATEGORY_KEY, category);
             urls.add(empty);
+        }
+        return urls;
+    }*/
+    //skykong1981
+    private List<URL> toUrlsWithEmpty(URL consumer, String path, List<String> providers, List<String> childData) {
+        List<URL> urls = toUrlsWithoutEmpty(consumer, providers);
+        if (urls == null || urls.isEmpty()) {
+        	int i = path.lastIndexOf('/');
+        	String category = i < 0 ? path : path.substring(i + 1);
+        	URL empty = consumer.setProtocol(Constants.EMPTY_PROTOCOL).addParameter(Constants.CATEGORY_KEY, category);
+            urls.add(empty);
+        }
+        for (int i=0; i<urls.size(); i++) {
+        	URL url = urls.get(i);
+        	if (!"empty".equals(url.getProtocol())) {
+        		url.setData(childData.get(i));
+        	}
         }
         return urls;
     }

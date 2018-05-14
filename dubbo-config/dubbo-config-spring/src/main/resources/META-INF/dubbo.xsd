@@ -1095,6 +1095,107 @@
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
+    
+    <!-- Laocoon -->
+	<xsd:complexType name="cacheServerType">
+		<xsd:attribute name="id" type="xsd:ID">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ The unique identifier for a bean. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="protocol" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ The cache protocol. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="address" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ The server address. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="prefix" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ The cache key prefix. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="user" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ The cache server auth user. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>		
+		<xsd:attribute name="password" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ The cache server auth password. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="maxactive" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ max active connection. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="maxidle" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ max idle connection.. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="minidle" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ min idle connection.. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="timeout" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ default timeout. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<!-- Laocoon -->
+	<!-- Laocoon -->
+	<xsd:complexType name="cacheType">
+		<xsd:sequence minOccurs="0" maxOccurs="unbounded">
+			<xsd:element ref="buffer" minOccurs="0" maxOccurs="unbounded" />
+		</xsd:sequence>
+		<xsd:attribute name="id" type="xsd:ID">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ The unique identifier for a bean. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="service" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ The service of cache. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="server" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ The reference of server. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<!-- Laocoon -->
+	<!-- Laocoon -->	
+	<xsd:complexType name="bufferType">
+		<xsd:attribute name="key" type="xsd:string" use="required">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ The key of cache. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="method" type="xsd:string" use="required">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ The method of service. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="command" type="xsd:string" use="required">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ get or delete. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="timeout" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[ cache timeout. ]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<!-- Laocoon -->
 
     <xsd:complexType name="annotationType">
         <xsd:attribute name="id" type="xsd:ID">
@@ -1186,5 +1287,23 @@
             <xsd:documentation><![CDATA[ The service url parameter ]]></xsd:documentation>
         </xsd:annotation>
     </xsd:element>
+    
+    <!-- Laocoon -->
+	<xsd:element name="buffer" type="bufferType">
+		<xsd:annotation> 
+			<xsd:documentation><![CDATA[ The service url parameter ]]></xsd:documentation> 
+		</xsd:annotation>
+	</xsd:element>	
+	<xsd:element name="cache" type="cacheType">
+		<xsd:annotation> 
+			<xsd:documentation><![CDATA[ Export service default config ]]></xsd:documentation> 
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element name="cacheServer" type="cacheServerType">
+		<xsd:annotation> 
+			<xsd:documentation><![CDATA[ Export service default config ]]></xsd:documentation> 
+		</xsd:annotation>
+	</xsd:element>
+	<!-- Laocoon -->
 
 </xsd:schema>

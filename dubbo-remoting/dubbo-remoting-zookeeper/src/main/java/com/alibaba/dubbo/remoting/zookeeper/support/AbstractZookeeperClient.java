@@ -50,18 +50,40 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
     }
 
     public void create(String path, boolean ephemeral) {
+		logger.info("zkclient create path=" + path);
+		int i = path.lastIndexOf('/');
+		if (i > 0) {
+			create(path.substring(0, i), false);
+		}
+		if (ephemeral) {
+			createEphemeral(path);
+		} else {
+			createPersistent(path);
+		}
+	}
+    
+    //skykong1981
+    public void create(String path, String data, boolean ephemeral) {
         int i = path.lastIndexOf('/');
         if (i > 0) {
             String parentPath = path.substring(0, i);
             if (!checkExists(parentPath)) {
                 create(parentPath, false);
             }
-        }
-        if (ephemeral) {
-            createEphemeral(path);
-        } else {
-            createPersistent(path);
-        }
+        }        
+        if (data == null || data.equals("")) {
+			if (ephemeral) {
+				createEphemeral(path);
+			} else {
+				createPersistent(path);
+			}
+		} else {
+			if (ephemeral) {
+				createEphemeral(path, data);
+			} else {
+				createPersistent(path, data);
+			}
+		}
     }
 
     public void addStateListener(StateListener listener) {
@@ -123,7 +145,13 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
     protected abstract void createPersistent(String path);
 
     protected abstract void createEphemeral(String path);
+    
+    //skykong1981
+    protected abstract void createPersistent(String path, String data);
 
+	protected abstract void createEphemeral(String path, String data);
+	//skykong1981
+	
     protected abstract boolean checkExists(String path);
 
     protected abstract TargetChildListener createTargetChildListener(String path, ChildListener listener);

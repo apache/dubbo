@@ -102,6 +102,8 @@ public final class URL implements Serializable {
 
     private volatile transient String string;
 
+    private volatile transient String data;//skykong1981
+
     protected URL() {
         this.protocol = null;
         this.username = null;
@@ -143,6 +145,12 @@ public final class URL implements Serializable {
     public URL(String protocol, String username, String password, String host, int port, String path, String... pairs) {
         this(protocol, username, password, host, port, path, CollectionUtils.toStringMap(pairs));
     }
+    
+    //skykong1981
+    public URL(String protocol, String host, int port, String path, Map<String, String> parameters, String data) {
+		this(protocol, null, null, host, port, path, parameters);
+		this.data = data;
+	}
 
     public URL(String protocol, String username, String password, String host, int port, String path, Map<String, String> parameters) {
         if ((username == null || username.length() == 0)
@@ -407,6 +415,16 @@ public final class URL implements Serializable {
     public Map<String, String> getParameters() {
         return parameters;
     }
+    
+    //skykong1981
+    public void setData(String data) {
+    	this.data = data;
+    }
+    
+    public String getData() {
+		return data;
+	}
+    //skykong1981
 
     public String getParameterAndDecoded(String key) {
         return getParameterAndDecoded(key, null);
@@ -932,7 +950,11 @@ public final class URL implements Serializable {
 
         Map<String, String> map = new HashMap<String, String>(getParameters());
         map.put(key, value);
-        return new URL(protocol, username, password, host, port, path, map);
+        //return new URL(protocol, username, password, host, port, path, map);
+        //skykong1981
+        URL newURL = new URL(protocol, username, password, host, port, path, map);
+        newURL.setData(data);
+        return newURL;
     }
 
     public URL addParameterIfAbsent(String key, String value) {
@@ -945,7 +967,11 @@ public final class URL implements Serializable {
         }
         Map<String, String> map = new HashMap<String, String>(getParameters());
         map.put(key, value);
-        return new URL(protocol, username, password, host, port, path, map);
+        //return new URL(protocol, username, password, host, port, path, map);
+        //skykong1981
+        URL newURL = new URL(protocol, username, password, host, port, path, map);
+        newURL.setData(data);
+        return newURL;
     }
 
     /**
@@ -979,7 +1005,11 @@ public final class URL implements Serializable {
 
         Map<String, String> map = new HashMap<String, String>(getParameters());
         map.putAll(parameters);
-        return new URL(protocol, username, password, host, port, path, map);
+        //return new URL(protocol, username, password, host, port, path, map);
+        //skykong1981
+        URL newURL = new URL(protocol, username, password, host, port, path, map);
+        newURL.setData(data);
+        return newURL;
     }
 
     public URL addParametersIfAbsent(Map<String, String> parameters) {
@@ -988,7 +1018,11 @@ public final class URL implements Serializable {
         }
         Map<String, String> map = new HashMap<String, String>(parameters);
         map.putAll(getParameters());
-        return new URL(protocol, username, password, host, port, path, map);
+        //return new URL(protocol, username, password, host, port, path, map);
+        //skykong1981
+        URL newURL = new URL(protocol, username, password, host, port, path, map);
+        newURL.setData(data);
+        return newURL;
     }
 
     public URL addParameters(String... pairs) {
@@ -1038,11 +1072,19 @@ public final class URL implements Serializable {
         if (map.size() == getParameters().size()) {
             return this;
         }
-        return new URL(protocol, username, password, host, port, path, map);
+        //return new URL(protocol, username, password, host, port, path, map);
+        //skykong1981
+        URL newURL = new URL(protocol, username, password, host, port, path, map);
+        newURL.setData(data);
+        return newURL;
     }
 
     public URL clearParameters() {
-        return new URL(protocol, username, password, host, port, path, new HashMap<String, String>());
+        //return new URL(protocol, username, password, host, port, path, new HashMap<String, String>());
+    	//skykong1981
+        URL newURL = new URL(protocol, username, password, host, port, path, new HashMap<String, String>());
+        newURL.setData(data);
+        return newURL;
     }
 
     public String getRawParameter(String key) {

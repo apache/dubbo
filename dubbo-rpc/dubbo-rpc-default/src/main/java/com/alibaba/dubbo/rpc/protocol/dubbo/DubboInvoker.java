@@ -16,6 +16,17 @@
  */
 package com.alibaba.dubbo.rpc.protocol.dubbo;
 
+import java.lang.reflect.Field;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import com.alibaba.dubbo.cache.CacheService;
+import com.alibaba.dubbo.cache.DubboCacheFactory;
+import com.alibaba.dubbo.cache.common.DubboBuffer;
+import com.alibaba.dubbo.cache.common.DubboCache;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.AtomicPositiveInteger;
@@ -34,9 +45,6 @@ import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.protocol.AbstractInvoker;
 import com.alibaba.dubbo.rpc.support.RpcUtils;
 
-import java.util.Set;
-import java.util.concurrent.locks.ReentrantLock;
-
 /**
  * DubboInvoker
  */
@@ -52,6 +60,8 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
 
     private final Set<Invoker<?>> invokers;
 
+    private DubboCache dubboCache;//skykong1981
+    
     public DubboInvoker(Class<T> serviceType, URL url, ExchangeClient[] clients) {
         this(serviceType, url, clients, null);
     }
@@ -62,6 +72,11 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         // get version.
         this.version = url.getParameter(Constants.VERSION_KEY, "0.0.0");
         this.invokers = invokers;
+        //skykong1981
+        String cacheData = url.getData();
+        if (cacheData != null && !cacheData.isEmpty()) {
+        	dubboCache = new DubboCache(cacheData);
+        }
     }
 
     @Override
@@ -70,6 +85,59 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         final String methodName = RpcUtils.getMethodName(invocation);
         inv.setAttachment(Constants.PATH_KEY, getUrl().getPath());
         inv.setAttachment(Constants.VERSION_KEY, version);
+        
+        //skykong1981
+        Object[] args = invocation.getArguments();        
+        boolean needRemoteCall = true;
+        boolean needRemoteCache = false;
+        String cacheKey = null;
+        Object cacheValue = null;
+        int cacheTimeout = 0;
+        CacheService cacheService = null;
+        if (dubboCache != null) {
+    		try {
+    			cacheService = DubboCacheFactory.getCacheService(dubboCache);
+            	if (cacheService != null && cacheService.isConnected()) {
+            		Map<String, DubboBuffer> bufferMap = dubboCache.getBufferMap();
+            		DubboBuffer buffer = bufferMap.get(methodName);
+            		if (buffer != null) {//configed cache in this function
+                		String command = buffer.getCommand();
+                		if (command.equals("get")) {
+                			String key = buffer.getKey();
+                			cacheKey = getCacheKey(key, args);
+                			cacheValue = cacheService.get(cacheKey);
+                			cacheTimeout = buffer.getTimeout();
+                			if (cacheValue != null) {
+                				if (logger.isDebugEnabled()) {
+                					logger.debug("Cache contains key : " + cacheKey);
+                				}
+                				needRemoteCall = false;
+                			} else {
+                				if (logger.isDebugEnabled()) {
+                					logger.debug("Cache doesn't contain key : " + cacheKey);
+                				}
+                				needRemoteCache = true;
+                			}
+                		} else {//command is delete
+                			String[] keys = buffer.getKeys();
+                			for (String key : keys) {
+                    			cacheKey = getCacheKey(key, args);
+                    			cacheService.delete(cacheKey);
+                			}
+                		}
+            		}
+            	}
+    		} catch (Exception e) {
+    			logger.warn("Get result from remote cache error!", e);
+    			needRemoteCall = true;
+    	        needRemoteCache = false;
+    		}
+    	}
+        
+        if (!needRemoteCall) {
+        	return new RpcResult(cacheValue);
+        }
+        //skykong1981
 
         ExchangeClient currentClient;
         if (clients.length == 1) {
@@ -92,7 +160,21 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                 return new RpcResult();
             } else {
                 RpcContext.getContext().setFuture(null);
-                return (Result) currentClient.request(inv, timeout).get();
+                //return (Result) currentClient.request(inv, timeout).get();
+                //skykong1981
+            	RpcResult rpcResult = (RpcResult) currentClient.request(inv, timeout).get();
+            	if (needRemoteCache) {
+            		Object value = rpcResult.getValue();
+            		if (value != null) {
+            			if (cacheTimeout == 0) {
+            				cacheService.put(cacheKey, value);
+            			} else {
+            				cacheService.put(cacheKey, value, cacheTimeout);
+            			}
+            		}
+            	}
+            	return rpcResult;
+            	//skykong1981
             }
         } catch (TimeoutException e) {
             throw new RpcException(RpcException.TIMEOUT_EXCEPTION, "Invoke remote method timeout. method: " + invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
@@ -138,10 +220,50 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                         logger.warn(t.getMessage(), t);
                     }
                 }
-
+                //skykong1981
+                if (dubboCache != null) {
+                	try {
+                		CacheService cacheService = DubboCacheFactory.getCacheService(dubboCache);
+                		if (cacheService != null) {
+                			cacheService.shutdown();
+                			DubboCacheFactory.removeCacheService(dubboCache);
+                		}
+                	} catch (Throwable t) {
+                        logger.warn(t.getMessage(), t);
+                    }
+                }
+                //skykong1981
             } finally {
                 destroyLock.unlock();
             }
         }
     }
+    
+    private String getCacheKey(String key, Object[] args) throws Exception {
+        String regex = "\\{(.*?)\\}";
+        Pattern p = Pattern.compile(regex);
+        Matcher m = p.matcher(key);
+        while (m.find()) {
+            String k = m.group();
+            if (k.indexOf(".") == -1) {
+            	int idx = Integer.parseInt(k.substring(1, k.length() - 1));
+            	key = key.replaceFirst("\\{" + idx + "\\}", String.valueOf(args[idx - 1]));
+            } else {
+            	String nk = k.substring(1, k.length() - 1);//1.userid
+            	String[] nkAry = nk.split("\\.");
+            	int idx = Integer.parseInt(nkAry[0]);//1
+            	String fieldName = nkAry[1];//userid
+            	Object paramObj = args[idx - 1];//User
+            	
+            	Class<? extends Object> clazz = paramObj.getClass();
+            	Field field = clazz.getDeclaredField(fieldName);//userid
+    			field.setAccessible(true);
+    			String paramValue = String.valueOf(field.get(paramObj));//userid's value
+    			key = key.replaceFirst("\\{" + nk + "\\}", paramValue);
+        		
+            }
+        }
+        return dubboCache.getPrefix() + key;
+    }
+    
 }
