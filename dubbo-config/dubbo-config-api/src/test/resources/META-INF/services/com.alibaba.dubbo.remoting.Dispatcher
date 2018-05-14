@@ -15,4 +15,4 @@
 # limitations under the License.
 #
 
-mockdispatcher=com.alibaba.dubbo.config.MockDispatcher
+mockdispatcher=com.alibaba.dubbo.config.mock.MockDispatcher

@@ -14,15 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.alibaba.dubbo.config.mock;
 
-package com.alibaba.dubbo.config;
+import com.alibaba.dubbo.rpc.Invoker;
+import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.cluster.Cluster;
+import com.alibaba.dubbo.rpc.cluster.Directory;
 
-import com.alibaba.dubbo.common.status.Status;
-import com.alibaba.dubbo.common.status.StatusChecker;
-
-public class MockStatusChecker implements StatusChecker {
+public class MockCluster implements Cluster {
     @Override
-    public Status check() {
+    public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
         return null;
     }
 }

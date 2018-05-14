@@ -15,34 +15,23 @@
  * limitations under the License.
  */
 
-package com.alibaba.dubbo.config;
+package com.alibaba.dubbo.config.mock;
 
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.rpc.Exporter;
-import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.Protocol;
-import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.remoting.Channel;
+import com.alibaba.dubbo.remoting.Codec;
 
-public class MockProtocol2 implements Protocol {
-    public static Protocol delegate;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
+public class MockCodec implements Codec {
     @Override
-    public int getDefaultPort() {
-        return delegate.getDefaultPort();
+    public void encode(Channel channel, OutputStream output, Object message) throws IOException {
+
     }
 
     @Override
-    public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
-        return delegate.export(invoker);
-    }
-
-    @Override
-    public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
-        return delegate.refer(type, url);
-    }
-
-    @Override
-    public void destroy() {
-        delegate.destroy();
+    public Object decode(Channel channel, InputStream input) throws IOException {
+        return null;
     }
 }

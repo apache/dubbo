@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,16 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.config;
 
-import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.RpcException;
-import com.alibaba.dubbo.rpc.cluster.Cluster;
-import com.alibaba.dubbo.rpc.cluster.Directory;
+package com.alibaba.dubbo.config.mock;
 
-public class MockCluster implements Cluster {
+import com.alibaba.dubbo.common.status.Status;
+import com.alibaba.dubbo.common.status.StatusChecker;
+
+public class MockStatusChecker implements StatusChecker {
     @Override
-    public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
+    public Status check() {
         return null;
     }
 }

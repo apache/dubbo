@@ -15,23 +15,20 @@
  * limitations under the License.
  */
 
-package com.alibaba.dubbo.config;
+package com.alibaba.dubbo.config.mock;
 
-import com.alibaba.dubbo.remoting.Channel;
-import com.alibaba.dubbo.remoting.Codec;
+import com.alibaba.dubbo.rpc.Exporter;
+import com.alibaba.dubbo.rpc.ExporterListener;
+import com.alibaba.dubbo.rpc.RpcException;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
-public class MockCodec implements Codec {
+public class MockExporterListener implements ExporterListener  {
     @Override
-    public void encode(Channel channel, OutputStream output, Object message) throws IOException {
+    public void exported(Exporter<?> exporter) throws RpcException {
 
     }
 
     @Override
-    public Object decode(Channel channel, InputStream input) throws IOException {
-        return null;
+    public void unexported(Exporter<?> exporter) {
+
     }
 }

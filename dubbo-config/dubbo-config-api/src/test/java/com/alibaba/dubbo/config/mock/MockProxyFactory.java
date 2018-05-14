@@ -14,24 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.alibaba.dubbo.config;
+package com.alibaba.dubbo.config.mock;
 
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.remoting.RemotingException;
-import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
-import com.alibaba.dubbo.remoting.exchange.ExchangeHandler;
-import com.alibaba.dubbo.remoting.exchange.ExchangeServer;
-import com.alibaba.dubbo.remoting.exchange.Exchanger;
+import com.alibaba.dubbo.rpc.Invoker;
+import com.alibaba.dubbo.rpc.ProxyFactory;
+import com.alibaba.dubbo.rpc.RpcException;
 
-public class MockExchanger implements Exchanger {
+public class MockProxyFactory implements ProxyFactory {
     @Override
-    public ExchangeServer bind(URL url, ExchangeHandler handler) throws RemotingException {
+    public <T> T getProxy(Invoker<T> invoker) throws RpcException {
         return null;
     }
 
     @Override
-    public ExchangeClient connect(URL url, ExchangeHandler handler) throws RemotingException {
+    public <T> Invoker<T> getInvoker(T proxy, Class<T> type, URL url) throws RpcException {
         return null;
     }
 }

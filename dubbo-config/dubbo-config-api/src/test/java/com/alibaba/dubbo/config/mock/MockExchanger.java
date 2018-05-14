@@ -15,20 +15,23 @@
  * limitations under the License.
  */
 
-package com.alibaba.dubbo.config;
+package com.alibaba.dubbo.config.mock;
 
-import com.alibaba.dubbo.rpc.Exporter;
-import com.alibaba.dubbo.rpc.ExporterListener;
-import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.remoting.RemotingException;
+import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
+import com.alibaba.dubbo.remoting.exchange.ExchangeHandler;
+import com.alibaba.dubbo.remoting.exchange.ExchangeServer;
+import com.alibaba.dubbo.remoting.exchange.Exchanger;
 
-public class MockExporterListener implements ExporterListener  {
+public class MockExchanger implements Exchanger {
     @Override
-    public void exported(Exporter<?> exporter) throws RpcException {
-
+    public ExchangeServer bind(URL url, ExchangeHandler handler) throws RemotingException {
+        return null;
     }
 
     @Override
-    public void unexported(Exporter<?> exporter) {
-
+    public ExchangeClient connect(URL url, ExchangeHandler handler) throws RemotingException {
+        return null;
     }
 }

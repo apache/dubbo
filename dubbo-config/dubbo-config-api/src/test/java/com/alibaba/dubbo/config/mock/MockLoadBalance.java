@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,21 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.config;
+package com.alibaba.dubbo.config.mock;
 
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.ProxyFactory;
 import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.cluster.LoadBalance;
 
-public class MockProxyFactory implements ProxyFactory {
-    @Override
-    public <T> T getProxy(Invoker<T> invoker) throws RpcException {
-        return null;
-    }
+import java.util.List;
 
+public class MockLoadBalance implements LoadBalance {
     @Override
-    public <T> Invoker<T> getInvoker(T proxy, Class<T> type, URL url) throws RpcException {
+    public <T> Invoker<T> select(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
         return null;
     }
 }

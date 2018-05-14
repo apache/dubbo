@@ -1,1 +1,1 @@
-mockfilter=com.alibaba.dubbo.config.MockFilter
+mockfilter=com.alibaba.dubbo.config.mock.MockFilter

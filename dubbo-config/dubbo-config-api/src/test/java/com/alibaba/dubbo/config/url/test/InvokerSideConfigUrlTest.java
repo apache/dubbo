@@ -25,7 +25,7 @@ import com.alibaba.dubbo.config.MethodConfig;
 import com.alibaba.dubbo.config.ReferenceConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.config.api.DemoService;
-import com.alibaba.dubbo.config.support.MockRegistry;
+import com.alibaba.dubbo.config.mock.MockRegistry;
 
 import org.junit.After;
 import org.junit.Before;

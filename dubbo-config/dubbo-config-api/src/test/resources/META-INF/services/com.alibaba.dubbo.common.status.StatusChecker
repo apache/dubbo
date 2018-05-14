@@ -15,4 +15,4 @@
 # limitations under the License.
 #
 
-mockstatuschecker=com.alibaba.dubbo.config.MockStatusChecker
+mockstatuschecker=com.alibaba.dubbo.config.mock.MockStatusChecker

@@ -14,18 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.alibaba.dubbo.config.mock;
 
-package com.alibaba.dubbo.config;
+import com.alibaba.dubbo.rpc.Invoker;
+import com.alibaba.dubbo.rpc.InvokerListener;
+import com.alibaba.dubbo.rpc.RpcException;
 
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.registry.Registry;
-import com.alibaba.dubbo.registry.RegistryFactory;
+public class MockInvokerListener implements InvokerListener {
+    @Override
+    public void referred(Invoker<?> invoker) throws RpcException {
 
-public class MockRegistryFactory implements RegistryFactory {
-    public static Registry registry;
+    }
 
     @Override
-    public Registry getRegistry(URL url) {
-        return registry;
+    public void destroyed(Invoker<?> invoker) {
+
     }
 }

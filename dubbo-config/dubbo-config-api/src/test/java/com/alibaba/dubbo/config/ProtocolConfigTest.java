@@ -18,6 +18,7 @@
 package com.alibaba.dubbo.config;
 
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
+import com.alibaba.dubbo.config.mock.MockProtocol2;
 import com.alibaba.dubbo.rpc.Protocol;
 import org.junit.Test;
 import org.mockito.Mockito;

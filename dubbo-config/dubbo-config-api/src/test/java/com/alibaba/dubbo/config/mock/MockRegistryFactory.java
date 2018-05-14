@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.config.support;
+package com.alibaba.dubbo.config.mock;
 
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.registry.Registry;
