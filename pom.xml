@@ -530,6 +530,33 @@
                     <goals>deploy</goals>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.apache.resources</groupId>
+                        <artifactId>apache-source-release-assembly-descriptor</artifactId>
+                        <version>1.0.6</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <id>source-release-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <runOnlyAtExecutionRoot>true</runOnlyAtExecutionRoot>
+                            <descriptorRefs>
+                                <descriptorRef>source-release</descriptorRef>
+                            </descriptorRefs>
+                            <tarLongFileMode>gnu</tarLongFileMode>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
 
         <pluginManagement>
@@ -553,31 +580,9 @@
                     <artifactId>maven-paxexam-plugin</artifactId>
                     <version>1.2.4</version>
                 </plugin>
-                <!--<plugin>-->
-                <!--<artifactId>maven-jar-plugin</artifactId>-->
-                <!--<version>3.0.2</version>-->
-                <!--<executions>-->
-                <!--<execution>-->
-                <!--<id>default-jar</id>-->
-                <!--<configuration>-->
-                <!--<archive>-->
-                <!--<manifest>-->
-                <!--<addDefaultImplementationEntries>true</addDefaultImplementationEntries>-->
-                <!--</manifest>-->
-                <!--<index>true</index>-->
-                <!--<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>-->
-                <!--</archive>-->
-                <!--</configuration>-->
-                <!--</execution>-->
-                <!--</executions>-->
-                <!--</plugin>-->
                 <plugin>
                     <artifactId>maven-dependency-plugin</artifactId>
                     <version>2.10</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-assembly-plugin</artifactId>
-                    <version>2.6</version>
                 </plugin>
                 <plugin>
                     <!-- Do NOT upgrade -->
