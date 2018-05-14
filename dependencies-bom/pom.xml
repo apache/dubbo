@@ -99,7 +99,7 @@
 
         <rs_api_version>2.0</rs_api_version>
         <resteasy_version>3.0.19.Final</resteasy_version>
-        <tomcat_embed_version>8.0.11</tomcat_embed_version>
+        <tomcat_embed_version>8.5.31</tomcat_embed_version>
         <!-- Log libs -->
         <slf4j_version>1.7.25</slf4j_version>
         <jcl_version>1.2</jcl_version>
