@@ -20,7 +20,10 @@ package com.alibaba.dubbo.config;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.config.api.DemoService;
+import com.alibaba.dubbo.config.api.Greeting;
 import com.alibaba.dubbo.config.provider.impl.DemoServiceImpl;
+import com.alibaba.dubbo.config.mock.MockProtocol2;
+import com.alibaba.dubbo.config.mock.MockRegistryFactory2;
 import com.alibaba.dubbo.registry.Registry;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invoker;
@@ -55,7 +58,7 @@ public class ServiceConfigTest {
     @Before
     public void setUp() throws Exception {
         MockProtocol2.delegate = protocolDelegate;
-        MockRegistryFactory.registry = registryDelegate;
+        MockRegistryFactory2.registry = registryDelegate;
         Mockito.when(protocolDelegate.export(Mockito.any(Invoker.class))).thenReturn(exporter);
 
         ApplicationConfig app = new ApplicationConfig("app");
