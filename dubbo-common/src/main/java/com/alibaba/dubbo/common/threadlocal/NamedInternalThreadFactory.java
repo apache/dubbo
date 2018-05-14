@@ -22,9 +22,6 @@ import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 /**
  * NamedInternalThreadFactory
  * This is a threadFactory which produce {@link InternalThread}
- *
- * @author xiuyuhang [xiuyuhang]
- * @since 2018-05-05
  */
 public class NamedInternalThreadFactory extends NamedThreadFactory {
 

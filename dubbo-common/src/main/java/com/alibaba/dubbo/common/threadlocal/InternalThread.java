@@ -19,9 +19,6 @@ package com.alibaba.dubbo.common.threadlocal;
 
 /**
  * InternalThread
- *
- * @author xiuyuhang [xiuyuhang]
- * @since 2018-05-05
  */
 public class InternalThread extends Thread {
 

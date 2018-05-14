@@ -31,9 +31,6 @@ import java.util.Set;
  * table, and it is useful when accessed frequently.
  * <p></p>
  * This design is learning from {@see io.netty.util.concurrent.FastThreadLocal} which is in Netty.
- *
- * @author xiuyuhang [xiuyuhang]
- * @since 2018-05-05
  */
 public class InternalThreadLocal<V> {
 
