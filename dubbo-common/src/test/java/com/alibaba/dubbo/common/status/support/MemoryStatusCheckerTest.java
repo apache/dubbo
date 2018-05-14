@@ -22,18 +22,21 @@ import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.status.Status;
 import org.junit.Test;
 
-import static org.hamcrest.Matchers.notNullValue;
+import static com.alibaba.dubbo.common.status.Status.Level.OK;
+import static com.alibaba.dubbo.common.status.Status.Level.WARN;
+import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-public class LoadStatusCheckerTest {
-    private static Logger logger = LoggerFactory.getLogger(LoadStatusCheckerTest.class);
+public class MemoryStatusCheckerTest {
+    private static final Logger logger = LoggerFactory.getLogger(MemoryStatusCheckerTest.class);
 
     @Test
     public void test() throws Exception {
-        LoadStatusChecker statusChecker = new LoadStatusChecker();
+        MemoryStatusChecker statusChecker = new MemoryStatusChecker();
         Status status = statusChecker.check();
-        assertThat(status, notNullValue());
-        logger.info("load status level: " + status.getLevel());
-        logger.info("load status message: " + status.getMessage());
+        assertThat(status.getLevel(), anyOf(is(OK), is(WARN)));
+        logger.info("memory status level: " + status.getLevel());
+        logger.info("memory status message: " + status.getMessage());
     }
 }
