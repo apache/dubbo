@@ -119,7 +119,10 @@ public final class InternalThreadLocalMap {
                 ++count;
             }
         }
-        return count;
+
+        //the fist element in `indexedVariables` is a set to keep all the InternalThreadLocal to remove
+        //look at method `addToVariablesToRemove`
+        return count - 1;
     }
 
     private static Object[] newIndexedVariableTable() {
