@@ -104,7 +104,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     @Deprecated
-    private static final List<ProtocolConfig> convertProviderToProtocol(List<ProviderConfig> providers) {
+    private static List<ProtocolConfig> convertProviderToProtocol(List<ProviderConfig> providers) {
         if (providers == null || providers.isEmpty()) {
             return null;
         }
@@ -116,7 +116,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     @Deprecated
-    private static final List<ProviderConfig> convertProtocolToProvider(List<ProtocolConfig> protocols) {
+    private static List<ProviderConfig> convertProtocolToProvider(List<ProtocolConfig> protocols) {
         if (protocols == null || protocols.isEmpty()) {
             return null;
         }
@@ -128,7 +128,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     @Deprecated
-    private static final ProtocolConfig convertProviderToProtocol(ProviderConfig provider) {
+    private static ProtocolConfig convertProviderToProtocol(ProviderConfig provider) {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setName(provider.getProtocol().getName());
         protocol.setServer(provider.getServer());
@@ -144,7 +144,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     @Deprecated
-    private static final ProviderConfig convertProtocolToProvider(ProtocolConfig protocol) {
+    private static ProviderConfig convertProtocolToProvider(ProtocolConfig protocol) {
         ProviderConfig provider = new ProviderConfig();
         provider.setProtocol(protocol);
         provider.setServer(protocol.getServer());
@@ -175,7 +175,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     public URL toUrl() {
-        return urls == null || urls.isEmpty() ? null : urls.iterator().next();
+        return urls.isEmpty() ? null : urls.iterator().next();
     }
 
     public List<URL> toUrls() {
@@ -338,7 +338,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (unexported) {
             return;
         }
-        if (exporters != null && !exporters.isEmpty()) {
+        if (!exporters.isEmpty()) {
             for (Exporter<?> exporter : exporters) {
                 try {
                     exporter.unexport();

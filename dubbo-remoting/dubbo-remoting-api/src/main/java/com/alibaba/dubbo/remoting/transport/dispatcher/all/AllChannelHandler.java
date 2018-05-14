@@ -88,12 +88,4 @@ public class AllChannelHandler extends WrappedChannelHandler {
             throw new ExecutionException("caught event", channel, getClass() + " error when process caught event .", t);
         }
     }
-
-    private ExecutorService getExecutorService() {
-        ExecutorService cexecutor = executor;
-        if (cexecutor == null || cexecutor.isShutdown()) {
-            cexecutor = SHARED_EXECUTOR;
-        }
-        return cexecutor;
-    }
 }
