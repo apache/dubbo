@@ -27,7 +27,7 @@
 
     <groupId>com.alibaba</groupId>
     <artifactId>dubbo-parent</artifactId>
-    <version>2.6.2</version>
+    <version>2.6.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>${project.artifactId}</name>
@@ -142,7 +142,7 @@
             <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>dubbo-dependencies-bom</artifactId>
-                <version>2.6.2</version>
+                <version>2.6.2-SNAPSHOT</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -519,29 +519,17 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--<plugin>-->
-            <!--<artifactId>maven-resources-plugin</artifactId>-->
-            <!--<version>3.0.1</version>-->
-            <!--<executions>-->
-            <!--<execution>-->
-            <!--<id>copy-resources</id>-->
-            <!--&lt;!&ndash; here the phase you need &ndash;&gt;-->
-            <!--<phase>validate</phase>-->
-            <!--<goals>-->
-            <!--<goal>copy-resources</goal>-->
-            <!--</goals>-->
-            <!--<configuration>-->
-            <!--<outputDirectory>MATE-INF/</outputDirectory>-->
-            <!--<resources>-->
-            <!--<resource>-->
-            <!--<directory>src/non-packaged-resources</directory>-->
-            <!--<filtering>true</filtering>-->
-            <!--</resource>-->
-            <!--</resources>-->
-            <!--</configuration>-->
-            <!--</execution>-->
-            <!--</executions>-->
-            <!--</plugin>-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5.3</version>
+                <configuration>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <useReleaseProfile>false</useReleaseProfile>
+                    <releaseProfiles>release</releaseProfiles>
+                    <goals>deploy</goals>
+                </configuration>
+            </plugin>
         </plugins>
 
         <pluginManagement>
