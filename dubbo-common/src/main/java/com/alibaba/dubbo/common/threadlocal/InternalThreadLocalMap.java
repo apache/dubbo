@@ -29,7 +29,7 @@ public final class InternalThreadLocalMap {
 
     private Object[] indexedVariables;
 
-    private static final ThreadLocal<InternalThreadLocalMap> slowThreadLocalMap = new ThreadLocal<InternalThreadLocalMap>();
+    private static ThreadLocal<InternalThreadLocalMap> slowThreadLocalMap = new ThreadLocal<InternalThreadLocalMap>();
 
     private static final AtomicInteger nextIndex = new AtomicInteger();
 
@@ -61,7 +61,7 @@ public final class InternalThreadLocalMap {
     }
 
     public static void destroy() {
-        slowThreadLocalMap.remove();
+        slowThreadLocalMap = null;
     }
 
     public static int nextVariableIndex() {
