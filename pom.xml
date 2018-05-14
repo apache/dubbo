@@ -91,6 +91,9 @@
         <junit_version>4.12</junit_version>
         <hazelcast_version>3.9-EA</hazelcast_version>
         <hamcrest_version>1.3</hamcrest_version>
+        <hibernate_validator_version>5.2.4.Final</hibernate_validator_version>
+        <el_api_version>2.2.4</el_api_version>
+        <jaxb_api_version>2.2.7</jaxb_api_version>
         <cglib_version>2.2</cglib_version>
         <mockito_version>2.18.3</mockito_version>
         <!-- Build args -->
