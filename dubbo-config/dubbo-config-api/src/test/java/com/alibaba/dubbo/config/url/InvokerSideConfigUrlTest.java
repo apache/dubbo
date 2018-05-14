@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.config.url.test;
+package com.alibaba.dubbo.config.url;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.logger.Logger;
@@ -137,23 +137,18 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
 
     @BeforeClass
     public static void start() {
-
         //RegistryController.startRegistryIfAbsence(1);
     }
 
 
     @Before
     public void setUp() {
-
         initServConf();
         initRefConf();
-
-        return;
     }
 
     @After()
     public void teardown() {
-
         //RegistryServer.reloadCache();
     }
 
@@ -171,9 +166,7 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
     @Ignore("parameter on register center will not be merged any longer with query parameter request from the consumer")
     @Test
     public void regConfForConsumerUrlTest() {
-
         verifyInvokerUrlGeneration(regConfForConsumer, regConfForConsumerTable);
-
     }
 
     // ======================================================
