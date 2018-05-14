@@ -32,6 +32,7 @@
             </includes>
         </fileSet>
     </fileSets>
+
     <dependencySets>
         <dependencySet>
             <useProjectArtifact>true</useProjectArtifact>
@@ -41,23 +42,9 @@
             <includes>
                 <include>com.alibaba:*</include>
             </includes>
+            <excludes>
+                <exclude>com.alibaba:fastjson</exclude>
+            </excludes>
         </dependencySet>
     </dependencySets>
-    <!--<moduleSets>-->
-    <!--<moduleSet>-->
-    <!--&lt;!&ndash;<useAllReactorProjects>true</useAllReactorProjects>&ndash;&gt;-->
-    <!--<includes>-->
-    <!--<include>*:jar:*</include>-->
-    <!--</includes>-->
-    <!--<binaries>-->
-    <!--<outputDirectory>lib/</outputDirectory>-->
-    <!--<unpack>false</unpack>-->
-    <!--<dependencySets>-->
-    <!--<dependencySet>-->
-    <!--<outputDirectory>lib/</outputDirectory>-->
-    <!--</dependencySet>-->
-    <!--</dependencySets>-->
-    <!--</binaries>-->
-    <!--</moduleSet>-->
-    <!--</moduleSets>-->
 </assembly>
