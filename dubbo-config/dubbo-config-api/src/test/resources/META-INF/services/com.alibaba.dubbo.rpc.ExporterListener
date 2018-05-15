@@ -15,4 +15,4 @@
 # limitations under the License.
 #
 
-mockexporterlistener=com.alibaba.dubbo.config.MockExporterListener
+mockexporterlistener=com.alibaba.dubbo.config.mock.MockExporterListener

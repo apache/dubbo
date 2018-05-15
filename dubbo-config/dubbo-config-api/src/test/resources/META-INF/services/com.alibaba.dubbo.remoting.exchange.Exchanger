@@ -15,4 +15,4 @@
 # limitations under the License.
 #
 
-mockexchanger=com.alibaba.dubbo.config.MockExchanger
+mockexchanger=com.alibaba.dubbo.config.mock.MockExchanger
