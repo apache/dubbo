@@ -18,6 +18,16 @@ package com.alibaba.dubbo.rpc.protocol.http;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.beanutil.JavaBeanAccessor;
+import com.alibaba.dubbo.common.beanutil.JavaBeanDescriptor;
+import com.alibaba.dubbo.common.beanutil.JavaBeanSerializeUtil;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
+import com.alibaba.dubbo.common.io.UnsafeByteArrayInputStream;
+import com.alibaba.dubbo.common.io.UnsafeByteArrayOutputStream;
+import com.alibaba.dubbo.common.serialize.Serialization;
+import com.alibaba.dubbo.common.utils.PojoUtils;
+import com.alibaba.dubbo.common.utils.ReflectUtils;
+import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.remoting.http.HttpBinder;
 import com.alibaba.dubbo.remoting.http.HttpHandler;
 import com.alibaba.dubbo.remoting.http.HttpServer;
@@ -25,16 +35,21 @@ import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.protocol.AbstractProxyProtocol;
 
+import com.alibaba.dubbo.rpc.support.ProtocolUtils;
+import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.remoting.RemoteAccessException;
 import org.springframework.remoting.httpinvoker.HttpComponentsHttpInvokerRequestExecutor;
 import org.springframework.remoting.httpinvoker.HttpInvokerProxyFactoryBean;
 import org.springframework.remoting.httpinvoker.HttpInvokerServiceExporter;
 import org.springframework.remoting.httpinvoker.SimpleHttpInvokerRequestExecutor;
+import org.springframework.remoting.support.RemoteInvocation;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.util.Map;
@@ -74,7 +89,89 @@ public class HttpProtocol extends AbstractProxyProtocol {
             server = httpBinder.bind(url, new InternalHandler());
             serverMap.put(addr, server);
         }
-        final HttpInvokerServiceExporter httpServiceExporter = new HttpInvokerServiceExporter();
+        final HttpInvokerServiceExporter httpServiceExporter = new HttpInvokerServiceExporter() {
+            @Override
+            protected Object invoke(RemoteInvocation invocation, Object targetObject) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+                if (invocation.getMethodName().equals(Constants.$INVOKE)
+                        && invocation.getArguments() != null
+                        && invocation.getArguments().length == 3) {
+                    String name = ((String) invocation.getArguments()[0]).trim();
+                    String[] types = (String[]) invocation.getArguments()[1];
+                    Object[] args = (Object[]) invocation.getArguments()[2];
+
+                    Class<?>[] params;
+                    try {
+                        Method method = ReflectUtils.findMethodByMethodSignature(this.getServiceInterface(), name, types);
+                        params = method.getParameterTypes();
+                        if (args == null) {
+                            args = new Object[params.length];
+                        }
+
+                        String generic = (String) invocation.getAttribute(Constants.GENERIC_KEY);
+                        if (StringUtils.isEmpty(generic)
+                                || ProtocolUtils.isDefaultGenericSerialization(generic)) {
+                            args = PojoUtils.realize(args, params, method.getGenericParameterTypes());
+                        } else if (ProtocolUtils.isJavaGenericSerialization(generic)) {
+                            for (int i = 0; i < args.length; i++) {
+                                if (byte[].class == args[i].getClass()) {
+                                    try {
+                                        UnsafeByteArrayInputStream is = new UnsafeByteArrayInputStream((byte[]) args[i]);
+                                        args[i] = ExtensionLoader.getExtensionLoader(Serialization.class)
+                                                .getExtension(Constants.GENERIC_SERIALIZATION_NATIVE_JAVA)
+                                                .deserialize(null, is).readObject();
+                                    } catch (Exception e) {
+                                        throw new RpcException("Deserialize argument [" + (i + 1) + "] failed.", e);
+                                    }
+                                } else {
+                                    throw new RpcException(
+                                            "Generic serialization [" + generic + "] only support message type " +
+                                                    byte[].class + " and your message type is " +
+                                                    args[i].getClass());
+                                }
+                            }
+                        } else if (ProtocolUtils.isBeanGenericSerialization(generic)) {
+                            for (int i = 0; i < args.length; i++) {
+                                if (args[i] instanceof JavaBeanDescriptor) {
+                                    args[i] = JavaBeanSerializeUtil.deserialize((JavaBeanDescriptor) args[i]);
+                                } else {
+                                    throw new RpcException(
+                                            "Generic serialization [" + generic + "] only support message type " +
+                                                    JavaBeanDescriptor.class.getName() + " and your message type is " +
+                                                    args[i].getClass().getName());
+                                }
+                            }
+                        }
+
+                        RemoteInvocation invocation2 = invocation;
+                        invocation2.setMethodName(name);
+                        invocation2.setParameterTypes(params);
+                        invocation2.setArguments(args);
+
+                        Object result = super.invoke(invocation, targetObject);
+                        if (ProtocolUtils.isJavaGenericSerialization(generic)) {
+                            try {
+                                UnsafeByteArrayOutputStream os = new UnsafeByteArrayOutputStream(512);
+                                ExtensionLoader.getExtensionLoader(Serialization.class)
+                                        .getExtension(Constants.GENERIC_SERIALIZATION_NATIVE_JAVA)
+                                        .serialize(null, os).writeObject(result);
+                                return os.toByteArray();
+                            } catch (IOException e) {
+                                throw new RpcException("Serialize result failed.", e);
+                            }
+                        } else if (ProtocolUtils.isBeanGenericSerialization(generic)) {
+                            return JavaBeanSerializeUtil.serialize(result, JavaBeanAccessor.METHOD);
+                        } else {
+                            return PojoUtils.generalize(result);
+                        }
+                    } catch (NoSuchMethodException e) {
+                        throw new RpcException(e);
+                    } catch (Exception e) {
+                        throw new RpcException(e);
+                    }
+                }
+                return super.invoke(invocation, targetObject);
+            }
+        };
         httpServiceExporter.setServiceInterface(type);
         httpServiceExporter.setService(impl);
         try {
@@ -95,7 +192,18 @@ public class HttpProtocol extends AbstractProxyProtocol {
     @Override
     @SuppressWarnings("unchecked")
     protected <T> T doRefer(final Class<T> serviceType, final URL url) throws RpcException {
-        final HttpInvokerProxyFactoryBean httpProxyFactoryBean = new HttpInvokerProxyFactoryBean();
+        final HttpInvokerProxyFactoryBean httpProxyFactoryBean = new HttpInvokerProxyFactoryBean() {
+            @Override
+            protected RemoteInvocation createRemoteInvocation(MethodInvocation methodInvocation) {
+                RemoteInvocation result = super.createRemoteInvocation(methodInvocation);
+                for (Map.Entry<String, String> entry : url.getParameters().entrySet()) {
+                    if (!StringUtils.isBlank(entry.getValue())) {
+                        result.addAttribute(entry.getKey(), entry.getValue());
+                    }
+                }
+                return result;
+            }
+        };
         httpProxyFactoryBean.setServiceUrl(url.toIdentityString());
         httpProxyFactoryBean.setServiceInterface(serviceType);
         String client = url.getParameter(Constants.CLIENT_KEY);
