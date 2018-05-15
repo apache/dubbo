@@ -20,7 +20,6 @@ import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -57,12 +56,11 @@ public class ClassHelper {
 
         Set<Class<?>> primitiveTypeNames = new HashSet<Class<?>>(16);
         primitiveTypeNames.addAll(primitiveWrapperTypeMap.values());
-        primitiveTypeNames.addAll(Arrays
-                .asList(new Class<?>[]{boolean[].class, byte[].class, char[].class, double[].class,
-                        float[].class, int[].class, long[].class, short[].class}));
-        for (Iterator<Class<?>> it = primitiveTypeNames.iterator(); it.hasNext(); ) {
-            Class<?> primitiveClass = (Class<?>) it.next();
-            primitiveTypeNameMap.put(primitiveClass.getName(), primitiveClass);
+        primitiveTypeNames.addAll(Arrays.asList(
+                boolean[].class, byte[].class, char[].class, double[].class, float[].class, int[].class,
+                long[].class, short[].class));
+        for (Class<?> primitiveTypeName : primitiveTypeNames) {
+            primitiveTypeNameMap.put((primitiveTypeName).getName(), primitiveTypeName);
         }
     }
 
@@ -193,7 +191,7 @@ public class ClassHelper {
         // SHOULD sit in a package, so a length check is worthwhile.
         if (name != null && name.length() <= 8) {
             // Could be a primitive - likely.
-            result = (Class<?>) primitiveTypeNameMap.get(name);
+            result = primitiveTypeNameMap.get(name);
         }
         return result;
     }
