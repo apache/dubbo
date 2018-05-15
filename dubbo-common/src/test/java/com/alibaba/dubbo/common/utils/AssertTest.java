@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,21 +17,18 @@
 
 package com.alibaba.dubbo.common.utils;
 
-public abstract class Assert {
+import org.junit.Test;
 
-    protected Assert() {
+import static com.alibaba.dubbo.common.utils.Assert.notNull;
+
+public class AssertTest {
+    @Test(expected = IllegalArgumentException.class)
+    public void testNotNull1() throws Exception {
+        notNull(null, "null object");
     }
 
-    public static void notNull(Object obj, String message) {
-        if (obj == null) {
-            throw new IllegalArgumentException(message);
-        }
+    @Test(expected = IllegalStateException.class)
+    public void testNotNull2() throws Exception {
+        notNull(null, new IllegalStateException("null object"));
     }
-
-    public static void notNull(Object obj, RuntimeException exception) {
-        if (obj == null) {
-            throw exception;
-        }
-    }
-
 }
