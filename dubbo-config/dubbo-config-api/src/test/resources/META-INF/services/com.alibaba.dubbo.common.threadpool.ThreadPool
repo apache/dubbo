@@ -15,4 +15,4 @@
 # limitations under the License.
 #
 
-mockthreadpool=com.alibaba.dubbo.config.MockThreadPool
+mockthreadpool=com.alibaba.dubbo.config.mock.MockThreadPool

@@ -1,1 +1,1 @@
-mockinvokerlistener=com.alibaba.dubbo.config.MockInvokerListener
+mockinvokerlistener=com.alibaba.dubbo.config.mock.MockInvokerListener
