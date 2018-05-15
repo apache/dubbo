@@ -67,7 +67,7 @@ public class EagerThreadPoolTest {
             }
         });
 
-        latch.await(5000, TimeUnit.MICROSECONDS);
+        latch.await();
         assertThat(latch.getCount(), is(0L));
     }
 
