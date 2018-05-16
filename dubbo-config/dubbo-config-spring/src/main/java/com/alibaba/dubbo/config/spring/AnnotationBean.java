@@ -174,9 +174,6 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
                 if (service.module().length() > 0) {
                     serviceConfig.setModule(applicationContext.getBean(service.module(), ModuleConfig.class));
                 }
-                if (service.provider().length() > 0) {
-                    serviceConfig.setProvider(applicationContext.getBean(service.provider(), ProviderConfig.class));
-                }
                 if (service.protocol().length > 0) {
                     List<ProtocolConfig> protocolConfigs = new ArrayList<ProtocolConfig>();
                     for (String protocolId : service.protocol()) {
@@ -288,9 +285,6 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
                 }
                 if (reference.module().length() > 0) {
                     referenceConfig.setModule(applicationContext.getBean(reference.module(), ModuleConfig.class));
-                }
-                if (reference.consumer().length() > 0) {
-                    referenceConfig.setConsumer(applicationContext.getBean(reference.consumer(), ConsumerConfig.class));
                 }
                 try {
                     referenceConfig.afterPropertiesSet();
