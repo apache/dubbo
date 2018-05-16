@@ -757,7 +757,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             throw new IllegalStateException("The interface class " + interfaceClass + " is not a interface!");
         }
         this.interfaceClass = interfaceClass;
-        setInterface(interfaceClass == null ? (String) null : interfaceClass.getName());
+        setInterface(interfaceClass == null ? null : interfaceClass.getName());
     }
 
     public T getRef() {
