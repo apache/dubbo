@@ -26,6 +26,7 @@ import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.serialize.ObjectInput;
 import com.alibaba.dubbo.common.serialize.ObjectOutput;
 import com.alibaba.dubbo.common.serialize.Serialization;
+import com.alibaba.dubbo.common.utils.DubboxUtil;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.remoting.Channel;
@@ -168,13 +169,30 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
         out.writeUTF(inv.getAttachment(Constants.VERSION_KEY));
 
         out.writeUTF(inv.getMethodName());
-        out.writeUTF(ReflectUtils.getDesc(inv.getParameterTypes()));
-        Object[] args = inv.getArguments();
-        if (args != null)
-            for (int i = 0; i < args.length; i++) {
-                out.writeObject(encodeInvocationArgument(channel, inv, i));
-            }
-        out.writeObject(inv.getAttachments());
+
+        boolean isDubbox = DubboxUtil.isDubbox(channel.getUrl().getParameter(Constants.DUBBO_VERSION_KEY));
+
+        if (isDubbox){
+            //Compatible with dubbox
+            out.writeInt(-1);
+            out.writeUTF(ReflectUtils.getDesc(inv.getParameterTypes()));
+            Object[] args = inv.getArguments();
+            if (args != null)
+                for (int i = 0; i < args.length; i++) {
+                    out.writeObject(encodeInvocationArgument(channel, inv, i));
+                }
+            out.writeObject(inv.getAttachments());
+        }else {
+            out.writeUTF(ReflectUtils.getDesc(inv.getParameterTypes()));
+            Object[] args = inv.getArguments();
+            if (args != null)
+                for (int i = 0; i < args.length; i++) {
+                    out.writeObject(encodeInvocationArgument(channel, inv, i));
+                }
+            out.writeObject(inv.getAttachments());
+        }
+
+
     }
 
     @Override
