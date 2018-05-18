@@ -61,7 +61,6 @@ public class ClusterUtils {
             map.remove(Constants.TRANSPORTER_KEY);
             map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.TRANSPORTER_KEY);
         }
-
         if (localMap != null && localMap.size() > 0) {
             map.putAll(localMap);
         }
@@ -88,6 +87,19 @@ public class ClusterUtils {
             if (remoteTimestamp != null && remoteTimestamp.length() > 0) {
                 map.put(Constants.REMOTE_TIMESTAMP_KEY, remoteMap.get(Constants.TIMESTAMP_KEY));
             }
+            // Use unit passed from provider side
+            String unit = remoteMap.get(Constants.UNIT_KEY);
+            if (unit != null && unit.length() > 0) {
+                map.put(Constants.UNIT_KEY, unit);
+            }
+            // we don't want consumer unit parameter merged to provider
+            else if(localMap != null
+                    && (localMap.containsKey(Constants.UNIT_KEY))
+                            || localMap.containsKey(Constants.DEFAULT_KEY_PREFIX + Constants.UNIT_KEY)){
+                map.remove(Constants.UNIT_KEY);
+                map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.UNIT_KEY);
+            }
+
             // Combine filters and listeners on Provider and Consumer
             String remoteFilter = remoteMap.get(Constants.REFERENCE_FILTER_KEY);
             String localFilter = localMap.get(Constants.REFERENCE_FILTER_KEY);

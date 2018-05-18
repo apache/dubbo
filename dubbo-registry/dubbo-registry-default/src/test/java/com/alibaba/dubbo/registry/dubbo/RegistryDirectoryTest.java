@@ -57,14 +57,11 @@ public class RegistryDirectoryTest {
     String service = DemoService.class.getName();
     RpcInvocation invocation = new RpcInvocation();
     URL noMeaningUrl = URL.valueOf("notsupport:/" + service + "?refer=" + URL.encode("interface=" + service));
-    URL SERVICEURL = URL.valueOf("dubbo://127.0.0.1:9091/" + service + "?lazy=true&side=consumer");
+    URL SERVICEURL1 = URL.valueOf("dubbo://127.0.0.1:9091/" + service + "?lazy=true&side=consumer");
     URL SERVICEURL2 = URL.valueOf("dubbo://127.0.0.1:9092/" + service + "?lazy=true&side=consumer");
     URL SERVICEURL3 = URL.valueOf("dubbo://127.0.0.1:9093/" + service + "?lazy=true&side=consumer");
+    URL SERVICEURL4 = URL.valueOf("dubbo://127.0.0.1:9094/" + service + "?lazy=true&side=consumer");
     URL SERVICEURL_DUBBO_NOPATH = URL.valueOf("dubbo://127.0.0.1:9092" + "?lazy=true&side=consumer");
-
-    @Before
-    public void setUp() {
-    }
 
     private RegistryDirectory getRegistryDirectory(URL url) {
         RegistryDirectory registryDirectory = new RegistryDirectory(URL.class, url);
@@ -148,7 +145,7 @@ public class RegistryDirectoryTest {
         // ignore error log
         URL badurl = URL.valueOf("notsupported://127.0.0.1/" + service);
         serviceUrls.add(badurl);
-        serviceUrls.add(SERVICEURL);
+        serviceUrls.add(SERVICEURL1);
 
         registryDirectory.notify(serviceUrls);
         Assert.assertEquals(true, registryDirectory.isAvailable());
@@ -160,8 +157,8 @@ public class RegistryDirectoryTest {
     public void testNotified_WithDuplicateUrls() {
         List<URL> serviceUrls = new ArrayList<URL>();
         // ignore error log
-        serviceUrls.add(SERVICEURL);
-        serviceUrls.add(SERVICEURL);
+        serviceUrls.add(SERVICEURL1);
+        serviceUrls.add(SERVICEURL1);
 
         RegistryDirectory registryDirectory = getRegistryDirectory();
         registryDirectory.notify(serviceUrls);
@@ -218,7 +215,7 @@ public class RegistryDirectoryTest {
     private void test_Notified1invokers(RegistryDirectory registryDirectory) {
 
         List<URL> serviceUrls = new ArrayList<URL>();
-        serviceUrls.add(SERVICEURL.addParameter("methods", "getXXX1"));// .addParameter("refer.autodestroy", "true")
+        serviceUrls.add(SERVICEURL1.addParameter("methods", "getXXX1"));// .addParameter("refer.autodestroy", "true")
         registryDirectory.notify(serviceUrls);
         Assert.assertEquals(true, registryDirectory.isAvailable());
 
@@ -243,7 +240,7 @@ public class RegistryDirectoryTest {
     // 2 invokers===================================
     private void test_Notified2invokers(RegistryDirectory registryDirectory) {
         List<URL> serviceUrls = new ArrayList<URL>();
-        serviceUrls.add(SERVICEURL.addParameter("methods", "getXXX1"));
+        serviceUrls.add(SERVICEURL1.addParameter("methods", "getXXX1"));
         serviceUrls.add(SERVICEURL2.addParameter("methods", "getXXX1,getXXX2"));
         serviceUrls.add(SERVICEURL2.addParameter("methods", "getXXX1,getXXX2"));
 
@@ -271,7 +268,7 @@ public class RegistryDirectoryTest {
     // 3 invoker notifications===================================
     private void test_Notified3invokers(RegistryDirectory registryDirectory) {
         List<URL> serviceUrls = new ArrayList<URL>();
-        serviceUrls.add(SERVICEURL.addParameter("methods", "getXXX1"));
+        serviceUrls.add(SERVICEURL1.addParameter("methods", "getXXX1"));
         serviceUrls.add(SERVICEURL2.addParameter("methods", "getXXX1,getXXX2"));
         serviceUrls.add(SERVICEURL3.addParameter("methods", "getXXX1,getXXX2,getXXX3"));
 
@@ -301,6 +298,252 @@ public class RegistryDirectoryTest {
     }
 
     @Test
+    public void test_unit_router_with_available_invokers() {
+
+        URL consumerUrl = new URL(Constants.CONSUMER_PROTOCOL, service, 0, service )
+                                  .addParameters(Constants.CATEGORY_KEY
+                                        , Constants.CONSUMERS_CATEGORY
+                                        , Constants.SIDE_KEY
+                                        , Constants.CONSUMER_SIDE
+                                        , Constants.METHODS_KEY
+                                        , "getXXX1,getXXX2,getXXX3"
+                                        , Constants.UNIT_KEY
+                                        , "beijing");
+
+        URL registryUrl = URL.valueOf("notsupport:/" + service + "?refer=" + URL.encode(consumerUrl.toFullString()));
+
+        RegistryDirectory registryDirectory = new RegistryDirectory(DemoService.class, registryUrl);
+        registryDirectory.setConsumerUrl(consumerUrl);
+        registryDirectory.setProtocol(protocol);
+
+        List<URL> serviceUrls = new ArrayList<URL>();
+        serviceUrls.add(SERVICEURL1.addParameter("methods", "getXXX1").addParameter(Constants.UNIT_KEY, "beijing"));
+        serviceUrls.add(SERVICEURL2.addParameter("methods", "getXXX1,getXXX2").addParameter(Constants.UNIT_KEY, "beijing"));
+        serviceUrls.add(SERVICEURL3.addParameter("methods", "getXXX1,getXXX2,getXXX3").addParameter(Constants.UNIT_KEY, "hangzhou"));
+        serviceUrls.add(SERVICEURL4.addParameter("methods", "getXXX1,getXXX2,getXXX3"));
+
+        registryDirectory.notify(serviceUrls);
+        Assert.assertEquals(true, registryDirectory.isAvailable());
+
+        invocation = new RpcInvocation();
+
+        List invokers = registryDirectory.list(invocation);
+        Assert.assertEquals(4, invokers.size());
+
+        invocation.setMethodName("getXXX");
+        invokers = registryDirectory.list(invocation);
+        Assert.assertEquals(4, invokers.size());
+
+        invocation.setMethodName("getXXX1");
+        invokers = registryDirectory.list(invocation);
+        Assert.assertEquals(2, invokers.size());
+
+        invocation.setMethodName("getXXX2");
+        invokers = registryDirectory.list(invocation);
+        Assert.assertEquals(1, invokers.size());
+
+        invocation.setMethodName("getXXX3");
+        invokers = registryDirectory.list(invocation);
+        Assert.assertEquals(2, invokers.size());
+    }
+
+    @Test
+    public void test_unit_router_with_available_invokers0() {
+
+        URL consumerUrl = new URL(Constants.CONSUMER_PROTOCOL, service, 0, service )
+                .addParameters(Constants.CATEGORY_KEY
+                        , Constants.CONSUMERS_CATEGORY
+                        , Constants.SIDE_KEY
+                        , Constants.CONSUMER_SIDE
+                        , Constants.METHODS_KEY
+                        , "getXXX1,getXXX2,getXXX3"
+                        , Constants.UNIT_KEY
+                        , "hangzhou");
+
+        URL registryUrl = URL.valueOf("notsupport:/" + service + "?refer=" + URL.encode(consumerUrl.toFullString()));
+
+        RegistryDirectory registryDirectory = new RegistryDirectory(DemoService.class, registryUrl);
+        registryDirectory.setConsumerUrl(consumerUrl);
+        registryDirectory.setProtocol(protocol);
+
+        List<URL> serviceUrls = new ArrayList<URL>();
+        serviceUrls.add(SERVICEURL1.addParameter("methods", "getXXX1").addParameter(Constants.UNIT_KEY, "beijing"));
+        serviceUrls.add(SERVICEURL2.addParameter("methods", "getXXX1,getXXX2").addParameter(Constants.UNIT_KEY, "beijing"));
+        serviceUrls.add(SERVICEURL3.addParameter("methods", "getXXX1,getXXX2,getXXX3").addParameter(Constants.UNIT_KEY, "hangzhou"));
+        serviceUrls.add(SERVICEURL4.addParameter("methods", "getXXX1,getXXX2,getXXX3"));
+
+        registryDirectory.notify(serviceUrls);
+        Assert.assertEquals(true, registryDirectory.isAvailable());
+
+        invocation = new RpcInvocation();
+
+        List invokers = registryDirectory.list(invocation);
+        Assert.assertEquals(4, invokers.size());
+
+        invocation.setMethodName("getXXX");
+        invokers = registryDirectory.list(invocation);
+        Assert.assertEquals(4, invokers.size());
+
+        invocation.setMethodName("getXXX1");
+        invokers = registryDirectory.list(invocation);
+        Assert.assertEquals(1, invokers.size());
+
+        invocation.setMethodName("getXXX2");
+        invokers = registryDirectory.list(invocation);
+        Assert.assertEquals(1, invokers.size());
+
+        invocation.setMethodName("getXXX3");
+        invokers = registryDirectory.list(invocation);
+        Assert.assertEquals(1, invokers.size());
+    }
+
+    @Test
+    public void test_unit_router_with_available_invokers1() {
+
+        URL consumerUrl = new URL(Constants.CONSUMER_PROTOCOL, service, 0, service )
+                .addParameters(Constants.CATEGORY_KEY
+                        , Constants.CONSUMERS_CATEGORY
+                        , Constants.SIDE_KEY
+                        , Constants.CONSUMER_SIDE
+                        , Constants.METHODS_KEY
+                        , "getXXX1,getXXX2,getXXX3");
+
+        URL registryUrl = URL.valueOf("notsupport:/" + service + "?refer=" + URL.encode(consumerUrl.toFullString()));
+
+        RegistryDirectory registryDirectory = new RegistryDirectory(DemoService.class, registryUrl);
+        registryDirectory.setConsumerUrl(consumerUrl);
+        registryDirectory.setProtocol(protocol);
+
+        List<URL> serviceUrls = new ArrayList<URL>();
+        serviceUrls.add(SERVICEURL1.addParameter("methods", "getXXX1").addParameter(Constants.UNIT_KEY, "beijing"));
+        serviceUrls.add(SERVICEURL2.addParameter("methods", "getXXX1,getXXX2").addParameter(Constants.UNIT_KEY, "beijing"));
+        serviceUrls.add(SERVICEURL3.addParameter("methods", "getXXX1,getXXX2,getXXX3").addParameter(Constants.UNIT_KEY, "hangzhou"));
+        serviceUrls.add(SERVICEURL4.addParameter("methods", "getXXX1,getXXX2,getXXX3"));
+
+        registryDirectory.notify(serviceUrls);
+        Assert.assertEquals(true, registryDirectory.isAvailable());
+
+        invocation = new RpcInvocation();
+
+        List invokers = registryDirectory.list(invocation);
+        Assert.assertEquals(4, invokers.size());
+
+        invocation.setMethodName("getXXX");
+        invokers = registryDirectory.list(invocation);
+        Assert.assertEquals(4, invokers.size());
+
+        invocation.setMethodName("getXXX1");
+        invokers = registryDirectory.list(invocation);
+        Assert.assertEquals(4, invokers.size());
+
+        invocation.setMethodName("getXXX2");
+        invokers = registryDirectory.list(invocation);
+        Assert.assertEquals(3, invokers.size());
+
+        invocation.setMethodName("getXXX3");
+        invokers = registryDirectory.list(invocation);
+        Assert.assertEquals(2, invokers.size());
+    }
+
+    @Test
+    public void test_unit_router_with_available_invokers2() {
+
+        URL consumerUrl = new URL(Constants.CONSUMER_PROTOCOL, service, 0, service )
+                .addParameters(Constants.CATEGORY_KEY
+                        , Constants.CONSUMERS_CATEGORY
+                        , Constants.SIDE_KEY
+                        , Constants.CONSUMER_SIDE
+                        , Constants.METHODS_KEY
+                        , "getXXX1,getXXX2,getXXX3"
+                        , Constants.UNIT_KEY
+                        , "beijing");
+
+        URL registryUrl = URL.valueOf("notsupport:/" + service + "?refer=" + URL.encode(consumerUrl.toFullString()));
+
+        RegistryDirectory registryDirectory = new RegistryDirectory(DemoService.class, registryUrl);
+        registryDirectory.setConsumerUrl(consumerUrl);
+        registryDirectory.setProtocol(protocol);
+
+        List<URL> serviceUrls = new ArrayList<URL>();
+        serviceUrls.add(SERVICEURL1.addParameter("methods", "getXXX1"));
+        serviceUrls.add(SERVICEURL2.addParameter("methods", "getXXX1,getXXX2"));
+        serviceUrls.add(SERVICEURL3.addParameter("methods", "getXXX1,getXXX2,getXXX3"));
+        serviceUrls.add(SERVICEURL4.addParameter("methods", "getXXX1,getXXX2,getXXX3"));
+
+        registryDirectory.notify(serviceUrls);
+        Assert.assertEquals(true, registryDirectory.isAvailable());
+
+        invocation = new RpcInvocation();
+
+        List invokers = registryDirectory.list(invocation);
+        Assert.assertEquals(4, invokers.size());
+
+        invocation.setMethodName("getXXX");
+        invokers = registryDirectory.list(invocation);
+        Assert.assertEquals(4, invokers.size());
+
+        invocation.setMethodName("getXXX1");
+        invokers = registryDirectory.list(invocation);
+        Assert.assertEquals(4, invokers.size());
+
+        invocation.setMethodName("getXXX2");
+        invokers = registryDirectory.list(invocation);
+        Assert.assertEquals(3, invokers.size());
+
+        invocation.setMethodName("getXXX3");
+        invokers = registryDirectory.list(invocation);
+        Assert.assertEquals(2, invokers.size());
+    }
+
+    @Test
+    public void test_unit_router_with_available_invokers3() {
+
+        URL consumerUrl = new URL(Constants.CONSUMER_PROTOCOL, service, 0, service )
+                .addParameters(Constants.CATEGORY_KEY
+                        , Constants.CONSUMERS_CATEGORY
+                        , Constants.SIDE_KEY
+                        , Constants.CONSUMER_SIDE
+                        , Constants.METHODS_KEY
+                        , "getXXX4");
+
+        URL registryUrl = URL.valueOf("notsupport:/" + service + "?refer=" + URL.encode(consumerUrl.toFullString()));
+
+        RegistryDirectory registryDirectory = new RegistryDirectory(DemoService.class, registryUrl);
+        registryDirectory.setConsumerUrl(consumerUrl);
+        registryDirectory.setProtocol(protocol);
+
+        List<URL> serviceUrls = new ArrayList<URL>();
+        serviceUrls.add(SERVICEURL1.addParameter("methods", "getXXX1"));
+        serviceUrls.add(SERVICEURL2.addParameter("methods", "getXXX1,getXXX2"));
+        serviceUrls.add(SERVICEURL3.addParameter("methods", "getXXX1,getXXX2,getXXX3"));
+        serviceUrls.add(SERVICEURL4.addParameter("methods", "getXXX1,getXXX2,getXXX3"));
+
+        registryDirectory.notify(serviceUrls);
+        Assert.assertEquals(true, registryDirectory.isAvailable());
+
+        invocation = new RpcInvocation();
+
+        List invokers = registryDirectory.list(invocation);
+        Assert.assertEquals(4, invokers.size());
+
+        invocation.setMethodName("getXXX");
+        invokers = registryDirectory.list(invocation);
+        Assert.assertEquals(4, invokers.size());
+
+        invocation.setMethodName("getXXX1");
+        invokers = registryDirectory.list(invocation);
+        Assert.assertEquals(4, invokers.size());
+
+        invocation.setMethodName("getXXX2");
+        invokers = registryDirectory.list(invocation);
+        Assert.assertEquals(3, invokers.size());
+
+        invocation.setMethodName("getXXX3");
+        invokers = registryDirectory.list(invocation);
+        Assert.assertEquals(2, invokers.size());
+    }
+
+    @Test
     public void testParametersMerge() {
         RegistryDirectory registryDirectory = getRegistryDirectory();
         URL regurl = noMeaningUrl.addParameter("test", "reg").addParameterAndEncoded(Constants.REFER_KEY,
@@ -317,7 +560,7 @@ public class RegistryDirectoryTest {
         // The parameters of the inspection registry need to be cleared
         {
             serviceUrls.clear();
-            serviceUrls.add(SERVICEURL.addParameter("methods", "getXXX1"));
+            serviceUrls.add(SERVICEURL1.addParameter("methods", "getXXX1"));
             registryDirectory.notify(serviceUrls);
 
             invocation = new RpcInvocation();
@@ -330,7 +573,7 @@ public class RegistryDirectoryTest {
         // The parameters of the provider for the inspection service need merge
         {
             serviceUrls.clear();
-            serviceUrls.add(SERVICEURL.addParameter("methods", "getXXX2").addParameter("key", "provider"));
+            serviceUrls.add(SERVICEURL1.addParameter("methods", "getXXX2").addParameter("key", "provider"));
 
             registryDirectory.notify(serviceUrls);
             invocation = new RpcInvocation();
@@ -343,7 +586,7 @@ public class RegistryDirectoryTest {
         // The parameters of the test service query need to be with the providermerge.
         {
             serviceUrls.clear();
-            serviceUrls.add(SERVICEURL.addParameter("methods", "getXXX3").addParameter("key", "provider"));
+            serviceUrls.add(SERVICEURL1.addParameter("methods", "getXXX3").addParameter("key", "provider"));
 
             registryDirectory2.notify(serviceUrls);
             invocation = new RpcInvocation();
@@ -356,7 +599,7 @@ public class RegistryDirectoryTest {
 
         {
             serviceUrls.clear();
-            serviceUrls.add(SERVICEURL.addParameter("methods", "getXXX1"));
+            serviceUrls.add(SERVICEURL1.addParameter("methods", "getXXX1"));
             registryDirectory.notify(serviceUrls);
 
             invocation = new RpcInvocation();
@@ -368,7 +611,7 @@ public class RegistryDirectoryTest {
         }
         {
             serviceUrls.clear();
-            serviceUrls.add(SERVICEURL.addParameter(Constants.LOADBALANCE_KEY, RoundRobinLoadBalance.NAME));
+            serviceUrls.add(SERVICEURL1.addParameter(Constants.LOADBALANCE_KEY, RoundRobinLoadBalance.NAME));
             registryDirectory2.notify(serviceUrls);
 
             invocation = new RpcInvocation();
@@ -383,7 +626,7 @@ public class RegistryDirectoryTest {
         {
             Assert.assertEquals(null, registryDirectory2.getUrl().getParameter("mock"));
             serviceUrls.clear();
-            serviceUrls.add(SERVICEURL.addParameter(Constants.MOCK_KEY, "true"));
+            serviceUrls.add(SERVICEURL1.addParameter(Constants.MOCK_KEY, "true"));
             registryDirectory2.notify(serviceUrls);
 
             Assert.assertEquals("true", registryDirectory2.getUrl().getParameter("mock"));
@@ -398,7 +641,7 @@ public class RegistryDirectoryTest {
         RegistryDirectory registryDirectory = getRegistryDirectory();
 
         List<URL> serviceUrls = new ArrayList<URL>();
-        serviceUrls.add(SERVICEURL.addParameter("methods", "getXXX1"));
+        serviceUrls.add(SERVICEURL1.addParameter("methods", "getXXX1"));
         serviceUrls.add(SERVICEURL2.addParameter("methods", "getXXX1,getXXX2"));
         serviceUrls.add(SERVICEURL3.addParameter("methods", "getXXX1,getXXX2,getXXX3"));
 
@@ -476,7 +719,7 @@ public class RegistryDirectoryTest {
     public void testParmeterRoute() {
         RegistryDirectory registryDirectory = getRegistryDirectory();
         List<URL> serviceUrls = new ArrayList<URL>();
-        serviceUrls.add(SERVICEURL.addParameter("methods", "getXXX1.napoli"));
+        serviceUrls.add(SERVICEURL1.addParameter("methods", "getXXX1.napoli"));
         serviceUrls.add(SERVICEURL2.addParameter("methods", "getXXX1.MORGAN,getXXX2"));
         serviceUrls.add(SERVICEURL3.addParameter("methods", "getXXX1.morgan,getXXX2,getXXX3"));
 
@@ -510,7 +753,7 @@ public class RegistryDirectoryTest {
             Assert.assertEquals(false, registryDirectory.isAvailable());
         }
 
-        serviceUrls.add(SERVICEURL.addParameter("methods", "getXXX1"));
+        serviceUrls.add(SERVICEURL1.addParameter("methods", "getXXX1"));
         serviceUrls.add(SERVICEURL2.addParameter("methods", "getXXX1,getXXX2"));
         serviceUrls.add(SERVICEURL3.addParameter("methods", "getXXX1,getXXX2,getXXX3"));
 
@@ -575,7 +818,7 @@ public class RegistryDirectoryTest {
 
         //After pushing two provider, the directory state is restored to true
         List<URL> serviceUrls = new ArrayList<URL>();
-        serviceUrls.add(SERVICEURL.addParameter("timeout", "1000"));
+        serviceUrls.add(SERVICEURL1.addParameter("timeout", "1000"));
         serviceUrls.add(SERVICEURL2.addParameter("timeout", "1000").addParameter("connections", "10"));
 
         registryDirectory.notify(serviceUrls);
@@ -602,7 +845,7 @@ public class RegistryDirectoryTest {
 
         //After pushing two provider, the directory state is restored to true
         List<URL> serviceUrls = new ArrayList<URL>();
-        serviceUrls.add(SERVICEURL.addParameter("timeout", "1000"));
+        serviceUrls.add(SERVICEURL1.addParameter("timeout", "1000"));
         serviceUrls.add(SERVICEURL2.addParameter("timeout", "1000").addParameter("connections", "10"));
 
         registryDirectory.notify(serviceUrls);
@@ -632,7 +875,7 @@ public class RegistryDirectoryTest {
         RegistryDirectory registryDirectory = getRegistryDirectory();
 
         List<URL> durls = new ArrayList<URL>();
-        durls.add(SERVICEURL.addParameter("timeout", "1000"));
+        durls.add(SERVICEURL1.addParameter("timeout", "1000"));
         durls.add(SERVICEURL2.addParameter("timeout", "1000").addParameter("connections", "10"));
         durls.add(URL.valueOf("override://0.0.0.0?timeout=1&connections=5"));
 
@@ -661,7 +904,7 @@ public class RegistryDirectoryTest {
         invocation = new RpcInvocation();
 
         List<URL> durls = new ArrayList<URL>();
-        durls.add(SERVICEURL.addParameter("timeout", "1"));//One is the same, one is different
+        durls.add(SERVICEURL1.addParameter("timeout", "1"));//One is the same, one is different
         durls.add(SERVICEURL2.addParameter("timeout", "1").addParameter("connections", "5"));
         registryDirectory.notify(durls);
         List<Invoker<?>> invokers = registryDirectory.list(invocation);
@@ -695,7 +938,7 @@ public class RegistryDirectoryTest {
         invocation = new RpcInvocation();
 
         List<URL> durls = new ArrayList<URL>();
-        durls.add(SERVICEURL.setHost("10.20.30.140").addParameter("timeout", "1").addParameter(Constants.SIDE_KEY, Constants.CONSUMER_SIDE));//One is the same, one is different
+        durls.add(SERVICEURL1.setHost("10.20.30.140").addParameter("timeout", "1").addParameter(Constants.SIDE_KEY, Constants.CONSUMER_SIDE));//One is the same, one is different
         durls.add(SERVICEURL2.setHost("10.20.30.141").addParameter("timeout", "2").addParameter(Constants.SIDE_KEY, Constants.CONSUMER_SIDE));
         registryDirectory.notify(durls);
 
@@ -721,7 +964,7 @@ public class RegistryDirectoryTest {
         invocation = new RpcInvocation();
 
         List<URL> durls = new ArrayList<URL>();
-        durls.add(SERVICEURL.setHost("10.20.30.140").addParameter("timeout", "1"));
+        durls.add(SERVICEURL1.setHost("10.20.30.140").addParameter("timeout", "1"));
         registryDirectory.notify(durls);
 
         durls = new ArrayList<URL>();
@@ -749,7 +992,7 @@ public class RegistryDirectoryTest {
         invocation = new RpcInvocation();
 
         List<URL> durls = new ArrayList<URL>();
-        durls.add(SERVICEURL.setHost("10.20.30.140").addParameter("timeout", "1"));
+        durls.add(SERVICEURL1.setHost("10.20.30.140").addParameter("timeout", "1"));
         registryDirectory.notify(durls);
         Assert.assertEquals(null, registryDirectory.getUrl().getParameter("mock"));
 
@@ -784,7 +1027,7 @@ public class RegistryDirectoryTest {
         invocation = new RpcInvocation();
 
         List<URL> durls = new ArrayList<URL>();
-        durls.add(SERVICEURL.setHost("10.20.30.140").addParameter("timeout", "1"));
+        durls.add(SERVICEURL1.setHost("10.20.30.140").addParameter("timeout", "1"));
         registryDirectory.notify(durls);
 
         durls = new ArrayList<URL>();
@@ -808,8 +1051,8 @@ public class RegistryDirectoryTest {
         invocation = new RpcInvocation();
 
         List<URL> durls = new ArrayList<URL>();
-        durls.add(SERVICEURL.setHost("10.20.30.140"));
-        durls.add(SERVICEURL.setHost("10.20.30.141"));
+        durls.add(SERVICEURL1.setHost("10.20.30.140"));
+        durls.add(SERVICEURL1.setHost("10.20.30.141"));
         registryDirectory.notify(durls);
 
         durls = new ArrayList<URL>();
@@ -831,8 +1074,8 @@ public class RegistryDirectoryTest {
         invocation = new RpcInvocation();
 
         List<URL> durls = new ArrayList<URL>();
-        durls.add(SERVICEURL.setHost("10.20.30.140"));
-        durls.add(SERVICEURL.setHost("10.20.30.141"));
+        durls.add(SERVICEURL1.setHost("10.20.30.140"));
+        durls.add(SERVICEURL1.setHost("10.20.30.141"));
         registryDirectory.notify(durls);
 
         durls = new ArrayList<URL>();
@@ -860,15 +1103,15 @@ public class RegistryDirectoryTest {
         invocation = new RpcInvocation();
 
         List<URL> durls = new ArrayList<URL>();
-        durls.add(SERVICEURL.setHost("10.20.30.140"));
-        durls.add(SERVICEURL.setHost("10.20.30.141"));
+        durls.add(SERVICEURL1.setHost("10.20.30.140"));
+        durls.add(SERVICEURL1.setHost("10.20.30.141"));
         registryDirectory.notify(durls);
 
         List<Invoker<?>> invokers = registryDirectory.list(invocation);
         Assert.assertEquals(2, invokers.size());
 
         durls = new ArrayList<URL>();
-        durls.add(SERVICEURL.setHost("10.20.30.140"));
+        durls.add(SERVICEURL1.setHost("10.20.30.140"));
         registryDirectory.notify(durls);
         List<Invoker<?>> invokers2 = registryDirectory.list(invocation);
         Assert.assertEquals(1, invokers2.size());
@@ -892,8 +1135,8 @@ public class RegistryDirectoryTest {
 
         // Initially disable
         List<URL> durls = new ArrayList<URL>();
-        durls.add(SERVICEURL.setHost("10.20.30.140").addParameter(Constants.ENABLED_KEY, "false"));
-        durls.add(SERVICEURL.setHost("10.20.30.141"));
+        durls.add(SERVICEURL1.setHost("10.20.30.140").addParameter(Constants.ENABLED_KEY, "false"));
+        durls.add(SERVICEURL1.setHost("10.20.30.141"));
         registryDirectory.notify(durls);
 
         List<Invoker<?>> invokers = registryDirectory.list(invocation);
@@ -940,9 +1183,9 @@ public class RegistryDirectoryTest {
         RegistryDirectory registryDirectory = getRegistryDirectory();
 
         List<URL> serviceUrls = new ArrayList<URL>();
-        serviceUrls.add(SERVICEURL.addParameter("methods", "getXXX1"));
+        serviceUrls.add(SERVICEURL1.addParameter("methods", "getXXX1"));
         serviceUrls.add(SERVICEURL2.addParameter("methods", "getXXX1,getXXX2"));
-        serviceUrls.add(SERVICEURL.setProtocol(Constants.MOCK_PROTOCOL));
+        serviceUrls.add(SERVICEURL1.setProtocol(Constants.MOCK_PROTOCOL));
 
         registryDirectory.notify(serviceUrls);
         Assert.assertEquals(true, registryDirectory.isAvailable());
@@ -1075,5 +1318,9 @@ public class RegistryDirectoryTest {
                 throw new RpcException("test exception ignore.");
             }
         }
+    }
+
+    @Before
+    public void setUp() {
     }
 }

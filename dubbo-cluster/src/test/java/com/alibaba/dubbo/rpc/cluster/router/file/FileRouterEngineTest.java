@@ -70,8 +70,8 @@ public class FileRouterEngineTest {
         if (isScriptUnsupported) return;
         URL url = initUrl("notAvailablerule.javascript");
         initInvocation("method1");
-        initDic(url);
         initInvokers(url, true, false);
+        initDic(url);
 
         MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<FileRouterEngineTest>(
                 dic, url);
@@ -87,8 +87,8 @@ public class FileRouterEngineTest {
         if (isScriptUnsupported) return;
         URL url = initUrl("availablerule.javascript");
         initInvocation("method1");
-        initDic(url);
         initInvokers(url);
+        initDic(url);
 
         MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<FileRouterEngineTest>(
                 dic, url);
@@ -105,8 +105,8 @@ public class FileRouterEngineTest {
         URL url = initUrl("methodrule.javascript");
         {
             initInvocation("method1");
-            initDic(url);
             initInvokers(url, true, true);
+            initDic(url);
 
             MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<FileRouterEngineTest>(
                     dic, url);
@@ -118,8 +118,8 @@ public class FileRouterEngineTest {
         }
         {
             initInvocation("method2");
-            initDic(url);
             initInvokers(url, true, true);
+            initDic(url);
             MockClusterInvoker<FileRouterEngineTest> sinvoker = new MockClusterInvoker<FileRouterEngineTest>(
                     dic, url);
             for (int i = 0; i < 100; i++) {

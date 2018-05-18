@@ -24,14 +24,20 @@ import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.cluster.Directory;
 import com.alibaba.dubbo.rpc.cluster.Router;
 import com.alibaba.dubbo.rpc.cluster.RouterFactory;
 import com.alibaba.dubbo.rpc.cluster.router.MockInvokersSelector;
+import com.alibaba.dubbo.rpc.cluster.router.unit.UnitRouter;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+
+import static com.alibaba.dubbo.common.utils.StringUtils.containsParseKey;
+import static com.alibaba.dubbo.common.utils.StringUtils.parseQueryString;
 
 /**
  * Abstract implementation of Directory: Invoker list returned from this Directory's list method have been filtered by Routers
@@ -46,7 +52,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     private volatile boolean destroyed = false;
 
-    private volatile URL consumerUrl;
+    protected volatile URL consumerUrl;
 
     private volatile List<Router> routers;
 
@@ -108,7 +114,34 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         // append mock invoker selector
         routers.add(new MockInvokersSelector());
         Collections.sort(routers);
+
+        /**
+         *  We expect unit router will be executed at last,
+         *  because if the unit router has no match,
+         *  it will return the previous available invokers.
+         */
+
+        if(detectUnitRouter()) {
+            routers.add(new UnitRouter());
+        }
+
         this.routers = routers;
+    }
+
+    protected List<Invoker<T>> route(List<Invoker<T>> invokers, String method) {
+
+        if(invokers == null || invokers.isEmpty()) return invokers;
+
+        Invocation invocation = new RpcInvocation(method, new Class<?>[0], new Object[0]);
+        List<Router> routers = getRouters();
+        if (routers != null) {
+            for (Router router : routers) {
+                if (router.getUrl() != null) {
+                    invokers = router.route(invokers, getConsumerUrl(), invocation);
+                }
+            }
+        }
+        return invokers;
     }
 
     public URL getConsumerUrl() {
@@ -117,6 +150,50 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     public void setConsumerUrl(URL consumerUrl) {
         this.consumerUrl = consumerUrl;
+    }
+
+    private boolean detectUnitRouter() {
+        String unitKey = url.getParameter(Constants.UNIT_KEY);
+        if((unitKey != null && unitKey.length() > 0)
+                // we check if consumer contains `unit` property
+                || containsParseKey(url.getParameterAndDecoded(Constants.REFER_KEY), Constants.UNIT_KEY))
+            return true;
+
+        return false;
+    }
+
+    /**
+     * use to find current consumer url.
+     *
+     */
+    public URL parseConsumerUrl(final URL url) {
+
+        String refer, path;
+
+        URL invokerUrl = url.setProtocol(
+                url.getParameter(Constants.REGISTRY_KEY, Constants.DEFAULT_REGISTRY))
+                .removeParameter(Constants.REGISTRY_KEY);
+
+        if((refer = invokerUrl.getParameterAndDecoded(Constants.REFER_KEY)) != null
+                && refer.length() > 0) {
+
+            Map<String, String> parameters = parseQueryString(refer);
+            parameters.remove(Constants.MONITOR_KEY);
+
+            if(!(Constants.ANY_VALUE).equals(path = parameters.remove(Constants.INTERFACE_KEY))){
+                URL consumerUrl = new URL(Constants.CONSUMER_PROTOCOL
+                        , parameters.remove(Constants.REGISTER_IP_KEY), 0
+                        , path  , parameters)
+                        . addParameters(Constants.CATEGORY_KEY
+                                , Constants.CONSUMERS_CATEGORY
+                                , Constants.CHECK_KEY
+                                , String.valueOf(false));
+
+                return consumerUrl;
+            }
+        }
+
+        return url;
     }
 
     public boolean isDestroyed() {

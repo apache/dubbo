@@ -19,6 +19,9 @@ package com.alibaba.com.caucho.hessian.io.beans;
 import java.io.Serializable;
 import java.util.List;
 
+/**
+ * @author jason.shang
+ */
 public class PersonType implements Serializable {
 
     String name;

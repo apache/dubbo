@@ -440,19 +440,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         return providerUrl;
     }
 
-    private List<Invoker<T>> route(List<Invoker<T>> invokers, String method) {
-        Invocation invocation = new RpcInvocation(method, new Class<?>[0], new Object[0]);
-        List<Router> routers = getRouters();
-        if (routers != null) {
-            for (Router router : routers) {
-                if (router.getUrl() != null) {
-                    invokers = router.route(invokers, getConsumerUrl(), invocation);
-                }
-            }
-        }
-        return invokers;
-    }
-
     /**
      * Transform the invokers list into a mapping relationship with a method
      *
