@@ -95,7 +95,6 @@ public class HttpProtocol extends AbstractProxyProtocol {
 
     private <T> HttpInvokerServiceExporter createExporter(T impl, Class<?> type) {
         final HttpInvokerServiceExporter httpServiceExporter = new HttpInvokerServiceExporter();
-
         httpServiceExporter.setServiceInterface(type);
         httpServiceExporter.setService(impl);
         try {
@@ -130,7 +129,6 @@ public class HttpProtocol extends AbstractProxyProtocol {
         }
 
         httpProxyFactoryBean.setServiceUrl(key);
-
         httpProxyFactoryBean.setServiceInterface(serviceType);
         String client = url.getParameter(Constants.CLIENT_KEY);
         if (client == null || client.length() == 0 || "simple".equals(client)) {
