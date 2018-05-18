@@ -85,6 +85,7 @@ public class ClientReconnectTest {
         try {
             Exchangers.connect(url);
         } catch (Exception e) {
+
             //do nothing
         }
         Thread.sleep(1500);

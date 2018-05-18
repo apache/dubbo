@@ -32,7 +32,7 @@ import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.protocol.hessian.HessianServiceImpl.MyException;
 
 import com.alibaba.dubbo.rpc.service.GenericService;
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -52,7 +52,7 @@ public class HessianProtocolTest {
         Assert.assertFalse(server.isCalled());
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-        URL url = URL.valueOf("hessian://127.0.0.1:5342/" + HessianService.class.getName() + "?version=1.0.0");
+        URL url = URL.valueOf("hessian://127.0.0.1:5342/" + HessianService.class.getName() + "?version=1.0.0&hessian.overload.method=true");
         Exporter<HessianService> exporter = protocol.export(proxyFactory.getInvoker(server, HessianService.class, url));
         Invoker<HessianService> invoker = protocol.refer(HessianService.class, url);
         HessianService client = proxyFactory.getProxy(invoker);
@@ -151,7 +151,7 @@ public class HessianProtocolTest {
         Assert.assertFalse(server.isCalled());
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-        URL url = URL.valueOf("hessian://127.0.0.1:5342/" + HessianService.class.getName() + "?version=1.0.0&client=httpclient");
+        URL url = URL.valueOf("hessian://127.0.0.1:5342/" + HessianService.class.getName() + "?version=1.0.0&client=httpclient&hessian.overload.method=true");
         Exporter<HessianService> exporter = protocol.export(proxyFactory.getInvoker(server, HessianService.class, url));
         Invoker<HessianService> invoker = protocol.refer(HessianService.class, url);
         HessianService client = proxyFactory.getProxy(invoker);
@@ -175,7 +175,7 @@ public class HessianProtocolTest {
             client.timeOut(6000);
             fail();
         } catch (RpcException expected) {
-            Assert.assertEquals(true, expected.isTimeout());
+            Assert.assertTrue(expected.isTimeout());
         } finally {
             invoker.destroy();
             exporter.unexport();
@@ -196,6 +196,7 @@ public class HessianProtocolTest {
             client.customException();
             fail();
         } catch (MyException expected) {
+
         }
         invoker.destroy();
         exporter.unexport();

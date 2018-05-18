@@ -19,9 +19,9 @@ package com.alibaba.dubbo.common.threadpool.support.eager;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.threadlocal.NamedInternalThreadFactory;
 import com.alibaba.dubbo.common.threadpool.ThreadPool;
 import com.alibaba.dubbo.common.threadpool.support.AbortPolicyWithReport;
-import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
@@ -48,7 +48,7 @@ public class EagerThreadPool implements ThreadPool {
                 alive,
                 TimeUnit.MILLISECONDS,
                 taskQueue,
-                new NamedThreadFactory(name, true),
+                new NamedInternalThreadFactory(name, true),
                 new AbortPolicyWithReport(name, url));
         taskQueue.setExecutor(executor);
         return executor;

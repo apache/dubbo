@@ -1,1 +1,1 @@
-mockloadbalance=com.alibaba.dubbo.config.MockLoadBalance
+mockloadbalance=com.alibaba.dubbo.config.mock.MockLoadBalance

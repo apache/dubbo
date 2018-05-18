@@ -54,7 +54,7 @@ public class Status {
     /**
      * Level
      */
-    public static enum Level {
+    public enum Level {
         /**
          * OK
          */
