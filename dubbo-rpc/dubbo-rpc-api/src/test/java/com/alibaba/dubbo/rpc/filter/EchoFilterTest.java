@@ -24,14 +24,12 @@ import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.support.DemoService;
 
-import org.easymock.EasyMock;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 
-/**
- * EchoFilterTest.java
- */
 public class EchoFilterTest {
 
     Filter echoFilter = new EchoFilter();
@@ -39,21 +37,21 @@ public class EchoFilterTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testEcho() {
-        Invocation invocation = EasyMock.createMock(Invocation.class);
-        EasyMock.expect(invocation.getMethodName()).andReturn("$echo").anyTimes();
-        EasyMock.expect(invocation.getParameterTypes()).andReturn(new Class<?>[]{Enum.class}).anyTimes();
-        EasyMock.expect(invocation.getArguments()).andReturn(new Object[]{"hello"}).anyTimes();
-        EasyMock.expect(invocation.getAttachments()).andReturn(null).anyTimes();
-        EasyMock.replay(invocation);
-        Invoker<DemoService> invoker = EasyMock.createMock(Invoker.class);
-        EasyMock.expect(invoker.isAvailable()).andReturn(true).anyTimes();
-        EasyMock.expect(invoker.getInterface()).andReturn(DemoService.class).anyTimes();
+        Invocation invocation = mock(Invocation.class);
+        given(invocation.getMethodName()).willReturn("$echo");
+        given(invocation.getParameterTypes()).willReturn(new Class<?>[]{Enum.class});
+        given(invocation.getArguments()).willReturn(new Object[]{"hello"});
+        given(invocation.getAttachments()).willReturn(null);
+
+        Invoker<DemoService> invoker = mock(Invoker.class);
+        given(invoker.isAvailable()).willReturn(true);
+        given(invoker.getInterface()).willReturn(DemoService.class);
         RpcResult result = new RpcResult();
         result.setValue("High");
-        EasyMock.expect(invoker.invoke(invocation)).andReturn(result).anyTimes();
+        given(invoker.invoke(invocation)).willReturn(result);
         URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1");
-        EasyMock.expect(invoker.getUrl()).andReturn(url).anyTimes();
-        EasyMock.replay(invoker);
+        given(invoker.getUrl()).willReturn(url);
+
         Result filterResult = echoFilter.invoke(invoker, invocation);
         assertEquals("hello", filterResult.getValue());
     }
@@ -61,21 +59,21 @@ public class EchoFilterTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testNonEcho() {
-        Invocation invocation = EasyMock.createMock(Invocation.class);
-        EasyMock.expect(invocation.getMethodName()).andReturn("echo").anyTimes();
-        EasyMock.expect(invocation.getParameterTypes()).andReturn(new Class<?>[]{Enum.class}).anyTimes();
-        EasyMock.expect(invocation.getArguments()).andReturn(new Object[]{"hello"}).anyTimes();
-        EasyMock.expect(invocation.getAttachments()).andReturn(null).anyTimes();
-        EasyMock.replay(invocation);
-        Invoker<DemoService> invoker = EasyMock.createMock(Invoker.class);
-        EasyMock.expect(invoker.isAvailable()).andReturn(true).anyTimes();
-        EasyMock.expect(invoker.getInterface()).andReturn(DemoService.class).anyTimes();
+        Invocation invocation = mock(Invocation.class);
+        given(invocation.getMethodName()).willReturn("echo");
+        given(invocation.getParameterTypes()).willReturn(new Class<?>[]{Enum.class});
+        given(invocation.getArguments()).willReturn(new Object[]{"hello"});
+        given(invocation.getAttachments()).willReturn(null);
+
+        Invoker<DemoService> invoker = mock(Invoker.class);
+        given(invoker.isAvailable()).willReturn(true);
+        given(invoker.getInterface()).willReturn(DemoService.class);
         RpcResult result = new RpcResult();
         result.setValue("High");
-        EasyMock.expect(invoker.invoke(invocation)).andReturn(result).anyTimes();
+        given(invoker.invoke(invocation)).willReturn(result);
         URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1");
-        EasyMock.expect(invoker.getUrl()).andReturn(url).anyTimes();
-        EasyMock.replay(invoker);
+        given(invoker.getUrl()).willReturn(url);
+
         Result filterResult = echoFilter.invoke(invoker, invocation);
         assertEquals("High", filterResult.getValue());
     }

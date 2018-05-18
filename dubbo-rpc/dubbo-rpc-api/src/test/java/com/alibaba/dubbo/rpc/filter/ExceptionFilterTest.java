@@ -22,11 +22,13 @@ import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.support.DemoService;
-
-import org.easymock.EasyMock;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 
 /**
  * ExceptionFilterTest
@@ -36,24 +38,25 @@ public class ExceptionFilterTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testRpcException() {
-        Logger logger = EasyMock.createMock(Logger.class);
+        Logger logger = mock(Logger.class);
         RpcContext.getContext().setRemoteAddress("127.0.0.1", 1234);
         RpcException exception = new RpcException("TestRpcException");
-        logger.error(EasyMock.eq("Got unchecked and undeclared exception which called by 127.0.0.1. service: " + DemoService.class.getName() + ", method: sayHello, exception: " + RpcException.class.getName() + ": TestRpcException"), EasyMock.eq(exception));
+
         ExceptionFilter exceptionFilter = new ExceptionFilter(logger);
         RpcInvocation invocation = new RpcInvocation("sayHello", new Class<?>[]{String.class}, new Object[]{"world"});
-        Invoker<DemoService> invoker = EasyMock.createMock(Invoker.class);
-        EasyMock.expect(invoker.getInterface()).andReturn(DemoService.class);
-        EasyMock.expect(invoker.invoke(EasyMock.eq(invocation))).andThrow(exception);
+        Invoker<DemoService> invoker = mock(Invoker.class);
+        given(invoker.getInterface()).willReturn(DemoService.class);
+        given(invoker.invoke(eq(invocation))).willThrow(exception);
 
-        EasyMock.replay(logger, invoker);
 
         try {
             exceptionFilter.invoke(invoker, invocation);
         } catch (RpcException e) {
             assertEquals("TestRpcException", e.getMessage());
         }
-        EasyMock.verify(logger, invoker);
+        Mockito.verify(logger).error(eq("Got unchecked and undeclared exception which called by 127.0.0.1. service: "
+                + DemoService.class.getName() + ", method: sayHello, exception: "
+                + RpcException.class.getName() + ": TestRpcException"), eq(exception));
         RpcContext.removeContext();
     }
 

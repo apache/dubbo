@@ -25,9 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-/**
- * FastJsonSerialization
- */
 public class FastJsonSerialization implements Serialization {
 
     @Override

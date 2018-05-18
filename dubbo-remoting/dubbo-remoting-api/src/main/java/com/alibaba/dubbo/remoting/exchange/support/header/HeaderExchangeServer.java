@@ -29,8 +29,6 @@ import com.alibaba.dubbo.remoting.Server;
 import com.alibaba.dubbo.remoting.exchange.ExchangeChannel;
 import com.alibaba.dubbo.remoting.exchange.ExchangeServer;
 import com.alibaba.dubbo.remoting.exchange.Request;
-import com.alibaba.dubbo.remoting.exchange.support.DefaultFuture;
-
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -85,7 +83,13 @@ public class HeaderExchangeServer implements ExchangeServer {
     private boolean isRunning() {
         Collection<Channel> channels = getChannels();
         for (Channel channel : channels) {
-            if (DefaultFuture.hasFuture(channel)) {
+
+            /**
+             *  If there are any client connections,
+             *  our server should be running.
+             */
+
+            if (channel.isConnected()) {
                 return true;
             }
         }
