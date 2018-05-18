@@ -68,7 +68,7 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
         if (exporter != null) {
             return exporter;
         }
-        final Runnable runnable = doExport(proxyFactory.getProxy(invoker), invoker.getInterface(), invoker.getUrl());
+        final Runnable runnable = doExport(proxyFactory.getProxy(invoker, true), invoker.getInterface(), invoker.getUrl());
         exporter = new AbstractExporter<T>(invoker) {
             @Override
             public void unexport() {
