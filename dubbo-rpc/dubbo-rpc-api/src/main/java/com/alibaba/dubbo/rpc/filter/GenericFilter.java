@@ -32,10 +32,12 @@ import com.alibaba.dubbo.rpc.Filter;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
+import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.service.GenericException;
+import com.alibaba.dubbo.rpc.service.GenericService;
 import com.alibaba.dubbo.rpc.support.ProtocolUtils;
 
 import java.io.IOException;
@@ -52,7 +54,7 @@ public class GenericFilter implements Filter {
         if (inv.getMethodName().equals(Constants.$INVOKE)
                 && inv.getArguments() != null
                 && inv.getArguments().length == 3
-                && !ProtocolUtils.isGeneric(invoker.getUrl().getParameter(Constants.GENERIC_KEY))) {
+                && !invoker.getInterface().equals(GenericService.class)) {
             String name = ((String) inv.getArguments()[0]).trim();
             String[] types = (String[]) inv.getArguments()[1];
             Object[] args = (Object[]) inv.getArguments()[2];
@@ -63,6 +65,11 @@ public class GenericFilter implements Filter {
                     args = new Object[params.length];
                 }
                 String generic = inv.getAttachment(Constants.GENERIC_KEY);
+
+                if (StringUtils.isBlank(generic)) {
+                    generic = RpcContext.getContext().getAttachment(Constants.GENERIC_KEY);
+                }
+
                 if (StringUtils.isEmpty(generic)
                         || ProtocolUtils.isDefaultGenericSerialization(generic)) {
                     args = PojoUtils.realize(args, params, method.getGenericParameterTypes());
