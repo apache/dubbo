@@ -22,13 +22,16 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+//(已读)
+@Deprecated
 public class WrapperTest {
     @Test
     public void testMain() throws Exception {
         Wrapper w = Wrapper.getWrapper(I1.class);
-        String[] ns = w.getDeclaredMethodNames();
-        assertEquals(ns.length, 5);
-        ns = w.getMethodNames();
+        String[] ns1 = w.getDeclaredMethodNames(); //自己的方法，不包括父类的方法
+        assertEquals(ns1.length, 5);
+
+        String[] ns = w.getMethodNames(); //所有方法
         assertEquals(ns.length, 6);
 
         Object obj = new Impl1();
@@ -43,6 +46,9 @@ public class WrapperTest {
     // bug: DUBBO-132
     @Test
     public void test_unwantedArgument() throws Exception {
+        /**
+         * 参数不对产生问题
+         */
         Wrapper w = Wrapper.getWrapper(I1.class);
         Object obj = new Impl1();
         try {
@@ -74,7 +80,7 @@ public class WrapperTest {
      */
     @Test
     public void test_getMethodNames_ContainExtendsParentMethods() throws Exception {
-        assertArrayEquals(new String[]{"hello", "world"}, Wrapper.getWrapper(Son.class).getMethodNames());
+        assertArrayEquals(new String[]{"hello", "world"}, Wrapper.getWrapper(Son.class).getMethodNames()); //包括父类的
     }
 
     public static interface I0 {

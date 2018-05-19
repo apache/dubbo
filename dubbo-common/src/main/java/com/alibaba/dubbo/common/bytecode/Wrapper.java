@@ -34,11 +34,20 @@ import java.util.regex.Matcher;
 
 /**
  * Wrapper.
+ * 简单工厂设计模式
+ * 是产品的父类，也是工厂制造类
  */
+@Deprecated
 public abstract class Wrapper {
+    /**
+     * 来保存出现过的wrapper
+     */
     private static final Map<Class<?>, Wrapper> WRAPPER_MAP = new ConcurrentHashMap<Class<?>, Wrapper>(); //class wrapper map
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
     private static final String[] OBJECT_METHODS = new String[]{"getClass", "hashCode", "toString", "equals"};
+    /**
+     * 若是Object则直接使用OBJECT_WRAPPER这个对象
+     */
     private static final Wrapper OBJECT_WRAPPER = new Wrapper() {
         public String[] getMethodNames() {
             return OBJECT_METHODS;
@@ -79,10 +88,12 @@ public abstract class Wrapper {
             throw new NoSuchMethodException("Method [" + mn + "] not found.");
         }
     };
+
     private static AtomicLong WRAPPER_CLASS_COUNTER = new AtomicLong(0);
 
     /**
      * get wrapper.
+     * 产生包装类
      *
      * @param c Class instance.
      * @return Wrapper instance(not null).
@@ -102,6 +113,12 @@ public abstract class Wrapper {
         return ret;
     }
 
+    /**
+     * 产生Wrapper类
+     *
+     * @param c
+     * @return
+     */
     private static Wrapper makeWrapper(Class<?> c) {
         if (c.isPrimitive())
             throw new IllegalArgumentException("Can not create wrapper for primitive type: " + c);
@@ -232,7 +249,9 @@ public abstract class Wrapper {
         cc.addMethod(c1.toString());
         cc.addMethod(c2.toString());
         cc.addMethod(c3.toString());
-
+        System.out.println(c1.toString());
+        System.out.println(c2.toString());
+        System.out.println(c3.toString());
         try {
             Class<?> wc = cc.toClass();
             // setup static field.
