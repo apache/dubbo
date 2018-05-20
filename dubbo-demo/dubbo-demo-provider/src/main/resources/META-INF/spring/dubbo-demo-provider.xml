@@ -32,7 +32,9 @@
     <!--<dubbo:registry address="multicast://224.5.6.7:1234"/>-->
 
     <!-- use dubbo protocol to export service on port 20880 -->
-    <dubbo:protocol name="dubbo" port="20881"/>
+    <!--<dubbo:protocol name="dubbo" port="20881"/>-->
+    <!--端口号-1或者没有的情况-->
+    <dubbo:protocol name="dubbo" port="-1"/>
 
     <!--用netty4做通讯-->
     <dubbo:provider server="netty4"/>
@@ -44,5 +46,7 @@
     <!--暴露服务-->
     <!-- declare the service interface to be exported -->
     <dubbo:service interface="com.alibaba.dubbo.demo.DemoService" ref="demoService"/>
+
+    <dubbo:reference id="demoService2" interface="com.alibaba.dubbo.demo.DemoService"/>
 
 </beans>

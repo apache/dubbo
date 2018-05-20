@@ -16,18 +16,40 @@
  */
 package com.alibaba.dubbo.demo.provider;
 
+import com.alibaba.dubbo.demo.DemoService;
+import org.junit.Before;
+import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import java.util.concurrent.Executors;
 
 public class Provider {
 
-    public static void main(String[] args) throws Exception {
+    ClassPathXmlApplicationContext context;
+
+
+    @Before
+    public void before() {
         //Prevent to get IPV6 address,this way only work in debug mode
         //But you can pass use -Djava.net.preferIPv4Stack=true,then it work well whether in debug mode or not
         System.setProperty("java.net.preferIPv4Stack", "true");
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"META-INF/spring/dubbo-demo-provider.xml"});
+        context = new ClassPathXmlApplicationContext(new String[]{"META-INF/spring/dubbo-demo-provider.xml"});
         context.start();
+    }
 
-        System.in.read(); // press any key to exit
+    /**
+     * 测试本地暴露
+     * @throws Exception
+     */
+    @Test
+    public void test_InJvm() throws Exception {
+        final DemoService demoService = (DemoService) context.getBean("demoService2");
+        Executors.newSingleThreadExecutor().submit(new Runnable() {
+            @Override
+            public void run() {
+                demoService.sayHello("a");
+            }
+        });
     }
 
 }
