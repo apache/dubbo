@@ -42,6 +42,7 @@ public class ProxyTest extends TestCase {
             }
         });
 
+        System.out.println(instance.getName());
         assertNull(instance.getName());
         instance.setName("qianlei", "hello");
     }
@@ -61,20 +62,48 @@ public class ProxyTest extends TestCase {
         enhancer.setCallback(new MethodInterceptor() {
 
             public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
-                return null;
+                return "123";
             }
         });
         try {
-            enhancer.create();
+            ITest test1 = (ITest) enhancer.create();
+            assertEquals(test1.getName(), "123");
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
             Assert.fail();
         }
     }
 
+    @Test
+    public void testTwoClass() throws Exception {
+        Proxy proxy = Proxy.getProxy(ITest1.class, ITest2.class);
+        ITest1 instance = (ITest1) proxy.newInstance(new InvocationHandler() {
+            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                if ("show1".equals(method.getName())) {
+                    return "show1";
+                } else if ("show2".equals(method.getName())) {
+                    return "show2";
+                }
+                return null;
+            }
+        });
+
+        assertEquals(instance.show1(), "show1");
+        System.out.println(instance.getClass().getSuperclass());
+        System.out.println(instance.getClass().getInterfaces().toString());
+    }
+
     public static interface ITest {
         String getName();
 
         void setName(String name, String name2);
+    }
+
+    interface ITest1 {
+        String show1();
+    }
+
+    interface ITest2 {
+        String show2();
     }
 }

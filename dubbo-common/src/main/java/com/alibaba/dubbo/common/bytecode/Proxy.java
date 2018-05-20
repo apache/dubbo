@@ -34,6 +34,7 @@ import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
+ * 使用了Javassist 创建类
  * Proxy.
  */
 

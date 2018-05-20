@@ -36,6 +36,14 @@ public class JavassistProxyFactory extends AbstractProxyFactory {
 
     public <T> Invoker<T> getInvoker(T proxy, Class<T> type, URL url) {
         // TODO Wrapper cannot handle this scenario correctly: the classname contains '$'
+        //无法识别代理类
+        /**
+         * 使用wrapper的好处是什么
+         * 通过答应wrapper生成的方法可以知道是为了跳过反射，反射会降低效率
+         * wrapper里面的调用方式和反射一样，但是实质是产生了一个代理类，里面都是通过调用的方式来调用proxy类
+         * ！！！
+         */
+
         final Wrapper wrapper = Wrapper.getWrapper(proxy.getClass().getName().indexOf('$') < 0 ? proxy.getClass() : type);
         return new AbstractProxyInvoker<T>(proxy, type, url) {
             @Override
