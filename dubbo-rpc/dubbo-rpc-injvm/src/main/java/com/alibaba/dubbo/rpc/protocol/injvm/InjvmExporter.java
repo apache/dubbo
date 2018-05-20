@@ -35,7 +35,7 @@ class InjvmExporter<T> extends AbstractExporter<T> {
         super(invoker);
         this.key = key;
         this.exporterMap = exporterMap;
-        exporterMap.put(key, this);
+        exporterMap.put(key, this); //把自己放进去。。。。找了半天。。。
     }
 
     public void unexport() {
