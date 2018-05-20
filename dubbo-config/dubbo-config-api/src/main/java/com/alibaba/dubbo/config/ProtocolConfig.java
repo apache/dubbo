@@ -461,12 +461,11 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     /**
-     * This method will do nothing.
-     * It should be deleted in the next major version, say 2.7.x.
      * Just for compatibility.
+     * It should be deleted in the next major version, say 2.7.x.
      */
     @Deprecated
     public static void destroyAll() {
-        // DO NOTHING
+        DubboShutdownHook.getDubboShutdownHook().destroyAll();
     }
 }
