@@ -32,7 +32,7 @@ import com.alibaba.dubbo.rpc.cluster.directory.StaticDirectory;
 import com.alibaba.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 import com.alibaba.dubbo.rpc.support.MockProtocol;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 

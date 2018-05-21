@@ -25,7 +25,7 @@ import com.alibaba.dubbo.rpc.ProxyFactory;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.protocol.hessian.HessianServiceImpl.MyException;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 
 import static org.junit.Assert.fail;

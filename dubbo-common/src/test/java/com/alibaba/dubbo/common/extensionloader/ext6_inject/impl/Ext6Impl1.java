@@ -21,7 +21,7 @@ import com.alibaba.dubbo.common.extensionloader.ext1.SimpleExt;
 import com.alibaba.dubbo.common.extensionloader.ext6_inject.Dao;
 import com.alibaba.dubbo.common.extensionloader.ext6_inject.Ext6;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 public class Ext6Impl1 implements Ext6 {
     public Dao obj;

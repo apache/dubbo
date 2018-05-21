@@ -20,7 +20,7 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.config.api.DemoService;
 import com.alibaba.dubbo.config.provider.impl.DemoServiceImpl;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class ReferenceConfigTest {

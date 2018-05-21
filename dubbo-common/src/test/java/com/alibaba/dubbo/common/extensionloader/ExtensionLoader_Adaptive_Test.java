@@ -30,7 +30,7 @@ import com.alibaba.dubbo.common.extensionloader.ext6_inject.Ext6;
 import com.alibaba.dubbo.common.extensionloader.ext6_inject.impl.Ext6Impl2;
 import com.alibaba.dubbo.common.utils.LogUtil;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.HashMap;
