@@ -136,6 +136,7 @@
         <module>dubbo-demo</module>
         <module>dubbo-plugin</module>
         <module>dubbo-serialization</module>
+        <module>dubbo-bootstrap</module>
         <module>dependencies-bom</module>
         <module>bom</module>
         <module>all</module>

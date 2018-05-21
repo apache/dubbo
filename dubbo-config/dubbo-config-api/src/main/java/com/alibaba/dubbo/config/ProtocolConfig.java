@@ -21,7 +21,6 @@ import com.alibaba.dubbo.common.serialize.Serialization;
 import com.alibaba.dubbo.common.status.StatusChecker;
 import com.alibaba.dubbo.common.threadpool.ThreadPool;
 import com.alibaba.dubbo.config.support.Parameter;
-import com.alibaba.dubbo.registry.support.AbstractRegistryFactory;
 import com.alibaba.dubbo.remoting.Codec;
 import com.alibaba.dubbo.remoting.Dispatcher;
 import com.alibaba.dubbo.remoting.Transporter;
@@ -30,7 +29,6 @@ import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
 import com.alibaba.dubbo.rpc.Protocol;
 
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * ProtocolConfig
@@ -135,8 +133,6 @@ public class ProtocolConfig extends AbstractConfig {
     // if it's default
     private Boolean isDefault;
 
-    private static final AtomicBoolean destroyed = new AtomicBoolean(false);
-
     public ProtocolConfig() {
     }
 
@@ -147,27 +143,6 @@ public class ProtocolConfig extends AbstractConfig {
     public ProtocolConfig(String name, int port) {
         setName(name);
         setPort(port);
-    }
-
-    // TODO: 2017/8/30 to move this method somewhere else
-    public static void destroyAll() {
-        if (!destroyed.compareAndSet(false, true)) {
-            return;
-        }
-
-        AbstractRegistryFactory.destroyAll();
-
-        ExtensionLoader<Protocol> loader = ExtensionLoader.getExtensionLoader(Protocol.class);
-        for (String protocolName : loader.getLoadedExtensions()) {
-            try {
-                Protocol protocol = loader.getLoadedExtension(protocolName);
-                if (protocol != null) {
-                    protocol.destroy();
-                }
-            } catch (Throwable t) {
-                logger.warn(t.getMessage(), t);
-            }
-        }
     }
 
     @Parameter(excluded = true)
