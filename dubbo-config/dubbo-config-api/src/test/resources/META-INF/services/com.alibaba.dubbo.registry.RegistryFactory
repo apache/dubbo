@@ -1,1 +1,2 @@
-mockregistry=com.alibaba.dubbo.config.support.MockRegistryFactory
+mockregistry=com.alibaba.dubbo.config.mock.MockRegistryFactory
+mockprotocol2=com.alibaba.dubbo.config.mock.MockRegistryFactory2

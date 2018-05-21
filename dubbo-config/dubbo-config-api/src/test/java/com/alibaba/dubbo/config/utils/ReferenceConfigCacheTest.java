@@ -31,109 +31,60 @@ public class ReferenceConfigCacheTest {
     }
 
     @Test
-    public void testGetCache_SameReference() throws Exception {
+    public void testGetCacheSameReference() throws Exception {
         ReferenceConfigCache cache = ReferenceConfigCache.getCache();
+        MockReferenceConfig config = buildMockReferenceConfig("FooService", "group1", "1.0.0");
+        String value = cache.get(config);
+        assertTrue(config.isGetMethodRun());
+        assertEquals("0", value);
 
-        {
-            MockReferenceConfig config = new MockReferenceConfig();
-            config.setInterface("FooService");
-            config.setGroup("group1");
-            config.setVersion("1.0.0");
-
-            String value = cache.get(config);
-            assertTrue(config.isGetMethodRun());
-            assertEquals("0", value);
-        }
-
-        {
-            MockReferenceConfig configCopy = new MockReferenceConfig();
-            configCopy.setInterface("FooService");
-            configCopy.setGroup("group1");
-            configCopy.setVersion("1.0.0");
-
-            String value = cache.get(configCopy);
-            assertFalse(configCopy.isGetMethodRun());
-            assertEquals("0", value);
-        }
+        MockReferenceConfig configCopy = buildMockReferenceConfig("FooService", "group1", "1.0.0");
+        value = cache.get(configCopy);
+        assertFalse(configCopy.isGetMethodRun());
+        assertEquals("0", value);
     }
 
     @Test
-    public void testGetCache_DiffReference() throws Exception {
+    public void testGetCacheDiffReference() throws Exception {
         ReferenceConfigCache cache = ReferenceConfigCache.getCache();
+        MockReferenceConfig config = buildMockReferenceConfig("FooService", "group1", "1.0.0");
+        String value = cache.get(config);
+        assertTrue(config.isGetMethodRun());
+        assertEquals("0", value);
 
-        {
-            MockReferenceConfig config = new MockReferenceConfig();
-            config.setInterface("FooService");
-            config.setGroup("group1");
-            config.setVersion("1.0.0");
-
-            String value = cache.get(config);
-            assertTrue(config.isGetMethodRun());
-            assertEquals("0", value);
-        }
-
-        {
-            MockReferenceConfig configCopy = new MockReferenceConfig();
-            configCopy.setInterface("XxxService");
-            configCopy.setGroup("group1");
-            configCopy.setVersion("1.0.0");
-
-            String value = cache.get(configCopy);
-            assertTrue(configCopy.isGetMethodRun());
-            assertEquals("1", value);
-        }
+        MockReferenceConfig configCopy = buildMockReferenceConfig("XxxService", "group1", "1.0.0");
+        value = cache.get(configCopy);
+        assertTrue(configCopy.isGetMethodRun());
+        assertEquals("1", value);
     }
 
     @Test
-    public void testGetCache_DiffName() throws Exception {
-        {
-            ReferenceConfigCache cache = ReferenceConfigCache.getCache();
+    public void testGetCacheDiffName() throws Exception {
+        ReferenceConfigCache cache = ReferenceConfigCache.getCache();
+        MockReferenceConfig config = buildMockReferenceConfig("FooService", "group1", "1.0.0");
+        String value = cache.get(config);
+        assertTrue(config.isGetMethodRun());
+        assertEquals("0", value);
 
-            MockReferenceConfig config = new MockReferenceConfig();
-            config.setInterface("FooService");
-            config.setGroup("group1");
-            config.setVersion("1.0.0");
-
-            String value = cache.get(config);
-            assertTrue(config.isGetMethodRun());
-            assertEquals("0", value);
-        }
-        {
-            ReferenceConfigCache cache = ReferenceConfigCache.getCache("foo");
-
-            MockReferenceConfig config = new MockReferenceConfig();
-            config.setInterface("FooService");
-            config.setGroup("group1");
-            config.setVersion("1.0.0");
-
-            String value = cache.get(config);
-            // still init for the same ReferenceConfig if the cache is different
-            assertTrue(config.isGetMethodRun());
-            assertEquals("1", value);
-        }
+        cache = ReferenceConfigCache.getCache("foo");
+        config = buildMockReferenceConfig("FooService", "group1", "1.0.0");
+        value = cache.get(config);
+        // still init for the same ReferenceConfig if the cache is different
+        assertTrue(config.isGetMethodRun());
+        assertEquals("1", value);
     }
 
     @Test
     public void testDestroy() throws Exception {
         ReferenceConfigCache cache = ReferenceConfigCache.getCache();
-
-        MockReferenceConfig config = new MockReferenceConfig();
-        config.setInterface("FooService");
-        config.setGroup("group1");
-        config.setVersion("1.0.0");
+        MockReferenceConfig config = buildMockReferenceConfig("FooService", "group1", "1.0.0");
         cache.get(config);
-        MockReferenceConfig configCopy = new MockReferenceConfig();
-        configCopy.setInterface("XxxService");
-        configCopy.setGroup("group1");
-        configCopy.setVersion("1.0.0");
+        MockReferenceConfig configCopy = buildMockReferenceConfig("XxxService", "group1", "1.0.0");
         cache.get(configCopy);
-
         assertEquals(2, cache.cache.size());
-
         cache.destroy(config);
         assertTrue(config.isDestroyMethodRun());
         assertEquals(1, cache.cache.size());
-
         cache.destroy(configCopy);
         assertTrue(configCopy.isDestroyMethodRun());
         assertEquals(0, cache.cache.size());
@@ -142,23 +93,22 @@ public class ReferenceConfigCacheTest {
     @Test
     public void testDestroyAll() throws Exception {
         ReferenceConfigCache cache = ReferenceConfigCache.getCache();
-
-        MockReferenceConfig config = new MockReferenceConfig();
-        config.setInterface("FooService");
-        config.setGroup("group1");
-        config.setVersion("1.0.0");
+        MockReferenceConfig config = buildMockReferenceConfig("FooService", "group1", "1.0.0");
         cache.get(config);
-        MockReferenceConfig configCopy = new MockReferenceConfig();
-        configCopy.setInterface("XxxService");
-        configCopy.setGroup("group1");
-        configCopy.setVersion("1.0.0");
+        MockReferenceConfig configCopy = buildMockReferenceConfig("XxxService", "group1", "1.0.0");
         cache.get(configCopy);
-
         assertEquals(2, cache.cache.size());
-
         cache.destroyAll();
         assertTrue(config.isDestroyMethodRun());
         assertTrue(configCopy.isDestroyMethodRun());
         assertEquals(0, cache.cache.size());
+    }
+
+    private MockReferenceConfig buildMockReferenceConfig(String service, String group, String version) {
+        MockReferenceConfig config = new MockReferenceConfig();
+        config.setInterface(service);
+        config.setGroup(group);
+        config.setVersion(version);
+        return config;
     }
 }

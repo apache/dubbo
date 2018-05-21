@@ -20,11 +20,11 @@
     <parent>
         <groupId>com.alibaba</groupId>
         <artifactId>dubbo-parent</artifactId>
-        <version>2.6.1</version>
+        <version>2.6.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>dubbo</artifactId>
-    <version>2.6.1</version>
+    <version>2.6.2-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>dubbo-all</name>
     <description>The all in one project of dubbo</description>
@@ -321,6 +321,13 @@
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-bootstrap</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
             <artifactId>hessian-lite</artifactId>
             <version>3.2.2</version>
             <scope>compile</scope>
@@ -418,6 +425,7 @@
                                     <include>com.alibaba:dubbo-serialization-fst</include>
                                     <include>com.alibaba:dubbo-serialization-kryo</include>
                                     <include>com.alibaba:dubbo-serialization-jdk</include>
+                                    <include>com.alibaba:dubbo-bootstrap</include>
                                 </includes>
                             </artifactSet>
                             <transformers>

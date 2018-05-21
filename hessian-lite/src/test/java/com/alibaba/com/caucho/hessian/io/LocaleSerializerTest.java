@@ -39,7 +39,7 @@ public class LocaleSerializerTest extends SerializeTestBase {
     }
 
     private void assertLocale(Locale locale) throws IOException {
-        TestCase.assertEquals(locale, baseHession2Serialize(locale));
-        TestCase.assertEquals(locale, baseHessionSerialize(locale));
+        TestCase.assertEquals(locale, baseHessian2Serialize(locale));
+        TestCase.assertEquals(locale, baseHessianSerialize(locale));
     }
 }

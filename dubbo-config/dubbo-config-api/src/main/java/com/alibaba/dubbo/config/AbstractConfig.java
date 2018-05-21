@@ -73,18 +73,6 @@ public abstract class AbstractConfig implements Serializable {
         legacyProperties.put("dubbo.service.url", "dubbo.service.address");
     }
 
-    static {
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (logger.isInfoEnabled()) {
-                    logger.info("Run shutdown hook now.");
-                }
-                ProtocolConfig.destroyAll();
-            }
-        }, "DubboShutdownHook"));
-    }
-
     protected String id;
 
     private static String convertLegacyValue(String key, String value) {
@@ -129,16 +117,16 @@ public abstract class AbstractConfig implements Serializable {
                     if (value == null || value.length() == 0) {
                         Method getter;
                         try {
-                            getter = config.getClass().getMethod("get" + name.substring(3), new Class<?>[0]);
+                            getter = config.getClass().getMethod("get" + name.substring(3));
                         } catch (NoSuchMethodException e) {
                             try {
-                                getter = config.getClass().getMethod("is" + name.substring(3), new Class<?>[0]);
+                                getter = config.getClass().getMethod("is" + name.substring(3));
                             } catch (NoSuchMethodException e2) {
                                 getter = null;
                             }
                         }
                         if (getter != null) {
-                            if (getter.invoke(config, new Object[0]) == null) {
+                            if (getter.invoke(config) == null) {
                                 if (config.getId() != null && config.getId().length() > 0) {
                                     value = ConfigUtils.getProperty(prefix + config.getId() + "." + property);
                                 }
@@ -156,7 +144,7 @@ public abstract class AbstractConfig implements Serializable {
                         }
                     }
                     if (value != null && value.length() > 0) {
-                        method.invoke(config, new Object[]{convertPrimitive(method.getParameterTypes()[0], value)});
+                        method.invoke(config, convertPrimitive(method.getParameterTypes()[0], value));
                     }
                 }
             } catch (Exception e) {
@@ -202,12 +190,12 @@ public abstract class AbstractConfig implements Serializable {
                     int i = name.startsWith("get") ? 3 : 2;
                     String prop = StringUtils.camelToSplitName(name.substring(i, i + 1).toLowerCase() + name.substring(i + 1), ".");
                     String key;
-                    if (parameter != null && parameter.key() != null && parameter.key().length() > 0) {
+                    if (parameter != null && parameter.key().length() > 0) {
                         key = parameter.key();
                     } else {
                         key = prop;
                     }
-                    Object value = method.invoke(config, new Object[0]);
+                    Object value = method.invoke(config);
                     String str = String.valueOf(value).trim();
                     if (value != null && str.length() > 0) {
                         if (parameter != null && parameter.escaped()) {
@@ -269,13 +257,14 @@ public abstract class AbstractConfig implements Serializable {
                     if (parameter == null || !parameter.attribute())
                         continue;
                     String key;
-                    if (parameter.key() != null && parameter.key().length() > 0) {
+                    parameter.key();
+                    if (parameter.key().length() > 0) {
                         key = parameter.key();
                     } else {
                         int i = name.startsWith("get") ? 3 : 2;
                         key = name.substring(i, i + 1).toLowerCase() + name.substring(i + 1);
                     }
-                    Object value = method.invoke(config, new Object[0]);
+                    Object value = method.invoke(config);
                     if (value != null) {
                         if (prefix != null && prefix.length() > 0) {
                             key = prefix + "." + key;
@@ -430,7 +419,7 @@ public abstract class AbstractConfig implements Serializable {
                         property = "interface";
                     }
                     String setter = "set" + property.substring(0, 1).toUpperCase() + property.substring(1);
-                    Object value = method.invoke(annotation, new Object[0]);
+                    Object value = method.invoke(annotation);
                     if (value != null && !value.equals(method.getDefaultValue())) {
                         Class<?> parameterType = ReflectUtils.getBoxedClass(method.getReturnType());
                         if ("filter".equals(property) || "listener".equals(property)) {
@@ -441,8 +430,8 @@ public abstract class AbstractConfig implements Serializable {
                             value = CollectionUtils.toStringMap((String[]) value);
                         }
                         try {
-                            Method setterMethod = getClass().getMethod(setter, new Class<?>[]{parameterType});
-                            setterMethod.invoke(this, new Object[]{value});
+                            Method setterMethod = getClass().getMethod(setter, parameterType);
+                            setterMethod.invoke(this, value);
                         } catch (NoSuchMethodException e) {
                             // ignore
                         }
@@ -471,7 +460,7 @@ public abstract class AbstractConfig implements Serializable {
                             && isPrimitive(method.getReturnType())) {
                         int i = name.startsWith("get") ? 3 : 2;
                         String key = name.substring(i, i + 1).toLowerCase() + name.substring(i + 1);
-                        Object value = method.invoke(this, new Object[0]);
+                        Object value = method.invoke(this);
                         if (value != null) {
                             buf.append(" ");
                             buf.append(key);

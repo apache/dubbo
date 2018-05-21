@@ -122,19 +122,19 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         //convert onreturn methodName to Method
         String onReturnMethodKey = StaticContext.getKey(map, method.getName(), Constants.ON_RETURN_METHOD_KEY);
         Object onReturnMethod = attributes.get(onReturnMethodKey);
-        if (onReturnMethod != null && onReturnMethod instanceof String) {
+        if (onReturnMethod instanceof String) {
             attributes.put(onReturnMethodKey, getMethodByName(method.getOnreturn().getClass(), onReturnMethod.toString()));
         }
         //convert onthrow methodName to Method
         String onThrowMethodKey = StaticContext.getKey(map, method.getName(), Constants.ON_THROW_METHOD_KEY);
         Object onThrowMethod = attributes.get(onThrowMethodKey);
-        if (onThrowMethod != null && onThrowMethod instanceof String) {
+        if (onThrowMethod instanceof String) {
             attributes.put(onThrowMethodKey, getMethodByName(method.getOnthrow().getClass(), onThrowMethod.toString()));
         }
         //convert oninvoke methodName to Method
         String onInvokeMethodKey = StaticContext.getKey(map, method.getName(), Constants.ON_INVOKE_METHOD_KEY);
         Object onInvokeMethod = attributes.get(onInvokeMethodKey);
-        if (onInvokeMethod != null && onInvokeMethod instanceof String) {
+        if (onInvokeMethod instanceof String) {
             attributes.put(onInvokeMethodKey, getMethodByName(method.getOninvoke().getClass(), onInvokeMethod.toString()));
         }
     }
@@ -148,7 +148,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     }
 
     public URL toUrl() {
-        return urls == null || urls.isEmpty() ? null : urls.iterator().next();
+        return urls.isEmpty() ? null : urls.iterator().next();
     }
 
     public List<URL> toUrls() {
@@ -238,7 +238,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         if (resolve != null && resolve.length() > 0) {
             url = resolve;
             if (logger.isWarnEnabled()) {
-                if (resolveFile != null && resolveFile.length() > 0) {
+                if (resolveFile != null) {
                     logger.warn("Using default dubbo resolve file " + resolveFile + " replace " + interfaceName + "" + resolve + " to p2p invoke remote service.");
                 } else {
                     logger.warn("Using -D" + interfaceName + "=" + resolve + " to p2p invoke remote service.");
@@ -385,7 +385,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                         urls.add(u.addParameterAndEncoded(Constants.REFER_KEY, StringUtils.toQueryString(map)));
                     }
                 }
-                if (urls == null || urls.isEmpty()) {
+                if (urls.isEmpty()) {
                     throw new IllegalStateException("No such any registry to reference " + interfaceName + " on the consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() + ", please config <dubbo:registry address=\"...\" /> to your spring config.");
                 }
             }
