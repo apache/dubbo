@@ -42,6 +42,10 @@
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-container-spring</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
             <artifactId>dubbo-registry-zookeeper</artifactId>
         </dependency>
         <dependency>

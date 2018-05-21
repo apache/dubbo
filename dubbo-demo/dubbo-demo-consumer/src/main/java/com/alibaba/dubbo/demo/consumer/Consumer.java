@@ -16,31 +16,57 @@
  */
 package com.alibaba.dubbo.demo.consumer;
 
+import com.alibaba.dubbo.container.Main;
+import com.alibaba.dubbo.container.spring.SpringContainer;
 import com.alibaba.dubbo.demo.DemoService;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 public class Consumer {
 
     public static void main(String[] args) {
-        //Prevent to get IPV6 address,this way only work in debug mode
-        //But you can pass use -Djava.net.preferIPv4Stack=true,then it work well whether in debug mode or not
+
+        // Prevent to get IPV6 address,this way only work in debug mode
+        // But you can pass use -Djava.net.preferIPv4Stack=true,then it work well whether in debug mode or not
         System.setProperty("java.net.preferIPv4Stack", "true");
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"META-INF/spring/dubbo-demo-consumer.xml"});
-        context.start();
-        DemoService demoService = (DemoService) context.getBean("demoService"); // get remote service proxy
 
-        while (true) {
-            try {
-                Thread.sleep(1000);
-                String hello = demoService.sayHello("world"); // call remote method
-                System.out.println(hello); // get result
+        // Enable shutdown gracefully feature
+        System.setProperty(Main.SHUTDOWN_HOOK_KEY, "true");
 
-            } catch (Throwable throwable) {
-                throwable.printStackTrace();
+        // Search provider definition path
+        System.setProperty(SpringContainer.SPRING_CONFIG, "META-INF/spring/dubbo-demo-consumer.xml");
+
+        // Refer service
+        Main.main(args);
+    }
+
+    static class DemoServiceConsumer implements ApplicationContextAware {
+
+        private ApplicationContext context;
+
+        public void init(){
+
+            DemoService demoService = context.getBean(DemoService.class);
+
+            while (true) {
+                try {
+                    Thread.sleep(1000);
+                    // call remote method
+                    String hello = demoService.sayHello("world");
+                    // get result
+                    System.out.println(hello);
+
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
             }
-
-
         }
 
+        @Override
+        public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+            this.context = applicationContext;
+        }
     }
 }
