@@ -19,10 +19,10 @@
     <parent>
         <groupId>com.alibaba</groupId>
         <artifactId>dubbo-parent</artifactId>
-        <version>2.6.3-SNAPSHOT</version>
+        <version>2.6.2-SNAPSHOT</version>
     </parent>
     <artifactId>hessian-lite</artifactId>
     <packaging>jar</packaging>
-    <version>2.6.3-SNAPSHOT</version>
+    <version>2.6.2-SNAPSHOT</version>
     <name>Hessian Lite(Alibaba embed version)</name>
 </project>

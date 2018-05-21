@@ -20,7 +20,7 @@ limitations under the License.
     <parent>
         <groupId>com.alibaba</groupId>
         <artifactId>dubbo-serialization</artifactId>
-        <version>2.6.3-SNAPSHOT</version>
+        <version>2.6.2-SNAPSHOT</version>
     </parent>
     <artifactId>dubbo-serialization-kryo</artifactId>
     <packaging>jar</packaging>
