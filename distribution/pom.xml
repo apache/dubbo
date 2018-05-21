@@ -249,21 +249,33 @@
     </dependencies>
 
     <build>
-        <finalName>dubbo-incubating</finalName>
+        <finalName>dubbo-incubating-${project.version}</finalName>
         <plugins>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>3.1.0</version>
                 <executions>
                     <execution>
-                        <id>release-bin</id>
+                        <id>bin-release</id>
                         <phase>package</phase>
                         <goals>
                             <goal>single</goal>
                         </goals>
                         <configuration>
                             <descriptors>
-                                <descriptor>src/assembly/release-bin.xml</descriptor>
+                                <descriptor>src/assembly/bin-release.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>source-release</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>src/assembly/source-release.xml</descriptor>
                             </descriptors>
                         </configuration>
                     </execution>
