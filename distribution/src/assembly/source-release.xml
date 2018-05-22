@@ -45,7 +45,7 @@
                 <exclude>**/cobertura.ser</exclude>
                 <exclude>**/*.log</exclude>
                 <exclude>release.properties</exclude>
-                <exclude>**/*.releaseBackup</exclude>
+                <exclude>**/*.xml.*</exclude>
             </excludes>
         </fileSet>
     </fileSets>
