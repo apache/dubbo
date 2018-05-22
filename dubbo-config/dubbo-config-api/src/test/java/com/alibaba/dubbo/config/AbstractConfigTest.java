@@ -21,6 +21,7 @@ import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.config.api.Greeting;
 import com.alibaba.dubbo.config.support.Parameter;
 import junit.framework.TestCase;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.lang.annotation.ElementType;
@@ -255,6 +256,7 @@ public class AbstractConfigTest {
     }
 
     @Test
+    @Ignore
     @Config(interfaceClass = Greeting.class, filter = {"f1, f2"}, listener = {"l1, l2"},
             parameters = {"k1", "v1", "k2", "v2"})
     public void appendAnnotation() throws Exception {

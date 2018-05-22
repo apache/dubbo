@@ -14,22 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.protocol.hessian;
+package com.alibaba.dubbo.rpc.protol.rest;
 
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.core.MediaType;
 
 /**
- * HessianService
+ * RestService
  */
-public interface HessianService {
+@Path("/rest")
+public interface RestService {
 
+    @POST
+    @Path("/say1")
+    @Consumes({MediaType.TEXT_PLAIN})
     String sayHello(String name);
-    
-    String sayHello(String name, int times);
-
-    void timeOut(int millis);
-
-    String customException();
-
-    String context(String name);
 
 }

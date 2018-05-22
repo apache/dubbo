@@ -25,8 +25,11 @@ import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.protocol.AbstractProxyProtocol;
 
+import com.alibaba.dubbo.rpc.service.GenericService;
+import com.alibaba.dubbo.rpc.support.ProtocolUtils;
 import com.caucho.hessian.HessianException;
 import com.caucho.hessian.client.HessianConnectionException;
+import com.caucho.hessian.client.HessianConnectionFactory;
 import com.caucho.hessian.client.HessianProxyFactory;
 import com.caucho.hessian.io.HessianMethodSerializationException;
 import com.caucho.hessian.server.HessianSkeleton;
@@ -37,6 +40,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -73,12 +77,17 @@ public class HessianProtocol extends AbstractProxyProtocol {
             serverMap.put(addr, server);
         }
         final String path = url.getAbsolutePath();
-        HessianSkeleton skeleton = new HessianSkeleton(impl, type);
+        final HessianSkeleton skeleton = new HessianSkeleton(impl, type);
         skeletonMap.put(path, skeleton);
+
+        final String genericPath = path + "/" + Constants.GENERIC_KEY;
+        skeletonMap.put(genericPath, new HessianSkeleton(impl, GenericService.class));
+
         return new Runnable() {
             @Override
             public void run() {
                 skeletonMap.remove(path);
+                skeletonMap.remove(genericPath);
             }
         };
     }
@@ -86,6 +95,13 @@ public class HessianProtocol extends AbstractProxyProtocol {
     @Override
     @SuppressWarnings("unchecked")
     protected <T> T doRefer(Class<T> serviceType, URL url) throws RpcException {
+        String generic = url.getParameter(Constants.GENERIC_KEY);
+        boolean isGeneric = ProtocolUtils.isGeneric(generic) || serviceType.equals(GenericService.class);
+        if (isGeneric) {
+            RpcContext.getContext().setAttachment(Constants.GENERIC_KEY, generic);
+            url = url.setPath(url.getPath() + "/" + Constants.GENERIC_KEY);
+        }
+
         HessianProxyFactory hessianProxyFactory = new HessianProxyFactory();
         boolean isHessian2Request = url.getParameter(Constants.HESSIAN2_REQUEST_KEY, Constants.DEFAULT_HESSIAN2_REQUEST);
         hessianProxyFactory.setHessian2Request(isHessian2Request);
@@ -96,6 +112,10 @@ public class HessianProtocol extends AbstractProxyProtocol {
             hessianProxyFactory.setConnectionFactory(new HttpClientConnectionFactory());
         } else if (client != null && client.length() > 0 && !Constants.DEFAULT_HTTP_CLIENT.equals(client)) {
             throw new IllegalStateException("Unsupported http protocol client=\"" + client + "\"!");
+        } else {
+            HessianConnectionFactory factory = new DubboHessianURLConnectionFactory();
+            factory.setHessianProxyFactory(hessianProxyFactory);
+            hessianProxyFactory.setConnectionFactory(factory);
         }
         int timeout = url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
         hessianProxyFactory.setConnectTimeout(timeout);
@@ -148,6 +168,16 @@ public class HessianProtocol extends AbstractProxyProtocol {
                 response.setStatus(500);
             } else {
                 RpcContext.getContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
+
+                Enumeration<String> enumeration = request.getHeaderNames();
+                while (enumeration.hasMoreElements()) {
+                    String key = enumeration.nextElement();
+                    if (key.startsWith(Constants.DEFAULT_EXCHANGER)) {
+                        RpcContext.getContext().setAttachment(key.substring(Constants.DEFAULT_EXCHANGER.length()),
+                                request.getHeader(key));
+                    }
+                }
+
                 try {
                     skeleton.invoke(request.getInputStream(), response.getOutputStream());
                 } catch (Throwable e) {
