@@ -239,6 +239,14 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-checkstyle-plugin</artifactId>
+                        <version>${maven_checkstyle_version}</version>
+                        <dependencies>
+                            <dependency>
+                                <groupId>com.puppycrawl.tools</groupId>
+                                <artifactId>checkstyle</artifactId>
+                                <version>8.9</version>
+                            </dependency>
+                        </dependencies>
                         <executions>
                             <execution>
                                 <id>checkstyle-validation</id>
