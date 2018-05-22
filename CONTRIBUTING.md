@@ -10,11 +10,11 @@ Our code style is almost in line with the standard java conventions(Popular IDE'
 
 We provide a template file [dubbo_codestyle_for_idea.xml](https://github.com/alibaba/dubbo/tree/master/codestyle/dubbo_codestyle_for_idea.xml) for IntelliJ idea, you can import it to you IDE. If you use Eclipse you can config manually by referencing the same file.  
 
-* Make sure all new .java files to have a simple Javadoc class comment with at least an @author tag identifying you, and a @date tag identifying birth, and preferably at least a paragraph on what the class is for.
+* Make sure all new .java files to have a simple Javadoc class comment with at least a @date tag identifying birth, and preferably at least a paragraph on what the class is for.
 
 * Add the ASF license header comment to all new .java files (copy from existing files in the project)
 
-* Add yourself as an @author to the .java files that you modify substantially (more than cosmetic changes).
+* Make sure no @author tag added to the file you contribute since @author tag is not used at Apache, other ways such as cvs will record all your contributions fairly.
 
 * Add some Javadocs and, if you change the namespace, some XSD doc elements.
 
