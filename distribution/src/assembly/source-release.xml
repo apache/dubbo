@@ -44,6 +44,8 @@
                 <exclude>**/*.iws</exclude>
                 <exclude>**/cobertura.ser</exclude>
                 <exclude>**/*.log</exclude>
+                <exclude>release.properties</exclude>
+                <exclude>**/*.releaseBackup</exclude>
             </excludes>
         </fileSet>
     </fileSets>
