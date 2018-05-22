@@ -117,6 +117,7 @@
         <apache-rat-plugin.version>0.12</apache-rat-plugin.version>
         <arguments/>
         <checkstyle.skip>true</checkstyle.skip>
+        <rat.skip>true</rat.skip>
     </properties>
 
     <modules>
