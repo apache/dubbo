@@ -30,4 +30,6 @@ public interface HessianService {
 
     String customException();
 
+    String context(String name);
+
 }

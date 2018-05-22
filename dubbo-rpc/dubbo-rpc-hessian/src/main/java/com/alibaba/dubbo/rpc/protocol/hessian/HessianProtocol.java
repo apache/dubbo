@@ -29,6 +29,7 @@ import com.alibaba.dubbo.rpc.service.GenericService;
 import com.alibaba.dubbo.rpc.support.ProtocolUtils;
 import com.caucho.hessian.HessianException;
 import com.caucho.hessian.client.HessianConnectionException;
+import com.caucho.hessian.client.HessianConnectionFactory;
 import com.caucho.hessian.client.HessianProxyFactory;
 import com.caucho.hessian.io.HessianMethodSerializationException;
 import com.caucho.hessian.server.HessianSkeleton;
@@ -39,6 +40,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -96,7 +98,7 @@ public class HessianProtocol extends AbstractProxyProtocol {
         String generic = url.getParameter(Constants.GENERIC_KEY);
         boolean isGeneric = ProtocolUtils.isGeneric(generic) || serviceType.equals(GenericService.class);
         if (isGeneric) {
-            url.addParameter(Constants.GENERIC_KEY, generic);
+            RpcContext.getContext().setAttachment(Constants.GENERIC_KEY, generic);
             url = url.setPath(url.getPath() + "/" + Constants.GENERIC_KEY);
         }
 
@@ -110,6 +112,10 @@ public class HessianProtocol extends AbstractProxyProtocol {
             hessianProxyFactory.setConnectionFactory(new HttpClientConnectionFactory());
         } else if (client != null && client.length() > 0 && !Constants.DEFAULT_HTTP_CLIENT.equals(client)) {
             throw new IllegalStateException("Unsupported http protocol client=\"" + client + "\"!");
+        } else {
+            HessianConnectionFactory factory = new DubboHessianURLConnectionFactory();
+            factory.setHessianProxyFactory(hessianProxyFactory);
+            hessianProxyFactory.setConnectionFactory(factory);
         }
         int timeout = url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
         hessianProxyFactory.setConnectTimeout(timeout);
@@ -162,7 +168,16 @@ public class HessianProtocol extends AbstractProxyProtocol {
                 response.setStatus(500);
             } else {
                 RpcContext.getContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
-                RpcContext.getContext().setAttachment(Constants.GENERIC_KEY, request.getParameter(Constants.GENERIC_KEY));
+
+                Enumeration<String> enumeration = request.getHeaderNames();
+                while (enumeration.hasMoreElements()) {
+                    String key = enumeration.nextElement();
+                    if (key.startsWith(Constants.DEFAULT_EXCHANGER)) {
+                        RpcContext.getContext().setAttachment(key.substring(Constants.DEFAULT_EXCHANGER.length()),
+                                request.getHeader(key));
+                    }
+                }
+
                 try {
                     skeleton.invoke(request.getInputStream(), response.getOutputStream());
                 } catch (Throwable e) {

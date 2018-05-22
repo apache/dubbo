@@ -16,6 +16,8 @@
  */
 package com.alibaba.dubbo.rpc.protocol.hessian;
 
+import com.alibaba.dubbo.rpc.RpcContext;
+
 /**
  * HessianServiceImpl
  */
@@ -51,6 +53,10 @@ public class HessianServiceImpl implements HessianService {
 
     public String customException() {
         throw new MyException("custom exception");
+    }
+
+    public String context(String name) {
+        return "Hello, " + name + " context, " + RpcContext.getContext().getAttachment("myContext");
     }
 
     static class MyException extends RuntimeException {
