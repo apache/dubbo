@@ -45,6 +45,7 @@
                 <exclude>**/*.ipr</exclude>
                 <exclude>**/*.iws</exclude>
                 <exclude>**/cobertura.ser</exclude>
+                <exclude>**/*.log</exclude>
             </excludes>
         </fileSet>
     </fileSets>
