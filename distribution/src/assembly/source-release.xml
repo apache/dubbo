@@ -34,8 +34,6 @@
                 <exclude>**/target/**</exclude>
                 <exclude>**/build/**</exclude>
                 <exclude>**/eclipse-classes/**</exclude>
-                <exclude>**/.*</exclude>
-                <exclude>**/.*/**</exclude>
                 <exclude>*.enc</exclude>
                 <exclude>*.gpg</exclude>
                 <exclude>**/surefire*</exclude>

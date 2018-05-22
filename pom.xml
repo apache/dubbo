@@ -116,6 +116,7 @@
         <maven_jacoco_version>0.8.1</maven_jacoco_version>
         <apache-rat-plugin.version>0.12</apache-rat-plugin.version>
         <arguments/>
+        <checkstyle.skip>true</checkstyle.skip>
     </properties>
 
     <modules>
@@ -591,18 +592,6 @@
                     <groupId>org.mortbay.jetty</groupId>
                     <artifactId>maven-jetty-plugin</artifactId>
                     <version>${maven_jetty_version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-checkstyle-plugin</artifactId>
-                    <version>${maven_checkstyle_version}</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>com.puppycrawl.tools</groupId>
-                            <artifactId>checkstyle</artifactId>
-                            <version>8.9</version>
-                        </dependency>
-                    </dependencies>
                 </plugin>
             </plugins>
         </pluginManagement>
