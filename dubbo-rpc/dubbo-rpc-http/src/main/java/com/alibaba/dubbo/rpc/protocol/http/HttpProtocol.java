@@ -24,7 +24,6 @@ import com.alibaba.dubbo.remoting.http.HttpServer;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.protocol.AbstractProxyProtocol;
-
 import com.alibaba.dubbo.rpc.service.GenericService;
 import com.alibaba.dubbo.rpc.support.ProtocolUtils;
 import org.aopalliance.intercept.MethodInvocation;
@@ -96,6 +95,7 @@ public class HttpProtocol extends AbstractProxyProtocol {
 
     private <T> HttpInvokerServiceExporter createExporter(T impl, Class<?> type) {
         final HttpInvokerServiceExporter httpServiceExporter = new HttpInvokerServiceExporter();
+
         httpServiceExporter.setServiceInterface(type);
         httpServiceExporter.setService(impl);
         try {
@@ -130,6 +130,7 @@ public class HttpProtocol extends AbstractProxyProtocol {
         }
 
         httpProxyFactoryBean.setServiceUrl(key);
+
         httpProxyFactoryBean.setServiceInterface(serviceType);
         String client = url.getParameter(Constants.CLIENT_KEY);
         if (client == null || client.length() == 0 || "simple".equals(client)) {
