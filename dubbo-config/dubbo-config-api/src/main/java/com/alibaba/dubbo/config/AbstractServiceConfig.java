@@ -70,6 +70,9 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     // warm up period
     private Integer warmup;
 
+    // warm up weight in warm up period
+    private Integer warmupweight;
+
     // serialization
     private String serialization;
 
@@ -230,6 +233,14 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
 
     public void setWarmup(Integer warmup) {
         this.warmup = warmup;
+    }
+
+    public Integer getWarmupweight() {
+        return warmupweight;
+    }
+
+    public void setWarmupweight(Integer warmupweight) {
+        this.warmupweight = warmupweight;
     }
 
     public String getSerialization() {

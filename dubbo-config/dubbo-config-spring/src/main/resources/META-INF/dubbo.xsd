@@ -302,6 +302,11 @@
                         <xsd:documentation><![CDATA[ The warmup time in Milliseconds. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
+                <xsd:attribute name="warmupweight" type="xsd:string" use="optional">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ The specified warmup weight in warmup time. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
                 <xsd:attribute name="serialization" type="xsd:string" use="optional">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[ The serialization protocol of service. ]]></xsd:documentation>

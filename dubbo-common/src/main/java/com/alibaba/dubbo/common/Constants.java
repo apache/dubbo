@@ -311,6 +311,10 @@ public class Constants {
 
     public static final int DEFAULT_WARMUP = 10 * 60 * 1000;
 
+    public static final String WARMUP_WEIGHT_KEY = "warmupweight";
+
+    public static final int DEFAULT_WARMUP_WEIGHT = 0;
+
     public static final String CHECK_KEY = "check";
 
     public static final String REGISTER_KEY = "register";
