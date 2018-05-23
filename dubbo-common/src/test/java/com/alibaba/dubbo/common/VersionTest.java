@@ -25,7 +25,7 @@ import org.junit.Test;
 public class VersionTest {
 
     public static final String DEFAULT_VERSION = "2.0.0";
-
+    
     @Test
     public void testGetVersion() {
         String version = Version.getVersion();
