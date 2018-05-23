@@ -3,7 +3,7 @@
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
+ * (the "License")); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -40,7 +40,6 @@ import static org.mockito.Mockito.mock;
 
 /**
  * RoundRobinLoadBalanceTest
- *
  */
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class LoadBalanceTest {
@@ -108,24 +107,22 @@ public class LoadBalanceTest {
     }
 
     @Test
-    public void testRoundRobinLoadBalance_select() {
+    public void testRoundRobinLoadBalanceSelect() {
         int runs = 10000;
         Map<Invoker, AtomicLong> counter = getInvokeCounter(runs, RoundRobinLoadBalance.NAME);
         for (Invoker minvoker : counter.keySet()) {
             Long count = counter.get(minvoker).get();
-            Assert.assertTrue("abs diff shoud < 1", Math.abs(count - runs / (0f + invokers.size())) < 1f);
+            Assert.assertTrue("abs diff should < 1", Math.abs(count - runs / (0f + invokers.size())) < 1f);
         }
     }
 
     @Test
-    public void testRandomLoadBalance_select() {
+    public void testRandomLoadBalanceSelect() {
         int runs = 1000;
         Map<Invoker, AtomicLong> counter = getInvokeCounter(runs, RandomLoadBalance.NAME);
         for (Invoker minvoker : counter.keySet()) {
             Long count = counter.get(minvoker).get();
-            // System.out.println(count);
-            Assert.assertTrue("abs diff shoud < avg",
-                Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size()));
+            Assert.assertTrue("abs diff should < avg", Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size()));
         }
 
         for (int i = 0; i < 5; i++) {
@@ -145,14 +142,12 @@ public class LoadBalanceTest {
     }
 
     @Test
-    public void testLeastActiveLoadBalance_select() {
+    public void testLeastActiveLoadBalanceSelect() {
         int runs = 10000;
         Map<Invoker, AtomicLong> counter = getInvokeCounter(runs, LeastActiveLoadBalance.NAME);
         for (Invoker minvoker : counter.keySet()) {
             Long count = counter.get(minvoker).get();
-            //            System.out.println(count);
-            Assert.assertTrue("abs diff shoud < avg",
-                Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size()));
+            Assert.assertTrue("abs diff should < avg", Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size()));
         }
     }
 
@@ -171,34 +166,30 @@ public class LoadBalanceTest {
 
     @Test
     public void testLoadBalanceWarmup() {
-        Assert.assertEquals(1,
-            AbstractLoadBalance.calculateWarmupWeight(0, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
-        Assert.assertEquals(1,
-            AbstractLoadBalance.calculateWarmupWeight(13, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
-        Assert.assertEquals(1,
-            AbstractLoadBalance.calculateWarmupWeight(6 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
-        Assert.assertEquals(2,
-            AbstractLoadBalance.calculateWarmupWeight(12 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
-        Assert.assertEquals(10,
-            AbstractLoadBalance.calculateWarmupWeight(60 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
-        Assert.assertEquals(50, AbstractLoadBalance
-            .calculateWarmupWeight(5 * 60 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
-        Assert.assertEquals(50, AbstractLoadBalance
-            .calculateWarmupWeight(5 * 60 * 1000 + 23, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
-        Assert.assertEquals(50, AbstractLoadBalance
-            .calculateWarmupWeight(5 * 60 * 1000 + 5999, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
-        Assert.assertEquals(51, AbstractLoadBalance
-            .calculateWarmupWeight(5 * 60 * 1000 + 6000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
-        Assert.assertEquals(90, AbstractLoadBalance
-            .calculateWarmupWeight(9 * 60 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
-        Assert.assertEquals(98, AbstractLoadBalance
-            .calculateWarmupWeight(10 * 60 * 1000 - 12 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
-        Assert.assertEquals(99, AbstractLoadBalance
-            .calculateWarmupWeight(10 * 60 * 1000 - 6 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
-        Assert.assertEquals(100, AbstractLoadBalance
-            .calculateWarmupWeight(10 * 60 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
-        Assert.assertEquals(100, AbstractLoadBalance
-            .calculateWarmupWeight(20 * 60 * 1000, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT));
+        Assert.assertEquals(1, calculateDefaultWarmupWeight(0));
+        Assert.assertEquals(1, calculateDefaultWarmupWeight(13));
+        Assert.assertEquals(1, calculateDefaultWarmupWeight(6 * 1000));
+        Assert.assertEquals(2, calculateDefaultWarmupWeight(12 * 1000));
+        Assert.assertEquals(10, calculateDefaultWarmupWeight(60 * 1000));
+        Assert.assertEquals(50, calculateDefaultWarmupWeight(5 * 60 * 1000));
+        Assert.assertEquals(50, calculateDefaultWarmupWeight(5 * 60 * 1000 + 23));
+        Assert.assertEquals(50, calculateDefaultWarmupWeight(5 * 60 * 1000 + 5999));
+        Assert.assertEquals(51, calculateDefaultWarmupWeight(5 * 60 * 1000 + 6000));
+        Assert.assertEquals(90, calculateDefaultWarmupWeight(9 * 60 * 1000));
+        Assert.assertEquals(98, calculateDefaultWarmupWeight(10 * 60 * 1000 - 12 * 1000));
+        Assert.assertEquals(99, calculateDefaultWarmupWeight(10 * 60 * 1000 - 6 * 1000));
+        Assert.assertEquals(100, calculateDefaultWarmupWeight(10 * 60 * 1000));
+        Assert.assertEquals(100, calculateDefaultWarmupWeight(20 * 60 * 1000));
     }
+
+    /**
+     * handel feault data
+     *
+     * @return
+     */
+    private static int calculateDefaultWarmupWeight(int uptime) {
+        return AbstractLoadBalance.calculateWarmupWeight(uptime, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT);
+    }
+
 
 }
