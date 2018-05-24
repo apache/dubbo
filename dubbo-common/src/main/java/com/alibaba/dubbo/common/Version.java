@@ -35,7 +35,7 @@ public final class Version {
     private static final Logger logger = LoggerFactory.getLogger(Version.class);
 
     // Dubbo RPC protocol version
-    private static final String DEFAULT_DUBBO_PROTOCOL_VERSION = "2.0.2";
+    public static final String DEFAULT_DUBBO_PROTOCOL_VERSION = "2.0.2";
     // Dubbo implementation version, usually is jar version.
     private static final String VERSION = getVersion(Version.class, "");
 
