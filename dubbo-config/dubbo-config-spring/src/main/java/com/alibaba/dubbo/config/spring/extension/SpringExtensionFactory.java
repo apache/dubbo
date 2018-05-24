@@ -43,6 +43,11 @@ public class SpringExtensionFactory implements ExtensionFactory {
         contexts.remove(context);
     }
 
+    // currently for test purpose
+    public static void clearContexts() {
+        contexts.clear();
+    }
+
     @Override
     @SuppressWarnings("unchecked")
     public <T> T getExtension(Class<T> type, String name) {

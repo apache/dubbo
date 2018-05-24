@@ -73,8 +73,7 @@ public class SpringExtensionFactoryTest {
 
     @After
     public void destroy() {
-        SpringExtensionFactory.removeApplicationContext(context1);
-        SpringExtensionFactory.removeApplicationContext(context2);
+        SpringExtensionFactory.clearContexts();
         context1.close();
         context2.close();
     }
