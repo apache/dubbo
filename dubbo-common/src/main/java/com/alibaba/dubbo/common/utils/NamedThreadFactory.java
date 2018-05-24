@@ -23,15 +23,16 @@ import java.util.concurrent.atomic.AtomicInteger;
  * InternalThreadFactory.
  */
 public class NamedThreadFactory implements ThreadFactory {
-    private static final AtomicInteger POOL_SEQ = new AtomicInteger(1);
 
-    private final AtomicInteger mThreadNum = new AtomicInteger(1);
+    protected static final AtomicInteger POOL_SEQ = new AtomicInteger(1);
 
-    private final String mPrefix;
+    protected final AtomicInteger mThreadNum = new AtomicInteger(1);
 
-    private final boolean mDaemon;
+    protected final String mPrefix;
 
-    private final ThreadGroup mGroup;
+    protected final boolean mDaemon;
+
+    protected final ThreadGroup mGroup;
 
     public NamedThreadFactory() {
         this("pool-" + POOL_SEQ.getAndIncrement(), false);
@@ -48,6 +49,7 @@ public class NamedThreadFactory implements ThreadFactory {
         mGroup = (s == null) ? Thread.currentThread().getThreadGroup() : s.getThreadGroup();
     }
 
+    @Override
     public Thread newThread(Runnable runnable) {
         String name = mPrefix + mThreadNum.getAndIncrement();
         Thread ret = new Thread(mGroup, runnable, name, 0);

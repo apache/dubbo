@@ -36,6 +36,7 @@ public class MockRegistryFactory implements RegistryFactory {
         registries.clear();
     }
 
+    @Override
     public Registry getRegistry(URL url) {
         MockRegistry registry = new MockRegistry(url);
         registries.put(url, registry);

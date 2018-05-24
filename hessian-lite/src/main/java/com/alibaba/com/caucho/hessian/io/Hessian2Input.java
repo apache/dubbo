@@ -118,7 +118,7 @@ public class Hessian2Input
     private Reader _chunkReader;
     private InputStream _chunkInputStream;
     private Throwable _replyFault;
-    private StringBuffer _sbuf = new StringBuffer();
+    private StringBuilder _sbuf = new StringBuilder();
     // true if this is the last chunk
     private boolean _isLastChunk;
     // the chunk length
@@ -144,6 +144,7 @@ public class Hessian2Input
     /**
      * Sets the serializer factory.
      */
+    @Override
     public void setSerializerFactory(SerializerFactory factory) {
         _serializerFactory = factory;
     }
@@ -171,6 +172,7 @@ public class Hessian2Input
     /**
      * Returns the calls method
      */
+    @Override
     public String getMethod() {
         return _method;
     }
@@ -189,6 +191,7 @@ public class Hessian2Input
      * c major minor
      * </pre>
      */
+    @Override
     public int readCall()
             throws IOException {
         int tag = read();
@@ -252,6 +255,7 @@ public class Hessian2Input
      * string
      * </pre>
      */
+    @Override
     public String readMethod()
             throws IOException {
         _method = readString();
@@ -282,6 +286,7 @@ public class Hessian2Input
      * m b16 b8 method
      * </pre>
      */
+    @Override
     public void startCall()
             throws IOException {
         readCall();
@@ -297,6 +302,7 @@ public class Hessian2Input
      * <pre>
      * </pre>
      */
+    @Override
     public void completeCall()
             throws IOException {
     }
@@ -344,6 +350,7 @@ public class Hessian2Input
      * r
      * </pre>
      */
+    @Override
     public void startReply()
             throws Throwable {
         // XXX: for variable length (?)
@@ -388,6 +395,7 @@ public class Hessian2Input
      * z
      * </pre>
      */
+    @Override
     public void completeReply()
             throws IOException {
     }
@@ -416,6 +424,7 @@ public class Hessian2Input
      * H b16 b8 value
      * </pre>
      */
+    @Override
     public String readHeader()
             throws IOException {
         return null;
@@ -469,6 +478,7 @@ public class Hessian2Input
      * N
      * </pre>
      */
+    @Override
     public void readNull()
             throws IOException {
         int tag = read();
@@ -490,6 +500,7 @@ public class Hessian2Input
      * F
      * </pre>
      */
+    @Override
     public boolean readBoolean()
             throws IOException {
         int tag = _offset < _length ? (_buffer[_offset++] & 0xff) : read();
@@ -736,6 +747,7 @@ public class Hessian2Input
      * I b32 b24 b16 b8
      * </pre>
      */
+    @Override
     public final int readInt()
             throws IOException {
         //int tag = _offset < _length ? (_buffer[_offset++] & 0xff) : read();
@@ -955,6 +967,7 @@ public class Hessian2Input
      * L b64 b56 b48 b40 b32 b24 b16 b8
      * </pre>
      */
+    @Override
     public long readLong()
             throws IOException {
         int tag = read();
@@ -1182,6 +1195,7 @@ public class Hessian2Input
      * D b64 b56 b48 b40 b32 b24 b16 b8
      * </pre>
      */
+    @Override
     public double readDouble()
             throws IOException {
         int tag = read();
@@ -1394,6 +1408,7 @@ public class Hessian2Input
      * T b64 b56 b48 b40 b32 b24 b16 b8
      * </pre>
      */
+    @Override
     public long readUTCDate()
             throws IOException {
         int tag = read();
@@ -1560,6 +1575,7 @@ public class Hessian2Input
      * S b16 b8 string value
      * </pre>
      */
+    @Override
     public String readString()
             throws IOException {
         int tag = read();
@@ -1845,6 +1861,7 @@ public class Hessian2Input
      * B b16 b8 data value
      * </pre>
      */
+    @Override
     public byte[] readBytes()
             throws IOException {
         int tag = read();
@@ -2051,6 +2068,7 @@ public class Hessian2Input
     /**
      * Reads an object from the input stream with an expected type.
      */
+    @Override
     public Object readObject(Class cl)
             throws IOException {
         return readObject(cl, null, null);
@@ -2254,6 +2272,7 @@ public class Hessian2Input
      * Reads an arbitrary object from the input stream when the type
      * is unknown.
      */
+    @Override
     public Object readObject()
             throws IOException {
         return readObject((List<Class<?>>) null);
@@ -2473,11 +2492,9 @@ public class Hessian2Input
                 _isLastChunk = tag == 'S';
                 _chunkLength = (read() << 8) + read();
 
-                int data;
                 _sbuf.setLength(0);
 
-                while ((data = parseChar()) >= 0)
-                    _sbuf.append((char) data);
+                parseString(_sbuf);
 
                 return _sbuf.toString();
             }
@@ -2518,11 +2535,9 @@ public class Hessian2Input
                 _isLastChunk = true;
                 _chunkLength = tag - 0x00;
 
-                int data;
                 _sbuf.setLength(0);
 
-                while ((data = parseChar()) >= 0)
-                    _sbuf.append((char) data);
+                parseString(_sbuf);
 
                 return _sbuf.toString();
             }
@@ -2536,9 +2551,7 @@ public class Hessian2Input
 
                 _sbuf.setLength(0);
 
-                int ch;
-                while ((ch = parseChar()) >= 0)
-                    _sbuf.append((char) ch);
+                parseString(_sbuf);
 
                 return _sbuf.toString();
             }
@@ -2752,6 +2765,23 @@ public class Hessian2Input
         }
     }
 
+    private void parseString(StringBuilder sbuf)
+            throws IOException {
+        while (true) {
+            if (_chunkLength <= 0) {
+                if (!parseChunkLength())
+                    return;
+            }
+
+            int length = _chunkLength;
+            _chunkLength = 0;
+
+            while (length-- > 0) {
+                sbuf.append((char) parseUTF8Char());
+            }
+        }
+    }
+
     /**
      * Reads an object definition:
      * <p>
@@ -2822,6 +2852,7 @@ public class Hessian2Input
     /**
      * Reads a remote object.
      */
+    @Override
     public Object readRemote()
             throws IOException {
         String type = readType();
@@ -2833,6 +2864,7 @@ public class Hessian2Input
     /**
      * Reads a reference.
      */
+    @Override
     public Object readRef()
             throws IOException {
         return _refs.get(parseInt());
@@ -2841,6 +2873,7 @@ public class Hessian2Input
     /**
      * Reads the start of a list.
      */
+    @Override
     public int readListStart()
             throws IOException {
         return read();
@@ -2849,6 +2882,7 @@ public class Hessian2Input
     /**
      * Reads the start of a list.
      */
+    @Override
     public int readMapStart()
             throws IOException {
         return read();
@@ -2857,6 +2891,7 @@ public class Hessian2Input
     /**
      * Returns true if this is the end of a list or a map.
      */
+    @Override
     public boolean isEnd()
             throws IOException {
         int code;
@@ -2876,6 +2911,7 @@ public class Hessian2Input
     /**
      * Reads the end byte.
      */
+    @Override
     public void readEnd()
             throws IOException {
         int code = _offset < _length ? (_buffer[_offset++] & 0xff) : read();
@@ -2891,6 +2927,7 @@ public class Hessian2Input
     /**
      * Reads the end byte.
      */
+    @Override
     public void readMapEnd()
             throws IOException {
         int code = _offset < _length ? (_buffer[_offset++] & 0xff) : read();
@@ -2902,6 +2939,7 @@ public class Hessian2Input
     /**
      * Reads the end byte.
      */
+    @Override
     public void readListEnd()
             throws IOException {
         int code = _offset < _length ? (_buffer[_offset++] & 0xff) : read();
@@ -2913,6 +2951,7 @@ public class Hessian2Input
     /**
      * Adds a list/map reference.
      */
+    @Override
     public int addRef(Object ref) {
         if (_refs == null)
             _refs = new ArrayList();
@@ -2925,6 +2964,7 @@ public class Hessian2Input
     /**
      * Adds a list/map reference.
      */
+    @Override
     public void setRef(int i, Object ref) {
         _refs.set(i, ref);
     }
@@ -2932,6 +2972,7 @@ public class Hessian2Input
     /**
      * Resets the references for streaming.
      */
+    @Override
     public void resetReferences() {
         if (_refs != null)
             _refs.clear();
@@ -2966,6 +3007,7 @@ public class Hessian2Input
      * type ::= int
      * </pre>
      */
+    @Override
     public String readType()
             throws IOException {
         int code = _offset < _length ? (_buffer[_offset++] & 0xff) : read();
@@ -3040,6 +3082,7 @@ public class Hessian2Input
      * l b32 b24 b16 b8
      * </pre>
      */
+    @Override
     public int readLength()
             throws IOException {
         throw new UnsupportedOperationException();
@@ -3124,80 +3167,86 @@ public class Hessian2Input
         throw new UnsupportedOperationException();
     }
 
+    private boolean parseChunkLength()
+            throws IOException {
+        if (_isLastChunk)
+            return false;
+
+        int code = _offset < _length ? (_buffer[_offset++] & 0xff) : read();
+
+        switch (code) {
+            case BC_STRING_CHUNK:
+                _isLastChunk = false;
+
+                _chunkLength = (read() << 8) + read();
+                break;
+
+            case 'S':
+                _isLastChunk = true;
+
+                _chunkLength = (read() << 8) + read();
+                break;
+
+            case 0x00:
+            case 0x01:
+            case 0x02:
+            case 0x03:
+            case 0x04:
+            case 0x05:
+            case 0x06:
+            case 0x07:
+            case 0x08:
+            case 0x09:
+            case 0x0a:
+            case 0x0b:
+            case 0x0c:
+            case 0x0d:
+            case 0x0e:
+            case 0x0f:
+
+            case 0x10:
+            case 0x11:
+            case 0x12:
+            case 0x13:
+            case 0x14:
+            case 0x15:
+            case 0x16:
+            case 0x17:
+            case 0x18:
+            case 0x19:
+            case 0x1a:
+            case 0x1b:
+            case 0x1c:
+            case 0x1d:
+            case 0x1e:
+            case 0x1f:
+                _isLastChunk = true;
+                _chunkLength = code - 0x00;
+                break;
+
+            case 0x30:
+            case 0x31:
+            case 0x32:
+            case 0x33:
+                _isLastChunk = true;
+                _chunkLength = (code - 0x30) * 256 + read();
+                break;
+
+            default:
+                throw expect("string", code);
+        }
+
+        return true;
+    }
+
     /**
      * Reads a character from the underlying stream.
      */
     private int parseChar()
             throws IOException {
         while (_chunkLength <= 0) {
-            if (_isLastChunk)
+            if (!parseChunkLength())
                 return -1;
-
-            int code = _offset < _length ? (_buffer[_offset++] & 0xff) : read();
-
-            switch (code) {
-                case BC_STRING_CHUNK:
-                    _isLastChunk = false;
-
-                    _chunkLength = (read() << 8) + read();
-                    break;
-
-                case 'S':
-                    _isLastChunk = true;
-
-                    _chunkLength = (read() << 8) + read();
-                    break;
-
-                case 0x00:
-                case 0x01:
-                case 0x02:
-                case 0x03:
-                case 0x04:
-                case 0x05:
-                case 0x06:
-                case 0x07:
-                case 0x08:
-                case 0x09:
-                case 0x0a:
-                case 0x0b:
-                case 0x0c:
-                case 0x0d:
-                case 0x0e:
-                case 0x0f:
-
-                case 0x10:
-                case 0x11:
-                case 0x12:
-                case 0x13:
-                case 0x14:
-                case 0x15:
-                case 0x16:
-                case 0x17:
-                case 0x18:
-                case 0x19:
-                case 0x1a:
-                case 0x1b:
-                case 0x1c:
-                case 0x1d:
-                case 0x1e:
-                case 0x1f:
-                    _isLastChunk = true;
-                    _chunkLength = code - 0x00;
-                    break;
-
-                // qian.lei 2010-7-21
-                case 0x30:
-                case 0x31:
-                case 0x32:
-                case 0x33:
-                    _isLastChunk = true;
-                    _chunkLength = ((code - 0x30) << 8) + read();
-                    break;
-
-                default:
-                    throw expect("string", code);
-            }
-
         }
 
         _chunkLength--;
@@ -3296,6 +3345,7 @@ public class Hessian2Input
     /**
      * Reads bytes based on an input stream.
      */
+    @Override
     public InputStream readInputStream()
             throws IOException {
         int tag = read();
@@ -3451,6 +3501,7 @@ public class Hessian2Input
         return true;
     }
 
+    @Override
     public Reader getReader() {
         return null;
     }
@@ -3495,6 +3546,7 @@ public class Hessian2Input
             return new HessianProtocolException(message);
     }
 
+    @Override
     public void close()
             throws IOException {
         InputStream is = _is;
@@ -3527,6 +3579,7 @@ public class Hessian2Input
     class ReadInputStream extends InputStream {
         boolean _isClosed = false;
 
+        @Override
         public int read()
                 throws IOException {
             if (_isClosed)
@@ -3539,6 +3592,7 @@ public class Hessian2Input
             return ch;
         }
 
+        @Override
         public int read(byte[] buffer, int offset, int length)
                 throws IOException {
             if (_isClosed)
@@ -3551,6 +3605,7 @@ public class Hessian2Input
             return len;
         }
 
+        @Override
         public void close()
                 throws IOException {
             while (read() >= 0) {

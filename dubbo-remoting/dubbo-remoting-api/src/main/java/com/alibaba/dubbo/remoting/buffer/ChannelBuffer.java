@@ -274,6 +274,7 @@ public interface ChannelBuffer extends Comparable<ChannelBuffer> {
      * method also returns {@code false} for {@code null} and an object which is
      * not an instance of {@link ChannelBuffer} type.
      */
+    @Override
     public boolean equals(Object o);
 
     /**

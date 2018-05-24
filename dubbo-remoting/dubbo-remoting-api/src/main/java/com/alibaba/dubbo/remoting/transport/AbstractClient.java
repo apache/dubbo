@@ -149,6 +149,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         int reconnect = getReconnectParam(getUrl());
         if (reconnect > 0 && (reconnectExecutorFuture == null || reconnectExecutorFuture.isCancelled())) {
             Runnable connectStatusCheckCommand = new Runnable() {
+                @Override
                 public void run() {
                     try {
                         if (!isConnected()) {
@@ -195,6 +196,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         return new InetSocketAddress(NetUtils.filterLocalHost(getUrl().getHost()), getUrl().getPort());
     }
 
+    @Override
     public InetSocketAddress getRemoteAddress() {
         Channel channel = getChannel();
         if (channel == null)
@@ -202,6 +204,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         return channel.getRemoteAddress();
     }
 
+    @Override
     public InetSocketAddress getLocalAddress() {
         Channel channel = getChannel();
         if (channel == null)
@@ -209,6 +212,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         return channel.getLocalAddress();
     }
 
+    @Override
     public boolean isConnected() {
         Channel channel = getChannel();
         if (channel == null)
@@ -216,6 +220,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         return channel.isConnected();
     }
 
+    @Override
     public Object getAttribute(String key) {
         Channel channel = getChannel();
         if (channel == null)
@@ -223,6 +228,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         return channel.getAttribute(key);
     }
 
+    @Override
     public void setAttribute(String key, Object value) {
         Channel channel = getChannel();
         if (channel == null)
@@ -230,6 +236,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         channel.setAttribute(key, value);
     }
 
+    @Override
     public void removeAttribute(String key) {
         Channel channel = getChannel();
         if (channel == null)
@@ -237,6 +244,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         channel.removeAttribute(key);
     }
 
+    @Override
     public boolean hasAttribute(String key) {
         Channel channel = getChannel();
         if (channel == null)
@@ -244,6 +252,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         return channel.hasAttribute(key);
     }
 
+    @Override
     public void send(Object message, boolean sent) throws RemotingException {
         if (send_reconnect && !isConnected()) {
             connect();
@@ -310,11 +319,13 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         }
     }
 
+    @Override
     public void reconnect() throws RemotingException {
         disconnect();
         connect();
     }
 
+    @Override
     public void close() {
         try {
             if (executor != null) {
@@ -340,6 +351,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         }
     }
 
+    @Override
     public void close(int timeout) {
         ExecutorUtil.gracefulShutdown(executor, timeout);
         close();

@@ -31,14 +31,15 @@ import java.util.Collection;
 @Activate
 public class RegistryStatusChecker implements StatusChecker {
 
+    @Override
     public Status check() {
-        Collection<Registry> regsitries = AbstractRegistryFactory.getRegistries();
-        if (regsitries == null || regsitries.isEmpty()) {
+        Collection<Registry> registries = AbstractRegistryFactory.getRegistries();
+        if (registries.isEmpty()) {
             return new Status(Status.Level.UNKNOWN);
         }
         Status.Level level = Status.Level.OK;
         StringBuilder buf = new StringBuilder();
-        for (Registry registry : regsitries) {
+        for (Registry registry : registries) {
             if (buf.length() > 0) {
                 buf.append(",");
             }

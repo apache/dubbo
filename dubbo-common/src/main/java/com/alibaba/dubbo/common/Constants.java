@@ -633,6 +633,8 @@ public class Constants {
 
     public static final boolean DEFAULT_HESSIAN_OVERLOAD_METHOD = false;
 
+    public static final String MULTICAST = "multicast";
+
     /*
      * private Constants(){ }
      */

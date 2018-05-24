@@ -33,11 +33,9 @@ public class MessageOnlyChannelHandler extends WrappedChannelHandler {
         super(handler, url);
     }
 
+    @Override
     public void received(Channel channel, Object message) throws RemotingException {
-        ExecutorService cexecutor = executor;
-        if (cexecutor == null || cexecutor.isShutdown()) {
-            cexecutor = SHARED_EXECUTOR;
-        }
+        ExecutorService cexecutor = getExecutorService();
         try {
             cexecutor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
         } catch (Throwable t) {

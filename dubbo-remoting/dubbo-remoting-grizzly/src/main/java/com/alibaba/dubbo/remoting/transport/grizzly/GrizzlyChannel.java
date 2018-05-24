@@ -75,24 +75,28 @@ final class GrizzlyChannel extends AbstractChannel {
         return ret;
     }
 
-    static void removeChannelIfDisconnectd(Connection<?> connection) {
+    static void removeChannelIfDisconnected(Connection<?> connection) {
         if (connection != null && !connection.isOpen()) {
             ATTRIBUTE.remove(connection);
         }
     }
 
+    @Override
     public InetSocketAddress getRemoteAddress() {
         return (InetSocketAddress) connection.getPeerAddress();
     }
 
+    @Override
     public boolean isConnected() {
         return connection.isOpen();
     }
 
+    @Override
     public InetSocketAddress getLocalAddress() {
         return (InetSocketAddress) connection.getLocalAddress();
     }
 
+    @Override
     @SuppressWarnings("rawtypes")
     public void send(Object message, boolean sent) throws RemotingException {
         super.send(message, sent);
@@ -112,6 +116,7 @@ final class GrizzlyChannel extends AbstractChannel {
         }
     }
 
+    @Override
     public void close() {
         try {
             super.close();
@@ -119,7 +124,7 @@ final class GrizzlyChannel extends AbstractChannel {
             logger.warn(e.getMessage(), e);
         }
         try {
-            removeChannelIfDisconnectd(connection);
+            removeChannelIfDisconnected(connection);
         } catch (Exception e) {
             logger.warn(e.getMessage(), e);
         }
@@ -133,18 +138,22 @@ final class GrizzlyChannel extends AbstractChannel {
         }
     }
 
+    @Override
     public boolean hasAttribute(String key) {
         return getAttribute(key) == null;
     }
 
+    @Override
     public Object getAttribute(String key) {
         return Grizzly.DEFAULT_ATTRIBUTE_BUILDER.createAttribute(key).get(connection);
     }
 
+    @Override
     public void setAttribute(String key, Object value) {
         Grizzly.DEFAULT_ATTRIBUTE_BUILDER.createAttribute(key).set(connection, value);
     }
 
+    @Override
     public void removeAttribute(String key) {
         Grizzly.DEFAULT_ATTRIBUTE_BUILDER.createAttribute(key).remove(connection);
     }

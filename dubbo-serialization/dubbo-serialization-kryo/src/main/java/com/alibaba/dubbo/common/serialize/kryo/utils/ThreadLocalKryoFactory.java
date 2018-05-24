@@ -32,6 +32,7 @@ public class ThreadLocalKryoFactory extends AbstractKryoFactory {
         // do nothing
     }
 
+    @Override
     public Kryo getKryo() {
         return holder.get();
     }

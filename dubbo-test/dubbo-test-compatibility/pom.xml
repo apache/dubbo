@@ -22,7 +22,7 @@
     <parent>
         <groupId>com.alibaba</groupId>
         <artifactId>dubbo-test</artifactId>
-        <version>2.6.1</version>
+        <version>2.6.2-SNAPSHOT</version>
     </parent>
     <artifactId>dubbo-test-compatibility</artifactId>
     <packaging>pom</packaging>
@@ -30,7 +30,7 @@
     <description>The technology compatibility kit(TCK) test module of dubbo project</description>
 
     <properties>
-        <skip_maven_deploy>false</skip_maven_deploy>
+        <skip_maven_deploy>true</skip_maven_deploy>
     </properties>
 
     <dependencyManagement>

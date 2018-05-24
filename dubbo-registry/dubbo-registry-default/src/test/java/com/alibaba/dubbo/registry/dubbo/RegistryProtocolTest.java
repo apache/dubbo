@@ -181,6 +181,7 @@ public class RegistryProtocolTest {
             super(url);
         }
 
+        @Override
         public boolean isAvailable() {
             return true;
         }

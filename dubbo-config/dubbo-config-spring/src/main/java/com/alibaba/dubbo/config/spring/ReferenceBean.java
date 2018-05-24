@@ -25,7 +25,6 @@ import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.spring.extension.SpringExtensionFactory;
 import com.alibaba.dubbo.config.support.Parameter;
-
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
@@ -56,24 +55,29 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
         super(reference);
     }
 
+    @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
         SpringExtensionFactory.addApplicationContext(applicationContext);
     }
 
+    @Override
     public Object getObject() throws Exception {
         return get();
     }
 
+    @Override
     public Class<?> getObjectType() {
         return getInterfaceClass();
     }
 
+    @Override
     @Parameter(excluded = true)
     public boolean isSingleton() {
         return true;
     }
 
+    @Override
     @SuppressWarnings({"unchecked"})
     public void afterPropertiesSet() throws Exception {
         if (getConsumer() == null) {

@@ -20,6 +20,7 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.ExecutorUtil;
 import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.common.utils.UrlUtils;
@@ -133,10 +134,12 @@ public class RedisRegistry extends FailbackRegistry {
             }
             if (StringUtils.isEmpty(password)) {
                 this.jedisPools.put(address, new JedisPool(config, host, port,
-                        url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT)));
+                        url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT), null,
+                        url.getParameter("db.index", 0)));
             } else {
                 this.jedisPools.put(address, new JedisPool(config, host, port,
-                        url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT), password));
+                        url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT), password,
+                        url.getParameter("db.index", 0)));
             }
         }
 
@@ -152,6 +155,7 @@ public class RedisRegistry extends FailbackRegistry {
 
         this.expirePeriod = url.getParameter(Constants.SESSION_TIMEOUT_KEY, Constants.DEFAULT_SESSION_TIMEOUT);
         this.expireFuture = expireExecutor.scheduleWithFixedDelay(new Runnable() {
+            @Override
             public void run() {
                 try {
                     deferExpired(); // Extend the expiration time
@@ -221,6 +225,7 @@ public class RedisRegistry extends FailbackRegistry {
         }
     }
 
+    @Override
     public boolean isAvailable() {
         for (JedisPool jedisPool : jedisPools.values()) {
             try {
@@ -261,6 +266,7 @@ public class RedisRegistry extends FailbackRegistry {
                 logger.warn("Failed to destroy the redis registry client. registry: " + entry.getKey() + ", cause: " + t.getMessage(), t);
             }
         }
+        ExecutorUtil.gracefulShutdown(expireExecutor, expirePeriod);
     }
 
     @Override

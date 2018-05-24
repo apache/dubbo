@@ -49,6 +49,7 @@ public class GenericImplFilter implements Filter {
 
     private static final Class<?>[] GENERIC_PARAMETER_TYPES = new Class<?>[]{String.class, String[].class, Object[].class};
 
+    @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         String generic = invoker.getUrl().getParameter(Constants.GENERIC_KEY);
         if (ProtocolUtils.isGeneric(generic)
@@ -90,13 +91,12 @@ public class GenericImplFilter implements Filter {
                             return new RpcResult(JavaBeanSerializeUtil.deserialize((JavaBeanDescriptor) value));
                         } else {
                             throw new RpcException(
-                                    new StringBuilder(64)
-                                            .append("The type of result value is ")
-                                            .append(value.getClass().getName())
-                                            .append(" other than ")
-                                            .append(JavaBeanDescriptor.class.getName())
-                                            .append(", and the result is ")
-                                            .append(value).toString());
+                                    "The type of result value is " +
+                                            value.getClass().getName() +
+                                            " other than " +
+                                            JavaBeanDescriptor.class.getName() +
+                                            ", and the result is " +
+                                            value);
                         }
                     } else {
                         return new RpcResult(PojoUtils.realize(value, method.getReturnType(), method.getGenericReturnType()));
@@ -174,13 +174,12 @@ public class GenericImplFilter implements Filter {
 
     private void error(String expected, String actual) throws RpcException {
         throw new RpcException(
-                new StringBuilder(32)
-                        .append("Generic serialization [")
-                        .append(Constants.GENERIC_SERIALIZATION_NATIVE_JAVA)
-                        .append("] only support message type ")
-                        .append(expected)
-                        .append(" and your message type is ")
-                        .append(actual).toString());
+                "Generic serialization [" +
+                        Constants.GENERIC_SERIALIZATION_NATIVE_JAVA +
+                        "] only support message type " +
+                        expected +
+                        " and your message type is " +
+                        actual);
     }
 
 }

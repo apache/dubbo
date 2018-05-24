@@ -88,6 +88,7 @@ public class BasicDeserializer extends AbstractDeserializer {
         _code = code;
     }
 
+    @Override
     public Class getType() {
         switch (_code) {
             case NULL:
@@ -144,6 +145,7 @@ public class BasicDeserializer extends AbstractDeserializer {
         }
     }
 
+    @Override
     public Object readObject(AbstractHessianInput in)
             throws IOException {
         switch (_code) {
@@ -265,6 +267,7 @@ public class BasicDeserializer extends AbstractDeserializer {
         }
     }
 
+    @Override
     public Object readList(AbstractHessianInput in, int length)
             throws IOException {
         switch (_code) {
@@ -509,6 +512,7 @@ public class BasicDeserializer extends AbstractDeserializer {
         }
     }
 
+    @Override
     public Object readLengthList(AbstractHessianInput in, int length)
             throws IOException {
         switch (_code) {

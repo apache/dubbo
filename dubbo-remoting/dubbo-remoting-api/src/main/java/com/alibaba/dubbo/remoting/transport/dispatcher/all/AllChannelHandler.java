@@ -36,6 +36,7 @@ public class AllChannelHandler extends WrappedChannelHandler {
         super(handler, url);
     }
 
+    @Override
     public void connected(Channel channel) throws RemotingException {
         ExecutorService cexecutor = getExecutorService();
         try {
@@ -45,6 +46,7 @@ public class AllChannelHandler extends WrappedChannelHandler {
         }
     }
 
+    @Override
     public void disconnected(Channel channel) throws RemotingException {
         ExecutorService cexecutor = getExecutorService();
         try {
@@ -54,6 +56,7 @@ public class AllChannelHandler extends WrappedChannelHandler {
         }
     }
 
+    @Override
     public void received(Channel channel, Object message) throws RemotingException {
         ExecutorService cexecutor = getExecutorService();
         try {
@@ -76,6 +79,7 @@ public class AllChannelHandler extends WrappedChannelHandler {
         }
     }
 
+    @Override
     public void caught(Channel channel, Throwable exception) throws RemotingException {
         ExecutorService cexecutor = getExecutorService();
         try {
@@ -83,13 +87,5 @@ public class AllChannelHandler extends WrappedChannelHandler {
         } catch (Throwable t) {
             throw new ExecutionException("caught event", channel, getClass() + " error when process caught event .", t);
         }
-    }
-
-    private ExecutorService getExecutorService() {
-        ExecutorService cexecutor = executor;
-        if (cexecutor == null || cexecutor.isShutdown()) {
-            cexecutor = SHARED_EXECUTOR;
-        }
-        return cexecutor;
     }
 }

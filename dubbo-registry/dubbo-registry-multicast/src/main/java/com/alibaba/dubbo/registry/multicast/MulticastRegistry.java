@@ -21,6 +21,7 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
+import com.alibaba.dubbo.common.utils.ExecutorUtil;
 import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
@@ -88,6 +89,7 @@ public class MulticastRegistry extends FailbackRegistry {
             mutilcastSocket.setLoopbackMode(false);
             mutilcastSocket.joinGroup(mutilcastAddress);
             Thread thread = new Thread(new Runnable() {
+                @Override
                 public void run() {
                     byte[] buf = new byte[2048];
                     DatagramPacket recv = new DatagramPacket(buf, buf.length);
@@ -117,6 +119,7 @@ public class MulticastRegistry extends FailbackRegistry {
         this.cleanPeriod = url.getParameter(Constants.SESSION_TIMEOUT_KEY, Constants.DEFAULT_SESSION_TIMEOUT);
         if (url.getParameter("clean", true)) {
             this.cleanFuture = cleanExecutor.scheduleWithFixedDelay(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         clean(); // Remove the expired
@@ -254,14 +257,17 @@ public class MulticastRegistry extends FailbackRegistry {
         }
     }
 
+    @Override
     protected void doRegister(URL url) {
         broadcast(Constants.REGISTER + " " + url.toFullString());
     }
 
+    @Override
     protected void doUnregister(URL url) {
         broadcast(Constants.UNREGISTER + " " + url.toFullString());
     }
 
+    @Override
     protected void doSubscribe(URL url, NotifyListener listener) {
         if (Constants.ANY_VALUE.equals(url.getServiceInterface())) {
             admin = true;
@@ -275,6 +281,7 @@ public class MulticastRegistry extends FailbackRegistry {
         }
     }
 
+    @Override
     protected void doUnsubscribe(URL url, NotifyListener listener) {
         if (!Constants.ANY_VALUE.equals(url.getServiceInterface())
                 && url.getParameter(Constants.REGISTER_KEY, true)) {
@@ -283,6 +290,7 @@ public class MulticastRegistry extends FailbackRegistry {
         broadcast(Constants.UNSUBSCRIBE + " " + url.toFullString());
     }
 
+    @Override
     public boolean isAvailable() {
         try {
             return mutilcastSocket != null;
@@ -291,6 +299,7 @@ public class MulticastRegistry extends FailbackRegistry {
         }
     }
 
+    @Override
     public void destroy() {
         super.destroy();
         try {
@@ -306,6 +315,7 @@ public class MulticastRegistry extends FailbackRegistry {
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
         }
+        ExecutorUtil.gracefulShutdown(cleanExecutor, cleanPeriod);
     }
 
     protected void registered(URL url) {
@@ -367,26 +377,31 @@ public class MulticastRegistry extends FailbackRegistry {
         return list;
     }
 
+    @Override
     public void register(URL url) {
         super.register(url);
         registered(url);
     }
 
+    @Override
     public void unregister(URL url) {
         super.unregister(url);
         unregistered(url);
     }
 
+    @Override
     public void subscribe(URL url, NotifyListener listener) {
         super.subscribe(url, listener);
         subscribed(url, listener);
     }
 
+    @Override
     public void unsubscribe(URL url, NotifyListener listener) {
         super.unsubscribe(url, listener);
         received.remove(url);
     }
 
+    @Override
     public List<URL> lookup(URL url) {
         List<URL> urls = new ArrayList<URL>();
         Map<String, List<URL>> notifiedUrls = getNotified().get(url);

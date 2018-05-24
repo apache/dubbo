@@ -169,8 +169,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 if (sysaddress != null && sysaddress.length() > 0) {
                     address = sysaddress;
                 }
-                if (address != null && address.length() > 0
-                        && !RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) {
+                if (address.length() > 0 && !RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) {
                     Map<String, String> map = new HashMap<String, String>();
                     appendParameters(map, application);
                     appendParameters(map, config);
@@ -360,7 +359,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setStub(Boolean stub) {
-        if (local == null) {
+        if (stub == null) {
             setStub((String) null);
         } else {
             setStub(String.valueOf(stub));
@@ -410,11 +409,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     @Parameter(key = Constants.INVOKER_LISTENER_KEY, append = true)
     public String getListener() {
-        checkMultiExtension(InvokerListener.class, "listener", listener);
         return listener;
     }
 
     public void setListener(String listener) {
+        checkMultiExtension(InvokerListener.class, "listener", listener);
         this.listener = listener;
     }
 

@@ -28,6 +28,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -41,6 +42,7 @@ public class GenericJSONConverter implements JSONConverter {
     static {
         // init encoder map.
         Encoder e = new Encoder() {
+            @Override
             public void encode(Object obj, JSONWriter jb) throws IOException {
                 jb.valueBoolean((Boolean) obj);
             }
@@ -49,6 +51,7 @@ public class GenericJSONConverter implements JSONConverter {
         GlobalEncoderMap.put(Boolean.class, e);
 
         e = new Encoder() {
+            @Override
             public void encode(Object obj, JSONWriter jb) throws IOException {
                 jb.valueInt(((Number) obj).intValue());
             }
@@ -62,6 +65,7 @@ public class GenericJSONConverter implements JSONConverter {
         GlobalEncoderMap.put(AtomicInteger.class, e);
 
         e = new Encoder() {
+            @Override
             public void encode(Object obj, JSONWriter jb) throws IOException {
                 jb.valueString(Character.toString((Character) obj));
             }
@@ -70,6 +74,7 @@ public class GenericJSONConverter implements JSONConverter {
         GlobalEncoderMap.put(Character.class, e);
 
         e = new Encoder() {
+            @Override
             public void encode(Object obj, JSONWriter jb) throws IOException {
                 jb.valueLong(((Number) obj).longValue());
             }
@@ -80,6 +85,7 @@ public class GenericJSONConverter implements JSONConverter {
         GlobalEncoderMap.put(BigInteger.class, e);
 
         e = new Encoder() {
+            @Override
             public void encode(Object obj, JSONWriter jb) throws IOException {
                 jb.valueFloat(((Number) obj).floatValue());
             }
@@ -88,6 +94,7 @@ public class GenericJSONConverter implements JSONConverter {
         GlobalEncoderMap.put(Float.class, e);
 
         e = new Encoder() {
+            @Override
             public void encode(Object obj, JSONWriter jb) throws IOException {
                 jb.valueDouble(((Number) obj).doubleValue());
             }
@@ -97,6 +104,7 @@ public class GenericJSONConverter implements JSONConverter {
         GlobalEncoderMap.put(BigDecimal.class, e);
 
         e = new Encoder() {
+            @Override
             public void encode(Object obj, JSONWriter jb) throws IOException {
                 jb.valueString(obj.toString());
             }
@@ -106,6 +114,7 @@ public class GenericJSONConverter implements JSONConverter {
         GlobalEncoderMap.put(StringBuffer.class, e);
 
         e = new Encoder() {
+            @Override
             public void encode(Object obj, JSONWriter jb) throws IOException {
                 jb.valueString(Bytes.bytes2base64((byte[]) obj));
             }
@@ -113,6 +122,7 @@ public class GenericJSONConverter implements JSONConverter {
         GlobalEncoderMap.put(byte[].class, e);
 
         e = new Encoder() {
+            @Override
             public void encode(Object obj, JSONWriter jb) throws IOException {
                 jb.valueString(new SimpleDateFormat(DATE_FORMAT).format((Date) obj));
             }
@@ -121,6 +131,7 @@ public class GenericJSONConverter implements JSONConverter {
 
         // init decoder map.
         Decoder d = new Decoder() {
+            @Override
             public Object decode(Object jv) {
                 return jv.toString();
             }
@@ -128,6 +139,7 @@ public class GenericJSONConverter implements JSONConverter {
         GlobalDecoderMap.put(String.class, d);
 
         d = new Decoder() {
+            @Override
             public Object decode(Object jv) {
                 if (jv instanceof Boolean) return ((Boolean) jv).booleanValue();
                 return false;
@@ -136,6 +148,7 @@ public class GenericJSONConverter implements JSONConverter {
         GlobalDecoderMap.put(boolean.class, d);
 
         d = new Decoder() {
+            @Override
             public Object decode(Object jv) {
                 if (jv instanceof Boolean) return (Boolean) jv;
                 return (Boolean) null;
@@ -144,6 +157,7 @@ public class GenericJSONConverter implements JSONConverter {
         GlobalDecoderMap.put(Boolean.class, d);
 
         d = new Decoder() {
+            @Override
             public Object decode(Object jv) {
                 if (jv instanceof String && ((String) jv).length() > 0) return ((String) jv).charAt(0);
                 return (char) 0;
@@ -152,6 +166,7 @@ public class GenericJSONConverter implements JSONConverter {
         GlobalDecoderMap.put(char.class, d);
 
         d = new Decoder() {
+            @Override
             public Object decode(Object jv) {
                 if (jv instanceof String && ((String) jv).length() > 0) return ((String) jv).charAt(0);
                 return (Character) null;
@@ -160,6 +175,7 @@ public class GenericJSONConverter implements JSONConverter {
         GlobalDecoderMap.put(Character.class, d);
 
         d = new Decoder() {
+            @Override
             public Object decode(Object jv) {
                 if (jv instanceof Number) return ((Number) jv).intValue();
                 return 0;
@@ -168,6 +184,7 @@ public class GenericJSONConverter implements JSONConverter {
         GlobalDecoderMap.put(int.class, d);
 
         d = new Decoder() {
+            @Override
             public Object decode(Object jv) {
                 if (jv instanceof Number) return Integer.valueOf(((Number) jv).intValue());
                 return (Integer) null;
@@ -176,6 +193,7 @@ public class GenericJSONConverter implements JSONConverter {
         GlobalDecoderMap.put(Integer.class, d);
 
         d = new Decoder() {
+            @Override
             public Object decode(Object jv) {
                 if (jv instanceof Number) return ((Number) jv).shortValue();
                 return (short) 0;
@@ -184,6 +202,7 @@ public class GenericJSONConverter implements JSONConverter {
         GlobalDecoderMap.put(short.class, d);
 
         d = new Decoder() {
+            @Override
             public Object decode(Object jv) {
                 if (jv instanceof Number) return Short.valueOf(((Number) jv).shortValue());
                 return (Short) null;
@@ -192,6 +211,7 @@ public class GenericJSONConverter implements JSONConverter {
         GlobalDecoderMap.put(Short.class, d);
 
         d = new Decoder() {
+            @Override
             public Object decode(Object jv) {
                 if (jv instanceof Number) return ((Number) jv).longValue();
                 return (long) 0;
@@ -200,6 +220,7 @@ public class GenericJSONConverter implements JSONConverter {
         GlobalDecoderMap.put(long.class, d);
 
         d = new Decoder() {
+            @Override
             public Object decode(Object jv) {
                 if (jv instanceof Number) return Long.valueOf(((Number) jv).longValue());
                 return (Long) null;
@@ -208,6 +229,7 @@ public class GenericJSONConverter implements JSONConverter {
         GlobalDecoderMap.put(Long.class, d);
 
         d = new Decoder() {
+            @Override
             public Object decode(Object jv) {
                 if (jv instanceof Number) return ((Number) jv).floatValue();
                 return (float) 0;
@@ -216,6 +238,7 @@ public class GenericJSONConverter implements JSONConverter {
         GlobalDecoderMap.put(float.class, d);
 
         d = new Decoder() {
+            @Override
             public Object decode(Object jv) {
                 if (jv instanceof Number) return new Float(((Number) jv).floatValue());
                 return (Float) null;
@@ -224,6 +247,7 @@ public class GenericJSONConverter implements JSONConverter {
         GlobalDecoderMap.put(Float.class, d);
 
         d = new Decoder() {
+            @Override
             public Object decode(Object jv) {
                 if (jv instanceof Number) return ((Number) jv).doubleValue();
                 return (double) 0;
@@ -232,6 +256,7 @@ public class GenericJSONConverter implements JSONConverter {
         GlobalDecoderMap.put(double.class, d);
 
         d = new Decoder() {
+            @Override
             public Object decode(Object jv) {
                 if (jv instanceof Number) return new Double(((Number) jv).doubleValue());
                 return (Double) null;
@@ -240,6 +265,7 @@ public class GenericJSONConverter implements JSONConverter {
         GlobalDecoderMap.put(Double.class, d);
 
         d = new Decoder() {
+            @Override
             public Object decode(Object jv) {
                 if (jv instanceof Number) return ((Number) jv).byteValue();
                 return (byte) 0;
@@ -248,6 +274,7 @@ public class GenericJSONConverter implements JSONConverter {
         GlobalDecoderMap.put(byte.class, d);
 
         d = new Decoder() {
+            @Override
             public Object decode(Object jv) {
                 if (jv instanceof Number) return Byte.valueOf(((Number) jv).byteValue());
                 return (Byte) null;
@@ -256,6 +283,7 @@ public class GenericJSONConverter implements JSONConverter {
         GlobalDecoderMap.put(Byte.class, d);
 
         d = new Decoder() {
+            @Override
             public Object decode(Object jv) throws IOException {
                 if (jv instanceof String) return Bytes.base642bytes((String) jv);
                 return (byte[]) null;
@@ -264,6 +292,7 @@ public class GenericJSONConverter implements JSONConverter {
         GlobalDecoderMap.put(byte[].class, d);
 
         d = new Decoder() {
+            @Override
             public Object decode(Object jv) throws IOException {
                 return new StringBuilder(jv.toString());
             }
@@ -271,6 +300,7 @@ public class GenericJSONConverter implements JSONConverter {
         GlobalDecoderMap.put(StringBuilder.class, d);
 
         d = new Decoder() {
+            @Override
             public Object decode(Object jv) throws IOException {
                 return new StringBuffer(jv.toString());
             }
@@ -278,6 +308,7 @@ public class GenericJSONConverter implements JSONConverter {
         GlobalDecoderMap.put(StringBuffer.class, d);
 
         d = new Decoder() {
+            @Override
             public Object decode(Object jv) throws IOException {
                 if (jv instanceof Number) return BigInteger.valueOf(((Number) jv).longValue());
                 return (BigInteger) null;
@@ -286,6 +317,7 @@ public class GenericJSONConverter implements JSONConverter {
         GlobalDecoderMap.put(BigInteger.class, d);
 
         d = new Decoder() {
+            @Override
             public Object decode(Object jv) throws IOException {
                 if (jv instanceof Number) return BigDecimal.valueOf(((Number) jv).doubleValue());
                 return (BigDecimal) null;
@@ -294,6 +326,7 @@ public class GenericJSONConverter implements JSONConverter {
         GlobalDecoderMap.put(BigDecimal.class, d);
 
         d = new Decoder() {
+            @Override
             public Object decode(Object jv) throws IOException {
                 if (jv instanceof Number) return new AtomicInteger(((Number) jv).intValue());
                 return (AtomicInteger) null;
@@ -302,6 +335,7 @@ public class GenericJSONConverter implements JSONConverter {
         GlobalDecoderMap.put(AtomicInteger.class, d);
 
         d = new Decoder() {
+            @Override
             public Object decode(Object jv) throws IOException {
                 if (jv instanceof Number) return new AtomicLong(((Number) jv).longValue());
                 return (AtomicLong) null;
@@ -310,6 +344,7 @@ public class GenericJSONConverter implements JSONConverter {
         GlobalDecoderMap.put(AtomicLong.class, d);
 
         d = new Decoder() {
+            @Override
             public Object decode(Object jv) throws IOException {
                 if (jv instanceof String) {
                     try {
@@ -324,8 +359,27 @@ public class GenericJSONConverter implements JSONConverter {
             }
         };
         GlobalDecoderMap.put(Date.class, d);
+
+        d = new Decoder() {
+            @Override
+            public Object decode(Object jv) throws IOException {
+                if (jv instanceof String) {
+                    String[] items = ((String)jv).split("_");
+                    if(items.length == 1){
+                        return new Locale(items[0]);
+                    }
+                    if(items.length == 2){
+                        return new Locale(items[0], items[1]);
+                    }
+                    return new Locale(items[0], items[1], items[2]);
+                }
+                return (Locale)null;
+            }
+        };
+        GlobalDecoderMap.put(Locale.class, d);
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public void writeValue(Object obj, JSONWriter jb, boolean writeClass) throws IOException {
         if (obj == null) {
@@ -372,6 +426,8 @@ public class GenericJSONConverter implements JSONConverter {
                     writeValue(item, jb, writeClass);
             }
             jb.arrayEnd();
+        } else if(obj instanceof Locale) {
+            jb.valueString(obj.toString());
         } else {
             jb.objectBegin();
 
@@ -403,6 +459,7 @@ public class GenericJSONConverter implements JSONConverter {
         }
     }
 
+    @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public Object readValue(Class<?> c, Object jv) throws IOException {
         if (jv == null) {

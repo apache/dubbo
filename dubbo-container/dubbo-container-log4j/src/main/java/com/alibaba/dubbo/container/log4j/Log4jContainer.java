@@ -40,6 +40,7 @@ public class Log4jContainer implements Container {
 
     public static final String DEFAULT_LOG4J_LEVEL = "ERROR";
 
+    @Override
     @SuppressWarnings("unchecked")
     public void start() {
         String file = ConfigUtils.getProperty(LOG4J_FILE);
@@ -92,6 +93,7 @@ public class Log4jContainer implements Container {
         }
     }
 
+    @Override
     public void stop() {
     }
 

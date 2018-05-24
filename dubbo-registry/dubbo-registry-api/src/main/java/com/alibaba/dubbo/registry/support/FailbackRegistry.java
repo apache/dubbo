@@ -19,6 +19,7 @@ package com.alibaba.dubbo.registry.support;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
+import com.alibaba.dubbo.common.utils.ExecutorUtil;
 import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 import com.alibaba.dubbo.registry.NotifyListener;
 
@@ -57,10 +58,16 @@ public abstract class FailbackRegistry extends AbstractRegistry {
 
     private final ConcurrentMap<URL, Map<NotifyListener, List<URL>>> failedNotified = new ConcurrentHashMap<URL, Map<NotifyListener, List<URL>>>();
 
+    /**
+     * The time in milliseconds the retryExecutor will wait
+     */
+    private final int retryPeriod;
+
     public FailbackRegistry(URL url) {
         super(url);
-        int retryPeriod = url.getParameter(Constants.REGISTRY_RETRY_PERIOD_KEY, Constants.DEFAULT_REGISTRY_RETRY_PERIOD);
+        this.retryPeriod = url.getParameter(Constants.REGISTRY_RETRY_PERIOD_KEY, Constants.DEFAULT_REGISTRY_RETRY_PERIOD);
         this.retryFuture = retryExecutor.scheduleWithFixedDelay(new Runnable() {
+            @Override
             public void run() {
                 // Check and connect to the registry
                 try {
@@ -439,6 +446,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
         }
+        ExecutorUtil.gracefulShutdown(retryExecutor, retryPeriod);
     }
 
     // ==== Template method ====

@@ -58,26 +58,30 @@ final class MinaCodecAdapter implements ProtocolCodecFactory {
         this.bufferSize = b >= Constants.MIN_BUFFER_SIZE && b <= Constants.MAX_BUFFER_SIZE ? b : Constants.DEFAULT_BUFFER_SIZE;
     }
 
+    @Override
     public ProtocolEncoder getEncoder() {
         return encoder;
     }
 
+    @Override
     public ProtocolDecoder getDecoder() {
         return decoder;
     }
 
     private class InternalEncoder implements ProtocolEncoder {
 
+        @Override
         public void dispose(IoSession session) throws Exception {
         }
 
+        @Override
         public void encode(IoSession session, Object msg, ProtocolEncoderOutput out) throws Exception {
             ChannelBuffer buffer = ChannelBuffers.dynamicBuffer(1024);
             MinaChannel channel = MinaChannel.getOrAddChannel(session, url, handler);
             try {
                 codec.encode(channel, buffer, msg);
             } finally {
-                MinaChannel.removeChannelIfDisconnectd(session);
+                MinaChannel.removeChannelIfDisconnected(session);
             }
             out.write(ByteBuffer.wrap(buffer.toByteBuffer()));
             out.flush();
@@ -88,6 +92,7 @@ final class MinaCodecAdapter implements ProtocolCodecFactory {
 
         private ChannelBuffer buffer = ChannelBuffers.EMPTY_BUFFER;
 
+        @Override
         public void decode(IoSession session, ByteBuffer in, ProtocolDecoderOutput out) throws Exception {
             int readable = in.limit();
             if (readable <= 0) return;
@@ -141,13 +146,15 @@ final class MinaCodecAdapter implements ProtocolCodecFactory {
                 } else {
                     buffer = ChannelBuffers.EMPTY_BUFFER;
                 }
-                MinaChannel.removeChannelIfDisconnectd(session);
+                MinaChannel.removeChannelIfDisconnected(session);
             }
         }
 
+        @Override
         public void dispose(IoSession session) throws Exception {
         }
 
+        @Override
         public void finishDecode(IoSession session, ProtocolDecoderOutput out) throws Exception {
         }
     }

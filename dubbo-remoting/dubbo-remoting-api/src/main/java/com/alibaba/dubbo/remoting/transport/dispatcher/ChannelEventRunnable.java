@@ -50,8 +50,17 @@ public class ChannelEventRunnable implements Runnable {
         this.exception = exception;
     }
 
+    @Override
     public void run() {
-        switch (state) {
+        if (state == ChannelState.RECEIVED) {
+            try {
+                handler.received(channel, message);
+            } catch (Exception e) {
+                logger.warn("ChannelEventRunnable handle " + state + " operation error, channel is " + channel
+                        + ", message is " + message, e);
+            }
+        } else {
+            switch (state) {
             case CONNECTED:
                 try {
                     handler.connected(channel);
@@ -73,15 +82,6 @@ public class ChannelEventRunnable implements Runnable {
                     logger.warn("ChannelEventRunnable handle " + state + " operation error, channel is " + channel
                             + ", message is " + message, e);
                 }
-                break;
-            case RECEIVED:
-                try {
-                    handler.received(channel, message);
-                } catch (Exception e) {
-                    logger.warn("ChannelEventRunnable handle " + state + " operation error, channel is " + channel
-                            + ", message is " + message, e);
-                }
-                break;
             case CAUGHT:
                 try {
                     handler.caught(channel, exception);
@@ -92,7 +92,9 @@ public class ChannelEventRunnable implements Runnable {
                 break;
             default:
                 logger.warn("unknown state: " + state + ", message is " + message);
+            }
         }
+
     }
 
     /**

@@ -17,45 +17,52 @@
 package com.alibaba.dubbo.registry.zookeeper;
 
 import com.alibaba.dubbo.common.URL;
-
-import junit.framework.Assert;
+import com.alibaba.dubbo.common.status.Status;
+import com.alibaba.dubbo.common.utils.NetUtils;
+import com.alibaba.dubbo.registry.NotifyListener;
+import com.alibaba.dubbo.registry.Registry;
+import com.alibaba.dubbo.registry.status.RegistryStatusChecker;
+import com.alibaba.dubbo.remoting.zookeeper.curator.CuratorZookeeperTransporter;
+import org.apache.curator.test.TestingServer;
+import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
-/**
- * ZookeeperRegistryTest
- *
- */
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+
 public class ZookeeperRegistryTest {
+    private TestingServer zkServer;
+    private ZookeeperRegistry zookeeperRegistry;
+    private String service = "com.alibaba.dubbo.test.injvmServie";
+    private URL serviceUrl = URL.valueOf("zookeeper://zookeeper/" + service + "?notify=false&methods=test1,test2");
+    private URL anyUrl = URL.valueOf("zookeeper://zookeeper/*");
+    private URL registryUrl;
+    private ZookeeperRegistryFactory zookeeperRegistryFactory;
 
-    String service = "com.alibaba.dubbo.test.injvmServie";
-    URL registryUrl = URL.valueOf("zookeeper://239.255.255.255/");
-    URL serviceUrl = URL.valueOf("zookeeper://zookeeper/" + service
-            + "?notify=false&methods=test1,test2");
-    URL consumerUrl = URL.valueOf("zookeeper://consumer/" + service + "?notify=false&methods=test1,test2");
-    // ZookeeperRegistry registry    = new ZookeeperRegistry(registryUrl);
-
-    /**
-     * @throws java.lang.Exception
-     */
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
-    }
-
-    /**
-     * @throws java.lang.Exception
-     */
     @Before
     public void setUp() throws Exception {
-        //registry.register(service, serviceUrl);
+        int zkServerPort = NetUtils.getAvailablePort();
+        this.zkServer = new TestingServer(zkServerPort, true);
+        this.registryUrl = URL.valueOf("zookeeper://localhost:" + zkServerPort);
+
+        zookeeperRegistryFactory = new ZookeeperRegistryFactory();
+        zookeeperRegistryFactory.setZookeeperTransporter(new CuratorZookeeperTransporter());
+        this.zookeeperRegistry = (ZookeeperRegistry) zookeeperRegistryFactory.createRegistry(registryUrl);
     }
 
-    /*@Test(expected = IllegalStateException.class)
-    public void testUrlerror() {
-        URL errorUrl = URL.valueOf("zookeeper://zookeeper/");
-        new ZookeeperRegistry(errorUrl);
-    }*/
+    @After
+    public void tearDown() throws Exception {
+        zkServer.stop();
+    }
 
     @Test
     public void testDefaultPort() {
@@ -63,46 +70,93 @@ public class ZookeeperRegistryTest {
         Assert.assertEquals("10.20.153.10:2181", ZookeeperRegistry.appendDefaultPort("10.20.153.10"));
     }
 
-    /**
-     * Test method for {@link com.alibaba.dubbo.registry.zookeeper.ZookeeperRegistry#getRegistered()}.
-     */
+    @Test(expected = IllegalStateException.class)
+    public void testAnyHost() {
+        URL errorUrl = URL.valueOf("multicast://0.0.0.0/");
+        new ZookeeperRegistryFactory().createRegistry(errorUrl);
+    }
+
     @Test
     public void testRegister() {
-        /*List<URL> registered = null;
-        // clear first
-        registered = registry.getRegistered(service);
+        Set<URL> registered;
 
         for (int i = 0; i < 2; i++) {
-            registry.register(service, serviceUrl);
-            registered = registry.getRegistered(service);
-            assertTrue(registered.contains(serviceUrl));
+            zookeeperRegistry.register(serviceUrl);
+            registered = zookeeperRegistry.getRegistered();
+            assertThat(registered.contains(serviceUrl), is(true));
         }
-        // confirm only 1 regist success;
-        registered = registry.getRegistered(service);
-        assertEquals(1, registered.size());*/
+
+        registered = zookeeperRegistry.getRegistered();
+        assertThat(registered.size(), is(1));
     }
 
-    /**
-     * Test method for
-     * {@link com.alibaba.dubbo.registry.zookeeper.ZookeeperRegistry#subscribe(URL, com.alibaba.dubbo.registry.NotifyListener)}
-     * .
-     */
     @Test
     public void testSubscribe() {
-        /*final String subscribearg = "arg1=1&arg2=2";
-        // verify lisener.
-        final AtomicReference<Map<String, String>> args = new AtomicReference<Map<String, String>>();
-        registry.subscribe(service, new URL("dubbo", NetUtils.getLocalHost(), 0, StringUtils.parseQueryString(subscribearg)), new NotifyListener() {
+        NotifyListener listener = mock(NotifyListener.class);
+        zookeeperRegistry.subscribe(serviceUrl, listener);
 
-            public void notify(List<URL> urls) {
-                // FIXME assertEquals(ZookeeperRegistry.this.service, service);
-                args.set(urls.get(0).getParameters());
-            }
-        });
-        assertEquals(serviceUrl.toParameterString(), StringUtils.toQueryString(args.get()));
-        Map<String, String> arg = registry.getSubscribed(service);
-        assertEquals(subscribearg, StringUtils.toQueryString(arg));*/
+        Map<URL, Set<NotifyListener>> subscribed = zookeeperRegistry.getSubscribed();
+        assertThat(subscribed.size(), is(1));
+        assertThat(subscribed.get(serviceUrl).size(), is(1));
 
+        zookeeperRegistry.unsubscribe(serviceUrl, listener);
+        subscribed = zookeeperRegistry.getSubscribed();
+        assertThat(subscribed.size(), is(1));
+        assertThat(subscribed.get(serviceUrl).size(), is(0));
     }
 
+    @Test
+    public void testAvailable() {
+        zookeeperRegistry.register(serviceUrl);
+        assertThat(zookeeperRegistry.isAvailable(), is(true));
+
+        zookeeperRegistry.destroy();
+        assertThat(zookeeperRegistry.isAvailable(), is(false));
+    }
+
+    @Test
+    public void testLookup() {
+        List<URL> lookup = zookeeperRegistry.lookup(serviceUrl);
+        assertThat(lookup.size(), is(0));
+
+        zookeeperRegistry.register(serviceUrl);
+        lookup = zookeeperRegistry.lookup(serviceUrl);
+        assertThat(lookup.size(), is(1));
+    }
+
+    @Ignore
+    @Test
+    /*
+      This UT is unstable, consider remove it later.
+      @see https://github.com/apache/incubator-dubbo/issues/1787
+     */
+    public void testStatusChecker() {
+        RegistryStatusChecker registryStatusChecker = new RegistryStatusChecker();
+        Status status = registryStatusChecker.check();
+        assertThat(status.getLevel(), is(Status.Level.UNKNOWN));
+
+        Registry registry = zookeeperRegistryFactory.getRegistry(registryUrl);
+        assertThat(registry, not(nullValue()));
+
+        status = registryStatusChecker.check();
+        assertThat(status.getLevel(), is(Status.Level.ERROR));
+
+        registry.register(serviceUrl);
+        status = registryStatusChecker.check();
+        assertThat(status.getLevel(), is(Status.Level.OK));
+    }
+
+    @Test
+    public void testSubscribeAnyValue() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+        zookeeperRegistry.register(serviceUrl);
+        zookeeperRegistry.subscribe(anyUrl, new NotifyListener() {
+            @Override
+            public void notify(List<URL> urls) {
+                latch.countDown();
+            }
+        });
+        zookeeperRegistry.register(serviceUrl);
+        latch.await();
+    }
 }

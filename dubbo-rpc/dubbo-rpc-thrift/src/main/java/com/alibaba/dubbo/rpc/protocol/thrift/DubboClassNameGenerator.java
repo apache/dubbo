@@ -20,10 +20,12 @@ public class DubboClassNameGenerator implements ClassNameGenerator {
 
     public static final String NAME = "dubbo";
 
+    @Override
     public String generateArgsClassName(String serviceName, String methodName) {
         return ThriftUtils.generateMethodArgsClassName(serviceName, methodName);
     }
 
+    @Override
     public String generateResultClassName(String serviceName, String methodName) {
         return ThriftUtils.generateMethodResultClassName(serviceName, methodName);
     }

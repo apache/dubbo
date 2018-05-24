@@ -38,6 +38,7 @@ class InjvmExporter<T> extends AbstractExporter<T> {
         exporterMap.put(key, this);
     }
 
+    @Override
     public void unexport() {
         super.unexport();
         exporterMap.remove(key);

@@ -42,15 +42,13 @@ public class MultiServiceProcessor implements TProcessor {
     public MultiServiceProcessor() {
     }
 
+    @Override
     public boolean process(TProtocol in, TProtocol out) throws TException {
 
         short magic = in.readI16();
 
         if (magic != ThriftCodec.MAGIC) {
-            logger.error(
-                    new StringBuilder(24)
-                            .append("Unsupported magic ")
-                            .append(magic).toString());
+            logger.error("Unsupported magic " + magic);
             return false;
         }
 
@@ -69,11 +67,7 @@ public class MultiServiceProcessor implements TProcessor {
         TProcessor processor = processorMap.get(serviceName);
 
         if (processor == null) {
-            logger.error(
-                    new StringBuilder(32)
-                            .append("Could not find processor for service ")
-                            .append(serviceName)
-                            .toString());
+            logger.error("Could not find processor for service " + serviceName);
             return false;
         }
 

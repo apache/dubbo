@@ -29,8 +29,6 @@ import com.alibaba.dubbo.remoting.Server;
 import com.alibaba.dubbo.remoting.exchange.ExchangeChannel;
 import com.alibaba.dubbo.remoting.exchange.ExchangeServer;
 import com.alibaba.dubbo.remoting.exchange.Request;
-import com.alibaba.dubbo.remoting.exchange.support.DefaultFuture;
-
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,7 +52,7 @@ public class HeaderExchangeServer implements ExchangeServer {
                     true));
     private final Server server;
     // heartbeat timer
-    private ScheduledFuture<?> heatbeatTimer;
+    private ScheduledFuture<?> heartbeatTimer;
     // heartbeat timeout (ms), default value is 0 , won't execute a heartbeat.
     private int heartbeat;
     private int heartbeatTimeout;
@@ -70,13 +68,14 @@ public class HeaderExchangeServer implements ExchangeServer {
         if (heartbeatTimeout < heartbeat * 2) {
             throw new IllegalStateException("heartbeatTimeout < heartbeatInterval * 2");
         }
-        startHeatbeatTimer();
+        startHeartbeatTimer();
     }
 
     public Server getServer() {
         return server;
     }
 
+    @Override
     public boolean isClosed() {
         return server.isClosed();
     }
@@ -84,18 +83,26 @@ public class HeaderExchangeServer implements ExchangeServer {
     private boolean isRunning() {
         Collection<Channel> channels = getChannels();
         for (Channel channel : channels) {
-            if (DefaultFuture.hasFuture(channel)) {
+
+            /**
+             *  If there are any client connections,
+             *  our server should be running.
+             */
+
+            if (channel.isConnected()) {
                 return true;
             }
         }
         return false;
     }
 
+    @Override
     public void close() {
         doClose();
         server.close();
     }
 
+    @Override
     public void close(final int timeout) {
         startClose();
         if (timeout > 0) {
@@ -134,7 +141,7 @@ public class HeaderExchangeServer implements ExchangeServer {
                 if (channel.isConnected())
                     channel.send(request, getUrl().getParameter(Constants.CHANNEL_READONLYEVENT_SENT_KEY, true));
             } catch (RemotingException e) {
-                logger.warn("send connot write messge error.", e);
+                logger.warn("send cannot write message error.", e);
             }
         }
     }
@@ -151,6 +158,7 @@ public class HeaderExchangeServer implements ExchangeServer {
         }
     }
 
+    @Override
     public Collection<ExchangeChannel> getExchangeChannels() {
         Collection<ExchangeChannel> exchangeChannels = new ArrayList<ExchangeChannel>();
         Collection<Channel> channels = server.getChannels();
@@ -162,36 +170,44 @@ public class HeaderExchangeServer implements ExchangeServer {
         return exchangeChannels;
     }
 
+    @Override
     public ExchangeChannel getExchangeChannel(InetSocketAddress remoteAddress) {
         Channel channel = server.getChannel(remoteAddress);
         return HeaderExchangeChannel.getOrAddChannel(channel);
     }
 
+    @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public Collection<Channel> getChannels() {
         return (Collection) getExchangeChannels();
     }
 
+    @Override
     public Channel getChannel(InetSocketAddress remoteAddress) {
         return getExchangeChannel(remoteAddress);
     }
 
+    @Override
     public boolean isBound() {
         return server.isBound();
     }
 
+    @Override
     public InetSocketAddress getLocalAddress() {
         return server.getLocalAddress();
     }
 
+    @Override
     public URL getUrl() {
         return server.getUrl();
     }
 
+    @Override
     public ChannelHandler getChannelHandler() {
         return server.getChannelHandler();
     }
 
+    @Override
     public void reset(URL url) {
         server.reset(url);
         try {
@@ -205,7 +221,7 @@ public class HeaderExchangeServer implements ExchangeServer {
                 if (h != heartbeat || t != heartbeatTimeout) {
                     heartbeat = h;
                     heartbeatTimeout = t;
-                    startHeatbeatTimer();
+                    startHeartbeatTimer();
                 }
             }
         } catch (Throwable t) {
@@ -213,11 +229,13 @@ public class HeaderExchangeServer implements ExchangeServer {
         }
     }
 
+    @Override
     @Deprecated
     public void reset(com.alibaba.dubbo.common.Parameters parameters) {
         reset(getUrl().addParameters(parameters.getParameters()));
     }
 
+    @Override
     public void send(Object message) throws RemotingException {
         if (closed.get()) {
             throw new RemotingException(this.getLocalAddress(), null, "Failed to send message " + message + ", cause: The server " + getLocalAddress() + " is closed!");
@@ -225,6 +243,7 @@ public class HeaderExchangeServer implements ExchangeServer {
         server.send(message);
     }
 
+    @Override
     public void send(Object message, boolean sent) throws RemotingException {
         if (closed.get()) {
             throw new RemotingException(this.getLocalAddress(), null, "Failed to send message " + message + ", cause: The server " + getLocalAddress() + " is closed!");
@@ -232,11 +251,12 @@ public class HeaderExchangeServer implements ExchangeServer {
         server.send(message, sent);
     }
 
-    private void startHeatbeatTimer() {
+    private void startHeartbeatTimer() {
         stopHeartbeatTimer();
         if (heartbeat > 0) {
-            heatbeatTimer = scheduled.scheduleWithFixedDelay(
+            heartbeatTimer = scheduled.scheduleWithFixedDelay(
                     new HeartBeatTask(new HeartBeatTask.ChannelProvider() {
+                        @Override
                         public Collection<Channel> getChannels() {
                             return Collections.unmodifiableCollection(
                                     HeaderExchangeServer.this.getChannels());
@@ -248,14 +268,14 @@ public class HeaderExchangeServer implements ExchangeServer {
 
     private void stopHeartbeatTimer() {
         try {
-            ScheduledFuture<?> timer = heatbeatTimer;
+            ScheduledFuture<?> timer = heartbeatTimer;
             if (timer != null && !timer.isCancelled()) {
                 timer.cancel(true);
             }
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
         } finally {
-            heatbeatTimer = null;
+            heartbeatTimer = null;
         }
     }
 

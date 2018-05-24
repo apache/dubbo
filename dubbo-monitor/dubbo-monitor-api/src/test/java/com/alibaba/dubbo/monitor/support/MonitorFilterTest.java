@@ -28,14 +28,20 @@ import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
-
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.List;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 /**
  * MonitorFilterTest
@@ -47,6 +53,7 @@ public class MonitorFilterTest {
     private volatile Invocation lastInvocation;
 
     private final Invoker<MonitorService> serviceInvoker = new Invoker<MonitorService>() {
+        @Override
         public Class<MonitorService> getInterface() {
             return MonitorService.class;
         }
@@ -59,6 +66,7 @@ public class MonitorFilterTest {
             }
         }
 
+        @Override
         public boolean isAvailable() {
             return false;
         }
@@ -68,21 +76,25 @@ public class MonitorFilterTest {
             return null;
         }
 
+        @Override
         public void destroy() {
         }
     };
 
     private MonitorFactory monitorFactory = new MonitorFactory() {
+        @Override
         public Monitor getMonitor(final URL url) {
             return new Monitor() {
                 public URL getUrl() {
                     return url;
                 }
 
+                @Override
                 public boolean isAvailable() {
                     return true;
                 }
 
+                @Override
                 public void destroy() {
                 }
 
@@ -120,6 +132,20 @@ public class MonitorFilterTest {
     }
 
     @Test
+    public void testSkipMonitorIfNotHasKey() {
+        MonitorFilter monitorFilter = new MonitorFilter();
+        MonitorFactory mockMonitorFactory = mock(MonitorFactory.class);
+        monitorFilter.setMonitorFactory(mockMonitorFactory);
+        Invocation invocation = new RpcInvocation("aaa", new Class<?>[0], new Object[0]);
+        Invoker invoker = mock(Invoker.class);
+        given(invoker.getUrl()).willReturn(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":20880?" + Constants.APPLICATION_KEY + "=abc&" + Constants.SIDE_KEY + "=" + Constants.CONSUMER_SIDE));
+
+        monitorFilter.invoke(invoker, invocation);
+
+        verify(mockMonitorFactory, never()).getMonitor(any(URL.class));
+    }
+
+    @Test
     public void testGenericFilter() throws Exception {
         MonitorFilter monitorFilter = new MonitorFilter();
         monitorFilter.setMonitorFactory(monitorFactory);
@@ -141,4 +167,17 @@ public class MonitorFilterTest {
         Assert.assertEquals(invocation, lastInvocation);
     }
 
+    @Test
+    public void testSafeFailForMonitorCollectFail() {
+        MonitorFilter monitorFilter = new MonitorFilter();
+        MonitorFactory mockMonitorFactory = mock(MonitorFactory.class);
+        Monitor mockMonitor = mock(Monitor.class);
+        Mockito.doThrow(new RuntimeException()).when(mockMonitor).collect(any(URL.class));
+
+        monitorFilter.setMonitorFactory(mockMonitorFactory);
+        given(mockMonitorFactory.getMonitor(any(URL.class))).willReturn(mockMonitor);
+        Invocation invocation = new RpcInvocation("aaa", new Class<?>[0], new Object[0]);
+
+        monitorFilter.invoke(serviceInvoker, invocation);
+    }
 }

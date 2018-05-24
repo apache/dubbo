@@ -38,25 +38,31 @@ public class MockChannel implements ExchangeChannel {
         closed = false;
     }
 
+    @Override
     public InetSocketAddress getLocalAddress() {
         return localAddress;
     }
 
+    @Override
     public InetSocketAddress getRemoteAddress() {
         return remoteAddress;
     }
 
+    @Override
     public boolean isConnected() {
         return true;
     }
 
+    @Override
     public void close() {
         closed = true;
     }
 
+    @Override
     public void send(Object message) throws RemotingException {
     }
 
+    @Override
     public void close(int timeout) {
     }
 
@@ -65,6 +71,7 @@ public class MockChannel implements ExchangeChannel {
         closing = true;
     }
 
+    @Override
     public URL getUrl() {
         return null;
     }
@@ -73,6 +80,7 @@ public class MockChannel implements ExchangeChannel {
         return null;
     }
 
+    @Override
     public ChannelHandler getChannelHandler() {
         return null;
     }
@@ -89,26 +97,32 @@ public class MockChannel implements ExchangeChannel {
         return null;
     }
 
+    @Override
     public Object getAttribute(String key) {
         return null;
     }
 
+    @Override
     public void setAttribute(String key, Object value) {
 
     }
 
+    @Override
     public boolean hasAttribute(String key) {
         return false;
     }
 
+    @Override
     public boolean isClosed() {
         return false;
     }
 
+    @Override
     public void removeAttribute(String key) {
 
     }
 
+    @Override
     public void send(Object message, boolean sent) throws RemotingException {
 
     }
