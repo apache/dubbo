@@ -34,13 +34,27 @@ public class DubboBootstrap {
     private List<ServiceConfig> serviceConfigList;
 
     /**
+     * Whether register the shutdown hook during start?
+     */
+    private final boolean registerShutdownHookOnStart;
+
+    /**
      * The shutdown hook used when Dubbo is running under embedded environment
      */
     private DubboShutdownHook shutdownHook;
 
     public DubboBootstrap() {
+        this(true, DubboShutdownHook.getDubboShutdownHook());
+    }
+
+    public DubboBootstrap(boolean registerShutdownHookOnStart) {
+        this(registerShutdownHookOnStart, DubboShutdownHook.getDubboShutdownHook());
+    }
+
+    public DubboBootstrap(boolean registerShutdownHookOnStart, DubboShutdownHook shutdownHook) {
         this.serviceConfigList = new ArrayList<ServiceConfig>();
-        this.shutdownHook = DubboShutdownHook.getDubboShutdownHook();
+        this.shutdownHook = shutdownHook;
+        this.registerShutdownHookOnStart = registerShutdownHookOnStart;
     }
 
     /**
@@ -54,7 +68,13 @@ public class DubboBootstrap {
     }
 
     public void start() {
-        registerShutdownHook();
+        if (registerShutdownHookOnStart) {
+            registerShutdownHook();
+        } else {
+            // DubboShutdown hook has been registered in AbstractConfig,
+            // we need to remove it explicitly
+            removeShutdownHook();
+        }
         for (ServiceConfig serviceConfig: serviceConfigList) {
             serviceConfig.export();
         }
@@ -65,7 +85,9 @@ public class DubboBootstrap {
             serviceConfig.unexport();
         }
         shutdownHook.destroyAll();
-        removeShutdownHook();
+        if (registerShutdownHookOnStart) {
+            removeShutdownHook();
+        }
     }
 
     /**
