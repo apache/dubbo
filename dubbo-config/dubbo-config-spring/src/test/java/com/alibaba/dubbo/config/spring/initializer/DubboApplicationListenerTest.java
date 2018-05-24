@@ -56,39 +56,4 @@ public class DubboApplicationListenerTest {
         applicationContext.addApplicationListener(new DubboApplicationListener(bootstrap));
         return applicationContext;
     }
-
-    public static void main(String[] args) {
-        ThreadGroup tg = new ThreadGroup("test");
-        Thread a = new Thread(tg, new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Thread.sleep(1000000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        System.out.println(a.isDaemon());
-        System.out.println(a.getThreadGroup().getName());
-        a.start();
-    }
-
-    @Test
-    public void test() {
-        Thread a = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Thread.sleep(1000000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        System.out.println(a.isDaemon());
-        System.out.println(a.getThreadGroup().getName());
-        a.start();
-    }
-
 }
