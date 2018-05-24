@@ -89,7 +89,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
             channel.send(message, sent);
         } else {
             Request request = new Request();
-            request.setVersion(Version.getVersion());
+            request.setVersion(Version.getProtocolVersion());
             request.setTwoWay(false);
             request.setData(message);
             channel.send(request, sent);
@@ -108,7 +108,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         }
         // create request.
         Request req = new Request();
-        req.setVersion(Version.getVersion());
+        req.setVersion(Version.getProtocolVersion());
         req.setTwoWay(true);
         req.setData(request);
         DefaultFuture future = new DefaultFuture(channel, req, timeout);

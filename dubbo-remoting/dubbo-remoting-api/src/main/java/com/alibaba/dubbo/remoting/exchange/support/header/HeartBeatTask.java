@@ -58,7 +58,7 @@ final class HeartBeatTask implements Runnable {
                     if ((lastRead != null && now - lastRead > heartbeat)
                             || (lastWrite != null && now - lastWrite > heartbeat)) {
                         Request req = new Request();
-                        req.setVersion(Version.getVersion());
+                        req.setVersion(Version.getProtocolVersion());
                         req.setTwoWay(true);
                         req.setEvent(Request.HEARTBEAT_EVENT);
                         channel.send(req);

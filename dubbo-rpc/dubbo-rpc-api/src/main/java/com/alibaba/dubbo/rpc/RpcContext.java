@@ -18,6 +18,7 @@ package com.alibaba.dubbo.rpc;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.threadlocal.InternalThreadLocal;
 import com.alibaba.dubbo.common.utils.NetUtils;
 
 import java.net.InetSocketAddress;
@@ -54,7 +55,7 @@ public class RpcContext {
             return new RpcContext();
         }
     };
-    private static final ThreadLocal<RpcContext> SERVER_LOCAL = new ThreadLocal<RpcContext>() {
+    private static final InternalThreadLocal<RpcContext> SERVER_LOCAL = new InternalThreadLocal<RpcContext>() {
         @Override
         protected RpcContext initialValue() {
             return new RpcContext();

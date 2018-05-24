@@ -217,7 +217,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
         Assert.assertEquals(person, obj.getData());
         Assert.assertEquals(true, obj.isTwoWay());
         Assert.assertEquals(true, obj.isEvent());
-        Assert.assertEquals(Version.getVersion(), obj.getVersion());
+        Assert.assertEquals(Version.getProtocolVersion(), obj.getVersion());
         System.out.println(obj);
     }
 
@@ -232,7 +232,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
         Assert.assertEquals(event, obj.getData());
         Assert.assertEquals(true, obj.isTwoWay());
         Assert.assertEquals(true, obj.isEvent());
-        Assert.assertEquals(Version.getVersion(), obj.getVersion());
+        Assert.assertEquals(Version.getProtocolVersion(), obj.getVersion());
         System.out.println(obj);
     }
 
@@ -245,7 +245,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
         Assert.assertEquals(null, obj.getData());
         Assert.assertEquals(true, obj.isTwoWay());
         Assert.assertEquals(true, obj.isHeartbeat());
-        Assert.assertEquals(Version.getVersion(), obj.getVersion());
+        Assert.assertEquals(Version.getProtocolVersion(), obj.getVersion());
         System.out.println(obj);
     }
 
@@ -260,7 +260,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
         Assert.assertEquals(person, obj.getData());
         Assert.assertEquals(true, obj.isTwoWay());
         Assert.assertEquals(false, obj.isHeartbeat());
-        Assert.assertEquals(Version.getVersion(), obj.getVersion());
+        Assert.assertEquals(Version.getProtocolVersion(), obj.getVersion());
         System.out.println(obj);
     }
 
@@ -351,7 +351,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
         Assert.assertEquals(response.isHeartbeat(), obj.isHeartbeat());
         Assert.assertEquals(person, obj.getResult());
         // encode response verson ??
-//        Assert.assertEquals(response.getVersion(), obj.getVersion());
+//        Assert.assertEquals(response.getProtocolVersion(), obj.getVersion());
 
     }
 
@@ -381,7 +381,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
         Assert.assertEquals(response.isHeartbeat(), obj.isHeartbeat());
         Assert.assertEquals(badString, obj.getErrorMessage());
         Assert.assertEquals(null, obj.getResult());
-//        Assert.assertEquals(response.getVersion(), obj.getVersion());
+//        Assert.assertEquals(response.getProtocolVersion(), obj.getVersion());
     }
 
     // http://code.alibabatech.com/jira/browse/DUBBO-392
@@ -389,7 +389,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
     public void testMessageLengthGreaterThanMessageActualLength() throws Exception {
         Channel channel = getCliendSideChannel(url);
         Request request = new Request(1L);
-        request.setVersion(Version.getVersion());
+        request.setVersion(Version.getProtocolVersion());
         Date date = new Date();
         request.setData(date);
         ChannelBuffer encodeBuffer = ChannelBuffers.dynamicBuffer(1024);

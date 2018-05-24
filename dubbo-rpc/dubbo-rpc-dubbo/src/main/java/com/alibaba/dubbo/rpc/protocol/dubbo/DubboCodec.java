@@ -49,7 +49,7 @@ import static com.alibaba.dubbo.rpc.protocol.dubbo.CallbackServiceCodec.encodeIn
 public class DubboCodec extends ExchangeCodec implements Codec2 {
 
     public static final String NAME = "dubbo";
-    public static final String DUBBO_VERSION = Version.getVersion(DubboCodec.class, Version.getVersion());
+    public static final String DUBBO_VERSION = Version.getProtocolVersion();
     public static final byte RESPONSE_WITH_EXCEPTION = 0;
     public static final byte RESPONSE_VALUE = 1;
     public static final byte RESPONSE_NULL_VALUE = 2;
@@ -112,7 +112,7 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
         } else {
             // decode request.
             Request req = new Request(id);
-            req.setVersion(Version.getVersion());
+            req.setVersion(Version.getProtocolVersion());
             req.setTwoWay((flag & FLAG_TWOWAY) != 0);
             if ((flag & FLAG_EVENT) != 0) {
                 req.setEvent(Request.HEARTBEAT_EVENT);
@@ -212,7 +212,7 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
 
         if (attach) {
             // returns current version of Response to consumer side.
-            result.getAttachments().put(Constants.DUBBO_VERSION_KEY, Version.getVersion());
+            result.getAttachments().put(Constants.DUBBO_VERSION_KEY, Version.getProtocolVersion());
             out.writeObject(result.getAttachments());
         }
     }

@@ -165,7 +165,7 @@ final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Cod
         } else {
             // decode request.
             Request req = new Request(id);
-            req.setVersion(Version.getVersion());
+            req.setVersion(Version.getProtocolVersion());
             req.setTwoWay((flag & FLAG_TWOWAY) != 0);
             if ((flag & FLAG_EVENT) != 0) {
                 req.setEvent(Request.HEARTBEAT_EVENT);

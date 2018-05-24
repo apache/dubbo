@@ -32,11 +32,18 @@ import java.util.Set;
  * Version
  */
 public final class Version {
-
-    private static final String DEFAULT_DUBBO_VERSION = "2.0.2";
-    private static final int LOWEST_VERSION_FOR_RESPONSE_ATTATCHMENT = 202; // 2.0.2
     private static final Logger logger = LoggerFactory.getLogger(Version.class);
-    private static final String VERSION = getVersion(Version.class, DEFAULT_DUBBO_VERSION);
+
+    // Dubbo RPC protocol version
+    private static final String DEFAULT_DUBBO_PROTOCOL_VERSION = "2.0.2";
+    // Dubbo implementation version, usually is jar version.
+    private static final String VERSION = getVersion(Version.class, "");
+
+    /**
+     * For protocol compatibility purpose.
+     * Because {@link #isSupportResponseAttatchment} is checked for every call, int compare expect to has higher performance than string.
+     */
+    private static final int LOWEST_VERSION_FOR_RESPONSE_ATTATCHMENT = 202; // 2.0.2
     private static final Map<String, Integer> VERSION2INT = new HashMap<String, Integer>();
 
     static {
@@ -45,6 +52,10 @@ public final class Version {
     }
 
     private Version() {
+    }
+
+    public static String getProtocolVersion() {
+        return DEFAULT_DUBBO_PROTOCOL_VERSION;
     }
 
     public static String getVersion() {
