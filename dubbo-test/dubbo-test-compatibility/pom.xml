@@ -21,7 +21,7 @@
     <parent>
         <groupId>com.alibaba</groupId>
         <artifactId>dubbo-test</artifactId>
-        <version>2.6.2-SNAPSHOT</version>
+        <version>2.6.2</version>
     </parent>
     <artifactId>dubbo-test-compatibility</artifactId>
     <packaging>pom</packaging>
