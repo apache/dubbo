@@ -142,7 +142,7 @@ public class LoadBalanceTest {
     }
 
     @Test
-    public void testLeastActiveLoadBalanceSelect() {
+    public void testLeastActiveLoadBalanceSelectOne() {
         int runs = 10000;
         Map<Invoker, AtomicLong> counter = getInvokeCounter(runs, LeastActiveLoadBalance.NAME);
         for (Invoker minvoker : counter.keySet()) {
