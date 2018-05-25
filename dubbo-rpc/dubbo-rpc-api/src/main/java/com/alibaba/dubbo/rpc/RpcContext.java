@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
@@ -170,6 +171,18 @@ public class RpcContext {
     public boolean isConsumerSide() {
         return getUrl().getParameter(Constants.SIDE_KEY, Constants.PROVIDER_SIDE).equals(Constants.CONSUMER_SIDE);
     }
+
+    /**
+     * get CompletableFuture.
+     *
+     * @param <T>
+     * @return future
+     */
+    @SuppressWarnings("unchecked")
+    public <T> CompletableFuture<T> getCompletableFuture() {
+        return (CompletableFuture<T>) future;
+    }
+
 
     /**
      * get future.

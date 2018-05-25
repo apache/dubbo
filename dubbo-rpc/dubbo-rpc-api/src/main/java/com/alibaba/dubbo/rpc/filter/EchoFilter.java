@@ -18,9 +18,9 @@ package com.alibaba.dubbo.rpc.filter;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.Activate;
-import com.alibaba.dubbo.rpc.Filter;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
+import com.alibaba.dubbo.rpc.PostProcessFilter;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcResult;
@@ -29,7 +29,7 @@ import com.alibaba.dubbo.rpc.RpcResult;
  * EchoInvokerFilter
  */
 @Activate(group = Constants.PROVIDER, order = -110000)
-public class EchoFilter implements Filter {
+public class EchoFilter implements PostProcessFilter {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {
@@ -38,4 +38,10 @@ public class EchoFilter implements Filter {
         return invoker.invoke(inv);
     }
 
+    @Override
+    public void postProcess(Invoker<?> invoker, Invocation invocation, Result result) {
+        System.out.println("Post process for result: " + result.getValue());
+        System.out.println("The next invoker in chain is: " + invoker);
+
+    }
 }
