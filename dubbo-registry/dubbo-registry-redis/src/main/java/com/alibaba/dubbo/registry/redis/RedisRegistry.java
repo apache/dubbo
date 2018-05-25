@@ -134,10 +134,12 @@ public class RedisRegistry extends FailbackRegistry {
             }
             if (StringUtils.isEmpty(password)) {
                 this.jedisPools.put(address, new JedisPool(config, host, port,
-                        url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT)));
+                        url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT), null,
+                        url.getParameter("db.index", 0)));
             } else {
                 this.jedisPools.put(address, new JedisPool(config, host, port,
-                        url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT), password));
+                        url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT), password,
+                        url.getParameter("db.index", 0)));
             }
         }
 
