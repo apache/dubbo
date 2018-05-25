@@ -50,6 +50,7 @@ import java.util.concurrent.Executors;
 import static com.alibaba.dubbo.common.Constants.ACCEPT_FOREIGN_IP;
 import static com.alibaba.dubbo.common.Constants.QOS_ENABLE;
 import static com.alibaba.dubbo.common.Constants.QOS_PORT;
+import static com.alibaba.dubbo.common.Constants.VALIDATION_KEY;
 
 /**
  * RegistryProtocol
@@ -227,7 +228,8 @@ public class RegistryProtocol implements Protocol {
                 .removeParameter(Constants.BIND_PORT_KEY)
                 .removeParameter(QOS_ENABLE)
                 .removeParameter(QOS_PORT)
-                .removeParameter(ACCEPT_FOREIGN_IP);
+                .removeParameter(ACCEPT_FOREIGN_IP)
+                .removeParameter(VALIDATION_KEY);
         return registedProviderUrl;
     }
 
