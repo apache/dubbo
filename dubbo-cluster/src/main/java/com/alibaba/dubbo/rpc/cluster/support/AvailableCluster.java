@@ -16,36 +16,22 @@
  */
 package com.alibaba.dubbo.rpc.cluster.support;
 
-import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.cluster.Cluster;
 import com.alibaba.dubbo.rpc.cluster.Directory;
-import com.alibaba.dubbo.rpc.cluster.LoadBalance;
-
-import java.util.List;
 
 /**
  * AvailableCluster
  *
+ * 失败自动切换，当出现失败，重试其它服务器。通常用于读操作，但重试会带来更长延迟。可通过 retries="2" 来设置重试次数(不含第一次)。
  */
 public class AvailableCluster implements Cluster {
 
     public static final String NAME = "available";
 
     public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
-        //
-        return new AbstractClusterInvoker<T>(directory) {
-            public Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
-                for (Invoker<T> invoker : invokers) {
-                    if (invoker.isAvailable()) {
-                        return invoker.invoke(invocation);
-                    }
-                }
-                throw new RpcException("No provider available in " + invokers);
-            }
-        };
+        return new AvailableClusterInvoker<T>(directory);
     }
 
 }

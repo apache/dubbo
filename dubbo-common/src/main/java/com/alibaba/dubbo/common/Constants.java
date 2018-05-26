@@ -442,6 +442,8 @@ public class Constants {
 
     /**
      * To decide whether to exclude unavailable invoker from the cluster
+     *
+     * 集群时是否排除非可用( available )的 Invoker
      */
     public static final String CLUSTER_AVAILABLE_CHECK_KEY = "cluster.availablecheck";
 

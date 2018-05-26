@@ -31,7 +31,6 @@ public class Consumer {
 
         while (true) {
             try {
-                Thread.sleep(1000);
 //                try {
 //                    demoService.sayHello(gen(1024000));
 //                } catch (Exception e) {
@@ -43,6 +42,10 @@ public class Consumer {
 
 //                demoService.say01(null);
                 demoService.say01("TestException");
+//                demoService.hello("01");
+//                ((EchoService) demoService).$echo("test4u");
+//                ((EchoService) demoService).$echo("test4u");
+                Thread.sleep(10000000);
 //                demoService.say02();
 //                demoService.say03();
 //                demoService.say04();

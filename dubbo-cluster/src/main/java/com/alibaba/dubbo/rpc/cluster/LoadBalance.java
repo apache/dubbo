@@ -28,6 +28,9 @@ import java.util.List;
 
 /**
  * LoadBalance. (SPI, Singleton, ThreadSafe)
+ *
+ * LoadBalance 接口
+ *
  * <p>
  * <a href="http://en.wikipedia.org/wiki/Load_balancing_(computing)">Load-Balancing</a>
  *
@@ -38,6 +41,8 @@ public interface LoadBalance {
 
     /**
      * select one invoker in list.
+     *
+     * 从 Invoker 集合中，选择一个
      *
      * @param invokers   invokers.
      * @param url        refer url

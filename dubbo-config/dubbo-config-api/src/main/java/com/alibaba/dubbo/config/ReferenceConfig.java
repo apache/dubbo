@@ -498,7 +498,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                         urls.add(u.addParameterAndEncoded(Constants.REFER_KEY, StringUtils.toQueryString(map))); // 注册中心，带上服务引用的配置参数
                     }
                 }
-                if (urls == null || urls.isEmpty()) {
+                if (urls.isEmpty()) {
                     throw new IllegalStateException("No such any registry to reference " + interfaceName + " on the consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() + ", please config <dubbo:registry address=\"...\" /> to your spring config.");
                 }
             }
@@ -524,11 +524,9 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                     // 对有注册中心的 Cluster 只用 AvailableCluster
                     // use AvailableCluster only when register's cluster is available
                     URL u = registryURL.addParameter(Constants.CLUSTER_KEY, AvailableCluster.NAME);
-                    // TODO 芋艿
                     invoker = cluster.join(new StaticDirectory(u, invokers));
-                // 无注册中心
+                // 无注册中心，全部都是服务直连
                 } else { // not a registry url
-                    // TODO 芋艿
                     invoker = cluster.join(new StaticDirectory(invokers));
                 }
             }

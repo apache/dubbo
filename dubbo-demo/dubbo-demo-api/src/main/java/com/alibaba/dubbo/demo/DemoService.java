@@ -17,6 +17,7 @@
 package com.alibaba.dubbo.demo;
 
 import com.alibaba.dubbo.demo.entity.User;
+import com.alibaba.dubbo.demo.enumx.Sex;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -54,5 +55,14 @@ public interface DemoService {
               @NotNull(message = "至少需要保存一个用户") User user);
 
     interface Save{}
+
+    void demo(Sex sex);
+
+
+    void hello(String name);
+
+    void hello01(String name);
+
+    void hello02(String name);
 
 }

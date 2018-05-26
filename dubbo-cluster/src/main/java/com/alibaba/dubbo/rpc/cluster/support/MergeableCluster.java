@@ -21,10 +21,14 @@ import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.cluster.Cluster;
 import com.alibaba.dubbo.rpc.cluster.Directory;
 
+/**
+ * 分组聚合 Cluster 实现类
+ */
 public class MergeableCluster implements Cluster {
 
     public static final String NAME = "mergeable";
 
+    @Override
     public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
         return new MergeableClusterInvoker<T>(directory);
     }

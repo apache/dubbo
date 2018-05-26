@@ -29,8 +29,7 @@ import com.alibaba.dubbo.rpc.cluster.LoadBalance;
 import java.util.List;
 
 /**
- * BroadcastClusterInvoker
- *
+ * BroadcastCluster Invoker 实现类
  */
 public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
@@ -40,23 +39,31 @@ public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
         super(directory);
     }
 
+    @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public Result doInvoke(final Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
+        // 检查 invokers 即可用Invoker集合是否为空，如果为空，那么抛出异常
         checkInvokers(invokers, invocation);
+        // 设置已经调用的 Invoker 集合，到 Context 中
         RpcContext.getContext().setInvokers((List) invokers);
+        // 保存最后一次调用的异常
         RpcException exception = null;
+        // 保存最后一次调用的结果
         Result result = null;
+        // 循环候选的 Invoker 集合，调用所有 Invoker 对象。
         for (Invoker<T> invoker : invokers) {
             try {
+                // 发起 RPC 调用
                 result = invoker.invoke(invocation);
             } catch (RpcException e) {
                 exception = e;
                 logger.warn(e.getMessage(), e);
             } catch (Throwable e) {
-                exception = new RpcException(e.getMessage(), e);
+                exception = new RpcException(e.getMessage(), e); // 封装成 RpcException 异常
                 logger.warn(e.getMessage(), e);
             }
         }
+        // 若存在一个异常，抛出该异常
         if (exception != null) {
             throw exception;
         }
