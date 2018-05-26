@@ -35,20 +35,31 @@ import java.util.List;
 
 /**
  * Abstract implementation of Directory: Invoker list returned from this Directory's list method have been filtered by Routers
- *
- * Directory 抽象实现类， TODO 芋艿，优化注释 增加router的Directory
+ * <p>
+ * Directory 抽象实现类，实现了公用的路由规则的逻辑
  */
 public abstract class AbstractDirectory<T> implements Directory<T> {
 
     // logger
     private static final Logger logger = LoggerFactory.getLogger(AbstractDirectory.class);
 
-    private final URL url;
-
+    /**
+     * 是否已经销毁
+     */
     private volatile boolean destroyed = false;
-
+    /**
+     * 注册中心 URL
+     */
+    private final URL url;
+    /**
+     * 消费者 URL
+     *
+     * 若未显示调用 {@link #AbstractDirectory(URL, URL, List)} 构造方法，consumerUrl 等于 {@link #url}
+     */
     private volatile URL consumerUrl;
-
+    /**
+     * Router 数组
+     */
     private volatile List<Router> routers;
 
     public AbstractDirectory(URL url) {
@@ -60,19 +71,24 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     }
 
     public AbstractDirectory(URL url, URL consumerUrl, List<Router> routers) {
-        if (url == null)
+        if (url == null) {
             throw new IllegalArgumentException("url == null");
+        }
         this.url = url;
         this.consumerUrl = consumerUrl;
+        // 设置 Router 数组
         setRouters(routers);
     }
 
+    @Override
     public List<Invoker<T>> list(Invocation invocation) throws RpcException {
         if (destroyed) {
             throw new RpcException("Directory already destroyed .url: " + getUrl());
         }
+        // 获得所有 Invoker 集合
         List<Invoker<T>> invokers = doList(invocation);
-        List<Router> localRouters = this.routers; // local reference
+        // 根据路由规则，筛选 Invoker 集合
+        List<Router> localRouters = this.routers; // local reference 本地引用，避免并发问题
         if (localRouters != null && !localRouters.isEmpty()) {
             for (Router router : localRouters) {
                 try {
@@ -87,27 +103,17 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         return invokers;
     }
 
+    /**
+     * 获得所有 Invoker 集合
+     *
+     * @param invocation Invocation 对象
+     * @return Invoker 集合
+     */
+    protected abstract List<Invoker<T>> doList(Invocation invocation) throws RpcException;
+
+    @Override
     public URL getUrl() {
         return url;
-    }
-
-    public List<Router> getRouters() {
-        return routers;
-    }
-
-    protected void setRouters(List<Router> routers) {
-        // copy list
-        routers = routers == null ? new ArrayList<Router>() : new ArrayList<Router>(routers);
-        // append url router
-        String routerkey = url.getParameter(Constants.ROUTER_KEY);
-        if (routerkey != null && routerkey.length() > 0) {
-            RouterFactory routerFactory = ExtensionLoader.getExtensionLoader(RouterFactory.class).getExtension(routerkey);
-            routers.add(routerFactory.getRouter(url));
-        }
-        // append mock invoker selector
-        routers.add(new MockInvokersSelector());
-        Collections.sort(routers);
-        this.routers = routers;
     }
 
     public URL getConsumerUrl() {
@@ -122,10 +128,29 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         return destroyed;
     }
 
+    @Override
     public void destroy() {
         destroyed = true;
     }
 
-    protected abstract List<Invoker<T>> doList(Invocation invocation) throws RpcException;
+    public List<Router> getRouters() {
+        return routers;
+    }
+
+    // 【TODO 8036】
+    protected void setRouters(List<Router> routers) {
+        // copy list
+        routers = routers == null ? new ArrayList<Router>() : new ArrayList<Router>(routers);
+        // append url router
+        String routerkey = url.getParameter(Constants.ROUTER_KEY);
+        if (routerkey != null && routerkey.length() > 0) {
+            RouterFactory routerFactory = ExtensionLoader.getExtensionLoader(RouterFactory.class).getExtension(routerkey);
+            routers.add(routerFactory.getRouter(url));
+        }
+        // append mock invoker selector
+        routers.add(new MockInvokersSelector());
+        Collections.sort(routers);
+        this.routers = routers;
+    }
 
 }

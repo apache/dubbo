@@ -21,6 +21,7 @@ import com.alibaba.dubbo.rpc.cluster.Merger;
 
 public class BooleanArrayMerger implements Merger<boolean[]> {
 
+    @Override
     public boolean[] merge(boolean[]... items) {
         int totalLen = 0;
         for (boolean[] array : items) {

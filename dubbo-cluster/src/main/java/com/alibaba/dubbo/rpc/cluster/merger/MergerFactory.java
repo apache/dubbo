@@ -25,24 +25,34 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+/**
+ * Merger 工厂类
+ */
 public class MergerFactory {
 
-    private static final ConcurrentMap<Class<?>, Merger<?>> mergerCache =
-            new ConcurrentHashMap<Class<?>, Merger<?>>();
+    /**
+     * Merger 对象缓存
+     */
+    private static final ConcurrentMap<Class<?>, Merger<?>> mergerCache = new ConcurrentHashMap<Class<?>, Merger<?>>();
 
     public static <T> Merger<T> getMerger(Class<T> returnType) {
         Merger result;
+        // 数组类型
         if (returnType.isArray()) {
             Class type = returnType.getComponentType();
+            // 从缓存中获得 Merger 对象
             result = mergerCache.get(type);
             if (result == null) {
                 loadMergers();
                 result = mergerCache.get(type);
             }
+            // 获取不到，使用 ArrayMerger
             if (result == null && !type.isPrimitive()) {
                 result = ArrayMerger.INSTANCE;
             }
+        // 普通类型
         } else {
+            // 从缓存中获得 Merger 对象
             result = mergerCache.get(returnType);
             if (result == null) {
                 loadMergers();
@@ -52,9 +62,11 @@ public class MergerFactory {
         return result;
     }
 
+    /**
+     * 初始化所有的 Merger 拓展对象，到 mergerCache 缓存中。
+      */
     static void loadMergers() {
-        Set<String> names = ExtensionLoader.getExtensionLoader(Merger.class)
-                .getSupportedExtensions();
+        Set<String> names = ExtensionLoader.getExtensionLoader(Merger.class).getSupportedExtensions();
         for (String name : names) {
             Merger m = ExtensionLoader.getExtensionLoader(Merger.class).getExtension(name);
             mergerCache.putIfAbsent(ReflectUtils.getGenericClass(m.getClass()), m);
