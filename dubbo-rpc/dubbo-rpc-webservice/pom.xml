@@ -61,6 +61,11 @@
             <version>1.2.0</version>
         </dependency>
         <dependency>
+            <groupId>com.sun.activation</groupId>
+            <artifactId>javax.activation</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-frontend-simple</artifactId>
         </dependency>
@@ -73,6 +78,5 @@
             <artifactId>spring-context</artifactId>
         </dependency>
     </dependencies>
-
 
 </project>
