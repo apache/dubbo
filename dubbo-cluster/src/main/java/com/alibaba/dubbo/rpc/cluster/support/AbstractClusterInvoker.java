@@ -88,11 +88,15 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
     /**
      * Select a invoker using loadbalance policy.</br>
-     * a)Firstly, select an invoker using loadbalance. If this invoker is in previously selected list, or, 
+     * a)Firstly, select an invoker using loadbalance. If this invoker is in previously selected list, or,
      * if this invoker is unavailable, then continue step b (reselect), otherwise return the first selected invoker</br>
      * b)Reslection, the validation rule for reselection: selected > available. This rule guarantees that
-     * the selected invoker has the minimum chance to be one in the previously selected list, and also 
+     * the selected invoker has the minimum chance to be one in the previously selected list, and also
      * guarantees this invoker is available.
+     *
+     *  * 使用loadbalance选择invoker.</br>
+     * a)先lb选择，如果在selected列表中 或者 不可用且做检验时，进入下一步(重选),否则直接返回</br>
+     * b)重选验证规则：selected > available .保证重选出的结果尽量不在select中，并且是可用的 
      *
      * @param loadbalance load balance policy
      * @param invocation
@@ -127,6 +131,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         return invoker;
     }
 
+    //负载均衡
     private Invoker<T> doSelect(LoadBalance loadbalance, Invocation invocation, List<Invoker<T>> invokers, List<Invoker<T>> selected) throws RpcException {
         if (invokers == null || invokers.isEmpty())
             return null;
@@ -136,6 +141,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         if (invokers.size() == 2 && selected != null && !selected.isEmpty()) {
             return selected.get(0) == invokers.get(0) ? invokers.get(1) : invokers.get(0);
         }
+        //loadbalance 负载均衡 ，默认使用随机权重
         if (loadbalance == null) {
             loadbalance = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(Constants.DEFAULT_LOADBALANCE);
         }
@@ -224,12 +230,15 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
     public Result invoke(final Invocation invocation) throws RpcException {
         checkWhetherDestroyed();
         LoadBalance loadbalance = null;
+        //从directory获取invokers
         List<Invoker<T>> invokers = list(invocation);
         if (invokers != null && !invokers.isEmpty()) {
+            //通过扩展点获取到loadbalance 用来均衡何在
             loadbalance = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(invokers.get(0).getUrl()
                     .getMethodParameter(invocation.getMethodName(), Constants.LOADBALANCE_KEY, Constants.DEFAULT_LOADBALANCE));
         }
         RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
+        //交给子类，模板设计模式
         return doInvoke(invocation, invokers, loadbalance);
     }
 

@@ -40,7 +40,7 @@ public class MockClusterInvoker<T> implements Invoker<T> {
 
     private final Invoker<T> invoker;
 
-    public MockClusterInvoker(Directory<T> directory, Invoker<T> invoker) {
+    public MockClusterInvoker(Directory<T> directory, Invoker<T> invoker) { //初始化的时候放入directory
         this.directory = directory;
         this.invoker = invoker;
     }
@@ -68,7 +68,7 @@ public class MockClusterInvoker<T> implements Invoker<T> {
         if (value.length() == 0 || value.equalsIgnoreCase("false")) {
             //no mock
             result = this.invoker.invoke(invocation);
-        } else if (value.startsWith("force")) {
+        } else if (value.startsWith("force")) { //mock 数据
             if (logger.isWarnEnabled()) {
                 logger.info("force-mock: " + invocation.getMethodName() + " force-mock enabled , url : " + directory.getUrl());
             }

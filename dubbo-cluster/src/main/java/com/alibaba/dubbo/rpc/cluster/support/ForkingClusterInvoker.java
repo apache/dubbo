@@ -37,7 +37,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Invoke a specific number of invokers concurrently, usually used for demanding real-time operations, but need to waste more service resources.
- *
+ * 并行调用
+ * 实时调用性强
  * <a href="http://en.wikipedia.org/wiki/Fork_(topology)">Fork</a>
  *
  */
@@ -61,6 +62,7 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
             selected = new ArrayList<Invoker<T>>();
             for (int i = 0; i < forks; i++) {
                 // TODO. Add some comment here, refer chinese version for more details.
+                //在invoker列表(排除selected)后,如果没有选够,则存在重复循环问题.见select实现.
                 Invoker<T> invoker = select(loadbalance, invocation, invokers, selected);
                 if (!selected.contains(invoker)) {//Avoid add the same invoker several times.
                     selected.add(invoker);
@@ -69,6 +71,9 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
         }
         RpcContext.getContext().setInvokers((List) selected);
         final AtomicInteger count = new AtomicInteger();
+        /**
+         * 用一个队列来保存结果，当全部请求异常的时候才会返回异常  TODO
+         */
         final BlockingQueue<Object> ref = new LinkedBlockingQueue<Object>();
         for (final Invoker<T> invoker : selected) {
             executor.execute(new Runnable() {
