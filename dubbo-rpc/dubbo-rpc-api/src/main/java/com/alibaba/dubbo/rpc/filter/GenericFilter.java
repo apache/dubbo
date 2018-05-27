@@ -47,6 +47,7 @@ import java.lang.reflect.Method;
 @Activate(group = Constants.PROVIDER, order = -20000)
 public class GenericFilter implements Filter {
 
+    @Override
     public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {
         if (inv.getMethodName().equals(Constants.$INVOKE)
                 && inv.getArguments() != null
@@ -78,12 +79,12 @@ public class GenericFilter implements Filter {
                             }
                         } else {
                             throw new RpcException(
-                                    new StringBuilder(32).append("Generic serialization [")
-                                            .append(Constants.GENERIC_SERIALIZATION_NATIVE_JAVA)
-                                            .append("] only support message type ")
-                                            .append(byte[].class)
-                                            .append(" and your message type is ")
-                                            .append(args[i].getClass()).toString());
+                                    "Generic serialization [" +
+                                            Constants.GENERIC_SERIALIZATION_NATIVE_JAVA +
+                                            "] only support message type " +
+                                            byte[].class +
+                                            " and your message type is " +
+                                            args[i].getClass());
                         }
                     }
                 } else if (ProtocolUtils.isBeanGenericSerialization(generic)) {
@@ -92,13 +93,12 @@ public class GenericFilter implements Filter {
                             args[i] = JavaBeanSerializeUtil.deserialize((JavaBeanDescriptor) args[i]);
                         } else {
                             throw new RpcException(
-                                    new StringBuilder(32)
-                                            .append("Generic serialization [")
-                                            .append(Constants.GENERIC_SERIALIZATION_BEAN)
-                                            .append("] only support message type ")
-                                            .append(JavaBeanDescriptor.class.getName())
-                                            .append(" and your message type is ")
-                                            .append(args[i].getClass().getName()).toString());
+                                    "Generic serialization [" +
+                                            Constants.GENERIC_SERIALIZATION_BEAN +
+                                            "] only support message type " +
+                                            JavaBeanDescriptor.class.getName() +
+                                            " and your message type is " +
+                                            args[i].getClass().getName());
                         }
                     }
                 }

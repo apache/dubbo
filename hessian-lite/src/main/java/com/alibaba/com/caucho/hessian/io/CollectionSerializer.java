@@ -74,6 +74,7 @@ public class CollectionSerializer extends AbstractSerializer {
         _sendJavaType = sendJavaType;
     }
 
+    @Override
     public void writeObject(Object obj, AbstractHessianOutput out)
             throws IOException {
         if (out.addRef(obj))

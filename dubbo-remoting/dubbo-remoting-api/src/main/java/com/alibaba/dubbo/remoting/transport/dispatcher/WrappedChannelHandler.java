@@ -59,30 +59,35 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
 
     public void close() {
         try {
-            if (executor instanceof ExecutorService) {
-                ((ExecutorService) executor).shutdown();
+            if (executor != null) {
+                executor.shutdown();
             }
         } catch (Throwable t) {
             logger.warn("fail to destroy thread pool of server: " + t.getMessage(), t);
         }
     }
 
+    @Override
     public void connected(Channel channel) throws RemotingException {
         handler.connected(channel);
     }
 
+    @Override
     public void disconnected(Channel channel) throws RemotingException {
         handler.disconnected(channel);
     }
 
+    @Override
     public void sent(Channel channel, Object message) throws RemotingException {
         handler.sent(channel, message);
     }
 
+    @Override
     public void received(Channel channel, Object message) throws RemotingException {
         handler.received(channel, message);
     }
 
+    @Override
     public void caught(Channel channel, Throwable exception) throws RemotingException {
         handler.caught(channel, exception);
     }
@@ -91,6 +96,7 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
         return executor;
     }
 
+    @Override
     public ChannelHandler getHandler() {
         if (handler instanceof ChannelHandlerDelegate) {
             return ((ChannelHandlerDelegate) handler).getHandler();
@@ -101,6 +107,14 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
 
     public URL getUrl() {
         return url;
+    }
+
+    public ExecutorService getExecutorService() {
+        ExecutorService cexecutor = executor;
+        if (cexecutor == null || cexecutor.isShutdown()) {
+            cexecutor = SHARED_EXECUTOR;
+        }
+        return cexecutor;
     }
 
 }

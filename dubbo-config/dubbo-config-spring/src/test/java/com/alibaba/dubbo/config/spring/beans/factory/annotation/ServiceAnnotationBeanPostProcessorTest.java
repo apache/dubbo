@@ -44,7 +44,8 @@ import java.util.Map;
         classes = {ServiceAnnotationBeanPostProcessorTest.TestConfiguration.class})
 @TestPropertySource(properties = {
         "package1 = com.alibaba.dubbo.config.spring.context.annotation",
-        "packagesToScan = ${package1}"
+        "packagesToScan = ${package1}",
+        "provider.version = 1.2"
 })
 public class ServiceAnnotationBeanPostProcessorTest {
 

@@ -21,7 +21,7 @@ import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.monitor.Monitor;
 import com.alibaba.dubbo.monitor.MonitorFactory;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.List;
@@ -40,10 +40,12 @@ public class AbstractMonitorFactoryTest {
                     return url;
                 }
 
+                @Override
                 public boolean isAvailable() {
                     return true;
                 }
 
+                @Override
                 public void destroy() {
                 }
 

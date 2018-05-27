@@ -64,14 +64,17 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         this.availablecheck = url.getParameter(Constants.CLUSTER_AVAILABLE_CHECK_KEY, Constants.DEFAULT_CLUSTER_AVAILABLE_CHECK);
     }
 
+    @Override
     public Class<T> getInterface() {
         return directory.getInterface();
     }
 
+    @Override
     public URL getUrl() {
         return directory.getUrl();
     }
 
+    @Override
     public boolean isAvailable() {
         Invoker<T> invoker = stickyInvoker;
         if (invoker != null) {
@@ -80,6 +83,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         return directory.isAvailable();
     }
 
+    @Override
     public void destroy() {
         if (destroyed.compareAndSet(false, true)) {
             directory.destroy();
@@ -132,10 +136,6 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
             return null;
         if (invokers.size() == 1)
             return invokers.get(0);
-        // If we only have two invokers, use round-robin instead.
-        if (invokers.size() == 2 && selected != null && !selected.isEmpty()) {
-            return selected.get(0) == invokers.get(0) ? invokers.get(1) : invokers.get(0);
-        }
         if (loadbalance == null) {
             loadbalance = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(Constants.DEFAULT_LOADBALANCE);
         }
@@ -153,7 +153,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
                     int index = invokers.indexOf(invoker);
                     try {
                         //Avoid collision
-                        invoker = index < invokers.size() - 1 ? invokers.get(index + 1) : invoker;
+                        invoker = index < invokers.size() - 1 ? invokers.get(index + 1) : invokers.get(0);
                     } catch (Exception e) {
                         logger.warn(e.getMessage() + " may because invokers list dynamic change, ignore.", e);
                     }
@@ -221,6 +221,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         return null;
     }
 
+    @Override
     public Result invoke(final Invocation invocation) throws RpcException {
         checkWhetherDestroyed();
         LoadBalance loadbalance = null;

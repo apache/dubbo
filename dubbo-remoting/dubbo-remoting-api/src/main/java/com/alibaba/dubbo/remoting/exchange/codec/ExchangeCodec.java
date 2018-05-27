@@ -65,6 +65,7 @@ public class ExchangeCodec extends TelnetCodec {
         return MAGIC;
     }
 
+    @Override
     public void encode(Channel channel, ChannelBuffer buffer, Object msg) throws IOException {
         if (msg instanceof Request) {
             encodeRequest(channel, buffer, (Request) msg);
@@ -75,6 +76,7 @@ public class ExchangeCodec extends TelnetCodec {
         }
     }
 
+    @Override
     public Object decode(Channel channel, ChannelBuffer buffer) throws IOException {
         int readable = buffer.readableBytes();
         byte[] header = new byte[Math.min(readable, HEADER_LENGTH)];
@@ -82,6 +84,7 @@ public class ExchangeCodec extends TelnetCodec {
         return decode(channel, buffer, readable, header);
     }
 
+    @Override
     protected Object decode(Channel channel, ChannelBuffer buffer, int readable, byte[] header) throws IOException {
         // check magic number.
         if (readable > 0 && header[0] != MAGIC_HIGH

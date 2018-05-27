@@ -83,7 +83,7 @@ public class GrizzlyClient extends AbstractClient {
     @Override
     protected void doDisConnect() throws Throwable {
         try {
-            GrizzlyChannel.removeChannelIfDisconnectd(connection);
+            GrizzlyChannel.removeChannelIfDisconnected(connection);
         } catch (Throwable t) {
             logger.warn(t.getMessage());
         }

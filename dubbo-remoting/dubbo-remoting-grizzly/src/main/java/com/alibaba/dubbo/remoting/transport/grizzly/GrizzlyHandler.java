@@ -55,7 +55,7 @@ public class GrizzlyHandler extends BaseFilter {
         } catch (RemotingException e) {
             throw new IOException(StringUtils.toString(e));
         } finally {
-            GrizzlyChannel.removeChannelIfDisconnectd(connection);
+            GrizzlyChannel.removeChannelIfDisconnected(connection);
         }
         return ctx.getInvokeAction();
     }
@@ -69,7 +69,7 @@ public class GrizzlyHandler extends BaseFilter {
         } catch (RemotingException e) {
             throw new IOException(StringUtils.toString(e));
         } finally {
-            GrizzlyChannel.removeChannelIfDisconnectd(connection);
+            GrizzlyChannel.removeChannelIfDisconnected(connection);
         }
         return ctx.getInvokeAction();
     }
@@ -83,7 +83,7 @@ public class GrizzlyHandler extends BaseFilter {
         } catch (RemotingException e) {
             throw new IOException(StringUtils.toString(e));
         } finally {
-            GrizzlyChannel.removeChannelIfDisconnectd(connection);
+            GrizzlyChannel.removeChannelIfDisconnected(connection);
         }
         return ctx.getInvokeAction();
     }
@@ -97,7 +97,7 @@ public class GrizzlyHandler extends BaseFilter {
         } catch (RemotingException e) {
             throw new IOException(StringUtils.toString(e));
         } finally {
-            GrizzlyChannel.removeChannelIfDisconnectd(connection);
+            GrizzlyChannel.removeChannelIfDisconnected(connection);
         }
         return ctx.getInvokeAction();
     }
@@ -111,7 +111,7 @@ public class GrizzlyHandler extends BaseFilter {
         } catch (RemotingException e) {
             logger.error("RemotingException on channel " + channel, e);
         } finally {
-            GrizzlyChannel.removeChannelIfDisconnectd(connection);
+            GrizzlyChannel.removeChannelIfDisconnected(connection);
         }
     }
 

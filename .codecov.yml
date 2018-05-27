@@ -1,0 +1,9 @@
+coverage:
+  status:
+    # pull-requests only
+    patch:
+      default:
+        threshold: 0.1%
+ignore:
+  - "dubbo-demo/.*"
+  - "dubbo-common/src/main/java/com/alibaba/dubbo/common/json/*.java" #  internal JSON impl is deprecate, ignore test coverage for them

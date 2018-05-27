@@ -44,10 +44,12 @@ public abstract class AbstractConfigurator implements Configurator {
         System.out.println(URL.encode("timeout=100"));
     }
 
+    @Override
     public URL getUrl() {
         return configuratorUrl;
     }
 
+    @Override
     public URL configure(URL url) {
         if (configuratorUrl == null || configuratorUrl.getHost() == null
                 || url == null || url.getHost() == null) {
@@ -107,6 +109,7 @@ public abstract class AbstractConfigurator implements Configurator {
      * @param o
      * @return
      */
+    @Override
     public int compareTo(Configurator o) {
         if (o == null) {
             return -1;

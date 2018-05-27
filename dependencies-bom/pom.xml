@@ -13,7 +13,7 @@
 
     <groupId>com.alibaba</groupId>
     <artifactId>dubbo-dependencies-bom</artifactId>
-    <version>2.6.1</version>
+    <version>2.6.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>dubbo-dependencies-bom</name>
@@ -71,7 +71,7 @@
 
     <properties>
         <!-- Common libs -->
-        <spring_version>4.3.10.RELEASE</spring_version>
+        <spring_version>4.3.16.RELEASE</spring_version>
         <javassist_version>3.20.0-GA</javassist_version>
         <netty_version>3.2.5.Final</netty_version>
         <netty4_version>4.0.35.Final</netty4_version>
@@ -99,13 +99,14 @@
 
         <rs_api_version>2.0</rs_api_version>
         <resteasy_version>3.0.19.Final</resteasy_version>
-        <tomcat_embed_version>8.0.11</tomcat_embed_version>
+        <tomcat_embed_version>8.5.31</tomcat_embed_version>
         <!-- Log libs -->
         <slf4j_version>1.7.25</slf4j_version>
         <jcl_version>1.2</jcl_version>
         <log4j_version>1.2.16</log4j_version>
         <logback_version>1.2.2</logback_version>
         <commons_lang3_version>3.4</commons_lang3_version>
+        <embedded_redis_version>0.6</embedded_redis_version>
     </properties>
 
     <dependencyManagement>
@@ -320,7 +321,42 @@
                 <artifactId>commons-lang3</artifactId>
                 <version>${commons_lang3_version}</version>
             </dependency>
+            <!-- Test lib -->
+            <dependency>
+                <groupId>org.apache.curator</groupId>
+                <artifactId>curator-test</artifactId>
+                <version>${curator_version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.github.kstyrc</groupId>
+                <artifactId>embedded-redis</artifactId>
+                <version>${embedded_redis_version}</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

@@ -158,9 +158,7 @@ public class ConfigUtils {
     }
 
     public static void setProperties(Properties properties) {
-        if (properties != null) {
-            PROPERTIES = properties;
-        }
+        PROPERTIES = properties;
     }
 
     public static void addProperties(Properties properties) {
@@ -228,7 +226,7 @@ public class ConfigUtils {
                     input.close();
                 }
             } catch (Throwable e) {
-                logger.warn("Failed to load " + fileName + " file from " + fileName + "(ingore this file): " + e.getMessage(), e);
+                logger.warn("Failed to load " + fileName + " file from " + fileName + "(ignore this file): " + e.getMessage(), e);
             }
             return properties;
         }
@@ -263,7 +261,7 @@ public class ConfigUtils {
             try {
                 properties.load(ClassHelper.getClassLoader().getResourceAsStream(fileName));
             } catch (Throwable e) {
-                logger.warn("Failed to load " + fileName + " file from " + fileName + "(ingore this file): " + e.getMessage(), e);
+                logger.warn("Failed to load " + fileName + " file from " + fileName + "(ignore this file): " + e.getMessage(), e);
             }
             return properties;
         }
@@ -286,7 +284,7 @@ public class ConfigUtils {
                     }
                 }
             } catch (Throwable e) {
-                logger.warn("Fail to load " + fileName + " file from " + url + "(ingore this file): " + e.getMessage(), e);
+                logger.warn("Fail to load " + fileName + " file from " + url + "(ignore this file): " + e.getMessage(), e);
             }
         }
 
@@ -314,6 +312,7 @@ public class ConfigUtils {
             try {
                 timeout = Integer.parseInt(value);
             } catch (Exception e) {
+                // ignore
             }
         } else {
             value = ConfigUtils.getProperty(Constants.SHUTDOWN_WAIT_SECONDS_KEY);
@@ -321,6 +320,7 @@ public class ConfigUtils {
                 try {
                     timeout = Integer.parseInt(value) * 1000;
                 } catch (Exception e) {
+                    // ignore
                 }
             }
         }

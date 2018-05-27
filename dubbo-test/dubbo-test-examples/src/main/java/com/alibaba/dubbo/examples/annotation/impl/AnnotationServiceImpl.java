@@ -25,6 +25,7 @@ import com.alibaba.dubbo.examples.annotation.api.AnnotationService;
 @Service
 public class AnnotationServiceImpl implements AnnotationService {
 
+    @Override
     public String sayHello(String name) {
         System.out.println("async provider received: " + name);
         return "annotation: hello, " + name;

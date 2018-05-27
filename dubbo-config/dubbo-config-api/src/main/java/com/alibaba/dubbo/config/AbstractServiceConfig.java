@@ -171,7 +171,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     }
 
     public void setProtocol(ProtocolConfig protocol) {
-        this.protocols = Arrays.asList(new ProtocolConfig[]{protocol});
+        this.protocols = Arrays.asList(protocol);
     }
 
     public String getAccesslog() {
@@ -198,20 +198,22 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
         this.executes = executes;
     }
 
+    @Override
     @Parameter(key = Constants.SERVICE_FILTER_KEY, append = true)
     public String getFilter() {
         return super.getFilter();
     }
 
+    @Override
     @Parameter(key = Constants.EXPORTER_LISTENER_KEY, append = true)
     public String getListener() {
-        return super.getListener();
+        return listener;
     }
 
     @Override
     public void setListener(String listener) {
         checkMultiExtension(ExporterListener.class, "listener", listener);
-        super.setListener(listener);
+        this.listener = listener;
     }
 
     public Boolean isRegister() {

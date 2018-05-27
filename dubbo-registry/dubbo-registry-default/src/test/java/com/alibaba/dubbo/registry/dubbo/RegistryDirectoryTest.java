@@ -1035,22 +1035,27 @@ public class RegistryDirectoryTest {
             this.destroyWithError = destroyWithError;
         }
 
+        @Override
         public void register(URL url) {
 
         }
 
+        @Override
         public void unregister(URL url) {
 
         }
 
+        @Override
         public void subscribe(URL url, NotifyListener listener) {
 
         }
 
+        @Override
         public void unsubscribe(URL url, NotifyListener listener) {
             if (latch != null) latch.countDown();
         }
 
+        @Override
         public List<URL> lookup(URL url) {
             return null;
         }
@@ -1059,10 +1064,12 @@ public class RegistryDirectoryTest {
             return null;
         }
 
+        @Override
         public boolean isAvailable() {
             return true;
         }
 
+        @Override
         public void destroy() {
             if (destroyWithError) {
                 throw new RpcException("test exception ignore.");

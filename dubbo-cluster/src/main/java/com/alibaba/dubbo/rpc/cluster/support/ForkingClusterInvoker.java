@@ -17,7 +17,7 @@
 package com.alibaba.dubbo.rpc.cluster.support;
 
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.utils.NamedThreadFactory;
+import com.alibaba.dubbo.common.threadlocal.NamedInternalThreadFactory;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
@@ -43,12 +43,18 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
-    private final ExecutorService executor = Executors.newCachedThreadPool(new NamedThreadFactory("forking-cluster-timer", true));
+    /**
+     * Use {@link NamedInternalThreadFactory} to produce {@link com.alibaba.dubbo.common.threadlocal.InternalThread}
+     * which with the use of {@link com.alibaba.dubbo.common.threadlocal.InternalThreadLocal} in {@link RpcContext}.
+     */
+    private final ExecutorService executor = Executors.newCachedThreadPool(
+            new NamedInternalThreadFactory("forking-cluster-timer", true));
 
     public ForkingClusterInvoker(Directory<T> directory) {
         super(directory);
     }
 
+    @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public Result doInvoke(final Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
         checkInvokers(invokers, invocation);
@@ -72,6 +78,7 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
         final BlockingQueue<Object> ref = new LinkedBlockingQueue<Object>();
         for (final Invoker<T> invoker : selected) {
             executor.execute(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         Result result = invoker.invoke(invocation);

@@ -97,6 +97,7 @@ public class HessianRemote {
     /**
      * Defines the hashcode.
      */
+    @Override
     public int hashCode() {
         return url.hashCode();
     }
@@ -104,6 +105,7 @@ public class HessianRemote {
     /**
      * Defines equality
      */
+    @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof HessianRemote))
             return false;
@@ -116,6 +118,7 @@ public class HessianRemote {
     /**
      * Readable version of the remote.
      */
+    @Override
     public String toString() {
         return "[HessianRemote " + url + "]";
     }

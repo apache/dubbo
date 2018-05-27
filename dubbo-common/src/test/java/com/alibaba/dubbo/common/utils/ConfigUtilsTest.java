@@ -16,76 +16,182 @@
  */
 package com.alibaba.dubbo.common.utils;
 
-import com.alibaba.dubbo.common.serialize.Serialization;
-
+import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.threadpool.ThreadPool;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import static java.util.Arrays.asList;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.junit.matchers.JUnitMatchers.containsString;
 
 public class ConfigUtilsTest {
+    @Before
+    public void setUp() throws Exception {
+        ConfigUtils.setProperties(null);
+    }
 
-    public static <T> List<T> toArray(T... args) {
-        List<T> ret = new ArrayList<T>();
-        for (T a : args) {
-            ret.add(a);
-        }
-        return ret;
+    @After
+    public void tearDown() throws Exception {
+        ConfigUtils.setProperties(null);
+    }
+
+    @Test
+    public void testIsNotEmpty() throws Exception {
+        assertThat(ConfigUtils.isNotEmpty("abc"), is(true));
+    }
+
+    @Test
+    public void testIsEmpty() throws Exception {
+        assertThat(ConfigUtils.isEmpty(null), is(true));
+        assertThat(ConfigUtils.isEmpty(""), is(true));
+        assertThat(ConfigUtils.isEmpty("false"), is(true));
+        assertThat(ConfigUtils.isEmpty("FALSE"), is(true));
+        assertThat(ConfigUtils.isEmpty("0"), is(true));
+        assertThat(ConfigUtils.isEmpty("null"), is(true));
+        assertThat(ConfigUtils.isEmpty("NULL"), is(true));
+        assertThat(ConfigUtils.isEmpty("n/a"), is(true));
+        assertThat(ConfigUtils.isEmpty("N/A"), is(true));
+    }
+
+    @Test
+    public void testIsDefault() throws Exception {
+        assertThat(ConfigUtils.isDefault("true"), is(true));
+        assertThat(ConfigUtils.isDefault("TRUE"), is(true));
+        assertThat(ConfigUtils.isDefault("default"), is(true));
+        assertThat(ConfigUtils.isDefault("DEFAULT"), is(true));
     }
 
     @Test
     public void testMergeValues() {
-        List<String> merged = ConfigUtils.mergeValues(Serialization.class, "aaa,bbb,default.cunstom",
-                toArray("dubbo", "default.hessian2", "fastjson"));
-        Assert.assertEquals(toArray("dubbo", "fastjson", "aaa", "bbb", "default.cunstom"), merged);
+        List<String> merged = ConfigUtils.mergeValues(ThreadPool.class, "aaa,bbb,default.custom",
+                asList("fixed", "default.limited", "cached"));
+        assertEquals(asList("fixed", "cached", "aaa", "bbb", "default.custom"), merged);
     }
 
     @Test
-    public void testMergeValues_addDefault() {
-        List<String> merged = ConfigUtils.mergeValues(Serialization.class, "aaa,bbb,default,zzz",
-                toArray("dubbo", "default.hessian2", "fastjson"));
-        Assert.assertEquals(toArray("aaa", "bbb", "dubbo", "fastjson", "zzz"), merged);
+    public void testMergeValuesAddDefault() {
+        List<String> merged = ConfigUtils.mergeValues(ThreadPool.class, "aaa,bbb,default,zzz",
+                asList("fixed", "default.limited", "cached"));
+        assertEquals(asList("aaa", "bbb", "fixed", "cached", "zzz"), merged);
     }
 
     @Test
     public void testMergeValuesDeleteDefault() {
-        List<String> merged = ConfigUtils.mergeValues(Serialization.class, "-default", toArray("dubbo", "default.hessian2", "json"));
-        Assert.assertEquals(toArray(), merged);
+        List<String> merged = ConfigUtils.mergeValues(ThreadPool.class, "-default", asList("fixed", "default.limited", "cached"));
+        assertEquals(asList(), merged);
     }
 
     @Test
     public void testMergeValuesDeleteDefault_2() {
-        List<String> merged = ConfigUtils.mergeValues(Serialization.class, "-default,aaa", toArray("dubbo", "default.hessian2", "json"));
-        Assert.assertEquals(toArray("aaa"), merged);
+        List<String> merged = ConfigUtils.mergeValues(ThreadPool.class, "-default,aaa", asList("fixed", "default.limited", "cached"));
+        assertEquals(asList("aaa"), merged);
     }
 
     /**
-     * Test Point 1: The user configures -default, which will delete all the default parameters
+     * The user configures -default, which will delete all the default parameters
      */
     @Test
     public void testMergeValuesDelete() {
-        List<String> merged = ConfigUtils.mergeValues(Serialization.class, "-dubbo,aaa", toArray("dubbo", "default.hessian2", "fastjson"));
-        Assert.assertEquals(toArray("fastjson", "aaa"), merged);
+        List<String> merged = ConfigUtils.mergeValues(ThreadPool.class, "-fixed,aaa", asList("fixed", "default.limited", "cached"));
+        assertEquals(asList("cached", "aaa"), merged);
     }
 
     @Test
-    public void test_loadProperties_noFile() throws Exception {
+    public void testReplaceProperty() throws Exception {
+        String s = ConfigUtils.replaceProperty("1${a.b.c}2${a.b.c}3", Collections.singletonMap("a.b.c", "ABC"));
+        assertEquals(s, "1ABC2ABC3");
+        s = ConfigUtils.replaceProperty("1${a.b.c}2${a.b.c}3", Collections.<String, String>emptyMap());
+        assertEquals(s, "123");
+    }
+
+    @Test
+    public void testGetProperties1() throws Exception {
+        try {
+            System.setProperty(Constants.DUBBO_PROPERTIES_KEY, "properties.load");
+            Properties p = ConfigUtils.getProperties();
+            assertThat((String) p.get("a"), equalTo("12"));
+            assertThat((String) p.get("b"), equalTo("34"));
+            assertThat((String) p.get("c"), equalTo("56"));
+        } finally {
+            System.clearProperty(Constants.DUBBO_PROPERTIES_KEY);
+        }
+    }
+
+    @Test
+    public void testGetProperties2() throws Exception {
+        System.clearProperty(Constants.DUBBO_PROPERTIES_KEY);
+        Properties p = ConfigUtils.getProperties();
+        assertThat((String) p.get("dubbo"), equalTo("properties"));
+    }
+
+    @Test
+    public void testAddProperties() throws Exception {
+        Properties p = new Properties();
+        p.put("key1", "value1");
+        ConfigUtils.addProperties(p);
+        assertThat((String) ConfigUtils.getProperties().get("key1"), equalTo("value1"));
+    }
+
+    @Test
+    public void testLoadPropertiesNoFile() throws Exception {
         Properties p = ConfigUtils.loadProperties("notExisted", true);
         Properties expected = new Properties();
-        Assert.assertEquals(expected, p);
+        assertEquals(expected, p);
 
         p = ConfigUtils.loadProperties("notExisted", false);
-        Assert.assertEquals(expected, p);
+        assertEquals(expected, p);
     }
 
     @Test
-    public void test_loadProperties_oneFile() throws Exception {
+    public void testGetProperty() throws Exception {
+        assertThat(ConfigUtils.getProperty("dubbo"), equalTo("properties"));
+    }
+
+    @Test
+    public void testGetPropertyDefaultValue() throws Exception {
+        assertThat(ConfigUtils.getProperty("not-exist", "default"), equalTo("default"));
+    }
+
+    @Test
+    public void testGetPropertyFromSystem() throws Exception {
+        try {
+            System.setProperty("dubbo", "system");
+            assertThat(ConfigUtils.getProperty("dubbo"), equalTo("system"));
+        } finally {
+            System.clearProperty("dubbo");
+        }
+    }
+
+    @Test
+    public void testGetSystemProperty() throws Exception {
+        try {
+            System.setProperty("dubbo", "system-only");
+            assertThat(ConfigUtils.getSystemProperty("dubbo"), equalTo("system-only"));
+        } finally {
+            System.clearProperty("dubbo");
+        }
+    }
+
+    @Test
+    public void testLoadProperties() throws Exception {
+        Properties p = ConfigUtils.loadProperties("dubbo.properties");
+        assertThat((String)p.get("dubbo"), equalTo("properties"));
+    }
+
+    @Test
+    public void testLoadPropertiesOneFile() throws Exception {
         Properties p = ConfigUtils.loadProperties("properties.load", false);
 
         Properties expected = new Properties();
@@ -93,11 +199,11 @@ public class ConfigUtilsTest {
         expected.put("b", "34");
         expected.put("c", "56");
 
-        Assert.assertEquals(expected, p);
+        assertEquals(expected, p);
     }
 
     @Test
-    public void test_loadProperties_oneFile_allowMulti() throws Exception {
+    public void testLoadPropertiesOneFileAllowMulti() throws Exception {
         Properties p = ConfigUtils.loadProperties("properties.load", true);
 
         Properties expected = new Properties();
@@ -105,25 +211,26 @@ public class ConfigUtilsTest {
         expected.put("b", "34");
         expected.put("c", "56");
 
-        Assert.assertEquals(expected, p);
+        assertEquals(expected, p);
     }
 
     @Test
-    public void test_loadProperties_oneFile_notRootPath() throws Exception {
+    public void testLoadPropertiesOneFileNotRootPath() throws Exception {
         Properties p = ConfigUtils.loadProperties("META-INF/dubbo/internal/com.alibaba.dubbo.common.threadpool.ThreadPool", false);
 
         Properties expected = new Properties();
         expected.put("fixed", "com.alibaba.dubbo.common.threadpool.support.fixed.FixedThreadPool");
         expected.put("cached", "com.alibaba.dubbo.common.threadpool.support.cached.CachedThreadPool");
         expected.put("limited", "com.alibaba.dubbo.common.threadpool.support.limited.LimitedThreadPool");
+        expected.put("eager", "com.alibaba.dubbo.common.threadpool.support.eager.EagerThreadPool");
 
-        Assert.assertEquals(expected, p);
+        assertEquals(expected, p);
     }
 
 
     @Ignore("see http://code.alibabatech.com/jira/browse/DUBBO-133")
     @Test
-    public void test_loadProperties_multiFile_notRootPath_Exception() throws Exception {
+    public void testLoadPropertiesMultiFileNotRootPathException() throws Exception {
         try {
             ConfigUtils.loadProperties("META-INF/services/com.alibaba.dubbo.common.status.StatusChecker", false);
             Assert.fail();
@@ -133,7 +240,7 @@ public class ConfigUtilsTest {
     }
 
     @Test
-    public void test_loadProperties_multiFile_notRootPath() throws Exception {
+    public void testLoadPropertiesMultiFileNotRootPath() throws Exception {
 
         Properties p = ConfigUtils.loadProperties("META-INF/dubbo/internal/com.alibaba.dubbo.common.status.StatusChecker", true);
 
@@ -142,7 +249,38 @@ public class ConfigUtilsTest {
         expected.put("load", "com.alibaba.dubbo.common.status.support.LoadStatusChecker");
         expected.put("aa", "12");
 
-        Assert.assertEquals(expected, p);
+        assertEquals(expected, p);
     }
 
+    @Test
+    public void testGetPid() throws Exception {
+        assertThat(ConfigUtils.getPid(), greaterThan(0));
+    }
+
+    @Test
+    public void testGetServerShutdownTimeoutFromShutdownWait() throws Exception {
+        System.setProperty(Constants.SHUTDOWN_WAIT_KEY, "1234");
+        try {
+            assertThat(ConfigUtils.getServerShutdownTimeout(), equalTo(1234));
+        } finally {
+            System.clearProperty(Constants.SHUTDOWN_WAIT_KEY);
+        }
+    }
+
+    @Test
+    public void testGetServerShutdownTimeoutFromShutdownWaitSeconds() throws Exception {
+        System.setProperty(Constants.SHUTDOWN_WAIT_SECONDS_KEY, "1234");
+        try {
+            assertThat(ConfigUtils.getServerShutdownTimeout(), equalTo(1234 * 1000));
+        } finally {
+            System.clearProperty(Constants.SHUTDOWN_WAIT_SECONDS_KEY);
+        }
+    }
+
+    @Test
+    public void testGetServerShutdownTimeoutFromDefault() throws Exception {
+        System.clearProperty(Constants.SHUTDOWN_WAIT_KEY);
+        System.clearProperty(Constants.SHUTDOWN_WAIT_SECONDS_KEY);
+        assertThat(ConfigUtils.getServerShutdownTimeout(), equalTo(Constants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT));
+    }
 }

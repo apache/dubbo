@@ -1,0 +1,1 @@
+fastjson=com.alibaba.dubbo.common.serialize.fastjson.FastJsonSerialization

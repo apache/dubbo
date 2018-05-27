@@ -27,6 +27,7 @@ public class CacheServiceImpl implements CacheService {
 
     private final AtomicInteger i = new AtomicInteger();
 
+    @Override
     public String findCache(String id) {
         return "request: " + id + ", response: " + i.getAndIncrement();
     }

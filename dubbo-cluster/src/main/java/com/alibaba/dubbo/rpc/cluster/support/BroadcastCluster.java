@@ -27,6 +27,7 @@ import com.alibaba.dubbo.rpc.cluster.Directory;
  */
 public class BroadcastCluster implements Cluster {
 
+    @Override
     public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
         return new BroadcastClusterInvoker<T>(directory);
     }

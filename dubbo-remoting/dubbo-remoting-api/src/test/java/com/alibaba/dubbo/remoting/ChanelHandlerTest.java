@@ -100,10 +100,12 @@ public class ChanelHandlerTest extends TestCase {
             this.url = url;
         }
 
+        @Override
         public void connected(Channel channel) throws RemotingException {
             System.out.println("connected event,chanel;" + channel);
         }
 
+        @Override
         public void disconnected(Channel channel) throws RemotingException {
             System.out.println("disconnected event,chanel;" + channel);
             initClient(url);

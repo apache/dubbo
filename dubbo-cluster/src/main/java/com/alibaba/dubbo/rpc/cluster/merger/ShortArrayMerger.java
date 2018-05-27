@@ -21,6 +21,7 @@ import com.alibaba.dubbo.rpc.cluster.Merger;
 
 public class ShortArrayMerger implements Merger<short[]> {
 
+    @Override
     public short[] merge(short[]... items) {
         int total = 0;
         for (short[] array : items) {

@@ -29,6 +29,7 @@ public class FailsafeCluster implements Cluster {
 
     public final static String NAME = "failsafe";
 
+    @Override
     public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
         return new FailsafeClusterInvoker<T>(directory);
     }

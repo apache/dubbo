@@ -18,12 +18,13 @@ package com.alibaba.dubbo.rpc.cluster.support;
 
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
-import com.alibaba.dubbo.common.utils.NamedThreadFactory;
+import com.alibaba.dubbo.common.threadlocal.NamedInternalThreadFactory;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcResult;
+import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.cluster.Directory;
 import com.alibaba.dubbo.rpc.cluster.LoadBalance;
 
@@ -50,7 +51,13 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
     private static final long RETRY_FAILED_PERIOD = 5 * 1000;
 
-    private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2, new NamedThreadFactory("failback-cluster-timer", true));
+    /**
+     * Use {@link NamedInternalThreadFactory} to produce {@link com.alibaba.dubbo.common.threadlocal.InternalThread}
+     * which with the use of {@link com.alibaba.dubbo.common.threadlocal.InternalThreadLocal} in {@link RpcContext}.
+     */
+    private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2,
+            new NamedInternalThreadFactory("failback-cluster-timer", true));
+
     private final ConcurrentMap<Invocation, AbstractClusterInvoker<?>> failed = new ConcurrentHashMap<Invocation, AbstractClusterInvoker<?>>();
     private volatile ScheduledFuture<?> retryFuture;
 
@@ -64,6 +71,7 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 if (retryFuture == null) {
                     retryFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
 
+                        @Override
                         public void run() {
                             // collect retry statistics
                             try {
@@ -96,6 +104,7 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
         }
     }
 
+    @Override
     protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
         try {
             checkInvokers(invokers, invocation);
