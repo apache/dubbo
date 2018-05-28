@@ -42,8 +42,8 @@ import com.alibaba.dubbo.rpc.support.RpcUtils;
  * 
  */
 public class ConsistentHashLoadBalance extends AbstractLoadBalance {
-	
-	public static final String NAME = "consistenthash";
+    
+    public static final String NAME = "consistenthash";
 
     private final ConcurrentMap<String, ConsistentHashSelector<?>> selectors = new ConcurrentHashMap<String, ConsistentHashSelector<?>>();
 
@@ -51,7 +51,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
     @SuppressWarnings("unchecked")
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         String methodName = RpcUtils.getMethodName(invocation);
-        String key = invokers.get(0).getUrl().getServiceKey() + "." + methodName;
+        String key = invokers.get(0).getUrl().getServiceKey() + "." + methodName;    
         Map<String, Invoker<T>> invokerMap = new HashMap<String, Invoker<T>>();
         int identityHashCode = caculateInvokerHashCode(invokers, invokerMap);
         ConsistentHashSelector<T> selector = (ConsistentHashSelector<T>) selectors.get(key);
@@ -62,7 +62,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
         return selector.select(invocation, invokerMap);
     }
 
-	/**
+    /**
      * Generate hashcode according to the invoker list.
      * the value only changes when adding or reducing the invoker.
      * 
@@ -78,7 +78,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
     private <T> int caculateInvokerHashCode(List<Invoker<T>> invokers, Map<String, Invoker<T>> invokerMap) {
         StringBuilder metakey = new StringBuilder();
         for (Invoker<T> obj : invokers) {
-        	    String address = obj.getUrl().getAddress();
+            String address = obj.getUrl().getAddress();
             metakey.append(address);
             invokerMap.put(address, obj);
         }
@@ -153,7 +153,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
         }
 
         private Invoker<T> selectInvoker(String invokerAddress, Map<String, Invoker<T>> invokerMap) {
-        	    return invokerMap.get(invokerAddress);
+            return invokerMap.get(invokerAddress);
         }
 
         private long hash(byte[] digest, int number) {
