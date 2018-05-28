@@ -427,22 +427,29 @@ public class UrlUtils {
     }
 
     public static boolean isMatchGlobPattern(String pattern, String value, URL param) {
+        // 以美元符 `$` 开头，表示引用参数
         if (param != null && pattern.startsWith("$")) {
             pattern = param.getRawParameter(pattern.substring(1));
         }
+        // 匹配
         return isMatchGlobPattern(pattern, value);
     }
 
     public static boolean isMatchGlobPattern(String pattern, String value) {
-        if ("*".equals(pattern))
+        // 全匹配
+        if ("*".equals(pattern)) {
             return true;
-        if ((pattern == null || pattern.length() == 0)
-                && (value == null || value.length() == 0))
+        }
+        // 全部为空，匹配
+        if ((pattern == null || pattern.length() == 0) && (value == null || value.length() == 0)) {
             return true;
-        if ((pattern == null || pattern.length() == 0)
-                || (value == null || value.length() == 0))
+        }
+        // 有一个为空，不匹配
+        if ((pattern == null || pattern.length() == 0) || (value == null || value.length() == 0)) {
             return false;
+        }
 
+        // 支持 * 的通配
         int i = pattern.lastIndexOf('*');
         // doesn't find "*"
         if (i == -1) {

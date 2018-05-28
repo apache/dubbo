@@ -72,34 +72,34 @@ limitations under the License.
 
     </dubbo:service>
 
-    <!-- declare the service interface to be exported -->
-    <dubbo:service interface="com.alibaba.dubbo.demo.DemoService" group="g2" ref="demoService" filter="demo" deprecated="false" callbacks="1000" timeout="200000" accesslog="true">
-        <!--<dubbo:service interface="com.alibaba.dubbo.demo.DemoService" protocol="dubbo" ref="demoService"/>-->
-        <!--<dubbo:service id="sa" interface="com.alibaba.dubbo.demo.DemoService" protocol="dubbo" class="com.alibaba.dubbo.demo.provider.DemoServiceImpl">-->
-        <!--&lt;!&ndash;<dubbo:method name="sayHello" retries="100">&ndash;&gt;-->
-        <!--&lt;!&ndash;&lt;!&ndash;<dubbo:argument index="0" callback="true" />&ndash;&gt;&ndash;&gt;-->
-        <!--&lt;!&ndash;<dubbo:argument type="com.demo.CallbackListener" callback="true" />&ndash;&gt;-->
+    <!--&lt;!&ndash; declare the service interface to be exported &ndash;&gt;-->
+    <!--<dubbo:service interface="com.alibaba.dubbo.demo.DemoService" group="g2" ref="demoService" filter="demo" deprecated="false" callbacks="1000" timeout="200000" accesslog="true">-->
+        <!--&lt;!&ndash;<dubbo:service interface="com.alibaba.dubbo.demo.DemoService" protocol="dubbo" ref="demoService"/>&ndash;&gt;-->
+        <!--&lt;!&ndash;<dubbo:service id="sa" interface="com.alibaba.dubbo.demo.DemoService" protocol="dubbo" class="com.alibaba.dubbo.demo.provider.DemoServiceImpl">&ndash;&gt;-->
+        <!--&lt;!&ndash;&lt;!&ndash;<dubbo:method name="sayHello" retries="100">&ndash;&gt;&ndash;&gt;-->
+        <!--&lt;!&ndash;&lt;!&ndash;&lt;!&ndash;<dubbo:argument index="0" callback="true" />&ndash;&gt;&ndash;&gt;&ndash;&gt;-->
+        <!--&lt;!&ndash;&lt;!&ndash;<dubbo:argument type="com.demo.CallbackListener" callback="true" />&ndash;&gt;&ndash;&gt;-->
+        <!--&lt;!&ndash;&lt;!&ndash;</dubbo:method>&ndash;&gt;&ndash;&gt;-->
+        <!--&lt;!&ndash;<property name="demoDAO" ref="demoDAO" />&ndash;&gt;-->
+        <!--&lt;!&ndash;</dubbo:service>&ndash;&gt;-->
+
+        <!--&lt;!&ndash;<dubbo:service id="sb" interface="com.alibaba.dubbo.demo.DemoService" ref="demoService">&ndash;&gt;-->
+        <!--&lt;!&ndash;&lt;!&ndash;<dubbo:method name="sayHello" retries="100">&ndash;&gt;&ndash;&gt;-->
+        <!--&lt;!&ndash;&lt;!&ndash;&lt;!&ndash;<dubbo:argument index="0" callback="true" />&ndash;&gt;&ndash;&gt;&ndash;&gt;-->
+        <!--&lt;!&ndash;&lt;!&ndash;<dubbo:argument type="com.demo.CallbackListener" callback="true" />&ndash;&gt;&ndash;&gt;-->
+        <!--&lt;!&ndash;&lt;!&ndash;</dubbo:method>&ndash;&gt;&ndash;&gt;-->
+
+        <!--&lt;!&ndash;<dubbo:parameter key="threadname" value="shuaiqi" />&ndash;&gt;-->
+        <!--&lt;!&ndash;<dubbo:parameter key="threads" value="123" />&ndash;&gt;-->
+        <!--&lt;!&ndash;<dubbo:parameter key="queues" value="10" />&ndash;&gt;-->
+
+        <!--&lt;!&ndash;<dubbo:method name="callbackParam">&ndash;&gt;-->
+        <!--&lt;!&ndash;<dubbo:argument callback="true" type="com.alibaba.dubbo.demo.ParamCallback" />&ndash;&gt;-->
         <!--&lt;!&ndash;</dubbo:method>&ndash;&gt;-->
-        <!--<property name="demoDAO" ref="demoDAO" />-->
-        <!--</dubbo:service>-->
-
-        <!--<dubbo:service id="sb" interface="com.alibaba.dubbo.demo.DemoService" ref="demoService">-->
-        <!--&lt;!&ndash;<dubbo:method name="sayHello" retries="100">&ndash;&gt;-->
-        <!--&lt;!&ndash;&lt;!&ndash;<dubbo:argument index="0" callback="true" />&ndash;&gt;&ndash;&gt;-->
-        <!--&lt;!&ndash;<dubbo:argument type="com.demo.CallbackListener" callback="true" />&ndash;&gt;-->
-        <!--&lt;!&ndash;</dubbo:method>&ndash;&gt;-->
-
-        <!--<dubbo:parameter key="threadname" value="shuaiqi" />-->
-        <!--<dubbo:parameter key="threads" value="123" />-->
-        <!--<dubbo:parameter key="queues" value="10" />-->
-
-        <!--<dubbo:method name="callbackParam">-->
-        <!--<dubbo:argument callback="true" type="com.alibaba.dubbo.demo.ParamCallback" />-->
-        <!--</dubbo:method>-->
-        <dubbo:method name="say01" deprecated="true" />
+        <!--<dubbo:method name="say01" deprecated="true" />-->
 
 
-    </dubbo:service>
+    <!--</dubbo:service>-->
 
     <!--<dubbo:service interface="com.alibaba.dubbo.demo.BarService" ref="genericService" timeout="200000" />-->
 

@@ -23,7 +23,9 @@ import com.alibaba.dubbo.rpc.Invocation;
 
 /**
  * RouterFactory. (SPI, Singleton, ThreadSafe)
- * <p>
+ *
+ * Router 工厂接口
+ *
  * <a href="http://en.wikipedia.org/wiki/Routing">Routing</a>
  *
  * @see com.alibaba.dubbo.rpc.cluster.Cluster#join(Directory)
@@ -34,6 +36,8 @@ public interface RouterFactory {
 
     /**
      * Create router.
+     *
+     * 创建 Router 对象
      *
      * @param url
      * @return router

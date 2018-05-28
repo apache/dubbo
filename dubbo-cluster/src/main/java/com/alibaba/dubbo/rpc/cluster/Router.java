@@ -26,6 +26,8 @@ import java.util.List;
 /**
  * Router. (SPI, Prototype, ThreadSafe)
  * <p>
+ * 路由规则接口
+ *
  * <a href="http://en.wikipedia.org/wiki/Routing">Routing</a>
  *
  * @see com.alibaba.dubbo.rpc.cluster.Cluster#join(Directory)
@@ -35,6 +37,8 @@ public interface Router extends Comparable<Router> {
 
     /**
      * get the router url.
+     * <p>
+     * 路由规则 URL
      *
      * @return url
      */
@@ -43,10 +47,12 @@ public interface Router extends Comparable<Router> {
     /**
      * route.
      *
-     * @param invokers
+     * 路由，筛选匹配的 Invoker 集合
+     *
+     * @param invokers   Invoker 集合
      * @param url        refer url
      * @param invocation
-     * @return routed invokers
+     * @return routed invokers 路由后的 Invoker 集合
      * @throws RpcException
      */
     <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException;

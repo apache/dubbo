@@ -350,7 +350,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     /**
      * 校验 Stub 和 Mock 相关的配置
      *
-     * TODO 芋艿，后续继续研究
      * @param interfaceClass 接口类
      */
     protected void checkStubAndMock(Class<?> interfaceClass) {
@@ -382,20 +381,24 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             }
         }
         if (ConfigUtils.isNotEmpty(mock)) {
-            if (mock.startsWith(Constants.RETURN_PREFIX)) {
+            if (mock.startsWith(Constants.RETURN_PREFIX)) { // 处理 "return " 开头的情况
                 String value = mock.substring(Constants.RETURN_PREFIX.length());
+                // 校验 Mock 值，配置正确
                 try {
                     MockInvoker.parseMockValue(value);
                 } catch (Exception e) {
                     throw new IllegalStateException("Illegal mock json value in <dubbo:service ... mock=\"" + mock + "\" />");
                 }
             } else {
+                // 获得 Mock 类
                 Class<?> mockClass = ConfigUtils.isDefault(mock) ? ReflectUtils.forName(interfaceClass.getName() + "Mock") : ReflectUtils.forName(mock);
+                // 校验是否实现接口类
                 if (!interfaceClass.isAssignableFrom(mockClass)) {
                     throw new IllegalStateException("The mock implementation class " + mockClass.getName() + " not implement interface " + interfaceClass.getName());
                 }
+                // 校验是否有默认构造方法
                 try {
-                    mockClass.getConstructor(new Class<?>[0]);
+                    mockClass.getConstructor();
                 } catch (NoSuchMethodException e) {
                     throw new IllegalStateException("No such empty constructor \"public " + mockClass.getSimpleName() + "()\" in mock implementation class " + mockClass.getName());
                 }

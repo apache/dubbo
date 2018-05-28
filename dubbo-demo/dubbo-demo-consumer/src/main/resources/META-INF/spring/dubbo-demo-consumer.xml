@@ -29,20 +29,23 @@ limitations under the License.
 
     <!-- use multicast registry center to discover service -->
     <!--<dubbo:registry address="multicast://224.5.6.7:1234"/>-->
-    <dubbo:registry id="zk01" address="zookeeper://127.0.0.1:2181"/>
+    <dubbo:registry id="zk01" address="zookeeper://127.0.0.1:2181">
+    </dubbo:registry>
     <dubbo:registry id="zk02" address="zookeeper://127.0.0.1:2181"/>
     <!--<dubbo:registry address="redis://127.0.0.1:6379"/>-->
 
     <!-- generate proxy for the remote service, then demoService can be used in the same way as the
     local regular interface -->
-    <dubbo:reference id="demoService" group="*" check="false" interface="com.alibaba.dubbo.demo.DemoService" client="netty4" timeout="10000" callbacks="1000" registry="zk01" cluster="failback">
+    <dubbo:reference id="demoService" group="g1" check="false" interface="com.alibaba.dubbo.demo.DemoService"
+                     client="netty4" timeout="10000" callbacks="1000" registry="zk01">
         <!--<dubbo:method name="sayHello" />-->
 
         <!--url="registry://127.0.0.1:2181?registry=zookeeper;127.0.0.1:2181;127.0.0.1:27018"-->
         
         <dubbo:parameter key="payload" value="1000" />
-        
-        <dubbo:method name="sayHello" async="true" onreturn="callbackDemo.done" />
+
+
+        <!--<dubbo:method name="sayHello" async="true" onreturn="callbackDemo.done" />-->
         
     </dubbo:reference>
 
