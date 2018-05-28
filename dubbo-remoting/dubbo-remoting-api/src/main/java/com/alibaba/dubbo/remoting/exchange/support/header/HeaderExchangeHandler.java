@@ -76,7 +76,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         }
     }
 
-    Response handleRequest(ExchangeChannel channel, Request req) throws RemotingException {
+    void handleRequest(ExchangeChannel channel, Request req) throws RemotingException {
         Response res = new Response(req.getId(), req.getVersion());
         if (req.isBroken()) {
             Object data = req.getData();
@@ -88,20 +88,39 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
             res.setErrorMessage("Fail to decode request due to: " + msg);
             res.setStatus(Response.BAD_REQUEST);
 
-            return res;
+            channel.send(res);
+            return;
         }
         // find handler by message class.
         Object msg = req.getData();
         try {
             // handle data.
             CompletableFuture<Object> future = handler.reply(channel, msg);
-            res.setStatus(Response.OK);
-            res.setResult(future.get());
+            if (future.isDone()) {
+                channel.send(future.get());
+                return;
+            }
+            future.whenCompleteAsync((result, t) -> {
+                try {
+                    if (t == null) {
+                        res.setStatus(Response.OK);
+                        res.setResult(result);
+                    } else {
+                        res.setStatus(Response.SERVICE_ERROR);
+                        res.setErrorMessage(StringUtils.toString(t));
+                    }
+                    channel.send(res);
+                } catch (RemotingException e) {
+                    logger.warn("Send result to consumer failed, channel is " + channel + ", msg is " + e);
+                } finally {
+                    // HeaderExchangeChannel.removeChannelIfDisconnected(channel);
+                }
+            });
         } catch (Throwable e) {
             res.setStatus(Response.SERVICE_ERROR);
             res.setErrorMessage(StringUtils.toString(e));
+            channel.send(res);
         }
-        return res;
     }
 
     @Override
@@ -170,11 +189,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
                     handlerEvent(channel, request);
                 } else {
                     if (request.isTwoWay()) {
-                        Response response = handleRequest(exchangeChannel, request);
-                        // TODO Do we need to send back for Callback usage?
-                        if (response.getStatus() != Response.OK || response.getResult() != null) {
-                            channel.send(response);
-                        }
+                        handleRequest(exchangeChannel, request);
                     } else {
                         handler.received(exchangeChannel, request.getData());
                     }
