@@ -34,7 +34,11 @@
 			<artifactId>dubbo-rpc-api</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
-
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-config-api</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>dubbo-remoting-http</artifactId>
@@ -68,28 +72,6 @@
             <artifactId>resteasy-jdk-http</artifactId>
         </dependency>
 
-        <!--<dependency>-->
-            <!--<groupId>org.jboss.resteasy</groupId>-->
-            <!--<artifactId>tjws</artifactId>-->
-            <!--<version>3.0.7.Final</version>-->
-        <!--</dependency>-->
-
-        <!--<dependency>-->
-            <!--<groupId>org.jboss.resteasy</groupId>-->
-            <!--<artifactId>resteasy-undertow</artifactId>-->
-            <!--<version>3.0.7.Final</version>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-            <!--<groupId>io.undertow</groupId>-->
-            <!--<artifactId>undertow-servlet</artifactId>-->
-            <!--<version>1.0.1.Final</version>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-            <!--<groupId>io.undertow</groupId>-->
-            <!--<artifactId>undertow-core</artifactId>-->
-            <!--<version>1.0.1.Final</version>-->
-        <!--</dependency>-->
-
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-jackson-provider</artifactId>
@@ -103,6 +85,16 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
+        </dependency>
+
+        <!-- swagger -->
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-jaxrs</artifactId>
         </dependency>
 
     </dependencies>
