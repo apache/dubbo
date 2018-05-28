@@ -39,6 +39,7 @@ import com.alibaba.dubbo.rpc.protocol.dubbo.DubboExporter;
 
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -55,7 +56,7 @@ public class ThriftProtocol extends AbstractProtocol {
     private ExchangeHandler handler = new ExchangeHandlerAdapter() {
 
         @Override
-        public Object reply(ExchangeChannel channel, Object msg) throws RemotingException {
+        public CompletableFuture<Object> reply(ExchangeChannel channel, Object msg) throws RemotingException {
 
             if (msg instanceof Invocation) {
                 Invocation inv = (Invocation) msg;
@@ -78,7 +79,8 @@ public class ThriftProtocol extends AbstractProtocol {
                 }
 
                 RpcContext.getContext().setRemoteAddress(channel.getRemoteAddress());
-                return exporter.getInvoker().invoke(inv);
+
+                return CompletableFuture.completedFuture(exporter.getInvoker().invoke(inv));
 
             }
 

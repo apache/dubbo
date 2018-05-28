@@ -25,6 +25,8 @@ import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
 import com.alibaba.dubbo.remoting.telnet.support.TelnetHandlerAdapter;
 import com.alibaba.dubbo.remoting.transport.ChannelHandlerDispatcher;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * ExchangeHandlerDispatcher
  */
@@ -82,8 +84,8 @@ public class ExchangeHandlerDispatcher implements ExchangeHandler {
 
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public Object reply(ExchangeChannel channel, Object request) throws RemotingException {
-        return ((Replier) replierDispatcher).reply(channel, request);
+    public CompletableFuture<Object> reply(ExchangeChannel channel, Object request) throws RemotingException {
+        return CompletableFuture.completedFuture(((Replier) replierDispatcher).reply(channel, request));
     }
 
     @Override

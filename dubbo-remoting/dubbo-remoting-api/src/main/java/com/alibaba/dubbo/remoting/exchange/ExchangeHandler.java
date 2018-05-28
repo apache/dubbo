@@ -20,6 +20,8 @@ import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * ExchangeHandler. (API, Prototype, ThreadSafe)
  */
@@ -33,6 +35,6 @@ public interface ExchangeHandler extends ChannelHandler, TelnetHandler {
      * @return response
      * @throws RemotingException
      */
-    Object reply(ExchangeChannel channel, Object request) throws RemotingException;
+    CompletableFuture<Object> reply(ExchangeChannel channel, Object request) throws RemotingException;
 
 }

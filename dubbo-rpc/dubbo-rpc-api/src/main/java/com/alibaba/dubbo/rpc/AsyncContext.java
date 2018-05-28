@@ -17,4 +17,14 @@
 package com.alibaba.dubbo.rpc;
 
 public interface AsyncContext {
+
+    void addListener(Runnable run);
+
+    void write(Object value);
+
+    boolean isAsyncStarted();
+
+    void stop();
+
+    void start();
 }

@@ -34,6 +34,7 @@ import com.alibaba.dubbo.remoting.exchange.support.DefaultFuture;
 import com.alibaba.dubbo.remoting.transport.ChannelHandlerDelegate;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * ExchangeReceiver
@@ -93,9 +94,9 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         Object msg = req.getData();
         try {
             // handle data.
-            Object result = handler.reply(channel, msg);
+            CompletableFuture<Object> future = handler.reply(channel, msg);
             res.setStatus(Response.OK);
-            res.setResult(result);
+            res.setResult(future.get());
         } catch (Throwable e) {
             res.setStatus(Response.SERVICE_ERROR);
             res.setErrorMessage(StringUtils.toString(e));
@@ -170,7 +171,10 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
                 } else {
                     if (request.isTwoWay()) {
                         Response response = handleRequest(exchangeChannel, request);
-                        channel.send(response);
+                        // TODO Do we need to send back for Callback usage?
+                        if (response.getStatus() != Response.OK || response.getResult() != null) {
+                            channel.send(response);
+                        }
                     } else {
                         handler.received(exchangeChannel, request.getData());
                     }

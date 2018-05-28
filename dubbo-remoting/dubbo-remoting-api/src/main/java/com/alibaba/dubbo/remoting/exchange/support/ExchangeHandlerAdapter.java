@@ -21,13 +21,15 @@ import com.alibaba.dubbo.remoting.exchange.ExchangeChannel;
 import com.alibaba.dubbo.remoting.exchange.ExchangeHandler;
 import com.alibaba.dubbo.remoting.telnet.support.TelnetHandlerAdapter;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * ExchangeHandlerAdapter
  */
 public abstract class ExchangeHandlerAdapter extends TelnetHandlerAdapter implements ExchangeHandler {
 
     @Override
-    public Object reply(ExchangeChannel channel, Object msg) throws RemotingException {
+    public CompletableFuture<Object> reply(ExchangeChannel channel, Object msg) throws RemotingException {
         return null;
     }
 

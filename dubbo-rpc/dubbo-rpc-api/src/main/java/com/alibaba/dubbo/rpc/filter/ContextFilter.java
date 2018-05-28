@@ -71,6 +71,7 @@ public class ContextFilter implements Filter {
         try {
             return invoker.invoke(invocation);
         } finally {
+            // TODO must we remove the whole context completely?
             RpcContext.removeContext();
         }
     }

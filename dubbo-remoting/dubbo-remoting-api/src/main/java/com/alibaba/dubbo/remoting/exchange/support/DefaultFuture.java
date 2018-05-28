@@ -47,8 +47,6 @@ public class DefaultFuture implements ResponseFuture {
 
     private static final Map<Long, DefaultFuture> FUTURES = new ConcurrentHashMap<Long, DefaultFuture>();
 
-    private static final Map<Long, Invoker<?>>
-
     static {
         Thread th = new Thread(new RemotingInvocationTimeoutScan(), "DubboResponseTimeoutScanTimer");
         th.setDaemon(true);
