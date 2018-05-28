@@ -39,7 +39,7 @@ public class ProtocolConfigTest {
         MockProtocol2.delegate = protocol;
         ProtocolConfig protocolConfig = new ProtocolConfig();
         protocolConfig.setName("mockprotocol2");
-        protocolConfig.destory();
+        protocolConfig.destroy();
         Mockito.verify(protocol).destroy();
     }
 

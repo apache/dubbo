@@ -454,7 +454,7 @@ public class ProtocolConfig extends AbstractConfig {
         this.extension = extension;
     }
 
-    public void destory() {
+    public void destroy() {
         if (name != null) {
             ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(name).destroy();
         }
