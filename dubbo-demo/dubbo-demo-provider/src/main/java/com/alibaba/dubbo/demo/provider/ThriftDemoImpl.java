@@ -1,3 +1,5 @@
+package com.alibaba.dubbo.demo.provider;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,18 +16,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.protocol.thrift.examples;
 
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import com.alibaba.dubbo.demo.ThriftDemoService;
 
-public class DubboDemoProvider {
 
-    public static void main(String[] args) throws Exception {
-        ClassPathXmlApplicationContext context =
-                new ClassPathXmlApplicationContext("dubbo-demo-provider.xml");
-        context.start();
-        System.out.println("context started");
-        System.in.read();
+public class ThriftDemoImpl implements ThriftDemoService.Iface {
+
+    public boolean echoBool(boolean arg) {
+        return arg;
+    }
+
+    public byte echoByte(byte arg) {
+        return arg;
+    }
+
+    public short echoI16(short arg) {
+        return arg;
+    }
+
+    public int echoI32(int arg) {
+        return arg;
+    }
+
+    public long echoI64(long arg) {
+        return arg;
+    }
+
+    public double echoDouble(double arg) {
+        return arg;
+    }
+
+    public String echoString(String arg) {
+        return arg;
     }
 
 }

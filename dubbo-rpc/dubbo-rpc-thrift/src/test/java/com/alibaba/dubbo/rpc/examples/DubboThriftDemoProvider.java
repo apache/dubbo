@@ -14,43 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.protocol.thrift;
+package com.alibaba.dubbo.rpc.examples;
 
-public class DemoImpl {
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-    public boolean echoBool(boolean arg) {
+public class DubboThriftDemoProvider {
 
-        return arg;
-    }
+    public static void main(String[] args) throws Exception {
+        //Prevent to get IPV6 address,this way only work in debug mode
+        //But you can pass use -Djava.net.preferIPv4Stack=true,then it work well whether in debug mode or not
+        System.setProperty("java.net.preferIPv4Stack", "true");
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"dubbo-demo-provider.xml"});
+        context.start();
 
-    public byte echoByte(byte arg) {
-
-        return arg;
-    }
-
-    public short echoI16(short arg) {
-
-        return arg;
-    }
-
-    public int echoI32(int arg) {
-
-        return arg;
-    }
-
-    public long echoI64(long arg) {
-
-        return arg;
-    }
-
-    public double echoDouble(double arg) {
-
-        return arg;
-    }
-
-    public String echoString(String arg) {
-
-        return arg;
+        System.in.read(); // press any key to exit
     }
 
 }

@@ -14,11 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.protocol.thrift;
+package com.alibaba.dubbo.rpc.examples;
 
-import com.alibaba.dubbo.rpc.examples.DemoImpl;
-import com.alibaba.dubbo.rpc.gen.dubbo.$__DemoStub;
-import com.alibaba.dubbo.rpc.gen.dubbo.Demo;
+import com.alibaba.dubbo.rpc.gen.thrift.Demo;
 
-public class DubboDemoImpl extends DemoImpl implements Demo, $__DemoStub.Iface {
+public class ThriftDemoImpl extends DemoImpl implements Demo.Iface {
 }

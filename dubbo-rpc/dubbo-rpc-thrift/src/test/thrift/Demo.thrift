@@ -2,8 +2,9 @@ namespace dubbo_java com.alibaba.dubbo.rpc.gen.dubbo
 namespace dubbo_cpp  com.alibaba.dubbo.rpc.gen.dubbo
 
 namespace java com.alibaba.dubbo.rpc.gen.thrift
-namespace cpp  com.alibaba.dubbo.rpc.gen.thrift
-
+namespace go demo
+/*Demo service define file,can be generated to inteface files*/
+/*Here test the 7 kind of data type*/
 service Demo {
     bool echoBool( 1:required bool arg );
     byte echoByte( 1:required byte arg );

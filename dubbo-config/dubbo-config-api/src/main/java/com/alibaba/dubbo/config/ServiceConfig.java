@@ -95,6 +95,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private transient volatile boolean unexported;
 
     private volatile String generic;
+    //thrift原生协议的支持调用
+    private boolean nativeThrift = false;
 
     public ServiceConfig() {
     }
@@ -810,6 +812,14 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         } else {
             throw new IllegalArgumentException("Unsupported generic type " + generic);
         }
+    }
+
+    public boolean isNativeThrift() {
+        return nativeThrift;
+    }
+
+    public void setNativeThrift(boolean nativeThrift) {
+        this.nativeThrift = nativeThrift;
     }
 
     public List<URL> getExportedUrls() {
