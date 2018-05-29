@@ -97,7 +97,9 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
             // handle data.
             CompletableFuture<Object> future = handler.reply(channel, msg);
             if (future.isDone()) {
-                channel.send(future.get());
+                res.setStatus(Response.OK);
+                res.setResult(future.get());
+                channel.send(res);
                 return;
             }
             future.whenCompleteAsync((result, t) -> {
