@@ -17,17 +17,39 @@
 package com.alibaba.dubbo.demo.provider;
 
 import com.alibaba.dubbo.demo.DemoService;
-import com.alibaba.dubbo.rpc.RpcContext;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 public class DemoServiceImpl implements DemoService {
 
+    /*@Override
+    public String sayHello(String name) {
+        final AsyncContext asyncContext = RpcContext.startAsync();
+        System.out.println("[" + new SimpleDateFormat("HH:mm:ss").format(new Date()) + "] Hello " + name + ", request from consumer: " + RpcContext.getContext().getRemoteAddress());
+        new Thread(() -> {
+            asyncContext.write("Hello " + name + ", response from provider: " + RpcContext.getContext().getLocalAddress());
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).start();
+        return null;
+    }*/
+
     @Override
     public String sayHello(String name) {
-        System.out.println("[" + new SimpleDateFormat("HH:mm:ss").format(new Date()) + "] Hello " + name + ", request from consumer: " + RpcContext.getContext().getRemoteAddress());
-        return "Hello " + name + ", response from provider: " + RpcContext.getContext().getLocalAddress();
+//        final AsyncContext asyncContext = RpcContext.startAsync();
+//        System.out.println("[" + new SimpleDateFormat("HH:mm:ss").format(new Date()) + "] Hello " + name + ", request from consumer: " + RpcContext.getContext().getRemoteAddress());
+//        new Thread(() -> {
+//            asyncContext.write("Hello " + name + ", response from provider: " + RpcContext.getContext().getLocalAddress());
+//            try {
+//                Thread.sleep(500);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        }).start();
+//        return null;
+
+        return "name";
     }
 
 }
