@@ -17,10 +17,7 @@
 package com.alibaba.dubbo.remoting.transport.netty4;
 
 import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.logger.Logger;
-import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.DubboAppender;
-import com.alibaba.dubbo.common.utils.LogUtil;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.Client;
@@ -28,8 +25,6 @@ import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.Server;
 import com.alibaba.dubbo.remoting.exchange.Exchangers;
 import com.alibaba.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
-import com.alibaba.dubbo.remoting.transport.netty4.logging.NettyHelper;
-import org.apache.log4j.Level;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
