@@ -16,11 +16,13 @@
  */
 package com.alibaba.dubbo.rpc.proxy;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * InvokerHandler
@@ -49,7 +51,19 @@ public class InvokerInvocationHandler implements InvocationHandler {
         if ("equals".equals(methodName) && parameterTypes.length == 1) {
             return invoker.equals(args[0]);
         }
-        return invoker.invoke(new RpcInvocation(method, args)).recreate();
+
+        RpcInvocation invocation;
+        if (methodName.endsWith(Constants.ASYNC_SUFFIX) && method.getReturnType().equals(CompletableFuture.class)) {
+            Class<?> clazz = method.getDeclaringClass();
+            String syncMethodName = methodName.substring(0, methodName.length() - Constants.ASYNC_SUFFIX.length());
+            Method syncMethod = clazz.getSuperclass().getMethod(syncMethodName, method.getParameterTypes());
+            invocation = new RpcInvocation(syncMethod, args);
+            invocation.setAttachment(Constants.ASYNC_KEY, "true");
+        } else {
+            invocation = new RpcInvocation(method, args);
+        }
+        return invoker.invoke(invocation).recreate();
     }
+
 
 }
