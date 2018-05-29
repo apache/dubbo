@@ -30,9 +30,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.UriInfo;
 
-/**
- * Created by kimmking on 2017-6-13.
- */
+
 @Path("dubbo")
 @Consumes({MediaType.APPLICATION_JSON, MediaType.TEXT_XML})
 @Produces({MediaType.APPLICATION_JSON + "; " + "charset=UTF-8", MediaType.TEXT_XML + "; " + "charset=UTF-8"})

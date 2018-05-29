@@ -28,9 +28,6 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Application;
 
-/**
- * Created by kimmking on 2017-6-13.
- */
 @Service
 public class DubboSwaggerApiListingResource extends BaseApiListingResource implements DubboSwaggerService {
 
