@@ -43,7 +43,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@SupportedAnnotationTypes("com.alibaba.dubbo.async.DubboAsync")
+@SupportedAnnotationTypes({"com.alibaba.dubbo.config.async.DubboAsync"})
 public class AsyncAnnotationProcessor extends AbstractProcessor {
 
     private static final String OBJECT_NAME = "java.lang.Object";
@@ -308,7 +308,7 @@ public class AsyncAnnotationProcessor extends AbstractProcessor {
 
     private void startAsyncInterface(StringBuilder result, String qualifiedName, String className, String packageName) {
         result.append("package ").append(packageName).append(";\n");
-        result.append("import import java.util.concurrent.CompletableFuture;\n");
+        result.append("import java.util.concurrent.CompletableFuture;\n");
         result.append("@javax.annotation.Generated(\"com.alibaba.dubbo.async.processor.AsyncAnnotationProcessor\")\n");
         result.append("@com.alibaba.dubbo.config.annotation.AsyncFor(").append(qualifiedName).append(".class)\n");
         result.append("public interface ").append(className).append("Async extends ").append(className).append(" {\n");
@@ -316,7 +316,7 @@ public class AsyncAnnotationProcessor extends AbstractProcessor {
 
     @Override
     public SourceVersion getSupportedSourceVersion() {
-        return SourceVersion.latest();
+        return SourceVersion.latestSupported();
     }
 
     private void close(Writer writer) {
