@@ -22,6 +22,11 @@ import java.util.IdentityHashMap;
 import java.util.Set;
 
 /**
+ * See
+ * <a href="https://github.com/netty/netty/blob/4.1/common/src/main/java/io/netty/util/concurrent/FastThreadLocal.java">
+ * FastThreadLocal
+ * </a>.
+ * <p>
  * InternalThreadLocal
  * A special variant of {@link ThreadLocal} that yields higher access performance when accessed from a
  * {@link InternalThread}.

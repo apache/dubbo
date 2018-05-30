@@ -21,6 +21,11 @@ import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
+ * See
+ * <a href="https://github.com/netty/netty/blob/4.1/common/src/main/java/io/netty/util/internal/InternalThreadLocalMap.java">
+ * InternalThreadLocalMap
+ * </a>.
+ * <p>
  * The internal data structure that stores the threadLocal variables for Netty and all {@link InternalThread}s.
  * Note that this class is for internal use only. Use {@link InternalThread}
  * unless you know what you are doing.
