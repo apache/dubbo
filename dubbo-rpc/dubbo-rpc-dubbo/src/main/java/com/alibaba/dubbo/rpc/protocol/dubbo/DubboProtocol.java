@@ -106,15 +106,16 @@ public class DubboProtocol extends AbstractProtocol {
                 CompletableFuture<Object> resultFuture = new CompletableFuture<>();
                 RpcContext rpcContext = RpcContext.getContext();
                 if (supportServerAsync) {
-                    rpcContext.setAsyncContext(new AsyncContextImpl(channel, resultFuture));
+                    rpcContext.setAsyncContext(new AsyncContextImpl(resultFuture));
                 }
                 rpcContext.setRemoteAddress(channel.getRemoteAddress());
                 Result result = invoker.invoke(inv);
                 if (!rpcContext.isAsyncStarted()) {
                     resultFuture.complete(result);
                 } else if (rpcContext.isAsyncStarted() && result.hasException()) {
-                    rpcContext.stopAsync();
-                    resultFuture.complete(result);
+                    if (rpcContext.stopAsync()) {
+                        resultFuture.complete(result);
+                    }
                 }
 
                 return resultFuture;

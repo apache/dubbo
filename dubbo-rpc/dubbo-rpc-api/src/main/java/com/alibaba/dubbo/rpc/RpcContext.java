@@ -692,10 +692,10 @@ public class RpcContext {
         return asyncContext.isAsyncStarted();
     }
 
-    public void stopAsync() {
-        // TODO mark somewhere
-        asyncContext.stop();
+    public boolean stopAsync() {
+        boolean stoped = asyncContext.stop();
         asyncContext = null;
+        return stoped;
     }
 
     public void setAsyncContext(AsyncContext asyncContext) {

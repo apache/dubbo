@@ -18,39 +18,22 @@ package com.alibaba.dubbo.rpc;
 
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
-import com.alibaba.dubbo.remoting.Channel;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class AsyncContextImpl implements AsyncContext {
     private static final Logger logger = LoggerFactory.getLogger(AsyncContextImpl.class);
 
-    private boolean started = false;
+    private final AtomicBoolean started = new AtomicBoolean(false);
 
     private CompletableFuture<Object> future;
 
     public AsyncContextImpl() {
     }
 
-    public AsyncContextImpl(Channel channel, CompletableFuture<Object> future) {
+    public AsyncContextImpl(CompletableFuture<Object> future) {
         this.future = future;
-        /*this.future.whenCompleteAsync((result, t) -> {
-            Response res = new Response();
-            try {
-                if (t == null) {
-                    res.setStatus(Response.OK);
-                    res.setResult(result);
-                } else {
-                    res.setStatus(Response.SERVICE_ERROR);
-                    res.setErrorMessage(StringUtils.toString(t));
-                }
-                channel.send(res);
-            } catch (RemotingException e) {
-                logger.warn("Send result to consumer failed, channel is " + channel + ", msg is " + e);
-            } finally {
-                // HeaderExchangeChannel.removeChannelIfDisconnected(channel);
-            }
-        });*/
     }
 
     @Override
@@ -60,26 +43,33 @@ public class AsyncContextImpl implements AsyncContext {
 
     @Override
     public void write(Object value) {
-        if (value instanceof Throwable) {
-            // TODO check exception type like ExceptionFilter do.
+        if (stop()) {
+            if (value instanceof Throwable) {
+                // TODO check exception type like ExceptionFilter do.
+            }
+            Result result = new RpcResult(value);
+            future.complete(result);
+        } else {
+            throw new IllegalStateException("The async response has probably been wrote back by another thread, or the asyncContext has been closed.");
         }
-        Result result = new RpcResult(value);
-        future.complete(result);
     }
 
     @Override
     public boolean isAsyncStarted() {
-        return started;
+        return started.get();
     }
 
     @Override
-    public void stop() {
-        this.started = false;
-        future.cancel(true);
+    public boolean stop() {
+        if (started.compareAndSet(true, false)) {
+//            future.cancel(true);
+            return true;
+        }
+        return false;
     }
 
     @Override
     public void start() {
-        this.started = true;
+        this.started.set(true);
     }
 }

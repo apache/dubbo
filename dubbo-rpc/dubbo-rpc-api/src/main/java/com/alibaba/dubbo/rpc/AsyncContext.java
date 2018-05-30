@@ -24,7 +24,7 @@ public interface AsyncContext {
 
     boolean isAsyncStarted();
 
-    void stop();
+    boolean stop();
 
     void start();
 }
