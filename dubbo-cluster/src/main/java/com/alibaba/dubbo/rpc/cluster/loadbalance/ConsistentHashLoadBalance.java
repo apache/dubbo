@@ -16,44 +16,78 @@
  */
 package com.alibaba.dubbo.rpc.cluster.loadbalance;
 
-import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.rpc.Invocation;
-import com.alibaba.dubbo.rpc.Invoker;
-
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.rpc.Invocation;
+import com.alibaba.dubbo.rpc.Invoker;
+import com.alibaba.dubbo.rpc.support.RpcUtils;
+
 /**
  * ConsistentHashLoadBalance
- *
+ * 
+ * After fixed, the ConsistentHashLoadBalance will surpport to used in GenericService,
+ * and it will reduce the times of rebuilding hash cycle when the provider restart 
+ * but nothing to change
+ * 
  */
 public class ConsistentHashLoadBalance extends AbstractLoadBalance {
+    
+    public static final String NAME = "consistenthash";
 
     private final ConcurrentMap<String, ConsistentHashSelector<?>> selectors = new ConcurrentHashMap<String, ConsistentHashSelector<?>>();
 
-    @SuppressWarnings("unchecked")
     @Override
+    @SuppressWarnings("unchecked")
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
-        String key = invokers.get(0).getUrl().getServiceKey() + "." + invocation.getMethodName();
-        int identityHashCode = System.identityHashCode(invokers);
+        String methodName = RpcUtils.getMethodName(invocation);
+        String key = invokers.get(0).getUrl().getServiceKey() + "." + methodName;    
+        Map<String, Invoker<T>> invokerMap = new HashMap<String, Invoker<T>>();
+        int identityHashCode = caculateInvokerHashCode(invokers, invokerMap);
         ConsistentHashSelector<T> selector = (ConsistentHashSelector<T>) selectors.get(key);
         if (selector == null || selector.identityHashCode != identityHashCode) {
-            selectors.put(key, new ConsistentHashSelector<T>(invokers, invocation.getMethodName(), identityHashCode));
+            selectors.put(key, new ConsistentHashSelector<T>(invokers, methodName, identityHashCode));
             selector = (ConsistentHashSelector<T>) selectors.get(key);
         }
-        return selector.select(invocation);
+        return selector.select(invocation, invokerMap);
+    }
+
+    /**
+     * Generate hashcode according to the invoker list.
+     * the value only changes when adding or reducing the invoker.
+     * 
+     * The method use System.identityHashCode(invokers) to generate
+     * hashcode in past.The result of method executed changes everytime,
+     * because the timestamp of invoker alse be solved.
+     * 
+     * Now if the providers are only restart but nothing to change, 
+     * the value also won't be changed;
+     * @param invokers
+     * @return the hashcode of invoker addresses
+     */
+    private <T> int caculateInvokerHashCode(List<Invoker<T>> invokers, Map<String, Invoker<T>> invokerMap) {
+        StringBuilder metakey = new StringBuilder();
+        for (Invoker<T> obj : invokers) {
+            String address = obj.getUrl().getAddress();
+            metakey.append(address);
+            invokerMap.put(address, obj);
+        }
+        return metakey.toString().hashCode();
     }
 
     private static final class ConsistentHashSelector<T> {
 
-        private final TreeMap<Long, Invoker<T>> virtualInvokers;
+        private final TreeMap<Long, String> virtualInvokers;
 
         private final int replicaNumber;
 
@@ -62,7 +96,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
         private final int[] argumentIndex;
 
         ConsistentHashSelector(List<Invoker<T>> invokers, String methodName, int identityHashCode) {
-            this.virtualInvokers = new TreeMap<Long, Invoker<T>>();
+            this.virtualInvokers = new TreeMap<Long, String>();
             this.identityHashCode = identityHashCode;
             URL url = invokers.get(0).getUrl();
             this.replicaNumber = url.getMethodParameter(methodName, "hash.nodes", 160);
@@ -77,34 +111,49 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
                     byte[] digest = md5(address + i);
                     for (int h = 0; h < 4; h++) {
                         long m = hash(digest, h);
-                        virtualInvokers.put(m, invoker);
+                        // here not put the object reference into the map， only put the address
+                        virtualInvokers.put(m, address.intern());
                     }
                 }
             }
         }
 
-        public Invoker<T> select(Invocation invocation) {
-            String key = toKey(invocation.getArguments());
+        public Invoker<T> select(Invocation invocation, Map<String, Invoker<T>> invokerMap) {
+            Object[] param = RpcUtils.getArguments(invocation);
+            String key = toKey(param);
             byte[] digest = md5(key);
-            return selectForKey(hash(digest, 0));
+            String invokerAddress = selectForKey(hash(digest, 0));
+            return selectInvoker(invokerAddress, invokerMap);
         }
 
         private String toKey(Object[] args) {
             StringBuilder buf = new StringBuilder();
             for (int i : argumentIndex) {
                 if (i >= 0 && i < args.length) {
+                    // find a problem here, when args[i] is an array, 
+                    // this method is not stable. Because the value of args[i]
+                    // may be the memory address.
                     buf.append(args[i]);
                 }
             }
             return buf.toString();
         }
 
-        private Invoker<T> selectForKey(long hash) {
-            Map.Entry<Long, Invoker<T>> entry = virtualInvokers.tailMap(hash, true).firstEntry();
-        	if (entry == null) {
-        		entry = virtualInvokers.firstEntry();
-        	}
-        	return entry.getValue();
+        private String selectForKey(long hash) {
+            Long key = hash;
+            if (!virtualInvokers.containsKey(key)) {
+                SortedMap<Long, String> tailMap = virtualInvokers.tailMap(key);
+                if (tailMap.isEmpty()) {
+                    key = virtualInvokers.firstKey();
+                } else {
+                    key = tailMap.firstKey();
+                }
+            }
+            return virtualInvokers.get(key);
+        }
+
+        private Invoker<T> selectInvoker(String invokerAddress, Map<String, Invoker<T>> invokerMap) {
+            return invokerMap.get(invokerAddress);
         }
 
         private long hash(byte[] digest, int number) {

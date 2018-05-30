@@ -226,15 +226,18 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         checkWhetherDestroyed();
         LoadBalance loadbalance = null;
         List<Invoker<T>> invokers = list(invocation);
+        String methodName = RpcUtils.getMethodName(invocation);
         if (invokers != null && !invokers.isEmpty()) {
             loadbalance = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(invokers.get(0).getUrl()
-                    .getMethodParameter(invocation.getMethodName(), Constants.LOADBALANCE_KEY, Constants.DEFAULT_LOADBALANCE));
+                    .getMethodParameter(methodName, Constants.LOADBALANCE_KEY, Constants.DEFAULT_LOADBALANCE));
+        } else {
+            loadbalance = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(Constants.DEFAULT_LOADBALANCE);
         }
         RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
         return doInvoke(invocation, invokers, loadbalance);
     }
 
-    protected void checkWhetherDestroyed() {
+	protected void checkWhetherDestroyed() {
 
         if (destroyed.get()) {
             throw new RpcException("Rpc cluster invoker for " + getInterface() + " on consumer " + NetUtils.getLocalHost()
