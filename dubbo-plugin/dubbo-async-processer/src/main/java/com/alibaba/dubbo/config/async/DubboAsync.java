@@ -14,29 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.protocol.dubbo;
-
-import com.alibaba.dubbo.rpc.AsyncResult;
-
-import java.util.concurrent.CompletableFuture;
+package com.alibaba.dubbo.config.async;
 
 /**
  *
  */
-public class AsyncRpcResult<T> extends AsyncResult<T> {
 
-    private CompletableFuture<T> future;
-
-    public AsyncRpcResult(CompletableFuture<T> future) {
-        this.future = future;
-    }
-
-    public CompletableFuture<T> getFuture() {
-        return future;
-    }
-
-    @Override
-    public Object recreate() throws Throwable {
-        return future;
-    }
+public @interface DubboAsync {
 }

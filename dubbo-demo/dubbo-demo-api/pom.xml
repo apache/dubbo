@@ -29,4 +29,12 @@
     <properties>
         <skip_maven_deploy>true</skip_maven_deploy>
     </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-config-api</artifactId>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
 </project>

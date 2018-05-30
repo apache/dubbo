@@ -14,29 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.protocol.dubbo;
+package com.alibaba.dubbo.config.annotation;
 
-import com.alibaba.dubbo.rpc.AsyncResult;
-
-import java.util.concurrent.CompletableFuture;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- *
+ * TODO This definition should placed in module 'dubbo-config-api', but only can be done when "rpc" dependencies are removed from "dubbo-config-api"
+ * If an interface is annotated with AsyncFor, it will be treated as an async counterpart for the sync one.
  */
-public class AsyncRpcResult<T> extends AsyncResult<T> {
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.ANNOTATION_TYPE})
+public @interface AsyncFor {
 
-    private CompletableFuture<T> future;
+    /**
+     * The original sync-style interface
+     *
+     * @return
+     */
+    Class<?> value();
 
-    public AsyncRpcResult(CompletableFuture<T> future) {
-        this.future = future;
-    }
-
-    public CompletableFuture<T> getFuture() {
-        return future;
-    }
-
-    @Override
-    public Object recreate() throws Throwable {
-        return future;
-    }
 }
