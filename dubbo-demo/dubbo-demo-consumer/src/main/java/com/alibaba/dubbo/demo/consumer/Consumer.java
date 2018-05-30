@@ -17,8 +17,12 @@
 package com.alibaba.dubbo.demo.consumer;
 
 import com.alibaba.dubbo.demo.DemoService;
+import com.alibaba.dubbo.demo.DemoServiceAsync;
+import com.alibaba.dubbo.rpc.RpcContext;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import java.util.concurrent.CompletableFuture;
 
 public class Consumer {
 
@@ -28,19 +32,37 @@ public class Consumer {
         System.setProperty("java.net.preferIPv4Stack", "true");
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"META-INF/spring/dubbo-demo-consumer.xml"});
         context.start();
-        DemoService demoService = (DemoService) context.getBean("demoService"); // get remote service proxy
+        DemoService demoService = (DemoService) context.getBean("demoService1"); // get remote service proxy
 
+//        while (true) {
+//            try {
+//                Thread.sleep(1000);
+//                String hello = demoService.sayHello("world");
+//                System.out.println(hello); // call remote method
+//                CompletableFuture future = RpcContext.getContext().getCompletableFuture();
+//                if (future != null) {
+//                    System.out.println("Result from future: " + future.get());
+//                }
+//            } catch (Throwable throwable) {
+//                throwable.printStackTrace();
+//            }
+//        }
+
+        DemoServiceAsync demoServiceAsync = (DemoServiceAsync) context.getBean("demoService"); // get remote service proxy
         while (true) {
             try {
                 Thread.sleep(1000);
-                String hello = demoService.sayHello("world"); // call remote method
-                System.out.println(hello); // get result
-
+                CompletableFuture<String> future = demoServiceAsync.sayHelloAsync("world");
+                CompletableFuture future1 = RpcContext.getContext().getCompletableFuture();
+                System.out.println("Result from future: " + future.get());
+                if (future1 != null) {
+                    System.out.println("Result from rpccontext future: " + future1.get());
+                }
+                System.out.println("Sync call from async: " + demoServiceAsync.sayHello("sync"));
+                System.out.println("Sync call: " + demoService.sayHello("sync"));
             } catch (Throwable throwable) {
                 throwable.printStackTrace();
             }
-
-
         }
 
     }

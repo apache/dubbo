@@ -30,6 +30,8 @@
 
     <!-- generate proxy for the remote service, then demoService can be used in the same way as the
     local regular interface -->
-    <dubbo:reference id="demoService" check="false" interface="com.alibaba.dubbo.demo.DemoService"/>
+    <dubbo:reference id="demoService" check="false" interface="com.alibaba.dubbo.demo.DemoServiceAsync"/>
+
+    <dubbo:reference id="demoService1" check="false" interface="com.alibaba.dubbo.demo.DemoService"/>
 
 </beans>
