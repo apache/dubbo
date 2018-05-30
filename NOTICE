@@ -3,3 +3,12 @@ Copyright 2018 The Apache Software Foundation
 
 This product includes software developed at
 The Apache Software Foundation (http://www.apache.org/).
+
+-------------------------------------------------------------------------------
+This product contains a modified portion of 'Netty',
+an event-driven asynchronous network application framework :
+
+  * LICENSE:
+    * licenses/LICENSE.netty.txt (Apache License 2.0)
+  * HOMEPAGE:
+    * http://netty.io/
