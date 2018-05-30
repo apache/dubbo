@@ -48,7 +48,7 @@ public class AsyncAnnotationProcessor extends AbstractProcessor {
 
     private static final String OBJECT_NAME = "java.lang.Object";
 
-    private static final String FUTURE_NAME = "ListenableFuture";
+    private static final String FUTURE_NAME = "CompletableFuture";
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
@@ -96,7 +96,7 @@ public class AsyncAnnotationProcessor extends AbstractProcessor {
             writer.write(result.toString());
             writer.close();
         } catch (IOException e) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, "生成async接口失败");
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, "Failed to generate async interface.");
         } finally {
             close(writer);
         }
@@ -130,7 +130,7 @@ public class AsyncAnnotationProcessor extends AbstractProcessor {
         result.append(");");
     }
 
-    //泛型参数
+    // generic parameter type
     private void appendTypeParameters(StringBuilder result, ExecutableElement element) {
         List<? extends TypeParameterElement> typeParameters = element.getTypeParameters();
         if (typeParameters == null || typeParameters.size() == 0) return;
@@ -145,7 +145,7 @@ public class AsyncAnnotationProcessor extends AbstractProcessor {
         result.append("> ");
     }
 
-    //返回值
+    // return type
     private void appendReturnType(StringBuilder result, ExecutableElement element) {
         TypeMirror returnType = element.getReturnType();
         if (returnType.getKind() == TypeKind.VOID) {
@@ -155,7 +155,7 @@ public class AsyncAnnotationProcessor extends AbstractProcessor {
         }
     }
 
-    //参数
+    // parameters
     private void appendParameters(StringBuilder result, ExecutableElement method) {
         List<? extends VariableElement> parameters = method.getParameters();
         int i = 1;
@@ -308,7 +308,7 @@ public class AsyncAnnotationProcessor extends AbstractProcessor {
 
     private void startAsyncInterface(StringBuilder result, String qualifiedName, String className, String packageName) {
         result.append("package ").append(packageName).append(";\n");
-        result.append("import com.google.common.util.concurrent.ListenableFuture;\n");
+        result.append("import import java.util.concurrent.CompletableFuture;\n");
         result.append("@javax.annotation.Generated(\"com.alibaba.dubbo.async.processor.AsyncAnnotationProcessor\")\n");
         result.append("@com.alibaba.dubbo.config.annotation.AsyncFor(").append(qualifiedName).append(".class)\n");
         result.append("public interface ").append(className).append("Async extends ").append(className).append(" {\n");
