@@ -31,7 +31,6 @@
     <modules>
         <module>dubbo-qos</module>
         <module>dubbo-async</module>
-        <module>dubbo-async-processer</module>
     </modules>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
