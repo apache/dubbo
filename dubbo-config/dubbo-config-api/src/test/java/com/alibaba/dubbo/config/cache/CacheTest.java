@@ -29,6 +29,7 @@ import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.config.ServiceConfig;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.RpcInvocation;
+
 import junit.framework.TestCase;
 import org.junit.Test;
 
