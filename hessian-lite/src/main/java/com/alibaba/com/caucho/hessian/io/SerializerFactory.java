@@ -499,7 +499,7 @@ public class SerializerFactory extends AbstractSerializerFactory {
      * Reads the object as a map.
      */
     public Object readMap(AbstractHessianInput in, String type, Class<?> expectKeyType, Class<?> expectValueType)
-        throws HessianProtocolException, IOException {
+            throws HessianProtocolException, IOException {
         Deserializer deserializer = getDeserializer(type);
 
         if (deserializer != null)

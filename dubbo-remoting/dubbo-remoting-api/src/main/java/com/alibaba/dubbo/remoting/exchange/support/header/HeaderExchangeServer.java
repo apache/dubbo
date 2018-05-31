@@ -29,6 +29,7 @@ import com.alibaba.dubbo.remoting.Server;
 import com.alibaba.dubbo.remoting.exchange.ExchangeChannel;
 import com.alibaba.dubbo.remoting.exchange.ExchangeServer;
 import com.alibaba.dubbo.remoting.exchange.Request;
+
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -133,7 +134,7 @@ public class HeaderExchangeServer implements ExchangeServer {
         Request request = new Request();
         request.setEvent(Request.READONLY_EVENT);
         request.setTwoWay(false);
-        request.setVersion(Version.getVersion());
+        request.setVersion(Version.getProtocolVersion());
 
         Collection<Channel> channels = getChannels();
         for (Channel channel : channels) {

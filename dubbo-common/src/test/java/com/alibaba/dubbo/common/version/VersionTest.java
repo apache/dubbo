@@ -14,23 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.com.caucho.hessian.io.beans;
+package com.alibaba.dubbo.common.version;
 
-import java.io.Serializable;
-import java.util.Map;
 
-/**
- * test short serialize & deserialize model
- */
-public class Hessian2StringShortType implements Serializable {
+import com.alibaba.dubbo.common.Version;
 
-    public Map<String, Short> stringShortMap;
+import org.junit.Assert;
+import org.junit.Test;
 
-    public Map<String, Byte> stringByteMap;
+public class VersionTest {
 
-    public Map<String, PersonType> stringPersonTypeMap;
+    @Test
+    public void testGetProtocolVersion() {
+        Assert.assertEquals(Version.getProtocolVersion(), Version.DEFAULT_DUBBO_PROTOCOL_VERSION);
+    }
 
-    public Hessian2StringShortType() {
-
+    @Test
+    public void testSupportResponseAttatchment() {
+        Assert.assertTrue(Version.isSupportResponseAttatchment("2.0.2"));
+        Assert.assertTrue(Version.isSupportResponseAttatchment("2.0.3"));
+        Assert.assertFalse(Version.isSupportResponseAttatchment("2.0.0"));
     }
 }
