@@ -19,6 +19,7 @@ package com.alibaba.dubbo.container.spring;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ConfigUtils;
+import com.alibaba.dubbo.config.spring.initializer.DubboApplicationListener;
 import com.alibaba.dubbo.container.Container;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -43,7 +44,10 @@ public class SpringContainer implements Container {
         if (configPath == null || configPath.length() == 0) {
             configPath = DEFAULT_SPRING_CONFIG;
         }
-        context = new ClassPathXmlApplicationContext(configPath.split("[,\\s]+"));
+        context = new ClassPathXmlApplicationContext(configPath.split("[,\\s]+"), false);
+        context.addApplicationListener(new DubboApplicationListener());
+        context.registerShutdownHook();
+        context.refresh();
         context.start();
     }
 
