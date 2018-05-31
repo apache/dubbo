@@ -494,6 +494,9 @@
                                 <exclude>**/resources/META-INF/**</exclude>
                                 <!-- exclude the hessian-lite files -->
                                 <exclude>**/com/caucho/hessian/**</exclude>
+                                <!-- exclude the internal threadlocal files -->
+                                <exclude>**/com/alibaba/common/threadlocal/InternalThreadLocal.java</exclude>
+                                <exclude>**/com/alibaba/common/threadlocal/InternalThreadLocalMap.java</exclude>
                             </excludes>
                         </configuration>
                     </execution>
