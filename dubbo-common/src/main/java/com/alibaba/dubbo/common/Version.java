@@ -19,11 +19,15 @@ package com.alibaba.dubbo.common;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ClassHelper;
+import com.alibaba.dubbo.common.utils.StringUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.security.CodeSource;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 
 /**
@@ -34,6 +38,8 @@ public final class Version {
     private static final String DEFAULT_DUBBO_VERSION = "2.0.0";
     private static final Logger logger = LoggerFactory.getLogger(Version.class);
     private static final String VERSION = getVersion(Version.class, DEFAULT_DUBBO_VERSION);
+    private static final String DUBBO_VERSION_PROPERTIES_PATH = "/dubboVersion.properties";
+    private static final String DUBBO_VERSION_KEY = "dubbo.version";
 
     static {
         // check if there's duplicated jar
@@ -47,24 +53,38 @@ public final class Version {
         return VERSION;
     }
 
-
-    private static boolean hasResource(String path) {
+    /**
+     * get version from dubboVersion.properties filled by pom.xml
+     *
+     * @return
+     */
+    private static String getVersionFromConfigFile() {
+        String version = null;
         try {
-            return Version.class.getClassLoader().getResource(path) != null;
-        } catch (Throwable t) {
-            return false;
+            InputStream inputStream = Version.class.getResourceAsStream(DUBBO_VERSION_PROPERTIES_PATH);
+            Properties properties = new Properties();
+            properties.load(inputStream);
+            version = properties.getProperty(DUBBO_VERSION_KEY);
+        } catch (IOException e) {
+            logger.error("return version error " + e.getMessage(), e);
         }
+        return version;
     }
 
     public static String getVersion(Class<?> cls, String defaultVersion) {
         try {
-            // find version info from MANIFEST.MF first
-            String version = cls.getPackage().getImplementationVersion();
-            if (version == null || version.length() == 0) {
-                version = cls.getPackage().getSpecificationVersion();
+            // find version info from dubboVersion.properties
+            String version = getVersionFromConfigFile();
+            if (StringUtils.isNotEmpty(version)) {
+                return version;
             }
-            if (version == null || version.length() == 0) {
-                // guess version fro jar file name if nothing's found from MANIFEST.MF
+            // find version info from MANIFEST.MF first
+            version = cls.getPackage().getImplementationVersion();
+            if (StringUtils.isNotEmpty(version)) {
+                String specificationVersion = cls.getPackage().getSpecificationVersion();
+                return StringUtils.isNotEmpty(specificationVersion) ? specificationVersion : defaultVersion;
+            } else {
+                // guess version from jar file name if nothing's found from from dubboVersion.properties and MANIFEST.MF
                 CodeSource codeSource = cls.getProtectionDomain().getCodeSource();
                 if (codeSource == null) {
                     logger.info("No codeSource for class " + cls.getName() + " when getVersion, use default version " + defaultVersion);
@@ -89,11 +109,12 @@ public final class Version {
                             }
                         }
                         version = file;
+                        return StringUtils.isNotEmpty(version) ? version : defaultVersion;
                     }
                 }
             }
             // return default version if no version info is found
-            return version == null || version.length() == 0 ? defaultVersion : version;
+            return defaultVersion;
         } catch (Throwable e) {
             // return default version when any exception is thrown
             logger.error("return default version, ignore exception " + e.getMessage(), e);
