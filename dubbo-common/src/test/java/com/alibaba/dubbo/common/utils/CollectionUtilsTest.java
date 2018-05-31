@@ -22,17 +22,27 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import static com.alibaba.dubbo.common.utils.CollectionUtils.isEmpty;
+import static com.alibaba.dubbo.common.utils.CollectionUtils.isNotEmpty;
+import static com.alibaba.dubbo.common.utils.CollectionUtils.toMap;
+import static com.alibaba.dubbo.common.utils.CollectionUtils.toStringMap;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class CollectionUtilsTest {
     @Test
-    public void test_sort() throws Exception {
+    public void testSort() throws Exception {
         List<Integer> list = new ArrayList<Integer>();
         list.add(100);
         list.add(10);
@@ -47,14 +57,14 @@ public class CollectionUtilsTest {
     }
 
     @Test
-    public void test_sort_null() throws Exception {
+    public void testSortNull() throws Exception {
         assertNull(CollectionUtils.sort(null));
 
         assertTrue(CollectionUtils.sort(new ArrayList<Integer>()).isEmpty());
     }
 
     @Test
-    public void test_sortSimpleName() throws Exception {
+    public void testSortSimpleName() throws Exception {
         List<String> list = new ArrayList<String>();
         list.add("aaa.z");
         list.add("b");
@@ -69,14 +79,14 @@ public class CollectionUtilsTest {
     }
 
     @Test
-    public void test_sortSimpleName_null() throws Exception {
+    public void testSortSimpleNameNull() throws Exception {
         assertNull(CollectionUtils.sortSimpleName(null));
 
         assertTrue(CollectionUtils.sortSimpleName(new ArrayList<String>()).isEmpty());
     }
 
     @Test
-    public void test_splitAll() throws Exception {
+    public void testSplitAll() throws Exception {
         assertNull(CollectionUtils.splitAll(null, null));
         assertNull(CollectionUtils.splitAll(null, "-"));
 
@@ -98,7 +108,7 @@ public class CollectionUtilsTest {
     }
 
     @Test
-    public void test_joinAll() throws Exception {
+    public void testJoinAll() throws Exception {
         assertNull(CollectionUtils.joinAll(null, null));
         assertNull(CollectionUtils.joinAll(null, "-"));
 
@@ -125,7 +135,7 @@ public class CollectionUtilsTest {
     }
 
     @Test
-    public void test_joinList() throws Exception {
+    public void testJoinList() throws Exception {
         List<String> list = Arrays.asList();
         assertEquals("", CollectionUtils.join(list, "/"));
 
@@ -137,7 +147,7 @@ public class CollectionUtilsTest {
     }
 
     @Test
-    public void test_mapEquals() throws Exception {
+    public void testMapEquals() throws Exception {
         assertTrue(CollectionUtils.mapEquals(null, null));
         assertFalse(CollectionUtils.mapEquals(null, new HashMap<String, String>()));
         assertFalse(CollectionUtils.mapEquals(new HashMap<String, String>(), null));
@@ -147,9 +157,18 @@ public class CollectionUtilsTest {
     }
 
     @Test
-    public void test_toMap() throws Exception {
-        assertTrue(CollectionUtils.toMap().isEmpty());
+    public void testStringMap1() throws Exception {
+        assertThat(toStringMap("key", "value"), equalTo(Collections.singletonMap("key", "value")));
+    }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testStringMap2() throws Exception {
+        toStringMap("key", "value", "odd");
+    }
+
+    @Test
+    public void testToMap1() throws Exception {
+        assertTrue(CollectionUtils.toMap().isEmpty());
 
         Map<String, Integer> expected = new HashMap<String, Integer>();
         expected.put("a", 1);
@@ -157,5 +176,22 @@ public class CollectionUtilsTest {
         expected.put("c", 3);
 
         assertEquals(expected, CollectionUtils.toMap("a", 1, "b", 2, "c", 3));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testToMap2() throws Exception {
+        toMap("a", "b", "c");
+    }
+
+    @Test
+    public void testIsEmpty() throws Exception {
+        assertThat(isEmpty(null), is(true));
+        assertThat(isEmpty(new HashSet()), is(true));
+        assertThat(isEmpty(emptyList()), is(true));
+    }
+
+    @Test
+    public void testIsNotEmpty() throws Exception {
+        assertThat(isNotEmpty(singleton("a")), is(true));
     }
 }

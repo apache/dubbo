@@ -62,12 +62,65 @@ public class InternalThreadLocalTest {
     }
 
     @Test
+    public void testRemoveAll() throws InterruptedException {
+        final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>();
+        internalThreadLocal.set(1);
+        Assert.assertTrue("set failed", internalThreadLocal.get() == 1);
+
+        final InternalThreadLocal<String> internalThreadLocalString = new InternalThreadLocal<String>();
+        internalThreadLocalString.set("value");
+        Assert.assertTrue("set failed", "value".equals(internalThreadLocalString.get()));
+
+        InternalThreadLocal.removeAll();
+        Assert.assertTrue("removeAll failed!", internalThreadLocal.get() == null);
+        Assert.assertTrue("removeAll failed!", internalThreadLocalString.get() == null);
+    }
+
+    @Test
+    public void testSize() throws InterruptedException {
+        final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>();
+        internalThreadLocal.set(1);
+        Assert.assertTrue("size method is wrong!", InternalThreadLocal.size() == 1);
+
+        final InternalThreadLocal<String> internalThreadLocalString = new InternalThreadLocal<String>();
+        internalThreadLocalString.set("value");
+        Assert.assertTrue("size method is wrong!", InternalThreadLocal.size() == 2);
+    }
+
+    @Test
     public void testSetAndGet() {
         final Integer testVal = 10;
         final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>();
         internalThreadLocal.set(testVal);
         Assert.assertTrue("set is not equals get",
                 Objects.equals(testVal, internalThreadLocal.get()));
+    }
+
+    @Test
+    public void testRemove() {
+        final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>();
+        internalThreadLocal.set(1);
+        Assert.assertTrue("get method false!", internalThreadLocal.get() == 1);
+
+        internalThreadLocal.remove();
+        Assert.assertTrue("remove failed!", internalThreadLocal.get() == null);
+    }
+
+    @Test
+    public void testOnRemove() {
+        final Integer[] valueToRemove = {null};
+        final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>() {
+            @Override
+            protected void onRemoval(Integer value) throws Exception {
+                //value calculate
+                valueToRemove[0] = value + 1;
+            }
+        };
+        internalThreadLocal.set(1);
+        Assert.assertTrue("get method false!", internalThreadLocal.get() == 1);
+
+        internalThreadLocal.remove();
+        Assert.assertTrue("onRemove method failed!", valueToRemove[0] == 2);
     }
 
     @Test

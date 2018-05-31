@@ -107,9 +107,17 @@ public class RpcResult implements Result, Serializable {
      * @param map contains all key-value pairs to append
      */
     public void setAttachments(Map<String, String> map) {
-        if (map != null && map.size() > 0) {
-            attachments.putAll(map);
+        this.attachments = map == null ? new HashMap<String, String>() : map;
+    }
+
+    public void addAttachments(Map<String, String> map) {
+        if (map == null) {
+            return;
         }
+        if (this.attachments == null) {
+            this.attachments = new HashMap<String, String>();
+        }
+        this.attachments.putAll(map);
     }
 
     @Override

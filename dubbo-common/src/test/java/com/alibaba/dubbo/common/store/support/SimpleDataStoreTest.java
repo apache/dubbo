@@ -18,14 +18,18 @@ package com.alibaba.dubbo.common.store.support;
 
 import org.junit.Test;
 
+import java.util.Map;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class SimpleDataStoreTest {
-    SimpleDataStore dataStore = new SimpleDataStore();
+    private SimpleDataStore dataStore = new SimpleDataStore();
 
     @Test
-    public void testPut_Get() throws Exception {
+    public void testPutGet() throws Exception {
         assertNull(dataStore.get("xxx", "yyy"));
 
         dataStore.put("name", "key", "1");
@@ -41,5 +45,16 @@ public class SimpleDataStoreTest {
         dataStore.put("name", "key", "1");
         dataStore.remove("name", "key");
         assertNull(dataStore.get("name", "key"));
+    }
+
+    @Test
+    public void testGetComponent() throws Exception {
+        Map<String, Object> map = dataStore.get("component");
+        assertTrue(map != null && map.isEmpty());
+        dataStore.put("component", "key", "value");
+        map = dataStore.get("component");
+        assertTrue(map != null && map.size() == 1);
+        dataStore.remove("component", "key");
+        assertNotEquals(map, dataStore.get("component"));
     }
 }

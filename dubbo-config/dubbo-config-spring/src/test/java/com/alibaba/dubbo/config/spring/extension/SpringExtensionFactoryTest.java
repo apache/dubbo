@@ -16,49 +16,80 @@
  */
 package com.alibaba.dubbo.config.spring.extension;
 
+import com.alibaba.dubbo.config.spring.api.DemoService;
+import com.alibaba.dubbo.config.spring.api.HelloService;
+import com.alibaba.dubbo.config.spring.impl.DemoServiceImpl;
+import com.alibaba.dubbo.config.spring.impl.HelloServiceImpl;
+
+import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-
+@Configuration
 public class SpringExtensionFactoryTest {
 
-    private SpringExtensionFactory springExtensionFactory;
+    private SpringExtensionFactory springExtensionFactory = new SpringExtensionFactory();
+    private AnnotationConfigApplicationContext context1;
+    private AnnotationConfigApplicationContext context2;
 
     @Before
-    public void setUp() {
-        springExtensionFactory = new SpringExtensionFactory();
+    public void init() {
+        context1 = new AnnotationConfigApplicationContext();
+        context1.register(getClass());
+        context1.refresh();
+        context2 = new AnnotationConfigApplicationContext();
+        context2.register(BeanForContext2.class);
+        context2.refresh();
+        SpringExtensionFactory.addApplicationContext(context1);
+        SpringExtensionFactory.addApplicationContext(context2);
     }
 
     @Test
-    public void testExtensionWithSameName() {
-        AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
-        applicationContext.register(CustomServiceConfig.class);
-        applicationContext.refresh();
-
-        SpringExtensionFactory.addApplicationContext(applicationContext);
-        CustomService service = springExtensionFactory.getExtension(CustomService.class, "customService");
-        SpringExtensionFactory.removeApplicationContext(applicationContext);
-
-        assertThat(service, not(nullValue()));
+    public void testGetExtensionByName() {
+        DemoService bean = springExtensionFactory.getExtension(DemoService.class, "bean1");
+        Assert.assertNotNull(bean);
     }
-}
 
-@Configuration
-class CustomServiceConfig {
-
-    @Bean
-    public CustomService customService() {
-        return mock(CustomService.class);
+    @Test
+    public void testGetExtensionByTypeMultiple() {
+        try {
+            springExtensionFactory.getExtension(DemoService.class, "beanname-not-exist");
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.assertTrue(e instanceof NoUniqueBeanDefinitionException);
+        }
     }
-}
 
-class CustomService {
+    @Test
+    public void testGetExtensionByType() {
+        HelloService bean = springExtensionFactory.getExtension(HelloService.class, "beanname-not-exist");
+        Assert.assertNotNull(bean);
+    }
 
+    @After
+    public void destroy() {
+        SpringExtensionFactory.clearContexts();
+        context1.close();
+        context2.close();
+    }
+
+    @Bean("bean1")
+    public DemoService bean1() {
+        return new DemoServiceImpl();
+    }
+
+    @Bean("bean2")
+    public DemoService bean2() {
+        return new DemoServiceImpl();
+    }
+
+    @Bean("hello")
+    public HelloService helloService() {
+        return new HelloServiceImpl();
+    }
 }
