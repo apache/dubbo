@@ -18,6 +18,9 @@ package com.alibaba.dubbo.common.logger;
 
 /**
  * Logger interface
+ *
+ * Logger 接口
+ *
  * <p>
  * This interface is referred from commons-logging
  */

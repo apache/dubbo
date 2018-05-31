@@ -27,27 +27,33 @@ public class Slf4jLoggerAdapter implements LoggerAdapter {
     private Level level;
     private File file;
 
+    @Override
     public Logger getLogger(String key) {
         return new Slf4jLogger(org.slf4j.LoggerFactory.getLogger(key));
     }
 
+    @Override
     public Logger getLogger(Class<?> key) {
         return new Slf4jLogger(org.slf4j.LoggerFactory.getLogger(key));
     }
 
-    public Level getLevel() {
+    @Override
+    public Level getLevel() { // 无用
         return level;
     }
 
-    public void setLevel(Level level) {
+    @Override
+    public void setLevel(Level level) { // 无用
         this.level = level;
     }
 
-    public File getFile() {
+    @Override
+    public File getFile() { // 无用
         return file;
     }
 
-    public void setFile(File file) {
+    @Override
+    public void setFile(File file) { // 无用
         this.file = file;
     }
 

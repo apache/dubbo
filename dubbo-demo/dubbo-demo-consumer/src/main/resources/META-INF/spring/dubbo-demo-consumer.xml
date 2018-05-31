@@ -36,7 +36,7 @@ limitations under the License.
 
     <!-- generate proxy for the remote service, then demoService can be used in the same way as the
     local regular interface -->
-    <dubbo:reference id="demoService" group="g1" check="false" interface="com.alibaba.dubbo.demo.DemoService"
+    <dubbo:reference id="demoService" group="g1" check="true" interface="com.alibaba.dubbo.demo.DemoService"
                      client="netty4" timeout="10000" callbacks="1000" registry="zk01">
         <!--<dubbo:method name="sayHello" />-->
 

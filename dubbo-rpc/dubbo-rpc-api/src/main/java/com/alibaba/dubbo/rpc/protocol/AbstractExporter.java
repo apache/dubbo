@@ -56,10 +56,12 @@ public abstract class AbstractExporter<T> implements Exporter<T> {
 
     @Override
     public void unexport() {
+        // 标记已经取消暴露
         if (unexported) {
             return;
         }
         unexported = true;
+        // 销毁
         getInvoker().destroy();
     }
 

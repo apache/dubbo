@@ -22,6 +22,9 @@ import com.alibaba.dubbo.common.utils.NetUtils;
 
 public class FailsafeLogger implements Logger {
 
+    /**
+     * Dubbo Logger 对象
+     */
     private Logger logger;
 
     public FailsafeLogger(Logger logger) {
@@ -117,6 +120,7 @@ public class FailsafeLogger implements Logger {
         }
     }
 
+    @Override
     public void error(String msg) {
         try {
             logger.error(appendContextMessage(msg));

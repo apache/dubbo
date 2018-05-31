@@ -60,7 +60,7 @@ public class ApplicationConfig extends AbstractConfig {
     private String compiler; // TODO 芋艿
 
     // logger
-    private String logger; // TODO 芋艿
+    private String logger;
 
     // registry centers
     private List<RegistryConfig> registries;
@@ -203,6 +203,7 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setLogger(String logger) {
         this.logger = logger;
+        // 设置 LoggerAdapter
         LoggerFactory.setLoggerAdapter(logger);
     }
 

@@ -72,6 +72,7 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
         return true;
     }
 
+    @Override
     public void destroy() {
     }
 

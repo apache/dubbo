@@ -530,10 +530,13 @@ public abstract class FailbackRegistry extends AbstractRegistry {
 
     @Override
     public void destroy() {
-        if (!canDestroy()){
+        // 忽略，若已经销毁
+        if (!canDestroy()) {
             return;
         }
+        // 调用父方法，取消注册和订阅
         super.destroy();
+        // 销毁重试任务
         try {
             retryFuture.cancel(true);
         } catch (Throwable t) {

@@ -159,6 +159,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
 
     @Override
     public void close(int timeout) {
+        // 防止client被关闭多次. 在 connect per jvm 的情况下，client.close 方法会调用计数器-1，当计数器小于等于0的情况下，才真正关闭
         if (refenceCount.decrementAndGet() <= 0) {
             // 关闭 `client`
             if (timeout == 0) {

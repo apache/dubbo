@@ -238,8 +238,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                         url = url.addParameter(Constants.REGISTRY_KEY, url.getProtocol());
                         url = url.setProtocol(Constants.REGISTRY_PROTOCOL);
                         // 添加到结果
-                        if ((provider && url.getParameter(Constants.REGISTER_KEY, true)) // 服务提供者 && 注册
-                                || (!provider && url.getParameter(Constants.SUBSCRIBE_KEY, true))) { // 服务消费者 && 订阅
+                        if ((provider && url.getParameter(Constants.REGISTER_KEY, true)) // 服务提供者 && 注册 https://dubbo.gitbooks.io/dubbo-user-book/demos/subscribe-only.html
+                                || (!provider && url.getParameter(Constants.SUBSCRIBE_KEY, true))) { // 服务消费者 && 订阅 https://dubbo.gitbooks.io/dubbo-user-book/demos/registry-only.html
                             registryList.add(url);
                         }
                     }

@@ -114,6 +114,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         return url;
     }
 
+    @Override
     public boolean isAvailable() {
         return available;
     }
@@ -122,6 +123,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         this.available = available;
     }
 
+    @Override
     public void destroy() {
         if (!destroyed.compareAndSet(false, true)) {
             return;

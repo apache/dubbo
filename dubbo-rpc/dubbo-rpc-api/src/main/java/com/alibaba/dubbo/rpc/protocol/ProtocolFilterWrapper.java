@@ -127,6 +127,7 @@ public class ProtocolFilterWrapper implements Protocol {
         return buildInvokerChain(protocol.refer(type, url), Constants.REFERENCE_FILTER_KEY, Constants.CONSUMER);
     }
 
+    @Override
     public void destroy() {
         protocol.destroy();
     }

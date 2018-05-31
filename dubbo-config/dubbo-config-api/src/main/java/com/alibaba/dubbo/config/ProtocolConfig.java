@@ -77,13 +77,13 @@ public class ProtocolConfig extends AbstractConfig {
     private Integer queues;
 
     // max acceptable connections
-    private Integer accepts; // TODO 芋艿，
+    private Integer accepts;
 
     // protocol codec
-    private String codec; // TODO 芋艿，
+    private String codec;
 
     // serialization
-    private String serialization; // TODO 芋艿，
+    private String serialization;
 
     // charset
     private String charset;
@@ -95,31 +95,31 @@ public class ProtocolConfig extends AbstractConfig {
     private Integer buffer;
 
     // heartbeat interval
-    private Integer heartbeat; // TODO 芋艿，
+    private Integer heartbeat;
 
     // access log
-    private String accesslog; // TODO 芋艿，
+    private String accesslog;
 
     // transfort
-    private String transporter; // TODO 芋艿，
+    private String transporter;
 
     // how information is exchanged
-    private String exchanger; // TODO 芋艿，
+    private String exchanger;
 
     // thread dispatch mode
-    private String dispatcher; // TODO 芋艿，
+    private String dispatcher;
 
     // networker
     private String networker; // TODO ，芋艿
 
     // sever impl
-    private String server; // TODO ，芋艿
+    private String server;
 
     // client impl
-    private String client; // TODO ，芋艿
+    private String client;
 
     // supported telnet commands, separated with comma.
-    private String telnet; // TODO ，芋艿
+    private String telnet;
 
     // command line prompt
     private String prompt; // TODO ，芋艿
@@ -133,19 +133,21 @@ public class ProtocolConfig extends AbstractConfig {
     // parameters
     // 是否长连接
     // TODO add this to provider config
-    private Boolean keepAlive; // TODO ，芋艿
+    private Boolean keepAlive;
 
     // TODO add this to provider config
-    private String optimizer; // TODO ，芋艿
+    private String optimizer;
 
-    private String extension; // TODO ，芋艿
+    private String extension;
 
     // parameters
     private Map<String, String> parameters;
 
     // if it's default
     private Boolean isDefault;
-
+    /**
+     * 是否已经销毁
+     */
     private static final AtomicBoolean destroyed = new AtomicBoolean(false);
 
     public ProtocolConfig() {
@@ -162,11 +164,14 @@ public class ProtocolConfig extends AbstractConfig {
 
     // TODO: 2017/8/30 to move this method somewhere else
     public static void destroyAll() {
+        // 忽略，若已经销毁
         if (!destroyed.compareAndSet(false, true)) {
             return;
         }
+        // 销毁 Registry 相关
         AbstractRegistryFactory.destroyAll();
 
+        // 等到服务消费，接收到注册中心通知到该服务提供者已经下线，加大了在不重试情况下优雅停机的成功率。
         // Wait for registry notification
         try {
             Thread.sleep(ConfigUtils.getServerShutdownTimeout());
@@ -174,6 +179,7 @@ public class ProtocolConfig extends AbstractConfig {
             logger.warn("Interrupted unexpectedly when waiting for registry notification during shutdown process!");
         }
 
+        // 销毁 Protocol 相关
         ExtensionLoader<Protocol> loader = ExtensionLoader.getExtensionLoader(Protocol.class);
         for (String protocolName : loader.getLoadedExtensions()) {
             try {

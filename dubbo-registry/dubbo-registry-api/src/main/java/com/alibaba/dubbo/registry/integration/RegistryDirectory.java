@@ -581,7 +581,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             }
         }
 
-        // 不检查连接是否成功，总是创建 Invoker ！
+        // 不检查连接是否成功，总是创建 Invoker ！因为，启动检查，只有启动阶段需要。此时在检查，已经没必要了。
         providerUrl = providerUrl.addParameter(Constants.CHECK_KEY, String.valueOf(false)); // Do not check whether the connection is successful or not, always create Invoker!
 
         // The combination of directoryUrl and override is at the end of notify, which can't be handled here

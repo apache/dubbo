@@ -577,6 +577,7 @@ public abstract class AbstractRegistry implements Registry {
     /**
      * 取消注册和订阅
      */
+    @Override
     public void destroy() {
         // 已销毁，跳过
         if (!destroyed.compareAndSet(false, true)) {
@@ -591,7 +592,7 @@ public abstract class AbstractRegistry implements Registry {
             for (URL url : new HashSet<URL>(getRegistered())) {
                 if (url.getParameter(Constants.DYNAMIC_KEY, true)) {
                     try {
-                        unregister(url); // 取消
+                        unregister(url); // 取消注册
                         if (logger.isInfoEnabled()) {
                             logger.info("Destroy unregister url " + url);
                         }
@@ -608,7 +609,7 @@ public abstract class AbstractRegistry implements Registry {
                 URL url = entry.getKey();
                 for (NotifyListener listener : entry.getValue()) {
                     try {
-                        unsubscribe(url, listener); // 取消
+                        unsubscribe(url, listener); // 取消订阅
                         if (logger.isInfoEnabled()) {
                             logger.info("Destroy unsubscribe url " + url);
                         }

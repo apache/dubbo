@@ -79,6 +79,7 @@ public class Log4jLogger implements Logger {
         logger.log(FQCN, Level.WARN, msg, e);
     }
 
+    @Override
     public void error(String msg) {
         logger.log(FQCN, Level.ERROR, msg, null);
     }

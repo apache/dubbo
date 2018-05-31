@@ -17,7 +17,7 @@
 package com.alibaba.dubbo.common.logger;
 
 /**
- * Level
+ * Level 日志级别
  */
 public enum Level {
 

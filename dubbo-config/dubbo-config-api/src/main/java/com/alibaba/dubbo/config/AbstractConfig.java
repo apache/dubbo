@@ -93,7 +93,7 @@ public abstract class AbstractConfig implements Serializable {
         legacyProperties.put("dubbo.service.url", "dubbo.service.address");
     }
 
-    static { // TODO 芋艿，注意
+    static {
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             public void run() {
                 if (logger.isInfoEnabled()) {

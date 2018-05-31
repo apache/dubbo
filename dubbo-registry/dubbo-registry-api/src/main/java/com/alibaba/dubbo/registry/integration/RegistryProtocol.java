@@ -288,7 +288,7 @@ public class RegistryProtocol implements Protocol {
     private URL getSubscribedOverrideUrl(URL registedProviderUrl) {
         return registedProviderUrl.setProtocol(Constants.PROVIDER_PROTOCOL)
                 .addParameters(Constants.CATEGORY_KEY, Constants.CONFIGURATORS_CATEGORY, // configurators
-                        Constants.CHECK_KEY, String.valueOf(false)); // 订阅失败，不校验
+                        Constants.CHECK_KEY, String.valueOf(false)); // 订阅失败，不校验。因为，不需要检查。
     }
 
     /**
@@ -374,7 +374,7 @@ public class RegistryProtocol implements Protocol {
         if (!Constants.ANY_VALUE.equals(url.getServiceInterface())
                 && url.getParameter(Constants.REGISTER_KEY, true)) {
             registry.register(subscribeUrl.addParameters(Constants.CATEGORY_KEY, Constants.CONSUMERS_CATEGORY,
-                    Constants.CHECK_KEY, String.valueOf(false)));
+                    Constants.CHECK_KEY, String.valueOf(false))); // 不检查的原因是，不需要检查。
         }
         // 向注册中心订阅服务提供者 + 路由规则 + 配置规则
         directory.subscribe(subscribeUrl.addParameter(Constants.CATEGORY_KEY,
@@ -389,11 +389,15 @@ public class RegistryProtocol implements Protocol {
         return invoker;
     }
 
+    @Override
     public void destroy() {
+        // 获得 Exporter 数组
         List<Exporter<?>> exporters = new ArrayList<Exporter<?>>(bounds.values());
+        // 取消所有 Exporter 的暴露
         for (Exporter<?> exporter : exporters) {
             exporter.unexport();
         }
+        // 清空
         bounds.clear();
     }
 

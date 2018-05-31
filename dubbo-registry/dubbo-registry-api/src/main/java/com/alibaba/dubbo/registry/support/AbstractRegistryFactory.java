@@ -63,7 +63,7 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
     }
 
     /**
-     * 销毁
+     * 销毁所有 Registry
      *
      * Close all created registries
      */

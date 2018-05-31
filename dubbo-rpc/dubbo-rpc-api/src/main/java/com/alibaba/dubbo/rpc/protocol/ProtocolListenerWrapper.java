@@ -72,6 +72,7 @@ public class ProtocolListenerWrapper implements Protocol {
         return new ListenerInvokerWrapper<T>(invoker, listeners);
     }
 
+    @Override
     public void destroy() {
         protocol.destroy();
     }

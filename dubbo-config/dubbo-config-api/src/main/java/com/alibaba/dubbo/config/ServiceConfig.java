@@ -442,7 +442,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (unexported) {
             return;
         }
-        if (exporters != null && !exporters.isEmpty()) {
+        if (!exporters.isEmpty()) {
             for (Exporter<?> exporter : exporters) {
                 try {
                     exporter.unexport();
