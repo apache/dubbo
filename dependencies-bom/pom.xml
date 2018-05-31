@@ -84,7 +84,7 @@
         <curator_version>2.12.0</curator_version>
         <jedis_version>2.9.0</jedis_version>
         <xmemcached_version>1.3.6</xmemcached_version>
-        <cxf_version>3.0.14</cxf_version>
+        <cxf_version>3.1.15</cxf_version>
         <thrift_version>0.8.0</thrift_version>
         <hessian_version>4.0.38</hessian_version>
         <servlet_version>3.1.0</servlet_version>
@@ -107,6 +107,9 @@
         <logback_version>1.2.2</logback_version>
         <commons_lang3_version>3.4</commons_lang3_version>
         <embedded_redis_version>0.6</embedded_redis_version>
+
+        <jaxb_version>2.2.7</jaxb_version>
+        <activation_version>1.2.0</activation_version>
     </properties>
 
     <dependencyManagement>
@@ -321,6 +324,34 @@
                 <artifactId>commons-lang3</artifactId>
                 <version>${commons_lang3_version}</version>
             </dependency>
+
+            <!-- for dubbo-rpc-webservice -->
+            <dependency>
+                <groupId>javax.xml.bind</groupId>
+                <artifactId>jaxb-api</artifactId>
+                <version>${jaxb_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sun.xml.bind</groupId>
+                <artifactId>jaxb-impl</artifactId>
+                <version>${jaxb_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sun.xml.bind</groupId>
+                <artifactId>jaxb-core</artifactId>
+                <version>${jaxb_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.activation</groupId>
+                <artifactId>javax.activation-api</artifactId>
+                <version>${activation_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sun.activation</groupId>
+                <artifactId>javax.activation</artifactId>
+                <version>${activation_version}</version>
+            </dependency>
+
             <!-- Test lib -->
             <dependency>
                 <groupId>org.apache.curator</groupId>
