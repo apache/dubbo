@@ -18,6 +18,11 @@
 package com.alibaba.dubbo.common.threadlocal;
 
 /**
+ * See
+ * <a href="https://github.com/netty/netty/blob/4.1/common/src/main/java/io/netty/util/concurrent/FastThreadLocalThread.java">
+ * FastThreadLocalThread
+ * </a>.
+ * <p>
  * InternalThread
  */
 public class InternalThread extends Thread {
