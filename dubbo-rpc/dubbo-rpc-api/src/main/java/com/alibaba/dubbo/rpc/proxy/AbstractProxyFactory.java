@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,11 +25,10 @@ import com.alibaba.dubbo.rpc.service.EchoService;
 
 /**
  * AbstractProxyFactory
- * 
- * @author william.liangf
  */
 public abstract class AbstractProxyFactory implements ProxyFactory {
 
+    @Override
     public <T> T getProxy(Invoker<T> invoker) throws RpcException {
         Class<?>[] interfaces = null;
         String config = invoker.getUrl().getParameter("interfaces");
@@ -38,17 +38,17 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
                 interfaces = new Class<?>[types.length + 2];
                 interfaces[0] = invoker.getInterface();
                 interfaces[1] = EchoService.class;
-                for (int i = 0; i < types.length; i ++) {
+                for (int i = 0; i < types.length; i++) {
                     interfaces[i + 1] = ReflectUtils.forName(types[i]);
                 }
             }
         }
         if (interfaces == null) {
-            interfaces = new Class<?>[] {invoker.getInterface(), EchoService.class};
+            interfaces = new Class<?>[]{invoker.getInterface(), EchoService.class};
         }
         return getProxy(invoker, interfaces);
     }
-    
+
     public abstract <T> T getProxy(Invoker<T> invoker, Class<?>[] types);
 
 }

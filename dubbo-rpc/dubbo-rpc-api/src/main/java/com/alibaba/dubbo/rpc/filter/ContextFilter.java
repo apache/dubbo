@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,9 +15,6 @@
  * limitations under the License.
  */
 package com.alibaba.dubbo.rpc.filter;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.Activate;
@@ -27,15 +25,18 @@ import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
+import com.alibaba.dubbo.rpc.RpcResult;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * ContextInvokerFilter
- * 
- * @author william.liangf
  */
 @Activate(group = Constants.PROVIDER, order = -10000)
 public class ContextFilter implements Filter {
 
+    @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         Map<String, String> attachments = invocation.getAttachments();
         if (attachments != null) {
@@ -46,20 +47,36 @@ public class ContextFilter implements Filter {
             attachments.remove(Constants.DUBBO_VERSION_KEY);
             attachments.remove(Constants.TOKEN_KEY);
             attachments.remove(Constants.TIMEOUT_KEY);
+            attachments.remove(Constants.ASYNC_KEY);// Remove async property to avoid being passed to the following invoke chain.
         }
         RpcContext.getContext()
                 .setInvoker(invoker)
                 .setInvocation(invocation)
-                .setAttachments(attachments)
-                .setLocalAddress(invoker.getUrl().getHost(), 
-                                 invoker.getUrl().getPort());
+//                .setAttachments(attachments)  // merged from dubbox
+                .setLocalAddress(invoker.getUrl().getHost(),
+                        invoker.getUrl().getPort());
+
+        // mreged from dubbox
+        // we may already added some attachments into RpcContext before this filter (e.g. in rest protocol)
+        if (attachments != null) {
+            if (RpcContext.getContext().getAttachments() != null) {
+                RpcContext.getContext().getAttachments().putAll(attachments);
+            } else {
+                RpcContext.getContext().setAttachments(attachments);
+            }
+        }
+
         if (invocation instanceof RpcInvocation) {
-            ((RpcInvocation)invocation).setInvoker(invoker);
+            ((RpcInvocation) invocation).setInvoker(invoker);
         }
         try {
-            return invoker.invoke(invocation);
+            RpcResult result = (RpcResult) invoker.invoke(invocation);
+            // pass attachments to result
+            result.addAttachments(RpcContext.getServerContext().getAttachments());
+            return result;
         } finally {
             RpcContext.removeContext();
+            RpcContext.getServerContext().clearAttachments();
         }
     }
 }

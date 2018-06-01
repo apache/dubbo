@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,21 +23,22 @@ import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.protocol.AbstractProtocol;
 
 /**
- * MockProtocol 用于在consumer side 通过url及类型生成一个mockInvoker
- * @author chao.liuc
- *
+ * MockProtocol is used for generating a mock invoker by URL and type on consumer side
  */
 final public class MockProtocol extends AbstractProtocol {
 
-	public int getDefaultPort() {
-		return 0;
-	}
+    @Override
+    public int getDefaultPort() {
+        return 0;
+    }
 
-	public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
+        throw new UnsupportedOperationException();
+    }
 
-	public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
-		return new MockInvoker<T>(url);
-	}
+    @Override
+    public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
+        return new MockInvoker<T>(url);
+    }
 }

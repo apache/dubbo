@@ -54,18 +54,17 @@ import java.io.IOException;
  * Serializing an object for known object types.
  */
 public class ThrowableSerializer extends JavaSerializer {
-  public ThrowableSerializer(Class cl, ClassLoader loader)
-  {
-    super(cl, loader);
-  }
-  
-  public void writeObject(Object obj, AbstractHessianOutput out)
-    throws IOException
-  {
-    Throwable e = (Throwable) obj;
+    public ThrowableSerializer(Class cl, ClassLoader loader) {
+        super(cl, loader);
+    }
 
-    e.getStackTrace();
+    @Override
+    public void writeObject(Object obj, AbstractHessianOutput out)
+            throws IOException {
+        Throwable e = (Throwable) obj;
 
-    super.writeObject(obj, out);
-  }
+        e.getStackTrace();
+
+        super.writeObject(obj, out);
+    }
 }

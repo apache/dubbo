@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,6 +16,19 @@
  */
 package com.alibaba.dubbo.common.compiler.support;
 
+import com.alibaba.dubbo.common.utils.ClassHelper;
+
+import javax.tools.DiagnosticCollector;
+import javax.tools.FileObject;
+import javax.tools.ForwardingJavaFileManager;
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileManager;
+import javax.tools.JavaFileObject;
+import javax.tools.JavaFileObject.Kind;
+import javax.tools.SimpleJavaFileObject;
+import javax.tools.StandardJavaFileManager;
+import javax.tools.StandardLocation;
+import javax.tools.ToolProvider;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -36,45 +50,31 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.tools.DiagnosticCollector;
-import javax.tools.FileObject;
-import javax.tools.ForwardingJavaFileManager;
-import javax.tools.JavaCompiler;
-import javax.tools.JavaFileManager;
-import javax.tools.JavaFileObject;
-import javax.tools.JavaFileObject.Kind;
-import javax.tools.SimpleJavaFileObject;
-import javax.tools.StandardJavaFileManager;
-import javax.tools.StandardLocation;
-import javax.tools.ToolProvider;
-
-import com.alibaba.dubbo.common.utils.ClassHelper;
-
 /**
  * JdkCompiler. (SPI, Singleton, ThreadSafe)
- * 
- * @author william.liangf
  */
 public class JdkCompiler extends AbstractCompiler {
 
     private final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
     private final DiagnosticCollector<JavaFileObject> diagnosticCollector = new DiagnosticCollector<JavaFileObject>();
-    
+
     private final ClassLoaderImpl classLoader;
-    
+
     private final JavaFileManagerImpl javaFileManager;
 
     private volatile List<String> options;
 
-    public JdkCompiler(){
+    public JdkCompiler() {
         options = new ArrayList<String>();
+        options.add("-source");
+        options.add("1.6");
         options.add("-target");
         options.add("1.6");
         StandardJavaFileManager manager = compiler.getStandardFileManager(diagnosticCollector, null, null);
         final ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        if (loader instanceof URLClassLoader 
-                && (! loader.getClass().getName().equals("sun.misc.Launcher$AppClassLoader"))) {
+        if (loader instanceof URLClassLoader
+                && (!loader.getClass().getName().equals("sun.misc.Launcher$AppClassLoader"))) {
             try {
                 URLClassLoader urlClassLoader = (URLClassLoader) loader;
                 List<File> files = new ArrayList<File>();
@@ -87,94 +87,46 @@ public class JdkCompiler extends AbstractCompiler {
             }
         }
         classLoader = AccessController.doPrivileged(new PrivilegedAction<ClassLoaderImpl>() {
+            @Override
             public ClassLoaderImpl run() {
                 return new ClassLoaderImpl(loader);
             }
         });
         javaFileManager = new JavaFileManagerImpl(manager, classLoader);
     }
-    
+
     @Override
     public Class<?> doCompile(String name, String sourceCode) throws Throwable {
         int i = name.lastIndexOf('.');
         String packageName = i < 0 ? "" : name.substring(0, i);
         String className = i < 0 ? name : name.substring(i + 1);
         JavaFileObjectImpl javaFileObject = new JavaFileObjectImpl(className, sourceCode);
-        javaFileManager.putFileForInput(StandardLocation.SOURCE_PATH, packageName, 
-                                        className + ClassUtils.JAVA_EXTENSION, javaFileObject);
-        Boolean result = compiler.getTask(null, javaFileManager, diagnosticCollector, options, 
-                                          null, Arrays.asList(new JavaFileObject[]{javaFileObject})).call();
-        if (result == null || ! result.booleanValue()) {
+        javaFileManager.putFileForInput(StandardLocation.SOURCE_PATH, packageName,
+                className + ClassUtils.JAVA_EXTENSION, javaFileObject);
+        Boolean result = compiler.getTask(null, javaFileManager, diagnosticCollector, options,
+                null, Arrays.asList(javaFileObject)).call();
+        if (result == null || !result) {
             throw new IllegalStateException("Compilation failed. class: " + name + ", diagnostics: " + diagnosticCollector);
         }
         return classLoader.loadClass(name);
     }
-    
-    private final class ClassLoaderImpl extends ClassLoader {
-        
-        private final Map<String, JavaFileObject> classes = new HashMap<String, JavaFileObject>();
 
-        ClassLoaderImpl(final ClassLoader parentClassLoader) {
-            super(parentClassLoader);
-        }
-
-        Collection<JavaFileObject> files() {
-            return Collections.unmodifiableCollection(classes.values());
-        }
-
-        @Override
-        protected Class<?> findClass(final String qualifiedClassName) throws ClassNotFoundException {
-            JavaFileObject file = classes.get(qualifiedClassName);
-            if (file != null) {
-                byte[] bytes = ((JavaFileObjectImpl) file).getByteCode();
-                return defineClass(qualifiedClassName, bytes, 0, bytes.length);
-            }
-            try {
-                return ClassHelper.forNameWithCallerClassLoader(qualifiedClassName, getClass());
-            } catch (ClassNotFoundException nf) {
-                return super.findClass(qualifiedClassName);
-            }
-        }
-
-        void add(final String qualifiedClassName, final JavaFileObject javaFile) {
-            classes.put(qualifiedClassName, javaFile);
-        }
-
-        @Override
-        protected synchronized Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
-            return super.loadClass(name, resolve);
-        }
-
-        @Override
-        public InputStream getResourceAsStream(final String name) {
-            if (name.endsWith(ClassUtils.CLASS_EXTENSION)) {
-                String qualifiedClassName = name.substring(0, name.length() - ClassUtils.CLASS_EXTENSION.length()).replace('/', '.');
-                JavaFileObjectImpl file = (JavaFileObjectImpl) classes.get(qualifiedClassName);
-                if (file != null) {
-                    return new ByteArrayInputStream(file.getByteCode());
-                }
-            }
-            return super.getResourceAsStream(name);
-        }
-    }
-    
     private static final class JavaFileObjectImpl extends SimpleJavaFileObject {
 
+        private final CharSequence source;
         private ByteArrayOutputStream bytecode;
 
-        private final CharSequence    source;
-
-        public JavaFileObjectImpl(final String baseName, final CharSequence source){
+        public JavaFileObjectImpl(final String baseName, final CharSequence source) {
             super(ClassUtils.toURI(baseName + ClassUtils.JAVA_EXTENSION), Kind.SOURCE);
             this.source = source;
         }
 
-        JavaFileObjectImpl(final String name, final Kind kind){
+        JavaFileObjectImpl(final String name, final Kind kind) {
             super(ClassUtils.toURI(name), kind);
             source = null;
         }
 
-        public JavaFileObjectImpl(URI uri, Kind kind){
+        public JavaFileObjectImpl(URI uri, Kind kind) {
             super(uri, kind);
             source = null;
         }
@@ -201,9 +153,9 @@ public class JdkCompiler extends AbstractCompiler {
             return bytecode.toByteArray();
         }
     }
-    
+
     private static final class JavaFileManagerImpl extends ForwardingJavaFileManager<JavaFileManager> {
-        
+
         private final ClassLoaderImpl classLoader;
 
         private final Map<URI, JavaFileObject> fileObjects = new HashMap<URI, JavaFileObject>();
@@ -284,6 +236,54 @@ public class JdkCompiler extends AbstractCompiler {
             }
 
             return files;
+        }
+    }
+
+    private final class ClassLoaderImpl extends ClassLoader {
+
+        private final Map<String, JavaFileObject> classes = new HashMap<String, JavaFileObject>();
+
+        ClassLoaderImpl(final ClassLoader parentClassLoader) {
+            super(parentClassLoader);
+        }
+
+        Collection<JavaFileObject> files() {
+            return Collections.unmodifiableCollection(classes.values());
+        }
+
+        @Override
+        protected Class<?> findClass(final String qualifiedClassName) throws ClassNotFoundException {
+            JavaFileObject file = classes.get(qualifiedClassName);
+            if (file != null) {
+                byte[] bytes = ((JavaFileObjectImpl) file).getByteCode();
+                return defineClass(qualifiedClassName, bytes, 0, bytes.length);
+            }
+            try {
+                return ClassHelper.forNameWithCallerClassLoader(qualifiedClassName, getClass());
+            } catch (ClassNotFoundException nf) {
+                return super.findClass(qualifiedClassName);
+            }
+        }
+
+        void add(final String qualifiedClassName, final JavaFileObject javaFile) {
+            classes.put(qualifiedClassName, javaFile);
+        }
+
+        @Override
+        protected synchronized Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
+            return super.loadClass(name, resolve);
+        }
+
+        @Override
+        public InputStream getResourceAsStream(final String name) {
+            if (name.endsWith(ClassUtils.CLASS_EXTENSION)) {
+                String qualifiedClassName = name.substring(0, name.length() - ClassUtils.CLASS_EXTENSION.length()).replace('/', '.');
+                JavaFileObjectImpl file = (JavaFileObjectImpl) classes.get(qualifiedClassName);
+                if (file != null) {
+                    return new ByteArrayInputStream(file.getByteCode());
+                }
+            }
+            return super.getResourceAsStream(name);
         }
     }
 

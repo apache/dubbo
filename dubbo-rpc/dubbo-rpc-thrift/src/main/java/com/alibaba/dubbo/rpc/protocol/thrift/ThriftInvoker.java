@@ -1,15 +1,18 @@
-/**
- * File Created at 2011-12-06
- * $Id$
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Copyright 2008 Alibaba.com Croporation Limited.
- * All rights reserved.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * This software is the confidential and proprietary information of
- * Alibaba Company. ("Confidential Information").  You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the license agreement you entered into
- * with Alibaba.com.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.alibaba.dubbo.rpc.protocol.thrift;
 
@@ -30,10 +33,6 @@ import com.alibaba.dubbo.rpc.protocol.AbstractInvoker;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
-
-/**
- * @author <a href="mailto:gang.lvg@alibaba-inc.com">gang.lvg</a>
- */
 public class ThriftInvoker<T> extends AbstractInvoker<T> {
 
     private final ExchangeClient[] clients;
@@ -41,23 +40,23 @@ public class ThriftInvoker<T> extends AbstractInvoker<T> {
     private final AtomicPositiveInteger index = new AtomicPositiveInteger();
 
     private final ReentrantLock destroyLock = new ReentrantLock();
-    
+
     private final Set<Invoker<?>> invokers;
 
-    public ThriftInvoker( Class<T> service, URL url, ExchangeClient[] clients ) {
+    public ThriftInvoker(Class<T> service, URL url, ExchangeClient[] clients) {
         this(service, url, clients, null);
     }
 
     public ThriftInvoker(Class<T> type, URL url, ExchangeClient[] clients, Set<Invoker<?>> invokers) {
         super(type, url,
-              new String[]{Constants.INTERFACE_KEY, Constants.GROUP_KEY,
-                      Constants.TOKEN_KEY, Constants.TIMEOUT_KEY});
+                new String[]{Constants.INTERFACE_KEY, Constants.GROUP_KEY,
+                        Constants.TOKEN_KEY, Constants.TIMEOUT_KEY});
         this.clients = clients;
         this.invokers = invokers;
     }
-    
+
     @Override
-    protected Result doInvoke( Invocation invocation ) throws Throwable {
+    protected Result doInvoke(Invocation invocation) throws Throwable {
 
         RpcInvocation inv = (RpcInvocation) invocation;
 
@@ -65,11 +64,11 @@ public class ThriftInvoker<T> extends AbstractInvoker<T> {
 
         methodName = invocation.getMethodName();
 
-        inv.setAttachment( Constants.PATH_KEY, getUrl().getPath() );
+        inv.setAttachment(Constants.PATH_KEY, getUrl().getPath());
 
         // for thrift codec
-        inv.setAttachment( ThriftCodec.PARAMETER_CLASS_NAME_GENERATOR, getUrl().getParameter(
-                ThriftCodec.PARAMETER_CLASS_NAME_GENERATOR, DubboClassNameGenerator.NAME ) );
+        inv.setAttachment(ThriftCodec.PARAMETER_CLASS_NAME_GENERATOR, getUrl().getParameter(
+                ThriftCodec.PARAMETER_CLASS_NAME_GENERATOR, DubboClassNameGenerator.NAME));
 
         ExchangeClient currentClient;
 
@@ -81,7 +80,7 @@ public class ThriftInvoker<T> extends AbstractInvoker<T> {
 
         try {
             int timeout = getUrl().getMethodParameter(
-                    methodName, Constants.TIMEOUT_KEY,Constants.DEFAULT_TIMEOUT);
+                    methodName, Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
 
             RpcContext.getContext().setFuture(null);
 
@@ -102,33 +101,36 @@ public class ThriftInvoker<T> extends AbstractInvoker<T> {
             return false;
         }
 
-        for (ExchangeClient client : clients){
+        for (ExchangeClient client : clients) {
             if (client.isConnected()
-                    && !client.hasAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY)){
+                    && !client.hasAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY)) {
                 //cannot write == not Available ?
-                return true ;
+                return true;
             }
         }
         return false;
     }
 
+    @Override
     public void destroy() {
-        //防止client被关闭多次.在connect per jvm的情况下，client.close方法会调用计数器-1，当计数器小于等于0的情况下，才真正关闭
-        if (super.isDestroyed()){
-            return ;
+        // in order to avoid closing a client multiple times, a counter is used in case of connection per jvm, every
+        // time when client.close() is called, counter counts down once, and when counter reaches zero, client will be
+        // closed.
+        if (super.isDestroyed()) {
+            return;
         } else {
-            //dubbo check ,避免多次关闭
+            // double check to avoid dup close
             destroyLock.lock();
 
-            try{
+            try {
 
-                if (super.isDestroyed()){
-                    return ;
+                if (super.isDestroyed()) {
+                    return;
                 }
 
                 super.destroy();
 
-                if(invokers != null) {
+                if (invokers != null) {
                     invokers.remove(this);
                 }
 
@@ -142,7 +144,7 @@ public class ThriftInvoker<T> extends AbstractInvoker<T> {
 
                 }
 
-            }finally {
+            } finally {
                 destroyLock.unlock();
             }
 

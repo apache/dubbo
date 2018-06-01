@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,36 +16,34 @@
  */
 package com.alibaba.dubbo.remoting.p2p.exchange.support;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.MulticastSocket;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.exchange.ExchangeHandler;
 import com.alibaba.dubbo.remoting.p2p.exchange.ExchangePeer;
 
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.MulticastSocket;
+
 /**
  * MulticastGroup
- * 
- * @author william.liangf
  */
 public class MulticastExchangeGroup extends AbstractExchangeGroup {
-    
+
     private static final String JOIN = "join";
-    
+
     private static final String LEAVE = "leave";
 
     private InetAddress mutilcastAddress;
-    
+
     private MulticastSocket mutilcastSocket;
 
     public MulticastExchangeGroup(URL url) {
         super(url);
-        if (! isMulticastAddress(url.getHost())) {
+        if (!isMulticastAddress(url.getHost())) {
             throw new IllegalArgumentException("Invalid multicast address " + url.getHost() + ", scope: 224.0.0.0 - 239.255.255.255");
         }
         try {
@@ -53,6 +52,7 @@ public class MulticastExchangeGroup extends AbstractExchangeGroup {
             mutilcastSocket.setLoopbackMode(false);
             mutilcastSocket.joinGroup(mutilcastAddress);
             Thread thread = new Thread(new Runnable() {
+                @Override
                 public void run() {
                     byte[] buf = new byte[1024];
                     DatagramPacket recv = new DatagramPacket(buf, buf.length);
@@ -72,7 +72,7 @@ public class MulticastExchangeGroup extends AbstractExchangeGroup {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
-    
+
     private static boolean isMulticastAddress(String ip) {
         int i = ip.indexOf('.');
         if (i > 0) {
@@ -84,7 +84,7 @@ public class MulticastExchangeGroup extends AbstractExchangeGroup {
         }
         return false;
     }
-    
+
     private void send(String msg) throws RemotingException {
         DatagramPacket hi = new DatagramPacket(msg.getBytes(), msg.length(), mutilcastAddress, mutilcastSocket.getLocalPort());
         try {
@@ -103,7 +103,7 @@ public class MulticastExchangeGroup extends AbstractExchangeGroup {
             disconnect(URL.valueOf(url));
         }
     }
-    
+
     @Override
     public ExchangePeer join(URL url, ExchangeHandler handler) throws RemotingException {
         ExchangePeer peer = super.join(url, handler);

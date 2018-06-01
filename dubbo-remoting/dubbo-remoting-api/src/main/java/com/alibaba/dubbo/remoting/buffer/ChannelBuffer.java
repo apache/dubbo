@@ -1,11 +1,12 @@
 /*
- * Copyright 1999-2012 Alibaba Group.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -198,7 +199,7 @@ import java.nio.ByteBuffer;
  * Please refer to {@link ChannelBufferInputStream} and {@link
  * ChannelBufferOutputStream}.
  *
- * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
+ *
  */
 public interface ChannelBuffer extends Comparable<ChannelBuffer> {
 
@@ -257,7 +258,6 @@ public interface ChannelBuffer extends Comparable<ChannelBuffer> {
      * consequently memory copy.</li> </ul>
      *
      * @param writableBytes the expected minimum number of writable bytes
-     *
      * @throws IndexOutOfBoundsException if {@linkplain #writableBytes() the
      *                                   writable bytes} of this buffer is less
      *                                   than the specified value and if this
@@ -274,6 +274,7 @@ public interface ChannelBuffer extends Comparable<ChannelBuffer> {
      * method also returns {@code false} for {@code null} and an object which is
      * not an instance of {@link ChannelBuffer} type.
      */
+    @Override
     public boolean equals(Object o);
 
     /**
@@ -312,7 +313,6 @@ public interface ChannelBuffer extends Comparable<ChannelBuffer> {
      *
      * @param dstIndex the first index of the destination
      * @param length   the number of bytes to transfer
-     *
      * @throws IndexOutOfBoundsException if the specified {@code index} is less
      *                                   than {@code 0}, if the specified {@code
      *                                   dstIndex} is less than {@code 0}, if
@@ -364,7 +364,6 @@ public interface ChannelBuffer extends Comparable<ChannelBuffer> {
      * writerIndex} of the source buffer (i.e. {@code this}).
      *
      * @param length the number of bytes to transfer
-     *
      * @throws IndexOutOfBoundsException if the specified {@code index} is less
      *                                   than {@code 0}, if {@code index +
      *                                   length} is greater than {@code
@@ -381,7 +380,6 @@ public interface ChannelBuffer extends Comparable<ChannelBuffer> {
      *
      * @param dstIndex the first index of the destination
      * @param length   the number of bytes to transfer
-     *
      * @throws IndexOutOfBoundsException if the specified {@code index} is less
      *                                   than {@code 0}, if the specified {@code
      *                                   dstIndex} is less than {@code 0}, if
@@ -398,7 +396,6 @@ public interface ChannelBuffer extends Comparable<ChannelBuffer> {
      * readerIndex} or {@code writerIndex} of this buffer.
      *
      * @param length the number of bytes to transfer
-     *
      * @throws IndexOutOfBoundsException if the specified {@code index} is less
      *                                   than {@code 0} or if {@code index +
      *                                   length} is greater than {@code
@@ -468,7 +465,6 @@ public interface ChannelBuffer extends Comparable<ChannelBuffer> {
      *
      * @param dstIndex the first index of the destination
      * @param length   the number of bytes to transfer
-     *
      * @throws IndexOutOfBoundsException if the specified {@code dstIndex} is
      *                                   less than {@code 0}, if {@code length}
      *                                   is greater than {@code this.readableBytes},
@@ -526,7 +522,6 @@ public interface ChannelBuffer extends Comparable<ChannelBuffer> {
      *
      * @param dstIndex the first index of the destination
      * @param length   the number of bytes to transfer
-     *
      * @throws IndexOutOfBoundsException if the specified {@code dstIndex} is
      *                                   less than {@code 0}, if {@code length}
      *                                   is greater than {@code this.readableBytes},
@@ -543,9 +538,7 @@ public interface ChannelBuffer extends Comparable<ChannelBuffer> {
      * length} respectively.
      *
      * @param length the number of bytes to transfer
-     *
      * @return the newly created buffer which contains the transferred bytes
-     *
      * @throws IndexOutOfBoundsException if {@code length} is greater than
      *                                   {@code this.readableBytes}
      */
@@ -588,7 +581,6 @@ public interface ChannelBuffer extends Comparable<ChannelBuffer> {
      * current {@code readerIndex}.
      *
      * @param length the number of bytes to transfer
-     *
      * @throws IndexOutOfBoundsException if {@code length} is greater than
      *                                   {@code this.readableBytes}
      * @throws IOException               if the specified stream threw an
@@ -675,7 +667,6 @@ public interface ChannelBuffer extends Comparable<ChannelBuffer> {
      * writerIndex} of the source buffer (i.e. {@code this}).
      *
      * @param length the number of bytes to transfer
-     *
      * @throws IndexOutOfBoundsException if the specified {@code index} is less
      *                                   than {@code 0}, if {@code index +
      *                                   length} is greater than {@code
@@ -692,7 +683,6 @@ public interface ChannelBuffer extends Comparable<ChannelBuffer> {
      *
      * @param srcIndex the first index of the source
      * @param length   the number of bytes to transfer
-     *
      * @throws IndexOutOfBoundsException if the specified {@code index} is less
      *                                   than {@code 0}, if the specified {@code
      *                                   srcIndex} is less than {@code 0}, if
@@ -709,10 +699,8 @@ public interface ChannelBuffer extends Comparable<ChannelBuffer> {
      * modify {@code readerIndex} or {@code writerIndex} of this buffer.
      *
      * @param length the number of bytes to transfer
-     *
      * @return the actual number of bytes read in from the specified channel.
-     *         {@code -1} if the specified channel is closed.
-     *
+     * {@code -1} if the specified channel is closed.
      * @throws IndexOutOfBoundsException if the specified {@code index} is less
      *                                   than {@code 0} or if {@code index +
      *                                   length} is greater than {@code
@@ -843,7 +831,6 @@ public interface ChannelBuffer extends Comparable<ChannelBuffer> {
      *
      * @param index  the first index of the source
      * @param length the number of bytes to transfer
-     *
      * @throws IndexOutOfBoundsException if the specified {@code srcIndex} is
      *                                   less than {@code 0}, if {@code srcIndex
      *                                   + length} is greater than {@code
@@ -888,7 +875,6 @@ public interface ChannelBuffer extends Comparable<ChannelBuffer> {
      * #writeBytes(ChannelBuffer, int, int)} does not.
      *
      * @param length the number of bytes to transfer
-     *
      * @throws IndexOutOfBoundsException if {@code length} is greater than
      *                                   {@code this.writableBytes} or if {@code
      *                                   length} is greater then {@code
@@ -903,7 +889,6 @@ public interface ChannelBuffer extends Comparable<ChannelBuffer> {
      *
      * @param srcIndex the first index of the source
      * @param length   the number of bytes to transfer
-     *
      * @throws IndexOutOfBoundsException if the specified {@code srcIndex} is
      *                                   less than {@code 0}, if {@code srcIndex
      *                                   + length} is greater than {@code
@@ -918,9 +903,7 @@ public interface ChannelBuffer extends Comparable<ChannelBuffer> {
      * the number of the transferred bytes.
      *
      * @param length the number of bytes to transfer
-     *
      * @return the actual number of bytes read in from the specified stream
-     *
      * @throws IndexOutOfBoundsException if {@code length} is greater than
      *                                   {@code this.writableBytes}
      * @throws IOException               if the specified stream threw an

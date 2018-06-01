@@ -54,66 +54,37 @@ import java.util.Locale;
  * Handle for a locale object.
  */
 public class LocaleHandle implements java.io.Serializable, HessianHandle {
-  private String value;
+    private String value;
 
-  public LocaleHandle(String locale)
-  {
-    this.value = locale;
-  }
-
-  private Object readResolve()
-  {
-    String s = this.value;
-    
-    if (s == null)
-      return null;
-    
-    int len = s.length();
-    char ch = ' ';
-
-    int i = 0;
-    for (;
-	 i < len && ('a' <= (ch = s.charAt(i)) && ch <= 'z'
-		     || 'A' <= ch && ch <= 'Z'
-		     || '0' <= ch && ch <= '9');
-	 i++) {
+    public LocaleHandle(String locale) {
+        this.value = locale;
     }
 
-    String language = s.substring(0, i);
-    String country = null;
-    String var = null;
+    private Object readResolve() {
+        if (value == null) {
+            return null;
+        }
 
-    if (ch == '-' || ch == '_') {
-      int head = ++i;
-      
-      for (;
-	   i < len && ('a' <= (ch = s.charAt(i)) && ch <= 'z'
-		       || 'A' <= ch && ch <= 'Z'
-		       || '0' <= ch && ch <= '9');
-	   i++) {
-      }
-      
-      country = s.substring(head, i);
+        if (value.length() == 0) {
+            return new Locale("");
+        }
+
+        int extStart = value.indexOf("_#");
+        if (extStart != -1) value = value.substring(0, extStart);
+
+        String language = value, country = "", variant = "";
+        int pos1 = value.indexOf('_');
+        if (pos1 != -1) {
+            language = value.substring(0, pos1++);
+
+            int pos2 = value.indexOf('_', pos1);
+            if (pos2 == -1) {
+                country = value.substring(pos1);
+            } else {
+                country = value.substring(pos1, pos2);
+                variant = value.substring(pos2 + 1);
+            }
+        }
+        return new Locale(language, country, variant);
     }
-
-    if (ch == '-' || ch == '_') {
-      int head = ++i;
-      
-      for (;
-	   i < len && ('a' <= (ch = s.charAt(i)) && ch <= 'z'
-		       || 'A' <= ch && ch <= 'Z'
-		       || '0' <= ch && ch <= '9');
-	   i++) {
-      }
-      
-      var = s.substring(head, i);
-    }
-
-    if (var != null)
-      return new Locale(language, country, var);
-    else if (country != null)
-      return new Locale(language, country);
-    else
-      return new Locale(language);
-  }
 }

@@ -1,0 +1,2 @@
+server=com.alibaba.dubbo.rpc.protocol.dubbo.status.ServerStatusChecker
+threadpool=com.alibaba.dubbo.rpc.protocol.dubbo.status.ThreadPoolStatusChecker

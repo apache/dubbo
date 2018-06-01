@@ -1,17 +1,18 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.alibaba.dubbo.remoting.exchange.support.header;
@@ -26,9 +27,6 @@ import com.alibaba.dubbo.remoting.exchange.Request;
 import com.alibaba.dubbo.remoting.exchange.Response;
 import com.alibaba.dubbo.remoting.transport.AbstractChannelHandlerDelegate;
 
-/**
- * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
- */
 public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
 
     private static final Logger logger = LoggerFactory.getLogger(HeartbeatHandler.class);
@@ -41,23 +39,27 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
         super(handler);
     }
 
+    @Override
     public void connected(Channel channel) throws RemotingException {
         setReadTimestamp(channel);
         setWriteTimestamp(channel);
         handler.connected(channel);
     }
 
+    @Override
     public void disconnected(Channel channel) throws RemotingException {
         clearReadTimestamp(channel);
         clearWriteTimestamp(channel);
         handler.disconnected(channel);
     }
 
+    @Override
     public void sent(Channel channel, Object message) throws RemotingException {
         setWriteTimestamp(channel);
         handler.sent(channel, message);
     }
 
+    @Override
     public void received(Channel channel, Object message) throws RemotingException {
         setReadTimestamp(channel);
         if (isHeartbeatRequest(message)) {
@@ -68,22 +70,18 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
                 channel.send(res);
                 if (logger.isInfoEnabled()) {
                     int heartbeat = channel.getUrl().getParameter(Constants.HEARTBEAT_KEY, 0);
-                    if(logger.isDebugEnabled()) {
+                    if (logger.isDebugEnabled()) {
                         logger.debug("Received heartbeat from remote channel " + channel.getRemoteAddress()
-                                        + ", cause: The channel has no data-transmission exceeds a heartbeat period"
-                                        + (heartbeat > 0 ? ": " + heartbeat + "ms" : ""));
+                                + ", cause: The channel has no data-transmission exceeds a heartbeat period"
+                                + (heartbeat > 0 ? ": " + heartbeat + "ms" : ""));
                     }
-	            }
+                }
             }
             return;
         }
         if (isHeartbeatResponse(message)) {
             if (logger.isDebugEnabled()) {
-            	logger.debug(
-                    new StringBuilder(32)
-                        .append("Receive heartbeat response in thread ")
-                        .append(Thread.currentThread().getName())
-                        .toString());
+                logger.debug("Receive heartbeat response in thread " + Thread.currentThread().getName());
             }
             return;
         }
@@ -111,6 +109,6 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
     }
 
     private boolean isHeartbeatResponse(Object message) {
-        return message instanceof Response && ((Response)message).isHeartbeat();
+        return message instanceof Response && ((Response) message).isHeartbeat();
     }
 }

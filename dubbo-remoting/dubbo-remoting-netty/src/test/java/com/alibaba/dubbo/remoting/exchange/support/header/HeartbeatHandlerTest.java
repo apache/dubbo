@@ -1,23 +1,21 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.alibaba.dubbo.remoting.exchange.support.header;
-
-import org.junit.After;
-import org.junit.Test;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
@@ -33,10 +31,9 @@ import com.alibaba.dubbo.remoting.exchange.Exchangers;
 import com.alibaba.dubbo.remoting.transport.dispatcher.FakeChannelHandlers;
 
 import junit.framework.Assert;
+import org.junit.After;
+import org.junit.Test;
 
-/**
- * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
- */
 public class HeartbeatHandlerTest {
 
     private static final Logger logger = LoggerFactory.getLogger(HeartbeatHandlerTest.class);
@@ -114,22 +111,27 @@ public class HeartbeatHandlerTest {
             return request;
         }
 
+        @Override
         public void connected(Channel channel) throws RemotingException {
             ++connectCount;
         }
 
+        @Override
         public void disconnected(Channel channel) throws RemotingException {
             ++disconnectCount;
         }
 
+        @Override
         public void sent(Channel channel, Object message) throws RemotingException {
 
         }
 
+        @Override
         public void received(Channel channel, Object message) throws RemotingException {
-        	logger.error(this.getClass().getSimpleName() + message.toString());
+            logger.error(this.getClass().getSimpleName() + message.toString());
         }
 
+        @Override
         public void caught(Channel channel, Throwable exception) throws RemotingException {
             exception.printStackTrace();
         }
