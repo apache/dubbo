@@ -26,5 +26,8 @@
 
     <!-- 连接注册中心配置 -->
     <dubbo:registry address="N/A"/>
+    <dubbo:monitor version="1.1"/>
+    <dubbo:module name="defaultModule"/>
+    <dubbo:consumer version="1.2.0"/>
 
 </beans>

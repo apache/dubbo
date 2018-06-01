@@ -25,7 +25,7 @@ public class PersonType implements Serializable {
     int age;
     double money;
     short p1;
-    byte  p2;
+    byte p2;
     List<Short> p3;
 
     public PersonType(String name, int age, double money, short p1, byte p2, List<Short> p3) {

@@ -16,16 +16,11 @@
  */
 package org.apache.dubbo.bootstrap;
 
-import com.alibaba.dubbo.common.extension.ExtensionLoader;
-import com.alibaba.dubbo.common.logger.Logger;
-import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.config.DubboShutdownHook;
 import com.alibaba.dubbo.config.ServiceConfig;
-import com.alibaba.dubbo.registry.support.AbstractRegistryFactory;
-import com.alibaba.dubbo.rpc.Protocol;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A bootstrap class to easily start and stop Dubbo via programmatic API.
@@ -33,35 +28,33 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class DubboBootstrap {
 
-    private static final Logger logger = LoggerFactory.getLogger(DubboBootstrap.class);
-
     /**
      * The list of ServiceConfig
      */
     private List<ServiceConfig> serviceConfigList;
 
     /**
-     * Has it already been destroyed or not?
+     * Whether register the shutdown hook during start?
      */
-    private final AtomicBoolean destroyed;
+    private final boolean registerShutdownHookOnStart;
 
     /**
      * The shutdown hook used when Dubbo is running under embedded environment
      */
-    private Thread shutdownHook;
+    private DubboShutdownHook shutdownHook;
 
     public DubboBootstrap() {
+        this(true, DubboShutdownHook.getDubboShutdownHook());
+    }
+
+    public DubboBootstrap(boolean registerShutdownHookOnStart) {
+        this(registerShutdownHookOnStart, DubboShutdownHook.getDubboShutdownHook());
+    }
+
+    public DubboBootstrap(boolean registerShutdownHookOnStart, DubboShutdownHook shutdownHook) {
         this.serviceConfigList = new ArrayList<ServiceConfig>();
-        this.destroyed = new AtomicBoolean(false);
-        this.shutdownHook = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (logger.isInfoEnabled()) {
-                    logger.info("Run shutdown hook now.");
-                }
-                destroy();
-            }
-        }, "DubboShutdownHook");
+        this.shutdownHook = shutdownHook;
+        this.registerShutdownHookOnStart = registerShutdownHookOnStart;
     }
 
     /**
@@ -69,13 +62,19 @@ public class DubboBootstrap {
      * @param serviceConfig the service
      * @return the bootstrap instance
      */
-    public DubboBootstrap regsiterServiceConfig(ServiceConfig serviceConfig) {
+    public DubboBootstrap registerServiceConfig(ServiceConfig serviceConfig) {
         serviceConfigList.add(serviceConfig);
         return this;
     }
 
     public void start() {
-        registerShutdownHook();
+        if (registerShutdownHookOnStart) {
+            registerShutdownHook();
+        } else {
+            // DubboShutdown hook has been registered in AbstractConfig,
+            // we need to remove it explicitly
+            removeShutdownHook();
+        }
         for (ServiceConfig serviceConfig: serviceConfigList) {
             serviceConfig.export();
         }
@@ -85,8 +84,10 @@ public class DubboBootstrap {
         for (ServiceConfig serviceConfig: serviceConfigList) {
             serviceConfig.unexport();
         }
-        destroy();
-        removeShutdownHook();
+        shutdownHook.destroyAll();
+        if (registerShutdownHookOnStart) {
+            removeShutdownHook();
+        }
     }
 
     /**
@@ -105,29 +106,6 @@ public class DubboBootstrap {
         }
         catch (IllegalStateException ex) {
             // ignore - VM is already shutting down
-        }
-    }
-
-    /**
-     * Destroy all the resources, including registries and protocols.
-     */
-    private void destroy() {
-        if (!destroyed.compareAndSet(false, true)) {
-            return;
-        }
-        // destroy all the registries
-        AbstractRegistryFactory.destroyAll();
-        // destroy all the protocols
-        ExtensionLoader<Protocol> loader = ExtensionLoader.getExtensionLoader(Protocol.class);
-        for (String protocolName : loader.getLoadedExtensions()) {
-            try {
-                Protocol protocol = loader.getLoadedExtension(protocolName);
-                if (protocol != null) {
-                    protocol.destroy();
-                }
-            } catch (Throwable t) {
-                logger.warn(t.getMessage(), t);
-            }
         }
     }
 }

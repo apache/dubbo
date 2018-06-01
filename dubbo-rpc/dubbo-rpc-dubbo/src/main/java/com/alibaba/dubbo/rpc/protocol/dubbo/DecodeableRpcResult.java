@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Type;
+import java.util.Map;
 
 public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable {
 
@@ -93,6 +94,35 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
                     if (obj instanceof Throwable == false)
                         throw new IOException("Response data error, expect Throwable, but get " + obj);
                     setException((Throwable) obj);
+                } catch (ClassNotFoundException e) {
+                    throw new IOException(StringUtils.toString("Read response data failed.", e));
+                }
+                break;
+            case DubboCodec.RESPONSE_NULL_VALUE_WITH_ATTACHMENTS:
+                try {
+                    setAttachments((Map<String, String>) in.readObject(Map.class));
+                } catch (ClassNotFoundException e) {
+                    throw new IOException(StringUtils.toString("Read response data failed.", e));
+                }
+                break;
+            case DubboCodec.RESPONSE_VALUE_WITH_ATTACHMENTS:
+                try {
+                    Type[] returnType = RpcUtils.getReturnTypes(invocation);
+                    setValue(returnType == null || returnType.length == 0 ? in.readObject() :
+                            (returnType.length == 1 ? in.readObject((Class<?>) returnType[0])
+                                    : in.readObject((Class<?>) returnType[0], returnType[1])));
+                    setAttachments((Map<String, String>) in.readObject(Map.class));
+                } catch (ClassNotFoundException e) {
+                    throw new IOException(StringUtils.toString("Read response data failed.", e));
+                }
+                break;
+            case DubboCodec.RESPONSE_WITH_EXCEPTION_WITH_ATTACHMENTS:
+                try {
+                    Object obj = in.readObject();
+                    if (obj instanceof Throwable == false)
+                        throw new IOException("Response data error, expect Throwable, but get " + obj);
+                    setException((Throwable) obj);
+                    setAttachments((Map<String, String>) in.readObject(Map.class));
                 } catch (ClassNotFoundException e) {
                     throw new IOException(StringUtils.toString("Read response data failed.", e));
                 }

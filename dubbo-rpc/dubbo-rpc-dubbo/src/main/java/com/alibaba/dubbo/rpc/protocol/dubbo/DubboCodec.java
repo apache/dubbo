@@ -49,10 +49,13 @@ import static com.alibaba.dubbo.rpc.protocol.dubbo.CallbackServiceCodec.encodeIn
 public class DubboCodec extends ExchangeCodec implements Codec2 {
 
     public static final String NAME = "dubbo";
-    public static final String DUBBO_VERSION = Version.getVersion(DubboCodec.class, Version.getVersion());
+    public static final String DUBBO_VERSION = Version.getProtocolVersion();
     public static final byte RESPONSE_WITH_EXCEPTION = 0;
     public static final byte RESPONSE_VALUE = 1;
     public static final byte RESPONSE_NULL_VALUE = 2;
+    public static final byte RESPONSE_WITH_EXCEPTION_WITH_ATTACHMENTS = 3;
+    public static final byte RESPONSE_VALUE_WITH_ATTACHMENTS = 4;
+    public static final byte RESPONSE_NULL_VALUE_WITH_ATTACHMENTS = 5;
     public static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
     public static final Class<?>[] EMPTY_CLASS_ARRAY = new Class<?>[0];
     private static final Logger log = LoggerFactory.getLogger(DubboCodec.class);
@@ -109,7 +112,7 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
         } else {
             // decode request.
             Request req = new Request(id);
-            req.setVersion("2.0.0");
+            req.setVersion(Version.getProtocolVersion());
             req.setTwoWay((flag & FLAG_TWOWAY) != 0);
             if ((flag & FLAG_EVENT) != 0) {
                 req.setEvent(Request.HEARTBEAT_EVENT);
@@ -162,9 +165,19 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
 
     @Override
     protected void encodeRequestData(Channel channel, ObjectOutput out, Object data) throws IOException {
+        encodeRequestData(channel, out, data, DUBBO_VERSION);
+    }
+
+    @Override
+    protected void encodeResponseData(Channel channel, ObjectOutput out, Object data) throws IOException {
+        encodeResponseData(channel, out, data, DUBBO_VERSION);
+    }
+
+    @Override
+    protected void encodeRequestData(Channel channel, ObjectOutput out, Object data, String version) throws IOException {
         RpcInvocation inv = (RpcInvocation) data;
 
-        out.writeUTF(inv.getAttachment(Constants.DUBBO_VERSION_KEY, DUBBO_VERSION));
+        out.writeUTF(version);
         out.writeUTF(inv.getAttachment(Constants.PATH_KEY));
         out.writeUTF(inv.getAttachment(Constants.VERSION_KEY));
 
@@ -179,21 +192,28 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
     }
 
     @Override
-    protected void encodeResponseData(Channel channel, ObjectOutput out, Object data) throws IOException {
+    protected void encodeResponseData(Channel channel, ObjectOutput out, Object data, String version) throws IOException {
         Result result = (Result) data;
-
+        // currently, the version value in Response records the version of Request
+        boolean attach = Version.isSupportResponseAttatchment(version);
         Throwable th = result.getException();
         if (th == null) {
             Object ret = result.getValue();
             if (ret == null) {
-                out.writeByte(RESPONSE_NULL_VALUE);
+                out.writeByte(attach ? RESPONSE_NULL_VALUE_WITH_ATTACHMENTS : RESPONSE_NULL_VALUE);
             } else {
-                out.writeByte(RESPONSE_VALUE);
+                out.writeByte(attach ? RESPONSE_VALUE_WITH_ATTACHMENTS : RESPONSE_VALUE);
                 out.writeObject(ret);
             }
         } else {
-            out.writeByte(RESPONSE_WITH_EXCEPTION);
+            out.writeByte(attach ? RESPONSE_WITH_EXCEPTION_WITH_ATTACHMENTS : RESPONSE_WITH_EXCEPTION);
             out.writeObject(th);
+        }
+
+        if (attach) {
+            // returns current version of Response to consumer side.
+            result.getAttachments().put(Constants.DUBBO_VERSION_KEY, Version.getProtocolVersion());
+            out.writeObject(result.getAttachments());
         }
     }
 }
