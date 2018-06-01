@@ -30,13 +30,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.UriInfo;
 
-/**
- * {@link javax.ws.rs.core.MediaType}
- * {@link javax.ws.rs.Path}
- * {@link javax.ws.rs.Consumes}
- * {@link javax.ws.rs.Produces}
- * {@link javax.ws.rs.GET}
- */
+
 @Path("dubbo")
 @Consumes({MediaType.APPLICATION_JSON, MediaType.TEXT_XML})
 @Produces({MediaType.APPLICATION_JSON + "; " + "charset=UTF-8", MediaType.TEXT_XML + "; " + "charset=UTF-8"})
