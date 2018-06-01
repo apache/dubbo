@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,8 +15,6 @@
  * limitations under the License.
  */
 package com.alibaba.dubbo.rpc.protocol.injvm;
-
-import java.util.Map;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
@@ -28,41 +27,27 @@ import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.protocol.AbstractProtocol;
 import com.alibaba.dubbo.rpc.support.ProtocolUtils;
 
+import java.util.Map;
+
 /**
  * InjvmProtocol
- * 
- * @author qian.lei
- * @author william.liangf
  */
 public class InjvmProtocol extends AbstractProtocol implements Protocol {
-    
+
     public static final String NAME = Constants.LOCAL_PROTOCOL;
 
     public static final int DEFAULT_PORT = 0;
-
-    public int getDefaultPort() {
-        return DEFAULT_PORT;
-    }
-    
     private static InjvmProtocol INSTANCE;
 
     public InjvmProtocol() {
         INSTANCE = this;
     }
-    
+
     public static InjvmProtocol getInjvmProtocol() {
         if (INSTANCE == null) {
             ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(InjvmProtocol.NAME); // load
         }
         return INSTANCE;
-    }
-
-    public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
-        return new InjvmExporter<T>(invoker, invoker.getUrl().getServiceKey(), exporterMap);
-    }
-
-    public <T> Invoker<T> refer(Class<T> serviceType, URL url) throws RpcException {
-        return new InjvmInvoker<T>(serviceType, url, url.getServiceKey(), exporterMap);
     }
 
     static Exporter<?> getExporter(Map<String, Exporter<?>> map, URL key) {
@@ -84,35 +69,50 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
         if (result == null) {
             return null;
         } else if (ProtocolUtils.isGeneric(
-            result.getInvoker().getUrl().getParameter(Constants.GENERIC_KEY))) {
+                result.getInvoker().getUrl().getParameter(Constants.GENERIC_KEY))) {
             return null;
         } else {
             return result;
         }
     }
-    
+
+    @Override
+    public int getDefaultPort() {
+        return DEFAULT_PORT;
+    }
+
+    @Override
+    public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
+        return new InjvmExporter<T>(invoker, invoker.getUrl().getServiceKey(), exporterMap);
+    }
+
+    @Override
+    public <T> Invoker<T> refer(Class<T> serviceType, URL url) throws RpcException {
+        return new InjvmInvoker<T>(serviceType, url, url.getServiceKey(), exporterMap);
+    }
+
     public boolean isInjvmRefer(URL url) {
-    	final boolean isJvmRefer;
-    	String scope = url.getParameter(Constants.SCOPE_KEY);
-    	//本身已经是jvm协议了，走正常流程就是了.
-    	if (Constants.LOCAL_PROTOCOL.toString().equals(url.getProtocol())) {
-    		isJvmRefer = false;
-    	} else if (Constants.SCOPE_LOCAL.equals(scope) || (url.getParameter("injvm", false))) {
-			//如果声明为本地引用
-			//scope=local || injvm=true 等价 injvm标签未来废弃掉.
-			isJvmRefer = true;
-		} else if (Constants.SCOPE_REMOTE.equals(scope)){
-			//声明了是远程引用，则不做本地引用
-			isJvmRefer = false;
-		} else if (url.getParameter(Constants.GENERIC_KEY, false)){
-			//泛化调用不走本地
-			isJvmRefer = false;
-		} else if (getExporter(exporterMap, url) != null) {
-			//默认情况下如果本地有服务暴露，则引用本地服务.
-			isJvmRefer = true;
-		} else {
-			isJvmRefer = false;
-		}
-		return isJvmRefer;
+        final boolean isJvmRefer;
+        String scope = url.getParameter(Constants.SCOPE_KEY);
+        // Since injvm protocol is configured explicitly, we don't need to set any extra flag, use normal refer process.
+        if (Constants.LOCAL_PROTOCOL.toString().equals(url.getProtocol())) {
+            isJvmRefer = false;
+        } else if (Constants.SCOPE_LOCAL.equals(scope) || (url.getParameter("injvm", false))) {
+            // if it's declared as local reference
+            // 'scope=local' is equivalent to 'injvm=true', injvm will be deprecated in the future release
+            isJvmRefer = true;
+        } else if (Constants.SCOPE_REMOTE.equals(scope)) {
+            // it's declared as remote reference
+            isJvmRefer = false;
+        } else if (url.getParameter(Constants.GENERIC_KEY, false)) {
+            // generic invocation is not local reference
+            isJvmRefer = false;
+        } else if (getExporter(exporterMap, url) != null) {
+            // by default, go through local reference if there's the service exposed locally
+            isJvmRefer = true;
+        } else {
+            isJvmRefer = false;
+        }
+        return isJvmRefer;
     }
 }

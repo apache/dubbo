@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,11 +15,6 @@
  * limitations under the License.
  */
 package com.alibaba.dubbo.remoting.p2p.support;
-
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
@@ -32,25 +28,29 @@ import com.alibaba.dubbo.remoting.p2p.Group;
 import com.alibaba.dubbo.remoting.p2p.Peer;
 import com.alibaba.dubbo.remoting.transport.ServerDelegate;
 
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
+
 /**
  * ServerPeer
- * 
- * @author william.liangf
  */
 public class ServerPeer extends ServerDelegate implements Peer {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(ServerPeer.class);
 
     private final Map<URL, Client> clients;
 
     private final Group group;
-    
-    public ServerPeer(Server server, Map<URL, Client> clients, Group group){
+
+    public ServerPeer(Server server, Map<URL, Client> clients, Group group) {
         super(server);
         this.clients = clients;
         this.group = group;
     }
 
+    @Override
     public void leave() throws RemotingException {
         group.leave(getUrl());
     }
@@ -63,7 +63,7 @@ public class ServerPeer extends ServerDelegate implements Peer {
             logger.error(e.getMessage(), e);
         }
     }
-    
+
     @Override
     public Collection<Channel> getChannels() {
         Collection<Channel> channels = super.getChannels();

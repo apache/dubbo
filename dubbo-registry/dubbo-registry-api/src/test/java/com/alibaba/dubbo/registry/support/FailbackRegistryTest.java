@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2101 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,32 +16,27 @@
  */
 package com.alibaba.dubbo.registry.support;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-
-import org.junit.Before;
-import org.junit.Test;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.CollectionUtils;
 import com.alibaba.dubbo.registry.NotifyListener;
 
-/**
- * 
- * @author liuchao
- */
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static org.junit.Assert.assertEquals;
+
 public class FailbackRegistryTest {
-    MockRegistry  registry;
     static String service;
-    static URL    serviceUrl;
-    static URL    registryUrl;
+    static URL serviceUrl;
+    static URL registryUrl;
+    MockRegistry registry;
     private int FAILED_PERIOD = 200;
     private int sleeptime = 100;
     private int trytimes = 5;
@@ -52,22 +48,23 @@ public class FailbackRegistryTest {
     public void setUp() throws Exception {
         service = "com.alibaba.dubbo.test.DemoService";
         serviceUrl = URL.valueOf("remote://127.0.0.1/demoservice?method=get");
-        registryUrl = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A").addParameter(Constants.REGISTRY_RETRY_PERIOD_KEY,String.valueOf(FAILED_PERIOD));
+        registryUrl = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A").addParameter(Constants.REGISTRY_RETRY_PERIOD_KEY, String.valueOf(FAILED_PERIOD));
     }
 
     /**
      * Test method for
-     * {@link com.alibaba.dubbo.registry.internal.FailbackRegistry#doRetry()}.
-     * 
+     * {@link com.alibaba.dubbo.registry.support.FailbackRegistry#retry()}.
+     *
      * @throws Exception
      */
     @Test
     public void testDoRetry() throws Exception {
 
         final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
-        final CountDownLatch latch = new CountDownLatch(3);//全部共调用3次。成功才会减1. subscribe register的失败尝试不会在做了
+        final CountDownLatch latch = new CountDownLatch(3);//All of them are called 3 times. Successful attempts to reduce the failure of 1. subscribe register will not be done again
 
         NotifyListener listner = new NotifyListener() {
+            @Override
             public void notify(List<URL> urls) {
                 notified.set(Boolean.TRUE);
             }
@@ -79,7 +76,7 @@ public class FailbackRegistryTest {
         registry.subscribe(serviceUrl.setProtocol(Constants.CONSUMER_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false")), listner);
         registry.unsubscribe(serviceUrl.setProtocol(Constants.CONSUMER_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false")), listner);
 
-        //失败的情况不能调用到listener.
+        //Failure can not be called to listener.
         assertEquals(false, notified.get());
         assertEquals(3, latch.getCount());
 
@@ -94,14 +91,14 @@ public class FailbackRegistryTest {
         }
 //        Thread.sleep(100000);//for debug
         assertEquals(0, latch.getCount());
-        //unsubscribe时会清除failedsubcribe对应key
+        //The failedsubcribe corresponding key will be cleared when unsubscribing
         assertEquals(false, notified.get());
     }
-    
+
     @Test
     public void testDoRetry_subscribe() throws Exception {
 
-        final CountDownLatch latch = new CountDownLatch(1);//全部共调用4次。成功才会减1. subscribe的失败尝试不会在做了
+        final CountDownLatch latch = new CountDownLatch(1);//All of them are called 4 times. A successful attempt to lose 1. subscribe will not be done
 
         registry = new MockRegistry(registryUrl, latch);
         registry.setBad(true);
@@ -117,14 +114,15 @@ public class FailbackRegistryTest {
         }
         assertEquals(0, latch.getCount());
     }
-    
+
     @Test
     public void testDoRetry_register() throws Exception {
 
         final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
-        final CountDownLatch latch = new CountDownLatch(1);//全部共调用4次。成功才会减1. subscribe的失败尝试不会在做了
+        final CountDownLatch latch = new CountDownLatch(1);//All of them are called 4 times. A successful attempt to lose 1. subscribe will not be done
 
         NotifyListener listner = new NotifyListener() {
+            @Override
             public void notify(List<URL> urls) {
                 notified.set(Boolean.TRUE);
             }
@@ -133,7 +131,7 @@ public class FailbackRegistryTest {
         registry.setBad(true);
         registry.subscribe(serviceUrl.setProtocol(Constants.CONSUMER_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false")), listner);
 
-        //失败的情况不能调用到listener.
+        //Failure can not be called to listener.
         assertEquals(false, notified.get());
         assertEquals(1, latch.getCount());
 
@@ -148,30 +146,31 @@ public class FailbackRegistryTest {
         }
 //        Thread.sleep(100000);
         assertEquals(0, latch.getCount());
-        //unsubscribe时会清除failedsubcribe对应key
+        //The failedsubcribe corresponding key will be cleared when unsubscribing
         assertEquals(true, notified.get());
     }
-    
+
     @Test
     public void testDoRetry_nofify() throws Exception {
 
-        //初始值0
+        //Initial value 0
         final AtomicInteger count = new AtomicInteger(0);
 
         NotifyListener listner = new NotifyListener() {
+            @Override
             public void notify(List<URL> urls) {
                 count.incrementAndGet();
-                //第一次抛出异常，看后面是否会再次调用到incrementAndGet
-                if(count.get() == 1l ){
-                    throw new  RuntimeException("test exception please ignore");
+                //The exception is thrown for the first time to see if the back will be called again to incrementAndGet
+                if (count.get() == 1l) {
+                    throw new RuntimeException("test exception please ignore");
                 }
             }
         };
         registry = new MockRegistry(registryUrl, new CountDownLatch(0));
         registry.subscribe(serviceUrl.setProtocol(Constants.CONSUMER_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false")), listner);
 
-        assertEquals(1, count.get()); //确保subscribe调用完成后刚调用过一次count.incrementAndGet
-        //等定时器.
+        assertEquals(1, count.get()); //Make sure that the subscribe call has just been called once count.incrementAndGet after the call is completed
+        //Wait for the timer.
         for (int i = 0; i < trytimes; i++) {
             System.out.println("failback notify retry ,times:" + i);
             if (count.get() == 2)
@@ -181,10 +180,10 @@ public class FailbackRegistryTest {
         assertEquals(2, count.get());
     }
 
-    
-    
+
     private static class MockRegistry extends FailbackRegistry {
         CountDownLatch latch;
+        private boolean bad = false;
 
         /**
          * @param url
@@ -193,8 +192,6 @@ public class FailbackRegistryTest {
             super(url);
             this.latch = latch;
         }
-
-        private boolean bad = false;
 
         /**
          * @param bad the bad to set
@@ -229,7 +226,7 @@ public class FailbackRegistryTest {
                 throw new RuntimeException("can not invoke!");
             }
             //System.out.println("do doSubscribe");
-            super.notify(url, listener, Arrays.asList(new URL[] { serviceUrl }));
+            super.notify(url, listener, Arrays.asList(new URL[]{serviceUrl}));
             latch.countDown();
         }
 
@@ -252,6 +249,7 @@ public class FailbackRegistryTest {
             latch.countDown();
         }
 
+        @Override
         public boolean isAvailable() {
             return true;
         }

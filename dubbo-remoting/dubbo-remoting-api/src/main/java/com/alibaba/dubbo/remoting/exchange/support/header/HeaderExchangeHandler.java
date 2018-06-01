@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,8 +15,6 @@
  * limitations under the License.
  */
 package com.alibaba.dubbo.remoting.exchange.support.header;
-
-import java.net.InetSocketAddress;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
@@ -34,27 +33,40 @@ import com.alibaba.dubbo.remoting.exchange.Response;
 import com.alibaba.dubbo.remoting.exchange.support.DefaultFuture;
 import com.alibaba.dubbo.remoting.transport.ChannelHandlerDelegate;
 
+import java.net.InetSocketAddress;
+
 /**
  * ExchangeReceiver
- * 
- * @author william.liangf
- * @author chao.liuc
  */
 public class HeaderExchangeHandler implements ChannelHandlerDelegate {
 
-    protected static final Logger logger              = LoggerFactory.getLogger(HeaderExchangeHandler.class);
+    protected static final Logger logger = LoggerFactory.getLogger(HeaderExchangeHandler.class);
 
-    public static String          KEY_READ_TIMESTAMP  = HeartbeatHandler.KEY_READ_TIMESTAMP;
+    public static String KEY_READ_TIMESTAMP = HeartbeatHandler.KEY_READ_TIMESTAMP;
 
-    public static String          KEY_WRITE_TIMESTAMP = HeartbeatHandler.KEY_WRITE_TIMESTAMP;
+    public static String KEY_WRITE_TIMESTAMP = HeartbeatHandler.KEY_WRITE_TIMESTAMP;
 
     private final ExchangeHandler handler;
 
-    public HeaderExchangeHandler(ExchangeHandler handler){
+    public HeaderExchangeHandler(ExchangeHandler handler) {
         if (handler == null) {
             throw new IllegalArgumentException("handler == null");
         }
         this.handler = handler;
+    }
+
+    static void handleResponse(Channel channel, Response response) throws RemotingException {
+        if (response != null && !response.isHeartbeat()) {
+            DefaultFuture.received(channel, response);
+        }
+    }
+
+    private static boolean isClientSide(Channel channel) {
+        InetSocketAddress address = channel.getRemoteAddress();
+        URL url = channel.getUrl();
+        return url.getPort() == address.getPort() &&
+                NetUtils.filterLocalHost(url.getIp())
+                        .equals(NetUtils.filterLocalHost(address.getAddress().getHostAddress()));
     }
 
     void handlerEvent(Channel channel, Request req) throws RemotingException {
@@ -91,12 +103,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         return res;
     }
 
-    static void handleResponse(Channel channel, Response response) throws RemotingException {
-        if (response != null && !response.isHeartbeat()) {
-            DefaultFuture.received(channel, response);
-        }
-    }
-
+    @Override
     public void connected(Channel channel) throws RemotingException {
         channel.setAttribute(KEY_READ_TIMESTAMP, System.currentTimeMillis());
         channel.setAttribute(KEY_WRITE_TIMESTAMP, System.currentTimeMillis());
@@ -108,6 +115,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         }
     }
 
+    @Override
     public void disconnected(Channel channel) throws RemotingException {
         channel.setAttribute(KEY_READ_TIMESTAMP, System.currentTimeMillis());
         channel.setAttribute(KEY_WRITE_TIMESTAMP, System.currentTimeMillis());
@@ -119,6 +127,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         }
     }
 
+    @Override
     public void sent(Channel channel, Object message) throws RemotingException {
         Throwable exception = null;
         try {
@@ -143,19 +152,12 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
                 throw (RemotingException) exception;
             } else {
                 throw new RemotingException(channel.getLocalAddress(), channel.getRemoteAddress(),
-                                            exception.getMessage(), exception);
+                        exception.getMessage(), exception);
             }
         }
     }
 
-    private static boolean isClientSide(Channel channel) {
-        InetSocketAddress address = channel.getRemoteAddress();
-        URL url = channel.getUrl();
-        return url.getPort() == address.getPort() && 
-                    NetUtils.filterLocalHost(url.getIp())
-                    .equals(NetUtils.filterLocalHost(address.getAddress().getHostAddress()));
-    }
-
+    @Override
     public void received(Channel channel, Object message) throws RemotingException {
         channel.setAttribute(KEY_READ_TIMESTAMP, System.currentTimeMillis());
         ExchangeChannel exchangeChannel = HeaderExchangeChannel.getOrAddChannel(channel);
@@ -193,13 +195,14 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         }
     }
 
+    @Override
     public void caught(Channel channel, Throwable exception) throws RemotingException {
         if (exception instanceof ExecutionException) {
             ExecutionException e = (ExecutionException) exception;
             Object msg = e.getRequest();
             if (msg instanceof Request) {
                 Request req = (Request) msg;
-                if (req.isTwoWay() && ! req.isHeartbeat()) {
+                if (req.isTwoWay() && !req.isHeartbeat()) {
                     Response res = new Response(req.getId(), req.getVersion());
                     res.setStatus(Response.SERVER_ERROR);
                     res.setErrorMessage(StringUtils.toString(e));
@@ -216,6 +219,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         }
     }
 
+    @Override
     public ChannelHandler getHandler() {
         if (handler instanceof ChannelHandlerDelegate) {
             return ((ChannelHandlerDelegate) handler).getHandler();

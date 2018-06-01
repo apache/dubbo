@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,59 +28,58 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-/**
- * @author ding.lid
- */
 public class CompatibleTypeUtils {
-    
-    private CompatibleTypeUtils() {
-    }
 
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
+    private CompatibleTypeUtils() {
+    }
+
     /**
-     * 兼容类型转换。null值是OK的。如果不需要转换，则返回原来的值。
-     * 进行的兼容类型转换如下：（基本类对应的Wrapper类型不再列出。）
+     * Compatible type convert. Null value is allowed to pass in. If no conversion is needed, then the original value
+     * will be returned.
+     * <p>
+     * Supported compatible type conversions include (primary types and corresponding wrappers are not listed):
      * <ul>
      * <li> String -> char, enum, Date
      * <li> byte, short, int, long -> byte, short, int, long
      * <li> float, double -> float, double
      * </ul>
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-	public static Object compatibleTypeConvert(Object value, Class<?> type) {
-        if(value == null || type == null || type.isAssignableFrom(value.getClass())) {
-        	return value;
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static Object compatibleTypeConvert(Object value, Class<?> type) {
+        if (value == null || type == null || type.isAssignableFrom(value.getClass())) {
+            return value;
         }
-        if(value instanceof String) {
+        if (value instanceof String) {
             String string = (String) value;
             if (char.class.equals(type) || Character.class.equals(type)) {
-                if(string.length() != 1) {
+                if (string.length() != 1) {
                     throw new IllegalArgumentException(String.format("CAN NOT convert String(%s) to char!" +
                             " when convert String to char, the String MUST only 1 char.", string));
                 }
                 return string.charAt(0);
-            } else if(type.isEnum()) {
-                return Enum.valueOf((Class<Enum>)type, string);
-            } else if(type == BigInteger.class) {
+            } else if (type.isEnum()) {
+                return Enum.valueOf((Class<Enum>) type, string);
+            } else if (type == BigInteger.class) {
                 return new BigInteger(string);
-            } else if(type == BigDecimal.class) {
+            } else if (type == BigDecimal.class) {
                 return new BigDecimal(string);
-            } else if(type == Short.class || type == short.class) {
+            } else if (type == Short.class || type == short.class) {
                 return new Short(string);
-            } else if(type == Integer.class || type == int.class) {
+            } else if (type == Integer.class || type == int.class) {
                 return new Integer(string);
-            } else if(type == Long.class || type == long.class) {
+            } else if (type == Long.class || type == long.class) {
                 return new Long(string);
-            } else if(type == Double.class || type == double.class) {
+            } else if (type == Double.class || type == double.class) {
                 return new Double(string);
-            } else if(type == Float.class || type == float.class) {
+            } else if (type == Float.class || type == float.class) {
                 return new Float(string);
-            }  else if(type == Byte.class || type == byte.class) {
+            } else if (type == Byte.class || type == byte.class) {
                 return new Byte(string);
-            } else if(type == Boolean.class || type == boolean.class) {
+            } else if (type == Boolean.class || type == boolean.class) {
                 return new Boolean(string);
-            } else if(type == Date.class) {
+            } else if (type == Date.class) {
                 try {
                     return new SimpleDateFormat(DATE_FORMAT).parse((String) value);
                 } catch (ParseException e) {
@@ -87,12 +87,12 @@ public class CompatibleTypeUtils {
                 }
             } else if (type == Class.class) {
                 try {
-                    return ReflectUtils.name2class((String)value);
+                    return ReflectUtils.name2class((String) value);
                 } catch (ClassNotFoundException e) {
                     throw new RuntimeException(e.getMessage(), e);
                 }
             }
-        } else if(value instanceof Number) {
+        } else if (value instanceof Number) {
             Number number = (Number) value;
             if (type == byte.class || type == Byte.class) {
                 return number.byteValue();
@@ -113,17 +113,17 @@ public class CompatibleTypeUtils {
             } else if (type == Date.class) {
                 return new Date(number.longValue());
             }
-        } else if(value instanceof Collection) {
+        } else if (value instanceof Collection) {
             Collection collection = (Collection) value;
             if (type.isArray()) {
                 int length = collection.size();
                 Object array = Array.newInstance(type.getComponentType(), length);
                 int i = 0;
                 for (Object item : collection) {
-                    Array.set(array, i ++, item);
+                    Array.set(array, i++, item);
                 }
                 return array;
-            } else if (! type.isInterface()) {
+            } else if (!type.isInterface()) {
                 try {
                     Collection result = (Collection) type.newInstance();
                     result.addAll(collection);
@@ -135,9 +135,9 @@ public class CompatibleTypeUtils {
             } else if (type == Set.class) {
                 return new HashSet<Object>(collection);
             }
-        } else if(value.getClass().isArray() && Collection.class.isAssignableFrom(type)) {
+        } else if (value.getClass().isArray() && Collection.class.isAssignableFrom(type)) {
             Collection collection;
-            if (! type.isInterface()) {
+            if (!type.isInterface()) {
                 try {
                     collection = (Collection) type.newInstance();
                 } catch (Throwable e) {
@@ -149,7 +149,7 @@ public class CompatibleTypeUtils {
                 collection = new ArrayList<Object>();
             }
             int length = Array.getLength(value);
-            for (int i = 0; i < length; i ++) {
+            for (int i = 0; i < length; i++) {
                 collection.add(Array.get(value, i));
             }
             return collection;

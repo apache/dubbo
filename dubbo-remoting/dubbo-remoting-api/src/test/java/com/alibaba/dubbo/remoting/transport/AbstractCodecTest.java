@@ -1,11 +1,12 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,52 +16,46 @@
  */
 package com.alibaba.dubbo.remoting.transport;
 
-import java.io.IOException;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.Channel;
 import junit.framework.TestCase;
+import org.hamcrest.CoreMatchers;
+import org.mockito.internal.verification.VerificationModeFactory;
 
-import static org.easymock.EasyMock.createMock;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
+import java.io.IOException;
+
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.junit.Assert.assertThat;
-import static org.junit.matchers.JUnitMatchers.*;
-import static org.hamcrest.CoreMatchers.*;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
-/**
- * @author ding.lid
- */
 public class AbstractCodecTest extends TestCase {
 
     public void test_checkPayload_default8M() throws Exception {
-        Channel channel = createMock(Channel.class);
-        expect(channel.getUrl()).andReturn(URL.valueOf("dubbo://1.1.1.1")).anyTimes();
-        replay(channel);
+        Channel channel = mock(Channel.class);
+        given(channel.getUrl()).willReturn(URL.valueOf("dubbo://1.1.1.1"));
 
         AbstractCodec.checkPayload(channel, 1 * 1024 * 1024);
 
         try {
             AbstractCodec.checkPayload(channel, 15 * 1024 * 1024);
-        }
-        catch (IOException expected) {
+        } catch (IOException expected) {
             assertThat(expected.getMessage(), allOf(
-                    containsString("Data length too large: "),
-                    containsString("max payload: " + 8 * 1024 * 1024)
+                    CoreMatchers.containsString("Data length too large: "),
+                    CoreMatchers.containsString("max payload: " + 8 * 1024 * 1024)
             ));
         }
 
-        verify(channel);
+        verify(channel, VerificationModeFactory.atLeastOnce()).getUrl();
     }
 
     public void test_checkPayload_minusPayloadNoLimit() throws Exception {
-        Channel channel = createMock(Channel.class);
-        expect(channel.getUrl()).andReturn(URL.valueOf("dubbo://1.1.1.1?payload=-1")).anyTimes();
-        replay(channel);
+        Channel channel = mock(Channel.class);
+        given(channel.getUrl()).willReturn(URL.valueOf("dubbo://1.1.1.1?payload=-1"));
 
         AbstractCodec.checkPayload(channel, 15 * 1024 * 1024);
 
-        verify(channel);
+        verify(channel, VerificationModeFactory.atLeastOnce()).getUrl();
     }
 }

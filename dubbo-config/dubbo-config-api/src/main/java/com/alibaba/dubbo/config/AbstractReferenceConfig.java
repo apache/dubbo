@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,47 +21,45 @@ import com.alibaba.dubbo.config.support.Parameter;
 import com.alibaba.dubbo.rpc.InvokerListener;
 import com.alibaba.dubbo.rpc.support.ProtocolUtils;
 
-
 /**
  * AbstractConsumerConfig
- * 
- * @see com.alibaba.dubbo.config.ReferenceConfig
- * @author william.liangf
+ *
  * @export
+ * @see com.alibaba.dubbo.config.ReferenceConfig
  */
 public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
     private static final long serialVersionUID = -2786526984373031126L;
 
-    // ======== 引用缺省值，当引用属性未设置时使用该缺省值替代  ========
-    
-    // 检查服务提供者是否存在
-    protected Boolean             check;
+    // ======== Reference config default values, will take effect if reference's attribute is not set  ========
 
-    // 是否加载时即刻初始化
-    protected Boolean             init;
+    // check if service provider exists
+    protected Boolean check;
 
-    // 是否使用泛接口
-    protected String             generic;
+    // whether to eagle-init
+    protected Boolean init;
 
-    // 优先从JVM内获取引用实例
-    protected Boolean             injvm;
-    
+    // whether to use generic interface
+    protected String generic;
+
+    // whether to find reference's instance from the current JVM
+    protected Boolean injvm;
+
     // lazy create connection
-    protected Boolean             lazy;
+    protected Boolean lazy;
 
-    protected String              reconnect;
-    
-    protected Boolean             sticky;
-    
-    //stub是否支持event事件. //TODO slove merge problem 
-    protected Boolean             stubevent ;//= Constants.DEFAULT_STUB_EVENT;
+    protected String reconnect;
 
-    // 版本
-    protected String               version;
+    protected Boolean sticky;
 
-    // 服务分组
-    protected String               group;
+    // whether to support event in stub. //TODO solve merge problem
+    protected Boolean stubevent;//= Constants.DEFAULT_STUB_EVENT;
+
+    // version
+    protected String version;
+
+    // group
+    protected String group;
 
     public Boolean isCheck() {
         return check;
@@ -89,37 +88,39 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         }
     }
 
-    public void setGeneric(String generic) {
-        this.generic = generic;
-    }
-
     public String getGeneric() {
         return generic;
     }
 
+    public void setGeneric(String generic) {
+        this.generic = generic;
+    }
+
     /**
      * @return
-     * @deprecated 通过scope进行判断，scope=local
+     * @deprecated instead, use scope to judge if it's in jvm, scope=local
      */
     @Deprecated
     public Boolean isInjvm() {
         return injvm;
     }
-    
+
     /**
      * @param injvm
-     * @deprecated 通过scope设置，scope=local表示使用injvm协议.
+     * @deprecated instead, use scope to judge if it's in jvm, scope=local
      */
-    @Deprecated 
+    @Deprecated
     public void setInjvm(Boolean injvm) {
         this.injvm = injvm;
     }
 
+    @Override
     @Parameter(key = Constants.REFERENCE_FILTER_KEY, append = true)
     public String getFilter() {
         return super.getFilter();
     }
 
+    @Override
     @Parameter(key = Constants.INVOKER_LISTENER_KEY, append = true)
     public String getListener() {
         return super.getListener();
@@ -142,7 +143,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
     @Override
     public void setOnconnect(String onconnect) {
-        if (onconnect != null && onconnect.length() >0){
+        if (onconnect != null && onconnect.length() > 0) {
             this.stubevent = true;
         }
         super.setOnconnect(onconnect);
@@ -150,7 +151,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
     @Override
     public void setOndisconnect(String ondisconnect) {
-        if (ondisconnect != null && ondisconnect.length() >0){
+        if (ondisconnect != null && ondisconnect.length() > 0) {
             this.stubevent = true;
         }
         super.setOndisconnect(ondisconnect);
@@ -160,7 +161,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     public Boolean getStubevent() {
         return stubevent;
     }
-    
+
     @Parameter(key = Constants.RECONNECT_KEY)
     public String getReconnect() {
         return reconnect;

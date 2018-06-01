@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,22 +15,6 @@
  * limitations under the License.
  */
 package com.alibaba.dubbo.remoting.transport.mina;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-
-import org.apache.mina.common.ConnectFuture;
-import org.apache.mina.common.IoFuture;
-import org.apache.mina.common.IoFutureListener;
-import org.apache.mina.common.IoSession;
-import org.apache.mina.common.ThreadModel;
-import org.apache.mina.filter.codec.ProtocolCodecFilter;
-import org.apache.mina.transport.socket.nio.SocketConnector;
-import org.apache.mina.transport.socket.nio.SocketConnectorConfig;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
@@ -43,28 +28,41 @@ import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.transport.AbstractClient;
 
+import org.apache.mina.common.ConnectFuture;
+import org.apache.mina.common.IoFuture;
+import org.apache.mina.common.IoFutureListener;
+import org.apache.mina.common.IoSession;
+import org.apache.mina.common.ThreadModel;
+import org.apache.mina.filter.codec.ProtocolCodecFilter;
+import org.apache.mina.transport.socket.nio.SocketConnector;
+import org.apache.mina.transport.socket.nio.SocketConnectorConfig;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
 /**
  * Mina client.
- * 
- * @author qian.lei
- * @author william.liangf
  */
 public class MinaClient extends AbstractClient {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(MinaClient.class);
 
     private static final Map<String, SocketConnector> connectors = new ConcurrentHashMap<String, SocketConnector>();
-    
+
     private String connectorKey;
-    
+
     private SocketConnector connector;
-    
+
     private volatile IoSession session; // volatile, please copy reference to use
 
     public MinaClient(final URL url, final ChannelHandler handler) throws RemotingException {
         super(url, wrapChannelHandler(url, handler));
     }
-    
+
     @Override
     protected void doOpen() throws Throwable {
         connectorKey = getUrl().toFullString();
@@ -73,8 +71,8 @@ public class MinaClient extends AbstractClient {
             connector = c;
         } else {
             // set thread pool.
-            connector = new SocketConnector(Constants.DEFAULT_IO_THREADS, 
-                                            Executors.newCachedThreadPool(new NamedThreadFactory("MinaClientWorker", true)));
+            connector = new SocketConnector(Constants.DEFAULT_IO_THREADS,
+                    Executors.newCachedThreadPool(new NamedThreadFactory("MinaClientWorker", true)));
             // config
             SocketConnectorConfig cfg = (SocketConnectorConfig) connector.getDefaultConfig();
             cfg.setThreadModel(ThreadModel.MANUAL);
@@ -87,7 +85,7 @@ public class MinaClient extends AbstractClient {
             connectors.put(connectorKey, connector);
         }
     }
-    
+
     @Override
     protected void doConnect() throws Throwable {
         ConnectFuture future = connector.connect(getConnectAddress(), new MinaHandler(getUrl(), this));
@@ -95,12 +93,13 @@ public class MinaClient extends AbstractClient {
         final AtomicReference<Throwable> exception = new AtomicReference<Throwable>();
         final CountDownLatch finish = new CountDownLatch(1); // resolve future.awaitUninterruptibly() dead lock
         future.addListener(new IoFutureListener() {
+            @Override
             public void operationComplete(IoFuture future) {
                 try {
                     if (future.isReady()) {
                         IoSession newSession = future.getSession();
                         try {
-                            // 关闭旧的连接
+                            // Close old channel
                             IoSession oldSession = MinaClient.this.session; // copy reference
                             if (oldSession != null) {
                                 try {
@@ -109,7 +108,7 @@ public class MinaClient extends AbstractClient {
                                     }
                                     oldSession.close();
                                 } finally {
-                                    MinaChannel.removeChannelIfDisconnectd(oldSession);
+                                    MinaChannel.removeChannelIfDisconnected(oldSession);
                                 }
                             }
                         } finally {
@@ -121,7 +120,7 @@ public class MinaClient extends AbstractClient {
                                     newSession.close();
                                 } finally {
                                     MinaClient.this.session = null;
-                                    MinaChannel.removeChannelIfDisconnectd(newSession);
+                                    MinaChannel.removeChannelIfDisconnected(newSession);
                                 }
                             } else {
                                 MinaClient.this.session = newSession;
@@ -139,9 +138,9 @@ public class MinaClient extends AbstractClient {
             finish.await(getTimeout(), TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             throw new RemotingException(this, "client(url: " + getUrl() + ") failed to connect to server " + getRemoteAddress() + " client-side timeout "
-                                        + getTimeout() + "ms (elapsed: " + (System.currentTimeMillis() - start)
-                                        + "ms) from netty client " + NetUtils.getLocalHost() + " using dubbo version "
-                                        + Version.getVersion() + ", cause: " + e.getMessage(), e);
+                    + getTimeout() + "ms (elapsed: " + (System.currentTimeMillis() - start)
+                    + "ms) from netty client " + NetUtils.getLocalHost() + " using dubbo version "
+                    + Version.getVersion() + ", cause: " + e.getMessage(), e);
         }
         Throwable e = exception.get();
         if (e != null) {
@@ -152,7 +151,7 @@ public class MinaClient extends AbstractClient {
     @Override
     protected void doDisConnect() throws Throwable {
         try {
-            MinaChannel.removeChannelIfDisconnectd(session);
+            MinaChannel.removeChannelIfDisconnected(session);
         } catch (Throwable t) {
             logger.warn(t.getMessage());
         }
@@ -162,11 +161,11 @@ public class MinaClient extends AbstractClient {
     protected void doClose() throws Throwable {
         //release mina resouces.
     }
-    
+
     @Override
     protected Channel getChannel() {
         IoSession s = session;
-        if (s == null || ! s.isConnected())
+        if (s == null || !s.isConnected())
             return null;
         return MinaChannel.getOrAddChannel(s, getUrl(), this);
     }

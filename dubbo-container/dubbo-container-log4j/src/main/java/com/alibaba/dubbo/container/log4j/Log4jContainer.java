@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,21 +16,19 @@
  */
 package com.alibaba.dubbo.container.log4j;
 
-import java.util.Enumeration;
-import java.util.Properties;
+import com.alibaba.dubbo.common.utils.ConfigUtils;
+import com.alibaba.dubbo.container.Container;
 
 import org.apache.log4j.Appender;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.PropertyConfigurator;
 
-import com.alibaba.dubbo.common.utils.ConfigUtils;
-import com.alibaba.dubbo.container.Container;
+import java.util.Enumeration;
+import java.util.Properties;
 
 /**
  * Log4jContainer. (SPI, Singleton, ThreadSafe)
- * 
- * @author william.liangf
  */
 public class Log4jContainer implements Container {
 
@@ -41,6 +40,7 @@ public class Log4jContainer implements Container {
 
     public static final String DEFAULT_LOG4J_LEVEL = "ERROR";
 
+    @Override
     @SuppressWarnings("unchecked")
     public void start() {
         String file = ConfigUtils.getProperty(LOG4J_FILE);
@@ -69,7 +69,7 @@ public class Log4jContainer implements Container {
                     while (as.hasMoreElements()) {
                         Appender a = as.nextElement();
                         if (a instanceof FileAppender) {
-                            FileAppender fa = (FileAppender)a;
+                            FileAppender fa = (FileAppender) a;
                             String f = fa.getFile();
                             if (f != null && f.length() > 0) {
                                 int i = f.replace('\\', '/').lastIndexOf('/');
@@ -78,7 +78,7 @@ public class Log4jContainer implements Container {
                                     path = subdirectory;
                                 } else {
                                     path = f.substring(0, i);
-                                    if (! path.endsWith(subdirectory)) {
+                                    if (!path.endsWith(subdirectory)) {
                                         path = path + "/" + subdirectory;
                                     }
                                     f = f.substring(i + 1);
@@ -93,6 +93,7 @@ public class Log4jContainer implements Container {
         }
     }
 
+    @Override
     public void stop() {
     }
 
