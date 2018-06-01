@@ -79,23 +79,23 @@ public abstract class AbstractConfigurator implements Configurator {
             String currentApplication = url.getParameter(Constants.APPLICATION_KEY, url.getUsername());
             if (configApplication == null || Constants.ANY_VALUE.equals(configApplication)
                     || configApplication.equals(currentApplication)) {
-                Set<String> condtionKeys = new HashSet<String>();
-                condtionKeys.add(Constants.CATEGORY_KEY);
-                condtionKeys.add(Constants.CHECK_KEY);
-                condtionKeys.add(Constants.DYNAMIC_KEY);
-                condtionKeys.add(Constants.ENABLED_KEY);
+                Set<String> conditionKeys = new HashSet<String>();
+                conditionKeys.add(Constants.CATEGORY_KEY);
+                conditionKeys.add(Constants.CHECK_KEY);
+                conditionKeys.add(Constants.DYNAMIC_KEY);
+                conditionKeys.add(Constants.ENABLED_KEY);
                 for (Map.Entry<String, String> entry : configuratorUrl.getParameters().entrySet()) {
                     String key = entry.getKey();
                     String value = entry.getValue();
                     if (key.startsWith("~") || Constants.APPLICATION_KEY.equals(key) || Constants.SIDE_KEY.equals(key)) {
-                        condtionKeys.add(key);
+                        conditionKeys.add(key);
                         if (value != null && !Constants.ANY_VALUE.equals(value)
                                 && !value.equals(url.getParameter(key.startsWith("~") ? key.substring(1) : key))) {
                             return url;
                         }
                     }
                 }
-                return doConfigure(url, configuratorUrl.removeParameters(condtionKeys));
+                return doConfigure(url, configuratorUrl.removeParameters(conditionKeys));
             }
         }
         return url;
@@ -117,15 +117,9 @@ public abstract class AbstractConfigurator implements Configurator {
 
         int ipCompare = getUrl().getHost().compareTo(o.getUrl().getHost());
         if (ipCompare == 0) {//host is the same, sort by priority
-            int i = getUrl().getParameter(Constants.PRIORITY_KEY, 0),
+            Integer i = getUrl().getParameter(Constants.PRIORITY_KEY, 0),
                     j = o.getUrl().getParameter(Constants.PRIORITY_KEY, 0);
-            if (i < j) {
-                return -1;
-            } else if (i > j) {
-                return 1;
-            } else {
-                return 0;
-            }
+            return i.compareTo(j);
         } else {
             return ipCompare;
         }
