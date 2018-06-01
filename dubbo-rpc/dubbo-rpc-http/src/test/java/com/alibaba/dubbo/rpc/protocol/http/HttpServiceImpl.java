@@ -14,14 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.protocol.hessian;
-
-import com.alibaba.dubbo.rpc.RpcContext;
+package com.alibaba.dubbo.rpc.protocol.http;
 
 /**
- * HessianServiceImpl
+ * HttpServiceImpl
  */
-public class HessianServiceImpl implements HessianService {
+public class HttpServiceImpl implements HttpService {
 
     private boolean called;
 
@@ -29,7 +27,7 @@ public class HessianServiceImpl implements HessianService {
         called = true;
         return "Hello, " + name;
     }
-
+    
     public String sayHello(String name, int times) {
         called = true;
         StringBuilder sb = new StringBuilder();
@@ -53,10 +51,6 @@ public class HessianServiceImpl implements HessianService {
 
     public String customException() {
         throw new MyException("custom exception");
-    }
-
-    public String context(String name) {
-        return "Hello, " + name + " context, " + RpcContext.getContext().getAttachment("myContext");
     }
 
     static class MyException extends RuntimeException {

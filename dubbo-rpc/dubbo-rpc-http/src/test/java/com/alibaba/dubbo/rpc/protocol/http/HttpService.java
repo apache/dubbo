@@ -14,22 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.protocol.hessian;
+package com.alibaba.dubbo.rpc.protocol.http;
 
 
 /**
- * HessianService
+ * HttpService
  */
-public interface HessianService {
+public interface HttpService {
 
     String sayHello(String name);
-
+    
     String sayHello(String name, int times);
 
     void timeOut(int millis);
 
     String customException();
-
-    String context(String name);
 
 }
