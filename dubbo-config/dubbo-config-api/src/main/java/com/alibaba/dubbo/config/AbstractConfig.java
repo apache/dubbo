@@ -71,6 +71,9 @@ public abstract class AbstractConfig implements Serializable {
         legacyProperties.put("dubbo.consumer.retries", "dubbo.service.max.retry.providers");
         legacyProperties.put("dubbo.consumer.check", "dubbo.service.allow.no.provider");
         legacyProperties.put("dubbo.service.url", "dubbo.service.address");
+
+        // this is only for compatibility
+        Runtime.getRuntime().addShutdownHook(DubboShutdownHook.getDubboShutdownHook());
     }
 
     protected String id;
