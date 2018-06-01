@@ -14,22 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.protocol.hessian;
-
+package com.alibaba.dubbo.rpc.protol.rest;
 
 /**
- * HessianService
+ * RestServiceImpl
  */
-public interface HessianService {
 
-    String sayHello(String name);
+public class RestServiceImpl implements RestService {
 
-    String sayHello(String name, int times);
+    private boolean called;
 
-    void timeOut(int millis);
+    public String sayHello(String name) {
+        called = true;
+        return "Hello, " + name;
+    }
 
-    String customException();
 
-    String context(String name);
-
+    public boolean isCalled() {
+        return called;
+    }
 }
