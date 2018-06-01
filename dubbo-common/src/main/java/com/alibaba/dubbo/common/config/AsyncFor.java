@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.config.annotation;
+package com.alibaba.dubbo.common.config;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -23,7 +23,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * TODO This definition should placed in module 'dubbo-config-api', but only can be done when "rpc" dependencies are removed from "dubbo-config-api"
+ * TODO This definition should better be placed in module 'dubbo-config-api', but only can be done when "rpc" dependencies are removed from "dubbo-config-api"
  * If an interface is annotated with AsyncFor, it will be treated as an async counterpart for the sync one.
  */
 @Documented

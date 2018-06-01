@@ -328,13 +328,6 @@
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
-            <artifactId>dubbo-async</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>com.alibaba</groupId>
             <artifactId>hessian-lite</artifactId>
             <version>3.2.2</version>
             <scope>compile</scope>
@@ -433,7 +426,6 @@
                                     <include>com.alibaba:dubbo-serialization-kryo</include>
                                     <include>com.alibaba:dubbo-serialization-jdk</include>
                                     <include>com.alibaba:dubbo-bootstrap</include>
-                                    <include>com.alibaba:dubbo-async</include>
                                 </includes>
                             </artifactSet>
                             <transformers>
