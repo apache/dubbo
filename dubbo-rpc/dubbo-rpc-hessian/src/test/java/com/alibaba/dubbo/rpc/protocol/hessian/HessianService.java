@@ -23,7 +23,7 @@ package com.alibaba.dubbo.rpc.protocol.hessian;
 public interface HessianService {
 
     String sayHello(String name);
-    
+
     String sayHello(String name, int times);
 
     void timeOut(int millis);

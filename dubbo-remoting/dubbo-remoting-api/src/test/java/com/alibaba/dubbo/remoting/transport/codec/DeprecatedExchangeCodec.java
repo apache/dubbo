@@ -16,6 +16,7 @@
  */
 package com.alibaba.dubbo.remoting.transport.codec;
 
+import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.common.io.Bytes;
 import com.alibaba.dubbo.common.io.StreamUtils;
 import com.alibaba.dubbo.common.io.UnsafeByteArrayInputStream;
@@ -164,7 +165,7 @@ final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Cod
         } else {
             // decode request.
             Request req = new Request(id);
-            req.setVersion("2.0.0");
+            req.setVersion(Version.getProtocolVersion());
             req.setTwoWay((flag & FLAG_TWOWAY) != 0);
             if ((flag & FLAG_EVENT) != 0) {
                 req.setEvent(Request.HEARTBEAT_EVENT);

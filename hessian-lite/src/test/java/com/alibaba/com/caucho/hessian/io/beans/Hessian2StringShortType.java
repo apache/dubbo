@@ -20,9 +20,7 @@ import java.io.Serializable;
 import java.util.Map;
 
 /**
- *
  * test short serialize & deserialize model
- *
  */
 public class Hessian2StringShortType implements Serializable {
 
@@ -32,7 +30,7 @@ public class Hessian2StringShortType implements Serializable {
 
     public Map<String, PersonType> stringPersonTypeMap;
 
-    public Hessian2StringShortType(){
+    public Hessian2StringShortType() {
 
     }
 }

@@ -18,6 +18,7 @@ package com.alibaba.dubbo.remoting.exchange.support.header;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.remoting.Channel;
@@ -88,7 +89,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
             channel.send(message, sent);
         } else {
             Request request = new Request();
-            request.setVersion("2.0.0");
+            request.setVersion(Version.getProtocolVersion());
             request.setTwoWay(false);
             request.setData(message);
             channel.send(request, sent);
@@ -107,7 +108,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         }
         // create request.
         Request req = new Request();
-        req.setVersion("2.0.0");
+        req.setVersion(Version.getProtocolVersion());
         req.setTwoWay(true);
         req.setData(request);
         DefaultFuture future = new DefaultFuture(channel, req, timeout);
