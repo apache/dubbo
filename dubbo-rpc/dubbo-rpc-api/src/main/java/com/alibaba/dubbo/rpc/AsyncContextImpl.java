@@ -46,9 +46,10 @@ public class AsyncContextImpl implements AsyncContext {
         if (stop()) {
             if (value instanceof Throwable) {
                 // TODO check exception type like ExceptionFilter do.
+                Throwable bizExe = (Throwable) value;
+                future.complete(new RpcResult(bizExe));
             }
-            Result result = new RpcResult(value);
-            future.complete(result);
+            future.complete(new RpcResult(value));
         } else {
             throw new IllegalStateException("The async response has probably been wrote back by another thread, or the asyncContext has been closed.");
         }
