@@ -17,16 +17,28 @@
 package com.alibaba.dubbo.rpc.protocol.hessian;
 
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.beanutil.JavaBeanDescriptor;
+import com.alibaba.dubbo.common.beanutil.JavaBeanSerializeUtil;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
+import com.alibaba.dubbo.common.serialize.ObjectInput;
+import com.alibaba.dubbo.common.serialize.ObjectOutput;
+import com.alibaba.dubbo.common.serialize.Serialization;
+import com.alibaba.dubbo.common.serialize.nativejava.NativeJavaSerialization;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.ProxyFactory;
+import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.protocol.hessian.HessianServiceImpl.MyException;
 
+import com.alibaba.dubbo.rpc.service.GenericService;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 import static org.junit.Assert.fail;
 
@@ -51,7 +63,88 @@ public class HessianProtocolTest {
         invoker.destroy();
         exporter.unexport();
     }
-    
+
+    @Test
+    public void testGenericInvoke() {
+        HessianServiceImpl server = new HessianServiceImpl();
+        Assert.assertFalse(server.isCalled());
+        ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+        URL url = URL.valueOf("hessian://127.0.0.1:5342/" + HessianService.class.getName() + "?version=1.0.0");
+        Exporter<HessianService> exporter = protocol.export(proxyFactory.getInvoker(server, HessianService.class, url));
+        Invoker<GenericService> invoker = protocol.refer(GenericService.class, url);
+        GenericService client = proxyFactory.getProxy(invoker, true);
+        String result = (String) client.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{"haha"});
+        Assert.assertTrue(server.isCalled());
+        Assert.assertEquals("Hello, haha", result);
+        invoker.destroy();
+        exporter.unexport();
+    }
+
+    @Test
+    public void testGenericInvokeWithNativeJava() throws IOException, ClassNotFoundException {
+        HessianServiceImpl server = new HessianServiceImpl();
+        Assert.assertFalse(server.isCalled());
+        ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+        URL url = URL.valueOf("hessian://127.0.0.1:5342/" + HessianService.class.getName() + "?version=1.0.0&generic=nativejava");
+        Exporter<HessianService> exporter = protocol.export(proxyFactory.getInvoker(server, HessianService.class, url));
+        Invoker<GenericService> invoker = protocol.refer(GenericService.class, url);
+        GenericService client = proxyFactory.getProxy(invoker);
+
+        Serialization serialization = new NativeJavaSerialization();
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+        ObjectOutput objectOutput = serialization.serialize(url, byteArrayOutputStream);
+        objectOutput.writeObject("haha");
+        objectOutput.flushBuffer();
+
+        Object result = client.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{byteArrayOutputStream.toByteArray()});
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream((byte[]) result);
+        ObjectInput objectInput = serialization.deserialize(url, byteArrayInputStream);
+        Assert.assertTrue(server.isCalled());
+        Assert.assertEquals("Hello, haha", objectInput.readObject());
+        invoker.destroy();
+        exporter.unexport();
+    }
+
+    @Test
+    public void testGenericInvokeWithRpcContext() {
+        RpcContext.getContext().setAttachment("myContext", "123");
+
+        HessianServiceImpl server = new HessianServiceImpl();
+        ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+        URL url = URL.valueOf("hessian://127.0.0.1:5342/" + HessianService.class.getName() + "?version=1.0.0");
+        Exporter<HessianService> exporter = protocol.export(proxyFactory.getInvoker(server, HessianService.class, url));
+        Invoker<GenericService> invoker = protocol.refer(GenericService.class, url);
+        GenericService client = proxyFactory.getProxy(invoker, true);
+        String result = (String) client.$invoke("context", new String[]{"java.lang.String"}, new Object[]{"haha"});
+        Assert.assertEquals("Hello, haha context, 123", result);
+        invoker.destroy();
+        exporter.unexport();
+    }
+
+    @Test
+    public void testGenericInvokeWithBean() {
+        HessianServiceImpl server = new HessianServiceImpl();
+        Assert.assertFalse(server.isCalled());
+        ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+        URL url = URL.valueOf("hessian://127.0.0.1:5342/" + HessianService.class.getName() + "?version=1.0.0&generic=bean");
+        Exporter<HessianService> exporter = protocol.export(proxyFactory.getInvoker(server, HessianService.class, url));
+        Invoker<GenericService> invoker = protocol.refer(GenericService.class, url);
+        GenericService client = proxyFactory.getProxy(invoker);
+
+        JavaBeanDescriptor javaBeanDescriptor = JavaBeanSerializeUtil.serialize("haha");
+
+        Object result = client.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{javaBeanDescriptor});
+        Assert.assertTrue(server.isCalled());
+        Assert.assertEquals("Hello, haha", JavaBeanSerializeUtil.deserialize((JavaBeanDescriptor) result));
+        invoker.destroy();
+        exporter.unexport();
+    }
+
     @Test
     public void testOverload() {
         HessianServiceImpl server = new HessianServiceImpl();
