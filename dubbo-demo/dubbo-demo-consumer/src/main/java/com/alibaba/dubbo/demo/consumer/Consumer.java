@@ -16,7 +16,6 @@
  */
 package com.alibaba.dubbo.demo.consumer;
 
-import com.alibaba.dubbo.config.ProtocolConfig;
 import com.alibaba.dubbo.demo.DemoService;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -48,7 +47,7 @@ public class Consumer {
 //                ((EchoService) demoService).$echo("test4u");
 
                 demoService.sayHello("world");
-                ProtocolConfig.destroyAll();
+//                ProtocolConfig.destroyAll();
 
                 Thread.sleep(10000000);
 //                demoService.say02();

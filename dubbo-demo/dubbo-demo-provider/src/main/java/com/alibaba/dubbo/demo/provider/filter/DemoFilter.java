@@ -9,7 +9,10 @@ public class DemoFilter implements Filter {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        return invoker.invoke(invocation);
+        Result result = invoker.invoke(invocation);
+        System.out.println(result.getAttachments());
+        result.getAttachments().put("hh", "hhhh");
+        return result;
     }
 
     public DemoFilter setDemoDAO(DemoDAO demoDAO) {
