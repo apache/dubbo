@@ -16,15 +16,68 @@
  */
 package com.alibaba.dubbo.rpc.cluster.loadbalance;
 
+import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+
 public class LeastActiveLoadBalanceTest extends LoadBalanceBaseTest{
+    /**
+     * @throws java.lang.Exception
+     */
+    @Before
+    public void setUp() throws Exception {
+
+        invocation = mock(Invocation.class);
+        given(invocation.getMethodName()).willReturn("method1");
+
+        invoker1 = mock(Invoker.class);
+        invoker2 = mock(Invoker.class);
+        invoker3 = mock(Invoker.class);
+        invoker4 = mock(Invoker.class);
+        invoker5 = mock(Invoker.class);
+
+        URL url1 = URL.valueOf("test://127.0.0.1:1/DemoService");
+        URL url2 = URL.valueOf("test://127.0.0.1:2/DemoService");
+        URL url3 = URL.valueOf("test://127.0.0.1:3/DemoService");
+        URL url4 = URL.valueOf("test://127.0.0.1:4/DemoService");
+        URL url5 = URL.valueOf("test://127.0.0.1:5/DemoService");
+
+        given(invoker1.isAvailable()).willReturn(true);
+        given(invoker1.getInterface()).willReturn(LoadBalanceBaseTest.class);
+        given(invoker1.getUrl()).willReturn(url1);
+
+        given(invoker2.isAvailable()).willReturn(true);
+        given(invoker2.getInterface()).willReturn(LoadBalanceBaseTest.class);
+        given(invoker2.getUrl()).willReturn(url2);
+
+        given(invoker3.isAvailable()).willReturn(true);
+        given(invoker3.getInterface()).willReturn(LoadBalanceBaseTest.class);
+        given(invoker3.getUrl()).willReturn(url3);
+
+        given(invoker4.isAvailable()).willReturn(true);
+        given(invoker4.getInterface()).willReturn(LoadBalanceBaseTest.class);
+        given(invoker4.getUrl()).willReturn(url4);
+
+        given(invoker5.isAvailable()).willReturn(true);
+        given(invoker5.getInterface()).willReturn(LoadBalanceBaseTest.class);
+        given(invoker5.getUrl()).willReturn(url5);
+
+        invokers.add(invoker1);
+        invokers.add(invoker2);
+        invokers.add(invoker3);
+        invokers.add(invoker4);
+        invokers.add(invoker5);
+    }
     @Test
     public void testLeastActiveLoadBalanceSelectOne() {
         int runs = 10000;
