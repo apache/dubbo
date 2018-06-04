@@ -36,6 +36,7 @@ import java.util.concurrent.ConcurrentMap;
  *
  */
 public class ConsistentHashLoadBalance extends AbstractLoadBalance {
+    public static final String NAME = "consistenthash";
 
     private final ConcurrentMap<String, ConsistentHashSelector<?>> selectors = new ConcurrentHashMap<String, ConsistentHashSelector<?>>();
 

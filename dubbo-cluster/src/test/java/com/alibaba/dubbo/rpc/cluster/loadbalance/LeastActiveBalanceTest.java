@@ -3,7 +3,7 @@
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
+ * (the "License")); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -19,22 +19,20 @@ package com.alibaba.dubbo.rpc.cluster.loadbalance;
 import com.alibaba.dubbo.rpc.Invoker;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class ConsistentHashLoadBalanceTest extends LoadBalanceBaseTest {
-    @Ignore
+public class LeastActiveBalanceTest extends LoadBalanceBaseTest{
     @Test
-    public void testConsistentHashLoadBalance() {
+    public void testLeastActiveLoadBalanceSelect() {
         int runs = 10000;
-        Map<Invoker, AtomicLong> counter = getInvokeCounter(runs, ConsistentHashLoadBalance.NAME);
+        Map<Invoker, AtomicLong> counter = getInvokeCounter(runs, LeastActiveLoadBalance.NAME);
         for (Invoker minvoker : counter.keySet()) {
             Long count = counter.get(minvoker).get();
-            Assert.assertTrue("abs diff should < avg", Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size()));
+            boolean condition = Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size());
+            Assert.assertTrue("abs diff should < avg", condition);
         }
     }
-
 }
