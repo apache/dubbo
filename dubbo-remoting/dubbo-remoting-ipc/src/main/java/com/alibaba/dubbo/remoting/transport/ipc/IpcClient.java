@@ -45,6 +45,6 @@ public class IpcClient extends NettyClient {
 
     @Override
     protected EventLoopGroup group() {
-        return new EpollEventLoopGroup(Constants.DEFAULT_IO_THREADS, new DefaultThreadFactory("NettyClientWorker", true));
+        return new EpollEventLoopGroup(Constants.DEFAULT_IO_THREADS, new DefaultThreadFactory("IpcClientWorker", true));
     }
 }

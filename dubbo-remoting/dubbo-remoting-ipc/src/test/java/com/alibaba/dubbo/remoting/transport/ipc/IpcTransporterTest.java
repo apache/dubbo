@@ -45,7 +45,7 @@ public class IpcTransporterTest {
             return;
         }
         int port = NetUtils.getAvailablePort();
-        URL url = new URL("http", "localhost", port,
+        URL url = new URL("dubbo", "localhost", port,
                 new String[]{Constants.BIND_PORT_KEY, String.valueOf(port)});
 
         Server server = new IpcTransporter().bind(url, new ChannelHandlerAdapter());
@@ -62,7 +62,7 @@ public class IpcTransporterTest {
 
         final CountDownLatch lock = new CountDownLatch(1);
         int port = NetUtils.getAvailablePort();
-        URL url = new URL("http", "localhost", port,
+        URL url = new URL("dubbo", "localhost", port,
                 new String[]{Constants.BIND_PORT_KEY, String.valueOf(port)});
 
         new IpcTransporter().bind(url, new ChannelHandlerAdapter() {

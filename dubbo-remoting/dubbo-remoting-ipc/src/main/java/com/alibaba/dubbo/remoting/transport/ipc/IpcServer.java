@@ -49,13 +49,13 @@ public class IpcServer extends NettyServer {
 
     @Override
     protected EventLoopGroup bossGroup() {
-        return new EpollEventLoopGroup(1, new DefaultThreadFactory("NettyServerBoss", true));
+        return new EpollEventLoopGroup(1, new DefaultThreadFactory("IpcServerBoss", true));
     }
 
     @Override
     protected EventLoopGroup workerGroup() {
         return new EpollEventLoopGroup(getUrl().getPositiveParameter(Constants.IO_THREADS_KEY,
-                Constants.DEFAULT_IO_THREADS), new DefaultThreadFactory("NettyServerWorker", true));
+                Constants.DEFAULT_IO_THREADS), new DefaultThreadFactory("IpcServerWorker", true));
     }
 
     @Override
