@@ -18,7 +18,11 @@
 package com.alibaba.dubbo.remoting.transport.ipc;
 
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.remoting.*;
+import com.alibaba.dubbo.remoting.ChannelHandler;
+import com.alibaba.dubbo.remoting.Client;
+import com.alibaba.dubbo.remoting.RemotingException;
+import com.alibaba.dubbo.remoting.Server;
+import com.alibaba.dubbo.remoting.Transporter;
 import io.netty.util.internal.SystemPropertyUtil;
 
 import java.util.Locale;
