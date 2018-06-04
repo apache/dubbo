@@ -144,5 +144,14 @@ public class LoadBalanceBaseTest {
     private static int calculateDefaultWarmupWeight(int uptime) {
         return AbstractLoadBalance.calculateWarmupWeight(uptime, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT);
     }
-
+    @Test
+    public void testLeastActiveLoadBalanceSelectOne() {
+        int runs = 10000;
+        Map<Invoker, AtomicLong> counter = getInvokeCounter(runs, LeastActiveLoadBalance.NAME);
+        for (Invoker minvoker : counter.keySet()) {
+            Long count = counter.get(minvoker).get();
+            boolean condition = Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size());
+            Assert.assertTrue("abs diff should < avg", condition);
+        }
+    }
 }
