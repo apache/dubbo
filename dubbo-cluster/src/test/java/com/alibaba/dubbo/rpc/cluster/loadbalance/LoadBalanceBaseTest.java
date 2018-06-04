@@ -21,7 +21,6 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.RpcStatus;
 import com.alibaba.dubbo.rpc.cluster.LoadBalance;
 
 import org.junit.Assert;
@@ -42,14 +41,14 @@ import static org.mockito.Mockito.mock;
  * RoundRobinLoadBalanceTest
  */
 @SuppressWarnings({"unchecked", "rawtypes"})
-public class LoadBalanceTest {
+public class LoadBalanceBaseTest {
     Invocation invocation;
-    List<Invoker<LoadBalanceTest>> invokers = new ArrayList<Invoker<LoadBalanceTest>>();
-    Invoker<LoadBalanceTest> invoker1;
-    Invoker<LoadBalanceTest> invoker2;
-    Invoker<LoadBalanceTest> invoker3;
-    Invoker<LoadBalanceTest> invoker4;
-    Invoker<LoadBalanceTest> invoker5;
+    List<Invoker<LoadBalanceBaseTest>> invokers = new ArrayList<Invoker<LoadBalanceBaseTest>>();
+    Invoker<LoadBalanceBaseTest> invoker1;
+    Invoker<LoadBalanceBaseTest> invoker2;
+    Invoker<LoadBalanceBaseTest> invoker3;
+    Invoker<LoadBalanceBaseTest> invoker4;
+    Invoker<LoadBalanceBaseTest> invoker5;
 
     /**
      * @throws java.lang.Exception
@@ -80,23 +79,23 @@ public class LoadBalanceTest {
         URL url5 = URL.valueOf("test://127.0.0.1:5/DemoService");
 
         given(invoker1.isAvailable()).willReturn(true);
-        given(invoker1.getInterface()).willReturn(LoadBalanceTest.class);
+        given(invoker1.getInterface()).willReturn(LoadBalanceBaseTest.class);
         given(invoker1.getUrl()).willReturn(url1);
 
         given(invoker2.isAvailable()).willReturn(true);
-        given(invoker2.getInterface()).willReturn(LoadBalanceTest.class);
+        given(invoker2.getInterface()).willReturn(LoadBalanceBaseTest.class);
         given(invoker2.getUrl()).willReturn(url2);
 
         given(invoker3.isAvailable()).willReturn(true);
-        given(invoker3.getInterface()).willReturn(LoadBalanceTest.class);
+        given(invoker3.getInterface()).willReturn(LoadBalanceBaseTest.class);
         given(invoker3.getUrl()).willReturn(url3);
 
         given(invoker4.isAvailable()).willReturn(true);
-        given(invoker4.getInterface()).willReturn(LoadBalanceTest.class);
+        given(invoker4.getInterface()).willReturn(LoadBalanceBaseTest.class);
         given(invoker4.getUrl()).willReturn(url4);
 
         given(invoker5.isAvailable()).willReturn(true);
-        given(invoker5.getInterface()).willReturn(LoadBalanceTest.class);
+        given(invoker5.getInterface()).willReturn(LoadBalanceBaseTest.class);
         given(invoker5.getUrl()).willReturn(url5);
 
         invokers.add(invoker1);
@@ -104,51 +103,6 @@ public class LoadBalanceTest {
         invokers.add(invoker3);
         invokers.add(invoker4);
         invokers.add(invoker5);
-    }
-
-    @Test
-    public void testRoundRobinLoadBalanceSelect() {
-        int runs = 10000;
-        Map<Invoker, AtomicLong> counter = getInvokeCounter(runs, RoundRobinLoadBalance.NAME);
-        for (Invoker minvoker : counter.keySet()) {
-            Long count = counter.get(minvoker).get();
-            Assert.assertTrue("abs diff should < 1", Math.abs(count - runs / (0f + invokers.size())) < 1f);
-        }
-    }
-
-    @Test
-    public void testRandomLoadBalanceSelect() {
-        int runs = 1000;
-        Map<Invoker, AtomicLong> counter = getInvokeCounter(runs, RandomLoadBalance.NAME);
-        for (Invoker minvoker : counter.keySet()) {
-            Long count = counter.get(minvoker).get();
-            Assert.assertTrue("abs diff should < avg", Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size()));
-        }
-
-        for (int i = 0; i < 5; i++) {
-            for (int j = 0; j <= i; j++) {
-                RpcStatus.beginCount(invokers.get(i).getUrl(), invocation.getMethodName());
-            }
-        }
-        counter = getInvokeCounter(runs, LeastActiveLoadBalance.NAME);
-        for (Invoker minvoker : counter.keySet()) {
-            Long count = counter.get(minvoker).get();
-        }
-        Assert.assertEquals(runs, counter.get(invoker1).intValue());
-        Assert.assertEquals(0, counter.get(invoker2).intValue());
-        Assert.assertEquals(0, counter.get(invoker3).intValue());
-        Assert.assertEquals(0, counter.get(invoker4).intValue());
-        Assert.assertEquals(0, counter.get(invoker5).intValue());
-    }
-
-    @Test
-    public void testLeastActiveLoadBalanceSelectOne() {
-        int runs = 10000;
-        Map<Invoker, AtomicLong> counter = getInvokeCounter(runs, LeastActiveLoadBalance.NAME);
-        for (Invoker minvoker : counter.keySet()) {
-            Long count = counter.get(minvoker).get();
-            Assert.assertTrue("abs diff should < avg", Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size()));
-        }
     }
 
     public Map<Invoker, AtomicLong> getInvokeCounter(int runs, String loadbalanceName) {
@@ -183,13 +137,12 @@ public class LoadBalanceTest {
     }
 
     /**
-     * handel feault data
+     * handle default data
      *
      * @return
      */
     private static int calculateDefaultWarmupWeight(int uptime) {
         return AbstractLoadBalance.calculateWarmupWeight(uptime, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT);
     }
-
 
 }
