@@ -44,6 +44,8 @@ public class CacheFilterTest {
     private Invoker<?> invoker = mock(Invoker.class);
     private Invoker<?> invoker1 = mock(Invoker.class);
     private Invoker<?> invoker2 = mock(Invoker.class);
+    private Invoker<?> invoker3 = mock(Invoker.class);
+    private Invoker<?> invoker4 = mock(Invoker.class);
     private String cacheType;
     private CacheFactory cacheFactory;
 
@@ -77,6 +79,11 @@ public class CacheFilterTest {
         given(invoker2.invoke(invocation)).willReturn(new RpcResult("value2"));
         given(invoker2.getUrl()).willReturn(url);
 
+        given(invoker3.invoke(invocation)).willReturn(new RpcResult(new RuntimeException()));
+        given(invoker3.getUrl()).willReturn(url);
+
+        given(invoker4.invoke(invocation)).willReturn(new RpcResult());
+        given(invoker4.getUrl()).willReturn(url);
     }
 
     @Test
@@ -89,6 +96,7 @@ public class CacheFilterTest {
         RpcResult rpcResult1 = (RpcResult) cacheFilter.invoke(invoker1, invocation);
         RpcResult rpcResult2 = (RpcResult) cacheFilter.invoke(invoker2, invocation);
         Assert.assertEquals(rpcResult1.getValue(), rpcResult2.getValue());
+        Assert.assertEquals(rpcResult1.getValue(), "value");
     }
 
     @Test
@@ -101,5 +109,30 @@ public class CacheFilterTest {
         RpcResult rpcResult1 = (RpcResult) cacheFilter.invoke(invoker1, invocation);
         RpcResult rpcResult2 = (RpcResult) cacheFilter.invoke(invoker2, invocation);
         Assert.assertEquals(rpcResult1.getValue(), rpcResult2.getValue());
+        Assert.assertEquals(rpcResult1.getValue(), "value");
+    }
+
+    @Test
+    public void testException() {
+        invocation.setMethodName("echo1");
+        invocation.setParameterTypes(new Class<?>[]{String.class});
+        invocation.setArguments(new Object[]{"arg2"});
+
+        cacheFilter.invoke(invoker3, invocation);
+        RpcResult rpcResult = (RpcResult) cacheFilter.invoke(invoker2, invocation);
+        Assert.assertEquals(rpcResult.getValue(), "value2");
+    }
+
+    @Test
+    public void testNull() {
+        invocation.setMethodName("echo1");
+        invocation.setParameterTypes(new Class<?>[]{String.class});
+        invocation.setArguments(new Object[]{"arg3"});
+
+        cacheFilter.invoke(invoker4, invocation);
+        RpcResult rpcResult1 = (RpcResult) cacheFilter.invoke(invoker1, invocation);
+        RpcResult rpcResult2 = (RpcResult) cacheFilter.invoke(invoker2, invocation);
+        Assert.assertEquals(rpcResult1.getValue(), "value1");
+        Assert.assertEquals(rpcResult2.getValue(), "value1");
     }
 }

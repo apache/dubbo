@@ -52,12 +52,14 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
 
     @Override
     public void create(String path, boolean ephemeral) {
+        if (!ephemeral) {
+            if (checkExists(path)) {
+                return;
+            }
+        }
         int i = path.lastIndexOf('/');
         if (i > 0) {
-            String parentPath = path.substring(0, i);
-            if (!checkExists(parentPath)) {
-                create(parentPath, false);
-            }
+            create(path.substring(0, i), false);
         }
         if (ephemeral) {
             createEphemeral(path);

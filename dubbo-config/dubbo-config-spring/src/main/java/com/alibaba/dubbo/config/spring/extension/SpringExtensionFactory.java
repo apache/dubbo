@@ -17,7 +17,12 @@
 package com.alibaba.dubbo.config.spring.extension;
 
 import com.alibaba.dubbo.common.extension.ExtensionFactory;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
+
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 
 import java.util.Set;
@@ -26,6 +31,7 @@ import java.util.Set;
  * SpringExtensionFactory
  */
 public class SpringExtensionFactory implements ExtensionFactory {
+    private static final Logger logger = LoggerFactory.getLogger(SpringExtensionFactory.class);
 
     private static final Set<ApplicationContext> contexts = new ConcurrentHashSet<ApplicationContext>();
 
@@ -35,6 +41,11 @@ public class SpringExtensionFactory implements ExtensionFactory {
 
     public static void removeApplicationContext(ApplicationContext context) {
         contexts.remove(context);
+    }
+
+    // currently for test purpose
+    public static void clearContexts() {
+        contexts.clear();
     }
 
     @Override
@@ -48,6 +59,23 @@ public class SpringExtensionFactory implements ExtensionFactory {
                 }
             }
         }
+
+        logger.warn("No spring extension(bean) named:" + name + ", try to find an extension(bean) of type " + type.getName());
+
+        for (ApplicationContext context : contexts) {
+            try {
+                return context.getBean(type);
+            } catch (NoUniqueBeanDefinitionException multiBeanExe) {
+                throw multiBeanExe;
+            } catch (NoSuchBeanDefinitionException noBeanExe) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Error when get spring extension(bean) for type:" + type.getName(), noBeanExe);
+                }
+            }
+        }
+
+        logger.warn("No spring extension(bean) named:" + name + ", type:" + type.getName() + " found, stop get bean.");
+
         return null;
     }
 
