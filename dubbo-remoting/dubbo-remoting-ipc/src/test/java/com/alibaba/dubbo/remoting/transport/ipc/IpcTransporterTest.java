@@ -47,6 +47,8 @@ public class IpcTransporterTest {
         int port = NetUtils.getAvailablePort();
         URL url = new URL("dubbo", "localhost", port,
                 new String[]{Constants.BIND_PORT_KEY, String.valueOf(port)});
+        //to not create too much child group
+        url.addParameter(Constants.IO_THREADS_KEY, 1);
 
         Server server = new IpcTransporter().bind(url, new ChannelHandlerAdapter());
 
@@ -64,6 +66,8 @@ public class IpcTransporterTest {
         int port = NetUtils.getAvailablePort();
         URL url = new URL("dubbo", "localhost", port,
                 new String[]{Constants.BIND_PORT_KEY, String.valueOf(port)});
+        //to not create too much child group
+        url.addParameter(Constants.IO_THREADS_KEY, 1);
 
         new IpcTransporter().bind(url, new ChannelHandlerAdapter() {
 
