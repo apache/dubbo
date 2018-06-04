@@ -18,7 +18,6 @@ package com.alibaba.dubbo.remoting.transport.ipc;
 
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.remoting.Transporter;
-import com.alibaba.dubbo.remoting.transport.netty4.NettyTransporter;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
