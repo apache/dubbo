@@ -120,6 +120,13 @@ public class FailsafeLogger implements Logger {
         }
     }
 
+    public void warn(String msg,Throwable e, boolean needAppendContext){
+        try {
+            logger.warn(needAppendContext ? appendContextMessage(msg) : msg, e);
+        }catch (Throwable t){
+        }
+    }
+
     @Override
     public void error(String msg, Throwable e) {
         try {
@@ -133,6 +140,13 @@ public class FailsafeLogger implements Logger {
         try {
             logger.error(appendContextMessage(msg));
         } catch (Throwable t) {
+        }
+    }
+
+    public void error(String msg, boolean needAppendContext){
+        try {
+            logger.error(needAppendContext ? appendContextMessage(msg) : msg);
+        }catch (Throwable t){
         }
     }
 
