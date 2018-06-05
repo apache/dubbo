@@ -97,8 +97,14 @@ public class DubboShutdownHook extends Thread {
     private void destroyCaches() {
         ExtensionLoader<Cache> cacheLoader = ExtensionLoader.getExtensionLoader(Cache.class);
         for (String cacheName : cacheLoader.getLoadedExtensions()) {
-            Cache cache = cacheLoader.getLoadedExtension(cacheName);
-            cache.destroy();
+            try {
+                Cache cache = cacheLoader.getLoadedExtension(cacheName);
+                if (cache != null) {
+                    cache.destroy();
+                }
+            } catch (Throwable t) {
+                logger.warn(t.getMessage(), t);
+            }
         }
     }
 
