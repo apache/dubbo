@@ -33,7 +33,6 @@ import io.netty.channel.epoll.EpollServerDomainSocketChannel;
 import io.netty.channel.unix.DomainSocketAddress;
 import io.netty.util.concurrent.DefaultThreadFactory;
 
-import java.io.File;
 import java.net.SocketAddress;
 
 /**
@@ -77,14 +76,7 @@ public class IpcServer extends NettyServer {
     }
 
     @Override
-    protected void doClose() throws Throwable {
-        super.doClose();
-        File f = new File("tmp");
-        f.delete();
-    }
-
-    @Override
     public SocketAddress getBindAddress() {
-        return new DomainSocketAddress(System.getProperty("java.io.tmpdir") + "DUBBO-IPC");
+        return new DomainSocketAddress("DUBBO-IPC.tmp");
     }
 }

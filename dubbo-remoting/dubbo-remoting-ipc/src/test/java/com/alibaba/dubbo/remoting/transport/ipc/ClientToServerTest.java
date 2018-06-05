@@ -49,7 +49,6 @@ public abstract class ClientToServerTest extends TestCase {
     @Override
     protected void setUp() throws Exception {
         String os = SystemPropertyUtil.get("os.name").toLowerCase(Locale.UK).trim();
-        System.out.println(os);
         if (!os.startsWith("linux")) {
             return;
         }

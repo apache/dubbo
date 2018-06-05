@@ -59,6 +59,7 @@ public class IpcTransporterTest {
     @Test
     public void shouldConnectToIpcServer() throws Exception {
         String os = SystemPropertyUtil.get("os.name").toLowerCase(Locale.UK).trim();
+        System.getProperty("java.io.tmpdir");
         if (!os.startsWith("linux")) {
             return;
         }
