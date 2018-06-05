@@ -53,6 +53,6 @@ public class IpcClient extends NettyClient {
 
     @Override
     public SocketAddress getConnectAddress() {
-        return new DomainSocketAddress("DUBBO-IPC.tmp");
+        return new DomainSocketAddress("DUBBO-IPC-CLIENT.tmp");
     }
 }

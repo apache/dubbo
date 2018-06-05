@@ -77,6 +77,6 @@ public class IpcServer extends NettyServer {
 
     @Override
     public SocketAddress getBindAddress() {
-        return new DomainSocketAddress("DUBBO-IPC.tmp");
+        return new DomainSocketAddress("DUBBO-IPC-SERVER.tmp");
     }
 }
