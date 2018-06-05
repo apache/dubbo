@@ -16,11 +16,7 @@
  */
 package com.alibaba.dubbo.cache.support.expiry;
 
-import java.util.Map;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -315,12 +311,12 @@ public class ExpiryMap<K, V> implements Map<K, V> {
                 if (!running) {
                     running = true;
                     expirerThread.start();
-                    Runtime.getRuntime().addShutdownHook(new Thread() {
+                    /*Runtime.getRuntime().addShutdownHook(new Thread() {
                         @Override
                         public void run() {
                             stopExpiring();
                         }
-                    });
+                    });*/
                 }
             } finally {
                 stateLock.writeLock().unlock();

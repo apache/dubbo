@@ -25,4 +25,5 @@ public interface Cache {
 
     Object get(Object key);
 
+    void destroy();
 }

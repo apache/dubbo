@@ -44,4 +44,8 @@ public class LruCache implements Cache {
         return store.get(key);
     }
 
+    @Override
+    public void destroy() {
+        store.clear();
+    }
 }
