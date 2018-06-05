@@ -19,12 +19,14 @@ package com.alibaba.dubbo.rpc.cluster.loadbalance;
 import com.alibaba.dubbo.rpc.Invoker;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class LeastActiveBalanceTest extends LoadBalanceBaseTest {
+    @Ignore
     @Test
     public void testLeastActiveLoadBalance_select() {
         int runs = 10000;
