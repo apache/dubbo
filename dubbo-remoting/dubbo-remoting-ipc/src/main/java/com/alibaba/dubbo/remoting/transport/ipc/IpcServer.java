@@ -34,7 +34,6 @@ import io.netty.channel.unix.DomainSocketAddress;
 import io.netty.util.concurrent.DefaultThreadFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.SocketAddress;
 
 /**
@@ -86,16 +85,6 @@ public class IpcServer extends NettyServer {
 
     @Override
     public SocketAddress getBindAddress() {
-        File f = new File("tmp");
-        try {
-            if (!f.exists()) {
-                if (f.createNewFile()) {
-                    throw new IllegalStateException("socket file create failed!");
-                }
-            }
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
-        return new DomainSocketAddress(f);
+        return new DomainSocketAddress(System.getProperty("java.io.tmpdir") + "DUBBO-IPC");
     }
 }

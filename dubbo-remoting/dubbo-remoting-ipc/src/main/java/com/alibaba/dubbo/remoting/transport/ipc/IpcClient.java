@@ -29,7 +29,6 @@ import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.unix.DomainSocketAddress;
 import io.netty.util.concurrent.DefaultThreadFactory;
 
-import java.io.File;
 import java.net.SocketAddress;
 
 /**
@@ -54,10 +53,6 @@ public class IpcClient extends NettyClient {
 
     @Override
     public SocketAddress getConnectAddress() {
-        File f = new File("tmp");
-        if (!f.exists()) {
-            throw new IllegalStateException("socket file is not exist!");
-        }
-        return new DomainSocketAddress(f);
+        return new DomainSocketAddress(System.getProperty("java.io.tmpdir") + "DUBBO-IPC");
     }
 }
