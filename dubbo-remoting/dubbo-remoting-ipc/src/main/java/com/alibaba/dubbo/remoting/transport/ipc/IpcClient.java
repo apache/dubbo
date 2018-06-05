@@ -29,6 +29,8 @@ import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.unix.DomainSocketAddress;
 import io.netty.util.concurrent.DefaultThreadFactory;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.SocketAddress;
 
 /**
@@ -53,6 +55,16 @@ public class IpcClient extends NettyClient {
 
     @Override
     public SocketAddress getConnectAddress() {
-        return new DomainSocketAddress("DUBBO-IPC-CLIENT.tmp");
+        File f = new File("DUBBO-IPC-CLIENT.tmp");
+        if (!f.exists()) {
+            try {
+                if (!f.createNewFile()) {
+                    throw new RuntimeException("create client tmp file failed!");
+                }
+            } catch (IOException e) {
+                throw new RuntimeException("create client tmp file failed!");
+            }
+        }
+        return new DomainSocketAddress(f);
     }
 }
