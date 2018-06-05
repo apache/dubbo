@@ -26,7 +26,11 @@ import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.EpollDomainSocketChannel;
 import io.netty.channel.epoll.EpollEventLoopGroup;
+import io.netty.channel.unix.DomainSocketAddress;
 import io.netty.util.concurrent.DefaultThreadFactory;
+
+import java.io.File;
+import java.net.SocketAddress;
 
 /**
  * IpcClient
@@ -46,5 +50,14 @@ public class IpcClient extends NettyClient {
     @Override
     protected EventLoopGroup group() {
         return new EpollEventLoopGroup(Constants.DEFAULT_IO_THREADS, new DefaultThreadFactory("IpcClientWorker", true));
+    }
+
+    @Override
+    public SocketAddress getConnectAddress() {
+        File f = new File("tmp");
+        if (!f.exists()) {
+            throw new IllegalStateException("socket file is not exist!");
+        }
+        return new DomainSocketAddress(f);
     }
 }

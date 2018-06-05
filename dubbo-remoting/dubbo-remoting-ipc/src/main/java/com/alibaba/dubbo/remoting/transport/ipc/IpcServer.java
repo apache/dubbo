@@ -30,8 +30,11 @@ import io.netty.channel.ServerChannel;
 import io.netty.channel.epoll.EpollDomainSocketChannel;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerDomainSocketChannel;
+import io.netty.channel.unix.DomainSocketAddress;
 import io.netty.util.concurrent.DefaultThreadFactory;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.SocketAddress;
 
 /**
@@ -75,7 +78,24 @@ public class IpcServer extends NettyServer {
     }
 
     @Override
+    protected void doClose() throws Throwable {
+        super.doClose();
+        File f = new File("tmp");
+        f.delete();
+    }
+
+    @Override
     public SocketAddress getBindAddress() {
-        return UnixFileUtils.newDomainSocketAddress();
+        File f = new File("tmp");
+        try {
+            if (!f.exists()) {
+                if (f.createNewFile()) {
+                    throw new IllegalStateException("socket file create failed!");
+                }
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+        return new DomainSocketAddress(f);
     }
 }

@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.alibaba.dubbo.remoting.transport.ipc;
 
 import com.alibaba.dubbo.common.Constants;
@@ -76,6 +77,9 @@ public class IpcTransporterTest {
                 lock.countDown();
             }
         });
+
+        Thread.sleep(1000);
+
         new IpcTransporter().connect(url, new ChannelHandlerAdapter() {
             @Override
             public void sent(Channel channel, Object message) throws RemotingException {
