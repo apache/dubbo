@@ -27,6 +27,7 @@ import org.apache.curator.test.TestingServer;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -123,8 +124,12 @@ public class ZookeeperRegistryTest {
         assertThat(lookup.size(), is(1));
     }
 
-
+    @Ignore
     @Test
+    /*
+      This UT is unstable, consider remove it later.
+      @see https://github.com/apache/incubator-dubbo/issues/1787
+     */
     public void testStatusChecker() {
         RegistryStatusChecker registryStatusChecker = new RegistryStatusChecker();
         Status status = registryStatusChecker.check();

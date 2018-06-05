@@ -102,12 +102,12 @@ public abstract class AbstractTest {
             invoker = null;
         }
 
-        try{
-            if(serverTransport != null){
+        try {
+            if (serverTransport != null) {
                 // release port if used
                 serverTransport.close();
             }
-        }catch (Exception e) {
+        } catch (Exception e) {
             // ignore
         }
 

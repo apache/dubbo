@@ -200,7 +200,14 @@ public class ZookeeperRegistry extends FailbackRegistry {
         if (listeners != null) {
             ChildListener zkListener = listeners.get(listener);
             if (zkListener != null) {
-                zkClient.removeChildListener(toUrlPath(url), zkListener);
+                if (Constants.ANY_VALUE.equals(url.getServiceInterface())) {
+                    String root = toRootPath();
+                    zkClient.removeChildListener(root, zkListener);
+                } else {
+                    for (String path : toCategoriesPath(url)) {
+                        zkClient.removeChildListener(path, zkListener);
+                    }
+                }
             }
         }
     }

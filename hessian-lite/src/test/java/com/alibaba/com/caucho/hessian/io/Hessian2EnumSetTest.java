@@ -34,7 +34,7 @@ public class Hessian2EnumSetTest extends SerializeTestBase {
     @Test
     public void singleton() throws Exception {
         EnumSet h = EnumSet.of(Type.High);
-        EnumSet set = baseHession2Serialize(h);
+        EnumSet set = baseHessian2Serialize(h);
         assertTrue(Arrays.asList(set.toArray()).contains(Type.High));
         assertFalse(Arrays.asList(set.toArray()).contains(Type.Lower));
     }
@@ -42,7 +42,7 @@ public class Hessian2EnumSetTest extends SerializeTestBase {
     @Test
     public void set() throws Exception {
         EnumSet<Type> types = EnumSet.of(Type.High, Type.Lower);
-        EnumSet set = baseHession2Serialize(types);
+        EnumSet set = baseHessian2Serialize(types);
         assertTrue(set.contains(Type.High));
         assertFalse(set.contains(Type.Normal));
     }
@@ -50,7 +50,7 @@ public class Hessian2EnumSetTest extends SerializeTestBase {
     @Test
     public void none() throws Exception {
         EnumSet<Type> types = EnumSet.noneOf(Type.class);
-        EnumSet set = baseHession2Serialize(types);
+        EnumSet set = baseHessian2Serialize(types);
         TestCase.assertEquals(set, EnumSet.noneOf(Type.class));
     }
 }

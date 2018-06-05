@@ -27,9 +27,6 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
 
-/**
- * JsonObjectOutput
- */
 public class FastJsonObjectOutput implements ObjectOutput {
 
     private final PrintWriter writer;

@@ -1,0 +1,1 @@
+slf4j=com.alibaba.dubbo.common.logger.slf4j.Slf4jLoggerAdapter

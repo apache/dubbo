@@ -28,9 +28,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.reflect.Type;
 
-/**
- * JsonObjectInput
- */
 public class FastJsonObjectInput implements ObjectInput {
 
     private final BufferedReader reader;
@@ -45,74 +42,42 @@ public class FastJsonObjectInput implements ObjectInput {
 
     @Override
     public boolean readBool() throws IOException {
-        try {
-            return readObject(boolean.class);
-        } catch (ClassNotFoundException e) {
-            throw new IOException(e.getMessage());
-        }
+        return read(boolean.class);
     }
 
     @Override
     public byte readByte() throws IOException {
-        try {
-            return readObject(byte.class);
-        } catch (ClassNotFoundException e) {
-            throw new IOException(e.getMessage());
-        }
+        return read(byte.class);
     }
 
     @Override
     public short readShort() throws IOException {
-        try {
-            return readObject(short.class);
-        } catch (ClassNotFoundException e) {
-            throw new IOException(e.getMessage());
-        }
+        return read(short.class);
     }
 
     @Override
     public int readInt() throws IOException {
-        try {
-            return readObject(int.class);
-        } catch (ClassNotFoundException e) {
-            throw new IOException(e.getMessage());
-        }
+        return read(int.class);
     }
 
     @Override
     public long readLong() throws IOException {
-        try {
-            return readObject(long.class);
-        } catch (ClassNotFoundException e) {
-            throw new IOException(e.getMessage());
-        }
+        return read(long.class);
     }
 
     @Override
     public float readFloat() throws IOException {
-        try {
-            return readObject(float.class);
-        } catch (ClassNotFoundException e) {
-            throw new IOException(e.getMessage());
-        }
+        return read(float.class);
     }
 
     @Override
     public double readDouble() throws IOException {
-        try {
-            return readObject(double.class);
-        } catch (ClassNotFoundException e) {
-            throw new IOException(e.getMessage());
-        }
+        return read(double.class);
     }
 
     @Override
     public String readUTF() throws IOException {
-        try {
-            return readObject(String.class);
-        } catch (ClassNotFoundException e) {
-            throw new IOException(e.getMessage());
-        }
+        return read(String.class);
     }
 
     @Override
@@ -128,8 +93,7 @@ public class FastJsonObjectInput implements ObjectInput {
 
     @Override
     public <T> T readObject(Class<T> cls) throws IOException, ClassNotFoundException {
-        String json = readLine();
-        return JSON.parseObject(json, cls);
+        return read(cls);
     }
 
     @Override
@@ -145,4 +109,8 @@ public class FastJsonObjectInput implements ObjectInput {
         return line;
     }
 
+    private <T> T read(Class<T> cls) throws IOException {
+        String json = readLine();
+        return JSON.parseObject(json, cls);
+    }
 }

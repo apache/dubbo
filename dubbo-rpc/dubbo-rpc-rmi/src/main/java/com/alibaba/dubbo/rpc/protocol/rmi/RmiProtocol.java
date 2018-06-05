@@ -78,7 +78,7 @@ public class RmiProtocol extends AbstractProxyProtocol {
     protected <T> T doRefer(final Class<T> serviceType, final URL url) throws RpcException {
         final RmiProxyFactoryBean rmiProxyFactoryBean = new RmiProxyFactoryBean();
         // RMI needs extra parameter since it uses customized remote invocation object
-        if (url.getParameter(Constants.DUBBO_VERSION_KEY, Version.getVersion()).equals(Version.getVersion())) {
+        if (url.getParameter(Constants.DUBBO_VERSION_KEY, Version.getProtocolVersion()).equals(Version.getProtocolVersion())) {
             // Check dubbo version on provider, this feature only support
             rmiProxyFactoryBean.setRemoteInvocationFactory(new RemoteInvocationFactory() {
                 @Override

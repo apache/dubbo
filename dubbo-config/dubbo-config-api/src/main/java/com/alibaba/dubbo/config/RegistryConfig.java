@@ -18,7 +18,6 @@ package com.alibaba.dubbo.config;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.config.support.Parameter;
-import com.alibaba.dubbo.registry.support.AbstractRegistryFactory;
 
 import java.util.Map;
 
@@ -96,13 +95,9 @@ public class RegistryConfig extends AbstractConfig {
         setAddress(address);
     }
 
-    public static void destroyAll() {
-        AbstractRegistryFactory.destroyAll();
-    }
-
-    @Deprecated
-    public static void closeAll() {
-        destroyAll();
+    public RegistryConfig(String address, String protocol) {
+        setAddress(address);
+        setProtocol(protocol);
     }
 
     public String getProtocol() {

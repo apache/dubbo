@@ -22,6 +22,7 @@ import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.ProxyFactory;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.service.EchoService;
+import com.alibaba.dubbo.rpc.service.GenericService;
 
 /**
  * AbstractProxyFactory
@@ -30,6 +31,11 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
 
     @Override
     public <T> T getProxy(Invoker<T> invoker) throws RpcException {
+        return getProxy(invoker, false);
+    }
+
+    @Override
+    public <T> T getProxy(Invoker<T> invoker, boolean generic) throws RpcException {
         Class<?>[] interfaces = null;
         String config = invoker.getUrl().getParameter("interfaces");
         if (config != null && config.length() > 0) {
@@ -46,6 +52,15 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
         if (interfaces == null) {
             interfaces = new Class<?>[]{invoker.getInterface(), EchoService.class};
         }
+
+        if (!invoker.getInterface().equals(GenericService.class) && generic) {
+            int len = interfaces.length;
+            Class<?>[] temp = interfaces;
+            interfaces = new Class<?>[len + 1];
+            System.arraycopy(temp, 0, interfaces, 0, len);
+            interfaces[len] = GenericService.class;
+        }
+
         return getProxy(invoker, interfaces);
     }
 

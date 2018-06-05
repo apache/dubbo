@@ -20,7 +20,7 @@
     <parent>
         <groupId>com.alibaba</groupId>
         <artifactId>dubbo-rpc</artifactId>
-        <version>2.6.1</version>
+        <version>2.6.2-SNAPSHOT</version>
     </parent>
     <artifactId>dubbo-rpc-redis</artifactId>
     <packaging>jar</packaging>
@@ -38,6 +38,17 @@
         <dependency>
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.kstyrc</groupId>
+            <artifactId>embedded-redis</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-serialization-jdk</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

@@ -26,19 +26,19 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 /**
- * hession base serialize utils
+ * hessian base serialize utils
  *
  */
 public class SerializeTestBase {
     /**
-     * hession serialize util
+     * hessian serialize util
      *
      * @param data
      * @param <T>
      * @return
      * @throws IOException
      */
-    protected <T> T baseHessionSerialize(T data) throws IOException {
+    protected <T> T baseHessianSerialize(T data) throws IOException {
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
         HessianOutput out = new HessianOutput(bout);
 
@@ -51,14 +51,14 @@ public class SerializeTestBase {
     }
 
     /**
-     * hession2 serialize util
+     * hessian2 serialize util
      *
      * @param data
      * @param <T>
      * @return
      * @throws IOException
      */
-    protected <T> T baseHession2Serialize(T data) throws IOException {
+    protected <T> T baseHessian2Serialize(T data) throws IOException {
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
         Hessian2Output out = new Hessian2Output(bout);
 

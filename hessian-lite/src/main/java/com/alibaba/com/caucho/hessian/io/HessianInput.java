@@ -56,6 +56,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Input stream for Hessian requests.
@@ -999,7 +1000,15 @@ public class HessianInput extends AbstractHessianInput {
     @Override
     public Object readObject(Class cl)
             throws IOException {
-        if (cl == null || cl == Object.class)
+        return readObject(cl, null, null);
+    }
+
+    /**
+     * Reads an object from the input stream with an expected type.
+     */
+    public Object readObject(Class expectedClass, Class<?>... expectedTypes)
+            throws IOException {
+        if (expectedClass == null || expectedClass == Object.class)
             return readObject();
 
         int tag = read();
@@ -1011,17 +1020,23 @@ public class HessianInput extends AbstractHessianInput {
             case 'M': {
                 String type = readType();
 
+                boolean keyValuePair = expectedTypes != null && expectedTypes.length == 2;
+
                 // hessian/3386
                 if ("".equals(type)) {
                     Deserializer reader;
-                    reader = _serializerFactory.getDeserializer(cl);
+                    reader = _serializerFactory.getDeserializer(expectedClass);
 
-                    return reader.readMap(this);
+                    return reader.readMap(this
+                            , keyValuePair ? expectedTypes[0] : null
+                            , keyValuePair ? expectedTypes[1] : null);
                 } else {
                     Deserializer reader;
-                    reader = _serializerFactory.getObjectDeserializer(type, cl);
+                    reader = _serializerFactory.getObjectDeserializer(type, expectedClass);
 
-                    return reader.readMap(this);
+                    return reader.readMap(this
+                            , keyValuePair ? expectedTypes[0] : null
+                            , keyValuePair ? expectedTypes[1] : null);
                 }
             }
 
@@ -1032,12 +1047,14 @@ public class HessianInput extends AbstractHessianInput {
                 Deserializer reader;
                 reader = _serializerFactory.getObjectDeserializer(type);
 
-                if (cl != reader.getType() && cl.isAssignableFrom(reader.getType()))
-                    return reader.readList(this, length);
+                boolean valueType = expectedTypes != null && expectedTypes.length == 1;
 
-                reader = _serializerFactory.getDeserializer(cl);
+                if (expectedClass != reader.getType() && expectedClass.isAssignableFrom(reader.getType()))
+                    return reader.readList(this, length, valueType ? expectedTypes[0] : null);
 
-                Object v = reader.readList(this, length);
+                reader = _serializerFactory.getDeserializer(expectedClass);
+
+                Object v = reader.readList(this, length, valueType ? expectedTypes[0] : null);
 
                 return v;
             }
@@ -1061,7 +1078,7 @@ public class HessianInput extends AbstractHessianInput {
         // hessian/332i vs hessian/3406
         //return readObject();
 
-        Object value = _serializerFactory.getDeserializer(cl).readObject(this);
+        Object value = _serializerFactory.getDeserializer(expectedClass).readObject(this);
 
         return value;
     }
@@ -1072,6 +1089,15 @@ public class HessianInput extends AbstractHessianInput {
      */
     @Override
     public Object readObject()
+            throws IOException {
+        return readObject((List<Class<?>>) null);
+    }
+
+    /**
+     * Reads an arbitrary object from the input stream when the type
+     * is unknown.
+     */
+    public Object readObject(List<Class<?>> expectedTypes)
             throws IOException {
         int tag = read();
 
@@ -1137,13 +1163,29 @@ public class HessianInput extends AbstractHessianInput {
                 String type = readType();
                 int length = readLength();
 
-                return _serializerFactory.readList(this, length, type);
+                Deserializer reader;
+                reader = _serializerFactory.getObjectDeserializer(type);
+
+                boolean valueType = expectedTypes != null && expectedTypes.size() == 1;
+
+                if (List.class != reader.getType() && List.class.isAssignableFrom(reader.getType()))
+                    return reader.readList(this, length, valueType ? expectedTypes.get(0) : null);
+
+                reader = _serializerFactory.getDeserializer(List.class);
+
+                Object v = reader.readList(this, length, valueType ? expectedTypes.get(0) : null);
+
+                return v;
             }
 
             case 'M': {
                 String type = readType();
 
-                return _serializerFactory.readMap(this, type);
+                boolean keyValuePair = expectedTypes != null && expectedTypes.size() == 2;
+
+                return _serializerFactory.readMap(this, type
+                        , keyValuePair ? expectedTypes.get(0) : null
+                        , keyValuePair ? expectedTypes.get(1) : null);
             }
 
             case 'R': {
