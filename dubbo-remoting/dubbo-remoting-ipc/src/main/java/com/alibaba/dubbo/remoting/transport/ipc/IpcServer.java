@@ -30,11 +30,9 @@ import io.netty.channel.ServerChannel;
 import io.netty.channel.epoll.EpollDomainSocketChannel;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerDomainSocketChannel;
-import io.netty.channel.unix.DomainSocketAddress;
 import io.netty.util.concurrent.DefaultThreadFactory;
 
 import java.net.SocketAddress;
-import java.util.UUID;
 
 /**
  * IpcServer
@@ -78,6 +76,6 @@ public class IpcServer extends NettyServer {
 
     @Override
     public SocketAddress getBindAddress() {
-        return new DomainSocketAddress(System.getProperty("java.io.tmpdir") + UUID.randomUUID());
+        return UnixFileUtils.newDomainSocketAddress();
     }
 }
