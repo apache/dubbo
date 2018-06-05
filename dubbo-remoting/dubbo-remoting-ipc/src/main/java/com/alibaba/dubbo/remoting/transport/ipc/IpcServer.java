@@ -43,6 +43,8 @@ import java.net.SocketAddress;
  */
 public class IpcServer extends NettyServer {
 
+    public static final String TMP_FILE = "DUBBO-IPC.tmp";
+
     public IpcServer(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
     }
@@ -79,7 +81,7 @@ public class IpcServer extends NettyServer {
 
     @Override
     public SocketAddress getBindAddress() {
-        File f = new File("DUBBO-IPC-SERVER.tmp");
+        File f = new File(TMP_FILE);
         if (!f.exists()) {
             try {
                 if (!f.createNewFile()) {

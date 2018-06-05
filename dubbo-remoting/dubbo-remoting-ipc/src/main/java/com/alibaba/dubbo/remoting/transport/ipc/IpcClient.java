@@ -30,7 +30,6 @@ import io.netty.channel.unix.DomainSocketAddress;
 import io.netty.util.concurrent.DefaultThreadFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.SocketAddress;
 
 /**
@@ -55,15 +54,9 @@ public class IpcClient extends NettyClient {
 
     @Override
     public SocketAddress getConnectAddress() {
-        File f = new File("DUBBO-IPC-CLIENT.tmp");
+        File f = new File(IpcServer.TMP_FILE);
         if (!f.exists()) {
-            try {
-                if (!f.createNewFile()) {
-                    throw new RuntimeException("create client tmp file failed!");
-                }
-            } catch (IOException e) {
-                throw new RuntimeException("create client tmp file failed!");
-            }
+            throw new RuntimeException("connect failed, connection refused: " + IpcServer.TMP_FILE);
         }
         return new DomainSocketAddress(f);
     }
