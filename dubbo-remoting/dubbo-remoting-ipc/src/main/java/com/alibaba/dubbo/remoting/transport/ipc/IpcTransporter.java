@@ -18,6 +18,8 @@
 package com.alibaba.dubbo.remoting.transport.ipc;
 
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.Client;
 import com.alibaba.dubbo.remoting.RemotingException;
@@ -33,18 +35,32 @@ import java.util.Locale;
  */
 public class IpcTransporter implements Transporter {
 
+    private static final Logger logger = LoggerFactory.getLogger(IpcTransporter.class);
+
     public static final String NAME = "ipc";
 
     @Override
     public Server bind(URL url, ChannelHandler handler) throws RemotingException {
         checkOS();
-        return new IpcServer(url, handler);
+        try {
+            return new IpcServer(url, handler);
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public Client connect(URL url, ChannelHandler handler) throws RemotingException {
         checkOS();
-        return new IpcClient(url, handler);
+        try {
+            return new IpcClient(url, handler);
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
     }
 
     /**

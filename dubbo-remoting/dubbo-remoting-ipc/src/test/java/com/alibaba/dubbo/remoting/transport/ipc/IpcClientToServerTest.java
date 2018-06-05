@@ -33,6 +33,13 @@ public class IpcClientToServerTest extends ClientToServerTest {
     }
 
     protected ExchangeChannel newClient(int port) throws RemotingException {
-        return Exchangers.connect(URL.valueOf("exchange://localhost:" + port + "?client=ipc"));
+        try {
+            return Exchangers.connect(URL.valueOf("exchange://localhost:" + port + "?client=ipc"));
+        } catch (RemotingException e) {
+            if (e.getCause() != null) {
+                e.getCause().printStackTrace();
+            }
+            return null;
+        }
     }
 }
