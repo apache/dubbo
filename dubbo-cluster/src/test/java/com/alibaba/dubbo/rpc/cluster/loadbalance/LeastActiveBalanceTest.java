@@ -24,15 +24,17 @@ import org.junit.Test;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class LeastActiveBalanceTest extends LoadBalanceBaseTest{
+public class LeastActiveBalanceTest extends LoadBalanceBaseTest {
     @Test
-    public void testLeastActiveLoadBalanceSelect() {
+    public void testLeastActiveLoadBalance_select() {
         int runs = 10000;
         Map<Invoker, AtomicLong> counter = getInvokeCounter(runs, LeastActiveLoadBalance.NAME);
         for (Invoker minvoker : counter.keySet()) {
             Long count = counter.get(minvoker).get();
-            boolean condition = Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size());
-            Assert.assertTrue("abs diff should < avg", condition);
+            //            System.out.println(count);
+            Assert.assertTrue("abs diff shoud < avg",
+                    Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size()));
         }
     }
+
 }
