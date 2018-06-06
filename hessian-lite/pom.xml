@@ -23,6 +23,6 @@
     </parent>
     <artifactId>hessian-lite</artifactId>
     <packaging>jar</packaging>
-    <version>2.6.3-SNAPSHOT</version>
+    <version>3.2.3</version>
     <name>Hessian Lite(Alibaba embed version)</name>
 </project>
