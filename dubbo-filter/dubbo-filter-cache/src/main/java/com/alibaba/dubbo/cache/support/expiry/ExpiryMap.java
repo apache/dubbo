@@ -315,12 +315,6 @@ public class ExpiryMap<K, V> implements Map<K, V> {
                 if (!running) {
                     running = true;
                     expirerThread.start();
-                    /*Runtime.getRuntime().addShutdownHook(new Thread() {
-                        @Override
-                        public void run() {
-                            stopExpiring();
-                        }
-                    });*/
                 }
             } finally {
                 stateLock.writeLock().unlock();
