@@ -45,7 +45,7 @@ public class LruCache implements Cache {
     }
 
     @Override
-    public void destroy() {
+    public void clear() {
         store.clear();
     }
 }

@@ -22,6 +22,7 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invocation;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -46,4 +47,12 @@ public abstract class AbstractCacheFactory implements CacheFactory {
 
     protected abstract Cache createCache(URL url);
 
+    @Override
+    public void destroy() {
+        System.out.println("clear cacheFactory");
+        for (Map.Entry<String, Cache> entry : caches.entrySet()) {
+            entry.getValue().clear();
+        }
+        caches.clear();
+    }
 }

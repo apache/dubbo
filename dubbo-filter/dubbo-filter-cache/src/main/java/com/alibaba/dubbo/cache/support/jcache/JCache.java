@@ -76,7 +76,7 @@ public class JCache implements com.alibaba.dubbo.cache.Cache {
     }
 
     @Override
-    public void destroy() {
+    public void clear() {
         store.clear();
     }
 }

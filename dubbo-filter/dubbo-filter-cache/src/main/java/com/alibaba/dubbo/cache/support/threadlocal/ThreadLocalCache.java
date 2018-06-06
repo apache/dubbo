@@ -49,7 +49,7 @@ public class ThreadLocalCache implements Cache {
     }
 
     @Override
-    public void destroy() {
+    public void clear() {
         store.remove();
     }
 

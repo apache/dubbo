@@ -31,7 +31,7 @@ public class ExpiryCache implements Cache {
         // cache time (second)
         final int secondsToLive = url.getParameter("cache.seconds", 180);
         // Cache check interval (second)
-        final int intervalSeconds = url.getParameter("cache.interval", 1);
+        final int intervalSeconds = url.getParameter("cache.interval", 4);
         ExpiryMap<Object, Object> expiryMap = new ExpiryMap<Object, Object>(secondsToLive, intervalSeconds);
         expiryMap.getExpireThread().startExpiryIfNotStarted();
         this.store = expiryMap;
@@ -48,7 +48,7 @@ public class ExpiryCache implements Cache {
     }
 
     @Override
-    public void destroy() {
+    public void clear() {
         store.clear();
     }
 }

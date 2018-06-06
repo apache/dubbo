@@ -16,7 +16,7 @@
  */
 package com.alibaba.dubbo.config;
 
-import com.alibaba.dubbo.cache.Cache;
+import com.alibaba.dubbo.cache.CacheFactory;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
@@ -95,12 +95,12 @@ public class DubboShutdownHook extends Thread {
      * Destroy all the caches.
      */
     private void destroyCaches() {
-        ExtensionLoader<Cache> cacheLoader = ExtensionLoader.getExtensionLoader(Cache.class);
-        for (String cacheName : cacheLoader.getLoadedExtensions()) {
+        ExtensionLoader<CacheFactory> loader = ExtensionLoader.getExtensionLoader(CacheFactory.class);
+        for (String cacheName : loader.getLoadedExtensions()) {
             try {
-                Cache cache = cacheLoader.getLoadedExtension(cacheName);
-                if (cache != null) {
-                    cache.destroy();
+                CacheFactory cacheFactory = loader.getLoadedExtension(cacheName);
+                if (cacheFactory != null) {
+                    cacheFactory.destroy();
                 }
             } catch (Throwable t) {
                 logger.warn(t.getMessage(), t);
