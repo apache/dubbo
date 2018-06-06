@@ -69,6 +69,15 @@ public class PropertySourcesUtilsTest {
 
         Assert.assertEquals(Collections.emptyMap(), result);
 
+        source.put(KEY_PREFIX + ".app.name", "${info.name}");
+        source.put("info.name", "Hello app");
+
+        result = PropertySourcesUtils.getSubProperties(propertySources, KEY_PREFIX);
+
+        String appName = result.get("app.name");
+
+        Assert.assertEquals("Hello app", appName);
+
     }
 
 }
