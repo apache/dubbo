@@ -30,6 +30,7 @@ import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.Server;
 
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.Collection;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -168,7 +169,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
         return localAddress;
     }
 
-    public InetSocketAddress getBindAddress() {
+    protected SocketAddress getBindAddress() {
         return bindAddress;
     }
 

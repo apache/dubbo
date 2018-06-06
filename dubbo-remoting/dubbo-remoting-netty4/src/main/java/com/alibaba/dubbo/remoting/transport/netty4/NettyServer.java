@@ -28,7 +28,6 @@ import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.Server;
 import com.alibaba.dubbo.remoting.transport.AbstractServer;
 import com.alibaba.dubbo.remoting.transport.dispatcher.ChannelHandlers;
-
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelFuture;
@@ -67,35 +66,22 @@ public class NettyServer extends AbstractServer implements Server {
 
     @Override
     protected void doOpen() throws Throwable {
-        bootstrap = new ServerBootstrap();
-
-        bossGroup = new NioEventLoopGroup(1, new DefaultThreadFactory("NettyServerBoss", true));
-        workerGroup = new NioEventLoopGroup(getUrl().getPositiveParameter(Constants.IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS),
-                new DefaultThreadFactory("NettyServerWorker", true));
-
+        bossGroup = bossGroup();
+        workerGroup = workerGroup();
         final NettyServerHandler nettyServerHandler = new NettyServerHandler(getUrl(), this);
         channels = nettyServerHandler.getChannels();
 
+        bootstrap = new ServerBootstrap();
         bootstrap.group(bossGroup, workerGroup)
-                .channel(NioServerSocketChannel.class)
+                .channel(serverChannelClass())
                 .childOption(ChannelOption.TCP_NODELAY, Boolean.TRUE)
                 .childOption(ChannelOption.SO_REUSEADDR, Boolean.TRUE)
                 .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                .childHandler(new ChannelInitializer<NioSocketChannel>() {
-                    @Override
-                    protected void initChannel(NioSocketChannel ch) throws Exception {
-                        NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyServer.this);
-                        ch.pipeline()//.addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
-                                .addLast("decoder", adapter.getDecoder())
-                                .addLast("encoder", adapter.getEncoder())
-                                .addLast("handler", nettyServerHandler);
-                    }
-                });
+                .childHandler(initializer(nettyServerHandler));
         // bind
         ChannelFuture channelFuture = bootstrap.bind(getBindAddress());
         channelFuture.syncUninterruptibly();
         channel = channelFuture.channel();
-
     }
 
     @Override
@@ -162,4 +148,44 @@ public class NettyServer extends AbstractServer implements Server {
         return channel.isActive();
     }
 
+    /**
+     * server channel class
+     */
+    protected Class<? extends io.netty.channel.ServerChannel> serverChannelClass() {
+        return NioServerSocketChannel.class;
+    }
+
+    /**
+     * create a ChannelInitializer for netty server
+     *
+     * @param nettyServerHandler handler
+     * @return ChannelInitializer
+     */
+    protected ChannelInitializer initializer(final NettyServerHandler nettyServerHandler) {
+        return new ChannelInitializer<NioSocketChannel>() {
+            @Override
+            protected void initChannel(NioSocketChannel ch) throws Exception {
+                NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyServer.this);
+                ch.pipeline()//.addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
+                        .addLast("decoder", adapter.getDecoder())
+                        .addLast("encoder", adapter.getEncoder())
+                        .addLast("handler", nettyServerHandler);
+            }
+        };
+    }
+
+    /**
+     * config boss group
+     */
+    protected EventLoopGroup bossGroup() {
+        return new NioEventLoopGroup(1, new DefaultThreadFactory("NettyServerBoss", true));
+    }
+
+    /**
+     * config worker group
+     */
+    protected EventLoopGroup workerGroup() {
+        return new NioEventLoopGroup(getUrl().getPositiveParameter(Constants.IO_THREADS_KEY,
+                Constants.DEFAULT_IO_THREADS), new DefaultThreadFactory("NettyServerWorker", true));
+    }
 }
