@@ -57,10 +57,10 @@ public class LogHelperTest {
         Logger logger = Mockito.mock(Logger.class);
         when(logger.isInfoEnabled()).thenReturn(true);
         LogHelper.info(logger, "info");
-        verify(logger).debug("info");
+        verify(logger).info("info");
         Throwable t = new RuntimeException();
         LogHelper.info(logger, t);
-        verify(logger).debug(t);
+        verify(logger).info(t);
         LogHelper.info(logger, "info", t);
         verify(logger).info("info", t);
     }
@@ -70,10 +70,10 @@ public class LogHelperTest {
         Logger logger = Mockito.mock(Logger.class);
         when(logger.isWarnEnabled()).thenReturn(true);
         LogHelper.warn(logger, "warn");
-        verify(logger).debug("warn");
+        verify(logger).warn("warn");
         Throwable t = new RuntimeException();
         LogHelper.warn(logger, t);
-        verify(logger).debug(t);
+        verify(logger).warn(t);
         LogHelper.warn(logger, "warn", t);
         verify(logger).warn("warn", t);
     }
@@ -83,10 +83,10 @@ public class LogHelperTest {
         Logger logger = Mockito.mock(Logger.class);
         when(logger.isErrorEnabled()).thenReturn(true);
         LogHelper.error(logger, "error");
-        verify(logger).debug("error");
+        verify(logger).error("error");
         Throwable t = new RuntimeException();
         LogHelper.error(logger, t);
-        verify(logger).debug(t);
+        verify(logger).error(t);
         LogHelper.error(logger, "error", t);
         verify(logger).error("error", t);
     }
