@@ -49,7 +49,6 @@ public abstract class AbstractCacheFactory implements CacheFactory {
 
     @Override
     public void destroy() {
-        System.out.println("clear cacheFactory");
         for (Map.Entry<String, Cache> entry : caches.entrySet()) {
             entry.getValue().clear();
         }
