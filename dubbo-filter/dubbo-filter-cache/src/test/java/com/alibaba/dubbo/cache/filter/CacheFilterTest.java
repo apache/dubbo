@@ -83,7 +83,7 @@ public class CacheFilterTest {
     public void test_Expire_Map() {
         URL url = URL.valueOf("test://test:11/test?cache=expiry&cache.seconds=3&cache.interval=1");
         ExpiryCache expiryCache = new ExpiryCache(url);
-        expiryCache.put("first", new Object());
+        expiryCache.put("first", "first value");
         System.out.println(expiryCache.get("first"));
         try {
             TimeUnit.SECONDS.sleep(4);
