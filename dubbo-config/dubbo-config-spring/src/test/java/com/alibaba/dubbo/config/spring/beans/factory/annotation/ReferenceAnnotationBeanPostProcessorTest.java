@@ -36,6 +36,10 @@ import java.util.Collection;
 import java.util.Map;
 
 import static com.alibaba.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor.BEAN_NAME;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * {@link ReferenceAnnotationBeanPostProcessor} Test
@@ -172,6 +176,25 @@ public class ReferenceAnnotationBeanPostProcessorTest {
 
         }
 
+    }
+
+    @Test
+    public void testModuleInfo() {
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestBean.class);
+
+        ReferenceAnnotationBeanPostProcessor beanPostProcessor = context.getBean(BEAN_NAME,
+                ReferenceAnnotationBeanPostProcessor.class);
+
+
+        Map<InjectionMetadata.InjectedElement, ReferenceBean<?>> referenceBeanMap =
+                beanPostProcessor.getInjectedMethodReferenceBeanMap();
+
+        for (Map.Entry<InjectionMetadata.InjectedElement, ReferenceBean<?>> entry : referenceBeanMap.entrySet()) {
+            ReferenceBean<?> referenceBean = entry.getValue();
+
+            assertThat(referenceBean.getModule().getName(),is("defaultModule"));
+            assertThat(referenceBean.getMonitor(), not(nullValue()));
+        }
     }
 
     private static class AncestorBean {

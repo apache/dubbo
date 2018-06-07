@@ -1,0 +1,2 @@
+mockproxyfactory=com.alibaba.dubbo.config.mock.MockProxyFactory
+testproxyfactory=com.alibaba.dubbo.config.mock.TestProxyFactory

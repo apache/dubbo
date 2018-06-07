@@ -25,6 +25,7 @@ import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
+import com.alibaba.dubbo.rpc.RpcResult;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -69,9 +70,13 @@ public class ContextFilter implements Filter {
             ((RpcInvocation) invocation).setInvoker(invoker);
         }
         try {
-            return invoker.invoke(invocation);
+            RpcResult result = (RpcResult) invoker.invoke(invocation);
+            // pass attachments to result
+            result.addAttachments(RpcContext.getServerContext().getAttachments());
+            return result;
         } finally {
             RpcContext.removeContext();
+            RpcContext.getServerContext().clearAttachments();
         }
     }
 }

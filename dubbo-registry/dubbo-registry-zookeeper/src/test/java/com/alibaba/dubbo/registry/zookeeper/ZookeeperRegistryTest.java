@@ -24,10 +24,10 @@ import com.alibaba.dubbo.registry.Registry;
 import com.alibaba.dubbo.registry.status.RegistryStatusChecker;
 import com.alibaba.dubbo.remoting.zookeeper.curator.CuratorZookeeperTransporter;
 import org.apache.curator.test.TestingServer;
-import org.easymock.EasyMock;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -37,6 +37,7 @@ import java.util.concurrent.CountDownLatch;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 
 public class ZookeeperRegistryTest {
     private TestingServer zkServer;
@@ -91,7 +92,7 @@ public class ZookeeperRegistryTest {
 
     @Test
     public void testSubscribe() {
-        NotifyListener listener = EasyMock.mock(NotifyListener.class);
+        NotifyListener listener = mock(NotifyListener.class);
         zookeeperRegistry.subscribe(serviceUrl, listener);
 
         Map<URL, Set<NotifyListener>> subscribed = zookeeperRegistry.getSubscribed();
@@ -123,8 +124,12 @@ public class ZookeeperRegistryTest {
         assertThat(lookup.size(), is(1));
     }
 
-
+    @Ignore
     @Test
+    /*
+      This UT is unstable, consider remove it later.
+      @see https://github.com/apache/incubator-dubbo/issues/1787
+     */
     public void testStatusChecker() {
         RegistryStatusChecker registryStatusChecker = new RegistryStatusChecker();
         Status status = registryStatusChecker.check();

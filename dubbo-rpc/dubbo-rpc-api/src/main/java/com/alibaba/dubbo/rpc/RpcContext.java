@@ -18,6 +18,7 @@ package com.alibaba.dubbo.rpc;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.threadlocal.InternalThreadLocal;
 import com.alibaba.dubbo.common.utils.NetUtils;
 
 import java.net.InetSocketAddress;
@@ -45,12 +46,22 @@ import java.util.concurrent.TimeoutException;
  */
 public class RpcContext {
 
-    private static final ThreadLocal<RpcContext> LOCAL = new ThreadLocal<RpcContext>() {
+    /**
+     * use internal thread local to improve performance
+     */
+    private static final InternalThreadLocal<RpcContext> LOCAL = new InternalThreadLocal<RpcContext>() {
         @Override
         protected RpcContext initialValue() {
             return new RpcContext();
         }
     };
+    private static final InternalThreadLocal<RpcContext> SERVER_LOCAL = new InternalThreadLocal<RpcContext>() {
+        @Override
+        protected RpcContext initialValue() {
+            return new RpcContext();
+        }
+    };
+
     private final Map<String, String> attachments = new HashMap<String, String>();
     private final Map<String, Object> values = new HashMap<String, Object>();
     private Future<?> future;
@@ -81,6 +92,24 @@ public class RpcContext {
     private Object response;
 
     protected RpcContext() {
+    }
+
+    /**
+     * get server side context.
+     *
+     * @return server context
+     */
+    public static RpcContext getServerContext() {
+        return SERVER_LOCAL.get();
+    }
+
+    /**
+     * remove server side context.
+     *
+     * @see com.alibaba.dubbo.rpc.filter.ContextFilter
+     */
+    public static void removeServerContext() {
+        SERVER_LOCAL.remove();
     }
 
     /**
@@ -154,22 +183,7 @@ public class RpcContext {
      * @return provider side.
      */
     public boolean isProviderSide() {
-        URL url = getUrl();
-        if (url == null) {
-            return false;
-        }
-        InetSocketAddress address = getRemoteAddress();
-        if (address == null) {
-            return false;
-        }
-        String host;
-        if (address.getAddress() == null) {
-            host = address.getHostName();
-        } else {
-            host = address.getAddress().getHostAddress();
-        }
-        return url.getPort() != address.getPort() ||
-                !NetUtils.filterLocalHost(url.getIp()).equals(NetUtils.filterLocalHost(host));
+        return !isConsumerSide();
     }
 
     /**
@@ -178,22 +192,7 @@ public class RpcContext {
      * @return consumer side.
      */
     public boolean isConsumerSide() {
-        URL url = getUrl();
-        if (url == null) {
-            return false;
-        }
-        InetSocketAddress address = getRemoteAddress();
-        if (address == null) {
-            return false;
-        }
-        String host;
-        if (address.getAddress() == null) {
-            host = address.getHostName();
-        } else {
-            host = address.getAddress().getHostAddress();
-        }
-        return url.getPort() == address.getPort() &&
-                NetUtils.filterLocalHost(url.getIp()).equals(NetUtils.filterLocalHost(host));
+        return getUrl().getParameter(Constants.SIDE_KEY, Constants.PROVIDER_SIDE).equals(Constants.CONSUMER_SIDE);
     }
 
     /**

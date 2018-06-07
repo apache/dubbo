@@ -132,7 +132,7 @@ public class NetUtils {
                 new InetSocketAddress(port) : new InetSocketAddress(host, port);
     }
 
-    private static boolean isValidAddress(InetAddress address) {
+    static boolean isValidAddress(InetAddress address) {
         if (address == null || address.isLoopbackAddress())
             return false;
         String name = address.getHostAddress();

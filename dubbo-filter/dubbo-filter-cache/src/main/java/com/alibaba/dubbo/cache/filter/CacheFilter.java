@@ -52,7 +52,7 @@ public class CacheFilter implements Filter {
                     return new RpcResult(value);
                 }
                 Result result = invoker.invoke(invocation);
-                if (!result.hasException()) {
+                if (!result.hasException() && result.getValue() != null) {
                     cache.put(key, result.getValue());
                 }
                 return result;
