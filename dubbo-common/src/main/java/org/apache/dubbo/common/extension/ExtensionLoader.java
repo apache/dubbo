@@ -576,14 +576,17 @@ public class ExtensionLoader<T> {
         }
 
         Map<String, Class<?>> extensionClasses = new HashMap<String, Class<?>>();
-        loadDirectory(extensionClasses, DUBBO_INTERNAL_DIRECTORY);
-        loadDirectory(extensionClasses, DUBBO_DIRECTORY);
-        loadDirectory(extensionClasses, SERVICES_DIRECTORY);
+        loadDirectory(extensionClasses, DUBBO_INTERNAL_DIRECTORY, type.getName());
+        loadDirectory(extensionClasses, DUBBO_INTERNAL_DIRECTORY, type.getName().replace("org.apache", "com.alibaba"));
+        loadDirectory(extensionClasses, DUBBO_DIRECTORY, type.getName());
+        loadDirectory(extensionClasses, DUBBO_DIRECTORY, type.getName().replace("org.apache", "com.alibaba"));
+        loadDirectory(extensionClasses, SERVICES_DIRECTORY, type.getName());
+        loadDirectory(extensionClasses, SERVICES_DIRECTORY, type.getName().replace("org.apache", "com.alibaba"));
         return extensionClasses;
     }
 
-    private void loadDirectory(Map<String, Class<?>> extensionClasses, String dir) {
-        String fileName = dir + type.getName();
+    private void loadDirectory(Map<String, Class<?>> extensionClasses, String dir, String type) {
+        String fileName = dir + type;
         try {
             Enumeration<java.net.URL> urls;
             ClassLoader classLoader = findClassLoader();
