@@ -40,10 +40,6 @@ public abstract class AbstractConfigurator implements Configurator {
         this.configuratorUrl = url;
     }
 
-    public static void main(String[] args) {
-        System.out.println(URL.encode("timeout=100"));
-    }
-
     @Override
     public URL getUrl() {
         return configuratorUrl;

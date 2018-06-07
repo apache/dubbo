@@ -19,13 +19,13 @@ package com.alibaba.dubbo.rpc.cluster.configurator.override;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.rpc.cluster.configurator.absent.AbsentConfigurator;
+import com.alibaba.dubbo.rpc.cluster.configurator.consts.UrlConstant;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
  * OverrideConfiguratorTest
- *
  */
 public class OverrideConfiguratorTest {
 
@@ -33,16 +33,16 @@ public class OverrideConfiguratorTest {
     public void testOverride_Application() {
         OverrideConfigurator configurator = new OverrideConfigurator(URL.valueOf("override://foo@0.0.0.0/com.foo.BarService?timeout=200"));
 
-        URL url = configurator.configure(URL.valueOf("dubbo://10.20.153.10:20880/com.foo.BarService?application=foo&side=consumer"));
+        URL url = configurator.configure(URL.valueOf(UrlConstant.URL_CONSUMER));
         Assert.assertEquals("200", url.getParameter("timeout"));
 
-        url = configurator.configure(URL.valueOf("dubbo://10.20.153.10:20880/com.foo.BarService?application=foo&timeout=1000&side=consumer"));
+        url = configurator.configure(URL.valueOf(UrlConstant.URL_ONE));
         Assert.assertEquals("200", url.getParameter("timeout"));
 
-        url = configurator.configure(URL.valueOf("dubbo://10.20.153.11:20880/com.foo.BarService?application=bar&side=consumer"));
+        url = configurator.configure(URL.valueOf(UrlConstant.APPLICATION_BAR_SIDE_CONSUMER_11));
         Assert.assertNull(url.getParameter("timeout"));
 
-        url = configurator.configure(URL.valueOf("dubbo://10.20.153.11:20880/com.foo.BarService?application=bar&timeout=1000&side=consumer"));
+        url = configurator.configure(URL.valueOf(UrlConstant.TIMEOUT_1000_SIDE_CONSUMER_11));
         Assert.assertEquals("1000", url.getParameter("timeout"));
     }
 
@@ -50,18 +50,18 @@ public class OverrideConfiguratorTest {
     public void testOverride_Host() {
         OverrideConfigurator configurator = new OverrideConfigurator(URL.valueOf("override://" + NetUtils.getLocalHost() + "/com.foo.BarService?timeout=200"));
 
-        URL url = configurator.configure(URL.valueOf("dubbo://10.20.153.10:20880/com.foo.BarService?application=foo&side=consumer"));
+        URL url = configurator.configure(URL.valueOf(UrlConstant.URL_CONSUMER));
         Assert.assertEquals("200", url.getParameter("timeout"));
 
-        url = configurator.configure(URL.valueOf("dubbo://10.20.153.10:20880/com.foo.BarService?application=foo&timeout=1000&side=consumer"));
+        url = configurator.configure(URL.valueOf(UrlConstant.URL_ONE));
         Assert.assertEquals("200", url.getParameter("timeout"));
 
         AbsentConfigurator configurator1 = new AbsentConfigurator(URL.valueOf("override://10.20.153.10/com.foo.BarService?timeout=200"));
 
-        url = configurator1.configure(URL.valueOf("dubbo://10.20.153.10:20880/com.foo.BarService?application=bar&side=consumer"));
+        url = configurator1.configure(URL.valueOf(UrlConstant.APPLICATION_BAR_SIDE_CONSUMER_10));
         Assert.assertNull(url.getParameter("timeout"));
 
-        url = configurator1.configure(URL.valueOf("dubbo://10.20.153.10:20880/com.foo.BarService?application=bar&timeout=1000&side=consumer"));
+        url = configurator1.configure(URL.valueOf(UrlConstant.TIMEOUT_1000_SIDE_CONSUMER_10));
         Assert.assertEquals("1000", url.getParameter("timeout"));
     }
 

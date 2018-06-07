@@ -31,7 +31,7 @@ import com.alibaba.dubbo.rpc.cluster.RouterFactory;
 import com.alibaba.dubbo.rpc.cluster.directory.StaticDirectory;
 import com.alibaba.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;

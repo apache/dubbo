@@ -185,7 +185,7 @@ public class UrlTestBase {
      */
     protected void assertUrlStringWithLocalTable(String paramStringFromDb,
                                                  Object[][] dataTable, String configName, int column) {
-        final String FAILLOG_HEADER = "The following config items are not found in URL: ";
+        final String FAILLOG_HEADER = "The following config items are not found in URLONE: ";
 
         log.warn("Verifying service url for " + configName + "... ");
         log.warn("Consumer url string: " + paramStringFromDb);
