@@ -1,0 +1,1 @@
+protobuf=com.alibaba.dubbo.common.serialize.protobuf.ProtobufSerialization
