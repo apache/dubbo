@@ -1,80 +1,75 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
-    <!--<parent>-->
-    <!--<artifactId>dubbo-parent</artifactId>-->
-    <!--<groupId>com.alibaba</groupId>-->
-    <!--<version>2.6.2-SNAPSHOT</version>-->
-    <!--<relativePath>../pom.xml</relativePath>-->
-    <!--</parent>-->
     <parent>
         <groupId>org.sonatype.oss</groupId>
         <artifactId>oss-parent</artifactId>
         <version>7</version>
-        <relativePath/>
     </parent>
 
     <groupId>com.alibaba</groupId>
     <artifactId>dubbo-bom</artifactId>
-    <version>2.6.2-SNAPSHOT</version>
+    <version>2.7.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>dubbo-bom</name>
     <description>Dubbo dependencies BOM</description>
-    <url>http://dubbo.io</url>
-
+    <url>https://github.com/apache/incubator-dubbo</url>
     <inceptionYear>2011</inceptionYear>
     <licenses>
         <license>
-            <name>Apache 2</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+            <distribution>repo</distribution>
         </license>
     </licenses>
 
-    <organization>
-        <name>The Dubbo Project</name>
-        <url>http://dubbo.io</url>
-    </organization>
-
-    <issueManagement>
-        <system>Github Issues</system>
-        <url>https://github.com/alibaba/dubbo/issues</url>
-    </issueManagement>
     <scm>
-        <url>https://github.com/alibaba/dubbo/tree/master</url>
-        <connection>scm:git:git://github.com/alibaba/dubbo.git</connection>
-        <developerConnection>scm:git:git@github.com:alibaba/dubbo.git</developerConnection>
-    </scm>
+        <url>https://github.com/apache/incubator-dubbo</url>
+        <connection>scm:git:https://github.com/apache/incubator-dubbo.git</connection>
+        <developerConnection>scm:git:https://github.com/apache/incubator-dubbo.git</developerConnection>
+      <tag>HEAD</tag>
+  </scm>
     <mailingLists>
         <mailingList>
-            <name>Dubbo User Mailling List</name>
-            <subscribe>dubbo+subscribe@googlegroups.com</subscribe>
-            <unsubscribe>dubbo+unsubscribe@googlegroups.com</unsubscribe>
-            <post>dubbo@googlegroups.com</post>
-            <archive>http://groups.google.com/group/dubbo</archive>
+            <name>Development List</name>
+            <subscribe>dev-subscribe@dubbo.apache.org</subscribe>
+            <unsubscribe>dev-unsubscribe@dubbo.apache.org</unsubscribe>
+            <post>dev@dubbo.apache.org</post>
         </mailingList>
         <mailingList>
-            <name>Dubbo Developer Mailling List</name>
-            <subscribe>dubbo-developers+subscribe@googlegroups.com</subscribe>
-            <unsubscribe>dubbo-developers+unsubscribe@googlegroups.com</unsubscribe>
-            <post>dubbo-developers@googlegroups.com</post>
-            <archive>http://groups.google.com/group/dubbo-developers</archive>
+            <name>Commits List</name>
+            <subscribe>commits-subscribe@dubbo.apache.org</subscribe>
+            <unsubscribe>commits-unsubscribe@dubbo.apache.org</unsubscribe>
+            <post>commits@dubbo.apache.org</post>
+        </mailingList>
+        <mailingList>
+            <name>Issues List</name>
+            <subscribe>issues-subscribe@dubbo.apache.org</subscribe>
+            <unsubscribe>issues-unsubscribe@dubbo.apache.org</unsubscribe>
+            <post>issues@dubbo.apache.org</post>
         </mailingList>
     </mailingLists>
     <developers>
         <developer>
             <id>dubbo.io</id>
             <name>The Dubbo Project Contributors</name>
-            <email>dubbo@googlegroups.com</email>
-            <url>http://dubbo.io</url>
-            <organization>The Dubbo Project</organization>
-            <organizationUrl>http://dubbo.io</organizationUrl>
+            <email>dev-subscribe@dubbo.apache.org</email>
+            <url>http://dubbo.apache.org/</url>
         </developer>
     </developers>
+
+    <organization>
+        <name>The Apache Software Foundation</name>
+        <url>http://www.apache.org/</url>
+    </organization>
+
+    <issueManagement>
+        <system>Github Issues</system>
+        <url>https://github.com/apache/incubator-dubbo/issues</url>
+    </issueManagement>
 
     <dependencyManagement>
         <dependencies>
@@ -286,7 +281,7 @@
             <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>hessian-lite</artifactId>
-                <version>3.2.2</version>
+                <version>3.2.3</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
