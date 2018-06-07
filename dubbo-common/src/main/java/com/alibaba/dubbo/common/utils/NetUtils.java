@@ -17,8 +17,8 @@
 package com.alibaba.dubbo.common.utils;
 
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.logger.support.FailsafeLogger;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -38,7 +38,7 @@ public class NetUtils {
 
     public static final String LOCALHOST = "127.0.0.1";
     public static final String ANYHOST = "0.0.0.0";
-    private static final Logger logger = LoggerFactory.getLogger(NetUtils.class);
+    private static final FailsafeLogger logger = (FailsafeLogger) LoggerFactory.getLogger(NetUtils.class);
     private static final int RND_PORT_START = 30000;
 
     private static final int RND_PORT_RANGE = 10000;
@@ -190,7 +190,7 @@ public class NetUtils {
                 return localAddress;
             }
         } catch (Throwable e) {
-            logger.warn("Failed to retrieving ip address, " + e.getMessage(), e);
+            logger.warn("Failed to retrieving ip address, " + e.getMessage(), e,false);
         }
         try {
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
@@ -207,19 +207,19 @@ public class NetUtils {
                                         return address;
                                     }
                                 } catch (Throwable e) {
-                                    logger.warn("Failed to retrieving ip address, " + e.getMessage(), e);
+                                    logger.warn("Failed to retrieving ip address, " + e.getMessage(), e, false);
                                 }
                             }
                         }
                     } catch (Throwable e) {
-                        logger.warn("Failed to retrieving ip address, " + e.getMessage(), e);
+                        logger.warn("Failed to retrieving ip address, " + e.getMessage(), e, false);
                     }
                 }
             }
         } catch (Throwable e) {
-            logger.warn("Failed to retrieving ip address, " + e.getMessage(), e);
+            logger.warn("Failed to retrieving ip address, " + e.getMessage(), e,false);
         }
-        logger.error("Could not get local host ip address, will use 127.0.0.1 instead.");
+        logger.error("Could not get local host ip address, will use 127.0.0.1 instead.",false);
         return localAddress;
     }
 
