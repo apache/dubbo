@@ -143,12 +143,13 @@ public class ReflectUtilsTest {
 
     @Test
     public void testGetMethodName() throws Exception {
-        assertThat(ReflectUtils.getName(getHelloMethod()), equalTo("java.util.List hello(int[])"));
+        assertThat(ReflectUtils.getName(Foo2.class.getDeclaredMethod("hello", int[].class)),
+                equalTo("java.util.List hello(int[])"));
     }
 
     @Test
     public void testGetSignature() throws Exception {
-        Method m = getHelloMethod();
+        Method m = Foo2.class.getDeclaredMethod("hello", int[].class);
         assertThat(ReflectUtils.getSignature("greeting", m.getParameterTypes()), equalTo("greeting([I)"));
     }
 
@@ -168,7 +169,8 @@ public class ReflectUtilsTest {
 
     @Test
     public void testGetDescMethod() throws Exception {
-        assertThat(ReflectUtils.getDesc(getHelloMethod()), equalTo("hello([I)Ljava/util/List;"));
+        assertThat(ReflectUtils.getDesc(Foo2.class.getDeclaredMethod("hello", int[].class)),
+                equalTo("hello([I)Ljava/util/List;"));
     }
 
     @Test
@@ -178,7 +180,8 @@ public class ReflectUtilsTest {
 
     @Test
     public void testGetDescWithoutMethodName() throws Exception {
-        assertThat(ReflectUtils.getDescWithoutMethodName(getHelloMethod()), equalTo("([I)Ljava/util/List;"));
+        assertThat(ReflectUtils.getDescWithoutMethodName(Foo2.class.getDeclaredMethod("hello", int[].class)),
+                equalTo("([I)Ljava/util/List;"));
     }
 
     @Test
@@ -390,17 +393,6 @@ public class ReflectUtilsTest {
     @Test(expected = IllegalStateException.class)
     public void testForName2() throws Exception {
         ReflectUtils.forName("a.c.d.e.F");
-    }
-
-    private Method getHelloMethod() {
-        Method m = null;
-        for (Method method : Foo2.class.getDeclaredMethods()) {
-            if (method.getName().equals("hello")) {
-                m = method;
-                break;
-            }
-        }
-        return m;
     }
 
     public static class EmptyClass {
