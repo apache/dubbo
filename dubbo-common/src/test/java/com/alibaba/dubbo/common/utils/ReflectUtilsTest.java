@@ -16,29 +16,87 @@
  */
 package com.alibaba.dubbo.common.utils;
 
-import junit.framework.TestCase;
 import org.junit.Test;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertNotNull;
+import static junit.framework.TestCase.assertNull;
+import static junit.framework.TestCase.assertTrue;
+import static junit.framework.TestCase.fail;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
-import static org.junit.matchers.JUnitMatchers.containsString;
 
-public class ReflectUtilsTest extends TestCase {
-    public void testIsCompatible() throws Exception {
-        assertEquals(ReflectUtils.isCompatible(short.class, (short) 1), true);
-        assertEquals(ReflectUtils.isCompatible(int.class, 1), true);
-        assertEquals(ReflectUtils.isCompatible(double.class, 1.2), true);
-        assertEquals(ReflectUtils.isCompatible(Object.class, 1.2), true);
-        assertEquals(ReflectUtils.isCompatible(List.class, new ArrayList<String>()), true);
+public class ReflectUtilsTest {
+    @Test
+    public void testIsPrimitives() throws Exception {
+        assertTrue(ReflectUtils.isPrimitives(boolean[].class));
+        assertTrue(ReflectUtils.isPrimitives(byte.class));
+        assertFalse(ReflectUtils.isPrimitive(Map[].class));
     }
 
-    public void testNameDesc() throws Exception {
+    @Test
+    public void testIsPrimitive() throws Exception {
+        assertTrue(ReflectUtils.isPrimitive(boolean.class));
+        assertTrue(ReflectUtils.isPrimitive(String.class));
+        assertTrue(ReflectUtils.isPrimitive(Boolean.class));
+        assertTrue(ReflectUtils.isPrimitive(Character.class));
+        assertTrue(ReflectUtils.isPrimitive(Number.class));
+        assertTrue(ReflectUtils.isPrimitive(Date.class));
+        assertFalse(ReflectUtils.isPrimitive(Map.class));
+    }
+
+    @Test
+    public void testGetBoxedClass() throws Exception {
+        assertThat(ReflectUtils.getBoxedClass(int.class), sameInstance(Integer.class));
+        assertThat(ReflectUtils.getBoxedClass(boolean.class), sameInstance(Boolean.class));
+        assertThat(ReflectUtils.getBoxedClass(long.class), sameInstance(Long.class));
+        assertThat(ReflectUtils.getBoxedClass(float.class), sameInstance(Float.class));
+        assertThat(ReflectUtils.getBoxedClass(double.class), sameInstance(Double.class));
+        assertThat(ReflectUtils.getBoxedClass(char.class), sameInstance(Character.class));
+        assertThat(ReflectUtils.getBoxedClass(byte.class), sameInstance(Byte.class));
+        assertThat(ReflectUtils.getBoxedClass(short.class), sameInstance(Short.class));
+    }
+
+    @Test
+    public void testIsCompatible() throws Exception {
+        assertTrue(ReflectUtils.isCompatible(short.class, (short) 1));
+        assertTrue(ReflectUtils.isCompatible(int.class, 1));
+        assertTrue(ReflectUtils.isCompatible(double.class, 1.2));
+        assertTrue(ReflectUtils.isCompatible(Object.class, 1.2));
+        assertTrue(ReflectUtils.isCompatible(List.class, new ArrayList<String>()));
+    }
+
+    @Test
+    public void testIsCompatibleWithArray() throws Exception {
+        assertFalse(ReflectUtils.isCompatible(new Class[]{short.class, int.class}, new Object[]{(short) 1}));
+        assertFalse(ReflectUtils.isCompatible(new Class[]{double.class}, new Object[]{"hello"}));
+        assertTrue(ReflectUtils.isCompatible(new Class[]{double.class}, new Object[]{1.2}));
+    }
+
+    @Test
+    public void testGetCodeBase() throws Exception {
+        assertNull(ReflectUtils.getCodeBase(null));
+        assertNull(ReflectUtils.getCodeBase(String.class));
+        assertNotNull(ReflectUtils.getCodeBase(ReflectUtils.class));
+    }
+
+    @Test
+    public void testGetName() throws Exception {
         // getName
         assertEquals("boolean", ReflectUtils.getName(boolean.class));
         assertEquals("int[][][]", ReflectUtils.getName(int[][][].class));
@@ -56,10 +114,52 @@ public class ReflectUtilsTest extends TestCase {
 
         // desc2name
         assertEquals("short[]", ReflectUtils.desc2name(ReflectUtils.getDesc(short[].class)));
+        assertEquals("boolean[]", ReflectUtils.desc2name(ReflectUtils.getDesc(boolean[].class)));
+        assertEquals("byte[]", ReflectUtils.desc2name(ReflectUtils.getDesc(byte[].class)));
+        assertEquals("char[]", ReflectUtils.desc2name(ReflectUtils.getDesc(char[].class)));
+        assertEquals("double[]", ReflectUtils.desc2name(ReflectUtils.getDesc(double[].class)));
+        assertEquals("float[]", ReflectUtils.desc2name(ReflectUtils.getDesc(float[].class)));
+        assertEquals("int[]", ReflectUtils.desc2name(ReflectUtils.getDesc(int[].class)));
+        assertEquals("long[]", ReflectUtils.desc2name(ReflectUtils.getDesc(long[].class)));
         assertEquals("int", ReflectUtils.desc2name(ReflectUtils.getDesc(int.class)));
+        assertEquals("void", ReflectUtils.desc2name(ReflectUtils.getDesc(void.class)));
         assertEquals("java.lang.Object[][]", ReflectUtils.desc2name(ReflectUtils.getDesc(Object[][].class)));
     }
 
+    @Test
+    public void testGetGenericClass() throws Exception {
+        assertThat(ReflectUtils.getGenericClass(Foo1.class), sameInstance(String.class));
+    }
+
+    @Test
+    public void testGetGenericClassWithIndex() throws Exception {
+        assertThat(ReflectUtils.getGenericClass(Foo1.class, 0), sameInstance(String.class));
+        assertThat(ReflectUtils.getGenericClass(Foo1.class, 1), sameInstance(Integer.class));
+        assertThat(ReflectUtils.getGenericClass(Foo2.class, 0), sameInstance(List.class));
+        assertThat(ReflectUtils.getGenericClass(Foo2.class, 1), sameInstance(int.class));
+        assertThat(ReflectUtils.getGenericClass(Foo3.class, 0), sameInstance(Foo1.class));
+        assertThat(ReflectUtils.getGenericClass(Foo3.class, 1), sameInstance(Foo2.class));
+    }
+
+    @Test
+    public void testGetMethodName() throws Exception {
+        assertThat(ReflectUtils.getName(Foo2.class.getDeclaredMethod("hello", int[].class)),
+                equalTo("java.util.List hello(int[])"));
+    }
+
+    @Test
+    public void testGetSignature() throws Exception {
+        Method m = Foo2.class.getDeclaredMethod("hello", int[].class);
+        assertThat(ReflectUtils.getSignature("greeting", m.getParameterTypes()), equalTo("greeting([I)"));
+    }
+
+    @Test
+    public void testGetConstructorName() throws Exception {
+        Constructor c = Foo2.class.getConstructors()[0];
+        assertThat(ReflectUtils.getName(c), equalTo("(java.util.List,int[])"));
+    }
+
+    @Test
     public void testName2Class() throws Exception {
         assertEquals(boolean.class, ReflectUtils.name2class("boolean"));
         assertEquals(boolean[].class, ReflectUtils.name2class("boolean[]"));
@@ -67,9 +167,125 @@ public class ReflectUtilsTest extends TestCase {
         assertEquals(ReflectUtilsTest[].class, ReflectUtils.name2class(ReflectUtils.getName(ReflectUtilsTest[].class)));
     }
 
+    @Test
+    public void testGetDescMethod() throws Exception {
+        assertThat(ReflectUtils.getDesc(Foo2.class.getDeclaredMethod("hello", int[].class)),
+                equalTo("hello([I)Ljava/util/List;"));
+    }
+
+    @Test
+    public void testGetDescConstructor() throws Exception {
+        assertThat(ReflectUtils.getDesc(Foo2.class.getConstructors()[0]), equalTo("(Ljava/util/List;[I)V"));
+    }
+
+    @Test
+    public void testGetDescWithoutMethodName() throws Exception {
+        assertThat(ReflectUtils.getDescWithoutMethodName(Foo2.class.getDeclaredMethod("hello", int[].class)),
+                equalTo("([I)Ljava/util/List;"));
+    }
+
+    @Test
+    public void testFindMethodByMethodName1() throws Exception {
+        assertNotNull(ReflectUtils.findMethodByMethodName(Foo.class, "hello"));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testFindMethodByMethodName2() throws Exception {
+        ReflectUtils.findMethodByMethodName(Foo2.class, "hello");
+    }
+
+    @Test
+    public void testFindConstructor() throws Exception {
+        Constructor constructor = ReflectUtils.findConstructor(Foo3.class, Foo2.class);
+        assertNotNull(constructor);
+    }
+
+    @Test
+    public void testIsInstance() throws Exception {
+        assertTrue(ReflectUtils.isInstance(new Foo1(), Foo.class.getName()));
+    }
+
+    @Test
+    public void testIsBeanPropertyReadMethod() throws Exception {
+        Method method = EmptyClass.class.getMethod("getProperty");
+        assertTrue(ReflectUtils.isBeanPropertyReadMethod(method));
+        method = EmptyClass.class.getMethod("getProperties");
+        assertFalse(ReflectUtils.isBeanPropertyReadMethod(method));
+        method = EmptyClass.class.getMethod("isProperty");
+        assertFalse(ReflectUtils.isBeanPropertyReadMethod(method));
+        method = EmptyClass.class.getMethod("getPropertyIndex", int.class);
+        assertFalse(ReflectUtils.isBeanPropertyReadMethod(method));
+    }
+
+    @Test
+    public void testGetPropertyNameFromBeanReadMethod() throws Exception {
+        Method method = EmptyClass.class.getMethod("getProperty");
+        assertEquals(ReflectUtils.getPropertyNameFromBeanReadMethod(method), "property");
+        method = EmptyClass.class.getMethod("isSet");
+        assertEquals(ReflectUtils.getPropertyNameFromBeanReadMethod(method), "set");
+    }
+
+    @Test
+    public void testIsBeanPropertyWriteMethod() throws Exception {
+        Method method = EmptyClass.class.getMethod("setProperty", EmptyProperty.class);
+        assertTrue(ReflectUtils.isBeanPropertyWriteMethod(method));
+        method = EmptyClass.class.getMethod("setSet", boolean.class);
+        assertTrue(ReflectUtils.isBeanPropertyWriteMethod(method));
+    }
+
+    @Test
+    public void testGetPropertyNameFromBeanWriteMethod() throws Exception {
+        Method method = EmptyClass.class.getMethod("setProperty", EmptyProperty.class);
+        assertEquals(ReflectUtils.getPropertyNameFromBeanWriteMethod(method), "property");
+    }
+
+    @Test
+    public void testIsPublicInstanceField() throws Exception {
+        Field field = EmptyClass.class.getDeclaredField("set");
+        assertTrue(ReflectUtils.isPublicInstanceField(field));
+        field = EmptyClass.class.getDeclaredField("property");
+        assertFalse(ReflectUtils.isPublicInstanceField(field));
+    }
+
+    @Test
+    public void testGetBeanPropertyFields() throws Exception {
+        Map<String, Field> map = ReflectUtils.getBeanPropertyFields(EmptyClass.class);
+        assertThat(map.size(), is(2));
+        assertThat(map, hasKey("set"));
+        assertThat(map, hasKey("property"));
+        for (Field f : map.values()) {
+            if (!f.isAccessible()) {
+                fail();
+            }
+        }
+    }
+
+    @Test
+    public void testGetBeanPropertyReadMethods() throws Exception {
+        Map<String, Method> map = ReflectUtils.getBeanPropertyReadMethods(EmptyClass.class);
+        assertThat(map.size(), is(2));
+        assertThat(map, hasKey("set"));
+        assertThat(map, hasKey("property"));
+        for (Method m : map.values()) {
+            if (!m.isAccessible()) {
+                fail();
+            }
+        }
+    }
+
+    @Test
     public void testDesc2Class() throws Exception {
+        assertEquals(void.class, ReflectUtils.desc2class("V"));
         assertEquals(boolean.class, ReflectUtils.desc2class("Z"));
         assertEquals(boolean[].class, ReflectUtils.desc2class("[Z"));
+        assertEquals(byte.class, ReflectUtils.desc2class("B"));
+        assertEquals(char.class, ReflectUtils.desc2class("C"));
+        assertEquals(double.class, ReflectUtils.desc2class("D"));
+        assertEquals(float.class, ReflectUtils.desc2class("F"));
+        assertEquals(int.class, ReflectUtils.desc2class("I"));
+        assertEquals(long.class, ReflectUtils.desc2class("J"));
+        assertEquals(short.class, ReflectUtils.desc2class("S"));
+        assertEquals(String.class, ReflectUtils.desc2class("Ljava.lang.String;"));
         assertEquals(int[][].class, ReflectUtils.desc2class(ReflectUtils.getDesc(int[][].class)));
         assertEquals(ReflectUtilsTest[].class, ReflectUtils.desc2class(ReflectUtils.getDesc(ReflectUtilsTest[].class)));
 
@@ -96,7 +312,7 @@ public class ReflectUtilsTest extends TestCase {
     }
 
     @Test
-    public void test_findMethodByMethodSignature() throws Exception {
+    public void testFindMethodByMethodSignature() throws Exception {
         Method m = ReflectUtils.findMethodByMethodSignature(TestedClass.class, "method1", null);
 
         assertEquals("method1", m.getName());
@@ -106,7 +322,7 @@ public class ReflectUtilsTest extends TestCase {
     }
 
     @Test
-    public void test_findMethodByMethodSignature_override() throws Exception {
+    public void testFindMethodByMethodSignature_override() throws Exception {
         {
             Method m = ReflectUtils.findMethodByMethodSignature(TestedClass.class,
                     "overrideMethod", new String[]{"int"});
@@ -128,18 +344,17 @@ public class ReflectUtilsTest extends TestCase {
     }
 
     @Test
-    public void test_findMethodByMethodSignature_override_Morethan1() throws Exception {
+    public void testFindMethodByMethodSignatureOverrideMoreThan1() throws Exception {
         try {
             ReflectUtils.findMethodByMethodSignature(TestedClass.class, "overrideMethod", null);
             fail();
         } catch (IllegalStateException expected) {
-            assertThat(expected.getMessage(), containsString(
-                    "Not unique method for method name("));
+            assertThat(expected.getMessage(), containsString("Not unique method for method name("));
         }
     }
 
     @Test
-    public void test_findMethodByMethodSignature_notFound() throws Exception {
+    public void testFindMethodByMethodSignatureNotFound() throws Exception {
         try {
             ReflectUtils.findMethodByMethodSignature(TestedClass.class, "notExsited", null);
             fail();
@@ -150,7 +365,7 @@ public class ReflectUtilsTest extends TestCase {
     }
 
     @Test
-    public void test_getEmptyObject() throws Exception {
+    public void testGetEmptyObject() throws Exception {
         assertTrue(ReflectUtils.getEmptyObject(Collection.class) instanceof Collection);
         assertTrue(ReflectUtils.getEmptyObject(List.class) instanceof List);
         assertTrue(ReflectUtils.getEmptyObject(Set.class) instanceof Set);
@@ -170,18 +385,49 @@ public class ReflectUtilsTest extends TestCase {
         assertNotNull(object.getProperty());
     }
 
-    public static class EmptyClass {
+    @Test
+    public void testForName1() throws Exception {
+        assertThat(ReflectUtils.forName(ReflectUtils.class.getName()), sameInstance(ReflectUtils.class));
+    }
 
+    @Test(expected = IllegalStateException.class)
+    public void testForName2() throws Exception {
+        ReflectUtils.forName("a.c.d.e.F");
+    }
+
+    public static class EmptyClass {
         private EmptyProperty property;
+        public boolean set;
+        public static String s;
+        private transient int i;
 
         public EmptyProperty getProperty() {
             return property;
+        }
+
+        public EmptyProperty getPropertyIndex(int i) {
+            return property;
+        }
+
+        public static EmptyProperty getProperties() {
+            return null;
+        }
+
+        public void isProperty() {
+
+        }
+
+        public boolean isSet() {
+            return set;
         }
 
         public void setProperty(EmptyProperty property) {
             this.property = property;
         }
 
+        public void setSet(boolean set) {
+            this.set = set;
+        }
     }
 
     public static class EmptyProperty {
@@ -203,5 +449,38 @@ public class ReflectUtilsTest extends TestCase {
         public void overrideMethod(String s1, String s2) {
         }
     }
+
+
+    interface Foo<A, B> {
+        A hello(B b);
+    }
+
+    static class Foo1 implements Foo<String, Integer> {
+        @Override
+        public String hello(Integer integer) {
+            return null;
+        }
+    }
+
+    static class Foo2 implements Foo<List<String>, int[]> {
+        public Foo2(List<String> list, int[] ints) {
+        }
+
+        @Override
+        public List<String> hello(int[] ints) {
+            return null;
+        }
+    }
+
+    static class Foo3 implements Foo<Foo1, Foo2> {
+        public Foo3(Foo foo) {
+        }
+
+        @Override
+        public Foo1 hello(Foo2 foo2) {
+            return null;
+        }
+    }
+
 
 }
