@@ -19,7 +19,7 @@ package com.alibaba.dubbo.examples.validation;
 import com.alibaba.dubbo.examples.validation.api.ValidationParameter;
 import com.alibaba.dubbo.examples.validation.api.ValidationService;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 

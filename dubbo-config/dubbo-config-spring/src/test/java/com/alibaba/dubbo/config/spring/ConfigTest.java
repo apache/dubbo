@@ -381,7 +381,7 @@ public class ConfigTest {
         }
     }
 
-    // DUBBO-571 methods key in provider's URL doesn't contain the methods from inherited super interface
+    // DUBBO-571 methods key in provider's URLONE doesn't contain the methods from inherited super interface
     @Test
     public void test_noMethodInterface_methodsKeyHasValue() throws Exception {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/demo-provider-no-methods-interface.xml");

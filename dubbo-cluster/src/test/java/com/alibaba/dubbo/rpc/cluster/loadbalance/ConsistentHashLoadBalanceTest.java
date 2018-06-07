@@ -14,23 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.remoting.buffer;
+package com.alibaba.dubbo.rpc.cluster.loadbalance;
+
+import com.alibaba.dubbo.rpc.Invoker;
 
 import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
 
-public class HeapChannelBufferTest extends AbstractChannelBufferTest {
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
-    private ChannelBuffer buffer;
-
-    @Override
-    protected ChannelBuffer newBuffer(int capacity) {
-        buffer = ChannelBuffers.buffer(capacity);
-        Assert.assertEquals(0, buffer.writerIndex());
-        return buffer;
+public class ConsistentHashLoadBalanceTest extends LoadBalanceBaseTest {
+    @Ignore
+    @Test
+    public void testConsistentHashLoadBalance() {
+        int runs = 10000;
+        Map<Invoker, AtomicLong> counter = getInvokeCounter(runs, ConsistentHashLoadBalance.NAME);
+        for (Invoker minvoker : counter.keySet()) {
+            Long count = counter.get(minvoker).get();
+            Assert.assertTrue("abs diff should < avg", Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size()));
+        }
     }
 
-    @Override
-    protected ChannelBuffer[] components() {
-        return new ChannelBuffer[]{buffer};
-    }
 }
