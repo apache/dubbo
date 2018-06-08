@@ -29,11 +29,14 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class MulticastRegistryTest {
 
-    private String service = "com.apache.dubbo.test.injvmServie";
+    private String service = "com.alibaba.dubbo.test.injvmServie";
     private URL registryUrl = URL.valueOf("multicast://239.255.255.255/");
     private URL serviceUrl = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + "/" + service
             + "?methods=test1,test2");
