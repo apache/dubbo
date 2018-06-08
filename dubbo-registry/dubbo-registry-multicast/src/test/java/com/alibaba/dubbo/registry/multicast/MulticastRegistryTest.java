@@ -212,9 +212,4 @@ public class MulticastRegistryTest {
         }
     }
 
-    @Test
-    public void testMulticastSocket() {
-
-    }
-
 }
