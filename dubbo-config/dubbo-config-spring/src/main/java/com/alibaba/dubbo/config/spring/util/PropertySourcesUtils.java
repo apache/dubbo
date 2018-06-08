@@ -19,6 +19,7 @@ package com.alibaba.dubbo.config.spring.util;
 import org.springframework.core.env.EnumerablePropertySource;
 import org.springframework.core.env.PropertySource;
 import org.springframework.core.env.PropertySources;
+import org.springframework.core.env.PropertySourcesPropertyResolver;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -46,13 +47,15 @@ public abstract class PropertySourcesUtils {
 
         String normalizedPrefix = normalizePrefix(prefix);
 
+        PropertySourcesPropertyResolver propertyResolver = new PropertySourcesPropertyResolver((PropertySources) propertySources);
+
         for (PropertySource<?> source : propertySources) {
             if (source instanceof EnumerablePropertySource) {
                 for (String name : ((EnumerablePropertySource<?>) source).getPropertyNames()) {
                     if (name.startsWith(normalizedPrefix)) {
                         String subName = name.substring(normalizedPrefix.length());
-                        Object value = source.getProperty(name);
-                        subProperties.put(subName, String.valueOf(value));
+                        String value = propertyResolver.getProperty(name);
+                        subProperties.put(subName, value);
                     }
                 }
             }

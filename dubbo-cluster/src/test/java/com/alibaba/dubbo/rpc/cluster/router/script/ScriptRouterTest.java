@@ -24,11 +24,12 @@ import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.cluster.Router;
 import com.alibaba.dubbo.rpc.cluster.router.MockInvoker;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import javax.script.ScriptException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,18 +50,18 @@ public class ScriptRouterTest {
     }
 
     @Test
-    public void testRoute_ReturnAll() {
+    public void testRouteReturnAll() {
         Router router = new ScriptRouterFactory().getRouter(getRouteUrl("function route(op1,op2){return op1} route(invokers)"));
         List<Invoker<String>> invokers = new ArrayList<Invoker<String>>();
         invokers.add(new MockInvoker<String>());
         invokers.add(new MockInvoker<String>());
         invokers.add(new MockInvoker<String>());
-        List<Invoker<String>> fileredInvokers = router.route(invokers, invokers.get(0).getUrl(), new RpcInvocation());
-        Assert.assertEquals(invokers, fileredInvokers);
+        List<Invoker<String>> filteredInvokers = router.route(invokers, invokers.get(0).getUrl(), new RpcInvocation());
+        Assert.assertEquals(invokers, filteredInvokers);
     }
 
     @Test
-    public void testRoute_PickInvokers() {
+    public void testRoutePickInvokers() {
         String rule = "var result = new java.util.ArrayList(invokers.size());" +
                 "for (i=0;i<invokers.size(); i++){ " +
                 "if (invokers.get(i).isAvailable()) {" +
@@ -78,10 +79,11 @@ public class ScriptRouterTest {
         invokers.add(invoker1);
         invokers.add(invoker2);
         invokers.add(invoker3);
-        List<Invoker<String>> fileredInvokers = router.route(invokers, invokers.get(0).getUrl(), new RpcInvocation());
-        Assert.assertEquals(2, fileredInvokers.size());
-        Assert.assertEquals(invoker2, fileredInvokers.get(0));
-        Assert.assertEquals(invoker3, fileredInvokers.get(1));
+        List<Invoker<String>> filteredInvokers = router.route(invokers, invokers.get(0).getUrl(), new RpcInvocation());
+        Assert.assertEquals(2, filteredInvokers.size());
+        Assert.assertEquals(invoker2, filteredInvokers.get(0));
+        Assert.assertEquals(invoker3, filteredInvokers.get(1));
     }
+
     //TODO Add tests for abnormal scene
 }
