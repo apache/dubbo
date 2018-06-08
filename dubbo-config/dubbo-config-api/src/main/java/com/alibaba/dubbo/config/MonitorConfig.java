@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,38 +16,39 @@
  */
 package com.alibaba.dubbo.config;
 
-import java.util.Map;
-
 import com.alibaba.dubbo.config.support.Parameter;
+
+import java.util.Map;
 
 /**
  * MonitorConfig
- * 
- * @author william.liangf
+ *
  * @export
  */
 public class MonitorConfig extends AbstractConfig {
-	
-	private static final long serialVersionUID = -1184681514659198203L;
-	
-	private String protocol;
-	
-	private String address;
+
+    private static final long serialVersionUID = -1184681514659198203L;
+
+    private String protocol;
+
+    private String address;
 
     private String username;
 
     private String password;
 
-	private String group;
+    private String group;
 
     private String version;
 
-    // 自定义参数
+    private String interval;
+
+    // customized parameters
     private Map<String, String> parameters;
 
-    // 是否为缺省
+    // if it's default
     private Boolean isDefault;
-    
+
     public MonitorConfig() {
     }
 
@@ -55,15 +57,15 @@ public class MonitorConfig extends AbstractConfig {
     }
 
     @Parameter(excluded = true)
-	public String getAddress() {
-		return address;
-	}
+    public String getAddress() {
+        return address;
+    }
 
-	public void setAddress(String address) {
-		this.address = address;
-	}
+    public void setAddress(String address) {
+        this.address = address;
+    }
 
-	@Parameter(excluded = true)
+    @Parameter(excluded = true)
     public String getProtocol() {
         return protocol;
     }
@@ -121,6 +123,14 @@ public class MonitorConfig extends AbstractConfig {
 
     public void setDefault(Boolean isDefault) {
         this.isDefault = isDefault;
+    }
+
+    public void setInterval(String interval){
+        this.interval = interval;
+    }
+
+    public String getInterval(){
+        return interval;
     }
 
 }

@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,14 +16,14 @@
  */
 package com.alibaba.dubbo.common.utils;
 
+import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.URL;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.URL;
 
 public class UrlUtils {
 
@@ -302,10 +303,10 @@ public class UrlUtils {
 
     //compatible for dubbo-2.0.0
     public static List<String> revertForbid(List<String> forbid, Set<URL> subscribed) {
-        if (forbid != null && forbid.size() > 0) {
+        if (forbid != null && !forbid.isEmpty()) {
             List<String> newForbid = new ArrayList<String>();
             for (String serviceName : forbid) {
-                if (! serviceName.contains(":") && ! serviceName.contains("/")) {
+                if (!serviceName.contains(":") && !serviceName.contains("/")) {
                     for (URL url : subscribed) {
                         if (serviceName.equals(url.getServiceInterface())) {
                             newForbid.add(url.getServiceKey());
@@ -334,10 +335,10 @@ public class UrlUtils {
             version = service.substring(i + 1);
             service = service.substring(0, i);
         }
-        return URL.valueOf(Constants.EMPTY_PROTOCOL + "://0.0.0.0/" + service + "?" 
-                    + Constants.CATEGORY_KEY + "=" + category
-                    + (group == null ? "" : "&" + Constants.GROUP_KEY + "=" + group)
-                    + (version == null ? "" : "&" + Constants.VERSION_KEY + "=" + version));
+        return URL.valueOf(Constants.EMPTY_PROTOCOL + "://0.0.0.0/" + service + "?"
+                + Constants.CATEGORY_KEY + "=" + category
+                + (group == null ? "" : "&" + Constants.GROUP_KEY + "=" + group)
+                + (version == null ? "" : "&" + Constants.VERSION_KEY + "=" + version));
     }
 
     public static boolean isMatchCategory(String category, String categories) {
@@ -346,7 +347,7 @@ public class UrlUtils {
         } else if (categories.contains(Constants.ANY_VALUE)) {
             return true;
         } else if (categories.contains(Constants.REMOVE_VALUE_PREFIX)) {
-            return ! categories.contains(Constants.REMOVE_VALUE_PREFIX + category);
+            return !categories.contains(Constants.REMOVE_VALUE_PREFIX + category);
         } else {
             return categories.contains(category);
         }
@@ -355,60 +356,61 @@ public class UrlUtils {
     public static boolean isMatch(URL consumerUrl, URL providerUrl) {
         String consumerInterface = consumerUrl.getServiceInterface();
         String providerInterface = providerUrl.getServiceInterface();
-        if( ! (Constants.ANY_VALUE.equals(consumerInterface) || StringUtils.isEquals(consumerInterface, providerInterface)) ) return false;
-        
-        if (! isMatchCategory(providerUrl.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY), 
+        if (!(Constants.ANY_VALUE.equals(consumerInterface) || StringUtils.isEquals(consumerInterface, providerInterface)))
+            return false;
+
+        if (!isMatchCategory(providerUrl.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY),
                 consumerUrl.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY))) {
             return false;
         }
-        if (! providerUrl.getParameter(Constants.ENABLED_KEY, true) 
-                && ! Constants.ANY_VALUE.equals(consumerUrl.getParameter(Constants.ENABLED_KEY))) {
+        if (!providerUrl.getParameter(Constants.ENABLED_KEY, true)
+                && !Constants.ANY_VALUE.equals(consumerUrl.getParameter(Constants.ENABLED_KEY))) {
             return false;
         }
-       
+
         String consumerGroup = consumerUrl.getParameter(Constants.GROUP_KEY);
         String consumerVersion = consumerUrl.getParameter(Constants.VERSION_KEY);
         String consumerClassifier = consumerUrl.getParameter(Constants.CLASSIFIER_KEY, Constants.ANY_VALUE);
-        
+
         String providerGroup = providerUrl.getParameter(Constants.GROUP_KEY);
         String providerVersion = providerUrl.getParameter(Constants.VERSION_KEY);
         String providerClassifier = providerUrl.getParameter(Constants.CLASSIFIER_KEY, Constants.ANY_VALUE);
         return (Constants.ANY_VALUE.equals(consumerGroup) || StringUtils.isEquals(consumerGroup, providerGroup) || StringUtils.isContains(consumerGroup, providerGroup))
-               && (Constants.ANY_VALUE.equals(consumerVersion) || StringUtils.isEquals(consumerVersion, providerVersion))
-               && (consumerClassifier == null || Constants.ANY_VALUE.equals(consumerClassifier) || StringUtils.isEquals(consumerClassifier, providerClassifier));
+                && (Constants.ANY_VALUE.equals(consumerVersion) || StringUtils.isEquals(consumerVersion, providerVersion))
+                && (consumerClassifier == null || Constants.ANY_VALUE.equals(consumerClassifier) || StringUtils.isEquals(consumerClassifier, providerClassifier));
     }
-    
+
     public static boolean isMatchGlobPattern(String pattern, String value, URL param) {
         if (param != null && pattern.startsWith("$")) {
             pattern = param.getRawParameter(pattern.substring(1));
         }
         return isMatchGlobPattern(pattern, value);
     }
-    
+
     public static boolean isMatchGlobPattern(String pattern, String value) {
         if ("*".equals(pattern))
             return true;
-        if((pattern == null || pattern.length() == 0) 
-                && (value == null || value.length() == 0)) 
+        if ((pattern == null || pattern.length() == 0)
+                && (value == null || value.length() == 0))
             return true;
-        if((pattern == null || pattern.length() == 0) 
-                || (value == null || value.length() == 0)) 
+        if ((pattern == null || pattern.length() == 0)
+                || (value == null || value.length() == 0))
             return false;
-        
+
         int i = pattern.lastIndexOf('*');
-        // 没有找到星号
-        if(i == -1) {
+        // doesn't find "*"
+        if (i == -1) {
             return value.equals(pattern);
         }
-        // 星号在末尾
+        // "*" is at the end
         else if (i == pattern.length() - 1) {
             return value.startsWith(pattern.substring(0, i));
         }
-        // 星号的开头
+        // "*" is at the beginning
         else if (i == 0) {
             return value.endsWith(pattern.substring(i + 1));
         }
-        // 星号的字符串的中间
+        // "*" is in the middle
         else {
             String prefix = pattern.substring(0, i);
             String suffix = pattern.substring(i + 1);
@@ -417,20 +419,20 @@ public class UrlUtils {
     }
 
     public static boolean isServiceKeyMatch(URL pattern, URL value) {
-        return  pattern.getParameter(Constants.INTERFACE_KEY).equals(
-            value.getParameter(Constants.INTERFACE_KEY))
-            && isItemMatch(pattern.getParameter(Constants.GROUP_KEY),
-                           value.getParameter(Constants.GROUP_KEY))
-            && isItemMatch(pattern.getParameter(Constants.VERSION_KEY),
-                           value.getParameter(Constants.VERSION_KEY));
+        return pattern.getParameter(Constants.INTERFACE_KEY).equals(
+                value.getParameter(Constants.INTERFACE_KEY))
+                && isItemMatch(pattern.getParameter(Constants.GROUP_KEY),
+                value.getParameter(Constants.GROUP_KEY))
+                && isItemMatch(pattern.getParameter(Constants.VERSION_KEY),
+                value.getParameter(Constants.VERSION_KEY));
     }
 
     /**
-     * 判断 value 是否匹配 pattern，pattern 支持 * 通配符.
+     * Check if the given value matches the given pattern. The pattern supports wildcard "*".
      *
      * @param pattern pattern
      * @param value   value
-     * @return  true if match otherwise false
+     * @return true if match otherwise false
      */
     static boolean isItemMatch(String pattern, String value) {
         if (pattern == null) {

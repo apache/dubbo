@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,10 +16,10 @@
  */
 package com.alibaba.dubbo.common.utils;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.URL;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,14 +28,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
-import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.URL;
-
-/**
- * @author tony.chenl
- */
 public class UrlUtilsTest {
 
     String localAddress = "127.0.0.1";
@@ -244,7 +242,7 @@ public class UrlUtilsTest {
         assertEquals(expectedRegister, newRegister);
     }
 
-    // 为了兼容2.0.0版本的rpc
+    // backward compatibility for version 2.0.0
     @Test
     public void testRevertForbid() {
         String service = "dubbo.test.api.HelloService";
@@ -326,8 +324,8 @@ public class UrlUtilsTest {
     public void testIsServiceKeyMatch() throws Exception {
         URL url = URL.valueOf("test://127.0.0.0");
         URL pattern = url.addParameter(Constants.GROUP_KEY, "test")
-            .addParameter(Constants.INTERFACE_KEY, "test")
-            .addParameter(Constants.VERSION_KEY, "test");
+                .addParameter(Constants.INTERFACE_KEY, "test")
+                .addParameter(Constants.VERSION_KEY, "test");
         URL value = pattern;
         assertTrue(UrlUtils.isServiceKeyMatch(pattern, value));
 

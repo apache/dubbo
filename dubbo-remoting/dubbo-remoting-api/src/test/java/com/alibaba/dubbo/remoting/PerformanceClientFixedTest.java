@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,18 +16,17 @@
  */
 package com.alibaba.dubbo.remoting;
 
-import java.util.ArrayList;
-import java.util.Random;
-
-import junit.framework.TestCase;
-
-import org.junit.Test;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
 import com.alibaba.dubbo.remoting.exchange.Exchangers;
+
+import junit.framework.TestCase;
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.Random;
 
 public class PerformanceClientFixedTest extends TestCase {
 
@@ -34,7 +34,7 @@ public class PerformanceClientFixedTest extends TestCase {
 
     @Test
     public void testClient() throws Exception {
-        // 读取参数
+        // read the parameters
         if (PerformanceUtils.getProperty("server", null) == null) {
             logger.warn("Please set -Dserver=127.0.0.1:9911");
             return;
@@ -50,12 +50,12 @@ public class PerformanceClientFixedTest extends TestCase {
         //final int runs = r > 0 ? r : Integer.MAX_VALUE;
         //final String onerror = PerformanceUtils.getProperty("onerror", "continue");
         final String url = "exchange://" + server + "?transporter=" + transporter + "&serialization=" + serialization + "&timeout=" + timeout;
-        
+
         //int idx = server.indexOf(':');
         Random rd = new Random(connectionCount);
-        ArrayList<ExchangeClient> arrays          = new ArrayList<ExchangeClient>();
-        String            oneKBlock       = null;
-        String            messageBlock    = null;
+        ArrayList<ExchangeClient> arrays = new ArrayList<ExchangeClient>();
+        String oneKBlock = null;
+        String messageBlock = null;
         int s = 0;
         int f = 0;
         System.out.println("initialize arrays " + url);
@@ -98,34 +98,34 @@ public class PerformanceClientFixedTest extends TestCase {
         for (int j = 0; j < Integer.MAX_VALUE; j++) {
             try {
                 String size = "10";
-    
+
                 int request_size = 10;
                 try {
                     request_size = Integer.parseInt(size);
                 } catch (Throwable t) {
                     request_size = 10;
                 }
-    
+
                 if (messageBlock == null) {
                     StringBuilder sb = new StringBuilder();
                     for (int i = 0; i < request_size; i++) {
                         sb.append(oneKBlock);
                     }
                     messageBlock = sb.toString();
-    
+
                     System.out.println("set messageBlock to " + messageBlock);
                 }
                 int index = rd.nextInt(connectionCount);
                 ExchangeClient client = arrays.get(index);
                 // ExchangeClient client = arrays.get(0);
                 String output = (String) client.request(messageBlock).get();
-    
+
                 if (output.lastIndexOf(messageBlock) < 0) {
                     System.out.println("send messageBlock;get " + output);
                     throw new Throwable("return results invalid");
                 } else {
                     if (j % 100 == 0)
-                    System.out.println("OK: " + j);
+                        System.out.println("OK: " + j);
                 }
             } catch (Throwable t) {
                 t.printStackTrace();

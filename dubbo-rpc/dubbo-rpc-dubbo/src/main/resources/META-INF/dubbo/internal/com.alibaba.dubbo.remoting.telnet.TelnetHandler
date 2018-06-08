@@ -1,0 +1,7 @@
+ls=com.alibaba.dubbo.rpc.protocol.dubbo.telnet.ListTelnetHandler
+ps=com.alibaba.dubbo.rpc.protocol.dubbo.telnet.PortTelnetHandler
+cd=com.alibaba.dubbo.rpc.protocol.dubbo.telnet.ChangeTelnetHandler
+pwd=com.alibaba.dubbo.rpc.protocol.dubbo.telnet.CurrentTelnetHandler
+invoke=com.alibaba.dubbo.rpc.protocol.dubbo.telnet.InvokeTelnetHandler
+trace=com.alibaba.dubbo.rpc.protocol.dubbo.telnet.TraceTelnetHandler
+count=com.alibaba.dubbo.rpc.protocol.dubbo.telnet.CountTelnetHandler

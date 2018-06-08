@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,11 +15,6 @@
  * limitations under the License.
  */
 package com.alibaba.dubbo.remoting.telnet.support.command;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.Activate;
@@ -31,10 +27,13 @@ import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
 import com.alibaba.dubbo.remoting.telnet.support.Help;
 import com.alibaba.dubbo.remoting.telnet.support.TelnetUtils;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * StatusTelnetHandler
- * 
- * @author william.liangf
  */
 @Activate
 @Help(parameter = "[-l]", summary = "Show status.", detail = "Show status.")
@@ -42,13 +41,14 @@ public class StatusTelnetHandler implements TelnetHandler {
 
     private final ExtensionLoader<StatusChecker> extensionLoader = ExtensionLoader.getExtensionLoader(StatusChecker.class);
 
+    @Override
     public String telnet(Channel channel, String message) {
         if (message.equals("-l")) {
             List<StatusChecker> checkers = extensionLoader.getActivateExtension(channel.getUrl(), "status");
-            String[] header = new String[] {"resource", "status", "message"};
+            String[] header = new String[]{"resource", "status", "message"};
             List<List<String>> table = new ArrayList<List<String>>();
             Map<String, Status> statuses = new HashMap<String, Status>();
-            if (checkers != null && checkers.size() > 0) {
+            if (checkers != null && !checkers.isEmpty()) {
                 for (StatusChecker checker : checkers) {
                     String name = extensionLoader.getExtensionName(checker);
                     Status stat;
@@ -67,7 +67,7 @@ public class StatusTelnetHandler implements TelnetHandler {
                     }
                 }
             }
-            Status stat= StatusUtils.getSummaryStatus(statuses);
+            Status stat = StatusUtils.getSummaryStatus(statuses);
             List<String> row = new ArrayList<String>();
             row.add("summary");
             row.add(String.valueOf(stat.getLevel()));
@@ -92,7 +92,7 @@ public class StatusTelnetHandler implements TelnetHandler {
                 statuses.put(s, stat);
             }
         }
-        Status stat= StatusUtils.getSummaryStatus(statuses);
+        Status stat = StatusUtils.getSummaryStatus(statuses);
         return String.valueOf(stat.getLevel());
     }
 

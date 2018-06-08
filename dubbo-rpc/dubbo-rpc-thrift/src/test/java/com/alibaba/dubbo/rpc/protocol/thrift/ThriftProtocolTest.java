@@ -1,34 +1,32 @@
-/**
- * File Created at 2011-12-08
- * $Id$
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Copyright 2008 Alibaba.com Croporation Limited.
- * All rights reserved.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * This software is the confidential and proprietary information of
- * Alibaba Company. ("Confidential Information").  You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the license agreement you entered into
- * with Alibaba.com.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.alibaba.dubbo.rpc.protocol.thrift;
 
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.Result;
-import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.gen.dubbo.Demo;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
-/**
- * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
- */
+import org.junit.After;
+import org.junit.Before;
+
 public class ThriftProtocolTest extends AbstractTest {
 
-    public static final int DEFAULT_PORT = 30660;
+    public final int DEFAULT_PORT = NetUtils.getAvailablePort();
 
     private ThriftProtocol protocol;
 
@@ -43,7 +41,7 @@ public class ThriftProtocolTest extends AbstractTest {
 
         protocol = new ThriftProtocol();
 
-        url = URL.valueOf( ThriftProtocol.NAME + "://127.0.0.1:" + PORT + "/" + Demo.class.getName() );
+        url = URL.valueOf(ThriftProtocol.NAME + "://127.0.0.1:" + PORT + "/" + Demo.class.getName());
 
     }
 
@@ -52,22 +50,22 @@ public class ThriftProtocolTest extends AbstractTest {
 
         destroy();
 
-        if ( protocol != null ) {
+        if (protocol != null) {
             protocol.destroy();
             protocol = null;
         }
 
-        if ( invoker != null ) {
+        if (invoker != null) {
             invoker.destroy();
             invoker = null;
         }
 
     }
-
+/*
     @Test
     public void testRefer() throws Exception {
         // FIXME
-        /*invoker = protocol.refer( Demo.class, url );
+        *//*invoker = protocol.refer( Demo.class, url );
 
         Assert.assertNotNull( invoker );
 
@@ -83,8 +81,8 @@ public class ThriftProtocolTest extends AbstractTest {
 
         Result result = invoker.invoke( invocation );
 
-        Assert.assertEquals( arg, result.getResult() );*/
+        Assert.assertEquals( arg, result.getResult() );*//*
 
-    }
+    }*/
 
 }

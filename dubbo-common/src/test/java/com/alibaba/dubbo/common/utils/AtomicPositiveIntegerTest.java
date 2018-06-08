@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,33 +16,32 @@
  */
 package com.alibaba.dubbo.common.utils;
 
+import org.junit.Test;
+
 import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
-import static org.junit.matchers.JUnitMatchers.containsString;
 
-import org.junit.Test;
-
-/**
- * @author ding.lid
- */
 public class AtomicPositiveIntegerTest {
-    AtomicPositiveInteger i1 = new AtomicPositiveInteger();
+    private AtomicPositiveInteger i1 = new AtomicPositiveInteger();
 
-    AtomicPositiveInteger i2 = new AtomicPositiveInteger(127);
+    private AtomicPositiveInteger i2 = new AtomicPositiveInteger(127);
 
-    AtomicPositiveInteger i3 = new AtomicPositiveInteger(Integer.MAX_VALUE);
+    private AtomicPositiveInteger i3 = new AtomicPositiveInteger(Integer.MAX_VALUE);
 
     @Test
-    public void test_get() throws Exception {
+    public void testGet() throws Exception {
         assertEquals(0, i1.get());
         assertEquals(127, i2.get());
         assertEquals(Integer.MAX_VALUE, i3.get());
     }
 
     @Test
-    public void test_set() throws Exception {
+    public void testSet() throws Exception {
         i1.set(100);
         assertEquals(100, i1.get());
 
@@ -55,7 +55,7 @@ public class AtomicPositiveIntegerTest {
     }
 
     @Test
-    public void test_getAndIncrement() throws Exception {
+    public void testGetAndIncrement() throws Exception {
         int get = i1.getAndIncrement();
         assertEquals(0, get);
         assertEquals(1, i1.get());
@@ -70,7 +70,7 @@ public class AtomicPositiveIntegerTest {
     }
 
     @Test
-    public void test_getAndDecrement() throws Exception {
+    public void testGetAndDecrement() throws Exception {
         int get = i1.getAndDecrement();
         assertEquals(0, get);
         assertEquals(Integer.MAX_VALUE, i1.get());
@@ -85,7 +85,7 @@ public class AtomicPositiveIntegerTest {
     }
 
     @Test
-    public void test_incrementAndGet() throws Exception {
+    public void testIncrementAndGet() throws Exception {
         int get = i1.incrementAndGet();
         assertEquals(1, get);
         assertEquals(1, i1.get());
@@ -100,7 +100,7 @@ public class AtomicPositiveIntegerTest {
     }
 
     @Test
-    public void test_decrementAndGet() throws Exception {
+    public void testDecrementAndGet() throws Exception {
         int get = i1.decrementAndGet();
         assertEquals(Integer.MAX_VALUE, get);
         assertEquals(Integer.MAX_VALUE, i1.get());
@@ -115,7 +115,7 @@ public class AtomicPositiveIntegerTest {
     }
 
     @Test
-    public void test_getAndSet() throws Exception {
+    public void testGetAndSet() throws Exception {
         int get = i1.getAndSet(100);
         assertEquals(0, get);
         assertEquals(100, i1.get());
@@ -129,7 +129,7 @@ public class AtomicPositiveIntegerTest {
     }
 
     @Test
-    public void test_getAndAnd() throws Exception {
+    public void testGetAndAnd() throws Exception {
         int get = i1.getAndAdd(3);
         assertEquals(0, get);
         assertEquals(3, i1.get());
@@ -145,7 +145,7 @@ public class AtomicPositiveIntegerTest {
 
 
     @Test
-    public void test_addAndGet() throws Exception {
+    public void testAddAndGet() throws Exception {
         int get = i1.addAndGet(3);
         assertEquals(3, get);
         assertEquals(3, i1.get());
@@ -157,5 +157,45 @@ public class AtomicPositiveIntegerTest {
         get = i3.addAndGet(3);
         assertEquals(2, get);
         assertEquals(2, i3.get());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCompareAndSet1() throws Exception {
+        i1.compareAndSet(i1.get(), -1);
+    }
+
+    @Test
+    public void testCompareAndSet2() throws Exception {
+        assertThat(i1.compareAndSet(i1.get(), 2), is(true));
+        assertThat(i1.get(), is(2));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testWeakCompareAndSet1() throws Exception {
+        i1.weakCompareAndSet(i1.get(), -1);
+    }
+
+    @Test
+    public void testWeakCompareAndSet2() throws Exception {
+        assertThat(i1.weakCompareAndSet(i1.get(), 2), is(true));
+        assertThat(i1.get(), is(2));
+    }
+
+    @Test
+    public void testValues() throws Exception {
+        Integer i = i1.get();
+        assertThat(i1.byteValue(), equalTo(i.byteValue()));
+        assertThat(i1.shortValue(), equalTo(i.shortValue()));
+        assertThat(i1.intValue(), equalTo(i.intValue()));
+        assertThat(i1.longValue(), equalTo(i.longValue()));
+        assertThat(i1.floatValue(), equalTo(i.floatValue()));
+        assertThat(i1.doubleValue(), equalTo(i.doubleValue()));
+        assertThat(i1.toString(), equalTo(i.toString()));
+    }
+
+    @Test
+    public void testEquals() {
+        assertEquals(new AtomicPositiveInteger(), new AtomicPositiveInteger());
+        assertEquals(new AtomicPositiveInteger(1), new AtomicPositiveInteger(1));
     }
 }

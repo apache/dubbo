@@ -1,11 +1,12 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,16 +16,13 @@
  */
 package com.alibaba.dubbo.remoting.transport.netty;
 
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
+
 import org.jboss.netty.logging.AbstractInternalLogger;
 import org.jboss.netty.logging.InternalLogger;
 import org.jboss.netty.logging.InternalLoggerFactory;
 
-import com.alibaba.dubbo.common.logger.Logger;
-import com.alibaba.dubbo.common.logger.LoggerFactory;
-
-/**
- * @author <a href="mailto:gang.lvg@taobao.com">kimi</a>
- */
 final class NettyHelper {
 
     public static void setNettyLoggerFactory() {
@@ -50,50 +48,62 @@ final class NettyHelper {
             this.logger = logger;
         }
 
+        @Override
         public boolean isDebugEnabled() {
             return logger.isDebugEnabled();
         }
 
+        @Override
         public boolean isInfoEnabled() {
             return logger.isInfoEnabled();
         }
 
+        @Override
         public boolean isWarnEnabled() {
             return logger.isWarnEnabled();
         }
 
+        @Override
         public boolean isErrorEnabled() {
             return logger.isErrorEnabled();
         }
 
+        @Override
         public void debug(String msg) {
             logger.debug(msg);
         }
 
+        @Override
         public void debug(String msg, Throwable cause) {
             logger.debug(msg, cause);
         }
 
+        @Override
         public void info(String msg) {
             logger.info(msg);
         }
 
+        @Override
         public void info(String msg, Throwable cause) {
             logger.info(msg, cause);
         }
 
+        @Override
         public void warn(String msg) {
             logger.warn(msg);
         }
 
+        @Override
         public void warn(String msg, Throwable cause) {
             logger.warn(msg, cause);
         }
 
+        @Override
         public void error(String msg) {
             logger.error(msg);
         }
 
+        @Override
         public void error(String msg, Throwable cause) {
             logger.error(msg, cause);
         }

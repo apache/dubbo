@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,28 +16,30 @@
  */
 package com.alibaba.dubbo.rpc.cluster.support;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * ClusterUtils
- * 
- * @author william.liangf
+ *
  */
 public class ClusterUtils {
-    
+
+    private ClusterUtils() {
+    }
+
     public static URL mergeUrl(URL remoteUrl, Map<String, String> localMap) {
         Map<String, String> map = new HashMap<String, String>();
         Map<String, String> remoteMap = remoteUrl.getParameters();
-        
-        
+
+
         if (remoteMap != null && remoteMap.size() > 0) {
             map.putAll(remoteMap);
-            
-            //线程池配置不使用提供者的
+
+            // Remove configurations from provider, some items should be affected by provider.
             map.remove(Constants.THREAD_NAME_KEY);
             map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.THREAD_NAME_KEY);
 
@@ -54,13 +57,16 @@ public class ClusterUtils {
 
             map.remove(Constants.ALIVE_KEY);
             map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.ALIVE_KEY);
+
+            map.remove(Constants.TRANSPORTER_KEY);
+            map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.TRANSPORTER_KEY);
         }
-        
+
         if (localMap != null && localMap.size() > 0) {
             map.putAll(localMap);
         }
-        if (remoteMap != null && remoteMap.size() > 0) { 
-            // 版本号使用提供者的
+        if (remoteMap != null && remoteMap.size() > 0) {
+            // Use version passed from provider side
             String dubbo = remoteMap.get(Constants.DUBBO_VERSION_KEY);
             if (dubbo != null && dubbo.length() > 0) {
                 map.put(Constants.DUBBO_VERSION_KEY, dubbo);
@@ -77,7 +83,12 @@ public class ClusterUtils {
             if (methods != null && methods.length() > 0) {
                 map.put(Constants.METHODS_KEY, methods);
             }
-            // 合并filter和listener
+            // Reserve timestamp of provider url.
+            String remoteTimestamp = remoteMap.get(Constants.TIMESTAMP_KEY);
+            if (remoteTimestamp != null && remoteTimestamp.length() > 0) {
+                map.put(Constants.REMOTE_TIMESTAMP_KEY, remoteMap.get(Constants.TIMESTAMP_KEY));
+            }
+            // Combine filters and listeners on Provider and Consumer
             String remoteFilter = remoteMap.get(Constants.REFERENCE_FILTER_KEY);
             String localFilter = localMap.get(Constants.REFERENCE_FILTER_KEY);
             if (remoteFilter != null && remoteFilter.length() > 0
@@ -95,6 +106,4 @@ public class ClusterUtils {
         return remoteUrl.clearParameters().addParameters(map);
     }
 
-    private ClusterUtils() {}
-    
 }

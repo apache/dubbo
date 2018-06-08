@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,65 +16,64 @@
  */
 package com.alibaba.dubbo.config;
 
-import java.util.List;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.config.support.Parameter;
 
+import java.util.List;
+
 /**
  * MethodConfig
- * 
- * @author william.liangf
+ *
  * @export
  */
 public class MethodConfig extends AbstractMethodConfig {
 
     private static final long serialVersionUID = 884908855422675941L;
 
-    // 方法名
-    private String            name;
-    
-    // 统计参数
-    private Integer           stat;
+    // method name
+    private String name;
 
-    // 是否重试
-    private Boolean           retry;
+    // stat
+    private Integer stat;
 
-    // 是否为可靠异步
-    private Boolean           reliable;
+    // whether to retry
+    private Boolean retry;
 
-    // 方法使用线程数限制
-    private Integer           executes;
-    
-    // 是否过时
-    private Boolean           deprecated;
+    // if it's reliable
+    private Boolean reliable;
 
-    // 是否需要开启stiky策略
-    private Boolean           sticky;
+    // thread limits for method invocations
+    private Integer executes;
 
-    // 是否需要返回
-    private Boolean           isReturn;
-    
-    //异步调用回调实例
-    private Object            oninvoke;
+    // if it's deprecated
+    private Boolean deprecated;
 
-    //异步调用回调方法
-    private String            oninvokeMethod;
-    
-    //异步调用回调实例
-    private Object            onreturn;
+    // whether to enable sticky
+    private Boolean sticky;
 
-    //异步调用回调方法
-    private String            onreturnMethod;
-    
-    //异步调用异常回调实例
-    private Object            onthrow;
-    
-    //异步调用异常回调方法
-    private String            onthrowMethod;
-    
+    // whether need to return
+    private Boolean isReturn;
+
+    // callback instance when async-call is invoked
+    private Object oninvoke;
+
+    // callback method when async-call is invoked
+    private String oninvokeMethod;
+
+    // callback instance when async-call is returned
+    private Object onreturn;
+
+    // callback method when async-call is returned
+    private String onreturnMethod;
+
+    // callback instance when async-call has exception thrown
+    private Object onthrow;
+
+    // callback method when async-call has exception thrown
+    private String onthrowMethod;
+
     private List<ArgumentConfig> arguments;
-    
+
     @Parameter(excluded = true)
     public String getName() {
         return name;
@@ -86,11 +86,11 @@ public class MethodConfig extends AbstractMethodConfig {
             id = name;
         }
     }
-    
+
     public Integer getStat() {
         return stat;
     }
-    
+
     @Deprecated
     public void setStat(Integer stat) {
         this.stat = stat;
@@ -132,15 +132,15 @@ public class MethodConfig extends AbstractMethodConfig {
         this.deprecated = deprecated;
     }
 
+    public List<ArgumentConfig> getArguments() {
+        return arguments;
+    }
+
     @SuppressWarnings("unchecked")
     public void setArguments(List<? extends ArgumentConfig> arguments) {
         this.arguments = (List<ArgumentConfig>) arguments;
     }
 
-    public List<ArgumentConfig> getArguments() {
-        return arguments;
-    }
-    
     public Boolean getSticky() {
         return sticky;
     }
@@ -153,11 +153,11 @@ public class MethodConfig extends AbstractMethodConfig {
     public Object getOnreturn() {
         return onreturn;
     }
-    
+
     public void setOnreturn(Object onreturn) {
         this.onreturn = onreturn;
     }
-    
+
     @Parameter(key = Constants.ON_RETURN_METHOD_KEY, excluded = true, attribute = true)
     public String getOnreturnMethod() {
         return onreturnMethod;
@@ -175,7 +175,7 @@ public class MethodConfig extends AbstractMethodConfig {
     public void setOnthrow(Object onthrow) {
         this.onthrow = onthrow;
     }
-    
+
     @Parameter(key = Constants.ON_THROW_METHOD_KEY, excluded = true, attribute = true)
     public String getOnthrowMethod() {
         return onthrowMethod;
@@ -184,21 +184,21 @@ public class MethodConfig extends AbstractMethodConfig {
     public void setOnthrowMethod(String onthrowMethod) {
         this.onthrowMethod = onthrowMethod;
     }
-    
+
     @Parameter(key = Constants.ON_INVOKE_INSTANCE_KEY, excluded = true, attribute = true)
     public Object getOninvoke() {
         return oninvoke;
     }
-    
+
     public void setOninvoke(Object oninvoke) {
         this.oninvoke = oninvoke;
     }
-    
+
     @Parameter(key = Constants.ON_INVOKE_METHOD_KEY, excluded = true, attribute = true)
     public String getOninvokeMethod() {
         return oninvokeMethod;
     }
-    
+
     public void setOninvokeMethod(String oninvokeMethod) {
         this.oninvokeMethod = oninvokeMethod;
     }

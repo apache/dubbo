@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,35 +16,33 @@
  */
 package com.alibaba.dubbo.remoting.transport;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.concurrent.CopyOnWriteArraySet;
-
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.concurrent.CopyOnWriteArraySet;
+
 /**
  * ChannelListenerDispatcher
- * 
- * @author william.liangf
  */
 public class ChannelHandlerDispatcher implements ChannelHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ChannelHandlerDispatcher.class);
 
     private final Collection<ChannelHandler> channelHandlers = new CopyOnWriteArraySet<ChannelHandler>();
-    
+
     public ChannelHandlerDispatcher() {
     }
-    
+
     public ChannelHandlerDispatcher(ChannelHandler... handlers) {
         this(handlers == null ? null : Arrays.asList(handlers));
     }
 
     public ChannelHandlerDispatcher(Collection<ChannelHandler> handlers) {
-        if (handlers != null && handlers.size() > 0) {
+        if (handlers != null && !handlers.isEmpty()) {
             this.channelHandlers.addAll(handlers);
         }
     }
@@ -62,6 +61,7 @@ public class ChannelHandlerDispatcher implements ChannelHandler {
         return this;
     }
 
+    @Override
     public void connected(Channel channel) {
         for (ChannelHandler listener : channelHandlers) {
             try {
@@ -72,6 +72,7 @@ public class ChannelHandlerDispatcher implements ChannelHandler {
         }
     }
 
+    @Override
     public void disconnected(Channel channel) {
         for (ChannelHandler listener : channelHandlers) {
             try {
@@ -82,6 +83,7 @@ public class ChannelHandlerDispatcher implements ChannelHandler {
         }
     }
 
+    @Override
     public void sent(Channel channel, Object message) {
         for (ChannelHandler listener : channelHandlers) {
             try {
@@ -92,6 +94,7 @@ public class ChannelHandlerDispatcher implements ChannelHandler {
         }
     }
 
+    @Override
     public void received(Channel channel, Object message) {
         for (ChannelHandler listener : channelHandlers) {
             try {
@@ -102,6 +105,7 @@ public class ChannelHandlerDispatcher implements ChannelHandler {
         }
     }
 
+    @Override
     public void caught(Channel channel, Throwable exception) {
         for (ChannelHandler listener : channelHandlers) {
             try {
@@ -111,5 +115,5 @@ public class ChannelHandlerDispatcher implements ChannelHandler {
             }
         }
     }
-    
+
 }

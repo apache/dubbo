@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,46 +16,47 @@
  */
 package com.alibaba.dubbo.rpc.cluster.directory;
 
-import java.util.List;
-
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.cluster.Router;
 
+import java.util.List;
+
 /**
  * StaticDirectory
- * 
- * @author william.liangf
+ *
  */
 public class StaticDirectory<T> extends AbstractDirectory<T> {
-    
+
     private final List<Invoker<T>> invokers;
-    
-    public StaticDirectory(List<Invoker<T>> invokers){
+
+    public StaticDirectory(List<Invoker<T>> invokers) {
         this(null, invokers, null);
     }
-    
-    public StaticDirectory(List<Invoker<T>> invokers, List<Router> routers){
+
+    public StaticDirectory(List<Invoker<T>> invokers, List<Router> routers) {
         this(null, invokers, routers);
     }
-    
+
     public StaticDirectory(URL url, List<Invoker<T>> invokers) {
         this(url, invokers, null);
     }
 
     public StaticDirectory(URL url, List<Invoker<T>> invokers, List<Router> routers) {
-        super(url == null && invokers != null && invokers.size() > 0 ? invokers.get(0).getUrl() : url, routers);
-        if (invokers == null || invokers.size() == 0)
+        super(url == null && invokers != null && !invokers.isEmpty() ? invokers.get(0).getUrl() : url, routers);
+        if (invokers == null || invokers.isEmpty())
             throw new IllegalArgumentException("invokers == null");
         this.invokers = invokers;
     }
 
+    @Override
     public Class<T> getInterface() {
         return invokers.get(0).getInterface();
     }
 
+    @Override
     public boolean isAvailable() {
         if (isDestroyed()) {
             return false;
@@ -67,8 +69,9 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
         return false;
     }
 
+    @Override
     public void destroy() {
-        if(isDestroyed()) {
+        if (isDestroyed()) {
             return;
         }
         super.destroy();
@@ -77,7 +80,7 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
         }
         invokers.clear();
     }
-    
+
     @Override
     protected List<Invoker<T>> doList(Invocation invocation) throws RpcException {
 

@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,24 +22,25 @@ import com.alibaba.dubbo.common.utils.NetUtils;
 
 public class FailsafeLogger implements Logger {
 
-	private Logger logger;
+    private Logger logger;
 
-	public FailsafeLogger(Logger logger) {
-		this.logger = logger;
-	}
+    public FailsafeLogger(Logger logger) {
+        this.logger = logger;
+    }
 
-	public Logger getLogger() {
-		return logger;
-	}
+    public Logger getLogger() {
+        return logger;
+    }
 
-	public void setLogger(Logger logger) {
-		this.logger = logger;
-	}
+    public void setLogger(Logger logger) {
+        this.logger = logger;
+    }
 
-	private String appendContextMessage(String msg) {
-	    return " [DUBBO] " + msg + ", dubbo version: " + Version.getVersion() + ", current host: " + NetUtils.getLogHost();
-	}
+    private String appendContextMessage(String msg) {
+        return " [DUBBO] " + msg + ", dubbo version: " + Version.getVersion() + ", current host: " + NetUtils.getLocalHost();
+    }
 
+    @Override
     public void trace(String msg, Throwable e) {
         try {
             logger.trace(appendContextMessage(msg), e);
@@ -46,6 +48,7 @@ public class FailsafeLogger implements Logger {
         }
     }
 
+    @Override
     public void trace(Throwable e) {
         try {
             logger.trace(e);
@@ -53,6 +56,7 @@ public class FailsafeLogger implements Logger {
         }
     }
 
+    @Override
     public void trace(String msg) {
         try {
             logger.trace(appendContextMessage(msg));
@@ -60,13 +64,15 @@ public class FailsafeLogger implements Logger {
         }
     }
 
-	public void debug(String msg, Throwable e) {
-		try {
-			logger.debug(appendContextMessage(msg), e);
-		} catch (Throwable t) {
-		}
-	}
+    @Override
+    public void debug(String msg, Throwable e) {
+        try {
+            logger.debug(appendContextMessage(msg), e);
+        } catch (Throwable t) {
+        }
+    }
 
+    @Override
     public void debug(Throwable e) {
         try {
             logger.debug(e);
@@ -74,55 +80,63 @@ public class FailsafeLogger implements Logger {
         }
     }
 
-	public void debug(String msg) {
-		try {
-			logger.debug(appendContextMessage(msg));
-		} catch (Throwable t) {
-		}
-	}
+    @Override
+    public void debug(String msg) {
+        try {
+            logger.debug(appendContextMessage(msg));
+        } catch (Throwable t) {
+        }
+    }
 
-	public void info(String msg, Throwable e) {
-		try {
-			logger.info(appendContextMessage(msg), e);
-		} catch (Throwable t) {
-		}
-	}
+    @Override
+    public void info(String msg, Throwable e) {
+        try {
+            logger.info(appendContextMessage(msg), e);
+        } catch (Throwable t) {
+        }
+    }
 
-	public void info(String msg) {
-		try {
-			logger.info(appendContextMessage(msg));
-		} catch (Throwable t) {
-		}
-	}
+    @Override
+    public void info(String msg) {
+        try {
+            logger.info(appendContextMessage(msg));
+        } catch (Throwable t) {
+        }
+    }
 
-	public void warn(String msg, Throwable e) {
-		try {
-			logger.warn(appendContextMessage(msg), e);
-		} catch (Throwable t) {
-		}
-	}
+    @Override
+    public void warn(String msg, Throwable e) {
+        try {
+            logger.warn(appendContextMessage(msg), e);
+        } catch (Throwable t) {
+        }
+    }
 
-	public void warn(String msg) {
-		try {
-			logger.warn(appendContextMessage(msg));
-		} catch (Throwable t) {
-		}
-	}
+    @Override
+    public void warn(String msg) {
+        try {
+            logger.warn(appendContextMessage(msg));
+        } catch (Throwable t) {
+        }
+    }
 
-	public void error(String msg, Throwable e) {
-		try {
-			logger.error(appendContextMessage(msg), e);
-		} catch (Throwable t) {
-		}
-	}
+    @Override
+    public void error(String msg, Throwable e) {
+        try {
+            logger.error(appendContextMessage(msg), e);
+        } catch (Throwable t) {
+        }
+    }
 
-	public void error(String msg) {
-		try {
-			logger.error(appendContextMessage(msg));
-		} catch (Throwable t) {
-		}
-	}
+    @Override
+    public void error(String msg) {
+        try {
+            logger.error(appendContextMessage(msg));
+        } catch (Throwable t) {
+        }
+    }
 
+    @Override
     public void error(Throwable e) {
         try {
             logger.error(e);
@@ -130,6 +144,7 @@ public class FailsafeLogger implements Logger {
         }
     }
 
+    @Override
     public void info(Throwable e) {
         try {
             logger.info(e);
@@ -137,6 +152,7 @@ public class FailsafeLogger implements Logger {
         }
     }
 
+    @Override
     public void warn(Throwable e) {
         try {
             logger.warn(e);
@@ -144,6 +160,7 @@ public class FailsafeLogger implements Logger {
         }
     }
 
+    @Override
     public boolean isTraceEnabled() {
         try {
             return logger.isTraceEnabled();
@@ -152,36 +169,40 @@ public class FailsafeLogger implements Logger {
         }
     }
 
-	public boolean isDebugEnabled() {
-		try {
-			return logger.isDebugEnabled();
-		} catch (Throwable t) {
-			return false;
-		}
-	}
+    @Override
+    public boolean isDebugEnabled() {
+        try {
+            return logger.isDebugEnabled();
+        } catch (Throwable t) {
+            return false;
+        }
+    }
 
-	public boolean isInfoEnabled() {
-		try {
-			return logger.isInfoEnabled();
-		} catch (Throwable t) {
-			return false;
-		}
-	}
+    @Override
+    public boolean isInfoEnabled() {
+        try {
+            return logger.isInfoEnabled();
+        } catch (Throwable t) {
+            return false;
+        }
+    }
 
-	public boolean isWarnEnabled() {
-		try {
-			return logger.isWarnEnabled();
-		} catch (Throwable t) {
-			return false;
-		}
-	}
-	
-	public boolean isErrorEnabled() {
-	    try {
-	        return logger.isErrorEnabled();
-	    } catch (Throwable t) {
-	        return false;
-	    }
-	}
+    @Override
+    public boolean isWarnEnabled() {
+        try {
+            return logger.isWarnEnabled();
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean isErrorEnabled() {
+        try {
+            return logger.isErrorEnabled();
+        } catch (Throwable t) {
+            return false;
+        }
+    }
 
 }

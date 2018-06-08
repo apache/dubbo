@@ -1,11 +1,12 @@
 /*
- * Copyright 1999-2012 Alibaba Group.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,19 +20,16 @@ package com.alibaba.dubbo.remoting.buffer;
 import java.io.IOException;
 import java.io.InputStream;
 
-/**
- * @author <a href="mailto:gang.lvg@alibaba-inc.com">kimi</a>
- */
 public class ChannelBufferInputStream extends InputStream {
 
     private final ChannelBuffer buffer;
     private final int startIndex;
     private final int endIndex;
-    
+
     public ChannelBufferInputStream(ChannelBuffer buffer) {
         this(buffer, buffer.readableBytes());
     }
-    
+
     public ChannelBufferInputStream(ChannelBuffer buffer, int length) {
         if (buffer == null) {
             throw new NullPointerException("buffer");
@@ -42,7 +40,7 @@ public class ChannelBufferInputStream extends InputStream {
         if (length > buffer.readableBytes()) {
             throw new IndexOutOfBoundsException();
         }
-        
+
         this.buffer = buffer;
         startIndex = buffer.readerIndex();
         endIndex = startIndex + length;

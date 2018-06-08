@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2012 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,8 +15,6 @@
  * limitations under the License.
  */
 package com.alibaba.dubbo.rpc.cluster.support;
-
-import java.util.List;
 
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
@@ -27,26 +26,28 @@ import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.cluster.Directory;
 import com.alibaba.dubbo.rpc.cluster.LoadBalance;
 
+import java.util.List;
+
 /**
  * BroadcastClusterInvoker
- * 
- * @author william.liangf
+ *
  */
 public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(BroadcastClusterInvoker.class);
 
     public BroadcastClusterInvoker(Directory<T> directory) {
         super(directory);
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Override
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public Result doInvoke(final Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
         checkInvokers(invokers, invocation);
-        RpcContext.getContext().setInvokers((List)invokers);
+        RpcContext.getContext().setInvokers((List) invokers);
         RpcException exception = null;
         Result result = null;
-        for (Invoker<T> invoker: invokers) {
+        for (Invoker<T> invoker : invokers) {
             try {
                 result = invoker.invoke(invocation);
             } catch (RpcException e) {

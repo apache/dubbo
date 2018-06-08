@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,10 +16,9 @@
  */
 package com.alibaba.dubbo.remoting.exchange.support.header;
 
-import java.net.InetSocketAddress;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.remoting.Channel;
@@ -31,22 +31,22 @@ import com.alibaba.dubbo.remoting.exchange.Response;
 import com.alibaba.dubbo.remoting.exchange.ResponseFuture;
 import com.alibaba.dubbo.remoting.exchange.support.DefaultFuture;
 
+import java.net.InetSocketAddress;
+
 /**
  * ExchangeReceiver
- * 
- * @author william.liangf
  */
 final class HeaderExchangeChannel implements ExchangeChannel {
 
-    private static final Logger logger      = LoggerFactory.getLogger(HeaderExchangeChannel.class);
+    private static final Logger logger = LoggerFactory.getLogger(HeaderExchangeChannel.class);
 
     private static final String CHANNEL_KEY = HeaderExchangeChannel.class.getName() + ".CHANNEL";
 
-    private final Channel       channel;
+    private final Channel channel;
 
-    private volatile boolean    closed      = false;
+    private volatile boolean closed = false;
 
-    HeaderExchangeChannel(Channel channel){
+    HeaderExchangeChannel(Channel channel) {
         if (channel == null) {
             throw new IllegalArgumentException("channel == null");
         }
@@ -66,17 +66,19 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         }
         return ret;
     }
-    
+
     static void removeChannelIfDisconnected(Channel ch) {
-        if (ch != null && ! ch.isConnected()) {
+        if (ch != null && !ch.isConnected()) {
             ch.removeAttribute(CHANNEL_KEY);
         }
     }
-    
+
+    @Override
     public void send(Object message) throws RemotingException {
         send(message, getUrl().getParameter(Constants.SENT_KEY, false));
     }
-    
+
+    @Override
     public void send(Object message, boolean sent) throws RemotingException {
         if (closed) {
             throw new RemotingException(this.getLocalAddress(), null, "Failed to send message " + message + ", cause: The channel " + this + " is closed!");
@@ -87,40 +89,44 @@ final class HeaderExchangeChannel implements ExchangeChannel {
             channel.send(message, sent);
         } else {
             Request request = new Request();
-            request.setVersion("2.0.0");
+            request.setVersion(Version.getProtocolVersion());
             request.setTwoWay(false);
             request.setData(message);
             channel.send(request, sent);
         }
     }
 
+    @Override
     public ResponseFuture request(Object request) throws RemotingException {
         return request(request, channel.getUrl().getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
     }
 
+    @Override
     public ResponseFuture request(Object request, int timeout) throws RemotingException {
         if (closed) {
             throw new RemotingException(this.getLocalAddress(), null, "Failed to send request " + request + ", cause: The channel " + this + " is closed!");
         }
         // create request.
         Request req = new Request();
-        req.setVersion("2.0.0");
+        req.setVersion(Version.getProtocolVersion());
         req.setTwoWay(true);
         req.setData(request);
         DefaultFuture future = new DefaultFuture(channel, req, timeout);
-        try{
+        try {
             channel.send(req);
-        }catch (RemotingException e) {
+        } catch (RemotingException e) {
             future.cancel();
             throw e;
         }
         return future;
     }
 
+    @Override
     public boolean isClosed() {
         return closed;
     }
 
+    @Override
     public void close() {
         try {
             channel.close();
@@ -130,6 +136,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
     }
 
     // graceful close
+    @Override
     public void close(int timeout) {
         if (closed) {
             return;
@@ -137,7 +144,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         closed = true;
         if (timeout > 0) {
             long start = System.currentTimeMillis();
-            while (DefaultFuture.hasFuture(HeaderExchangeChannel.this) 
+            while (DefaultFuture.hasFuture(channel)
                     && System.currentTimeMillis() - start < timeout) {
                 try {
                     Thread.sleep(10);
@@ -149,42 +156,57 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         close();
     }
 
+    @Override
+    public void startClose() {
+        channel.startClose();
+    }
+
+    @Override
     public InetSocketAddress getLocalAddress() {
         return channel.getLocalAddress();
     }
 
+    @Override
     public InetSocketAddress getRemoteAddress() {
         return channel.getRemoteAddress();
     }
 
+    @Override
     public URL getUrl() {
         return channel.getUrl();
     }
 
+    @Override
     public boolean isConnected() {
         return channel.isConnected();
     }
 
+    @Override
     public ChannelHandler getChannelHandler() {
         return channel.getChannelHandler();
     }
 
+    @Override
     public ExchangeHandler getExchangeHandler() {
         return (ExchangeHandler) channel.getChannelHandler();
     }
-    
+
+    @Override
     public Object getAttribute(String key) {
         return channel.getAttribute(key);
     }
 
+    @Override
     public void setAttribute(String key, Object value) {
         channel.setAttribute(key, value);
     }
 
+    @Override
     public void removeAttribute(String key) {
         channel.removeAttribute(key);
     }
 
+    @Override
     public boolean hasAttribute(String key) {
         return channel.hasAttribute(key);
     }

@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,6 +15,14 @@
  * limitations under the License.
  */
 package com.alibaba.dubbo.remoting.p2p.exchange.support;
+
+import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.utils.IOUtils;
+import com.alibaba.dubbo.common.utils.NamedThreadFactory;
+import com.alibaba.dubbo.common.utils.NetUtils;
+import com.alibaba.dubbo.remoting.RemotingException;
+import com.alibaba.dubbo.remoting.exchange.ExchangeHandler;
+import com.alibaba.dubbo.remoting.p2p.exchange.ExchangePeer;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,54 +34,43 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.utils.IOUtils;
-import com.alibaba.dubbo.common.utils.NamedThreadFactory;
-import com.alibaba.dubbo.common.utils.NetUtils;
-import com.alibaba.dubbo.remoting.RemotingException;
-import com.alibaba.dubbo.remoting.exchange.ExchangeHandler;
-import com.alibaba.dubbo.remoting.p2p.exchange.ExchangePeer;
-
 /**
  * FileGroup
- * 
- * @author william.liangf
  */
 public class FileExchangeGroup extends AbstractExchangeGroup {
-    
+
     private final File file;
-    
+    // scheduled executor service
+    private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(3, new NamedThreadFactory("FileGroupModifiedChecker", true));
+    // Reconnect the timer to check whether the connection is available at a time, and when unavailable, an infinite reconnection
+    private final ScheduledFuture<?> checkModifiedFuture;
     private volatile long last;
 
-    // 定时任务执行器
-    private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(3, new NamedThreadFactory("FileGroupModifiedChecker", true));
-
-    // 重连定时器，定时检查连接是否可用，不可用时，无限次重连
-    private final ScheduledFuture<?> checkModifiedFuture;
-
-    public FileExchangeGroup(URL url){
+    public FileExchangeGroup(URL url) {
         super(url);
         String path = url.getHost() + "/" + url.getPath();
         file = new File(path);
-        if (! file.exists()) {
+        if (!file.exists()) {
             throw new IllegalStateException("The group file not exists. file: " + path);
         }
         checkModifiedFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
+            @Override
             public void run() {
-                // 检测文件变更
+                // check the file change
                 try {
                     check();
-                } catch (Throwable t) { // 防御性容错
+                } catch (Throwable t) { // Defensive fault tolerance
                     logger.error("Unexpected error occur at reconnect, cause: " + t.getMessage(), t);
                 }
             }
         }, 2000, 2000, TimeUnit.MILLISECONDS);
     }
 
+    @Override
     public void close() {
         super.close();
         try {
-            if (! checkModifiedFuture.isCancelled()) {
+            if (!checkModifiedFuture.isCancelled()) {
                 checkModifiedFuture.cancel(true);
             }
         } catch (Throwable t) {
@@ -87,7 +85,7 @@ public class FileExchangeGroup extends AbstractExchangeGroup {
             changed();
         }
     }
-    
+
     private void changed() throws RemotingException {
         try {
             String[] lines = IOUtils.readLines(file);
@@ -109,13 +107,13 @@ public class FileExchangeGroup extends AbstractExchangeGroup {
                     return peer;
                 }
             }
-            IOUtils.appendLines(file, new String[] {full});
+            IOUtils.appendLines(file, new String[]{full});
         } catch (IOException e) {
             throw new RemotingException(new InetSocketAddress(NetUtils.getLocalHost(), 0), getUrl().toInetSocketAddress(), e.getMessage(), e);
         }
         return peer;
     }
-    
+
     @Override
     public void leave(URL url) throws RemotingException {
         super.leave(url);

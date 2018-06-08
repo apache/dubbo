@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,7 +16,14 @@
  */
 package com.alibaba.dubbo.remoting.transport.grizzly;
 
-import java.io.IOException;
+import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.remoting.Channel;
+import com.alibaba.dubbo.remoting.ChannelHandler;
+import com.alibaba.dubbo.remoting.Codec2;
+import com.alibaba.dubbo.remoting.buffer.ChannelBuffer;
+import com.alibaba.dubbo.remoting.buffer.ChannelBuffers;
+import com.alibaba.dubbo.remoting.buffer.DynamicChannelBuffer;
 
 import org.glassfish.grizzly.Buffer;
 import org.glassfish.grizzly.Connection;
@@ -23,32 +31,23 @@ import org.glassfish.grizzly.filterchain.BaseFilter;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.filterchain.NextAction;
 
-import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.remoting.Channel;
-import com.alibaba.dubbo.remoting.Codec2;
-import com.alibaba.dubbo.remoting.ChannelHandler;
-import com.alibaba.dubbo.remoting.buffer.ChannelBuffer;
-import com.alibaba.dubbo.remoting.buffer.ChannelBuffers;
-import com.alibaba.dubbo.remoting.buffer.DynamicChannelBuffer;
+import java.io.IOException;
 
 /**
  * GrizzlyCodecAdapter
- * 
- * @author william.liangf
  */
 public class GrizzlyCodecAdapter extends BaseFilter {
 
-    private final Codec2          codec;
+    private final Codec2 codec;
 
-    private final URL             url;
-    
-    private final ChannelHandler  handler;
+    private final URL url;
 
-    private final int             bufferSize;
+    private final ChannelHandler handler;
+
+    private final int bufferSize;
 
     private ChannelBuffer previousData = ChannelBuffers.EMPTY_BUFFER;
-    
+
     public GrizzlyCodecAdapter(Codec2 codec, URL url, ChannelHandler handler) {
         this.codec = codec;
         this.url = url;
@@ -62,19 +61,19 @@ public class GrizzlyCodecAdapter extends BaseFilter {
         Connection<?> connection = context.getConnection();
         GrizzlyChannel channel = GrizzlyChannel.getOrAddChannel(connection, url, handler);
         try {
-            ChannelBuffer channelBuffer = ChannelBuffers.dynamicBuffer(1024); // 不需要关闭
-            
+            ChannelBuffer channelBuffer = ChannelBuffers.dynamicBuffer(1024); // Do not need to close
+
             Object msg = context.getMessage();
             codec.encode(channel, channelBuffer, msg);
-            
-            GrizzlyChannel.removeChannelIfDisconnectd(connection);
+
+            GrizzlyChannel.removeChannelIfDisconnected(connection);
             Buffer buffer = connection.getTransport().getMemoryManager().allocate(channelBuffer.readableBytes());
             buffer.put(channelBuffer.toByteBuffer());
             buffer.flip();
             buffer.allowBufferDispose(true);
             context.setMessage(buffer);
         } finally {
-            GrizzlyChannel.removeChannelIfDisconnectd(connection);
+            GrizzlyChannel.removeChannelIfDisconnected(connection);
         }
         return context.getInvokeAction();
     }
@@ -85,8 +84,8 @@ public class GrizzlyCodecAdapter extends BaseFilter {
         Connection<?> connection = context.getConnection();
         Channel channel = GrizzlyChannel.getOrAddChannel(connection, url, handler);
         try {
-            if (message instanceof Buffer) { // 收到新的数据包
-                Buffer grizzlyBuffer = (Buffer) message; // 缓存
+            if (message instanceof Buffer) { // receive a new packet
+                Buffer grizzlyBuffer = (Buffer) message; // buffer
 
                 ChannelBuffer frame;
 
@@ -131,11 +130,11 @@ public class GrizzlyCodecAdapter extends BaseFilter {
                         }
                     }
                 } while (frame.readable());
-            } else { // 其它事件直接往下传
+            } else { // Other events are passed down directly
                 return context.getInvokeAction();
             }
         } finally {
-            GrizzlyChannel.removeChannelIfDisconnectd(connection);
+            GrizzlyChannel.removeChannelIfDisconnected(connection);
         }
     }
 

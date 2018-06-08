@@ -1,0 +1,1 @@
+kryo=com.alibaba.dubbo.common.serialize.kryo.KryoSerialization

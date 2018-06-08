@@ -1,0 +1,5 @@
+online=com.alibaba.dubbo.qos.command.impl.Online
+help=com.alibaba.dubbo.qos.command.impl.Help
+quit=com.alibaba.dubbo.qos.command.impl.Quit
+ls=com.alibaba.dubbo.qos.command.impl.Ls
+offline=com.alibaba.dubbo.qos.command.impl.Offline

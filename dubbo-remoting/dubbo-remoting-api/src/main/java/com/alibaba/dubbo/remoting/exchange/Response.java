@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,40 +18,37 @@ package com.alibaba.dubbo.remoting.exchange;
 
 /**
  * Response
- * 
- * @author qian.lei
- * @author william.liangf
  */
 public class Response {
-    
+
     public static final String HEARTBEAT_EVENT = null;
-    
+
     public static final String READONLY_EVENT = "R";
 
     /**
      * ok.
      */
-    public static final byte OK                = 20;
+    public static final byte OK = 20;
 
     /**
      * clien side timeout.
      */
-    public static final byte CLIENT_TIMEOUT    = 30;
+    public static final byte CLIENT_TIMEOUT = 30;
 
     /**
      * server side timeout.
      */
-    public static final byte SERVER_TIMEOUT    = 31;
+    public static final byte SERVER_TIMEOUT = 31;
 
     /**
      * request format error.
      */
-    public static final byte BAD_REQUEST       = 40;
+    public static final byte BAD_REQUEST = 40;
 
     /**
      * response format error.
      */
-    public static final byte BAD_RESPONSE      = 50;
+    public static final byte BAD_RESPONSE = 50;
 
     /**
      * service not found.
@@ -60,38 +58,43 @@ public class Response {
     /**
      * service error.
      */
-    public static final byte SERVICE_ERROR     = 70;
+    public static final byte SERVICE_ERROR = 70;
 
     /**
      * internal server error.
      */
-    public static final byte SERVER_ERROR      = 80;
+    public static final byte SERVER_ERROR = 80;
 
     /**
      * internal server error.
      */
-    public static final byte CLIENT_ERROR      = 90;
+    public static final byte CLIENT_ERROR = 90;
 
-    private long             mId               = 0;
+    /**
+     * server side threadpool exhausted and quick return.
+     */
+    public static final byte SERVER_THREADPOOL_EXHAUSTED_ERROR = 100;
 
-    private String           mVersion;
+    private long mId = 0;
 
-    private byte             mStatus           = OK;
+    private String mVersion;
 
-    private boolean          mEvent         = false;
+    private byte mStatus = OK;
 
-    private String           mErrorMsg;
+    private boolean mEvent = false;
 
-    private Object           mResult;
+    private String mErrorMsg;
 
-    public Response(){
+    private Object mResult;
+
+    public Response() {
     }
 
-    public Response(long id){
+    public Response(long id) {
         mId = id;
     }
 
-    public Response(long id, String version){
+    public Response(long id, String version) {
         mId = id;
         mVersion = version;
     }
@@ -119,7 +122,7 @@ public class Response {
     public void setStatus(byte status) {
         mStatus = status;
     }
-    
+
     public boolean isEvent() {
         return mEvent;
     }
@@ -159,6 +162,6 @@ public class Response {
     @Override
     public String toString() {
         return "Response [id=" + mId + ", version=" + mVersion + ", status=" + mStatus + ", event=" + mEvent
-               + ", error=" + mErrorMsg + ", result=" + (mResult == this ? "this" : mResult) + "]";
+                + ", error=" + mErrorMsg + ", result=" + (mResult == this ? "this" : mResult) + "]";
     }
 }

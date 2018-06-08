@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,53 +16,52 @@
  */
 package com.alibaba.dubbo.config;
 
-import java.util.Map;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.config.support.Parameter;
 import com.alibaba.dubbo.rpc.cluster.LoadBalance;
 
+import java.util.Map;
+
 /**
  * AbstractMethodConfig
- * 
- * @author william.liangf
+ *
  * @export
  */
 public abstract class AbstractMethodConfig extends AbstractConfig {
 
     private static final long serialVersionUID = 1L;
 
-    // 远程调用超时时间(毫秒)
-    protected Integer             timeout;
+    // timeout for remote invocation in milliseconds
+    protected Integer timeout;
 
-    // 重试次数
-    protected Integer             retries;
+    // retry times
+    protected Integer retries;
 
-    // 最大并发调用
-    protected Integer             actives;
-    
-    // 负载均衡
-    protected String              loadbalance;
+    // max concurrent invocations
+    protected Integer actives;
 
-    // 是否异步
-    protected Boolean             async;
-    
-    // 异步发送是否等待发送成功
-    protected Boolean             sent;
+    // load balance
+    protected String loadbalance;
 
-    // 服务接口的失败mock实现类名
-    protected String              mock;
+    // whether to async
+    protected Boolean async;
 
-    // 合并器
-    protected String              merger;
-    
-    // 服务接口的失败mock实现类名
-    protected String              cache;
+    // whether to ack async-sent
+    protected Boolean sent;
 
-    // 服务接口的失败mock实现类名
-    protected String              validation;
+    // the name of mock class which gets called when a service fails to execute
+    protected String mock;
 
-    // 自定义参数
+    // merger
+    protected String merger;
+
+    // cache
+    protected String cache;
+
+    // validation
+    protected String validation;
+
+    // customized parameters
     protected Map<String, String> parameters;
 
     public Integer getTimeout() {
@@ -100,7 +100,7 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
     public Integer getActives() {
         return actives;
     }
-    
+
     public void setActives(Integer actives) {
         this.actives = actives;
     }
@@ -118,6 +118,14 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
         return mock;
     }
 
+    public void setMock(Boolean mock) {
+        if (mock == null) {
+            setMock((String) null);
+        } else {
+            setMock(String.valueOf(mock));
+        }
+    }
+
     public void setMock(String mock) {
         if (mock != null && mock.startsWith(Constants.RETURN_PREFIX)) {
             checkLength("mock", mock);
@@ -125,14 +133,6 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
             checkName("mock", mock);
         }
         this.mock = mock;
-    }
-    
-    public void setMock(Boolean mock) {
-        if (mock == null) {
-            setMock((String) null);
-        } else {
-            setMock(String.valueOf(mock));
-        }
     }
 
     public String getMerger() {

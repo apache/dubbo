@@ -1,1 +1,1 @@
-memcached=memcom.alibaba.dubbo.rpc.protocol.memcached.MemcachedProtocol
+memcached=com.alibaba.dubbo.rpc.protocol.memcached.MemcachedProtocol

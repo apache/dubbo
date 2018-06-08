@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2011 Alibaba Group.
- *  
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *  
- *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,65 +16,77 @@
  */
 package com.alibaba.dubbo.config;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.compiler.support.AdaptiveCompiler;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.config.support.Parameter;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 
 /**
  * ApplicationConfig
- * 
- * @author william.liangf
+ *
  * @export
  */
 public class ApplicationConfig extends AbstractConfig {
 
-    private static final long    serialVersionUID = 5508512956753757169L;
+    private static final long serialVersionUID = 5508512956753757169L;
 
-    // 应用名称
-    private String               name;
+    // application name
+    private String name;
 
-    // 模块版本
-    private String               version;
+    // module version
+    private String version;
 
-    // 应用负责人
-    private String               owner;
+    // application owner
+    private String owner;
 
-    // 组织名(BU或部门)
-    private String               organization;
+    // application's organization (BU)
+    private String organization;
 
-    // 分层
-    private String               architecture;
+    // architecture layer
+    private String architecture;
 
-    // 环境，如：dev/test/run
-    private String               environment;
+    // environment, e.g. dev, test or production
+    private String environment;
 
-    // Java代码编译器
-    private String               compiler;
+    // Java compiler
+    private String compiler;
 
-    // 日志输出方式
-    private String               logger;
+    // logger
+    private String logger;
 
-    // 注册中心
+    // registry centers
     private List<RegistryConfig> registries;
 
-    // 服务监控
-    private MonitorConfig        monitor;
+    // monitor center
+    private MonitorConfig monitor;
 
-    // 是否为缺省
-    private Boolean              isDefault;
+    // is default or not
+    private Boolean isDefault;
+
+    // directory for saving thread dump
+    private String dumpDirectory;
+
+    private Boolean qosEnable;
+
+    private Integer qosPort;
+
+    private Boolean qosAcceptForeignIp;
+
+    // customized parameters
+    private Map<String, String> parameters;
 
     public ApplicationConfig() {
     }
-    
+
     public ApplicationConfig(String name) {
         setName(name);
     }
-    
+
     @Parameter(key = Constants.APPLICATION_KEY, required = true)
     public String getName() {
         return name;
@@ -105,16 +118,16 @@ public class ApplicationConfig extends AbstractConfig {
         this.owner = owner;
     }
 
-	public String getOrganization() {
-		return organization;
-	}
+    public String getOrganization() {
+        return organization;
+    }
 
-	public void setOrganization(String organization) {
-	    checkName("organization", organization);
-		this.organization = organization;
-	}
+    public void setOrganization(String organization) {
+        checkName("organization", organization);
+        this.organization = organization;
+    }
 
-	public String getArchitecture() {
+    public String getArchitecture() {
         return architecture;
     }
 
@@ -124,21 +137,21 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public String getEnvironment() {
-		return environment;
-	}
+        return environment;
+    }
 
-	public void setEnvironment(String environment) {
-	    checkName("environment", environment);
-	    if(environment != null) {
-            if (! ("develop".equals(environment) || "test".equals(environment) || "product".equals(environment))) {
+    public void setEnvironment(String environment) {
+        checkName("environment", environment);
+        if (environment != null) {
+            if (!("develop".equals(environment) || "test".equals(environment) || "product".equals(environment))) {
                 throw new IllegalStateException("Unsupported environment: " + environment + ", only support develop/test/product, default is product.");
             }
         }
-		this.environment = environment;
-	}
+        this.environment = environment;
+    }
 
     public RegistryConfig getRegistry() {
-        return registries == null || registries.size() == 0 ? null : registries.get(0);
+        return registries == null || registries.isEmpty() ? null : registries.get(0);
     }
 
     public void setRegistry(RegistryConfig registry) {
@@ -151,9 +164,9 @@ public class ApplicationConfig extends AbstractConfig {
         return registries;
     }
 
-    @SuppressWarnings({ "unchecked" })
+    @SuppressWarnings({"unchecked"})
     public void setRegistries(List<? extends RegistryConfig> registries) {
-        this.registries = (List<RegistryConfig>)registries;
+        this.registries = (List<RegistryConfig>) registries;
     }
 
     public MonitorConfig getMonitor() {
@@ -194,4 +207,48 @@ public class ApplicationConfig extends AbstractConfig {
         this.isDefault = isDefault;
     }
 
+    @Parameter(key = Constants.DUMP_DIRECTORY)
+    public String getDumpDirectory() {
+        return dumpDirectory;
+    }
+
+    public void setDumpDirectory(String dumpDirectory) {
+        this.dumpDirectory = dumpDirectory;
+    }
+
+    @Parameter(key = Constants.QOS_ENABLE)
+    public Boolean getQosEnable() {
+        return qosEnable;
+    }
+
+    public void setQosEnable(Boolean qosEnable) {
+        this.qosEnable = qosEnable;
+    }
+
+    @Parameter(key = Constants.QOS_PORT)
+    public Integer getQosPort() {
+        return qosPort;
+    }
+
+    public void setQosPort(Integer qosPort) {
+        this.qosPort = qosPort;
+    }
+
+    @Parameter(key = Constants.ACCEPT_FOREIGN_IP)
+    public Boolean getQosAcceptForeignIp() {
+        return qosAcceptForeignIp;
+    }
+
+    public void setQosAcceptForeignIp(Boolean qosAcceptForeignIp) {
+        this.qosAcceptForeignIp = qosAcceptForeignIp;
+    }
+
+    public Map<String, String> getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(Map<String, String> parameters) {
+        checkParameterName(parameters);
+        this.parameters = parameters;
+    }
 }
