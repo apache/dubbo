@@ -26,6 +26,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * EagerThreadPoolExecutor
+ * 恶汉模式
+ * 区别：使用TaskQueue 先对数量进行校验
+ * 在产生异常的时候进行重试机制
  */
 public class EagerThreadPoolExecutor extends ThreadPoolExecutor {
 
