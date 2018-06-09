@@ -353,6 +353,17 @@ public class UrlUtils {
         }
     }
 
+    /**
+     * 判断是否 提供者和消费者是否匹配
+     * 1.方法进行校验
+     * 2。对category
+     * 3。对是否启用进行校验
+     * 4.对组号,版本号，  CLASSIFIER_KEY进行校验
+     *
+     * @param consumerUrl
+     * @param providerUrl
+     * @return
+     */
     public static boolean isMatch(URL consumerUrl, URL providerUrl) {
         String consumerInterface = consumerUrl.getServiceInterface();
         String providerInterface = providerUrl.getServiceInterface();

@@ -28,6 +28,7 @@ public class ConditionRouterFactory implements RouterFactory {
 
     public static final String NAME = "condition";
 
+    //配置
     public Router getRouter(URL url) {
         return new ConditionRouter(url);
     }

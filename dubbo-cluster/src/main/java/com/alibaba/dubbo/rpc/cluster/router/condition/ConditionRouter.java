@@ -40,17 +40,17 @@ import java.util.regex.Pattern;
 
 /**
  * ConditionRouter
- *
+ * 配置中心 路由
  */
 public class ConditionRouter implements Router, Comparable<Router> {
 
     private static final Logger logger = LoggerFactory.getLogger(ConditionRouter.class);
-    private static Pattern ROUTE_PATTERN = Pattern.compile("([&!=,]*)\\s*([^&!=,\\s]+)");
+    private static Pattern ROUTE_PATTERN = Pattern.compile("([&!=,]*)\\s*([^&!=,\\s]+)"); //正则
     private final URL url;
     private final int priority;
     private final boolean force;
-    private final Map<String, MatchPair> whenCondition;
-    private final Map<String, MatchPair> thenCondition;
+    private final Map<String, MatchPair> whenCondition; //调用者的信息
+    private final Map<String, MatchPair> thenCondition; //提供者的信息
 
     public ConditionRouter(URL url) {
         this.url = url;
@@ -177,6 +177,7 @@ public class ConditionRouter implements Router, Comparable<Router> {
         return url;
     }
 
+    //route 排序规则
     public int compareTo(Router o) {
         if (o == null || o.getClass() != ConditionRouter.class) {
             return 1;

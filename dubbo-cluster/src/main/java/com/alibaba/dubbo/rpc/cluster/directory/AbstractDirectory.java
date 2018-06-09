@@ -95,6 +95,11 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         return routers;
     }
 
+
+    /**
+     * 产生路由
+     * @param routers
+     */
     protected void setRouters(List<Router> routers) {
         // copy list
         routers = routers == null ? new ArrayList<Router>() : new ArrayList<Router>(routers);

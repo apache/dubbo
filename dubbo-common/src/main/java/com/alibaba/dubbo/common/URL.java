@@ -64,10 +64,12 @@ import java.util.concurrent.ConcurrentHashMap;
  * <li>home/user1/router.js?type=script <br>
  * for this case, url protocol = null, url host = home, url path = user1/router.js
  * </ul>
- *
+ * <p>
  * 标准的URL 的
- *  protocol://username:password@host:port/path?key=value&key=value
+ * protocol://username:password@host:port/path?key=value&key=value
  *
+ * @See URLTest
+ * 设置成final类
  * @see java.net.URL
  * @see java.net.URI
  */
@@ -311,7 +313,7 @@ public final class URL implements Serializable {
 
     /**
      * Fetch IP address for this URL.
-     *
+     * <p>
      * Pls. note that IP should be used instead of Host when to compare with socket's address or to search in a map
      * which use address as its key.
      *
@@ -943,6 +945,7 @@ public final class URL implements Serializable {
     /**
      * Url 里如果有这个属性 reutrn
      * 如果没有
+     *
      * @param key
      * @param value
      * @return

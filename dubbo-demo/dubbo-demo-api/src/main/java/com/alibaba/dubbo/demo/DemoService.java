@@ -20,4 +20,7 @@ public interface DemoService {
 
     String sayHello(String name);
 
+    SimpleObject changeSimple(SimpleObject simpleObject);
+
+    void throwsEx();
 }

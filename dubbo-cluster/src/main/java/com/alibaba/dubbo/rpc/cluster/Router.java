@@ -41,7 +41,7 @@ public interface Router extends Comparable<Router> {
     URL getUrl();
 
     /**
-     * route.
+     * route. 路由 对invoke进行筛选
      *
      * @param invokers
      * @param url        refer url

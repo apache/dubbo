@@ -21,9 +21,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import java.io.IOException;
 import java.util.concurrent.Executors;
 
-public class Provider {
+public class Provider2 {
 
     ClassPathXmlApplicationContext context;
 
@@ -33,8 +34,12 @@ public class Provider {
         //Prevent to get IPV6 address,this way only work in debug mode
         //But you can pass use -Djava.net.preferIPv4Stack=true,then it work well whether in debug mode or not
         System.setProperty("java.net.preferIPv4Stack", "true");
-        context = new ClassPathXmlApplicationContext(new String[]{"META-INF/spring/dubbo-demo-provider.xml"});
+        context = new ClassPathXmlApplicationContext(new String[]{"META-INF/spring/dubbo-demo-provider2.xml"});
         context.start();
+    }
+    @Test
+    public void main() throws IOException {
+        System.in.read(); // press any key to exit
     }
 
     /**
@@ -50,6 +55,19 @@ public class Provider {
                 demoService.sayHello("a");
             }
         });
+    }
+
+    public static void main(String[] args) {
+        //Prevent to get IPV6 address,this way only work in debug mode
+        //But you can pass use -Djava.net.preferIPv4Stack=true,then it work well whether in debug mode or not
+        System.setProperty("java.net.preferIPv4Stack", "true");
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"META-INF/spring/dubbo-demo-provider1.xml"});
+        context.start();
+        try {
+            System.in.read(); // press any key to exit
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }
