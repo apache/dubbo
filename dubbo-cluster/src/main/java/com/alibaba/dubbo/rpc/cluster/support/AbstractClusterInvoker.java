@@ -228,7 +228,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         List<Invoker<T>> invokers = list(invocation);
         if (invokers != null && !invokers.isEmpty()) {
             loadbalance = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(invokers.get(0).getUrl()
-                    .getMethodParameter(invocation.getMethodName(), Constants.LOADBALANCE_KEY, Constants.DEFAULT_LOADBALANCE));
+                    .getMethodParameter(RpcUtils.getMethodName(invocation), Constants.LOADBALANCE_KEY, Constants.DEFAULT_LOADBALANCE));
         }
         RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
         return doInvoke(invocation, invokers, loadbalance);

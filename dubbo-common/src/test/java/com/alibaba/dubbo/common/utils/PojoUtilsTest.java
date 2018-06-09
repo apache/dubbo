@@ -23,7 +23,6 @@ import com.alibaba.dubbo.common.model.person.FullAddress;
 import com.alibaba.dubbo.common.model.person.PersonInfo;
 import com.alibaba.dubbo.common.model.person.PersonStatus;
 import com.alibaba.dubbo.common.model.person.Phone;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -38,10 +37,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class PojoUtilsTest {
@@ -199,6 +201,90 @@ public class PojoUtilsTest {
         assertArrayObject(array);
     }
 
+    @Test
+    public void testArrayToCollection() throws Exception {
+        Person[] array = new Person[2];
+        Person person1 = new Person();
+        person1.setName("person1");
+        Person person2 = new Person();
+        person2.setName("person2");
+        array[0] = person1;
+        array[1] = person2;
+        Object o = PojoUtils.realize(PojoUtils.generalize(array), LinkedList.class);
+        assertTrue(o instanceof LinkedList);
+        assertEquals(((List) o).get(0), person1);
+        assertEquals(((List) o).get(1), person2);
+    }
+
+    @Test
+    public void testCollectionToArray() throws Exception {
+        Person person1 = new Person();
+        person1.setName("person1");
+        Person person2 = new Person();
+        person2.setName("person2");
+        List<Person> list = new LinkedList<Person>();
+        list.add(person1);
+        list.add(person2);
+        Object o = PojoUtils.realize(PojoUtils.generalize(list), Person[].class);
+        assertTrue(o instanceof Person[]);
+        assertEquals(((Person[]) o)[0], person1);
+        assertEquals(((Person[]) o)[1], person2);
+    }
+
+    @Test
+    public void testMapToEnum() throws Exception {
+        Map map = new HashMap();
+        map.put("name", "MONDAY");
+        Object o = PojoUtils.realize(map, Day.class);
+        assertEquals(o, Day.MONDAY);
+    }
+
+    @Test
+    public void testGeneralizeEnumArray() throws Exception {
+        Object days = new Enum[]{Day.FRIDAY, Day.SATURDAY};
+        Object o = PojoUtils.generalize(days);
+        assertTrue(o instanceof String[]);
+        assertEquals(((String[]) o)[0], "FRIDAY");
+        assertEquals(((String[]) o)[1], "SATURDAY");
+    }
+
+    @Test
+    public void testGeneralizePersons() throws Exception {
+        Object persons = new Person[]{new Person(), new Person()};
+        Object o = PojoUtils.generalize(persons);
+        assertTrue(o instanceof Object[]);
+        assertEquals(((Object[]) o).length, 2);
+    }
+
+    @Test
+    public void testMapToInterface() throws Exception {
+        Map map = new HashMap();
+        map.put("content", "greeting");
+        map.put("from", "dubbo");
+        map.put("urgent", true);
+        Object o = PojoUtils.realize(map, Message.class);
+        Message message = (Message) o;
+        assertThat(message.getContent(), equalTo("greeting"));
+        assertThat(message.getFrom(), equalTo("dubbo"));
+        assertTrue(message.isUrgent());
+    }
+
+    @Test
+    public void testException() throws Exception {
+        Map map = new HashMap();
+        map.put("message", "dubbo exception");
+        Object o = PojoUtils.realize(map, RuntimeException.class);
+        assertEquals(((Throwable) o).getMessage(), "dubbo exception");
+    }
+
+    @Test
+    public void testIsPojo() throws Exception {
+        assertFalse(PojoUtils.isPojo(boolean.class));
+        assertFalse(PojoUtils.isPojo(Map.class));
+        assertFalse(PojoUtils.isPojo(List.class));
+        assertTrue(PojoUtils.isPojo(Person.class));
+    }
+
     public List<Person> returnListPersonMethod() {
         return null;
     }
@@ -342,6 +428,9 @@ public class PojoUtilsTest {
 
         assertEquals("haha", parent.getChild().getToy());
         assertSame(parent, parent.getChild().getParent());
+
+        Object[] objects = PojoUtils.realize(new Object[]{generalize}, new Class[]{List.class}, new Type[]{getType("getListGenericType")});
+        assertTrue(((List) objects[0]).get(0) instanceof Parent);
     }
 
     @Test
@@ -377,8 +466,6 @@ public class PojoUtilsTest {
         return null;
     }
 
-    ;
-
     // java.lang.IllegalArgumentException: argument type mismatch
     @Test
     public void test_realize_LongPararmter_IllegalArgumentException() throws Exception {
@@ -389,8 +476,6 @@ public class PojoUtilsTest {
 
         method.invoke(new PojoUtilsTest(), value);
     }
-
-    ;
 
     // java.lang.IllegalArgumentException: argument type mismatch
     @Test
@@ -467,9 +552,9 @@ public class PojoUtilsTest {
 
         Object obj = PojoUtils.generalize(data);
         Assert.assertEquals(3, data.getChildren().size());
-        Assert.assertTrue(data.getChildren().get("first").getClass() == Child.class);
+        assertTrue(data.getChildren().get("first").getClass() == Child.class);
         Assert.assertEquals(1, data.getList().size());
-        Assert.assertTrue(data.getList().get(0).getClass() == Child.class);
+        assertTrue(data.getList().get(0).getClass() == Child.class);
 
         TestData realizadData = (TestData) PojoUtils.realize(obj, TestData.class);
         Assert.assertEquals(data.getChildren().size(), realizadData.getChildren().size());
@@ -488,13 +573,15 @@ public class PojoUtilsTest {
 
     @Test
     public void testRealize() throws Exception {
-        Map<String, String> inputMap = new LinkedHashMap<String, String>();
-        inputMap.put("key", "value");
-        Object obj = PojoUtils.generalize(inputMap);
-        Assert.assertTrue(obj instanceof LinkedHashMap);
-        Object outputObject = PojoUtils.realize(inputMap, LinkedHashMap.class);
-        System.out.println(outputObject.getClass().getName());
-        Assert.assertTrue(outputObject instanceof LinkedHashMap);
+        Map<String, String> map = new LinkedHashMap<String, String>();
+        map.put("key", "value");
+        Object obj = PojoUtils.generalize(map);
+        assertTrue(obj instanceof LinkedHashMap);
+        Object outputObject = PojoUtils.realize(map, LinkedHashMap.class);
+        assertTrue(outputObject instanceof LinkedHashMap);
+        Object[] objects = PojoUtils.realize(new Object[]{map}, new Class[]{LinkedHashMap.class});
+        assertTrue(objects[0] instanceof LinkedHashMap);
+        assertEquals(objects[0], outputObject);
     }
 
     @Test
@@ -504,10 +591,10 @@ public class PojoUtilsTest {
         person.setAge(37);
         input.add(person);
         Object obj = PojoUtils.generalize(input);
-        Assert.assertTrue(obj instanceof List);
-        Assert.assertTrue(input.get(0) instanceof Person);
+        assertTrue(obj instanceof List);
+        assertTrue(input.get(0) instanceof Person);
         Object output = PojoUtils.realize(obj, LinkedList.class);
-        Assert.assertTrue(output instanceof LinkedList);
+        assertTrue(output instanceof LinkedList);
     }
 
     @Test
@@ -522,11 +609,11 @@ public class PojoUtilsTest {
 
         Object generializeObject = PojoUtils.generalize(result);
         Object realizeObject = PojoUtils.realize(generializeObject, ListResult.class);
-        Assert.assertTrue(realizeObject instanceof ListResult);
+        assertTrue(realizeObject instanceof ListResult);
         ListResult listResult = (ListResult) realizeObject;
         List l = listResult.getResult();
-        Assert.assertTrue(l.size() == 1);
-        Assert.assertTrue(l.get(0) instanceof Parent);
+        assertTrue(l.size() == 1);
+        assertTrue(l.get(0) instanceof Parent);
         Parent realizeParent = (Parent) l.get(0);
         Assert.assertEquals(parent.getName(), realizeParent.getName());
         Assert.assertEquals(parent.getAge(), realizeParent.getAge());
@@ -546,17 +633,21 @@ public class PojoUtilsTest {
         Object generializeObject = PojoUtils.generalize(list);
         Object realizeObject = PojoUtils.realize(generializeObject, ListResult.class);
 
-        Assert.assertTrue(realizeObject instanceof ListResult);
+        assertTrue(realizeObject instanceof ListResult);
         ListResult realizeList = (ListResult) realizeObject;
         List realizeInnerList = realizeList.getResult();
         Assert.assertEquals(1, realizeInnerList.size());
-        Assert.assertTrue(realizeInnerList.get(0) instanceof InnerPojo);
+        assertTrue(realizeInnerList.get(0) instanceof InnerPojo);
         InnerPojo realizeParentList = (InnerPojo) realizeInnerList.get(0);
         Assert.assertEquals(1, realizeParentList.getList().size());
-        Assert.assertTrue(realizeParentList.getList().get(0) instanceof Parent);
+        assertTrue(realizeParentList.getList().get(0) instanceof Parent);
         Parent realizeParent = (Parent) realizeParentList.getList().get(0);
         Assert.assertEquals(parent.getName(), realizeParent.getName());
         Assert.assertEquals(parent.getAge(), realizeParent.getAge());
+    }
+
+    public enum Day {
+        SUNDAY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY
     }
 
     public static class Parent {
@@ -695,5 +786,13 @@ public class PojoUtilsTest {
         public void setResult(List<T> result) {
             this.result = result;
         }
+    }
+
+    interface Message {
+        String getContent();
+
+        String getFrom();
+
+        boolean isUrgent();
     }
 }

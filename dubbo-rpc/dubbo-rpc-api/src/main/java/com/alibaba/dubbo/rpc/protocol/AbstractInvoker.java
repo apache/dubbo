@@ -134,9 +134,15 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         if (attachment != null && attachment.size() > 0) {
             invocation.addAttachmentsIfAbsent(attachment);
         }
-        Map<String, String> context = RpcContext.getContext().getAttachments();
-        if (context != null) {
-            invocation.addAttachmentsIfAbsent(context);
+        Map<String, String> contextAttachments = RpcContext.getContext().getAttachments();
+        if (contextAttachments != null) {
+            /**
+             * invocation.addAttachmentsIfAbsent(context){@link RpcInvocation#addAttachmentsIfAbsent(Map)}should not be used here,
+             * because the {@link RpcContext#setAttachment(String, String)} is passed in the Filter when the call is triggered
+             * by the built-in retry mechanism of the Dubbo. The attachment to update RpcContext will no longer work, which is
+             * a mistake in most cases (for example, through Filter to RpcContext output traceId and spanId and other information).
+             */
+            invocation.addAttachments(contextAttachments);
         }
         if (getUrl().getMethodParameter(invocation.getMethodName(), Constants.ASYNC_KEY, false)) {
             invocation.setAttachment(Constants.ASYNC_KEY, Boolean.TRUE.toString());

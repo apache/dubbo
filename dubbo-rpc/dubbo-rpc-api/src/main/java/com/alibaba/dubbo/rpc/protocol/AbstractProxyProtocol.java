@@ -68,7 +68,7 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
         if (exporter != null) {
             return exporter;
         }
-        final Runnable runnable = doExport(proxyFactory.getProxy(invoker), invoker.getInterface(), invoker.getUrl());
+        final Runnable runnable = doExport(proxyFactory.getProxy(invoker, true), invoker.getInterface(), invoker.getUrl());
         exporter = new AbstractExporter<T>(invoker) {
             @Override
             public void unexport() {
@@ -89,12 +89,12 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
 
     @Override
     public <T> Invoker<T> refer(final Class<T> type, final URL url) throws RpcException {
-        final Invoker<T> tagert = proxyFactory.getInvoker(doRefer(type, url), type, url);
+        final Invoker<T> target = proxyFactory.getInvoker(doRefer(type, url), type, url);
         Invoker<T> invoker = new AbstractInvoker<T>(type, url) {
             @Override
             protected Result doInvoke(Invocation invocation) throws Throwable {
                 try {
-                    Result result = tagert.invoke(invocation);
+                    Result result = target.invoke(invocation);
                     Throwable e = result.getException();
                     if (e != null) {
                         for (Class<?> rpcException : rpcExceptions) {
