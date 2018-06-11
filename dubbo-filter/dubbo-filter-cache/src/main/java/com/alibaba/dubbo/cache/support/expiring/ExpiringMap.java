@@ -16,10 +16,13 @@
  */
 package com.alibaba.dubbo.cache.support.expiring;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * can be expired map
@@ -193,8 +196,7 @@ public class ExpiringMap<K, V> implements Map<K, V> {
     private class ExpiryObject {
         private K key;
         private V value;
-        private long lastAccessTime;
-        private final ReadWriteLock lastAccessTimeLock = new ReentrantReadWriteLock();
+        private AtomicLong lastAccessTime;
 
         ExpiryObject(K key, V value, long lastAccessTime) {
             if (value == null) {
@@ -202,25 +204,15 @@ public class ExpiringMap<K, V> implements Map<K, V> {
             }
             this.key = key;
             this.value = value;
-            this.lastAccessTime = lastAccessTime;
+            this.lastAccessTime = new AtomicLong(lastAccessTime);
         }
 
         public long getLastAccessTime() {
-            lastAccessTimeLock.readLock().lock();
-            try {
-                return lastAccessTime;
-            } finally {
-                lastAccessTimeLock.readLock().unlock();
-            }
+            return lastAccessTime.get();
         }
 
         public void setLastAccessTime(long lastAccessTime) {
-            lastAccessTimeLock.writeLock().lock();
-            try {
-                this.lastAccessTime = lastAccessTime;
-            } finally {
-                lastAccessTimeLock.writeLock().unlock();
-            }
+            this.lastAccessTime.set(lastAccessTime);
         }
 
         public K getKey() {
