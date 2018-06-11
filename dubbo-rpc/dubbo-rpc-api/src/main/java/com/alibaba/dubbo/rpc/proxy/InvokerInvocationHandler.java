@@ -35,20 +35,23 @@ public class InvokerInvocationHandler implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        String methodName = method.getName();
-        Class<?>[] parameterTypes = method.getParameterTypes();
         if (method.getDeclaringClass() == Object.class) {
             return method.invoke(invoker, args);
         }
-        if ("toString".equals(methodName) && parameterTypes.length == 0) {
-            return invoker.toString();
-        }
-        if ("hashCode".equals(methodName) && parameterTypes.length == 0) {
-            return invoker.hashCode();
-        }
-        if ("equals".equals(methodName) && parameterTypes.length == 1) {
+        String methodName = method.getName();
+        int parameterCount = method.getParameterCount();
+        if (parameterCount > 1) {
+            return invoker.invoke(new RpcInvocation(method, args)).recreate();
+        } else if (parameterCount == 1 && "equals".equals(methodName)) {
             return invoker.equals(args[0]);
+        } else if (parameterCount == 0) {
+            if ("toString".equals(methodName)) {
+                return invoker.toString();
+            } else if ("hashCode".equals(methodName)) {
+                return invoker.hashCode();
+            }
         }
+
         return invoker.invoke(new RpcInvocation(method, args)).recreate();
     }
 
