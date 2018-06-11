@@ -75,8 +75,4 @@ public class JCache implements com.alibaba.dubbo.cache.Cache {
         return store.get(key);
     }
 
-    @Override
-    public void clear() {
-        store.clear();
-    }
 }

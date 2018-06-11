@@ -25,5 +25,4 @@ public interface Cache {
 
     Object get(Object key);
 
-    void clear();
 }

@@ -16,11 +16,7 @@
  */
 package com.alibaba.dubbo.cache.support.expiry;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -29,7 +25,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * can be expired map
  * Contains a background thread that periodically checks if the data is out of date
  */
-public class ExpiryMap<K, V> implements Map<K, V> {
+public class ExpiringMap<K, V> implements Map<K, V> {
 
     /**
      * default time to live (second)
@@ -47,7 +43,7 @@ public class ExpiryMap<K, V> implements Map<K, V> {
 
     private final ExpireThread expireThread;
 
-    public ExpiryMap() {
+    public ExpiringMap() {
         this(DEFAULT_TIME_TO_LIVE, DEFAULT_EXPIRATION_INTERVAL);
     }
 
@@ -56,15 +52,15 @@ public class ExpiryMap<K, V> implements Map<K, V> {
      *
      * @param timeToLive time to live (second)
      */
-    public ExpiryMap(int timeToLive) {
+    public ExpiringMap(int timeToLive) {
         this(timeToLive, DEFAULT_EXPIRATION_INTERVAL);
     }
 
-    public ExpiryMap(int timeToLive, int expirationInterval) {
+    public ExpiringMap(int timeToLive, int expirationInterval) {
         this(new ConcurrentHashMap<K, ExpiryObject>(), timeToLive, expirationInterval);
     }
 
-    private ExpiryMap(ConcurrentHashMap<K, ExpiryObject> delegateMap, int timeToLive, int expirationInterval) {
+    private ExpiringMap(ConcurrentHashMap<K, ExpiryObject> delegateMap, int timeToLive, int expirationInterval) {
         this.delegateMap = delegateMap;
         this.expireThread = new ExpireThread();
         expireThread.setTimeToLive(timeToLive);
@@ -185,7 +181,7 @@ public class ExpiryMap<K, V> implements Map<K, V> {
 
     @Override
     public String toString() {
-        return "ExpiryMap{" +
+        return "ExpiringMap{" +
                 "delegateMap=" + delegateMap.toString() +
                 ", expireThread=" + expireThread.toString() +
                 '}';
@@ -259,7 +255,6 @@ public class ExpiryMap<K, V> implements Map<K, V> {
      * Background thread, periodically checking if the data is out of date
      */
     public class ExpireThread implements Runnable {
-        private final ReadWriteLock stateLock = new ReentrantReadWriteLock();
         private long timeToLiveMillis;
         private long expirationIntervalMillis;
         private volatile boolean running = false;
@@ -268,7 +263,6 @@ public class ExpiryMap<K, V> implements Map<K, V> {
         @Override
         public String toString() {
             return "ExpireThread{" +
-                    "stateLock=" + stateLock +
                     ", timeToLiveMillis=" + timeToLiveMillis +
                     ", expirationIntervalMillis=" + expirationIntervalMillis +
                     ", running=" + running +
@@ -310,14 +304,9 @@ public class ExpiryMap<K, V> implements Map<K, V> {
          * start expiry Thread
          */
         public void startExpiring() {
-            stateLock.writeLock().lock();
-            try {
-                if (!running) {
-                    running = true;
-                    expirerThread.start();
-                }
-            } finally {
-                stateLock.writeLock().unlock();
+            if (!running) {
+                running = true;
+                expirerThread.start();
             }
         }
 
@@ -325,13 +314,8 @@ public class ExpiryMap<K, V> implements Map<K, V> {
          * start thread
          */
         public void startExpiryIfNotStarted() {
-            stateLock.readLock().lock();
-            try {
-                if (running) {
-                    return;
-                }
-            } finally {
-                stateLock.readLock().unlock();
+            if (running) {
+                return;
             }
             startExpiring();
         }
@@ -340,14 +324,9 @@ public class ExpiryMap<K, V> implements Map<K, V> {
          * stop thread
          */
         public void stopExpiring() {
-            stateLock.writeLock().lock();
-            try {
-                if (running) {
-                    running = false;
-                    expirerThread.interrupt();
-                }
-            } finally {
-                stateLock.writeLock().unlock();
+            if (running) {
+                running = false;
+                expirerThread.interrupt();
             }
         }
 
@@ -357,12 +336,7 @@ public class ExpiryMap<K, V> implements Map<K, V> {
          * @return thread state
          */
         public boolean isRunning() {
-            stateLock.readLock().lock();
-            try {
-                return running;
-            } finally {
-                stateLock.readLock().unlock();
-            }
+            return running;
         }
 
         /**
@@ -371,12 +345,7 @@ public class ExpiryMap<K, V> implements Map<K, V> {
          * @return time to live
          */
         public int getTimeToLive() {
-            stateLock.readLock().lock();
-            try {
-                return (int) timeToLiveMillis / 1000;
-            } finally {
-                stateLock.readLock().unlock();
-            }
+            return (int) timeToLiveMillis / 1000;
         }
 
         /**
@@ -385,12 +354,7 @@ public class ExpiryMap<K, V> implements Map<K, V> {
          * @param timeToLive time to live
          */
         public void setTimeToLive(long timeToLive) {
-            stateLock.writeLock().lock();
-            try {
-                this.timeToLiveMillis = timeToLive * 1000;
-            } finally {
-                stateLock.writeLock().unlock();
-            }
+            this.timeToLiveMillis = timeToLive * 1000;
         }
 
         /**
@@ -399,12 +363,7 @@ public class ExpiryMap<K, V> implements Map<K, V> {
          * @return expiration interval (second)
          */
         public int getExpirationInterval() {
-            stateLock.readLock().lock();
-            try {
-                return (int) expirationIntervalMillis / 1000;
-            } finally {
-                stateLock.readLock().unlock();
-            }
+            return (int) expirationIntervalMillis / 1000;
         }
 
         /**
@@ -413,12 +372,7 @@ public class ExpiryMap<K, V> implements Map<K, V> {
          * @param expirationInterval expiration interval (second)
          */
         public void setExpirationInterval(long expirationInterval) {
-            stateLock.writeLock().lock();
-            try {
-                this.expirationIntervalMillis = expirationInterval * 1000;
-            } finally {
-                stateLock.writeLock().unlock();
-            }
+            this.expirationIntervalMillis = expirationInterval * 1000;
         }
     }
 }

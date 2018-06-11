@@ -48,9 +48,4 @@ public class ThreadLocalCache implements Cache {
         return store.get().get(key);
     }
 
-    @Override
-    public void clear() {
-        store.remove();
-    }
-
 }

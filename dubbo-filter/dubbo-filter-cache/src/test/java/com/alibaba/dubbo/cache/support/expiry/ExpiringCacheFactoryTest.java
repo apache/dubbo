@@ -18,15 +18,21 @@ package com.alibaba.dubbo.cache.support.expiry;
 
 import com.alibaba.dubbo.cache.Cache;
 import com.alibaba.dubbo.cache.support.AbstractCacheFactory;
-import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.cache.support.AbstractCacheFactoryTest;
+import org.junit.Test;
 
-/**
- * ExpiryCacheFactory
- */
-public class ExpiryCacheFactory extends AbstractCacheFactory {
-    
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
+
+public class ExpiringCacheFactoryTest extends AbstractCacheFactoryTest {
+    @Test
+    public void testLruCacheFactory() throws Exception {
+        Cache cache = super.constructCache();
+        assertThat(cache instanceof ExpiringCache, is(true));
+    }
+
     @Override
-    protected Cache createCache(URL url) {
-        return new ExpiryCache(url);
+    protected AbstractCacheFactory getCacheFactory() {
+        return new ExpiringCacheFactory();
     }
 }

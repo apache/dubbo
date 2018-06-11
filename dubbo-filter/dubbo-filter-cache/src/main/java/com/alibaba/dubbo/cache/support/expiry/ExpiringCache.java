@@ -17,22 +17,34 @@
 package com.alibaba.dubbo.cache.support.expiry;
 
 import com.alibaba.dubbo.cache.Cache;
-import com.alibaba.dubbo.cache.support.AbstractCacheFactory;
-import com.alibaba.dubbo.cache.support.AbstractCacheFactoryTest;
-import org.junit.Test;
+import com.alibaba.dubbo.common.URL;
 
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
+import java.util.Map;
 
-public class ExpiryCacheFactoryTest extends AbstractCacheFactoryTest {
-    @Test
-    public void testLruCacheFactory() throws Exception {
-        Cache cache = super.constructCache();
-        assertThat(cache instanceof ExpiryCache, is(true));
+/**
+ * ExpiringCache - With the characteristic of expiration time.
+ */
+public class ExpiringCache implements Cache {
+    private final Map<Object, Object> store;
+
+    public ExpiringCache(URL url) {
+        // cache time (second)
+        final int secondsToLive = url.getParameter("cache.seconds", 180);
+        // Cache check interval (second)
+        final int intervalSeconds = url.getParameter("cache.interval", 4);
+        ExpiringMap<Object, Object> expiringMap = new ExpiringMap<Object, Object>(secondsToLive, intervalSeconds);
+        expiringMap.getExpireThread().startExpiryIfNotStarted();
+        this.store = expiringMap;
     }
 
     @Override
-    protected AbstractCacheFactory getCacheFactory() {
-        return new ExpiryCacheFactory();
+    public void put(Object key, Object value) {
+        store.put(key, value);
     }
+
+    @Override
+    public Object get(Object key) {
+        return store.get(key);
+    }
+
 }

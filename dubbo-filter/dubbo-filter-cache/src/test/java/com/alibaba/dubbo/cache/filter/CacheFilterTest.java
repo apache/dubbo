@@ -16,7 +16,7 @@
  */
 package com.alibaba.dubbo.cache.filter;
 
-import com.alibaba.dubbo.cache.support.expiry.ExpiryCache;
+import com.alibaba.dubbo.cache.support.expiry.ExpiringCache;
 import com.alibaba.dubbo.cache.support.lru.LruCacheFactory;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invoker;
@@ -82,14 +82,14 @@ public class CacheFilterTest {
     @Test
     public void test_Expire_Map() {
         URL url = URL.valueOf("test://test:11/test?cache=expiry&cache.seconds=3&cache.interval=1");
-        ExpiryCache expiryCache = new ExpiryCache(url);
-        expiryCache.put("first", "first value");
-        System.out.println(expiryCache.get("first"));
+        ExpiringCache expiringCache = new ExpiringCache(url);
+        expiringCache.put("first", "first value");
+        System.out.println(expiringCache.get("first"));
         try {
             TimeUnit.SECONDS.sleep(4);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        System.out.println(expiryCache.get("first"));
+        System.out.println(expiringCache.get("first"));
     }
 }

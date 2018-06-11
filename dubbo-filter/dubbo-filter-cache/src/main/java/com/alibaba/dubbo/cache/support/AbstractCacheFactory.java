@@ -47,11 +47,4 @@ public abstract class AbstractCacheFactory implements CacheFactory {
 
     protected abstract Cache createCache(URL url);
 
-    @Override
-    public void destroy() {
-        for (Map.Entry<String, Cache> entry : caches.entrySet()) {
-            entry.getValue().clear();
-        }
-        caches.clear();
-    }
 }
