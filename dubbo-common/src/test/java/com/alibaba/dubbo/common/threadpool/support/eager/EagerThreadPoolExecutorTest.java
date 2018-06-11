@@ -102,5 +102,6 @@ public class EagerThreadPoolExecutorTest {
                 executorService.getClass()
                         .getSimpleName()
                         .equals("EagerThreadPoolExecutor"));
+        executorService.execute(() ->{ throw new RuntimeException("x");});
     }
 }
