@@ -44,6 +44,7 @@ import org.springframework.context.annotation.ConfigurationClassPostProcessor;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
@@ -77,6 +78,8 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
 
     private final Set<String> packagesToScan;
 
+    private final AtomicBoolean scanned = new AtomicBoolean(false);
+
     private Environment environment;
 
     private ResourceLoader resourceLoader;
@@ -98,13 +101,15 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
 
-        Set<String> resolvedPackagesToScan = resolvePackagesToScan(packagesToScan);
+        if (scanned.compareAndSet(false,true)) {
+            Set<String> resolvedPackagesToScan = resolvePackagesToScan(packagesToScan);
 
-        if (!CollectionUtils.isEmpty(resolvedPackagesToScan)) {
-            registerServiceBeans(resolvedPackagesToScan, registry);
-        } else {
-            if (logger.isWarnEnabled()) {
-                logger.warn("packagesToScan is empty , ServiceBean registry will be ignored!");
+            if (!CollectionUtils.isEmpty(resolvedPackagesToScan)) {
+                registerServiceBeans(resolvedPackagesToScan, registry);
+            } else {
+                if (logger.isWarnEnabled()) {
+                    logger.warn("packagesToScan is empty , ServiceBean registry will be ignored!");
+                }
             }
         }
 
@@ -482,7 +487,11 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
 
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-
+        if (!scanned.get()) {
+            if (beanFactory instanceof BeanDefinitionRegistry) {
+                postProcessBeanDefinitionRegistry((BeanDefinitionRegistry) beanFactory);
+            }
+        }
     }
 
     @Override
