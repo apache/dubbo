@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.cache.support.expiry;
+package com.alibaba.dubbo.cache.support.expiring;
 
 import com.alibaba.dubbo.cache.Cache;
 import com.alibaba.dubbo.common.URL;
