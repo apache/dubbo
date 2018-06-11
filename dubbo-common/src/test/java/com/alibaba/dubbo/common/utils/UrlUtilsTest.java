@@ -28,9 +28,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class UrlUtilsTest {
@@ -334,5 +336,23 @@ public class UrlUtilsTest {
 
         pattern = pattern.addParameter(Constants.VERSION_KEY, "*");
         assertTrue(UrlUtils.isServiceKeyMatch(pattern, value));
+    }
+
+    @Test
+    public void testGetEmptyUrl() throws Exception {
+        URL url = UrlUtils.getEmptyUrl("dubbo/a.b.c.Foo:1.0.0", "test");
+        assertThat(url.toFullString(), equalTo("empty://0.0.0.0/a.b.c.Foo?category=test&group=dubbo&version=1.0.0"));
+    }
+
+    @Test
+    public void testIsMatchGlobPattern() throws Exception {
+        assertTrue(UrlUtils.isMatchGlobPattern("*", "value"));
+        assertTrue(UrlUtils.isMatchGlobPattern("", null));
+        assertFalse(UrlUtils.isMatchGlobPattern("", "value"));
+        assertTrue(UrlUtils.isMatchGlobPattern("value", "value"));
+        assertTrue(UrlUtils.isMatchGlobPattern("v*", "value"));
+        assertTrue(UrlUtils.isMatchGlobPattern("*e", "value"));
+        assertTrue(UrlUtils.isMatchGlobPattern("v*e", "value"));
+        assertTrue(UrlUtils.isMatchGlobPattern("$key", "value", URL.valueOf("dubbo://localhost:8080/Foo?key=v*e")));
     }
 }
