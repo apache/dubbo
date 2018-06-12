@@ -70,7 +70,7 @@ public class EagerThreadPoolExecutor extends ThreadPoolExecutor {
             try {
                 if (!queue.retryOffer(command, 0, TimeUnit.MILLISECONDS)) {
                     submittedTaskCount.decrementAndGet();
-                    throw new RejectedExecutionException("Queue capacity is full.");
+                    throw new RejectedExecutionException("Queue capacity is full.", rx);
                 }
             } catch (InterruptedException x) {
                 submittedTaskCount.decrementAndGet();
@@ -79,6 +79,7 @@ public class EagerThreadPoolExecutor extends ThreadPoolExecutor {
         } catch (Throwable t) {
             // decrease any way
             submittedTaskCount.decrementAndGet();
+            throw t;
         }
     }
 }
