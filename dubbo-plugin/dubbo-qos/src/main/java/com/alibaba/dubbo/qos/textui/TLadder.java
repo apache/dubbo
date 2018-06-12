@@ -19,7 +19,7 @@ package com.alibaba.dubbo.qos.textui;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.apache.commons.lang3.StringUtils.repeat;
+import static com.alibaba.dubbo.common.utils.StringUtils.repeat;
 
 /**
  * Ladder

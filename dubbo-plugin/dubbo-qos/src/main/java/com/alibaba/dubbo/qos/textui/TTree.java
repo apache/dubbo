@@ -23,9 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import static com.alibaba.dubbo.common.utils.StringUtils.EMPTY;
+import static com.alibaba.dubbo.common.utils.StringUtils.repeat;
 import static java.lang.System.currentTimeMillis;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
-import static org.apache.commons.lang3.StringUtils.repeat;
 
 /**
  * tree
