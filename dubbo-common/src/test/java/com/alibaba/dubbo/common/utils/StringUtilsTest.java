@@ -17,6 +17,7 @@
 package com.alibaba.dubbo.common.utils;
 
 import com.alibaba.dubbo.common.Constants;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -32,9 +33,70 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 public class StringUtilsTest {
+    @Test
+    public void testLength() throws Exception {
+        assertThat(StringUtils.length(null), equalTo(0));
+        assertThat(StringUtils.length("abc"), equalTo(3));
+    }
+
+    @Test
+    public void testRepeat() throws Exception {
+        assertThat(StringUtils.repeat(null, 2), nullValue());
+        assertThat(StringUtils.repeat("", 0), equalTo(""));
+        assertThat(StringUtils.repeat("", 2), equalTo(""));
+        assertThat(StringUtils.repeat("a", 3), equalTo("aaa"));
+        assertThat(StringUtils.repeat("ab", 2), equalTo("abab"));
+        assertThat(StringUtils.repeat("a", -2), equalTo(""));
+        assertThat(StringUtils.repeat(null, null, 2), nullValue());
+        assertThat(StringUtils.repeat(null, "x", 2), nullValue());
+        assertThat(StringUtils.repeat("", null, 0), equalTo(""));
+        assertThat(StringUtils.repeat("", "", 2), equalTo(""));
+        assertThat(StringUtils.repeat("", "x", 3), equalTo("xx"));
+        assertThat(StringUtils.repeat("?", ", ", 3), equalTo("?, ?, ?"));
+        assertThat(StringUtils.repeat('e', 0), equalTo(""));
+        assertThat(StringUtils.repeat('e', 3), equalTo("eee"));
+    }
+
+    @Test
+    public void testStripEnd() throws Exception {
+        assertThat(StringUtils.stripEnd(null, "*"), nullValue());
+        assertThat(StringUtils.stripEnd("", null), equalTo(""));
+        assertThat(StringUtils.stripEnd("abc", ""), equalTo("abc"));
+        assertThat(StringUtils.stripEnd("abc", null), equalTo("abc"));
+        assertThat(StringUtils.stripEnd("  abc", null), equalTo("  abc"));
+        assertThat(StringUtils.stripEnd("abc  ", null), equalTo("abc"));
+        assertThat(StringUtils.stripEnd(" abc ", null), equalTo(" abc"));
+        assertThat(StringUtils.stripEnd("  abcyx", "xyz"), equalTo("  abc"));
+        assertThat(StringUtils.stripEnd("120.00", ".0"), equalTo("12"));
+    }
+
+    @Test
+    public void testReplace() throws Exception {
+        assertThat(StringUtils.replace(null, "*", "*"), nullValue());
+        assertThat(StringUtils.replace("", "*", "*"), equalTo(""));
+        assertThat(StringUtils.replace("any", null, "*"), equalTo("any"));
+        assertThat(StringUtils.replace("any", "*", null), equalTo("any"));
+        assertThat(StringUtils.replace("any", "", "*"), equalTo("any"));
+        assertThat(StringUtils.replace("aba", "a", null), equalTo("aba"));
+        assertThat(StringUtils.replace("aba", "a", ""), equalTo("b"));
+        assertThat(StringUtils.replace("aba", "a", "z"), equalTo("zbz"));
+        assertThat(StringUtils.replace(null, "*", "*", 64), nullValue());
+        assertThat(StringUtils.replace("", "*", "*", 64), equalTo(""));
+        assertThat(StringUtils.replace("any", null, "*", 64), equalTo("any"));
+        assertThat(StringUtils.replace("any", "*", null, 64), equalTo("any"));
+        assertThat(StringUtils.replace("any", "", "*", 64), equalTo("any"));
+        assertThat(StringUtils.replace("any", "*", "*", 0), equalTo("any"));
+        assertThat(StringUtils.replace("abaa", "a", null, -1), equalTo("abaa"));
+        assertThat(StringUtils.replace("abaa", "a", "", -1), equalTo("b"));
+        assertThat(StringUtils.replace("abaa", "a", "z", 0), equalTo("abaa"));
+        assertThat(StringUtils.replace("abaa", "a", "z", 1), equalTo("zbaa"));
+        assertThat(StringUtils.replace("abaa", "a", "z", 2), equalTo("zbza"));
+    }
+
     @Test
     public void testIsBlank() throws Exception {
         assertTrue(StringUtils.isBlank(null));

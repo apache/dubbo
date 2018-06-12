@@ -16,19 +16,18 @@
  */
 package com.alibaba.dubbo.qos.textui;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import static com.alibaba.dubbo.common.utils.StringUtils.EMPTY;
+import static com.alibaba.dubbo.common.utils.StringUtils.length;
+import static com.alibaba.dubbo.common.utils.StringUtils.repeat;
+import static com.alibaba.dubbo.common.utils.StringUtils.replace;
 import static java.lang.Math.abs;
 import static java.lang.Math.max;
 import static java.lang.String.format;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
-import static org.apache.commons.lang3.StringUtils.length;
-import static org.apache.commons.lang3.StringUtils.repeat;
 
 /**
  * Table
@@ -189,7 +188,7 @@ public class TTable implements TComponent {
     private String getDataFormat(ColumnDefine columnDefine, int width, String data) {
         switch (columnDefine.align) {
             case MIDDLE: {
-                final int length = StringUtils.length(data);
+                final int length = length(data);
                 final int diff = width - length;
                 final int left = diff / 2;
                 return repeat(" ", diff - left) + "%s" + repeat(" ", left);
@@ -407,7 +406,7 @@ public class TTable implements TComponent {
      * @return the replaced string
      */
     private static String replaceTab(String string) {
-        return StringUtils.replace(string, "\t", "    ");
+        return replace(string, "\t", "    ");
     }
 
     /**

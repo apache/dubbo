@@ -19,6 +19,7 @@ package com.alibaba.dubbo.qos.server.handler;
 
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.qos.command.CommandContext;
 import com.alibaba.dubbo.qos.command.CommandExecutor;
 import com.alibaba.dubbo.qos.command.DefaultCommandExecutor;
@@ -29,7 +30,6 @@ import com.alibaba.dubbo.qos.common.QosConstants;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * Telnet process handler
@@ -50,7 +50,7 @@ public class TelnetProcessHandler extends SimpleChannelInboundHandler<String> {
 
             try {
                 String result = commandExecutor.execute(commandContext);
-                if (StringUtils.equals(QosConstants.CLOSE, result)) {
+                if (StringUtils.isEquals(QosConstants.CLOSE, result)) {
                     ctx.writeAndFlush(getByeLabel()).addListener(ChannelFutureListener.CLOSE);
                 } else {
                     ctx.writeAndFlush(result + QosConstants.BR_STR + QosProcessHandler.prompt);
