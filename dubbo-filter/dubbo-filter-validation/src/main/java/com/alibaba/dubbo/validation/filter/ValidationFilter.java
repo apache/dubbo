@@ -28,6 +28,8 @@ import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.validation.Validation;
 import com.alibaba.dubbo.validation.Validator;
 
+import javax.validation.ConstraintViolationException;
+
 /**
  * ValidationFilter
  */
@@ -49,6 +51,8 @@ public class ValidationFilter implements Filter {
                 if (validator != null) {
                     validator.validate(invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());
                 }
+            } catch (ConstraintViolationException t) {
+                throw new RpcException(RpcException.BIZ_EXCEPTION, t.getMessage(), t);
             } catch (RpcException e) {
                 throw e;
             } catch (Throwable t) {
