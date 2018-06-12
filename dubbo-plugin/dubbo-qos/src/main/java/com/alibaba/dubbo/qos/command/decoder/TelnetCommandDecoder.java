@@ -16,15 +16,15 @@
  */
 package com.alibaba.dubbo.qos.command.decoder;
 
+import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.qos.command.CommandContext;
 import com.alibaba.dubbo.qos.command.CommandContextFactory;
 
-import org.apache.commons.lang3.StringUtils;
 
 public class TelnetCommandDecoder {
     public static final CommandContext decode(String str) {
         CommandContext commandContext = null;
-        if (StringUtils.isNotBlank(str)) {
+        if (!StringUtils.isBlank(str)) {
             String[] array = str.split("(?<![\\\\]) ");
             if (array.length > 0) {
                 String name = array[0];
