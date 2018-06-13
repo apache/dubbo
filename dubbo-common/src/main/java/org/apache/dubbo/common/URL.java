@@ -68,7 +68,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @see java.net.URL
  * @see java.net.URI
  */
-public final class URL implements Serializable {
+public /**final**/ class URL implements Serializable {
 
     private static final long serialVersionUID = -1985165475234910535L;
 
