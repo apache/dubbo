@@ -16,23 +16,17 @@
  */
 package com.alibaba.dubbo.rpc;
 
-import java.util.concurrent.CompletableFuture;
-
 /**
  *
  */
-public class AsyncRpcResult extends AsyncResult {
-
-    public AsyncRpcResult(CompletableFuture<Object> future) {
-        super(future);
-    }
-
-    public AsyncRpcResult(CompletableFuture<Object> future, boolean registerCallback) {
-        super(future, registerCallback);
-    }
-
-    @Override
-    public Object recreate() throws Throwable {
-        return valueFuture;
-    }
+public interface PostProcessFilter extends Filter {
+    /**
+     * TODO Filter is singleton, so we have to add invoker & invocation as parameters for every invoke.
+     *
+     * @param result
+     * @param invoker
+     * @param invocation
+     * @return
+     */
+    Result postProcessResult(Result result, Invoker<?> invoker, Invocation invocation);
 }

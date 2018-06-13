@@ -161,7 +161,7 @@ public class RpcUtils {
         return Boolean.TRUE.toString().equals(inv.getAttachment(Constants.FUTURE_KEY));
     }
 
-    public static boolean isAsyncFuture(Method method) {
+    public static boolean isGeneratedAsyncFuture(Method method) {
         Class<?> clazz = method.getDeclaringClass();
         return clazz.isAnnotationPresent(AsyncFor.class) && method.getName().endsWith(Constants.ASYNC_SUFFIX) && method.getReturnType().equals(CompletableFuture.class);
     }

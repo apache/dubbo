@@ -16,45 +16,105 @@
  */
 package com.alibaba.dubbo.rpc;
 
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
+
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 /**
  *
  */
-public abstract class AsyncResult<T> implements Result {
+public abstract class AsyncResult implements Result {
+    private static final Logger logger = LoggerFactory.getLogger(AsyncResult.class);
+
+    protected CompletableFuture<Object> valueFuture;
+
+    protected CompletableFuture<Result> resultFuture;
+
+    // TODO remove
+    protected Result rpcResult;
+
+    protected AsyncResult(CompletableFuture<Object> future) {
+        this(future, true);
+    }
+
+    protected AsyncResult(CompletableFuture<Object> future, boolean registerCallback) {
+        if (registerCallback) {
+            resultFuture = new CompletableFuture<>();
+            future.whenComplete((v, t) -> {
+                if (t != null) {
+                    if (t instanceof CompletionException) {
+                        rpcResult = new RpcResult(t.getCause());
+                    } else {
+                        rpcResult = new RpcResult(t);
+                    }
+                } else {
+                    rpcResult = new RpcResult(v);
+                }
+                resultFuture.complete(rpcResult);
+            });
+        }
+        this.valueFuture = future;
+    }
 
     @Override
     public Object getValue() {
-        return null;
+        return rpcResult.getValue();
     }
 
     @Override
     public Throwable getException() {
-        return null;
+        return rpcResult.getException();
     }
 
     @Override
     public boolean hasException() {
-        return false;
+        return rpcResult.hasException();
     }
 
     @Override
     public Object getResult() {
-        return null;
+        return rpcResult.getResult();
     }
 
     @Override
     public Map<String, String> getAttachments() {
-        return null;
+        return rpcResult.getAttachments();
     }
 
     @Override
     public String getAttachment(String key) {
-        return null;
+        return rpcResult.getAttachment(key);
     }
 
     @Override
     public String getAttachment(String key, String defaultValue) {
-        return null;
+        return rpcResult.getAttachment(key, defaultValue);
+    }
+
+    public CompletableFuture getValueFuture() {
+        return valueFuture;
+    }
+
+    public CompletableFuture<Result> getResultFuture() {
+        return resultFuture;
+    }
+
+    public void setResultFuture(CompletableFuture<Result> resultFuture) {
+        this.resultFuture = resultFuture;
+    }
+
+    public Result getRpcResult() {
+        Result result;
+        try {
+            result = resultFuture.get();
+        } catch (Exception e) {
+            // This should never happen;
+            logger.error("", e);
+            result = new RpcResult();
+        }
+        return result;
     }
 }

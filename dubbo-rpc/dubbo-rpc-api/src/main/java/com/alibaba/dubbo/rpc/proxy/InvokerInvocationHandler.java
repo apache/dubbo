@@ -53,7 +53,7 @@ public class InvokerInvocationHandler implements InvocationHandler {
         }
 
         RpcInvocation invocation;
-        if (RpcUtils.isAsyncFuture(method)) {
+        if (RpcUtils.isGeneratedAsyncFuture(method)) {
             Class<?> clazz = method.getDeclaringClass();
             String syncMethodName = methodName.substring(0, methodName.length() - Constants.ASYNC_SUFFIX.length());
             Method syncMethod = clazz.getMethod(syncMethodName, method.getParameterTypes());

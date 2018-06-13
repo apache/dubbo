@@ -109,23 +109,6 @@ public class RpcContext {
     }
 
     /**
-     * TODO call multiple times in different thread?
-     *
-     * @return
-     * @throws IllegalStateException
-     */
-    @SuppressWarnings("unchecked")
-    public static AsyncContext startAsync() throws IllegalStateException {
-        RpcContext currentContext = getContext();
-        if (currentContext.asyncContext != null) {
-            currentContext.asyncContext.start();
-            return currentContext.asyncContext;
-        } else {
-            throw new IllegalStateException("This service does not support asynchronous operations, you should open async explicitly before use.");
-        }
-    }
-
-    /**
      * Get the request object of the underlying RPC protocol, e.g. HttpServletRequest
      *
      * @return null if the underlying protocol doesn't provide support for getting request
@@ -682,6 +665,21 @@ public class RpcContext {
             throw new RpcException("oneway call error ." + e.getMessage(), e);
         } finally {
             removeAttachment(Constants.RETURN_KEY);
+        }
+    }
+
+    /**
+     * @return
+     * @throws IllegalStateException
+     */
+    @SuppressWarnings("unchecked")
+    public static AsyncContext startAsync() throws IllegalStateException {
+        RpcContext currentContext = getContext();
+        if (currentContext.asyncContext != null) {
+            currentContext.asyncContext.start();
+            return currentContext.asyncContext;
+        } else {
+            throw new IllegalStateException("This service does not support asynchronous operations, you should open async explicitly before use.");
         }
     }
 

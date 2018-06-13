@@ -34,7 +34,6 @@ import com.alibaba.dubbo.remoting.exchange.ExchangeHandler;
 import com.alibaba.dubbo.remoting.exchange.ExchangeServer;
 import com.alibaba.dubbo.remoting.exchange.Exchangers;
 import com.alibaba.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
-import com.alibaba.dubbo.rpc.AsyncContextImpl;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
@@ -102,23 +101,10 @@ public class DubboProtocol extends AbstractProtocol {
                         return null;
                     }
                 }
-                boolean supportServerAsync = invoker.getUrl().getMethodParameter(inv.getMethodName(), Constants.ASYNC_KEY, false);
-                CompletableFuture<Object> resultFuture = new CompletableFuture<>();
                 RpcContext rpcContext = RpcContext.getContext();
-                if (supportServerAsync) {
-                    rpcContext.setAsyncContext(new AsyncContextImpl(resultFuture));
-                }
                 rpcContext.setRemoteAddress(channel.getRemoteAddress());
                 Result result = invoker.invoke(inv);
-                if (!rpcContext.isAsyncStarted()) {
-                    resultFuture.complete(result);
-                } else if (rpcContext.isAsyncStarted() && result.hasException()) {
-                    if (rpcContext.stopAsync()) {
-                        resultFuture.complete(result);
-                    }
-                }
 
-                return resultFuture;
             }
             throw new RemotingException(channel, "Unsupported request: "
                     + (message == null ? null : (message.getClass().getName() + ": " + message))

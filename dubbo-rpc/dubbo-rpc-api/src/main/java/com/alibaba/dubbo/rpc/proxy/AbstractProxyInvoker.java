@@ -17,13 +17,18 @@
 package com.alibaba.dubbo.rpc.proxy;
 
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.rpc.AsyncContextImpl;
+import com.alibaba.dubbo.rpc.AsyncRpcResult;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
+import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcResult;
+import com.alibaba.dubbo.rpc.support.RpcUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * InvokerWrapper
@@ -70,11 +75,30 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
     public void destroy() {
     }
 
+    // TODO Unified to AsyncResult?
     @Override
     public Result invoke(Invocation invocation) throws RpcException {
         try {
-            return new RpcResult(doInvoke(proxy, invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments()));
+            RpcContext rpcContext = RpcContext.getContext();
+            if (RpcUtils.isAsyncFuture(null, invocation)) {
+                CompletableFuture<Object> future = new CompletableFuture<>();
+                rpcContext.setAsyncContext(new AsyncContextImpl(future));
+                Object obj = doInvoke(proxy, invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());
+                // ignore obj in case of RpcContext.startAsync()? always rely on user to write back.
+                if (rpcContext.isAsyncStarted()) {
+                    return new AsyncRpcResult(future);
+                } else {
+                    return new RpcResult(obj);
+                }
+            } else {
+                Object obj = doInvoke(proxy, invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());
+                if (obj instanceof CompletableFuture) {
+                    return new AsyncRpcResult((CompletableFuture<Object>) obj);
+                }
+                return new RpcResult(obj);
+            }
         } catch (InvocationTargetException e) {
+            // TODO async throw exception before async thread write back, should stop asyncContext
             return new RpcResult(e.getTargetException());
         } catch (Throwable e) {
             throw new RpcException("Failed to invoke remote proxy method " + invocation.getMethodName() + " to " + getUrl() + ", cause: " + e.getMessage(), e);
