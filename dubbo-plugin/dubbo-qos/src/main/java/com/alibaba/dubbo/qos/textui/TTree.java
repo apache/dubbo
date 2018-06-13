@@ -16,16 +16,15 @@
  */
 package com.alibaba.dubbo.qos.textui;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import static com.alibaba.dubbo.common.utils.StringUtils.EMPTY;
+import static com.alibaba.dubbo.common.utils.StringUtils.length;
+import static com.alibaba.dubbo.common.utils.StringUtils.repeat;
 import static java.lang.System.currentTimeMillis;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
-import static org.apache.commons.lang3.StringUtils.repeat;
 
 /**
  * tree
@@ -65,7 +64,7 @@ public class TTree implements TComponent {
 
                 final boolean hasChild = !node.children.isEmpty();
                 final String stepString = isLast ? STEP_FIRST_CHAR : STEP_NORMAL_CHAR;
-                final int stepStringLength = StringUtils.length(stepString);
+                final int stepStringLength = length(stepString);
                 treeSB.append(prefix).append(stepString);
 
                 int costPrefixLength = 0;
@@ -75,7 +74,7 @@ public class TTree implements TComponent {
                 if (isPrintCost
                         && !node.isRoot()) {
                     final String costPrefix = String.format("[%s,%sms]", (node.endTimestamp - root.beginTimestamp), (node.endTimestamp - node.beginTimestamp));
-                    costPrefixLength = StringUtils.length(costPrefix);
+                    costPrefixLength = length(costPrefix);
                     treeSB.append(costPrefix);
                 }
 

@@ -47,7 +47,7 @@ import com.alibaba.dubbo.common.extensionloader.ext8_add.impl.AddExt4_ManualAdap
 import com.alibaba.dubbo.common.extensionloader.ext9_empty.Ext9Empty;
 import com.alibaba.dubbo.common.extensionloader.ext9_empty.impl.Ext9EmptyImpl;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.HashSet;

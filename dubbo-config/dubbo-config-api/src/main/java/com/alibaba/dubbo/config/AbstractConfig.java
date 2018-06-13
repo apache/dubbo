@@ -260,7 +260,6 @@ public abstract class AbstractConfig implements Serializable {
                     if (parameter == null || !parameter.attribute())
                         continue;
                     String key;
-                    parameter.key();
                     if (parameter.key().length() > 0) {
                         key = parameter.key();
                     } else {

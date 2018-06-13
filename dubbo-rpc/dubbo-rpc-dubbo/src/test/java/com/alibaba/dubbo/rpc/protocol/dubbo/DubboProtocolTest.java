@@ -31,14 +31,14 @@ import com.alibaba.dubbo.rpc.protocol.dubbo.support.RemoteServiceImpl;
 import com.alibaba.dubbo.rpc.protocol.dubbo.support.Type;
 import com.alibaba.dubbo.rpc.service.EchoService;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 /**
  * <code>ProxiesTest</code>

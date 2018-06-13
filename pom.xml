@@ -115,7 +115,7 @@
         <maven_deploy_version>2.8.2</maven_deploy_version>
         <maven_compiler_version>3.6.0</maven_compiler_version>
         <maven_source_version>3.0.1</maven_source_version>
-        <maven_javadoc_version>3.0.0</maven_javadoc_version>
+        <maven_javadoc_version>3.0.1</maven_javadoc_version>
         <maven_jetty_version>6.1.26</maven_jetty_version>
         <maven_checkstyle_version>3.0.0</maven_checkstyle_version>
         <maven_jacoco_version>0.8.1</maven_jacoco_version>
@@ -126,7 +126,6 @@
     </properties>
 
     <modules>
-        <module>hessian-lite</module>
         <module>dubbo-common</module>
         <module>dubbo-container</module>
         <module>dubbo-remoting</module>
@@ -534,8 +533,6 @@
                                 <exclude>README.md</exclude>
                                 <exclude>**/codestyle/*</exclude>
                                 <exclude>**/resources/META-INF/**</exclude>
-                                <!-- exclude the hessian-lite files -->
-                                <exclude>**/com/caucho/hessian/**</exclude>
                                 <!-- exclude the internal threadlocal files -->
                                 <exclude>**/com/alibaba/common/threadlocal/InternalThreadLocal.java</exclude>
                                 <exclude>**/com/alibaba/common/threadlocal/InternalThreadLocalMap.java</exclude>

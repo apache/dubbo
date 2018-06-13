@@ -28,12 +28,16 @@
         <skip_maven_deploy>false</skip_maven_deploy>
 	</properties>
 	<dependencies>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-config-api</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
 		<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>dubbo-rpc-api</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
-
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>dubbo-remoting-http</artifactId>
@@ -67,28 +71,6 @@
             <artifactId>resteasy-jdk-http</artifactId>
         </dependency>
 
-        <!--<dependency>-->
-            <!--<groupId>org.jboss.resteasy</groupId>-->
-            <!--<artifactId>tjws</artifactId>-->
-            <!--<version>3.0.7.Final</version>-->
-        <!--</dependency>-->
-
-        <!--<dependency>-->
-            <!--<groupId>org.jboss.resteasy</groupId>-->
-            <!--<artifactId>resteasy-undertow</artifactId>-->
-            <!--<version>3.0.7.Final</version>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-            <!--<groupId>io.undertow</groupId>-->
-            <!--<artifactId>undertow-servlet</artifactId>-->
-            <!--<version>1.0.1.Final</version>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-            <!--<groupId>io.undertow</groupId>-->
-            <!--<artifactId>undertow-core</artifactId>-->
-            <!--<version>1.0.1.Final</version>-->
-        <!--</dependency>-->
-
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-jackson-provider</artifactId>
@@ -104,11 +86,34 @@
             <artifactId>netty-all</artifactId>
         </dependency>
 
+        <!-- swagger -->
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-annotations</artifactId>
+            <exclusions> 
+                <exclusion> 
+                	<groupId>javax.ws.rs</groupId> 
+                    <artifactId>jsr311-api</artifactId> 
+                </exclusion> 
+            </exclusions> 
+        </dependency>
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-jaxrs</artifactId>
+            <exclusions> 
+                <exclusion> 
+                    <groupId>javax.ws.rs</groupId> 
+                    <artifactId>jsr311-api</artifactId> 
+                </exclusion> 
+            </exclusions> 
+        </dependency>
+
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>dubbo-serialization-jdk</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
 </project>
