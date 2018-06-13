@@ -340,10 +340,10 @@ abstract public class AbstractHessianInput {
      *
      * @param expectedClass the expected class if the protocol doesn't supply it.
      * @param expectedTypes the runtime type hints, eg: expectedClass equals Map, expectedTypes can
-     * equals String.class, Short.class
+     *                      equals String.class, Short.class
      */
     public Object readObject(Class expectedClass, Class<?>... expectedTypes)
-        throws IOException{
+            throws IOException {
         throw new UnsupportedOperationException(String.valueOf(this));
     }
 
@@ -355,11 +355,12 @@ abstract public class AbstractHessianInput {
 
     /**
      * Reads an arbitrary object from the input stream.
+     *
      * @param expectedTypes the runtime type hints, eg: expectedTypes can
-     * equals String.class, Short.class for HashMap
+     *                      equals String.class, Short.class for HashMap
      */
     public Object readObject(List<Class<?>> expectedTypes)
-        throws IOException{
+            throws IOException {
         throw new UnsupportedOperationException(String.valueOf(this));
     }
 

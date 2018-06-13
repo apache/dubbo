@@ -21,6 +21,7 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.config.api.DemoService;
 import com.alibaba.dubbo.config.api.Greeting;
+import com.alibaba.dubbo.config.mock.TestProxyFactory;
 import com.alibaba.dubbo.config.provider.impl.DemoServiceImpl;
 import com.alibaba.dubbo.config.mock.MockProtocol2;
 import com.alibaba.dubbo.config.mock.MockRegistryFactory2;
@@ -45,6 +46,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.withSettings;
 
@@ -53,6 +55,7 @@ public class ServiceConfigTest {
     private Registry registryDelegate = Mockito.mock(Registry.class);
     private Exporter exporter = Mockito.mock(Exporter.class);
     private ServiceConfig<DemoServiceImpl> service = new ServiceConfig<DemoServiceImpl>();
+    private ServiceConfig<DemoServiceImpl> service2 = new ServiceConfig<DemoServiceImpl>();
 
 
     @Before
@@ -87,6 +90,14 @@ public class ServiceConfigTest {
         service.setInterface(DemoService.class);
         service.setRef(new DemoServiceImpl());
         service.setMethods(Collections.singletonList(method));
+
+        service2.setProvider(provider);
+        service2.setApplication(app);
+        service2.setRegistry(registry);
+        service2.setInterface(DemoService.class);
+        service2.setRef(new DemoServiceImpl());
+        service2.setMethods(Collections.singletonList(method));
+        service2.setProxy("testproxyfactory");
     }
 
     @Test
@@ -110,6 +121,14 @@ public class ServiceConfigTest {
         assertThat(url.getParameters().get(Constants.METHODS_KEY), containsString("echo"));
         assertThat(url.getParameters(), hasEntry(Constants.SIDE_KEY, Constants.PROVIDER));
         Mockito.verify(protocolDelegate).export(Mockito.any(Invoker.class));
+    }
+
+    @Test
+    public void testProxy() throws Exception {
+        service2.export();
+
+        assertThat(service2.getExportedUrls(), hasSize(1));
+        assertEquals(2, TestProxyFactory.count); // local injvm and registry protocol, so expected is 2
     }
 
     @Test

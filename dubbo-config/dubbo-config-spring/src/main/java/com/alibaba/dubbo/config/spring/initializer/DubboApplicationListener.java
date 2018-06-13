@@ -31,7 +31,11 @@ public class DubboApplicationListener implements ApplicationListener<Application
     private DubboBootstrap dubboBootstrap;
 
     public DubboApplicationListener() {
-        dubboBootstrap = new DubboBootstrap();
+        dubboBootstrap = new DubboBootstrap(false);
+    }
+
+    public DubboApplicationListener(DubboBootstrap dubboBootstrap) {
+        this.dubboBootstrap = dubboBootstrap;
     }
 
     @Override
