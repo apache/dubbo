@@ -55,6 +55,11 @@ public class StubProxyFactoryWrapper implements ProxyFactory {
     }
 
     @Override
+    public <T> T getProxy(Invoker<T> invoker, boolean generic) throws RpcException {
+        return proxyFactory.getProxy(invoker, generic);
+    }
+
+    @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public <T> T getProxy(Invoker<T> invoker) throws RpcException {
         T proxy = proxyFactory.getProxy(invoker);

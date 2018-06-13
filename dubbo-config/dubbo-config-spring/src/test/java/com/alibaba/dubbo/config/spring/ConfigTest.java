@@ -46,7 +46,7 @@ import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.service.GenericException;
 import com.alibaba.dubbo.rpc.service.GenericService;
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.BeanCreationException;
@@ -381,7 +381,7 @@ public class ConfigTest {
         }
     }
 
-    // DUBBO-571 methods key in provider's URL doesn't contain the methods from inherited super interface
+    // DUBBO-571 methods key in provider's URLONE doesn't contain the methods from inherited super interface
     @Test
     public void test_noMethodInterface_methodsKeyHasValue() throws Exception {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/demo-provider-no-methods-interface.xml");

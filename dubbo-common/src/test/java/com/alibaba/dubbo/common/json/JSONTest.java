@@ -16,7 +16,7 @@
  */
 package com.alibaba.dubbo.common.json;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.StringReader;
@@ -24,6 +24,7 @@ import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -167,6 +168,14 @@ public class JSONTest {
         assertEquals(test[2].getClass(), Bean.class);
         test = JSON.parse("[1.2, 2]", new Class<?>[]{int.class, int.class});
         assertEquals(test[0], 1);
+    }
+
+    @Test
+    public void testLocale() throws Exception {
+        Locale obj = Locale.US;
+        String str = JSON.json(obj);
+        assertEquals("\"en_US\"", str);
+        assertEquals(obj, JSON.parse(str, Locale.class));
     }
 
     public static class Bean1 {

@@ -65,6 +65,7 @@ public class DubboProtocol extends AbstractProtocol {
     private final Map<String, ExchangeServer> serverMap = new ConcurrentHashMap<String, ExchangeServer>(); // <host:port,Exchanger>
     private final Map<String, ReferenceCountExchangeClient> referenceClientMap = new ConcurrentHashMap<String, ReferenceCountExchangeClient>(); // <host:port,Exchanger>
     private final ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap = new ConcurrentHashMap<String, LazyConnectExchangeClient>();
+    private final ConcurrentMap<String, Object> locks = new ConcurrentHashMap<String, Object>();
     private final Set<String> optimizers = new ConcurrentHashSet<String>();
     //consumer side export a stub service for dispatching event
     //servicekey-stubmethods
@@ -260,7 +261,12 @@ public class DubboProtocol extends AbstractProtocol {
         if (isServer) {
             ExchangeServer server = serverMap.get(key);
             if (server == null) {
-                serverMap.put(key, createServer(url));
+                synchronized (this) {
+                    server = serverMap.get(key);
+                    if (server == null) {
+                        serverMap.put(key, createServer(url));
+                    }
+                }
             } else {
                 // server supports reset, use together with override
                 server.reset(url);
@@ -373,11 +379,18 @@ public class DubboProtocol extends AbstractProtocol {
                 referenceClientMap.remove(key);
             }
         }
-        synchronized (key.intern()) {
+
+        locks.putIfAbsent(key, new Object());
+        synchronized (locks.get(key)) {
+            if (referenceClientMap.containsKey(key)) {
+                return referenceClientMap.get(key);
+            }
+
             ExchangeClient exchangeClient = initClient(url);
             client = new ReferenceCountExchangeClient(exchangeClient, ghostClientMap);
             referenceClientMap.put(key, client);
             ghostClientMap.remove(key);
+            locks.remove(key);
             return client;
         }
     }

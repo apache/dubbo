@@ -16,6 +16,7 @@
  */
 package com.alibaba.dubbo.remoting.exchange.codec;
 
+import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.common.io.Bytes;
 import com.alibaba.dubbo.common.io.StreamUtils;
 import com.alibaba.dubbo.common.logger.Logger;
@@ -173,7 +174,7 @@ public class ExchangeCodec extends TelnetCodec {
         } else {
             // decode request.
             Request req = new Request(id);
-            req.setVersion("2.0.0");
+            req.setVersion(Version.getProtocolVersion());
             req.setTwoWay((flag & FLAG_TWOWAY) != 0);
             if ((flag & FLAG_EVENT) != 0) {
                 req.setEvent(Request.HEARTBEAT_EVENT);
@@ -231,7 +232,7 @@ public class ExchangeCodec extends TelnetCodec {
         if (req.isEvent()) {
             encodeEventData(channel, out, req.getData());
         } else {
-            encodeRequestData(channel, out, req.getData());
+            encodeRequestData(channel, out, req.getData(), req.getVersion());
         }
         out.flushBuffer();
         if (out instanceof Cleanable) {
@@ -274,7 +275,7 @@ public class ExchangeCodec extends TelnetCodec {
                 if (res.isHeartbeat()) {
                     encodeHeartbeatData(channel, out, res.getResult());
                 } else {
-                    encodeResponseData(channel, out, res.getResult());
+                    encodeResponseData(channel, out, res.getResult(), res.getVersion());
                 }
             } else out.writeUTF(res.getErrorMessage());
             out.flushBuffer();
@@ -441,5 +442,14 @@ public class ExchangeCodec extends TelnetCodec {
     protected void encodeResponseData(Channel channel, ObjectOutput out, Object data) throws IOException {
         encodeResponseData(out, data);
     }
+
+    protected void encodeRequestData(Channel channel, ObjectOutput out, Object data, String version) throws IOException {
+        encodeRequestData(out, data);
+    }
+
+    protected void encodeResponseData(Channel channel, ObjectOutput out, Object data, String version) throws IOException {
+        encodeResponseData(out, data);
+    }
+
 
 }

@@ -169,13 +169,12 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 if (sysaddress != null && sysaddress.length() > 0) {
                     address = sysaddress;
                 }
-                if (address != null && address.length() > 0
-                        && !RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) {
+                if (address.length() > 0 && !RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) {
                     Map<String, String> map = new HashMap<String, String>();
                     appendParameters(map, application);
                     appendParameters(map, config);
                     map.put("path", RegistryService.class.getName());
-                    map.put("dubbo", Version.getVersion());
+                    map.put("dubbo", Version.getProtocolVersion());
                     map.put(Constants.TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
                     if (ConfigUtils.getPid() > 0) {
                         map.put(Constants.PID_KEY, String.valueOf(ConfigUtils.getPid()));
@@ -221,7 +220,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         appendProperties(monitor);
         Map<String, String> map = new HashMap<String, String>();
         map.put(Constants.INTERFACE_KEY, MonitorService.class.getName());
-        map.put("dubbo", Version.getVersion());
+        map.put("dubbo", Version.getProtocolVersion());
         map.put(Constants.TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
         if (ConfigUtils.getPid() > 0) {
             map.put(Constants.PID_KEY, String.valueOf(ConfigUtils.getPid()));
@@ -360,7 +359,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setStub(Boolean stub) {
-        if (local == null) {
+        if (stub == null) {
             setStub((String) null);
         } else {
             setStub(String.valueOf(stub));
@@ -410,11 +409,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     @Parameter(key = Constants.INVOKER_LISTENER_KEY, append = true)
     public String getListener() {
-        checkMultiExtension(InvokerListener.class, "listener", listener);
         return listener;
     }
 
     public void setListener(String listener) {
+        checkMultiExtension(InvokerListener.class, "listener", listener);
         this.listener = listener;
     }
 

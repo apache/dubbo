@@ -21,6 +21,7 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
+import com.alibaba.dubbo.common.utils.ExecutorUtil;
 import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
@@ -144,6 +145,9 @@ public class MulticastRegistry extends FailbackRegistry {
         return false;
     }
 
+    /**
+     * Remove the expired providers, only when "clean" parameter is true.
+     */
     private void clean() {
         if (admin) {
             for (Set<URL> providers : new HashSet<Set<URL>>(received.values())) {
@@ -298,6 +302,9 @@ public class MulticastRegistry extends FailbackRegistry {
         }
     }
 
+    /**
+     * Remove the expired providers(if clean is true), leave the multicast group and close the multicast socket.
+     */
     @Override
     public void destroy() {
         super.destroy();
@@ -314,6 +321,7 @@ public class MulticastRegistry extends FailbackRegistry {
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
         }
+        ExecutorUtil.gracefulShutdown(cleanExecutor, cleanPeriod);
     }
 
     protected void registered(URL url) {

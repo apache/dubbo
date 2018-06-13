@@ -18,9 +18,9 @@ package com.alibaba.dubbo.common.threadpool.support.cached;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.threadlocal.NamedInternalThreadFactory;
 import com.alibaba.dubbo.common.threadpool.ThreadPool;
 import com.alibaba.dubbo.common.threadpool.support.AbortPolicyWithReport;
-import com.alibaba.dubbo.common.utils.NamedThreadFactory;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -47,7 +47,6 @@ public class CachedThreadPool implements ThreadPool {
                 queues == 0 ? new SynchronousQueue<Runnable>() :
                         (queues < 0 ? new LinkedBlockingQueue<Runnable>()
                                 : new LinkedBlockingQueue<Runnable>(queues)),
-                new NamedThreadFactory(name, true), new AbortPolicyWithReport(name, url));
+                new NamedInternalThreadFactory(name, true), new AbortPolicyWithReport(name, url));
     }
-
 }
